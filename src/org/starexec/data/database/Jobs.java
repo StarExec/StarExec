@@ -4307,97 +4307,99 @@ public class Jobs {
 	 */
 	public static List<SolverStats> processPairsToSolverStats(List<JobPair> pairs) {
 		try {
-			Hashtable<String, SolverStats> SolverStats=new Hashtable<String,SolverStats>();
-			String key=null;
+			Hashtable<String, SolverStats> SolverStats = new Hashtable<String, SolverStats>();
+			String key = null;
 			for (JobPair jp : pairs) {
-				
+
 				for (JoblineStage stage : jp.getStages()) {
-					
+
 					//we need to exclude noOp stages
 					if (stage.isNoOp()) {
 						continue;
 					}
 
 					//entries in the stats table determined by stage/configuration pairs
-					key=stage.getStageNumber()+":"+String.valueOf(stage.getConfiguration().getId());
-					
+					key = stage.getStageNumber() + ":" + String.valueOf(stage.getConfiguration().getId());
+
 					if (!SolverStats.containsKey(key)) { // current stats entry does not yet exist
-						SolverStats newSolver=new SolverStats();
+						SolverStats newSolver = new SolverStats();
 						newSolver.setStageNumber(stage.getStageNumber());
 						newSolver.setSolver(stage.getSolver());
 						newSolver.setConfiguration(stage.getConfiguration());
 						SolverStats.put(key, newSolver);
 					}
-					
-					
+
+
 					//update stats info for entry that current job-pair belongs to
-					SolverStats curSolver=SolverStats.get(key);
-					addStageToSolverStats(curSolver,stage);
-					if (stage.getStageNumber()==jp.getPrimaryStageNumber()) {
+					SolverStats curSolver = SolverStats.get(key);
+					addStageToSolverStats(curSolver, stage);
+					if (stage.getStageNumber() == jp.getPrimaryStageNumber()) {
 						//if we get here, we need to add this stage to the primary stats as well
-						key=0+":"+String.valueOf(stage.getConfiguration().getId());
+						key = 0 + ":" + String.valueOf(stage.getConfiguration().getId());
 						if (!SolverStats.containsKey(key)) { // current stats entry does not yet exist
-							SolverStats newSolver=new SolverStats();
+							SolverStats newSolver = new SolverStats();
 							newSolver.setStageNumber(0);
 							newSolver.setSolver(stage.getSolver());
 							newSolver.setConfiguration(stage.getConfiguration());
 							SolverStats.put(key, newSolver);
 						}
-						
-						
+
+
 						//update stats info for entry that current job-pair belongs to
-						curSolver=SolverStats.get(key);
+						curSolver = SolverStats.get(key);
 					}
-					populateConflictsForSolverStat(curSolver, pairs, jp, stage);
 				}
 			}
-				
-			
-			List<SolverStats> returnValues=new LinkedList<SolverStats>();
+
+
+			List<SolverStats> returnValues = new LinkedList<SolverStats>();
 			for (SolverStats js : SolverStats.values()) {
 				returnValues.add(js);
 			}
 
 
-
 			return returnValues;
 		} catch (Exception e) {
-			log.error(e.getMessage(),e);
+			log.error(e.getMessage(), e);
 		}
 		return null;
-		
+
 	}
 
 	/**
-	 *
-	 * @param curSolver The solver stats to be populated.
-	 * @param pairs The job pairs to search for conflicts from.
-	 * @param jp The job pair relating to the solver stats.
-	 * @param stage The stage of the job pair that we're interested in.
+	 * Gets all of the benchmarks in a job for which a job pair gave a result that conflicted with another job pair on
+	 * the same benchmark.
+	 * @param jobId The id of the job to get conflicting benchmarks for.
+	 * @return A set of all the benchmark ids that are conflicting.
+	 * @throws SQLException if there is a problem with the database.
 	 */
-	private static void populateConflictsForSolverStat(SolverStats curSolver, List<JobPair> pairs, JobPair jp, JoblineStage stage) {
-		// Run through all the pairs again and check which ones conflict with the current ones.
-		for (JobPair innerJp : pairs) {
-			for (JoblineStage innerStage : innerJp.getStages()) {
-				// For a conflict to occur the benchmark and solver/config must be the same between the pairs
-				// but the results must be different. the starexec-unknown result does not count as a conflict.
-				if (innerJp.getBench().getId() == jp.getBench().getId()
-						&& !innerStage.getStarexecResult().equals(stage.getStarexecResult())
-						&& !innerStage.getStarexecResult().equals(R.STAREXEC_UNKNOWN)
-						&& !stage.getStarexecResult().equals(R.STAREXEC_UNKNOWN) ) {
-					curSolver.incrementConflicts();
-//					curSolver.getConflicts().add(new Conflict(
-//							stage.getSolver(),
-//							innerStage.getSolver(),
-//							jp.getBench(),
-//							stage.getStarexecResult(),
-//							innerStage.getStarexecResult())
-//					);
+	private Set<Integer> getConflictingBenchmarksForJob(int jobId) throws SQLException {
+		Set<Integer> conflictingBenchmarkIds = new HashSet<>();
+		List<Benchmark> benchmarksInJob = Benchmarks.getByJob(jobId);
+
+		benchmarkLoop:
+		for (Benchmark benchmarkInJob : benchmarksInJob) {
+			List<JobPair> jobPairsInJobContainingBenchmark = JobPairs.getPairsInJobContainingBenchmark(jobId, benchmarkInJob.getId());
+			for (JobPair jobPair : jobPairsInJobContainingBenchmark) {
+				// Loop through all the job pairs containing the benchmark. If two gave different results then the benchmark
+				// is conflicting.
+				String firstResultFound = null;
+				for (JoblineStage stage: jobPair.getStages()) {
+					if (stage.isNoOp() || stage.getStarexecResult().equals(R.STAREXEC_UNKNOWN)) {
+						continue;
+					} else if (firstResultFound == null) {
+						firstResultFound = stage.getStarexecResult();
+					} else {
+						// Since there were two different results, add the benchmark to conflicting benchmarks and
+						// continue to the next benchmark.
+						conflictingBenchmarkIds.add(benchmarkInJob.getId());
+						continue benchmarkLoop;
+					}
 				}
 			}
 		}
+		return conflictingBenchmarkIds;
 	}
-
 
 	
 	/**
