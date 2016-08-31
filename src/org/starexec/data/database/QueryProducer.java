@@ -10,5 +10,5 @@ import java.sql.SQLException;
  */
 @FunctionalInterface
 public 	interface QueryProducer<T> {
-    T query(Connection con, CallableStatement procedure, ResultSet results) throws SQLException;
+    T query(CallableStatement procedure, ResultSet results) throws SQLException;
 }

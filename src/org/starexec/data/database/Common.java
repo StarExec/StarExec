@@ -202,13 +202,14 @@ public class Common {
 	 * @return Whatever we queried for and assembled from our ResultSet.
 	 * @throws SQLException
 	 */
-	public static <T> T queryDatabase(QueryProducer<T> queryProducer) throws SQLException {
+	public static <T> T queryDatabase(String callPreparationSql, QueryProducer<T> queryProducer) throws SQLException {
 		Connection con = null;
 		CallableStatement procedure=null;
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();
-			return queryProducer.query(con, procedure, results);
+			procedure = con.prepareCall(callPreparationSql);
+			return queryProducer.query(procedure, results);
 		} catch (SQLException e) {
 			throw e;
 		} finally {

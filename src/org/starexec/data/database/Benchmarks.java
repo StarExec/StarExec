@@ -709,7 +709,7 @@ public class Benchmarks {
 			procedure=con.prepareCall("CALL GetDeletedBenchmarks()");
 			results=procedure.executeQuery();
 			while (results.next()) {
-				Benchmark b = resultToBenchmark(results,"");
+				Benchmark b = resultToBenchmark(results);
 				if (new File(b.getPath()).exists()) {
 					log.warn("a deleted benchmark still exists on disk! id = "+b.getId());
 					if (!Util.safeDeleteFileAndEmptyParents(b.getPath(), R.getBenchmarkPath())) {
@@ -983,7 +983,7 @@ public class Benchmarks {
 			results = procedure.executeQuery();
 
 			if(results.next()){
-				Benchmark b = resultToBenchmark(results,"bench");
+				Benchmark b = resultToBenchmarkWithPrefix(results,"bench");
 
 				Processor t = Processors.resultSetToProcessor(results, "types");
 
@@ -1104,7 +1104,7 @@ public class Benchmarks {
 			
 			
 			while(results.next()){
-				Benchmark b = resultToBenchmark(results,"");
+				Benchmark b = resultToBenchmark(results);
 				Processor t = Processors.resultSetToProcessor(results, "types");
 				b.setType(t);
 				// Add benchmark object to list
@@ -1127,9 +1127,21 @@ public class Benchmarks {
 	}
 
 	// TODO Finish implementation.
-	public static Set<Benchmark> getByJob(int jobId) {
-		return null;
+	public static List<Benchmark> getByJob(int jobId) throws SQLException {
+		return Common.queryDatabase( "{CALL GetBenchmarksByJob(?)}", (CallableStatement procedure, ResultSet results) -> {
+			procedure.setInt(1, jobId);
+			results = procedure.executeQuery();
+			List<Benchmark> benchmarks = new ArrayList<>();
+			while (results.next()) {
+				benchmarks.add(resultToBenchmark(results));
+			}
+			return benchmarks;
+		});
 	}
+
+
+
+
 	
 	
 	
@@ -1508,7 +1520,7 @@ public class Benchmarks {
 			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
 
 			while(results.next()){
-				Benchmark b = resultToBenchmark(results,"bench"); 
+				Benchmark b = resultToBenchmarkWithPrefix(results,"bench");
 				Processor t = Processors.resultSetToProcessor(results, "types");
 
 
@@ -1928,6 +1940,12 @@ public class Benchmarks {
 		return false;
 	}
 
+
+
+	public static Benchmark resultToBenchmark(ResultSet results) throws SQLException {
+		return resultToBenchmarkWithPrefix(results, null);
+	}
+
 	/**
 	 * Creates a Benchmark object from a SQL resultset
 	 * @param results The resultset pointed at the row containing benchmark data
@@ -1937,8 +1955,7 @@ public class Benchmarks {
 	 * @return A Benchmark object
 	 * @throws SQLException
 	 */
-	
-	public static Benchmark resultToBenchmark(ResultSet results, String prefix) throws SQLException {
+	public static Benchmark resultToBenchmarkWithPrefix(ResultSet results, String prefix) throws SQLException {
 		Benchmark b = new Benchmark();
 		if (prefix==null || prefix=="") {
 			b.setId(results.getInt("id"));
@@ -2379,7 +2396,7 @@ public class Benchmarks {
 			results=procedure.executeQuery();
 			List<Benchmark> Benchmarks=new ArrayList<Benchmark>();
 			while (results.next()) {
-				Benchmark b=resultToBenchmark(results,"");
+				Benchmark b=resultToBenchmark(results);
 				Processor t = Processors.resultSetToProcessor(results, "types");
 				b.setType(t);
 				Benchmarks.add(b);
@@ -2410,7 +2427,7 @@ public class Benchmarks {
 			List<Benchmark> Benchmarks = new LinkedList<Benchmark>();
 			
 			while(results.next()){
-				Benchmark s=resultToBenchmark(results,"");
+				Benchmark s=resultToBenchmark(results);
 				Processor t = Processors.resultSetToProcessor(results, "types");
 				s.setType(t);
 				Benchmarks.add(s);

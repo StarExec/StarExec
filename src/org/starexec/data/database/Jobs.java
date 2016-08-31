@@ -3056,7 +3056,7 @@ public class Jobs {
 				stage.setSolver(discoveredSolvers.get(curSolver));
 				
 				if (!discoveredBenchmarks.containsKey(curBench)) {
-					Benchmark b= Benchmarks.resultToBenchmark(results, "bench");
+					Benchmark b= Benchmarks.resultToBenchmarkWithPrefix(results, "bench");
 					jp.setBench(b);
 					discoveredBenchmarks.put(curBench,b);
 				}
@@ -3334,7 +3334,7 @@ public class Jobs {
 			    	Status s = new Status();
 				    s.setCode(results.getInt("job_pairs.status_code"));
 				    jp.setStatus(s);
-				    Benchmark b = Benchmarks.resultToBenchmark(results, "benchmarks");
+				    Benchmark b = Benchmarks.resultToBenchmarkWithPrefix(results, "benchmarks");
 				    b.setUsesDependencies(results.getInt("dependency_count")>0);
 				    jp.setBench(b);
 				    
