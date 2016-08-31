@@ -1126,7 +1126,12 @@ public class Benchmarks {
 		return null;
 	}
 
-	// TODO Finish implementation.
+	/**
+	 * Gets all benchmarks in a given job.
+	 * @param jobId The job to get the benchmarks from.
+	 * @return The list of benchmarks in the job.
+	 * @throws SQLException if something goes wrong with the database.
+	 */
 	public static List<Benchmark> getByJob(int jobId) throws SQLException {
 		return Common.queryDatabase( "{CALL GetBenchmarksByJob(?)}", (CallableStatement procedure, ResultSet results) -> {
 			procedure.setInt(1, jobId);
@@ -1139,11 +1144,6 @@ public class Benchmarks {
 		});
 	}
 
-
-
-
-	
-	
 	
 	/**
 	 * Gets the IDs of every space that is associated with the given benchmark
