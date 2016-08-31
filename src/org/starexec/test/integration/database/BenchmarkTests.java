@@ -15,6 +15,7 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
+import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.*;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.test.TestUtil;
@@ -98,6 +99,7 @@ public class BenchmarkTests extends TestSequence {
 			}
 		} catch (SQLException e) {
 			Assert.fail("Call threw SQL Exception.");
+			log.error(Util.getStackTrace(e));
 		}
 
 	}
@@ -566,8 +568,10 @@ public class BenchmarkTests extends TestSequence {
 		benchmarks=Benchmarks.get(ids,true);
 		benchProcessor = loader.loadBenchProcessorIntoDatabase(Communities.getTestCommunity().getId());
 		List<Integer> solverIds=new ArrayList<Integer>();
+		solver = loader.loadSolverIntoDatabase(space.getId(), user.getId());
 		solverIds.add(solver.getId());
 		int wallclockTimeout=100;
+		postProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
 		job=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, ids,cpuTimeout,wallclockTimeout,gbMemory);
 	}
 	
