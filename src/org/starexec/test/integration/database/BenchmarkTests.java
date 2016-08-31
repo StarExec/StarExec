@@ -1,6 +1,7 @@
 package org.starexec.test.integration.database;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -79,20 +80,26 @@ public class BenchmarkTests extends TestSequence {
 
 	@StarexecTest
 	private void GetByJobTest() {
-		// This is the method we're testing. It retrieves all the benchmarks in a job.
-		Set<Benchmark> benchmarks = Benchmarks.getByJob(job.getId());
+		try {
+			// This is the method we're testing. It retrieves all the benchmarks in a job.
+			List<Benchmark> benchmarks = Benchmarks.getByJob(job.getId());
 
-		// Convert the benchmarks to their ids.
-		Set<Integer> benchmarkIds = benchmarks.stream()
-				.map((benchmark) -> benchmark.getId())
-				.collect(Collectors.toSet());
+			// Convert the benchmarks to their ids.
+			Set<Integer> benchmarkIds = benchmarks.stream()
+					.map((benchmark) -> benchmark.getId())
+					.collect(Collectors.toSet());
 
-		// Assert that all the benchmarks in the job are in the benchmarks we retrieved.
-		for (JobPair pair : job.getJobPairs()) {
-			Assert.assertTrue(
-					"Job pair had bench with bench id: " + pair.getBench().getId() + " but this benchmark was contained in benchmarks retrieved.",
-					benchmarkIds.contains(pair.getBench().getId()));
+
+			// Assert that all the benchmarks in the job are in the benchmarks we retrieved.
+			for (JobPair pair : job.getJobPairs()) {
+				Assert.assertTrue(
+						"Job pair had bench with bench id: " + pair.getBench().getId() + " but this benchmark was contained in benchmarks retrieved.",
+						benchmarkIds.contains(pair.getBench().getId()));
+			}
+		} catch (SQLException e) {
+			Assert.fail("Call threw SQL Exception.");
 		}
+
 	}
 	
 	@StarexecTest
