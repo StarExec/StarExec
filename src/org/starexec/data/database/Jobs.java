@@ -4396,15 +4396,16 @@ public class Jobs {
 
 		benchmarkLoop:
 		for (Benchmark benchmarkInJob : benchmarksInJob) {
+			// Loop through all the job pairs containing the benchmark. If two gave different results then the benchmark
+			// is conflicting.
+			String firstResultFound = null;
 			List<JobPair> jobPairsInJobContainingBenchmark = JobPairs.getPairsInJobContainingBenchmark(jobId, benchmarkInJob.getId());
-			log.debug("Job pairs found job containing benchmark: " + jobPairsInJobContainingBenchmark.size());
+			log.debug("Job pairs found in job containing benchmark: " + jobPairsInJobContainingBenchmark.size());
 			for (JobPair jobPair : jobPairsInJobContainingBenchmark) {
-				// Loop through all the job pairs containing the benchmark. If two gave different results then the benchmark
-				// is conflicting.
-				String firstResultFound = null;
 				for (JoblineStage stage: jobPair.getStages()) {
+					log.debug("Result found while searching for conflicting benchmark: " + stage.getStarexecResult() );
 					if (stage.isNoOp() || stage.getStarexecResult().equals(R.STAREXEC_UNKNOWN)) {
-						log.debug("Found STAREXEC_UNKOWN while searching for conflicting benchmarks.");
+						log.debug("Found STAREXEC_UNKNOWN while searching for conflicting benchmarks.");
 						continue;
 					} else if (firstResultFound == null) {
 						log.debug("Got first valid result while searching for conflicting benchmarks.");
@@ -4437,28 +4438,54 @@ public class Jobs {
      * @throws SQLException if there is a database issue.
      */
 	private static Map<String, Integer> buildSolverIdToNumberOfConflictsMap(int jobId) throws SQLException {
+		final String methodName = "buildSolverIdToNumberOfConflictsMap";
 	    Set<Integer> conflictingBenchmarksInJob = getConflictingBenchmarksForJob(jobId);
         Map<String, Integer> conflictingBenchmarksBySolver = new HashMap<>();
+		Map<String, Set<Integer>> remainingConflictingBenchmarksInJobForKey = new HashMap<>();
 		List<Solver> solversInJob = Solvers.getByJobSimpleWithConfigs(jobId);
+		logUtil.debug(methodName, "Got " + solversInJob.size() + " solvers with Solvers.getByJobSimpleWithConfigs("+jobId+")");
         for (Solver solver : solversInJob) {
             List<JobPair> pairsContainingSolverInJob =  JobPairs.getPairsInJobContainingSolver(jobId, solver.getId());
+			logUtil.debug(methodName, "Got "+pairsContainingSolverInJob.size()+" pairs containing solver "+solver.getName());
             for (JobPair pair : pairsContainingSolverInJob) {
                 for (JoblineStage stage : pair.getStages()) {
                     int benchId = pair.getBench().getId();
                     String key = getStageConfigHashKey(stage, stage.getConfiguration());
+					logUtil.debug(methodName, "Got key "+key);
+					logUtil.debug(methodName, "Got bench id " + benchId);
+					// TODO delete log loop
+					logUtil.debug(methodName, "Conflicting benchmarks: ");
+					for (Integer conflictingBenchmarkId : conflictingBenchmarksInJob) {
+						logUtil.debug(methodName, "\t"+conflictingBenchmarkId);
+					}
 
-                    if (conflictingBenchmarksInJob.contains(key)) {
+					// Copy the conflictingBenchmarksInJob set and associate the copy with the key. This way we can ensure
+					// each benchmark is counted at most once towards each key by removing the benchmark from that list if it
+					// is found for this key.
+					if (!remainingConflictingBenchmarksInJobForKey.containsKey(key)) {
+						remainingConflictingBenchmarksInJobForKey.put(key, new HashSet<>(conflictingBenchmarksInJob));
+					}
+
+
+                    if (remainingConflictingBenchmarksInJobForKey.get(key).contains(benchId)) {
                         // If the benchmark in the pair is conflicting then increment the number of conflicting benchmarks
                         // for the solver.
                         if (conflictingBenchmarksBySolver.containsKey(key)) {
-                            conflictingBenchmarksBySolver.put(key, conflictingBenchmarksBySolver.get(benchId) + 1);
+                            conflictingBenchmarksBySolver.put(key, conflictingBenchmarksBySolver.get(key) + 1);
                         } else {
                             conflictingBenchmarksBySolver.put(key, 1);
                         }
+						// Make sure each benchmark is only counted towards each stage-config pair at most once.
+						remainingConflictingBenchmarksInJobForKey.get(key).remove(benchId);
                     }
                 }
             }
         }
+
+		// TODO Remove log loop.
+		for ( String key : conflictingBenchmarksBySolver.keySet() ) {
+			logUtil.debug(methodName, key + " => " + conflictingBenchmarksBySolver.get(key));
+		}
 
         return conflictingBenchmarksBySolver;
 	}

@@ -1051,6 +1051,7 @@ public class JobPairs {
 				JobPair jp = JobPairs.resultToPair(results);
 				jp.addStage(new JoblineStage()); // just add an empty stage that we can populate below
 				jp.getStages().get(0).setStageNumber(jp.getPrimaryStageNumber());
+
 				jp.getNode().setId(results.getInt("node_id"));
 				jp.getStatus().setCode(results.getInt("status_code"));
 				jp.getBench().setId(results.getInt("bench_id"));
@@ -1204,6 +1205,7 @@ public class JobPairs {
 			List<JobPair> jobPairs = new ArrayList<>();
 			while (results.next()) {
 				JobPair pair = resultToPair(results);
+                populateJobPairStagesDetailed(pair, con);
 				jobPairs.add(pair);
 			}
 			return jobPairs;
@@ -1268,6 +1270,12 @@ public class JobPairs {
 		jp.setQueueSubmitTime(result.getTimestamp("job_pairs.queuesub_time"));
 		jp.setStartTime(result.getTimestamp("job_pairs.start_time"));
 		jp.setEndTime(result.getTimestamp("job_pairs.end_time"));
+		// Populate basic benchmark info.
+		jp.getBench().setId(result.getInt("bench_id"));
+		jp.getBench().setName(result.getString("bench_name"));
+
+		jp.getNode().setId(result.getInt("job_pairs.node_id"));
+		jp.getStatus().setCode(result.getInt("job_pairs.status_code"));
 		
 		jp.setPath(result.getString("job_pairs.path"));
 		jp.setJobSpaceId(result.getInt("job_pairs.job_space_id"));
