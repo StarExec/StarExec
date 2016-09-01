@@ -1159,7 +1159,7 @@ public class Solvers {
 	 * @return The configuration with the given id
 	 * @author Tyler Jensen
 	 */
-	protected static Configuration getConfiguration(Connection con, int configId) throws Exception {
+	protected static Configuration getConfiguration(Connection con, int configId) throws SQLException {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		 
@@ -1349,7 +1349,7 @@ public class Solvers {
 	 * if the solver does not exist
 	 * @author Tyler Jensen
 	 */
-	protected static Solver getSolverByConfig(Connection con, int configId, boolean includeDeleted) throws Exception {		
+	protected static Solver getSolverByConfig(Connection con, int configId, boolean includeDeleted) throws SQLException {
 		Configuration c = Solvers.getConfiguration(con, configId);
 		if (c==null) {
 			log.debug("getSolverByConfig called with configId = "+configId+" but config was null");

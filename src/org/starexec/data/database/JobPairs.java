@@ -1082,7 +1082,7 @@ public class JobPairs {
 	 * @return The job pair object with the given id.
 	 * @author Tyler Jensen
 	 */
-	protected static JobPair getPairDetailed(Connection con, int pairId) throws Exception {			
+	protected static JobPair getPairDetailed(Connection con, int pairId) throws Exception {
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
@@ -1107,53 +1107,9 @@ public class JobPairs {
 				//couldn't find the pair for some reason
 				return null;
 			}
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-			procedure=con.prepareCall("{CALL GetJobPairStagesById(?)}");
-			procedure.setInt(1,pairId);
-			results= procedure.executeQuery();
-			//next, we get data at the stage level
-			while (results.next()) {
-				JoblineStage stage=resultToStage(results);
-				int configId=results.getInt("config_id");
-				int solverId=results.getInt("solver_id");
-				String configName=results.getString("config_name");
-				String solverName=results.getString("solver_name");
-				//means this stage has no configuration
-				if (configId==-1) {
-					stage.setNoOp(true);
-				}else if (configId>0) {
-					Solver solver = Solvers.getSolverByConfig(con, configId,true);
-					Configuration c=Solvers.getConfiguration(configId);
-					
-					//this can happen if the pair references a deleted solver
-					if (solver==null) {
-						solver=new Solver();
-						solver.setId(solverId);
-						solver.setName(solverName);
-					}
-					
-					if (c==null) {
-						c=new Configuration();
-						c.setId(configId);
-						c.setName(configName);
-					}
-					
-					stage.setSolver(solver);
-					stage.setConfiguration(c);
-					stage.getSolver().addConfiguration(c);
-				}
 
+            populateJobPairStagesDetailed(jp, con);
 
-				jp.addStage(stage);
-			}
-			//last, we get attributes for everything
-			HashMap<Integer,Properties> attrs = getAttributes(pairId);
-			for (JoblineStage stage : jp.getStages()) {
-				if (attrs.containsKey(stage.getStageNumber())) {
-					stage.setAttributes(attrs.get(stage.getStageNumber()));
-				}
-			}
 			return jp;
 		} catch (Exception e) {
 			log.error("Get JobPair says "+e.getMessage(),e);
@@ -1164,6 +1120,54 @@ public class JobPairs {
 
 		return null;		
 	}
+
+	private static void populateJobPairStagesDetailed(JobPair jp, Connection con) throws SQLException {
+        Common.<Void>queryUsingConnection("{CALL GetJobPairStagesById(?)}", con, procedure -> {
+                procedure.setInt(1, jp.getId());
+            }, results -> {
+            //next, we get data at the stage level
+            while (results.next()) {
+                JoblineStage stage = resultToStage(results);
+                int configId = results.getInt("config_id");
+                int solverId = results.getInt("solver_id");
+                String configName = results.getString("config_name");
+                String solverName = results.getString("solver_name");
+                //means this stage has no configuration
+                if (configId == -1) {
+                    stage.setNoOp(true);
+                } else if (configId > 0) {
+                    Solver solver = Solvers.getSolverByConfig(con, configId, true);
+                    Configuration c = Solvers.getConfiguration(configId);
+
+                    //this can happen if the pair references a deleted solver
+                    if (solver == null) {
+                        solver = new Solver();
+                        solver.setId(solverId);
+                        solver.setName(solverName);
+                    }
+
+                    if (c == null) {
+                        c = new Configuration();
+                        c.setId(configId);
+                        c.setName(configName);
+                    }
+
+                    stage.setSolver(solver);
+                    stage.setConfiguration(c);
+                    stage.getSolver().addConfiguration(c);
+                }
+                jp.addStage(stage);
+            }
+            //last, we get attributes for everything
+            HashMap<Integer, Properties> attrs = getAttributes(jp.getId());
+            for (JoblineStage stage : jp.getStages()) {
+                if (attrs.containsKey(stage.getStageNumber())) {
+                    stage.setAttributes(attrs.get(stage.getStageNumber()));
+                }
+            }
+            return null;
+        });
+    }
 
 	/**
 	 * Gets the job pair with the given id recursively 
@@ -1213,10 +1217,10 @@ public class JobPairs {
 
 	// TODO implement method.
 	public static List<JobPair> getPairsInJobContainingSolver(int jobId, int solverId) throws SQLException {
-		return Common.query("{CALL GetJobPairsInJobContainingSolver(?, ?)}", procedure -> {
+		return Common.queryKeepConnection("{CALL GetJobPairsInJobContainingSolver(?, ?)}", procedure -> {
 		    procedure.setInt(1, jobId);
             procedure.setInt(2, solverId);
-        }, results -> {
+        }, (con, results) -> {
             List<JobPair> jobPairs = new ArrayList<>();
             while (results.next()) {
                 JobPair pairFromResults = resultToPair(results);
@@ -1233,7 +1237,7 @@ public class JobPairs {
 	 * @return
 	 * @throws Exception
 	 */
-	protected static JoblineStage resultToStage(ResultSet result) throws Exception {
+	protected static JoblineStage resultToStage(ResultSet result) throws SQLException {
 		JoblineStage stage=new JoblineStage();
 				
 		stage.setStageNumber(result.getInt("jobpair_stage_data.stage_number"));

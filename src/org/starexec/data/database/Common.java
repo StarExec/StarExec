@@ -193,6 +193,32 @@ public class Common {
 	}
 
 	/**
+	 * Makes a query and allows the user to make additional calls on the same connection.
+	 * @param callPreparationSql the SQL to prepare the SQL Procedure (e.g. "{Call MyProcedure(?, ?)}")
+	 * @param procedureConsumer lambda used to set arguments to procedure.
+	 * @param connectionResultsConsumer lambda used to transform results to desired type and use open DB connection.
+	 * @param <T> the type we want to transform the results to.
+	 * @return the results of the query as type T.
+	 * @throws SQLException if there is a database error.
+	 */
+	public static <T> T queryKeepConnection(
+			String callPreparationSql,
+			ProcedureConsumer procedureConsumer,
+			ConnectionResultsConsumer<T> connectionResultsConsumer) throws SQLException
+	{
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			return queryUsingConnectionKeepConnection(callPreparationSql, con, procedureConsumer, connectionResultsConsumer);
+		} catch (SQLException e) {
+			log.warn("Caught SQLException in Common.queryKeepConnect. Throwing exception...");
+			throw e;
+		} finally {
+			Common.safeClose(con);
+		}
+	}
+
+	/**
 	 * IMPORTANT: This method must only be used for queries and not updates. No transaction will be started and no rollback will
 	 * occur on failure.
 	 * This function accepts a ResultsConsumer lambda and queries the database. It handles the opening and closing
@@ -204,10 +230,32 @@ public class Common {
 	 */
 	public static <T> T query(String callPreparationSql, ProcedureConsumer procedureConsumer, ResultsConsumer<T> resultsConsumer) throws SQLException {
 		Connection con = null;
+		try {
+			con = Common.getConnection();
+			return queryUsingConnection(callPreparationSql, con, procedureConsumer, resultsConsumer);
+		} catch (SQLException e) {
+			log.warn("Caught SQLException in Common.query. Throwing exception...");
+			throw e;
+		} finally {
+			Common.safeClose(con);
+		}
+	}
+
+		/**
+         * IMPORTANT: This method must only be used for queries and not updates. No transaction will be started and no rollback will
+         * occur on failure.
+         * This function accepts a ResultsConsumer lambda and queries the database. It handles the opening and closing
+         * of the connection and closing other resources.
+		 * @param procedureConsumer lambda responsible for setting arguments to the procedure. (prepareCall is already done for you)
+         * @param resultsConsumer lambda responsible for converting the results to the desired type.
+         * @param <T> The type parameter that determines what exactly we are querying for and returning.
+         * @return Whatever we queried for and assembled from our ResultSet.
+         * @throws SQLException
+         */
+	public static <T> T queryUsingConnection(String callPreparationSql, Connection con, ProcedureConsumer procedureConsumer, ResultsConsumer<T> resultsConsumer) throws SQLException {
 		CallableStatement procedure=null;
 		ResultSet results = null;
 		try {
-			con = Common.getConnection();
 			procedure = con.prepareCall(callPreparationSql);
 			procedureConsumer.setupProcedure(procedure);
 			results = procedure.executeQuery();
@@ -216,12 +264,34 @@ public class Common {
 			log.error("Caught SQLException: " + Util.getStackTrace(e));
 			throw e;
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
 	}
-	
+
+	public static <T> T queryUsingConnectionKeepConnection(
+			String callPreparationSql,
+			Connection con,
+			ProcedureConsumer procedureConsumer,
+			ConnectionResultsConsumer<T> connectionResultsConsumer) throws SQLException
+	{
+		CallableStatement procedure=null;
+		ResultSet results = null;
+		try {
+			procedure = con.prepareCall(callPreparationSql);
+			procedureConsumer.setupProcedure(procedure);
+			results = procedure.executeQuery();
+			return connectionResultsConsumer.query(con, results);
+		} catch (SQLException e) {
+			log.error("Caught SQLException: " + Util.getStackTrace(e));
+			throw e;
+		} finally {
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+	}
+
+
 	/**
 	 * Cleans up the database connection pool. This class must be reinitialized after this is called. 
 	 */
