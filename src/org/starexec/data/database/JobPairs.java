@@ -1224,6 +1224,7 @@ public class JobPairs {
             List<JobPair> jobPairs = new ArrayList<>();
             while (results.next()) {
                 JobPair pairFromResults = resultToPair(results);
+                populateJobPairStagesDetailed(pairFromResults, con);
                 jobPairs.add(pairFromResults);
             }
             return jobPairs;
