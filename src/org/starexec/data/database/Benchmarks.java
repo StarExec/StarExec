@@ -1133,11 +1133,17 @@ public class Benchmarks {
 	 * @throws SQLException if something goes wrong with the database.
 	 */
 	public static List<Benchmark> getByJob(int jobId) throws SQLException {
+		log.debug("Inside benchmarks.getByJob");
 		return Common.query( "{CALL GetBenchmarksByJob(?)}", procedure -> {
+			log.debug("Setting GetBenchmarksByJob parameter.");
 			procedure.setInt(1, jobId);
 		}, results -> {
 			List<Benchmark> benchmarks = new ArrayList<>();
+			int test = 0;
+			log.debug("Compiling result for GetBenchmarksByJob");
 			while (results.next()) {
+				log.debug("GetBenchmarksByJob results.next() called");
+				test += 1;
 				benchmarks.add(resultToBenchmark(results));
 			}
 			return benchmarks;

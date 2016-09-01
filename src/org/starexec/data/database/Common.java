@@ -213,6 +213,7 @@ public class Common {
 			results = procedure.executeQuery();
 			return resultsConsumer.query(results);
 		} catch (SQLException e) {
+			log.error("Caught SQLException: " + Util.getStackTrace(e));
 			throw e;
 		} finally {
 			Common.safeClose(con);

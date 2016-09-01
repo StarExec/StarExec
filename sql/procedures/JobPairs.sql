@@ -235,7 +235,7 @@ CREATE PROCEDURE DeleteJobPair( IN _pairId INT)
 DROP PROCEDURE IF EXISTS GetJobPairsInJobContainingBenchmark;
 CREATE PROCEDURE GetJobPairsInJobContainingBenchmark(IN _jobId INT, IN _benchmarkId INT )
 	BEGIN
-		SELECT *
+		SELECT job_pairs.*
 		FROM job_pairs
 		WHERE job_id=_jobId AND bench_id=_benchmarkId;
 	END //
@@ -243,9 +243,9 @@ CREATE PROCEDURE GetJobPairsInJobContainingBenchmark(IN _jobId INT, IN _benchmar
 DROP PROCEDURE IF EXISTS GetJobPairsInJobContainingSolver;
 CREATE PROCEDURE GetJobPairsInJobContainingSolver(IN _jobId INT, IN _solverId INT)
   BEGIN
-    SELECT *
+    SELECT job_pairs.*
     FROM job_pairs INNER JOIN jobpair_stage_data ON job_pairs.id=jobpair_stage_data.jobpair_id
-		WHERE job_id=_jobId AND solver_id=_solverId;
+	WHERE job_id=_jobId AND solver_id=_solverId;
   END //
 	
 -- Sets the completion time to now (the moment this is called) for the pair with the given id

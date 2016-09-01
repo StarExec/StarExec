@@ -35,7 +35,7 @@ CREATE PROCEDURE AddAndAssociateBenchmark(IN _name VARCHAR(256), IN _path TEXT, 
 DROP PROCEDURE IF EXISTS GetBenchmarksByJob;
 CREATE PROCEDURE GetBenchmarksByJob(IN _jobId INT)
 	BEGIN
-		SELECT benchmarks.*
+		SELECT DISTINCT benchmarks.*
 		FROM benchmarks
 			INNER JOIN job_pairs
 			ON benchmarks.id=job_pairs.bench_id

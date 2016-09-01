@@ -1218,12 +1218,8 @@ public class JobPairs {
             procedure.setInt(2, solverId);
         }, results -> {
             List<JobPair> jobPairs = new ArrayList<>();
-            log.debug("Spagett: Listing results for (jobId, solverId): " + jobId + ", " + solverId);
             while (results.next()) {
                 JobPair pairFromResults = resultToPair(results);
-                for (JoblineStage stage : pairFromResults.getStages()) {
-                    log.debug("Spagett: " + stage.getSolver().getId());
-                }
                 jobPairs.add(pairFromResults);
             }
             return jobPairs;

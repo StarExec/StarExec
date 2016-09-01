@@ -1067,8 +1067,11 @@ public class Jobs {
 			log.debug("stats already cached in database");
 			return stats;
 		}
+
+		int jobId = space.getJobId();
+
 		//we will cache the stats only if the job is complete
-		boolean isJobComplete=Jobs.isJobComplete(space.getJobId());
+		boolean isJobComplete=Jobs.isJobComplete(jobId);
 
 		//otherwise, we need to compile the stats
 		log.debug("stats not present in database -- compiling stats now");
@@ -1076,7 +1079,7 @@ public class Jobs {
 		
 		
 		//compiles pairs into solver stats
-		List<SolverStats> newStats=processPairsToSolverStats(pairs);
+		List<SolverStats> newStats=processPairsToSolverStats(jobId, pairs);
 		for (SolverStats s : newStats) {
 			s.setJobSpaceId(space.getId());
 		}
@@ -4305,12 +4308,10 @@ public class Jobs {
 	 * @return A list of SolverStats objects to use in a datatable
 	 * @author Eric Burns
 	 */
-	public static List<SolverStats> processPairsToSolverStats(List<JobPair> pairs) {
+	public static List<SolverStats> processPairsToSolverStats(int jobId, List<JobPair> pairs) {
 		try {
 		    Map<String, Integer> solverIdToNumberOfConflicts = new HashMap<>();
-            if (pairs.size() > 0) {
-                solverIdToNumberOfConflicts = buildSolverIdToNumberOfConflictsMap(pairs.get(0).getJobId());
-            }
+			solverIdToNumberOfConflicts = buildSolverIdToNumberOfConflictsMap(jobId);
 
 			Hashtable<String, SolverStats> SolverStats = new Hashtable<String, SolverStats>();
 			String key = null;
@@ -4325,6 +4326,7 @@ public class Jobs {
 
 					//entries in the stats table determined by stage/configuration pairs
 					key = getStageConfigHashKey(stage, stage.getConfiguration());
+					log.debug("Got solver stats key: " + key);
 
 					if (!SolverStats.containsKey(key)) { // current stats entry does not yet exist
 						SolverStats newSolver = new SolverStats();
@@ -4387,21 +4389,28 @@ public class Jobs {
 	 */
 	private static Set<Integer> getConflictingBenchmarksForJob(int jobId) throws SQLException {
 		Set<Integer> conflictingBenchmarkIds = new HashSet<>();
+		
+		log.debug("Calling Benchmarks.getByJob("+jobId+")");
 		List<Benchmark> benchmarksInJob = Benchmarks.getByJob(jobId);
+		log.debug("Benchmarks found in job while searching for conflicting benchmarks: " + benchmarksInJob.size());
 
 		benchmarkLoop:
 		for (Benchmark benchmarkInJob : benchmarksInJob) {
 			List<JobPair> jobPairsInJobContainingBenchmark = JobPairs.getPairsInJobContainingBenchmark(jobId, benchmarkInJob.getId());
+			log.debug("Job pairs found job containing benchmark: " + jobPairsInJobContainingBenchmark.size());
 			for (JobPair jobPair : jobPairsInJobContainingBenchmark) {
 				// Loop through all the job pairs containing the benchmark. If two gave different results then the benchmark
 				// is conflicting.
 				String firstResultFound = null;
 				for (JoblineStage stage: jobPair.getStages()) {
 					if (stage.isNoOp() || stage.getStarexecResult().equals(R.STAREXEC_UNKNOWN)) {
+						log.debug("Found STAREXEC_UNKOWN while searching for conflicting benchmarks.");
 						continue;
 					} else if (firstResultFound == null) {
+						log.debug("Got first valid result while searching for conflicting benchmarks.");
 						firstResultFound = stage.getStarexecResult();
 					} else {
+						log.debug("Got second valid result, adding conflicting benchmark with id: " + benchmarkInJob.getId());
 						// Since there were two different results, add the benchmark to conflicting benchmarks and
 						// continue to the next benchmark.
 						conflictingBenchmarkIds.add(benchmarkInJob.getId());
@@ -4409,6 +4418,10 @@ public class Jobs {
 					}
 				}
 			}
+		}
+		log.debug("Conflicting benchmark id size: " + conflictingBenchmarkIds.size() );
+		for (Integer id : conflictingBenchmarkIds) {
+			log.debug("conflictingBenchmarkId: " + id);
 		}
 		return conflictingBenchmarkIds;
 	}
