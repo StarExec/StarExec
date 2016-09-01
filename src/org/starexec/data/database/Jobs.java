@@ -4307,6 +4307,11 @@ public class Jobs {
 	 */
 	public static List<SolverStats> processPairsToSolverStats(List<JobPair> pairs) {
 		try {
+		    Map<String, Integer> solverIdToNumberOfConflicts = new HashMap<>();
+            if (pairs.size() > 0) {
+                solverIdToNumberOfConflicts = buildSolverIdToNumberOfConflictsMap(pairs.get(0).getJobId());
+            }
+
 			Hashtable<String, SolverStats> SolverStats = new Hashtable<String, SolverStats>();
 			String key = null;
 			for (JobPair jp : pairs) {
@@ -4319,13 +4324,16 @@ public class Jobs {
 					}
 
 					//entries in the stats table determined by stage/configuration pairs
-					key = stage.getStageNumber() + ":" + String.valueOf(stage.getConfiguration().getId());
+					key = getStageConfigHashKey(stage, stage.getConfiguration());
 
 					if (!SolverStats.containsKey(key)) { // current stats entry does not yet exist
 						SolverStats newSolver = new SolverStats();
 						newSolver.setStageNumber(stage.getStageNumber());
 						newSolver.setSolver(stage.getSolver());
 						newSolver.setConfiguration(stage.getConfiguration());
+                        if (solverIdToNumberOfConflicts.containsKey(key)) {
+                            newSolver.setConflicts(solverIdToNumberOfConflicts.get(key));
+                        }
 						SolverStats.put(key, newSolver);
 					}
 
@@ -4341,12 +4349,16 @@ public class Jobs {
 							newSolver.setStageNumber(0);
 							newSolver.setSolver(stage.getSolver());
 							newSolver.setConfiguration(stage.getConfiguration());
+                            if (solverIdToNumberOfConflicts.containsKey(key)) {
+                                newSolver.setConflicts(solverIdToNumberOfConflicts.get(key));
+                            }
 							SolverStats.put(key, newSolver);
 						}
 
 
 						//update stats info for entry that current job-pair belongs to
 						curSolver = SolverStats.get(key);
+
 					}
 				}
 			}
@@ -4373,7 +4385,7 @@ public class Jobs {
 	 * @return A set of all the benchmark ids that are conflicting.
 	 * @throws SQLException if there is a problem with the database.
 	 */
-	private Set<Integer> getConflictingBenchmarksForJob(int jobId) throws SQLException {
+	private static Set<Integer> getConflictingBenchmarksForJob(int jobId) throws SQLException {
 		Set<Integer> conflictingBenchmarkIds = new HashSet<>();
 		List<Benchmark> benchmarksInJob = Benchmarks.getByJob(jobId);
 
@@ -4399,6 +4411,43 @@ public class Jobs {
 			}
 		}
 		return conflictingBenchmarkIds;
+	}
+
+	private static String getStageConfigHashKey(JoblineStage stage, Configuration config) {
+	    return stage.getStageNumber() + ":" + String.valueOf(stage.getConfiguration().getId());
+
+    }
+
+    /**
+     * Builds a map of solverId to the number of conflicting benchmarks for that solver in a job.
+     * @param jobId the job to evaluate job pairs for.
+     * @throws SQLException if there is a database issue.
+     */
+	private static Map<String, Integer> buildSolverIdToNumberOfConflictsMap(int jobId) throws SQLException {
+	    Set<Integer> conflictingBenchmarksInJob = getConflictingBenchmarksForJob(jobId);
+        Map<String, Integer> conflictingBenchmarksBySolver = new HashMap<>();
+		List<Solver> solversInJob = Solvers.getByJobSimpleWithConfigs(jobId);
+        for (Solver solver : solversInJob) {
+            List<JobPair> pairsContainingSolverInJob =  JobPairs.getPairsInJobContainingSolver(jobId, solver.getId());
+            for (JobPair pair : pairsContainingSolverInJob) {
+                for (JoblineStage stage : pair.getStages()) {
+                    int benchId = pair.getBench().getId();
+                    String key = getStageConfigHashKey(stage, stage.getConfiguration());
+
+                    if (conflictingBenchmarksInJob.contains(key)) {
+                        // If the benchmark in the pair is conflicting then increment the number of conflicting benchmarks
+                        // for the solver.
+                        if (conflictingBenchmarksBySolver.containsKey(key)) {
+                            conflictingBenchmarksBySolver.put(key, conflictingBenchmarksBySolver.get(benchId) + 1);
+                        } else {
+                            conflictingBenchmarksBySolver.put(key, 1);
+                        }
+                    }
+                }
+            }
+        }
+
+        return conflictingBenchmarksBySolver;
 	}
 
 	
