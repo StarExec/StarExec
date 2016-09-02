@@ -4407,10 +4407,12 @@ public class Jobs {
 					if (stageCantCountTowardsConflicts(stage)) {
 						log.debug("Found STAREXEC_UNKNOWN or NoOp while searching for conflicting benchmarks.");
 						continue;
-					} else if (firstResultFound == null) {
+					} 
+					
+					if (firstResultFound == null) {
 						log.debug("Got first valid result while searching for conflicting benchmarks.");
 						firstResultFound = stage.getStarexecResult();
-					} else {
+					} else if (!firstResultFound.equals(stage.getStarexecResult())) {
 						log.debug("Got second valid result, adding conflicting benchmark with id: " + benchmarkInJob.getId());
 						// Since there were two different results, add the benchmark to conflicting benchmarks and
 						// continue to the next benchmark.
