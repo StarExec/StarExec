@@ -4404,8 +4404,8 @@ public class Jobs {
 			for (JobPair jobPair : jobPairsInJobContainingBenchmark) {
 				for (JoblineStage stage: jobPair.getStages()) {
 					log.debug("Result found while searching for conflicting benchmark: " + stage.getStarexecResult() );
-					if (stage.isNoOp() || stage.getStarexecResult().equals(R.STAREXEC_UNKNOWN)) {
-						log.debug("Found STAREXEC_UNKNOWN while searching for conflicting benchmarks.");
+					if (stageCantCountTowardsConflicts(stage)) {
+						log.debug("Found STAREXEC_UNKNOWN or NoOp while searching for conflicting benchmarks.");
 						continue;
 					} else if (firstResultFound == null) {
 						log.debug("Got first valid result while searching for conflicting benchmarks.");
@@ -4425,6 +4425,10 @@ public class Jobs {
 			log.debug("conflictingBenchmarkId: " + id);
 		}
 		return conflictingBenchmarkIds;
+	}
+
+	private static Boolean stageCantCountTowardsConflicts(JoblineStage stage) {
+		return stage.isNoOp() || stage.getStarexecResult().equals(R.STAREXEC_UNKNOWN);
 	}
 
 	private static String getStageConfigHashKey(JoblineStage stage, Configuration config) {
@@ -4448,8 +4452,15 @@ public class Jobs {
             List<JobPair> pairsContainingSolverInJob =  JobPairs.getPairsInJobContainingSolver(jobId, solver.getId());
 			logUtil.debug(methodName, "Got "+pairsContainingSolverInJob.size()+" pairs containing solver "+solver.getName());
             for (JobPair pair : pairsContainingSolverInJob) {
-                for (JoblineStage stage : pair.getStages()) {
-                    int benchId = pair.getBench().getId();
+				int benchId = pair.getBench().getId();
+				for (JoblineStage stage : pair.getStages()) {
+
+                	if (stageCantCountTowardsConflicts(stage)) {
+                		// Skip stages that couldn't contribute to a conflict
+						// (Stages with STAREXEC_UNKNOWN, NoOp stages, etc.)
+                		continue;
+					}
+
                     String key = getStageConfigHashKey(stage, stage.getConfiguration());
 					logUtil.debug(methodName, "Got key "+key);
 					logUtil.debug(methodName, "Got bench id " + benchId);
