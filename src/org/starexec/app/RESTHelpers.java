@@ -525,6 +525,7 @@ public class RESTHelpers {
 				solverStats, 
 				new DataTablesQuery( solverStats.size(), solverStats.size(), 1 ), 
 				jobSpace.getId(),
+				jobSpace.getJobId(),
 				shortFormat,
 				wallclock,
 				primitivesToAnonymize
@@ -1755,7 +1756,7 @@ public class RESTHelpers {
 	 */
 
 	public static JsonObject convertSolverStatsToJsonObject(List<SolverStats> stats,DataTablesQuery query, 
-			int spaceId, boolean shortFormat, boolean wallTime, PrimitivesToAnonymize primitivesToAnonymize) {
+			int spaceId, int jobId, boolean shortFormat, boolean wallTime, PrimitivesToAnonymize primitivesToAnonymize) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -1798,7 +1799,11 @@ public class RESTHelpers {
 					entries.add(String.valueOf(Math.round(js.getCpuTime()*100)/100.0));
 				}
 
-				entries.add("<a href=\"" + Util.docRoot("secure/details/solverConflicts.jsp") + "\" target=\"_blank\" >"
+				entries.add("<a href=\"" + Util.docRoot("secure/details/solverConflicts.jsp") + "?"
+						+ "jobId=" + jobId + "&"
+						+ "configId=" + configId + "&"
+						+ "stageNumber=" + stageNumber
+						+ "\" target=\"_blank\" >"
 						+ String.valueOf(js.getConflicts()) + "</a>");
 
 			} else {
@@ -1851,7 +1856,7 @@ public class RESTHelpers {
 			query.setTotalRecords(stats.size());
 			query.setTotalRecordsAfterQuery(stats.size());
 			query.setSyncValue(1);
-			JsonObject solverStatsJson = RESTHelpers.convertSolverStatsToJsonObject(stats, query,jobSpace.getId(),true,wallclock, PrimitivesToAnonymize.NONE);
+			JsonObject solverStatsJson = RESTHelpers.convertSolverStatsToJsonObject(stats, query,jobSpace.getId(), jobSpace.getJobId(), true,wallclock, PrimitivesToAnonymize.NONE);
 			if (solverStatsJson != null) {
 				jobSpaceIdToSolverStatsJsonMap.put(jobSpace.getId(), gson.toJson(solverStatsJson));
 			}
