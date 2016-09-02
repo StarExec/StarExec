@@ -13,6 +13,7 @@ pushsolver f=incremental-output-solver.zip id=2 n=incremental-output-solver
 pushsolver f=always-sat-solver.zip id=2 n=always-sat-solver
 pushsolver f=always-unsat-solver.zip id=2 n=always-unsat-solver
 pushsolver f=output-nothing-solver.zip id=2 n=output-nothing-solver
+pushsolver f=random-sat-or-unsat-solver.zip id=2 n=random-sat-or-unsat-solver
 logout
 login addr=https://stardev.cs.uiowa.edu/appname/ u=user@uiowa.edu p=Starexec4ever
 pushbenchmarks id=2 f=benchmarks.zip bt=2 hier=
