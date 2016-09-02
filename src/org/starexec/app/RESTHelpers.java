@@ -1798,7 +1798,9 @@ public class RESTHelpers {
 					entries.add(String.valueOf(Math.round(js.getCpuTime()*100)/100.0));
 				}
 
-				entries.add(String.valueOf(js.getConflicts()));
+				entries.add("<a href=\"" + Util.docRoot("secure/details/solverConflicts.jsp") + "\" target=\"_blank\" >"
+						+ String.valueOf(js.getConflicts()) + "</a>");
+
 			} else {
 				entries.add((js.getCorrectJobPairs()) +" / "+js.getCompleteJobPairs());
 				if (wallTime) {
