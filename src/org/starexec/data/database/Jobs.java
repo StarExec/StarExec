@@ -4387,7 +4387,7 @@ public class Jobs {
 	 * @return A set of all the benchmark ids that are conflicting.
 	 * @throws SQLException if there is a problem with the database.
 	 */
-	private static Set<Integer> getConflictingBenchmarksForJob(int jobId) throws SQLException {
+	public static Set<Integer> getConflictingBenchmarksForJob(int jobId) throws SQLException {
 		Set<Integer> conflictingBenchmarkIds = new HashSet<>();
 		
 		log.debug("Calling Benchmarks.getByJob("+jobId+")");
