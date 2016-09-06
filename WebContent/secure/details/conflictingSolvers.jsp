@@ -8,6 +8,14 @@
         String solver;
         String config;
         String result;
+
+        public String getSolver() {
+            return solver;
+        }
+
+        public String getConfig() {return config;}
+        public String getResult() {return result;}
+
     }
 %>
 <%
