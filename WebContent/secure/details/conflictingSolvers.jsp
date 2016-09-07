@@ -1,30 +1,14 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.*, org.apache.commons.lang3.StringUtils, org.starexec.app.RESTHelpers, org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.data.to.JobStatus.JobStatusCode, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType, org.starexec.util.dataStructures.*"%>
-<%@ page import="org.starexec.data.to.pipelines.JoblineStage" %>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.Benchmarks, org.starexec.data.database.JobPairs, org.starexec.data.to.Benchmark, org.starexec.data.to.JobPair, org.starexec.data.to.pipelines.JoblineStage, java.util.ArrayList, java.util.List"%>
+<%@ page import="org.apache.commons.lang3.tuple.Triple" %>
+<%@ page import="org.apache.commons.lang3.tuple.ImmutableTriple" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%
-    class TableData {
-        String solver;
-        String config;
-        String result;
-
-        public String getSolver() {
-            return solver;
-        }
-
-        public String getConfig() {return config;}
-        public String getResult() {return result;}
-
-    }
-%>
-<%
     try {
-
-
         int jobId = Integer.parseInt(request.getParameter("jobId"));
         int benchId = Integer.parseInt(request.getParameter("benchId"));
-        List<TableData> table = new ArrayList<TableData>();
+        List<Triple<String, String, String>> table = new ArrayList<Triple<String, String, String>>();
 
         Benchmark benchmark = Benchmarks.get(benchId);
         request.setAttribute("benchmark", benchmark);
@@ -32,10 +16,10 @@
         List<JobPair> jobPairsContainingBenchmark = JobPairs.getPairsInJobContainingBenchmark(jobId, benchId);
         for (JobPair pair : jobPairsContainingBenchmark) {
             for (JoblineStage stage: pair.getStages()) {
-                TableData row = new TableData();
-                row.solver = stage.getSolver().getName();
-                row.config = stage.getConfiguration().getName();
-                row.result = stage.getStarexecResult();
+                String solverName = stage.getSolver().getName();
+                String configName = stage.getConfiguration().getName();
+                String result = stage.getStarexecResult();
+                Triple<String, String, String> row = new ImmutableTriple<String, String, String>(solverName, configName, result);
                 table.add(row);
             }
         }
@@ -59,9 +43,9 @@
 
         <c:forEach var="row" items="${tableData}">
             <tr>
-                <td>${row.solver}</td>
-                <td>${row.config}</td>
-                <td>${row.result}</td>
+                <td>${row.left}</td>
+                <td>${row.middle}</td>
+                <td>${row.right}</td>
             </tr>
         </c:forEach>
 
