@@ -1799,7 +1799,7 @@ public class RESTHelpers {
 					entries.add(String.valueOf(Math.round(js.getCpuTime()*100)/100.0));
 				}
 
-				entries.add("<a href=\"" + Util.docRoot("secure/details/solverConflicts.jsp") + "?"
+				entries.add("<a href=\"" + Util.docRoot("secure/details/conflictingBenchmarks.jsp") + "?"
 						+ "jobId=" + jobId + "&"
 						+ "configId=" + configId + "&"
 						+ "stageNumber=" + stageNumber

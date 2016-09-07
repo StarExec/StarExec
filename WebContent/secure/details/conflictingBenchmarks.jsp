@@ -9,6 +9,7 @@
 
 		int jobId = Integer.parseInt(request.getParameter("jobId"));
         int configId = Integer.parseInt(request.getParameter("configId"));
+
         int stageNumber = Integer.parseInt(request.getParameter("stageNumber"));
         List<Benchmark> conflictingBenchmarksForSolverConfig = new ArrayList<Benchmark>();
 
