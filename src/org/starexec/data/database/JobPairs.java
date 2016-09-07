@@ -324,7 +324,6 @@ public class JobPairs {
 	public static boolean incrementTotalJobPairsForJob(int jobId, int increment, Connection con) {
 		CallableStatement procedure = null;
 		try {
-			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL IncrementTotalJobPairsForJob(?,?)}");
 			procedure.setInt(1, jobId);
 			procedure.setInt(2, increment);
