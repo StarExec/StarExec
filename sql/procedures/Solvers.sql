@@ -32,7 +32,7 @@ CREATE PROCEDURE GetPublicSolvers()
 DROP PROCEDURE IF EXISTS GetConflictsForConfigInJob;
 CREATE PROCEDURE GetConflictsForConfigInJob(IN _jobId INT, IN _configId INT, IN _stageNumber INT)
   BEGIN
-	SELECT COUNT(DISTINCT jp_o.bench_id)
+	SELECT COUNT(DISTINCT jp_o.bench_id) AS conflicting_benchmarks
 	FROM jobs j_o JOIN job_pairs jp_o ON j_o.id=jp_o.job_id
 		JOIN jobpair_stage_data jpsd_o ON jpsd_o.jobpair_id=jp_o.id
 		JOIN job_attributes ja_o ON ja_o.pair_id=jp_o.id
