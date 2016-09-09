@@ -23,12 +23,9 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
+import org.starexec.data.to.*;
 import org.starexec.data.to.Solver.ExecutableType;
 import org.starexec.data.to.compare.SolverComparator;
-import org.starexec.data.to.SolverBuildStatus;
 import org.starexec.util.DataTablesQuery;
 import org.starexec.util.LogUtil;
 import org.starexec.util.NamedParameterStatement;
@@ -1187,6 +1184,27 @@ public class Solvers {
 				
 		return null;
 	}
+
+    /**
+     *
+     * @param jobId The job id to get conflic
+     * @param stageId
+     * @return
+     * @throws SQLException
+     */
+	public static List<Benchmark> getConflictingBenchmarksInJobForStage(int jobId, int configId, int stageId) throws SQLException {
+       return Common.query("{CALL GetConflictingBenchmarksForConfigInJob(?,?,?)}", procedure -> {
+            procedure.setInt(1, jobId);
+		   	procedure.setInt(2, configId);
+            procedure.setInt(3, stageId);
+        }, results -> {
+            List<Benchmark> benchmarks = new ArrayList<>();
+            while (results.next()) {
+                benchmarks.add(Benchmarks.resultToBenchmark(results));
+            }
+            return benchmarks;
+        });
+    }
 
 	public static Integer getConflictsForConfigInJobWithStage(int jobId, int configId, int stageId) throws SQLException {
 		return Common.query("{CALL GetConflictsForConfigInJob(?, ?, ?)", procedure -> {

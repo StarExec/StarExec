@@ -11,11 +11,11 @@
         int configId = Integer.parseInt(request.getParameter("configId"));
 
         int stageNumber = Integer.parseInt(request.getParameter("stageNumber"));
-        List<Benchmark> conflictingBenchmarksForSolverConfig = new ArrayList<Benchmark>();
+        List<Benchmark> conflictingBenchmarksForSolverConfig = Solvers.getConflictingBenchmarksInJobForStage(jobId, configId, stageNumber);
 
-        Set<Integer> benchmarks = Jobs.getConflictingBenchmarksForJob(jobId);
         // Loop through all the conflicting benchmarks for the job
 
+        /*
         benchmarkLoop:
         for (Integer conflictingBenchId : benchmarks) {
             List<JobPair> pairsContainingConflictingBench = JobPairs.getPairsInJobContainingBenchmark(jobId, conflictingBenchId);
@@ -28,7 +28,7 @@
                     continue benchmarkLoop;
                 }
             }
-        }
+        }*/
 
         request.setAttribute("conflictingBenchmarks", conflictingBenchmarksForSolverConfig);
 	} catch (Exception e) {
