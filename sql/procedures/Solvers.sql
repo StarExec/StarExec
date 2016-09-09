@@ -29,6 +29,8 @@ CREATE PROCEDURE GetPublicSolvers()
 		GROUP BY(solvers.id);
 	END //
 
+-- Gets the number of conflicting benchmarks a given config was run against for a stage.
+-- A conflicting benchmark is a benchmark for which two solvers gave different results.
 DROP PROCEDURE IF EXISTS GetConflictsForConfigInJob;
 CREATE PROCEDURE GetConflictsForConfigInJob(IN _jobId INT, IN _configId INT, IN _stageNumber INT)
   BEGIN
@@ -53,6 +55,25 @@ CREATE PROCEDURE GetConflictsForConfigInJob(IN _jobId INT, IN _configId INT, IN 
 		AND ja_o.attr_value!="starexec-unknown"
 	;
   END //
+
+-- Gets the data for conflicting benchmarks in the job.
+-- A conflicting benchmark is a benchmark for which two solvers gave different results.
+DROP PROCEDURE IF EXISTS GetConflictingBenchmarksForConfigInJob;
+CREATE PROCEDURE GetConflictingBenchmarksForConfigInJob(IN _jobId INT, IN _configId INT, IN _stageNumber INT)
+	BEGIN
+			SELECT b.*
+			 FROM jobs j join job_pairs jp ON j.id=jp.job_id
+				 JOIN jobpair_stage_data jpsd ON jpsd.jobpair_id=jp.id
+				 JOIN job_attributes ja ON ja.pair_id=jp.id
+				 JOIN benchmarks b ON jp.bench_id=benchmarks.id
+			 WHERE j.id=_jobId
+						 AND ja.stage_number=_stageNumber
+						 AND ja.attr_key="starexec-result"
+						 AND ja.attr_value!="starexec-unknown"
+			 GROUP BY jp.bench_id
+			 HAVING COUNT(DISTINCT ja.attr_value) > 1
+		;
+	END //
 
 	
 	
