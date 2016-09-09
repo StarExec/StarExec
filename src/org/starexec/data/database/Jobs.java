@@ -4422,10 +4422,6 @@ public class Jobs {
 				}
 			}
 		}
-		log.debug("Conflicting benchmark id size: " + conflictingBenchmarkIds.size() );
-		for (Integer id : conflictingBenchmarkIds) {
-			log.debug("conflictingBenchmarkId: " + id);
-		}
 		return conflictingBenchmarkIds;
 	}
 
@@ -4449,28 +4445,19 @@ public class Jobs {
         Map<String, Integer> conflictingBenchmarksBySolver = new HashMap<>();
 		Map<String, Set<Integer>> remainingConflictingBenchmarksInJobForKey = new HashMap<>();
 		List<Solver> solversInJob = Solvers.getByJobSimpleWithConfigs(jobId);
-		logUtil.debug(methodName, "Got " + solversInJob.size() + " solvers with Solvers.getByJobSimpleWithConfigs("+jobId+")");
         for (Solver solver : solversInJob) {
-            List<JobPair> pairsContainingSolverInJob =  JobPairs.getPairsInJobContainingSolver(jobId, solver.getId());
-			logUtil.debug(methodName, "Got "+pairsContainingSolverInJob.size()+" pairs containing solver "+solver.getName());
-            for (JobPair pair : pairsContainingSolverInJob) {
+			List<JobPair> pairsContainingSolverInJob = JobPairs.getPairsInJobContainingSolver(jobId, solver.getId());
+			for (JobPair pair : pairsContainingSolverInJob) {
 				int benchId = pair.getBench().getId();
 				for (JoblineStage stage : pair.getStages()) {
 
-                	if (stageCantCountTowardsConflicts(stage)) {
-                		// Skip stages that couldn't contribute to a conflict
+					if (stageCantCountTowardsConflicts(stage)) {
+						// Skip stages that couldn't contribute to a conflict
 						// (Stages with STAREXEC_UNKNOWN, NoOp stages, etc.)
-                		continue;
+						continue;
 					}
 
-                    String key = getStageConfigHashKey(stage, stage.getConfiguration());
-					logUtil.debug(methodName, "Got key "+key);
-					logUtil.debug(methodName, "Got bench id " + benchId);
-					// TODO delete log loop
-					logUtil.debug(methodName, "Conflicting benchmarks: ");
-					for (Integer conflictingBenchmarkId : conflictingBenchmarksInJob) {
-						logUtil.debug(methodName, "\t"+conflictingBenchmarkId);
-					}
+					String key = getStageConfigHashKey(stage, stage.getConfiguration());
 
 					// Copy the conflictingBenchmarksInJob set and associate the copy with the key. This way we can ensure
 					// each benchmark is counted at most once towards each key by removing the benchmark from that list if it
@@ -4480,24 +4467,19 @@ public class Jobs {
 					}
 
 
-                    if (remainingConflictingBenchmarksInJobForKey.get(key).contains(benchId)) {
-                        // If the benchmark in the pair is conflicting then increment the number of conflicting benchmarks
-                        // for the solver.
-                        if (conflictingBenchmarksBySolver.containsKey(key)) {
-                            conflictingBenchmarksBySolver.put(key, conflictingBenchmarksBySolver.get(key) + 1);
-                        } else {
-                            conflictingBenchmarksBySolver.put(key, 1);
-                        }
+					if (remainingConflictingBenchmarksInJobForKey.get(key).contains(benchId)) {
+						// If the benchmark in the pair is conflicting then increment the number of conflicting benchmarks
+						// for the solver.
+						if (conflictingBenchmarksBySolver.containsKey(key)) {
+							conflictingBenchmarksBySolver.put(key, conflictingBenchmarksBySolver.get(key) + 1);
+						} else {
+							conflictingBenchmarksBySolver.put(key, 1);
+						}
 						// Make sure each benchmark is only counted towards each stage-config pair at most once.
 						remainingConflictingBenchmarksInJobForKey.get(key).remove(benchId);
-                    }
-                }
-            }
-        }
-
-		// TODO Remove log loop.
-		for ( String key : conflictingBenchmarksBySolver.keySet() ) {
-			logUtil.debug(methodName, key + " => " + conflictingBenchmarksBySolver.get(key));
+					}
+				}
+			}
 		}
 
         return conflictingBenchmarksBySolver;
