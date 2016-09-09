@@ -32,16 +32,26 @@ CREATE PROCEDURE GetPublicSolvers()
 DROP PROCEDURE IF EXISTS GetConflictsForConfigInJob;
 CREATE PROCEDURE GetConflictsForConfigInJob(IN _jobId INT, IN _configId INT, IN _stageNumber INT)
   BEGIN
-    SELECT jp.bench_id
-    FROM jobs j join job_pairs jp on j.id=jp.job_id
-        join jobpair_stage_data jpsd on jpsd.jobpair_id=jp.id
-        join job_attributes ja on ja.pair_id=jp.id
-    WHERE j.id=_jobId
-				and ja.stage_number=_stageNumber
-        and ja.attr_key="starexec result"
-        and ja.attr_value!="starexec unknown"
-    group by jp.bench_id
-    having count(distinct ja.attr_key) > 1;
+	SELECT COUNT(DISTINCT jp_o.bench_id)
+	FROM jobs j_o JOIN job_pairs jp_o ON j_o.id=jp_o.job_id
+		JOIN jobpair_stage_data jpsd_o ON jpsd_o.jobpair_id=jp_o.id
+		JOIN job_attributes ja_o ON ja_o.pair_id=jp_o.id
+		JOIN 
+			(SELECT jp.bench_id
+			FROM jobs j join job_pairs jp ON j.id=jp.job_id
+				JOIN jobpair_stage_data jpsd ON jpsd.jobpair_id=jp.id
+				JOIN job_attributes ja ON ja.pair_id=jp.id
+			WHERE j.id=_jobId
+				AND ja.stage_number=_stageNumber
+				AND ja.attr_key="starexec-result"
+				AND ja.attr_value!="starexec-unknown"
+			GROUP BY jp.bench_id
+			HAVING COUNT(DISTINCT ja.attr_value) > 1) AS conflicting
+		ON jp_o.bench_id=conflicting.bench_id
+	WHERE jpsd_o.config_id=_configId
+		AND ja_o.attr_key="starexec-result"
+		AND ja_o.attr_value!="starexec-unknown"
+	;
   END //
 
 	

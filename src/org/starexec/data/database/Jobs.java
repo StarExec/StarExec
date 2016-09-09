@@ -4310,6 +4310,9 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	public static List<SolverStats> processPairsToSolverStats(int jobId, List<JobPair> pairs) {
+		final String methodName = "processPairsToSolverStats";
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start();
 		try {
 		    Map<String, Integer> solverIdToNumberOfConflicts = new HashMap<>();
 			solverIdToNumberOfConflicts = buildSolverIdToNumberOfConflictsMap(jobId);
@@ -4373,6 +4376,9 @@ public class Jobs {
 			}
 
 
+			stopWatch.stop();
+			logUtil.debug(methodName, "Time taken to process job pairs to stats for job with "+Jobs.getPairCount(jobId)+" pairs: "+stopWatch.toString());
+			
 			return returnValues;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
