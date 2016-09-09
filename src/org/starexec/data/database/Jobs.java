@@ -20,6 +20,7 @@ import java.util.TreeMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.starexec.backend.Backend;
 import org.starexec.constants.PaginationQueries;
@@ -4388,8 +4389,11 @@ public class Jobs {
 	 * @throws SQLException if there is a problem with the database.
 	 */
 	public static Set<Integer> getConflictingBenchmarksForJob(int jobId) throws SQLException {
+		final String methodName = "getConflictingBenchmarksForJob";
 		Set<Integer> conflictingBenchmarkIds = new HashSet<>();
-		
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start();
+
 		log.debug("Calling Benchmarks.getByJob("+jobId+")");
 		List<Benchmark> benchmarksInJob = Benchmarks.getByJob(jobId);
 		log.debug("Benchmarks found in job while searching for conflicting benchmarks: " + benchmarksInJob.size());
@@ -4400,20 +4404,15 @@ public class Jobs {
 			// is conflicting.
 			String firstResultFound = null;
 			List<JobPair> jobPairsInJobContainingBenchmark = JobPairs.getPairsInJobContainingBenchmark(jobId, benchmarkInJob.getId());
-			log.debug("Job pairs found in job containing benchmark: " + jobPairsInJobContainingBenchmark.size());
 			for (JobPair jobPair : jobPairsInJobContainingBenchmark) {
 				for (JoblineStage stage: jobPair.getStages()) {
-					log.debug("Result found while searching for conflicting benchmark: " + stage.getStarexecResult() );
 					if (stageCantCountTowardsConflicts(stage)) {
-						log.debug("Found STAREXEC_UNKNOWN or NoOp while searching for conflicting benchmarks.");
 						continue;
 					} 
 					
 					if (firstResultFound == null) {
-						log.debug("Got first valid result while searching for conflicting benchmarks.");
 						firstResultFound = stage.getStarexecResult();
 					} else if (!firstResultFound.equals(stage.getStarexecResult())) {
-						log.debug("Got second valid result, adding conflicting benchmark with id: " + benchmarkInJob.getId());
 						// Since there were two different results, add the benchmark to conflicting benchmarks and
 						// continue to the next benchmark.
 						conflictingBenchmarkIds.add(benchmarkInJob.getId());
@@ -4422,6 +4421,8 @@ public class Jobs {
 				}
 			}
 		}
+		stopWatch.stop();
+		log.debug("Time taken to get conflicting benchmarks for job with "+Jobs.getPairCount(jobId)+" pairs: "+stopWatch.toString());
 		return conflictingBenchmarkIds;
 	}
 
@@ -4441,7 +4442,9 @@ public class Jobs {
      */
 	private static Map<String, Integer> buildSolverIdToNumberOfConflictsMap(int jobId) throws SQLException {
 		final String methodName = "buildSolverIdToNumberOfConflictsMap";
-	    Set<Integer> conflictingBenchmarksInJob = getConflictingBenchmarksForJob(jobId);
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start();
+		Set<Integer> conflictingBenchmarksInJob = getConflictingBenchmarksForJob(jobId);
         Map<String, Integer> conflictingBenchmarksBySolver = new HashMap<>();
 		Map<String, Set<Integer>> remainingConflictingBenchmarksInJobForKey = new HashMap<>();
 		List<Solver> solversInJob = Solvers.getByJobSimpleWithConfigs(jobId);
@@ -4481,6 +4484,9 @@ public class Jobs {
 				}
 			}
 		}
+
+		stopWatch.stop();
+		logUtil.debug(methodName, "Time taken to build conflicts map for job with "+Jobs.getPairCount(jobId)+" pairs: "+stopWatch.toString());
 
         return conflictingBenchmarksBySolver;
 	}
