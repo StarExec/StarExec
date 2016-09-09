@@ -1188,6 +1188,19 @@ public class Solvers {
 		return null;
 	}
 
+	public static Integer getConflictsForConfigInJobWithStage(int jobId, int configId, int stageId) throws SQLException {
+		return Common.query("{CALL GetConflictsForConfigInJob(?, ?, ?)", procedure -> {
+			procedure.setInt(1, jobId);
+			procedure.setInt(2, configId);
+			procedure.setInt(3, stageId);
+		}, results -> {
+			if (results.next()) {
+				return results.getInt("conflicting_benchmarks");
+			}
+			throw new SQLException("The database did not return a row for procedure GetConflictsForConfigInJob");
+		});
+	}
+
 	
 	/**
 	 * Gets a particular Configuration
@@ -1719,7 +1732,6 @@ public class Solvers {
 	 * Returns whether a solver with the given ID is present in the database with the 
 	 * "recycled" column set to true
 	 * @param solverId The ID of the solver to check
-	 * @param the open connection to make the SQL call on
 	 * @return True if the solver exists in the database with the "recycled" column set to
 	 * true, and false otherwise
 	 * @author Eric Burns

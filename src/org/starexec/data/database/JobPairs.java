@@ -1122,51 +1122,58 @@ public class JobPairs {
 	}
 
 	private static void populateJobPairStagesDetailed(JobPair jp, Connection con) throws SQLException {
-        Common.<Void>queryUsingConnection("{CALL GetJobPairStagesById(?)}", con, procedure -> {
-                procedure.setInt(1, jp.getId());
-            }, results -> {
-            //next, we get data at the stage level
-            while (results.next()) {
-                JoblineStage stage = resultToStage(results);
-                int configId = results.getInt("config_id");
-                int solverId = results.getInt("solver_id");
-                String configName = results.getString("config_name");
-                String solverName = results.getString("solver_name");
-                //means this stage has no configuration
-                if (configId == -1) {
-                    stage.setNoOp(true);
-                } else if (configId > 0) {
-                    Solver solver = Solvers.getSolverByConfig(con, configId, true);
-                    Configuration c = Solvers.getConfiguration(configId);
+		CallableStatement procedure = null;
+		ResultSet results = null;
 
-                    //this can happen if the pair references a deleted solver
-                    if (solver == null) {
-                        solver = new Solver();
-                        solver.setId(solverId);
-                        solver.setName(solverName);
-                    }
+        try {
+			procedure = con.prepareCall("{CALL GetJobPairStagesById(?)}");
+			procedure.setInt(1, jp.getId());
+			results = procedure.executeQuery();
+			//next, we get data at the stage level
+			while (results.next()) {
+				JoblineStage stage = resultToStage(results);
+				int configId = results.getInt("config_id");
+				int solverId = results.getInt("solver_id");
+				String configName = results.getString("config_name");
+				String solverName = results.getString("solver_name");
+				//means this stage has no configuration
+				if (configId == -1) {
+					stage.setNoOp(true);
+				} else if (configId > 0) {
+					Solver solver = Solvers.getSolverByConfig(con, configId, true);
+					Configuration c = Solvers.getConfiguration(configId);
 
-                    if (c == null) {
-                        c = new Configuration();
-                        c.setId(configId);
-                        c.setName(configName);
-                    }
+					//this can happen if the pair references a deleted solver
+					if (solver == null) {
+						solver = new Solver();
+						solver.setId(solverId);
+						solver.setName(solverName);
+					}
 
-                    stage.setSolver(solver);
-                    stage.setConfiguration(c);
-                    stage.getSolver().addConfiguration(c);
-                }
-                jp.addStage(stage);
-            }
-            //last, we get attributes for everything
-            HashMap<Integer, Properties> attrs = getAttributes(jp.getId());
-            for (JoblineStage stage : jp.getStages()) {
-                if (attrs.containsKey(stage.getStageNumber())) {
-                    stage.setAttributes(attrs.get(stage.getStageNumber()));
-                }
-            }
-            return null;
-        });
+					if (c == null) {
+						c = new Configuration();
+						c.setId(configId);
+						c.setName(configName);
+					}
+
+					stage.setSolver(solver);
+					stage.setConfiguration(c);
+					stage.getSolver().addConfiguration(c);
+				}
+				jp.addStage(stage);
+			}
+			//last, we get attributes for everything
+			HashMap<Integer, Properties> attrs = getAttributes(jp.getId());
+			for (JoblineStage stage : jp.getStages()) {
+				if (attrs.containsKey(stage.getStageNumber())) {
+					stage.setAttributes(attrs.get(stage.getStageNumber()));
+				}
+			}
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
     }
 
 	/**
