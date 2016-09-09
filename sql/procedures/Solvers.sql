@@ -29,6 +29,21 @@ CREATE PROCEDURE GetPublicSolvers()
 		GROUP BY(solvers.id);
 	END //
 
+DROP PROCEDURE IF EXISTS GetConflictsForConfigInJob;
+CREATE PROCEDURE GetConflictsForConfigInJob(IN _jobId INT, IN _configId INT, IN _stageNumber INT)
+  BEGIN
+    SELECT jp.bench_id
+    FROM jobs j join job_pairs jp on j.id=jp.job_id
+        join jobpair_stage_data jpsd on jpsd.jobpair_id=jp.id
+        join job_attributes ja on ja.pair_id=jp.id
+    WHERE j.id=_jobId
+				and ja.stage_number=_stageNumber
+        and ja.attr_key="starexec result"
+        and ja.attr_value!="starexec unknown"
+    group by jp.bench_id
+    having count(distinct ja.attr_key) > 1;
+  END //
+
 	
 	
 -- Adds a Space/Solver association
