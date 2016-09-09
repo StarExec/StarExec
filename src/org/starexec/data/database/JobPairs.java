@@ -1192,28 +1192,19 @@ public class JobPairs {
 	}
 
 	public static List<JobPair> getPairsInJobContainingBenchmark(int jobId, int benchmarkId) throws SQLException {
-		Connection con = null;
-		CallableStatement procedure= null;
-		ResultSet results=null;
-		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetJobPairsInJobContainingBenchmark(?, ?)}");
+
+		return Common.queryKeepConnection("{CALL GetJobPairsInJobContainingBenchmark(?, ?)}", procedure -> {
 			procedure.setInt(1, jobId);
 			procedure.setInt(2, benchmarkId);
-			results = procedure.executeQuery();
+		}, (con, results) -> {
 			List<JobPair> jobPairs = new ArrayList<>();
 			while (results.next()) {
 				JobPair pair = resultToPair(results);
-                populateJobPairStagesDetailed(pair, con);
+				populateJobPairStagesDetailed(pair, con);
 				jobPairs.add(pair);
 			}
 			return jobPairs;
-		} catch (SQLException e) {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-			throw e;
-		}
+		});
 	}
 
 	// TODO implement method.
