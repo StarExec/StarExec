@@ -8,11 +8,11 @@
     try {
         int jobId = Integer.parseInt(request.getParameter("jobId"));
         int benchId = Integer.parseInt(request.getParameter("benchId"));
-        List<Triple<String, String, String>> table = new ArrayList<Triple<String, String, String>>();
+        //List<Triple<String, String, String>> table = new ArrayList<Triple<String, String, String>>();
 
-        Benchmark benchmark = Benchmarks.get(benchId);
-        request.setAttribute("benchmark", benchmark);
-
+        //Benchmark benchmark = Benchmarks.get(benchId);
+        //request.setAttribute("benchmark", benchmark);
+        /*
         List<JobPair> jobPairsContainingBenchmark = JobPairs.getPairsInJobContainingBenchmark(jobId, benchId);
         for (JobPair pair : jobPairsContainingBenchmark) {
             for (JoblineStage stage: pair.getStages()) {
@@ -24,7 +24,7 @@
             }
         }
 
-        request.setAttribute("tableData", table);
+        request.setAttribute("tableData", table);*/
 
     } catch (Exception e) {
         response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
@@ -41,14 +41,11 @@
         </thead>
         <tbody>
 
-        <c:forEach var="row" items="${tableData}">
             <tr>
-                <td>${row.left}</td>
-                <td>${row.middle}</td>
-                <td>${row.right}</td>
+                <td></td>
+                <td></td>
+                <td></td>
             </tr>
-        </c:forEach>
-
         </tbody>
     </table>
 </star:template>
