@@ -2,29 +2,27 @@
 <%@ page import="org.apache.commons.lang3.tuple.Triple" %>
 <%@ page import="org.apache.commons.lang3.tuple.ImmutableTriple" %>
 <%@ page import="org.starexec.data.database.Solvers" %>
+<%@ page import="org.starexec.util.SessionUtil" %>
+<%@ page import="org.starexec.data.security.JobSecurity" %>
+<%@ page import="org.starexec.data.database.Jobs" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%
     try {
         int jobId = Integer.parseInt(request.getParameter("jobId"));
+        int userId = SessionUtil.getUserId(request);
+        if (!JobSecurity.canUserSeeJob(jobId, userId).isSuccess()) {
+            if (Jobs.isJobDeleted(jobId)) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
+                return;
+            } else {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
+                return;
+            }
+        }
         int benchId = Integer.parseInt(request.getParameter("benchId"));
         int stageNum = Integer.parseInt(request.getParameter("stageNumber"));
-        //List<Triple<String, String, String>> table = new ArrayList<Triple<String, String, String>>();
-
-        //Benchmark benchmark = Benchmarks.get(benchId);
-        //request.setAttribute("benchmark", benchmark);
-        /*
-        List<JobPair> jobPairsContainingBenchmark = JobPairs.getPairsInJobContainingBenchmark(jobId, benchId);
-        for (JobPair pair : jobPairsContainingBenchmark) {
-            for (JoblineStage stage: pair.getStages()) {
-                String solverName = stage.getSolver().getName();
-                String configName = stage.getConfiguration().getName();
-                String result = stage.getStarexecResult();
-                Triple<String, String, String> row = new ImmutableTriple<String, String, String>(solverName, configName, result);
-                table.add(row);
-            }
-        }*/
 
         request.setAttribute("tableData", Solvers.getSolverConfigResultsForBenchmarkInJob(jobId, benchId, stageNum));
 
