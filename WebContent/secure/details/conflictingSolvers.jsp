@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.Benchmarks, org.starexec.data.database.JobPairs, org.starexec.data.to.Benchmark, org.starexec.data.to.JobPair, org.starexec.data.to.pipelines.JoblineStage, java.util.ArrayList, java.util.List"%>
 <%@ page import="org.apache.commons.lang3.tuple.Triple" %>
 <%@ page import="org.apache.commons.lang3.tuple.ImmutableTriple" %>
+<%@ page import="org.starexec.data.database.Solvers" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -8,6 +9,7 @@
     try {
         int jobId = Integer.parseInt(request.getParameter("jobId"));
         int benchId = Integer.parseInt(request.getParameter("benchId"));
+        int stageNum = Integer.parseInt(request.getParameter("stageNumber"));
         //List<Triple<String, String, String>> table = new ArrayList<Triple<String, String, String>>();
 
         //Benchmark benchmark = Benchmarks.get(benchId);
@@ -22,9 +24,9 @@
                 Triple<String, String, String> row = new ImmutableTriple<String, String, String>(solverName, configName, result);
                 table.add(row);
             }
-        }
+        }*/
 
-        request.setAttribute("tableData", table);*/
+        request.setAttribute("tableData", Solvers.getSolverConfigResultsForBenchmarkInJob(jobId, benchId, stageNum));
 
     } catch (Exception e) {
         response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
@@ -40,12 +42,13 @@
             </tr>
         </thead>
         <tbody>
-
+            <c:forEach var="solverConfigResult" items="${tableData}">
             <tr>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td>${solverConfigResult.left}</td>
+                <td>${solverConfigResult.middle}</td>
+                <td>${solverConfigResult.right}</td>
             </tr>
+            </c:forEach>
         </tbody>
     </table>
 </star:template>

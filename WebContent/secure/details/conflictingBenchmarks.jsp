@@ -15,6 +15,7 @@
         int jobId = Integer.parseInt(request.getParameter("jobId"));
         request.setAttribute("jobId", jobId);
         int stageNumber = Integer.parseInt(request.getParameter("stageNumber"));
+        request.setAttribute("stageNumber", stageNumber);
         List<Benchmark> conflictingBenchmarksForSolverConfig = Solvers.getConflictingBenchmarksInJobForStage(jobId, configId, stageNumber);
         request.setAttribute("conflictingBenchmarks", conflictingBenchmarksForSolverConfig);
 
@@ -56,7 +57,7 @@
         <tbody>
             <c:forEach var="bench" items="${conflictingBenchmarks}">
                 <tr>
-                    <td><a href="${starexecRoot}/secure/details/conflictingSolvers.jsp?jobId=${jobId}&benchId=${bench.id}">${bench.name}</a></td>
+                    <td><a href="${starexecRoot}/secure/details/conflictingSolvers.jsp?jobId=${jobId}&benchId=${bench.id}&stageNumber=${stageNumber}">${bench.name}</a></td>
                 </tr>
             </c:forEach>
         </tbody>
