@@ -1207,7 +1207,7 @@ public class Solvers {
     }
 
 	public static Integer getConflictsForConfigInJobWithStage(int jobId, int configId, int stageId) throws SQLException {
-		return Common.query("{CALL GetConflictsForConfigInJob(?, ?, ?)", procedure -> {
+		return Common.query("{CALL GetConflictsForConfigInJob(?, ?, ?)}", procedure -> {
 			procedure.setInt(1, jobId);
 			procedure.setInt(2, configId);
 			procedure.setInt(3, stageId);
