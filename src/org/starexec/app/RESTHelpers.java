@@ -1804,7 +1804,7 @@ public class RESTHelpers {
 						+ "configId=" + configId + "&"
 						+ "stageNumber=" + stageNumber
 						+ "\" target=\"_blank\" >"
-						+ String.valueOf(js.getConflicts()) + "</a>");
+						+ String.valueOf(js.getConflicts()) +"<img class=\"extLink\" src=\""+Util.docRoot("images/external.png")+ "\"/></a>");
 
 			} else {
 				entries.add((js.getCorrectJobPairs()) +" / "+js.getCompleteJobPairs());
