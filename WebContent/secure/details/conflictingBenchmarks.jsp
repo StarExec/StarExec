@@ -59,7 +59,7 @@
 	}
 %>
 <star:template title="Conflicting benchmarks for solver/config ${solver.name} / ${configuration.name}" js="details/solverConflicts, util/sortButtons, util/jobDetailsUtilityFunctions, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="details/solverConflicts, common/table, common/delaySpinner, explore/common, details/shared">
-	<table class="solverConflictsTable">
+	<table class="conflictsTable">
         <thead>
             <tr>
                 <th>name</th>

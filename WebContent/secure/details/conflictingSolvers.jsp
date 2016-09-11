@@ -30,8 +30,8 @@
         response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
     }
 %>
-<star:template title="conflicting solvers for bench ${benchmark.name}" js="util/sortButtons, util/jobDetailsUtilityFunctions, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, common/delaySpinner, explore/common, details/shared">
-    <table class="conflictingSolversTable">
+<star:template title="conflicting solvers for bench ${benchmark.name}" js="details/solverConflicts, util/sortButtons, util/jobDetailsUtilityFunctions, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="details/solverConflicts, common/table, common/delaySpinner, explore/common, details/shared">
+    <table class="conflictsTable">
         <thead>
             <tr>
                 <th>solver</th>

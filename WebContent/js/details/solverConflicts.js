@@ -1,6 +1,6 @@
 $(document).ready(function() {
     'use strict';
-    var solverConflictsTable = $('.solverConflictsTable').dataTable({
+    var conflictsTable = $('.conflictsTable').dataTable({
         'bSort': false,
         'scrollY': '300px',
         'scrollX': '100%',
