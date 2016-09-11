@@ -44,8 +44,8 @@
         <tbody>
             <c:forEach var="solverConfigResult" items="${tableData}">
             <tr>
-                <td>${solverConfigResult.left}</td>
-                <td>${solverConfigResult.middle}</td>
+                <td>${solverConfigResult.left.name}</td>
+                <td>${solverConfigResult.middle.name}</td>
                 <td>${solverConfigResult.right}</td>
             </tr>
             </c:forEach>
