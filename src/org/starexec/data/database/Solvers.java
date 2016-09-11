@@ -1879,13 +1879,25 @@ public class Solvers {
 		}, results -> {
             List<Triple<Solver,Configuration,String>> solverConfigResult = new ArrayList<>();
 			while (results.next()) {
-				Solver solver = resultSetToSolver(results, "s_");
-				Configuration configuration = resultSetToConfiguration(results, "c_");
+				Solver solver = resultSetToSolver(results, "s");
+				Configuration configuration = resultSetToConfiguration(results, "c");
 				String starexecResult = results.getString("attr_value");
                 solverConfigResult.add(new ImmutableTriple<>(solver, configuration, starexecResult));
 			}
 			return solverConfigResult;
 		});
+	}
+
+	private static String transformPrefix(String prefix) {
+		// first format the prefix so it is either empty OR is the prefix plus a period
+		if (prefix==null) {
+			return "";
+		}
+		if (!prefix.isEmpty()) {
+			return prefix + ".";
+		}
+
+		return "";
 	}
 
 	
@@ -1901,13 +1913,8 @@ public class Solvers {
 	
 	protected static Solver resultSetToSolver(ResultSet results, String prefix) throws SQLException {
 		Solver s=new Solver();
-		// first format the prefix so it is either empty OR is the prefix plus a period
-		if (prefix==null) {
-			prefix="";
-		}
-		if (!prefix.isEmpty()) {
-			prefix=prefix+".";
-		}
+
+		prefix = transformPrefix(prefix);
 	
 		s.setId(results.getInt(prefix+"id"));
 		s.setUserId(results.getInt(prefix+"user_id"));
@@ -1932,6 +1939,7 @@ public class Solvers {
 	}
 
 	public static Configuration resultSetToConfiguration(ResultSet results, String prefix) throws SQLException {
+		prefix=transformPrefix(prefix);
 		Configuration config = new Configuration();
 		config.setId(results.getInt(prefix+"id"));
 		config.setDescription(results.getString(prefix+"description"));
