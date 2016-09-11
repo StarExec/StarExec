@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.Comparator;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.log4j.Logger;
 import org.apache.commons.lang3.tuple.Triple;
 import org.starexec.constants.PaginationQueries;
@@ -1876,13 +1877,14 @@ public class Solvers {
 			procedure.setInt(2, benchId);
 			procedure.setInt(3, stageNum);
 		}, results -> {
+            List<Triple<Solver,Configuration,String>> solverConfigResult = new ArrayList<>();
 			while (results.next()) {
 				Solver solver = resultSetToSolver(results, "s_");
 				Configuration configuration = resultSetToConfiguration(results, "c_");
 				String starexecResult = results.getString("attr_value");
-
+                solverConfigResult.add(new ImmutableTriple<>(solver, configuration, starexecResult));
 			}
-			return new ArrayList<>();
+			return solverConfigResult;
 		});
 	}
 
