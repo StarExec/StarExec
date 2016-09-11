@@ -7,11 +7,22 @@
 	try {
 
 
-		int jobId = Integer.parseInt(request.getParameter("jobId"));
-        int configId = Integer.parseInt(request.getParameter("configId"));
 
+        int configId = Integer.parseInt(request.getParameter("configId"));
+        Configuration configuration = Solvers.getConfiguration(configId);
+        request.setAttribute("configuration", configuration);
+
+        int jobId = Integer.parseInt(request.getParameter("jobId"));
         int stageNumber = Integer.parseInt(request.getParameter("stageNumber"));
         List<Benchmark> conflictingBenchmarksForSolverConfig = Solvers.getConflictingBenchmarksInJobForStage(jobId, configId, stageNumber);
+        request.setAttribute("conflictingBenchmarks", conflictingBenchmarksForSolverConfig);
+
+        // Get the solver even if it's deleted since this is for job stats.
+        boolean getSolverEvenIfDeleted = true;
+        Solver solver = Solvers.getSolverByConfig(configId, getSolverEvenIfDeleted);
+        request.setAttribute("solver", solver);
+
+
 
         // Loop through all the conflicting benchmarks for the job
 
@@ -30,12 +41,11 @@
             }
         }*/
 
-        request.setAttribute("conflictingBenchmarks", conflictingBenchmarksForSolverConfig);
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
-<star:template title="" js="details/solverConflicts, util/sortButtons, util/jobDetailsUtilityFunctions, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="details/solverConflicts, common/table, common/delaySpinner, explore/common, details/shared">
+<star:template title="Conflicting benchmarks for solver-config ${solver.name}-${configuration.name}" js="details/solverConflicts, util/sortButtons, util/jobDetailsUtilityFunctions, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="details/solverConflicts, common/table, common/delaySpinner, explore/common, details/shared">
 	<table class="solverConflictsTable">
         <thead>
             <tr>
