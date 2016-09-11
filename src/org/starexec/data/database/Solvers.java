@@ -1872,7 +1872,7 @@ public class Solvers {
 	}
 
 	public static List<Triple<Solver,Configuration,String>> getSolverConfigResultsForBenchmarkInJob(int jobId, int benchId, int stageNum) throws SQLException {
-		return Common.query("{CALL GetSolverConfigResultsForBenchmarkInJob(?,?,?}", procedure -> {
+		return Common.query("{CALL GetSolverConfigResultsForBenchmarkInJob(?,?,?)}", procedure -> {
 			procedure.setInt(1, jobId);
 			procedure.setInt(2, benchId);
 			procedure.setInt(3, stageNum);
