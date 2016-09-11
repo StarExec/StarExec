@@ -22,6 +22,7 @@
             }
         }
         int benchId = Integer.parseInt(request.getParameter("benchId"));
+        request.setAttribute("benchmark", Benchmarks.get(benchId));
         int stageNum = Integer.parseInt(request.getParameter("stageNumber"));
 
         request.setAttribute("tableData", Solvers.getSolverConfigResultsForBenchmarkInJob(jobId, benchId, stageNum));
@@ -30,7 +31,7 @@
         response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
     }
 %>
-<star:template title="conflicting solvers for bench ${benchmark.name}" js="details/solverConflicts, util/sortButtons, util/jobDetailsUtilityFunctions, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="details/solverConflicts, common/table, common/delaySpinner, explore/common, details/shared">
+<star:template title="conflicting solvers for benchmark ${benchmark.name}" js="details/solverConflicts, util/sortButtons, util/jobDetailsUtilityFunctions, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="details/solverConflicts, common/table, common/delaySpinner, explore/common, details/shared">
     <table class="conflictsTable">
         <thead>
             <tr>
