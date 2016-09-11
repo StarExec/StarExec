@@ -85,6 +85,24 @@ CREATE PROCEDURE GetConflictingBenchmarksForConfigInJob(IN _jobId INT, IN _confi
 		;
 	END //
 
+DROP PROCEDURE IF EXISTS GetSolverConfigResultsForBenchmarkInJob;
+CREATE PROCEDURE GetSolverConfigResultsForBenchmarkInJob(IN _jobId INT, IN _benchId INT, IN _stageNum INT)
+	BEGIN
+		SELECT s.*, c.*, ja.attr_key
+		FROM jobs j JOIN job_pairs jp ON j.id=jp.job_id
+				JOIN jobpair_stage_data jpsd ON jpsd.jobpair_id=jp.id
+				JOIN solvers s ON jpsd.solver_id=s.id
+				JOIN configurations c ON jpsd.config_id=c.id
+				JOIN job_attributes ja ON ja.pair_id=jp.id
+		WHERE
+				j.id = _jobId
+				AND jp.bench_id=_benchid
+				AND ja.attr_key='starexec-result'
+				AND ja.attr_value!='starexec-unknown'
+				AND jpsd.stage_number=_stageNum
+		;
+	END //
+
 	
 	
 -- Adds a Space/Solver association
