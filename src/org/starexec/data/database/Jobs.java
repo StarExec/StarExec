@@ -3053,7 +3053,7 @@ public class Jobs {
 				curSolver=results.getInt("config.solver_id");
 				JoblineStage stage=JobPairs.resultToStage(results);
 				if (!discoveredSolvers.containsKey(curSolver)) {
-					Solver solver= Solvers.resultToSolver(results,R.SOLVER);				
+					Solver solver= Solvers.resultSetToSolver(results,R.SOLVER);
 					stage.setSolver(solver);
 					discoveredSolvers.put(curSolver, solver);
 				}
@@ -3364,7 +3364,7 @@ public class Jobs {
 			    c.setName(configName);
 			    stage.setConfiguration(c);
 
-				Solver s = Solvers.resultToSolver(results, "solvers");
+				Solver s = Solvers.resultSetToSolver(results, "solvers");
 				stage.setSolver(s /* could be null, if Solver s above was null */);
 				if (s!=null) {
 					if (!solverIdsToTimestamps.containsKey(s.getId())) {

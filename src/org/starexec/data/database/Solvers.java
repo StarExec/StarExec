@@ -21,6 +21,7 @@ import java.util.Comparator;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
+import org.apache.commons.lang3.tuple.Triple;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.to.*;
@@ -651,7 +652,7 @@ public class Solvers {
 			procedure.setInt(1, solverId);					
 			results = procedure.executeQuery();
 			if(results.next()){
-				Solver s = resultToSolver(results,null);
+				Solver s = resultSetToSolver(results,null);
 				Common.safeClose(results);
 				return s;
 			}
@@ -1301,7 +1302,7 @@ public class Solvers {
 	 * @throws SQLException 
 	 */
 	private static Solver resultSetToSolver(ResultSet results) throws SQLException {
-		return resultToSolver(results,"");
+		return resultSetToSolver(results,"");
 	}
 	
 	/**
@@ -1868,6 +1869,23 @@ public class Solvers {
 		}
 		return false;
 	}
+
+	public static List<Triple<Solver,Configuration,String>> getSolverConfigResultsForBenchmarkInJob(int jobId, int benchId, int stageNum) throws SQLException {
+		return Common.query("{CALL GetSolverConfigResultsForBenchmarkInJob(?,?,?}", procedure -> {
+			procedure.setInt(1, jobId);
+			procedure.setInt(2, benchId);
+			procedure.setInt(3, stageNum);
+		}, results -> {
+			while (results.next()) {
+				Solver solver = resultSetToSolver(results, "s_");
+				Configuration configuration = resultSetToConfiguration(results, "c_");
+				String starexecResult = results.getString("attr_value");
+
+			}
+			return new ArrayList<>();
+		});
+	}
+
 	
 	
 	/**
@@ -1879,7 +1897,7 @@ public class Solvers {
 	 * @throws SQLException
 	 */
 	
-	protected static Solver resultToSolver(ResultSet results, String prefix) throws SQLException {
+	protected static Solver resultSetToSolver(ResultSet results, String prefix) throws SQLException {
 		Solver s=new Solver();
 		// first format the prefix so it is either empty OR is the prefix plus a period
 		if (prefix==null) {
@@ -1906,6 +1924,21 @@ public class Solvers {
 		
 		return s;
 	}
+
+	public static Configuration resultSetToConfiguration(ResultSet results) throws SQLException {
+		return resultSetToConfiguration(results, "");
+	}
+
+	public static Configuration resultSetToConfiguration(ResultSet results, String prefix) throws SQLException {
+		Configuration config = new Configuration();
+		config.setId(results.getInt(prefix+"id"));
+		config.setDescription(results.getString(prefix+"description"));
+		config.setName(results.getString(prefix+"name"));
+		config.setSolverId(results.getInt(prefix+"solver_id"));
+		return config;
+	}
+
+
 	
 	
 	/**
