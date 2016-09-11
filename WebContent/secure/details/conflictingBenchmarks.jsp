@@ -1,19 +1,30 @@
 <%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.*, org.apache.commons.lang3.StringUtils, org.starexec.app.RESTHelpers, org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.data.to.JobStatus.JobStatusCode, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType, org.starexec.util.dataStructures.*"%>
 <%@ page import="org.starexec.data.to.pipelines.JoblineStage" %>
+<%@ page import="org.starexec.data.security.JobSecurity" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%		
 	try {
-
+        int jobId = Integer.parseInt(request.getParameter("jobId"));
+        request.setAttribute("jobId", jobId);
+        int userId = SessionUtil.getUserId(request);
+        if (!JobSecurity.canUserSeeJob(jobId, userId).isSuccess()) {
+            if (Jobs.isJobDeleted(jobId)) {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
+                return;
+            } else {
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
+                return;
+            }
+        }
 
 
         int configId = Integer.parseInt(request.getParameter("configId"));
         Configuration configuration = Solvers.getConfiguration(configId);
         request.setAttribute("configuration", configuration);
 
-        int jobId = Integer.parseInt(request.getParameter("jobId"));
-        request.setAttribute("jobId", jobId);
+
         int stageNumber = Integer.parseInt(request.getParameter("stageNumber"));
         request.setAttribute("stageNumber", stageNumber);
         List<Benchmark> conflictingBenchmarksForSolverConfig = Solvers.getConflictingBenchmarksInJobForStage(jobId, configId, stageNumber);
