@@ -85,10 +85,20 @@ CREATE PROCEDURE GetConflictingBenchmarksForConfigInJob(IN _jobId INT, IN _confi
 		;
 	END //
 
+-- Gets the all of the solvers, configs, and results run on a benchmark in a job.
+-- Author: Albert Giegerich
 DROP PROCEDURE IF EXISTS GetSolverConfigResultsForBenchmarkInJob;
 CREATE PROCEDURE GetSolverConfigResultsForBenchmarkInJob(IN _jobId INT, IN _benchId INT, IN _stageNum INT)
 	BEGIN
-		SELECT s.*, c.*, ja.attr_key
+		SELECT
+				-- solver fields
+				s.id AS s_id, s.user_id AS s_user_id, s.name AS s_name, s.uploaded AS s_uploaded, s.path AS s_path, s.description AS s_description,
+				s.downloadable AS s_downloadable, s.disk_size AS s_disk_size, s.deleted AS s_deleted, s.recycled AS s_recycled,
+				s.executable_type AS s_exectuable_type, s.build_status AS s_build_status,
+				-- configuration fields
+				c.id AS c_id, c.solver_id AS c_solver_id, c.name AS c_name, c.description AS c_description, c.updated AS c_updated,
+				-- Value of starexec-result attribute
+			 	ja.attr_value
 		FROM jobs j JOIN job_pairs jp ON j.id=jp.job_id
 				JOIN jobpair_stage_data jpsd ON jpsd.jobpair_id=jp.id
 				JOIN solvers s ON jpsd.solver_id=s.id
