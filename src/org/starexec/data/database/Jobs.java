@@ -4312,6 +4312,7 @@ public class Jobs {
 	public static List<SolverStats> processPairsToSolverStats(int jobId, List<JobPair> pairs) {
 		final String methodName = "processPairsToSolverStats";
 		StopWatch stopWatch = new StopWatch();
+		StopWatch conflictsStopWatch = new StopWatch();
 		stopWatch.start();
 		try {
 		    //Map<String, Integer> solverIdToNumberOfConflicts = new HashMap<>();
@@ -4340,7 +4341,9 @@ public class Jobs {
 						newSolver.setSolver(stage.getSolver());
 						newSolver.setConfiguration(stage.getConfiguration());
 						// Compute the number of conflicts and save them in variable in case we need to use them again.
+						conflictsStopWatch.start();
 						conflicts =  Solvers.getConflictsForConfigInJobWithStage(jobId, configId, stageNumber);
+						conflictsStopWatch.stop();
 						newSolver.setConflicts(conflicts);
 						SolverStats.put(key, newSolver);
 					}
@@ -4358,7 +4361,10 @@ public class Jobs {
 							newSolver.setSolver(stage.getSolver());
 							newSolver.setConfiguration(stage.getConfiguration());
 							if (conflicts == null) {
-								newSolver.setConflicts(Solvers.getConflictsForConfigInJobWithStage(jobId, configId, stageNumber));
+								conflictsStopWatch.start();
+								conflicts = Solvers.getConflictsForConfigInJobWithStage(jobId, configId, stageNumber);
+								newSolver.setConflicts(conflicts);
+								conflictsStopWatch.stop();
 							} else {
 								newSolver.setConflicts(conflicts);
 							}
@@ -4382,7 +4388,9 @@ public class Jobs {
 
 			stopWatch.stop();
 			logUtil.debug(methodName, "Time taken to process job pairs to stats for job with "+Jobs.getPairCount(jobId)+" pairs: "+stopWatch.toString());
-			
+			logUtil.debug(methodName, "Time taken to compute conflicts: " + conflictsStopWatch.toString());
+			logUtil.debug(methodName, "Percentage of time used computing conflicts: "
+					+ (conflictsStopWatch.getTime()*1.0)/(stopWatch.getTime()*1.0));
 			return returnValues;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
