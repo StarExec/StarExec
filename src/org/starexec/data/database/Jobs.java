@@ -4312,7 +4312,6 @@ public class Jobs {
 	public static List<SolverStats> processPairsToSolverStats(int jobId, List<JobPair> pairs) {
 		final String methodName = "processPairsToSolverStats";
 		StopWatch stopWatch = new StopWatch();
-		StopWatch conflictsStopWatch = new StopWatch();
 		stopWatch.start();
 		try {
 		    //Map<String, Integer> solverIdToNumberOfConflicts = new HashMap<>();
@@ -4341,14 +4340,7 @@ public class Jobs {
 						newSolver.setSolver(stage.getSolver());
 						newSolver.setConfiguration(stage.getConfiguration());
 						// Compute the number of conflicts and save them in variable in case we need to use them again.
-						if (!conflictsStopWatch.isStarted()) {
-							stopWatch.start();
-						} else {
-							stopWatch.resume();
-						}
-						conflictsStopWatch.resume();
 						conflicts =  Solvers.getConflictsForConfigInJobWithStage(jobId, configId, stageNumber);
-						conflictsStopWatch.suspend();
 						newSolver.setConflicts(conflicts);
 						SolverStats.put(key, newSolver);
 					}
@@ -4366,14 +4358,8 @@ public class Jobs {
 							newSolver.setSolver(stage.getSolver());
 							newSolver.setConfiguration(stage.getConfiguration());
 							if (conflicts == null) {
-								if (!conflictsStopWatch.isStarted()) {
-									stopWatch.start();
-								} else {
-									stopWatch.resume();
-								}
 								conflicts = Solvers.getConflictsForConfigInJobWithStage(jobId, configId, stageNumber);
 								newSolver.setConflicts(conflicts);
-								conflictsStopWatch.suspend();
 							} else {
 								newSolver.setConflicts(conflicts);
 							}
@@ -4387,7 +4373,6 @@ public class Jobs {
 					}
 				}
 			}
-			conflictsStopWatch.stop();
 
 
 			List<SolverStats> returnValues = new LinkedList<SolverStats>();
@@ -4398,9 +4383,6 @@ public class Jobs {
 
 			stopWatch.stop();
 			logUtil.debug(methodName, "Time taken to process job pairs to stats for job with "+Jobs.getPairCount(jobId)+" pairs: "+stopWatch.toString());
-			logUtil.debug(methodName, "Time taken to compute conflicts: " + conflictsStopWatch.toString());
-			logUtil.debug(methodName, "Percentage of time used computing conflicts: "
-					+ (conflictsStopWatch.getTime()*1.0)/(stopWatch.getTime()*1.0));
 			return returnValues;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -4462,62 +4444,6 @@ public class Jobs {
 	    return stage.getStageNumber() + ":" + String.valueOf(stage.getConfiguration().getId());
 
     }
-
-    /*
-     * Builds a map of solverId to the number of conflicting benchmarks for that solver in a job.
-     * @param jobId the job to evaluate job pairs for.
-     * @throws SQLException if there is a database issue.
-     *
-	private static Map<String, Integer> buildSolverIdToNumberOfConflictsMap(int jobId) throws SQLException {
-		final String methodName = "buildSolverIdToNumberOfConflictsMap";
-		StopWatch stopWatch = new StopWatch();
-		stopWatch.start();
-		Set<Integer> conflictingBenchmarksInJob = getConflictingBenchmarksForJob(jobId);
-        Map<String, Integer> conflictingBenchmarksBySolver = new HashMap<>();
-		Map<String, Set<Integer>> remainingConflictingBenchmarksInJobForKey = new HashMap<>();
-		List<Solver> solversInJob = Solvers.getByJobSimpleWithConfigs(jobId);
-        for (Solver solver : solversInJob) {
-			List<JobPair> pairsContainingSolverInJob = JobPairs.getPairsInJobContainingSolver(jobId, solver.getId());
-			for (JobPair pair : pairsContainingSolverInJob) {
-				int benchId = pair.getBench().getId();
-				for (JoblineStage stage : pair.getStages()) {
-
-					if (stageCantCountTowardsConflicts(stage)) {
-						// Skip stages that couldn't contribute to a conflict
-						// (Stages with STAREXEC_UNKNOWN, NoOp stages, etc.)
-						continue;
-					}
-
-					String key = getStageConfigHashKey(stage, stage.getConfiguration());
-
-					// Copy the conflictingBenchmarksInJob set and associate the copy with the key. This way we can ensure
-					// each benchmark is counted at most once towards each key by removing the benchmark from that list if it
-					// is found for this key.
-					if (!remainingConflictingBenchmarksInJobForKey.containsKey(key)) {
-						remainingConflictingBenchmarksInJobForKey.put(key, new HashSet<>(conflictingBenchmarksInJob));
-					}
-
-
-					if (remainingConflictingBenchmarksInJobForKey.get(key).contains(benchId)) {
-						// If the benchmark in the pair is conflicting then increment the number of conflicting benchmarks
-						// for the solver.
-						if (conflictingBenchmarksBySolver.containsKey(key)) {
-							conflictingBenchmarksBySolver.put(key, conflictingBenchmarksBySolver.get(key) + 1);
-						} else {
-							conflictingBenchmarksBySolver.put(key, 1);
-						}
-						// Make sure each benchmark is only counted towards each stage-config pair at most once.
-						remainingConflictingBenchmarksInJobForKey.get(key).remove(benchId);
-					}
-				}
-			}
-		}
-
-		stopWatch.stop();
-		logUtil.debug(methodName, "Time taken to build conflicts map for job with "+Jobs.getPairCount(jobId)+" pairs: "+stopWatch.toString());
-
-        return conflictingBenchmarksBySolver;
-	}*/
 
 	
 	/**
