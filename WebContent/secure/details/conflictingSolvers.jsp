@@ -43,8 +43,18 @@
         <tbody>
             <c:forEach var="solverConfigResult" items="${tableData}">
             <tr>
-                <td>${solverConfigResult.left.name}</td>
-                <td>${solverConfigResult.middle.name}</td>
+                <td>
+                    <a href="${starexecRoot}/secure/details/solver.jsp?id=${solverConfigResult.left.id}">
+                        ${solverConfigResult.left.name}
+                        <img class="extLink" src="${starexecRoot}/images/external.png" />
+                    </a>
+                </td>
+                <td>
+                    <a href="${starexecRoot}/secure/details/configuration.jsp?id=${solverConfigResult.middle.id}">
+                        ${solverConfigResult.middle.name}
+                        <img class="extLink" src="${starexecRoot}/images/external.png" />
+                    </a>
+                </td>
                 <td>${solverConfigResult.right}</td>
             </tr>
             </c:forEach>

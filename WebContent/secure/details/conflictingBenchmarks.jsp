@@ -68,7 +68,12 @@
         <tbody>
             <c:forEach var="bench" items="${conflictingBenchmarks}">
                 <tr>
-                    <td><a href="${starexecRoot}/secure/details/conflictingSolvers.jsp?jobId=${jobId}&benchId=${bench.id}&stageNumber=${stageNumber}">${bench.name}</a></td>
+                    <td>
+                        <a href="${starexecRoot}/secure/details/conflictingSolvers.jsp?jobId=${jobId}&benchId=${bench.id}&stageNumber=${stageNumber}">
+                            ${bench.name}
+                            <img class="extLink" src="${starexecRoot}/images/external.png" />
+                        </a>
+                    </td>
                 </tr>
             </c:forEach>
         </tbody>
