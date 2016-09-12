@@ -1798,13 +1798,17 @@ public class RESTHelpers {
 				} else {
 					entries.add(String.valueOf(Math.round(js.getCpuTime()*100)/100.0));
 				}
-
-				entries.add("<a href=\"" + Util.docRoot("secure/details/conflictingBenchmarks.jsp") + "?"
-						+ "jobId=" + jobId + "&"
-						+ "configId=" + configId + "&"
-						+ "stageNumber=" + stageNumber
-						+ "\" target=\"_blank\" >"
-						+ String.valueOf(js.getConflicts()) +"<img class=\"extLink\" src=\""+Util.docRoot("images/external.png")+ "\"/></a>");
+				if (AnonymousLinks.isNothingAnonymized(primitivesToAnonymize)) {
+					entries.add("<a href=\"" + Util.docRoot("secure/details/conflictingBenchmarks.jsp") + "?"
+							+ "jobId=" + jobId + "&"
+							+ "configId=" + configId + "&"
+							+ "stageNumber=" + stageNumber
+							+ "\" target=\"_blank\" >"
+							+ String.valueOf(js.getConflicts()) + "<img class=\"extLink\" src=\"" + Util.docRoot("images/external.png") + "\"/></a>");
+				} else {
+					// Don't support conflicts for anonymized pages.
+					entries.add("N/A");
+				}
 
 			} else {
 				entries.add((js.getCorrectJobPairs()) +" / "+js.getCompleteJobPairs());
