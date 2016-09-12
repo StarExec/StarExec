@@ -5,6 +5,6 @@ $(document).ready(function() {
         'scrollY': '300px',
         'scrollX': '100%',
         'scrollCollapse': true,
-        'paging': false
+        'paging': true
     });
 });
