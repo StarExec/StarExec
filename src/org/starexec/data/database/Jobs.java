@@ -4341,9 +4341,14 @@ public class Jobs {
 						newSolver.setSolver(stage.getSolver());
 						newSolver.setConfiguration(stage.getConfiguration());
 						// Compute the number of conflicts and save them in variable in case we need to use them again.
-						conflictsStopWatch.start();
+						if (!conflictsStopWatch.isStarted()) {
+							stopWatch.start();
+						} else {
+							stopWatch.resume();
+						}
+						conflictsStopWatch.resume();
 						conflicts =  Solvers.getConflictsForConfigInJobWithStage(jobId, configId, stageNumber);
-						conflictsStopWatch.stop();
+						conflictsStopWatch.suspend();
 						newSolver.setConflicts(conflicts);
 						SolverStats.put(key, newSolver);
 					}
@@ -4361,10 +4366,14 @@ public class Jobs {
 							newSolver.setSolver(stage.getSolver());
 							newSolver.setConfiguration(stage.getConfiguration());
 							if (conflicts == null) {
-								conflictsStopWatch.start();
+								if (!conflictsStopWatch.isStarted()) {
+									stopWatch.start();
+								} else {
+									stopWatch.resume();
+								}
 								conflicts = Solvers.getConflictsForConfigInJobWithStage(jobId, configId, stageNumber);
 								newSolver.setConflicts(conflicts);
-								conflictsStopWatch.stop();
+								conflictsStopWatch.suspend();
 							} else {
 								newSolver.setConflicts(conflicts);
 							}
@@ -4378,6 +4387,7 @@ public class Jobs {
 					}
 				}
 			}
+			conflictsStopWatch.stop();
 
 
 			List<SolverStats> returnValues = new LinkedList<SolverStats>();
