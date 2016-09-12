@@ -4007,6 +4007,8 @@ public class RESTServices {
 	@Path("/spaces/{spaceId}/copySpace")
 	@Produces("application/json")
 	public String copySubSpaceToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request, @Context HttpServletResponse response) {
+		final String methodName = "copySubSpaceToSpace";
+		logUtil.entry(methodName);
 		// Make sure we have a list of spaces to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
 		if(null == request.getParameterValues("selectedIds[]") 
 				|| !Util.paramExists("copyHierarchy", request)
@@ -4018,6 +4020,7 @@ public class RESTServices {
 		int requestUserId = SessionUtil.getUserId(request);
 		
 		boolean copyPrimitives = Boolean.parseBoolean(request.getParameter("copyPrimitives"));
+		logUtil.debug(methodName, "copyPrimitives = " + copyPrimitives);
 		
 		boolean copyHierarchy = Boolean.parseBoolean(request.getParameter("copyHierarchy"));
 		

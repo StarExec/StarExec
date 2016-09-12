@@ -969,7 +969,7 @@ public class Spaces {
 		log.debug("Space tree built during space hierarchy copy:");
 		logSpaceTree(spaceTree);
 
-		return Spaces.copySpaceTree(spaceTree, desId, usrId);
+		return Spaces.copySpaceTree(spaceTree, desId, usrId, copyPrimitives);
 	}
 
 	private static void logSpaceTree(TreeNode<Space> tree) {
