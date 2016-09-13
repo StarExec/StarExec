@@ -39,12 +39,7 @@ public class JobPairs {
 	private static final Logger log = Logger.getLogger(JobPairs.class);
 	private static final LogUtil logUtil = new LogUtil( log );
 	
-	/**
-	 * 
-	 * @param pairs
-	 * @param con
-	 * @return
-	 */
+
 	private static boolean addJobPairInputs(List<JobPair> pairs, Connection con) {
 		final String methodName = "addJobPairInputs";
 		CallableStatement procedure=null;
@@ -211,7 +206,6 @@ public class JobPairs {
 	/**
 	 * Adds a job pair record to the database. This is a helper method for the Jobs.add method
 	 * @param con The connection the update will take place on
-	 * @param pair The pair to add
 	 * @return True if the operation was successful
 	 */
 	protected static boolean addJobPairs(Connection con, int jobId, List<JobPair> pairs) throws SQLException {
@@ -1056,6 +1050,7 @@ public class JobPairs {
 				JobPair jp = JobPairs.resultToPair(results);
 				jp.addStage(new JoblineStage()); // just add an empty stage that we can populate below
 				jp.getStages().get(0).setStageNumber(jp.getPrimaryStageNumber());
+
 				jp.getNode().setId(results.getInt("node_id"));
 				jp.getStatus().setCode(results.getInt("status_code"));
 				jp.getBench().setId(results.getInt("bench_id"));
@@ -1087,7 +1082,7 @@ public class JobPairs {
 	 * @return The job pair object with the given id.
 	 * @author Tyler Jensen
 	 */
-	protected static JobPair getPairDetailed(Connection con, int pairId) throws Exception {			
+	protected static JobPair getPairDetailed(Connection con, int pairId) throws Exception {
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
@@ -1112,53 +1107,9 @@ public class JobPairs {
 				//couldn't find the pair for some reason
 				return null;
 			}
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-			procedure=con.prepareCall("{CALL GetJobPairStagesById(?)}");
-			procedure.setInt(1,pairId);
-			results= procedure.executeQuery();
-			//next, we get data at the stage level
-			while (results.next()) {
-				JoblineStage stage=resultToStage(results);
-				int configId=results.getInt("config_id");
-				int solverId=results.getInt("solver_id");
-				String configName=results.getString("config_name");
-				String solverName=results.getString("solver_name");
-				//means this stage has no configuration
-				if (configId==-1) {
-					stage.setNoOp(true);
-				}else if (configId>0) {
-					Solver solver = Solvers.getSolverByConfig(con, configId,true);
-					Configuration c=Solvers.getConfiguration(configId);
-					
-					//this can happen if the pair references a deleted solver
-					if (solver==null) {
-						solver=new Solver();
-						solver.setId(solverId);
-						solver.setName(solverName);
-					}
-					
-					if (c==null) {
-						c=new Configuration();
-						c.setId(configId);
-						c.setName(configName);
-					}
-					
-					stage.setSolver(solver);
-					stage.setConfiguration(c);
-					stage.getSolver().addConfiguration(c);
-				}
 
+            populateJobPairStagesDetailed(jp, con);
 
-				jp.addStage(stage);
-			}
-			//last, we get attributes for everything
-			HashMap<Integer,Properties> attrs = getAttributes(pairId);
-			for (JoblineStage stage : jp.getStages()) {
-				if (attrs.containsKey(stage.getStageNumber())) {
-					stage.setAttributes(attrs.get(stage.getStageNumber()));
-				}
-			}
 			return jp;
 		} catch (Exception e) {
 			log.error("Get JobPair says "+e.getMessage(),e);
@@ -1169,6 +1120,61 @@ public class JobPairs {
 
 		return null;		
 	}
+
+	private static void populateJobPairStagesDetailed(JobPair jp, Connection con) throws SQLException {
+		CallableStatement procedure = null;
+		ResultSet results = null;
+
+        try {
+			procedure = con.prepareCall("{CALL GetJobPairStagesById(?)}");
+			procedure.setInt(1, jp.getId());
+			results = procedure.executeQuery();
+			//next, we get data at the stage level
+			while (results.next()) {
+				JoblineStage stage = resultToStage(results);
+				int configId = results.getInt("config_id");
+				int solverId = results.getInt("solver_id");
+				String configName = results.getString("config_name");
+				String solverName = results.getString("solver_name");
+				//means this stage has no configuration
+				if (configId == -1) {
+					stage.setNoOp(true);
+				} else if (configId > 0) {
+					Solver solver = Solvers.getSolverByConfig(con, configId, true);
+					Configuration c = Solvers.getConfiguration(configId);
+
+					//this can happen if the pair references a deleted solver
+					if (solver == null) {
+						solver = new Solver();
+						solver.setId(solverId);
+						solver.setName(solverName);
+					}
+
+					if (c == null) {
+						c = new Configuration();
+						c.setId(configId);
+						c.setName(configName);
+					}
+
+					stage.setSolver(solver);
+					stage.setConfiguration(c);
+					stage.getSolver().addConfiguration(c);
+				}
+				jp.addStage(stage);
+			}
+			//last, we get attributes for everything
+			HashMap<Integer, Properties> attrs = getAttributes(jp.getId());
+			for (JoblineStage stage : jp.getStages()) {
+				if (attrs.containsKey(stage.getStageNumber())) {
+					stage.setAttributes(attrs.get(stage.getStageNumber()));
+				}
+			}
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+    }
 
 	/**
 	 * Gets the job pair with the given id recursively 
@@ -1191,6 +1197,38 @@ public class JobPairs {
 
 		return null;		
 	}
+
+	public static List<JobPair> getPairsInJobContainingBenchmark(int jobId, int benchmarkId) throws SQLException {
+
+		return Common.queryKeepConnection("{CALL GetJobPairsInJobContainingBenchmark(?, ?)}", procedure -> {
+			procedure.setInt(1, jobId);
+			procedure.setInt(2, benchmarkId);
+		}, (con, results) -> {
+			List<JobPair> jobPairs = new ArrayList<>();
+			while (results.next()) {
+				JobPair pair = resultToPair(results);
+				populateJobPairStagesDetailed(pair, con);
+				jobPairs.add(pair);
+			}
+			return jobPairs;
+		});
+	}
+
+	// TODO implement method.
+	public static List<JobPair> getPairsInJobContainingSolver(int jobId, int solverId) throws SQLException {
+		return Common.queryKeepConnection("{CALL GetJobPairsInJobContainingSolver(?, ?)}", procedure -> {
+		    procedure.setInt(1, jobId);
+            procedure.setInt(2, solverId);
+        }, (con, results) -> {
+            List<JobPair> jobPairs = new ArrayList<>();
+            while (results.next()) {
+                JobPair pairFromResults = resultToPair(results);
+                populateJobPairStagesDetailed(pairFromResults, con);
+                jobPairs.add(pairFromResults);
+            }
+            return jobPairs;
+        });
+	}
 	
 	/**
 	 * Extracts query informaiton into a JoblineStage. Does NOT get deep information like
@@ -1199,7 +1237,7 @@ public class JobPairs {
 	 * @return
 	 * @throws Exception
 	 */
-	protected static JoblineStage resultToStage(ResultSet result) throws Exception {
+	protected static JoblineStage resultToStage(ResultSet result) throws SQLException {
 		JoblineStage stage=new JoblineStage();
 				
 		stage.setStageNumber(result.getInt("jobpair_stage_data.stage_number"));
@@ -1219,7 +1257,7 @@ public class JobPairs {
 	 * @param result The resultset that is the results from querying for job pairs
 	 * @return A job pair object populated with data from the result set
 	 */
-	protected static JobPair resultToPair(ResultSet result) throws Exception {
+	protected static JobPair resultToPair(ResultSet result) throws SQLException {
 
 		JobPair jp = new JobPair();
 
@@ -1229,6 +1267,12 @@ public class JobPairs {
 		jp.setQueueSubmitTime(result.getTimestamp("job_pairs.queuesub_time"));
 		jp.setStartTime(result.getTimestamp("job_pairs.start_time"));
 		jp.setEndTime(result.getTimestamp("job_pairs.end_time"));
+		// Populate basic benchmark info.
+		jp.getBench().setId(result.getInt("bench_id"));
+		jp.getBench().setName(result.getString("bench_name"));
+
+		jp.getNode().setId(result.getInt("job_pairs.node_id"));
+		jp.getStatus().setCode(result.getInt("job_pairs.status_code"));
 		
 		jp.setPath(result.getString("job_pairs.path"));
 		jp.setJobSpaceId(result.getInt("job_pairs.job_space_id"));

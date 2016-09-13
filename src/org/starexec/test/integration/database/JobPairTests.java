@@ -1,39 +1,26 @@
 package org.starexec.test.integration.database;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Random;
-
 import org.junit.Assert;
 import org.mockito.Mockito;
 import org.starexec.backend.GridEngineBackend;
 import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Processors;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.Status;
+import org.starexec.data.to.*;
+import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Status.StatusCode;
-import org.starexec.data.to.User;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PairStageProcessorTriple;
-import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
+
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  * Tests for org.starexec.data.database.JobPairs.java
  * @author Eric
@@ -252,6 +239,40 @@ public class JobPairTests extends TestSequence {
 		Assert.assertEquals(StatusCode.STATUS_KILLED.getVal(), updatedPair.getStages().get(0).getStatus().getCode().getVal());
 		Assert.assertEquals(StatusCode.STATUS_KILLED.getVal(), updatedPair.getStatus().getCode().getVal());
 		JobPairs.setStatusForPairAndStages(jp.getId(),StatusCode.STATUS_COMPLETE.getVal());
+	}
+
+	@StarexecTest
+	private void getPairsInJobContainingBenchmarkTest() {
+		int benchId = job.getJobPairs().get(0).getBench().getId();
+		int jobId = job.getId();
+		try {
+			List<JobPair> jobPairsContainingBench = JobPairs.getPairsInJobContainingBenchmark(jobId, benchId);
+			for (JobPair pair : jobPairsContainingBench) {
+				Assert.assertEquals("Job pair did not contain benchmark.", pair.getBench().getId(), benchId);
+				Assert.assertEquals("Job pair was not in job.", pair.getJobId(), jobId);
+			}
+		} catch (SQLException e) {
+			Assert.fail("SQL Exception was thrown.");
+		}
+	}
+
+	@StarexecTest
+	private void getPairsInJobContainingSolverTest() {
+		int solverId = job.getJobPairs().get(0).getPrimaryStage().getSolver().getId();
+		int jobId = job.getId();
+		try {
+			List<JobPair> jobPairsContainingSolver = JobPairs.getPairsInJobContainingSolver(jobId, solverId);
+			for (JobPair pair : jobPairsContainingSolver) {
+				boolean atLeastOneHadSolver = false;
+				for (JoblineStage stage : pair.getStages()) {
+					atLeastOneHadSolver = atLeastOneHadSolver || stage.getSolver().getId() == solverId;
+				}
+				Assert.assertTrue("Pair with id : " + pair.getId() + " did not contain solver with id: " + solverId, atLeastOneHadSolver);
+				Assert.assertEquals("Pair was not in job with id: " + jobId, pair.getJobId(), jobId);
+			}
+		} catch (SQLException e) {
+			Assert.fail("SQL Exception was thrown.");
+		}
 	}
 	
 	@Override

@@ -20,15 +20,14 @@ import java.util.Set;
 import java.util.Comparator;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.log4j.Logger;
+import org.apache.commons.lang3.tuple.Triple;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
+import org.starexec.data.to.*;
 import org.starexec.data.to.Solver.ExecutableType;
 import org.starexec.data.to.compare.SolverComparator;
-import org.starexec.data.to.SolverBuildStatus;
 import org.starexec.util.DataTablesQuery;
 import org.starexec.util.LogUtil;
 import org.starexec.util.NamedParameterStatement;
@@ -654,7 +653,7 @@ public class Solvers {
 			procedure.setInt(1, solverId);					
 			results = procedure.executeQuery();
 			if(results.next()){
-				Solver s = resultToSolver(results,null);
+				Solver s = resultSetToSolver(results,null);
 				Common.safeClose(results);
 				return s;
 			}
@@ -1159,7 +1158,7 @@ public class Solvers {
 	 * @return The configuration with the given id
 	 * @author Tyler Jensen
 	 */
-	protected static Configuration getConfiguration(Connection con, int configId) throws Exception {
+	protected static Configuration getConfiguration(Connection con, int configId) throws SQLException {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		 
@@ -1186,6 +1185,40 @@ public class Solvers {
 									
 				
 		return null;
+	}
+
+    /**
+     *
+     * @param jobId The job id to get conflic
+     * @param stageId
+     * @return
+     * @throws SQLException
+     */
+	public static List<Benchmark> getConflictingBenchmarksInJobForStage(int jobId, int configId, int stageId) throws SQLException {
+       return Common.query("{CALL GetConflictingBenchmarksForConfigInJob(?,?,?)}", procedure -> {
+            procedure.setInt(1, jobId);
+		   	procedure.setInt(2, configId);
+            procedure.setInt(3, stageId);
+        }, results -> {
+            List<Benchmark> benchmarks = new ArrayList<>();
+            while (results.next()) {
+                benchmarks.add(Benchmarks.resultToBenchmark(results));
+            }
+            return benchmarks;
+        });
+    }
+
+	public static Integer getConflictsForConfigInJobWithStage(int jobId, int configId, int stageId) throws SQLException {
+		return Common.query("{CALL GetConflictsForConfigInJob(?, ?, ?)}", procedure -> {
+			procedure.setInt(1, jobId);
+			procedure.setInt(2, configId);
+			procedure.setInt(3, stageId);
+		}, results -> {
+			if (results.next()) {
+				return results.getInt("conflicting_benchmarks");
+			}
+			throw new SQLException("The database did not return a row for procedure GetConflictsForConfigInJob");
+		});
 	}
 
 	
@@ -1270,7 +1303,7 @@ public class Solvers {
 	 * @throws SQLException 
 	 */
 	private static Solver resultSetToSolver(ResultSet results) throws SQLException {
-		return resultToSolver(results,"");
+		return resultSetToSolver(results,"");
 	}
 	
 	/**
@@ -1349,7 +1382,7 @@ public class Solvers {
 	 * if the solver does not exist
 	 * @author Tyler Jensen
 	 */
-	protected static Solver getSolverByConfig(Connection con, int configId, boolean includeDeleted) throws Exception {		
+	protected static Solver getSolverByConfig(Connection con, int configId, boolean includeDeleted) throws SQLException {
 		Configuration c = Solvers.getConfiguration(con, configId);
 		if (c==null) {
 			log.debug("getSolverByConfig called with configId = "+configId+" but config was null");
@@ -1719,7 +1752,6 @@ public class Solvers {
 	 * Returns whether a solver with the given ID is present in the database with the 
 	 * "recycled" column set to true
 	 * @param solverId The ID of the solver to check
-	 * @param the open connection to make the SQL call on
 	 * @return True if the solver exists in the database with the "recycled" column set to
 	 * true, and false otherwise
 	 * @author Eric Burns
@@ -1838,6 +1870,36 @@ public class Solvers {
 		}
 		return false;
 	}
+
+	public static List<Triple<Solver,Configuration,String>> getSolverConfigResultsForBenchmarkInJob(int jobId, int benchId, int stageNum) throws SQLException {
+		return Common.query("{CALL GetSolverConfigResultsForBenchmarkInJob(?,?,?)}", procedure -> {
+			procedure.setInt(1, jobId);
+			procedure.setInt(2, benchId);
+			procedure.setInt(3, stageNum);
+		}, results -> {
+            List<Triple<Solver,Configuration,String>> solverConfigResult = new ArrayList<>();
+			while (results.next()) {
+				Solver solver = resultSetToSolver(results, "s");
+				Configuration configuration = resultSetToConfiguration(results, "c");
+				String starexecResult = results.getString("attr_value");
+                solverConfigResult.add(new ImmutableTriple<>(solver, configuration, starexecResult));
+			}
+			return solverConfigResult;
+		});
+	}
+
+	private static String transformPrefix(String prefix) {
+		// first format the prefix so it is either empty OR is the prefix plus a period
+		if (prefix==null) {
+			return "";
+		}
+		if (!prefix.isEmpty()) {
+			return prefix + ".";
+		}
+
+		return "";
+	}
+
 	
 	
 	/**
@@ -1849,15 +1911,10 @@ public class Solvers {
 	 * @throws SQLException
 	 */
 	
-	protected static Solver resultToSolver(ResultSet results, String prefix) throws SQLException {
+	protected static Solver resultSetToSolver(ResultSet results, String prefix) throws SQLException {
 		Solver s=new Solver();
-		// first format the prefix so it is either empty OR is the prefix plus a period
-		if (prefix==null) {
-			prefix="";
-		}
-		if (!prefix.isEmpty()) {
-			prefix=prefix+".";
-		}
+
+		prefix = transformPrefix(prefix);
 	
 		s.setId(results.getInt(prefix+"id"));
 		s.setUserId(results.getInt(prefix+"user_id"));
@@ -1876,6 +1933,22 @@ public class Solvers {
 		
 		return s;
 	}
+
+	public static Configuration resultSetToConfiguration(ResultSet results) throws SQLException {
+		return resultSetToConfiguration(results, "");
+	}
+
+	public static Configuration resultSetToConfiguration(ResultSet results, String prefix) throws SQLException {
+		prefix=transformPrefix(prefix);
+		Configuration config = new Configuration();
+		config.setId(results.getInt(prefix+"id"));
+		config.setDescription(results.getString(prefix+"description"));
+		config.setName(results.getString(prefix+"name"));
+		config.setSolverId(results.getInt(prefix+"solver_id"));
+		return config;
+	}
+
+
 	
 	
 	/**

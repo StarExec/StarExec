@@ -229,6 +229,24 @@ CREATE PROCEDURE DeleteJobPair( IN _pairId INT)
 		DELETE FROM job_pairs
 		WHERE job_pairs.id = _pairId;
 	END //
+
+-- Gets all of the job pairs in a job that contain a given benchmark.
+-- Author: Albert Giegerich
+DROP PROCEDURE IF EXISTS GetJobPairsInJobContainingBenchmark;
+CREATE PROCEDURE GetJobPairsInJobContainingBenchmark(IN _jobId INT, IN _benchmarkId INT )
+	BEGIN
+		SELECT job_pairs.*
+		FROM job_pairs
+		WHERE job_id=_jobId AND bench_id=_benchmarkId;
+	END //
+
+DROP PROCEDURE IF EXISTS GetJobPairsInJobContainingSolver;
+CREATE PROCEDURE GetJobPairsInJobContainingSolver(IN _jobId INT, IN _solverId INT)
+  BEGIN
+    SELECT job_pairs.*
+    FROM job_pairs INNER JOIN jobpair_stage_data ON job_pairs.id=jobpair_stage_data.jobpair_id
+	WHERE job_id=_jobId AND solver_id=_solverId;
+  END //
 	
 -- Sets the completion time to now (the moment this is called) for the pair with the given id
 -- Also sets the time_delta for the pair in the jobpair_time_delta table.

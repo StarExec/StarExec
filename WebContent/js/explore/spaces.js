@@ -441,15 +441,20 @@ function setupSpaceCopyDialog(ids, destSpace, destName) {
 
 	var spaceCopyDialogButtons = {};
 
+	log('Deciding whether to copy hierarchy or space');
 	if (allSpacesBeingCopiedAreLeaves) {
+		log('Copying single space');
 		spaceCopyDialogButtons['confirm'] = singleSpaceCopy;
 	} else {
         spaceCopyDialogButtons['confirm'] = function() {
             var copyHierOption = $("input[type='radio'][name='copySpace']:checked").val(); 
-            if(copyHierOption == "hier") {
+			log('copyHierOption: ' + copyHierOption);
+            if(copyHierOption) {
                 $('#dialog-confirm-copy').dialog('close');
+				log('Copying hierarchy');
                 doSpaceCopyPost(ids,destSpace,true,destName);
             } else {
+				log('Copying single space');
                 singleSpaceCopy();
             }
             $('#hier-copy-options').addClass('copy-options-hidden');
@@ -508,6 +513,7 @@ function setupUserCopyDialog(ids, destSpace, destName, ui, destIsLeafSpace) {
 
 function doSpaceCopyPost(ids,destSpace,copyHierarchy,destName) {
     var copyPrimitives = $("input[type='radio'][name='copyPrimitives']:checked").val();
+	log('copyPrimitives: ' + copyPrimitives);
     $('#copy-primitives-options').addClass('copy-options-hidden');
 	$.post(  	    		
 			starexecRoot+'services/spaces/' + destSpace + '/copySpace',

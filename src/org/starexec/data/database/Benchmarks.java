@@ -7,15 +7,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeMap;
+import java.util.*;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -717,7 +709,7 @@ public class Benchmarks {
 			procedure=con.prepareCall("CALL GetDeletedBenchmarks()");
 			results=procedure.executeQuery();
 			while (results.next()) {
-				Benchmark b = resultToBenchmark(results,"");
+				Benchmark b = resultToBenchmark(results);
 				if (new File(b.getPath()).exists()) {
 					log.warn("a deleted benchmark still exists on disk! id = "+b.getId());
 					if (!Util.safeDeleteFileAndEmptyParents(b.getPath(), R.getBenchmarkPath())) {
@@ -991,7 +983,7 @@ public class Benchmarks {
 			results = procedure.executeQuery();
 
 			if(results.next()){
-				Benchmark b = resultToBenchmark(results,"bench");
+				Benchmark b = resultToBenchmarkWithPrefix(results,"bench");
 
 				Processor t = Processors.resultSetToProcessor(results, "types");
 
@@ -1112,7 +1104,7 @@ public class Benchmarks {
 			
 			
 			while(results.next()){
-				Benchmark b = resultToBenchmark(results,"");
+				Benchmark b = resultToBenchmark(results);
 				Processor t = Processors.resultSetToProcessor(results, "types");
 				b.setType(t);
 				// Add benchmark object to list
@@ -1133,8 +1125,30 @@ public class Benchmarks {
 		log.debug(String.format("Getting the benchmarks owned by user %d failed.", userId));
 		return null;
 	}
-	
-	
+
+	/**
+	 * Gets all benchmarks in a given job.
+	 * @param jobId The job to get the benchmarks from.
+	 * @return The list of benchmarks in the job.
+	 * @throws SQLException if something goes wrong with the database.
+	 */
+	public static List<Benchmark> getByJob(int jobId) throws SQLException {
+		log.debug("Inside benchmarks.getByJob");
+		return Common.query( "{CALL GetBenchmarksByJob(?)}", procedure -> {
+			log.debug("Setting GetBenchmarksByJob parameter.");
+			procedure.setInt(1, jobId);
+		}, results -> {
+			List<Benchmark> benchmarks = new ArrayList<>();
+			int test = 0;
+			log.debug("Compiling result for GetBenchmarksByJob");
+			while (results.next()) {
+				log.debug("GetBenchmarksByJob results.next() called");
+				test += 1;
+				benchmarks.add(resultToBenchmark(results));
+			}
+			return benchmarks;
+		});
+	}
 	
 	/**
 	 * Gets the IDs of every space that is associated with the given benchmark
@@ -1511,7 +1525,7 @@ public class Benchmarks {
 			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
 
 			while(results.next()){
-				Benchmark b = resultToBenchmark(results,"bench"); 
+				Benchmark b = resultToBenchmarkWithPrefix(results,"bench");
 				Processor t = Processors.resultSetToProcessor(results, "types");
 
 
@@ -1931,6 +1945,12 @@ public class Benchmarks {
 		return false;
 	}
 
+
+
+	public static Benchmark resultToBenchmark(ResultSet results) throws SQLException {
+		return resultToBenchmarkWithPrefix(results, null);
+	}
+
 	/**
 	 * Creates a Benchmark object from a SQL resultset
 	 * @param results The resultset pointed at the row containing benchmark data
@@ -1940,8 +1960,7 @@ public class Benchmarks {
 	 * @return A Benchmark object
 	 * @throws SQLException
 	 */
-	
-	public static Benchmark resultToBenchmark(ResultSet results, String prefix) throws SQLException {
+	public static Benchmark resultToBenchmarkWithPrefix(ResultSet results, String prefix) throws SQLException {
 		Benchmark b = new Benchmark();
 		if (prefix==null || prefix=="") {
 			b.setId(results.getInt("id"));
@@ -2075,7 +2094,6 @@ public class Benchmarks {
 	 * @param benchmarks The list of benchmarks that might have dependencies
 	 * @param spaceId the id of the space where the axiom benchmarks lie
 	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
-	 * @param userId the user's Id
 	 * @return the data structure that has information about depedencies
 	 * @author Eric Burns
 	 */
@@ -2098,7 +2116,6 @@ public class Benchmarks {
 	 * @param bench The benchmark that might have dependencies
 	 * @param spaceId the id of the space where the axiom benchmarks lie
 	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
-	 * @param userId the user's Id
 	 * @return True if the dependencies are valid and false otherwise
 	 * @author Benton McCune
 	 */
@@ -2384,7 +2401,7 @@ public class Benchmarks {
 			results=procedure.executeQuery();
 			List<Benchmark> Benchmarks=new ArrayList<Benchmark>();
 			while (results.next()) {
-				Benchmark b=resultToBenchmark(results,"");
+				Benchmark b=resultToBenchmark(results);
 				Processor t = Processors.resultSetToProcessor(results, "types");
 				b.setType(t);
 				Benchmarks.add(b);
@@ -2415,7 +2432,7 @@ public class Benchmarks {
 			List<Benchmark> Benchmarks = new LinkedList<Benchmark>();
 			
 			while(results.next()){
-				Benchmark s=resultToBenchmark(results,"");
+				Benchmark s=resultToBenchmark(results);
 				Processor t = Processors.resultSetToProcessor(results, "types");
 				s.setType(t);
 				Benchmarks.add(s);
@@ -2467,7 +2484,6 @@ public class Benchmarks {
 	
 	/**
 	 * Filters a list of benchmarks using the given query
-	 * @param Benchmarks The list of Benchmarks to filter
 	 * @param searchQuery Query for the Benchmarks. Not case sensitive
 	 * @return A subset of the given Benchmarks where, for every Benchmark returned, either the name
 	 * or the description includes the search query.

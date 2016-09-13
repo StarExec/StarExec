@@ -20,26 +20,16 @@ import java.util.TreeMap;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.starexec.backend.Backend;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.JobSpace;
-import org.starexec.data.to.JobStatus;
+import org.starexec.data.to.*;
 import org.starexec.data.to.JobStatus.JobStatusCode;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.SolverComparison;
-import org.starexec.data.to.SolverStats;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.SolverBuildStatus.SolverBuildStatusCode;
-import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.compare.JobPairComparator;
 import org.starexec.data.to.compare.SolverComparisonComparator;
 import org.starexec.data.to.pipelines.JoblineStage;
@@ -310,7 +300,7 @@ public class Jobs {
 	/**
 	 * Adds a new job pair using the input list of configurations for each existing job pair in the job that doesn't already contain the configuration.
 	 * @param jobId the id of the job.
-	 * @param configId  the configurations to add to the job.
+	 * @param configIds  the configurations to add to the job.
 	 * @author Albert Giegerich
 	 */
 	public static void addJobPairsFromConfigIdsForAllBenchmarks( int jobId, Set<Integer> configIds ) throws SQLException {
@@ -423,7 +413,7 @@ public class Jobs {
 	 * Adds a new job pair using the input list of configurations for each existing job pair in the job that contains the solver
 	 * associated with the configuration.
 	 * @param jobId the id of the job.
-	 * @param configId  the configurations to add to the job.
+	 * @param configIds  the configurations to add to the job.
 	 * @author Albert Giegerich
 	 */
 	public static void addJobPairsFromConfigIdsForPairedBenchmarks( int jobId, Set<Integer> configIds ) throws SQLException {
@@ -832,8 +822,6 @@ public class Jobs {
 	/**
 	 * Permanently removes a job from the database. This is a helper function and should NOT be called to delete a job!
 	 * It will not delete a job on disk
-	 * @param solverId The ID of the solver to remove
-	 * @param con The open connection to make the SQL call on
 	 * @return True on success and false otherwise
 	 */
 	
@@ -1080,8 +1068,11 @@ public class Jobs {
 			log.debug("stats already cached in database");
 			return stats;
 		}
+
+		int jobId = space.getJobId();
+
 		//we will cache the stats only if the job is complete
-		boolean isJobComplete=Jobs.isJobComplete(space.getJobId());
+		boolean isJobComplete=Jobs.isJobComplete(jobId);
 
 		//otherwise, we need to compile the stats
 		log.debug("stats not present in database -- compiling stats now");
@@ -1089,7 +1080,7 @@ public class Jobs {
 		
 		
 		//compiles pairs into solver stats
-		List<SolverStats> newStats=processPairsToSolverStats(pairs);
+		List<SolverStats> newStats=processPairsToSolverStats(jobId, pairs);
 		for (SolverStats s : newStats) {
 			s.setJobSpaceId(space.getId());
 		}
@@ -1471,7 +1462,7 @@ public class Jobs {
 	 * Gets all the the attributes for every job pair in a job, and returns a HashMap
 	 * mapping pair IDs a map of their stages to the stage's attributes
 	 * @param con The connection to make the query on
-	 * @param The ID of the job to get attributes of
+	 * @param jobId The ID of the job to get attributes of
 	 * @return A HashMap mapping pair IDs to properties. Some values may be null
 	 * @author Eric Burns
 	 */
@@ -2551,14 +2542,7 @@ public class Jobs {
 
 	/**
 	 * Gets the minimal number of Jobs necessary in order to service the client's
-	 * request for the next page of Jobs in their DataTables object
-	 * 
-	 * @param startingRecord the record to start getting the next page of Jobs from
-	 * @param recordsPerPage how many records to return (i.e. 10, 25, 50, or 100 records)
-	 * @param isSortedASC whether or not the selected column is sorted in ascending or descending order 
-	 * @param indexOfColumnSortedBy the index representing the column that the client has sorted on
-	 * @param searchQuery the search query provided by the client (this is the empty string if no search query was inputed)
-	 * @param id the id of the space or user to get jobs for
+	 * request for the next page of Jobs in their DataTables objects
 	 * @return a list of 10, 25, 50, or 100 Jobs containing the minimal amount of data necessary
 	 * @author Todd Elvers
 	 */
@@ -2669,6 +2653,7 @@ public class Jobs {
 			while (results.next()) {
 				SolverStats s=new SolverStats();
 				s.setCompleteJobPairs(results.getInt("complete"));
+				s.setConflicts(results.getInt("conflicts"));
 				s.setIncompleteJobPairs(results.getInt("incomplete")); 
 				s.setWallTime(results.getDouble("wallclock"));
 				s.setCpuTime(results.getDouble("cpu"));
@@ -3032,7 +3017,6 @@ public class Jobs {
 	 * only the job pairs that have been completed after the argument "since" Only primary stages are populated
 	 * (Worker node, status, benchmark and solver WILL be populated) 
 	 * @param jobId The id of the job to get pairs for
-	 * @param since The completion ID to get all the pairs after. If null, gets all pairs
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author Tyler Jensen, Benton Mccune, Eric Burns
 	 */
@@ -3069,14 +3053,14 @@ public class Jobs {
 				curSolver=results.getInt("config.solver_id");
 				JoblineStage stage=JobPairs.resultToStage(results);
 				if (!discoveredSolvers.containsKey(curSolver)) {
-					Solver solver= Solvers.resultToSolver(results,R.SOLVER);				
+					Solver solver= Solvers.resultSetToSolver(results,R.SOLVER);
 					stage.setSolver(solver);
 					discoveredSolvers.put(curSolver, solver);
 				}
 				stage.setSolver(discoveredSolvers.get(curSolver));
 				
 				if (!discoveredBenchmarks.containsKey(curBench)) {
-					Benchmark b= Benchmarks.resultToBenchmark(results, "bench");
+					Benchmark b= Benchmarks.resultToBenchmarkWithPrefix(results, "bench");
 					jp.setBench(b);
 					discoveredBenchmarks.put(curBench,b);
 				}
@@ -3354,7 +3338,7 @@ public class Jobs {
 			    	Status s = new Status();
 				    s.setCode(results.getInt("job_pairs.status_code"));
 				    jp.setStatus(s);
-				    Benchmark b = Benchmarks.resultToBenchmark(results, "benchmarks");
+				    Benchmark b = Benchmarks.resultToBenchmarkWithPrefix(results, "benchmarks");
 				    b.setUsesDependencies(results.getInt("dependency_count")>0);
 				    jp.setBench(b);
 				    
@@ -3380,7 +3364,7 @@ public class Jobs {
 			    c.setName(configName);
 			    stage.setConfiguration(c);
 
-				Solver s = Solvers.resultToSolver(results, "solvers");
+				Solver s = Solvers.resultSetToSolver(results, "solvers");
 				stage.setSolver(s /* could be null, if Solver s above was null */);
 				if (s!=null) {
 					if (!solverIdsToTimestamps.containsKey(s.getId())) {
@@ -3880,7 +3864,6 @@ public class Jobs {
 	
 	/**
 	 * Returns the IDs of all jobs in the system
-	 * @param jobId 
 	 * @return
 	 */
 	public static List<Integer> getAllJobIds() {
@@ -4260,7 +4243,8 @@ public class Jobs {
 	 * @return A mapping from pair ids to Properties
 	 * @author Eric Burns
 	 */
-	private static HashMap<Integer,HashMap<Integer,Properties>> processAttrResults(ResultSet results) {
+	private static HashMap<Integer,HashMap<Integer,Properties>> processAttrResults(ResultSet results)
+	{
 		try {
 			HashMap<Integer,HashMap<Integer,Properties>> props=new HashMap<Integer,HashMap<Integer,Properties>>();
 			int id;
@@ -4325,73 +4309,147 @@ public class Jobs {
 	 * @return A list of SolverStats objects to use in a datatable
 	 * @author Eric Burns
 	 */
-	public static List<SolverStats> processPairsToSolverStats(List<JobPair> pairs) {
+	public static List<SolverStats> processPairsToSolverStats(int jobId, List<JobPair> pairs) {
+		final String methodName = "processPairsToSolverStats";
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start();
 		try {
-			Hashtable<String, SolverStats> SolverStats=new Hashtable<String,SolverStats>();
-			String key=null;
+		    //Map<String, Integer> solverIdToNumberOfConflicts = new HashMap<>();
+			//solverIdToNumberOfConflicts = buildSolverIdToNumberOfConflictsMap(jobId);
+
+			Hashtable<String, SolverStats> SolverStats = new Hashtable<String, SolverStats>();
+			String key;
 			for (JobPair jp : pairs) {
-				
+
 				for (JoblineStage stage : jp.getStages()) {
-					
+
 					//we need to exclude noOp stages
 					if (stage.isNoOp()) {
 						continue;
 					}
 
 					//entries in the stats table determined by stage/configuration pairs
-					key=stage.getStageNumber()+":"+String.valueOf(stage.getConfiguration().getId());
-					
+					key = getStageConfigHashKey(stage, stage.getConfiguration());
+					log.debug("Got solver stats key: " + key);
+					int configId = stage.getConfiguration().getId();
+					int stageNumber = stage.getStageNumber();
+					Integer conflicts = null;
 					if (!SolverStats.containsKey(key)) { // current stats entry does not yet exist
-						SolverStats newSolver=new SolverStats();
+						SolverStats newSolver = new SolverStats();
 						newSolver.setStageNumber(stage.getStageNumber());
 						newSolver.setSolver(stage.getSolver());
 						newSolver.setConfiguration(stage.getConfiguration());
+						// Compute the number of conflicts and save them in variable in case we need to use them again.
+						conflicts =  Solvers.getConflictsForConfigInJobWithStage(jobId, configId, stageNumber);
+						newSolver.setConflicts(conflicts);
 						SolverStats.put(key, newSolver);
 					}
-					
-					
+
+
 					//update stats info for entry that current job-pair belongs to
-					SolverStats curSolver=SolverStats.get(key);
-					addStageToSolverStats(curSolver,stage);
-					if (stage.getStageNumber()==jp.getPrimaryStageNumber()) {
+					SolverStats curSolver = SolverStats.get(key);
+					addStageToSolverStats(curSolver, stage);
+					if (stage.getStageNumber().equals(jp.getPrimaryStageNumber())) {
 						//if we get here, we need to add this stage to the primary stats as well
-						key=0+":"+String.valueOf(stage.getConfiguration().getId());
+						key = 0 + ":" + String.valueOf(stage.getConfiguration().getId());
 						if (!SolverStats.containsKey(key)) { // current stats entry does not yet exist
-							SolverStats newSolver=new SolverStats();
+							SolverStats newSolver = new SolverStats();
 							newSolver.setStageNumber(0);
 							newSolver.setSolver(stage.getSolver());
 							newSolver.setConfiguration(stage.getConfiguration());
+							if (conflicts == null) {
+								conflicts = Solvers.getConflictsForConfigInJobWithStage(jobId, configId, stageNumber);
+								newSolver.setConflicts(conflicts);
+							} else {
+								newSolver.setConflicts(conflicts);
+							}
 							SolverStats.put(key, newSolver);
 						}
-						
-						
+
+
 						//update stats info for entry that current job-pair belongs to
-						curSolver=SolverStats.get(key);
-						addStageToSolverStats(curSolver,stage);
+						curSolver = SolverStats.get(key);
+
 					}
 				}
-				}
-				
-			
-			List<SolverStats> returnValues=new LinkedList<SolverStats>();
+			}
+
+
+			List<SolverStats> returnValues = new LinkedList<SolverStats>();
 			for (SolverStats js : SolverStats.values()) {
 				returnValues.add(js);
 			}
+
+
+			stopWatch.stop();
+			logUtil.debug(methodName, "Time taken to process job pairs to stats for job with "+Jobs.getPairCount(jobId)+" pairs: "+stopWatch.toString());
 			return returnValues;
 		} catch (Exception e) {
-			log.error(e.getMessage(),e);
+			log.error(e.getMessage(), e);
 		}
 		return null;
-		
+
 	}
+
+	/*
+	 * Gets all of the benchmarks in a job for which a job pair gave a result that conflicted with another job pair on
+	 * the same benchmark.
+	 * @param jobId The id of the job to get conflicting benchmarks for.
+	 * @return A set of all the benchmark ids that are conflicting.
+	 * @throws SQLException if there is a problem with the database.
+	 *
+	public static Set<Integer> getConflictingBenchmarksForJob(int jobId) throws SQLException {
+		final String methodName = "getConflictingBenchmarksForJob";
+		Set<Integer> conflictingBenchmarkIds = new HashSet<>();
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start();
+
+		log.debug("Calling Benchmarks.getByJob("+jobId+")");
+		List<Benchmark> benchmarksInJob = Benchmarks.getByJob(jobId);
+		log.debug("Benchmarks found in job while searching for conflicting benchmarks: " + benchmarksInJob.size());
+
+		benchmarkLoop:
+		for (Benchmark benchmarkInJob : benchmarksInJob) {
+			// Loop through all the job pairs containing the benchmark. If two gave different results then the benchmark
+			// is conflicting.
+			String firstResultFound = null;
+			List<JobPair> jobPairsInJobContainingBenchmark = JobPairs.getPairsInJobContainingBenchmark(jobId, benchmarkInJob.getId());
+			for (JobPair jobPair : jobPairsInJobContainingBenchmark) {
+				for (JoblineStage stage: jobPair.getStages()) {
+					if (stageCantCountTowardsConflicts(stage)) {
+						continue;
+					} 
+					
+					if (firstResultFound == null) {
+						firstResultFound = stage.getStarexecResult();
+					} else if (!firstResultFound.equals(stage.getStarexecResult())) {
+						// Since there were two different results, add the benchmark to conflicting benchmarks and
+						// continue to the next benchmark.
+						conflictingBenchmarkIds.add(benchmarkInJob.getId());
+						continue benchmarkLoop;
+					}
+				}
+			}
+		}
+		stopWatch.stop();
+		log.debug("Time taken to get conflicting benchmarks for job with "+Jobs.getPairCount(jobId)+" pairs: "+stopWatch.toString());
+		return conflictingBenchmarkIds;
+	}*/
+
+//	private static Boolean stageCantCountTowardsConflicts(JoblineStage stage) {
+//		return stage.isNoOp() || stage.getStarexecResult().equals(R.STAREXEC_UNKNOWN);
+//	}
+
+	private static String getStageConfigHashKey(JoblineStage stage, Configuration config) {
+	    return stage.getStageNumber() + ":" + String.valueOf(stage.getConfiguration().getId());
+
+    }
 
 	
 	/**
 	 * Given the result set from a SQL query containing job pair info, produces a list of job pairs
 	 * for which all the necessary fields for solver stat production have been created
 	 * @param results A resultset containing SQL data
-	 * @param jobId The ID of the job in question
-	 * @param con The connection to request pair attributes on
 	 * @return A list of job pairs
 	 * @throws Exception
 	 * @author Eric Burns
@@ -4662,7 +4720,6 @@ public class Jobs {
 	 * Given a SolverStats object, saves it in the database so that it does not need to be generated again
 	 * This function is currently called only when the job is complete, as we do not want to cache stats
 	 * for incomplete jobs. 
-	 * @param jobSpaceId The ID of the job space that this stats object was accumulated for
 	 * @param stats The stats object to save
 	 * @param con The open connection to make the update on
 	 * @return True if the save was successful, false otherwise
@@ -4672,18 +4729,19 @@ public class Jobs {
 	private static boolean saveStats(SolverStats stats, Connection con) {
 		CallableStatement procedure=null;
 		try {
-			procedure=con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?,?,?,?,?,?)}");
+			procedure=con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?,?,?,?,?,?,?)}");
 			procedure.setInt(1,stats.getJobSpaceId());
 			procedure.setInt(2,stats.getConfiguration().getId());
 			procedure.setInt(3,stats.getCompleteJobPairs());
 			procedure.setInt(4,stats.getCorrectJobPairs());
 			procedure.setInt(5,stats.getIncorrectJobPairs());
 			procedure.setInt(6,stats.getFailedJobPairs());
-			procedure.setDouble(7,stats.getWallTime());
-			procedure.setDouble(8,stats.getCpuTime());
-			procedure.setInt(9,stats.getResourceOutJobPairs());
-			procedure.setInt(10, stats.getIncompleteJobPairs());
-			procedure.setInt(11,stats.getStageNumber());
+			procedure.setInt(7, stats.getConflicts());
+			procedure.setDouble(8,stats.getWallTime());
+			procedure.setDouble(9,stats.getCpuTime());
+			procedure.setInt(10,stats.getResourceOutJobPairs());
+			procedure.setInt(11, stats.getIncompleteJobPairs());
+			procedure.setInt(12,stats.getStageNumber());
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
