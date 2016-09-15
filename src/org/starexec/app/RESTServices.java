@@ -4931,15 +4931,18 @@ public class RESTServices {
     @Produces("application/json")
     public String getJobAttributesTableHeader(@PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {
         int userId = SessionUtil.getUserId(request);
+		ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
+
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+
         JsonArray tableHeaders = new JsonArray();
         List<String> headers = Jobs.getJobAttributesTableHeader(jobSpaceId);
         for(String item : headers) {
             tableHeaders.add(new JsonPrimitive(item));
         }
-        ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
-        if (!status.isSuccess()) {
-            return gson.toJson(status);
-        }
+
         return headers == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(headers);
     }
 }
