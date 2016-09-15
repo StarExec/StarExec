@@ -4939,10 +4939,14 @@ public class RESTServices {
 
         JsonArray tableHeaders = new JsonArray();
         List<String> headers = Jobs.getJobAttributesTableHeader(jobSpaceId);
+		if (headers == null ) {
+			return gson.toJson(ERROR_DATABASE);
+		}
+		
         for(String item : headers) {
             tableHeaders.add(new JsonPrimitive(item));
         }
 
-        return headers == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(headers);
+        return gson.toJson(headers);
     }
 }
