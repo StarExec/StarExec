@@ -4930,6 +4930,8 @@ public class RESTServices {
     @Path("/jobs/attributes/header/{jobSpaceId}")
     @Produces("application/json")
     public String getJobAttributesTableHeader(@PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {
+		final String methodName = "getJobAttributesTableHeader";
+
         int userId = SessionUtil.getUserId(request);
 		ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
 
@@ -4939,10 +4941,14 @@ public class RESTServices {
 
         JsonArray tableHeaders = new JsonArray();
         List<String> headers = Jobs.getJobAttributesTableHeader(jobSpaceId);
+		logUtil.debug(methodName, "Table headers: ");
+		for (String header : headers) {
+			logUtil.debug(methodName, "\t"+header);
+		}
 		if (headers == null ) {
 			return gson.toJson(ERROR_DATABASE);
 		}
-		
+
         for(String item : headers) {
             tableHeaders.add(new JsonPrimitive(item));
         }
