@@ -2171,7 +2171,6 @@ public class RESTHelpers {
 	}
 
     public static JsonObject convertJobAttributesToJsonObject(int jobSpaceId) {
-        JsonArray dataTablePageEntries = new JsonArray();
         List<HashMap<String, String>> jobAttributes = Jobs.getJobAttributesTable(jobSpaceId);
         HashMap<String,List<String>> valueCounts = new HashMap<>();
         for(HashMap<String,String> tableEntry : jobAttributes) {
@@ -2186,7 +2185,9 @@ public class RESTHelpers {
                 valueCounts.put(key,counts);
             }
         }
-        for(HashMap<String,String> tableEntry : jobAttributes) {
+
+		JsonArray dataTablePageEntries = new JsonArray();
+		for(HashMap<String,String> tableEntry : jobAttributes) {
             JsonArray entry = new JsonArray();
             String solverName = tableEntry.get("solver_name");
             String configName = tableEntry.get("config_name");
