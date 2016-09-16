@@ -35,8 +35,16 @@ public class LogUtil {
 		log.warn(prefix(method)+message);
 	}
 
+	public void warnt(String method, String message, Throwable t) {
+		log.warn(prefix(method)+message, t);
+	}
+
 	public void error(String method, String message) {
 		log.error(prefix(method)+message);
+	}
+
+	public void error(String method, String message, Throwable t) {
+		log.error(prefix(method)+message, t);
 	}
 
 	public void fatal(String method, String message) {
