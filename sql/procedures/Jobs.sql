@@ -1012,4 +1012,14 @@ CREATE PROCEDURE GetJobAttributesTable(IN _jobSpaceId INT)
         GROUP BY solver_id, config_id, attr_value;
     END //
 
+DROP PROCEDURE IF EXISTS GetSumOfJobAttributes;
+CREATE PROCEDURE GetSumOfJobAttributes(IN _jobSpaceId INT)
+    BEGIN
+        SELECT attr_value, COUNT(attr_value) attr_count
+        FROM job_attributes ja JOIN job_pairs jp ON ja.pair_id=jp.id
+            JOIN jobpair_stage_data jsd ON jp.id=jsd.jobpair_id
+        WHERE ja.attr_key='starexec-result' AND jp.job_space_id=_jobSpaceId
+        GROUP BY attr_value;
+    END //
+
 DELIMITER ; -- this should always be at the end of the file
