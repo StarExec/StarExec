@@ -2228,8 +2228,12 @@ public class RESTHelpers {
 			String configName = solverConfig.configName;
 
 			// First two columns in the data table will be the solver name and config name.
-			String solverNameLink = "<a href='"+Util.docRoot("secure/details/solver.jsp?id="+solverId)+"'>"+solverName+"</a>";
-			String configNameLink = "<a href='"+Util.docRoot("secure/details/configuration.jsp?id="+configId)+"'>"+configName+"</a>";
+			String solverNameLink = "<a href='"+Util.docRoot("secure/details/solver.jsp?id="+solverId)+"'>"
+					+solverName+"<img class='extLink' src='"+Util.docRoot("images/external.png")+"'/>"
+					+"</a>";
+			String configNameLink = "<a href='"+Util.docRoot("secure/details/configuration.jsp?id="+configId)+"'>"
+					+configName+"<img class='extLink' src='"+Util.docRoot("images/external.png")+"'/>"
+					+"</a>";
 			entry.add(new JsonPrimitive(solverNameLink));
 			entry.add(new JsonPrimitive(configNameLink));
 
