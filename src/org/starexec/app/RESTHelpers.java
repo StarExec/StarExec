@@ -2222,12 +2222,16 @@ public class RESTHelpers {
 		// Convert all the solver-config attr-value count data to Json data.
 		for(SolverConfig solverConfig : solverConfigToAttrCount.keySet()) {
             JsonArray entry = new JsonArray();
+			int solverId = solverConfig.solverId;
+			int configId = solverConfig.configId;
 			String solverName = solverConfig.solverName;
 			String configName = solverConfig.configName;
 
 			// First two columns in the data table will be the solver name and config name.
-			entry.add(new JsonPrimitive(solverName));
-			entry.add(new JsonPrimitive(configName));
+			String solverNameLink = "<a href='"+Util.docRoot("secure/details/solver.jsp?id="+solverId)+"'>"+solverName+"</a>";
+			String configNameLink = "<a href='"+Util.docRoot("secure/details/configuration.jsp?id="+configId)+"'>"+configName+"</a>";
+			entry.add(new JsonPrimitive(solverNameLink));
+			entry.add(new JsonPrimitive(configNameLink));
 
 			// Add all the attr_value counts under the appropriate headers. To do this we sort the list of headers.
 			// The headers will need to be sorted in the same way so the columns line up.
