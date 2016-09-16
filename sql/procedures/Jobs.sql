@@ -1005,7 +1005,7 @@ CREATE PROCEDURE GetJobAttributesTableHeaders(IN _jobSpaceId INT)
 DROP PROCEDURE IF EXISTS GetJobAttributesTable;
 CREATE PROCEDURE GetJobAttributesTable(IN _jobSpaceId INT)
     BEGIN
-        SELECT solver_id, solver_name, config_id, config_name, COUNT(attr_value) attr_count
+        SELECT solver_id, solver_name, config_id, config_name, attr_value, COUNT(attr_value) attr_count
         FROM job_attributes ja JOIN job_pairs jp ON ja.pair_id=jp.id
             JOIN jobpair_stage_data jsd ON jp.id = jsd.jobpair_id
         WHERE ja.attr_key = 'starexec-result' AND jp.job_space_id=_jobSpaceId
