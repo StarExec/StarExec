@@ -56,4 +56,15 @@
             </thead>
         </table>
     </fieldset>
+    <fieldset id="attributeTotalsTableField">
+        <legend>totals</legend>
+        <table id="attributeTotalsTable">
+            <thead>
+                <tr>
+                    <th>attribute value</th>
+                    <th>total</th>
+                </tr>
+            </thead>
+        </table>
+    </fieldset>
 </star:template>

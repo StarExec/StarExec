@@ -27,6 +27,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
@@ -4951,4 +4952,33 @@ public class RESTServices {
 
         return gson.toJson(headers);
     }
+
+	@POST
+	@Path("/jobs/attributes/totals/{jobSpaceId}")
+	@Produces("application/json")
+	public String getJobAttributesTotals(@PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {
+		final String methodName = "getJobAttributesTotals";
+		int userId = SessionUtil.getUserId(request);
+		ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
+
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+
+		try {
+			JsonArray table = new JsonArray();
+			List<Pair<String, Integer>> attrTotals = Jobs.getJobAttributeTotals(jobSpaceId);
+			for (Pair<String, Integer> attrTotal : attrTotals) {
+				JsonArray row = new JsonArray();
+				row.add(new JsonPrimitive(attrTotal.getLeft()));
+				row.add(new JsonPrimitive(attrTotal.getRight()));
+				table.add(row);
+			}
+			return gson.toJson(table);
+		} catch (SQLException e) {
+			logUtil.error(methodName, "Caught SQLException while getting attr totals for jobspace id="+jobSpaceId, e);
+			return gson.toJson(ERROR_DATABASE);
+		}
+	}
+
 }

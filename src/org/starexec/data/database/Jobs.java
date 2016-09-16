@@ -5316,7 +5316,7 @@ public class Jobs {
 	 * @return list of attribute count totals for the jobspace sorted by attr_value.
 	 * @throws SQLException
 	 */
-    public static List<Pair<String, Integer>> getAttributeTotalsForJobspace(int jobspaceId) throws SQLException {
+    public static List<Pair<String, Integer>> getJobAttributeTotals(int jobspaceId) throws SQLException {
 		return Common.query("{CALL GetSumOfJobAttributes(?)}", procedure -> {
 			procedure.setInt(1, jobspaceId);
 		}, results -> {

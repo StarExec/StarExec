@@ -120,6 +120,20 @@ function killAjaxRequests() {
     }
     openAjaxRequests = []
 }
+function totalsPaginationHandler(sSource, aoData, fnCallback) {
+    $.post(
+        sSource + "jobs/attributes/totals/"+jobSpaceId,
+        aoData,
+        function(nextDataTablePage){
+            var s=parseReturnCode(nextDataTablePage);
+            if (s) {
+                fnCallback(nextDataTablePage);
+            }
+        },
+        "json"
+    )
+}
+
 
 function initDataTables() {
     attributeDataTable = $('#attributeTable').dataTable( {
@@ -132,14 +146,26 @@ function initDataTables() {
         "fnServerData"      : fnPaginationHandler
     });
 
+    $('#attributeTotalsTable').dataTable({
+        "sDom"          :getDataTablesDom(),
+        "iDisplayStart" : 0,
+        "iDisplayLength" : defaultPageSize,
+        "bServerSide"       : false,
+        "sAjaxSource"       : starexecRoot+"services/",
+        "sServerMethod"     : 'POST',
+        "fnServerData"      : totalsPaginationHandler
+    });
+
 }
+
+
 
 function fnPaginationHandler(sSource, aoData, fnCallback) {
     $.post(
             sSource + "jobs/attributes/"+jobSpaceId,
             aoData,
             function(nextDataTablePage){
-                s=parseReturnCode(nextDataTablePage);
+                var s=parseReturnCode(nextDataTablePage);
                 if (s) {
                     fnCallback(nextDataTablePage);
                 }
