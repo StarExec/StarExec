@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.StopWatch;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.starexec.backend.Backend;
 import org.starexec.constants.PaginationQueries;
@@ -5307,5 +5309,29 @@ public class Jobs {
         }
         return null;
     }
+
+	/**
+	 *
+	 * @param jobspaceId the jobspace to get attribute count totals in.
+	 * @return list of attribute count totals for the jobspace sorted by attr_value.
+	 * @throws SQLException
+	 */
+    public static List<Pair<String, Integer>> getAttributeTotalsForJobspace(int jobspaceId) throws SQLException {
+		return Common.query("{CALL GetSumOfJobAttributes(?)}", procedure -> {
+			procedure.setInt(1, jobspaceId);
+		}, results -> {
+			List<Pair<String, Integer>> valueCounts = new ArrayList<>();
+			while (results.next()) {
+				valueCounts.add( new ImmutablePair<String, Integer>(
+						results.getString("attr_value"),
+						results.getInt("attr_count")));
+			}
+			// Sort the value counts based on attr_value name.
+			return valueCounts.stream()
+					.sorted((a,b) -> a.getLeft().compareTo(b.getLeft()))
+					.collect(Collectors.toList());
+
+		});
+	}
 
 }
