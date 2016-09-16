@@ -14,6 +14,8 @@ import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.*;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.data.to.tuples.AttributesTableData;
+import org.starexec.data.to.tuples.SolverConfig;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.test.integration.TestResult;
 import org.starexec.test.integration.TestSequence;
@@ -26,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Holds all helper methods and classes for our restful web services
@@ -2170,11 +2173,40 @@ public class RESTHelpers {
 		return convertCommunityRequestsToJsonObject(requests, query, currentUserId);
 	}
 
+	private static Map<String, Integer> initializeAttrCounts(List<String> headers) {
+		Map<String, Integer> attrCounts = new HashMap<>();
+		for (String header : headers) {
+			attrCounts.put(header, 0);
+		}
+		return attrCounts;
+	}
+
     public static JsonObject convertJobAttributesToJsonObject(int jobSpaceId) {
-        List<HashMap<String, String>> jobAttributes = Jobs.getJobAttributesTable(jobSpaceId);
-        HashMap<String,List<String>> valueCounts = new HashMap<>();
-        for(HashMap<String,String> tableEntry : jobAttributes) {
-            String key = tableEntry.get("solver_name") + tableEntry.get("config_name");
+        List<AttributesTableData> jobAttributes = Jobs.getJobAttributesTable(jobSpaceId);
+		List<String> headers = Jobs.getJobAttributesTableHeader(jobSpaceId);
+
+		Map<SolverConfig, Map<String, Integer>> solverConfigToAttrCount = new HashMap<>();
+		for(AttributesTableData tableEntry : jobAttributes) {
+			// Initialize a solverConfig to be used as a key in our map.
+			SolverConfig solverConfig = new SolverConfig(tableEntry.solverId, tableEntry.configId);
+			// Add this optional data so we can populate the table with it later.
+			solverConfig.solverName = tableEntry.solverName;
+			solverConfig.configName = tableEntry.configName;
+
+			// Initialize new entries in the map with a 0 count for each attribute.
+			if (!solverConfigToAttrCount.containsKey(solverConfig)) {
+				Map<String, Integer> zeroAttrCounts = initializeAttrCounts(headers);
+				solverConfigToAttrCount.put(solverConfig, zeroAttrCounts);
+			}
+
+			// Populate the map with the count in the table entry.
+			solverConfigToAttrCount.get(solverConfig).put(tableEntry.attrValue, tableEntry.attrCount);
+		}
+
+			/*
+
+			for(AttributesTableData tableEntry : jobAttributes) {
+            String key = String.valueOf(tableEntry.solverId)+":"+String.valueOf(tableEntry.configId);
             if(valueCounts.containsKey(key)) {
                 List<String> counts = valueCounts.get(key);
                 counts.add(tableEntry.get("attr_count"));
@@ -2184,22 +2216,27 @@ public class RESTHelpers {
                 counts.add(tableEntry.get("attr_count"));
                 valueCounts.put(key,counts);
             }
-        }
+            */
 
 		JsonArray dataTablePageEntries = new JsonArray();
-		for(HashMap<String,String> tableEntry : jobAttributes) {
+		// Convert all the solver-config attr-value count data to Json data.
+		for(SolverConfig solverConfig : solverConfigToAttrCount.keySet()) {
             JsonArray entry = new JsonArray();
-            String solverName = tableEntry.get("solver_name");
-            String configName = tableEntry.get("config_name");
-            if(valueCounts.containsKey(solverName+configName)) {
-                entry.add(new JsonPrimitive(solverName));
-                entry.add(new JsonPrimitive(configName));
-                for(String count : valueCounts.get(solverName+configName)){
-                    entry.add(new JsonPrimitive(count));
-                }
-                valueCounts.remove(solverName+configName);
-                dataTablePageEntries.add(entry);
-            }
+			String solverName = solverConfig.solverName;
+			String configName = solverConfig.configName;
+
+			// First two columns in the data table will be the solver name and config name.
+			entry.add(new JsonPrimitive(solverName));
+			entry.add(new JsonPrimitive(configName));
+
+			// Add all the attr_value counts under the appropriate headers. To do this we sort the list of headers.
+			// The headers will need to be sorted in the same way so the columns line up.
+			Map<String, Integer> valueCounts = solverConfigToAttrCount.get(solverConfig);
+			List<String> attrValues = new ArrayList<>(valueCounts.keySet()).stream().sorted().collect(Collectors.toList());
+			for (String attrValue : attrValues) {
+				entry.add(new JsonPrimitive(valueCounts.get(attrValue)));
+			}
+			dataTablePageEntries.add(entry);
         }
         JsonObject jo = new JsonObject();
         jo.add("aaData", dataTablePageEntries);

@@ -18,6 +18,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.StopWatch;
@@ -37,6 +38,7 @@ import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.SolverPipeline;
 import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
+import org.starexec.data.to.tuples.AttributesTableData;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.util.DataTablesQuery;
 import org.starexec.util.LogUtil;
@@ -5264,7 +5266,8 @@ public class Jobs {
             while (results.next()) {
                 headers.add(results.getString("attr_value"));
             }
-            return headers;
+            // Sort the list of headers before returning it.
+            return headers.stream().sorted().collect(Collectors.toList());
         } catch (Exception e) {
             log.error(e.getMessage(),e);
         }finally {
@@ -5275,23 +5278,24 @@ public class Jobs {
         return null;
     }
 
-    public static List<HashMap<String, String>> getJobAttributesTable(int jobSpaceId) {
+    public static List<AttributesTableData> getJobAttributesTable(int jobSpaceId) {
         Connection con=null;
         CallableStatement procedure=null;
         ResultSet results=null;
-        List<HashMap<String, String>> tableEntries=new ArrayList<HashMap<String, String>>();
+        List<AttributesTableData> tableEntries=new ArrayList<>();
         try {
             con=Common.getConnection();
             procedure=con.prepareCall("{CALL GetJobAttributesTable(?)}");
             procedure.setInt(1, jobSpaceId);
             results= procedure.executeQuery();
             while (results.next()) {
-                HashMap<String,String> tableEntry = new HashMap<String, String>();
-                tableEntry.put("solver_name", results.getString("solver_name"));
-                tableEntry.put("config_name", results.getString("config_name"));
-                tableEntry.put("attr_count", results.getString("attr_count"));
-                //tableEntry.put("attr_value", results.getString("attr_value"));
-                tableEntries.add(tableEntry);
+                Integer solverId = results.getInt("solver_id");
+				String solverName = results.getString("solver_name");
+                Integer configId = results.getInt("config_id");
+				String configName = results.getString("config_name");
+                Integer attrCount = results.getInt("attr_count");
+                String attrValue = results.getString("attr_value");
+				tableEntries.add(new AttributesTableData(solverId, solverName, configId, configName, attrValue, attrCount));
             }
             return tableEntries;
         } catch (Exception e) {

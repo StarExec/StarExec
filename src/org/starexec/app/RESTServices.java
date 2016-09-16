@@ -4941,10 +4941,6 @@ public class RESTServices {
 
         JsonArray tableHeaders = new JsonArray();
         List<String> headers = Jobs.getJobAttributesTableHeader(jobSpaceId);
-		logUtil.debug(methodName, "Table headers: ");
-		for (String header : headers) {
-			logUtil.debug(methodName, "\t"+header);
-		}
 		if (headers == null ) {
 			return gson.toJson(ERROR_DATABASE);
 		}

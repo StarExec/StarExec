@@ -9,9 +9,9 @@ import java.util.Optional;
 public class SolverConfig {
 
     public final Integer solverId;
-    public Optional<String> solverName = Optional.empty();
+    public String solverName;
     public final Integer configId;
-    public Optional<String> configName = Optional.empty();
+    public String configName;
 
     public SolverConfig(Integer solverId, Integer configId) {
         this.solverId = solverId;
