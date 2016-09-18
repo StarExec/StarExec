@@ -48,8 +48,10 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.log4j.Logger;
 
+import org.starexec.app.RESTHelpers;
 import org.starexec.constants.R;
 import org.starexec.data.database.Jobs;
+import org.starexec.data.to.enums.Primitive;
 import org.starexec.test.TestUtil;
 
 /**
@@ -60,6 +62,7 @@ import org.starexec.test.TestUtil;
  */
 public class Util {	
     private static final Logger log = Logger.getLogger(Util.class);
+    private static final LogUtil logUtil = new LogUtil(log);
 
     protected static final ExecutorService threadPool = Executors.newCachedThreadPool();
     
@@ -943,6 +946,60 @@ public class Util {
 		}
 		return returnList;
     }
+
+    public static String getSolverDetailsLink(int solverId, String linkText) {
+        return getPrimitiveDetailsLink(Primitive.SOLVER, solverId, linkText);
+    }
+    public static String getBenchDetailsLink(int benchId, String linkText) {
+        return getPrimitiveDetailsLink(Primitive.BENCHMARK, benchId, linkText);
+    }
+    public static String getUserDetailsLink(int userId, String linkText) {
+        return getPrimitiveDetailsLink(Primitive.USER, userId, linkText);
+    }
+    public static String getConfigDetailsLink(int configId, String linkText) {
+        return getPrimitiveDetailsLink(Primitive.CONFIGURATION, configId, linkText);
+    }
+    public static String getJobDetailsLink(int jobId, String linkText) {
+        return getPrimitiveDetailsLink(Primitive.JOB, jobId, linkText);
+    }
+
+    public static String getPairDetailsLink(int pairId, String linkText) {
+        return getPrimitiveDetailsLink(Primitive.JOB_PAIR, pairId, linkText);
+    }
+
+    private static String getPrimitiveDetailsLink(Primitive type, int id, String linkText) {
+        final String methodName = "getPrimitiveDetailsLink";
+
+        String primitiveNameInLink = null;
+        switch (type) {
+            case USER:
+                primitiveNameInLink = "user";
+                break;
+            case BENCHMARK:
+                primitiveNameInLink = "benchmark";
+                break;
+            case SOLVER:
+                primitiveNameInLink = "solver";
+                break;
+            case CONFIGURATION:
+                primitiveNameInLink = "configuration";
+                break;
+            case JOB:
+                primitiveNameInLink = "job";
+                break;
+            case JOB_PAIR:
+                primitiveNameInLink = "pair";
+                break;
+            default:
+                logUtil.error(methodName, "Threw and IllegalArgumentException because the input type does not have a details page.");
+                throw new IllegalArgumentException("Util.getPrimitiveDetailsLink does not support the given enum type.");
+
+        }
+
+        return ("<a href='"+Util.docRoot("secure/details/"+primitiveNameInLink+".jsp?id="+id)+"'>"
+                +linkText+"<img class='extLink' src='"+Util.docRoot("images/external.png")+"'/>"
+                +"</a>");
+	}
 
 	/**
 	 * Gets a String representation of a Throwable object's
