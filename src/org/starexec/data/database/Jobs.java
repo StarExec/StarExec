@@ -5274,7 +5274,9 @@ public class Jobs {
 			// Add a column for the total time taken for each type of result.
 			for (String header : sortedHeaders) {
 				sortedHeadersWithTime.add(header);
-				sortedHeadersWithTime.add(header + " time");
+				if (!header.equals(R.STAREXEC_UNKNOWN)) {
+					sortedHeadersWithTime.add(header + " time");
+				}
 			}
 			return sortedHeadersWithTime;
         } catch (Exception e) {
