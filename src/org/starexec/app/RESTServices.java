@@ -4974,7 +4974,9 @@ public class RESTServices {
 				row.add(new JsonPrimitive(attrTotal.getRight()));
 				table.add(row);
 			}
-			return gson.toJson(table);
+			JsonObject dataTableWrapper = new JsonObject();
+			dataTableWrapper.add("aaData", table);
+			return gson.toJson(dataTableWrapper);
 		} catch (SQLException e) {
 			logUtil.error(methodName, "Caught SQLException while getting attr totals for jobspace id="+jobSpaceId, e);
 			return gson.toJson(ERROR_DATABASE);
