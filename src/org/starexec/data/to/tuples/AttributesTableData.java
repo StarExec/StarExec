@@ -13,14 +13,19 @@ public class AttributesTableData {
     public final String configName;
     public final String attrValue;
     public final Integer attrCount;
+    public final Double wallclockSum;
+    public final Double cpuSum;
 
-    public AttributesTableData(Integer solverId, String solverName, Integer configId, String configName, String attrValue, Integer attrCount) {
+    public AttributesTableData(Integer solverId, String solverName, Integer configId, String configName,
+                               String attrValue, Integer attrCount, Double wallclockSum, Double cpuSum) {
         this.solverId = solverId;
         this.solverName = solverName;
         this.configId = configId;
         this.configName = configName;
         this.attrValue = attrValue;
         this.attrCount = attrCount;
+        this.wallclockSum = wallclockSum;
+        this.cpuSum = cpuSum;
     }
 
     // Getters are necessary if we want to use this tuple in JSP.

@@ -1,5 +1,7 @@
 package org.starexec.app;
 
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -2168,10 +2170,10 @@ public class RESTHelpers {
 		return convertCommunityRequestsToJsonObject(requests, query, currentUserId);
 	}
 
-	private static Map<String, Integer> initializeAttrCounts(List<String> headers) {
-		Map<String, Integer> attrCounts = new HashMap<>();
+	private static Map<String, Triple<Integer, Double, Double>> initializeAttrCounts(List<String> headers) {
+		Map<String, Triple<Integer, Double, Double>> attrCounts = new HashMap<>();
 		for (String header : headers) {
-			attrCounts.put(header, 0);
+			attrCounts.put(header, new ImmutableTriple<Integer, Double, Double>(0, 0.0, 0.0));
 		}
 		return attrCounts;
 	}
@@ -2180,7 +2182,7 @@ public class RESTHelpers {
         List<AttributesTableData> jobAttributes = Jobs.getJobAttributesTable(jobSpaceId);
 		List<String> headers = Jobs.getJobAttributesTableHeader(jobSpaceId);
 
-		Map<SolverConfig, Map<String, Integer>> solverConfigToAttrCount = new HashMap<>();
+		Map<SolverConfig, Map<String, Triple<Integer, Double, Double>>> solverConfigToAttrCount = new HashMap<>();
 		for(AttributesTableData tableEntry : jobAttributes) {
 			// Initialize a solverConfig to be used as a key in our map.
 			SolverConfig solverConfig = new SolverConfig(tableEntry.solverId, tableEntry.configId);
@@ -2190,12 +2192,13 @@ public class RESTHelpers {
 
 			// Initialize new entries in the map with a 0 count for each attribute.
 			if (!solverConfigToAttrCount.containsKey(solverConfig)) {
-				Map<String, Integer> zeroAttrCounts = initializeAttrCounts(headers);
+				Map<String, Triple<Integer, Double, Double>> zeroAttrCounts = initializeAttrCounts(headers);
 				solverConfigToAttrCount.put(solverConfig, zeroAttrCounts);
 			}
 
-			// Populate the map with the count in the table entry.
-			solverConfigToAttrCount.get(solverConfig).put(tableEntry.attrValue, tableEntry.attrCount);
+			// Populate the map with the count and times in the table entry.
+			solverConfigToAttrCount.get(solverConfig).put(tableEntry.attrValue,
+					new ImmutableTriple<>(tableEntry.attrCount, tableEntry.wallclockSum, tableEntry.cpuSum));
 		}
 
 		JsonArray dataTablePageEntries = new JsonArray();
@@ -2215,10 +2218,16 @@ public class RESTHelpers {
 
 			// Add all the attr_value counts under the appropriate headers. To do this we sort the list of headers.
 			// The headers will need to be sorted in the same way so the columns line up.
-			Map<String, Integer> valueCounts = solverConfigToAttrCount.get(solverConfig);
+			Map<String, Triple<Integer, Double, Double>> valueCounts = solverConfigToAttrCount.get(solverConfig);
 			List<String> attrValues = new ArrayList<>(valueCounts.keySet()).stream().sorted().collect(Collectors.toList());
 			for (String attrValue : attrValues) {
-				entry.add(new JsonPrimitive(valueCounts.get(attrValue)));
+				Triple<Integer,Double,Double> countWallclockCpu = valueCounts.get(attrValue);
+				entry.add(new JsonPrimitive(countWallclockCpu.getLeft()));
+
+				// Add the wallclock sum and cpu sum to one single column. On the page one of these two values will be hidden.
+				double wallclockSum = countWallclockCpu.getMiddle();
+				double cpuSum = countWallclockCpu.getRight();
+				entry.add(new JsonPrimitive(getWallclockCpuAttributeTableHtml(wallclockSum, cpuSum)));
 			}
 			dataTablePageEntries.add(entry);
         }
@@ -2226,4 +2235,8 @@ public class RESTHelpers {
         jo.add("aaData", dataTablePageEntries);
         return (jo);
     }
+
+    private static String getWallclockCpuAttributeTableHtml(Double wallclockSum, Double cpuSum) {
+		return "<span class='wallclockSum'>"+wallclockSum+"</span><span class='cpuSum'>"+cpuSum+"</span>";
+	}
 }

@@ -5304,7 +5304,10 @@ public class Jobs {
 				String configName = results.getString("config_name");
                 Integer attrCount = results.getInt("attr_count");
                 String attrValue = results.getString("attr_value");
-				tableEntries.add(new AttributesTableData(solverId, solverName, configId, configName, attrValue, attrCount));
+				Double wallclockSum = results.getDouble("wallclock_sum");
+				Double cpuSum = results.getDouble("cpu_sum");
+				tableEntries.add(new AttributesTableData(solverId, solverName, configId, configName, attrValue, attrCount,
+						wallclockSum, cpuSum));
             }
             return tableEntries;
         } catch (Exception e) {
