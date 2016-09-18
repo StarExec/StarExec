@@ -5269,7 +5269,14 @@ public class Jobs {
                 headers.add(results.getString("attr_value"));
             }
             // Sort the list of headers before returning it.
-            return headers.stream().sorted().collect(Collectors.toList());
+            List<String> sortedHeaders = headers.stream().sorted().collect(Collectors.toList());
+			List<String> sortedHeadersWithTime = new ArrayList<>();
+			// Add a column for the total time taken for each type of result.
+			for (String header : sortedHeaders) {
+				sortedHeadersWithTime.add(header);
+				sortedHeadersWithTime.add(header + " time");
+			}
+			return sortedHeadersWithTime;
         } catch (Exception e) {
             log.error(e.getMessage(),e);
         }finally {

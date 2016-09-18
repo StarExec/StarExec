@@ -2198,21 +2198,6 @@ public class RESTHelpers {
 			solverConfigToAttrCount.get(solverConfig).put(tableEntry.attrValue, tableEntry.attrCount);
 		}
 
-			/*
-
-			for(AttributesTableData tableEntry : jobAttributes) {
-            String key = String.valueOf(tableEntry.solverId)+":"+String.valueOf(tableEntry.configId);
-            if(valueCounts.containsKey(key)) {
-                List<String> counts = valueCounts.get(key);
-                counts.add(tableEntry.get("attr_count"));
-                valueCounts.put(key, counts);
-            } else {
-                List<String> counts = new ArrayList<>();
-                counts.add(tableEntry.get("attr_count"));
-                valueCounts.put(key,counts);
-            }
-            */
-
 		JsonArray dataTablePageEntries = new JsonArray();
 		// Convert all the solver-config attr-value count data to Json data.
 		for(SolverConfig solverConfig : solverConfigToAttrCount.keySet()) {
