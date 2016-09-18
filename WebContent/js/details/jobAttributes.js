@@ -14,6 +14,7 @@ $(document).ready(function(){
     spaceExplorerJsonData = getSpaceExplorerJsonData();
     initSpaceExplorer();
     initDataTables();
+	setupChangeTimeButton();
 });
 
 function getSpaceExplorerJsonData() {
@@ -32,6 +33,36 @@ function getSpaceExplorerJsonData() {
     };
     return spaceExplorerJsonData;
 }
+function setupChangeTimeButton() {
+	$(".changeTime").button({
+		icons: {
+			primary: "ui-icon-refresh"
+		}
+	
+	});
+
+	var isWallclock = true;
+	$('.cpuSum').hide();
+
+
+	var toggleTime = function() {
+		if (isWallclock) {
+			$('.changeTime .ui-button-text').html('use wallclock time');
+			isWallclock = false;
+			$('.cpuSum').show();
+			$('.wallclockSum').hide();
+		} else {
+			isWallclock = true;
+			$('.changeTime .ui-button-text').html('use CPU time');
+			$('.wallclockSum').show();
+			$('.cpuSum').hide();
+		}
+	}
+
+
+	$(".changeTime").click(toggleTime);
+		
+}
 
 
 function initSpaceExplorer() {
@@ -39,6 +70,9 @@ function initSpaceExplorer() {
 
     $.jstree._themes = starexecRoot+"css/jstree/";
     var id;
+
+
+
 
     // Initialize the jstree plugin for the explorer list
     /*$("#exploreList").bind("loaded.jstree", function() {

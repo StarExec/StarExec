@@ -42,6 +42,7 @@
         <ul id="exploreList">
         </ul>
     </div>
+	<button class="changeTime">use CPU time</button>
     <fieldset id="attributesTableField">
         <legend>Attributes</legend>
         <table id="attributeTable">
