@@ -13,6 +13,7 @@ import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.*;
 import org.starexec.data.to.Queue;
+import org.starexec.data.to.enums.Primitive;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.tuples.AttributesTableData;
 import org.starexec.data.to.tuples.SolverConfig;
@@ -38,12 +39,6 @@ public class RESTHelpers {
 	private static final LogUtil logUtil = new LogUtil( log );
 	private static Gson gson = new Gson();
 
-	/** Job pairs and nodes aren't technically a primitive class according to how
-	 we've discussed primitives, but to save time and energy I've included
-	 them here as such*/
-	public enum Primitive {
-		JOB, USER, SOLVER, BENCHMARK, SPACE, JOB_PAIR, JOB_STATS, NODE, QUEUE
-	}
 
 	private static final String SEARCH_QUERY = "sSearch";
 	private static final String SORT_DIRECTION = "sSortDir_0";

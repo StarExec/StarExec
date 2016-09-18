@@ -62,6 +62,7 @@ import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.security.UploadSecurity;
 import org.starexec.data.security.UserSecurity;
 import org.starexec.data.to.*;
+import org.starexec.data.to.enums.Primitive;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.exceptions.StarExecException;
@@ -1377,10 +1378,10 @@ public class RESTServices {
 		}
 		
 		if (primType.startsWith("u")) {
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageAdmin(RESTHelpers.Primitive.USER, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageAdmin(Primitive.USER, request);
 		}
 		if (primType.startsWith("j")) {
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageAdmin(RESTHelpers.Primitive.JOB, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageAdmin(Primitive.JOB, request);
 		}
 
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
@@ -1603,17 +1604,17 @@ public class RESTServices {
 		
 		// Query for the next page of primitives and return them to the user
 		if(primType.startsWith("j")){
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.JOB, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(Primitive.JOB, spaceId, request);
 		} else if(primType.startsWith("u")){
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.USER, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(Primitive.USER, spaceId, request);
 		} else if(primType.startsWith("so")){
 			
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.SOLVER, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(Primitive.SOLVER, spaceId, request);
 		} else if(primType.startsWith("sp")){
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.SPACE, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(Primitive.SPACE, spaceId, request);
 		} else if(primType.startsWith("b")){
 			
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.BENCHMARK, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(Primitive.BENCHMARK, spaceId, request);
 		}
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -4093,7 +4094,7 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 		// Query for the next page of job pairs and return them to the user
-		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.JOB, usrId, request,false);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.JOB, usrId, request,false);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -4161,7 +4162,7 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 		// Query for the next page of solver pairs and return them to the user
-		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.SOLVER, usrId, request,false);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.SOLVER, usrId, request,false);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -4183,7 +4184,7 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}		// Query for the next page of solver pairs and return them to the user
-		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.BENCHMARK, usrId, request,false);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.BENCHMARK, usrId, request,false);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -4207,7 +4208,7 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 		
-		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.SOLVER, usrId, request,true);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.SOLVER, usrId, request,true);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -4229,7 +4230,7 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.BENCHMARK, usrId, request, true);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.BENCHMARK, usrId, request, true);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
