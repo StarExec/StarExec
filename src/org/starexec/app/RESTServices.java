@@ -4912,26 +4912,32 @@ public class RESTServices {
     @Path("/jobs/attributes/{jobSpaceId}")
     @Produces("application/json")
     public String getJobSpaceAttributesSummary(@PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {
+		final String methodName = "getJobSpaceAttributesSummary";
         int userId = SessionUtil.getUserId(request);
         JsonObject nextDataTablesPage = null;
         ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
         if (!status.isSuccess()) {
             return gson.toJson(status);
         }
-        nextDataTablesPage = RESTHelpers.convertJobAttributesToJsonObject(jobSpaceId);
-        return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+        try {
+			nextDataTablesPage = RESTHelpers.convertJobAttributesToJsonObject(jobSpaceId);
+		} catch (SQLException e) {
+			logUtil.error(methodName, "Caught database exception while attempting to get job attributes.", e);
+			return gson.toJson(ERROR_DATABASE);
+		}
+        return gson.toJson(nextDataTablesPage);
     }	
 
 	/**
 	 * Gets headers of the table of starexec-result attributes summary
-	 * @param jobSpaceId The ID of the primitive 
-	 * @param request 
+	 * @param jobSpaceId The ID of the primitive
+	 * @param request
 	 * @return json table headers
 	 */
     @POST
     @Path("/jobs/attributes/header/{jobSpaceId}")
     @Produces("application/json")
-    public String getJobAttributesTableHeader(@PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {
+    public String getJobAttributesTableHeader(@PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) throws SQLException {
 		final String methodName = "getJobAttributesTableHeader";
 
         int userId = SessionUtil.getUserId(request);

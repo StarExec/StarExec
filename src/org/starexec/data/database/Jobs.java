@@ -5255,38 +5255,31 @@ public class Jobs {
             return jobCopiesBackResultsIncrementally;
         }
 
-    public static List<String> getJobAttributesTableHeader(int jobSpaceId) {
-        Connection con=null;
-        CallableStatement procedure=null;
-        ResultSet results=null;
-        List<String> headers=new ArrayList<String>();
-        try {
-            con=Common.getConnection();
-            procedure=con.prepareCall("{CALL GetJobAttributesTableHeaders(?)}");
-            procedure.setInt(1, jobSpaceId);
-            results= procedure.executeQuery();
-            while (results.next()) {
-                headers.add(results.getString("attr_value"));
-            }
-            // Sort the list of headers before returning it.
-            List<String> sortedHeaders = headers.stream().sorted().collect(Collectors.toList());
-			List<String> sortedHeadersWithTime = new ArrayList<>();
-			// Add a column for the total time taken for each type of result.
-			for (String header : sortedHeaders) {
-				sortedHeadersWithTime.add(header);
-				if (!header.equals(R.STAREXEC_UNKNOWN)) {
-					sortedHeadersWithTime.add(header + " time");
-				}
+	public static List<String> getJobAttributeValues(int jobSpaceId) throws SQLException {
+		return Common.query("{CALL GetJobAttributesTableHeaders(?)}", procedure -> {
+			procedure.setInt(1, jobSpaceId);
+		}, results -> {
+			List<String> headers=new ArrayList<String>();
+			while (results.next()) {
+				headers.add(results.getString("attr_value"));
 			}
-			return sortedHeadersWithTime;
-        } catch (Exception e) {
-            log.error(e.getMessage(),e);
-        }finally {
-            Common.safeClose(con);
-            Common.safeClose(procedure);
-            Common.safeClose(results);
-        }
-        return null;
+			return headers;
+		});
+	}
+
+    public static List<String> getJobAttributesTableHeader(int jobSpaceId) throws SQLException {
+		List<String> headers = getJobAttributeValues(jobSpaceId);
+		// Sort the list of headers before returning it.
+		List<String> sortedHeaders = headers.stream().sorted().collect(Collectors.toList());
+		List<String> sortedHeadersWithTime = new ArrayList<>();
+		// Add a column for the total time taken for each type of result.
+		for (String header : sortedHeaders) {
+			sortedHeadersWithTime.add(header);
+			if (!header.equals(R.STAREXEC_UNKNOWN)) {
+				sortedHeadersWithTime.add(header + " time");
+			}
+		}
+		return sortedHeadersWithTime;
     }
 
     public static List<AttributesTableData> getJobAttributesTable(int jobSpaceId) {

@@ -29,6 +29,7 @@ import org.starexec.util.Util;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -2178,9 +2179,9 @@ public class RESTHelpers {
 		return attrCounts;
 	}
 
-    public static JsonObject convertJobAttributesToJsonObject(int jobSpaceId) {
+    public static JsonObject convertJobAttributesToJsonObject(int jobSpaceId) throws SQLException {
         List<AttributesTableData> jobAttributes = Jobs.getJobAttributesTable(jobSpaceId);
-		List<String> headers = Jobs.getJobAttributesTableHeader(jobSpaceId);
+		List<String> uniqueResultValues = Jobs.getJobAttributeValues(jobSpaceId);
 
 		Map<SolverConfig, Map<String, Triple<Integer, Double, Double>>> solverConfigToAttrCount = new HashMap<>();
 		for(AttributesTableData tableEntry : jobAttributes) {
@@ -2192,7 +2193,7 @@ public class RESTHelpers {
 
 			// Initialize new entries in the map with a 0 count for each attribute.
 			if (!solverConfigToAttrCount.containsKey(solverConfig)) {
-				Map<String, Triple<Integer, Double, Double>> zeroAttrCounts = initializeAttrCounts(headers);
+				Map<String, Triple<Integer, Double, Double>> zeroAttrCounts = initializeAttrCounts(uniqueResultValues);
 				solverConfigToAttrCount.put(solverConfig, zeroAttrCounts);
 			}
 
