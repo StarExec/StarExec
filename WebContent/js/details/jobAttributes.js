@@ -4,6 +4,7 @@ var jobId;
 var attributeDataTable;
 var openAjaxRequests = [];
 var jobSpaceId;
+var attributeTotalsTable;
 
 $(document).ready(function(){
     jobSpaceId=getParameterByName('id');
@@ -110,7 +111,7 @@ function initSpaceExplorer() {
             killAjaxRequests();
             // When a node is clicked, get its ID and display the info in the details pane
             id = data.rslt.obj.attr("id");
-            console.log(id);
+			console.log('Changing jobspace to '+id);
             jobSpaceId = id;
             name = data.rslt.obj.attr("name");
             console.log(data.rslt.obj);
@@ -126,7 +127,11 @@ function initSpaceExplorer() {
 }
 
 function reloadTables(id) {
-    attributeDataTable.DataTable.destroy();
+    attributeDataTable.fnDestroy();
+	attributeTotalsTable.fnDestroy();
+	console.log('Reloading tables using jobspaceId='+id);
+	
+	// Recreate the headers since these can be different depending on the jobspace.
     $('#attributeTable').remove();
     $('legend').after('<table id="attributeTable"></table>');
     $('#attributeTable').append('<thead></thead>');
@@ -143,6 +148,7 @@ function populateTableHeaders(headers) {
     console.log("headers");
     console.log(headers);
     for(var h in headers) {
+		console.log(h);
         $('#attributeTable tr').append('<th>' + headers[h] + '</th>');
     }
     initDataTables();
@@ -180,7 +186,7 @@ function initDataTables() {
         "fnServerData"      : fnPaginationHandler
     });
 
-    $('#attributeTotalsTable').dataTable({
+    attributeTotalsTable = $('#attributeTotalsTable').dataTable({
         "sDom"          :getDataTablesDom(),
         "iDisplayStart" : 0,
         "iDisplayLength" : defaultPageSize,
