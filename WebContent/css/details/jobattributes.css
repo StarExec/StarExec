@@ -1,6 +1,10 @@
 #explorer {
     float:left;
 }
+.changeTime {
+	margin: 10px 0 0 35px;
+}
+
 .hidden {
 	display: none;
 }
