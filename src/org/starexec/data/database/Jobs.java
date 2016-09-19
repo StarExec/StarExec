@@ -1,5 +1,7 @@
 package org.starexec.data.database;
 
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import java.io.File;
 import java.io.IOException;
 import java.sql.CallableStatement;
@@ -41,6 +43,7 @@ import org.starexec.data.to.pipelines.SolverPipeline;
 import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.data.to.tuples.AttributesTableData;
+import org.starexec.data.to.tuples.TimePair;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.util.DataTablesQuery;
 import org.starexec.util.LogUtil;
@@ -5321,15 +5324,16 @@ public class Jobs {
 	 * @return list of attribute count totals for the jobspace sorted by attr_value.
 	 * @throws SQLException
 	 */
-    public static List<Pair<String, Integer>> getJobAttributeTotals(int jobspaceId) throws SQLException {
+    public static List<Triple<String, Integer, TimePair>> getJobAttributeTotals(int jobspaceId) throws SQLException {
 		return Common.query("{CALL GetSumOfJobAttributes(?)}", procedure -> {
 			procedure.setInt(1, jobspaceId);
 		}, results -> {
-			List<Pair<String, Integer>> valueCounts = new ArrayList<>();
+			List<Triple<String, Integer, TimePair>> valueCounts = new ArrayList<>();
 			while (results.next()) {
-				valueCounts.add( new ImmutablePair<String, Integer>(
+				valueCounts.add( new ImmutableTriple<String, Integer, TimePair>(
 						results.getString("attr_value"),
-						results.getInt("attr_count")));
+						results.getInt("attr_count"),
+						new TimePair(results.getDouble("wallclock"), results.getDouble("cpu"))));
 			}
 			// Sort the value counts based on attr_value name.
 			return valueCounts.stream()

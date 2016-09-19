@@ -1016,7 +1016,7 @@ CREATE PROCEDURE GetJobAttributesTable(IN _jobSpaceId INT)
 DROP PROCEDURE IF EXISTS GetSumOfJobAttributes;
 CREATE PROCEDURE GetSumOfJobAttributes(IN _jobSpaceId INT)
     BEGIN
-        SELECT attr_value, COUNT(attr_value) attr_count
+        SELECT attr_value, COUNT(attr_value) attr_count, SUM(wallclock), SUM(cpu)
         FROM job_attributes ja JOIN job_pairs jp ON ja.pair_id=jp.id
             JOIN jobpair_stage_data jsd ON jp.id=jsd.jobpair_id
         WHERE ja.attr_key='starexec-result' AND jp.job_space_id=_jobSpaceId

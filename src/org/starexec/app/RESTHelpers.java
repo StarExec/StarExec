@@ -2240,7 +2240,7 @@ public class RESTHelpers {
         return (jo);
     }
 
-    private static String getWallclockCpuAttributeTableHtml(Double wallclockSum, Double cpuSum) {
+    protected static String getWallclockCpuAttributeTableHtml(Double wallclockSum, Double cpuSum) {
 		String formattedWallclock = String.format("%.2f", wallclockSum);
 		String formattedCpu = String.format("%.2f", cpuSum);
 		return "<span class='wallclockSum'>"+formattedWallclock+"</span>"+

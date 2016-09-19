@@ -1,5 +1,7 @@
 package org.starexec.app;
 
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -64,6 +66,7 @@ import org.starexec.data.security.UserSecurity;
 import org.starexec.data.to.*;
 import org.starexec.data.to.enums.Primitive;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.data.to.tuples.TimePair;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.exceptions.StarExecSecurityException;
@@ -4974,11 +4977,21 @@ public class RESTServices {
 
 		try {
 			JsonArray table = new JsonArray();
-			List<Pair<String, Integer>> attrTotals = Jobs.getJobAttributeTotals(jobSpaceId);
-			for (Pair<String, Integer> attrTotal : attrTotals) {
+			List<Triple<String, Integer, TimePair>> attrTotals = Jobs.getJobAttributeTotals(jobSpaceId);
+			for (Triple<String, Integer, TimePair> attrTotal : attrTotals) {
 				JsonArray row = new JsonArray();
+
+				// Attribute name
 				row.add(new JsonPrimitive(attrTotal.getLeft()));
-				row.add(new JsonPrimitive(attrTotal.getRight()));
+
+				// Attribute count
+				row.add(new JsonPrimitive(attrTotal.getMiddle()));
+
+				// Wallclock/Cpu formatted as HTML so we can easily hide on or the other.
+				double wallclock = attrTotal.getRight().getWallclock();
+				double cpu = attrTotal.getRight().getCpu();
+				String wallclockCpuHtml = RESTHelpers.getWallclockCpuAttributeTableHtml(wallclock, cpu);
+				row.add(new JsonPrimitive(wallclockCpuHtml));
 				table.add(row);
 			}
 			JsonObject dataTableWrapper = new JsonObject();

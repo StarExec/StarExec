@@ -64,6 +64,7 @@
                 <tr>
                     <th>attribute value</th>
                     <th>total</th>
+                    <th>time</th>
                 </tr>
             </thead>
         </table>
