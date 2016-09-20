@@ -14,7 +14,7 @@ $(document).ready(function(){
     jobId = $('#data').data('jobid');
     spaceExplorerJsonData = getSpaceExplorerJsonData();
     initSpaceExplorer();
-    initDataTables();
+    //initDataTables();
 	setupChangeTimeButton();
 });
 
@@ -127,8 +127,12 @@ function initSpaceExplorer() {
 }
 
 function reloadTables(id) {
-    attributeDataTable.fnDestroy();
-	attributeTotalsTable.fnDestroy();
+	if (attributeDataTable != null) {
+		attributeDataTable.fnDestroy();
+	}
+	if (attributeTotalsTable != null) {
+		attributeTotalsTable.fnDestroy();
+	}
 	console.log('Reloading tables using jobspaceId='+id);
 	
 	// Recreate the headers since these can be different depending on the jobspace.
