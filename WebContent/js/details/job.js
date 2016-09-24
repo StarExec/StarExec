@@ -507,7 +507,7 @@ function initUI(){
 	});
 
 	$("#jobPairAttributes").click(function() {
-		var url = DETAILS_JOB.starexecUrl+'secure/details/JobAttributes.jsp?id='+curSpaceId;
+		var url = DETAILS_JOB.starexecUrl+'secure/details/jobAttributes.jsp?id='+curSpaceId;
 		if (isLocalJobPage) {
 			window.location.href = url;
 		} else {
