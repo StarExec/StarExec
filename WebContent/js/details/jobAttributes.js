@@ -127,16 +127,19 @@ function initSpaceExplorer() {
 }
 
 function reloadTables(id) {
+	/*
 	if (attributeDataTable != null) {
 		attributeDataTable.fnDestroy();
 	}
 	if (attributeTotalsTable != null) {
 		attributeTotalsTable.fnDestroy();
 	}
+	*/
 	console.log('Reloading tables using jobspaceId='+id);
 	
 	// Recreate the headers since these can be different depending on the jobspace.
     $('#attributeTable').remove();
+    $('#attributeTable_wrapper').remove();
     $('legend').after('<table id="attributeTable"></table>');
     $('#attributeTable').append('<thead></thead>');
     $('#attributeTable thead').append('<tr></tr>');
@@ -181,9 +184,10 @@ function totalsPaginationHandler(sSource, aoData, fnCallback) {
 
 function initDataTables() {
     attributeDataTable = $('#attributeTable').dataTable( {
-        "sDom"          :getDataTablesDom(),
-        "iDisplayStart" : 0,
-        "iDisplayLength" : defaultPageSize,
+		"bDestroy"			: true,
+        "sDom"          	:getDataTablesDom(),
+        "iDisplayStart" 	: 0,
+        "iDisplayLength" 	: defaultPageSize,
         "bServerSide"       : false,
         "sAjaxSource"       : starexecRoot+"services/",
         "sServerMethod"     : 'POST',
@@ -191,9 +195,10 @@ function initDataTables() {
     });
 
     attributeTotalsTable = $('#attributeTotalsTable').dataTable({
-        "sDom"          :getDataTablesDom(),
-        "iDisplayStart" : 0,
-        "iDisplayLength" : defaultPageSize,
+		"bDestroy"			: true,
+        "sDom"          	:getDataTablesDom(),
+        "iDisplayStart" 	: 0,
+        "iDisplayLength" 	: defaultPageSize,
         "bServerSide"       : false,
         "sAjaxSource"       : starexecRoot+"services/",
         "sServerMethod"     : 'POST',
