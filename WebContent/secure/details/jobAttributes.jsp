@@ -34,7 +34,7 @@
     }
 %>
 
-<star:template title="Starexec-Result Attributes Summary" js="util/spaceTree,details/jobAttributes, lib/jquery.dataTables.min, util/jobDetailsUtilityFunctions, util/datatablesUtility, details/shared, lib/jquery.ba-throttle-debounce.min,lib/jquery.jstree" css="common/table, details/shared, details/jobattributes, details/pairsInSpace">         
+<star:template title="Starexec-Result Attributes Summary" js="util/spaceTree,details/jobAttributes, lib/jquery.dataTables.min, util/jobDetailsUtilityFunctions, util/datatablesUtility, details/shared, lib/jquery.ba-throttle-debounce.min,lib/jquery.jstree" css="common/table, details/shared, details/jobaAttributes, details/pairsInSpace">
     <span id="data" data-jobid="${jobId}" data-jobspaceid="${jobSpaceId}" />
         <h1>Results for space <span id="spaceId">${jobSpaceId}</span></h1>
     <div id="explorer">
