@@ -2223,15 +2223,11 @@ public class RESTHelpers {
 			List<String> attrValues = new ArrayList<>(valueCounts.keySet()).stream().sorted().collect(Collectors.toList());
 			for (String attrValue : attrValues) {
 				Triple<Integer,Double,Double> countWallclockCpu = valueCounts.get(attrValue);
-				entry.add(new JsonPrimitive(countWallclockCpu.getLeft()));
-
-				// Don't include times for starexec-unknown
-				if (!attrValue.equals(R.STAREXEC_UNKNOWN)) {
-					// Add the wallclock sum and cpu sum to one single column. On the page one of these two values will be hidden.
-					double wallclockSum = countWallclockCpu.getMiddle();
-					double cpuSum = countWallclockCpu.getRight();
-					entry.add(new JsonPrimitive(getWallclockCpuAttributeTableHtml(wallclockSum, cpuSum)));
-				}
+				// Add the wallclock sum and cpu sum to the column. On the page one of these two values will be hidden.
+				double wallclockSum = countWallclockCpu.getMiddle();
+				double cpuSum = countWallclockCpu.getRight();
+				entry.add(new JsonPrimitive(countWallclockCpu.getLeft() + " / "
+						+ getWallclockCpuAttributeTableHtml(wallclockSum, cpuSum)));
 			}
 			dataTablePageEntries.add(entry);
         }
