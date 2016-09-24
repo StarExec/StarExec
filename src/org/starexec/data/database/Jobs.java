@@ -5277,7 +5277,7 @@ public class Jobs {
 		List<String> sortedHeadersWithTime = new ArrayList<>();
 		// Add a column for the total time taken for each type of result.
 		for (String header : sortedHeaders) {
-			sortedHeadersWithTime.add(header);
+			sortedHeadersWithTime.add(header + " / time");
 		}
 		return sortedHeadersWithTime;
     }
