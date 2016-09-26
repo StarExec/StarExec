@@ -5,19 +5,19 @@ package org.starexec.command;
  */
 public class CommandLogger {
 
-    final private String className;
+    final private Class logClass;
 
-    private CommandLogger(String className) {
-        this.className = className;
+    private CommandLogger(Class c) {
+		logClass = c;
     }
 
     public static CommandLogger getLogger(Class c) {
-        return new CommandLogger(c.getName());
+        return new CommandLogger(c);
     }
 
     void log(String message) {
         if (C.debugMode) {
-            System.out.println("[" + className + "] " + message);
+            System.out.println("[" + logClass.getSimpleName() + "] " + message);
         }
     }
 }

@@ -18,10 +18,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.starexec.util.Util;
 import org.starexec.constants.R;
 import org.starexec.data.to.Permission;
 
 class ArgumentParser {
+
+	final private CommandLogger log = CommandLogger.getLogger(ArgumentParser.class);
 	
 	Connection con;
 	
@@ -416,19 +419,25 @@ class ArgumentParser {
 		try {
 			int valid=CommandValidator.isValidDownloadRequest(commandParams,type,since);
 			if (valid<0) {
+				log.log("Not a valid download request");
 				return valid;
 			}
 			String location=commandParams.get(C.PARAM_OUTPUT_FILE);
 
 			if (type.equals(R.JOB_OUTPUTS)) {
+				log.log("Type was "+R.JOB_OUTPUTS);
 				List<Integer> ids=CommandParser.convertToIntList(commandParams.get(C.PARAM_ID));
 				return con.downloadJobPairs(ids, location);
 			} else { 
+				log.log("Type was not "+R.JOB_OUTPUTS);
 				Integer id=Integer.parseInt(commandParams.get(C.PARAM_ID));		
 				Integer updateId=null;
 				if (commandParams.containsKey(C.PARAM_PROCID)) {
 					updateId=Integer.parseInt(commandParams.get(C.PARAM_PROCID));
 				}
+
+				log.log("Putting in request for server to generate desired archive.");
+
 				//First, put in the request for the server to generate the desired archive			
 				return con.downloadArchive(id, type, since,lastModified, location, commandParams.containsKey(C.PARAM_EXCLUDE_SOLVERS),
 						commandParams.containsKey(C.PARAM_EXCLUDE_BENCHMARKS), commandParams.containsKey(C.PARAM_INCLUDE_IDS),
@@ -437,6 +446,7 @@ class ArgumentParser {
 			
 
 		} catch (Exception e) {
+			log.log("Caught exception in downloadArchive: "+Util.getStackTrace(e));
 			return Status.ERROR_INTERNAL;
 		}
 		

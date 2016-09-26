@@ -28,6 +28,7 @@ import org.starexec.constants.R;
 import org.starexec.data.to.Permission;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.Validator;
+import org.starexec.util.Util;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -44,6 +45,7 @@ import com.google.gson.JsonPrimitive;
  */
 @SuppressWarnings({"deprecation"})
 public class Connection {
+	final private CommandLogger log = CommandLogger.getLogger(Connection.class);
 	private String baseURL;
 	private String sessionID=null;
 	HttpClient client=null;
@@ -1949,6 +1951,7 @@ public class Connection {
 		
 		try {
 			HashMap<String,String> urlParams=new HashMap<String,String>();
+			log.log("Downloading archive of type: "+type);
 			urlParams.put(C.FORMPARAM_TYPE, type);
 			urlParams.put(C.FORMPARAM_ID, id.toString());
 			if (type.equals(R.SPACE)) {
@@ -2016,17 +2019,22 @@ public class Connection {
 			Integer totalPairs=null;
 			Integer pairsFound=null;
 			Integer oldPairs=null;
-            Integer runningPairsFound=null;
+            //Integer runningPairsFound=null;
 			int lastSeen=-1;
 			//if we're sending 'since,' it means this is a request for new job data
 			boolean isNewJobRequest=urlParams.containsKey(C.FORMPARAM_SINCE);
 			boolean isNewOutputRequest = isNewJobRequest && urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB_OUTPUT);
 			if (isNewJobRequest) {
+				log.log("Headers, looking for 'Total-Pairs', 'Pairs-Found', 'Older-Pairs', 'Running-Pairs'");
+				for (Header header : response.getAllHeaders()) {
+					log.log("\t"+header.getName() + " : "+header.getValue());
+				}
+				log.log(HTMLParser.extractCookie(response.getAllHeaders(),"Total-Pairs"));
 				
 				totalPairs=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Total-Pairs"));
 				pairsFound=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Pairs-Found"));
 				oldPairs=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Older-Pairs"));
-				runningPairsFound=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Running-Pairs"));
+				//runningPairsFound=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Running-Pairs"));
 				
 				//check to see if the job is complete
 				done=totalPairs==(pairsFound+oldPairs);
@@ -2073,9 +2081,10 @@ public class Connection {
                 if(pairsFound != 0) {
 				    System.out.println("completed pairs found ="+(oldPairs+1)+"-"+(oldPairs+pairsFound)+"/"+totalPairs +" (highest="+lastSeen+")");
                 }
+				/*
                 if(runningPairsFound != 0) {
                     System.out.println("output from running pairs found="+runningPairsFound); 
-                }
+                }*/
 
 			}
 			if (done) {
@@ -2083,6 +2092,7 @@ public class Connection {
 			}
 			return 0;
 		} catch (Exception e) {
+			log.log("Caught exception in downloadArchive: " + Util.getStackTrace(e));
 
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 			return Status.ERROR_INTERNAL;

@@ -18,6 +18,8 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 
+import org.starexec.util.Util;
+
 class CommandParser {
 	final private CommandLogger log = CommandLogger.getLogger(CommandParser.class);
 	private ArgumentParser parser=null;
@@ -759,6 +761,7 @@ class CommandParser {
 					infoDone=true;
 				
 				} else if (status<0) {
+					log.log("Failed to downloadArchive");
 					return status;
 				}
 				nextName=baseFileName+"-output"+String.valueOf(outputCounter)+extension;
@@ -790,6 +793,7 @@ class CommandParser {
 			}
 
 		} catch (Exception e) {
+			log.log(Util.getStackTrace(e));
 			e.printStackTrace();
 			return Status.ERROR_INTERNAL;
 		}
