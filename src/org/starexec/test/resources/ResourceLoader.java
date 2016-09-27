@@ -2,6 +2,7 @@ package org.starexec.test.resources;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -85,7 +86,11 @@ public class ResourceLoader {
 	 */
 	public void deleteAllPrimitives() {
 		for (Integer i : createdJobIds) {
-			Jobs.deleteAndRemove(i);
+			try {
+				Jobs.deleteAndRemove(i);
+			} catch (SQLException e) {
+				log.warn("Could not delete job with id: " + i);
+			}
 		}
 		for (Integer i : createdSettingsIds) {
 			Settings.deleteProfile(i);
@@ -221,8 +226,6 @@ public class ResourceLoader {
 	 * @param cpuTimeout The cpu timeout for every pair in this job
 	 * @param wallclockTimeout The wallclock timeout for every pair in this job
 	 * @param memory The max memory limit, in bytes, for every pair in this job
-	 * @param solvers The solverIds that will be matched to every benchmark
-	 * @param benchmarks The benchmarkIDs to run
 	 * @return The job object
 	 */
 	public Job loadJobIntoDatabase(int spaceId, int userId, int preProcessorId, int postProcessorId, List<Integer> solverIds, List<Integer> benchmarkIds,

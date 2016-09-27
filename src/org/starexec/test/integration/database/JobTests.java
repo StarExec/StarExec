@@ -1,5 +1,6 @@
 package org.starexec.test.integration.database;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +31,7 @@ import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
+import org.starexec.util.Util;
 
 /**
  * Tests for org.starexec.data.database.Jobs.java
@@ -161,12 +163,14 @@ public class JobTests extends TestSequence {
 		solverIds.add(solver.getId());
 		Job temp=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
 		Assert.assertFalse(Jobs.isJobDeleted(temp.getId()));
-		Assert.assertTrue(Jobs.delete(temp.getId()));
-		
-		
-		Assert.assertTrue(Jobs.isJobDeleted(temp.getId()));
-		
-		Assert.assertTrue(Jobs.deleteAndRemove(temp.getId()));
+
+		try {
+			Assert.assertTrue(Jobs.delete(temp.getId()));
+			Assert.assertTrue(Jobs.isJobDeleted(temp.getId()));
+			Assert.assertTrue(Jobs.deleteAndRemove(temp.getId()));
+		} catch (SQLException e) {
+			Assert.fail("Caught sql exception while trying to delete job: " + Util.getStackTrace(e));
+		}
 		
 		
 	}
@@ -278,7 +282,11 @@ public class JobTests extends TestSequence {
 		Job tempJob = loader.loadJobIntoDatabase(space.getId(), user.getId(), solver.getId(), benchmarkIds);
 		List<Integer> job = new ArrayList<Integer>();
 		job.add(tempJob.getId());
-		Jobs.delete(tempJob.getId());
+		try {
+			Jobs.delete(tempJob.getId());
+		} catch (SQLException e) {
+			Assert.fail("Caught SQLException while trying to delete job: " + Util.getStackTrace(e));
+		}
 		Assert.assertTrue(Jobs.cleanOrphanedDeletedJobs());
 		Assert.assertNotNull(Jobs.getIncludeDeleted(tempJob.getId()));
 		

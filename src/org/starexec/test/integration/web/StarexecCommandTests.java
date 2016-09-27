@@ -1,6 +1,7 @@
 package org.starexec.test.integration.web;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -67,9 +68,14 @@ public class StarexecCommandTests extends TestSequence {
 		Job job=Jobs.get(jobId);
 		Assert.assertNotNull(job);
 		Assert.assertEquals(jobName,job.getName());
-		
-		
-		Assert.assertTrue(Jobs.deleteAndRemove(jobId));
+
+		boolean jobDeleted = false;
+		try {
+			jobDeleted = Jobs.deleteAndRemove(jobId);
+		} catch (SQLException e) {
+			Assert.fail("Caught SQLException while deleting job: " + Util.getStackTrace(e));
+		}
+		Assert.assertTrue(jobDeleted);
 		
 	}
 	
@@ -503,8 +509,15 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertNotNull(Jobs.get(tempJob.getId()));
 		Assert.assertEquals(0,con.deleteJobs(ids));
 		Assert.assertNull(Jobs.get(tempJob.getId()));
-		
-		Assert.assertTrue(Jobs.deleteAndRemove(tempJob.getId()));
+
+		boolean jobDeleted = false;
+		try {
+			jobDeleted = Jobs.deleteAndRemove(tempJob.getId());
+		} catch (SQLException e) {
+			Assert.fail("Caught SQLException while trying to delete job: " + Util.getStackTrace(e));
+		}
+
+		Assert.assertTrue(jobDeleted);
 
 	}
 	

@@ -741,7 +741,7 @@ public class Jobs {
 	 * @return True on success, false otherwise
 	 */
 	
-	public static boolean deleteAndRemove(int jobId) {
+	public static boolean deleteAndRemove(int jobId) throws SQLException {
 		Job j=Jobs.get(jobId);
 		if (j!=null) {
 			log.debug("Called deleteAndRemove on the following job");
@@ -789,7 +789,7 @@ public class Jobs {
 	 * @param jobId The ID of the job to delete
 	 * @return True on success, false otherwise
 	 */
-	public static boolean delete(int jobId) {
+	public static boolean delete(int jobId) throws SQLException {
 		Connection con=null;
 		CallableStatement procedure = null;
 		try {
@@ -816,14 +816,10 @@ public class Jobs {
 			
 			
 			return true;
-		} catch (Exception e) {
-			log.error("deleteJob says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		
-		return false;
 	}
 	
 	/**
