@@ -2483,6 +2483,8 @@ public class Jobs {
 			return "errorPairs";
 		} else if (orderIndex==5) {
 			return "created";
+		} else if (orderIndex==6) {
+			return "disk_size";
 		}
 		return "jobs.name";
 	}
@@ -2495,12 +2497,15 @@ public class Jobs {
 	 * @author Ruoyu Zhang
 	 */
 	public static List<Job> getJobsByUserForNextPage(DataTablesQuery query, int userId) {
+		final String methodName = "getJobsByUserForNextPage";
 		Connection con = null;
 		NamedParameterStatement procedure = null;
 		ResultSet results = null;
 		try {
 			con =Common.getConnection();
+			logUtil.debug(methodName, "Sorting on col: " + query.getSortColumn());
 			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_JOBS_BY_USER_QUERY, getJobOrderColumn(query.getSortColumn()), query);
+			logUtil.debug(methodName, "SQL: "+builder.getSQL());
 			procedure = new NamedParameterStatement(con,builder.getSQL());
 			procedure.setString("query",query.getSearchQuery());
 			procedure.setInt("userId",userId);

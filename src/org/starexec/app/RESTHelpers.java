@@ -833,7 +833,7 @@ public class RESTHelpers {
 				query.setTotalRecordsAfterQuery(jobsToDisplay.size());
 
 			}
-			return convertJobsToJsonObject(jobsToDisplay,query);
+			return convertJobsToJsonObject(jobsToDisplay,query, false);
 
 		case USER:
 			List<User> usersToDisplay = new LinkedList<User>();
@@ -901,7 +901,7 @@ public class RESTHelpers {
 
 			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 
-			JsonObject answer = convertJobsToJsonObject(jobsToDisplay, query);
+			JsonObject answer = convertJobsToJsonObject(jobsToDisplay, query, false);
 			return answer;
 		    	
 		case USER:
@@ -990,7 +990,8 @@ public class RESTHelpers {
 		
 	}
 
-	public static JsonObject getNextDataTablesPageForUserDetails(Primitive type, int id, HttpServletRequest request, boolean recycled) {
+
+	public static JsonObject getNextDataTablesPageForUserDetails(Primitive type, int id, HttpServletRequest request, boolean recycled, boolean dataAsObjects) {
 		// Parameter validation
 	    DataTablesQuery query = RESTHelpers.getAttrMap(type, request);
 	    if(query==null){
@@ -1014,7 +1015,7 @@ public class RESTHelpers {
 
 			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 
-			JsonObject answer = convertJobsToJsonObject(jobsToDisplay, query);
+			JsonObject answer = convertJobsToJsonObject(jobsToDisplay, query, dataAsObjects);
 			return answer;
 		    	
 		
@@ -1415,7 +1416,7 @@ public class RESTHelpers {
 	 * @return A JsonObject that can be used to populate a datatable
 	 * @author Eric Burns
 	 */
-	public static JsonObject convertJobsToJsonObject(List<Job> jobs, DataTablesQuery query) {
+	public static JsonObject convertJobsToJsonObject(List<Job> jobs, DataTablesQuery query, boolean dataAsObjects) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -1454,25 +1455,60 @@ public class RESTHelpers {
 				status = "killed";
 			}
 
-			// Create an object, and inject the above HTML, to represent an
-			// entry in the DataTable
-			JsonArray entry = new JsonArray();
-			entry.add(new JsonPrimitive(jobLink));
-			entry.add(new JsonPrimitive(status));
-			entry.add(new JsonPrimitive(getPercentStatHtml("asc", job
-					.getLiteJobPairStats().get("completionPercentage"),
-					true)));
-			entry.add(new JsonPrimitive(getPercentStatHtml("static", job
-					.getLiteJobPairStats().get("totalPairs"), false)));
-			entry.add(new JsonPrimitive(getPercentStatHtml("desc", job
-					.getLiteJobPairStats().get("errorPercentage"), true)));
-			
-			entry.add(new JsonPrimitive(job.getCreateTime().toString()));
-            entry.add(new JsonPrimitive(Util.byteCountToDisplaySize(job.getDiskSize())));
-			dataTablePageEntries.add(entry);
+
+			if (dataAsObjects) {
+				dataTablePageEntries.add(getEntryAsObject(jobLink, status, job));
+			} else {
+				dataTablePageEntries.add(getEntryAsArray(jobLink, status, job));
+			}
+
 		}
 		
 		return createPageDataJsonObject(query, dataTablePageEntries);
+	}
+
+	private static JsonArray getEntryAsArray(String jobLink, String status, Job job)  {
+		// Create an object, and inject the above HTML, to represent an
+		// entry in the DataTable
+		JsonArray entry = new JsonArray();
+		entry.add(new JsonPrimitive(jobLink));
+		entry.add(new JsonPrimitive(status));
+		entry.add(new JsonPrimitive(getPercentStatHtml("asc", job
+				.getLiteJobPairStats().get("completionPercentage"),
+				true)));
+		entry.add(new JsonPrimitive(getPercentStatHtml("static", job
+				.getLiteJobPairStats().get("totalPairs"), false)));
+		entry.add(new JsonPrimitive(getPercentStatHtml("desc", job
+				.getLiteJobPairStats().get("errorPercentage"), true)));
+		
+		entry.add(new JsonPrimitive(job.getCreateTime().toString()));
+		JsonObject diskSize = new JsonObject();
+		entry.add(new JsonPrimitive(Util.byteCountToDisplaySize(job.getDiskSize())));
+		return entry;
+	}
+
+
+
+	private static JsonObject getEntryAsObject(String jobLink, String status, Job job) {
+		// Create an object, and inject the above HTML, to represent an
+		// entry in the DataTable
+		JsonObject entry = new JsonObject();
+		entry.add("jobLink", new JsonPrimitive(jobLink));
+		entry.add("status", new JsonPrimitive(status));
+		entry.add("completion", new JsonPrimitive(getPercentStatHtml("asc", job
+				.getLiteJobPairStats().get("completionPercentage"),
+				true)));
+		entry.add("totalPairs", new JsonPrimitive(getPercentStatHtml("static", job
+				.getLiteJobPairStats().get("totalPairs"), false)));
+		entry.add("errorPercentage", new JsonPrimitive(getPercentStatHtml("desc", job
+				.getLiteJobPairStats().get("errorPercentage"), true)));
+		
+		entry.add("createTime",new JsonPrimitive(job.getCreateTime().toString()));
+		JsonObject diskSize = new JsonObject();
+		diskSize.add("display", new JsonPrimitive(Util.byteCountToDisplaySize(job.getDiskSize())));
+		diskSize.add("bytes", new JsonPrimitive(job.getDiskSize()));
+		entry.add("diskSize", diskSize);
+		return entry;
 	}
 
 	/**

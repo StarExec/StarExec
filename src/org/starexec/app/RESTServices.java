@@ -4097,7 +4097,29 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 		// Query for the next page of job pairs and return them to the user
-		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.JOB, usrId, request,false);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.JOB, usrId, request,false, false);
+		
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+	}
+	/**
+	 * Get the paginated result of the jobs belong to a specified user
+	 * @param usrId Id of the user we are looking for
+	 * @param request The http request
+	 * @return a JSON object representing the next page of jobs if successful
+	 * 		   1: The get job procedure fails.
+	 * @author Ruoyu Zhang
+	 */
+	@POST
+	@Path("/users/{id}/jobs/pagination/asObjects")
+	@Produces("application/json")	
+	public String getUserJobsPaginatedAsObjects(@PathParam("id") int usrId, @Context HttpServletRequest request) {
+		int requestUserId=SessionUtil.getUserId(request);
+		ValidatorStatusCode status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		// Query for the next page of job pairs and return them to the user
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.JOB, usrId, request,false, true);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -4165,7 +4187,7 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 		// Query for the next page of solver pairs and return them to the user
-		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.SOLVER, usrId, request,false);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.SOLVER, usrId, request,false, false);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -4187,7 +4209,7 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}		// Query for the next page of solver pairs and return them to the user
-		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.BENCHMARK, usrId, request,false);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.BENCHMARK, usrId, request,false, false);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -4211,7 +4233,7 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 		
-		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.SOLVER, usrId, request,true);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.SOLVER, usrId, request,true, false);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -4233,7 +4255,7 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.BENCHMARK, usrId, request, true);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.BENCHMARK, usrId, request, true, false);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
