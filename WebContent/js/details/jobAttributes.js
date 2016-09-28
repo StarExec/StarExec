@@ -1,13 +1,13 @@
 
 $(document).ready(function(){
     'use strict';
-    var jobSpaceId=getParameterByName('id');
+    var currentJobSpaceId=getParameterByName('id');
     var rootJobSpaceId=getParameterByName('id');
     var jsTree=makeSpaceTree("#exploreList");
     // Initialize the jstree plugin for the explorer list
     var jobId = $('#data').data('jobid');
     var spaceExplorerJsonData = getSpaceExplorerJsonData(jobId);
-    initSpaceExplorer(rootJobSpaceId, spaceExplorerJsonData);
+    initSpaceExplorer(rootJobSpaceId, currentJobSpaceId, spaceExplorerJsonData);
 	setupChangeTimeButton();
 });
 
@@ -58,7 +58,7 @@ function setupChangeTimeButton() {
 }
 
 
-function initSpaceExplorer(rootJobSpaceId, spaceExplorerJsonData) {
+function initSpaceExplorer(rootJobSpaceId, currentJobSpaceId, spaceExplorerJsonData) {
     // Set the path to the css theme for the jstree plugin
 
     $.jstree._themes = starexecRoot+"css/jstree/";
@@ -68,6 +68,7 @@ function initSpaceExplorer(rootJobSpaceId, spaceExplorerJsonData) {
         log("exploreList tree has finished loading.");
         $("#exploreList").jstree("select_node", ".rootNode");
     })*/
+	console.log('Setting up explore list.');
     $("#exploreList").jstree({
         "json_data" : spaceExplorerJsonData,
         "themes" : {
@@ -98,7 +99,11 @@ function initSpaceExplorer(rootJobSpaceId, spaceExplorerJsonData) {
     }).bind("select_node.jstree", function (event, data) {
         // Change the page to the appropriate jobspace.
         var newJobSpaceId = data.rslt.obj.attr("id");
-        window.location.href=starexecRoot+'secure/details/jobAttributes.jsp?id='+newJobSpaceId;
+		log("New job space id: "+newJobSpaceId);
+
+		if (newJobSpaceId !== currentJobSpaceId) {
+			window.location.href=starexecRoot+'secure/details/jobAttributes.jsp?id='+newJobSpaceId;
+		}
     }).on( "click", "a", function (event, data) {
         event.preventDefault();  // This just disable's links in the node title
     });
