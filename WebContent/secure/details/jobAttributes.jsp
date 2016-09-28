@@ -17,7 +17,8 @@
         List<String> tableHeaders = Jobs.getJobAttributesTableHeader(jobSpaceId);
         List<AttributesTableRow> table = RESTHelpers.getAttributesTable(jobSpaceId);
 
-        if(j != null) { 
+        if(j != null) {
+            request.setAttribute("tableData", table);
             request.setAttribute("jobId", j.getId());
             request.setAttribute("jobSpaceId", jobSpaceId);
             request.setAttribute("attributes", Jobs.getJobAttributesTable(space.getId()));
@@ -58,6 +59,29 @@
                     </c:forEach>
                 </tr>
             </thead>
+            <tbody>
+                <c:forEach items="${tableData}" var="row">
+                    <tr>
+                        <td>
+                            <a href="${starexecRoot}/secure/details/solver.jsp?id=${row.solverId}">
+                                ${row.solverName}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="${starexecRoot}/secure/details/configuration.jsp?id=${row.configId}">
+                                ${row.configName}
+                            </a>
+                        </td>
+                        <c:forEach items="${row.countAndTimes}" var="countAndTimes">
+                            <td>
+                                ${countAndTimes.left} /
+                                    <span class="wallclockSum">${countAndTimes.middle}</span>
+                                    <span class="cpuSum">${countAndTimes.right}</span>
+                            </td>
+                        </c:forEach>
+                    </tr>
+                </c:forEach>
+            </tbody>
         </table>
     </fieldset>
     <fieldset id="attributeTotalsTableField">
