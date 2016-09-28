@@ -999,7 +999,8 @@ CREATE PROCEDURE GetJobAttributesTableHeaders(IN _jobSpaceId INT)
         FROM job_attributes ja INNER JOIN job_pairs jp
             ON ja.pair_id=jp.id
         WHERE ja.attr_key = "starexec-result" AND jp.job_space_id=_jobSpaceId
-        GROUP BY attr_value;
+        GROUP BY attr_value
+				ORDER BY attr_value;
     END //
 
 DROP PROCEDURE IF EXISTS GetJobAttributesTable;
