@@ -15,6 +15,7 @@
         }
         Job j = Jobs.get(space.getJobId());
         List<String> tableHeaders = Jobs.getJobAttributesTableHeader(jobSpaceId);
+        List<AttributesTableRow> table = RESTHelpers.getAttributesTable(jobSpaceId);
 
         if(j != null) { 
             request.setAttribute("jobId", j.getId());
