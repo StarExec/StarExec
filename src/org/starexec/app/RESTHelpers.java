@@ -2269,7 +2269,12 @@ public class RESTHelpers {
 			List<String> attrValues = new ArrayList<>(valueCounts.keySet()).stream().sorted().collect(Collectors.toList());
 			for (String attrValue : attrValues) {
 				Triple<Integer,Double,Double> countWallclockCpu = valueCounts.get(attrValue);
-				row.countAndTimes.add(countWallclockCpu);
+				Triple<Integer,String,String> formattedCountWallclockCpu = new ImmutableTriple<>(
+						countWallclockCpu.getLeft(),
+						String.format("%.4f", countWallclockCpu.getMiddle()),
+						String.format("%.4f", countWallclockCpu.getRight())
+				);
+				row.countAndTimes.add(formattedCountWallclockCpu);
 			}
 			table.add(row);
 		}

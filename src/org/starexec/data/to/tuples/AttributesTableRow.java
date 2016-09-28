@@ -13,7 +13,7 @@ public class AttributesTableRow {
     public String solverName;
     public int configId;
     public String configName;
-    public List<Triple<Integer, Double, Double>> countAndTimes = new ArrayList<>();
+    public List<Triple<Integer, String, String>> countAndTimes = new ArrayList<>();
 
     public int getSolverId() {
         return solverId;
@@ -47,11 +47,11 @@ public class AttributesTableRow {
         this.configName = configName;
     }
 
-    public List<Triple<Integer, Double, Double>> getCountAndTimes() {
+    public List<Triple<Integer, String, String>> getCountAndTimes() {
         return countAndTimes;
     }
 
-    public void setCountAndTimes(List<Triple<Integer, Double, Double>> countAndTimes) {
+    public void setCountAndTimes(List<Triple<Integer, String, String>> countAndTimes) {
         this.countAndTimes = countAndTimes;
     }
 }
