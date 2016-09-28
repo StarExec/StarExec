@@ -5,6 +5,7 @@ var attributeDataTable;
 var openAjaxRequests = [];
 var jobSpaceId;
 var attributeTotalsTable;
+var jsTree;
 
 $(document).ready(function(){
     jobSpaceId=getParameterByName('id');
@@ -73,8 +74,6 @@ function initSpaceExplorer() {
     var id;
 
 
-
-
     // Initialize the jstree plugin for the explorer list
     /*$("#exploreList").bind("loaded.jstree", function() {
         log("exploreList tree has finished loading.");
@@ -108,117 +107,10 @@ function initSpaceExplorer() {
         "plugins" : [ "types", "themes", "json_data", "ui", "cookies"] ,
         "core" : { animation : 200 }
     }).bind("select_node.jstree", function (event, data) {
-            killAjaxRequests();
-            // When a node is clicked, get its ID and display the info in the details pane
-            id = data.rslt.obj.attr("id");
-			console.log('Changing jobspace to '+id);
-            jobSpaceId = id;
-            name = data.rslt.obj.attr("name");
-            console.log(data.rslt.obj);
-            maxStages = data.rslt.obj.attr("maxStages");
-            setMaxStagesDropdown(parseInt(maxStages));
-            $('#spaceId').text("id: " + id);
-            reloadTables(id);
+        // Change the page to the appropriate jobspace.
     }).on( "click", "a", function (event, data) {
         event.preventDefault();  // This just disable's links in the node title
     });
     log("Initialized exploreList tree.");
 
-}
-
-function reloadTables(id) {
-	/*
-	if (attributeDataTable != null) {
-		attributeDataTable.fnDestroy();
-	}
-	if (attributeTotalsTable != null) {
-		attributeTotalsTable.fnDestroy();
-	}
-	*/
-	console.log('Reloading tables using jobspaceId='+id);
-	
-	// Recreate the headers since these can be different depending on the jobspace.
-    $('#attributeTable').remove();
-    $('#attributeTable_wrapper').remove();
-    $('legend').after('<table id="attributeTable"></table>');
-    $('#attributeTable').append('<thead></thead>');
-    $('#attributeTable thead').append('<tr></tr>');
-    $('#attributeTable tr').append('<th>solver</th>');
-    $('#attributeTable tr').append('<th>config</th>');
-    $.post(starexecRoot+"services/jobs/attributes/header/"+jobSpaceId,
-            {},
-            populateTableHeaders,
-            "json");
-}
-
-function populateTableHeaders(headers) {
-    console.log("headers");
-    console.log(headers);
-    for(var h in headers) {
-		console.log(h);
-        $('#attributeTable tr').append('<th>' + headers[h] + '</th>');
-    }
-    initDataTables();
-}
-
-function killAjaxRequests() {
-    for (var i = 0; i < openAjaxRequests.length; i++) {
-        openAjaxRequests[i].abort();
-    }
-    openAjaxRequests = []
-}
-function totalsPaginationHandler(sSource, aoData, fnCallback) {
-    $.post(
-        sSource + "jobs/attributes/totals/"+jobSpaceId,
-        aoData,
-        function(nextDataTablePage){
-            var s=parseReturnCode(nextDataTablePage);
-            if (s) {
-                fnCallback(nextDataTablePage);
-            }
-        },
-        "json"
-    )
-}
-
-
-function initDataTables() {
-    attributeDataTable = $('#attributeTable').dataTable( {
-		"bDestroy"			: true,
-        "sDom"          	:getDataTablesDom(),
-        "iDisplayStart" 	: 0,
-        "iDisplayLength" 	: defaultPageSize,
-        "bServerSide"       : false,
-        "sAjaxSource"       : starexecRoot+"services/",
-        "sServerMethod"     : 'POST',
-        "fnServerData"      : fnPaginationHandler
-    });
-
-    attributeTotalsTable = $('#attributeTotalsTable').dataTable({
-		"bDestroy"			: true,
-        "sDom"          	:getDataTablesDom(),
-        "iDisplayStart" 	: 0,
-        "iDisplayLength" 	: defaultPageSize,
-        "bServerSide"       : false,
-        "sAjaxSource"       : starexecRoot+"services/",
-        "sServerMethod"     : 'POST',
-        "fnServerData"      : totalsPaginationHandler
-    });
-
-}
-
-
-
-function fnPaginationHandler(sSource, aoData, fnCallback) {
-    $.post(
-            sSource + "jobs/attributes/"+jobSpaceId,
-            aoData,
-            function(nextDataTablePage){
-                var s=parseReturnCode(nextDataTablePage);
-                if (s) {
-                    fnCallback(nextDataTablePage);
-                }
-            },
-            "json"
-            )
 }
