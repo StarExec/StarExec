@@ -97,6 +97,8 @@ function initSpaceExplorer(rootJobSpaceId, spaceExplorerJsonData) {
         "core" : { animation : 200 }
     }).bind("select_node.jstree", function (event, data) {
         // Change the page to the appropriate jobspace.
+        var newJobSpaceId = data.rslt.obj.attr("id");
+        window.location.href=starexecRoot+'secure/details/jobAttributes.jsp?id='+newJobSpaceId;
     }).on( "click", "a", function (event, data) {
         event.preventDefault();  // This just disable's links in the node title
     });
