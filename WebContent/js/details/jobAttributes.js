@@ -1,26 +1,20 @@
-var rootJobSpaceId;
-var spaceExplorerJsonData;
-var jobId;
-var jobSpaceId;
-var jsTree;
 
 $(document).ready(function(){
-    jobSpaceId=getParameterByName('id');
-    rootJobSpaceId=getParameterByName('id');
-    jsTree=makeSpaceTree("#exploreList");
+    'use strict';
+    var jobSpaceId=getParameterByName('id');
+    var rootJobSpaceId=getParameterByName('id');
+    var jsTree=makeSpaceTree("#exploreList");
     // Initialize the jstree plugin for the explorer list
-    jobId = $('#data').data('jobid');
-    spaceExplorerJsonData = getSpaceExplorerJsonData();
-    initSpaceExplorer();
-    //initDataTables();
+    var jobId = $('#data').data('jobid');
+    var spaceExplorerJsonData = getSpaceExplorerJsonData(jobId);
+    initSpaceExplorer(rootJobSpaceId, spaceExplorerJsonData);
 	setupChangeTimeButton();
 });
 
-function getSpaceExplorerJsonData() {
+function getSpaceExplorerJsonData(jobId) {
     'use strict';
-    var spaceExplorerJsonData = {};
     var url = starexecRoot+"services/space/" +jobId+ "/jobspaces/true";
-    spaceExplorerJsonData = {
+    return {
         "ajax" : {
             "url" : url, // Where we will be getting json data from
             "data" : function (n) {
@@ -30,14 +24,14 @@ function getSpaceExplorerJsonData() {
             }
         }
     };
-    return spaceExplorerJsonData;
 }
 function setupChangeTimeButton() {
+
+
 	$(".changeTime").button({
 		icons: {
 			primary: "ui-icon-refresh"
 		}
-	
 	});
 
 	var isWallclock = true;
@@ -64,12 +58,10 @@ function setupChangeTimeButton() {
 }
 
 
-function initSpaceExplorer() {
+function initSpaceExplorer(rootJobSpaceId, spaceExplorerJsonData) {
     // Set the path to the css theme for the jstree plugin
 
     $.jstree._themes = starexecRoot+"css/jstree/";
-    var id;
-
 
     // Initialize the jstree plugin for the explorer list
     /*$("#exploreList").bind("loaded.jstree", function() {
