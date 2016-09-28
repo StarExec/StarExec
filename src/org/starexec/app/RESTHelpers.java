@@ -18,6 +18,7 @@ import org.starexec.data.to.Queue;
 import org.starexec.data.to.enums.Primitive;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.tuples.AttributesTableData;
+import org.starexec.data.to.tuples.AttributesTableRow;
 import org.starexec.data.to.tuples.SolverConfig;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.test.integration.TestResult;
@@ -26,6 +27,7 @@ import org.starexec.util.DataTablesQuery;
 import org.starexec.util.LogUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
+import org.w3c.dom.Attr;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
@@ -2215,11 +2217,16 @@ public class RESTHelpers {
 		return attrCounts;
 	}
 
-    public static JsonObject convertJobAttributesToJsonObject(int jobSpaceId) throws SQLException {
-        List<AttributesTableData> jobAttributes = Jobs.getJobAttributesTable(jobSpaceId);
-		List<String> uniqueResultValues = Jobs.getJobAttributeValues(jobSpaceId);
-
+	/**
+	 * Creates a map from a solver-config pair to a map from an attribute to the count of attributes (results) generated
+	 * by that solver-config as well as the time it took to create all those results.
+	 * @param jobSpaceId the jobspace to generate the map for, only job pairs in this jobspace will be examined.
+	 * @throws SQLException if there is a database issue.
+	 */
+	private static Map<SolverConfig, Map<String, Triple<Integer, Double, Double>>> getSolverConfigToAttrCountMap(int jobSpaceId) throws SQLException {
 		Map<SolverConfig, Map<String, Triple<Integer, Double, Double>>> solverConfigToAttrCount = new HashMap<>();
+		List<AttributesTableData> jobAttributes = Jobs.getJobAttributesTable(jobSpaceId);
+		List<String> uniqueResultValues = Jobs.getJobAttributeValues(jobSpaceId);
 		for(AttributesTableData tableEntry : jobAttributes) {
 			// Initialize a solverConfig to be used as a key in our map.
 			SolverConfig solverConfig = new SolverConfig(tableEntry.solverId, tableEntry.configId);
@@ -2237,19 +2244,51 @@ public class RESTHelpers {
 			solverConfigToAttrCount.get(solverConfig).put(tableEntry.attrValue,
 					new ImmutableTriple<>(tableEntry.attrCount, tableEntry.wallclockSum, tableEntry.cpuSum));
 		}
+		return solverConfigToAttrCount;
+	}
+
+	/**
+	 * Creates the attribute table for details/jobAttributes as a list.
+	 * @see #getSolverConfigToAttrCountMap(int)
+	 */
+	public static List<AttributesTableRow> getAttributesTable(int jobSpaceId) throws SQLException  {
+		Map<SolverConfig, Map<String, Triple<Integer, Double, Double>>> solverConfigToAttrCount = getSolverConfigToAttrCountMap(jobSpaceId);
+
+		List<AttributesTableRow> table = new ArrayList<>();
+		for(SolverConfig solverConfig : solverConfigToAttrCount.keySet()) {
+			AttributesTableRow row = new AttributesTableRow();
+
+			row.solverId = solverConfig.solverId;
+			row.configId = solverConfig.configId;
+			row.solverName = solverConfig.solverName;
+			row.configName = solverConfig.configName;
+
+			// Add all the attr_value counts under the appropriate headers. To do this we sort the list of headers.
+			// The headers will need to be sorted in the same way so the columns line up.
+			Map<String, Triple<Integer, Double, Double>> valueCounts = solverConfigToAttrCount.get(solverConfig);
+			List<String> attrValues = new ArrayList<>(valueCounts.keySet()).stream().sorted().collect(Collectors.toList());
+			for (String attrValue : attrValues) {
+				Triple<Integer,Double,Double> countWallclockCpu = valueCounts.get(attrValue);
+				row.countAndTimes.add(countWallclockCpu);
+			}
+			table.add(row);
+		}
+		return table;
+	}
+
+	/*
+    public static JsonObject convertJobAttributesToJsonObject(int jobSpaceId) throws SQLException {
+		List<AttributesTableRow> attributesTable = getAttributesTable(getSolverConfigToAttrCountMap(jobSpaceId));
+
+
 
 		JsonArray dataTablePageEntries = new JsonArray();
 		// Convert all the solver-config attr-value count data to Json data.
-		for(SolverConfig solverConfig : solverConfigToAttrCount.keySet()) {
+		for(AttributesTableRow row : attributesTable) {
             JsonArray entry = new JsonArray();
-			int solverId = solverConfig.solverId;
-			int configId = solverConfig.configId;
-			String solverName = solverConfig.solverName;
-			String configName = solverConfig.configName;
-
 			// First two columns in the data table will be the solver name and config name.
-			String solverNameLink = Util.getSolverDetailsLink(solverId, solverName);
-			String configNameLink = Util.getConfigDetailsLink(configId, configName);
+			String solverNameLink = Util.getSolverDetailsLink(row.solverId, row.solverName);
+			String configNameLink = Util.getConfigDetailsLink(row.configId, row.configName);
 			entry.add(new JsonPrimitive(solverNameLink));
 			entry.add(new JsonPrimitive(configNameLink));
 
@@ -2270,7 +2309,7 @@ public class RESTHelpers {
         JsonObject jo = new JsonObject();
         jo.add("aaData", dataTablePageEntries);
         return (jo);
-    }
+    }*/
 
     protected static String getWallclockCpuAttributeTableHtml(Double wallclockSum, Double cpuSum) {
 		String formatter = "%.3f";

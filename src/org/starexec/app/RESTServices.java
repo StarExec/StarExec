@@ -4929,10 +4929,10 @@ public class RESTServices {
 
 	/**
 	 * Gets table of starexec-result attributes summary
-	 * @param jobSpaceId The ID of the primitive 
-	 * @param request 
+	 * @param jobSpaceId The ID of the primitive
+	 * @param request
 	 * @return json table entries for starexec-result summary
-	 */
+	 *
     @POST
     @Path("/jobs/attributes/{jobSpaceId}")
     @Produces("application/json")
@@ -4951,7 +4951,7 @@ public class RESTServices {
 			return gson.toJson(ERROR_DATABASE);
 		}
         return gson.toJson(nextDataTablesPage);
-    }	
+	}*/
 
 	/**
 	 * Gets headers of the table of starexec-result attributes summary

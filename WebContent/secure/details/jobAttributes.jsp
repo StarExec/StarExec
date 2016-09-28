@@ -1,4 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.*,java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@ page import="org.starexec.data.to.tuples.AttributesTableRow" %>
+<%@ page import="org.starexec.app.RESTHelpers" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -13,7 +15,7 @@
         }
         Job j = Jobs.get(space.getJobId());
         List<String> tableHeaders = Jobs.getJobAttributesTableHeader(jobSpaceId);
-        
+
         if(j != null) { 
             request.setAttribute("jobId", j.getId());
             request.setAttribute("jobSpaceId", jobSpaceId);
