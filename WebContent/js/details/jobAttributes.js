@@ -1,10 +1,7 @@
 var rootJobSpaceId;
 var spaceExplorerJsonData;
 var jobId;
-var attributeDataTable;
-var openAjaxRequests = [];
 var jobSpaceId;
-var attributeTotalsTable;
 var jsTree;
 
 $(document).ready(function(){
