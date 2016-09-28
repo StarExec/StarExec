@@ -5322,16 +5322,12 @@ public class Jobs {
 		}, results -> {
 			List<Triple<String, Integer, TimePair>> valueCounts = new ArrayList<>();
 			while (results.next()) {
-				valueCounts.add( new ImmutableTriple<String, Integer, TimePair>(
+				valueCounts.add( new ImmutableTriple<>(
 						results.getString("attr_value"),
 						results.getInt("attr_count"),
 						new TimePair(results.getDouble("wallclock"), results.getDouble("cpu"))));
 			}
-			// Sort the value counts based on attr_value name.
-			return valueCounts.stream()
-					.sorted((a,b) -> a.getLeft().compareTo(b.getLeft()))
-					.collect(Collectors.toList());
-
+			return valueCounts;
 		});
 	}
 
