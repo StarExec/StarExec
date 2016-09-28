@@ -5273,8 +5273,6 @@ public class Jobs {
 
     public static List<String> getJobAttributesTableHeader(int jobSpaceId) throws SQLException {
 		List<String> headers = getJobAttributeValues(jobSpaceId);
-		// Sort the list of headers before returning it.
-		List<String> sortedHeadersWithTime = new ArrayList<>();
 		// Add a column for the total time taken for each type of result.
 		return headers.stream().map(header -> header + " / time").collect(Collectors.toList());
     }
