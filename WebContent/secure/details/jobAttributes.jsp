@@ -109,7 +109,7 @@
                         ${row.middle}
                     </td>
                     <td>
-                        <span class="wallclockSum">${row.right.wallclock}</span> / <span class="cpuSum">${row.right.cpu}</span>
+                        <span class="wallclockSum">${row.right.wallclock}</span><span class="cpuSum">${row.right.cpu}</span>
                     </td>
                 </tr>
             </c:forEach>
