@@ -100,6 +100,19 @@
                 </tr>
             </thead>
             <tbody>
+            <c:forEach items="${totalsTable}" var="row">
+                <tr>
+                    <td>
+                        ${row.left}
+                    </td>
+                    <td>
+                        ${row.middle}
+                    </td>
+                    <td>
+                        <span class="wallclockSum">${row.right.wallclock}</span> / <span class="cpuSum">${row.right.cpu}</span>
+                    </td>
+                </tr>
+            </c:forEach>
             </tbody>
         </table>
     </fieldset>
