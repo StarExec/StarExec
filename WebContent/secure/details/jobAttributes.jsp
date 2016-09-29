@@ -1,6 +1,8 @@
 <%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.*,java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@ page import="org.starexec.data.to.tuples.AttributesTableRow" %>
 <%@ page import="org.starexec.app.RESTHelpers" %>
+<%@ page import="org.apache.commons.lang3.tuple.Triple" %>
+<%@ page import="org.starexec.data.to.tuples.TimePair" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -17,12 +19,15 @@
         List<String> tableHeaders = Jobs.getJobAttributesTableHeader(jobSpaceId);
         List<AttributesTableRow> table = RESTHelpers.getAttributesTable(jobSpaceId);
 
+        List<Triple<String, Integer, TimePair>> totalsTable = Jobs.getJobAttributeTotals(jobSpaceId);
+
         if(j != null) {
             request.setAttribute("tableData", table);
             request.setAttribute("jobId", j.getId());
             request.setAttribute("jobSpaceId", jobSpaceId);
             request.setAttribute("attributes", Jobs.getJobAttributesTable(space.getId()));
             request.setAttribute("tableHeaders", tableHeaders);
+            request.setAttribute("totalsTable", totalsTable);
             
         } else {
                 if (Jobs.isJobDeleted(space.getJobId())) {
@@ -94,6 +99,8 @@
                     <th>time</th>
                 </tr>
             </thead>
+            <tbody>
+            </tbody>
         </table>
     </fieldset>
 </star:template>
