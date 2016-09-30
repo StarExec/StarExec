@@ -1,25 +1,9 @@
 #explorer {
     float:left;
 }
-.matrixLegendSelection {
-	margin: 2px 0 0 0;
-}
 
-.matrixLegend {
-	float: left;
-	margin: 0 0 0 20px;
-}
 
-.matrixControls {
-	float: right;
-	margin: 0 20px 0 0;
-}
-
-.matrixStageSelection {
-	margin: 10px 0 0 0;
-}
-
-.dataTables_scrollBody #jobMatrix thead {
+.dataTables_scrollBody #attributeTable thead {
 	display: none;
 }
 
@@ -27,8 +11,8 @@
 	font-weight: bold;
 }
 
-
 div.dataTables_wrapper {
+	width: 1000px;
 	min-height: 500px;
 }
 
@@ -44,36 +28,12 @@ div.dataTables_scrollBody {
 	min-height: 500px;
 }
 
-.solverHeader {
-	font-size: 15px;
-	font-style: normal;
-	word-wrap: break-word;
-}
-
-.jobSpaceName {
-	font-size: 26px;
-	margin-top: 50px;
-	margin-left: 20px;
-	margin-bottom: 10px;
-	word-wrap: break-word;
-}
-
-td.jobMatrixCell {
+td. {
 	padding: 0 0 20px;
 	min-width: 240px;
 	text-align: center;
 }
 
-.matrixBodyRow td {
-	border-right: 1px solid black;
-	border-bottom: 1px solid black;
-	border-collapse: collapse;
-}
-
-
-table.dataTable tbody td {
-	padding: 0;
-}
 
 #wrapper {
 	width: 100%;
@@ -91,63 +51,12 @@ table.dataTable tbody td {
 	margin-right: auto;
 }
 
-.legendColorTable {
-	margin: 5px 0 0 0;
-}
-
-.matrixTextLegend {
-	margin: 5px 0 0 0;
-}
-
-.legendColor {
-	padding: 4px;
-}
-
-.solved {
-	background-color: #006400;
-}
-
-.incomplete {
-	background-color: #0066ff;
-}
-
-.wrong {
-	background-color: #ae0000;
-}
-
-.failed {
-	background-color: #ff7700;
-}
-
-.resource {
-	background-color: #cc3399;
-}
-
-.unknown {
-	background-color: #90c;
-}
-
-tr {
-	background-color: #222;
-}
-
-.benchmarksColumnHeader {
-	border-right: 1px solid black;
-}
-
 .scrollable {
 	width: 100%;
 	height: 100%;
 	margin: 0;
 	padding: 0;
 	overflow: auto;
-}
-
-
-.benchmarkHeader {
-	border-right: 1px solid black;
-	text-align: center;
-	vertical-align: middle;
 }
 
 .DTFC_LeftBodyWrapper {

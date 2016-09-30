@@ -9,6 +9,22 @@ $(document).ready(function(){
     var spaceExplorerJsonData = getSpaceExplorerJsonData(jobId);
     initSpaceExplorer(rootJobSpaceId, currentJobSpaceId, spaceExplorerJsonData);
 	setupChangeTimeButton();
+	var table = $('#attributeTable').dataTable({
+		/*
+		'columnDefs': [
+			{ 'width': '120px', 'targets': '_all' }
+		],*/
+		'bSort': false,
+		'scrollY': '300px',
+		'scrollX': '100%',
+		'scrollCollapse': true,
+		'paging': false
+	});
+
+	new $.fn.dataTable.FixedColumns(table);
+	$(window).resize(function() {
+		table.fnDraw();
+	});
 });
 
 function getSpaceExplorerJsonData(jobId) {
