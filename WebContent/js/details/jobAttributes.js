@@ -9,6 +9,11 @@ $(document).ready(function(){
     var spaceExplorerJsonData = getSpaceExplorerJsonData(jobId);
     initSpaceExplorer(rootJobSpaceId, currentJobSpaceId, spaceExplorerJsonData);
 	setupChangeTimeButton();
+
+    $('#attributeTotalsTable').dataTable({
+        'bSort': true
+    });
+
 	var table = $('#attributeTable').dataTable({
 		/*
 		'columnDefs': [
