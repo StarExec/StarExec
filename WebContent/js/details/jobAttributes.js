@@ -11,7 +11,8 @@ $(document).ready(function(){
 	setupChangeTimeButton();
 
     $('#attributeTotalsTable').dataTable({
-        'bSort': true
+        'bSort': true,
+        "bPaginate": true
     });
 
 	var table = $('#attributeTable').dataTable({
