@@ -499,9 +499,19 @@ public class JspHelpers {
 		request.setAttribute( "com", s );
 		request.setAttribute( "depends", deps );
 		request.setAttribute( "attributes", attrs );
-		
-		String content = GeneralSecurity.getHTMLSafeString( Benchmarks.getContents( b, 100 ));
-		request.setAttribute( "content", content );
+
+		try {
+			Optional<String> benchmarkContents = Benchmarks.getContents(b, 100);
+			if (!benchmarkContents.isPresent()) {
+				request.setAttribute( "content", "benchmark contents not available" );
+				return;
+			}
+			String content = GeneralSecurity.getHTMLSafeString(benchmarkContents.get());
+			request.setAttribute( "content", content );
+		} catch (IOException e) {
+			logUtil.warn(methodName, "Caught exception while trying to set benchmark contents.");
+			request.setAttribute("content", "IO Error: Could not get benchmark contents.");
+		}
 	}
 
 	private static void sendErrorMessage( int benchId, HttpServletResponse response ) throws IOException {

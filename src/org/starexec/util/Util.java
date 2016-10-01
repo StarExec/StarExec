@@ -23,16 +23,7 @@ import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -109,49 +100,52 @@ public class Util {
      * @param lineLimit The maximum number of lines to read (anything less than 0 indicates no limit)
      * @return The contents of the file as a String (null if it could not be found)
      */
-    public static String readFileLimited(File f, int lineLimit) {
-	LineIterator lineItr = null;
-	log.debug("calling readFileLimited");
-	try {
-	    // Set limit to max if it's less than 0 (anything less than 0 inclusive indicates no limit)
-	    lineLimit = Math.min(lineLimit, Integer.MAX_VALUE);
-			
-	    // If we found the correct std out file...
-	    if(f.exists()) {
-			// Create a buffer to store the lines in and an iterator to iterate over the lines
-			StringBuilder sb = new StringBuilder();
-			lineItr = FileUtils.lineIterator(f);
-			int i = 0;
-					
-			// While there are more lines in the file...
-			while (lineItr.hasNext()) {
-			    // If we've reached the line limit, break out, we're done.
-			    if(i++ == lineLimit) {
-				break;
-			    }
-						
-			    // If we're still under the limit, add the line to the buffer
-			    sb.append(lineItr.nextLine());
-						
-			    // Don't forget to add a new line, since they are stripped as they are read
-			    sb.append("\n");
+    public static Optional<String> readFileLimited(File f, int lineLimit) throws IOException {
+		final String methodName = "readFileLimited";
+		LineIterator lineItr = null;
+		logUtil.debug(methodName, "calling readFileLimited");
+		try {
+			// Set limit to max if it's less than 0 (anything less than 0 inclusive indicates no limit)
+			lineLimit = Math.min(lineLimit, Integer.MAX_VALUE);
+
+			// If we found the correct std out file...
+			if (f.exists()) {
+				// Create a buffer to store the lines in and an iterator to iterate over the lines
+				StringBuilder sb = new StringBuilder();
+				lineItr = FileUtils.lineIterator(f);
+				int i = 0;
+
+				// While there are more lines in the file...
+				while (lineItr.hasNext()) {
+					// If we've reached the line limit, break out, we're done.
+					if (i++ == lineLimit) {
+						break;
+					}
+
+					// If we're still under the limit, add the line to the buffer
+					sb.append(lineItr.nextLine());
+
+					// Don't forget to add a new line, since they are stripped as they are read
+					sb.append("\n");
+				}
+
+				// Return the buffer
+				return Optional.of(sb.toString());
+			} else {
+				// If the file doesn't exist...
+				logUtil.warn(methodName, "Could not find file to open: " + f.getAbsolutePath());
+				return Optional.empty();
 			}
-						
-			// Return the buffer
-			return sb.toString();
-	    } 
-		// If the file doesn't exist...
-		log.warn("Could not find file to open: " + f.getAbsolutePath());
-	    
-	} catch (Exception e) {
-	    log.warn(e.getMessage(), e);
-	} finally {
-	    // Release the line iterator without potential error
-	    LineIterator.closeQuietly(lineItr);
+		} catch (IOException e) {
+			logUtil.error(methodName, "Caught IOException with inputs: "
+					+"\n\tFile f: "+f.getAbsolutePath()
+					+"\n\tint lineLimit: "+lineLimit);
+			throw e;
+		} finally {
+			// Release the line iterator without potential error
+			LineIterator.closeQuietly(lineItr);
+		}
 	}
-		
-	return null;
-    }
     /**
      * Determines whether we are currently running on production.
      * @return True if this is production and false if it is a test instance

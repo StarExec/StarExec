@@ -402,17 +402,27 @@ public class RESTServices {
 	@Path("/benchmarks/{id}/contents")
 	@Produces("text/plain")	
 	public String getBenchmarkContent(@PathParam("id") int id, @QueryParam("limit") int limit, @Context HttpServletRequest request) {
-		int userId = SessionUtil.getUserId(request);
-		
-		if (BenchmarkSecurity.canUserSeeBenchmarkContents(id,userId).isSuccess()) {
-			Benchmark b=Benchmarks.get(id);
-			String contents = Benchmarks.getContents(b, limit);
-			if(!Util.isNullOrEmpty(contents)) {
-				return contents;
-			}	
-		}
+		final String methodName = "getBenchmarkContent";
 
-		return "not available";
+		logUtil.entry(methodName);
+		int userId = SessionUtil.getUserId(request);
+
+		final String notAvailableMessage = "not available";
+		if (!BenchmarkSecurity.canUserSeeBenchmarkContents(id,userId).isSuccess()) {
+			return notAvailableMessage;
+		}
+		Benchmark b=Benchmarks.get(id);
+		try {
+			Optional<String> contents = Benchmarks.getContents(b, limit);
+			if (contents.isPresent()) {
+				return contents.get();
+			} else {
+				return notAvailableMessage;
+			}
+		} catch (IOException e) {
+			logUtil.warn(methodName, "Caught IOException.");
+			return "Internal Error: not available";
+		}
 	}
 	
 	/**
@@ -517,6 +527,7 @@ public class RESTServices {
 	@Path("/jobs/pairs/{id}/stdout/{stageNumber}")
 	@Produces("text/plain")	
 	public String getJobPairStdout(@PathParam("id") int id,@PathParam("stageNumber") int stageNumber, @QueryParam("limit") int limit, @Context HttpServletRequest request) {
+		final String methodName = "getJobPairStdout";
 		JobPair jp = JobPairs.getPair(id);
 		if (jp==null) {
 			return "not available";
@@ -525,13 +536,18 @@ public class RESTServices {
 		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jp.getJobId(), userId);
 		if (!status.isSuccess()) {
 			return "not available";
-		}		
-		String stdout = JobPairs.getStdOut(jp.getId(),stageNumber, limit);
-		if(!Util.isNullOrEmpty(stdout)) {
-			return stdout;
-		}				
-		
-		return "not available";
+		}
+		try {
+			Optional<String> stdout = JobPairs.getStdOut(jp.getId(), stageNumber, limit);
+			if (stdout.isPresent()) {
+				return stdout.get();
+			} else {
+				return "not available";
+			}
+		} catch (IOException e) {
+			logUtil.warn(methodName, "Caught IOException while trying to get jobpair stdout.");
+			return "not available";
+		}
 	}
 	
 	/**

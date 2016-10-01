@@ -1,6 +1,7 @@
 package org.starexec.test.integration.database;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -162,8 +163,12 @@ public class BenchmarkTests extends TestSequence {
 	@StarexecTest 
 	private void GetContentsTest() {
 		Benchmark b=benchmarks.get(0);
-		String str=Benchmarks.getContents(b.getId(), -1);
-		Assert.assertNotNull(str);
+		try {
+			Optional<String> str = Benchmarks.getContents(b.getId(), -1);
+			Assert.assertTrue("Benchmark contents were not available.",str.isPresent());
+		} catch (IOException e) {
+			Assert.fail("Caught IOException: " + Util.getStackTrace(e));
+		}
 	}
 	
 	@StarexecTest
@@ -352,8 +357,16 @@ public class BenchmarkTests extends TestSequence {
 	@StarexecTest
 	private void getContentsLimitTest() {
 		// output should have just one line
-		Assert.assertEquals(1, Benchmarks.getContents(benchmarks.get(0), 1).split("\r\n|\r|\n").length);
-		Assert.assertEquals(1, Benchmarks.getContents(benchmarks.get(0).getId(), 1).split("\r\n|\r|\n").length);
+		try {
+			Optional<String> contentsFromBench = Benchmarks.getContents(benchmarks.get(0), 1);
+			Assert.assertTrue("Benchmark.getContents returned an empty optional.",contentsFromBench.isPresent());
+			Assert.assertEquals(1, contentsFromBench.get().split("\r\n|\r|\n").length);
+			Optional<String> contentsFromBenchId = Benchmarks.getContents(benchmarks.get(0).getId(), 1);
+			Assert.assertTrue("Benchmark.getContents returned empty when called on bench id.", contentsFromBenchId.isPresent());
+			Assert.assertEquals(1, contentsFromBenchId.get().split("\r\n|\r|\n").length);
+		} catch(IOException e) {
+			Assert.fail("Caught IOException: " + Util.getStackTrace(e));
+		}
 	}
 
 	@StarexecTest
