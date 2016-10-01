@@ -15,6 +15,7 @@ import org.starexec.data.to.pipelines.PairStageProcessorTriple;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
+import org.starexec.util.Util;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -252,7 +253,7 @@ public class JobPairTests extends TestSequence {
 				Assert.assertEquals("Job pair was not in job.", pair.getJobId(), jobId);
 			}
 		} catch (SQLException e) {
-			Assert.fail("SQL Exception was thrown.");
+			Assert.fail("SQL Exception: " + Util.getStackTrace(e));
 		}
 	}
 
@@ -271,7 +272,7 @@ public class JobPairTests extends TestSequence {
 				Assert.assertEquals("Pair was not in job with id: " + jobId, pair.getJobId(), jobId);
 			}
 		} catch (SQLException e) {
-			Assert.fail("SQL Exception was thrown.");
+			Assert.fail("SQL Exception: " + Util.getStackTrace(e));
 		}
 	}
 	
