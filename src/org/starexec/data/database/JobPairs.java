@@ -1167,7 +1167,6 @@ public class JobPairs {
 				}
 			}
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
