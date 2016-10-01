@@ -1,4 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.JobSecurity,org.apache.log4j.Logger, org.starexec.data.security.GeneralSecurity,org.starexec.data.database.*, org.starexec.data.to.*,org.starexec.data.to.pipelines.*, org.starexec.util.*, org.starexec.data.to.Status.StatusCode"%>
+<%@ page import="java.util.Optional" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -18,7 +19,12 @@
 		} else if(Permissions.canUserSeeJob(jp.getJobId(), userId)) {
 			Job j = Jobs.get(jp.getJobId());
 			for (JoblineStage stage : jp.getStages()) {
-				String output=GeneralSecurity.getHTMLSafeString(JobPairs.getStdOut(jp.getId(),stage.getStageNumber(),100));
+				Optional<String> pairOutput = JobPairs.getStdOut(jp.getId(),stage.getStageNumber(),100);
+				String tempOutput = "not available";
+				if (pairOutput.isPresent()) {
+					tempOutput = pairOutput.get();
+				}
+				String output=GeneralSecurity.getHTMLSafeString(tempOutput);
 				stage.setOutput(output);
 			}
 			User u = Users.get(j.getUserId());
