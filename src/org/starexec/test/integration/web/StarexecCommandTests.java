@@ -10,6 +10,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.starexec.command.Connection;
+import org.starexec.command.Status;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
@@ -575,7 +576,7 @@ public class StarexecCommandTests extends TestSequence {
 		String fileName=TestUtil.getRandomSolverName()+".zip";
 		File downloadDir=new File(loader.getDownloadDirectory(),fileName);
 		Assert.assertFalse(downloadDir.exists());
-		Assert.assertEquals(0,con.downloadPostProcessor(testCommunity.getId(), downloadDir.getAbsolutePath()));
+		Assert.assertEquals(Status.STATUS_SUCCESS,con.downloadPostProcessor(testCommunity.getId(), downloadDir.getAbsolutePath()));
 		Assert.assertTrue(downloadDir.exists());
 	}
 	
