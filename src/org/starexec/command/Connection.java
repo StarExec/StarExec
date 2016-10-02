@@ -1932,7 +1932,7 @@ public class Connection {
 	 * @param procClass If downloading a processor, what type of processor it is (R.BENCHMARK,"post",or "pre")
 	 * @return
 	 */
-	protected int downloadArchive(Integer id, String type, Integer since, Long lastTimestamp, String filePath,
+	protected int downloadArchive(Integer id, String type, Integer since, Long lastTimestamp, final String filePath,
 			boolean excludeSolvers, boolean excludeBenchmarks, boolean includeIds, Boolean hierarchy,
 			String procClass, boolean onlyCompleted,boolean includeAttributes,Integer updateId, Boolean longPath) throws IOException {
 		HttpResponse response=null;
