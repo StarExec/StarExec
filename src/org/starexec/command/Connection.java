@@ -1,10 +1,7 @@
 package org.starexec.command;
 
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -2025,11 +2022,6 @@ public class Connection {
 			boolean isNewJobRequest=urlParams.containsKey(C.FORMPARAM_SINCE);
 			boolean isNewOutputRequest = isNewJobRequest && urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB_OUTPUT);
 			if (isNewJobRequest) {
-				log.log("Headers, looking for 'Total-Pairs', 'Pairs-Found', 'Older-Pairs', 'Running-Pairs'");
-				for (Header header : response.getAllHeaders()) {
-					log.log("\t"+header.getName() + " : "+header.getValue());
-				}
-				log.log(HTMLParser.extractCookie(response.getAllHeaders(),"Total-Pairs"));
 				
 				totalPairs=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Total-Pairs"));
 				pairsFound=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Pairs-Found"));
@@ -2091,7 +2083,7 @@ public class Connection {
 				return C.SUCCESS_JOBDONE;
 			}
 			return 0;
-		} catch (Exception e) {
+		} catch (IOException e) {
 			log.log("Caught exception in downloadArchive: " + Util.getStackTrace(e));
 
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
