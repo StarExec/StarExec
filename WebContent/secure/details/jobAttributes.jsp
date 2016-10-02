@@ -54,6 +54,7 @@
 	<button class="changeTime">use CPU time</button>
     <fieldset id="attributesTableField">
         <legend>Attributes</legend>
+        <c:if test="${tableData.size() > 0}">
         <table id="attributeTable">
             <thead>
                 <tr>
@@ -88,6 +89,7 @@
                 </c:forEach>
             </tbody>
         </table>
+        </c:if>
     </fieldset>
     <fieldset id="attributeTotalsTableField">
         <legend>totals</legend>
