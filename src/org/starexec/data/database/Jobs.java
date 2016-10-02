@@ -5325,7 +5325,7 @@ public class Jobs {
 				valueCounts.add( new ImmutableTriple<>(
 						results.getString("attr_value"),
 						results.getInt("attr_count"),
-						new TimePair(results.getDouble("wallclock"), results.getDouble("cpu"))));
+						new TimePair(String.format("%.4f", results.getDouble("wallclock")), String.format("%.4f", results.getDouble("cpu")))));
 			}
 			return valueCounts;
 		});

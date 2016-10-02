@@ -4,19 +4,20 @@ package org.starexec.data.to.tuples;
  * Created by agieg on 9/19/2016.
  */
 public class TimePair {
-    private final double wallclock;
-    private final double cpu;
+    private final String wallclock;
+    private final String cpu;
 
-    public TimePair(double wallclock, double cpu) {
+    public TimePair(String wallclock, String cpu) {
         this.wallclock = wallclock;
         this.cpu = cpu;
     }
 
-    public double getWallclock() {
-        return wallclock;
+    public String getCpu() {
+        return cpu;
     }
 
-    public double getCpu() {
-        return cpu;
+    public String getWallclock() {
+
+        return wallclock;
     }
 }

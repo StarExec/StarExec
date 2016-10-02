@@ -5001,44 +5001,44 @@ public class RESTServices {
         return gson.toJson(headers);
     }
 
-	@POST
-	@Path("/jobs/attributes/totals/{jobSpaceId}")
-	@Produces("application/json")
-	public String getJobAttributesTotals(@PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {
-		final String methodName = "getJobAttributesTotals";
-		int userId = SessionUtil.getUserId(request);
-		ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
-
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
-		}
-
-		try {
-			JsonArray table = new JsonArray();
-			List<Triple<String, Integer, TimePair>> attrTotals = Jobs.getJobAttributeTotals(jobSpaceId);
-			for (Triple<String, Integer, TimePair> attrTotal : attrTotals) {
-				JsonArray row = new JsonArray();
-
-				// Attribute name
-				row.add(new JsonPrimitive(attrTotal.getLeft()));
-
-				// Attribute count
-				row.add(new JsonPrimitive(attrTotal.getMiddle()));
-
-				// Wallclock/Cpu formatted as HTML so we can easily hide on or the other.
-				double wallclock = attrTotal.getRight().getWallclock();
-				double cpu = attrTotal.getRight().getCpu();
-				String wallclockCpuHtml = RESTHelpers.getWallclockCpuAttributeTableHtml(wallclock, cpu);
-				row.add(new JsonPrimitive(wallclockCpuHtml));
-				table.add(row);
-			}
-			JsonObject dataTableWrapper = new JsonObject();
-			dataTableWrapper.add("aaData", table);
-			return gson.toJson(dataTableWrapper);
-		} catch (SQLException e) {
-			logUtil.error(methodName, "Caught SQLException while getting attr totals for jobspace id="+jobSpaceId, e);
-			return gson.toJson(ERROR_DATABASE);
-		}
-	}
+//	@POST
+//	@Path("/jobs/attributes/totals/{jobSpaceId}")
+//	@Produces("application/json")
+//	public String getJobAttributesTotals(@PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {
+//		final String methodName = "getJobAttributesTotals";
+//		int userId = SessionUtil.getUserId(request);
+//		ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
+//
+//		if (!status.isSuccess()) {
+//			return gson.toJson(status);
+//		}
+//
+//		try {
+//			JsonArray table = new JsonArray();
+//			List<Triple<String, Integer, TimePair>> attrTotals = Jobs.getJobAttributeTotals(jobSpaceId);
+//			for (Triple<String, Integer, TimePair> attrTotal : attrTotals) {
+//				JsonArray row = new JsonArray();
+//
+//				// Attribute name
+//				row.add(new JsonPrimitive(attrTotal.getLeft()));
+//
+//				// Attribute count
+//				row.add(new JsonPrimitive(attrTotal.getMiddle()));
+//
+//				// Wallclock/Cpu formatted as HTML so we can easily hide on or the other.
+//				String wallclock = attrTotal.getRight().getWallclock();
+//				String cpu = attrTotal.getRight().getCpu();
+//				String wallclockCpuHtml = RESTHelpers.getWallclockCpuAttributeTableHtml(wallclock, cpu);
+//				row.add(new JsonPrimitive(wallclockCpuHtml));
+//				table.add(row);
+//			}
+//			JsonObject dataTableWrapper = new JsonObject();
+//			dataTableWrapper.add("aaData", table);
+//			return gson.toJson(dataTableWrapper);
+//		} catch (SQLException e) {
+//			logUtil.error(methodName, "Caught SQLException while getting attr totals for jobspace id="+jobSpaceId, e);
+//			return gson.toJson(ERROR_DATABASE);
+//		}
+//	}
 
 }
