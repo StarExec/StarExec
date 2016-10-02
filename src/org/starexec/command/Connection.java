@@ -2,11 +2,9 @@ package org.starexec.command;
 
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -2044,14 +2042,14 @@ public class Connection {
 			IOUtils.copy(response.getEntity().getContent(), outs);
 			outs.close();
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
-			
-			if (!CommandValidator.isValidZip(out)) {
-				out.delete();
-				if (isNewOutputRequest) {
-					return C.SUCCESS_NOFILE;
-				}
-				return Status.ERROR_INTERNAL; //we got back an invalid archive for some reason
+
+			// If it's not a valid zipfile we need to return SUCCESS_NOFILE if the request was a
+			// new output request, otherwise throw the exception. Don't return anything if it is a valid zipfile.
+			Optional<Integer> statusCode = checkIfValidZipFile(out, isNewOutputRequest);
+			if (statusCode.isPresent()) {
+				return statusCode.get();
 			}
+
 			long lastModified = ArchiveUtil.getMostRecentlyModifiedFileInZip(out);
 			
 			//only after we've successfully saved the file should we update the maximum completion index,
@@ -2083,6 +2081,30 @@ public class Connection {
 			throw e;
 		} finally {
 			safeCloseResponse(response);
+		}
+	}
+
+	private static Optional<Integer> checkIfValidZipFile(File out, boolean isNewOutputRequest) throws IOException {
+		ZipFile zipfile = null;
+		try {
+			// Make sure the file is a valid zipfile.
+			zipfile = new ZipFile(out);
+			return Optional.empty();
+		} catch (IOException e) {
+			out.delete();
+			if (isNewOutputRequest) {
+				// The file shouldn't be a valid zipfile if it was a new output request.
+				return Optional.of(C.SUCCESS_NOFILE);
+			}
+			throw e; //we got back an invalid archive for some reason
+		} finally {
+			try {
+				if (zipfile != null) {
+					zipfile.close();
+					zipfile = null;
+				}
+			} catch (IOException e) {
+			}
 		}
 	}
 	
