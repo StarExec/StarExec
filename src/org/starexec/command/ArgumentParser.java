@@ -190,7 +190,6 @@ class ArgumentParser {
 	 * Sends a link request to the StarExec server and returns a status code
 	 * indicating the result of the request
 	 * @param commandParams The parameters given by the user at the command line.
-	 * @param copy True if a copy should be performed, and false if a link should be performed.
 	 * @param type The type of primitive being copied.
 	 * @return An integer error code where 0 indicates success and a negative number is an error.
 	 */
@@ -229,7 +228,6 @@ class ArgumentParser {
 	 * Sends a copy or link request to the StarExec server and returns a status code
 	 * indicating the result of the request
 	 * @param commandParams The parameters given by the user at the command line.
-	 * @param copy True if a copy should be performed, and false if a link should be performed.
 	 * @param type The type of primitive being copied.
 	 * @return An integer error code where 0 indicates success and a negative number is an error.
 	 */
@@ -258,7 +256,7 @@ class ArgumentParser {
 	
 	/**
 	 * Creates a subspace of an existing space on StarExec
-	 * @param commandParam A HashMap containing key/value pairs gathered from user input at the command line
+	 * @param commandParams A HashMap containing key/value pairs gathered from user input at the command line
 	 * @return the new space ID on success and a negative error code otherwise
 	 * @author Eric Burns
 	 */
@@ -410,7 +408,6 @@ class ArgumentParser {
 	/**
 	 * Function for downloading archives from StarExec with the given parameters and 
 	 * file output location.
-	 * @param urlParams A list of name/value pairs that will be encoded into the URL
 	 * @param commandParams A list of name/value pairs that the user entered into the command line
 	 * @return 0 on success, a negative integer on error
 	 * @author Eric Burns
@@ -456,7 +453,6 @@ class ArgumentParser {
 	/**
 	 * Lists the IDs and names of some kind of primitives in a given space or by user, depending on the
 	 * parameters given
-	 * @param urlParams Parameters to be encoded into the URL to send to the server
 	 * @param commandParams Parameters given by the user at the command line
 	 * @return An integer error code with 0 indicating success and a negative number indicating an
 	 * error
@@ -721,7 +717,7 @@ class ArgumentParser {
 	 * This function handles user requests for uploading an xml archive (space or job).
 	 * @param commandParams The key/value pairs given by the user at the command line. Should contain
 	 * ID and File keys
-	 * @param isJobUpload true if job xml upload, false otherwise
+	 * @param isJobXML true if job xml upload, false otherwise
 	 * @return 0 on success, and a negative error code otherwise
 	 * @author Julio Cervantes
 	 */
