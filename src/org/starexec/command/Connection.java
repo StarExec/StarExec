@@ -428,7 +428,6 @@ public class Connection {
 	 * Uploads an xml (job or space) to specified space
 	 * @param filePath An absolute file path to the file to upload
 	 * @param spaceID The ID of the space where the job is being uploaded to
-	 * @param isJobUpload true if job xml upload, false otherwise
 	 * @return The ids of the newly created jobs. On failure, a size 1 list with a negative error code
 	 * @author Julio Cervantes
 	 * @param isJobXML True if this is a job XML and false if it is a space XML
@@ -1001,7 +1000,6 @@ public class Connection {
 	
 	/**
 	 * Pauses or resumes a job depending on the value of pause
-	 * @param commandParams Parameters given by the user at the command line
 	 * @param pause Pauses a job if true and resumes it if false
 	 * @return 0 on success or a negative error code on failure
 	 */
@@ -1087,7 +1085,6 @@ public class Connection {
 	/**
 	 * Removes the given subspaces from the given space.
 	 * @param subspaceIds The IDs of the subspaces to remove
-	 * @param spaceID The ID of the space
 	 * @param recyclePrims If true, all primitives owned by the calling user that are present in any
 	 * space being removed will be deleted (or moved to the recycle bin, if applicable)
 	 * @return 0 on success, or a negative integer status code on failure
@@ -1099,7 +1096,6 @@ public class Connection {
 	
 	/**
 	 * Removes the association between a primitive and a space on StarExec
-	 * @param commandParams Parameters given by the user
 	 * @param type The type of primitive being remove
 	 * @return 0 on success, and a negative error code on failure
 	 * @author Eric Burns
@@ -1348,7 +1344,6 @@ public class Connection {
 	/**
 	 * Sends a copy or link request to the StarExec server and returns a status code
 	 * indicating the result of the request
-	 * @param commandParams The parameters given by the user at the command line.
 	 * @param copy True if a copy should be performed, and false if a link should be performed.
 	 * @param type The type of primitive being copied.
 	 * @return An integer error code where 0 indicates success and a negative number is an error.
@@ -1608,8 +1603,6 @@ public class Connection {
     }
 	/**
 	 * Lists the IDs and names of some kind of primitives in a given space
-	 * @param urlParams Parameters to be encoded into the URL to send to the server
-	 * @param commandParams Parameters given by the user at the command line
 	 * @return A HashMap mapping integer ids to string names
 	 * @author Eric Burns
 	 */
@@ -2106,7 +2099,6 @@ public class Connection {
 	/**
 	 * Sets the highest seen completion ID for output on a given job
 	 * @param jobID An ID of a job on StarExec
-	 * @param completion The completion ID
 	 */
 	protected void setJobOutCompletion(int jobID,PollJobData data) {
 		job_out_indices.put(jobID,data);
