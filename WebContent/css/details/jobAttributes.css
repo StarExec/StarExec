@@ -3,6 +3,8 @@
 }
 
 
+
+
 .dataTables_scrollBody #attributeTable thead {
 	display: none;
 }
@@ -28,9 +30,11 @@ div.dataTables_scrollBody {
 	min-height: 500px;
 }
 
-td. {
+td {
+	/*
 	padding: 0 0 20px;
 	min-width: 240px;
+	*/
 	text-align: center;
 }
 

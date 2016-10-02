@@ -11,7 +11,7 @@ public class C {
 
 	private C() {} // Make C uninstantiable
 
-	public static Boolean debugMode = false;
+	public static Boolean debugMode = true;
 	
 	public static String VERSION="February 06, 2016";
 	
