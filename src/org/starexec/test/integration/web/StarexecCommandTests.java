@@ -575,9 +575,10 @@ public class StarexecCommandTests extends TestSequence {
 	private void downloadProcessorTest() {
 		String fileName=TestUtil.getRandomSolverName()+".zip";
 		File downloadDir=new File(loader.getDownloadDirectory(),fileName);
-		Assert.assertFalse(downloadDir.exists());
-		Assert.assertEquals(Status.STATUS_SUCCESS,con.downloadPostProcessor(testCommunity.getId(), downloadDir.getAbsolutePath()));
-		Assert.assertTrue(downloadDir.exists());
+		Assert.assertFalse("Found download directory before the download occurred.",downloadDir.exists());
+		int status = con.downloadPostProcessor(testCommunity.getId(), downloadDir.getAbsolutePath());
+		Assert.assertEquals(Status.getStatusMessage(status),Status.STATUS_SUCCESS, status);
+		Assert.assertTrue("Could not find download directory after the download occurred.",downloadDir.exists());
 	}
 	
 	@StarexecTest
