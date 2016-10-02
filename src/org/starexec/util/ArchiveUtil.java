@@ -9,9 +9,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.file.attribute.FileTime;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -504,6 +502,7 @@ public class ArchiveUtil {
 	public static void createAndOutputZip(List<File> paths, OutputStream output, String baseName) throws IOException {
 		String newFileName=baseName;
 		ZipOutputStream stream=new ZipOutputStream(output);
+		Set<String> pathsSeen = new HashSet<>();
 		for (File f : paths) {
 			log.debug("adding new file to zip = "+f.getAbsolutePath());
 			log.debug("directory status = "+f.isDirectory());
@@ -512,6 +511,13 @@ public class ArchiveUtil {
 			} else {
 				newFileName=baseName+File.separator+f.getName();
 			}
+
+			if (pathsSeen.contains(newFileName)) {
+				continue;
+			} else {
+				pathsSeen.add(newFileName);
+			}
+
 			if (f.isDirectory()) {
 				addDirToArchive(stream,f,newFileName);
 			} else {
