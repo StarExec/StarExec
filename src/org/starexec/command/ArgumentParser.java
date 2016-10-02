@@ -12,6 +12,7 @@ package org.starexec.command;
  */
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -445,7 +446,7 @@ class ArgumentParser {
 			}
 			
 
-		} catch (Exception e) {
+		} catch (IOException e) {
 			log.log("Caught exception in downloadArchive: "+Util.getStackTrace(e));
 			return Status.ERROR_INTERNAL;
 		}

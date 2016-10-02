@@ -1728,7 +1728,7 @@ public class Connection {
  	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadSolver(Integer solverId, String filePath) {
+	public int downloadSolver(Integer solverId, String filePath) throws IOException {
 		return downloadArchive(solverId, R.SOLVER,null,null,filePath,false,false,false,false,null,false,false,null,false);
 	}
 	/**
@@ -1737,7 +1737,7 @@ public class Connection {
  	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadJobPair(Integer pairId, String filePath, Boolean longPath) {
+	public int downloadJobPair(Integer pairId, String filePath, Boolean longPath) throws IOException {
 		return downloadArchive(pairId,R.PAIR_OUTPUT,null,null,filePath,false,false,false,false,null,false,false,null,longPath);
 	}
 	
@@ -1813,7 +1813,7 @@ public class Connection {
  	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadJobOutput(Integer jobId, String filePath) {
+	public int downloadJobOutput(Integer jobId, String filePath) throws IOException {
 		return downloadArchive(jobId,R.JOB_OUTPUT,null,null,filePath,false,false,false,false,null,false,false,null,false);
 	}
 	/**
@@ -1824,7 +1824,7 @@ public class Connection {
  	 * @param onlyCompleted If true, only include completed pairs in the csv
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadJobInfo(Integer jobId, String filePath, boolean includeIds, boolean onlyCompleted) {
+	public int downloadJobInfo(Integer jobId, String filePath, boolean includeIds, boolean onlyCompleted) throws IOException {
 		return downloadArchive(jobId,R.JOB,null,null,filePath,false,false,includeIds,false,null,onlyCompleted,false,null,false);
 	}
 	/**
@@ -1835,7 +1835,7 @@ public class Connection {
 	 * @param updateId The ID of the update processor to use in the XML. No update processor if null
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadSpaceXML(Integer spaceId, String filePath,boolean getAttributes, Integer updateId) {
+	public int downloadSpaceXML(Integer spaceId, String filePath,boolean getAttributes, Integer updateId) throws IOException {
 		return downloadArchive(spaceId, R.SPACE_XML,null,null,filePath,false,false,false,false,null,false,getAttributes,updateId,false);
 	}
 	/**
@@ -1846,7 +1846,7 @@ public class Connection {
 	 * @param excludeBenchmarks If true, excludes benchmarks from the ZIP file
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadSpace(Integer spaceId, String filePath, boolean excludeSolvers, boolean excludeBenchmarks) {
+	public int downloadSpace(Integer spaceId, String filePath, boolean excludeSolvers, boolean excludeBenchmarks) throws IOException {
 		return downloadArchive(spaceId, R.SPACE,null,null,filePath,excludeSolvers,excludeBenchmarks,false,false,null,false,false,null,false);
 	}
 	/**
@@ -1857,7 +1857,7 @@ public class Connection {
 	 * @param excludeBenchmarks If true, excludes benchmarks from the ZIP file
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadSpaceHierarchy(Integer spaceId, String filePath,boolean excludeSolvers,boolean excludeBenchmarks) {
+	public int downloadSpaceHierarchy(Integer spaceId, String filePath,boolean excludeSolvers,boolean excludeBenchmarks) throws IOException {
 		return downloadArchive(spaceId,R.SPACE,null,null,filePath,excludeSolvers,excludeBenchmarks,false,true,null,false,false,null,false);
 	}
 	/**
@@ -1866,7 +1866,7 @@ public class Connection {
  	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadPreProcessor(Integer procId, String filePath) {
+	public int downloadPreProcessor(Integer procId, String filePath) throws IOException {
 		return downloadArchive(procId,R.PROCESSOR,null,null,filePath,false,false,false,false,"pre",false,false,null,false);
 	}
 	/**
@@ -1875,7 +1875,7 @@ public class Connection {
  	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadBenchProcessor(Integer procId, String filePath) {
+	public int downloadBenchProcessor(Integer procId, String filePath) throws IOException {
 		return downloadArchive(procId,R.PROCESSOR,null,null,filePath,false,false,false,false,R.BENCHMARK,false,false,null,false);
 	}
 	/**
@@ -1884,7 +1884,7 @@ public class Connection {
  	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadPostProcessor(Integer procId, String filePath) {
+	public int downloadPostProcessor(Integer procId, String filePath) throws IOException {
 		return downloadArchive(procId,R.PROCESSOR,null,null,filePath,false,false,false,false,"post",false,false,null,false);
 	}
 	/**
@@ -1893,7 +1893,7 @@ public class Connection {
  	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadBenchmark(Integer benchId,String filePath) {
+	public int downloadBenchmark(Integer benchId,String filePath) throws IOException {
 		return downloadArchive(benchId,R.BENCHMARK,null,null,filePath,false,false,false,false,null,false,false,null,false);
 	}
 	/**
@@ -1905,7 +1905,7 @@ public class Connection {
  	 * @param since A completion ID, indicating that only pairs with completion IDs greater should be included
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadNewJobInfo(Integer jobId, String filePath, boolean includeIds, int since) {
+	public int downloadNewJobInfo(Integer jobId, String filePath, boolean includeIds, int since) throws IOException {
 		return downloadArchive(jobId,R.JOB,since,null,filePath,false,false,includeIds,false,null,false,false,null,false);
 	}
 	/**
@@ -1916,7 +1916,7 @@ public class Connection {
  	 * @param since A completion ID, indicating that only pairs with completion IDs greater should be included
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadNewJobOutput(Integer jobId, String filePath, int since, long lastModified) {
+	public int downloadNewJobOutput(Integer jobId, String filePath, int since, long lastModified) throws IOException {
 		return downloadArchive(jobId,R.JOB_OUTPUT,since,lastModified,filePath,false,false,false,false,null,false,false,null,false);
 	}
 	
@@ -1936,7 +1936,7 @@ public class Connection {
 	 */
 	protected int downloadArchive(Integer id, String type, Integer since, Long lastTimestamp, String filePath,
 			boolean excludeSolvers, boolean excludeBenchmarks, boolean includeIds, Boolean hierarchy,
-			String procClass, boolean onlyCompleted,boolean includeAttributes,Integer updateId, Boolean longPath) {
+			String procClass, boolean onlyCompleted,boolean includeAttributes,Integer updateId, Boolean longPath) throws IOException {
 		HttpResponse response=null;
 		
 		try {
@@ -2080,11 +2080,10 @@ public class Connection {
 			log.log("Caught exception in downloadArchive: " + Util.getStackTrace(e));
 
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
-			return Status.ERROR_INTERNAL;
+			throw e;
 		} finally {
 			safeCloseResponse(response);
 		}
-		
 	}
 	
 	/**
