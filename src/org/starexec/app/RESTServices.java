@@ -100,8 +100,8 @@ public class RESTServices {
 	private static final LogUtil logUtil = new LogUtil(log);
 	private static Gson gson = new Gson();
 	private static Gson limitGson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-	
-	protected static final ValidatorStatusCode ERROR_DATABASE=new ValidatorStatusCode(false, "There was an internal database error processing your request");
+
+	public static final ValidatorStatusCode ERROR_DATABASE=new ValidatorStatusCode(false, "There was an internal database error processing your request");
 	private static final ValidatorStatusCode ERROR_INTERNAL_SERVER=new ValidatorStatusCode(false, "There was an internal server error processing your request");
 	private static final ValidatorStatusCode ERROR_INVALID_WEBSITE_TYPE=new ValidatorStatusCode(false, "The supplied website type was invalid");
 	private static final ValidatorStatusCode ERROR_EDIT_VAL_ABSENT=new ValidatorStatusCode(false, "No value specified");
@@ -2017,13 +2017,20 @@ public class RESTServices {
 	@POST
 	@Path("/delete/defaultSettings/{id}")
 	@Produces("application/json")
-	public String deleteDefaultSettings(@PathParam("id") int id, @Context HttpServletRequest request) {	
+	public String deleteDefaultSettings(@PathParam("id") int id, @Context HttpServletRequest request) {
+		final String methodName = "deleteDefaultSettings";
 		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=SettingSecurity.canModifySettings(id,userId);
-		
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
+		try {
+			ValidatorStatusCode status = SettingSecurity.canModifySettings(id, userId);
+			if (!status.isSuccess()) {
+				return gson.toJson(status);
+			}
+		} catch (SQLException e) {
+			logUtil.logException(methodName, e);
+			return gson.toJson(ERROR_DATABASE);
 		}
+		
+
 		try {			
 			boolean success=Settings.deleteProfile(id);
 			// Passed validation AND Database update successful
@@ -2051,13 +2058,20 @@ public class RESTServices {
 	@Path("/edit/defaultSettings/{attr}/{id}")
 	@Produces("application/json")
 	public String editCommunityDefaultSettings(@PathParam("attr") String attribute, @PathParam("id") int id, @Context HttpServletRequest request) {	
+		final String methodName = "editCommunityDefaultSettings";
 		int userId=SessionUtil.getUserId(request);
 		String newValue=(String)request.getParameter("val");
-		ValidatorStatusCode status=SettingSecurity.canUpdateSettings(id,attribute,newValue, userId);
-		
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
+		try {
+			ValidatorStatusCode status = SettingSecurity.canUpdateSettings(id, attribute, newValue, userId);
+			if (!status.isSuccess()) {
+				return gson.toJson(status);
+			}
+		} catch (SQLException e) {
+			logUtil.logException(methodName, e);
+			return gson.toJson(ERROR_DATABASE);
 		}
+		
+
 		try {			
 			if(Util.isNullOrEmpty((String)request.getParameter("val"))){
 				return gson.toJson(ERROR_EDIT_VAL_ABSENT);

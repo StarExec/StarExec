@@ -4,14 +4,19 @@ import org.apache.log4j.Logger;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Space;
+import org.starexec.util.LogUtil;
 
+import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 public class Settings {
 	private static Logger log=Logger.getLogger(Settings.class);
+	private static LogUtil logUtil = new LogUtil(log);
+
 	protected static int addNewSettingsProfile(DefaultSettings settings) {
 		Connection con=null;
 		CallableStatement procedure=null;
@@ -87,7 +92,8 @@ public class Settings {
 	 * @param results
 	 * @return
 	 */
-	protected static DefaultSettings resultsToSettings(ResultSet results) {
+	protected static DefaultSettings resultsToSettings(ResultSet results) throws SQLException {
+		final String methodName = "resultsToSettings";
 		try {
 			DefaultSettings settings=new DefaultSettings();
 			settings.setId(results.getInt("id"));
@@ -119,11 +125,10 @@ public class Settings {
 			settings.setPrimId(results.getInt("prim_id"));
 			settings.setType(results.getInt("setting_type"));
 			return settings;
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
+		} catch (SQLException e) {
+			logUtil.error(methodName, "Caught SQL exception while getting results. Throwing...",e);
+			throw e;
 		}
-		return null;
-		
 	}
 	
 	/**
@@ -257,7 +262,8 @@ public class Settings {
 	 * @param id 
 	 * @return
 	 */
-	public static DefaultSettings getProfileById(int id) {
+	public static DefaultSettings getProfileById(int id) throws SQLException {
+		final String methodName = "getProfileById";
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
@@ -269,14 +275,15 @@ public class Settings {
 			if (results.next()) {
 				return resultsToSettings(results);
 			}
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
+		} catch (SQLException e) {
+			logUtil.error(methodName, "SQLException caught while querying database.", e);
+			throw e;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		return null; //error;
+		return null;
 	}
 	
 	

@@ -100,7 +100,7 @@ public class C {
 	public static String COMMAND_GETJOBINFO="getjobinfo";
 	public static String COMMAND_GETSOLVER="getsolver";
 	public static String COMMAND_GETSPACEXML="getspacexml";
-        public static String COMMAND_GETJOBXML="getjobxml";
+	public static String COMMAND_GETJOBXML="getjobxml";
 	public static String COMMAND_GETBENCH="getbench";
 	public static String COMMAND_GETJOBPAIR="getjobpair";
 	public static String COMMAND_GETJOBPAIRS="getjobpairs";

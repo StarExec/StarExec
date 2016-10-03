@@ -1,6 +1,7 @@
 package org.starexec.test.integration.database;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,6 +31,7 @@ import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Hash;
+import org.starexec.util.Util;
 
 
 /**
@@ -495,7 +497,11 @@ public class UserTests extends TestSequence {
 		d.setCpuTimeout(101);
 		d.setWallclockTimeout(2421);
 		int id = Users.createNewDefaultSettings(d);
-		Assert.assertEquals(d,Settings.getProfileById(id));
+		try {
+			Assert.assertEquals(d, Settings.getProfileById(id));
+		} catch (SQLException e) {
+			Assert.fail("Caught SQLException: " + Util.getStackTrace(e));
+		}
 	}
 	
 	@StarexecTest
