@@ -27,7 +27,7 @@ public class GridEngineBackend implements Backend{
     private static String QUEUE_STATS_COMMAND = "qstat -f";				// The SGE command to get stats about all the queues
     private static String NODE_LIST_COMMAND = "qconf -sel";					// The SGE command to execute to get a list of all worker nodes
     private static String QUEUE_ASSOC_PATTERN = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,16}\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
-
+	private static String QUEUE_GET_SLOTS_PATTERN = "qconf -sq QUEUE_NAME | grep 'slots' | grep -o '[0-9]\\{1,\\}'";
 
     private static String GRID_ENGINE_PATH = "/cluster/gridengine-8.1.8/bin/lx-amd64/";
 	
