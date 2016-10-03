@@ -47,12 +47,20 @@ public class LogUtil {
 		log.error(prefix(method)+message, t);
 	}
 
+	public <T extends Throwable> void logAndThrow(String method, String message, T t) throws T {
+		error(method, "Caught and throwing " + t.getClass().getSimpleName() + ": " + message, t);
+	}
+
 	public <T extends Throwable> void logAndThrow(String method, T t) throws T {
-		error(method, "Caught and throwing " + t.getClass().getSimpleName(), t);
+		logAndThrow(method, "", t);
+	}
+
+		public <T extends Throwable> void logException(String method, String message, T t) {
+		warn(method, "Caught " + t.getClass().getSimpleName() + ": " + message, t);
 	}
 
 	public <T extends Throwable> void logException(String method, T t) {
-		warn(method, "Caught " + t.getClass().getSimpleName(), t);
+		logException(method, "", t);
 	}
 
 	public void fatal(String method, String message) {
