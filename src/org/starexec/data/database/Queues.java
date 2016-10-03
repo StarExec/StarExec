@@ -240,14 +240,7 @@ public class Queues {
 			procedure.setInt(1, qid);			
 			results = procedure.executeQuery();
 			if(results.next()){
-				Queue queue = new Queue();
-				queue.setName(results.getString("name"));
-				queue.setId(results.getInt("id"));
-				queue.setStatus(results.getString("status"));
-				queue.setWallTimeout(results.getInt("clockTimeout"));
-				queue.setCpuTimeout(results.getInt("cpuTimeout"));
-				queue.setGlobalAccess(results.getBoolean("global_access"));
-				return queue;				
+				return resultSetToQueue(results);
 			}										
 			
 		} catch (Exception e) {
