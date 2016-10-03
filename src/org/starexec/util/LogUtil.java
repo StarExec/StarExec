@@ -51,6 +51,10 @@ public class LogUtil {
 		error(method, "Caught and throwing " + t.getClass().getSimpleName(), t);
 	}
 
+	public <T extends Throwable> void logException(String method, T t) {
+		warn(method, "Caught " + t.getClass().getSimpleName(), t);
+	}
+
 	public void fatal(String method, String message) {
 		log.fatal(prefix(method)+message);
 	}
