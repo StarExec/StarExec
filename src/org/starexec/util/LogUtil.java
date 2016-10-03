@@ -35,7 +35,7 @@ public class LogUtil {
 		log.warn(prefix(method)+message);
 	}
 
-	public void warnt(String method, String message, Throwable t) {
+	public void warn(String method, String message, Throwable t) {
 		log.warn(prefix(method)+message, t);
 	}
 
@@ -45,6 +45,10 @@ public class LogUtil {
 
 	public void error(String method, String message, Throwable t) {
 		log.error(prefix(method)+message, t);
+	}
+
+	public <T extends Throwable> void logAndThrow(String method, T t) throws T {
+		error(method, "Caught and throwing " + t.getClass().getSimpleName(), t);
 	}
 
 	public void fatal(String method, String message) {
