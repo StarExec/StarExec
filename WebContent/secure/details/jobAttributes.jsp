@@ -25,7 +25,6 @@
             request.setAttribute("tableData", table);
             request.setAttribute("jobId", j.getId());
             request.setAttribute("jobSpaceId", jobSpaceId);
-            request.setAttribute("attributes", Jobs.getJobAttributesTable(space.getId()));
             request.setAttribute("tableHeaders", tableHeaders);
             request.setAttribute("totalsTable", totalsTable);
             
