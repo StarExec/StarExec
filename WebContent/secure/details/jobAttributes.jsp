@@ -50,7 +50,7 @@
         <ul id="exploreList">
         </ul>
     </div>
-    <p>Legend: "Attribute Count" / "Time"</p>
+    <p class="attributesLegend">Legend: "Attribute Count" / "Time"</p>
 	<button class="changeTime">use CPU time</button>
     <c:if test="${tableData.size() > 0}">
     <fieldset id="attributesTableField">
