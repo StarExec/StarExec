@@ -1,6 +1,7 @@
 package org.starexec.servlets;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -113,7 +114,7 @@ public class CreateJob extends HttpServlet {
 	 * @param settingsId ID of the default settings profile to use for the job
 	 * @return The ID of the job that was newly created, or -1 on error
 	 */
-	public static int buildSolverTestJob(int solverId, int spaceId, int userId, int settingsId) {
+	public static int buildSolverTestJob(int solverId, int spaceId, int userId, int settingsId) throws SQLException {
 		Solver s=Solvers.get(solverId);
 		DefaultSettings settings=Settings.getProfileById(settingsId);
         int preProcessorId = ((settings.getPreProcessorId() == null) ? -1 : settings.getPreProcessorId());

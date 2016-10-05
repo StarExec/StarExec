@@ -1551,7 +1551,7 @@ public class Benchmarks {
 	 * @param limit the maximum number of lines to return, or no limit if less than 0
 	 * @return The file contents as a string
 	 */
-	public static String getContents(Benchmark b, int limit) {
+	public static Optional<String> getContents(Benchmark b, int limit) throws IOException {
 		File file = new File(b.getPath());
 		return Util.readFileLimited(file, limit);
 	}
@@ -1562,7 +1562,7 @@ public class Benchmarks {
 	 * @param limit the maximum number of lines to return
 	 * @return The file contents as a string
 	 */
-	public static String getContents(int benchId, int limit) {
+	public static Optional<String> getContents(int benchId, int limit) throws IOException {
 		return Benchmarks.getContents(Benchmarks.get(benchId), limit);
 	}
 

@@ -9,7 +9,7 @@ import java.util.HashMap;
  */
 public class Status {
 	//Error codes for command parsing. The messages below give descriptions of each code suitable for presenting ot users.
-	public static int STATUS_SUCCESS;
+	public static int STATUS_SUCCESS=0;
 	public static int ERROR_BAD_COMMAND=-1;
 	public static int ERROR_BAD_ARGS=-2;
 	public static int ERROR_SERVER=-4; //no error message exists for this status-- it is used when there is a server-supplied message

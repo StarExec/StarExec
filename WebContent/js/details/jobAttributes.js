@@ -1,26 +1,42 @@
-var rootJobSpaceId;
-var spaceExplorerJsonData;
-var jobId;
-var attributeDataTable;
-var openAjaxRequests = [];
-var jobSpaceId;
 
 $(document).ready(function(){
-    jobSpaceId=getParameterByName('id');
-    rootJobSpaceId=getParameterByName('id');
-    jsTree=makeSpaceTree("#exploreList");
+    'use strict';
+    var currentJobSpaceId=getParameterByName('id');
+    var rootJobSpaceId=getParameterByName('id');
+    var jsTree=makeSpaceTree("#exploreList");
     // Initialize the jstree plugin for the explorer list
-    jobId = $('#data').data('jobid');
-    spaceExplorerJsonData = getSpaceExplorerJsonData();
-    initSpaceExplorer();
-    initDataTables();
+    var jobId = $('#data').data('jobid');
+    var spaceExplorerJsonData = getSpaceExplorerJsonData(jobId);
+    initSpaceExplorer(rootJobSpaceId, currentJobSpaceId, spaceExplorerJsonData);
+	setupChangeTimeButton();
+
+    $('#attributeTotalsTable').dataTable({
+        'bSort': true,
+        "bPaginate": true
+    });
+
+	var table = $('#attributeTable').dataTable({
+		/*
+		'columnDefs': [
+			{ 'width': '120px', 'targets': '_all' }
+		],*/
+		'bSort': false,
+		'scrollY': '300px',
+		'scrollX': '100%',
+		'scrollCollapse': true,
+		'paging': false
+	});
+
+	new $.fn.dataTable.FixedColumns(table);
+	$(window).resize(function() {
+		table.fnDraw();
+	});
 });
 
-function getSpaceExplorerJsonData() {
+function getSpaceExplorerJsonData(jobId) {
     'use strict';
-    var spaceExplorerJsonData = {};
     var url = starexecRoot+"services/space/" +jobId+ "/jobspaces/true";
-    spaceExplorerJsonData = {
+    return {
         "ajax" : {
             "url" : url, // Where we will be getting json data from
             "data" : function (n) {
@@ -30,21 +46,51 @@ function getSpaceExplorerJsonData() {
             }
         }
     };
-    return spaceExplorerJsonData;
+}
+function setupChangeTimeButton() {
+
+
+	$(".changeTime").button({
+		icons: {
+			primary: "ui-icon-refresh"
+		}
+	});
+
+	var isWallclock = true;
+	$('.cpuSum').hide();
+
+
+	var toggleTime = function() {
+		if (isWallclock) {
+			$('.changeTime .ui-button-text').html('use wallclock time');
+			isWallclock = false;
+			$('.cpuSum').show();
+			$('.wallclockSum').hide();
+		} else {
+			isWallclock = true;
+			$('.changeTime .ui-button-text').html('use CPU time');
+			$('.wallclockSum').show();
+			$('.cpuSum').hide();
+		}
+	}
+
+
+	$(".changeTime").click(toggleTime);
+		
 }
 
 
-function initSpaceExplorer() {
+function initSpaceExplorer(rootJobSpaceId, currentJobSpaceId, spaceExplorerJsonData) {
     // Set the path to the css theme for the jstree plugin
 
     $.jstree._themes = starexecRoot+"css/jstree/";
-    var id;
 
     // Initialize the jstree plugin for the explorer list
     /*$("#exploreList").bind("loaded.jstree", function() {
         log("exploreList tree has finished loading.");
         $("#exploreList").jstree("select_node", ".rootNode");
     })*/
+	console.log('Setting up explore list.');
     $("#exploreList").jstree({
         "json_data" : spaceExplorerJsonData,
         "themes" : {
@@ -73,77 +119,16 @@ function initSpaceExplorer() {
         "plugins" : [ "types", "themes", "json_data", "ui", "cookies"] ,
         "core" : { animation : 200 }
     }).bind("select_node.jstree", function (event, data) {
-            killAjaxRequests();
-            // When a node is clicked, get its ID and display the info in the details pane
-            id = data.rslt.obj.attr("id");
-            console.log(id);
-            jobSpaceId = id;
-            name = data.rslt.obj.attr("name");
-            console.log(data.rslt.obj);
-            maxStages = data.rslt.obj.attr("maxStages");
-            setMaxStagesDropdown(parseInt(maxStages));
-            $('#spaceId').text("id: " + id);
-            reloadTables(id);
+        // Change the page to the appropriate jobspace.
+        var newJobSpaceId = data.rslt.obj.attr("id");
+		log("New job space id: "+newJobSpaceId);
+
+		if (newJobSpaceId !== currentJobSpaceId) {
+			window.location.href=starexecRoot+'secure/details/jobAttributes.jsp?id='+newJobSpaceId;
+		}
     }).on( "click", "a", function (event, data) {
         event.preventDefault();  // This just disable's links in the node title
     });
     log("Initialized exploreList tree.");
 
-}
-
-function reloadTables(id) {
-    attributeDataTable.DataTable.destroy();
-    $('#attributeTable').remove();
-    $('legend').after('<table id="attributeTable"></table>');
-    $('#attributeTable').append('<thead></thead>');
-    $('#attributeTable thead').append('<tr></tr>');
-    $('#attributeTable tr').append('<th>solver</th>');
-    $('#attributeTable tr').append('<th>config</th>');
-    $.post(starexecRoot+"services/jobs/attributes/header/"+jobSpaceId,
-            {},
-            populateTableHeaders,
-            "json");
-}
-
-function populateTableHeaders(headers) {
-    console.log("headers");
-    console.log(headers);
-    for(var h in headers) {
-        $('#attributeTable tr').append('<th>' + headers[h] + '</th>');
-    }
-    initDataTables();
-}
-
-function killAjaxRequests() {
-    for (var i = 0; i < openAjaxRequests.length; i++) {
-        openAjaxRequests[i].abort();
-    }
-    openAjaxRequests = []
-}
-
-function initDataTables() {
-    attributeDataTable = $('#attributeTable').dataTable( {
-        "sDom"          :getDataTablesDom(),
-        "iDisplayStart" : 0,
-        "iDisplayLength" : defaultPageSize,
-        "bServerSide"       : false,
-        "sAjaxSource"       : starexecRoot+"services/",
-        "sServerMethod"     : 'POST',
-        "fnServerData"      : fnPaginationHandler
-    });
-
-}
-
-function fnPaginationHandler(sSource, aoData, fnCallback) {
-    $.post(
-            sSource + "jobs/attributes/"+jobSpaceId,
-            aoData,
-            function(nextDataTablePage){
-                s=parseReturnCode(nextDataTablePage);
-                if (s) {
-                    fnCallback(nextDataTablePage);
-                }
-            },
-            "json"
-            )
 }

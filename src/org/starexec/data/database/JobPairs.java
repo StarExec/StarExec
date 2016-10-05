@@ -1,17 +1,14 @@
 package org.starexec.data.database;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
@@ -265,10 +262,10 @@ public class JobPairs {
      * @param limit The maximum number of lines to return
      * @return All console output from a job pair run for the given pair
      */
-    public static String getStdOut(int pairId,int stageNumber,int limit) {		
+    public static Optional<String> getStdOut(int pairId,int stageNumber,int limit) throws IOException {
     	String stdoutPath= JobPairs.getStdout(pairId,stageNumber);
-    	
-    	return Util.readFileLimited(new File(stdoutPath), limit);
+    	Optional<String> stdOut = Util.readFileLimited(new File(stdoutPath), limit);
+    	return stdOut;
     }
 
     
@@ -1170,7 +1167,6 @@ public class JobPairs {
 				}
 			}
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}

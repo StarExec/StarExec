@@ -15,6 +15,7 @@ import org.starexec.data.to.pipelines.PairStageProcessorTriple;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
+import org.starexec.util.Util;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -128,8 +129,12 @@ public class JobPairTests extends TestSequence {
 	@StarexecTest
 	private void getStdOutTest() {
 		JobPair jp = job.getJobPairs().get(0);
-		String output = JobPairs.getStdOut(jp.getId(), 1, 1000);
-		Assert.assertNotNull(output);
+		try {
+			Optional<String> output = JobPairs.getStdOut(jp.getId(), 1, 1000);
+			Assert.assertTrue("stdout for job pairs was not available.",output.isPresent());
+		} catch (IOException e) {
+			Assert.fail("IOException: " + Util.getStackTrace(e));
+		}
 	}
 	@StarexecTest
 	private void getStdOutNoStagesTest() {
@@ -252,7 +257,7 @@ public class JobPairTests extends TestSequence {
 				Assert.assertEquals("Job pair was not in job.", pair.getJobId(), jobId);
 			}
 		} catch (SQLException e) {
-			Assert.fail("SQL Exception was thrown.");
+			Assert.fail("SQL Exception: " + Util.getStackTrace(e));
 		}
 	}
 
@@ -271,7 +276,7 @@ public class JobPairTests extends TestSequence {
 				Assert.assertEquals("Pair was not in job with id: " + jobId, pair.getJobId(), jobId);
 			}
 		} catch (SQLException e) {
-			Assert.fail("SQL Exception was thrown.");
+			Assert.fail("SQL Exception: " + Util.getStackTrace(e));
 		}
 	}
 	

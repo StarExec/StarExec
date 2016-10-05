@@ -11,6 +11,9 @@ import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
+import org.starexec.util.Util;
+
+import java.sql.SQLException;
 
 public class SettingSecurityTests extends TestSequence {
 	User u=null;
@@ -24,10 +27,14 @@ public class SettingSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void canModifySettingsTest() {
-		Assert.assertTrue(SettingSecurity.canModifySettings(s.getId(), u.getId()).isSuccess());
-		Assert.assertTrue(SettingSecurity.canModifySettings(s.getId(), admin.getId()).isSuccess());
-		Assert.assertFalse(SettingSecurity.canModifySettings(s.getId(), u2.getId()).isSuccess());
-		Assert.assertFalse(SettingSecurity.canModifySettings(-1, u2.getId()).isSuccess());
+		try {
+			Assert.assertTrue(SettingSecurity.canModifySettings(s.getId(), u.getId()).isSuccess());
+			Assert.assertTrue(SettingSecurity.canModifySettings(s.getId(), admin.getId()).isSuccess());
+			Assert.assertFalse(SettingSecurity.canModifySettings(s.getId(), u2.getId()).isSuccess());
+			Assert.assertFalse(SettingSecurity.canModifySettings(-1, u2.getId()).isSuccess());
+		} catch (SQLException e) {
+			Assert.fail("Caught SQLException: " + Util.getStackTrace(e));
+		}
 	}
 	
 	@StarexecTest

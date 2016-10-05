@@ -87,6 +87,13 @@ public class GetPageTests extends TestSequence {
 	private void getStatisticsTest() {
 		Assert.assertTrue(con.canGetPage("secure/explore/statistics.jsp"));
 	}
+
+	@StarexecTest
+	private void getJobAttributesTest() {
+		Assert.assertTrue(con.canGetPage("secure/details/jobAttributes.jsp?id="+job.getPrimarySpace()));
+		Assert.assertTrue(adminCon.canGetPage("secure/details/jobAttributes.jsp?id="+job.getPrimarySpace()));
+		Assert.assertFalse(nonUserCon.canGetPage("secure/details/jobAttributes.jsp?id="+job.getPrimarySpace()));
+	}
 	
 	@StarexecTest
 	private void getReportsTest() {

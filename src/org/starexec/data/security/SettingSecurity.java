@@ -1,5 +1,6 @@
 package org.starexec.data.security;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import org.starexec.data.database.Permissions;
@@ -61,7 +62,7 @@ public class SettingSecurity {
 	 * @param userId
 	 * @return
 	 */
-	public static ValidatorStatusCode canModifySettings(int id, int userId) {
+	public static ValidatorStatusCode canModifySettings(int id, int userId) throws SQLException {
 		DefaultSettings d=Settings.getProfileById(id);
 		if (d==null) {
 			return new ValidatorStatusCode(false, "The given setting profile could not be found");
@@ -91,7 +92,7 @@ public class SettingSecurity {
 	 * @return 0 if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	
-	public static ValidatorStatusCode canUpdateSettings(int id, String attribute, String newValue, int userId) {
+	public static ValidatorStatusCode canUpdateSettings(int id, String attribute, String newValue, int userId) throws SQLException {
 		boolean isInt = Validator.isValidPosInteger(newValue);
 				
 		if (attribute.equals("CpuTimeout") || attribute.equals("ClockTimeout")) {

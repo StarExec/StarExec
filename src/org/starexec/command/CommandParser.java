@@ -15,10 +15,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 
+import org.starexec.util.Util;
+
 class CommandParser {
-	
+	final private CommandLogger log = CommandLogger.getLogger(CommandParser.class);
 	private ArgumentParser parser=null;
 	
 	private boolean returnIDsOnUpload=false;
@@ -487,8 +490,7 @@ class CommandParser {
 	 * Run commands given in a file in succession
 	 * @param filePath The path to a file containing a list of commands
 	 * @param verbose Indicates whether to print status
-	 * @param test
-	 * @return 
+	 * @return
 	 * @author Eric Burns
 	 */
 	protected int runFile(String filePath, boolean verbose) {
@@ -710,6 +712,7 @@ class CommandParser {
 	
 	protected int pollJob(HashMap<String,String> commandParams) {
 		int valid=CommandValidator.isValidPollJobRequest(commandParams);
+		log.log("Is valid: " + valid);
 		if (valid<0) {
 			return valid;
 		}
@@ -758,6 +761,7 @@ class CommandParser {
 					infoDone=true;
 				
 				} else if (status<0) {
+					log.log("Failed to downloadArchive");
 					return status;
 				}
 				nextName=baseFileName+"-output"+String.valueOf(outputCounter)+extension;
@@ -789,6 +793,7 @@ class CommandParser {
 			}
 
 		} catch (Exception e) {
+			log.log(Util.getStackTrace(e));
 			e.printStackTrace();
 			return Status.ERROR_INTERNAL;
 		}

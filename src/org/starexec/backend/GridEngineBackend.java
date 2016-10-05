@@ -2,10 +2,7 @@ package org.starexec.backend;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
@@ -13,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
+import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
@@ -27,13 +25,15 @@ public class GridEngineBackend implements Backend{
     private static String QUEUE_STATS_COMMAND = "qstat -f";				// The SGE command to get stats about all the queues
     private static String NODE_LIST_COMMAND = "qconf -sel";					// The SGE command to execute to get a list of all worker nodes
     private static String QUEUE_ASSOC_PATTERN = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,16}\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
-
+	private static String QUEUE_NAME_PATTERN = "QUEUE_NAME";
+	private static String QUEUE_GET_SLOTS_PATTERN = "qconf -sq " + QUEUE_NAME_PATTERN + " | grep 'slots' | grep -o '[0-9]\\{1,\\}'";
 
     private static String GRID_ENGINE_PATH = "/cluster/gridengine-8.1.8/bin/lx-amd64/";
 	
 	
     private Session session = null;
     private Logger log;
+	private LogUtil logUtil;
     private String BACKEND_ROOT = null;
     
     // The regex patterns used to parse SGE output
@@ -49,7 +49,8 @@ public class GridEngineBackend implements Backend{
      * after construction.
      */
     public GridEngineBackend(){
-    	log = Logger.getLogger(GridEngineBackend.class);
+		log = Logger.getLogger(GridEngineBackend.class);
+		logUtil = new LogUtil(log);
     }
 
     /**
@@ -285,6 +286,28 @@ public class GridEngineBackend implements Backend{
 		
 
     }
+
+	/**
+	 * Gets the number of slots in a given queue.
+	 * @param queueName the name of the queue to get the number of slots for.
+	 * @return An optional with the number of slots for the queue. Empty if the queue doesn't exist.
+	 * @throws IOException
+	 */
+    public Optional<Integer> getSlotsInQueue(String queueName) throws IOException {
+		final String methodName = "getSlotsInQueue";
+		try {
+			String results = Util.executeCommand(QUEUE_GET_SLOTS_PATTERN.replace(QUEUE_NAME_PATTERN, queueName));
+			logUtil.debug(methodName, "Got result: '" + results + "'");
+			results = results.trim();
+			if (!results.matches("[0-9]+")) {
+				return Optional.empty();
+			}
+			return Optional.of(Integer.parseInt(results));
+		} catch (IOException e) {
+			logUtil.logException(methodName, e);
+			throw e;
+		}
+	}
 
     /**
      * should clear any states caused by errors on both queues and nodes

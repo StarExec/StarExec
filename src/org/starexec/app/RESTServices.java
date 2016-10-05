@@ -1,5 +1,7 @@
 package org.starexec.app;
 
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -27,6 +29,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
@@ -61,7 +64,9 @@ import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.security.UploadSecurity;
 import org.starexec.data.security.UserSecurity;
 import org.starexec.data.to.*;
+import org.starexec.data.to.enums.Primitive;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.data.to.tuples.TimePair;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.exceptions.StarExecSecurityException;
@@ -95,8 +100,8 @@ public class RESTServices {
 	private static final LogUtil logUtil = new LogUtil(log);
 	private static Gson gson = new Gson();
 	private static Gson limitGson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-	
-	protected static final ValidatorStatusCode ERROR_DATABASE=new ValidatorStatusCode(false, "There was an internal database error processing your request");
+
+	public static final ValidatorStatusCode ERROR_DATABASE=new ValidatorStatusCode(false, "There was an internal database error processing your request");
 	private static final ValidatorStatusCode ERROR_INTERNAL_SERVER=new ValidatorStatusCode(false, "There was an internal server error processing your request");
 	private static final ValidatorStatusCode ERROR_INVALID_WEBSITE_TYPE=new ValidatorStatusCode(false, "The supplied website type was invalid");
 	private static final ValidatorStatusCode ERROR_EDIT_VAL_ABSENT=new ValidatorStatusCode(false, "No value specified");
@@ -397,17 +402,27 @@ public class RESTServices {
 	@Path("/benchmarks/{id}/contents")
 	@Produces("text/plain")	
 	public String getBenchmarkContent(@PathParam("id") int id, @QueryParam("limit") int limit, @Context HttpServletRequest request) {
-		int userId = SessionUtil.getUserId(request);
-		
-		if (BenchmarkSecurity.canUserSeeBenchmarkContents(id,userId).isSuccess()) {
-			Benchmark b=Benchmarks.get(id);
-			String contents = Benchmarks.getContents(b, limit);
-			if(!Util.isNullOrEmpty(contents)) {
-				return contents;
-			}	
-		}
+		final String methodName = "getBenchmarkContent";
 
-		return "not available";
+		logUtil.entry(methodName);
+		int userId = SessionUtil.getUserId(request);
+
+		final String notAvailableMessage = "not available";
+		if (!BenchmarkSecurity.canUserSeeBenchmarkContents(id,userId).isSuccess()) {
+			return notAvailableMessage;
+		}
+		Benchmark b=Benchmarks.get(id);
+		try {
+			Optional<String> contents = Benchmarks.getContents(b, limit);
+			if (contents.isPresent()) {
+				return contents.get();
+			} else {
+				return notAvailableMessage;
+			}
+		} catch (IOException e) {
+			logUtil.warn(methodName, "Caught IOException.");
+			return "Internal Error: not available";
+		}
 	}
 	
 	/**
@@ -512,6 +527,7 @@ public class RESTServices {
 	@Path("/jobs/pairs/{id}/stdout/{stageNumber}")
 	@Produces("text/plain")	
 	public String getJobPairStdout(@PathParam("id") int id,@PathParam("stageNumber") int stageNumber, @QueryParam("limit") int limit, @Context HttpServletRequest request) {
+		final String methodName = "getJobPairStdout";
 		JobPair jp = JobPairs.getPair(id);
 		if (jp==null) {
 			return "not available";
@@ -520,13 +536,18 @@ public class RESTServices {
 		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jp.getJobId(), userId);
 		if (!status.isSuccess()) {
 			return "not available";
-		}		
-		String stdout = JobPairs.getStdOut(jp.getId(),stageNumber, limit);
-		if(!Util.isNullOrEmpty(stdout)) {
-			return stdout;
-		}				
-		
-		return "not available";
+		}
+		try {
+			Optional<String> stdout = JobPairs.getStdOut(jp.getId(), stageNumber, limit);
+			if (stdout.isPresent()) {
+				return stdout.get();
+			} else {
+				return "not available";
+			}
+		} catch (IOException e) {
+			logUtil.warn(methodName, "Caught IOException while trying to get jobpair stdout.");
+			return "not available";
+		}
 	}
 	
 	/**
@@ -1376,10 +1397,10 @@ public class RESTServices {
 		}
 		
 		if (primType.startsWith("u")) {
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageAdmin(RESTHelpers.Primitive.USER, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageAdmin(Primitive.USER, request);
 		}
 		if (primType.startsWith("j")) {
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageAdmin(RESTHelpers.Primitive.JOB, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageAdmin(Primitive.JOB, request);
 		}
 
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);	
@@ -1602,17 +1623,17 @@ public class RESTServices {
 		
 		// Query for the next page of primitives and return them to the user
 		if(primType.startsWith("j")){
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.JOB, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(Primitive.JOB, spaceId, request);
 		} else if(primType.startsWith("u")){
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.USER, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(Primitive.USER, spaceId, request);
 		} else if(primType.startsWith("so")){
 			
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.SOLVER, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(Primitive.SOLVER, spaceId, request);
 		} else if(primType.startsWith("sp")){
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.SPACE, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(Primitive.SPACE, spaceId, request);
 		} else if(primType.startsWith("b")){
 			
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(RESTHelpers.Primitive.BENCHMARK, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(Primitive.BENCHMARK, spaceId, request);
 		}
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -1996,13 +2017,20 @@ public class RESTServices {
 	@POST
 	@Path("/delete/defaultSettings/{id}")
 	@Produces("application/json")
-	public String deleteDefaultSettings(@PathParam("id") int id, @Context HttpServletRequest request) {	
+	public String deleteDefaultSettings(@PathParam("id") int id, @Context HttpServletRequest request) {
+		final String methodName = "deleteDefaultSettings";
 		int userId=SessionUtil.getUserId(request);
-		ValidatorStatusCode status=SettingSecurity.canModifySettings(id,userId);
-		
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
+		try {
+			ValidatorStatusCode status = SettingSecurity.canModifySettings(id, userId);
+			if (!status.isSuccess()) {
+				return gson.toJson(status);
+			}
+		} catch (SQLException e) {
+			logUtil.logException(methodName, e);
+			return gson.toJson(ERROR_DATABASE);
 		}
+		
+
 		try {			
 			boolean success=Settings.deleteProfile(id);
 			// Passed validation AND Database update successful
@@ -2030,13 +2058,20 @@ public class RESTServices {
 	@Path("/edit/defaultSettings/{attr}/{id}")
 	@Produces("application/json")
 	public String editCommunityDefaultSettings(@PathParam("attr") String attribute, @PathParam("id") int id, @Context HttpServletRequest request) {	
+		final String methodName = "editCommunityDefaultSettings";
 		int userId=SessionUtil.getUserId(request);
 		String newValue=(String)request.getParameter("val");
-		ValidatorStatusCode status=SettingSecurity.canUpdateSettings(id,attribute,newValue, userId);
-		
-		if (!status.isSuccess()) {
-			return gson.toJson(status);
+		try {
+			ValidatorStatusCode status = SettingSecurity.canUpdateSettings(id, attribute, newValue, userId);
+			if (!status.isSuccess()) {
+				return gson.toJson(status);
+			}
+		} catch (SQLException e) {
+			logUtil.logException(methodName, e);
+			return gson.toJson(ERROR_DATABASE);
 		}
+		
+
 		try {			
 			if(Util.isNullOrEmpty((String)request.getParameter("val"))){
 				return gson.toJson(ERROR_EDIT_VAL_ABSENT);
@@ -4092,7 +4127,29 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 		// Query for the next page of job pairs and return them to the user
-		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.JOB, usrId, request,false);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.JOB, usrId, request,false, false);
+		
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+	}
+	/**
+	 * Get the paginated result of the jobs belong to a specified user
+	 * @param usrId Id of the user we are looking for
+	 * @param request The http request
+	 * @return a JSON object representing the next page of jobs if successful
+	 * 		   1: The get job procedure fails.
+	 * @author Ruoyu Zhang
+	 */
+	@POST
+	@Path("/users/{id}/jobs/pagination/asObjects")
+	@Produces("application/json")	
+	public String getUserJobsPaginatedAsObjects(@PathParam("id") int usrId, @Context HttpServletRequest request) {
+		int requestUserId=SessionUtil.getUserId(request);
+		ValidatorStatusCode status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		// Query for the next page of job pairs and return them to the user
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.JOB, usrId, request,false, true);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -4160,7 +4217,7 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 		// Query for the next page of solver pairs and return them to the user
-		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.SOLVER, usrId, request,false);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.SOLVER, usrId, request,false, false);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -4182,7 +4239,7 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}		// Query for the next page of solver pairs and return them to the user
-		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.BENCHMARK, usrId, request,false);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.BENCHMARK, usrId, request,false, false);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -4206,7 +4263,7 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 		
-		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.SOLVER, usrId, request,true);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.SOLVER, usrId, request,true, false);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -4228,7 +4285,7 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(RESTHelpers.Primitive.BENCHMARK, usrId, request, true);
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.BENCHMARK, usrId, request, true, false);
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -4902,44 +4959,100 @@ public class RESTServices {
 
 	/**
 	 * Gets table of starexec-result attributes summary
-	 * @param jobSpaceId The ID of the primitive 
-	 * @param request 
+	 * @param jobSpaceId The ID of the primitive
+	 * @param request
 	 * @return json table entries for starexec-result summary
-	 */
+	 *
     @POST
     @Path("/jobs/attributes/{jobSpaceId}")
     @Produces("application/json")
     public String getJobSpaceAttributesSummary(@PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {
+		final String methodName = "getJobSpaceAttributesSummary";
         int userId = SessionUtil.getUserId(request);
         JsonObject nextDataTablesPage = null;
         ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
         if (!status.isSuccess()) {
             return gson.toJson(status);
         }
-        nextDataTablesPage = RESTHelpers.convertJobAttributesToJsonObject(jobSpaceId);
-        return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
-    }	
+        try {
+			nextDataTablesPage = RESTHelpers.convertJobAttributesToJsonObject(jobSpaceId);
+		} catch (SQLException e) {
+			logUtil.error(methodName, "Caught database exception while attempting to get job attributes.", e);
+			return gson.toJson(ERROR_DATABASE);
+		}
+        return gson.toJson(nextDataTablesPage);
+	}*/
 
 	/**
 	 * Gets headers of the table of starexec-result attributes summary
-	 * @param jobSpaceId The ID of the primitive 
-	 * @param request 
+	 * @param jobSpaceId The ID of the primitive
+	 * @param request
 	 * @return json table headers
 	 */
     @POST
     @Path("/jobs/attributes/header/{jobSpaceId}")
     @Produces("application/json")
-    public String getJobAttributesTableHeader(@PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {
+    public String getJobAttributesTableHeader(@PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) throws SQLException {
+		final String methodName = "getJobAttributesTableHeader";
+
         int userId = SessionUtil.getUserId(request);
+		ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
+
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+
         JsonArray tableHeaders = new JsonArray();
         List<String> headers = Jobs.getJobAttributesTableHeader(jobSpaceId);
+		if (headers == null ) {
+			return gson.toJson(ERROR_DATABASE);
+		}
+
         for(String item : headers) {
             tableHeaders.add(new JsonPrimitive(item));
         }
-        ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
-        if (!status.isSuccess()) {
-            return gson.toJson(status);
-        }
-        return headers == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(headers);
+
+        return gson.toJson(headers);
     }
+
+//	@POST
+//	@Path("/jobs/attributes/totals/{jobSpaceId}")
+//	@Produces("application/json")
+//	public String getJobAttributesTotals(@PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {
+//		final String methodName = "getJobAttributesTotals";
+//		int userId = SessionUtil.getUserId(request);
+//		ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
+//
+//		if (!status.isSuccess()) {
+//			return gson.toJson(status);
+//		}
+//
+//		try {
+//			JsonArray table = new JsonArray();
+//			List<Triple<String, Integer, TimePair>> attrTotals = Jobs.getJobAttributeTotals(jobSpaceId);
+//			for (Triple<String, Integer, TimePair> attrTotal : attrTotals) {
+//				JsonArray row = new JsonArray();
+//
+//				// Attribute name
+//				row.add(new JsonPrimitive(attrTotal.getLeft()));
+//
+//				// Attribute count
+//				row.add(new JsonPrimitive(attrTotal.getMiddle()));
+//
+//				// Wallclock/Cpu formatted as HTML so we can easily hide on or the other.
+//				String wallclock = attrTotal.getRight().getWallclock();
+//				String cpu = attrTotal.getRight().getCpu();
+//				String wallclockCpuHtml = RESTHelpers.getWallclockCpuAttributeTableHtml(wallclock, cpu);
+//				row.add(new JsonPrimitive(wallclockCpuHtml));
+//				table.add(row);
+//			}
+//			JsonObject dataTableWrapper = new JsonObject();
+//			dataTableWrapper.add("aaData", table);
+//			return gson.toJson(dataTableWrapper);
+//		} catch (SQLException e) {
+//			logUtil.error(methodName, "Caught SQLException while getting attr totals for jobspace id="+jobSpaceId, e);
+//			return gson.toJson(ERROR_DATABASE);
+//		}
+//	}
+
 }

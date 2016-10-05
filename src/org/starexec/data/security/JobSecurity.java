@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.apache.log4j.Logger;
 
+import org.starexec.app.RESTServices;
 import org.starexec.data.database.AnonymousLinks;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.JobPairs;
@@ -421,16 +422,22 @@ public class JobSecurity {
 	 * @return
 	 */
 	public static ValidatorStatusCode canCreateQuickJobWithCommunityDefaults(int userId, int sId,int statusId) {
-			
+			final String methodName = "canCreateQuickJobWithCommunityDefaults";
 			ValidatorStatusCode status = JobSecurity.canUserCreateJobInSpace(userId,sId);
 			if (!status.isSuccess()) {
 				return status;
 			}
-			DefaultSettings settings=Settings.getProfileById(statusId);
-			
-			if (settings.getBenchId() == null || Benchmarks.get(settings.getBenchId())==null)  {
-				return new ValidatorStatusCode(false, "The selected community has no default benchmark selected");
+			try {
+				DefaultSettings settings = Settings.getProfileById(statusId);
+				if (settings.getBenchId() == null || Benchmarks.get(settings.getBenchId())==null)  {
+					return new ValidatorStatusCode(false, "The selected community has no default benchmark selected");
+				}
+			} catch (SQLException e) {
+				logUtil.logException(methodName, e);
+				return RESTServices.ERROR_DATABASE;
 			}
+			
+
 			
 			return new ValidatorStatusCode(true);
 	}

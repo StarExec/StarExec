@@ -1,5 +1,6 @@
 package org.starexec.test.integration.database;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import org.junit.Assert;
@@ -12,6 +13,7 @@ import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
+import org.starexec.util.Util;
 
 /**
  * Tests for org.starexec.data.database.Settings.java
@@ -40,7 +42,11 @@ public class DefaultSettingsTests extends TestSequence {
 	private void deleteSettingsTest() {
 		DefaultSettings temp=loader.loadDefaultSettingsProfileIntoDatabase(u.getId());
 		Assert.assertTrue(Settings.deleteProfile(temp.getId()));
-		Assert.assertNull(Settings.getProfileById(temp.getId()));
+		try {
+			Assert.assertNull(Settings.getProfileById(temp.getId()));
+		} catch (SQLException e) {
+			Assert.fail("Caught SQLException: "+ Util.getStackTrace(e));
+		}
 	}
 	
 	@StarexecTest
@@ -54,9 +60,13 @@ public class DefaultSettingsTests extends TestSequence {
 	
 	@StarexecTest
 	private void getSettingsTest() {
-		DefaultSettings temp=Settings.getProfileById(settings.getId());
-		Assert.assertNotNull(temp);
-		Assert.assertTrue(temp.equals(settings));
+		try {
+			DefaultSettings temp = Settings.getProfileById(settings.getId());
+			Assert.assertNotNull(temp);
+			Assert.assertTrue(temp.equals(settings));
+		} catch (SQLException e) {
+			Assert.fail("Caught SQLException: " + Util.getStackTrace(e));
+		}
 	}
 	
 	@StarexecTest
@@ -64,8 +74,12 @@ public class DefaultSettingsTests extends TestSequence {
 
 		
 		Assert.assertTrue(Settings.setDefaultMaxMemory(settings.getId(), settings.getMaxMemory()+1));
-		Assert.assertEquals(settings.getMaxMemory()+1, Settings.getProfileById(settings.getId()).getMaxMemory());
-		Assert.assertTrue(Settings.setDefaultMaxMemory(settings.getId(), settings.getMaxMemory()));
+		try {
+			Assert.assertEquals(settings.getMaxMemory() + 1, Settings.getProfileById(settings.getId()).getMaxMemory());
+			Assert.assertTrue(Settings.setDefaultMaxMemory(settings.getId(), settings.getMaxMemory()));
+		} catch (SQLException e) {
+			Assert.fail("Caught SQLException: " + Util.getStackTrace(e));
+		}
 	}
 	
 	@Override

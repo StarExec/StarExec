@@ -1,5 +1,7 @@
 package org.starexec.app;
 
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -13,7 +15,11 @@ import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.*;
 import org.starexec.data.to.Queue;
+import org.starexec.data.to.enums.Primitive;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.data.to.tuples.AttributesTableData;
+import org.starexec.data.to.tuples.AttributesTableRow;
+import org.starexec.data.to.tuples.SolverConfig;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.test.integration.TestResult;
 import org.starexec.test.integration.TestSequence;
@@ -21,11 +27,14 @@ import org.starexec.util.DataTablesQuery;
 import org.starexec.util.LogUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
+import org.w3c.dom.Attr;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Holds all helper methods and classes for our restful web services
@@ -35,12 +44,6 @@ public class RESTHelpers {
 	private static final LogUtil logUtil = new LogUtil( log );
 	private static Gson gson = new Gson();
 
-	/** Job pairs and nodes aren't technically a primitive class according to how
-	 we've discussed primitives, but to save time and energy I've included
-	 them here as such*/
-	public enum Primitive {
-		JOB, USER, SOLVER, BENCHMARK, SPACE, JOB_PAIR, JOB_STATS, NODE, QUEUE
-	}
 
 	private static final String SEARCH_QUERY = "sSearch";
 	private static final String SORT_DIRECTION = "sSortDir_0";
@@ -832,7 +835,7 @@ public class RESTHelpers {
 				query.setTotalRecordsAfterQuery(jobsToDisplay.size());
 
 			}
-			return convertJobsToJsonObject(jobsToDisplay,query);
+			return convertJobsToJsonObject(jobsToDisplay,query, false);
 
 		case USER:
 			List<User> usersToDisplay = new LinkedList<User>();
@@ -900,7 +903,7 @@ public class RESTHelpers {
 
 			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 
-			JsonObject answer = convertJobsToJsonObject(jobsToDisplay, query);
+			JsonObject answer = convertJobsToJsonObject(jobsToDisplay, query, false);
 			return answer;
 		    	
 		case USER:
@@ -989,7 +992,8 @@ public class RESTHelpers {
 		
 	}
 
-	public static JsonObject getNextDataTablesPageForUserDetails(Primitive type, int id, HttpServletRequest request, boolean recycled) {
+
+	public static JsonObject getNextDataTablesPageForUserDetails(Primitive type, int id, HttpServletRequest request, boolean recycled, boolean dataAsObjects) {
 		// Parameter validation
 	    DataTablesQuery query = RESTHelpers.getAttrMap(type, request);
 	    if(query==null){
@@ -1013,7 +1017,7 @@ public class RESTHelpers {
 
 			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 
-			JsonObject answer = convertJobsToJsonObject(jobsToDisplay, query);
+			JsonObject answer = convertJobsToJsonObject(jobsToDisplay, query, dataAsObjects);
 			return answer;
 		    	
 		
@@ -1414,7 +1418,7 @@ public class RESTHelpers {
 	 * @return A JsonObject that can be used to populate a datatable
 	 * @author Eric Burns
 	 */
-	public static JsonObject convertJobsToJsonObject(List<Job> jobs, DataTablesQuery query) {
+	public static JsonObject convertJobsToJsonObject(List<Job> jobs, DataTablesQuery query, boolean dataAsObjects) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -1453,25 +1457,60 @@ public class RESTHelpers {
 				status = "killed";
 			}
 
-			// Create an object, and inject the above HTML, to represent an
-			// entry in the DataTable
-			JsonArray entry = new JsonArray();
-			entry.add(new JsonPrimitive(jobLink));
-			entry.add(new JsonPrimitive(status));
-			entry.add(new JsonPrimitive(getPercentStatHtml("asc", job
-					.getLiteJobPairStats().get("completionPercentage"),
-					true)));
-			entry.add(new JsonPrimitive(getPercentStatHtml("static", job
-					.getLiteJobPairStats().get("totalPairs"), false)));
-			entry.add(new JsonPrimitive(getPercentStatHtml("desc", job
-					.getLiteJobPairStats().get("errorPercentage"), true)));
-			
-			entry.add(new JsonPrimitive(job.getCreateTime().toString()));
-            entry.add(new JsonPrimitive(Util.byteCountToDisplaySize(job.getDiskSize())));
-			dataTablePageEntries.add(entry);
+
+			if (dataAsObjects) {
+				dataTablePageEntries.add(getEntryAsObject(jobLink, status, job));
+			} else {
+				dataTablePageEntries.add(getEntryAsArray(jobLink, status, job));
+			}
+
 		}
 		
 		return createPageDataJsonObject(query, dataTablePageEntries);
+	}
+
+	private static JsonArray getEntryAsArray(String jobLink, String status, Job job)  {
+		// Create an object, and inject the above HTML, to represent an
+		// entry in the DataTable
+		JsonArray entry = new JsonArray();
+		entry.add(new JsonPrimitive(jobLink));
+		entry.add(new JsonPrimitive(status));
+		entry.add(new JsonPrimitive(getPercentStatHtml("asc", job
+				.getLiteJobPairStats().get("completionPercentage"),
+				true)));
+		entry.add(new JsonPrimitive(getPercentStatHtml("static", job
+				.getLiteJobPairStats().get("totalPairs"), false)));
+		entry.add(new JsonPrimitive(getPercentStatHtml("desc", job
+				.getLiteJobPairStats().get("errorPercentage"), true)));
+		
+		entry.add(new JsonPrimitive(job.getCreateTime().toString()));
+		JsonObject diskSize = new JsonObject();
+		entry.add(new JsonPrimitive(Util.byteCountToDisplaySize(job.getDiskSize())));
+		return entry;
+	}
+
+
+
+	private static JsonObject getEntryAsObject(String jobLink, String status, Job job) {
+		// Create an object, and inject the above HTML, to represent an
+		// entry in the DataTable
+		JsonObject entry = new JsonObject();
+		entry.add("jobLink", new JsonPrimitive(jobLink));
+		entry.add("status", new JsonPrimitive(status));
+		entry.add("completion", new JsonPrimitive(getPercentStatHtml("asc", job
+				.getLiteJobPairStats().get("completionPercentage"),
+				true)));
+		entry.add("totalPairs", new JsonPrimitive(getPercentStatHtml("static", job
+				.getLiteJobPairStats().get("totalPairs"), false)));
+		entry.add("errorPercentage", new JsonPrimitive(getPercentStatHtml("desc", job
+				.getLiteJobPairStats().get("errorPercentage"), true)));
+		
+		entry.add("createTime",new JsonPrimitive(job.getCreateTime().toString()));
+		JsonObject diskSize = new JsonObject();
+		diskSize.add("display", new JsonPrimitive(Util.byteCountToDisplaySize(job.getDiskSize())));
+		diskSize.add("bytes", new JsonPrimitive(job.getDiskSize()));
+		entry.add("diskSize", diskSize);
+		return entry;
 	}
 
 	/**
@@ -2170,38 +2209,118 @@ public class RESTHelpers {
 		return convertCommunityRequestsToJsonObject(requests, query, currentUserId);
 	}
 
-    public static JsonObject convertJobAttributesToJsonObject(int jobSpaceId) {
-        JsonArray dataTablePageEntries = new JsonArray();
-        List<HashMap<String, String>> jobAttributes = Jobs.getJobAttributesTable(jobSpaceId);
-        HashMap<String,List<String>> valueCounts = new HashMap<>();
-        for(HashMap<String,String> tableEntry : jobAttributes) {
-            String key = tableEntry.get("solver_name") + tableEntry.get("config_name");
-            if(valueCounts.containsKey(key)) {
-                List<String> counts = valueCounts.get(key);
-                counts.add(tableEntry.get("attr_count"));
-                valueCounts.put(key, counts);
-            } else {
-                List<String> counts = new ArrayList<>();
-                counts.add(tableEntry.get("attr_count"));
-                valueCounts.put(key,counts);
-            }
-        }
-        for(HashMap<String,String> tableEntry : jobAttributes) {
+	private static Map<String, Triple<Integer, Double, Double>> initializeAttrCounts(List<String> headers) {
+		Map<String, Triple<Integer, Double, Double>> attrCounts = new HashMap<>();
+		for (String header : headers) {
+			attrCounts.put(header, new ImmutableTriple<Integer, Double, Double>(0, 0.0, 0.0));
+		}
+		return attrCounts;
+	}
+
+	/**
+	 * Creates a map from a solver-config pair to a map from an attribute to the count of attributes (results) generated
+	 * by that solver-config as well as the time it took to create all those results.
+	 * @param jobSpaceId the jobspace to generate the map for, only job pairs in this jobspace will be examined.
+	 * @throws SQLException if there is a database issue.
+	 */
+	private static Map<SolverConfig, Map<String, Triple<Integer, Double, Double>>> getSolverConfigToAttrCountMap(int jobSpaceId) throws SQLException {
+		Map<SolverConfig, Map<String, Triple<Integer, Double, Double>>> solverConfigToAttrCount = new HashMap<>();
+		List<AttributesTableData> jobAttributes = Jobs.getJobAttributesTable(jobSpaceId);
+		List<String> uniqueResultValues = Jobs.getJobAttributeValues(jobSpaceId);
+		for(AttributesTableData tableEntry : jobAttributes) {
+			// Initialize a solverConfig to be used as a key in our map.
+			SolverConfig solverConfig = new SolverConfig(tableEntry.solverId, tableEntry.configId);
+			// Add this optional data so we can populate the table with it later.
+			solverConfig.solverName = tableEntry.solverName;
+			solverConfig.configName = tableEntry.configName;
+
+			// Initialize new entries in the map with a 0 count for each attribute.
+			if (!solverConfigToAttrCount.containsKey(solverConfig)) {
+				Map<String, Triple<Integer, Double, Double>> zeroAttrCounts = initializeAttrCounts(uniqueResultValues);
+				solverConfigToAttrCount.put(solverConfig, zeroAttrCounts);
+			}
+
+			// Populate the map with the count and times in the table entry.
+			solverConfigToAttrCount.get(solverConfig).put(tableEntry.attrValue,
+					new ImmutableTriple<>(tableEntry.attrCount, tableEntry.wallclockSum, tableEntry.cpuSum));
+		}
+		return solverConfigToAttrCount;
+	}
+
+	/**
+	 * Creates the attribute table for details/jobAttributes as a list.
+	 * @see #getSolverConfigToAttrCountMap(int)
+	 */
+	public static List<AttributesTableRow> getAttributesTable(int jobSpaceId) throws SQLException  {
+		Map<SolverConfig, Map<String, Triple<Integer, Double, Double>>> solverConfigToAttrCount = getSolverConfigToAttrCountMap(jobSpaceId);
+
+		List<AttributesTableRow> table = new ArrayList<>();
+		for(SolverConfig solverConfig : solverConfigToAttrCount.keySet()) {
+			AttributesTableRow row = new AttributesTableRow();
+
+			row.solverId = solverConfig.solverId;
+			row.configId = solverConfig.configId;
+			row.solverName = solverConfig.solverName;
+			row.configName = solverConfig.configName;
+
+			// Add all the attr_value counts under the appropriate headers. To do this we sort the list of headers.
+			// The headers will need to be sorted in the same way so the columns line up.
+			Map<String, Triple<Integer, Double, Double>> valueCounts = solverConfigToAttrCount.get(solverConfig);
+			List<String> attrValues = new ArrayList<>(valueCounts.keySet()).stream().sorted().collect(Collectors.toList());
+			for (String attrValue : attrValues) {
+				Triple<Integer,Double,Double> countWallclockCpu = valueCounts.get(attrValue);
+				Triple<Integer,String,String> formattedCountWallclockCpu = new ImmutableTriple<>(
+						countWallclockCpu.getLeft(),
+						String.format("%.4f", countWallclockCpu.getMiddle()),
+						String.format("%.4f", countWallclockCpu.getRight())
+				);
+				row.countAndTimes.add(formattedCountWallclockCpu);
+			}
+			table.add(row);
+		}
+		return table;
+	}
+
+	/*
+    public static JsonObject convertJobAttributesToJsonObject(int jobSpaceId) throws SQLException {
+		List<AttributesTableRow> attributesTable = getAttributesTable(getSolverConfigToAttrCountMap(jobSpaceId));
+
+
+
+		JsonArray dataTablePageEntries = new JsonArray();
+		// Convert all the solver-config attr-value count data to Json data.
+		for(AttributesTableRow row : attributesTable) {
             JsonArray entry = new JsonArray();
-            String solverName = tableEntry.get("solver_name");
-            String configName = tableEntry.get("config_name");
-            if(valueCounts.containsKey(solverName+configName)) {
-                entry.add(new JsonPrimitive(solverName));
-                entry.add(new JsonPrimitive(configName));
-                for(String count : valueCounts.get(solverName+configName)){
-                    entry.add(new JsonPrimitive(count));
-                }
-                valueCounts.remove(solverName+configName);
-                dataTablePageEntries.add(entry);
-            }
+			// First two columns in the data table will be the solver name and config name.
+			String solverNameLink = Util.getSolverDetailsLink(row.solverId, row.solverName);
+			String configNameLink = Util.getConfigDetailsLink(row.configId, row.configName);
+			entry.add(new JsonPrimitive(solverNameLink));
+			entry.add(new JsonPrimitive(configNameLink));
+
+			// Add all the attr_value counts under the appropriate headers. To do this we sort the list of headers.
+			// The headers will need to be sorted in the same way so the columns line up.
+			Map<String, Triple<Integer, Double, Double>> valueCounts = solverConfigToAttrCount.get(solverConfig);
+			List<String> attrValues = new ArrayList<>(valueCounts.keySet()).stream().sorted().collect(Collectors.toList());
+			for (String attrValue : attrValues) {
+				Triple<Integer,Double,Double> countWallclockCpu = valueCounts.get(attrValue);
+				// Add the wallclock sum and cpu sum to the column. On the page one of these two values will be hidden.
+				double wallclockSum = countWallclockCpu.getMiddle();
+				double cpuSum = countWallclockCpu.getRight();
+				entry.add(new JsonPrimitive(countWallclockCpu.getLeft() + " / "
+						+ getWallclockCpuAttributeTableHtml(wallclockSum, cpuSum)));
+			}
+			dataTablePageEntries.add(entry);
         }
         JsonObject jo = new JsonObject();
         jo.add("aaData", dataTablePageEntries);
         return (jo);
-    }
+    }*/
+
+    protected static String getWallclockCpuAttributeTableHtml(Double wallclockSum, Double cpuSum) {
+		String formatter = "%.3f";
+		String formattedWallclock = String.format(formatter, wallclockSum);
+		String formattedCpu = String.format(formatter, cpuSum);
+		return "<span class='wallclockSum'>"+formattedWallclock+"</span>"+
+			"<span class='cpuSum hidden'>"+formattedCpu+"</span>";
+	}
 }

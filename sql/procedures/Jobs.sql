@@ -999,19 +999,30 @@ CREATE PROCEDURE GetJobAttributesTableHeaders(IN _jobSpaceId INT)
         FROM job_attributes ja INNER JOIN job_pairs jp
             ON ja.pair_id=jp.id
         WHERE ja.attr_key = "starexec-result" AND jp.job_space_id=_jobSpaceId
-        GROUP BY attr_value;
+        GROUP BY attr_value
+				ORDER BY attr_value;
     END //
 
 DROP PROCEDURE IF EXISTS GetJobAttributesTable;
 CREATE PROCEDURE GetJobAttributesTable(IN _jobSpaceId INT)
     BEGIN
-        SELECT solver_name, config_name, COUNT(attr_value) attr_count
-        FROM job_attributes ja INNER JOIN job_pairs jp
-            ON ja.pair_id=jp.id
-            INNER JOIN jobpair_stage_data jsd
-            ON jp.id = jsd.jobpair_id
-        WHERE ja.attr_key = "starexec-result" AND jp.job_space_id=_jobSpaceId
-        GROUP BY solver_name, config_name, attr_value;
+        SELECT solver_id, solver_name, config_id, config_name, attr_value, COUNT(attr_value) attr_count,
+					SUM(wallclock) wallclock_sum, SUM(cpu) cpu_sum
+        FROM job_attributes ja JOIN job_pairs jp ON ja.pair_id=jp.id
+            JOIN jobpair_stage_data jsd ON jp.id = jsd.jobpair_id
+        WHERE ja.attr_key = 'starexec-result' AND jp.job_space_id=_jobSpaceId
+        GROUP BY solver_id, config_id, attr_value;
+    END //
+
+DROP PROCEDURE IF EXISTS GetSumOfJobAttributes;
+CREATE PROCEDURE GetSumOfJobAttributes(IN _jobSpaceId INT)
+    BEGIN
+        SELECT attr_value, COUNT(attr_value) attr_count, SUM(wallclock) wallclock, SUM(cpu) cpu
+        FROM job_attributes ja JOIN job_pairs jp ON ja.pair_id=jp.id
+            JOIN jobpair_stage_data jsd ON jp.id=jsd.jobpair_id
+        WHERE ja.attr_key='starexec-result' AND jp.job_space_id=_jobSpaceId
+        GROUP BY attr_value
+				ORDER BY attr_value;
     END //
 
 DELIMITER ; -- this should always be at the end of the file

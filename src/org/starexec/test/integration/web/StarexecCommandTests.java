@@ -1,6 +1,8 @@
 package org.starexec.test.integration.web;
 
 import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +11,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.starexec.command.Connection;
+import org.starexec.command.Status;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
@@ -67,9 +70,14 @@ public class StarexecCommandTests extends TestSequence {
 		Job job=Jobs.get(jobId);
 		Assert.assertNotNull(job);
 		Assert.assertEquals(jobName,job.getName());
-		
-		
-		Assert.assertTrue(Jobs.deleteAndRemove(jobId));
+
+		boolean jobDeleted = false;
+		try {
+			jobDeleted = Jobs.deleteAndRemove(jobId);
+		} catch (SQLException e) {
+			Assert.fail("Caught SQLException while deleting job: " + Util.getStackTrace(e));
+		}
+		Assert.assertTrue(jobDeleted);
 		
 	}
 	
@@ -292,25 +300,37 @@ public class StarexecCommandTests extends TestSequence {
 	private void downloadSpaceXML() {
 		File xmlFile=new File(downloadDir,TestUtil.getRandomSolverName()+".zip");
 		Assert.assertFalse(xmlFile.exists());
-		int result=con.downloadSpaceXML(space1.getId(), xmlFile.getAbsolutePath(),true,null);
-		Assert.assertEquals(0, result);
-		Assert.assertTrue(xmlFile.exists());
+		try {
+			int result = con.downloadSpaceXML(space1.getId(), xmlFile.getAbsolutePath(), true, null);
+			Assert.assertEquals(0, result);
+			Assert.assertTrue(xmlFile.exists());
+		} catch (IOException e) {
+			Assert.fail("Caught IOException: " + Util.getStackTrace(e));
+		}
 	}
 	@StarexecTest 
 	private void downloadSpace() {
 		File spaceFile=new File(downloadDir,TestUtil.getRandomSolverName()+".zip");
 		Assert.assertFalse(spaceFile.exists());
-		int result=con.downloadSpace(space1.getId(), spaceFile.getAbsolutePath(), false, false);
-		Assert.assertEquals(0, result);
-		Assert.assertTrue(spaceFile.exists());
+		try {
+			int result=con.downloadSpace(space1.getId(), spaceFile.getAbsolutePath(), false, false);
+			Assert.assertEquals(0, result);
+			Assert.assertTrue(spaceFile.exists());
+		} catch (IOException e) {
+			Assert.fail("Caught IOException: " + Util.getStackTrace(e));
+		}
 	}
 	
 	@StarexecTest
 	private void downloadSpaceHierarchy() {
 		File spaceFile=new File(downloadDir, TestUtil.getRandomSolverName()+".zip");
 		Assert.assertFalse(spaceFile.exists());
-		Assert.assertEquals(0, con.downloadSpaceHierarchy(space1.getId(), spaceFile.getAbsolutePath(), false, false));
-		Assert.assertTrue(spaceFile.exists());
+		try {
+			Assert.assertEquals(0, con.downloadSpaceHierarchy(space1.getId(), spaceFile.getAbsolutePath(), false, false));
+			Assert.assertTrue(spaceFile.exists());
+		} catch (IOException e) {
+			Assert.fail("Caught IOException: " + Util.getStackTrace(e));
+		}
 	}
 	
 	@StarexecTest 
@@ -503,8 +523,15 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertNotNull(Jobs.get(tempJob.getId()));
 		Assert.assertEquals(0,con.deleteJobs(ids));
 		Assert.assertNull(Jobs.get(tempJob.getId()));
-		
-		Assert.assertTrue(Jobs.deleteAndRemove(tempJob.getId()));
+
+		boolean jobDeleted = false;
+		try {
+			jobDeleted = Jobs.deleteAndRemove(tempJob.getId());
+		} catch (SQLException e) {
+			Assert.fail("Caught SQLException while trying to delete job: " + Util.getStackTrace(e));
+		}
+
+		Assert.assertTrue(jobDeleted);
 
 	}
 	
@@ -542,8 +569,12 @@ public class StarexecCommandTests extends TestSequence {
 		String fileName=TestUtil.getRandomSolverName()+".zip";
 		File downloadDir=new File(loader.getDownloadDirectory(),fileName);
 		Assert.assertFalse(downloadDir.exists());
-		Assert.assertEquals(0,con.downloadJobInfo(job.getId(), downloadDir.getAbsolutePath(), true,false));
-		Assert.assertTrue(downloadDir.exists());
+		try {
+			Assert.assertEquals(0, con.downloadJobInfo(job.getId(), downloadDir.getAbsolutePath(), true, false));
+			Assert.assertTrue(downloadDir.exists());
+		} catch (IOException e) {
+			Assert.fail("Caught IOException: " + Util.getStackTrace(e));
+		}
 	}
 	
 	
@@ -552,36 +583,53 @@ public class StarexecCommandTests extends TestSequence {
 		String fileName=TestUtil.getRandomSolverName()+".zip";
 		File downloadDir=new File(loader.getDownloadDirectory(),fileName);
 		Assert.assertFalse(downloadDir.exists());
-		
-		Assert.assertEquals(0,con.downloadJobOutput(job.getId(), downloadDir.getAbsolutePath()));
-		Assert.assertTrue(downloadDir.exists());
+
+		try {
+			Assert.assertEquals(0,con.downloadJobOutput(job.getId(), downloadDir.getAbsolutePath()));
+			Assert.assertTrue(downloadDir.exists());
+		} catch (IOException e) {
+			Assert.fail("Caught IOException: " + Util.getStackTrace(e));
+		}
 	}
 	
 	@StarexecTest
 	private void downloadProcessorTest() {
 		String fileName=TestUtil.getRandomSolverName()+".zip";
 		File downloadDir=new File(loader.getDownloadDirectory(),fileName);
-		Assert.assertFalse(downloadDir.exists());
-		Assert.assertEquals(0,con.downloadPostProcessor(testCommunity.getId(), downloadDir.getAbsolutePath()));
-		Assert.assertTrue(downloadDir.exists());
+		Assert.assertFalse("Found download directory before the download occurred.",downloadDir.exists());
+		try {
+			int status = con.downloadPostProcessor(testCommunity.getId(), downloadDir.getAbsolutePath());
+			Assert.assertEquals(Status.getStatusMessage(status),Status.STATUS_SUCCESS, status);
+			Assert.assertTrue("Could not find download directory after the download occurred.",downloadDir.exists());
+		} catch (IOException e) {
+			Assert.fail("Caught IOException: " + Util.getStackTrace(e));
+		}
 	}
 	
 	@StarexecTest
 	private void downloadSolverTest() {
 		String fileName=TestUtil.getRandomSolverName()+".zip";
 		File downloadDir=new File(loader.getDownloadDirectory(),fileName);
-		int status=con.downloadSolver(solver.getId(), downloadDir.getAbsolutePath());
-		Assert.assertEquals(0, status);
-		Assert.assertTrue(downloadDir.exists());
+		try {
+			int status=con.downloadSolver(solver.getId(), downloadDir.getAbsolutePath());
+			Assert.assertEquals(0, status);
+			Assert.assertTrue(downloadDir.exists());
+		} catch (IOException e) {
+			Assert.fail("Caught IOException: " + Util.getStackTrace(e));
+		}
 	}
 	
 	@StarexecTest
 	private void downloadBenchmarkTest() {
 		String fileName=TestUtil.getRandomSolverName()+".zip";
 		File downloadDir=new File(loader.getDownloadDirectory(),fileName);
-		int status=con.downloadBenchmark(benchmarkIds.get(0), downloadDir.getAbsolutePath());
-		Assert.assertEquals(0, status);
-		Assert.assertTrue(downloadDir.exists());
+		try {
+			int status=con.downloadBenchmark(benchmarkIds.get(0), downloadDir.getAbsolutePath());
+			Assert.assertEquals(0, status);
+			Assert.assertTrue(downloadDir.exists());
+		} catch (IOException e) {
+			Assert.fail("Caught IOException: " + Util.getStackTrace(e));
+		}
 	}
 	
 	@StarexecTest

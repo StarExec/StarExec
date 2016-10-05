@@ -1,6 +1,7 @@
 package org.starexec.servlets;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -8,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.owasp.esapi.waf.internal.InterceptingHTTPServletResponse;
 import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Settings;
@@ -17,6 +19,7 @@ import org.starexec.data.security.SettingSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
+import org.starexec.util.LogUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -28,7 +31,8 @@ import org.starexec.util.Validator;
  */
 @SuppressWarnings("serial")
 public class AddSettingProfile extends HttpServlet {
-	private static final Logger log = Logger.getLogger(AddSettingProfile.class);	
+	private static final Logger log = Logger.getLogger(AddSettingProfile.class);
+	private static final LogUtil logUtil = new LogUtil(log);
 
 	// Param strings for processing
 	private static String POST_PROCESSOR = "postp";
@@ -51,15 +55,21 @@ public class AddSettingProfile extends HttpServlet {
 	 * Post requests should have all the attributes required for a DefaultSettings object
 	 */
 	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {	
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		final String method = "doPost";
 		
 		log.debug("got a request to create a new settings profile");
-		
-		ValidatorStatusCode status=isValidRequest(request);
-		if (!status.isSuccess()) { //if the request is malformed
-			log.debug(status.getMessage());
-			response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE,status.getMessage());
+
+		try {
+			ValidatorStatusCode status = isValidRequest(request);
+			if (!status.isSuccess()) { //if the request is malformed
+				log.debug(status.getMessage());
+				response.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, status.getMessage());
+				return;
+			}
+		} catch (SQLException e) {
+			logUtil.warn(method, "Caught SQLException, returning internal error.", e);
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error while trying to check permissions.");
 			return;
 		}
 
@@ -153,7 +163,7 @@ public class AddSettingProfile extends HttpServlet {
 		
 	}
 	
-	private ValidatorStatusCode isValidRequest(HttpServletRequest request) {
+	private ValidatorStatusCode isValidRequest(HttpServletRequest request) throws SQLException {
 		int userId=SessionUtil.getUserId(request);
 		if (Users.isPublicUser(userId)) {
 			return new ValidatorStatusCode(false, "Only registered users can take this action");

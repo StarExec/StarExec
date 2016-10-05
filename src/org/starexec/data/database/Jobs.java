@@ -1,5 +1,7 @@
 package org.starexec.data.database;
 
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import java.io.File;
 import java.io.IOException;
 import java.sql.CallableStatement;
@@ -18,9 +20,12 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.StopWatch;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.starexec.backend.Backend;
 import org.starexec.constants.PaginationQueries;
@@ -37,6 +42,8 @@ import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.SolverPipeline;
 import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
+import org.starexec.data.to.tuples.AttributesTableData;
+import org.starexec.data.to.tuples.TimePair;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.util.DataTablesQuery;
 import org.starexec.util.LogUtil;
@@ -734,7 +741,7 @@ public class Jobs {
 	 * @return True on success, false otherwise
 	 */
 	
-	public static boolean deleteAndRemove(int jobId) {
+	public static boolean deleteAndRemove(int jobId) throws SQLException {
 		Job j=Jobs.get(jobId);
 		if (j!=null) {
 			log.debug("Called deleteAndRemove on the following job");
@@ -782,7 +789,7 @@ public class Jobs {
 	 * @param jobId The ID of the job to delete
 	 * @return True on success, false otherwise
 	 */
-	public static boolean delete(int jobId) {
+	public static boolean delete(int jobId) throws SQLException {
 		Connection con=null;
 		CallableStatement procedure = null;
 		try {
@@ -809,14 +816,10 @@ public class Jobs {
 			
 			
 			return true;
-		} catch (Exception e) {
-			log.error("deleteJob says "+e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		
-		return false;
 	}
 	
 	/**
@@ -2476,6 +2479,8 @@ public class Jobs {
 			return "errorPairs";
 		} else if (orderIndex==5) {
 			return "created";
+		} else if (orderIndex==6) {
+			return "disk_size";
 		}
 		return "jobs.name";
 	}
@@ -2488,12 +2493,15 @@ public class Jobs {
 	 * @author Ruoyu Zhang
 	 */
 	public static List<Job> getJobsByUserForNextPage(DataTablesQuery query, int userId) {
+		final String methodName = "getJobsByUserForNextPage";
 		Connection con = null;
 		NamedParameterStatement procedure = null;
 		ResultSet results = null;
 		try {
 			con =Common.getConnection();
+			logUtil.debug(methodName, "Sorting on col: " + query.getSortColumn());
 			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_JOBS_BY_USER_QUERY, getJobOrderColumn(query.getSortColumn()), query);
+			logUtil.debug(methodName, "SQL: "+builder.getSQL());
 			procedure = new NamedParameterStatement(con,builder.getSQL());
 			procedure.setString("query",query.getSearchQuery());
 			procedure.setInt("userId",userId);
@@ -5251,47 +5259,43 @@ public class Jobs {
             return jobCopiesBackResultsIncrementally;
         }
 
-    public static List<String> getJobAttributesTableHeader(int jobSpaceId) {
-        Connection con=null;
-        CallableStatement procedure=null;
-        ResultSet results=null;
-        List<String> headers=new ArrayList<String>();
-        try {
-            con=Common.getConnection();
-            procedure=con.prepareCall("{CALL GetJobAttributesTableHeaders(?)}");
-            procedure.setInt(1, jobSpaceId);
-            results= procedure.executeQuery();
-            while (results.next()) {
-                headers.add(results.getString("attr_value"));
-            }
-            return headers;
-        } catch (Exception e) {
-            log.error(e.getMessage(),e);
-        }finally {
-            Common.safeClose(con);
-            Common.safeClose(procedure);
-            Common.safeClose(results);
-        }
-        return null;
+	public static List<String> getJobAttributeValues(int jobSpaceId) throws SQLException {
+		return Common.query("{CALL GetJobAttributesTableHeaders(?)}", procedure -> {
+			procedure.setInt(1, jobSpaceId);
+		}, results -> {
+			List<String> headers=new ArrayList<String>();
+			while (results.next()) {
+				headers.add(results.getString("attr_value"));
+			}
+			return headers;
+		});
+	}
+
+    public static List<String> getJobAttributesTableHeader(int jobSpaceId) throws SQLException {
+		return getJobAttributeValues(jobSpaceId);
     }
 
-    public static List<HashMap<String, String>> getJobAttributesTable(int jobSpaceId) {
+    public static List<AttributesTableData> getJobAttributesTable(int jobSpaceId) {
         Connection con=null;
         CallableStatement procedure=null;
         ResultSet results=null;
-        List<HashMap<String, String>> tableEntries=new ArrayList<HashMap<String, String>>();
+        List<AttributesTableData> tableEntries=new ArrayList<>();
         try {
             con=Common.getConnection();
             procedure=con.prepareCall("{CALL GetJobAttributesTable(?)}");
             procedure.setInt(1, jobSpaceId);
             results= procedure.executeQuery();
             while (results.next()) {
-                HashMap<String,String> tableEntry = new HashMap<String, String>();
-                tableEntry.put("solver_name", results.getString("solver_name"));
-                tableEntry.put("config_name", results.getString("config_name"));
-                tableEntry.put("attr_count", results.getString("attr_count"));
-                //tableEntry.put("attr_value", results.getString("attr_value"));
-                tableEntries.add(tableEntry);
+                Integer solverId = results.getInt("solver_id");
+				String solverName = results.getString("solver_name");
+                Integer configId = results.getInt("config_id");
+				String configName = results.getString("config_name");
+                Integer attrCount = results.getInt("attr_count");
+                String attrValue = results.getString("attr_value");
+				Double wallclockSum = results.getDouble("wallclock_sum");
+				Double cpuSum = results.getDouble("cpu_sum");
+				tableEntries.add(new AttributesTableData(solverId, solverName, configId, configName, attrValue, attrCount,
+						wallclockSum, cpuSum));
             }
             return tableEntries;
         } catch (Exception e) {
@@ -5303,5 +5307,26 @@ public class Jobs {
         }
         return null;
     }
+
+	/**
+	 *
+	 * @param jobspaceId the jobspace to get attribute count totals in.
+	 * @return list of attribute count totals for the jobspace sorted by attr_value.
+	 * @throws SQLException
+	 */
+    public static List<Triple<String, Integer, TimePair>> getJobAttributeTotals(int jobspaceId) throws SQLException {
+		return Common.query("{CALL GetSumOfJobAttributes(?)}", procedure -> {
+			procedure.setInt(1, jobspaceId);
+		}, results -> {
+			List<Triple<String, Integer, TimePair>> valueCounts = new ArrayList<>();
+			while (results.next()) {
+				valueCounts.add( new ImmutableTriple<>(
+						results.getString("attr_value"),
+						results.getInt("attr_count"),
+						new TimePair(String.format("%.4f", results.getDouble("wallclock")), String.format("%.4f", results.getDouble("cpu")))));
+			}
+			return valueCounts;
+		});
+	}
 
 }
