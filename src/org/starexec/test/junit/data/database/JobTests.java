@@ -83,13 +83,17 @@ public class JobTests {
 	@Test
 	public void GetSlotsInJobQueueForSgeTest() {
 		Job job = getTestJob();
-		GridEngineBackend backend = Mockito.spy(new GridEngineBackend());
+		R.BACKEND_TYPE=R.SGE_TYPE;
+
+		GridEngineBackend backend = Mockito.mock(GridEngineBackend.class);
 		final Integer slots = 1;
 		try {
-			BDDMockito.given(backend.getSlotsInQueue(TEST_QUEUE_NAME)).willReturn(Optional.of(slots));
+			BDDMockito.given(backend.getSlotsInQueue(any())).willReturn(Optional.of(slots));
+			PowerMockito.whenNew(GridEngineBackend.class).withAnyArguments().thenReturn(backend);
+			BDDMockito.given(Jobs.getSlotsInJobQueue(any())).willCallRealMethod();
 			Assert.assertEquals(Jobs.getSlotsInJobQueue(job), slots.toString());
-		} catch (IOException e) {
-			Assert.fail("Caught IOException: " + Util.getStackTrace(e));
+		} catch (Exception e) {
+			Assert.fail("Caught Exception: " + Util.getStackTrace(e));
 		}
 	}
 
@@ -97,13 +101,16 @@ public class JobTests {
 	public void GetSlotsInJobQueueForLocalTest() {
 		R.BACKEND_TYPE = R.LOCAL_TYPE;
 		Job job = getTestJob();
+	    BDDMockito.given(Jobs.getSlotsInJobQueue(job)).willCallRealMethod();
 		Assert.assertEquals(Jobs.getSlotsInJobQueue(job), R.DEFAULT_QUEUE_SLOTS);
+		System.out.println("End GetSlotsInJobQueueForLocalTest");
 	}
 
 	@Test
 	public void GetSlotsInJobQueueForOarTest() {
-		R.BACKEND_TYPE = R.OAR_TYPE;
 		Job job = getTestJob();
+	    BDDMockito.given(Jobs.getSlotsInJobQueue(job)).willCallRealMethod();
+		R.BACKEND_TYPE = R.OAR_TYPE;
 		Assert.assertEquals(Jobs.getSlotsInJobQueue(job), R.DEFAULT_QUEUE_SLOTS);
 	}
 }

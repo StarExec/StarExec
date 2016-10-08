@@ -5273,7 +5273,7 @@ public class Jobs {
 	 * @return
 	 */
 	public static String getSlotsInJobQueue(Job job) {
-		final String methodName = "getMemoryDivisors";
+		final String methodName = "getSlotsInJobQueue";
 		if (R.BACKEND_TYPE.equals(R.SGE_TYPE)) {
 			GridEngineBackend backend = new GridEngineBackend();
 			try {
