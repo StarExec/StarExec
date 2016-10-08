@@ -1,8 +1,10 @@
 package org.starexec.test.junit.backend;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.Set;
 
+import org.mockito.Mock;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,5 +35,20 @@ public class GridEngineBackendTests {
 		Assert.assertTrue(ids.contains(998));
 		Assert.assertTrue(ids.contains(999));
 		Assert.assertTrue(ids.contains(1000));
+	}
+
+	@Test
+	public void getSlotsInQueueTest() {
+		String testQueueName = "all.q";
+		String testCommand = GridEngineBackend.QUEUE_GET_SLOTS_PATTERN.replace(GridEngineBackend.QUEUE_NAME_PATTERN, testQueueName);
+		PowerMockito.mockStatic(Util.class);
+		try {
+			BDDMockito.given(Util.executeCommand(testCommand)).willReturn("2");
+			Optional<Integer> slots = backend.getSlotsInQueue(testQueueName);
+			Assert.assertTrue(slots.isPresent());
+			Assert.assertEquals(slots, 2);
+		} catch (IOException e) {
+			Assert.fail("Caught IOException: " + Util.getStackTrace(e));
+		}
 	}
 }
