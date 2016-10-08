@@ -71,18 +71,23 @@ public class R {
 	public static String getScriptDir() {
 		return STAREXEC_DATA_DIR+"/sge_scripts";
 	}
-	
+
+
+	public static final String SGE_TYPE = "sge";
+    public static final String OAR_TYPE = "oar";
+    public static final String LOCAL_TYPE = "local";
+
 	/**
 	 * Returns a Backend of the class corresponding to the BACKEND_TYPE set
 	 * @return
 	 * @throws StarExecException 
 	 */
 	public static Backend getBackendFromType() throws StarExecException {
-		if (BACKEND_TYPE.equals("sge")) {
+		if (BACKEND_TYPE.equals(SGE_TYPE)) {
 			return new GridEngineBackend();
-		} else if (BACKEND_TYPE.equals("oar")) {
+		} else if (BACKEND_TYPE.equals(OAR_TYPE)) {
 			return new OARBackend();
-		} else if (BACKEND_TYPE.equals("local")) {
+		} else if (BACKEND_TYPE.equals(LOCAL_TYPE)) {
 			return new LocalBackend();
 		} else {
 			throw new StarExecException("BACKEND_TYPE was configured as "+BACKEND_TYPE+", but one of 'sge' 'oar' or 'local' is required");
