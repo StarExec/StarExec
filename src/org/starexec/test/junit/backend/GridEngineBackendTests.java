@@ -46,7 +46,7 @@ public class GridEngineBackendTests {
 			BDDMockito.given(Util.executeCommand(testCommand)).willReturn("2");
 			Optional<Integer> slots = backend.getSlotsInQueue(testQueueName);
 			Assert.assertTrue(slots.isPresent());
-			Assert.assertEquals(slots, 2);
+			Assert.assertEquals(slots.get(), new Integer(2));
 		} catch (IOException e) {
 			Assert.fail("Caught IOException: " + Util.getStackTrace(e));
 		}
