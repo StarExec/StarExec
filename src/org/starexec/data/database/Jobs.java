@@ -37,6 +37,7 @@ import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.data.to.tuples.AttributesTableData;
 import org.starexec.data.to.tuples.TimePair;
 import org.starexec.exceptions.StarExecDatabaseException;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.util.DataTablesQuery;
 import org.starexec.util.LogUtil;
 import org.starexec.util.NamedParameterStatement;
@@ -5277,15 +5278,13 @@ public class Jobs {
 		if (R.BACKEND_TYPE.equals(R.SGE_TYPE)) {
 			GridEngineBackend backend = new GridEngineBackend();
 			try {
-				Optional<Integer> slots = backend.getSlotsInQueue(job.getQueue().getName());
-				if (slots.isPresent()) {
-					return slots.get().toString();
-				} else {
-					logUtil.warn(methodName, "Could not get number of slots from backend.getSlotsInQueue. "
-							+ "SGE may not have returned an integer when queryed.");
-				}
+				Integer slots = backend.getSlotsInQueue(job.getQueue().getName());
+				return slots.toString();
 			} catch (IOException e) {
 				logUtil.logException(methodName, "Caught IOException while trying to get number of slots in queue.", e);
+			} catch (StarExecException e) {
+				logUtil.logException(methodName, "Could not get number of slots from backend.getSlotsInQueue. "
+						+ "SGE may not have returned an integer when queryed.", e);
 			}
 		}
 		return R.DEFAULT_QUEUE_SLOTS;

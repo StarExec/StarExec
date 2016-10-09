@@ -12,6 +12,7 @@ import org.mockito.BDDMockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.starexec.backend.GridEngineBackend;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.util.Util;
 import org.testng.Assert;
 
@@ -44,11 +45,12 @@ public class GridEngineBackendTests {
 		PowerMockito.mockStatic(Util.class);
 		try {
 			BDDMockito.given(Util.executeCommand(testCommand)).willReturn("2");
-			Optional<Integer> slots = backend.getSlotsInQueue(testQueueName);
-			Assert.assertTrue(slots.isPresent());
-			Assert.assertEquals(slots.get(), new Integer(2));
+			Integer slots = backend.getSlotsInQueue(testQueueName);
+			Assert.assertEquals(slots, new Integer(2));
 		} catch (IOException e) {
 			Assert.fail("Caught IOException: " + Util.getStackTrace(e));
+		} catch (StarExecException e) {
+			Assert.fail("Caught StarExecException: " + Util.getStackTrace(e));
 		}
 	}
 }

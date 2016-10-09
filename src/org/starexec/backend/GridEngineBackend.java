@@ -10,6 +10,7 @@ import org.apache.log4j.Logger;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -26,7 +27,7 @@ public class GridEngineBackend implements Backend{
     private static String NODE_LIST_COMMAND = "qconf -sel";					// The SGE command to execute to get a list of all worker nodes
     private static String QUEUE_ASSOC_PATTERN = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,16}\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
 	public static String QUEUE_NAME_PATTERN = "QUEUE_NAME";
-	public static String QUEUE_GET_SLOTS_PATTERN = "qconf -sq " + QUEUE_NAME_PATTERN + " | grep 'slots' | grep -o '[0-9]\\{1,\\}'";
+	public static String QUEUE_GET_SLOTS_PATTERN = "qconf -sq " + QUEUE_NAME_PATTERN;// + " | grep 'slots' | grep -o '[0-9]\\{1,\\}'";
 
     private static String GRID_ENGINE_PATH = "/cluster/gridengine-8.1.8/bin/lx-amd64/";
 	
@@ -293,16 +294,38 @@ public class GridEngineBackend implements Backend{
 	 * @return An optional with the number of slots for the queue. Empty if the queue doesn't exist.
 	 * @throws IOException
 	 */
-    public Optional<Integer> getSlotsInQueue(String queueName) throws IOException {
+    public Integer getSlotsInQueue(String queueName) throws IOException, StarExecException {
 		final String methodName = "getSlotsInQueue";
 		try {
-			String results = Util.executeCommand(QUEUE_GET_SLOTS_PATTERN.replace(QUEUE_NAME_PATTERN, queueName));
+			String getSlotsInQueueCommand = QUEUE_GET_SLOTS_PATTERN.replace(QUEUE_NAME_PATTERN, queueName);
+			logUtil.debug(methodName, "Executing command: " + getSlotsInQueueCommand);
+			String results = Util.executeCommand(getSlotsInQueueCommand);
 			logUtil.debug(methodName, "Got result: '" + results + "'");
-			results = results.trim();
-			if (!results.matches("[0-9]+")) {
-				return Optional.empty();
+
+			// Trim outer whitespace and replace all consecutive whitespace with a single space.
+			String condensedResults = results.trim().replaceAll("\\s+", " ");
+			logUtil.debug(methodName, "Condensed results: "+condensedResults);
+
+			List<String> resultsWords = Arrays.asList(condensedResults.split(" "));
+			int slotsIndex = resultsWords.indexOf("slots");
+
+			if (slotsIndex == -1) {
+				throw new StarExecException("The result of getting the queue details from SGE did not include a slots attribute.");
 			}
-			return Optional.of(Integer.parseInt(results));
+
+			if (slotsIndex == resultsWords.size()) {
+				throw new StarExecException("The slots attribute was not followed by a numberal.");
+			}
+
+
+			String slots = resultsWords.get(slotsIndex+1);
+			if (!slots.matches("[0-9]+")) {
+				throw new StarExecException("The slots attribute was not followed by a numberal.");
+			}
+
+
+
+			return Integer.parseInt(results);
 		} catch (IOException e) {
 			logUtil.logException(methodName, e);
 			throw e;

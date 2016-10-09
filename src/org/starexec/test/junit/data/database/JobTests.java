@@ -88,7 +88,7 @@ public class JobTests {
 		GridEngineBackend backend = Mockito.mock(GridEngineBackend.class);
 		final Integer slots = 1;
 		try {
-			BDDMockito.given(backend.getSlotsInQueue(any())).willReturn(Optional.of(slots));
+			BDDMockito.given(backend.getSlotsInQueue(any())).willReturn(slots);
 			PowerMockito.whenNew(GridEngineBackend.class).withAnyArguments().thenReturn(backend);
 			BDDMockito.given(Jobs.getSlotsInJobQueue(any())).willCallRealMethod();
 			Assert.assertEquals(Jobs.getSlotsInJobQueue(job), slots.toString());
