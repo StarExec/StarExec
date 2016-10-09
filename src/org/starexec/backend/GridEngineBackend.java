@@ -320,12 +320,12 @@ public class GridEngineBackend implements Backend{
 
 			String slots = resultsWords.get(slotsIndex+1);
 			if (!slots.matches("[0-9]+")) {
-				throw new StarExecException("The slots attribute was not followed by a numberal.");
+				throw new StarExecException("The slots attribute was not followed by a numeral.");
 			}
 
 
 
-			return Integer.parseInt(results);
+			return Integer.parseInt(slots);
 		} catch (IOException e) {
 			logUtil.logException(methodName, e);
 			throw e;
