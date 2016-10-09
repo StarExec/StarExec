@@ -784,9 +784,7 @@ public abstract class JobManager {
 	 * selection on job creation)
 	 * 
 	 * @param j the job to add job pairs to
-	 * @param userId The ID of the user creating this job
 	 * @param benchmarkIds A list of benchmarks to use in this job
-	 * @param solverIds A list of solvers to use in this job
 	 * @param configIds A list of configurations (that match in order with solvers) to use for the specified solvers
 	 * @param spaceId the id of the space we are adding from
 	 */
@@ -830,7 +828,6 @@ public abstract class JobManager {
 	 * resulting job pairs to a given job object. Accessed from running the space / keep hierarchy
 	 * structure in job creation.
 	 * 
-	 * @param j the Job to add Job Pairs to
 	 * @param userId the id of the user adding the job pairs
 	 * @param spaceId the id of the space to build the job pairs from
 	 * @param path The space path to give to every job pair created by this function
@@ -1053,7 +1050,6 @@ public abstract class JobManager {
 	 * 
 	 * @param spaceId the id of the space we start in
 	 * @param userId the id of the user creating the job
-	 * @param solverIds a list of solvers to use
 	 * @param configIds a list of configurations to use
 	 * @param SP A mapping from space IDs to the path of the space rooted at "spaceId"
 	 * @return A HashMap that maps space IDs to all the job pairs in that space. These can then be added to a job in any
