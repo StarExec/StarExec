@@ -542,12 +542,14 @@ public class Queues {
      * @return the list of Jobs for that queue which have pending job pairs
      * @author Ben McCune and Aaron Stump
      */
-	public static List<Job> getPendingJobsHelper(int queueId, Boolean developerOnly) {
+	private static List<Job> getPendingJobsHelper(int queueId, Boolean developerOnly) {
 		Connection con = null;		
 		CallableStatement procedure = null;
 		ResultSet results = null;
+
 		try {
 			con = Common.getConnection();
+			Queue queue = Queues.get(con, queueId);
             if(developerOnly) {
                 procedure = con.prepareCall("{CALL GetPendingDeveloperJobs(?)}");                  
             } else {
@@ -570,7 +572,7 @@ public class Queues {
 				j.setSuppressTimestamp(results.getBoolean("suppress_timestamp"));
 				j.setUsingDependencies(results.getBoolean("using_dependencies"));
                 j.setBuildJob(results.getBoolean("buildJob"));
-				j.getQueue().setId(queueId);
+				j.setQueue(queue);
 
 				j.setStageAttributes(Jobs.getStageAttrsForJob(j.getId(), con));
 				j.setUser(Users.get(j.getUserId()));
