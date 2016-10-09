@@ -27,6 +27,7 @@
 
 export BENCH_NAME_LENGTH_LIMIT='$$BENCH_NAME_LENGTH_MAX$$'
 export PRIMARY_PREPROCESSOR_PATH='$$PRIMARY_PREPROCESSOR_PATH$$'
+export NUM_SLOTS='$$NUM_SLOTS$$'
 export RAND_SEED='$$RANDSEED$$'
 export MAX_MEM='$$MAX_MEM$$'
 export BENCH_SAVE_DIR='$$BENCH_SAVE_PATH$$'
@@ -195,7 +196,9 @@ NODE_MEM=$(($NODE_MEM/1024))
 log "node memory in megabytes = $NODE_MEM"
 
 #then, set to half the memory
-NODE_MEM=$(($NODE_MEM/2))
+NODE_MEM=$(($NODE_MEM/$NUM_SLOTS))
+
+log "node memory after accounting for pairs allowed to run on node = $NODE_MEM"
 
 if [ $MAX_MEM -gt $NODE_MEM ]
 then
