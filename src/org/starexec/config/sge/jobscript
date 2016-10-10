@@ -203,7 +203,7 @@ log "node memory after accounting for pairs allowed to run on node = $NODE_MEM"
 if [ $MAX_MEM -gt $NODE_MEM ]
 then
 
-echo "truncating max memory from requested $MAX_MEM to $NODE_MEM (half max memory on the node)"
+echo "truncating max memory from requested $MAX_MEM to $NODE_MEM"
 
 export MAX_MEM=$NODE_MEM
 
