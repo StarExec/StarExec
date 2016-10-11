@@ -138,7 +138,6 @@ public class SpaceSecurity {
 	}
 	/**
 	 * Checks to see if the given user can remove all of the given subspaces
-	 * @param spaceId
 	 * @param userId
 	 * @param subspaceIds
 	 * @return
@@ -321,7 +320,6 @@ public class SpaceSecurity {
 	}
 	/**
 	 * Checks to see whether a user can copy a given space from the given space
-	 * @param fromSpaceId The space ID the user is being copied FROM
 	 * @param userId The ID of the user making the request
 	 * @param spaceIdBeingCopied The ID of the space that would be copied
 	 * @return new ValidatorStatusCode(true) if allowed, or a status code from ValidatorStatusCodes if not
@@ -391,7 +389,7 @@ public class SpaceSecurity {
 	}
 	/**
 	 * Checks whether the user has enough disk quota to fit all of a list of solvers
-	 * @param solverIds The solver IDs that would be added
+	 * @param solvers The solvers that would be added
 	 * @param userId The ID of the user in question
 	 * @return new ValidatorStatusCode(true) if allowed, or a status code from ValidatorStatusCodes if not
 	 */
@@ -442,8 +440,7 @@ public class SpaceSecurity {
 	
 	/**
 	 * Checks to see whether a user can copy one set of subspaces from a space to another space
-	 * @param fromSpaceId The ID of the spaces that subspaces are being copied FROM
-	 * @param toSpaceId The ID of the space that new subspaces will be copied TO
+\s	 * @param toSpaceId The ID of the space that new subspaces will be copied TO
 	 * @param userId The ID of the user making the request
 	 * @param subspaceIds The IDs of the subspaces that would be copied
  	 * @return new ValidatorStatusCode(true) if allowed, or a status code from ValidatorStatusCodes if not
@@ -635,7 +632,6 @@ public class SpaceSecurity {
 	}
 	/**
 	 * Checks to see whether a list of users can be copied from one space to another
-	 * @param fromSpaceId The ID of the space the users are already in
 	 * @param toSpaceId The ID of the space the users would be placed in
 	 * @param userIdDoingCopying The ID of the user making the request
 	 * @param userIdsBeingCopied The IDs of the users that would be copied

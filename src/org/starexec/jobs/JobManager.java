@@ -16,6 +16,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
+import org.starexec.backend.Backend;
+import org.starexec.backend.GridEngineBackend;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Common;
@@ -45,6 +47,7 @@ import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.exceptions.BenchmarkDependencyMissingException;
 import org.starexec.servlets.BenchmarkUploader;
+import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
 
 /**
@@ -53,6 +56,7 @@ import org.starexec.util.Util;
  */
 public abstract class JobManager {
 	private static final Logger log = Logger.getLogger(JobManager.class);
+	private static final LogUtil logUtil = new LogUtil(log);
 
 	private static String mainTemplate = null; // initialized below
 
@@ -199,6 +203,8 @@ public abstract class JobManager {
 		return queueToMonitor.get(queueId);
 	}
 
+
+
 	/**
 	 * Submits a job to the grid engine
 	 * @param joblist The list of jobs for which we will be submitted new pairs
@@ -208,6 +214,7 @@ public abstract class JobManager {
 
 	 */
 	public static void submitJobs(List<Job> joblist, Queue q, int queueSize, int nodeCount) {
+		final String methodName = "submitJobs";
 		LoadBalanceMonitor monitor = getMonitor(q.getId());
 		try {
 			log.debug("submitJobs() begins");
@@ -230,9 +237,13 @@ public abstract class JobManager {
 				if (quotaExceededUsers.get(job.getUserId())) {
 					continue;
 				}
-
+				// By default we split the memory
+				String queueSlots = Jobs.getSlotsInJobQueue(job);
 				// jobTemplate is a version of mainTemplate customized for this job
-				String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());			
+				String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());
+
+				jobTemplate = jobTemplate.replace("$$NUM_SLOTS$$", queueSlots);
+
 				jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
 				jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
 				jobTemplate = jobTemplate.replace("$$DISK_QUOTA$$", ""+job.getUser().getDiskQuota());
@@ -773,9 +784,7 @@ public abstract class JobManager {
 	 * selection on job creation)
 	 * 
 	 * @param j the job to add job pairs to
-	 * @param userId The ID of the user creating this job
 	 * @param benchmarkIds A list of benchmarks to use in this job
-	 * @param solverIds A list of solvers to use in this job
 	 * @param configIds A list of configurations (that match in order with solvers) to use for the specified solvers
 	 * @param spaceId the id of the space we are adding from
 	 */
@@ -819,7 +828,6 @@ public abstract class JobManager {
 	 * resulting job pairs to a given job object. Accessed from running the space / keep hierarchy
 	 * structure in job creation.
 	 * 
-	 * @param j the Job to add Job Pairs to
 	 * @param userId the id of the user adding the job pairs
 	 * @param spaceId the id of the space to build the job pairs from
 	 * @param path The space path to give to every job pair created by this function
@@ -1042,7 +1050,6 @@ public abstract class JobManager {
 	 * 
 	 * @param spaceId the id of the space we start in
 	 * @param userId the id of the user creating the job
-	 * @param solverIds a list of solvers to use
 	 * @param configIds a list of configurations to use
 	 * @param SP A mapping from space IDs to the path of the space rooted at "spaceId"
 	 * @return A HashMap that maps space IDs to all the job pairs in that space. These can then be added to a job in any

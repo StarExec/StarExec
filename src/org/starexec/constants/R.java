@@ -71,18 +71,23 @@ public class R {
 	public static String getScriptDir() {
 		return STAREXEC_DATA_DIR+"/sge_scripts";
 	}
-	
+
+
+	public static final String SGE_TYPE = "sge";
+    public static final String OAR_TYPE = "oar";
+    public static final String LOCAL_TYPE = "local";
+
 	/**
 	 * Returns a Backend of the class corresponding to the BACKEND_TYPE set
 	 * @return
 	 * @throws StarExecException 
 	 */
 	public static Backend getBackendFromType() throws StarExecException {
-		if (BACKEND_TYPE.equals("sge")) {
+		if (BACKEND_TYPE.equals(SGE_TYPE)) {
 			return new GridEngineBackend();
-		} else if (BACKEND_TYPE.equals("oar")) {
+		} else if (BACKEND_TYPE.equals(OAR_TYPE)) {
 			return new OARBackend();
-		} else if (BACKEND_TYPE.equals("local")) {
+		} else if (BACKEND_TYPE.equals(LOCAL_TYPE)) {
 			return new LocalBackend();
 		} else {
 			throw new StarExecException("BACKEND_TYPE was configured as "+BACKEND_TYPE+", but one of 'sge' 'oar' or 'local' is required");
@@ -230,10 +235,11 @@ public class R {
     public static int DEFAULT_PAIR_QUOTA = 750000;							// The default max number of pairs a user should be able to own
     public static String PERSONAL_SPACE_DESCRIPTION =						// The default text that appears at the top of a user's personal space 
 	"this is your personal space";
-    public static int MAX_FAILED_VALIDATIONS=50;							//More than this number of benchmark validation failures triggers a message and ends
+    public static int MAX_FAILED_VALIDATIONS=50;						//More than this number of benchmark validation failures triggers a message and ends
 	public static String VALID_BENCHMARK_ATTRIBUTE = "starexec-valid";      //Name of attribute given by benchmark processors to show a benchmark is valid
 	//Reserved Names for users
-	public static String STAREXEC_RESULT = "starexec-result";				// The key used for the starexec result in key-value pairs for a job pair 
+	public static String STAREXEC_RESULT = "starexec-result";				// The key used for the starexec result in key-value pairs for a job pair
+    public static final String DEFAULT_QUEUE_SLOTS = "2";                  // By default we assume there will be two pairs per node and so we divide the memory into two parts for each pair.
 	public static String CONFIGURATION_PREFIX = "starexec_run_";            // The prefix for a file in the solver bin directory to be considered a configuration
 	public static String EXPECTED_RESULT = "starexec-expected-result";    // key for key value pair in benchmark attributes
 	public static String SOLVER_DESC_PATH = "starexec_description.txt";		// File that can be included within the archive solver file to include the description

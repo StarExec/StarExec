@@ -10,16 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -28,6 +19,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.starexec.backend.Backend;
+import org.starexec.backend.GridEngineBackend;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
@@ -45,6 +37,7 @@ import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.data.to.tuples.AttributesTableData;
 import org.starexec.data.to.tuples.TimePair;
 import org.starexec.exceptions.StarExecDatabaseException;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.util.DataTablesQuery;
 import org.starexec.util.LogUtil;
 import org.starexec.util.NamedParameterStatement;
@@ -5274,6 +5267,28 @@ public class Jobs {
     public static List<String> getJobAttributesTableHeader(int jobSpaceId) throws SQLException {
 		return getJobAttributeValues(jobSpaceId);
     }
+
+	/**
+	 * Gets the slots in a job's queue if the backend is SGE, otherwise just returns the default number of slots.
+	 * @param job the jobs to get the queue from.
+	 * @return
+	 */
+	public static String getSlotsInJobQueue(Job job) {
+		final String methodName = "getSlotsInJobQueue";
+		if (R.BACKEND_TYPE.equals(R.SGE_TYPE)) {
+			GridEngineBackend backend = new GridEngineBackend();
+			try {
+				Integer slots = backend.getSlotsInQueue(job.getQueue().getName());
+				return slots.toString();
+			} catch (IOException e) {
+				logUtil.logException(methodName, "Caught IOException while trying to get number of slots in queue.", e);
+			} catch (StarExecException e) {
+				logUtil.logException(methodName, "Could not get number of slots from backend.getSlotsInQueue. "
+						+ "SGE may not have returned an integer when queryed.", e);
+			}
+		}
+		return R.DEFAULT_QUEUE_SLOTS;
+	}
 
     public static List<AttributesTableData> getJobAttributesTable(int jobSpaceId) {
         Connection con=null;

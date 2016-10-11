@@ -1,8 +1,10 @@
 package org.starexec.test.junit.backend;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.Set;
 
+import org.mockito.Mock;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,6 +12,7 @@ import org.mockito.BDDMockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.starexec.backend.GridEngineBackend;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.util.Util;
 import org.testng.Assert;
 
@@ -33,5 +36,43 @@ public class GridEngineBackendTests {
 		Assert.assertTrue(ids.contains(998));
 		Assert.assertTrue(ids.contains(999));
 		Assert.assertTrue(ids.contains(1000));
+	}
+
+	final String slotsTestString =
+			 "qname                 one_job.q\n"
+			+"hostlist              @one_jobhosts\n"
+			+"seq_no                0\n"
+			+"load_thresholds       np_load_avg=1.75\n"
+			+"suspend_thresholds    NONE\n"
+			+"nsuspend              1\n"
+			+"suspend_interval      00:05:00\n"
+			+"priority              0\n"
+			+"min_cpu_interval      00:05:00\n"
+			+"processors            UNDEFINED\n"
+			+"qtype                 BATCH INTERACTIVE\n"
+			+"ckpt_list             NONE\n"
+			+"pe_list               make\n"
+			+"rerun                 FALSE\n"
+			+"slots                 1\n"
+			+"tmpdir                /tmp\n"
+			+"shell                 /bin/csh\n"
+			+"prolog                NONE";
+
+
+
+	@Test
+	public void getSlotsInQueueTest() {
+		String testQueueName = "all.q";
+		String testCommand = GridEngineBackend.QUEUE_GET_SLOTS_PATTERN.replace(GridEngineBackend.QUEUE_NAME_PATTERN, testQueueName);
+		PowerMockito.mockStatic(Util.class);
+		try {
+			BDDMockito.given(Util.executeCommand(testCommand)).willReturn(slotsTestString);
+			Integer slots = backend.getSlotsInQueue(testQueueName);
+			Assert.assertEquals(slots, new Integer(1));
+		} catch (IOException e) {
+			Assert.fail("Caught IOException: " + Util.getStackTrace(e));
+		} catch (StarExecException e) {
+			Assert.fail("Caught StarExecException: " + Util.getStackTrace(e));
+		}
 	}
 }
