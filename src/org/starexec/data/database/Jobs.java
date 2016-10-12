@@ -973,6 +973,12 @@ public class Jobs {
 		j.setSeed(results.getLong("seed"));
 		j.setTotalPairs(results.getInt("total_pairs"));
 		j.setDiskSize(results.getLong("disk_size"));
+        final boolean isHighPriority = results.getBoolean("is_high_priority");
+        if (isHighPriority) {
+            j.setHighPriority();
+        } else {
+            j.setLowPriority();
+        }
 		return j;
 	}
 	
