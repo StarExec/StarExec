@@ -338,7 +338,10 @@ public abstract class JobManager {
 							break;
 						}
 
+						// TODO: Get a pair from a high priority job if there is one.
 						final JobPair pair = s.pairIter.next();
+
+						// TODO: Change the load based on the high priority job if there is one.
 						monitor.changeLoad(s.job.getUserId(), s.job.getWallclockTimeout());
 						if (pair.getPrimarySolver()==null || pair.getBench()==null) {
 							// if the solver or benchmark is null, they were deleted. Indicate that the pair's
