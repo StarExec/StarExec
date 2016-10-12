@@ -213,19 +213,19 @@ public abstract class JobManager {
 	 * @param nodeCount The number of nodes in the given queue
 
 	 */
-	public static void submitJobs(List<Job> joblist, Queue q, int queueSize, int nodeCount) {
+	public static void submitJobs(final List<Job> joblist, final Queue q, int queueSize, final int nodeCount) {
 		final String methodName = "submitJobs";
-		LoadBalanceMonitor monitor = getMonitor(q.getId());
+		final LoadBalanceMonitor monitor = getMonitor(q.getId());
 		try {
 			log.debug("submitJobs() begins");
 
 			initMainTemplateIf();
 
-			LinkedList<SchedulingState> schedule = new LinkedList<SchedulingState>();
+			final LinkedList<SchedulingState> schedule = new LinkedList<SchedulingState>();
 			// add all the jobs in jobList to a SchedulingState in the schedule.
-			for (Job job : joblist) {
+			for (final Job job : joblist) {
 				// contains users that we have identified as exceeding their quota. These users will be skipped
-				HashMap<Integer, Boolean> quotaExceededUsers = new HashMap<Integer,Boolean>();
+				final HashMap<Integer, Boolean> quotaExceededUsers = new HashMap<Integer,Boolean>();
 				
 				if (!quotaExceededUsers.containsKey(job.getUserId())) {
 					//TODO: Handle in a new thread if this looks slow on Starexec
@@ -238,7 +238,7 @@ public abstract class JobManager {
 					continue;
 				}
 				// By default we split the memory
-				String queueSlots = Jobs.getSlotsInJobQueue(job);
+				final String queueSlots = Jobs.getSlotsInJobQueue(job);
 				// jobTemplate is a version of mainTemplate customized for this job
 				String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());
 
@@ -250,14 +250,14 @@ public abstract class JobManager {
 				jobTemplate = jobTemplate.replace("$$BENCH_SAVE_PATH$$", BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null).getAbsolutePath());
 				// for every job, retrieve no more than the number of pairs that would fill the queue. 
 				// retrieving more than this is wasteful.
-				int limit=Math.max(R.NUM_JOB_PAIRS_AT_A_TIME, (nodeCount*R.NODE_MULTIPLIER)-queueSize);
+				final int limit=Math.max(R.NUM_JOB_PAIRS_AT_A_TIME, (nodeCount*R.NODE_MULTIPLIER)-queueSize);
 				log.debug("calling Jobs.getPendingPairsDetailed for job "+job.getId());
-				List<JobPair> pairs = Jobs.getPendingPairsDetailed(job,limit);
+				final List<JobPair> pairs = Jobs.getPendingPairsDetailed(job,limit);
 				log.debug("finished call to getPendingPairsDetailed");
 
 				if (pairs.size()>0) {
-					Iterator<JobPair> pairIter = pairs.iterator();					
-					SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
+					final Iterator<JobPair> pairIter = pairs.iterator();
+					final SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
 					schedule.add(s);
 				} else {
 					log.debug("not adding any pairs from job "+job.getId());
@@ -267,10 +267,10 @@ public abstract class JobManager {
 			
 			// maps user IDs to the total 'load' that user is responsible for on the current queue,
 			// where load is the sum of wallclock timeouts of all active pairs on the queue
-			HashMap<Integer, Integer> userToCurrentQueueLoad = new HashMap<Integer, Integer>();
+			final HashMap<Integer, Integer> userToCurrentQueueLoad = new HashMap<Integer, Integer>();
 			Iterator<SchedulingState> it = schedule.iterator();
 			while (it.hasNext()) {
-				SchedulingState s = it.next();
+				final SchedulingState s = it.next();
 				if (!userToCurrentQueueLoad.containsKey(s.job.getUserId())) {
 					userToCurrentQueueLoad.put(s.job.getUserId(), Queues.getUserLoadOnQueue(q.getId(), s.job.getUserId()));
 				}
@@ -286,7 +286,7 @@ public abstract class JobManager {
 			 */
 			
 			//transient database errors can cause us to loop forever here, and we need to make sure that does not happen
-			int maxLoops=500;
+			final int maxLoops=500;
 			int curLoops=0;
 			while (!schedule.isEmpty()) {
 				curLoops++;
@@ -302,9 +302,9 @@ public abstract class JobManager {
 				it = schedule.iterator();
 				
 				//add all of the users that still have pending entries to the list of users
-				HashMap<Integer, Integer> pendingUsers=new HashMap<Integer, Integer>();
+				final HashMap<Integer, Integer> pendingUsers=new HashMap<Integer, Integer>();
 				while (it.hasNext()) {
-					SchedulingState s = it.next();
+					final SchedulingState s = it.next();
 					pendingUsers.put(s.job.getUserId(), userToCurrentQueueLoad.get(s.job.getUserId()));
 				}
 				
@@ -313,7 +313,7 @@ public abstract class JobManager {
 				it = schedule.iterator();
 
 				while (it.hasNext()) {
-					SchedulingState s = it.next();
+					final SchedulingState s = it.next();
 
 					if (!s.pairIter.hasNext()) {
 						// we will remove this SchedulingState from the schedule, since it is out of job pairs
@@ -338,7 +338,7 @@ public abstract class JobManager {
 							break;
 						}
 
-						JobPair pair = s.pairIter.next();
+						final JobPair pair = s.pairIter.next();
 						monitor.changeLoad(s.job.getUserId(), s.job.getWallclockTimeout());
 						if (pair.getPrimarySolver()==null || pair.getBench()==null) {
 							// if the solver or benchmark is null, they were deleted. Indicate that the pair's
@@ -351,10 +351,10 @@ public abstract class JobManager {
 
 						try {
 							// Write the script that will run this individual pair				
-							String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair, q);
+							final String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair, q);
 
-							String logPath=JobPairs.getLogFilePath(pair);
-							File file=new File(logPath);
+							final String logPath=JobPairs.getLogFilePath(pair);
+							final File file=new File(logPath);
 							file.getParentFile().mkdirs();
 			
 							if (file.exists()) {
