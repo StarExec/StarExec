@@ -228,6 +228,14 @@ CREATE PROCEDURE GetJobById(IN _id INT)
 		FROM jobs
 		WHERE id = _id and deleted=false;
 	END //
+
+DROP PROCEDURE IF EXISTS SetHighPriority;
+CREATE PROCEDURE SetHighPriority(IN _jobId INT, IN _isHighPriority BOOLEAN)
+	BEGIN
+		UPDATE jobs
+		SET is_high_priority=_isHighPriority
+		WHERE id=_jobId;
+	END //
 	
 -- Retrieves basic info about a job from the jobs table
 -- Author: Tyler Jensen
