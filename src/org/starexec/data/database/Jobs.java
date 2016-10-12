@@ -1184,19 +1184,7 @@ public class Jobs {
 			List<Job> jobs = new LinkedList<Job>();
 
 			while(results.next()){
-				Job j = new Job();
-				j.setId(results.getInt("id"));
-				j.setUserId(results.getInt("user_id"));
-				j.setName(results.getString("name"));		
-				j.setPrimarySpace(results.getInt("primary_space"));
-				j.setDescription(results.getString("description"));				
-				j.setCreateTime(results.getTimestamp("created"));
-				j.setCompleteTime(results.getTimestamp("completed"));
-                j.setBuildJob(results.getBoolean("buildJob"));
-
-				j.setSeed(results.getLong("seed"));
-
-				jobs.add(j);				
+				jobs.add(resultsToJob(results));
 			}			
 
 			return jobs;
