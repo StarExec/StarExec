@@ -1268,30 +1268,13 @@ public class Jobs {
 			 procedure = con.prepareCall("{CALL GetJobById(?)}");
 			procedure.setInt(1, jobId);					
 			results = procedure.executeQuery();
-			Job j = new Job();
-			if(results.next()){
-				j.setId(results.getInt("id"));
-				j.setUserId(results.getInt("user_id"));
-				j.setName(results.getString("name"));				
-				j.setDescription(results.getString("description"));	
-				j.setSeed(results.getLong("seed"));
 
-				j.setCreateTime(results.getTimestamp("created"));	
-				j.setCompleteTime(results.getTimestamp("completed"));
-
-				j.setPrimarySpace(results.getInt("primary_space"));
-				j.setQueue(Queues.get(con, results.getInt("queue_id")));
-				
-				j.setCpuTimeout(results.getInt("cpuTimeout"));
-				j.setWallclockTimeout(results.getInt("clockTimeout"));
-				j.setMaxMemory(results.getLong("maximum_memory"));
-				j.setStageAttributes(Jobs.getStageAttrsForJob(jobId, con));
-
+			if(!results.next()){
+                return null;
 			}
-			else{
-				return null;
-			}
-			
+
+            final Job j = resultsToJob(results);
+            j.setStageAttributes(Jobs.getStageAttrsForJob(jobId, con));
 			if (getCompletedPairsOnly) {
 				logUtil.debug(method, "Getting job pairs for job with id="+jobId+" since completionID="+since);	
 				j.setJobPairs(Jobs.getNewCompletedPairsDetailed(j.getId(), since));
