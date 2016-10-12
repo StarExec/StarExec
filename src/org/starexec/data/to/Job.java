@@ -58,7 +58,11 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	private boolean suppressTimestamp;
 	
 	private boolean usingDependencies = false;
-	
+	private boolean isHighPriority = false;
+
+
+
+
 	private int totalPairs; // number of pairs this job owns
 	private long diskSize; // in bytes
 	public Job() {
@@ -89,6 +93,19 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	 */
 	public int getPrimarySpace() {
 		return primarySpace;
+	}
+
+
+	public boolean isHighPriority() {
+		return isHighPriority;
+	}
+
+	public void setHighPriority() {
+		isHighPriority = true;
+	}
+
+	public void setLowPriority() {
+		isHighPriority = false;
 	}
 	
 	/**

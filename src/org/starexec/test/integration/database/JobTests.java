@@ -60,6 +60,21 @@ public class JobTests extends TestSequence {
 	}
 
 	@StarexecTest
+	private void IsHighPriorityTest() {
+		Jobs.setAsHighPriority(job.getId());
+		Job testJob = Jobs.get(job.getId());
+		Assert.assertTrue(testJob.isHighPriority());
+	}
+
+	@StarexecTest
+	private void SetAsLowPrioirtyTest() {
+		Jobs.setAsLowPriority(job.getId());
+		Job testJob = Jobs.get(job.getId());
+		Assert.assertFalse(testJob.isHighPriority());
+
+	}
+
+	@StarexecTest
 	private void GetByUserTest() {
 		List<Job> jobs=Jobs.getByUserId(user.getId());
 		Assert.assertEquals(1,jobs.size());

@@ -5270,17 +5270,17 @@ public class Jobs {
 
 	/**
 	 * Sets a job to be low priority meaning the user's other jobs should be run first.
-	 * @param job the job to set as low priority.
+	 * @param jobId the job to set as low priority.
 	 */
-	public static void setAsLowPriority(final Job job) {
+	public static void setAsLowPriority(final int jobId) {
 		// TODO: Implement
 	}
 
 	/**
 	 * Sets a job to be high priority meaning this job should run before other's jobs of the same user.
-	 * @param job the job to make high priority.
+	 * @param jobId the job to make high priority.
 	 */
-	public static void setAsHighPriority(final Job job) {
+	public static void setAsHighPriority(final int jobId) {
 		// TODO: Implement
 
 
@@ -5289,10 +5289,10 @@ public class Jobs {
 
 	/**
 	 * Decides whether or not a job has been set as being high priority.
-	 * @param job the job to check.
+	 * @param jobId the job to check.
 	 * @return true if high priority, false otherwise.
 	 */
-	public static boolean isHighPriority(final Job job) {
+	public static boolean isHighPriority(final int jobId) {
 		// TODO: Implement
 
 		return false;
