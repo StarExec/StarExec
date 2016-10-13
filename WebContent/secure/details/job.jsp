@@ -415,7 +415,7 @@
 							<c:if test="${isPaused or isAdminPaused}">
 								<li><button type="button" id="changeQueue">Change Queue</button></li>	
 							</c:if>
-							<c:if test="${isHighPriority}">
+							<c:if test="${!isHighPriority}">
 								<li><button type="button" id="setHighPriority">set as high priority</button></li>
 							</c:if>
 							<c:if test="${isHighPriority}">
