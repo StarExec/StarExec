@@ -5238,8 +5238,11 @@ public class Jobs {
 	 * Sets a job to be low priority meaning the user's other jobs should be run first.
 	 * @param jobId the job to set as low priority.
 	 */
-	public static void setAsLowPriority(final int jobId) {
-		// TODO: Implement
+	public static void setAsLowPriority(final int jobId) throws SQLException {
+		Common.update("{CALL SetHighPriority(?,?)", procedure -> {
+			procedure.setInt(1, jobId);
+			procedure.setBoolean(2, true);
+		});
 	}
 
 	/**
