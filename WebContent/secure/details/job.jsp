@@ -415,6 +415,8 @@
 							<c:if test="${isPaused or isAdminPaused}">
 								<li><button type="button" id="changeQueue">Change Queue</button></li>	
 							</c:if>
+							<li><button type="button" id="setHighPriority">set as high priority</button></li>
+							<li><button type="button" id="setLowPriority">set as low priority</button></li>
 						</c:if>
 					</ul>
 					<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
