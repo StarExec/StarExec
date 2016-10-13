@@ -497,6 +497,16 @@ function initUI(){
 		}
 	});
 
+	setupSetHighPriorityButton();
+
+	setupSetLowPriorityButton();
+
+	$('#setLowPriority').button({
+		icons: {
+			primary: "ui-icon-gear"
+		}
+	});
+
 	$("#matrixViewButton").click(function() {
 		var url = DETAILS_JOB.starexecUrl+'secure/details/jobMatrixView.jsp?stage=1&jobSpaceId='+curSpaceId;
 		if (isLocalJobPage) {
@@ -740,6 +750,50 @@ function setupDeleteJobButton() {
 				}
 			}
 		});
+	});
+}
+
+function setupSetHighPriorityButton() {
+	var setHighPrioritySelector = '#setHighPriority';
+	$(setHighPrioritySelector).button({
+		icons: {
+			primary: "ui-icon-gear"
+		}
+	});
+	$(setHighPrioritySelector).click(function() {
+		$.post(
+			starexecRoot+'/jobs/setHighPriority/'+jobId,
+			'',
+			function(status) {
+				if (status.success) {
+					document.location.reload(true);
+				} else {
+					parseReturnCode(status);
+				}
+			}
+		);
+	});
+}
+
+function setupSetLowPriorityButton() {
+	var setLowPrioritySelector = '#setLowPriority';
+	$(setLowPrioritySelector).button({
+		icons: {
+			primary: "ui-icon-gear"
+		}
+	});
+	$(setLowPrioritySelector).click(function() {
+		$.post(
+			starexecRoot+'/jobs/setLowPriority/'+jobId,
+			'',
+			function(status) {
+				if (status.success) {
+					document.location.reload(true);
+				} else {
+					parseReturnCode(status);
+				}
+			}
+		);
 	});
 }
 
