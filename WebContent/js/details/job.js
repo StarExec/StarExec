@@ -734,7 +734,7 @@ function setupDeleteJobButton() {
 							starexecRoot+"services/delete/job",
 							{selectedIds: [getParameterByName("id")]},
 							function(returnCode) {
-								s=parseReturnCode(returnCode);
+								var s=parseReturnCode(returnCode);
 								if (s) {
 									window.location = starexecRoot+'secure/explore/spaces.jsp';
 
@@ -809,7 +809,7 @@ function setupPauseJobButton() {
 		$.post(
 				starexecRoot+"services/pause/job/" + getParameterByName("id"),
 				function(returnCode) {
-					s=parseReturnCode(returnCode);
+					var s=parseReturnCode(returnCode);
 					if (s) {
 						document.location.reload(true);
 
@@ -832,7 +832,7 @@ function setupResumeJobButton() {
 		$.post(
 				starexecRoot+"services/resume/job/" + getParameterByName("id"),
 				function(returnCode) {
-					s=parseReturnCode(returnCode);
+					var s=parseReturnCode(returnCode);
 					if (s) {
 						document.location.reload(true);
 
@@ -864,7 +864,7 @@ function setupChangeQueueButton() {
 					$.post(
 							starexecRoot+"services/changeQueue/job/" + getParameterByName("id")+"/"+$("#changeQueueSelection").val(),
 							function(returnCode) {
-								s=parseReturnCode(returnCode);
+								var s=parseReturnCode(returnCode);
 								if (s) {
 									setTimeout(function(){document.location.reload(true);}, 1000);
 
