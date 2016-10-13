@@ -67,6 +67,14 @@ public class JobSecurity {
 		
 		return new ValidatorStatusCode(true);
 	}
+
+	public static ValidatorStatusCode canUserChangeJobPriority(int jobId, int userId) {
+		if (!userOwnsJobOrIsAdmin(jobId, userId)) {
+			return new ValidatorStatusCode(false, "You do not have permission to change the priority of this job.");
+		}
+
+		return new ValidatorStatusCode(true);
+	}
 	
 	/**
 	 * Checks to see whether the user is allowed to look at details of a given job space.
