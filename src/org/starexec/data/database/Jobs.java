@@ -5246,22 +5246,11 @@ public class Jobs {
 	 * Sets a job to be high priority meaning this job should run before other's jobs of the same user.
 	 * @param jobId the job to make high priority.
 	 */
-	public static void setAsHighPriority(final int jobId) {
-		// TODO: Implement
-
-
-	}
-
-
-	/**
-	 * Decides whether or not a job has been set as being high priority.
-	 * @param jobId the job to check.
-	 * @return true if high priority, false otherwise.
-	 */
-	public static boolean isHighPriority(final int jobId) {
-		// TODO: Implement
-
-		return false;
+	public static void setAsHighPriority(final int jobId) throws SQLException {
+        Common.update("{CALL SetHighPriority(?,?)}", procedure -> {
+            procedure.setInt(1, jobId);
+            procedure.setBoolean(2, true);
+        });
 	}
 
 	/**
