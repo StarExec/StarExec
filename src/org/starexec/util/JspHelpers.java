@@ -244,6 +244,7 @@ public class JspHelpers {
 				request.setAttribute("seed",j.getSeed());
 				request.setAttribute("diskUsage", Util.byteCountToDisplaySize(j.getDiskSize()));
 				request.setAttribute("buildJob", j.isBuildJob());
+				request.setAttribute("isHighPriority", j.isHighPriority());
 				
 				request.setAttribute("starexecUrl", R.STAREXEC_URL_PREFIX+"://"+R.STAREXEC_SERVERNAME+"/"+R.STAREXEC_APPNAME+"/");
 			} else {
