@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.text.html.Option;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -1049,6 +1050,51 @@ public class RESTServices {
 		}
 
 		return RESTHelpers.getSpaceOverviewGraphJson( stageNumber, jobSpaceId, request, PrimitivesToAnonymize.NONE );
+	}
+
+	@POST
+	@Path("/jobs/setHighPriority/{jobId}")
+	public String setJobAsHighPriority(@PathParam("jobId") final int jobId, @Context final HttpServletRequest request) {
+		final String methodName = "setJobAsHighPriority";
+		final int userId = SessionUtil.getUserId(request);
+		final ValidatorStatusCode status = JobSecurity.canUserChangeJobPriority(jobId, userId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		try {
+			setJobAsPriority(jobId, true, request);
+		} catch (SQLException e) {
+			logUtil.logException(methodName, "Caught exception while trying to set job priority to high.", e);
+			return gson.toJson(ERROR_DATABASE);
+		}
+		return gson.toJson(status);
+	}
+
+	@POST
+	@Path("/jobs/setLowPriority/{jobId}")
+	public String setJobAsLowPriority(@PathParam("jobId") final int jobId, @Context final HttpServletRequest request) {
+		final String methodName = "setJobAsLowPriority";
+		final int userId = SessionUtil.getUserId(request);
+		final ValidatorStatusCode status = JobSecurity.canUserChangeJobPriority(jobId, userId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+
+		try {
+			setJobAsPriority(jobId, false, request);
+		} catch (SQLException e) {
+			logUtil.logException(methodName, "Caught exception while trying to set job priority to low.", e);
+			return gson.toJson(ERROR_DATABASE);
+		}
+		return gson.toJson(status);
+	}
+
+	private static void setJobAsPriority(final int jobId, final boolean isHighPriority, final HttpServletRequest request) throws SQLException {
+		if (isHighPriority) {
+			Jobs.setAsHighPriority(jobId);
+		} else {
+			Jobs.setAsLowPriority(jobId);
+		}
 	}
 
     /**
