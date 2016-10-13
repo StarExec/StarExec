@@ -5239,7 +5239,7 @@ public class Jobs {
 	 * @param jobId the job to set as low priority.
 	 */
 	public static void setAsLowPriority(final int jobId) throws SQLException {
-		Common.update("{CALL SetHighPriority(?,?)", procedure -> {
+		Common.update("{CALL SetHighPriority(?,?)}", procedure -> {
 			procedure.setInt(1, jobId);
 			procedure.setBoolean(2, true);
 		});
