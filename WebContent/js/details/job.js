@@ -762,7 +762,7 @@ function setupSetHighPriorityButton() {
 	});
 	$(setHighPrioritySelector).click(function() {
 		$.post(
-			starexecRoot+'/jobs/setHighPriority/'+jobId,
+			starexecRoot+'services/jobs/setHighPriority/'+jobId,
 			'',
 			function(status) {
 				if (status.success) {
@@ -784,7 +784,7 @@ function setupSetLowPriorityButton() {
 	});
 	$(setLowPrioritySelector).click(function() {
 		$.post(
-			starexecRoot+'/jobs/setLowPriority/'+jobId,
+			starexecRoot+'services/jobs/setLowPriority/'+jobId,
 			'',
 			function(status) {
 				if (status.success) {
