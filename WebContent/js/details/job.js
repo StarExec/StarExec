@@ -289,7 +289,7 @@ function updateGraphs() {
 			var solverName=$(this).find("a:first").attr("title");
 			var configName=$(this).find("td:nth-child(2)").children("a:first").attr("title");
 			var configId=$(this).find("td:nth-child(2)").children("a:first").attr("id");
-			var htmlString='<option value="' +configId+ '">' +solverName+'/'+configName+ '</ option>';
+			var htmlString='<option value="' +configId+ '">' +solverName+'/'+configName+ '</option>';
 			$("#spaceOverviewSelections").append(htmlString);
 			$("#solverChoice1").append(htmlString);
 			$("#solverChoice2").append(htmlString);
