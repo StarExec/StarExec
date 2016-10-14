@@ -1371,7 +1371,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 					}
 				} else {
 					//if we weren't successful, we need to check to see if it was because there are too many pairs
-					code=getStatusCode(nextDataTablePage);
+					var code=getStatusCode(nextDataTablePage);
 					if (code==1) {
 						$("#pairTblField").hide();
 						$("#errorField").show();
