@@ -497,8 +497,9 @@ function initUI(){
 		}
 	});
 
+	log('Setting up high priority button');
 	setupSetHighPriorityButton();
-
+	log('Setting up low priority button');
 	setupSetLowPriorityButton();
 
 	$('#setLowPriority').button({
@@ -755,22 +756,28 @@ function setupDeleteJobButton() {
 
 function setupSetHighPriorityButton() {
 	var setHighPrioritySelector = '#setHighPriority';
+	log('setting up high priority button.');
 	$(setHighPrioritySelector).button({
 		icons: {
 			primary: "ui-icon-gear"
 		}
 	});
 	$(setHighPrioritySelector).click(function() {
+		log('set high priority button clicked.');
 		$.post(
 			starexecRoot+'services/jobs/setHighPriority/'+jobId,
 			'',
-			function(status) {
-				if (status.success) {
+			function(statusCode) {
+				log('got something back.');
+				log(statusCode);
+				if (statusCode.success) {
+					log('reloading page');
 					document.location.reload(true);
 				} else {
-					parseReturnCode(status);
+					parseReturnCode(statusCode);
 				}
-			}
+			},
+			'json'
 		);
 	});
 }
@@ -783,16 +790,19 @@ function setupSetLowPriorityButton() {
 		}
 	});
 	$(setLowPrioritySelector).click(function() {
+		log('set low priority button clicked.');
 		$.post(
 			starexecRoot+'services/jobs/setLowPriority/'+jobId,
 			'',
-			function(status) {
-				if (status.success) {
+			function(statusCode) {
+				if (statusCode.success) {
+					log('reloading page');
 					document.location.reload(true);
 				} else {
-					parseReturnCode(status);
+					parseReturnCode(statusCode);
 				}
-			}
+			},
+			'json'
 		);
 	});
 }
