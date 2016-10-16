@@ -3,14 +3,8 @@ package org.starexec.jobs;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -282,12 +276,14 @@ public abstract class JobManager {
 			// where load is the sum of wallclock timeouts of all active pairs on the queue
 			final HashMap<Integer, Integer> userToCurrentQueueLoad = new HashMap<Integer, Integer>();
 
+			// maps user IDs to the scheduling states containing high priority jobs that the user owns.
 			final Map<Integer, List<SchedulingState>> userToHighPriorityStates = new HashMap<>();
 
 			Iterator<SchedulingState> it = schedule.iterator();
 			while (it.hasNext()) {
 				final SchedulingState s = it.next();
 
+				// Add all high priority states to the user to high priority states map.
 				if (s.job.isHighPriority()) {
 					addToHighPriorityStateMap(s, userToHighPriorityStates);
 				}
@@ -335,12 +331,38 @@ public abstract class JobManager {
 				it = schedule.iterator();
 
 				while (it.hasNext()) {
-					final SchedulingState s = it.next();
+					SchedulingState s = it.next();
+
+
 
 					if (!s.pairIter.hasNext()) {
 						// we will remove this SchedulingState from the schedule, since it is out of job pairs
 						it.remove();
 						continue;
+					}
+
+					final int currentStateUserId = s.job.getUserId();
+					if (!s.job.isHighPriority() && userToHighPriorityStates.containsKey(currentStateUserId)) {
+						List<SchedulingState> highPriorityStates = userToHighPriorityStates.get(currentStateUserId);
+
+						// Filter out all of the high priority states that have no more job pairs.
+						highPriorityStates = highPriorityStates
+								.stream()
+								.filter(state -> state.pairIter.hasNext())
+								.collect(Collectors.toList());
+
+						// Replace the high priority states with the filtered ones.
+						userToHighPriorityStates.put(currentStateUserId, highPriorityStates);
+
+						if (highPriorityStates.size() == 0) {
+							// Remove the user from the map if they don't have any high priority jobs left to look at.
+							userToHighPriorityStates.remove(currentStateUserId);
+
+							// Leave the current scheduling state as is.
+						} else {
+							// Change the current scheduling state to a high priority one.
+							s = highPriorityStates.get(0);
+						}
 					}
 
 					log.info("About to submit "+R.NUM_JOB_PAIRS_AT_A_TIME+" pairs "
@@ -360,10 +382,8 @@ public abstract class JobManager {
 							break;
 						}
 
-						// TODO: Get a pair from a high priority job if there is one.
 						final JobPair pair = s.pairIter.next();
 
-						// TODO: Change the load based on the high priority job if there is one.
 						monitor.changeLoad(s.job.getUserId(), s.job.getWallclockTimeout());
 						if (pair.getPrimarySolver()==null || pair.getBench()==null) {
 							// if the solver or benchmark is null, they were deleted. Indicate that the pair's
