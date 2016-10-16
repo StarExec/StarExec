@@ -5241,7 +5241,7 @@ public class Jobs {
 	public static void setAsLowPriority(final int jobId) throws SQLException {
 		Common.update("{CALL SetHighPriority(?,?)}", procedure -> {
 			procedure.setInt(1, jobId);
-			procedure.setBoolean(2, true);
+			procedure.setBoolean(2, false);
 		});
 	}
 
