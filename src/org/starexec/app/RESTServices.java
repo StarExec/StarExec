@@ -1062,7 +1062,7 @@ public class RESTServices {
 			return gson.toJson(status);
 		}
 		try {
-			setJobAsPriority(jobId, true, request);
+			setJobAsPriority(jobId, true);
 		} catch (SQLException e) {
 			logUtil.logException(methodName, "Caught exception while trying to set job priority to high.", e);
 			return gson.toJson(ERROR_DATABASE);
@@ -1081,7 +1081,7 @@ public class RESTServices {
 		}
 
 		try {
-			setJobAsPriority(jobId, false, request);
+			setJobAsPriority(jobId, false);
 		} catch (SQLException e) {
 			logUtil.logException(methodName, "Caught exception while trying to set job priority to low.", e);
 			return gson.toJson(ERROR_DATABASE);
@@ -1089,7 +1089,7 @@ public class RESTServices {
 		return gson.toJson(status);
 	}
 
-	private static void setJobAsPriority(final int jobId, final boolean isHighPriority, final HttpServletRequest request) throws SQLException {
+	private static void setJobAsPriority(final int jobId, final boolean isHighPriority) throws SQLException {
 		if (isHighPriority) {
 			Jobs.setAsHighPriority(jobId);
 		} else {
@@ -1128,6 +1128,8 @@ public class RESTServices {
 		for(Space c : communities){
 		    String name = c.getName();
 		    int id = c.getId();
+
+
 
 		    JsonObject Comm = new JsonObject();
 		    Comm.addProperty("users",R.COMM_INFO_MAP.get(id).get("users").toString());
