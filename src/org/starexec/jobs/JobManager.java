@@ -203,6 +203,19 @@ public abstract class JobManager {
 		return queueToMonitor.get(queueId);
 	}
 
+	// Builds a map from user to the SchedulingStates containing high priority jobs in the schedule.
+	private static void addToHighPriorityStateMap(SchedulingState state, Map<Integer, List<SchedulingState>> userToHighPriorityStates) {
+		int userId = state.job.getUserId();
+		// Add the state to the map for the user if the state represents a high priority job.
+		if (userToHighPriorityStates.containsKey(userId)) {
+			userToHighPriorityStates.get(userId).add(state);
+		} else {
+			List<SchedulingState> highPriorityStatesForUser = new ArrayList<>();
+			highPriorityStatesForUser.add(state);
+			userToHighPriorityStates.put(userId, highPriorityStatesForUser);
+		}
+	}
+
 
 
 	/**
@@ -268,13 +281,22 @@ public abstract class JobManager {
 			// maps user IDs to the total 'load' that user is responsible for on the current queue,
 			// where load is the sum of wallclock timeouts of all active pairs on the queue
 			final HashMap<Integer, Integer> userToCurrentQueueLoad = new HashMap<Integer, Integer>();
+
+			final Map<Integer, List<SchedulingState>> userToHighPriorityStates = new HashMap<>();
+
 			Iterator<SchedulingState> it = schedule.iterator();
 			while (it.hasNext()) {
 				final SchedulingState s = it.next();
+
+				if (s.job.isHighPriority()) {
+					addToHighPriorityStateMap(s, userToHighPriorityStates);
+				}
+
 				if (!userToCurrentQueueLoad.containsKey(s.job.getUserId())) {
 					userToCurrentQueueLoad.put(s.job.getUserId(), Queues.getUserLoadOnQueue(q.getId(), s.job.getUserId()));
 				}
 			}
+
 			// updates user load values to take into account actual job pair runtimes.
 			monitor.subtractTimeDeltas(JobPairs.getAndClearTimeDeltas(q.getId()));
 
