@@ -211,6 +211,23 @@ public abstract class JobManager {
 	}
 
 
+	private static void logSchedulingState(final String methodName, final SchedulingState s) {
+        logSchedulingState(methodName, s, 0);
+    }
+
+	private static void logSchedulingState(final String methodName, final SchedulingState s, final int tabLevel) {
+        final StringBuilder logMessage = new StringBuilder();
+        for (int i = 0; i < tabLevel; i++) {
+            logMessage.append("\t");
+        }
+
+        logMessage.append("( jobId: "+s.job.getId()+", userId: "+s.job.getUserId()
+                +", isHighPriority: "+s.job.isHighPriority()+", hasNext"+s.pairIter.hasNext()+" )");
+
+        logUtil.debug(methodName, logMessage.toString());
+    }
+
+
 
 	/**
 	 * Submits a job to the grid engine
