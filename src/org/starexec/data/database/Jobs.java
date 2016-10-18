@@ -957,9 +957,9 @@ public class Jobs {
 		return get(jobId, false, true);
 	}
 
-	private static Job resultsToJob(ResultSet results) throws SQLException {
+	public static Job resultsToJob(ResultSet results) throws SQLException {
 		Job j = new Job();
-		j.setId(results.getInt("id"));
+		j.setId(results.getInt("jobs.id"));
 		j.setUserId(results.getInt("user_id"));
 		j.setName(results.getString("name"));
 		j.setPrimarySpace(results.getInt("primary_space"));
@@ -973,7 +973,12 @@ public class Jobs {
 		j.setSeed(results.getLong("seed"));
 		j.setTotalPairs(results.getInt("total_pairs"));
 		j.setDiskSize(results.getLong("disk_size"));
-        final boolean isHighPriority = results.getBoolean("is_high_priority");
+		j.setSuppressTimestamp(results.getBoolean("suppress_timestamp"));
+		j.setUsingDependencies(results.getBoolean("using_dependencies"));
+
+
+
+		final boolean isHighPriority = results.getBoolean("is_high_priority");
         if (isHighPriority) {
             j.setHighPriority();
         } else {
