@@ -227,6 +227,18 @@ public abstract class JobManager {
         logUtil.debug(methodName, logMessage.toString());
     }
 
+    private static Map buildUserToJobCountMap(final List<Job> joblist) {
+		Map<Integer, Integer> userToJobCountMap = new HashMap<>();
+		for (Job j : joblist) {
+			if (!userToJobCountMap.containsKey(j.getId())) {
+				userToJobCountMap.put(j.getId(), 0);
+			}
+
+			userToJobCountMap.put(j.getId(), userToJobCountMap.get(j.getId()) + 1);
+		}
+		return userToJobCountMap;
+	}
+
 
 
 	/**
