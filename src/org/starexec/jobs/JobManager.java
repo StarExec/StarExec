@@ -248,6 +248,16 @@ public abstract class JobManager {
 		return userToJobCountMap;
 	}
 
+	private static void addToHighPriorityJobBalance(SchedulingState state, Map<Integer, Map<Integer, Integer>> balance) {
+		final int userId = state.job.getUserId();
+		if (!balance.containsKey(userId)) {
+			balance.put(userId, new HashMap<>());
+		}
+
+		Map<Integer, Integer> jobIdToTimesSelected = balance.get(userId);
+		jobIdToTimesSelected.put(state.job.getId(), 0);
+	}
+
 
 
 	/**
@@ -309,7 +319,11 @@ public abstract class JobManager {
 				}
 
 			}
-			
+
+			// Map from (user id) -> ( (high priority job id) -> (# of times job been selected) )
+			// Balances out the number of times a high priority job can be selected.
+			final Map<Integer, Map<Integer, Integer>> highPriorityJobBalance = new HashMap<>();
+
 			// maps user IDs to the total 'load' that user is responsible for on the current queue,
 			// where load is the sum of wallclock timeouts of all active pairs on the queue
 			final HashMap<Integer, Integer> userToCurrentQueueLoad = new HashMap<Integer, Integer>();
@@ -324,6 +338,7 @@ public abstract class JobManager {
 				// Add all high priority states to the user to high priority states map.
 				if (s.job.isHighPriority()) {
 					addToHighPriorityStateMap(s, userToHighPriorityStates);
+					addToHighPriorityJobBalance(s, highPriorityJobBalance);
 				}
 
 				if (!userToCurrentQueueLoad.containsKey(s.job.getUserId())) {
