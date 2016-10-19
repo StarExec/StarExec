@@ -41,6 +41,7 @@ import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
+import org.starexec.data.to.tuples.JobCount;
 import org.starexec.exceptions.BenchmarkDependencyMissingException;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.LogUtil;
@@ -229,19 +230,19 @@ public abstract class JobManager {
         logUtil.debug(methodName, logMessage.toString());
     }
 
-    private static Map<Integer, MutablePair<Integer, Integer>> buildUserToJobCountMap(final List<Job> joblist) {
-		final Map<Integer, MutablePair<Integer,Integer>> userToJobCountMap = new HashMap<>();
+    private static Map<Integer, JobCount> buildUserToJobCountMap(final List<Job> joblist) {
+		final Map<Integer, JobCount> userToJobCountMap = new HashMap<>();
 		for (final Job j : joblist) {
 			final int userId = j.getUserId();
 			if (!userToJobCountMap.containsKey(userId)) {
-				userToJobCountMap.put(userId, new MutablePair<>(0, 0));
+				userToJobCountMap.put(userId, new JobCount(0, 0));
 			}
 
-			MutablePair<Integer, Integer> countPair = userToJobCountMap.get(userId);
+			JobCount jobCount = userToJobCountMap.get(userId);
 
-			countPair.setLeft(countPair.getLeft()+1);
+			jobCount.all += 1;
 			if (j.isHighPriority()) {
-				countPair.setRight(countPair.getRight()+1);
+				jobCount.highPriority += 1;
 			}
 		}
 		return userToJobCountMap;
