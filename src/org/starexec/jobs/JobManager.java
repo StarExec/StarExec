@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.starexec.backend.Backend;
 import org.starexec.backend.GridEngineBackend;
@@ -227,14 +229,20 @@ public abstract class JobManager {
         logUtil.debug(methodName, logMessage.toString());
     }
 
-    private static Map buildUserToJobCountMap(final List<Job> joblist) {
-		Map<Integer, Integer> userToJobCountMap = new HashMap<>();
-		for (Job j : joblist) {
-			if (!userToJobCountMap.containsKey(j.getId())) {
-				userToJobCountMap.put(j.getId(), 0);
+    private static Map<Integer, MutablePair<Integer, Integer>> buildUserToJobCountMap(final List<Job> joblist) {
+		final Map<Integer, MutablePair<Integer,Integer>> userToJobCountMap = new HashMap<>();
+		for (final Job j : joblist) {
+			final int userId = j.getUserId();
+			if (!userToJobCountMap.containsKey(userId)) {
+				userToJobCountMap.put(userId, new MutablePair<>(0, 0));
 			}
 
-			userToJobCountMap.put(j.getId(), userToJobCountMap.get(j.getId()) + 1);
+			MutablePair<Integer, Integer> countPair = userToJobCountMap.get(userId);
+
+			countPair.setLeft(countPair.getLeft()+1);
+			if (j.isHighPriority()) {
+				countPair.setRight(countPair.getRight()+1);
+			}
 		}
 		return userToJobCountMap;
 	}
