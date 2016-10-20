@@ -274,7 +274,6 @@ public abstract class JobManager {
 			List<SchedulingState> usersHighPriorityStates,
 			Map<Integer, Integer> usersHighPriorityJobBalance) throws StarExecException {
 
-		Random random = new Random();
 
 		// Check if all the high priority jobs have been selected an equal number of times.
 		HashSet<Integer> valueSet = new HashSet<Integer>(usersHighPriorityJobBalance.values());
@@ -282,6 +281,7 @@ public abstract class JobManager {
 
 		if (allEquals) {
 			// If all the high priority jobs have been selected an equal number of times, randomly pick one to use.
+			Random random = new Random();
 			SchedulingState selectedState = usersHighPriorityStates.get(random.nextInt(usersHighPriorityStates.size()));
 			Integer currentBalanceForState = usersHighPriorityJobBalance.get(selectedState.job.getId());
 			usersHighPriorityJobBalance.put(selectedState.job.getId(), currentBalanceForState+1);
@@ -292,6 +292,7 @@ public abstract class JobManager {
 		Map.Entry<Integer, Integer> minEntry =
 				Collections.min(usersHighPriorityJobBalance.entrySet(), (a, b) -> a.getValue().compareTo(b.getValue()));
 
+		// Find the high priority state with the job id that has been selected the minimum number of times.
 		for (SchedulingState state : usersHighPriorityStates) {
 			if (state.job.getId() == minEntry.getKey()) {
 				return state;
