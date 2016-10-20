@@ -43,6 +43,7 @@ import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.data.to.tuples.JobCount;
 import org.starexec.exceptions.BenchmarkDependencyMissingException;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
@@ -258,6 +259,41 @@ public abstract class JobManager {
 		jobIdToTimesSelected.put(state.job.getId(), 0);
 	}
 
+	/**
+	 * Selects a high priority SchedulingState from the user's high priority states taking into consideration how many
+	 * times those state have been selected previously
+	 * @param userId the user that we need to pick a new state for.
+	 * @param usersHighPriorityStates the high priority states owned by the user.
+	 * @param usersHighPriorityJobBalance a mapping from high priority state to the number of times that state has already
+	 *                               been chosen for the user.
+	 * @return
+	 * @throws StarExecException
+	 */
+	private static SchedulingState selectHighPriorityJob(
+			int userId,
+			List<SchedulingState> usersHighPriorityStates,
+			Map<Integer, Integer> usersHighPriorityJobBalance) throws StarExecException {
+
+		Random random = new Random();
+
+		// Check if all the high priority jobs have been selected an equal number of times.
+		HashSet<Integer> valueSet = new HashSet<Integer>(usersHighPriorityJobBalance.values());
+		boolean allEquals = valueSet.size() == 1;
+
+		if (allEquals) {
+			// If all the high priority jobs have been selected an equal number of times, randomly pick one to use.
+			SchedulingState selectedState = usersHighPriorityStates.get(random.nextInt(usersHighPriorityStates.size()));
+			Integer currentBalanceForState = usersHighPriorityJobBalance.get(selectedState.job.getId());
+			usersHighPriorityJobBalance.put(selectedState.job.getId(), currentBalanceForState+1);
+			return selectedState;
+		}
+
+		// Get and return the high priority job that has been selected the least number of times.
+		Map.Entry<Integer, Integer> minEntry =
+				Collections.min(usersHighPriorityJobBalance.entrySet(), (a, b) -> a.getValue().compareTo(b.getValue()));
+		return usersHighPriorityStates.get(minEntry.getKey());
+	}
+
 
 
 	/**
@@ -269,6 +305,7 @@ public abstract class JobManager {
 
 	 */
 	public static void submitJobs(final List<Job> joblist, final Queue q, int queueSize, final int nodeCount) {
+		final Random random = new Random();
 		final String methodName = "submitJobs";
 		final LoadBalanceMonitor monitor = getMonitor(q.getId());
 		try {
@@ -413,8 +450,22 @@ public abstract class JobManager {
 
 							// Leave the current scheduling state as is.
 						} else {
-							// Change the current scheduling state to a high priority one.
-							s = highPriorityStates.get(0);
+							if (!highPriorityJobBalance.containsKey(s.job.getUserId())) {
+								logUtil.logException(methodName, new StarExecException("Being in this block means there must be a high priority job user with"
+											+ "id=" + s.job.getUserId() + " but there was not."));
+							} else {
+								Map<Integer, Integer> highPriorityJobBalanceForUser = highPriorityJobBalance.get(s.job.getUserId());
+
+								if (highPriorityJobBalanceForUser.entrySet().size() == 0) {
+									logUtil.logException(methodName,
+											new StarExecException("There should be high priority jobs for this user in the high" +
+													"priority job balance but there isn't!, userId="+s.job.getUserId()));
+								} else {
+
+									// Change the state to a high priority one
+									s = selectHighPriorityJob(s.job.getUserId(), highPriorityStates, highPriorityJobBalanceForUser);
+								}
+							}
 						}
 					}
 
