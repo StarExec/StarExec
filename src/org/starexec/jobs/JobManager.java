@@ -291,7 +291,16 @@ public abstract class JobManager {
 		// Get and return the high priority job that has been selected the least number of times.
 		Map.Entry<Integer, Integer> minEntry =
 				Collections.min(usersHighPriorityJobBalance.entrySet(), (a, b) -> a.getValue().compareTo(b.getValue()));
-		return usersHighPriorityStates.get(minEntry.getKey());
+
+		for (SchedulingState state : usersHighPriorityStates) {
+			if (state.job.getId() == minEntry.getKey()) {
+				return state;
+			}
+		}
+
+		throw new StarExecException("The state with jobId="+minEntry.getKey()+" was not in the high priority state list for" +
+				"user with id="+userId+" but it was in their high priority job balance.");
+
 	}
 
 
@@ -450,21 +459,24 @@ public abstract class JobManager {
 
 							// Leave the current scheduling state as is.
 						} else {
-							if (!highPriorityJobBalance.containsKey(s.job.getUserId())) {
-								logUtil.logException(methodName, new StarExecException("Being in this block means there must be a high priority job user with"
-											+ "id=" + s.job.getUserId() + " but there was not."));
-							} else {
-								Map<Integer, Integer> highPriorityJobBalanceForUser = highPriorityJobBalance.get(s.job.getUserId());
-
-								if (highPriorityJobBalanceForUser.entrySet().size() == 0) {
-									logUtil.logException(methodName,
-											new StarExecException("There should be high priority jobs for this user in the high" +
-													"priority job balance but there isn't!, userId="+s.job.getUserId()));
+							try {
+								if (!highPriorityJobBalance.containsKey(s.job.getUserId())) {
+									throw new StarExecException("Being in this block means there must be a high priority job user with"
+											+ "id=" + s.job.getUserId() + " but there was not.");
 								} else {
+									Map<Integer, Integer> highPriorityJobBalanceForUser = highPriorityJobBalance.get(s.job.getUserId());
 
-									// Change the state to a high priority one
-									s = selectHighPriorityJob(s.job.getUserId(), highPriorityStates, highPriorityJobBalanceForUser);
+									if (highPriorityJobBalanceForUser.entrySet().size() == 0) {
+										throw new StarExecException("There should be high priority jobs for this user in the high" +
+												"priority job balance but there isn't!, userId=" + s.job.getUserId());
+									} else {
+										// Change the state to a high priority one
+										s = selectHighPriorityJob(s.job.getUserId(), highPriorityStates, highPriorityJobBalanceForUser);
+									}
 								}
+							} catch (StarExecException e) {
+								logUtil.logException(methodName, e);
+								// s will not have changed.
 							}
 						}
 					}
