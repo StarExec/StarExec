@@ -144,29 +144,30 @@
 							<input type="text" name="maxMem" id="maxMem"/>
 						</td>
 					</tr>
-					
-					
-					<tr class="noHover" title="How would you like to traverse the job pairs?">
+
+					<tr id="advancedOptionsRow"><td></td><td><button id="advancedOptionsButton" type="button">advanced options</button></td></tr>
+					<tr class="hidden"></tr>
+					<tr class="noHover advancedOptions" title="How would you like to traverse the job pairs?">
 						<td class="label"><p>Job-Pair Traversal</p></td>
 						<td>
 							Depth-First<input type="radio" id="radioDepth" name="traversal" value="depth"/> 	
 							Round-Robin<input type="radio" id="radioRobin" name="traversal" value="robin"/>	
 						</td>
 					</tr>	
-					<tr class="noHover" title="Would you like to immediately pause the job upon creation?">
+					<tr class="noHover advancedOptions" title="Would you like to immediately pause the job upon creation?">
 						<td class="label"><p>Create Paused</p></td>
 						<td>
 							Yes<input type="radio" id="radioYesPause" name="pause" value="yes"/> 	
 							No<input type="radio" id="radioNoPause" name="pause" value="no"/>	
 						</td>
 					</tr>
-					<tr class="noHover" title="a random value that will be passed into any preprocessor used for this job">
+					<tr class="noHover advancedOptions" title="a random value that will be passed into any preprocessor used for this job">
 						<td class="label"><p>pre-processor seed</p></td>
 						<td>
 							<input type="text" name="seed" id="seed" value="0">
 						</td>
 					</tr>					
-					<tr class="noHover" title="whether to include timestamps in the stdout for the pairs in this job">
+					<tr class="noHover advancedOptions" title="whether to include timestamps in the stdout for the pairs in this job">
 						<td>
 							<p>Suppress Timestamps</p>
 						</td>
@@ -175,7 +176,7 @@
 							No<input type="radio" id="radioNoSuppressTimestamps" name="${suppressTimestamp}" value="no" checked="checked"/>
 						</td>
 					</tr>
-					<tr class="noHover" title="The interval, in seconds, at which to retrieve incremental results for pairs that are running. 0 means results are only obtained after pairs finish. 10 is the minimum if this is used.">
+					<tr class="noHover advancedOptions" title="The interval, in seconds, at which to retrieve incremental results for pairs that are running. 0 means results are only obtained after pairs finish. 10 is the minimum if this is used.">
 						<td>
 							<p>Results Interval</p>
 						</td>
@@ -183,7 +184,7 @@
 							<input type="text" name="resultsInterval" id="resultsInterval" value="0">
 						</td>
 					</tr>
-					<tr class="noHover" title="Whether to save solver output that is placed into the extra output directory given to each solver">
+					<tr class="noHover advancedOptions" title="Whether to save solver output that is placed into the extra output directory given to each solver">
 						<td>
 							<p>Save Additional Output Files</p>
 						</td>

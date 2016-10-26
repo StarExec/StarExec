@@ -3,6 +3,14 @@
 	margin: 50px auto 50px auto;	
 }
 
+.hidden {
+	display: none;
+}
+
+#advancedOptionsButton {
+	float: left;
+}
+
 .contentTbl {
 	width: 100%;
 }

@@ -203,6 +203,7 @@ function attachFormValidation(){
 function initUI() {
 	
 	
+	$('#advancedOptions').expandable(true);
 	
 	//If there is only one post processor and for some reason it is not the default, set it as such
 	if ($("#postProcess").find("option").length==2) {
@@ -240,6 +241,18 @@ function initUI() {
 		
 		history.back(-1);
 	});
+
+
+	$('.advancedOptions').hide();
+	$('#advancedOptionsButton').button({
+		icons: {
+			primary: "ui-icon-gear"
+		}
+	}).click(function() {
+		$('#advancedOptionsRow').hide();
+		$('.advancedOptions').show();
+	});
+
 
 	
 	$('#btnNext').button({
