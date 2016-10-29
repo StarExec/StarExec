@@ -33,6 +33,17 @@ To copy primitives (users, solvers, benchmarks, or jobs), select them
 from the main panel of the space explorer, and then drag them to the
 desired space in the tree view on the left part of the page.</p>
 
+<p>
+	<strong>Deleting and removing jobs.</strong>
+	To remove a job from a space (without deleting it), drag and drop the job
+	to the trashcan on the right hand side of the page and select "remove jobs".
+	A removed job is still visible from account->profile.
+	To delete a job you must own the job. Drag and drop the job to the trachcan and
+	select "delete permanently". The job and all results contained in the job will
+	be deleted permanently.
+</p>
+
+
 <p><strong>Changing permissions.</strong>
 If you are a space leader (typically if you created a space), you
 can change the permissions a user in your space has for modifying that
