@@ -14,6 +14,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
@@ -65,6 +66,9 @@ public class JobUtil {
 	 * @throws IOException
 	 */
 	public List<Integer> createJobsFromFile(File file, int userId, Integer spaceId) throws Exception {
+		final String methodName = "createJobsFromFile";
+		StopWatch stopwatch = new StopWatch();
+		stopwatch.start();
 		final String method = "createJobsFromFile";
 		List<Integer> jobIds=new ArrayList<Integer>();
 		if (!validateAgainstSchema(file)){
@@ -180,6 +184,9 @@ public class JobUtil {
 		}
 		logUtil.info(method, "Finished creating jobs from elements, returning job ids.");
 		this.jobCreationSuccess = true;
+
+		stopwatch.stop();
+		logUtil.debug(methodName, "Time to create job from file: "+stopwatch.toString());
 		return jobIds;
 	}
 	
@@ -448,6 +455,10 @@ public class JobUtil {
 	private Integer createJobFromElement(int userId, Integer spaceId,
 			Element jobElement, HashMap<String,SolverPipeline> pipelines) {
 	    try {
+			final String methodName = "createJobFromElement";
+
+			StopWatch firstStopWatch = new StopWatch();
+			firstStopWatch.start();
 			
 	    	
 			Element jobAttributes = DOMHelper.getElementByName(jobElement,"JobAttributes");
@@ -559,7 +570,13 @@ public class JobUtil {
 			// to a single root space
 			HashSet<String> jobRootPaths=new HashSet<String>();
 			NodeList jobPairs = jobElement.getElementsByTagName("JobPair");
-			
+
+			firstStopWatch.stop();
+			// TODO: Lower log level
+			logUtil.info(methodName, "First stopwatch took: "+firstStopWatch.toString());
+
+			final StopWatch secondStopWatch = new StopWatch();
+			secondStopWatch.start();
 			//we now iterate through all the job pair elements and add them all to the job
 			for (int i = 0; i < jobPairs.getLength(); i++) {
 			    Node jobPairNode = jobPairs.item(i);
@@ -640,7 +657,12 @@ public class JobUtil {
 					job.addJobPair(jobPair);
 			    }
 			}
-			
+			secondStopWatch.stop();
+			// TODO: lower log level
+			logUtil.info(methodName, "Iterating through job pairs took "+secondStopWatch.toString());
+
+			StopWatch thirdStopWatch = new StopWatch();
+			thirdStopWatch.start();
 			//JobLine elements are still job pairs, but they are how multi-stage pairs are denoted
 			//in the XML
 			NodeList jobLines = jobElement.getElementsByTagName("JobLine");
@@ -743,6 +765,13 @@ public class JobUtil {
 					job.addJobPair(jobPair);
 			    }
 			}
+
+			thirdStopWatch.stop();
+			//TODO: LOWER LOG LEVEL
+			logUtil.info(methodName, "Jobline processing took: " + thirdStopWatch.toString());
+
+			StopWatch fourthStopWatch = new StopWatch();
+			fourthStopWatch.start();
 			
 			
 			log.info("job pairs set");
@@ -792,6 +821,11 @@ public class JobUtil {
 			} else if (startPaused) {
 			    Jobs.pause(job.getId());
 			}
+
+			fourthStopWatch.stop();
+			// TODO: LOWER LOG LEVEL
+			logUtil.info(methodName, "Post processing took: " + fourthStopWatch.toString());
+
 			return job.getId();
 		
 	    }
