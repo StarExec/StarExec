@@ -12,7 +12,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.*;
@@ -57,8 +56,6 @@ public class JobUtil {
 	 */
 	public List<Integer> createJobsFromFile(File file, int userId, Integer spaceId) throws Exception {
 		final String methodName = "createJobsFromFile";
-		StopWatch stopwatch = new StopWatch();
-		stopwatch.start();
 		final String method = "createJobsFromFile";
 		List<Integer> jobIds=new ArrayList<Integer>();
 		if (!validateAgainstSchema(file)){
@@ -175,8 +172,6 @@ public class JobUtil {
 		logUtil.info(method, "Finished creating jobs from elements, returning job ids.");
 		this.jobCreationSuccess = true;
 
-		stopwatch.stop();
-		logUtil.debug(methodName, "Time to create job from file: "+stopwatch.toString());
 		return jobIds;
 	}
 	
