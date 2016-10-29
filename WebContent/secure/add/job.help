@@ -63,6 +63,8 @@ generate a number and pass it to the preprocessor</p>
 <p>Setting this option to "yes" will prevent runsolver from adding timestamps to the jobpair output.</p>
 
 <h3>Results Interval</h3>
+<p>The interval, in seconds, at which to receive incremental results for pairs that are running. 0 means results
+are only obtained after pairs finish. 10 is the minimum if this is used.</p>
 
 <h3>Save Additional Output Files</h3>
 
