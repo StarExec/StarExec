@@ -171,7 +171,7 @@ public class JobPairs {
 					jobPair.addStage(stage);
 					//the primary stage is the one we just added
 					jobPair.setPrimaryStageNumber(jobPair.getStages().size());
-					jobPair.setSpace(Spaces.get(spaceId));
+					jobPair.setSpace(Spaces.get(spaceId, con));
 
 
 					job.addJobPair(jobPair);
