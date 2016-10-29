@@ -27,6 +27,11 @@ import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PairStageProcessorTriple;
 import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import javax.swing.text.html.Option;
 
 /**
  * Contains handles on database queries for retrieving and updating
@@ -77,7 +82,109 @@ public class JobPairs {
 			Common.safeClose(procedure);
 		}
 		return false;
-	}	
+	}
+
+	public static Optional<String> populateJobPairsForJobXMLUpload(
+			final Element jobElement,
+			final String rootName,
+			final int userId,
+			final HashMap<Integer,Solver> configIdsToSolvers,
+			final Job job,
+			final int spaceId,
+			final HashSet<String> jobRootPaths) throws SQLException {
+
+		final String methodName = "populateJobPairsForJobXMLUpload";
+
+		Connection con = null;
+
+		try {
+			con = Common.getConnection();
+
+			final NodeList jobPairs = jobElement.getElementsByTagName("JobPair");
+
+			//we now iterate through all the job pair elements and add them all to the job
+			for (int i = 0; i < jobPairs.getLength(); i++) {
+				final Node jobPairNode = jobPairs.item(i);
+				if (jobPairNode.getNodeType() == Node.ELEMENT_NODE) {
+					final Element jobPairElement = (Element) jobPairNode;
+
+					final JobPair jobPair = new JobPair();
+					final int benchmarkId = Integer.parseInt(jobPairElement.getAttribute("bench-id"));
+					final int configId = Integer.parseInt(jobPairElement.getAttribute("config-id"));
+					String path = jobPairElement.getAttribute("job-space-path");
+					if (path.equals("")) {
+						path = rootName;
+
+					}
+					jobPair.setPath(path);
+					if (path.contains(R.JOB_PAIR_PATH_DELIMITER)) {
+						jobRootPaths.add(path.substring(0, path.indexOf(R.JOB_PAIR_PATH_DELIMITER)));
+					} else {
+						jobRootPaths.add(path);
+					}
+
+					//permissions check on the benchmark for this job pair
+					Benchmark b = Benchmarks.get(con, benchmarkId, false);
+					if (b == null) {
+						Benchmark errorBench = Benchmarks.get(con, benchmarkId, true, true);
+						if (errorBench == null) {
+							return Optional.of("Found null reference to benchmark: " + benchmarkId);
+						} else if (errorBench.isDeleted()) {
+							return Optional.of(errorBench.getName() + " has been deleted by it's user.");
+						} else if (errorBench.isRecycled()) {
+							return Optional.of(errorBench.getName() + " has been reycled by it's user.");
+						} else {
+							return Optional.of("Unknown problem with benchmark: " + benchmarkId);
+						}
+					}
+					if (!Permissions.canUserSeeBench(benchmarkId, userId, con)) {
+						return Optional.of("You do not have permission to see benchmark " + benchmarkId);
+					}
+					jobPair.setBench(b);
+					if (!configIdsToSolvers.containsKey(configId)) {
+						//permissions check on the solver for the pair. Configurations do
+						//not have permissions by themselves-- their permissions are identical to the solver permissions
+						Solver s = Solvers.getSolverByConfig(con, configId, true);
+						if (s == null) {
+							return Optional.of("Found null reference to solver referenced by config id: " + configId);
+						}
+						if (s.isDeleted() || s.isRecycled()) {
+							return Optional.of("This solver associated with config " + configId + " has been deleted or recycled, solverId: " + s.getId());
+						}
+
+						if (!Permissions.canUserSeeSolver(s.getId(), userId)) {
+							return Optional.of("You do not have permission to see the solver " + s.getId());
+						}
+
+						s.addConfiguration(Solvers.getConfiguration(con, configId));
+						configIdsToSolvers.put(configId, s);
+					}
+					Solver s = configIdsToSolvers.get(configId);
+
+					//JobPair elements are for pairs with exactly one stage, so we create a stage
+					//to house the solver and benchmark
+					JoblineStage stage = new JoblineStage();
+					stage.setStageNumber(1);
+					stage.setSolver(s);
+					stage.setConfiguration(s.getConfigurations().get(0));
+
+					jobPair.addStage(stage);
+					//the primary stage is the one we just added
+					jobPair.setPrimaryStageNumber(jobPair.getStages().size());
+					jobPair.setSpace(Spaces.get(spaceId));
+
+
+					job.addJobPair(jobPair);
+				}
+			}
+			return Optional.empty();
+		} catch (SQLException e) {
+			logUtil.logException(methodName, e);
+			throw e;
+		} finally {
+			Common.safeClose(con);
+		}
+	}
 
 	/**
 	 * Retrieves all the inputs to the given pair from the jobpair_inputs table.

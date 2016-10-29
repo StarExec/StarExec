@@ -65,7 +65,7 @@ public class Permissions {
 	 * @author Tyler Jensen
 	 */
 	
-	private static boolean canUserSeeBench(int benchId, int userId, Connection con) {
+	public static boolean canUserSeeBench(int benchId, int userId, Connection con) {
 		Benchmark b = Benchmarks.getIncludeDeletedAndRecycled(benchId, false);
 		if (b==null) {
 			return false;

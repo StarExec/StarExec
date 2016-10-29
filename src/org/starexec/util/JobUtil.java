@@ -2,11 +2,9 @@ package org.starexec.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -17,15 +15,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Pipelines;
-import org.starexec.data.database.Processors;
-import org.starexec.data.database.Queues;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
+import org.starexec.data.database.*;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
@@ -457,10 +447,6 @@ public class JobUtil {
 	    try {
 			final String methodName = "createJobFromElement";
 
-			StopWatch firstStopWatch = new StopWatch();
-			firstStopWatch.start();
-			
-	    	
 			Element jobAttributes = DOMHelper.getElementByName(jobElement,"JobAttributes");
 			HashMap<Integer,Solver> configIdsToSolvers=new HashMap<Integer,Solver>();
 	
@@ -564,105 +550,19 @@ public class JobUtil {
 			if (!job.containsStageOneAttributes()) {
 				job.addStageAttributes(stageOneAttributes);
 			}
-			
 			//this is the set of every top level space path given in the XML. There must be exactly 1 top level space,
 			// so if there is more than one then we will need to prepend the rootName onto every pair path to condense it
 			// to a single root space
 			HashSet<String> jobRootPaths=new HashSet<String>();
-			NodeList jobPairs = jobElement.getElementsByTagName("JobPair");
 
-			firstStopWatch.stop();
-			// TODO: Lower log level
-			logUtil.info(methodName, "First stopwatch took: "+firstStopWatch.toString());
+			Optional<String> potentialError = JobPairs.populateJobPairsForJobXMLUpload(
+					jobElement, rootName, userId, configIdsToSolvers, job, spaceId, jobRootPaths);
 
-			final StopWatch secondStopWatch = new StopWatch();
-			secondStopWatch.start();
-			//we now iterate through all the job pair elements and add them all to the job
-			for (int i = 0; i < jobPairs.getLength(); i++) {
-			    Node jobPairNode = jobPairs.item(i);
-			    if (jobPairNode.getNodeType() == Node.ELEMENT_NODE){
-					Element jobPairElement = (Element)jobPairNode;
-						
-					JobPair jobPair = new JobPair();
-					int benchmarkId = Integer.parseInt(jobPairElement.getAttribute("bench-id"));
-					int configId = Integer.parseInt(jobPairElement.getAttribute("config-id"));
-					String path = jobPairElement.getAttribute("job-space-path");
-					if (path.equals("")) {
-						path=rootName;
-						
-					}
-					jobPair.setPath(path);
-					if (path.contains(R.JOB_PAIR_PATH_DELIMITER)) {
-						jobRootPaths.add(path.substring(0,path.indexOf(R.JOB_PAIR_PATH_DELIMITER)));
-					} else {
-						jobRootPaths.add(path);
-					}
-						
-					//permissions check on the benchmark for this job pair
-					Benchmark b = Benchmarks.get(benchmarkId);
-                    if(b == null) {
-                        Benchmark errorBench = Benchmarks.get(benchmarkId, true, true);
-                        if(errorBench == null) {
-                            errorMessage = "Found null reference to benchmark: " + benchmarkId;
-                        } else if(errorBench.isDeleted()) {
-                            errorMessage = errorBench.getName() + " has been deleted by it's user.";
-                        } else if (errorBench.isRecycled()) {
-                            errorMessage = errorBench.getName() + " has been reycled by it's user.";
-                        } else {
-                            errorMessage = "Unknown problem with benchmark: " + benchmarkId;
-                        }
-                        return -1;
-                    }
-					if (!Permissions.canUserSeeBench(benchmarkId, userId)){
-					    errorMessage = "You do not have permission to see benchmark " + benchmarkId;
-					    return -1;
-					}
-					jobPair.setBench(b);
-					if (!configIdsToSolvers.containsKey(configId)) {
-						//permissions check on the solver for the pair. Configurations do
-						//not have permissions by themselves-- their permissions are identical to the solver permissions
-						Solver s = Solvers.getSolverByConfig(configId, true);
-                        if(s == null) {
-                            errorMessage = "Found null reference to solver referenced by config id: " + configId;
-                            return -1;
-                        }
-                        if(s.isDeleted() || s.isRecycled()) {
-                            errorMessage = "This solver associated with config " + configId + " has been deleted or recycled, solverId: " + s.getId();
-                            return -1;
-                        }
-                        
-						if (!Permissions.canUserSeeSolver(s.getId(), userId)){
-						    errorMessage = "You do not have permission to see the solver " + s.getId();
-						    return -1;
-						}
-						
-						s.addConfiguration(Solvers.getConfiguration(configId));
-						configIdsToSolvers.put(configId, s);
-					}
-					Solver s = configIdsToSolvers.get(configId);
-					
-					//JobPair elements are for pairs with exactly one stage, so we create a stage
-					//to house the solver and benchmark
-					JoblineStage stage=new JoblineStage();
-					stage.setStageNumber(1);
-					stage.setSolver(s);
-					stage.setConfiguration(s.getConfigurations().get(0));
-					
-					jobPair.addStage(stage);
-					//the primary stage is the one we just added
-					jobPair.setPrimaryStageNumber(jobPair.getStages().size());
-					jobPair.setSpace(Spaces.get(spaceId));
-					
-						
-					job.addJobPair(jobPair);
-			    }
+			if (potentialError.isPresent()) {
+				errorMessage = potentialError.get();
+				return -1;
 			}
-			secondStopWatch.stop();
-			// TODO: lower log level
-			logUtil.info(methodName, "Iterating through job pairs took "+secondStopWatch.toString());
 
-			StopWatch thirdStopWatch = new StopWatch();
-			thirdStopWatch.start();
 			//JobLine elements are still job pairs, but they are how multi-stage pairs are denoted
 			//in the XML
 			NodeList jobLines = jobElement.getElementsByTagName("JobLine");
@@ -765,13 +665,6 @@ public class JobUtil {
 					job.addJobPair(jobPair);
 			    }
 			}
-
-			thirdStopWatch.stop();
-			//TODO: LOWER LOG LEVEL
-			logUtil.info(methodName, "Jobline processing took: " + thirdStopWatch.toString());
-
-			StopWatch fourthStopWatch = new StopWatch();
-			fourthStopWatch.start();
 			
 			
 			log.info("job pairs set");
@@ -822,14 +715,9 @@ public class JobUtil {
 			    Jobs.pause(job.getId());
 			}
 
-			fourthStopWatch.stop();
-			// TODO: LOWER LOG LEVEL
-			logUtil.info(methodName, "Post processing took: " + fourthStopWatch.toString());
-
 			return job.getId();
-		
-	    }
-	    catch (Exception e) {
+
+		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 			errorMessage = "Internal error when creating your job: "+e.getMessage();
 			return -1;

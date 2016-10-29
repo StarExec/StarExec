@@ -968,7 +968,7 @@ public class Benchmarks {
 	 * 
 	 * @throws Exception 
 	 */
-	protected static Benchmark get(Connection con, int benchId,boolean includeDeleted) throws Exception {	
+	protected static Benchmark get(Connection con, int benchId,boolean includeDeleted) throws SQLException {
 		CallableStatement procedure=null;
 		ResultSet results=null;
 	
@@ -1025,6 +1025,19 @@ public class Benchmarks {
 
 		try {
 			con = Common.getConnection();		
+			return get(con, benchId, includeAttrs, includeDeleted);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return null;
+	}
+
+	protected static Benchmark get(Connection con, int benchId, boolean includeAttrs, boolean includeDeleted) {
+
+		try {
 			Benchmark b = Benchmarks.get(con, benchId,includeDeleted);
 			if (b==null) {
 				return null;
@@ -1035,10 +1048,8 @@ public class Benchmarks {
 			}
 
 			return b;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
 		}
 
 		return null;
