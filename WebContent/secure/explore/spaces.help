@@ -53,6 +53,9 @@ desired space in the tree view on the left part of the page.</p>
 </p>
 <p>
 	<strong>Deleting and removing solvers.</strong>
+	Deleting a solver is the same as deleting a benchmark. Removing a solver is the same with only
+	one difference. When removing a solver you'll have the option to "remove from space hierarchy"
+	this option allows you to remove the solver from the space as well as all descendant spaces.
 </p>
 
 <p><strong>Changing permissions.</strong>
