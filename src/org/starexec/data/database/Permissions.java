@@ -208,18 +208,18 @@ public class Permissions {
 	 * @author Tyler Jensen
 	 * 
 	 */
-	private static boolean canUserSeeSolver(int solverId, int userId, Connection con) {
-		Solver s = Solvers.getIncludeDeleted(solverId);
+	public static boolean canUserSeeSolver(int solverId, int userId, Connection con) {
+		Solver s = Solvers.getIncludeDeleted(con, solverId);
 		if (s==null) {
 			return false;
 		}
-		if (Solvers.isPublic(solverId)){
+		if (Solvers.isPublic(con, solverId)){
 			return true;
 		}
-		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
+		if (GeneralSecurity.hasAdminReadPrivileges(con, userId)) {
 			return true;
 		}
-		if (Settings.canUserSeeSolverInSettings(userId, solverId)) {
+		if (Settings.canUserSeeSolverInSettings(con, userId, solverId)) {
 			return true;
 		}
 

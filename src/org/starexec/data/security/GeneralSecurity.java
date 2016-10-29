@@ -12,6 +12,8 @@ import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
+import java.sql.Connection;
+
 
 public class GeneralSecurity {
 
@@ -122,7 +124,11 @@ public class GeneralSecurity {
 	 * @author Albert Giegerich
 	 */
 	public static boolean hasAdminReadPrivileges(int userId) {
-		return Users.isAdmin(userId) || Users.isDeveloper(userId); 
+		return Users.isAdmin(userId) || Users.isDeveloper(userId);
+	}
+
+	public static boolean hasAdminReadPrivileges(Connection con, int userId) {
+		return Users.isAdmin(con, userId) || Users.isDeveloper(con, userId);
 	}
 
 	/**

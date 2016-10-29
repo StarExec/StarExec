@@ -186,6 +186,23 @@ public class Settings {
 		}
 		return listOfDefaultSettings;
 	}
+
+	public static List<DefaultSettings>getDefaultSettingsVisibleByUser(Connection con, int userId) {
+		List<DefaultSettings> listOfDefaultSettings=new ArrayList<DefaultSettings>();
+		List<Space> comms=Communities.getAllCommunitiesUserIsIn(con, userId);
+		if (comms.size()>0) {
+			for (int i=0;i<comms.size();i++) {
+				DefaultSettings s=Communities.getDefaultSettings(con, comms.get(i).getId());
+				listOfDefaultSettings.add(s);
+
+			}
+		}
+		List<DefaultSettings> userSettings=Settings.getDefaultSettingsOwnedByUser(userId);
+		if (userSettings!=null) {
+			listOfDefaultSettings.addAll(userSettings);
+		}
+		return listOfDefaultSettings;
+	}
 	
 	/**
 	 * Gets all of the defaultSettings profiles that this user has
@@ -203,7 +220,20 @@ public class Settings {
 	 * @return
 	 */
 	public static boolean canUserSeeSolverInSettings(int userId, int solverId) {
-		List<DefaultSettings> settings=Settings.getDefaultSettingsVisibleByUser(userId);
+		final String methodName = "canUserSeeSolverInSettings";
+		Connection con = null;
+		try {
+			return canUserSeeSolverInSettings(con, userId, solverId);
+		} catch (Exception e) {
+			logUtil.logException(methodName, e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
+
+	public static boolean canUserSeeSolverInSettings(Connection con, int userId, int solverId) {
+		List<DefaultSettings> settings=Settings.getDefaultSettingsVisibleByUser(con, userId);
 		for (DefaultSettings s : settings) {
 			if (s.getSolverId()==null) {
 				continue;
@@ -213,8 +243,8 @@ public class Settings {
 			}
 		}
 		return false;
-	} 
-	
+	}
+
 	/**
 	 * Checks whether the given user has access to the given benchmark through a settings profile
 	 * @param userId

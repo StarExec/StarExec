@@ -152,7 +152,7 @@ public class JobPairs {
 							return Optional.of("This solver associated with config " + configId + " has been deleted or recycled, solverId: " + s.getId());
 						}
 
-						if (!Permissions.canUserSeeSolver(s.getId(), userId)) {
+						if (!Permissions.canUserSeeSolver(s.getId(), userId, con)) {
 							return Optional.of("You do not have permission to see the solver " + s.getId());
 						}
 

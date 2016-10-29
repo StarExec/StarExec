@@ -26,32 +26,42 @@ public class Communities {
 	 */
 	public static List<Space> getAll() {
 		Connection con = null;			
+		try {
+			con = Common.getConnection();		
+			return getAll(con);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+	protected static List<Space> getAll(Connection con) {
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
-			con = Common.getConnection();		
 			procedure = con.prepareCall("{CALL GetSubSpacesOfRoot}");
 			results = procedure.executeQuery();
 			List<Space> commSpaces = new LinkedList<Space>();
-			
+
 			while(results.next()){
 				Space s = new Space();
 				s.setName(results.getString("name"));
 				s.setId(results.getInt("id"));
 				s.setDescription(results.getString("description"));
-				s.setLocked(results.getBoolean("locked"));				
+				s.setLocked(results.getBoolean("locked"));
 				commSpaces.add(s);
-			}			
-						
+			}
+
 			return commSpaces;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		
+
 		return null;
 	}
 
@@ -67,6 +77,19 @@ public class Communities {
 		for (Space community : allCommunities) {
 			int communityId = community.getId();
 			if (Users.isMemberOfCommunity(userId, communityId)) {
+				// If user is in community add community to list of communities user is in
+				communitiesUserIsIn.add(community);
+			}
+		}
+		return communitiesUserIsIn;
+	}
+
+	public static List<Space> getAllCommunitiesUserIsIn(Connection con, int userId) {
+		List<Space> allCommunities = Communities.getAll(con);
+		List<Space> communitiesUserIsIn = new LinkedList<Space>();
+		for (Space community : allCommunities) {
+			int communityId = community.getId();
+			if (Users.isMemberOfCommunity(con, userId, communityId)) {
 				// If user is in community add community to list of communities user is in
 				communitiesUserIsIn.add(community);
 			}
@@ -267,35 +290,49 @@ public class Communities {
 	 * @author Ruoyu Zhang
 	 */
 	public static DefaultSettings getDefaultSettings(int id) {
-		Connection con = null;			
+		Connection con = null;
+		try {			
+			//first, find the ID of the community this space is a part of
+			con = Common.getConnection();
+			return getDefaultSettings(con, id);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+
+		}
+		
+		return null;
+	}
+
+	protected static DefaultSettings getDefaultSettings(Connection con, int id) {
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		//if the current space is the root, we just want to return the default profile
 		if (id==1) {
 			return new DefaultSettings();
 		}
-		try {			
+		try {
 			//first, find the ID of the community this space is a part of
-			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetCommunityOfSpace(?)}");
 			procedure.setInt(1, id);
 			results = procedure.executeQuery();
-			
+
 			int community;
 			if (results.next()) {
 				//if we found the community, get the default settings
-			    community = results.getInt("community");
-			    Common.safeClose(results);
-			    Common.safeClose(procedure);
-			    
-			    //this means the community was NULL, which occurs when this is called on the root space.
-			    if (community<=0) {
-			    	log.debug("no default settings profile set for space = "+id);
-			    	return null;
-			    }
-			    
-			    List<DefaultSettings> settings=Settings.getDefaultSettingsByPrimIdAndType(community, SettingType.COMMUNITY);
-				
+				community = results.getInt("community");
+				Common.safeClose(results);
+				Common.safeClose(procedure);
+
+				//this means the community was NULL, which occurs when this is called on the root space.
+				if (community<=0) {
+					log.debug("no default settings profile set for space = "+id);
+					return null;
+				}
+
+				List<DefaultSettings> settings=Settings.getDefaultSettingsByPrimIdAndType(community, SettingType.COMMUNITY);
+
 				if(settings.size()>0){
 					return settings.get(0);
 				}
@@ -310,30 +347,29 @@ public class Communities {
 					d.setName(name);
 					d.setPrimId(community);
 					log.debug("calling createNewDefaultSettings on community with id = "+community);
-				    int newId=createNewDefaultSettings(d);
-				    if (newId>0) {
-					    return d;
+					int newId=createNewDefaultSettings(d);
+					if (newId>0) {
+						return d;
 
-				    } else {
-				    	//failed to create new profile
-				    	log.error("error creating new default settings profile");
-				    	return null;
-				    }
+					} else {
+						//failed to create new profile
+						log.error("error creating new default settings profile");
+						return null;
+					}
 				}
-			   
+
 			} else {
 				log.error("We were unable to find the community for the space ="+id);
 				return null;
 			}
 
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		
+
 		return null;
 	}
 	
