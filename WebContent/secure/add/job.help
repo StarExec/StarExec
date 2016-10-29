@@ -9,7 +9,9 @@ href="http://en.wikipedia.org/wiki/Wall-clock_time">here</a> for the
 difference).  
 </p>
 
-<h2>Selecting an execution queue</h2>
+<h2>Options for Creating Jobs</h2>
+
+<h3>Selecting an execution queue</h3>
 
 <p>You can also select a queue for execution of your job.
 Each job queue is assigned a number of nodes with identical technical specs.
@@ -20,7 +22,28 @@ Community leaders may request the creation of new queues for exclusive access
 to nodes, for special, community-related tasks (such as running a competition).  
 </p>
 
-<h2>Choosing an execution order</h2>
+<h3>Choosing a pre processor</h3>
+
+<p>With this option you can choose a benchmark pre processor that will alter the 
+benchmarks before the solvers on them.</p>
+
+<h3>Choosing a post processor<h3>
+
+<p>With this option you can select a post processor that will extract attributes from the
+job results as defined by the post processor.</p>
+
+<h3>Timeouts</h3>
+<p>Timeouts are specified in number of seconds. Any job pairs that exceed the wallclock timeout or cpu 
+timeout you specify will be terminated. Using these options will ensure that job pairs that are 
+taking an unreasonable amount of time won't keep your other pairs from running.</p>
+
+<h3>Maximum Memory</h3>
+<p>The units for the maximum memory field is Gigabytes. This option limits the amount of memory a pair can use
+before it is terminated.</p>
+
+<h2> Advanced Options </h2>
+
+<h3>Choosing an execution order</h3>
 
 <p>There is an option to execute job pairs in depth-first order, which will
 execute all job pairs in one subspace before moving on to the next; or
@@ -28,6 +51,21 @@ else round-robin, which will result in a workload where all subspaces
 make progress in the execution concurrently.  After setting these
 options, select "next".
 </p>
+
+<h3>Create Paused</h3>
+<p>The "Create Paused" option will pause the job as soon as it is created.</p>
+
+<h3>pre-processor seed</h3>
+<p>This option allows you to specify the seed for a pseudo-random value generator that will
+generate a number and pass it to the preprocessor</p>
+
+<h3>Suppress Timestamps</h3>
+<p>Setting this option to "yes" will prevent runsolver from adding timestamps to the jobpair output.</p>
+
+<h3>Results Interval</h3>
+
+<h3>Save Additional Output Files</h3>
+
 
 <p>You can then select whether to "run and keep the hierarchy structure" or
 choose which benchmarks and solvers to execute.  The first option will find 
@@ -39,7 +77,7 @@ copy the solvers and benchmarks for that division into that subspace, and
 the run a single job from the space containing those subspaces.
 </p>
 
-<h2>Monitoring the execution</h2>
+<h2>Monitoring the execution</h3>
 
 <p>Once the job is created, it will begin queueing immediately.  If
 other jobs are running, of course, it may take some time for your job
