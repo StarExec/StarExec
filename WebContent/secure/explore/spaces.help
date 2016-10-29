@@ -36,13 +36,24 @@ desired space in the tree view on the left part of the page.</p>
 <p>
 	<strong>Deleting and removing jobs.</strong>
 	To remove a job from a space (without deleting it), drag and drop the job
-	to the trashcan on the right hand side of the page and select "remove jobs".
-	A removed job is still visible from account->profile.
-	To delete a job you must own the job. Drag and drop the job to the trachcan and
+	to the trashbin on the right hand side of the page and select "remove jobs".
+	A removed job is still visible from Account->Profile.
+	To delete a job you must own the job. Drag and drop the job to the trashbin and
 	select "delete permanently". The job and all results contained in the job will
 	be deleted permanently.
 </p>
 
+<p>
+	<strong>Deleting and removing benchmarks.</strong>
+	Similarly to jobs, benchmarks can be deleted or removed by dragging them
+	to the trashbin. Selecting "remove from space" will remove them from the space but not
+	delete them. Selecting "move to recycle bin" will delete the benchmark and move it to your
+	recycle bin accessible from your Account->Profile, removed benchmarks are also available at
+	Account->Profile.
+</p>
+<p>
+	<strong>Deleting and removing solvers.</strong>
+</p>
 
 <p><strong>Changing permissions.</strong>
 If you are a space leader (typically if you created a space), you
