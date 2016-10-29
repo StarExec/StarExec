@@ -57,6 +57,14 @@ desired space in the tree view on the left part of the page.</p>
 	one difference. When removing a solver you'll have the option to "remove from space hierarchy"
 	this option allows you to remove the solver from the space as well as all descendant spaces.
 </p>
+<p>
+	<strong>Deleting and removing subspaces.</strong>
+	To delete a subspace, drag and drop it to the trashbin. The "remove subspaces only" option
+	will delete the subspace and descendant subspaces but your primitives will still be accessible
+	from Account->Profile. The remove subspaces and recycle primitives" option will delete the subspace
+	and descendant subspaces and recycle your primitives in those spaces. The recycled primitives can be
+	restored from your recycle bin.
+</p>
 
 <p><strong>Changing permissions.</strong>
 If you are a space leader (typically if you created a space), you
