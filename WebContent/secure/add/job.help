@@ -67,6 +67,7 @@ generate a number and pass it to the preprocessor</p>
 are only obtained after pairs finish. 10 is the minimum if this is used.</p>
 
 <h3>Save Additional Output Files</h3>
+<p>Saves solver output that is placed into the extra output directory given to each solver.</p>
 
 
 <p>You can then select whether to "run and keep the hierarchy structure" or
