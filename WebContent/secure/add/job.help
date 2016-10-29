@@ -27,7 +27,7 @@ to nodes, for special, community-related tasks (such as running a competition).
 <p>With this option you can choose a benchmark pre processor that will alter the 
 benchmarks before the solvers on them.</p>
 
-<h3>Choosing a post processor<h3>
+<h3>Choosing a post processor</h3>
 
 <p>With this option you can select a post processor that will extract attributes from the
 job results as defined by the post processor.</p>
