@@ -12,6 +12,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.lang3.time.StopWatch;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.*;
@@ -440,6 +442,9 @@ public class JobUtil {
 	private Integer createJobFromElement(int userId, Integer spaceId,
 			Element jobElement, HashMap<String,SolverPipeline> pipelines) {
 	    try {
+			// TODO delete
+			StopWatch totalStopWatch = new StopWatch();
+			totalStopWatch.start();
 			final String methodName = "createJobFromElement";
 
 			Element jobAttributes = DOMHelper.getElementByName(jobElement,"JobAttributes");
@@ -552,9 +557,12 @@ public class JobUtil {
 			Map<Integer, Benchmark> accessibleCachedBenchmarks = new HashMap<>();
 			// IMPORTANT: For efficieny reasons this function has the side-effect of populating configIdsToSolvers
 			//			  as well as accessibleCachedBenchmarks
+			StopWatch jobPairsStopWatch = new StopWatch();
+			jobPairsStopWatch.start();
 			Optional<String> potentialError = JobPairs.populateConfigIdsToSolversMapAndJobPairsForJobXMLUpload(
 					jobElement, rootName, userId, accessibleCachedBenchmarks, configIdsToSolvers, job, spaceId, jobRootPaths);
-
+			jobPairsStopWatch.stop();
+			logUtil.logStopWatch(Level.INFO, methodName, "Job Pairs Watch: ", jobPairsStopWatch);
 			if (potentialError.isPresent()) {
 				errorMessage = potentialError.get();
 				return -1;
@@ -562,6 +570,8 @@ public class JobUtil {
 
 			//JobLine elements are still job pairs, but they are how multi-stage pairs are denoted
 			//in the XML
+			StopWatch jobLinesStopWatch = new StopWatch();
+			jobLinesStopWatch.start();
 			NodeList jobLines = jobElement.getElementsByTagName("JobLine");
 			for (int i = 0; i < jobLines.getLength(); i++) {
 			    Node jobLineNode = jobLines.item(i);
@@ -671,7 +681,8 @@ public class JobUtil {
 					job.addJobPair(jobPair);
 			    }
 			}
-			
+			jobLinesStopWatch.stop();
+			logUtil.logStopWatch(Level.INFO, methodName, "Job Lines Watch: ", jobLinesStopWatch);
 			
 			log.info("job pairs set");
 	
@@ -680,7 +691,9 @@ public class JobUtil {
 			    errorMessage = "Error: no job pairs created for the job. Could not proceed with job submission.";
 			    return -1;
 			}
-			
+
+			StopWatch rootPathsStopwatch = new StopWatch();
+			rootPathsStopwatch.start();
 			// pairs must have exactly 1 root space, so if there is more than one, we prepend the rootname onto every path
 			if (jobRootPaths.size()>1) {
 				for (JobPair p : job.getJobPairs()) {
@@ -689,9 +702,13 @@ public class JobUtil {
 			} else {
 				rootName=jobRootPaths.iterator().next();
 			}
-			
+			// TODO delete
+			rootPathsStopwatch.stop();
+			logUtil.logStopWatch(Level.INFO, methodName, "Root Paths Watch: ", rootPathsStopwatch);
 			//check to make sure that, for all spaces where we will be creating mirrored hierarchies to store new benchmarks,
 			//that we actually can create the mirrored hierarchy without name collisions.
+			StopWatch attrsStopwatch = new StopWatch();
+			attrsStopwatch.start();
 			for (StageAttributes attrs: job.getStageAttributes()) {
 				if (attrs.getSpaceId()!=null) {
 					if (Spaces.getSubSpaceIDbyName(attrs.getSpaceId(), rootName)!=-1) {
@@ -701,6 +718,8 @@ public class JobUtil {
 
 				}
 			}
+			attrsStopwatch.stop();
+			logUtil.logStopWatch(Level.INFO, methodName, "Attrs Watch: ", attrsStopwatch);
 			
 			
 			log.info("job pair size nonzero");
@@ -721,6 +740,8 @@ public class JobUtil {
 			    Jobs.pause(job.getId());
 			}
 
+			totalStopWatch.stop();
+			logUtil.logStopWatch(Level.INFO, methodName, "Total: ", totalStopWatch);
 			return job.getId();
 
 		} catch (Exception e) {

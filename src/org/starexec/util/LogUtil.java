@@ -1,5 +1,7 @@
 package org.starexec.util;
 
+import org.apache.commons.lang3.time.StopWatch;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
 public class LogUtil {
@@ -9,6 +11,10 @@ public class LogUtil {
 
 	public LogUtil(Logger log) {
 		this.log = log;
+	}
+
+	public void logStopWatch(Level level, String method, String message, StopWatch stopWatch) {
+		log.log(level, prefix(method)+message+stopWatch.toString());
 	}
 
 	public void entry(String method) {
