@@ -99,6 +99,7 @@ public class JobPairs {
 
 		try {
 			con = Common.getConnection();
+			Common.beginTransaction(con);
 
 			final NodeList jobPairs = jobElement.getElementsByTagName("JobPair");
 
@@ -179,9 +180,11 @@ public class JobPairs {
 			}
 			return Optional.empty();
 		} catch (SQLException e) {
+			Common.doRollback(con);
 			logUtil.logException(methodName, e);
 			throw e;
 		} finally {
+			Common.endTransaction(con);
 			Common.safeClose(con);
 		}
 	}

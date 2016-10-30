@@ -1659,7 +1659,6 @@ public class Solvers {
 		ResultSet results=null;
 		CallableStatement procedure = null;
 		try {
-			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL IsSolverPublic(?)}");
 			procedure.setInt(1, solverId);
 			results = procedure.executeQuery();
