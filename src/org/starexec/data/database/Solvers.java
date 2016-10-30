@@ -686,19 +686,20 @@ public class Solvers {
 	 * @author Tyler Jensen
 	 */
 	public static Solver get(int solverId, boolean includeDeleted) {
-		Connection con = null;			
-		
-		try {			
-			con = Common.getConnection();		
-			return Solvers.get(con, solverId,includeDeleted);		
-		} catch (Exception e){			
-			log.error("Solver get says " + e.getMessage(), e);		
+		Connection con = null;
+
+		try {
+			con = Common.getConnection();
+			return Solvers.get(con, solverId,includeDeleted);
+		} catch (Exception e){
+			log.error("Solver get says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;
 	}
+
 	
 	/**
 	 * @param solverIds The ids of the solvers to retrieve
@@ -1393,9 +1394,9 @@ public class Solvers {
 		}
 		Solver s;
 		if (includeDeleted) {
-			s=Solvers.getIncludeDeleted(c.getSolverId());
+			s=Solvers.getIncludeDeleted(con, c.getSolverId());
 		} else {
-			s=Solvers.get(c.getSolverId());
+			s=Solvers.get(con, c.getSolverId(), false);
 		}
 		if (s==null) {
 			return null;

@@ -141,29 +141,41 @@ public class Settings {
 	public static List<DefaultSettings> getDefaultSettingsByPrimIdAndType(int id, SettingType type) {
 
 		Connection con=null;
-		CallableStatement procedure=null;
-		ResultSet results=null;
-		
+
 		try {
 			List<DefaultSettings> settings=new ArrayList<DefaultSettings>();
 			con=Common.getConnection();
-		    procedure = con.prepareCall("{CALL GetDefaultSettingsByIdAndType(?,?)}");
-		    procedure.setInt(1, id);
-		    procedure.setInt(2, type.getValue());
-			results=procedure.executeQuery();
-			while (results.next()) {
-				settings.add(resultsToSettings(results));
-			}
-			return settings;
+            return getDefaultSettingsByPrimIdAndType(con, id, type);
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
 		}
 		return null; //error;
 	}
+    protected static List<DefaultSettings> getDefaultSettingsByPrimIdAndType(Connection con, int id, SettingType type) {
+
+        CallableStatement procedure=null;
+        ResultSet results=null;
+
+        try {
+            List<DefaultSettings> settings=new ArrayList<DefaultSettings>();
+            procedure = con.prepareCall("{CALL GetDefaultSettingsByIdAndType(?,?)}");
+            procedure.setInt(1, id);
+            procedure.setInt(2, type.getValue());
+            results=procedure.executeQuery();
+            while (results.next()) {
+                settings.add(resultsToSettings(results));
+            }
+            return settings;
+        } catch (Exception e) {
+            log.error(e.getMessage(),e);
+        } finally {
+            Common.safeClose(procedure);
+            Common.safeClose(results);
+        }
+        return null; //error;
+    }
 	/**
 	 * Returns every DefaultSettings profile a user has access to, either by community
 	 * or individually
@@ -197,7 +209,7 @@ public class Settings {
 
 			}
 		}
-		List<DefaultSettings> userSettings=Settings.getDefaultSettingsOwnedByUser(userId);
+		List<DefaultSettings> userSettings=Settings.getDefaultSettingsOwnedByUser(con, userId);
 		if (userSettings!=null) {
 			listOfDefaultSettings.addAll(userSettings);
 		}
@@ -212,6 +224,10 @@ public class Settings {
 	public static List<DefaultSettings> getDefaultSettingsOwnedByUser(int userId) {
 		return getDefaultSettingsByPrimIdAndType(userId, SettingType.USER);
 	}
+
+    protected static List<DefaultSettings> getDefaultSettingsOwnedByUser(Connection con, int userId) {
+        return getDefaultSettingsByPrimIdAndType(con, userId, SettingType.USER);
+    }
 	
 	/**
 	 * Checks whether the given user has access to the given solver through a settings profile
@@ -253,19 +269,32 @@ public class Settings {
 	 * @return
 	 */
 	public static boolean canUserSeeBenchmarkInSettings(int userId, int benchId) {
-		List<DefaultSettings> settings=Settings.getDefaultSettingsVisibleByUser(userId);
-		for (DefaultSettings s : settings) {
-			if (s.getBenchId()==null) {
-				continue;
-			}
-			if (s.getBenchId()==benchId) {
-				return true;
-			}
-		}
-		return false;
-	} 
-	
-	/**
+        List<DefaultSettings> settings=Settings.getDefaultSettingsVisibleByUser(userId);
+        for (DefaultSettings s : settings) {
+            if (s.getBenchId()==null) {
+                continue;
+            }
+            if (s.getBenchId()==benchId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean canUserSeeBenchmarkInSettings(Connection con, int userId, int benchId) {
+        List<DefaultSettings> settings=Settings.getDefaultSettingsVisibleByUser(con, userId);
+        for (DefaultSettings s : settings) {
+            if (s.getBenchId()==null) {
+                continue;
+            }
+            if (s.getBenchId()==benchId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
 	 * Deletes the DefaultSettings profile with the given ID
 	 * @param id 
 	 * @return True on success and false otherwise

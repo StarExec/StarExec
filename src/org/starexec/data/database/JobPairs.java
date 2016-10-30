@@ -138,7 +138,7 @@ public class JobPairs {
 							return Optional.of("Unknown problem with benchmark: " + benchmarkId);
 						}
 					}
-					if (!Permissions.canUserSeeBench(benchmarkId, userId, con)) {
+					if (!Permissions.canUserSeeBench(con, benchmarkId, userId)) {
 						return Optional.of("You do not have permission to see benchmark " + benchmarkId);
 					}
 					jobPair.setBench(b);
@@ -153,7 +153,7 @@ public class JobPairs {
 							return Optional.of("This solver associated with config " + configId + " has been deleted or recycled, solverId: " + s.getId());
 						}
 
-						if (!Permissions.canUserSeeSolver(s.getId(), userId, con)) {
+						if (!Permissions.canUserSeeSolver(con, s.getId(), userId)) {
 							return Optional.of("You do not have permission to see the solver " + s.getId());
 						}
 

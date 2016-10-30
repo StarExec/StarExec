@@ -65,18 +65,18 @@ public class Permissions {
 	 * @author Tyler Jensen
 	 */
 	
-	public static boolean canUserSeeBench(int benchId, int userId, Connection con) {
-		Benchmark b = Benchmarks.getIncludeDeletedAndRecycled(benchId, false);
+	public static boolean canUserSeeBench(Connection con, int benchId, int userId) {
+		Benchmark b = Benchmarks.getIncludeDeletedAndRecycled(con, benchId, false);
 		if (b==null) {
 			return false;
 		}
-		if (Benchmarks.isPublic(benchId)){
+		if (Benchmarks.isPublic(con, benchId)){
 			return true;
 		}	
-		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
+		if (GeneralSecurity.hasAdminReadPrivileges(con, userId)) {
 			return true;
 		}
-		if (Settings.canUserSeeBenchmarkInSettings(userId, benchId)) {
+		if (Settings.canUserSeeBenchmarkInSettings(con, userId, benchId)) {
 			return true;
 		}
 
@@ -113,7 +113,7 @@ public class Permissions {
 		Connection con = null;			
 		try {
 			con = Common.getConnection();		
-			return canUserSeeBench(benchId, userId, con);
+			return canUserSeeBench(con, benchId, userId);
 		
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -141,7 +141,7 @@ public class Permissions {
 			con = Common.getConnection();		
 			//check the permissions for every benchmark
 			for(int id : benchIds) {
-				if (!canUserSeeBench(id,userId,con)) {
+				if (!canUserSeeBench(con, id,userId)) {
 					return false;
 				}
 			}			
@@ -208,7 +208,7 @@ public class Permissions {
 	 * @author Tyler Jensen
 	 * 
 	 */
-	public static boolean canUserSeeSolver(int solverId, int userId, Connection con) {
+	public static boolean canUserSeeSolver(Connection con, int solverId, int userId) {
 		Solver s = Solvers.getIncludeDeleted(con, solverId);
 		if (s==null) {
 			return false;
@@ -256,7 +256,7 @@ public class Permissions {
 		Connection con = null;			
 		try {
 			con = Common.getConnection();	
-			return canUserSeeSolver(solverId,userId,con);
+			return canUserSeeSolver(con, solverId,userId);
 			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -284,7 +284,7 @@ public class Permissions {
 			con = Common.getConnection();
 			//do the check for every solver
 			for(int id : solverIds) {	
-				if (!canUserSeeSolver(id,userId,con)) {
+				if (!canUserSeeSolver(con, id,userId)) {
 					return false;
 				}
 			}
