@@ -7,12 +7,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.security.GeneralSecurity;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.Permission;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
+import org.starexec.data.to.*;
 
 /**
  * Handles all database interaction for permissions
@@ -72,8 +69,10 @@ public class Permissions {
 		}
 		if (Benchmarks.isPublic(con, benchId)){
 			return true;
-		}	
-		if (GeneralSecurity.hasAdminReadPrivileges(con, userId)) {
+		}
+
+		User u=Users.get(con, userId);
+		if (u!=null && (u.getRole().equals(R.ADMIN_ROLE_NAME) || u.getRole().equals(R.DEVELOPER_ROLE_NAME))) {
 			return true;
 		}
 		if (Settings.canUserSeeBenchmarkInSettings(con, userId, benchId)) {

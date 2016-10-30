@@ -550,7 +550,8 @@ public class JobUtil {
 			// to a single root space
 			HashSet<String> jobRootPaths=new HashSet<String>();
 
-			Optional<String> potentialError = JobPairs.populateJobPairsForJobXMLUpload(
+			// IMPORTANT: For efficieny reasons this function has the side-effect of populating configIdsToSolvers
+			Optional<String> potentialError = JobPairs.populateConfigIdsToSolversMapAndJobPairsForJobXMLUpload(
 					jobElement, rootName, userId, configIdsToSolvers, job, spaceId, jobRootPaths);
 
 			if (potentialError.isPresent()) {

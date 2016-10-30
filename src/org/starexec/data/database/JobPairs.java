@@ -11,6 +11,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
@@ -84,7 +85,7 @@ public class JobPairs {
 		return false;
 	}
 
-	public static Optional<String> populateJobPairsForJobXMLUpload(
+	public static Optional<String> populateConfigIdsToSolversMapAndJobPairsForJobXMLUpload(
 			final Element jobElement,
 			final String rootName,
 			final int userId,
@@ -94,8 +95,10 @@ public class JobPairs {
 			final HashSet<String> jobRootPaths) throws SQLException {
 
 		final String methodName = "populateJobPairsForJobXMLUpload";
-
 		Connection con = null;
+
+		// Benchmarks the user can see that we've already seen.
+		Map<Integer, Benchmark> accessibleCachedBenchmarks = new HashMap<>();
 
 		try {
 			con = Common.getConnection();
@@ -104,11 +107,11 @@ public class JobPairs {
 			final NodeList jobPairs = jobElement.getElementsByTagName("JobPair");
 
 			//we now iterate through all the job pair elements and add them all to the job
-			for (int i = 0; i < jobPairs.getLength(); i++) {
+			final int jobPairsLength = jobPairs.getLength();
+			for (int i = 0; i < jobPairsLength; i++) {
 				final Node jobPairNode = jobPairs.item(i);
 				if (jobPairNode.getNodeType() == Node.ELEMENT_NODE) {
 					final Element jobPairElement = (Element) jobPairNode;
-
 					final JobPair jobPair = new JobPair();
 					final int benchmarkId = Integer.parseInt(jobPairElement.getAttribute("bench-id"));
 					final int configId = Integer.parseInt(jobPairElement.getAttribute("config-id"));
@@ -124,22 +127,30 @@ public class JobPairs {
 						jobRootPaths.add(path);
 					}
 
+					Benchmark b = null;
 					//permissions check on the benchmark for this job pair
-					Benchmark b = Benchmarks.get(con, benchmarkId, false);
-					if (b == null) {
-						Benchmark errorBench = Benchmarks.get(con, benchmarkId, true, true);
-						if (errorBench == null) {
-							return Optional.of("Found null reference to benchmark: " + benchmarkId);
-						} else if (errorBench.isDeleted()) {
-							return Optional.of(errorBench.getName() + " has been deleted by it's user.");
-						} else if (errorBench.isRecycled()) {
-							return Optional.of(errorBench.getName() + " has been reycled by it's user.");
-						} else {
-							return Optional.of("Unknown problem with benchmark: " + benchmarkId);
+					if (!accessibleCachedBenchmarks.containsKey(benchmarkId)) {
+						b = Benchmarks.get(con, benchmarkId, false);
+						if (b == null) {
+							Benchmark errorBench = Benchmarks.get(con, benchmarkId, true, true);
+							if (errorBench == null) {
+								return Optional.of("Found null reference to benchmark: " + benchmarkId);
+							} else if (errorBench.isDeleted()) {
+								return Optional.of(errorBench.getName() + " has been deleted by it's user.");
+							} else if (errorBench.isRecycled()) {
+								return Optional.of(errorBench.getName() + " has been reycled by it's user.");
+							} else {
+								return Optional.of("Unknown problem with benchmark: " + benchmarkId);
+							}
 						}
-					}
-					if (!Permissions.canUserSeeBench(con, benchmarkId, userId)) {
-						return Optional.of("You do not have permission to see benchmark " + benchmarkId);
+						if (!Permissions.canUserSeeBench(con, benchmarkId, userId)) {
+							return Optional.of("You do not have permission to see benchmark " + benchmarkId);
+						}
+
+						// Cache the benchmark
+						accessibleCachedBenchmarks.put(benchmarkId, b);
+					} else {
+						b = accessibleCachedBenchmarks.get(benchmarkId);
 					}
 					jobPair.setBench(b);
 					if (!configIdsToSolvers.containsKey(configId)) {
