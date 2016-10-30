@@ -223,6 +223,7 @@ public class Settings {
 		final String methodName = "canUserSeeSolverInSettings";
 		Connection con = null;
 		try {
+			con = Common.getConnection();
 			return canUserSeeSolverInSettings(con, userId, solverId);
 		} catch (Exception e) {
 			logUtil.logException(methodName, e);
