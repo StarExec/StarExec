@@ -549,10 +549,11 @@ public class JobUtil {
 			// so if there is more than one then we will need to prepend the rootName onto every pair path to condense it
 			// to a single root space
 			HashSet<String> jobRootPaths=new HashSet<String>();
-
+			Map<Integer, Benchmark> accessibleCachedBenchmarks = new HashMap<>();
 			// IMPORTANT: For efficieny reasons this function has the side-effect of populating configIdsToSolvers
+			//			  as well as accessibleCachedBenchmarks
 			Optional<String> potentialError = JobPairs.populateConfigIdsToSolversMapAndJobPairsForJobXMLUpload(
-					jobElement, rootName, userId, configIdsToSolvers, job, spaceId, jobRootPaths);
+					jobElement, rootName, userId, accessibleCachedBenchmarks, configIdsToSolvers, job, spaceId, jobRootPaths);
 
 			if (potentialError.isPresent()) {
 				errorMessage = potentialError.get();
@@ -593,11 +594,17 @@ public class JobUtil {
 					} else {
 						jobRootPaths.add(path);
 					}
-					
-					Benchmark b = Benchmarks.get(benchmarkId);
-					if (!Permissions.canUserSeeBench(benchmarkId, userId)){
-					    errorMessage = "You do not have permission to see benchmark " + benchmarkId;
-					    return -1;
+
+					Benchmark b = null;
+					if (!accessibleCachedBenchmarks.containsKey(benchmarkId)) {
+						b = Benchmarks.get(benchmarkId);
+						if (!Permissions.canUserSeeBench(benchmarkId, userId)) {
+							errorMessage = "You do not have permission to see benchmark " + benchmarkId;
+							return -1;
+						}
+						accessibleCachedBenchmarks.put(benchmarkId, b);
+					} else {
+						b = accessibleCachedBenchmarks.get(benchmarkId);
 					}
 					jobPair.setBench(b);
 					
@@ -606,9 +613,12 @@ public class JobUtil {
 					for (int inputIndex=0;inputIndex<inputs.getLength();inputIndex++) {
 						Element inputElement=(Element)inputs.item(inputIndex);
 						int benchmarkInput=Integer.parseInt(inputElement.getAttribute("bench-id"));
-						if (!Permissions.canUserSeeBench(benchmarkInput, userId)){
-						    errorMessage = "You do not have permission to see benchmark input " + benchmarkId;
-						    return -1;
+						// If the benchmark cache already contains the bench id then we know the user can see it.
+						if (!accessibleCachedBenchmarks.containsKey(benchmarkInput)) {
+							if (!Permissions.canUserSeeBench(benchmarkInput, userId)) {
+								errorMessage = "You do not have permission to see benchmark input " + benchmarkId;
+								return -1;
+							}
 						}
 						jobPair.addBenchInput(benchmarkInput);
 					}
