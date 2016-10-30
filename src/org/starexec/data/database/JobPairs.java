@@ -99,7 +99,9 @@ public class JobPairs {
 
 		// Benchmarks the user can see that we've already seen.
 		Map<Integer, Benchmark> accessibleCachedBenchmarks = new HashMap<>();
-
+		Runtime runtime = Runtime.getRuntime();
+		log.info("Max memory allowed: " + runtime.maxMemory());
+		log.info("Free memory before upload: " + runtime.maxMemory());
 		try {
 			con = Common.getConnection();
 			Common.beginTransaction(con);
@@ -195,6 +197,7 @@ public class JobPairs {
 			logUtil.logException(methodName, e);
 			throw e;
 		} finally {
+			log.info("Free memory after upload: " + runtime.freeMemory());
 			Common.endTransaction(con);
 			Common.safeClose(con);
 		}
