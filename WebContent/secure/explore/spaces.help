@@ -33,6 +33,39 @@ To copy primitives (users, solvers, benchmarks, or jobs), select them
 from the main panel of the space explorer, and then drag them to the
 desired space in the tree view on the left part of the page.</p>
 
+<p>
+	<strong>Deleting and removing jobs.</strong>
+	To remove a job from a space (without deleting it), drag and drop the job
+	to the trashbin on the right hand side of the page and select "remove jobs".
+	A removed job is still visible from Account->Profile.
+	To delete a job you must own the job. Drag and drop the job to the trashbin and
+	select "delete permanently". The job and all results contained in the job will
+	be deleted permanently.
+</p>
+
+<p>
+	<strong>Deleting and removing benchmarks.</strong>
+	Similarly to jobs, benchmarks can be deleted or removed by dragging them
+	to the trashbin. Selecting "remove from space" will remove them from the space but not
+	delete them. Selecting "move to recycle bin" will delete the benchmark and move it to your
+	recycle bin accessible from your Account->Profile, removed benchmarks are also available at
+	Account->Profile.
+</p>
+<p>
+	<strong>Deleting and removing solvers.</strong>
+	Deleting a solver is the same as deleting a benchmark. Removing a solver is the same with only
+	one difference. When removing a solver you'll have the option to "remove from space hierarchy"
+	this option allows you to remove the solver from the space as well as all descendant spaces.
+</p>
+<p>
+	<strong>Deleting and removing subspaces.</strong>
+	To delete a subspace, drag and drop it to the trashbin. The "remove subspaces only" option
+	will delete the subspace and descendant subspaces but your primitives will still be accessible
+	from Account->Profile. The remove subspaces and recycle primitives" option will delete the subspace
+	and descendant subspaces and recycle your primitives in those spaces. The recycled primitives can be
+	restored from your recycle bin.
+</p>
+
 <p><strong>Changing permissions.</strong>
 If you are a space leader (typically if you created a space), you
 can change the permissions a user in your space has for modifying that

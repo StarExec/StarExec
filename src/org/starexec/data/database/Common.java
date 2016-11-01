@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import jdk.nashorn.internal.codegen.CompilerConstants;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
@@ -214,6 +215,32 @@ public class Common {
 			log.warn("Caught SQLException in Common.queryKeepConnect. Throwing exception...");
 			throw e;
 		} finally {
+			Common.safeClose(con);
+		}
+	}
+
+	/**
+	 * This method will start a new transaction and do an update. Does a rollback if there is an error.
+	 * @param callPreparationSql the SQL needed to prepare the call.
+	 * @param procedureConsumer the code that should be run to setup the procedure. (Set parameters)
+	 * @throws SQLException
+	 */
+	public static void update(String callPreparationSql, ProcedureConsumer procedureConsumer) throws SQLException {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			procedure = con.prepareCall(callPreparationSql);
+			procedureConsumer.setupProcedure(procedure);
+			procedure.executeUpdate();
+			Common.endTransaction(con);
+		} catch (SQLException e) {
+			log.warn("Caught SQLException in Common.query. Doing rollback, Throwing exception...");
+			Common.doRollback(con);
+			throw e;
+		} finally {
+			Common.safeClose(procedure);
 			Common.safeClose(con);
 		}
 	}

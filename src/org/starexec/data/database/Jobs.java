@@ -957,9 +957,9 @@ public class Jobs {
 		return get(jobId, false, true);
 	}
 
-	private static Job resultsToJob(ResultSet results) throws SQLException {
+	public static Job resultsToJob(ResultSet results) throws SQLException {
 		Job j = new Job();
-		j.setId(results.getInt("id"));
+		j.setId(results.getInt("jobs.id"));
 		j.setUserId(results.getInt("user_id"));
 		j.setName(results.getString("name"));
 		j.setPrimarySpace(results.getInt("primary_space"));
@@ -973,6 +973,17 @@ public class Jobs {
 		j.setSeed(results.getLong("seed"));
 		j.setTotalPairs(results.getInt("total_pairs"));
 		j.setDiskSize(results.getLong("disk_size"));
+		j.setSuppressTimestamp(results.getBoolean("suppress_timestamp"));
+		j.setUsingDependencies(results.getBoolean("using_dependencies"));
+
+
+
+		final boolean isHighPriority = results.getBoolean("is_high_priority");
+        if (isHighPriority) {
+            j.setHighPriority();
+        } else {
+            j.setLowPriority();
+        }
 		return j;
 	}
 	
@@ -1153,18 +1164,7 @@ public class Jobs {
 			List<Job> jobs = new LinkedList<Job>();
 
 			while(results.next()){
-				Job j = new Job();
-				j.setId(results.getInt("id"));
-				j.setUserId(results.getInt("user_id"));
-				j.setName(results.getString("name"));	
-				j.setPrimarySpace(results.getInt("primary_space"));
-				j.setDescription(results.getString("description"));				
-				j.setCreateTime(results.getTimestamp("created"));	
-				j.setCompleteTime(results.getTimestamp("completed"));
-                j.setBuildJob(results.getBoolean("buildJob"));
-
-				j.setSeed(results.getLong("seed"));
-				jobs.add(j);				
+				jobs.add(resultsToJob(results));
 			}			
 			return jobs;
 		} catch (Exception e){			
@@ -1195,19 +1195,7 @@ public class Jobs {
 			List<Job> jobs = new LinkedList<Job>();
 
 			while(results.next()){
-				Job j = new Job();
-				j.setId(results.getInt("id"));
-				j.setUserId(results.getInt("user_id"));
-				j.setName(results.getString("name"));		
-				j.setPrimarySpace(results.getInt("primary_space"));
-				j.setDescription(results.getString("description"));				
-				j.setCreateTime(results.getTimestamp("created"));
-				j.setCompleteTime(results.getTimestamp("completed"));
-                j.setBuildJob(results.getBoolean("buildJob"));
-
-				j.setSeed(results.getLong("seed"));
-
-				jobs.add(j);				
+				jobs.add(resultsToJob(results));
 			}			
 
 			return jobs;
@@ -1291,30 +1279,13 @@ public class Jobs {
 			 procedure = con.prepareCall("{CALL GetJobById(?)}");
 			procedure.setInt(1, jobId);					
 			results = procedure.executeQuery();
-			Job j = new Job();
-			if(results.next()){
-				j.setId(results.getInt("id"));
-				j.setUserId(results.getInt("user_id"));
-				j.setName(results.getString("name"));				
-				j.setDescription(results.getString("description"));	
-				j.setSeed(results.getLong("seed"));
 
-				j.setCreateTime(results.getTimestamp("created"));	
-				j.setCompleteTime(results.getTimestamp("completed"));
-
-				j.setPrimarySpace(results.getInt("primary_space"));
-				j.setQueue(Queues.get(con, results.getInt("queue_id")));
-				
-				j.setCpuTimeout(results.getInt("cpuTimeout"));
-				j.setWallclockTimeout(results.getInt("clockTimeout"));
-				j.setMaxMemory(results.getLong("maximum_memory"));
-				j.setStageAttributes(Jobs.getStageAttrsForJob(jobId, con));
-
+			if(!results.next()){
+                return null;
 			}
-			else{
-				return null;
-			}
-			
+
+            final Job j = resultsToJob(results);
+            j.setStageAttributes(Jobs.getStageAttrsForJob(jobId, con));
 			if (getCompletedPairsOnly) {
 				logUtil.debug(method, "Getting job pairs for job with id="+jobId+" since completionID="+since);	
 				j.setJobPairs(Jobs.getNewCompletedPairsDetailed(j.getId(), since));
@@ -5267,6 +5238,28 @@ public class Jobs {
     public static List<String> getJobAttributesTableHeader(int jobSpaceId) throws SQLException {
 		return getJobAttributeValues(jobSpaceId);
     }
+
+	/**
+	 * Sets a job to be low priority meaning the user's other jobs should be run first.
+	 * @param jobId the job to set as low priority.
+	 */
+	public static void setAsLowPriority(final int jobId) throws SQLException {
+		Common.update("{CALL SetHighPriority(?,?)}", procedure -> {
+			procedure.setInt(1, jobId);
+			procedure.setBoolean(2, false);
+		});
+	}
+
+	/**
+	 * Sets a job to be high priority meaning this job should run before other's jobs of the same user.
+	 * @param jobId the job to make high priority.
+	 */
+	public static void setAsHighPriority(final int jobId) throws SQLException {
+        Common.update("{CALL SetHighPriority(?,?)}", procedure -> {
+            procedure.setInt(1, jobId);
+            procedure.setBoolean(2, true);
+        });
+	}
 
 	/**
 	 * Gets the slots in a job's queue if the backend is SGE, otherwise just returns the default number of slots.

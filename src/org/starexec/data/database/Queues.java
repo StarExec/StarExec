@@ -560,20 +560,8 @@ public class Queues {
 			List<Job> jobs = new LinkedList<Job>();
 
 			while(results.next()){
-				Job j = new Job();
-				j.setId(results.getInt("jobs.id"));
-				j.setUserId(results.getInt("user_id"));
-				j.setName(results.getString("name"));				
-				j.setPrimarySpace(results.getInt("primary_space"));
-				j.setSeed(results.getLong("seed"));
-				j.setCpuTimeout(results.getInt("cpuTimeout"));
-				j.setWallclockTimeout(results.getInt("clockTimeout"));
-				j.setMaxMemory(results.getLong("maximum_memory"));
-				j.setSuppressTimestamp(results.getBoolean("suppress_timestamp"));
-				j.setUsingDependencies(results.getBoolean("using_dependencies"));
-                j.setBuildJob(results.getBoolean("buildJob"));
+				Job j = Jobs.resultsToJob(results);
 				j.setQueue(queue);
-
 				j.setStageAttributes(Jobs.getStageAttrsForJob(j.getId(), con));
 				j.setUser(Users.get(j.getUserId()));
 				jobs.add(j);				

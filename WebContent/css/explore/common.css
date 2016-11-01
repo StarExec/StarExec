@@ -51,17 +51,17 @@
 	margin-top: 35px;
 }
 
-#actionList {
+.actionList {
 	list-style: none;
 }
 
-#actionList li {
+.actionList li {
 	float: left;
 	margin-left: 5px;
 	margin-bottom: 10px;
 }
 
-.expd, #actionList li a ,
+.expd, .actionList li a ,
 .qtip-nonPermanentLeader a.tooltipButton, img {	
 	cursor: pointer;
 }

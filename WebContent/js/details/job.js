@@ -289,7 +289,7 @@ function updateGraphs() {
 			var solverName=$(this).find("a:first").attr("title");
 			var configName=$(this).find("td:nth-child(2)").children("a:first").attr("title");
 			var configId=$(this).find("td:nth-child(2)").children("a:first").attr("id");
-			var htmlString='<option value="' +configId+ '">' +solverName+'/'+configName+ '</ option>';
+			var htmlString='<option value="' +configId+ '">' +solverName+'/'+configName+ '</option>';
 			$("#spaceOverviewSelections").append(htmlString);
 			$("#solverChoice1").append(htmlString);
 			$("#solverChoice2").append(htmlString);
@@ -492,6 +492,17 @@ function initUI(){
 
 	
 	$("#syncResults").button({
+		icons: {
+			primary: "ui-icon-gear"
+		}
+	});
+
+	log('Setting up high priority button');
+	setupSetHighPriorityButton();
+	log('Setting up low priority button');
+	setupSetLowPriorityButton();
+
+	$('#setLowPriority').button({
 		icons: {
 			primary: "ui-icon-gear"
 		}
@@ -724,7 +735,7 @@ function setupDeleteJobButton() {
 							starexecRoot+"services/delete/job",
 							{selectedIds: [getParameterByName("id")]},
 							function(returnCode) {
-								s=parseReturnCode(returnCode);
+								var s=parseReturnCode(returnCode);
 								if (s) {
 									window.location = starexecRoot+'secure/explore/spaces.jsp';
 
@@ -743,6 +754,59 @@ function setupDeleteJobButton() {
 	});
 }
 
+function setupSetHighPriorityButton() {
+	var setHighPrioritySelector = '#setHighPriority';
+	log('setting up high priority button.');
+	$(setHighPrioritySelector).button({
+		icons: {
+			primary: "ui-icon-gear"
+		}
+	});
+	$(setHighPrioritySelector).click(function() {
+		log('set high priority button clicked.');
+		$.post(
+			starexecRoot+'services/jobs/setHighPriority/'+jobId,
+			'',
+			function(statusCode) {
+				log('got something back.');
+				log(statusCode);
+				if (statusCode.success) {
+					log('reloading page');
+					document.location.reload(true);
+				} else {
+					parseReturnCode(statusCode);
+				}
+			},
+			'json'
+		);
+	});
+}
+
+function setupSetLowPriorityButton() {
+	var setLowPrioritySelector = '#setLowPriority';
+	$(setLowPrioritySelector).button({
+		icons: {
+			primary: "ui-icon-gear"
+		}
+	});
+	$(setLowPrioritySelector).click(function() {
+		log('set low priority button clicked.');
+		$.post(
+			starexecRoot+'services/jobs/setLowPriority/'+jobId,
+			'',
+			function(statusCode) {
+				if (statusCode.success) {
+					log('reloading page');
+					document.location.reload(true);
+				} else {
+					parseReturnCode(statusCode);
+				}
+			},
+			'json'
+		);
+	});
+}
+
 function setupPauseJobButton() {
 	'use strict';
 	$('#pauseJob').button({
@@ -755,7 +819,7 @@ function setupPauseJobButton() {
 		$.post(
 				starexecRoot+"services/pause/job/" + getParameterByName("id"),
 				function(returnCode) {
-					s=parseReturnCode(returnCode);
+					var s=parseReturnCode(returnCode);
 					if (s) {
 						document.location.reload(true);
 
@@ -778,7 +842,7 @@ function setupResumeJobButton() {
 		$.post(
 				starexecRoot+"services/resume/job/" + getParameterByName("id"),
 				function(returnCode) {
-					s=parseReturnCode(returnCode);
+					var s=parseReturnCode(returnCode);
 					if (s) {
 						document.location.reload(true);
 
@@ -810,7 +874,7 @@ function setupChangeQueueButton() {
 					$.post(
 							starexecRoot+"services/changeQueue/job/" + getParameterByName("id")+"/"+$("#changeQueueSelection").val(),
 							function(returnCode) {
-								s=parseReturnCode(returnCode);
+								var s=parseReturnCode(returnCode);
 								if (s) {
 									setTimeout(function(){document.location.reload(true);}, 1000);
 
@@ -1317,7 +1381,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 					}
 				} else {
 					//if we weren't successful, we need to check to see if it was because there are too many pairs
-					code=getStatusCode(nextDataTablePage);
+					var code=getStatusCode(nextDataTablePage);
 					if (code==1) {
 						$("#pairTblField").hide();
 						$("#errorField").show();

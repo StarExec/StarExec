@@ -82,7 +82,7 @@ function initSpaceDetails(){
 
 	// This hides the action list if the space is root space or we aren't looking at a space
 	if (spaceId == 1 || spaceId == undefined){
-		$('#actionList').hide();
+		$('.actionList').hide();
 	}
 
 	pbc = false;
@@ -1365,7 +1365,8 @@ function initDataTables(){
 	});
 	
 	// Set all fieldsets as expandable (except for action fieldset)
-	$('fieldset:not(#actions)').expandable(true);
+	$('fieldset:not(.actions)').expandable(true);
+	$('fieldset.advancedActions').expandable(true);
 
 	// Set the DataTable filters to only query the server when the user finishes typing
 	jobTable.fnFilterOnDoneTyping();
@@ -1460,14 +1461,14 @@ function checkPermissions(perms, id) {
 	// Check for no permission and hide entire action list if not present
 	// Don't hide if user is developer
 	if (userIsDeveloper) {
-		$('#actionList').show();
+		$('.actionList').show();
 		return;
-	} else if(perms == null) {
+	} else if (perms == null) {
 		log('no permissions found, hiding action bar');
-		$('#actionList').hide();		
-		return;
+		$('.actionList').hide();		
+		retu.n;
 	} else {
-		$('#actionList').show();
+		$('.actionList').show();
 	}
 
 	if(perms.isLeader){

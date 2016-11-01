@@ -35,8 +35,7 @@ CREATE PROCEDURE GetIdByName(IN _queueName VARCHAR(64))
 DROP PROCEDURE IF EXISTS GetPendingJobs;
 CREATE PROCEDURE GetPendingJobs(IN _queueId INT)
 	BEGIN
-		SELECT distinct jobs.id, user_id,name,seed,primary_space, jobs.clockTimeout,
-		jobs.cpuTimeout,jobs.maximum_memory, jobs.suppress_timestamp, jobs.using_dependencies, jobs.buildJob
+		SELECT distinct jobs.*
 		FROM jobs WHERE queue_id = _queueId 
 		AND EXISTS (select 1 from job_pairs FORCE INDEX (job_id_2) WHERE status_code=1 and job_id=jobs.id);
 	END //
@@ -45,7 +44,7 @@ CREATE PROCEDURE GetPendingJobs(IN _queueId INT)
 DROP PROCEDURE IF EXISTS GetPendingDeveloperJobs;
 CREATE PROCEDURE GetPendingDeveloperJobs(IN _queueId INT)
     BEGIN
-        SELECT DISTINCT  jobs.id, user_id,name,seed,primary_space, jobs.clockTimeout, jobs.cpuTimeout,jobs.maximum_memory, jobs.suppress_timestamp, jobs.using_dependencies, jobs.buildJob
+        SELECT DISTINCT jobs.*
         FROM users u
         INNER JOIN user_roles ur 
             ON u.email = ur.email

@@ -686,19 +686,20 @@ public class Solvers {
 	 * @author Tyler Jensen
 	 */
 	public static Solver get(int solverId, boolean includeDeleted) {
-		Connection con = null;			
-		
-		try {			
-			con = Common.getConnection();		
-			return Solvers.get(con, solverId,includeDeleted);		
-		} catch (Exception e){			
-			log.error("Solver get says " + e.getMessage(), e);		
+		Connection con = null;
+
+		try {
+			con = Common.getConnection();
+			return Solvers.get(con, solverId,includeDeleted);
+		} catch (Exception e){
+			log.error("Solver get says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;
 	}
+
 	
 	/**
 	 * @param solverIds The ids of the solvers to retrieve
@@ -1295,6 +1296,9 @@ public class Solvers {
 	public static Solver getIncludeDeleted(int solverId) {
 		return get(solverId,true);
 	}
+	public static Solver getIncludeDeleted( Connection con, int solverId) {
+		return get(con, solverId,true);
+	}
 	
 	/**
 	 * Given a ResultSet currently pointing at a row containing a solver, returns the solver
@@ -1390,9 +1394,9 @@ public class Solvers {
 		}
 		Solver s;
 		if (includeDeleted) {
-			s=Solvers.getIncludeDeleted(c.getSolverId());
+			s=Solvers.getIncludeDeleted(con, c.getSolverId());
 		} else {
-			s=Solvers.get(c.getSolverId());
+			s=Solvers.get(con, c.getSolverId(), false);
 		}
 		if (s==null) {
 			return null;
@@ -1651,6 +1655,42 @@ public class Solvers {
 		return null;
 	}
 
+	public static boolean isPublic(Connection con, int solverId) {
+		final String methodName = "isPublic";
+		ResultSet results=null;
+		CallableStatement procedure = null;
+		try {
+			procedure = con.prepareCall("{CALL IsSolverPublic(?)}");
+			procedure.setInt(1, solverId);
+			results = procedure.executeQuery();
+
+			boolean publicSpace = false;
+			if (results.next()) {
+				publicSpace = (results.getInt("solverPublic") > 0);
+			}
+			if (publicSpace) {
+				return true;
+			}
+
+			Common.safeClose(results);
+
+			Common.safeClose(procedure);
+			//if the solver is in no public spaces, check to see if it is the default solver for some community
+			procedure = con.prepareCall("CALL IsSolverACommunityDefault(?)");
+			procedure.setInt(1, solverId);
+			results = procedure.executeQuery();
+			if (results.next()) {
+				return (results.getInt("solverDefault") > 0);
+			}
+		} catch(Exception e) {
+			logUtil.logException(methodName, e);
+		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+
 	
 	
 	/**
@@ -1660,38 +1700,14 @@ public class Solvers {
 	 */
 	public static boolean isPublic(int solverId) {
 		Connection con = null;
-		ResultSet results=null;
-		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL IsSolverPublic(?)}");
-			procedure.setInt(1, solverId);
-			 results = procedure.executeQuery();
-
-			boolean publicSpace=false;
-			if (results.next()) {
-				publicSpace= (results.getInt("solverPublic") > 0);
-			}
-			if (publicSpace) {
-				return true;
-			}
-			
-			Common.safeClose(results);
-
-			Common.safeClose(procedure);
-			//if the solver is in no public spaces, check to see if it is the default solver for some community
-			procedure=con.prepareCall("CALL IsSolverACommunityDefault(?)");
-			procedure.setInt(1,solverId);
-			results = procedure.executeQuery();
-			if (results.next()) {
-				return (results.getInt("solverDefault") > 0);
-			}
+			return isPublic(con, solverId);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
+
 		}
 
 		return false;

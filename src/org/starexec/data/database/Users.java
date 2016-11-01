@@ -38,7 +38,6 @@ public class Users {
 	 * @param con The connection to perform the database operation on
 	 * @param userId The id of the user to add to the space
 	 * @param spaceId The space to add the user to
-	 * @param permId The permissions the user should have on the space
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
@@ -280,28 +279,39 @@ public class Users {
 	 */
 	public static User get(int id){
 		Connection con = null;			
+		try {
+			con = Common.getConnection();		
+			return Users.get(con, id);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+
+	public static User get(Connection con, int id) {
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetUserById(?)}");
-			procedure.setInt(1, id);					
-			 results = procedure.executeQuery();
-			
+			procedure = con.prepareCall("{CALL GetUserById(?)}");
+			procedure.setInt(1, id);
+			results = procedure.executeQuery();
+
 			if(results.next()){
 				return resultSetToUser(results);
 			} else {
 				log.debug("Could not find user with id = "+id);
 			}
-			
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		
+
 		return null;
 	}
 
@@ -747,10 +757,21 @@ public class Users {
 	
 	public static boolean isMemberOfCommunity(int userId, int communityId) {
 		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return isMemberOfCommunity(con, userId, communityId);
+		} catch (Exception e) {
+			log.error("isMemberOfCommunity says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
+
+	protected static boolean isMemberOfCommunity(Connection con, int userId, int communityId) {
 		CallableStatement procedure=null;
 		ResultSet results=null;
 		try {
-			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL IsMemberOfCommunity(?,?)}");
 			procedure.setInt(1, userId);
 			procedure.setInt(2,communityId);
@@ -761,13 +782,11 @@ public class Users {
 		} catch (Exception e) {
 			log.error("isMemberOfCommunity says "+e.getMessage(),e);
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
 		return false;
 	}
-	
 	
 
 	/**
@@ -1087,7 +1106,6 @@ public class Users {
 	/**
 	 * Completely deletes a user from the database. 
 	 * @param userToDeleteId The ID of the user to delete
-	 * @param userMakingRequestId The ID of the user trying to perform the deletion
 	 * @throws StarExecSecurityException if user making request cannot delete user.
 	 * @return True on success, false on error
 	 */
@@ -1135,7 +1153,6 @@ public class Users {
 
 	/**
 	 * Deletes the given jobs' directories.
-	 * @param jobs Jobs whose directories are to be deleted.
 	 * @author Albert Giegerich
 	 */
 	private static void deleteUsersJobDirectories(int userId) {
@@ -1180,13 +1197,23 @@ public class Users {
 		return u!=null && u.getRole().equals(R.ADMIN_ROLE_NAME);
 	}
 
+	public static boolean isAdmin(Connection con, int userId) {
+		User u=Users.get(con, userId);
+		return u!=null && u.getRole().equals(R.ADMIN_ROLE_NAME);
+	}
+
 	/**
 	 * Checks to see whether the given user is a developer
 	 * @param userId
 	 * @return True if the user is a developer and false otherwise (including if there was an error)
 	 */
+
 	public static boolean isDeveloper(int userId) {
 		User u = Users.get(userId);
+		return u != null && u.getRole().equals(R.DEVELOPER_ROLE_NAME);
+	}
+	public static boolean isDeveloper(Connection con, int userId) {
+		User u = Users.get(con, userId);
 		return u != null && u.getRole().equals(R.DEVELOPER_ROLE_NAME);
 	}
 

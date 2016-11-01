@@ -60,6 +60,29 @@ public class JobTests extends TestSequence {
 	}
 
 	@StarexecTest
+	private void IsHighPriorityTest() {
+		try {
+			Jobs.setAsHighPriority(job.getId());
+			Job testJob = Jobs.get(job.getId());
+			Assert.assertTrue(testJob.isHighPriority());
+		} catch (SQLException e) {
+			Assert.fail("Caught SQL exception while trying to change job priority: " + Util.getStackTrace(e));
+		}
+	}
+
+	@StarexecTest
+	private void SetAsLowPrioirtyTest() {
+		try {
+			Jobs.setAsLowPriority(job.getId());
+			Job testJob = Jobs.get(job.getId());
+			Assert.assertFalse(testJob.isHighPriority());
+		} catch (SQLException e) {
+			Assert.fail("Caught SQL exception while trying to change job priority: " + Util.getStackTrace(e));
+		}
+
+	}
+
+	@StarexecTest
 	private void GetByUserTest() {
 		List<Job> jobs=Jobs.getByUserId(user.getId());
 		Assert.assertEquals(1,jobs.size());

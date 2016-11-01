@@ -968,7 +968,7 @@ public class Benchmarks {
 	 * 
 	 * @throws Exception 
 	 */
-	protected static Benchmark get(Connection con, int benchId,boolean includeDeleted) throws Exception {	
+	protected static Benchmark get(Connection con, int benchId,boolean includeDeleted) throws SQLException {
 		CallableStatement procedure=null;
 		ResultSet results=null;
 	
@@ -1025,6 +1025,19 @@ public class Benchmarks {
 
 		try {
 			con = Common.getConnection();		
+			return get(con, benchId, includeAttrs, includeDeleted);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return null;
+	}
+
+	protected static Benchmark get(Connection con, int benchId, boolean includeAttrs, boolean includeDeleted) {
+
+		try {
 			Benchmark b = Benchmarks.get(con, benchId,includeDeleted);
 			if (b==null) {
 				return null;
@@ -1035,10 +1048,8 @@ public class Benchmarks {
 			}
 
 			return b;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
 		}
 
 		return null;
@@ -1620,6 +1631,9 @@ public class Benchmarks {
 	public static Benchmark getIncludeDeletedAndRecycled(int benchId, boolean includeAttrs) {
 		return Benchmarks.get(benchId,includeAttrs,true);
 	}
+	public static Benchmark getIncludeDeletedAndRecycled(Connection con, int benchId, boolean includeAttrs) {
+		return Benchmarks.get(con, benchId,includeAttrs,true);
+	}
 	
 	
 	/**
@@ -1849,10 +1863,21 @@ public class Benchmarks {
 
 	public static boolean isPublic(int benchId) {
 		Connection con = null;
+		try {
+			con = Common.getConnection();
+			return Benchmarks.isPublic(con, benchId);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+
+		return false;
+	}
+	protected static boolean isPublic(Connection con, int benchId) {
 		CallableStatement procedure=null;
 		ResultSet results=null;
 		try {
-			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL IsBenchPublic(?)}");
 			procedure.setInt(1, benchId);
 			results = procedure.executeQuery();
@@ -1860,11 +1885,11 @@ public class Benchmarks {
 			if (results.next()) {
 				publicSpace=(results.getInt("benchPublic") > 0);
 			}
-			
+
 			if (publicSpace) {
 				return true;
 			}
-			
+
 			Common.safeClose(results);
 
 			Common.safeClose(procedure);
@@ -1878,7 +1903,6 @@ public class Benchmarks {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}

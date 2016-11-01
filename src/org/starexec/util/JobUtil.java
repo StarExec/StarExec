@@ -2,11 +2,9 @@ package org.starexec.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -14,17 +12,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.lang3.time.StopWatch;
+import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Pipelines;
-import org.starexec.data.database.Processors;
-import org.starexec.data.database.Queues;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
+import org.starexec.data.database.*;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
@@ -65,6 +57,7 @@ public class JobUtil {
 	 * @throws IOException
 	 */
 	public List<Integer> createJobsFromFile(File file, int userId, Integer spaceId) throws Exception {
+		final String methodName = "createJobsFromFile";
 		final String method = "createJobsFromFile";
 		List<Integer> jobIds=new ArrayList<Integer>();
 		if (!validateAgainstSchema(file)){
@@ -180,6 +173,7 @@ public class JobUtil {
 		}
 		logUtil.info(method, "Finished creating jobs from elements, returning job ids.");
 		this.jobCreationSuccess = true;
+
 		return jobIds;
 	}
 	
@@ -448,8 +442,8 @@ public class JobUtil {
 	private Integer createJobFromElement(int userId, Integer spaceId,
 			Element jobElement, HashMap<String,SolverPipeline> pipelines) {
 	    try {
-			
-	    	
+			final String methodName = "createJobFromElement";
+
 			Element jobAttributes = DOMHelper.getElementByName(jobElement,"JobAttributes");
 			HashMap<Integer,Solver> configIdsToSolvers=new HashMap<Integer,Solver>();
 	
@@ -553,94 +547,21 @@ public class JobUtil {
 			if (!job.containsStageOneAttributes()) {
 				job.addStageAttributes(stageOneAttributes);
 			}
-			
 			//this is the set of every top level space path given in the XML. There must be exactly 1 top level space,
 			// so if there is more than one then we will need to prepend the rootName onto every pair path to condense it
 			// to a single root space
 			HashSet<String> jobRootPaths=new HashSet<String>();
-			NodeList jobPairs = jobElement.getElementsByTagName("JobPair");
-			
-			//we now iterate through all the job pair elements and add them all to the job
-			for (int i = 0; i < jobPairs.getLength(); i++) {
-			    Node jobPairNode = jobPairs.item(i);
-			    if (jobPairNode.getNodeType() == Node.ELEMENT_NODE){
-					Element jobPairElement = (Element)jobPairNode;
-						
-					JobPair jobPair = new JobPair();
-					int benchmarkId = Integer.parseInt(jobPairElement.getAttribute("bench-id"));
-					int configId = Integer.parseInt(jobPairElement.getAttribute("config-id"));
-					String path = jobPairElement.getAttribute("job-space-path");
-					if (path.equals("")) {
-						path=rootName;
-						
-					}
-					jobPair.setPath(path);
-					if (path.contains(R.JOB_PAIR_PATH_DELIMITER)) {
-						jobRootPaths.add(path.substring(0,path.indexOf(R.JOB_PAIR_PATH_DELIMITER)));
-					} else {
-						jobRootPaths.add(path);
-					}
-						
-					//permissions check on the benchmark for this job pair
-					Benchmark b = Benchmarks.get(benchmarkId);
-                    if(b == null) {
-                        Benchmark errorBench = Benchmarks.get(benchmarkId, true, true);
-                        if(errorBench == null) {
-                            errorMessage = "Found null reference to benchmark: " + benchmarkId;
-                        } else if(errorBench.isDeleted()) {
-                            errorMessage = errorBench.getName() + " has been deleted by it's user.";
-                        } else if (errorBench.isRecycled()) {
-                            errorMessage = errorBench.getName() + " has been reycled by it's user.";
-                        } else {
-                            errorMessage = "Unknown problem with benchmark: " + benchmarkId;
-                        }
-                        return -1;
-                    }
-					if (!Permissions.canUserSeeBench(benchmarkId, userId)){
-					    errorMessage = "You do not have permission to see benchmark " + benchmarkId;
-					    return -1;
-					}
-					jobPair.setBench(b);
-					if (!configIdsToSolvers.containsKey(configId)) {
-						//permissions check on the solver for the pair. Configurations do
-						//not have permissions by themselves-- their permissions are identical to the solver permissions
-						Solver s = Solvers.getSolverByConfig(configId, true);
-                        if(s == null) {
-                            errorMessage = "Found null reference to solver referenced by config id: " + configId;
-                            return -1;
-                        }
-                        if(s.isDeleted() || s.isRecycled()) {
-                            errorMessage = "This solver associated with config " + configId + " has been deleted or recycled, solverId: " + s.getId();
-                            return -1;
-                        }
-                        
-						if (!Permissions.canUserSeeSolver(s.getId(), userId)){
-						    errorMessage = "You do not have permission to see the solver " + s.getId();
-						    return -1;
-						}
-						
-						s.addConfiguration(Solvers.getConfiguration(configId));
-						configIdsToSolvers.put(configId, s);
-					}
-					Solver s = configIdsToSolvers.get(configId);
-					
-					//JobPair elements are for pairs with exactly one stage, so we create a stage
-					//to house the solver and benchmark
-					JoblineStage stage=new JoblineStage();
-					stage.setStageNumber(1);
-					stage.setSolver(s);
-					stage.setConfiguration(s.getConfigurations().get(0));
-					
-					jobPair.addStage(stage);
-					//the primary stage is the one we just added
-					jobPair.setPrimaryStageNumber(jobPair.getStages().size());
-					jobPair.setSpace(Spaces.get(spaceId));
-					
-						
-					job.addJobPair(jobPair);
-			    }
+			Map<Integer, Benchmark> accessibleCachedBenchmarks = new HashMap<>();
+			// IMPORTANT: For efficieny reasons this function has the side-effect of populating configIdsToSolvers
+			//			  as well as accessibleCachedBenchmarks
+
+			Optional<String> potentialError = JobPairs.populateConfigIdsToSolversMapAndJobPairsForJobXMLUpload(
+					jobElement, rootName, userId, accessibleCachedBenchmarks, configIdsToSolvers, job, spaceId, jobRootPaths);
+			if (potentialError.isPresent()) {
+				errorMessage = potentialError.get();
+				return -1;
 			}
-			
+
 			//JobLine elements are still job pairs, but they are how multi-stage pairs are denoted
 			//in the XML
 			NodeList jobLines = jobElement.getElementsByTagName("JobLine");
@@ -675,11 +596,17 @@ public class JobUtil {
 					} else {
 						jobRootPaths.add(path);
 					}
-					
-					Benchmark b = Benchmarks.get(benchmarkId);
-					if (!Permissions.canUserSeeBench(benchmarkId, userId)){
-					    errorMessage = "You do not have permission to see benchmark " + benchmarkId;
-					    return -1;
+
+					Benchmark b = null;
+					if (!accessibleCachedBenchmarks.containsKey(benchmarkId)) {
+						b = Benchmarks.get(benchmarkId);
+						if (!Permissions.canUserSeeBench(benchmarkId, userId)) {
+							errorMessage = "You do not have permission to see benchmark " + benchmarkId;
+							return -1;
+						}
+						accessibleCachedBenchmarks.put(benchmarkId, b);
+					} else {
+						b = accessibleCachedBenchmarks.get(benchmarkId);
 					}
 					jobPair.setBench(b);
 					
@@ -688,9 +615,12 @@ public class JobUtil {
 					for (int inputIndex=0;inputIndex<inputs.getLength();inputIndex++) {
 						Element inputElement=(Element)inputs.item(inputIndex);
 						int benchmarkInput=Integer.parseInt(inputElement.getAttribute("bench-id"));
-						if (!Permissions.canUserSeeBench(benchmarkInput, userId)){
-						    errorMessage = "You do not have permission to see benchmark input " + benchmarkId;
-						    return -1;
+						// If the benchmark cache already contains the bench id then we know the user can see it.
+						if (!accessibleCachedBenchmarks.containsKey(benchmarkInput)) {
+							if (!Permissions.canUserSeeBench(benchmarkInput, userId)) {
+								errorMessage = "You do not have permission to see benchmark input " + benchmarkId;
+								return -1;
+							}
 						}
 						jobPair.addBenchInput(benchmarkInput);
 					}
@@ -744,7 +674,6 @@ public class JobUtil {
 			    }
 			}
 			
-			
 			log.info("job pairs set");
 	
 			if (job.getJobPairs().size() == 0) {
@@ -752,7 +681,8 @@ public class JobUtil {
 			    errorMessage = "Error: no job pairs created for the job. Could not proceed with job submission.";
 			    return -1;
 			}
-			
+
+
 			// pairs must have exactly 1 root space, so if there is more than one, we prepend the rootname onto every path
 			if (jobRootPaths.size()>1) {
 				for (JobPair p : job.getJobPairs()) {
@@ -761,7 +691,6 @@ public class JobUtil {
 			} else {
 				rootName=jobRootPaths.iterator().next();
 			}
-			
 			//check to make sure that, for all spaces where we will be creating mirrored hierarchies to store new benchmarks,
 			//that we actually can create the mirrored hierarchy without name collisions.
 			for (StageAttributes attrs: job.getStageAttributes()) {
@@ -773,7 +702,6 @@ public class JobUtil {
 
 				}
 			}
-			
 			
 			log.info("job pair size nonzero");
 	
@@ -792,10 +720,10 @@ public class JobUtil {
 			} else if (startPaused) {
 			    Jobs.pause(job.getId());
 			}
+
 			return job.getId();
-		
-	    }
-	    catch (Exception e) {
+
+		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 			errorMessage = "Internal error when creating your job: "+e.getMessage();
 			return -1;

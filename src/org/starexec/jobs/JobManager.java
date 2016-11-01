@@ -3,18 +3,14 @@ package org.starexec.jobs;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.starexec.backend.Backend;
 import org.starexec.backend.GridEngineBackend;
@@ -45,7 +41,9 @@ import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
+import org.starexec.data.to.tuples.JobCount;
 import org.starexec.exceptions.BenchmarkDependencyMissingException;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
@@ -203,6 +201,109 @@ public abstract class JobManager {
 		return queueToMonitor.get(queueId);
 	}
 
+	// Builds a map from user to the SchedulingStates containing high priority jobs in the schedule.
+	private static void addToHighPriorityStateMap(SchedulingState state, Map<Integer, List<SchedulingState>> userToHighPriorityStates) {
+		int userId = state.job.getUserId();
+		// Add the state to the map for the user if the state represents a high priority job.
+		if (userToHighPriorityStates.containsKey(userId)) {
+			userToHighPriorityStates.get(userId).add(state);
+		} else {
+			List<SchedulingState> highPriorityStatesForUser = new ArrayList<>();
+			highPriorityStatesForUser.add(state);
+			userToHighPriorityStates.put(userId, highPriorityStatesForUser);
+		}
+	}
+
+
+	private static void logSchedulingState(final String methodName, final SchedulingState s) {
+        logSchedulingState(methodName, s, 0);
+    }
+
+	private static void logSchedulingState(final String methodName, final SchedulingState s, final int tabLevel) {
+        final StringBuilder logMessage = new StringBuilder();
+        for (int i = 0; i < tabLevel; i++) {
+            logMessage.append("\t");
+        }
+
+        logMessage.append("( jobId: "+s.job.getId()+", userId: "+s.job.getUserId()
+                +", isHighPriority: "+s.job.isHighPriority()+", hasNext: "+s.pairIter.hasNext()+" )");
+
+        logUtil.debug(methodName, logMessage.toString());
+    }
+
+    private static Map<Integer, JobCount> buildUserToJobCountMap(final List<Job> joblist) {
+		final Map<Integer, JobCount> userToJobCountMap = new HashMap<>();
+		for (final Job j : joblist) {
+			final int userId = j.getUserId();
+			if (!userToJobCountMap.containsKey(userId)) {
+				userToJobCountMap.put(userId, new JobCount(0, 0));
+			}
+
+			JobCount jobCount = userToJobCountMap.get(userId);
+
+			jobCount.all += 1;
+			if (j.isHighPriority()) {
+				jobCount.highPriority += 1;
+			}
+		}
+		return userToJobCountMap;
+	}
+
+	private static void addToHighPriorityJobBalance(SchedulingState state, Map<Integer, Map<Integer, Integer>> balance) {
+		final int userId = state.job.getUserId();
+		if (!balance.containsKey(userId)) {
+			balance.put(userId, new HashMap<>());
+		}
+
+		Map<Integer, Integer> jobIdToTimesSelected = balance.get(userId);
+		jobIdToTimesSelected.put(state.job.getId(), 0);
+	}
+
+	/**
+	 * Selects a high priority SchedulingState from the user's high priority states taking into consideration how many
+	 * times those state have been selected previously
+	 * @param userId the user that we need to pick a new state for.
+	 * @param usersHighPriorityStates the high priority states owned by the user.
+	 * @param usersHighPriorityJobBalance a mapping from high priority state to the number of times that state has already
+	 *                               been chosen for the user.
+	 * @return
+	 * @throws StarExecException
+	 */
+	private static SchedulingState selectHighPriorityJob(
+			int userId,
+			List<SchedulingState> usersHighPriorityStates,
+			Map<Integer, Integer> usersHighPriorityJobBalance) throws StarExecException {
+
+
+		// Check if all the high priority jobs have been selected an equal number of times.
+		HashSet<Integer> valueSet = new HashSet<Integer>(usersHighPriorityJobBalance.values());
+		boolean allEquals = valueSet.size() == 1;
+
+		if (allEquals) {
+			// If all the high priority jobs have been selected an equal number of times, randomly pick one to use.
+			Random random = new Random();
+			SchedulingState selectedState = usersHighPriorityStates.get(random.nextInt(usersHighPriorityStates.size()));
+			Integer currentBalanceForState = usersHighPriorityJobBalance.get(selectedState.job.getId());
+			usersHighPriorityJobBalance.put(selectedState.job.getId(), currentBalanceForState+1);
+			return selectedState;
+		}
+
+		// Get and return the high priority job that has been selected the least number of times.
+		Map.Entry<Integer, Integer> minEntry =
+				Collections.min(usersHighPriorityJobBalance.entrySet(), (a, b) -> a.getValue().compareTo(b.getValue()));
+
+		// Find the high priority state with the job id that has been selected the minimum number of times.
+		for (SchedulingState state : usersHighPriorityStates) {
+			if (state.job.getId() == minEntry.getKey()) {
+				return state;
+			}
+		}
+
+		throw new StarExecException("The state with jobId="+minEntry.getKey()+" was not in the high priority state list for" +
+				"user with id="+userId+" but it was in their high priority job balance.");
+
+	}
+
 
 
 	/**
@@ -213,19 +314,22 @@ public abstract class JobManager {
 	 * @param nodeCount The number of nodes in the given queue
 
 	 */
-	public static void submitJobs(List<Job> joblist, Queue q, int queueSize, int nodeCount) {
+	public static void submitJobs(final List<Job> joblist, final Queue q, int queueSize, final int nodeCount) {
+		final Random random = new Random();
 		final String methodName = "submitJobs";
-		LoadBalanceMonitor monitor = getMonitor(q.getId());
+		final LoadBalanceMonitor monitor = getMonitor(q.getId());
 		try {
 			log.debug("submitJobs() begins");
 
 			initMainTemplateIf();
 
-			LinkedList<SchedulingState> schedule = new LinkedList<SchedulingState>();
+			Map<Integer, JobCount> userToJobCountMap = buildUserToJobCountMap(joblist); 
+
+			final LinkedList<SchedulingState> schedule = new LinkedList<SchedulingState>();
 			// add all the jobs in jobList to a SchedulingState in the schedule.
-			for (Job job : joblist) {
+			for (final Job job : joblist) {
 				// contains users that we have identified as exceeding their quota. These users will be skipped
-				HashMap<Integer, Boolean> quotaExceededUsers = new HashMap<Integer,Boolean>();
+				final HashMap<Integer, Boolean> quotaExceededUsers = new HashMap<Integer,Boolean>();
 				
 				if (!quotaExceededUsers.containsKey(job.getUserId())) {
 					//TODO: Handle in a new thread if this looks slow on Starexec
@@ -238,7 +342,7 @@ public abstract class JobManager {
 					continue;
 				}
 				// By default we split the memory
-				String queueSlots = Jobs.getSlotsInJobQueue(job);
+				final String queueSlots = Jobs.getSlotsInJobQueue(job);
 				// jobTemplate is a version of mainTemplate customized for this job
 				String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());
 
@@ -251,34 +355,57 @@ public abstract class JobManager {
 				// for every job, retrieve no more than the number of pairs that would fill the queue. 
 				// retrieving more than this is wasteful.
 				int limit=Math.max(R.NUM_JOB_PAIRS_AT_A_TIME, (nodeCount*R.NODE_MULTIPLIER)-queueSize);
-				log.debug("calling Jobs.getPendingPairsDetailed for job "+job.getId());
-				List<JobPair> pairs = Jobs.getPendingPairsDetailed(job,limit);
+				log.debug("calling Jobs.getPendingPairsDetailed for job "+job.getId() + " with limit="+limit+"and queueSize="+queueSize+" and nodeCount="+nodeCount);
+				if ( job.isHighPriority() ) {
+					JobCount jobCount = userToJobCountMap.get( job.getUserId() );
+					// Assuming only high priority jobs will be scheduled this makes it so a user will have just as many pairs scheduled as if they had pairs scheduled from all jobs.
+					limit = (limit * jobCount.all) / jobCount.highPriority;
+				}
+				final List<JobPair> pairs = Jobs.getPendingPairsDetailed(job,limit);
 				log.debug("finished call to getPendingPairsDetailed");
 
 				if (pairs.size()>0) {
-					Iterator<JobPair> pairIter = pairs.iterator();					
-					SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
+					final Iterator<JobPair> pairIter = pairs.iterator();
+					final SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
 					schedule.add(s);
 				} else {
 					log.debug("not adding any pairs from job "+job.getId());
 				}
 
 			}
+
+			// Map from (user id) -> ( (high priority job id) -> (# of times job been selected) )
+			// Balances out the number of times a high priority job can be selected.
+			final Map<Integer, Map<Integer, Integer>> highPriorityJobBalance = new HashMap<>();
 			
 			// maps user IDs to the total 'load' that user is responsible for on the current queue,
 			// where load is the sum of wallclock timeouts of all active pairs on the queue
-			HashMap<Integer, Integer> userToCurrentQueueLoad = new HashMap<Integer, Integer>();
+			final HashMap<Integer, Integer> userToCurrentQueueLoad = new HashMap<Integer, Integer>();
+
+			// maps user IDs to the scheduling states containing high priority jobs that the user owns.
+			final Map<Integer, List<SchedulingState>> userToHighPriorityStates = new HashMap<>();
+
 			Iterator<SchedulingState> it = schedule.iterator();
+			logUtil.debug(methodName, "All States In Schedule: ");
 			while (it.hasNext()) {
-				SchedulingState s = it.next();
+				final SchedulingState s = it.next();
+
+				// Add all high priority states to the user to high priority states map.
+				if (s.job.isHighPriority()) {
+					addToHighPriorityStateMap(s, userToHighPriorityStates);
+					addToHighPriorityJobBalance(s, highPriorityJobBalance);
+				}
+
 				if (!userToCurrentQueueLoad.containsKey(s.job.getUserId())) {
 					userToCurrentQueueLoad.put(s.job.getUserId(), Queues.getUserLoadOnQueue(q.getId(), s.job.getUserId()));
 				}
 			}
+
 			// updates user load values to take into account actual job pair runtimes.
 			monitor.subtractTimeDeltas(JobPairs.getAndClearTimeDeltas(q.getId()));
 
 			log.info("Beginning scheduling of "+schedule.size()+" jobs on queue "+q.getName());
+
 			
 			/*
 			 * we are going to loop through the schedule adding a few job
@@ -286,9 +413,10 @@ public abstract class JobManager {
 			 */
 			
 			//transient database errors can cause us to loop forever here, and we need to make sure that does not happen
-			int maxLoops=500;
+			final int maxLoops=500;
 			int curLoops=0;
 			while (!schedule.isEmpty()) {
+
 				curLoops++;
 				if (queueSize >= R.NODE_MULTIPLIER * nodeCount) {
 					break; // out of while (!schedule.isEmpty())
@@ -302,9 +430,9 @@ public abstract class JobManager {
 				it = schedule.iterator();
 				
 				//add all of the users that still have pending entries to the list of users
-				HashMap<Integer, Integer> pendingUsers=new HashMap<Integer, Integer>();
+				final HashMap<Integer, Integer> pendingUsers=new HashMap<Integer, Integer>();
 				while (it.hasNext()) {
-					SchedulingState s = it.next();
+					final SchedulingState s = it.next();
 					pendingUsers.put(s.job.getUserId(), userToCurrentQueueLoad.get(s.job.getUserId()));
 				}
 				
@@ -315,10 +443,55 @@ public abstract class JobManager {
 				while (it.hasNext()) {
 					SchedulingState s = it.next();
 
+
+
 					if (!s.pairIter.hasNext()) {
 						// we will remove this SchedulingState from the schedule, since it is out of job pairs
 						it.remove();
 						continue;
+					}
+
+					final int currentStateUserId = s.job.getUserId();
+					if (!s.job.isHighPriority() && userToHighPriorityStates.containsKey(currentStateUserId)) {
+						List<SchedulingState> highPriorityStates = userToHighPriorityStates.get(currentStateUserId);
+
+
+						// Filter out all of the high priority states that have no more job pairs.
+						highPriorityStates = highPriorityStates
+								.stream()
+								.filter(state -> state.pairIter.hasNext())
+								.collect(Collectors.toList());
+						
+						// Replace the high priority states with the filtered ones.
+						userToHighPriorityStates.put(currentStateUserId, highPriorityStates);
+
+						if (highPriorityStates.size() == 0) {
+							logUtil.info(methodName, "No high priority states with pairs left.");
+							// Remove the user from the map if they don't have any high priority jobs left to look at.
+							userToHighPriorityStates.remove(currentStateUserId);
+
+							// Leave the current scheduling state as is.
+						} else {
+							try {
+								if (!highPriorityJobBalance.containsKey(s.job.getUserId())) {
+									throw new StarExecException("Being in this block means there must be a high priority job user with"
+											+ "id=" + s.job.getUserId() + " but there was not.");
+								} else {
+									Map<Integer, Integer> highPriorityJobBalanceForUser = highPriorityJobBalance.get(s.job.getUserId());
+
+									if (highPriorityJobBalanceForUser.entrySet().size() == 0) {
+										throw new StarExecException("There should be high priority jobs for this user in the high" +
+												"priority job balance but there isn't!, userId=" + s.job.getUserId());
+									} else {
+										// Change the state to a high priority one
+										s = selectHighPriorityJob(s.job.getUserId(), highPriorityStates, highPriorityJobBalanceForUser);
+									}
+								}
+							} catch (StarExecException e) {
+								logUtil.logException(methodName, e);
+								// s will not have changed.
+							}
+						}
 					}
 
 					log.info("About to submit "+R.NUM_JOB_PAIRS_AT_A_TIME+" pairs "
@@ -338,7 +511,8 @@ public abstract class JobManager {
 							break;
 						}
 
-						JobPair pair = s.pairIter.next();
+						final JobPair pair = s.pairIter.next();
+
 						monitor.changeLoad(s.job.getUserId(), s.job.getWallclockTimeout());
 						if (pair.getPrimarySolver()==null || pair.getBench()==null) {
 							// if the solver or benchmark is null, they were deleted. Indicate that the pair's
@@ -351,10 +525,10 @@ public abstract class JobManager {
 
 						try {
 							// Write the script that will run this individual pair				
-							String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair, q);
+							final String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair, q);
 
-							String logPath=JobPairs.getLogFilePath(pair);
-							File file=new File(logPath);
+							final String logPath=JobPairs.getLogFilePath(pair);
+							final File file=new File(logPath);
 							file.getParentFile().mkdirs();
 			
 							if (file.exists()) {

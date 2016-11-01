@@ -7,12 +7,9 @@ import java.util.Collection;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.starexec.constants.R;
 import org.starexec.data.security.GeneralSecurity;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.Permission;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
+import org.starexec.data.to.*;
 
 /**
  * Handles all database interaction for permissions
@@ -65,18 +62,20 @@ public class Permissions {
 	 * @author Tyler Jensen
 	 */
 	
-	private static boolean canUserSeeBench(int benchId, int userId, Connection con) {
-		Benchmark b = Benchmarks.getIncludeDeletedAndRecycled(benchId, false);
+	public static boolean canUserSeeBench(Connection con, int benchId, int userId) {
+		Benchmark b = Benchmarks.getIncludeDeletedAndRecycled(con, benchId, false);
 		if (b==null) {
 			return false;
 		}
-		if (Benchmarks.isPublic(benchId)){
-			return true;
-		}	
-		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
+		if (Benchmarks.isPublic(con, benchId)){
 			return true;
 		}
-		if (Settings.canUserSeeBenchmarkInSettings(userId, benchId)) {
+
+		User u=Users.get(con, userId);
+		if (u!=null && (u.getRole().equals(R.ADMIN_ROLE_NAME) || u.getRole().equals(R.DEVELOPER_ROLE_NAME))) {
+			return true;
+		}
+		if (Settings.canUserSeeBenchmarkInSettings(con, userId, benchId)) {
 			return true;
 		}
 
@@ -113,7 +112,7 @@ public class Permissions {
 		Connection con = null;			
 		try {
 			con = Common.getConnection();		
-			return canUserSeeBench(benchId, userId, con);
+			return canUserSeeBench(con, benchId, userId);
 		
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -141,7 +140,7 @@ public class Permissions {
 			con = Common.getConnection();		
 			//check the permissions for every benchmark
 			for(int id : benchIds) {
-				if (!canUserSeeBench(id,userId,con)) {
+				if (!canUserSeeBench(con, id,userId)) {
 					return false;
 				}
 			}			
@@ -208,18 +207,18 @@ public class Permissions {
 	 * @author Tyler Jensen
 	 * 
 	 */
-	private static boolean canUserSeeSolver(int solverId, int userId, Connection con) {
-		Solver s = Solvers.getIncludeDeleted(solverId);
+	public static boolean canUserSeeSolver(Connection con, int solverId, int userId) {
+		Solver s = Solvers.getIncludeDeleted(con, solverId);
 		if (s==null) {
 			return false;
 		}
-		if (Solvers.isPublic(solverId)){
+		if (Solvers.isPublic(con, solverId)){
 			return true;
 		}
-		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
+		if (GeneralSecurity.hasAdminReadPrivileges(con, userId)) {
 			return true;
 		}
-		if (Settings.canUserSeeSolverInSettings(userId, solverId)) {
+		if (Settings.canUserSeeSolverInSettings(con, userId, solverId)) {
 			return true;
 		}
 
@@ -256,7 +255,7 @@ public class Permissions {
 		Connection con = null;			
 		try {
 			con = Common.getConnection();	
-			return canUserSeeSolver(solverId,userId,con);
+			return canUserSeeSolver(con, solverId,userId);
 			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -284,7 +283,7 @@ public class Permissions {
 			con = Common.getConnection();
 			//do the check for every solver
 			for(int id : solverIds) {	
-				if (!canUserSeeSolver(id,userId,con)) {
+				if (!canUserSeeSolver(con, id,userId)) {
 					return false;
 				}
 			}

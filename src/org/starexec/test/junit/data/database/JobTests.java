@@ -33,6 +33,7 @@ public class JobTests {
 		PowerMockito.mockStatic(Jobs.class);
 
 	}
+
 	
 	@Test
 	public void GetStatusPausedTest() {
