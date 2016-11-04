@@ -51,8 +51,11 @@ public class Settings {
 		return -1;
 	}
 
-	public static void addDefaultBenchmark(Integer settingId, Integer benchId) {
-
+	public static void addDefaultBenchmark(final int settingId, final int benchId) throws SQLException {
+		Common.update("{CALL AddDefaultBenchmark(?, ?)}", procedure -> {
+			procedure.setInt(1, settingId);
+			procedure.setInt(2, benchId);
+		});
 	}
 	
 	/**
