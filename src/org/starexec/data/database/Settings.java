@@ -49,7 +49,10 @@ public class Settings {
 			Common.safeClose(procedure);
 		}
 		return -1;
-	
+	}
+
+	public static void addDefaultBenchmark(Integer settingId, Integer benchId) {
+
 	}
 	
 	/**

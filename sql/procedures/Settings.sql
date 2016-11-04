@@ -144,5 +144,12 @@ CREATE PROCEDURE GetDefaultProfileForUser(IN _uid INT)
 	BEGIN
 		SELECT default_settings_profile FROM users WHERE id=_uid;
 	END //
+
+DROP PROCEDURE IF EXISTS AddDefaultBenchmark;
+CREATE PROCEDURE AddDefaultBenchmark(IN _settingId INT, IN _benchId INT)
+	BEGIN
+		INSERT INTO default_bench_assoc (setting_id, bench_id)
+		VALUES (_settingId, _benchId);
+	END //
 	
 DELIMITER ; -- This should always be at the end of this file
