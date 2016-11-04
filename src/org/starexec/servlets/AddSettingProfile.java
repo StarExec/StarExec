@@ -142,7 +142,7 @@ public class AddSettingProfile extends HttpServlet {
 			int p=Integer.parseInt(benchId);
 			if (p>0) {
 				log.debug("setting the benchmark id = "+p);
-				d.setBenchId(p);
+				d.addBenchId(p);
 			}
 		}
 		boolean success=true;

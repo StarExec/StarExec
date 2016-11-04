@@ -127,8 +127,9 @@ public class CreateJob extends HttpServlet {
 				postProcessorId, 
 				Queues.getTestQueue(),
 				0,settings.getCpuTimeout(),settings.getWallclockTimeout(),settings.getMaxMemory(), false, 0, SaveResultsOption.SAVE);
-		
-		buildQuickJob(j, solverId, settings.getBenchId(), spaceId);
+
+		// TODO: need to allow for a selection of bench ids
+		buildQuickJob(j, solverId, settings.getBenchIds().get(0), spaceId);
 		boolean submitSuccess = Jobs.add(j, spaceId);
 		if (submitSuccess) {
 			return j.getId();

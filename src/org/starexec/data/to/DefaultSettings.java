@@ -6,6 +6,10 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
 import org.starexec.util.Util;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class DefaultSettings extends Identifiable {
 	public enum SettingType {
 		USER(0), COMMUNITY(1);
@@ -36,7 +40,7 @@ public class DefaultSettings extends Identifiable {
 	private Integer preProcessorId;
 	private Integer postProcessorId;
 	private Integer benchProcessorId;
-	private Integer benchId;
+	private final List<Integer> benchIds;
 	private Integer solverId;
 	private int wallclockTimeout;
 	private int cpuTimeout;
@@ -51,7 +55,7 @@ public class DefaultSettings extends Identifiable {
 		postProcessorId=null;
 		wallclockTimeout=10;
 		cpuTimeout=10;
-		benchId=null;
+		benchIds=new ArrayList<>();
 		solverId=null;
 		maxMemory=1073741824;
 		preProcessorId=null;
@@ -79,11 +83,11 @@ public class DefaultSettings extends Identifiable {
 	public Integer getBenchProcessorId() {
 		return benchProcessorId;
 	}
-	public void setBenchId(Integer benchId) {
-		this.benchId = benchId;
+	public void addBenchId(Integer benchId) {
+		benchIds.add(benchId);
 	}
-	public Integer getBenchId() {
-		return benchId;
+	public List<Integer> getBenchIds() {
+		return this.benchIds;
 	}
 	public void setSolverId(Integer solverId) {
 		this.solverId = solverId;
@@ -138,7 +142,8 @@ public class DefaultSettings extends Identifiable {
 		return s.getName();
 	}
 	
-	public String getBenchmarkName() {
+	public String getBenchmarkName(Integer index) {
+		Integer benchId = benchIds.get(index);
 		if (benchId==null) {
 			return "None";
 		}
@@ -185,7 +190,12 @@ public class DefaultSettings extends Identifiable {
 		sb.append(" | ");
 		sb.append(this.getSolverId());
 		sb.append(" | ");
-		sb.append(this.getBenchId());
+		for(int i = 0; i < benchIds.size(); i++) {
+			sb.append(benchIds.get(i));
+			if (i != benchIds.size() - 1) {
+				sb.append(", ");
+			}
+		}
 		sb.append(" | ");
 		sb.append(this.getCpuTimeout());
 		sb.append(" | ");
@@ -198,13 +208,31 @@ public class DefaultSettings extends Identifiable {
 	/**
 	 * Checks for deep equality between this object and another DefaultSettings profile
 	 */
-	
+
 	@Override
 	public boolean equals(Object s) {
 		if (!(s instanceof DefaultSettings)) {
             return false;
 		}
 		DefaultSettings set=(DefaultSettings) s;
+
+		List<Integer> thisBenchIds = this.getBenchIds();
+		List<Integer> setBenchIds = set.getBenchIds();
+		if (this.getBenchIds().size() != set.getBenchIds().size()) {
+			return false;
+		}
+
+		Collections.sort(thisBenchIds);
+		Collections.sort(setBenchIds);
+
+		// If we make it past this loop we've established that the default bench ids are the same.
+		for (int i = 0; i < thisBenchIds.size(); i++) {
+			if (thisBenchIds.get(i) != setBenchIds.get(i)) {
+				return false;
+			}
+		}
+
+
 
 		return (this.getId()==set.getId() &&
 				Util.objectsEqual(this.getName(), set.getName()) &&
@@ -215,8 +243,6 @@ public class DefaultSettings extends Identifiable {
 				this.getCpuTimeout()==set.getCpuTimeout() &&
 				this.getWallclockTimeout()==set.getWallclockTimeout()&&
 				this.getMaxMemory()==set.getMaxMemory() &&
-				Util.objectsEqual(this.getSolverId(),set.getSolverId()) &&
-				Util.objectsEqual(this.getBenchId(),set.getBenchId()));
-		
+				Util.objectsEqual(this.getSolverId(),set.getSolverId()));
 	}
 }

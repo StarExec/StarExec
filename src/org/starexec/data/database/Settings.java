@@ -28,7 +28,8 @@ public class Settings {
 			procedure.setInt(3, settings.getCpuTimeout());
 			procedure.setInt(4, settings.getWallclockTimeout());
 			procedure.setBoolean(5, settings.isDependenciesEnabled());
-			procedure.setObject(6, settings.getBenchId());
+			// TODO: refactor into separate method
+			procedure.setObject(6, settings.getBenchIds().get(0));
 			procedure.setLong(7,settings.getMaxMemory()); //memory initialized to 1 gigabyte
 			procedure.setObject(8,settings.getSolverId());
 			procedure.setObject(9, settings.getBenchProcessorId());
@@ -68,7 +69,8 @@ public class Settings {
 			procedure.setInt(2, settings.getCpuTimeout());
 			procedure.setInt(3, settings.getWallclockTimeout());
 			procedure.setBoolean(4, settings.isDependenciesEnabled());
-			procedure.setObject(5, settings.getBenchId());
+			// TODO: refactor into separate method
+			procedure.setObject(5, settings.getBenchIds().get(0));
 			procedure.setLong(6,settings.getMaxMemory()); //memory initialized to 1 gigabyte
 			procedure.setObject(7,settings.getSolverId());
 			procedure.setObject(8, settings.getBenchProcessorId());
@@ -108,10 +110,11 @@ public class Settings {
 				settings.setPostProcessorId(null);
 			}
 			settings.setDependenciesEnabled(results.getBoolean("dependencies_enabled"));
-			settings.setBenchId(results.getInt("default_benchmark"));
-			if (results.wasNull()) {
-				settings.setBenchId(null);
-			}
+			settings.addBenchId(results.getInt("default_benchmark"));
+			// TODO: check if this works for multi default benchmarks
+//			if (results.wasNull()) {
+//				settings.setBenchId(null);
+//			}
 			settings.setSolverId(results.getInt("default_solver"));
 			if (results.wasNull()) {
 				settings.setSolverId(null);
@@ -271,10 +274,10 @@ public class Settings {
 	public static boolean canUserSeeBenchmarkInSettings(int userId, int benchId) {
         List<DefaultSettings> settings=Settings.getDefaultSettingsVisibleByUser(userId);
         for (DefaultSettings s : settings) {
-            if (s.getBenchId()==null) {
+            if (s.getBenchIds().size() == 0) {
                 continue;
             }
-            if (s.getBenchId()==benchId) {
+            if (s.getBenchIds().contains(benchId)) {
                 return true;
             }
         }
@@ -284,10 +287,10 @@ public class Settings {
     public static boolean canUserSeeBenchmarkInSettings(Connection con, int userId, int benchId) {
         List<DefaultSettings> settings=Settings.getDefaultSettingsVisibleByUser(con, userId);
         for (DefaultSettings s : settings) {
-            if (s.getBenchId()==null) {
+            if (s.getBenchIds().size() == 0) {
                 continue;
             }
-            if (s.getBenchId()==benchId) {
+            if (s.getBenchIds().contains(benchId)) {
                 return true;
             }
         }
