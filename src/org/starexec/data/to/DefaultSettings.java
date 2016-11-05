@@ -67,8 +67,21 @@ public class DefaultSettings extends Identifiable {
 		setPrimId(-1);
 	}
 
-	public static void DefaultSettings(DefaultSettings settingsToCopy) {
-
+	public static DefaultSettings copy(DefaultSettings settingsToCopy) {
+		return new DefaultSettings(
+				settingsToCopy.primId,
+		settingsToCopy.preProcessorId,
+		settingsToCopy.postProcessorId,
+		settingsToCopy.benchProcessorId,
+		settingsToCopy.benchIds,
+		settingsToCopy.solverId,
+		settingsToCopy.wallclockTimeout,
+		settingsToCopy.cpuTimeout,
+		settingsToCopy.maxMemory,
+		settingsToCopy.dependenciesEnabled,
+		settingsToCopy.name,
+		settingsToCopy.type
+		);
 	}
 
 	private DefaultSettings(
