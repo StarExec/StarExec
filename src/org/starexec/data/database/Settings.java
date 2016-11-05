@@ -23,25 +23,28 @@ public class Settings {
 		CallableStatement procedure=null;
 		try {
 			con=Common.getConnection();
-			procedure = con.prepareCall("{CALL CreateDefaultSettings(?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?)}");
+			procedure = con.prepareCall("{CALL CreateDefaultSettings(?, ?, ?, ?, ?, ?,?,?,?,?,?,?)}");
 			procedure.setInt(1, settings.getPrimId());
 			procedure.setObject(2, settings.getPostProcessorId());
 			procedure.setInt(3, settings.getCpuTimeout());
 			procedure.setInt(4, settings.getWallclockTimeout());
 			procedure.setBoolean(5, settings.isDependenciesEnabled());
-			// TODO: refactor into separate method
-			procedure.setObject(6, settings.getBenchIds().get(0));
-			procedure.setLong(7,settings.getMaxMemory()); //memory initialized to 1 gigabyte
-			procedure.setObject(8,settings.getSolverId());
-			procedure.setObject(9, settings.getBenchProcessorId());
-			procedure.setObject(10,settings.getPreProcessorId());
-			procedure.setInt(11, settings.getType().getValue());
-			procedure.setString(12,settings.getName());
-			procedure.registerOutParameter(13, java.sql.Types.INTEGER);	
+			procedure.setLong(6,settings.getMaxMemory()); //memory initialized to 1 gigabyte
+			procedure.setObject(7,settings.getSolverId());
+			procedure.setObject(8, settings.getBenchProcessorId());
+			procedure.setObject(9,settings.getPreProcessorId());
+			procedure.setInt(10, settings.getType().getValue());
+			procedure.setString(11,settings.getName());
+			procedure.registerOutParameter(12, java.sql.Types.INTEGER);
 			procedure.executeUpdate();			
 
 			// Update the job's ID so it can be used outside this method
-			settings.setId(procedure.getInt(13));
+			settings.setId(procedure.getInt(12));
+
+			for (Integer benchId : settings.getBenchIds()) {
+				addDefaultBenchmark(settings.getId(), benchId);
+			}
+
 			return settings.getId();
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -64,6 +67,24 @@ public class Settings {
 			procedure.setInt(2, benchId);
 		});
 	}
+	/**
+	 * Adds a default benchmark for a given setting using a connection.
+	 * @param con the database connection to use for the update.
+	 * @param settingId the id of the setting to add a default benchmark to.
+	 * @param benchId the id of the benchmark to add to the setting.
+	 * @throws SQLException on database error.
+	 */
+	protected static void addDefaultBenchmark(
+			final Connection con,
+			final int settingId,
+			final int benchId) throws SQLException {
+
+		Common.updateUsingConnection(con, "{CALL AddDefaultBenchmark(?, ?)}", procedure -> {
+			procedure.setInt(1, settingId);
+			procedure.setInt(2, benchId);
+		});
+	}
+
 
 	/**
 	 * Gets all the default benchmarks for a given setting.
