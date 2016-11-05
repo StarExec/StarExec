@@ -102,6 +102,8 @@ CREATE PROCEDURE CreateDefaultSettings(IN _prim_id INT, IN _pp INT, IN _cto INT,
 		SELECT LAST_INSERT_ID() INTO _id;
 
 	END //
+
+
 	
 	
 -- Insert a default setting of a space given by id when it's initiated.
@@ -161,5 +163,12 @@ CREATE PROCEDURE GetDefaultBenchmarksForSetting(IN _settingId INT)
 		WHERE _settingId=ds.id;
 
 	END //
+
+DROP PROCEDURE IF EXISTS DeleteDefaultBenchmark;
+CREATE PROCEDURE DeleteDefaultBenchmark(IN _settingId INT, _benchId INT)
+  BEGIN
+    DELETE FROM default_bench_assoc
+    WHERE setting_id=_settingID AND bench_id=_benchid;
+  END //
 	
 DELIMITER ; -- This should always be at the end of this file
