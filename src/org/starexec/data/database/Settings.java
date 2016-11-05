@@ -17,7 +17,7 @@ public class Settings {
 	private static Logger log=Logger.getLogger(Settings.class);
 	private static LogUtil logUtil = new LogUtil(log);
 
-	protected static int addNewSettingsProfile(DefaultSettings settings) {
+	public static int addNewSettingsProfile(DefaultSettings settings) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		try {
