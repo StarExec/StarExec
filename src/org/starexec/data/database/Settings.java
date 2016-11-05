@@ -142,7 +142,7 @@ public class Settings {
 	 * @throws SQLException on database error.
 	 */
 	public static List<Integer> getDefaultBenchmarkIds(final int settingId) throws SQLException {
-		return Common.query("{CALL getDefaultBenchmarkIdsForSetting(?)",
+		return Common.query("{CALL GsetDefaultBenchmarkIdsForSetting(?)}",
 				procedure -> procedure.setInt(1, settingId),
 				Settings::resultsToBenchmarkIds);
 	}
@@ -154,7 +154,7 @@ public class Settings {
 	 * @throws SQLException on database error.
 	 */
 	public static List<Integer> getDefaultBenchmarkIds(Connection con, final int settingId) throws SQLException {
-		return Common.query("{CALL getDefaultBenchmarkIdsForSetting(?)",
+		return Common.query("{CALL GetDefaultBenchmarkIdsForSetting(?)}",
 				procedure -> procedure.setInt(1, settingId),
 				Settings::resultsToBenchmarkIds);
 	}
@@ -281,10 +281,8 @@ public class Settings {
             results=procedure.executeQuery();
             while (results.next()) {
 				DefaultSettings setting = resultsToSettings(results);
-				List<Benchmark> benchmarks = Settings.getDefaultBenchmarks(con, setting.getId());
-                for (Benchmark b : benchmarks) {
-					setting.addBenchId(b.getId());
-				}
+				setting.setBenchIds(Settings.getDefaultBenchmarkIds(con, setting.getId()));
+                settings.add(setting);
             }
             return settings;
         } catch (Exception e) {
