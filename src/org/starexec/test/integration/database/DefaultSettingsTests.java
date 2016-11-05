@@ -68,28 +68,25 @@ public class DefaultSettingsTests extends TestSequence {
 	@StarexecTest
 	private void addSettingsTest() {
 		DefaultSettings newSettings = DefaultSettings.copy(settings);
-		for (Integer benchId : benchIds) {
-			newSettings.addBenchId(benchId);
-		}
 
-		Settings.addNewSettingsProfile(settings);
+		Settings.addNewSettingsProfile(newSettings);
 
         try {
             DefaultSettings dbSettings = Settings.getProfileById(newSettings.getId());
 
-            Assert.assertEquals( "PrimId was not equal.", settings.getPrimId(), dbSettings.getPrimId());
-            Assert.assertEquals( "PreProcessorId was not equal.", settings.getPreProcessorId(), dbSettings.getPreProcessorId());
-            Assert.assertEquals( "PostProcessorId was not equal.", settings.getPostProcessorId(), dbSettings.getPostProcessorId());
-            Assert.assertEquals( "BenchProcessorId was not equal.", settings.getBenchProcessorId(), dbSettings.getBenchProcessorId());
-            Assert.assertEquals( "SolverId was not equal.", settings.getSolverId(), dbSettings.getSolverId());
-            Assert.assertEquals( "WallclockTimeout was not equal.", settings.getWallclockTimeout(), dbSettings.getWallclockTimeout());
-            Assert.assertEquals( "CpuTimeout was not equal.", settings.getCpuTimeout(), dbSettings.getCpuTimeout());
-            Assert.assertEquals( "MaxMemory was not equal.", settings.getMaxMemory(), dbSettings.getMaxMemory());
-            Assert.assertEquals( "DependenciesEnabled was not equal.", settings.isDependenciesEnabled(), dbSettings.isDependenciesEnabled());
-            Assert.assertEquals( "Name was not equal.", settings.getName(), dbSettings.getName());
-            Assert.assertEquals( "Type was not equal.", settings.getType(), dbSettings.getType());
+            Assert.assertEquals( "PrimId was not equal.", newSettings.getPrimId(), dbSettings.getPrimId());
+            Assert.assertEquals( "PreProcessorId was not equal.", newSettings.getPreProcessorId(), dbSettings.getPreProcessorId());
+            Assert.assertEquals( "PostProcessorId was not equal.", newSettings.getPostProcessorId(), dbSettings.getPostProcessorId());
+            Assert.assertEquals( "BenchProcessorId was not equal.", newSettings.getBenchProcessorId(), dbSettings.getBenchProcessorId());
+            Assert.assertEquals( "SolverId was not equal.", newSettings.getSolverId(), dbSettings.getSolverId());
+            Assert.assertEquals( "WallclockTimeout was not equal.", newSettings.getWallclockTimeout(), dbSettings.getWallclockTimeout());
+            Assert.assertEquals( "CpuTimeout was not equal.", newSettings.getCpuTimeout(), dbSettings.getCpuTimeout());
+            Assert.assertEquals( "MaxMemory was not equal.", newSettings.getMaxMemory(), dbSettings.getMaxMemory());
+            Assert.assertEquals( "DependenciesEnabled was not equal.", newSettings.isDependenciesEnabled(), dbSettings.isDependenciesEnabled());
+            Assert.assertEquals( "Name was not equal.", newSettings.getName(), dbSettings.getName());
+            Assert.assertEquals( "Type was not equal.", newSettings.getType(), dbSettings.getType());
 
-            List<Integer> settingsBenchIds = settings.getBenchIds();
+            List<Integer> settingsBenchIds = newSettings.getBenchIds();
             List<Integer> dbSettingsBenchIds = dbSettings.getBenchIds();
 
             final String benchIdsNotEqual = "Bench ids were not equal.";
