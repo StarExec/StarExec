@@ -41,7 +41,7 @@ public class DefaultSettings extends Identifiable {
 	private Integer preProcessorId;
 	private Integer postProcessorId;
 	private Integer benchProcessorId;
-	private final List<Integer> benchIds;
+	private List<Integer> benchIds;
 	private Integer solverId;
 	private int wallclockTimeout;
 	private int cpuTimeout;
@@ -135,6 +135,9 @@ public class DefaultSettings extends Identifiable {
 	}
 	public List<Integer> getBenchIds() {
 		return this.benchIds;
+	}
+	public void setBenchIds(final List<Integer> benchIds) {
+		this.benchIds = benchIds;
 	}
 	public void setSolverId(Integer solverId) {
 		this.solverId = solverId;

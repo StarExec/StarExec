@@ -164,6 +164,15 @@ CREATE PROCEDURE GetDefaultBenchmarksForSetting(IN _settingId INT)
 
 	END //
 
+DROP PROCEDURE IF EXISTS GetDefaultBenchmarkIdsForSetting;
+CREATE PROCEDURE GetDefaultBenchmarkIdsForSetting(IN _settingId INT)
+  BEGIN
+    SELECT b.id as default_bench_id
+    FROM benchmarks b JOIN default_bench_assoc dba ON b.id=dba.bench_id
+      JOIN default_settings ds ON dba.setting_id=ds.id
+    WHERE _settingId=ds.id;
+  END //
+
 DROP PROCEDURE IF EXISTS DeleteDefaultBenchmark;
 CREATE PROCEDURE DeleteDefaultBenchmark(IN _settingId INT, _benchId INT)
   BEGIN

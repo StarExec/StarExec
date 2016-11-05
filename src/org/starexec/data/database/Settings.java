@@ -107,18 +107,67 @@ public class Settings {
 	 * @throws SQLException on database error.
 	 */
 	public static List<Benchmark> getDefaultBenchmarks(final int settingId) throws SQLException {
-		return Common.query("{CALL GetDefaultBenchmarksForSetting(?)}", procedure -> {
-			procedure.setInt(1, settingId);
-		}, results -> {
-			List<Benchmark> benchmarks = new ArrayList<>();
-
-			while (results.next()) {
-				benchmarks.add(Benchmarks.resultToBenchmark(results));
-			}
-
-			return benchmarks;
-		});
+		return Common.query("{CALL GetDefaultBenchmarksForSetting(?)}",
+				procedure -> procedure.setInt(1, settingId),
+				Settings::resultsToBenchmarks);
 	}
+
+	/**
+	 * Gets all the default benchmarks for a given setting using a Connection.
+	 * @param con the connection to the database to use for the query.
+	 * @param settingId the id of the setting to get the default benchmarks for.
+	 * @return all the default benchmarks for a setting.
+	 * @throws SQLException on database error.
+	 */
+	protected static List<Benchmark> getDefaultBenchmarks(Connection con, final int settingId) throws SQLException {
+		return Common.queryUsingConnection(con, "{CALL GetDefaultBenchmarksForSetting(?)}",
+				procedure -> procedure.setInt(1, settingId),
+				Settings::resultsToBenchmarks);
+	}
+	private static List<Benchmark> resultsToBenchmarks(ResultSet results) throws SQLException {
+		List<Benchmark> benchmarks = new ArrayList<>();
+
+		while (results.next()) {
+			benchmarks.add(Benchmarks.resultToBenchmark(results));
+		}
+
+		return benchmarks;
+	}
+
+
+	/**
+	 * Gets the default benchmark ids for a given default setting.
+	 * @param settingId the id of the setting to get the default benchmark ids for.
+	 * @return a list of benchmark ids.
+	 * @throws SQLException on database error.
+	 */
+	public static List<Integer> getDefaultBenchmarkIds(final int settingId) throws SQLException {
+		return Common.query("{CALL getDefaultBenchmarkIdsForSetting(?)",
+				procedure -> procedure.setInt(1, settingId),
+				Settings::resultsToBenchmarkIds);
+	}
+
+	/**
+	 * Gets the default benchmark ids for a given default setting.
+	 * @param settingId the id of the setting to get the default benchmark ids for.
+	 * @return a list of benchmark ids.
+	 * @throws SQLException on database error.
+	 */
+	public static List<Integer> getDefaultBenchmarkIds(Connection con, final int settingId) throws SQLException {
+		return Common.query("{CALL getDefaultBenchmarkIdsForSetting(?)",
+				procedure -> procedure.setInt(1, settingId),
+				Settings::resultsToBenchmarkIds);
+	}
+
+	private static List<Integer> resultsToBenchmarkIds(ResultSet results) throws SQLException {
+		List<Integer> benchmarkIds = new ArrayList<>();
+		while (results.next()) {
+			benchmarkIds.add(results.getInt("default_bench_id"));
+		}
+		return benchmarkIds;
+	}
+
+
 	
 	/**
 	 * Given a DefaultSettings object with all of its fields set, including id,
@@ -178,11 +227,6 @@ public class Settings {
 				settings.setPostProcessorId(null);
 			}
 			settings.setDependenciesEnabled(results.getBoolean("dependencies_enabled"));
-			settings.addBenchId(results.getInt("default_benchmark"));
-			// TODO: check if this works for multi default benchmarks
-//			if (results.wasNull()) {
-//				settings.setBenchId(null);
-//			}
 			settings.setSolverId(results.getInt("default_solver"));
 			if (results.wasNull()) {
 				settings.setSolverId(null);
@@ -236,7 +280,11 @@ public class Settings {
             procedure.setInt(2, type.getValue());
             results=procedure.executeQuery();
             while (results.next()) {
-                settings.add(resultsToSettings(results));
+				DefaultSettings setting = resultsToSettings(results);
+				List<Benchmark> benchmarks = Settings.getDefaultBenchmarks(con, setting.getId());
+                for (Benchmark b : benchmarks) {
+					setting.addBenchId(b.getId());
+				}
             }
             return settings;
         } catch (Exception e) {
@@ -404,7 +452,9 @@ public class Settings {
 			procedure.setInt(1,id);
 			results=procedure.executeQuery();
 			if (results.next()) {
-				return resultsToSettings(results);
+                DefaultSettings settings = resultsToSettings(results);
+                settings.setBenchIds(Settings.getDefaultBenchmarkIds(con, settings.getId()));
+				return settings;
 			}
 		} catch (SQLException e) {
 			logUtil.error(methodName, "SQLException caught while querying database.", e);

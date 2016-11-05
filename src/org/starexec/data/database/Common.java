@@ -281,7 +281,7 @@ public class Common {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
-			return queryUsingConnection(callPreparationSql, con, procedureConsumer, resultsConsumer);
+			return queryUsingConnection(con, callPreparationSql, procedureConsumer, resultsConsumer);
 		} catch (SQLException e) {
 			log.warn("Caught SQLException in Common.query. Throwing exception...");
 			throw e;
@@ -301,7 +301,7 @@ public class Common {
          * @return Whatever we queried for and assembled from our ResultSet.
          * @throws SQLException
          */
-	public static <T> T queryUsingConnection(String callPreparationSql, Connection con, ProcedureConsumer procedureConsumer, ResultsConsumer<T> resultsConsumer) throws SQLException {
+	public static <T> T queryUsingConnection(Connection con, String callPreparationSql, ProcedureConsumer procedureConsumer, ResultsConsumer<T> resultsConsumer) throws SQLException {
 		CallableStatement procedure=null;
 		ResultSet results = null;
 		try {
