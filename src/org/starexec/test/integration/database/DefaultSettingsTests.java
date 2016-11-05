@@ -69,6 +69,8 @@ public class DefaultSettingsTests extends TestSequence {
 	private void addSettingsTest() {
 		DefaultSettings newSettings = DefaultSettings.copy(settings);
 
+        newSettings.setBenchIds(benchIds);
+
 		Settings.addNewSettingsProfile(newSettings);
 
         try {
@@ -92,9 +94,9 @@ public class DefaultSettingsTests extends TestSequence {
             final String benchIdsNotEqual = "Bench ids were not equal.";
             Assert.assertEquals(benchIdsNotEqual, settingsBenchIds.size(), dbSettingsBenchIds.size());
 
-            Collections.sort(benchIds);
+            Collections.sort(settingsBenchIds);
             Collections.sort(dbSettingsBenchIds);
-            for (int i = 0; i < benchIds.size(); i++) {
+            for (int i = 0; i < settingsBenchIds.size(); i++) {
                 Assert.assertEquals(benchIdsNotEqual, settingsBenchIds.get(i), dbSettingsBenchIds.get(i));
             }
 
