@@ -67,6 +67,20 @@ public class Settings {
 			procedure.setInt(2, benchId);
 		});
 	}
+
+	/**
+	 * Deletes a default benchmark from a setting.
+	 * @param settingId the id of the DefaultSetting
+	 * @param benchId the id of the benchmark to delete.s
+	 * @throws SQLException on database error.
+	 */
+	public static void deleteDefaultBenchmark(final int settingId, final int benchId) throws SQLException {
+		Common.update("{CALL DeleteDefaultBenchmark(?, ?)}", procedure -> {
+			procedure.setInt(1, settingId);
+			procedure.setInt(2, benchId);
+		});
+	}
+
 	/**
 	 * Adds a default benchmark for a given setting using a connection.
 	 * @param con the database connection to use for the update.
