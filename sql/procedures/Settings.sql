@@ -151,5 +151,15 @@ CREATE PROCEDURE AddDefaultBenchmark(IN _settingId INT, IN _benchId INT)
 		INSERT INTO default_bench_assoc (setting_id, bench_id)
 		VALUES (_settingId, _benchId);
 	END //
+
+DROP PROCEDURE IF EXISTS GetDefaultBenchmarksForSetting;
+CREATE PROCEDURE GetDefaultBenchmarksForSetting(IN _settingId INT)
+	BEGIN
+		SELECT b.*
+		FROM benchmarks b JOIN default_bench_assoc dba ON b.id=dba.bench_id
+				JOIN default_settings ds ON dba.setting_id=ds.id
+		WHERE _settingId=ds.id;
+
+	END //
 	
 DELIMITER ; -- This should always be at the end of this file
