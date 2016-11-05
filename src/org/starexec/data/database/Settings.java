@@ -1,6 +1,7 @@
 package org.starexec.data.database;
 
 import org.apache.log4j.Logger;
+import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Space;
@@ -51,10 +52,36 @@ public class Settings {
 		return -1;
 	}
 
+	/**
+	 * Adds a default benchmark for a given setting.
+	 * @param settingId the id of the setting to add a default benchmark to.
+	 * @param benchId the id of the benchmark to add to the setting.
+	 * @throws SQLException on database error.
+	 */
 	public static void addDefaultBenchmark(final int settingId, final int benchId) throws SQLException {
 		Common.update("{CALL AddDefaultBenchmark(?, ?)}", procedure -> {
 			procedure.setInt(1, settingId);
 			procedure.setInt(2, benchId);
+		});
+	}
+
+	/**
+	 * Gets all the default benchmarks for a given setting.
+	 * @param settingId the id of the setting to get the default benchmarks for.
+	 * @return all the default benchmarks for a setting.
+	 * @throws SQLException on database error.
+	 */
+	public static List<Benchmark> getDefaultBenchmarks(final int settingId) throws SQLException {
+		return Common.query("{CALL GetDefaultBenchmarksForSetting(?)}", procedure -> {
+			procedure.setInt(1, settingId);
+		}, results -> {
+			List<Benchmark> benchmarks = new ArrayList<>();
+
+			while (results.next()) {
+				benchmarks.add(Benchmarks.resultToBenchmark(results));
+			}
+
+			return benchmarks;
 		});
 	}
 	
