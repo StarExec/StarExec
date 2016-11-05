@@ -40,11 +40,34 @@ public class DefaultSettingsTests extends TestSequence {
 	}
 
 	@StarexecTest
+    private void addDefaultBenchmarkTest() {
+        DefaultSettings newSettings = DefaultSettings.copy(settings);
+        newSettings.addBenchId(benchIds.get(0));
+        Settings.addNewSettingsProfile(settings);
+
+        try {
+            int benchIdToAdd = benchIds.get(1);
+            Settings.addDefaultBenchmark(newSettings.getId(), benchIdToAdd);
+            List<Benchmark> benchmarks = Settings.getDefaultBenchmarks(settings.getId());
+
+            Assert.assertTrue("Benchmark was not part of default benchmarks.",
+                    benchmarks
+                            .stream()
+                            .anyMatch(b -> b.getId() == benchIdToAdd));
+        } catch (SQLException e) {
+            Assert.fail("Caught SQLException: " + Util.getStackTrace(e));
+        } finally {
+            Settings.deleteProfile(newSettings.getId());
+        }
+    }
+
+	@StarexecTest
 	private void addSettingsTest() {
 		DefaultSettings newSettings = DefaultSettings.copy(settings);
 		for (Integer benchId : benchIds) {
 			newSettings.addBenchId(benchId);
 		}
+
 		Settings.addNewSettingsProfile(settings);
 
         try {
@@ -79,6 +102,8 @@ public class DefaultSettingsTests extends TestSequence {
 
         } catch(SQLException e) {
             Assert.fail("Caught SQLException: " + Util.getStackTrace(e));
+        } finally {
+            Settings.deleteProfile(newSettings.getId());
         }
 
 	}
