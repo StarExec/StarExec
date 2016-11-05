@@ -32,7 +32,7 @@ public class DefaultSettingsTests extends TestSequence {
 	List<Integer> benchIds;
 
 	Space space = null;
-	
+
 	User admin=null;
 	@Override
 	protected String getTestName() {
@@ -40,7 +40,7 @@ public class DefaultSettingsTests extends TestSequence {
 	}
 
 	@StarexecTest
-    private void deleteDefaultBenchmarkTest() {
+    private void addAndDeleteDefaultBenchmarkTest() {
         try {
             int benchId = benchIds.get(0);
             int settingId = settings.getId();
@@ -60,31 +60,8 @@ public class DefaultSettingsTests extends TestSequence {
 
             Assert.assertFalse("Benchmark not deleted from settings.", s.getBenchIds().contains(benchId));
 
-
         } catch (SQLException e) {
             Assert.fail("Caught SQLException: " + Util.getStackTrace(e));
-        }
-    }
-
-	@StarexecTest
-    private void addDefaultBenchmarkTest() {
-        DefaultSettings newSettings = DefaultSettings.copy(settings);
-        newSettings.addBenchId(benchIds.get(0));
-        Settings.addNewSettingsProfile(settings);
-
-        try {
-            int benchIdToAdd = benchIds.get(1);
-            Settings.addDefaultBenchmark(newSettings.getId(), benchIdToAdd);
-            List<Benchmark> benchmarks = Settings.getDefaultBenchmarks(settings.getId());
-
-            Assert.assertTrue("Benchmark was not part of default benchmarks.",
-                    benchmarks
-                            .stream()
-                            .anyMatch(b -> b.getId() == benchIdToAdd));
-        } catch (SQLException e) {
-            Assert.fail("Caught SQLException: " + Util.getStackTrace(e));
-        } finally {
-            Settings.deleteProfile(newSettings.getId());
         }
     }
 
@@ -134,14 +111,14 @@ public class DefaultSettingsTests extends TestSequence {
         }
 
 	}
-	
+
 	@StarexecTest
 	private void getSettingsByUser() {
 		List<DefaultSettings> settingsList=Settings.getDefaultSettingsOwnedByUser(u.getId());
 		Assert.assertEquals(settingsList.size(), 1);
 		Assert.assertTrue(settingsList.get(0).equals(settings));
 	}
-	
+
 	@StarexecTest
 	private void deleteSettingsTest() {
 		DefaultSettings temp=loader.loadDefaultSettingsProfileIntoDatabase(u.getId());
@@ -152,16 +129,16 @@ public class DefaultSettingsTests extends TestSequence {
 			Assert.fail("Caught SQLException: "+ Util.getStackTrace(e));
 		}
 	}
-	
+
 	@StarexecTest
 	private void getSettingsByNameTest() {
 		List<DefaultSettings> settingsList=Settings.getDefaultSettingsByPrimIdAndType(settings.getPrimId(), settings.getType());
-		
+
 		Assert.assertEquals(settingsList.size(),1);
 		Assert.assertTrue(settingsList.get(0).equals(settings));
 	}
-	
-	
+
+
 	@StarexecTest
 	private void getSettingsTest() {
 		try {
@@ -172,11 +149,11 @@ public class DefaultSettingsTests extends TestSequence {
 			Assert.fail("Caught SQLException: " + Util.getStackTrace(e));
 		}
 	}
-	
+
 	@StarexecTest
 	private void updateDefaultMemoryLimitTest() {
 
-		
+
 		Assert.assertTrue(Settings.setDefaultMaxMemory(settings.getId(), settings.getMaxMemory()+1));
 		try {
 			Assert.assertEquals(settings.getMaxMemory() + 1, Settings.getProfileById(settings.getId()).getMaxMemory());
@@ -185,7 +162,7 @@ public class DefaultSettingsTests extends TestSequence {
 			Assert.fail("Caught SQLException: " + Util.getStackTrace(e));
 		}
 	}
-	
+
 	@Override
 	protected void setup() throws Exception {
 		u=loader.loadUserIntoDatabase();
@@ -194,7 +171,7 @@ public class DefaultSettingsTests extends TestSequence {
 		space=loader.loadSpaceIntoDatabase(u.getId(), Communities.getTestCommunity().getId());
 
 		benchIds = loader.loadBenchmarksIntoDatabase(space.getId() ,u.getId());
-		
+
 		settings=loader.loadDefaultSettingsProfileIntoDatabase(u.getId());
 		settings2=loader.loadDefaultSettingsProfileIntoDatabase(u2.getId());
 		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
