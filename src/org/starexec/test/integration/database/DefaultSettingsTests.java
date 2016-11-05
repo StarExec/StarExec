@@ -26,8 +26,10 @@ import org.starexec.util.Util;
 public class DefaultSettingsTests extends TestSequence {
 	DefaultSettings settings=null;
 	DefaultSettings settings2=null;
+    DefaultSettings settingsWithDefaultBenchmarks=null;
 	User u=null;
 	User u2=null;
+    User u3=null;
 
 	List<Integer> benchIds;
 
@@ -112,6 +114,11 @@ public class DefaultSettingsTests extends TestSequence {
 	}
 
 	@StarexecTest
+    private void getDefaultBenchmarksTest() {
+        
+    }
+
+	@StarexecTest
 	private void getSettingsByUser() {
 		List<DefaultSettings> settingsList=Settings.getDefaultSettingsOwnedByUser(u.getId());
 		Assert.assertEquals(settingsList.size(), 1);
@@ -166,6 +173,7 @@ public class DefaultSettingsTests extends TestSequence {
 	protected void setup() throws Exception {
 		u=loader.loadUserIntoDatabase();
 		u2=loader.loadUserIntoDatabase();
+        u3=loader.loadUserIntoDatabase();
 
 		space=loader.loadSpaceIntoDatabase(u.getId(), Communities.getTestCommunity().getId());
 
@@ -173,6 +181,8 @@ public class DefaultSettingsTests extends TestSequence {
 
 		settings=loader.loadDefaultSettingsProfileIntoDatabase(u.getId());
 		settings2=loader.loadDefaultSettingsProfileIntoDatabase(u2.getId());
+        settingsWithDefaultBenchmarks=loader.loadDefaultSettingsProfileIntoDatabaseWithDefaultBenchmarks(u3.getId(), benchIds);
+
 		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 	}
 

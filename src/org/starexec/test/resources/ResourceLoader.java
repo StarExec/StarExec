@@ -308,6 +308,14 @@ public class ResourceLoader {
 		}
 		return null;
 	}
+	public DefaultSettings loadDefaultSettingsProfileIntoDatabaseWithDefaultBenchmarks(int userId, List<Integer> benchIds) throws SQLException {
+		DefaultSettings settings = loadDefaultSettingsProfileIntoDatabase(userId);
+		for(Integer bid : benchIds) {
+			Settings.addDefaultBenchmark(settings.getId(), bid);
+		}
+		settings.setBenchIds(new ArrayList<>(benchIds));
+		return settings;
+	}
 	
 	/**
 	 * Loads a configuration for a solver into the database
