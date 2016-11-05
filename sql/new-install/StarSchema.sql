@@ -585,6 +585,15 @@ CREATE TABLE default_settings (
 );
 
 
+CREATE TABLE default_bench_assoc(
+	setting_id INT NOT NULL,
+	bench_id INT NOT NULL,
+	PRIMARY KEY(setting_id, bench_id),
+	CONSTRAINT default_setting_id FOREIGN KEY (setting_id) REFERENCES default_settings(id) ON DELETE CASCADE,
+	CONSTRAINT default_bench_id FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE
+);
+
+
 -- For Status Updates on a space XML upload
 -- Author: Eric Burns
 CREATE TABLE space_xml_uploads (
