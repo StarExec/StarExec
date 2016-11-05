@@ -34,6 +34,7 @@ public class DefaultSettings extends Identifiable {
 		}
 		return null;
 	}
+
 }
 
 	private Integer primId;
@@ -65,6 +66,39 @@ public class DefaultSettings extends Identifiable {
 		type=null;
 		setPrimId(-1);
 	}
+
+	public static void DefaultSettings(DefaultSettings settingsToCopy) {
+
+	}
+
+	private DefaultSettings(
+			final Integer primId,
+			final Integer preProcessorId,
+			final Integer postProcessorId,
+			final Integer benchProcessorId,
+			final List<Integer> benchIds,
+			final Integer solverId,
+			final int wallclockTimeout,
+			final int cpuTimeout,
+			final long maxMemory,
+			final boolean dependenciesEnabled,
+			final String name,
+			final SettingType type
+	) {
+		this.primId=primId;
+		this.preProcessorId=preProcessorId;
+		this.postProcessorId=postProcessorId;
+		this.benchProcessorId=benchProcessorId;
+		this.benchIds=new ArrayList<>(benchIds);
+		this.solverId=solverId;
+		this.wallclockTimeout=wallclockTimeout;
+		this.cpuTimeout=cpuTimeout;
+		this.maxMemory=maxMemory;
+		this.dependenciesEnabled=dependenciesEnabled;
+		this.name=name;
+		this.type=type;
+	}
+
 	public void setPreProcessorId(Integer preProcessorId) {
 		this.preProcessorId = preProcessorId;
 	}
