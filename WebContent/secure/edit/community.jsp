@@ -43,12 +43,8 @@
 			request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(settings.getMaxMemory()));
 			request.setAttribute("settingId",settings.getId());
 			try {
-				Benchmark bench=Benchmarks.get(settings.getBenchId());
-				if (bench!=null) {
-					request.setAttribute("defaultBenchmark", bench.getName());
-				} else {
-					request.setAttribute("defaultBenchmark", "none specified");
-				}
+				List<Benchmark> benches=Benchmarks.get(settings.getBenchIds());
+				request.setAttribute("defaultBenchmarks", benches);
 			} catch (Exception e) {
 				request.setAttribute("defaultBenchmark", "none specified");
 			}
@@ -298,10 +294,12 @@
 					</select>
 				</td>
 			</tr>
-			<tr id="defaultBenchRow">
-				<td>default benchmark</td>
-				<td>${defaultBenchmark} <a href="${defaultBenchLink}"><span class="selectPrim">select benchmark</span></a></td>
-			</tr>
+			<c:forEach items="${defaultBenchmarks}" var="defaultBench">
+				<tr id="defaultBenchRow">
+					<td>default benchmark</td>
+					<td>${defaultBench.getName()} <a href="${defaultBenchLink}"><span class="selectPrim">select benchmark</span></a></td>
+				</tr>
+			</c:forEach>
 			<tr id="defaultSolverRow">
 				<td>default solver</td>
 				<td>${defaultSolver} <a href="${defaultSolverLink}"><span class="selectPrim">select solver</span></a></td>
