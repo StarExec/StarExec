@@ -1,6 +1,8 @@
 package org.starexec.test.integration.database;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -77,34 +79,7 @@ public class DefaultSettingsTests extends TestSequence {
 
         try {
             DefaultSettings dbSettings = Settings.getProfileById(newSettings.getId());
-
-            Assert.assertEquals( "PrimId was not equal.", newSettings.getPrimId(), dbSettings.getPrimId());
-            Assert.assertEquals( "PreProcessorId was not equal.", newSettings.getPreProcessorId(), dbSettings.getPreProcessorId());
-            Assert.assertEquals( "PostProcessorId was not equal.", newSettings.getPostProcessorId(), dbSettings.getPostProcessorId());
-            Assert.assertEquals( "BenchProcessorId was not equal.", newSettings.getBenchProcessorId(), dbSettings.getBenchProcessorId());
-            Assert.assertEquals( "SolverId was not equal.", newSettings.getSolverId(), dbSettings.getSolverId());
-            Assert.assertEquals( "WallclockTimeout was not equal.", newSettings.getWallclockTimeout(), dbSettings.getWallclockTimeout());
-            Assert.assertEquals( "CpuTimeout was not equal.", newSettings.getCpuTimeout(), dbSettings.getCpuTimeout());
-            Assert.assertEquals( "MaxMemory was not equal.", newSettings.getMaxMemory(), dbSettings.getMaxMemory());
-            Assert.assertEquals( "DependenciesEnabled was not equal.", newSettings.isDependenciesEnabled(), dbSettings.isDependenciesEnabled());
-            Assert.assertEquals( "Name was not equal.", newSettings.getName(), dbSettings.getName());
-            Assert.assertEquals( "Type was not equal.", newSettings.getType(), dbSettings.getType());
-
-            List<Integer> settingsBenchIds = newSettings.getBenchIds();
-            List<Integer> dbSettingsBenchIds = dbSettings.getBenchIds();
-
-            final String benchIdsNotEqual = "Bench ids were not equal.";
-            Assert.assertEquals(benchIdsNotEqual, settingsBenchIds.size(), dbSettingsBenchIds.size());
-
-            Collections.sort(settingsBenchIds);
-            Collections.sort(dbSettingsBenchIds);
-            for (int i = 0; i < settingsBenchIds.size(); i++) {
-                Assert.assertEquals(benchIdsNotEqual, settingsBenchIds.get(i), dbSettingsBenchIds.get(i));
-            }
-
-
-
-
+            assertDefaultSettingsEqual(newSettings, dbSettings);
         } catch(SQLException e) {
             Assert.fail("Caught SQLException: " + Util.getStackTrace(e));
         } finally {
@@ -148,6 +123,65 @@ public class DefaultSettingsTests extends TestSequence {
             }
         } catch (SQLException e) {
             Assert.fail("SQLException thrown: " + Util.getStackTrace(e));
+        }
+    }
+
+    @StarexecTest
+    private void updateDefaultSettingsTest() {
+        DefaultSettings newSettings = DefaultSettings.copy(settingsWithDefaultBenchmarks);
+        Settings.addNewSettingsProfile(newSettings);
+
+        newSettings.setName("TestName");
+        newSettings.setMaxMemory(newSettings.getMaxMemory()+1);
+        newSettings.setCpuTimeout(newSettings.getCpuTimeout()+1);
+        newSettings.setWallclockTimeout(newSettings.getWallclockTimeout()+1);
+        newSettings.setDependenciesEnabled(!newSettings.isDependenciesEnabled());
+
+        if (newSettings.getType() == DefaultSettings.SettingType.COMMUNITY) {
+            newSettings.setType(DefaultSettings.SettingType.USER);
+        } else {
+            newSettings.setType(DefaultSettings.SettingType.COMMUNITY);
+        }
+
+        newSettings.setBenchIds(new ArrayList<>(Arrays.asList(
+                new Integer[] {newSettings.getBenchIds().get(0)}
+        )));
+
+        // TODO: need to change all other fields of setting as well.
+
+        try {
+            DefaultSettings dbSettings = Settings.getProfileById(newSettings.getId());
+            assertDefaultSettingsEqual(newSettings, dbSettings);
+        } catch (SQLException e) {
+            Assert.fail("Caught SQLException: " + Util.getStackTrace(e));
+        }
+    }
+
+    private void assertDefaultSettingsEqual(DefaultSettings newSettings, DefaultSettings dbSettings) {
+
+
+        Assert.assertEquals("PrimId was not equal.", newSettings.getPrimId(), dbSettings.getPrimId());
+        Assert.assertEquals("PreProcessorId was not equal.", newSettings.getPreProcessorId(), dbSettings.getPreProcessorId());
+        Assert.assertEquals("PostProcessorId was not equal.", newSettings.getPostProcessorId(), dbSettings.getPostProcessorId());
+        Assert.assertEquals("BenchProcessorId was not equal.", newSettings.getBenchProcessorId(), dbSettings.getBenchProcessorId());
+        Assert.assertEquals("SolverId was not equal.", newSettings.getSolverId(), dbSettings.getSolverId());
+        Assert.assertEquals("WallclockTimeout was not equal.", newSettings.getWallclockTimeout(), dbSettings.getWallclockTimeout());
+        Assert.assertEquals("CpuTimeout was not equal.", newSettings.getCpuTimeout(), dbSettings.getCpuTimeout());
+        Assert.assertEquals("MaxMemory was not equal.", newSettings.getMaxMemory(), dbSettings.getMaxMemory());
+        Assert.assertEquals("DependenciesEnabled was not equal.", newSettings.isDependenciesEnabled(), dbSettings.isDependenciesEnabled());
+        Assert.assertEquals("Name was not equal.", newSettings.getName(), dbSettings.getName());
+        Assert.assertEquals("Type was not equal.", newSettings.getType(), dbSettings.getType());
+
+        List<Integer> settingsBenchIds = newSettings.getBenchIds();
+        List<Integer> dbSettingsBenchIds = dbSettings.getBenchIds();
+
+        final String benchIdsNotEqual = "Bench ids were not equal.";
+        Assert.assertEquals(benchIdsNotEqual, settingsBenchIds.size(), dbSettingsBenchIds.size());
+
+        Collections.sort(settingsBenchIds);
+        Collections.sort(dbSettingsBenchIds);
+        for (int i = 0; i < settingsBenchIds.size(); i++) {
+            Assert.assertEquals(benchIdsNotEqual, settingsBenchIds.get(i), dbSettingsBenchIds.get(i));
         }
     }
 
