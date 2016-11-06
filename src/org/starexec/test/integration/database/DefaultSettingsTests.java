@@ -154,6 +154,8 @@ public class DefaultSettingsTests extends TestSequence {
             assertDefaultSettingsEqual(newSettings, dbSettings);
         } catch (SQLException e) {
             Assert.fail("Caught SQLException: " + Util.getStackTrace(e));
+        } finally {
+            Settings.deleteProfile(newSettings.getId());
         }
     }
 
