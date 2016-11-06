@@ -206,6 +206,7 @@ public class Settings {
 			procedure.setInt(9,settings.getId());
 			procedure.executeUpdate();
 
+			Settings.deleteAllDefaultBenchmarks(settings.getId());
 			for (Integer bid : settings.getBenchIds()) {
 				Settings.addDefaultBenchmark(con, settings.getId(), bid);
 			}
