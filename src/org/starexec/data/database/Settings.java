@@ -181,22 +181,29 @@ public class Settings {
 		CallableStatement procedure=null;
 		try {
 			con=Common.getConnection();
-			procedure = con.prepareCall("{CALL UpdateDefaultSettings(?, ?, ?, ?, ?, ?,?,?,?,?)}");
+			Common.beginTransaction(con);
+
+
+			procedure = con.prepareCall("{CALL UpdateDefaultSettings(?, ?, ?, ?, ?, ?,?,?,?)}");
 			procedure.setObject(1, settings.getPostProcessorId());
 			procedure.setInt(2, settings.getCpuTimeout());
 			procedure.setInt(3, settings.getWallclockTimeout());
 			procedure.setBoolean(4, settings.isDependenciesEnabled());
-			// TODO: refactor into separate method
-			procedure.setObject(5, settings.getBenchIds().get(0));
-			procedure.setLong(6,settings.getMaxMemory()); //memory initialized to 1 gigabyte
-			procedure.setObject(7,settings.getSolverId());
-			procedure.setObject(8, settings.getBenchProcessorId());
-			procedure.setObject(9,settings.getPreProcessorId());
-			procedure.setInt(10,settings.getId());
-			procedure.executeUpdate();			
+			procedure.setLong(5,settings.getMaxMemory()); //memory initialized to 1 gigabyte
+			procedure.setObject(6,settings.getSolverId());
+			procedure.setObject(7, settings.getBenchProcessorId());
+			procedure.setObject(8,settings.getPreProcessorId());
+			procedure.setInt(9,settings.getId());
+			procedure.executeUpdate();
 
+			for (Integer bid : settings.getBenchIds()) {
+				Settings.addDefaultBenchmark(con, settings.getId(), bid);
+			}
+
+			Common.endTransaction(con);
 			return true;
 		} catch (Exception e) {
+			Common.doRollback(con);
 			log.error(e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
