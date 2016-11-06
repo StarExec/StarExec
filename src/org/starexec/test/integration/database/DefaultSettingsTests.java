@@ -149,6 +149,8 @@ public class DefaultSettingsTests extends TestSequence {
 
         // TODO: need to change all other fields of setting as well.
 
+        boolean success = Settings.updateDefaultSettings(newSettings);
+        Assert.assertTrue("Database call failed.", success);
         try {
             DefaultSettings dbSettings = Settings.getProfileById(newSettings.getId());
             assertDefaultSettingsEqual(newSettings, dbSettings);
