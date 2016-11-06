@@ -133,6 +133,12 @@ CREATE PROCEDURE DeleteDefaultSettings(IN _id INT)
 		DELETE FROM default_settings WHERE id=_id;
 	END //
 
+DROP PROCEDURE IF EXISTS DeleteAllDefaultBenchmarks;
+CREATE PROCEDURE DeleteAllDefaultBenchmarks(IN _settingId INT)
+	BEGIN
+		DELETE FROM default_bench_assoc WHERE setting_id=_settingId;
+	END //
+
 DROP PROCEDURE IF EXISTS SetDefaultProfileForUser;
 CREATE PROCEDURE SetDefaultProfileForUser(IN _uid INT, IN _sid INT) 
 	BEGIN
