@@ -142,7 +142,7 @@ public class Settings {
 	 * @throws SQLException on database error.
 	 */
 	public static List<Integer> getDefaultBenchmarkIds(final int settingId) throws SQLException {
-		return Common.query("{CALL GsetDefaultBenchmarkIdsForSetting(?)}",
+		return Common.query("{CALL GetDefaultBenchmarkIdsForSetting(?)}",
 				procedure -> procedure.setInt(1, settingId),
 				Settings::resultsToBenchmarkIds);
 	}
