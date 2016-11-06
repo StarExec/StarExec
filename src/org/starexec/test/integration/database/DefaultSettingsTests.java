@@ -132,6 +132,25 @@ public class DefaultSettingsTests extends TestSequence {
         }
     }
 
+    @StarexecTest
+    private void getDefaultBenchmarkIdsTest() {
+        int settingsId = settingsWithDefaultBenchmarks.getId();
+        try {
+            List<Integer> dbBenchmarks = Settings.getDefaultBenchmarkIds(settingsId);
+            Collections.sort(dbBenchmarks);
+            List<Integer> settingsBenchmarks = settingsWithDefaultBenchmarks.getBenchIds();
+            Collections.sort(settingsBenchmarks);
+
+            Assert.assertTrue(settingsBenchmarks.size() == dbBenchmarks.size());
+
+            for (int i = 0; i < settingsBenchmarks.size(); i++) {
+                Assert.assertEquals(settingsBenchmarks.get(i), dbBenchmarks.get(i));
+            }
+        } catch (SQLException e) {
+            Assert.fail("SQLException thrown: " + Util.getStackTrace(e));
+        }
+    }
+
 	@StarexecTest
 	private void getSettingsByUser() {
 		List<DefaultSettings> settingsList=Settings.getDefaultSettingsOwnedByUser(u.getId());
