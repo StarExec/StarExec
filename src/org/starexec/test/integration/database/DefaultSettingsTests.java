@@ -131,23 +131,15 @@ public class DefaultSettingsTests extends TestSequence {
         DefaultSettings newSettings = DefaultSettings.copy(settingsWithDefaultBenchmarks);
         Settings.addNewSettingsProfile(newSettings);
 
-        newSettings.setName("TestName");
         newSettings.setMaxMemory(newSettings.getMaxMemory()+1);
         newSettings.setCpuTimeout(newSettings.getCpuTimeout()+1);
         newSettings.setWallclockTimeout(newSettings.getWallclockTimeout()+1);
         newSettings.setDependenciesEnabled(!newSettings.isDependenciesEnabled());
-
-        if (newSettings.getType() == DefaultSettings.SettingType.COMMUNITY) {
-            newSettings.setType(DefaultSettings.SettingType.USER);
-        } else {
-            newSettings.setType(DefaultSettings.SettingType.COMMUNITY);
-        }
-
         newSettings.setBenchIds(new ArrayList<>(Arrays.asList(
                 new Integer[] {newSettings.getBenchIds().get(0)}
         )));
 
-        // TODO: need to change all other fields of setting as well.
+        // TODO: need to change all other fields of setting except name, primId, and type (these are immutable)
 
         boolean success = Settings.updateDefaultSettings(newSettings);
         Assert.assertTrue("Database call failed.", success);
