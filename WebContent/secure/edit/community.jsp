@@ -297,9 +297,13 @@
 			<c:forEach items="${defaultBenchmarks}" var="defaultBench">
 				<tr id="defaultBenchRow">
 					<td>default benchmark</td>
-					<td>${defaultBench.getName()} <a href="${defaultBenchLink}"><span class="selectPrim">select benchmark</span></a></td>
+					<td>${defaultBench.getName()} </td>
 				</tr>
 			</c:forEach>
+			<tr id="addDefaultBenchmark">
+				<td>new default benchmark</td>
+				<td><a href="${defaultBenchLink}"><span class="selectPrim">add benchmark</span></a></td>
+			</tr>
 			<tr id="defaultSolverRow">
 				<td>default solver</td>
 				<td>${defaultSolver} <a href="${defaultSolverLink}"><span class="selectPrim">select solver</span></a></td>
