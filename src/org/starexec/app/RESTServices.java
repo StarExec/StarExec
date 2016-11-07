@@ -2138,7 +2138,10 @@ public class RESTServices {
 			} else if (attribute.equals("DependenciesEnabled")) {
 				success = Settings.updateSettingsProfile(id, 4, Integer.parseInt(newValue));
 			} else if (attribute.equals("defaultbenchmark")) {
-				success=Settings.updateSettingsProfile(id, 5, Integer.parseInt(newValue));
+				DefaultSettings settings = Settings.getProfileById(id);
+				Integer benchId = Integer.parseInt(newValue);
+				settings.addBenchId(benchId);
+				Settings.updateDefaultSettings(settings);
 			} else if (attribute.equals("defaultsolver")) {
 				success=Settings.updateSettingsProfile(id, 7, Integer.parseInt(newValue));
 			} else if(attribute.equals("MaxMem")) {
