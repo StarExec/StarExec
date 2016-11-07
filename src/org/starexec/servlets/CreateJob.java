@@ -84,7 +84,7 @@ public class CreateJob extends HttpServlet {
 	
 	
 	/**
-	 * Creates a quick job, which is a flat job with only a single solver and benchmark. Every configuration is run
+	 * Creates a job which is a flat job with only a single solver and benchmark. Every configuration is run
 	 * on the benchmark, so the number of job pairs is equal to the number of configurations in the solver
 	 * @param j A job object for the job, which must have the following attributes set: userId, pre processor, post processor, 
 	 * queue, name, description, seed
@@ -93,19 +93,33 @@ public class CreateJob extends HttpServlet {
 	 * @param sId The ID of the space to put the job in 
 	 */
 	public static void buildQuickJob(Job j, int solverId, int benchId, Integer sId) {
+		List<Integer> benchIds = new ArrayList<>();
+		benchIds.add(benchId);
+		buildQuickJob(j, solverId, benchIds, sId);
+	}
+
+	/**
+	 * Creates a quick job, Every configuration is run
+	 * on the benchmark, so the number of job pairs is equal to the number of configurations in the solver
+	 * @param j A job object for the job, which must have the following attributes set: userId, pre processor, post processor,
+	 * queue, name, description, seed
+	 * @param solverId The ID of the solver that will be run
+	 * @param benchmarkIds The IDs of the benchmarks that will be run
+	 * @param sId The ID of the space to put the job in
+	 */
+	public static void buildQuickJob(Job j, int solverId, List<Integer> benchmarkIds, Integer sId) {
 		//Setup the job's attributes
-		
+
 		List<Configuration> config = Solvers.getConfigsForSolver(solverId);
 		List<Integer> configIds = new ArrayList<Integer>();
 		for (Configuration c :config) {
-            if(!c.getName().equals("starexec_build")){
-			    configIds.add(c.getId());
-            }
+			if(!c.getName().equals("starexec_build")){
+				configIds.add(c.getId());
+			}
 		}
-		List<Integer> benchmarkIds = new ArrayList<Integer>();
-		benchmarkIds.add(benchId);
 		JobManager.buildJob(j, benchmarkIds, configIds, sId);
 	}
+
 	/**
 	 * Tests a solver using default info for the space it is being uploaded in
 	 * @param solverId ID of the solver ot put the job in.

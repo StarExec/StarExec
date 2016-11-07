@@ -1659,36 +1659,6 @@ public class RESTServices {
 	@Path("/space/{id}/{primType}/pagination/")
 	@Produces("application/json")
 	public String getPrimitiveDetailsPaginated(@PathParam("id") int spaceId, @PathParam("primType") String primType, @Context HttpServletRequest request) {
-		return getPrimitiveDetailsPaginatedHelper(spaceId, primType, false, request);
-	}
-
-	/**
-	 * Returns the next page of entries in a given DataTable
-	 *
-	 * @param spaceId the id of the space to query for primitives from
-	 * @param primType the type of primitive
-	 * @param request the object containing the DataTable information
-	 * @return a JSON object representing the next page of entries if successful,<br>
-	 * 		1 if the request fails parameter validation,<br>
-	 * 		2 if the user has insufficient privileges to view the parent space of the primitives
-	 * @author Todd Elvers
-	 */
-	@POST
-	@Path("/space/{id}/{primType}/pagination/filterDefaultBenchmarks")
-	@Produces("application/json")
-	public String getPrimitiveDetailsPaginatedFilterDefaultBenchmarks(
-			@PathParam("id") int spaceId,
-			@PathParam("primType") String primType,
-			@Context HttpServletRequest request) {
-
-		return getPrimitiveDetailsPaginatedHelper(spaceId, primType, true, request);
-	}
-
-	private static String getPrimitiveDetailsPaginatedHelper(
-			int spaceId,
-			String primType,
-			boolean filterDefaultBenchmarks,
-			HttpServletRequest request) {
 		log.debug("got a request to getPrimitiveDetailsPaginated!");
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
@@ -1715,7 +1685,6 @@ public class RESTServices {
 		}
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
-	
 
 	/**
 	 * Gets the permissions a given user has in a given space
