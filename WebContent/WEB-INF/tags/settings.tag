@@ -13,8 +13,10 @@
 			<span class="preProcessorId" value="${setting.preProcessorId}"></span>
 			<span class="postProcessorId" value="${setting.postProcessorId}"></span>
 			<span class="benchProcessorId" value="${setting.benchProcessorId}"></span>
-			<span class="benchId" value="${setting.getBenchId()}"></span>
-			<span class="benchName" value="${setting.getBenchmarkName()}"></span>
+
+			<c:forEach items="${setting.getBenchIds()}" var="bid">
+				<span class="benchId" value="${bid}"></span>
+			</c:forEach>
 			
 			<span class="dependency" value="${setting.isDependenciesEnabled()}"></span>
 			
