@@ -30,6 +30,7 @@ import org.starexec.util.Util;
 import org.w3c.dom.Attr;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.sql.SQLException;
 import java.util.*;
@@ -861,6 +862,134 @@ public class RESTHelpers {
 		return null;
 	}
 
+	public static JsonObject getNextBenchmarkPageForSpaceExplorer(int id, HttpServletRequest request) {
+		// Parameter validation
+		DataTablesQuery query = RESTHelpers.getAttrMap(Primitive.BENCHMARK, request);
+		if(query==null){
+			return null;
+		}
+
+		List<Benchmark> benchmarksToDisplay = new LinkedList<Benchmark>();
+		String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
+		if (sortOverride!=null) {
+			query.setSortColumn(Integer.parseInt(sortOverride));
+			query.setSortASC(Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR)));
+
+		}
+		// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
+		benchmarksToDisplay = Benchmarks.getBenchmarksForNextPage(query,id);
+
+		query.setTotalRecords(Benchmarks.getCountInSpace(id));
+		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
+		if(!query.hasSearchQuery()){
+			query.setTotalRecordsAfterQuery(query.getTotalRecords());
+		}
+		else {
+			query.setTotalRecordsAfterQuery(Benchmarks.getCountInSpace(id,query.getSearchQuery()));
+
+		}
+
+
+		return convertBenchmarksToJsonObject(benchmarksToDisplay,query);
+	}
+
+	public static JsonObject getNextJobPageForSpaceExplorer(int id, HttpServletRequest request) {
+		// Parameter validation
+		DataTablesQuery query = RESTHelpers.getAttrMap(Primitive.JOB, request);
+		if(query==null){
+			return null;
+		}
+
+		List<Job> jobsToDisplay = new LinkedList<Job>();
+
+		// Retrieves the relevant Job objects to use in constructing the
+		// JSON to send to the client
+		jobsToDisplay = Jobs.getJobsForNextPage(query,id);
+		query.setTotalRecords(Jobs.getCountInSpace(id));
+		if (!query.hasSearchQuery()) {
+			query.setTotalRecordsAfterQuery(query.getTotalRecords());
+		} else {
+			query.setTotalRecordsAfterQuery(Jobs.getCountInSpace(id,query.getSearchQuery()));
+		}
+
+
+		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
+
+		JsonObject answer = convertJobsToJsonObject(jobsToDisplay, query, false);
+		return answer;
+	}
+
+	public static JsonObject getNextUserPageForSpaceExplorer(int id, HttpServletRequest request) {
+		// Parameter validation
+		DataTablesQuery query = RESTHelpers.getAttrMap(Primitive.USER, request);
+		if(query==null){
+			return null;
+		}
+		List<User> usersToDisplay = new LinkedList<User>();
+		query.setTotalRecords(Users.getCountInSpace(id));
+
+		// Retrieves the relevant User objects to use in constructing the JSON to send to the client
+		usersToDisplay = Users.getUsersForNextPage(query,id);
+
+		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
+		if(!query.hasSearchQuery()){
+			query.setTotalRecordsAfterQuery(query.getTotalRecords());
+		}
+		// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
+		else {
+			query.setTotalRecordsAfterQuery(Users.getCountInSpace(id,query.getSearchQuery()));
+		}
+
+		return convertUsersToJsonObject(usersToDisplay,query,SessionUtil.getUserId(request));
+
+	}
+
+	public static JsonObject getNextSolverPageForSpaceExplorer(int id, HttpServletRequest request) {
+		// Parameter validation
+		DataTablesQuery query = RESTHelpers.getAttrMap(Primitive.SOLVER, request);
+		if (query == null) {
+			return null;
+		}
+		List<Solver> solversToDisplay = new LinkedList<Solver>();
+
+		// Retrieves the relevant Solver objects to use in constructing the JSON to send to the client
+		solversToDisplay = Solvers.getSolversForNextPage(query,id);
+		query.setTotalRecords(Solvers.getCountInSpace(id));
+		if(!query.hasSearchQuery()){
+			query.setTotalRecordsAfterQuery(query.getTotalRecords());
+		}
+		// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
+		else {
+			query.setTotalRecordsAfterQuery(Solvers.getCountInSpace(id,query.getSearchQuery()));
+		}
+
+		return convertSolversToJsonObject(solversToDisplay, query);
+	}
+
+	public static JsonObject getNextSpacePageForSpaceExplorer(int id, HttpServletRequest request) {
+		// Parameter validation
+		DataTablesQuery query = RESTHelpers.getAttrMap(Primitive.SPACE, request);
+		if (query == null) {
+			return null;
+		}
+		List<Space> spacesToDisplay = new LinkedList<Space>();
+
+		int userId = SessionUtil.getUserId(request);
+		query.setTotalRecords(Spaces.getCountInSpace(id, userId,false));
+
+		// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
+		spacesToDisplay = Spaces.getSpacesForNextPage(query,id,userId);
+
+		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
+		if(!query.hasSearchQuery()){
+			query.setTotalRecordsAfterQuery(query.getTotalRecords());
+		}
+		// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
+		else {
+			query.setTotalRecordsAfterQuery(Spaces.getCountInSpace(id, userId, query.getSearchQuery()));
+		}
+		return convertSpacesToJsonObject(spacesToDisplay,query,id);
+	}
 
 	
 	/**
@@ -877,8 +1006,7 @@ public class RESTHelpers {
 	 *         to the client,<br>
 	 *         or null if the parameters of the request fail validation
 	 * @author Todd Elvers
-	 */
-
+	 *
 	public static JsonObject getNextDataTablesPageForSpaceExplorer(Primitive type, int id, HttpServletRequest request) {
 		// Parameter validation
 	    DataTablesQuery query = RESTHelpers.getAttrMap(type, request);
@@ -990,7 +1118,7 @@ public class RESTHelpers {
 		}
 		return null;
 		
-	}
+	}*/
 
 
 	public static JsonObject getNextDataTablesPageForUserDetails(Primitive type, int id, HttpServletRequest request, boolean recycled, boolean dataAsObjects) {

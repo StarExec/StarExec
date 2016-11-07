@@ -1642,7 +1642,8 @@ public class RESTServices {
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
-	
+
+
 	/**
 	 * Returns the next page of entries in a given DataTable
 	 *
@@ -1650,14 +1651,44 @@ public class RESTServices {
 	 * @param primType the type of primitive
 	 * @param request the object containing the DataTable information
 	 * @return a JSON object representing the next page of entries if successful,<br>
-	 * 		1 if the request fails parameter validation,<br> 
-	 * 		2 if the user has insufficient privileges to view the parent space of the primitives 
+	 * 		1 if the request fails parameter validation,<br>
+	 * 		2 if the user has insufficient privileges to view the parent space of the primitives
 	 * @author Todd Elvers
 	 */
 	@POST
 	@Path("/space/{id}/{primType}/pagination/")
-	@Produces("application/json")	
-	public String getPrimitiveDetailsPaginated(@PathParam("id") int spaceId, @PathParam("primType") String primType, @Context HttpServletRequest request) {	
+	@Produces("application/json")
+	public String getPrimitiveDetailsPaginated(@PathParam("id") int spaceId, @PathParam("primType") String primType, @Context HttpServletRequest request) {
+		return getPrimitiveDetailsPaginatedHelper(spaceId, primType, false, request);
+	}
+
+	/**
+	 * Returns the next page of entries in a given DataTable
+	 *
+	 * @param spaceId the id of the space to query for primitives from
+	 * @param primType the type of primitive
+	 * @param request the object containing the DataTable information
+	 * @return a JSON object representing the next page of entries if successful,<br>
+	 * 		1 if the request fails parameter validation,<br>
+	 * 		2 if the user has insufficient privileges to view the parent space of the primitives
+	 * @author Todd Elvers
+	 */
+	@POST
+	@Path("/space/{id}/{primType}/pagination/filterDefaultBenchmarks")
+	@Produces("application/json")
+	public String getPrimitiveDetailsPaginatedFilterDefaultBenchmarks(
+			@PathParam("id") int spaceId,
+			@PathParam("primType") String primType,
+			@Context HttpServletRequest request) {
+
+		return getPrimitiveDetailsPaginatedHelper(spaceId, primType, true, request);
+	}
+
+	private static String getPrimitiveDetailsPaginatedHelper(
+			int spaceId,
+			String primType,
+			boolean filterDefaultBenchmarks,
+			HttpServletRequest request) {
 		log.debug("got a request to getPrimitiveDetailsPaginated!");
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
@@ -1668,20 +1699,19 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		
+
 		// Query for the next page of primitives and return them to the user
 		if(primType.startsWith("j")){
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(Primitive.JOB, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextJobPageForSpaceExplorer(spaceId, request);
 		} else if(primType.startsWith("u")){
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(Primitive.USER, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextUserPageForSpaceExplorer(spaceId, request);
 		} else if(primType.startsWith("so")){
-			
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(Primitive.SOLVER, spaceId, request);
+
+			nextDataTablesPage = RESTHelpers.getNextSolverPageForSpaceExplorer(spaceId, request);
 		} else if(primType.startsWith("sp")){
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(Primitive.SPACE, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextSpacePageForSpaceExplorer(spaceId, request);
 		} else if(primType.startsWith("b")){
-			
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(Primitive.BENCHMARK, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextBenchmarkPageForSpaceExplorer(spaceId, request);
 		}
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
