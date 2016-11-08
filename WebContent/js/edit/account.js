@@ -109,7 +109,13 @@ function initUI(){
 				function(returnCode) {
 						showMessage("success","Profile settings updated successfully",5000);
 				}
-			).error(function(xhr, textStatus, errorThrown){
+			).error(function(xhr, textStatus, errorThrown) {
+				log('xhr: ');
+				log(xhr);
+				log('textStatus: ');
+				log(textStatus);
+				log('errorThrown: ');
+				log(errorThrown);
 				showMessage('error',"Invalid parameters",5000);
 			});
 	});
