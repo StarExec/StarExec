@@ -2141,7 +2141,7 @@ public class RESTServices {
 				Integer benchId = Integer.parseInt(newValue);
 				settings.addBenchId(benchId);
 				Settings.updateDefaultSettings(settings);
-
+				success = true;
 			} else if (attribute.equals("defaultsolver")) {
 				success=Settings.updateSettingsProfile(id, 7, Integer.parseInt(newValue));
 			} else if(attribute.equals("MaxMem")) {
