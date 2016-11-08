@@ -1,6 +1,7 @@
 <!-- This tag stores a DefaultSettings profile on the page as a hidden set of spans -->
 
 <%@tag description="A hidden default settings object" import="org.starexec.data.to.*"%>
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@attribute name="setting" required="true" description="The setting object" type="org.starexec.data.to.DefaultSettings" %>
 
 <span class="defaultSettingsProfile" name="${setting.name}" value="${setting.getId()}">
