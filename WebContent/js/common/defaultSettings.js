@@ -42,27 +42,34 @@ function populateDefaultsWithId(selectedSettingId) {
 	if ($(".defaultSettingsProfile[value="+selectedSettingId+"]").length<=0) {
 		return; //couldn't find the profile, so nothing to populate
 	}
-	profile=$(".defaultSettingsProfile[value="+selectedSettingId+"]");
+	var profile=$(".defaultSettingsProfile[value="+selectedSettingId+"]");
 	//first, pull out
-	cpuTimeout=$(profile).find("span.cpuTimeout").attr("value");
-	clockTimeout=$(profile).find("span.clockTimeout").attr("value");
-	maxMemory=$(profile).find("span.maxMemory").attr("value");
+	var cpuTimeout=$(profile).find("span.cpuTimeout").attr("value");
+	var clockTimeout=$(profile).find("span.clockTimeout").attr("value");
+	var maxMemory=$(profile).find("span.maxMemory").attr("value");
 	solverId=$(profile).find("span.solverId").attr("value");
-	solverName=$(profile).find("span.solverName").attr("value");
-	benchName=$(profile).find("span.benchName").attr("value");
-	benchId=$(profile).find("span.benchId").attr("value");
-	preProcessorId=$(profile).find("span.preProcessorId").attr("value");
-	postProcessorId=$(profile).find("span.postProcessorId").attr("value");
-	deps = $(profile).find("span.dependency").attr("value");
-	benchProcessorId=$(profile).find("span.benchProcessorId").attr("value");
+	var solverName=$(profile).find("span.solverName").attr("value");
+	var benchName=$(profile).find("span.benchName").attr("value");
+	var preProcessorId=$(profile).find("span.preProcessorId").attr("value");
+	var postProcessorId=$(profile).find("span.postProcessorId").attr("value");
+	var deps = $(profile).find("span.dependency").attr("value");
+	var benchProcessorId=$(profile).find("span.benchProcessorId").attr("value");
 	setInputToValue("#cpuTimeout",cpuTimeout);
 	setInputToValue("#wallclockTimeout",clockTimeout);
 	setInputToValue("#maxMem",maxMemory);
 	
 	setInputToValue("#solver",solverId);
-	setInputToValue("#benchmark",benchId);
-	
+
+	$(profile).find('.benchId').each(function(i, ele) {
+		var benchmarkName = $(ele)
+		appendBenchmark()
+	});
+
+	var benchId=$(profile).find("span.benchId").attr("value");
+	//setInputToValue("#benchmark",benchId);
 	//setInputToValue("#benchmarkField",benchContents);
+
+
 	$("#solverNameField").text(solverName);
 	$("#benchmarkNameField").text(benchName);
 	
@@ -118,23 +125,36 @@ function clearSelectedSolver() {
 }
 
 function clearSelectedBenchmark() {
-	setInputToValue("#benchmark","-1");
-	$("#benchmarkNameField").text("None");
+	//setInputToValue("#benchmark","-1");
+	//$("#benchmarkNameField").text("None");
 }
 
 function useSelectedBenchmark() {
-	selection=$("#benchmarkList").find("tr.row_selected");
+	var selection=$("#benchmarkList").find("tr.row_selected");
 	//nothing is selected
 	if (selection.length==0) {
 		return;
 	}
-	name=$(selection).find("td:first").text();
-	input=selection.find("input");
-	id=input.attr("value");
-	setInputToValue("#benchmark",id);
+	var name=$(selection).find("td:first").text();
+	var input=selection.find("input");
+	var id=input.attr("value");
 
-	$("#benchmarkNameField").text(name);
+	appendBenchmark(id, name);
 
+
+}
+
+function appendBenchmark(id, name) {
+	$('.selectedDefaultBenchmarks').append(
+		'<td class="benchmark"><p class="benchmarkNameField"></p><span class="selectPrim clearBenchmark">clear benchmark</span></td>'
+	);
+
+	// Get the benchmark row we just appended.
+	var newBenchRow = $('.selectedDefaultBenchmarks').last();
+
+	// Set an id and name on it.
+	$(newBenchRow).val(id);
+	$(newBenchRow).find('.benchmarkNameField').text(name);
 }
 
 function useSelectedSolver() {

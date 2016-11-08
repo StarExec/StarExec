@@ -300,7 +300,8 @@
 				</tr>
 				<tr id="defaultBenchRow">
 					<td>default benchmark</td>
-					<td id="benchmark"><p id="benchmarkNameField"></p> <span class="selectPrim clearBenchmark">clear benchmark</span></td>
+					<span class="selectedDefaultBenchmarks">
+					</span>
 				</tr>
 				<tr id="defaultSolverRow">
 					<td>default solver</td>

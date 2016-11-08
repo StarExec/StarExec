@@ -1,6 +1,6 @@
 <!-- This tag stores a DefaultSettings profile on the page as a hidden set of spans -->
 
-<%@tag description="A hidden default settings object" import="org.starexec.data.to.*"%>
+<%@tag description="A hidden default settings object" import="org.starexec.data.database.Settings, org.starexec.data.to.*"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@attribute name="setting" required="true" description="The setting object" type="org.starexec.data.to.DefaultSettings" %>
 
@@ -15,8 +15,9 @@
 			<span class="postProcessorId" value="${setting.postProcessorId}"></span>
 			<span class="benchProcessorId" value="${setting.benchProcessorId}"></span>
 
-			<c:forEach items="${setting.getBenchIds()}" var="bid">
-				<span class="benchId" value="${bid}"></span>
+			<c:forEach items="${Settings.getDefaultBenchmarks(setting.getId())}" var="bench">
+				<span class="benchId" value="${bench.id}"></span>
+				<span class="benchName" value="${bench.name}"></span>
 			</c:forEach>
 			
 			<span class="dependency" value="${setting.isDependenciesEnabled()}"></span>
