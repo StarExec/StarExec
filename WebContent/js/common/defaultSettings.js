@@ -74,7 +74,6 @@ function populateDefaultsWithId(selectedSettingId) {
 
 
 	$("#solverNameField").text(solverName);
-	$("#benchmarkNameField").text(benchName);
 	
 	$(".dependencySetting").val(deps);
 	if (stringExists(preProcessorId)) {
@@ -147,18 +146,12 @@ function appendBenchmark(id, name) {
 	$('#settings tbody').append(
 		'<tr class="defaultBenchmarkRow">'+
 			'<td>default benchmark</td>'+
-			'<td class="benchmark"><p class="benchmarkNameField"></p><span class="selectPrim clearBenchmark">clear benchmark</span></td>'+
+			'<td class="benchmark" value="'+id+'">'+
+				'<p>'+name+'</p>'+
+				'<span class="selectPrim clearBenchmark">clear benchmark</span>'+
+			'</td>'+
 		'</tr>'
 	);
-
-	log('found name: ' + name);
-
-	// Get the benchmark row we just appended.
-	var newBenchRow = $('#settings tbody').last();
-
-	// Set an id and name on it.
-	$(newBenchRow).val(id);
-	$(newBenchRow).find('.benchmarkNameField').text(name);
 }
 
 function useSelectedSolver() {
