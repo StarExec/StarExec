@@ -2,6 +2,9 @@ package org.starexec.servlets;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -108,7 +111,7 @@ public class AddSettingProfile extends HttpServlet {
 		String solver=request.getParameter(R.SOLVER);
 		String preId=request.getParameter(PRE_PROCESSOR);
 		String benchProcId=request.getParameter(BENCH_PROCESSOR);
-		String benchId=request.getParameter(R.BENCHMARK);
+		List<String> benchIds=new ArrayList<>(Arrays.asList(request.getParameterValues(R.BENCHMARK)));
 
 		
 		//it is only set it if is an integer>0, as all real IDs are greater than 0. Same for all subsequent objects
@@ -138,13 +141,16 @@ public class AddSettingProfile extends HttpServlet {
 				d.setSolverId(p);
 			}
 		}
-		if (Validator.isValidPosInteger(benchId)) {
-			int p=Integer.parseInt(benchId);
-			if (p>0) {
-				log.debug("setting the benchmark id = "+p);
-				d.addBenchId(p);
+		for (String benchId : benchIds) {
+			if (Validator.isValidPosInteger(benchId)) {
+				int p = Integer.parseInt(benchId);
+				if (p > 0) {
+					log.debug("setting the benchmark id = " + p);
+					d.addBenchId(p);
+				}
 			}
 		}
+
 		boolean success=true;
 		//if we are doing an update
 		if (Util.paramExists(SETTING_ID,request)) {
