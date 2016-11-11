@@ -5,6 +5,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.lang.StringBuilder;
+import java.io.BufferedReader;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -119,7 +121,11 @@ public class AddSettingProfile extends HttpServlet {
 			String preId=request.getParameter(PRE_PROCESSOR);
 			String benchProcId=request.getParameter(BENCH_PROCESSOR);
 			log.debug("Getting benchIds from request.");
-			List<String> benchIds=new ArrayList<>(Arrays.asList(request.getParameterValues(R.BENCHMARK)));
+
+
+			List<String> benchIds = getBenchIds(request);
+
+
 
 			
 			log.debug("Casting parameters to integers.");
@@ -181,6 +187,20 @@ public class AddSettingProfile extends HttpServlet {
 			throw e;
 		}
 	}
+
+	private List<String> getBenchIds(HttpServletRequest request) {
+			String[] rawBenchIds = request.getParameterValues(R.BENCHMARK+"[]");
+			List<String> benchIds = null;
+			if (rawBenchIds == null) { 
+				benchIds = new ArrayList<>();
+			} else {
+				benchIds=new ArrayList<>(Arrays.asList(rawBenchIds));
+				for (String benchId : benchIds) {
+					log.debug("Got benchId: " + benchId);
+				}
+			}
+			return benchIds;
+	}
 	
 	private ValidatorStatusCode isValidRequest(HttpServletRequest request) throws SQLException {
 		int userId=SessionUtil.getUserId(request);
@@ -207,7 +227,9 @@ public class AddSettingProfile extends HttpServlet {
 		log.debug("got sent the solver "+solver);
 		String preId=request.getParameter(PRE_PROCESSOR);
 		String benchProcId=request.getParameter(BENCH_PROCESSOR);
-		List<String> benchIds=new ArrayList<>(Arrays.asList(request.getParameter(R.BENCHMARK)));
+		List<String> benchIds = getBenchIds(request);
+
+
 		
 		//-1 is not an error-- it indicates that nothing was selected for all the following cases
 		if (Validator.isValidPosInteger(postId)) {

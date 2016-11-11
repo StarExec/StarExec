@@ -115,9 +115,10 @@ function initUI(){
 				{postp: $("#editPostProcess").val(), prep: $("#editPreProcess").val(), benchp: $("#editBenchProcess").val(),
 					solver: $("#solver").val(), name: $("#settingName").val(), cpu: $("#cpuTimeout").val(),
 					wall: $("#wallclockTimeout").val(), dep: $("#editDependenciesEnabled").val(),
-					bench: benchmarkIds, mem: $("#maxMem").val(), settingId : $("#settingProfile").val(), userIdOfOwner: userId},
+					'bench[]': benchmarkIds, mem: $("#maxMem").val(), settingId : $("#settingProfile").val(), userIdOfOwner: userId},
 				function(returnCode) {
 						showMessage("success","Profile settings updated successfully",5000);
+
 				}
 			).error(function(xhr, textStatus, errorThrown) {
 				log('xhr: ');
