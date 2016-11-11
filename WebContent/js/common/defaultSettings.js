@@ -8,8 +8,10 @@ $(document).ready(function() {
 	$(".clearSolver").click(function() {
 		clearSelectedSolver();
 	});
-	$(".clearBenchmark").click(function() {
-		clearSelectedBenchmark();
+	// Set up event handling on the dynamic clear benchmark spans.
+	$("#settings").on('click', '.clearBenchmark', function() {
+		log('Clear benchmark clicked');
+		$(this).closest('tr.defaultBenchmarkRow').remove();
 	});
 	//sets the default profile if one exists
 	if (("#defaultProfile").length>0) {
@@ -125,10 +127,6 @@ function clearSelectedSolver() {
 	$("#solverNameField").text("None");
 }
 
-function clearSelectedBenchmark() {
-	//setInputToValue("#benchmark","-1");
-	//$("#benchmarkNameField").text("None");
-}
 
 function useSelectedBenchmark() {
 	var selection=$("#benchmarkList").find("tr.row_selected");
@@ -147,7 +145,7 @@ function useSelectedBenchmark() {
 
 function appendBenchmark(id, name) {
 	$('#settings tbody').append(
-		'<tr>'+
+		'<tr class="defaultBenchmarkRow">'+
 			'<td>default benchmark</td>'+
 			'<td class="benchmark"><p class="benchmarkNameField"></p><span class="selectPrim clearBenchmark">clear benchmark</span></td>'+
 		'</tr>'
