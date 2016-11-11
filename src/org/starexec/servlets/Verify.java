@@ -47,19 +47,24 @@ public class Verify extends HttpServlet {
     
     @Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		if (Util.paramExists(Mail.CHANGE_EMAIL_CODE, request)) { 
-			// Handle change email request
-			handleEmailChange(request, response);
+		try {
+			if (Util.paramExists(Mail.CHANGE_EMAIL_CODE, request)) {
+				// Handle change email request
+				handleEmailChange(request, response);
 
-		} else if(Util.paramExists(Mail.EMAIL_CODE, request) && !Util.paramExists(Mail.LEADER_RESPONSE, request)) {
-    		// Handle user activation request
-    		handleActivation(request, response);
-    	} else if(Util.paramExists(Mail.EMAIL_CODE, request) && Util.paramExists(Mail.LEADER_RESPONSE, request)) {
-    		// Handle community request accept/decline
-    		handleAcceptance(request, response);
-    	} else {
-    		response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-    	}
+			} else if (Util.paramExists(Mail.EMAIL_CODE, request) && !Util.paramExists(Mail.LEADER_RESPONSE, request)) {
+				// Handle user activation request
+				handleActivation(request, response);
+			} else if (Util.paramExists(Mail.EMAIL_CODE, request) && Util.paramExists(Mail.LEADER_RESPONSE, request)) {
+				// Handle community request accept/decline
+				handleAcceptance(request, response);
+			} else {
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			}
+		} catch (Exception e) {
+			log.warn("Caught Exception in Verify.doGet: " + Util.getStackTrace(e));
+			throw e;
+		}
     }
 
 	/**

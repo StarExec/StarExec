@@ -35,26 +35,30 @@ public class CommunityRequester extends HttpServlet {
 	}
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
-		
-		User user = SessionUtil.getUser(request);			
-		
-		// Validate parameters of request & construct Invite object
-		CommunityRequest comRequest = constructComRequest(user, request);
-		if(comRequest == null){
-			//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
-			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, errorMessage));
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, errorMessage);
-			return;
-		}
-		
-		boolean added = Requests.addCommunityRequest(user, comRequest.getCommunityId(), comRequest.getCode(), comRequest.getMessage());
-		if(added){
-			// Send the invite to the leaders of the community 
-			Mail.sendCommunityRequest(user, comRequest);
-			response.sendRedirect(Util.docRoot("secure/add/to_community.jsp?result=requestSent&cid=" + comRequest.getCommunityId()));
-		} else {
-			// There was a problem
-		    response.sendRedirect(Util.docRoot("secure/add/to_community.jsp?result=requestNotSent&cid=" + comRequest.getCommunityId()));
+		try {
+			User user = SessionUtil.getUser(request);
+
+			// Validate parameters of request & construct Invite object
+			CommunityRequest comRequest = constructComRequest(user, request);
+			if (comRequest == null) {
+				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, errorMessage));
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, errorMessage);
+				return;
+			}
+
+			boolean added = Requests.addCommunityRequest(user, comRequest.getCommunityId(), comRequest.getCode(), comRequest.getMessage());
+			if (added) {
+				// Send the invite to the leaders of the community
+				Mail.sendCommunityRequest(user, comRequest);
+				response.sendRedirect(Util.docRoot("secure/add/to_community.jsp?result=requestSent&cid=" + comRequest.getCommunityId()));
+			} else {
+				// There was a problem
+				response.sendRedirect(Util.docRoot("secure/add/to_community.jsp?result=requestNotSent&cid=" + comRequest.getCommunityId()));
+			}
+		} catch (Exception e) {
+			log.warn("Caught Exception in CommunityRequester.doPost: " + Util.getStackTrace(e));
+			throw e;
 		}
 	}
 	

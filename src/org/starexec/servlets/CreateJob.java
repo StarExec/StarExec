@@ -154,203 +154,207 @@ public class CreateJob extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
-		final String method = "doPost";
-		// Make sure the request is valid
-		log.debug("starting job post");
-		ValidatorStatusCode status=isValid(request);
-		if(!status.isSuccess()) {
-			//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
-			log.debug("received an invalid job creation request");
-			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
-			return;
-		}
-		int space = Integer.parseInt((String)request.getParameter(spaceId));
-		DefaultSettings settings = Communities.getDefaultSettings(space);
-		// next parameters are optional, and are set to the community defaults if not present
-		int cpuLimit = 0;
-		if (Util.paramExists(cpuTimeout, request)) {
-			cpuLimit = Integer.parseInt((String)request.getParameter(cpuTimeout));
-		} else {
-			cpuLimit = settings.getCpuTimeout();
-		}
-		int runLimit = 0;
-		if (Util.paramExists(clockTimeout, request)) {
-			runLimit = Integer.parseInt((String)request.getParameter(clockTimeout));
-		} else {
-			runLimit = settings.getWallclockTimeout();
-		}
-		long memoryLimit=0;
-		if (Util.paramExists(maxMemory, request)) {
-			memoryLimit=Util.gigabytesToBytes(Double.parseDouble(request.getParameter(maxMemory)));
-		} else {
-			memoryLimit = settings.getMaxMemory();
-		}
-		int resultsIntervalNum = 0;
-		if (Util.paramExists(resultsInterval, request)) {
-			resultsIntervalNum = Integer.parseInt(request.getParameter(resultsInterval));
-		}
-		
-		//a number that will be provided to the pre processor for every job pair in this job
-		long seed=Long.parseLong(request.getParameter(randSeed));
-
-		//ensure that the cpu limits are greater than 0
-		cpuLimit = (cpuLimit <= 0) ? R.DEFAULT_MAX_TIMEOUT : cpuLimit;
-		runLimit = (runLimit <= 0) ? R.DEFAULT_MAX_TIMEOUT : runLimit;
-		
-		//memory is in units of bytes
-		memoryLimit = (memoryLimit <=0) ? R.DEFAULT_PAIR_VMEM : memoryLimit;
-		
-		int userId = SessionUtil.getUserId(request);
-		
-		boolean suppressTimestamp=false;
-		if (Util.paramExists(R.SUPPRESS_TIMESTAMP_INPUT_NAME, request)) {
-			suppressTimestamp = request.getParameter(R.SUPPRESS_TIMESTAMP_INPUT_NAME).equals("yes");
-		}
-		log.debug("("+method+")"+" User chose "+(suppressTimestamp?"":"not ")+"to suppress timestamps.");
-		
-		SaveResultsOption option = SaveResultsOption.SAVE;
-		
-		if (Util.paramExists(otherOutputOption, request)) {
-			if (!Boolean.parseBoolean(request.getParameter(otherOutputOption))) {
-				option = SaveResultsOption.NO_SAVE;
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {	\
+		try {
+			final String method = "doPost";
+			// Make sure the request is valid
+			log.debug("starting job post");
+			ValidatorStatusCode status = isValid(request);
+			if (!status.isSuccess()) {
+				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+				log.debug("received an invalid job creation request");
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
+				return;
 			}
-		}
-		
-		//Setup the job's attributes
-		Job j = JobManager.setupJob(
-				userId,
-				(String)request.getParameter(name), 
-				(String)request.getParameter(description),
-				Integer.parseInt((String)request.getParameter(preProcessor)),
-				Integer.parseInt((String)request.getParameter(postProcessor)), 
-				Integer.parseInt((String)request.getParameter(workerQueue)),
-				seed,cpuLimit,runLimit,memoryLimit,suppressTimestamp, resultsIntervalNum,option);
-		
-
-		String selection = request.getParameter(run);
-		String benchMethod = request.getParameter(benchChoice);
-		String traversalMethod = request.getParameter(traversal);
-		//Depending on our run selection, handle each case differently
-		//if the user created a quickJob, they uploaded a single text benchmark and a solver to run
-		if (selection.equals("quickJob")) {
-			int solverId=Integer.parseInt(request.getParameter(R.SOLVER));
-			String benchText=request.getParameter(R.BENCHMARK);
-			String bName=request.getParameter(benchName);
-			int benchProc = Integer.parseInt(request.getParameter(benchProcessor));
-			int benchId=BenchmarkUploader.addBenchmarkFromText(benchText, bName, userId, benchProc, false);
-			log.debug("new benchmark created for quickJob with id = "+benchId);
-			buildQuickJob(j, solverId, benchId, space);
-		} else if (selection.equals("keepHierarchy")) {
-			log.debug("User selected keepHierarchy");
-			//Create the HashMap to be used for creating job-pair path
-			HashMap<Integer, String> SP =  Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
-			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(space, userId)); //Remove spaces the user is not a member of
-			log.debug("got all the subspaces for the job");		
-			spaces.add(0, Spaces.get(space));
-			
-			HashMap<Integer, List<JobPair>> spaceToPairs = new HashMap<Integer,List<JobPair>>();
-			for (Space s : spaces) {
-			    List<JobPair> pairs= JobManager.addJobPairsFromSpace(userId, s.getId(), SP.get(s.getId()));
-			    
-			    spaceToPairs.put(s.getId(), pairs);
-			}
-			log.debug("added all the job pairs from every space");
-			
-			//if we're doing "depth first", we just add all the pairs from space1, then all the pairs from space2, and so on
-			if (traversalMethod.equals("depth")) {
-				JobManager.addJobPairsDepthFirst(j, spaceToPairs);
-				//otherwise, we are doing "breadth first", so we interleave pairs from all the spaces
+			int space = Integer.parseInt((String) request.getParameter(spaceId));
+			DefaultSettings settings = Communities.getDefaultSettings(space);
+			// next parameters are optional, and are set to the community defaults if not present
+			int cpuLimit = 0;
+			if (Util.paramExists(cpuTimeout, request)) {
+				cpuLimit = Integer.parseInt((String) request.getParameter(cpuTimeout));
 			} else {
-				log.debug("adding pairs round robin");
-				JobManager.addJobPairsRoundRobin(j, spaceToPairs);
-				
+				cpuLimit = settings.getCpuTimeout();
 			}
-		} else { //user selected "choose"
-			
-			HashMap<Integer, String> SP =  Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
-			List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
+			int runLimit = 0;
+			if (Util.paramExists(clockTimeout, request)) {
+				runLimit = Integer.parseInt((String) request.getParameter(clockTimeout));
+			} else {
+				runLimit = settings.getWallclockTimeout();
+			}
+			long memoryLimit = 0;
+			if (Util.paramExists(maxMemory, request)) {
+				memoryLimit = Util.gigabytesToBytes(Double.parseDouble(request.getParameter(maxMemory)));
+			} else {
+				memoryLimit = settings.getMaxMemory();
+			}
+			int resultsIntervalNum = 0;
+			if (Util.paramExists(resultsInterval, request)) {
+				resultsIntervalNum = Integer.parseInt(request.getParameter(resultsInterval));
+			}
 
-			if (benchMethod.equals("runAllBenchInSpace")) {
-			    List<JobPair> pairs= JobManager.addJobPairsFromSpace(userId, space, Spaces.getName(space),configIds);
-			    if (pairs!=null) {
-				    j.addJobPairs(pairs);
-			    }
-			
-			}else if (benchMethod.equals("runAllBenchInHierarchy")) {
-				log.debug("got request to run all in bench hierarchy");
+			//a number that will be provided to the pre processor for every job pair in this job
+			long seed = Long.parseLong(request.getParameter(randSeed));
 
-				HashMap<Integer,List<JobPair>> spaceToPairs=JobManager.addBenchmarksFromHierarchy(Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), configIds, SP);
-				
+			//ensure that the cpu limits are greater than 0
+			cpuLimit = (cpuLimit <= 0) ? R.DEFAULT_MAX_TIMEOUT : cpuLimit;
+			runLimit = (runLimit <= 0) ? R.DEFAULT_MAX_TIMEOUT : runLimit;
+
+			//memory is in units of bytes
+			memoryLimit = (memoryLimit <= 0) ? R.DEFAULT_PAIR_VMEM : memoryLimit;
+
+			int userId = SessionUtil.getUserId(request);
+
+			boolean suppressTimestamp = false;
+			if (Util.paramExists(R.SUPPRESS_TIMESTAMP_INPUT_NAME, request)) {
+				suppressTimestamp = request.getParameter(R.SUPPRESS_TIMESTAMP_INPUT_NAME).equals("yes");
+			}
+			log.debug("(" + method + ")" + " User chose " + (suppressTimestamp ? "" : "not ") + "to suppress timestamps.");
+
+			SaveResultsOption option = SaveResultsOption.SAVE;
+
+			if (Util.paramExists(otherOutputOption, request)) {
+				if (!Boolean.parseBoolean(request.getParameter(otherOutputOption))) {
+					option = SaveResultsOption.NO_SAVE;
+				}
+			}
+
+			//Setup the job's attributes
+			Job j = JobManager.setupJob(
+					userId,
+					(String) request.getParameter(name),
+					(String) request.getParameter(description),
+					Integer.parseInt((String) request.getParameter(preProcessor)),
+					Integer.parseInt((String) request.getParameter(postProcessor)),
+					Integer.parseInt((String) request.getParameter(workerQueue)),
+					seed, cpuLimit, runLimit, memoryLimit, suppressTimestamp, resultsIntervalNum, option);
+
+
+			String selection = request.getParameter(run);
+			String benchMethod = request.getParameter(benchChoice);
+			String traversalMethod = request.getParameter(traversal);
+			//Depending on our run selection, handle each case differently
+			//if the user created a quickJob, they uploaded a single text benchmark and a solver to run
+			if (selection.equals("quickJob")) {
+				int solverId = Integer.parseInt(request.getParameter(R.SOLVER));
+				String benchText = request.getParameter(R.BENCHMARK);
+				String bName = request.getParameter(benchName);
+				int benchProc = Integer.parseInt(request.getParameter(benchProcessor));
+				int benchId = BenchmarkUploader.addBenchmarkFromText(benchText, bName, userId, benchProc, false);
+				log.debug("new benchmark created for quickJob with id = " + benchId);
+				buildQuickJob(j, solverId, benchId, space);
+			} else if (selection.equals("keepHierarchy")) {
+				log.debug("User selected keepHierarchy");
+				//Create the HashMap to be used for creating job-pair path
+				HashMap<Integer, String> SP = Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
+				List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(space, userId)); //Remove spaces the user is not a member of
+				log.debug("got all the subspaces for the job");
+				spaces.add(0, Spaces.get(space));
+
+				HashMap<Integer, List<JobPair>> spaceToPairs = new HashMap<Integer, List<JobPair>>();
+				for (Space s : spaces) {
+					List<JobPair> pairs = JobManager.addJobPairsFromSpace(userId, s.getId(), SP.get(s.getId()));
+
+					spaceToPairs.put(s.getId(), pairs);
+				}
+				log.debug("added all the job pairs from every space");
+
+				//if we're doing "depth first", we just add all the pairs from space1, then all the pairs from space2, and so on
 				if (traversalMethod.equals("depth")) {
-					log.debug("User selected depth-first traversal");
 					JobManager.addJobPairsDepthFirst(j, spaceToPairs);
+					//otherwise, we are doing "breadth first", so we interleave pairs from all the spaces
 				} else {
-					log.debug("users selected round robin traversal");
+					log.debug("adding pairs round robin");
 					JobManager.addJobPairsRoundRobin(j, spaceToPairs);
+
+				}
+			} else { //user selected "choose"
+
+				HashMap<Integer, String> SP = Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
+				List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
+
+				if (benchMethod.equals("runAllBenchInSpace")) {
+					List<JobPair> pairs = JobManager.addJobPairsFromSpace(userId, space, Spaces.getName(space), configIds);
+					if (pairs != null) {
+						j.addJobPairs(pairs);
+					}
+
+				} else if (benchMethod.equals("runAllBenchInHierarchy")) {
+					log.debug("got request to run all in bench hierarchy");
+
+					HashMap<Integer, List<JobPair>> spaceToPairs = JobManager.addBenchmarksFromHierarchy(Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), configIds, SP);
+
+					if (traversalMethod.equals("depth")) {
+						log.debug("User selected depth-first traversal");
+						JobManager.addJobPairsDepthFirst(j, spaceToPairs);
+					} else {
+						log.debug("users selected round robin traversal");
+						JobManager.addJobPairsRoundRobin(j, spaceToPairs);
+					}
+				} else {
+					List<Integer> benchmarkIds = Util.toIntegerList(request.getParameterValues(R.BENCHMARK));
+					JobManager.buildJob(j, benchmarkIds, configIds, space);
+				}
+			}
+
+
+			int pairCount = j.getJobPairs().size();
+			if (j.getJobPairs().size() == 0) {
+				String message = "Error: no job pairs created for the job. Could not proceed with job submission.";
+				Space jobSpace = Spaces.getDetails(space, userId);
+				if (jobSpace.getSubspaces().size() == 0) {
+					if (jobSpace.getSolvers().size() == 0) {
+						message = "Error: no job pairs created for the job. There are no solvers in this space. Could not proceed with job submission.";
+					} else if (jobSpace.getBenchmarks().size() == 0) {
+						message = "Error: no job pairs created for the job. There are no benchmarks in this space. Could not proceed with job submission.";
+					}
+				} else if (!Spaces.configBenchPairExistsInHierarchy(space, userId)) {
+					message = "Error: no job pairs created for the job. There are no valid solver benchmark pairs in this space hierarchy. Could not proceed with job submission.";
+				}
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
+				// No pairs in the job means something went wrong; error out
+				return;
+			}
+
+			User u = Users.get(userId);
+			int pairsAvailable = Math.max(0, u.getPairQuota() - Jobs.countPairsByUser(userId));
+			// This just checks if a quota is totally full, which is sufficient for quick jobs and as a fast sanity check
+			// for full jobs. After the number of pairs have been acquired for a full job this check will be done factoring them in.
+			if (pairsAvailable < pairCount) {
+				String message = "Error: You are trying to create " + pairCount + " pairs, but you have " + pairsAvailable + " remaining in your quota. Please delete some old jobs before continuing.";
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
+				// No pairs in the job means something went wrong; error out
+				return;
+			}
+
+
+			boolean submitSuccess = Jobs.add(j, space);
+			String start_paused = request.getParameter(pause);
+
+			//if the user chose to immediately pause the job
+			if (start_paused.equals("yes")) {
+				Jobs.pause(j.getId());
+			}
+
+			if (submitSuccess) {
+				// If the submission was successful, send back to space explorer
+
+				response.addCookie(new Cookie("New_ID", String.valueOf(j.getId())));
+				if (!selection.equals("quickJob")) {
+					response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
+				} else {
+					response.sendRedirect(Util.docRoot("secure/details/job.jsp?id=" + j.getId()));
 				}
 			} else {
-				List<Integer> benchmarkIds = Util.toIntegerList(request.getParameterValues(R.BENCHMARK));
-				JobManager.buildJob(j, benchmarkIds, configIds, space);
+				// Or else send an error
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+						"Your job failed to submit for an unknown reason. Please try again.");
 			}
-		}
-		
-		
-		
-		int pairCount = j.getJobPairs().size();
-		if (j.getJobPairs().size() == 0) {
-			String message="Error: no job pairs created for the job. Could not proceed with job submission.";
-            Space jobSpace = Spaces.getDetails(space, userId);
-            if (jobSpace.getSubspaces().size() == 0) {
-                if(jobSpace.getSolvers().size() == 0) {
-			        message="Error: no job pairs created for the job. There are no solvers in this space. Could not proceed with job submission.";
-                } else if (jobSpace.getBenchmarks().size() == 0) {
-			        message="Error: no job pairs created for the job. There are no benchmarks in this space. Could not proceed with job submission.";
-                }
-            } else if(!Spaces.configBenchPairExistsInHierarchy(space, userId)) {
-			        message="Error: no job pairs created for the job. There are no valid solver benchmark pairs in this space hierarchy. Could not proceed with job submission.";
-            }
-			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
-			// No pairs in the job means something went wrong; error out
-			return;
-		}
-		
-		 User u = Users.get(userId);
-		 int pairsAvailable = Math.max(0, u.getPairQuota() - Jobs.countPairsByUser(userId));
-		 // This just checks if a quota is totally full, which is sufficient for quick jobs and as a fast sanity check
-		 // for full jobs. After the number of pairs have been acquired for a full job this check will be done factoring them in.
-		 if (pairsAvailable<pairCount) {
-			String message = "Error: You are trying to create "+pairCount+" pairs, but you have "+pairsAvailable+" remaining in your quota. Please delete some old jobs before continuing.";
-			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
-			// No pairs in the job means something went wrong; error out
-			return;
-		 }
-		
-
-		boolean submitSuccess = Jobs.add(j, space);
-		String start_paused = request.getParameter(pause);
-
-		//if the user chose to immediately pause the job
-		if (start_paused.equals("yes")) {
-			Jobs.pause(j.getId());
-		}
-		
-		if(submitSuccess) {
-		    // If the submission was successful, send back to space explorer
-
-			response.addCookie(new Cookie("New_ID", String.valueOf(j.getId())));
-			if (!selection.equals("quickJob")) {
-			    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
-			} else {
-				response.sendRedirect(Util.docRoot("secure/details/job.jsp?id="+j.getId()));
-			}
-		}else  {
-		    // Or else send an error
-		    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
-				       "Your job failed to submit for an unknown reason. Please try again.");
+		} catch (Exception e) {
+			log.warn("Caught Exception in CreateJob.doPost: " + Util.getStackTrace(e));
+			throw e;
 		}
 	}
 	

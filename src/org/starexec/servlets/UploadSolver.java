@@ -175,8 +175,8 @@ public class UploadSolver extends HttpServlet {
 			}
     	} catch (Exception e) {
     		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-    		log.error(e.getMessage(), e);
-    	}	
+			log.error("Caught Exception in UploadSolver.doPost: " + Util.getStackTrace(e));
+    	}
 	}
     /**
      * Checks to see whether the given directory contains a solver build script in the top level

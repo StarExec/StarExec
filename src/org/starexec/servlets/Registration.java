@@ -47,20 +47,25 @@ public class Registration extends HttpServlet {
 	}
 
 	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
-		final String method = "doPost";
-		logUtil.entry(method);
-			
-		// Begin registration for a new user		
-		ValidatorStatusCode result = register(request, response);
-		if (result.isSuccess()) {
-		      response.sendRedirect(Util.docRoot("public/registrationConfirmation.jsp"));
-		} else {
-			//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
-			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, result.getMessage()));
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, result.getMessage());
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		try {
+			final String method = "doPost";
+			logUtil.entry(method);
+
+			// Begin registration for a new user
+			ValidatorStatusCode result = register(request, response);
+			if (result.isSuccess()) {
+				response.sendRedirect(Util.docRoot("public/registrationConfirmation.jsp"));
+			} else {
+				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, result.getMessage()));
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, result.getMessage());
+			}
+			logUtil.exit(method);
+		} catch(Exception e) {
+			log.warn("Caught Exception in Registration.doPost: " + Util.getStackTrace(e));
+			throw e;
 		}
-		logUtil.exit(method);
 	}
 	
 	/**

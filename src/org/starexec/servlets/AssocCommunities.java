@@ -42,25 +42,30 @@ public class AssocCommunities extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {	
-		int userId = SessionUtil.getUserId(request);
-		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
-			String message="You do not have permission to perform this operation";
-			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		try {
+			int userId = SessionUtil.getUserId(request);
+			if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+				String message = "You do not have permission to perform this operation";
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
 
-		}
-		String queue_name = (String)request.getParameter(name);
-		int queue_id = Queues.getIdByName(queue_name);
-		List<Integer> community_ids = Util.toIntegerList(request.getParameterValues(communities));
-		
-		
-		boolean result = Queues.setQueueCommunityAccess(community_ids, queue_id);
-		
-		if (result) {
-			response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));
-		} else {
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			}
+			String queue_name = (String) request.getParameter(name);
+			int queue_id = Queues.getIdByName(queue_name);
+			List<Integer> community_ids = Util.toIntegerList(request.getParameterValues(communities));
+
+
+			boolean result = Queues.setQueueCommunityAccess(community_ids, queue_id);
+
+			if (result) {
+				response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));
+			} else {
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+			}
+		} catch (Exception e) {
+			log.warn("Caught Exception in AssocCommunities.doPost: " + Util.getStackTrace(e));
+			throw e;
 		}
 	}
 }

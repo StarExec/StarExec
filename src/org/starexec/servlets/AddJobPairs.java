@@ -62,7 +62,7 @@ public class AddJobPairs extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {		
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		final String methodName = "doPost";
 		logUtil.entry( methodName );
 

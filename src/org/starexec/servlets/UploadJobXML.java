@@ -104,8 +104,8 @@ public class UploadJobXML extends HttpServlet {
 			}
     	} catch (Exception e) {
     		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-    		log.error(e.getMessage(), e);
-    	}	
+			log.error("Caught Exception in UploadJobXML.doPost: " + Util.getStackTrace(e));
+    	}
 	}
 
 	private boolean userMayUploadJobXML(int userId, int spaceId) {
