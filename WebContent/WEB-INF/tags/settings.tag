@@ -15,7 +15,7 @@
 			<span class="postProcessorId" value="${setting.postProcessorId}"></span>
 			<span class="benchProcessorId" value="${setting.benchProcessorId}"></span>
 
-			<c:forEach items="${Settings.getDefaultBenchmarks(setting.getId())}" var="bench">
+			<c:forEach items="${Settings.getDefaultBenchmarks(setting.id)}" var="bench">
 				<span class="benchId" value="${bench.id}"></span>
 				<span class="benchName" value="${bench.name}"></span>
 			</c:forEach>

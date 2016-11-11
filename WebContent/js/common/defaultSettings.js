@@ -60,9 +60,10 @@ function populateDefaultsWithId(selectedSettingId) {
 	
 	setInputToValue("#solver",solverId);
 
-	$(profile).find('.benchId').each(function(i, ele) {
-		var benchmarkName = $(ele)
-		appendBenchmark()
+	$(profile).find('.defaultBenchmark').each(function() {
+		var benchmarkId = $(this).find('.benchId').attr('value');
+		var benchmarkName = $(this).find('.benchName').attr('value');
+		appendBenchmark(benchmarkId, benchmarkName);
 	});
 
 	var benchId=$(profile).find("span.benchId").attr("value");
@@ -145,12 +146,17 @@ function useSelectedBenchmark() {
 }
 
 function appendBenchmark(id, name) {
-	$('.selectedDefaultBenchmarks').append(
-		'<td class="benchmark"><p class="benchmarkNameField"></p><span class="selectPrim clearBenchmark">clear benchmark</span></td>'
+	$('#settings tbody').append(
+		'<tr>'+
+			'<td>default benchmark</td>'+
+			'<td class="benchmark"><p class="benchmarkNameField"></p><span class="selectPrim clearBenchmark">clear benchmark</span></td>'+
+		'</tr>'
 	);
 
+	log('found name: ' + name);
+
 	// Get the benchmark row we just appended.
-	var newBenchRow = $('.selectedDefaultBenchmarks').last();
+	var newBenchRow = $('#settings tbody').last();
 
 	// Set an id and name on it.
 	$(newBenchRow).val(id);

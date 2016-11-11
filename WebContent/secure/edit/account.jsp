@@ -69,22 +69,27 @@
 %>
 <star:template title="edit account" css="common/table, common/pass_strength_meter, edit/account" js="common/defaultSettings,lib/jquery.validate.min, lib/jquery.validate.password, edit/account, lib/jquery.dataTables.min">
 	<c:forEach items="${settings}" var="setting">
-		<span class="cpuTimeout" value="${setting.cpuTimeout}" ></span>
-		<span class="clockTimeout" value="${setting.wallclockTimeout}"></span>
-		<span class="maxMemory" value="${setting.getRoundedMaxMemoryAsDouble()}"></span>
-		<span class="solverId" value="${setting.solverId}"></span>
-		<span class="solverName" value="${setting.getSolverName()}"></span>
+		<span class="defaultSettingsProfile" name="${setting.name}" value="${setting.getId()}">
 
-		<span class="preProcessorId" value="${setting.preProcessorId}"></span>
-		<span class="postProcessorId" value="${setting.postProcessorId}"></span>
-		<span class="benchProcessorId" value="${setting.benchProcessorId}"></span>
+			<span class="cpuTimeout" value="${setting.cpuTimeout}" ></span>
+			<span class="clockTimeout" value="${setting.wallclockTimeout}"></span>
+			<span class="maxMemory" value="${setting.getRoundedMaxMemoryAsDouble()}"></span>
+			<span class="solverId" value="${setting.solverId}"></span>
+			<span class="solverName" value="${setting.getSolverName()}"></span>
 
-		<c:forEach items="${settingIdToDefaultBenchmarks.get(setting.id)}" var="bench">
-			<span class="benchId" value="${bench.id}"></span>
-			<span class="benchName" value="${bench.name}"></span>
-		</c:forEach>
+			<span class="preProcessorId" value="${setting.preProcessorId}"></span>
+			<span class="postProcessorId" value="${setting.postProcessorId}"></span>
+			<span class="benchProcessorId" value="${setting.benchProcessorId}"></span>
 
-		<span class="dependency" value="${setting.isDependenciesEnabled()}"></span>
+			<c:forEach items="${settingIdToDefaultBenchmarks.get(setting.id)}" var="bench">
+				<span class="defaultBenchmark">
+					<span class="benchId" value="${bench.id}"></span>
+					<span class="benchName" value="${bench.name}"></span>
+				</span>
+			</c:forEach>
+
+			<span class="dependency" value="${setting.isDependenciesEnabled()}"></span>
+		</span>
 	</c:forEach>
 	
 	
@@ -324,11 +329,6 @@
 							<option value="false">False</option>
 						</select>
 					</td>
-				</tr>
-				<tr id="defaultBenchRow">
-					<td>default benchmark</td>
-					<span class="selectedDefaultBenchmarks">
-					</span>
 				</tr>
 				<tr id="defaultSolverRow">
 					<td>default solver</td>
