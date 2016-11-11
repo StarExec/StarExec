@@ -62,6 +62,9 @@ function populateDefaultsWithId(selectedSettingId) {
 	
 	setInputToValue("#solver",solverId);
 
+
+	$('.defaultBenchmarkRow').remove();
+
 	$(profile).find('.defaultBenchmark').each(function() {
 		var benchmarkId = $(this).find('.benchId').attr('value');
 		var benchmarkName = $(this).find('.benchName').attr('value');
