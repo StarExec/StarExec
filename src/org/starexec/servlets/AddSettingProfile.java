@@ -194,7 +194,7 @@ public class AddSettingProfile extends HttpServlet {
 		log.debug("got sent the solver "+solver);
 		String preId=request.getParameter(PRE_PROCESSOR);
 		String benchProcId=request.getParameter(BENCH_PROCESSOR);
-		String benchId=request.getParameter(BENCH_PROCESSOR);
+		List<String> benchIds=new ArrayList<>(Arrays.asList(request.getParameter(R.BENCHMARK)));
 		
 		//-1 is not an error-- it indicates that nothing was selected for all the following cases
 		if (Validator.isValidPosInteger(postId)) {
@@ -229,11 +229,13 @@ public class AddSettingProfile extends HttpServlet {
 				}
 			}
 		}
-		if (Validator.isValidPosInteger(benchId)) {
-			int b=Integer.parseInt(benchId);
-			if (b>0) {
-				if (!Permissions.canUserSeeBench(b, userId)) {
-					return new ValidatorStatusCode(false, "You do not have permission to use the given benchmark");
+		for (String benchId : benchIds) {
+			if (Validator.isValidPosInteger(benchId)) {
+				int b = Integer.parseInt(benchId);
+				if (b > 0) {
+					if (!Permissions.canUserSeeBench(b, userId)) {
+						return new ValidatorStatusCode(false, "You do not have permission to use the given benchmark");
+					}
 				}
 			}
 		}
