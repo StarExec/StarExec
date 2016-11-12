@@ -224,10 +224,7 @@
 			<legend>actions</legend>
 			<div id="actionBar">
 				<button type="submit" class="round" id="btnDone">submit</button>			
-				<button type="button" class="round" id="btnBack">cancel</button>	
-				<c:if test="${!isPublicUser}">
-					<button type="button" class="round" id="btnSave">save profile</button>		
-				</c:if>
+				<button type="button" class="round" id="btnBack">cancel</button>
 			</div>	
 		</fieldset>		
 	</form>		

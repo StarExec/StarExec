@@ -226,40 +226,7 @@ function initUI() {
 		
 		history.back(-1);
 	});
-	
-	
-	$("#btnSave").button({
-		icons: {
-			primary: "ui-icon-disk"
-		}
-	}).click(function() {
-		$("#dialog-createSettingsProfile").dialog({
-			modal: true,
-			width: 380,
-			height: 165,
-			buttons: {
-				'create': function() {
-					$(this).dialog("close");
-						$.post(  
-							starexecRoot+"secure/add/profile",
-							{postp: $("#postProcess").val(), prep: $("#preProcess").val(), benchp: $("#benchProcess").val(),
-								solver: $("#solver").val(), name: $("#settingName").val(), cpu: $("#cpuTimeout").val(),
-								wall: $("#wallclockTimeout").val(), dep: "false", bench: "", mem: $("#maxMem").val()},
-							function(returnCode) {
-									//success
-							}
-						).error(function(xhr, textStatus, errorThrown){
-							showMessage('error',"Invalid parameters",5000);
-						});
-														
-				},
-				"cancel": function() {
-					$(this).dialog("close");
-				}
-			}
-		});
-		
-	});
+
 	$("#advancedSettings").expandable(true);
 	$("#solverField").expandable(true);
     $('#btnDone').button({
