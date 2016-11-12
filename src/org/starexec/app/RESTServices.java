@@ -1,5 +1,6 @@
 package org.starexec.app;
 
+import org.apache.catalina.Session;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import java.io.File;
@@ -34,6 +35,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.constants.R.DefaultSettingAttribute;
 import org.starexec.data.database.AnonymousLinks;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.database.Benchmarks;
@@ -2088,6 +2090,24 @@ public class RESTServices {
 		}
 		
 	}
+
+
+	/*
+	@POST
+	@Path("/delete/defaultBenchmark/{settingId}/{benchId}")
+	@Produces("application/json")
+	public String deleteDefaultSettings(
+			@PathParam("settingId") int settingId,
+			@PathParam("benchId") int benchId,
+			@Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+
+
+		return null;
+	}*/
+
+
+
 	
 	/** 
 	 * Updates information for a space in the database using a POST. Attribute and
@@ -2106,10 +2126,19 @@ public class RESTServices {
 	@Produces("application/json")
 	public String editCommunityDefaultSettings(@PathParam("attr") String attribute, @PathParam("id") int id, @Context HttpServletRequest request) {	
 		final String methodName = "editCommunityDefaultSettings";
+
 		int userId=SessionUtil.getUserId(request);
 		String newValue=(String)request.getParameter("val");
+
+		DefaultSettingAttribute defaultSettingAttribute = null;
 		try {
-			ValidatorStatusCode status = SettingSecurity.canUpdateSettings(id, attribute, newValue, userId);
+			defaultSettingAttribute = DefaultSettingAttribute.valueOf(attribute);
+		} catch (Exception e) {
+			log.warn("Illegal value of DefaultSettingAttribute enum: " + Util.getStackTrace(e));
+		}
+
+		try {
+			ValidatorStatusCode status = SettingSecurity.canUpdateSettings(id, defaultSettingAttribute, newValue, userId);
 			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
@@ -2126,29 +2155,29 @@ public class RESTServices {
 			
 			boolean success = false;
 			// Go through all the cases, depending on what attribute we are changing.
-			if (attribute.equals("PostProcess")) {
+			if (defaultSettingAttribute == DefaultSettingAttribute.PostProcess) {
 				success = Settings.updateSettingsProfile(id, 1, Integer.parseInt(newValue));
-			} else if (attribute.equals("BenchProcess")) {
+			} else if (defaultSettingAttribute == DefaultSettingAttribute.BenchProcess) {
 				success = Settings.updateSettingsProfile(id,8,Integer.parseInt(newValue));
-			}else if (attribute.equals("CpuTimeout")) {
+			}else if (defaultSettingAttribute == DefaultSettingAttribute.CpuTimeout) {
 				success = Settings.updateSettingsProfile(id, 2, Integer.parseInt(newValue));			
-			}else if (attribute.equals("ClockTimeout")) {
+			}else if (defaultSettingAttribute == DefaultSettingAttribute.ClockTimeout) {
 				success = Settings.updateSettingsProfile(id, 3, Integer.parseInt(newValue));			
-			} else if (attribute.equals("DependenciesEnabled")) {
+			} else if (defaultSettingAttribute == DefaultSettingAttribute.DependenciesEnabled) {
 				success = Settings.updateSettingsProfile(id, 4, Integer.parseInt(newValue));
-			} else if (attribute.equals("defaultbenchmark")) {
+			} else if (defaultSettingAttribute == DefaultSettingAttribute.defaultbenchmark) {
 				DefaultSettings settings = Settings.getProfileById(id);
 				Integer benchId = Integer.parseInt(newValue);
 				settings.addBenchId(benchId);
 				Settings.updateDefaultSettings(settings);
 				success = true;
-			} else if (attribute.equals("defaultsolver")) {
+			} else if (defaultSettingAttribute == DefaultSettingAttribute.defaultsolver) {
 				success=Settings.updateSettingsProfile(id, 7, Integer.parseInt(newValue));
-			} else if(attribute.equals("MaxMem")) {
+			} else if(defaultSettingAttribute == DefaultSettingAttribute.MaxMem) {
 				double gigabytes=Double.parseDouble(newValue);
 				long bytes = Util.gigabytesToBytes(gigabytes); 
 				success=Settings.setDefaultMaxMemory(id, bytes);
-			} else if (attribute.equals("PreProcess")) {
+			} else if (defaultSettingAttribute == DefaultSettingAttribute.PreProcess) {
 				success=Settings.updateSettingsProfile(id, 6, Integer.parseInt(newValue));
 			}
 			

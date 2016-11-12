@@ -123,6 +123,18 @@ public class R {
     public static int QUEUE_NAME_LEN=64;
     public static int TEXT_FIELD_LEN = 65000;
 
+    public enum DefaultSettingAttribute {
+        PostProcess,
+        BenchProcess,
+        CpuTimeout,
+        ClockTimeout,
+        DependenciesEnabled,
+        defaultbenchmark,
+        defaultsolver,
+        MaxMem,
+        PreProcess;
+    }
+
 	// Matrix view settings
 	public static final int MATRIX_VIEW_COLUMN_HEADER = 18; // Limit on number of letters for Solver or config name
 	public static final int MAX_MATRIX_JOBPAIRS = 10000;
