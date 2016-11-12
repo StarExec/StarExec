@@ -327,14 +327,8 @@ public class UserTests extends TestSequence {
 		Assert.assertNotNull(tempJob);	
 
 		File jobDirectory = new File( Jobs.getDirectory( tempJob.getId() ) );
-		// Make the job directory since ResourceLoader isn't actually running the job.
-		boolean success = jobDirectory.mkdir();
 
-		Assert.assertTrue("Failed to make the job directory.", success);
-
-
-
-		Assert.assertTrue("Job directory did not exist after trying to make it.", jobDirectory.exists());
+		Assert.assertTrue("Job directory was not created.", jobDirectory.exists());
 
 
 		Users.deleteUser(tempUser.getId());
