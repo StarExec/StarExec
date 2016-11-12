@@ -11,8 +11,8 @@
 				
 		
 		Job j=null;
-		ValidatorStatusCode status = JobSecurity.canUserRerunPairs(jobId,userId);
-		if(status.isSuccess() || GeneralSecurity.hasAdminReadPrivileges(userId)) {
+		ValidatorStatusCode status = JobSecurity.canUserSeeRerunPairsPage(jobId,userId);
+		if(status.isSuccess()) {
 			boolean isComplete=Jobs.isJobComplete(jobId);
 			List<Status.StatusCode> filteredCodes=Status.rerunCodes();
 			for (Status.StatusCode code : filteredCodes) {
