@@ -15,7 +15,7 @@ $(document).ready(function() {
 	});
 	//sets the default profile if one exists
 	if (("#defaultProfile").length>0) {
-		defaultValue=$("#defaultProfile").attr("value");
+		var defaultValue=$("#defaultProfile").attr("value");
 		if (parseInt(defaultValue)>0) {
 			if ($('#settingProfile > [value='+defaultValue+']').length > 0) {
 				$("#settingProfile").val(defaultValue);
@@ -105,7 +105,7 @@ function populateDefaultsWithId(selectedSettingId) {
  * Sets all of the fields that have defaults according to the currently selected default setting
  */
 function populateDefaults() {
-	selectedSettingId=getSelectedSettingId();
+	var selectedSettingId=getSelectedSettingId();
 	if (!stringExists(selectedSettingId)) {
 		return; //no setting selected.
 	}
@@ -158,14 +158,14 @@ function appendBenchmark(id, name) {
 }
 
 function useSelectedSolver() {
-	selection=$("#solverList").find("tr.row_selected");
+	var selection=$("#solverList").find("tr.row_selected");
 	//nothing is selected
 	if (selection.length==0) {
 		return;
 	}
-	name=$(selection).find("td:first").text();
-	input=selection.find("input");
-	id=input.attr("value");
+	var name=$(selection).find("td:first").text();
+	var input=selection.find("input");
+	var id=input.attr("value");
 	setInputToValue("#solver",id);
 	$("#solverNameField").text(name);
 

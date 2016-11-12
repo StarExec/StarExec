@@ -30,7 +30,7 @@
 		response.sendError(HttpServletResponse.SC_NOT_FOUND, "You do not have permission to upload solvers to this space or the space does not exist");		
 	}
 %>
-<star:template title="upload solver to ${space.name}" css="common/delaySpinner, add/solver" js="common/defaultSettings, common/delaySpinner ,lib/jquery.validate.min, add/solver">
+<star:template title="upload solver to ${space.name}" css="common/delaySpinner, add/solver" js="common/delaySpinner ,lib/jquery.validate.min, add/solver">
 	<span id="defaultProfile" style="display:none" value="${defaultProfile}"></span>
 	
 	<form method="POST" enctype="multipart/form-data" action="${starexecRoot}/secure/upload/solvers" id="upForm" flag= "false">
