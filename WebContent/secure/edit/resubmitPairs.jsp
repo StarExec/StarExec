@@ -1,4 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.JobSecurity,org.starexec.data.to.*,java.util.HashMap, java.util.ArrayList, java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.data.to.JobStatus.JobStatusCode, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
+<%@ page import="org.starexec.data.security.ValidatorStatusCode" %>
+<%@ page import="org.starexec.data.security.GeneralSecurity" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -9,7 +11,8 @@
 				
 		
 		Job j=null;
-		if(JobSecurity.canUserRerunPairs(jobId,userId).isSuccess()) {
+		ValidatorStatusCode status = JobSecurity.canUserRerunPairs(jobId,userId);
+		if(status.isSuccess() || GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			boolean isComplete=Jobs.isJobComplete(jobId);
 			List<Status.StatusCode> filteredCodes=Status.rerunCodes();
 			for (Status.StatusCode code : filteredCodes) {
@@ -23,7 +26,7 @@
 			if (Jobs.isJobDeleted(jobId)) {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
 			} else {
-				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, status.getMessage());
 			}
 		}
 	} catch (NumberFormatException nfe) {
