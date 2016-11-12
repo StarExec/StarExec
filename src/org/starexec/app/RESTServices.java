@@ -2092,19 +2092,36 @@ public class RESTServices {
 	}
 
 
-	/*
+
 	@POST
 	@Path("/delete/defaultBenchmark/{settingId}/{benchId}")
 	@Produces("application/json")
 	public String deleteDefaultSettings(
-			@PathParam("settingId") int settingId,
-			@PathParam("benchId") int benchId,
+			@PathParam("settingId") Integer settingId,
+			@PathParam("benchId") Integer benchId,
 			@Context HttpServletRequest request) {
+
+		final String methodName = "deleteDefaultSettings";
+
 		int userId = SessionUtil.getUserId(request);
 
+		try {
+			ValidatorStatusCode status = SettingSecurity.canUpdateSettings(
+					settingId, DefaultSettingAttribute.defaultbenchmark, benchId.toString(), userId);
 
-		return null;
-	}*/
+			if (!status.isSuccess()) {
+				return gson.toJson(status);
+			}
+
+			Settings.deleteDefaultBenchmark(settingId, benchId);
+
+			return gson.toJson(new ValidatorStatusCode(true, "Default Benchmark Removed From Profile"));
+
+		} catch (SQLException e) {
+			logUtil.error(methodName, "Database error occurred: " + Util.getStackTrace(e));
+			return gson.toJson(ERROR_DATABASE);
+		}
+	}
 
 
 

@@ -95,7 +95,6 @@ public class SettingSecurity {
 	 * @param userId The ID of the user making the request
 	 * @return 0 if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
-	
 	public static ValidatorStatusCode canUpdateSettings(int id, R.DefaultSettingAttribute attribute, String newValue, int userId) throws SQLException {
 		boolean isInt = Validator.isValidPosInteger(newValue);
 				
@@ -151,7 +150,7 @@ public class SettingSecurity {
 				return new ValidatorStatusCode(false, "The given benchmark ID is not valid");
 			}
 			if (!Permissions.canUserSeeBench(Integer.parseInt(newValue), userId)) {
-				return new ValidatorStatusCode(false, "You do not have permission to see the given solver, or the given solver does not exist");
+				return new ValidatorStatusCode(false, "You do not have permission to see the given benchmark, or the given solver does not exist");
 			}	
 		} else if (attribute == DefaultSettingAttribute.defaultsolver) {
 			if (!isInt) {
