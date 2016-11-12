@@ -297,7 +297,7 @@
 			<c:forEach items="${defaultBenchmarks}" var="defaultBench">
 				<tr id="defaultBenchRow">
 					<td>default benchmark</td>
-					<td>${defaultBench.getName()} </td>
+					<td>${defaultBench.getName()}<span class="selectPrim deleteBenchmark" value="${defaultBench.id}">clear benchmark</span></td>
 				</tr>
 			</c:forEach>
 			<tr id="addDefaultBenchmark">
