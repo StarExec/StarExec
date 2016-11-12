@@ -103,8 +103,8 @@
 						<td class="label"><p>solver</p></td>
 						<td><input id="solver" type="hidden" name="solver"/><p id="solverNameField"></p></td>
 					</tr>
-					<tr class="noHover" title="what benchmark would you like to use?">
-						<td>benchmark selection</td>
+					<tr class="noHover" title="Enter the contents of the benchmark.">
+						<td>benchmark contents</td>
 						<td><textarea id="benchmarkField" name="bench"></textarea></td>
 					</tr>
 				</tbody>
