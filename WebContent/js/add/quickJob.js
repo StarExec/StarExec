@@ -12,17 +12,17 @@ $(document).ready(function(){
 });
 
 function getMaxCpuTimeout(){
-	maxtime=$( "#workerQueue option:selected" ).attr("cpumax");
+	var maxtime=$( "#workerQueue option:selected" ).attr("cpumax");
 	return parseInt(maxtime);
 }
 
 function getMaxWallTimeout() {
-	maxtime=$( "#workerQueue option:selected" ).attr("wallmax");
+	var maxtime=$( "#workerQueue option:selected" ).attr("wallmax");
 	return parseInt(maxtime);
 }
 
 function getCpuTimeoutErrorMessage() {
-	timeout=getMaxCpuTimeout();
+	var timeout=getMaxCpuTimeout();
 	if (isNaN(timeout)) {
 		return "please select a queue";
 	}
@@ -30,7 +30,7 @@ function getCpuTimeoutErrorMessage() {
 }
 
 function getClockTimeoutErrorMessage() {
-	timeout=getMaxWallTimeout();
+	var timeout=getMaxWallTimeout();
 	if (isNaN(timeout)) {
 		return "please select a queue";
 	}
@@ -171,7 +171,7 @@ function attachFormValidation(){
 	
 	//when we change queues, we need to refresh the validation to use the new timeouts
 	$("#workerQueue").change(function() {
-		settings = $('#addForm').validate().settings;
+		var settings = $('#addForm').validate().settings;
 		settings.rules.cpuTimeout = {
 				required: true,			    
 			    max: getMaxCpuTimeout(),
