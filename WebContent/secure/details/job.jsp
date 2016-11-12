@@ -381,8 +381,25 @@
 					<legend>actions</legend>
 					<ul id="actionList">
 						<li><a id="jobOutputDownload" href="${starexecRoot}/secure/download?type=j_outputs&id=${job.id}" >job output</a></li>
-						<li><a id="jobXMLDownload" href="${starexecRoot}/secure/download?type=jobXML&id=${job.id}" >job xml download</a></li>
 						<li><a id="jobDownload" href="${starexecRoot}/secure/download?type=job&id=${job.id}">job information</a></li>
+						<c:if test="${job.userId == userId or isAdmin}"> 
+							<li><button type="button" id="deleteJob">delete job</button></li>
+							<c:if test="${not buildJob}">
+								<li><a href="${starexecRoot}/secure/edit/resubmitPairs.jsp?id=${job.id}" id="rerunPairs">rerun pairs</a></li>
+							</c:if>
+							<c:if test="${isRunning}">
+								<li><button type="button" id="pauseJob">pause job</button></li>
+							</c:if>
+							<c:if test="${isPaused and queueExists and (not queueIsEmpty)}">
+								<li><button type="button" id="resumeJob">resume job</button></li>
+							</c:if>
+						</c:if>
+					</ul>
+				</fieldset>		
+				<fieldset id="advancedActionField">
+					<legend>advanced actions</legend>
+					<ul class='actionList'>
+						<li><a id="jobXMLDownload" href="${starexecRoot}/secure/download?type=jobXML&id=${job.id}" >job xml download</a></li>
 						<li><button id="downloadJobPageButton" type="button">download job page</button></li>
 						<c:if test="${job.userId == userId or isAdmin}"> 
 							<c:if test="${(isPaused or isComplete) and (not buildJob)}">
@@ -394,98 +411,78 @@
 							<li><button type="button" id="clearCache">clear cache</button></li>
 							<li><button type="button" id="recompileSpaces">recompile spaces</button></li>
 						</c:if>
-						
 						<c:if test="${job.userId == userId or isAdmin}"> 
-							<li><button type="button" id="deleteJob">delete job</button></li>
-							<c:if test="${not buildJob}">
-								<li><a href="${starexecRoot}/secure/edit/resubmitPairs.jsp?id=${job.id}" id="rerunPairs">rerun pairs</a></li>
-							</c:if>
-								<c:if test="${isRunning}">
-									<li><button type="button" id="pauseJob">pause job</button></li>
-								</c:if>
-							
-							
-								<c:if test="${isComplete}">
-									<li><button type="button" id="postProcess">run new postprocessor</button></li>
-								</c:if>
-							
-							<c:if test="${isPaused and queueExists and (not queueIsEmpty)}">
-								<li><button type="button" id="resumeJob">resume job</button></li>
-							</c:if>
-							<c:if test="${isPaused or isAdminPaused}">
-								<li><button type="button" id="changeQueue">Change Queue</button></li>	
-							</c:if>
-							<c:if test="${!isHighPriority}">
-								<li><button type="button" id="setHighPriority">set as high priority</button></li>
-							</c:if>
-							<c:if test="${isHighPriority}">
-								<li><button type="button" id="setLowPriority">set as low priority</button></li>
+							<c:if test="${isComplete}">
+								<li><button type="button" id="postProcess">run new postprocessor</button></li>
 							</c:if>
 						</c:if>
+						<c:if test="${isPaused or isAdminPaused}">
+							<li><button type="button" id="changeQueue">Change Queue</button></li>	
+						</c:if>
+						<c:if test="${!isHighPriority}">
+							<li><button type="button" id="setHighPriority">set as high priority</button></li>
+						</c:if>
+						<c:if test="${isHighPriority}">
+							<li><button type="button" id="setLowPriority">set as low priority</button></li>
+						</c:if>
 					</ul>
-					<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
-						<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
-					</div>	
-					<div id="dialog-confirm-pause" title="confirm pause" class="hiddenDialog">
-						<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-pause-txt"></span></p>
-					</div>	
-					<div id="dialog-confirm-resume" title="confirm resume" class="hiddenDialog">
-						<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-resume-txt"></span></p>
-					</div>	
-					<div id="dialog-return-ids" title="return ids" class="hiddenDialog">
-						<p><span id="dialog-return-ids-txt"></span></p>
-						<input type="checkbox" name="includeids" id="includeids" checked="checked"/>include ids<br>
-						<input type="checkbox" name="getcompleted" id="getcompleted" />completed pairs only<br>
-					</div>
-					<div id="dialog-solverComparison" title="solver comparison chart" class="hiddenDialog">
-						<img src="" id="solverComparison800" usemap="#solverComparisonMap800"/>
-						<map id="solverComparisonMap800"></map>
-					</div>
-					<div id="dialog-warning" title="warning" class="hiddenDialog">
-						<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
-					</div>		
-					<div id="dialog-postProcess" title="run new postprocessor" class="hiddenDialog">
-						<p><span id="dialog-postProcess-txt"></span></p><br/>
-						
-						<p>
-						<label for="postProcessorSelection">Post Processor</label>
-						<select id="postProcessorSelection">
-							<c:forEach var="proc" items="${postProcs}">
-								<option value="${proc.id}">${proc.name} (${proc.id})</option>
+				</fieldset>
+				<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
+					<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
+				</div>	
+				<div id="dialog-return-ids" title="return ids" class="hiddenDialog">
+					<p><span id="dialog-return-ids-txt"></span></p>
+					<input type="checkbox" name="includeids" id="includeids" checked="checked"/>include ids<br>
+					<input type="checkbox" name="getcompleted" id="getcompleted" />completed pairs only<br>
+				</div>
+				<div id="dialog-solverComparison" title="solver comparison chart" class="hiddenDialog">
+					<img src="" id="solverComparison800" usemap="#solverComparisonMap800"/>
+					<map id="solverComparisonMap800"></map>
+				</div>
+				<div id="dialog-warning" title="warning" class="hiddenDialog">
+					<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
+				</div>		
+				<div id="dialog-postProcess" title="run new postprocessor" class="hiddenDialog">
+					<p><span id="dialog-postProcess-txt"></span></p><br/>
+					
+					<p>
+					<label for="postProcessorSelection">Post Processor</label>
+					<select id="postProcessorSelection">
+						<c:forEach var="proc" items="${postProcs}">
+							<option value="${proc.id}">${proc.name} (${proc.id})</option>
+						</c:forEach>
+					</select></p>
+					<p>
+						<label class="noPrimaryStage stageSelectorLabel" for="postProcessorStageSelector">Stage: </label>
+						<select id="postProcessorStageSelector" class="stageSelector">
+							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
+								<option value="${i}">${i}</option>
 							</c:forEach>
-						</select></p>
-						<p>
-							<label class="noPrimaryStage stageSelectorLabel" for="postProcessorStageSelector">Stage: </label>
-							<select id="postProcessorStageSelector" class="stageSelector">
-								<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
-									<option value="${i}">${i}</option>
-								</c:forEach>
-							</select> 
-						</p>
-					</div>
-					<div id="dialog-changeQueue" title="change queue" class="hiddenDialog">
-						<p><span id="dialog-changeQueue-txt"></span></p><br/>
-						
-						<p><select id="changeQueueSelection">
-							<c:forEach var="q" items="${queues}">
-								<option value="${q.id}">${q.name} (${q.id})</option>
-							</c:forEach>
-						</select></p>
-						
-					</div>
-					<div id="dialog-spaceOverview" title="space overview chart" class="hiddenDialog">
-						<img src="" id="bigSpaceOverview"/>
-					</div>
-					<div id="dialog-show-anonymous-link" title="anonymous link" class="hiddenDialog">
-						<p>
-							<span class="ui-icon ui-icon-info"></span>
-							<span id="dialog-show-anonymous-link-txt"></span>
-						</p>
-					</div>
-					<div id="dialog-confirm-anonymous-link" title="confirm anonymous link" class="hiddenDialog">
-						<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-anonymous-link-txt"></span></p>
-					</div>
-				</fieldset>		
+						</select> 
+					</p>
+				</div>
+				<div id="dialog-changeQueue" title="change queue" class="hiddenDialog">
+					<p><span id="dialog-changeQueue-txt"></span></p><br/>
+					
+					<p><select id="changeQueueSelection">
+						<c:forEach var="q" items="${queues}">
+							<option value="${q.id}">${q.name} (${q.id})</option>
+						</c:forEach>
+					</select></p>
+					
+				</div>
+				<div id="dialog-spaceOverview" title="space overview chart" class="hiddenDialog">
+					<img src="" id="bigSpaceOverview"/>
+				</div>
+				<div id="dialog-show-anonymous-link" title="anonymous link" class="hiddenDialog">
+					<p>
+						<span class="ui-icon ui-icon-info"></span>
+						<span id="dialog-show-anonymous-link-txt"></span>
+					</p>
+				</div>
+				<div id="dialog-confirm-anonymous-link" title="confirm anonymous link" class="hiddenDialog">
+					<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-anonymous-link-txt"></span></p>
+				</div>
 			</c:if>
 		</div>
 </star:template>

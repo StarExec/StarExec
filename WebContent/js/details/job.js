@@ -345,6 +345,7 @@ function initUI(){
 
 	if (isLocalJobPage) {
 		$('#actionField').hide();
+		$('#advancedActionField').hide();
 		$('#matrixViewButton').hide();
         $('#jobPairAttributes').hide();
 		$('#downloadJobPageButton').hide();
@@ -668,7 +669,7 @@ function initUI(){
 	$("#statsErrorField").expandable(false);
 	$("#optionField").expandable(true);
 	$("#detailField").expandable(true);
-	$("#actionField").expandable(true);
+	$("#advancedActionField").expandable(true);
 	
 	
 	$("#subspaceSummaryField").expandable(false);
