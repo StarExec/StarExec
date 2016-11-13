@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" 
+		xmlns:tns="https://stardev.cs.uiowa.edu/starexec_agiegerich/public/runSolverOnUploadBatchJobSchema.xsd" 
+		targetNamespace="https://stardev.cs.uiowa.edu/starexec_agiegerich/public/runSolverOnUploadBatchJobSchema.xsd">
+    
+    <annotation>
+    	<documentation>
+    		This is the xml schema for creating starexec jobs. 
+    	</documentation>
+    </annotation>
+    
+    <complexType name="SolverPipeline">
+    
+    	<choice minOccurs="1" maxOccurs="unbounded">
+    		<element name="noop"></element>
+    		<element name="PipelineStage" type="tns:PipelineStage"></element>
+    	</choice> 
+    	<attribute name="name" type="tns:PrimitiveName" use="required"></attribute>
+    	
+    </complexType>
+    
+    <complexType name="PipelineStage">    	
+    	<sequence>
+    			
+    	    	<element name="StageDependency" minOccurs="0" maxOccurs="unbounded"></element>
+    			<element name="BenchmarkDependency" minOccurs="0" maxOccurs="unbounded"></element>
+    	</sequence>
+        <attribute name="config-id" type="int" use="required"></attribute>
+        
+        <!-- Defaults to false. A maximum of a single stage per pipeline can be primary. If none is primary
+        it will default to the first stage -->
+        <attribute name="primary" type="boolean" use="optional"></attribute>
+    </complexType>
+    
+    <element name="Jobs" type="tns:Jobs"></element>
+    
+    <complexType name="Jobs">
+    	<sequence>
+    		<element name="SolverPipeline" type="tns:SolverPipeline" minOccurs="0" maxOccurs="unbounded"></element>
+    		
+    		<element name="Job" type="tns:Job" minOccurs="1" 
+    			maxOccurs="unbounded">
+    		</element>
+    	</sequence>
+    </complexType>
+    
+    <complexType name="Job">
+    	<sequence>
+
+	  <element name="JobAttributes" type="tns:JobAttributes"></element>
+	  <element name="StageAttributes" type="tns:StageAttributes" minOccurs="0" maxOccurs="unbounded"></element>
+    		<element name="JobPair" type="tns:JobPair" minOccurs="0"
+    			maxOccurs="unbounded">
+    		</element>
+    		<element name="JobLine" type="tns:JobLine" minOccurs="0" maxOccurs="unbounded"></element>
+    	</sequence>
+    	
+    	<attribute name="name" type="tns:PrimitiveName" use="required"></attribute>
+    	
+    </complexType>
+    
+   
+    
+    <complexType name="BenchmarkInput">
+    	<attribute name="bench-id" type="int" use="required"></attribute>
+    </complexType>
+    
+    <complexType name="SaveOption">
+        <attribute name="value" type="tns:SaveEnum" use="required"></attribute>
+  	</complexType>
+    
+    <simpleType name="SaveEnum">
+    	<restriction base="string">
+      		<enumeration value="NoSave"/>
+      		<enumeration value="Save"/>
+      		<enumeration value="CreateBench"/>
+    	</restriction>
+    </simpleType>
+    
+    <complexType name="StageAttributes">
+      <sequence>	
+    	<element name="stage-num" type="tns:intInfo" minOccurs="1" maxOccurs="1"></element> 
+    	<element name="cpu-timeout" type="tns:intInfo" minOccurs="0" maxOccurs="1"></element>
+    	<element name="wallclock-timeout" type="tns:intInfo" minOccurs="0" maxOccurs="1"></element>
+    	
+    	<!-- Note: This is in Gigabytes -->
+    	<element name="mem-limit" type="tns:doubleInfo" minOccurs="0" maxOccurs="1"></element>
+		<element name="space-id" type="tns:intInfo" minOccurs="0" maxOccurs="1"></element>
+		<element name="bench-suffix" type="tns:nameInfo" minOccurs="0" maxOccurs="1"></element>
+		<element name="results-interval" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
+		<element name="stdout-save" type="tns:SaveOption" maxOccurs="1" minOccurs="0"></element>
+		<element name="other-save" type="tns:SaveOption" maxOccurs="1" minOccurs="0"></element>
+		
+		<element name="postproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
+		<element name="preproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
+		
+      </sequence>
+      
+    </complexType>
+    
+    
+    <complexType name="JobAttributes">
+      <all>
+	<element name="description" type="tns:descriptionInfo" maxOccurs="1" minOccurs="0"></element>
+    	<!-- You can find the id of a queue on the Cluster=>Status page -->
+    	<element name="queue-id" type="tns:intInfo"></element>
+    	
+    	<!-- The default for start-paused is false -->
+    	<element name="start-paused" type="tns:booleanInfo" maxOccurs="1" minOccurs="0"></element>
+    	<!-- The default for suppress-timestamps is false -->
+    	<element name="suppress-timestamps" type="tns:booleanInfo" maxOccurs="1" minOccurs="0"></element>
+    
+    	
+    	<!-- Note: Timeouts are in seconds -->
+    	<element name="cpu-timeout" type="tns:intInfo"></element>
+    	<element name="wallclock-timeout" type="tns:intInfo"></element>
+    	<!-- Note: This is in Gigabytes -->
+    	<element name="mem-limit" type="tns:doubleInfo"></element>
+    	
+    	<!-- These are used only if there is no StageAttributes tag with stage-num = 1 -->
+    	<element name="results-interval" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
+		<element name="postproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
+		<element name="preproc-id" type="tns:intInfo" maxOccurs="1" minOccurs="0"></element>
+      </all>
+      
+    </complexType>
+
+    <!-- job attributes type definitions -->
+    <complexType name="intInfo">
+      <attribute name="value" type="int" use="required"></attribute>
+    </complexType>
+
+    <complexType name="descriptionInfo">
+      <attribute name="value" type="tns:Description" use="required"></attribute>
+    </complexType>
+    
+    <complexType name="nameInfo">
+      <attribute name="value" type="tns:PrimitiveName" use="required"></attribute>
+    </complexType>
+
+    <complexType name="booleanInfo">
+      <attribute name="value" type="boolean" use="required"></attribute>
+    </complexType>
+	
+    <complexType name="doubleInfo">
+      <attribute name="value" type="double" use="required"></attribute>
+    </complexType>
+    <complexType name="BenchmarkDependency">
+    	<!-- The user will be required to give n inputs to each jobline, where n is the number of inputs
+    	declared in a pipeline -->
+    	<attribute name="input" type="int" use="required"></attribute>
+    </complexType>
+    <complexType name="StageDependency">
+    	<attribute name="stage" type="int" use="required"></attribute>
+    </complexType>
+    <!-- end job attributes type definitions -->
+
+    
+    <complexType name="JobPair">
+    	<attribute name="bench-id" type="int" use="required"></attribute>
+    	<attribute name="bench-name" type="tns:PrimitiveName" use="optional"></attribute>
+    	
+    	<attribute name="config-name" type="tns:PrimitiveName" use="required"></attribute>
+    	<attribute name="solver-name" type="tns:PrimitiveName" use="optional"></attribute>
+    	
+    	<attribute name="job-space-id" type="int" use="optional"></attribute>
+    	<attribute name="job-space-path" type="tns:Path" use="optional"></attribute>
+    </complexType>
+    
+    <complexType name="JobLine">
+    	<sequence>
+    		<element name="BenchmarkInput" type="tns:BenchmarkInput" minOccurs="0" maxOccurs="unbounded"></element>
+    	</sequence> 
+    	<attribute name="bench-id" type="int" use="required"></attribute>
+    	<attribute name="bench-name" type="tns:PrimitiveName" use="optional"></attribute>
+    	
+    	<!-- Must be the name of some pipeline declared in this upload -->
+    	<attribute name="pipe-name" type="tns:PrimitiveName" use="required"></attribute>
+    	
+    	<attribute name="job-space-id" type="int" use="optional"></attribute>
+    	<attribute name="job-space-path" type="tns:Path" use="optional"></attribute>
+    	
+    </complexType>
+    
+    <simpleType name="Description">
+    	<restriction base="string">
+    		<pattern value="[^&lt;&gt;&quot;&apos;)(&amp;&#37;&#43;&#45;]{0,1024}" />
+    	</restriction>
+    </simpleType>
+    
+    <simpleType name="PrimitiveName">
+  		<restriction base="string">
+    		<pattern value="[_\w\-\.\+\^=,!?:$%#@ ]{1,255}"/>
+  		</restriction>
+	</simpleType>
+	
+	<simpleType name="Path">
+  		<restriction base="string">
+    		<pattern value="[_/\w\-\.\+\^=,!?:$%#@ ]*"/>
+  		</restriction>
+	</simpleType>
+    
+</schema>
