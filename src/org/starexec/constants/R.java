@@ -256,7 +256,8 @@ public class R {
 	public static final String EXPECTED_RESULT = "starexec-expected-result";    // key for key value pair in benchmark attributes
 	public static final String SOLVER_DESC_PATH = "starexec_description.txt";		// File that can be included within the archive solver file to include the description
 	public static final String SOLVER_BUILD_SCRIPT="starexec_build";
-	public static final String PROCESSOR_RUN_SCRIPT="process";
+    public static final String UPLOAD_TEST_JOB_XML="run_on_upload.xml";
+    public static final String PROCESSOR_RUN_SCRIPT="process";
 	public static final String BENCHMARK_DESC_PATH = "starexec_description.txt";	// File that can be included within the archive solver file to include the description
 	public static final String DESC_PATH = "starexec_description.txt";
 	public static final String STAREXEC_UNKNOWN="starexec-unknown";               // Result that indicates a pair should not be counted as wrong
@@ -300,7 +301,7 @@ public class R {
     public static final String PROXY_ADDRESS = "proxy.divms.uiowa.edu";
     public static final int PROXY_PORT = 8888;
     
-    public static boolean DEBUG_MODE_ACTIVE = false;
+    public static       boolean DEBUG_MODE_ACTIVE = false;
     
     //names of primitive types
 	public static final String SOLVER="solver";

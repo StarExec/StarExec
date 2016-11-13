@@ -102,13 +102,6 @@ public class UploadSolver extends HttpServlet {
 				
 				// Parse the request as a solver
 				UploadSolverResult result = handleSolver(userId, form);
-				//should be 3 element array where the first element is the new solver ID and the
-				//second element is a status code related to whether configurations existed.
-                //the third element indicates whether this solver needs to be built on StarExec
-				//int return_value = result[0];
-				//boolean configs = result[1];
-				//int buildJob = result[2];
-				
 				
 				// Redirect based on success/failure
 				if(result.status == UploadSolverStatus.Success) {
@@ -177,7 +170,11 @@ public class UploadSolver extends HttpServlet {
     public boolean containsBuildScript(File dir) {
     	return new File(dir,R.SOLVER_BUILD_SCRIPT).exists();
     }
-    
+	private boolean containsRunOnUploadXml(File dir) {
+		return new File(dir,R.UPLOAD_TEST_JOB_XML).exists();
+	}
+
+
 	/**
 	 * This method is responsible for uploading a solver to
 	 * the appropriate location and updating the database to reflect
@@ -187,6 +184,7 @@ public class UploadSolver extends HttpServlet {
 	 * @throws Exception 
 	 */
 	public UploadSolverResult handleSolver(int userId, HashMap<String, Object> form) throws Exception {
+		final String methodName = "handleSolver";
 		log.info("handleSolver begins");
 
 		//int[] returnArray = new int[3];
@@ -305,6 +303,10 @@ public class UploadSolver extends HttpServlet {
                 status.setCode(1);
                 newSolver.setBuildStatus(status);
         }
+        if (containsRunOnUploadXml(sandboxDir)) {
+			// TODO: fill in
+			logUtil.debug(methodName, "Found the run_on_upload.xml file.");
+		}
 
 		Util.sandboxChmodDirectory(sandboxDir);
 
@@ -386,7 +388,8 @@ public class UploadSolver extends HttpServlet {
 
 		return new UploadSolverResult(UploadSolverStatus.Success, solver_Success, hadConfigs, isBuildJob);
 	}
-	
+
+
 	/**
 	 * Sees if a given String -> Object HashMap is a valid Upload Solver request.
 	 * Checks to see if it contains all the information needed and if the information
