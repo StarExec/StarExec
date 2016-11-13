@@ -4,10 +4,13 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+
+import org.starexec.data.to.tuples.UploadSolverResult.UploadSolverStatus;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -33,6 +36,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.SolverBuildStatus;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Solver.ExecutableType;
+import org.starexec.data.to.tuples.UploadSolverResult;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.LogUtil;
 import org.starexec.util.PartWrapper;
@@ -97,32 +101,32 @@ public class UploadSolver extends HttpServlet {
 				boolean runTestJob=Boolean.parseBoolean((String)form.get(RUN_TEST_JOB));
 				
 				// Parse the request as a solver
-				int[] result = handleSolver(userId, form);	
+				UploadSolverResult result = handleSolver(userId, form);
 				//should be 3 element array where the first element is the new solver ID and the
 				//second element is a status code related to whether configurations existed.
                 //the third element indicates whether this solver needs to be built on StarExec
-				int return_value = result[0];
-				int configs = result[1];
-				int buildJob = result[2];
+				//int return_value = result[0];
+				//boolean configs = result[1];
+				//int buildJob = result[2];
 				
 				
 				// Redirect based on success/failure
-				if(return_value>=0) {
-					if(buildJob>0) {
-						int job_return = JobManager.addBuildJob(return_value, spaceId);
+				if(result.status == UploadSolverStatus.Success) {
+					if(result.isBuildJob) {
+						int job_return = JobManager.addBuildJob(result.solverId, spaceId);
 						if (job_return >= 0) {
 							log.info("Job created successfully. JobId: " + job_return);
 						}
 						else {
-							log.debug("Error in job creation for buildJob for solver: " + return_value);
+							log.debug("Error in job creation for buildJob for solver: " + result.solverId);
 						}
 					}
 					
-					response.addCookie(new Cookie("New_ID", String.valueOf(return_value)));
-                    if(buildJob>0 && !runTestJob) {
-					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&buildmsg=Building Solver On Starexec"));
-                    } else if (configs == -1) { //If there are no configs. We do not attempt to run a test job in this case
-					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&msg=No configurations for the new solver"));
+					response.addCookie(new Cookie("New_ID", String.valueOf(result.solverId)));
+                    if(result.isBuildJob && !runTestJob) {
+					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&buildmsg=Building Solver On Starexec"));
+                    } else if (!result.hadConfigs) { //If there are no configs. We do not attempt to run a test job in this case
+					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&msg=No configurations for the new solver"));
 					} else {
 						//if this solver has some configurations, we should check to see if the user wanted a test job
 						if (runTestJob) {
@@ -135,40 +139,27 @@ public class UploadSolver extends HttpServlet {
 								settingsId=Integer.parseInt((String)form.get(SETTING_ID));
 							}
 							
-							int jobId=CreateJob.buildSolverTestJob(return_value, spaceId, userId,settingsId);
-                            if (buildJob>0 && jobId>0) {
-					            response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&buildmsg=Building Solver On Starexec-- test job will be run after build"));
+							int jobId=CreateJob.buildSolverTestJob(result.solverId, spaceId, userId,settingsId);
+                            if (result.isBuildJob && jobId>0) {
+					            response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&buildmsg=Building Solver On Starexec-- test job will be run after build"));
                             } else if (jobId>0) {
 								response.sendRedirect(Util.docRoot("secure/details/job.jsp?id="+jobId));
 							} else {
-							    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value + "&msg=Internal error creating test job-- solver uploaded successfully"));
+							    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&msg=Internal error creating test job-- solver uploaded successfully"));
 							}
 							
 							
 						} else {
-						    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + return_value));
+						    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId));
 						}
 					}
+				} else if (result.status == UploadSolverStatus.ExtractingError) {
+					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result.status.message);
+					return;
 				} else {
-					//Archive Description File failed validation
-					if (return_value == -3) {
-						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The archive description file is malformed. Make sure it does not exceed 1024 characters.");
-						return;
-					//URL was invalid
-					} else if (return_value == -2) {
-						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "File could not be accessed at URL"); 
-						return;
-					//Not enough disk quota
-					} else if (return_value==-4) {
-						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "File is too large to fit in user's disk quota");
-					} else if (return_value==-6) {
-						response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Internal error when extracting solver");
-					}
-					else {
-						response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload new solver.");
-						return;
-					}	
-				}									
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, result.status.message);
+					return;
+				}
 			} else {
 				// Got a non multi-part request, invalid
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST);
@@ -195,13 +186,13 @@ public class UploadSolver extends HttpServlet {
 	 * @param form the HashMap representation of the upload request
 	 * @throws Exception 
 	 */
-	public int[] handleSolver(int userId, HashMap<String, Object> form) throws Exception {
+	public UploadSolverResult handleSolver(int userId, HashMap<String, Object> form) throws Exception {
 		log.info("handleSolver begins");
 
-		int[] returnArray = new int[3];
-		returnArray[0] = 0;
-		returnArray[1] = 0;
-		returnArray[2] = 0; //0 if prebuilt, 1 if contains buildscript
+		//int[] returnArray = new int[3];
+		//returnArray[0] = 0;
+		//returnArray[1] = 0;
+		//returnArray[2] = 0; //0 if prebuilt, 1 if contains buildscript
 		
 		File sandboxDir=Util.getRandomSandboxDirectory();
 		Util.logSandboxContents();
@@ -218,8 +209,7 @@ public class UploadSolver extends HttpServlet {
 				url=new URL((String)form.get(UploadSolver.FILE_URL));
 			} catch (Exception e) {
 				log.error(e.getMessage(),e);
-				returnArray[0] = -2;
-				return returnArray;
+				return new UploadSolverResult(UploadSolverStatus.CannotAccessFile, -1, false, false);
 			}
 				
 			try {
@@ -275,8 +265,7 @@ public class UploadSolver extends HttpServlet {
 		//the user does not have enough disk quota to upload this solver
 		if (fileSize>allowedBytes-usedBytes) {
 			archiveFile.delete();
-			returnArray[0]=-4;
-			return returnArray;
+			return new UploadSolverResult(UploadSolverStatus.ExceedQuota, -1, false, false);
 		}
 		
 		//move the archive to the sandbox
@@ -297,16 +286,16 @@ public class UploadSolver extends HttpServlet {
 			FileUtils.deleteDirectory(sandboxDir);
 			FileUtils.deleteDirectory(uniqueDir);
 			FileUtils.deleteQuietly(archiveFile);
-			returnArray[0]=-6;
-			return returnArray;
+			return new UploadSolverResult(UploadSolverStatus.ExtractingError, -1, false ,false);
 		}
+		boolean isBuildJob = false;
         //Checks to see if a build script exists and needs to be built.
 		if (containsBuildScript(sandboxDir)) {
             SolverBuildStatus status = new SolverBuildStatus();
             status.setCode(SolverBuildStatus.SolverBuildStatusCode.UNBUILT);
 			newSolver.setBuildStatus(status);
 			
-            returnArray[2] = 1; //Set build flag
+            isBuildJob = true; //Set build flag
             uniqueDir = new File(newSolver.getPath() + "_src");
             newSolver.setPath(uniqueDir.getAbsolutePath());
             uniqueDir.mkdirs();
@@ -351,8 +340,7 @@ public class UploadSolver extends HttpServlet {
 				if (descriptionFile.exists()) {
 					String description=FileUtils.readFileToString(descriptionFile);
 					if (!Validator.isValidPrimDescription(description)) {
-						returnArray[0] = -3;
-						return returnArray;
+						return new UploadSolverResult(UploadSolverStatus.DescriptionMalformed, -1, false, isBuildJob);
 					}
 					newSolver.setDescription(description);
 					
@@ -372,10 +360,9 @@ public class UploadSolver extends HttpServlet {
 			newSolver.addConfiguration(c);
 		}
 		Util.logSandboxContents();
-		
-		if (newSolver.getConfigurations().isEmpty()) {
-			returnArray[1] = -1; //It is empty
-		}
+
+		boolean hadConfigs = !newSolver.getConfigurations().isEmpty();
+
 		newSolver.setType(ExecutableType.valueOf(Integer.parseInt((String)form.get(SOLVER_TYPE))));
 		//Try adding the solver to the database
 		int solver_Success = Solvers.add(newSolver, spaceId);
@@ -394,14 +381,10 @@ public class UploadSolver extends HttpServlet {
 		} */
 
 		// if the solver was uploaded successfully log the upload in the weekly report table
-		if (solver_Success>0) {
-			Reports.addToEventOccurrencesNotRelatedToQueue("solvers uploaded", 1);
-		}
+		Reports.addToEventOccurrencesNotRelatedToQueue("solvers uploaded", 1);
 
 
-		returnArray[0] = solver_Success;
-		
-		return returnArray;
+		return new UploadSolverResult(UploadSolverStatus.Success, solver_Success, hadConfigs, isBuildJob);
 	}
 	
 	/**
