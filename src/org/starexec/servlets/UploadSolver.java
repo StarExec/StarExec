@@ -366,7 +366,10 @@ public class UploadSolver extends HttpServlet {
 			// Now that we've added the solver to the database, run a test job
 			final File runOnUploadXml = new File(sandboxDir, R.UPLOAD_TEST_JOB_XML);
 			if (runOnUploadXml.exists()) {
-				createTestJobFromXml(runOnUploadXml, userId, spaceId, solverId);
+				JobUtil jobUtil = createTestJobFromXml(runOnUploadXml, userId, spaceId, solverId);
+				if (!jobUtil.getJobCreationSuccess()) {
+					// TODO: Let the user know the job failed.
+				}
 			}
 
 			//if we were successful and this solver had a build script, save the build output to show the uploader
@@ -397,7 +400,7 @@ public class UploadSolver extends HttpServlet {
 		}
 	}
 
-	private void createTestJobFromXml(
+	private JobUtil createTestJobFromXml(
 			final File jobXml,
 			final int userId,
 			final int spaceId,
@@ -417,6 +420,7 @@ public class UploadSolver extends HttpServlet {
 
 		jobUtil.createJobsFromFile(jobXml, userId, spaceId, solverUploadType);
 
+		return jobUtil;
 	}
 
 
