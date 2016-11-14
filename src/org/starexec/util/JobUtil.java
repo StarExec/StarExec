@@ -56,7 +56,8 @@ public class JobUtil {
 	 * @throws ParserConfigurationException
 	 * @throws IOException
 	 */
-	public List<Integer> createJobsFromFile(File file, int userId, Integer spaceId) throws Exception {
+	public List<Integer> createJobsFromFile(File file, int userId, Integer spaceId)
+			throws IOException, ParserConfigurationException, SAXException {
 		final String methodName = "createJobsFromFile";
 		final String method = "createJobsFromFile";
 		List<Integer> jobIds=new ArrayList<Integer>();
