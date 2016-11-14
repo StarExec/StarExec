@@ -61,6 +61,14 @@ public class JobUtil {
             this.nameToNewPrimitiveId = new HashMap<>();
         }
 
+        /**
+         * This method is used to add name to id mappings to the nameToNewPrimitiveId map.
+         * This should ONLY be used with job xml types that are not STANDARD. STANDARD job xml types
+         * should already have access to all primitive ids since they assume the primitives are already
+         * in the database.
+         * @param primitiveName the name of the primitive to set an id for.
+         * @param primitiveId the id of the primitve to associate a name with.
+         */
         public void addNameToIdMapping(final String primitiveName, final Integer primitiveId) {
             final String methodName = "addNameToIdMapping";
 
@@ -74,6 +82,14 @@ public class JobUtil {
             nameToNewPrimitiveId.put(primitiveName, primitiveId);
         }
 
+        /**
+         * This method is used to get name to id mappings in the nameToNewPrimitiveId map.
+         * This should ONLY be used with job xml types that are not STANDARD. STANDARD job xml types
+         * should already have access to all primitive ids since they assume the primitives are already
+         * in the database.
+         * @param name the name of the primitive to get the id for.
+         * @return the id of the primitive.
+         */
         public Integer getIdWithName(final String name) {
             final String methodName = "getIdWithName";
 
