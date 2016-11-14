@@ -21,6 +21,7 @@ import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.util.ArchiveUtil;
@@ -128,7 +129,7 @@ public class UploadJobXML extends HttpServlet {
 		logUtil.entry(method);
 		try {
 			logUtil.info(method,"Handling Upload of XML File from user with id=" + userId);
-			PartWrapper item = (PartWrapper)form.get(UploadJobXML.UPLOAD_FILE);		
+			PartWrapper item = (PartWrapper)form.get(UploadJobXML.UPLOAD_FILE);
 			// Don't need to keep file long - just using download directory
 			
 			File uniqueDir = new File(R.getBatchSpaceXMLDir(), "Job" + userId);
@@ -155,7 +156,7 @@ public class UploadJobXML extends HttpServlet {
 			logUtil.info(method, "Started creating jobs from XML files");
 			for (File file:uniqueDir.listFiles())
 			{
-				current=jobUtil.createJobsFromFile(file, userId, spaceId);
+				current=jobUtil.createJobsFromFile(file, userId, spaceId, JobUtil.JobXmlType.STANDARD);
 				if (current!=null) {
 					jobIds.addAll(current);		
 				} else {

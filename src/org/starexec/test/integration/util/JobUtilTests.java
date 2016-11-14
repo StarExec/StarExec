@@ -36,7 +36,7 @@ public class JobUtilTests extends TestSequence {
 		int cId = solver.getConfigurations().get(0).getId();
 		File xml = loader.getTestXMLFile(cId, cId, benchmarkIds.get(0), benchmarkIds.get(1));
 		JobUtil util = new JobUtil();
-		List<Integer> jobIds = util.createJobsFromFile(xml, admin.getId(), Communities.getTestCommunity().getId());
+		List<Integer> jobIds = util.createJobsFromFile(xml, admin.getId(), Communities.getTestCommunity().getId(), JobUtil.JobXmlType.STANDARD);
 		Assert.assertEquals(1, jobIds.size());
 		Job j = Jobs.get(jobIds.get(0));
 		j.setJobPairs(Jobs.getJobPairsInJobSpaceHierarchy(j.getPrimarySpace(), PrimitivesToAnonymize.NONE));

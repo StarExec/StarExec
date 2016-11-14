@@ -43,7 +43,12 @@ public class JobUtil {
 	
 	private Boolean jobCreationSuccess = false;
 	private String errorMessage = "";//this will be used to given information to user about failures in validation
-	
+
+
+	public enum JobXmlType {
+		STANDARD, SOLVER_UPLOAD
+	}
+
 	/**
 	 * Creates jobs from the xml file. This also creates any solver pipelines defined in the XML document
 	 * @author Tim Smith
@@ -56,7 +61,7 @@ public class JobUtil {
 	 * @throws ParserConfigurationException
 	 * @throws IOException
 	 */
-	public List<Integer> createJobsFromFile(File file, int userId, Integer spaceId)
+	public List<Integer> createJobsFromFile(File file, int userId, Integer spaceId, JobXmlType xmlType)
 			throws IOException, ParserConfigurationException, SAXException {
 		final String methodName = "createJobsFromFile";
 		final String method = "createJobsFromFile";
