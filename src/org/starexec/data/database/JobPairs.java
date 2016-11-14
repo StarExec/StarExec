@@ -14,6 +14,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.util.JobUtil.JobXmlType;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Job;
@@ -93,7 +94,8 @@ public class JobPairs {
 			final HashMap<Integer,Solver> configIdsToSolvers,
 			final Job job,
 			final int spaceId,
-			final HashSet<String> jobRootPaths) throws SQLException {
+			final HashSet<String> jobRootPaths,
+			final JobXmlType jobXmlType) throws SQLException {
 
 		final String methodName = "populateJobPairsForJobXMLUpload";
 		Connection con = null;

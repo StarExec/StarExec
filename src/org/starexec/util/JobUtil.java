@@ -5,9 +5,11 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Function;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+import javax.swing.text.html.Option;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -46,14 +48,51 @@ public class JobUtil {
 
 
 	public enum JobXmlType {
+
 		STANDARD(Util.url("public/batchJobSchema.xsd")),
         SOLVER_UPLOAD(Util.url("public/runSolverOnUploadBatchJobSchema.xsd"));
 
+        private static final Logger jobXmlTypeLog = Logger.getLogger(JobXmlType.class);
+        private static final LogUtil jobXmlTypeLogUtil = new LogUtil(log);
         public final String schemaPath;
+        private Map<String, Integer> nameToNewPrimitiveId;
         JobXmlType(String schemaPath) {
             this.schemaPath = schemaPath;
+            this.nameToNewPrimitiveId = new HashMap<>();
         }
-	}
+
+        public void addNameToIdMapping(final String primitiveName, final Integer primitiveId) {
+            final String methodName = "addNameToIdMapping";
+
+            if (this == JobXmlType.STANDARD) {
+                jobXmlTypeLogUtil.error(methodName, "Attempt was made to set primitive id from a standard job XML upload. " +
+                        "Throwing exception...");
+                throw new IllegalStateException("You cannot set primitive IDs for standard job XML uploads."
+                        + " The primitive IDs are specified in the ");
+            }
+
+            nameToNewPrimitiveId.put(primitiveName, primitiveId);
+        }
+
+        public Integer getIdWithName(final String name) {
+            final String methodName = "getIdWithName";
+
+            if (this == JobXmlType.STANDARD) {
+                jobXmlTypeLogUtil.error(methodName, "Attempt was made to get primitive id from a standard job XML upload. " +
+                        "Throwing exception...");
+                throw new IllegalStateException("You cannot get primitive IDs for standard job XML uploads."
+                        + " The primitive IDs are specified in the ");
+            }
+
+            if (!nameToNewPrimitiveId.containsKey(name)) {
+                jobXmlTypeLogUtil.error(methodName, "Attempt was made to get primitive id without it being set. Throwing exception...");
+                throw new IllegalArgumentException("The name, "+name+" was never added to the map. Use instance method"
+                +" addNameToIdMapping(String, Integer) to do so.");
+            }
+
+            return nameToNewPrimitiveId.get(name);
+        }
+    }
 
 	/**
 	 * Creates jobs from the xml file. This also creates any solver pipelines defined in the XML document
@@ -176,7 +215,7 @@ public class JobUtil {
 			if (jobNode.getNodeType() == Node.ELEMENT_NODE){
 				Element jobElement = (Element)jobNode;
 				log.info("about to create job from element");
-				Integer id = createJobFromElement(userId, spaceId, jobElement,pipelineNames);
+				Integer id = createJobFromElement(userId, spaceId, jobElement,pipelineNames, xmlType);
 				if (id < 0) {
 					return null; // means there was an error. Error message should have been set
 				}
@@ -452,7 +491,7 @@ public class JobUtil {
 	 * @author Tim Smith
 	 */
 	private Integer createJobFromElement(int userId, Integer spaceId,
-			Element jobElement, HashMap<String,SolverPipeline> pipelines) {
+			Element jobElement, HashMap<String,SolverPipeline> pipelines, JobXmlType xmlType) {
 	    try {
 			final String methodName = "createJobFromElement";
 
@@ -560,7 +599,8 @@ public class JobUtil {
 				job.addStageAttributes(stageOneAttributes);
 			}
 			//this is the set of every top level space path given in the XML. There must be exactly 1 top level space,
-			// so if there is more than one then we will need to prepend the rootName onto every pair path to condense it
+			// so if there is
+            // more than one then we will need to prepend the rootName onto every pair path to condense it
 			// to a single root space
 			HashSet<String> jobRootPaths=new HashSet<String>();
 			Map<Integer, Benchmark> accessibleCachedBenchmarks = new HashMap<>();
@@ -568,7 +608,15 @@ public class JobUtil {
 			//			  as well as accessibleCachedBenchmarks
 
 			Optional<String> potentialError = JobPairs.populateConfigIdsToSolversMapAndJobPairsForJobXMLUpload(
-					jobElement, rootName, userId, accessibleCachedBenchmarks, configIdsToSolvers, job, spaceId, jobRootPaths);
+					jobElement,
+                    rootName,
+                    userId,
+                    accessibleCachedBenchmarks,
+                    configIdsToSolvers,
+                    job,
+                    spaceId,
+                    jobRootPaths,
+                    xmlType);
 			if (potentialError.isPresent()) {
 				errorMessage = potentialError.get();
 				return -1;
