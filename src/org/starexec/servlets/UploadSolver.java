@@ -192,184 +192,183 @@ public class UploadSolver extends HttpServlet {
 		//returnArray[1] = 0;
 		//returnArray[2] = 0; //0 if prebuilt, 1 if contains buildscript
 		
-		File sandboxDir=Util.getRandomSandboxDirectory();
-		Util.logSandboxContents();
-		String upMethod=(String)form.get(UploadSolver.UPLOAD_METHOD); //file upload or url
-		PartWrapper item=null;
-		String name=null;
-		URL url=null;
-		Integer spaceId=Integer.parseInt((String)form.get(SPACE_ID));
-		if (upMethod.equals("local")) {
-			item = (PartWrapper)form.get(UploadSolver.UPLOAD_FILE);	
-		} else {
-			try {
-				
-				url=new URL((String)form.get(UploadSolver.FILE_URL));
-			} catch (Exception e) {
-				log.error(e.getMessage(),e);
-				return new UploadSolverResult(UploadSolverStatus.CANNOT_ACCESS_FILE, -1, false, false);
-			}
-				
-			try {
-				name=url.toString().substring(url.toString().lastIndexOf('/'));
-			} catch (Exception e) {
-				name=url.toString().replace('/', '-');
-			}	
-		}
+		File sandboxDir=null;
 
-		//Set up a new solver with the submitted information
-		Solver newSolver = new Solver();
-		newSolver.setUserId(userId);
-		newSolver.setName((String)form.get(UploadSolver.SOLVER_NAME));
-		newSolver.setDownloadable((Boolean.parseBoolean((String)form.get(SOLVER_DOWNLOADABLE))));
+		try {
+			sandboxDir=Util.getRandomSandboxDirectory();
+			Util.logSandboxContents();
+			String upMethod = (String) form.get(UploadSolver.UPLOAD_METHOD); //file upload or url
+			PartWrapper item = null;
+			String name = null;
+			URL url = null;
+			Integer spaceId = Integer.parseInt((String) form.get(SPACE_ID));
+			if (upMethod.equals("local")) {
+				item = (PartWrapper) form.get(UploadSolver.UPLOAD_FILE);
+			} else {
+				try {
+
+					url = new URL((String) form.get(UploadSolver.FILE_URL));
+				} catch (Exception e) {
+					log.error(e.getMessage(), e);
+					return new UploadSolverResult(UploadSolverStatus.CANNOT_ACCESS_FILE, -1, false, false);
+				}
+
+				try {
+					name = url.toString().substring(url.toString().lastIndexOf('/'));
+				} catch (Exception e) {
+					name = url.toString().replace('/', '-');
+				}
+			}
+
+			//Set up a new solver with the submitted information
+			Solver newSolver = new Solver();
+			newSolver.setUserId(userId);
+			newSolver.setName((String) form.get(UploadSolver.SOLVER_NAME));
+			newSolver.setDownloadable((Boolean.parseBoolean((String) form.get(SOLVER_DOWNLOADABLE))));
 
 			log.info("Handling upload of solver" + newSolver.getName());
-		
-		//Set up the unique directory to store the solver
-		//The directory is (base path)/user's ID/solver name/date/
-		File uniqueDir = new File(R.getSolverPath(), "" + userId);
-		uniqueDir = new File(uniqueDir, newSolver.getName());
-		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
-		
-		newSolver.setPath(uniqueDir.getAbsolutePath());
 
-		uniqueDir.mkdirs();
-		
-		
-		//Process the archive file and extract
-		File archiveFile=null;
-		//String FileName=null;
-		if (upMethod.equals("local")) {
-			//Using IE will cause item.getName() to return a full path, which is why we wrap it with the FilenameUtils call
-			archiveFile = new File(uniqueDir,  FilenameUtils.getName(item.getName()));
-			new File(archiveFile.getParent()).mkdir();
-			item.write(archiveFile);
-			//item.write(archiveFile);
-			//		log.info("handleSolver just wrote archive to disk");
-		} else {
-			archiveFile=new File(uniqueDir, name);
-			new File(archiveFile.getParent()).mkdir();
-			if (!Util.copyFileFromURLUsingProxy(url,archiveFile)) {
-				throw new Exception("Unable to copy file from URL");
-			}
-					log.info("handleSolver just downloaded solver from url " + url);
-		}
-		long fileSize=ArchiveUtil.getArchiveSize(archiveFile.getAbsolutePath());
-		
-		User currentUser=Users.get(userId);
-		long allowedBytes=currentUser.getDiskQuota();
-		long usedBytes=currentUser.getDiskUsage();
-		
-		//the user does not have enough disk quota to upload this solver
-		if (fileSize>allowedBytes-usedBytes) {
-			archiveFile.delete();
-			return new UploadSolverResult(UploadSolverStatus.EXCEED_QUOTA, -1, false, false);
-		}
-		
-		//move the archive to the sandbox
-		FileUtils.copyFileToDirectory(archiveFile, sandboxDir);
-		archiveFile.delete();
-		archiveFile=new File(sandboxDir,archiveFile.getName());
-		log.debug("location of archive file = "+archiveFile.getAbsolutePath()+" and archive file exists ="+archiveFile.exists());
-		
-		//extracts the given archive using the sandbox user
-		boolean extracted=ArchiveUtil.extractArchiveAsSandbox(archiveFile.getAbsolutePath(),sandboxDir.getAbsolutePath());
+			//Set up the unique directory to store the solver
+			//The directory is (base path)/user's ID/solver name/date/
+			File uniqueDir = new File(R.getSolverPath(), "" + userId);
+			uniqueDir = new File(uniqueDir, newSolver.getName());
+			uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
 
-		//give sandbox full permissions over the solver directory
-		Util.sandboxChmodDirectory(sandboxDir);
-		
-		//if there was an extraction error or if the temp directory is still empty.
-		if (!extracted || sandboxDir.listFiles().length==0) {
-			log.warn("there was an error extracting the new solver archive");
-			FileUtils.deleteDirectory(sandboxDir);
-			FileUtils.deleteDirectory(uniqueDir);
-			FileUtils.deleteQuietly(archiveFile);
-			return new UploadSolverResult(UploadSolverStatus.EXTRACTING_ERROR, -1, false ,false);
-		}
-		boolean isBuildJob = false;
-        //Checks to see if a build script exists and needs to be built.
-		if (containsBuildScript(sandboxDir)) {
-            SolverBuildStatus status = new SolverBuildStatus();
-            status.setCode(SolverBuildStatus.SolverBuildStatusCode.UNBUILT);
-			newSolver.setBuildStatus(status);
-			
-            isBuildJob = true; //Set build flag
-            uniqueDir = new File(newSolver.getPath() + "_src");
-            newSolver.setPath(uniqueDir.getAbsolutePath());
-            uniqueDir.mkdirs();
-		}
-		else {
-                SolverBuildStatus status = new SolverBuildStatus();
-                status.setCode(1);
-                newSolver.setBuildStatus(status);
-        }
-        if (containsRunOnUploadXml(sandboxDir)) {
-			// TODO: fill in
-			logUtil.debug(methodName, "Found the run_on_upload.xml file.");
-		}
+			newSolver.setPath(uniqueDir.getAbsolutePath());
 
-		Util.sandboxChmodDirectory(sandboxDir);
+			uniqueDir.mkdirs();
 
-		for (File f : sandboxDir.listFiles()) {
-			if (f.isDirectory()) {
-				try {
-					FileUtils.copyDirectoryToDirectory(f, uniqueDir);
-				} catch (FileNotFoundException e) {
-					throw new FileNotFoundException(
-							String.format("Check for broken symbolic links in your solver.%n%s", e.getMessage()));
-				}
+
+			//Process the archive file and extract
+			File archiveFile = null;
+			//String FileName=null;
+			if (upMethod.equals("local")) {
+				//Using IE will cause item.getName() to return a full path, which is why we wrap it with the FilenameUtils call
+				archiveFile = new File(uniqueDir, FilenameUtils.getName(item.getName()));
+				new File(archiveFile.getParent()).mkdir();
+				item.write(archiveFile);
+				//item.write(archiveFile);
+				//		log.info("handleSolver just wrote archive to disk");
 			} else {
-				FileUtils.copyFileToDirectory(f, uniqueDir);
-			}
-		}
-		
-		try {
-			FileUtils.deleteDirectory(sandboxDir);
-		} catch (Exception e) {
-			log.error("unable to delete temporary directory at "+sandboxDir.getAbsolutePath());
-			log.error(e.getMessage(),e);
-		}
-		
-		String DescMethod = (String)form.get(UploadSolver.DESC_METHOD);
-		if (DescMethod.equals("text")){
-			newSolver.setDescription((String)form.get(UploadSolver.SOLVER_DESC));
-		} else if (DescMethod.equals("file")) {
-			PartWrapper item_desc = (PartWrapper)form.get(UploadSolver.SOLVER_DESC_FILE);
-			newSolver.setDescription(item_desc.getString());
-		} else {	//Upload starexec_description.txt
-			try {	
-				File descriptionFile=new File(uniqueDir,R.SOLVER_DESC_PATH);
-				if (descriptionFile.exists()) {
-					String description=FileUtils.readFileToString(descriptionFile);
-					if (!Validator.isValidPrimDescription(description)) {
-						return new UploadSolverResult(UploadSolverStatus.DESCRIPTION_MALFORMED, -1, false, isBuildJob);
-					}
-					newSolver.setDescription(description);
-					
-				} else {
-					log.debug("description file option chosen, but file was not present");
+				archiveFile = new File(uniqueDir, name);
+				new File(archiveFile.getParent()).mkdir();
+				if (!Util.copyFileFromURLUsingProxy(url, archiveFile)) {
+					throw new Exception("Unable to copy file from URL");
 				}
-			} catch (Exception e) {
-				log.error(e.getMessage(),e);
+				log.info("handleSolver just downloaded solver from url " + url);
 			}
-			
-		}
-		
-		
-		
-		//Find configurations from the top-level "bin" directory
-		for(Configuration c : Solvers.findConfigs(uniqueDir.getAbsolutePath())) {
-			newSolver.addConfiguration(c);
-		}
-		Util.logSandboxContents();
+			long fileSize = ArchiveUtil.getArchiveSize(archiveFile.getAbsolutePath());
 
-		boolean hadConfigs = !newSolver.getConfigurations().isEmpty();
+			User currentUser = Users.get(userId);
+			long allowedBytes = currentUser.getDiskQuota();
+			long usedBytes = currentUser.getDiskUsage();
 
-		newSolver.setType(ExecutableType.valueOf(Integer.parseInt((String)form.get(SOLVER_TYPE))));
-		//Try adding the solver to the database
-		int solver_Success = Solvers.add(newSolver, spaceId);
-		
-		//if we were successful and this solver had a build script, save the build output to show the uploader
+			//the user does not have enough disk quota to upload this solver
+			if (fileSize > allowedBytes - usedBytes) {
+				archiveFile.delete();
+				return new UploadSolverResult(UploadSolverStatus.EXCEED_QUOTA, -1, false, false);
+			}
+
+			//move the archive to the sandbox
+			FileUtils.copyFileToDirectory(archiveFile, sandboxDir);
+			archiveFile.delete();
+			archiveFile = new File(sandboxDir, archiveFile.getName());
+			log.debug("location of archive file = " + archiveFile.getAbsolutePath() + " and archive file exists =" + archiveFile.exists());
+
+			//extracts the given archive using the sandbox user
+			boolean extracted = ArchiveUtil.extractArchiveAsSandbox(archiveFile.getAbsolutePath(), sandboxDir.getAbsolutePath());
+
+			//give sandbox full permissions over the solver directory
+			Util.sandboxChmodDirectory(sandboxDir);
+
+			//if there was an extraction error or if the temp directory is still empty.
+			if (!extracted || sandboxDir.listFiles().length == 0) {
+				log.warn("there was an error extracting the new solver archive");
+				FileUtils.deleteDirectory(sandboxDir);
+				FileUtils.deleteDirectory(uniqueDir);
+				FileUtils.deleteQuietly(archiveFile);
+				return new UploadSolverResult(UploadSolverStatus.EXTRACTING_ERROR, -1, false, false);
+			}
+			boolean isBuildJob = false;
+			//Checks to see if a build script exists and needs to be built.
+			if (containsBuildScript(sandboxDir)) {
+				SolverBuildStatus status = new SolverBuildStatus();
+				status.setCode(SolverBuildStatus.SolverBuildStatusCode.UNBUILT);
+				newSolver.setBuildStatus(status);
+
+				isBuildJob = true; //Set build flag
+				uniqueDir = new File(newSolver.getPath() + "_src");
+				newSolver.setPath(uniqueDir.getAbsolutePath());
+				uniqueDir.mkdirs();
+			} else {
+				SolverBuildStatus status = new SolverBuildStatus();
+				status.setCode(1);
+				newSolver.setBuildStatus(status);
+			}
+
+
+			Util.sandboxChmodDirectory(sandboxDir);
+
+			for (File f : sandboxDir.listFiles()) {
+				if (f.isDirectory()) {
+					try {
+						FileUtils.copyDirectoryToDirectory(f, uniqueDir);
+					} catch (FileNotFoundException e) {
+						throw new FileNotFoundException(
+								String.format("Check for broken symbolic links in your solver.%n%s", e.getMessage()));
+					}
+				} else {
+					FileUtils.copyFileToDirectory(f, uniqueDir);
+				}
+			}
+
+
+
+			String DescMethod = (String) form.get(UploadSolver.DESC_METHOD);
+			if (DescMethod.equals("text")) {
+				newSolver.setDescription((String) form.get(UploadSolver.SOLVER_DESC));
+			} else if (DescMethod.equals("file")) {
+				PartWrapper item_desc = (PartWrapper) form.get(UploadSolver.SOLVER_DESC_FILE);
+				newSolver.setDescription(item_desc.getString());
+			} else {    //Upload starexec_description.txt
+				try {
+					File descriptionFile = new File(uniqueDir, R.SOLVER_DESC_PATH);
+					if (descriptionFile.exists()) {
+						String description = FileUtils.readFileToString(descriptionFile);
+						if (!Validator.isValidPrimDescription(description)) {
+							return new UploadSolverResult(UploadSolverStatus.DESCRIPTION_MALFORMED, -1, false, isBuildJob);
+						}
+						newSolver.setDescription(description);
+
+					} else {
+						log.debug("description file option chosen, but file was not present");
+					}
+				} catch (Exception e) {
+					log.error(e.getMessage(), e);
+				}
+
+			}
+
+
+			//Find configurations from the top-level "bin" directory
+			for (Configuration c : Solvers.findConfigs(uniqueDir.getAbsolutePath())) {
+				newSolver.addConfiguration(c);
+			}
+			Util.logSandboxContents();
+
+			boolean hadConfigs = !newSolver.getConfigurations().isEmpty();
+
+			newSolver.setType(ExecutableType.valueOf(Integer.parseInt((String) form.get(SOLVER_TYPE))));
+			//Try adding the solver to the database
+			int solverId = Solvers.add(newSolver, spaceId);
+
+			// Now that we've added the solver to the database, run a test job
+			final File runOnUploadXml = new File(sandboxDir, R.UPLOAD_TEST_JOB_XML);
+			if (runOnUploadXml.exists()) {
+				//final UploadSolverStatus status = createTestJobFromXml();
+			}
+
+			//if we were successful and this solver had a build script, save the build output to show the uploader
 /*		if (solver_Success>0 && build) {
 			File buildOutputFile=Solvers.getSolverBuildOutput(solver_Success);
 			log.debug("output file = "+buildOutputFile.getAbsolutePath());
@@ -382,11 +381,19 @@ public class UploadSolver extends HttpServlet {
 			}
 		} */
 
-		// if the solver was uploaded successfully log the upload in the weekly report table
-		Reports.addToEventOccurrencesNotRelatedToQueue("solvers uploaded", 1);
+			// if the solver was uploaded successfully log the upload in the weekly report table
+			Reports.addToEventOccurrencesNotRelatedToQueue("solvers uploaded", 1);
 
 
-		return new UploadSolverResult(UploadSolverStatus.SUCCESS, solver_Success, hadConfigs, isBuildJob);
+			return new UploadSolverResult(UploadSolverStatus.SUCCESS, solverId, hadConfigs, isBuildJob);
+		} finally {
+			try {
+				FileUtils.deleteDirectory(sandboxDir);
+			} catch (Exception e) {
+				log.error("unable to delete temporary directory at " + sandboxDir.getAbsolutePath());
+				log.error(e.getMessage(), e);
+			}
+		}
 	}
 
 
