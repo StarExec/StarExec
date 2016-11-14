@@ -46,7 +46,13 @@ public class JobUtil {
 
 
 	public enum JobXmlType {
-		STANDARD, SOLVER_UPLOAD
+		STANDARD(Util.url("public/batchJobSchema.xsd")),
+        SOLVER_UPLOAD(Util.url("public/runSolverOnUploadBatchJobSchema.xsd"));
+
+        public final String schemaPath;
+        JobXmlType(String schemaPath) {
+            this.schemaPath = schemaPath;
+        }
 	}
 
 	/**
@@ -66,7 +72,7 @@ public class JobUtil {
 		final String methodName = "createJobsFromFile";
 		final String method = "createJobsFromFile";
 		List<Integer> jobIds=new ArrayList<Integer>();
-		if (!validateAgainstSchema(file)){
+		if (!validateAgainstSchema(file, xmlType)){
 			logUtil.warn(method, "File from User " + userId + " is not Schema valid.");
 			return null;
 		}
@@ -758,8 +764,8 @@ public class JobUtil {
 	 * @param file the XML file to be validated against the XSD
 	 * @author Tim Smith
 	 */
-	public Boolean validateAgainstSchema(File file) throws ParserConfigurationException, IOException{
-		ValidatorStatusCode code = XMLUtil.validateAgainstSchema(file, Util.url("public/batchJobSchema.xsd"));
+	public Boolean validateAgainstSchema(File file, JobXmlType jobXmlType) throws ParserConfigurationException, IOException{
+		ValidatorStatusCode code = XMLUtil.validateAgainstSchema(file, jobXmlType.schemaPath);
 		errorMessage=code.getMessage();
 		return code.isSuccess();	
 	}
