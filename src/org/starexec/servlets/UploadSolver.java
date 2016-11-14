@@ -368,7 +368,7 @@ public class UploadSolver extends HttpServlet {
 			if (runOnUploadXml.exists()) {
 				JobUtil jobUtil = createTestJobFromXml(runOnUploadXml, userId, spaceId, solverId);
 				if (!jobUtil.getJobCreationSuccess()) {
-					// TODO: Let the user know the job failed.
+					log.debug("Job creation failed: "+jobUtil.getErrorMessage());
 				}
 			}
 
