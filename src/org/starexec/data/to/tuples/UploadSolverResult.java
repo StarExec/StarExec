@@ -17,11 +17,11 @@ public class UploadSolverResult {
     }
 
     public enum UploadSolverStatus {
-        Success("Success"),
-        DescriptionMalformed("The archive description file is malformed. Make sure it does not exceed 1024 characters."),
-        CannotAccessFile("File could not be accessed at URL"),
-        ExceedQuota("File is too large to fit in user's disk quota"),
-        ExtractingError("Internal error when extracting solver");
+        SUCCESS("Success"),
+        DESCRIPTION_MALFORMED("The archive description file is malformed. Make sure it does not exceed 1024 characters."),
+        CANNOT_ACCESS_FILE("File could not be accessed at URL"),
+        EXCEED_QUOTA("File is too large to fit in user's disk quota"),
+        EXTRACTING_ERROR("Internal error when extracting solver");
 
         public final String message;
         UploadSolverStatus(String message) {

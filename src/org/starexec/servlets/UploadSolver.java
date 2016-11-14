@@ -104,7 +104,7 @@ public class UploadSolver extends HttpServlet {
 				UploadSolverResult result = handleSolver(userId, form);
 				
 				// Redirect based on success/failure
-				if(result.status == UploadSolverStatus.Success) {
+				if(result.status == UploadSolverStatus.SUCCESS) {
 					if(result.isBuildJob) {
 						int job_return = JobManager.addBuildJob(result.solverId, spaceId);
 						if (job_return >= 0) {
@@ -146,7 +146,7 @@ public class UploadSolver extends HttpServlet {
 						    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId));
 						}
 					}
-				} else if (result.status == UploadSolverStatus.ExtractingError) {
+				} else if (result.status == UploadSolverStatus.EXTRACTING_ERROR) {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result.status.message);
 					return;
 				} else {
@@ -207,7 +207,7 @@ public class UploadSolver extends HttpServlet {
 				url=new URL((String)form.get(UploadSolver.FILE_URL));
 			} catch (Exception e) {
 				log.error(e.getMessage(),e);
-				return new UploadSolverResult(UploadSolverStatus.CannotAccessFile, -1, false, false);
+				return new UploadSolverResult(UploadSolverStatus.CANNOT_ACCESS_FILE, -1, false, false);
 			}
 				
 			try {
@@ -263,7 +263,7 @@ public class UploadSolver extends HttpServlet {
 		//the user does not have enough disk quota to upload this solver
 		if (fileSize>allowedBytes-usedBytes) {
 			archiveFile.delete();
-			return new UploadSolverResult(UploadSolverStatus.ExceedQuota, -1, false, false);
+			return new UploadSolverResult(UploadSolverStatus.EXCEED_QUOTA, -1, false, false);
 		}
 		
 		//move the archive to the sandbox
@@ -284,7 +284,7 @@ public class UploadSolver extends HttpServlet {
 			FileUtils.deleteDirectory(sandboxDir);
 			FileUtils.deleteDirectory(uniqueDir);
 			FileUtils.deleteQuietly(archiveFile);
-			return new UploadSolverResult(UploadSolverStatus.ExtractingError, -1, false ,false);
+			return new UploadSolverResult(UploadSolverStatus.EXTRACTING_ERROR, -1, false ,false);
 		}
 		boolean isBuildJob = false;
         //Checks to see if a build script exists and needs to be built.
@@ -342,7 +342,7 @@ public class UploadSolver extends HttpServlet {
 				if (descriptionFile.exists()) {
 					String description=FileUtils.readFileToString(descriptionFile);
 					if (!Validator.isValidPrimDescription(description)) {
-						return new UploadSolverResult(UploadSolverStatus.DescriptionMalformed, -1, false, isBuildJob);
+						return new UploadSolverResult(UploadSolverStatus.DESCRIPTION_MALFORMED, -1, false, isBuildJob);
 					}
 					newSolver.setDescription(description);
 					
@@ -386,7 +386,7 @@ public class UploadSolver extends HttpServlet {
 		Reports.addToEventOccurrencesNotRelatedToQueue("solvers uploaded", 1);
 
 
-		return new UploadSolverResult(UploadSolverStatus.Success, solver_Success, hadConfigs, isBuildJob);
+		return new UploadSolverResult(UploadSolverStatus.SUCCESS, solver_Success, hadConfigs, isBuildJob);
 	}
 
 
