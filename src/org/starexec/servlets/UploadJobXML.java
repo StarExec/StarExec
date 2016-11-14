@@ -23,6 +23,7 @@ import org.starexec.data.database.Permissions;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
+import org.starexec.data.to.enums.JobXmlType;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.JobUtil;
@@ -156,7 +157,7 @@ public class UploadJobXML extends HttpServlet {
 			logUtil.info(method, "Started creating jobs from XML files");
 			for (File file:uniqueDir.listFiles())
 			{
-				current=jobUtil.createJobsFromFile(file, userId, spaceId, JobUtil.JobXmlType.STANDARD);
+				current=jobUtil.createJobsFromFile(file, userId, spaceId, JobXmlType.STANDARD);
 				if (current!=null) {
 					jobIds.addAll(current);		
 				} else {
