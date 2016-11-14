@@ -114,7 +114,8 @@ public class JobPairs {
 					final Element jobPairElement = (Element) jobPairNode;
 					final JobPair jobPair = new JobPair();
 					final int benchmarkId = Integer.parseInt(jobPairElement.getAttribute("bench-id"));
-					final int configId = Integer.parseInt(jobPairElement.getAttribute("config-id"));
+					final int configId = getConfigIdFromElement(jobPairElement, jobXmlType);
+					//final int configId = Integer.parseInt(jobPairElement.getAttribute("config-id"));
 					String path = jobPairElement.getAttribute("job-space-path");
 					if (path.equals("")) {
 						path = rootName;
@@ -195,6 +196,23 @@ public class JobPairs {
 			throw e;
 		} finally {
 			Common.safeClose(con);
+		}
+	}
+
+	private static Integer getConfigIdFromElement(Element jobPairElement, JobXmlType xmlType) {
+		switch (xmlType) {
+			case STANDARD:
+				// config-id is required for standard job XMLs
+				return Integer.parseInt(jobPairElement.getAttribute("config-id"));
+			case SOLVER_UPLOAD:
+				// config-name is required when the user doesnt have access to the config-id when they
+				// upload the XML, e.g. during a solver upload.
+				final String configName = jobPairElement.getAttribute("config-name");
+				return xmlType.getIdWithName(configName);
+			default:
+				final String message = "Unimplemented case in getConfigIdFromElement.";
+				log.error(message+ " Throwing runtime exception...");
+				throw new IllegalArgumentException(message);
 		}
 	}
 

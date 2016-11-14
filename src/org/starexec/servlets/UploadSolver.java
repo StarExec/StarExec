@@ -9,7 +9,10 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Set;
 
+import org.starexec.data.to.enums.JobXmlType;
 import org.starexec.data.to.tuples.UploadSolverResult.UploadSolverStatus;
 
 import javax.servlet.ServletException;
@@ -18,6 +21,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -37,13 +41,10 @@ import org.starexec.data.to.SolverBuildStatus;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Solver.ExecutableType;
 import org.starexec.data.to.tuples.UploadSolverResult;
-import org.starexec.util.ArchiveUtil;
-import org.starexec.util.LogUtil;
-import org.starexec.util.PartWrapper;
-import org.starexec.util.SessionUtil;
-import org.starexec.util.Util;
-import org.starexec.util.Validator;
+import org.starexec.util.*;
 import org.starexec.jobs.JobManager;
+import org.xml.sax.SAXException;
+
 /**
  * Allows for the uploading and handling of Solvers. Solvers can come in .zip,
  * .tar, or .tar.gz format, and configurations can be included in a top level
@@ -365,7 +366,7 @@ public class UploadSolver extends HttpServlet {
 			// Now that we've added the solver to the database, run a test job
 			final File runOnUploadXml = new File(sandboxDir, R.UPLOAD_TEST_JOB_XML);
 			if (runOnUploadXml.exists()) {
-				//final UploadSolverStatus status = createTestJobFromXml();
+				createTestJobFromXml(runOnUploadXml, userId, spaceId, solverId);
 			}
 
 			//if we were successful and this solver had a build script, save the build output to show the uploader
@@ -394,6 +395,28 @@ public class UploadSolver extends HttpServlet {
 				log.error(e.getMessage(), e);
 			}
 		}
+	}
+
+	private void createTestJobFromXml(
+			final File jobXml,
+			final int userId,
+			final int spaceId,
+			final int newSolverId) throws SAXException, IOException, ParserConfigurationException {
+
+		JobUtil jobUtil = new JobUtil();
+
+		JobXmlType solverUploadType = JobXmlType.SOLVER_UPLOAD;
+		List<Configuration> configs = Solvers.getConfigsForSolver(newSolverId);
+
+		// Map all the config names to their config id so we can figure out their id based on name only.
+		// This is necessary because if the user uploaded a test job with their solver, the configs did not have
+		// ids in the system when the XML file was originally created.
+		for (Configuration c : configs) {
+			solverUploadType.addNameToIdMapping(c.getName(), c.getId());
+		}
+
+		jobUtil.createJobsFromFile(jobXml, userId, spaceId, solverUploadType);
+
 	}
 
 
