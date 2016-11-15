@@ -69,7 +69,6 @@ public class JobUtil {
 		List<Integer> jobIds=new ArrayList<Integer>();
 		if (!validateAgainstSchema(file, xmlType)){
 			logUtil.warn(method, "File from User " + userId + " is not Schema valid.");
-            errorMessage = "Validation against schema failed.";
 			return null;
 		}
 		
