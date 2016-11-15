@@ -65,8 +65,8 @@ function initUI(){
 		
 		$('#dialog-warning').dialog({
 			modal: true,
-			width: 380,
-			height: 165,
+			width: 700,
+			height: 500,
 			buttons: {
 				'OK': function() {
 					$('#dialog-warning').dialog('close');
