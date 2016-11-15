@@ -7,10 +7,7 @@ import java.net.URL;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.starexec.data.to.enums.JobXmlType;
 import org.starexec.data.to.tuples.UploadSolverResult.UploadSolverStatus;
@@ -124,25 +121,28 @@ public class UploadSolver extends HttpServlet {
 					} else {
 						//if this solver has some configurations, we should check to see if the user wanted a test job
 						if (runTestJob) {
-							log.debug("attempting to run test job");
-							
-							int settingsId=Communities.getDefaultSettings(spaceId).getId();
-							//if the user gave a setting ID, then they need to have permission to use that profile
-							// otherwise, the community default is used
-							if (form.containsKey(SETTING_ID)) {
-								settingsId=Integer.parseInt((String)form.get(SETTING_ID));
-							}
-							
-							int jobId=CreateJob.buildSolverTestJob(result.solverId, spaceId, userId,settingsId);
-                            if (result.isBuildJob && jobId>0) {
-					            response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&buildmsg=Building Solver On Starexec-- test job will be run after build"));
-                            } else if (jobId>0) {
-								response.sendRedirect(Util.docRoot("secure/details/job.jsp?id="+jobId));
-							} else {
-							    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&msg=Internal error creating test job-- solver uploaded successfully"));
-							}
-							
-							
+                            log.debug("attempting to run test job");
+
+                            int settingsId = Communities.getDefaultSettings(spaceId).getId();
+                            //if the user gave a setting ID, then they need to have permission to use that profile
+                            // otherwise, the community default is used
+                            if (form.containsKey(SETTING_ID)) {
+                                settingsId = Integer.parseInt((String) form.get(SETTING_ID));
+                            }
+
+                            int jobId = CreateJob.buildSolverTestJob(result.solverId, spaceId, userId, settingsId);
+                            if (result.isBuildJob && jobId > 0) {
+                                response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&buildmsg=Building Solver On Starexec-- test job will be run after build"));
+                            } else if (jobId > 0) {
+                                response.sendRedirect(Util.docRoot("secure/details/job.jsp?id=" + jobId));
+                            } else {
+                                response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&msg=Internal error creating test job-- solver uploaded successfully"));
+                            }
+
+                        } else if (result.status.optionalMessage.isPresent()) {
+                            String url = "secure/details/solver.jsp?id=" + result.solverId
+                                    + "&msg="+result.status.optionalMessage.get();
+                            response.sendRedirect(Util.docRoot(url));
 						} else {
 						    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId));
 						}
@@ -363,12 +363,19 @@ public class UploadSolver extends HttpServlet {
 			//Try adding the solver to the database
 			int solverId = Solvers.add(newSolver, spaceId);
 
+            UploadSolverStatus status = UploadSolverStatus.SUCCESS;
+
+
 			// Now that we've added the solver to the database, run a test job
 			final File runOnUploadXml = new File(sandboxDir, R.UPLOAD_TEST_JOB_XML);
 			if (runOnUploadXml.exists()) {
 				JobUtil jobUtil = createTestJobFromXml(runOnUploadXml, userId, spaceId, solverId);
 				if (!jobUtil.getJobCreationSuccess()) {
-					log.debug("Job creation failed: "+jobUtil.getErrorMessage());
+                    status = UploadSolverStatus.SUCCESS_TEST_FAILED;
+                    String message = "Test job creation failed: "+jobUtil.getErrorMessage();
+                    // Set the optional message so the user gets some more spectific feedback.
+                    status.optionalMessage = Optional.of(message);
+					log.debug(message);
 				}
 			}
 
@@ -389,7 +396,7 @@ public class UploadSolver extends HttpServlet {
 			Reports.addToEventOccurrencesNotRelatedToQueue("solvers uploaded", 1);
 
 
-			return new UploadSolverResult(UploadSolverStatus.SUCCESS, solverId, hadConfigs, isBuildJob);
+			return new UploadSolverResult(status, solverId, hadConfigs, isBuildJob);
 		} finally {
 			try {
 				FileUtils.deleteDirectory(sandboxDir);
