@@ -365,13 +365,11 @@ public class UploadSolver extends HttpServlet {
 
             UploadSolverStatus status = UploadSolverStatus.SUCCESS;
 
-
 			// Now that we've added the solver to the database, run a test job
 			final File runOnUploadXml = new File(sandboxDir, R.UPLOAD_TEST_JOB_XML);
 			if (runOnUploadXml.exists()) {
 				JobUtil jobUtil = createTestJobFromXml(runOnUploadXml, userId, spaceId, solverId);
 				if (!jobUtil.getJobCreationSuccess()) {
-                    status = UploadSolverStatus.SUCCESS_TEST_FAILED;
                     String message = "Test job creation failed: "+jobUtil.getErrorMessage();
                     // Set the optional message so the user gets some more spectific feedback.
                     status.optionalMessage = Optional.of(message);
