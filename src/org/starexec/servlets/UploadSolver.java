@@ -139,9 +139,9 @@ public class UploadSolver extends HttpServlet {
                                 response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&msg=Internal error creating test job-- solver uploaded successfully"));
                             }
 
-                        } else if (result.status.optionalMessage.isPresent()) {
+                        } else if (result.optionalMessage.isPresent()) {
                             String url = "secure/details/solver.jsp?id=" + result.solverId
-                                    + "&msg="+result.status.optionalMessage.get();
+                                    + "&msg="+result.optionalMessage.get();
                             response.sendRedirect(Util.docRoot(url));
 						} else {
 						    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId));
@@ -365,6 +365,7 @@ public class UploadSolver extends HttpServlet {
 
             UploadSolverStatus status = UploadSolverStatus.SUCCESS;
 
+			UploadSolverResult result = new UploadSolverResult(status, solverId, hadConfigs, isBuildJob);
 			// Now that we've added the solver to the database, run a test job
 			final File runOnUploadXml = new File(sandboxDir, R.UPLOAD_TEST_JOB_XML);
 			if (runOnUploadXml.exists()) {
@@ -372,7 +373,7 @@ public class UploadSolver extends HttpServlet {
 				if (!jobUtil.getJobCreationSuccess()) {
                     String message = "Test job creation failed: "+jobUtil.getErrorMessage();
                     // Set the optional message so the user gets some more spectific feedback.
-                    status.optionalMessage = Optional.of(message);
+                    result.optionalMessage = Optional.of(message);
 					log.debug(message);
 				}
 			}
@@ -394,7 +395,7 @@ public class UploadSolver extends HttpServlet {
 			Reports.addToEventOccurrencesNotRelatedToQueue("solvers uploaded", 1);
 
 
-			return new UploadSolverResult(status, solverId, hadConfigs, isBuildJob);
+			return result;
 		} finally {
 			try {
 				FileUtils.deleteDirectory(sandboxDir);

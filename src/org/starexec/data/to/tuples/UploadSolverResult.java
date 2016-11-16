@@ -10,14 +10,20 @@ public class UploadSolverResult {
     public final int solverId;
     public final boolean hadConfigs;
     public final boolean isBuildJob;
+    public Optional<String> optionalMessage;
 
 
 
-    public UploadSolverResult(UploadSolverStatus status, int solverId, boolean hadConfigs, boolean isBuildJob) {
+    public UploadSolverResult(
+            UploadSolverStatus status,
+            int solverId,
+            boolean hadConfigs,
+            boolean isBuildJob) {
         this.status = status;
         this.solverId = solverId;
         this.hadConfigs = hadConfigs;
         this.isBuildJob = isBuildJob;
+        this.optionalMessage = Optional.empty();
     }
 
     public enum UploadSolverStatus {
@@ -28,7 +34,6 @@ public class UploadSolverResult {
         EXTRACTING_ERROR("Internal error when extracting solver");
 
         public final String message;
-        public Optional<String> optionalMessage = Optional.empty();
         UploadSolverStatus(String message) {
             this.message = message;
         }
