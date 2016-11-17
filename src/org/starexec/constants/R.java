@@ -2,11 +2,14 @@ package org.starexec.constants;
 import java.lang.UnsupportedOperationException;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.function.BiFunction;
+
 import org.starexec.backend.Backend;
 import org.starexec.backend.GridEngineBackend;
 import org.starexec.backend.LocalBackend;
 import org.starexec.backend.OARBackend;
 import org.starexec.exceptions.StarExecException;
+import org.w3c.dom.Element;
 
 /**
  * Class which holds static resources (R) available for use
@@ -319,10 +322,17 @@ public class R {
 	public static String USER = "user";
     public static final String SOLVER_SOURCE = "solverSrc";
 
-	public static final String ANONYMIZE_ALL = "all";
+    //
+    public static final String CONFIG_ID_ATTR = "config-id";
+    public static final String CONFIG_NAME_ATTR = "config-id";
+
+
+    public static final String ANONYMIZE_ALL = "all";
 	public static final String ANONYMIZE_ALL_BUT_BENCH = "allButBench";
 	public static final String ANONYMIZE_NONE = "none";
 
 	// 2 years
 	public static final int MAX_AGE_OF_ANONYMOUS_LINKS_IN_DAYS = 730;
+
+
 }	

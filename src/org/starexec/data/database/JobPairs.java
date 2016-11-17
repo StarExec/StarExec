@@ -9,10 +9,12 @@ import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.function.BiFunction;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.Logger;
+import org.apache.tomcat.dbcp.pool.impl.GenericKeyedObjectPool;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
@@ -24,14 +26,17 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.SolverComparison;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.enums.ConfigXmlAttribute;
 import org.starexec.data.to.enums.JobXmlType;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PairStageProcessorTriple;
+import org.starexec.data.to.tuples.ConfigAttrMapPair;
 import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import sun.plugin.dom.exception.InvalidStateException;
 
 import javax.swing.text.html.Option;
 
@@ -95,7 +100,8 @@ public class JobPairs {
 			final Job job,
 			final int spaceId,
 			final HashSet<String> jobRootPaths,
-			final JobXmlType jobXmlType) throws SQLException {
+			final ConfigAttrMapPair configAttrMapPair,
+			final NodeList jobPairs) throws SQLException {
 
 		final String methodName = "populateJobPairsForJobXMLUpload";
 		Connection con = null;
@@ -104,7 +110,6 @@ public class JobPairs {
 		try {
 			con = Common.getConnection();
 
-			final NodeList jobPairs = jobElement.getElementsByTagName("JobPair");
 
 			//we now iterate through all the job pair elements and add them all to the job
 			final int jobPairsLength = jobPairs.getLength();
@@ -114,7 +119,7 @@ public class JobPairs {
 					final Element jobPairElement = (Element) jobPairNode;
 					final JobPair jobPair = new JobPair();
 					final int benchmarkId = Integer.parseInt(jobPairElement.getAttribute("bench-id"));
-					final int configId = getConfigIdFromElement(jobPairElement, jobXmlType);
+					final int configId = getConfigIdFromElement(jobPairElement, configAttrMapPair);
 					//final int configId = Integer.parseInt(jobPairElement.getAttribute("config-id"));
 					String path = jobPairElement.getAttribute("job-space-path");
 					if (path.equals("")) {
@@ -199,21 +204,21 @@ public class JobPairs {
 		}
 	}
 
-	private static Integer getConfigIdFromElement(Element jobPairElement, JobXmlType xmlType) {
-		switch (xmlType) {
-			case STANDARD:
-				// config-id is required for standard job XMLs
-				return Integer.parseInt(jobPairElement.getAttribute("config-id"));
-			case SOLVER_UPLOAD:
-				// config-name is required when the user doesnt have access to the config-id when they
-				// upload the XML, e.g. during a solver upload.
-				final String configName = jobPairElement.getAttribute("config-name");
-				return xmlType.getIdWithName(configName);
-			default:
-				final String message = "Unimplemented case in getConfigIdFromElement.";
-				log.error(message+ " Throwing runtime exception...");
-				throw new IllegalArgumentException(message);
-		}
+	public static Integer getConfigIdFromElement(Element element, ConfigAttrMapPair configAttrMapPair) {
+		String attribute = element.getAttribute(configAttrMapPair.attribute.attribute);
+			if (configAttrMapPair.attribute == ConfigXmlAttribute.NAME) {
+				// The attribute should be the config name.
+				Map<String, Integer> configNameToId = configAttrMapPair.configNameToId;
+				 if (configNameToId.containsKey(attribute)) {
+					 return configNameToId.get(attribute);
+				 } else {
+					 throw new IllegalStateException("The id for config: "+attribute+" should have been added to the" +
+							 " configAttrMap");
+				 }
+			} else {
+				// The attribute should be the id of the config.
+				return Integer.parseInt(attribute);
+			}
 	}
 
 	/**

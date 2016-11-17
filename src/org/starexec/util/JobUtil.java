@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import javax.servlet.http.Cookie;
@@ -27,10 +28,12 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.User;
+import org.starexec.data.to.enums.ConfigXmlAttribute;
 import org.starexec.data.to.enums.JobXmlType;
 import org.starexec.data.to.pipelines.*;
 import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
+import org.starexec.data.to.tuples.ConfigAttrMapPair;
 import org.starexec.servlets.CreateJob;
 import org.starexec.util.DOMHelper;
 import org.starexec.util.LogUtil;
@@ -48,8 +51,6 @@ public class JobUtil {
 	private String errorMessage = "";//this will be used to given information to user about failures in validation
 
 
-
-
 	/**
 	 * Creates jobs from the xml file. This also creates any solver pipelines defined in the XML document
 	 * @author Tim Smith
@@ -62,8 +63,14 @@ public class JobUtil {
 	 * @throws ParserConfigurationException
 	 * @throws IOException
 	 */
-	public List<Integer> createJobsFromFile(File file, int userId, Integer spaceId, JobXmlType xmlType)
+	public List<Integer> createJobsFromFile(
+			File file,
+			int userId,
+			Integer spaceId,
+			JobXmlType xmlType,
+			ConfigAttrMapPair configAttrMapPair)
 			throws IOException, ParserConfigurationException, SAXException {
+
 		final String methodName = "createJobsFromFile";
 		final String method = "createJobsFromFile";
 		List<Integer> jobIds=new ArrayList<Integer>();
@@ -92,18 +99,22 @@ public class JobUtil {
         NodeList listOfJobs = doc.getElementsByTagName("Job");
 		logUtil.info(method, "# of Jobs = " + listOfJobs.getLength());
         NodeList listOfJobPairs = doc.getElementsByTagName("JobPair");
-        
+		NodeList listOfUploadedSolverJobPairs = doc.getElementsByTagName("UploadedSolverJobPair");
+
+
 		logUtil.info(method, "# of JobPairs = " + listOfJobPairs.getLength());
+		logUtil.info(method, "# of UploadedSolverJobPairs = " + listOfUploadedSolverJobPairs.getLength());
+
 		NodeList listOfJobLines= doc.getElementsByTagName("JobLine");
 		logUtil.info(method, " # of JobLines = "+listOfJobLines.getLength());
 		//this job has nothing to run
-		if (listOfJobLines.getLength() + listOfJobPairs.getLength()==0) {
+		int pairCount = listOfJobPairs.getLength()+listOfJobLines.getLength()+listOfUploadedSolverJobPairs.getLength();
+		if (pairCount == 0) {
 			errorMessage="Every job must have at least one job pair or job line to be created";
 			return null;
 		}
 		User u = Users.get(userId);
 		int pairsAvailable = Math.max(0, u.getPairQuota() - Jobs.countPairsByUser(userId));
-		int pairCount = listOfJobPairs.getLength()+listOfJobLines.getLength();
 		// This just checks if a quota is totally full, which is sufficient for quick jobs and as a fast sanity check
 		// for full jobs. After the number of pairs have been acquired for a full job this check will be done factoring them in.
 		if (pairsAvailable < pairCount) {
@@ -171,7 +182,14 @@ public class JobUtil {
 			if (jobNode.getNodeType() == Node.ELEMENT_NODE){
 				Element jobElement = (Element)jobNode;
 				log.info("about to create job from element");
-				Integer id = createJobFromElement(userId, spaceId, jobElement,pipelineNames, xmlType);
+
+				Integer id = createJobFromElement(
+						userId,
+						spaceId,
+						jobElement,
+						pipelineNames,
+						configAttrMapPair);
+
 				if (id < 0) {
 					return null; // means there was an error. Error message should have been set
 				}
@@ -446,8 +464,12 @@ public class JobUtil {
 	 * @return The id of the new job on success or -1 on failure
 	 * @author Tim Smith
 	 */
-	private Integer createJobFromElement(int userId, Integer spaceId,
-			Element jobElement, HashMap<String,SolverPipeline> pipelines, JobXmlType xmlType) {
+	private Integer createJobFromElement(
+			int userId,
+			Integer spaceId,
+			Element jobElement,
+			HashMap<String,SolverPipeline> pipelines,
+			ConfigAttrMapPair configAttrMapPair) {
 	    try {
 			final String methodName = "createJobFromElement";
 
@@ -563,16 +585,34 @@ public class JobUtil {
 			// IMPORTANT: For efficieny reasons this function has the side-effect of populating configIdsToSolvers
 			//			  as well as accessibleCachedBenchmarks
 
+			final NodeList jobPairs = jobElement.getElementsByTagName("JobPair");
 			Optional<String> potentialError = JobPairs.populateConfigIdsToSolversMapAndJobPairsForJobXMLUpload(
 					jobElement,
-                    rootName,
-                    userId,
-                    accessibleCachedBenchmarks,
-                    configIdsToSolvers,
-                    job,
-                    spaceId,
-                    jobRootPaths,
-                    xmlType);
+					rootName,
+					userId,
+					accessibleCachedBenchmarks,
+					configIdsToSolvers,
+					job,
+					spaceId,
+					jobRootPaths,
+					new ConfigAttrMapPair(ConfigXmlAttribute.ID), // We need to use config-id as the attribute for JobPair elements.
+					jobPairs);
+			if (potentialError.isPresent()) {
+				errorMessage = potentialError.get();
+				return -1;
+			}
+			final NodeList uploadedSolverJobPairs = jobElement.getElementsByTagName("UploadedSolverJobPair");
+			potentialError = JobPairs.populateConfigIdsToSolversMapAndJobPairsForJobXMLUpload(
+					jobElement,
+					rootName,
+					userId,
+					accessibleCachedBenchmarks,
+					configIdsToSolvers,
+					job,
+					spaceId,
+					jobRootPaths,
+					configAttrMapPair,
+					uploadedSolverJobPairs);
 			if (potentialError.isPresent()) {
 				errorMessage = potentialError.get();
 				return -1;

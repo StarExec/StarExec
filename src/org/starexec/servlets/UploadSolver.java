@@ -9,7 +9,9 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import org.starexec.data.to.enums.ConfigXmlAttribute;
 import org.starexec.data.to.enums.JobXmlType;
+import org.starexec.data.to.tuples.ConfigAttrMapPair;
 import org.starexec.data.to.tuples.UploadSolverResult.UploadSolverStatus;
 
 import javax.servlet.ServletException;
@@ -417,14 +419,16 @@ public class UploadSolver extends HttpServlet {
 		JobXmlType solverUploadType = JobXmlType.SOLVER_UPLOAD;
 		List<Configuration> configs = Solvers.getConfigsForSolver(newSolverId);
 
+
+		ConfigAttrMapPair configAttrMapPair = new ConfigAttrMapPair(ConfigXmlAttribute.NAME);
 		// Map all the config names to their config id so we can figure out their id based on name only.
 		// This is necessary because if the user uploaded a test job with their solver, the configs did not have
 		// ids in the system when the XML file was originally created.
 		for (Configuration c : configs) {
-			solverUploadType.addNameToIdMapping(c.getName(), c.getId());
+			configAttrMapPair.configNameToId.put(c.getName(), c.getId());
 		}
 
-		jobUtil.createJobsFromFile(jobXml, userId, spaceId, solverUploadType);
+		jobUtil.createJobsFromFile(jobXml, userId, spaceId, solverUploadType, configAttrMapPair);
 
 		return jobUtil;
 	}
