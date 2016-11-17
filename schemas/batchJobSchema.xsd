@@ -3,8 +3,11 @@
 		xmlns:tns="https://www.starexec.org/starexec/public/batchJobSchema.xsd" 
 		targetNamespace="https://www.starexec.org/starexec/public/batchJobSchema.xsd"
 		xmlns:jst="https://stardev.cs.uiowa.edu/starexec_agiegerich/public/jobSchemaTypes.xsd">
-    
-    <annotation>
+
+	<import namespace="https://stardev.cs.uiowa.edu/starexec_agiegerich/public/jobSchemaTypes.xsd" schemaLocation="https://stardev.cs.uiowa.edu/starexec_agiegerich/public/jobSchemaTypes.xsd" />
+
+
+	<annotation>
     	<documentation>
     		This is the xml schema for creating starexec jobs. 
     	</documentation>
