@@ -10,62 +10,62 @@
     	</documentation>
     </annotation>
 
-    <element name="Jobs" type="tns:Jobs"></element>
+    <element name="Jobs" type="tns:Jobs" />
 
     <complexType name="Jobs">
     	<sequence>
-    		<element name="SolverPipeline" type="tns:SolverPipeline" minOccurs="0" maxOccurs="unbounded"></element>
-    		
-    		<element name="Job" type="tns:Job" minOccurs="1" 
+    		<element name="SolverPipeline" type="tns:SolverPipeline" minOccurs="0" maxOccurs="unbounded" />
+
+    		<element name="Job" type="tns:Job" minOccurs="1"
     			maxOccurs="unbounded">
     		</element>
     	</sequence>
     </complexType>
-    
+
     <complexType name="SolverPipeline">
-    
+
     	<choice minOccurs="1" maxOccurs="unbounded">
-    		<element name="noop"></element>
-    		<element name="PipelineStage" type="tns:PipelineStage"></element>
-    	</choice> 
-    	<attribute name="name" type="jst:PrimitiveName" use="required"></attribute>
-    	
+    		<element name="noop" />
+    		<element name="PipelineStage" type="tns:PipelineStage" />
+    	</choice>
+    	<attribute name="name" type="jst:PrimitiveName" use="required" />
+
     </complexType>
 
     <complexType name="Job">
     	<sequence>
 
-	  <element name="JobAttributes" type="jst:JobAttributes"></element>
-	  <element name="StageAttributes" type="tns:StageAttributes" minOccurs="0" maxOccurs="unbounded"></element>
+	  <element name="JobAttributes" type="jst:JobAttributes" />
+	  <element name="StageAttributes" type="tns:StageAttributes" minOccurs="0" maxOccurs="unbounded" />
     		<element name="JobPair" type="jst:JobPair" minOccurs="0"
     			maxOccurs="unbounded">
     		</element>
-    		<element name="JobLine" type="tns:JobLine" minOccurs="0" maxOccurs="unbounded"></element>
+    		<element name="JobLine" type="tns:JobLine" minOccurs="0" maxOccurs="unbounded" />
     	</sequence>
-    	
-    	<attribute name="name" type="jst:PrimitiveName" use="required"></attribute>
-    	
+
+    	<attribute name="name" type="jst:PrimitiveName" use="required" />
+
     </complexType>
-    
-    <complexType name="PipelineStage">    	
+
+    <complexType name="PipelineStage">
     	<sequence>
-    			
-    	    	<element name="StageDependency" minOccurs="0" maxOccurs="unbounded"></element>
-    			<element name="BenchmarkDependency" minOccurs="0" maxOccurs="unbounded"></element>
+
+    	    	<element name="StageDependency" minOccurs="0" maxOccurs="unbounded" />
+    			<element name="BenchmarkDependency" minOccurs="0" maxOccurs="unbounded" />
     	</sequence>
-        <attribute name="config-id" type="int" use="required"></attribute>
-        
+        <attribute name="config-id" type="int" use="required" />
+
         <!-- Defaults to false. A maximum of a single stage per pipeline can be primary. If none is primary
         it will default to the first stage -->
-        <attribute name="primary" type="boolean" use="optional"></attribute>
+        <attribute name="primary" type="boolean" use="optional" />
     </complexType>
-    
+
     <complexType name="BenchmarkInput">
-    	<attribute name="bench-id" type="int" use="required"></attribute>
+    	<attribute name="bench-id" type="int" use="required" />
     </complexType>
-    
+
     <complexType name="SaveOption">
-        <attribute name="value" type="tns:SaveEnum" use="required"></attribute>
+        <attribute name="value" type="tns:SaveEnum" use="required" />
   	</complexType>
     
     <simpleType name="SaveEnum">
@@ -78,20 +78,20 @@
     
     <complexType name="StageAttributes">
       <sequence>	
-    	<element name="stage-num" type="jst:intInfo" minOccurs="1" maxOccurs="1"></element> 
-    	<element name="cpu-timeout" type="jst:intInfo" minOccurs="0" maxOccurs="1"></element>
-    	<element name="wallclock-timeout" type="jst:intInfo" minOccurs="0" maxOccurs="1"></element>
+    	<element name="stage-num" type="jst:intInfo" minOccurs="1" maxOccurs="1" />
+    	<element name="cpu-timeout" type="jst:intInfo" minOccurs="0" maxOccurs="1" />
+    	<element name="wallclock-timeout" type="jst:intInfo" minOccurs="0" maxOccurs="1" />
     	
     	<!-- Note: This is in Gigabytes -->
-    	<element name="mem-limit" type="jst:doubleInfo" minOccurs="0" maxOccurs="1"></element>
-		<element name="space-id" type="jst:intInfo" minOccurs="0" maxOccurs="1"></element>
-		<element name="bench-suffix" type="jst:nameInfo" minOccurs="0" maxOccurs="1"></element>
-		<element name="results-interval" type="jst:intInfo" maxOccurs="1" minOccurs="0"></element>
-		<element name="stdout-save" type="tns:SaveOption" maxOccurs="1" minOccurs="0"></element>
-		<element name="other-save" type="tns:SaveOption" maxOccurs="1" minOccurs="0"></element>
+    	<element name="mem-limit" type="jst:doubleInfo" minOccurs="0" maxOccurs="1" />
+		<element name="space-id" type="jst:intInfo" minOccurs="0" maxOccurs="1" />
+		<element name="bench-suffix" type="tns:nameInfo" minOccurs="0" maxOccurs="1" />
+		<element name="results-interval" type="jst:intInfo" maxOccurs="1" minOccurs="0" />
+		<element name="stdout-save" type="tns:SaveOption" maxOccurs="1" minOccurs="0" />
+		<element name="other-save" type="tns:SaveOption" maxOccurs="1" minOccurs="0" />
 		
-		<element name="postproc-id" type="jst:intInfo" maxOccurs="1" minOccurs="0"></element>
-		<element name="preproc-id" type="jst:intInfo" maxOccurs="1" minOccurs="0"></element>
+		<element name="postproc-id" type="jst:intInfo" maxOccurs="1" minOccurs="0" />
+		<element name="preproc-id" type="jst:intInfo" maxOccurs="1" minOccurs="0" />
 		
       </sequence>
       
@@ -99,16 +99,16 @@
 
     <!-- job attributes type definitions -->
     <complexType name="nameInfo">
-      <attribute name="value" type="jst:PrimitiveName" use="required"></attribute>
+      <attribute name="value" type="jst:PrimitiveName" use="required" />
     </complexType>
 
     <complexType name="BenchmarkDependency">
     	<!-- The user will be required to give n inputs to each jobline, where n is the number of inputs
     	declared in a pipeline -->
-    	<attribute name="input" type="int" use="required"></attribute>
+    	<attribute name="input" type="int" use="required" />
     </complexType>
     <complexType name="StageDependency">
-    	<attribute name="stage" type="int" use="required"></attribute>
+    	<attribute name="stage" type="int" use="required" />
     </complexType>
     <!-- end job attributes type definitions -->
 
@@ -116,15 +116,15 @@
     
     <complexType name="JobLine">
     	<sequence>
-    		<element name="BenchmarkInput" type="tns:BenchmarkInput" minOccurs="0" maxOccurs="unbounded"></element>
+    		<element name="BenchmarkInput" type="tns:BenchmarkInput" minOccurs="0" maxOccurs="unbounded" />
     	</sequence> 
-    	<attribute name="bench-id" type="int" use="required"></attribute>
-    	<attribute name="bench-name" type="jst:PrimitiveName" use="optional"></attribute>
+    	<attribute name="bench-id" type="int" use="required" />
+    	<attribute name="bench-name" type="jst:PrimitiveName" use="optional" />
     	
     	<!-- Must be the name of some pipeline declared in this upload -->
-    	<attribute name="pipe-name" type="jst:PrimitiveName" use="required"></attribute>
+    	<attribute name="pipe-name" type="jst:PrimitiveName" use="required" />
     	
-    	<attribute name="job-space-id" type="int" use="optional"></attribute>
-    	<attribute name="job-space-path" type="jst:Path" use="optional"></attribute>
+    	<attribute name="job-space-id" type="int" use="optional" />
+    	<attribute name="job-space-path" type="jst:Path" use="optional" />
     </complexType>
 </schema>
