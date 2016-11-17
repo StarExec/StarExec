@@ -36,7 +36,6 @@ import org.starexec.util.Util;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import sun.plugin.dom.exception.InvalidStateException;
 
 import javax.swing.text.html.Option;
 
