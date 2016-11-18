@@ -211,8 +211,8 @@ public class JobPairs {
 				 if (configNameToId.containsKey(attribute)) {
 					 return configNameToId.get(attribute);
 				 } else {
-					 throw new IllegalStateException("The id for config: "+attribute+" should have been added to the" +
-							 " configAttrMap");
+					 throw new IllegalStateException("There is no config with the name, " + attribute+
+							 ", in the uploaded solver.");
 				 }
 			} else {
 				// The attribute should be the id of the config.
