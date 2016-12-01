@@ -218,12 +218,6 @@ CREATE TABLE comm_queue (
 	PRIMARY KEY (space_id, queue_id)
 );
 
--- Pairs that have been rerun after job script failure.
-CREATE TABLE pairs_rerun (
-	pair_id INT NOT NULL,
-	PRIMARY KEY (pair_id),
-	CONSTRAINT id_of_rerun_pair FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE CASCADE
-);
 
 
 
@@ -344,6 +338,7 @@ CREATE TABLE job_pairs (
 	CONSTRAINT job_pairs_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE, -- not necessary as an index
 	CONSTRAINT job_pairs_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION -- not used as an index
 );
+
 
 CREATE TABLE jobpair_stage_data (
 	stage_number INT NOT NULL, -- this id orders the stages
@@ -728,6 +723,13 @@ CREATE TABLE report_data (
 
 	PRIMARY KEY(id),
 	UNIQUE KEY event_name_queue_name (event_name, queue_name)
+);
+
+-- Pairs that have been rerun after job script failure.
+CREATE TABLE pairs_rerun (
+	pair_id INT NOT NULL,
+	PRIMARY KEY (pair_id),
+	CONSTRAINT id_of_rerun_pair FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE CASCADE
 );
 
 -- Creates a view of the closure table that includes only communities as ancestors
