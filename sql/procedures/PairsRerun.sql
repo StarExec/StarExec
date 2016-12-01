@@ -18,4 +18,11 @@ CREATE PROCEDURE MarkPairAsRerun(IN _pairId INT)
 		VALUES (_pairId);
 	END //
 
+DROP PROCEDURE IF EXISTS UnmarkPairAsRerun;
+CREATE PROCEDURE UnmarkPairAsRerun(IN _pairId INT)
+  BEGIN
+    DELETE FROM pairs_rerun
+    WHERE pair_id=_pairId;
+  END //
+
 DELIMITER ; -- This should always be at the end of this file
