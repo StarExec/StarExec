@@ -9,6 +9,7 @@ source procedures/Cluster.sql;
 source procedures/Communities.sql;
 source procedures/Jobs.sql;
 source procedures/Misc.sql;
+source procedures/PairsRerun.sql;
 source procedures/Permissions.sql;
 source procedures/Processors.sql;
 source procedures/Requests.sql;
