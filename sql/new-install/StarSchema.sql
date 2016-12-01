@@ -218,6 +218,13 @@ CREATE TABLE comm_queue (
 	PRIMARY KEY (space_id, queue_id)
 );
 
+-- Pairs that have been rerun after job script failure.
+CREATE TABLE pairs_rerun (
+	pair_id INT NOT NULL,
+	PRIMARY KEY (pair_id),
+	CONSTRAINT id_of_rerun_pair FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE CASCADE
+);
+
 
 
 -- table for storing the top level of solver pipelines. These should generally not be deleted
