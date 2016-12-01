@@ -224,21 +224,28 @@ public class JobSecurity {
 		}
 		return new ValidatorStatusCode(true);
 	}
+
+	public static ValidatorStatusCode canUserSeeRerunPairsPage(int jobId, int userId) {
+		return rerunPairsHelper(jobId, userId, GeneralSecurity.hasAdminReadPrivileges(userId));
+	}
 	
 	public static ValidatorStatusCode canUserRerunPairs(int jobId, int userId) {
+		return rerunPairsHelper(jobId, userId, GeneralSecurity.hasAdminWritePrivileges(userId));
+	}
+
+	private static ValidatorStatusCode rerunPairsHelper(int jobId, int userId, boolean readOrWritePrivileges) {
 		Job job=Jobs.get(jobId);
 		if (job==null) {
 			return new ValidatorStatusCode(false, "The job could not be found");
 		}
-		boolean isAdmin=GeneralSecurity.hasAdminWritePrivileges(userId);
-		
-		if (job.getUserId()!=userId && !isAdmin) {
+
+		if (job.getUserId()!=userId && !readOrWritePrivileges) {
 			return new ValidatorStatusCode(false, "You do not have permission to rerun pairs in this job");
 		}
 		if (job.isBuildJob()) {
 			return new ValidatorStatusCode(false, "You may not rerun solver build jobs. Please reupload your solver instead.");
 		}
-		
+
 		JobStatus status= Jobs.getJobStatusCode(jobId);
 		if (status.getCode().getVal()==JobStatusCode.STATUS_PAUSED.getVal()) {
 			return new ValidatorStatusCode(false, "This job is currently paused. Please unpause it before rerunning pairs");
@@ -437,7 +444,7 @@ public class JobSecurity {
 			}
 			try {
 				DefaultSettings settings = Settings.getProfileById(statusId);
-				if (settings.getBenchId() == null || Benchmarks.get(settings.getBenchId())==null)  {
+				if (settings.getBenchIds().size() == 0 || Benchmarks.get(settings.getBenchIds().get(0))==null)  {
 					return new ValidatorStatusCode(false, "The selected community has no default benchmark selected");
 				}
 			} catch (SQLException e) {

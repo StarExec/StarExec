@@ -51,6 +51,7 @@
   <li class="subject"><a href="${starexecRoot}/secure/edit/solver.help">Editing solvers</a></li>
   <li class="topicHeader">Jobs</li>
   <li class="subject"><a href="${starexecRoot}/secure/add/job.help">Running jobs</a></li>
+  <li class="subject"><a href="${starexecRoot}/secure/add/quickJob.help">Quick jobs</a></li>
   <li class="subject"><a href="${starexecRoot}/secure/details/job.help">Viewing results</a></li>
   <li class="topicHeader">Users</li>
   <li class="subject"><a href="${starexecRoot}/secure/edit/account.help">Managing your account</a></li>

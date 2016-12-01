@@ -90,8 +90,8 @@ public class UploadConfiguration extends HttpServlet {
 			}
     	} catch (Exception e) {
     		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-    		log.error(e.getMessage(), e);
-    	}	
+			log.warn("Caught Exception in UploadConfiguration.doPost: " + Util.getStackTrace(e));
+    	}
 	}
     
     

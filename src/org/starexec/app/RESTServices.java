@@ -1,5 +1,6 @@
 package org.starexec.app;
 
+import org.apache.catalina.Session;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import java.io.File;
@@ -34,6 +35,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.constants.R.DefaultSettingAttribute;
 import org.starexec.data.database.AnonymousLinks;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.database.Benchmarks;
@@ -1642,7 +1644,8 @@ public class RESTServices {
 		
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
-	
+
+
 	/**
 	 * Returns the next page of entries in a given DataTable
 	 *
@@ -1650,14 +1653,14 @@ public class RESTServices {
 	 * @param primType the type of primitive
 	 * @param request the object containing the DataTable information
 	 * @return a JSON object representing the next page of entries if successful,<br>
-	 * 		1 if the request fails parameter validation,<br> 
-	 * 		2 if the user has insufficient privileges to view the parent space of the primitives 
+	 * 		1 if the request fails parameter validation,<br>
+	 * 		2 if the user has insufficient privileges to view the parent space of the primitives
 	 * @author Todd Elvers
 	 */
 	@POST
 	@Path("/space/{id}/{primType}/pagination/")
-	@Produces("application/json")	
-	public String getPrimitiveDetailsPaginated(@PathParam("id") int spaceId, @PathParam("primType") String primType, @Context HttpServletRequest request) {	
+	@Produces("application/json")
+	public String getPrimitiveDetailsPaginated(@PathParam("id") int spaceId, @PathParam("primType") String primType, @Context HttpServletRequest request) {
 		log.debug("got a request to getPrimitiveDetailsPaginated!");
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
@@ -1668,24 +1671,22 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		
+
 		// Query for the next page of primitives and return them to the user
 		if(primType.startsWith("j")){
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(Primitive.JOB, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextJobPageForSpaceExplorer(spaceId, request);
 		} else if(primType.startsWith("u")){
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(Primitive.USER, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextUserPageForSpaceExplorer(spaceId, request);
 		} else if(primType.startsWith("so")){
-			
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(Primitive.SOLVER, spaceId, request);
+
+			nextDataTablesPage = RESTHelpers.getNextSolverPageForSpaceExplorer(spaceId, request);
 		} else if(primType.startsWith("sp")){
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(Primitive.SPACE, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextSpacePageForSpaceExplorer(spaceId, request);
 		} else if(primType.startsWith("b")){
-			
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageForSpaceExplorer(Primitive.BENCHMARK, spaceId, request);
+			nextDataTablesPage = RESTHelpers.getNextBenchmarkPageForSpaceExplorer(spaceId, request);
 		}
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
-	
 
 	/**
 	 * Gets the permissions a given user has in a given space
@@ -2089,6 +2090,41 @@ public class RESTServices {
 		}
 		
 	}
+
+
+
+	@POST
+	@Path("/delete/defaultBenchmark/{settingId}/{benchId}")
+	@Produces("application/json")
+	public String deleteDefaultSettings(
+			@PathParam("settingId") Integer settingId,
+			@PathParam("benchId") Integer benchId,
+			@Context HttpServletRequest request) {
+
+		final String methodName = "deleteDefaultSettings";
+
+		int userId = SessionUtil.getUserId(request);
+
+		try {
+			ValidatorStatusCode status = SettingSecurity.canUpdateSettings(
+					settingId, DefaultSettingAttribute.defaultbenchmark, benchId.toString(), userId);
+
+			if (!status.isSuccess()) {
+				return gson.toJson(status);
+			}
+
+			Settings.deleteDefaultBenchmark(settingId, benchId);
+
+			return gson.toJson(new ValidatorStatusCode(true, "Default Benchmark Removed From Profile"));
+
+		} catch (SQLException e) {
+			logUtil.error(methodName, "Database error occurred: " + Util.getStackTrace(e));
+			return gson.toJson(ERROR_DATABASE);
+		}
+	}
+
+
+
 	
 	/** 
 	 * Updates information for a space in the database using a POST. Attribute and
@@ -2107,10 +2143,19 @@ public class RESTServices {
 	@Produces("application/json")
 	public String editCommunityDefaultSettings(@PathParam("attr") String attribute, @PathParam("id") int id, @Context HttpServletRequest request) {	
 		final String methodName = "editCommunityDefaultSettings";
+
 		int userId=SessionUtil.getUserId(request);
 		String newValue=(String)request.getParameter("val");
+
+		DefaultSettingAttribute defaultSettingAttribute = null;
 		try {
-			ValidatorStatusCode status = SettingSecurity.canUpdateSettings(id, attribute, newValue, userId);
+			defaultSettingAttribute = DefaultSettingAttribute.valueOf(attribute);
+		} catch (Exception e) {
+			log.warn("Illegal value of DefaultSettingAttribute enum: " + Util.getStackTrace(e));
+		}
+
+		try {
+			ValidatorStatusCode status = SettingSecurity.canUpdateSettings(id, defaultSettingAttribute, newValue, userId);
 			if (!status.isSuccess()) {
 				return gson.toJson(status);
 			}
@@ -2127,25 +2172,29 @@ public class RESTServices {
 			
 			boolean success = false;
 			// Go through all the cases, depending on what attribute we are changing.
-			if (attribute.equals("PostProcess")) {
+			if (defaultSettingAttribute == DefaultSettingAttribute.PostProcess) {
 				success = Settings.updateSettingsProfile(id, 1, Integer.parseInt(newValue));
-			} else if (attribute.equals("BenchProcess")) {
+			} else if (defaultSettingAttribute == DefaultSettingAttribute.BenchProcess) {
 				success = Settings.updateSettingsProfile(id,8,Integer.parseInt(newValue));
-			}else if (attribute.equals("CpuTimeout")) {
+			}else if (defaultSettingAttribute == DefaultSettingAttribute.CpuTimeout) {
 				success = Settings.updateSettingsProfile(id, 2, Integer.parseInt(newValue));			
-			}else if (attribute.equals("ClockTimeout")) {
+			}else if (defaultSettingAttribute == DefaultSettingAttribute.ClockTimeout) {
 				success = Settings.updateSettingsProfile(id, 3, Integer.parseInt(newValue));			
-			} else if (attribute.equals("DependenciesEnabled")) {
+			} else if (defaultSettingAttribute == DefaultSettingAttribute.DependenciesEnabled) {
 				success = Settings.updateSettingsProfile(id, 4, Integer.parseInt(newValue));
-			} else if (attribute.equals("defaultbenchmark")) {
-				success=Settings.updateSettingsProfile(id, 5, Integer.parseInt(newValue));
-			} else if (attribute.equals("defaultsolver")) {
+			} else if (defaultSettingAttribute == DefaultSettingAttribute.defaultbenchmark) {
+				DefaultSettings settings = Settings.getProfileById(id);
+				Integer benchId = Integer.parseInt(newValue);
+				settings.addBenchId(benchId);
+				Settings.updateDefaultSettings(settings);
+				success = true;
+			} else if (defaultSettingAttribute == DefaultSettingAttribute.defaultsolver) {
 				success=Settings.updateSettingsProfile(id, 7, Integer.parseInt(newValue));
-			} else if(attribute.equals("MaxMem")) {
+			} else if(defaultSettingAttribute == DefaultSettingAttribute.MaxMem) {
 				double gigabytes=Double.parseDouble(newValue);
 				long bytes = Util.gigabytesToBytes(gigabytes); 
 				success=Settings.setDefaultMaxMemory(id, bytes);
-			} else if (attribute.equals("PreProcess")) {
+			} else if (defaultSettingAttribute == DefaultSettingAttribute.PreProcess) {
 				success=Settings.updateSettingsProfile(id, 6, Integer.parseInt(newValue));
 			}
 			
@@ -2155,7 +2204,6 @@ public class RESTServices {
 			log.error(e.getMessage(),e);
 			return gson.toJson(ERROR_DATABASE);
 		}
-		
 	}
 	
 	/** 

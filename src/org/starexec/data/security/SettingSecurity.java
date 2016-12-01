@@ -2,7 +2,11 @@ package org.starexec.data.security;
 
 import java.sql.SQLException;
 import java.util.List;
+import org.starexec.constants.R.DefaultSettingAttribute;
 
+
+
+import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Settings;
@@ -91,11 +95,10 @@ public class SettingSecurity {
 	 * @param userId The ID of the user making the request
 	 * @return 0 if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
-	
-	public static ValidatorStatusCode canUpdateSettings(int id, String attribute, String newValue, int userId) throws SQLException {
+	public static ValidatorStatusCode canUpdateSettings(int id, R.DefaultSettingAttribute attribute, String newValue, int userId) throws SQLException {
 		boolean isInt = Validator.isValidPosInteger(newValue);
 				
-		if (attribute.equals("CpuTimeout") || attribute.equals("ClockTimeout")) {
+		if (attribute == R.DefaultSettingAttribute.CpuTimeout || attribute == DefaultSettingAttribute.ClockTimeout) {
 			if (! Validator.isValidPosInteger(newValue)) {
 				return new ValidatorStatusCode(false, "The new limit needs to be a valid integer");
 			}
@@ -103,7 +106,7 @@ public class SettingSecurity {
 			if (timeout<=0) {
 				return new ValidatorStatusCode(false, "The new limit needs to be greater than 0");
 			}
-		} else if (attribute.equals("MaxMem")) {
+		} else if (attribute == DefaultSettingAttribute.MaxMem) {
 			if (!Validator.isValidPosDouble(newValue)) {
 				return new ValidatorStatusCode(false, "The new limit needs to be a valid double");
 			}
@@ -112,7 +115,7 @@ public class SettingSecurity {
 			if (limit<=0) {
 				return new ValidatorStatusCode(false, "The new limit needs to be greater than 0");
 			}
-		} else if (attribute.equals("PostProcess")) {
+		} else if (attribute == DefaultSettingAttribute.PostProcess) {
 			if (!isInt) {
 				return new ValidatorStatusCode(false, "The given processor ID is not valid");
 			}
@@ -127,7 +130,7 @@ public class SettingSecurity {
 				}
 			}
 				
-		} else if (attribute.equals("BenchProcess")) {
+		} else if (attribute == DefaultSettingAttribute.BenchProcess) {
 			if (!isInt) {
 				return new ValidatorStatusCode(false, "The given processor ID is not valid");
 			}
@@ -142,21 +145,21 @@ public class SettingSecurity {
 				}
 			}
 			
-		} else if (attribute.equals("defaultbenchmark")) {
+		} else if (attribute == DefaultSettingAttribute.defaultbenchmark) {
 			if (!isInt) {
 				return new ValidatorStatusCode(false, "The given benchmark ID is not valid");
 			}
 			if (!Permissions.canUserSeeBench(Integer.parseInt(newValue), userId)) {
-				return new ValidatorStatusCode(false, "You do not have permission to see the given solver, or the given solver does not exist");
+				return new ValidatorStatusCode(false, "You do not have permission to see the given benchmark, or the given solver does not exist");
 			}	
-		} else if (attribute.equals("defaultsolver")) {
+		} else if (attribute == DefaultSettingAttribute.defaultsolver) {
 			if (!isInt) {
 				return new ValidatorStatusCode(false, "The given solver ID is not valid");
 			}
 			if (!Permissions.canUserSeeSolver(Integer.parseInt(newValue), userId)) {
 				return new ValidatorStatusCode(false, "You do not have permission to see the given solver, or the given solver does not exist");
 			}
-		} else if (attribute.equals("PreProcess")) {
+		} else if (attribute == DefaultSettingAttribute.PreProcess) {
 			if (!isInt) {
 				return new ValidatorStatusCode(false, "The given processor ID is not valid");
 			}

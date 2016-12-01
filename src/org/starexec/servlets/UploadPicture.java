@@ -86,7 +86,7 @@ public class UploadPicture extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			}					
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.warn("Caught Exception in UploadPicture.doPost: " + Util.getStackTrace(e));
 		}
 	}
     

@@ -12,17 +12,17 @@ $(document).ready(function(){
 });
 
 function getMaxCpuTimeout(){
-	maxtime=$( "#workerQueue option:selected" ).attr("cpumax");
+	var maxtime=$( "#workerQueue option:selected" ).attr("cpumax");
 	return parseInt(maxtime);
 }
 
 function getMaxWallTimeout() {
-	maxtime=$( "#workerQueue option:selected" ).attr("wallmax");
+	var maxtime=$( "#workerQueue option:selected" ).attr("wallmax");
 	return parseInt(maxtime);
 }
 
 function getCpuTimeoutErrorMessage() {
-	timeout=getMaxCpuTimeout();
+	var timeout=getMaxCpuTimeout();
 	if (isNaN(timeout)) {
 		return "please select a queue";
 	}
@@ -30,7 +30,7 @@ function getCpuTimeoutErrorMessage() {
 }
 
 function getClockTimeoutErrorMessage() {
-	timeout=getMaxWallTimeout();
+	var timeout=getMaxWallTimeout();
 	if (isNaN(timeout)) {
 		return "please select a queue";
 	}
@@ -171,7 +171,7 @@ function attachFormValidation(){
 	
 	//when we change queues, we need to refresh the validation to use the new timeouts
 	$("#workerQueue").change(function() {
-		settings = $('#addForm').validate().settings;
+		var settings = $('#addForm').validate().settings;
 		settings.rules.cpuTimeout = {
 				required: true,			    
 			    max: getMaxCpuTimeout(),
@@ -226,40 +226,7 @@ function initUI() {
 		
 		history.back(-1);
 	});
-	
-	
-	$("#btnSave").button({
-		icons: {
-			primary: "ui-icon-disk"
-		}
-	}).click(function() {
-		$("#dialog-createSettingsProfile").dialog({
-			modal: true,
-			width: 380,
-			height: 165,
-			buttons: {
-				'create': function() {
-					$(this).dialog("close");
-						$.post(  
-							starexecRoot+"secure/add/profile",
-							{postp: $("#postProcess").val(), prep: $("#preProcess").val(), benchp: $("#benchProcess").val(),
-								solver: $("#solver").val(), name: $("#settingName").val(), cpu: $("#cpuTimeout").val(),
-								wall: $("#wallclockTimeout").val(), dep: "false", bench: "", mem: $("#maxMem").val()},
-							function(returnCode) {
-									//success
-							}
-						).error(function(xhr, textStatus, errorThrown){
-							showMessage('error',"Invalid parameters",5000);
-						});
-														
-				},
-				"cancel": function() {
-					$(this).dialog("close");
-				}
-			}
-		});
-		
-	});
+
 	$("#advancedSettings").expandable(true);
 	$("#solverField").expandable(true);
     $('#btnDone').button({

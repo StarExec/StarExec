@@ -66,114 +66,117 @@ public class AddSpace extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
-		// Make sure the request is valid
-		ValidatorStatusCode status=isValid(request);
-		if(!status.isSuccess()) {
-			//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
-			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
-			return;
-		}
-
-		int spaceId = Integer.parseInt((String)request.getParameter(parentSpace));
-		int userId = SessionUtil.getUserId(request);
-
-		// Make the space to be added and set it's basic information
-		Space s = new Space();
-		s.setName((String)request.getParameter(name));
-		s.setDescription((String)request.getParameter(description));
-		s.setLocked(Boolean.parseBoolean((String)request.getParameter(locked)));
-		s.setStickyLeaders(Boolean.parseBoolean((String)request.getParameter(stickyLeaders)));
-		int spaceId1 = Integer.parseInt(request.getParameter(parentSpace));
-		s.setParentSpace(spaceId1);
-		
-		// Make the default permissions for the space to be added
-		Permission p = new Permission();
-		p.setAddBenchmark(request.getParameter(addBench) != null);
-		p.setAddSolver(request.getParameter(addSolver) != null);
-		p.setAddSpace(request.getParameter(addSpace) != null);
-		p.setAddUser(request.getParameter(addUser) != null);
-		p.setAddJob(request.getParameter(addJob) != null);
-		
-		p.setRemoveBench(request.getParameter(removeBench) != null);
-		p.setRemoveSolver(request.getParameter(removeSolver) != null);
-		p.setRemoveSpace(request.getParameter(removeSpace) != null);
-		p.setRemoveUser(request.getParameter(removeUser) != null);
-		p.setRemoveJob(request.getParameter(removeJob) != null);
-		p.setLeader(false);
-		// Set the default permission on the space
-		s.setPermission(p);
-		
-		
-		s.setParentSpace(spaceId);
-		int newSpaceId = Spaces.add(s, userId);
-		
-		//Inherit Users
-		boolean inheritUsers = Boolean.parseBoolean((String)request.getParameter(users));
-		log.debug("inheritUsers = " + inheritUsers);
-		if (inheritUsers) {
-			log.debug("Adding inherited users");
-			List<User> users = Spaces.getUsers(spaceId);
-			log.debug("parent users = " + users);
-			for (User u : users) {
-				log.debug("users = " + u.getFirstName());
-				int tempId = u.getId();
-				Users.associate(tempId, newSpaceId);
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		try {
+			// Make sure the request is valid
+			ValidatorStatusCode status = isValid(request);
+			if (!status.isSuccess()) {
+				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
+				return;
 			}
-		}
 
-		boolean inheritSolvers = Boolean.parseBoolean((String)request.getParameter(solvers));
-		log.debug("inheritSolvers = " + inheritSolvers);
-		if (inheritSolvers) {
-			log.debug("Adding inherited solvers");
-			List<Solver> solvers = Solvers.getBySpace(spaceId);
-			log.debug("parent solvers = " + solvers);
-			log.debug("parent solvers size = " + solvers.size());
-			for (Solver solver : solvers) {
-				log.debug("solvers = " + solver.getName());
-				Solvers.associate(solver.getId(), newSpaceId);
+			int spaceId = Integer.parseInt((String) request.getParameter(parentSpace));
+			int userId = SessionUtil.getUserId(request);
+
+			// Make the space to be added and set it's basic information
+			Space s = new Space();
+			s.setName((String) request.getParameter(name));
+			s.setDescription((String) request.getParameter(description));
+			s.setLocked(Boolean.parseBoolean((String) request.getParameter(locked)));
+			s.setStickyLeaders(Boolean.parseBoolean((String) request.getParameter(stickyLeaders)));
+			int spaceId1 = Integer.parseInt(request.getParameter(parentSpace));
+			s.setParentSpace(spaceId1);
+
+			// Make the default permissions for the space to be added
+			Permission p = new Permission();
+			p.setAddBenchmark(request.getParameter(addBench) != null);
+			p.setAddSolver(request.getParameter(addSolver) != null);
+			p.setAddSpace(request.getParameter(addSpace) != null);
+			p.setAddUser(request.getParameter(addUser) != null);
+			p.setAddJob(request.getParameter(addJob) != null);
+
+			p.setRemoveBench(request.getParameter(removeBench) != null);
+			p.setRemoveSolver(request.getParameter(removeSolver) != null);
+			p.setRemoveSpace(request.getParameter(removeSpace) != null);
+			p.setRemoveUser(request.getParameter(removeUser) != null);
+			p.setRemoveJob(request.getParameter(removeJob) != null);
+			p.setLeader(false);
+			// Set the default permission on the space
+			s.setPermission(p);
+
+
+			s.setParentSpace(spaceId);
+			int newSpaceId = Spaces.add(s, userId);
+
+			//Inherit Users
+			boolean inheritUsers = Boolean.parseBoolean((String) request.getParameter(users));
+			log.debug("inheritUsers = " + inheritUsers);
+			if (inheritUsers) {
+				log.debug("Adding inherited users");
+				List<User> users = Spaces.getUsers(spaceId);
+				log.debug("parent users = " + users);
+				for (User u : users) {
+					log.debug("users = " + u.getFirstName());
+					int tempId = u.getId();
+					Users.associate(tempId, newSpaceId);
+				}
 			}
-		}
 
-		boolean inheritBenchmarks = Boolean.parseBoolean((String)request.getParameter(benchmarks));
-		log.debug("inheritBenchmarks = " + inheritBenchmarks);
-		if (inheritBenchmarks) {
-			log.debug("Adding inherited benchmarks");
-			List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
-			log.debug("parent benchmarks = " + benchmarks);
-			log.debug("parent benchmarks size = " + benchmarks.size());
-			for (Benchmark benchmark : benchmarks) {
-				log.debug("benchmarks = " + benchmark.getName());
-				Benchmarks.associate(benchmark.getId(), newSpaceId);
+			boolean inheritSolvers = Boolean.parseBoolean((String) request.getParameter(solvers));
+			log.debug("inheritSolvers = " + inheritSolvers);
+			if (inheritSolvers) {
+				log.debug("Adding inherited solvers");
+				List<Solver> solvers = Solvers.getBySpace(spaceId);
+				log.debug("parent solvers = " + solvers);
+				log.debug("parent solvers size = " + solvers.size());
+				for (Solver solver : solvers) {
+					log.debug("solvers = " + solver.getName());
+					Solvers.associate(solver.getId(), newSpaceId);
+				}
 			}
-		}
-		
+
+			boolean inheritBenchmarks = Boolean.parseBoolean((String) request.getParameter(benchmarks));
+			log.debug("inheritBenchmarks = " + inheritBenchmarks);
+			if (inheritBenchmarks) {
+				log.debug("Adding inherited benchmarks");
+				List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
+				log.debug("parent benchmarks = " + benchmarks);
+				log.debug("parent benchmarks size = " + benchmarks.size());
+				for (Benchmark benchmark : benchmarks) {
+					log.debug("benchmarks = " + benchmark.getName());
+					Benchmarks.associate(benchmark.getId(), newSpaceId);
+				}
+			}
 
 
-		//adds sticky users from ancestor spaces
-		log.debug("adding leaders from parent spaces");
-		Set<Integer> users=Spaces.getStickyLeaders(newSpaceId);
-		Permission perm=Permissions.getFullPermission();
-		for (Integer id : users) {
-			Users.associate(id, newSpaceId);
-			Permissions.set(id, newSpaceId, perm);
+			//adds sticky users from ancestor spaces
+			log.debug("adding leaders from parent spaces");
+			Set<Integer> users = Spaces.getStickyLeaders(newSpaceId);
+			Permission perm = Permissions.getFullPermission();
+			for (Integer id : users) {
+				Users.associate(id, newSpaceId);
+				Permissions.set(id, newSpaceId, perm);
+			}
+
+			if (newSpaceId <= 0) {
+				// If it failed, notify an error
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error adding the space to the starexec database");
+			} else {
+				// On success, redirect to the space explorer so they can see changes
+				response.addCookie(new Cookie("New_ID", String.valueOf(newSpaceId)));
+				response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
+			}
+		} catch (Exception e) {
+			log.warn("Caught Exception in AddSpace.doPost: " + Util.getStackTrace(e));
+			throw e;
 		}
-		
-		if(newSpaceId <= 0) {			
-			// If it failed, notify an error
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error adding the space to the starexec database");
-		} else {
-			// On success, redirect to the space explorer so they can see changes
-			response.addCookie(new Cookie("New_ID", String.valueOf(newSpaceId)));
-		    response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));	
-		}		
 	}
 
 	/**
 	 * Uses the Validate util to ensure the incoming request is valid. This checks for illegal characters
 	 * and content length requirements to ensure it is not malicious.
-	 * @param spaceRequest The request to validate
 	 * @return True if the request is ok to act on, false otherwise
 	 */
 	private ValidatorStatusCode isValid(HttpServletRequest request) {

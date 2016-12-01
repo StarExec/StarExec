@@ -2,11 +2,14 @@ package org.starexec.constants;
 import java.lang.UnsupportedOperationException;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.function.BiFunction;
+
 import org.starexec.backend.Backend;
 import org.starexec.backend.GridEngineBackend;
 import org.starexec.backend.LocalBackend;
 import org.starexec.backend.OARBackend;
 import org.starexec.exceptions.StarExecException;
+import org.w3c.dom.Element;
 
 /**
  * Class which holds static resources (R) available for use
@@ -29,7 +32,7 @@ public class R {
     }
 
     public static String getBenchmarkPath() {
-		return STAREXEC_DATA_DIR + "/Benchmarks"; 
+		return STAREXEC_DATA_DIR + "/Benchmarks";
 	}
 
 	public static String getSolverPath() {
@@ -39,7 +42,7 @@ public class R {
 	public static String getJobInboxDir() {
 		return STAREXEC_DATA_DIR + "/jobin";
 	}
-	
+
 	public static String getJobOutputDirectory() {
 		return STAREXEC_DATA_DIR + "/joboutput";
 	}
@@ -52,7 +55,7 @@ public class R {
 	public static String getPicturePath() {
 		return STAREXEC_DATA_DIR + "/pictures";
 	}
-	
+
 	public static String getSolverBuildOutputDir() {
 		return getSolverPath()+"/buildoutput";
 	}
@@ -67,7 +70,7 @@ public class R {
 	public static String getBatchSpaceXMLDir() {
 		return STAREXEC_DATA_DIR + "/batchSpace/uploads";
 	}
-	
+
 	public static String getScriptDir() {
 		return STAREXEC_DATA_DIR+"/sge_scripts";
 	}
@@ -80,7 +83,7 @@ public class R {
 	/**
 	 * Returns a Backend of the class corresponding to the BACKEND_TYPE set
 	 * @return
-	 * @throws StarExecException 
+	 * @throws StarExecException
 	 */
 	public static Backend getBackendFromType() throws StarExecException {
 		if (BACKEND_TYPE.equals(SGE_TYPE)) {
@@ -96,7 +99,7 @@ public class R {
 
 	public static String BACKEND_TYPE = null;
 	public static Backend BACKEND = null;
-	
+
     //maximum length properties
     public static int SPACE_NAME_LEN=250;
     public static int SPACE_DESC_LEN=1024;
@@ -123,14 +126,26 @@ public class R {
     public static int QUEUE_NAME_LEN=64;
     public static int TEXT_FIELD_LEN = 65000;
 
+    public enum DefaultSettingAttribute {
+        PostProcess,
+        BenchProcess,
+        CpuTimeout,
+        ClockTimeout,
+        DependenciesEnabled,
+        defaultbenchmark,
+        defaultsolver,
+        MaxMem,
+        PreProcess;
+    }
+
 	// Matrix view settings
 	public static final int MATRIX_VIEW_COLUMN_HEADER = 18; // Limit on number of letters for Solver or config name
 	public static final int MAX_MATRIX_JOBPAIRS = 10000;
 
 	// JSP page constants
 	public static final String SUPPRESS_TIMESTAMP_INPUT_NAME = "suppressTimestamp"; // Name of input value for suppress timestamps in job.jsp
-	
-    
+
+
     //the number of increments we should accumulate in an upload status field before actually committing to the database
     //public static int UPLOAD_STATUS_UPDATE_THRESHOLD=100;
     public static long UPLOAD_STATUS_TIME_BETWEEN_UPDATES=9000; //number of milliseconds that should pass between updates
@@ -149,21 +164,21 @@ public class R {
     public static String PRIMITIVE_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]+$";
     public static String SPACE_NAME_PATTERN="^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,"+String.valueOf(SPACE_NAME_LEN)+"}$";
 
-    
+
     public static String REQUEST_MESSAGE="^[\\w\\]\\[\\!\"#\\$%&'()\\*\\+,\\./:;=\\?@\\^_`{\\|}~\\- ]{2,"+R.MSG_LEN+"}$";
     public static String PRIMITIVE_DESC_PATTERN="^[^<>\"\'%;)(&\\+-]{0,"+String.valueOf(SPACE_DESC_LEN)+"}$";
     public static String PASSWORD_PATTERN="^(?=.*[A-Za-z0-9~`!@#\\$%\\^&\\*\\(\\)_\\-\\+\\=]+$)(?=.*[0-9~`!@#\\$%\\^&\\*\\(\\)_\\-\\+\\=]{1,})(?=.*[A-Za-z]{1,}).{5,32}$";
 	public static String DATE_PATTERN="[0-9][0-9]/[0-9][0-9]/[0-9][0-9][0-9][0-9]";
 	public static String DOUBLE_PATTERN="^\\-?((\\d+(\\.\\d*)?)|(\\.\\d+))$";
 
-	
+
 	public static String JOB_PAIR_PATH_DELIMITER="/";
     // Email properties
     public static String EMAIL_SMTP = null;
     public static int EMAIL_SMTP_PORT = 25;
     public static String EMAIL_USER = null;
     public static String EMAIL_PWD = null;
-	
+
     // http properties
     public static String HTTP_PROXY_HOST = "https://proxy.divms.uiowa.edu";
     public static String HTTP_PROXY_PORT = "8888";
@@ -177,25 +192,25 @@ public class R {
     public static String COMPUTE_NODE_MYSQL_PASSWORD = null;				// DB password for COMPUTE_NODE_MYSQL_USERNAME
     public static String MYSQL_DRIVER = "com.mysql.jdbc.Driver";			// MySQL java driver class (we use JDBC)
     public static int MYSQL_POOL_MAX_SIZE = 1;								// The maximum number of connections in the database pool
-    public static int MYSQL_POOL_MIN_SIZE = 1;								// The minimum number of connections to keep open to the database	
+    public static int MYSQL_POOL_MIN_SIZE = 1;								// The minimum number of connections to keep open to the database
     public static String REPORT_HOST = "starexec1.star.cs.uiowa.edu";  // where to report job status updates during jobs
-	
+
     // Global path information
     public static String SOLVER_BUILD_OUTPUT = "starexec_build_log";                        // The name of the file in which we're storing build output
-    public static String STAREXEC_ROOT = null;								// The directory of the starexec webapp	
+    public static String STAREXEC_ROOT = null;								// The directory of the starexec webapp
     public static String CONFIG_PATH = null;								// The directory of starexec's configuration and template files relative to the root path
     public static String RUNSOLVER_PATH = null;								// The absolute filepath to the runsolver executable
     public static String STAREXEC_DATA_DIR = null;   						// the root of the data directory (where jobin/, jobout/, and dirs for primitive are)
     public static String DOWNLOAD_FILE_DIR = "/secure/files";				// Where to temporarily store processed files for downloading. Relative to webapp root
-    public static String SPACE_XML_SCHEMA_RELATIVE_LOC = "public/batchSpaceSchema.xsd";						// Where the schema for batch space xml is located, relative to STAREXEC_ROOT. 
+    public static String SPACE_XML_SCHEMA_RELATIVE_LOC = "public/batchSpaceSchema.xsd";						// Where the schema for batch space xml is located, relative to STAREXEC_ROOT.
     public static String JOB_XML_SCHEMA_RELATIVE_LOC = "public/batchJobSchema.xsd";
     public static String STAREXEC_URL_PREFIX = null;						//either "https" or "http"
 	public static String JOBGRAPH_FILE_DIR = "/secure/jobgraphs";			// Location to store job graph image files. Relative to webapp root.
 	public static String SANDBOX_DIRECTORY=null;                            //the sandbox directory for doing processing / building on the head node
-    
+
 	//Admin user info
     public static int ADMIN_USER_ID = 9;									//user id to use when administrator
-    public static String ADMIN_USER_PASSWORD = "admin";			
+    public static String ADMIN_USER_PASSWORD = "admin";
     public static String DEFAULT_QUEUE_NAME = "all.q";						//The name of the default queue
     public static int DEFAULT_QUEUE_ID=1;
     //Test info
@@ -210,7 +225,7 @@ public class R {
     // Job Manager (JM) constants
     public static String JOBFILE_FORMAT = "job_%d.bash";					// The filename format (with standard java string formatting) for generated jobscript files
     public static String DEPENDFILE_FORMAT = "depend_%d.txt";				// The filename format for dependencies
-    public static String SOLVER_BIN_DIR = "/bin";							// The path to the bin directory to look for runscripts (relative to the solver's toplevel directory)	
+    public static String SOLVER_BIN_DIR = "/bin";							// The path to the bin directory to look for runscripts (relative to the solver's toplevel directory)
     public static String SANDBOX_USER_ONE=null;								// name of user that executes jobs in sandbox one
     public static String SANDBOX_USER_TWO=null; 							// name of user that executes jobs in sandbox two
     // Misc application properties
@@ -221,6 +236,7 @@ public class R {
     public static boolean REMOVE_ARCHIVES = true;							// Whether or not to delete archive files after they're extracted
     public static String CONTACT_EMAIL = "";								// The default e-mail address to use for users to contact for support
     public static boolean IS_FULL_STAREXEC_INSTANCE = true;  				// should we run job tasks (see app/Starexec.java)
+    public static int CLEAR_JOB_LOG_PERIOD = 14;                                                        // How often (in days) to clear job logs
     public static int CLUSTER_UPDATE_PERIOD = 600;							// How often (in seconds) to update the cluster's current usage status
     public static int JOB_SUBMISSION_PERIOD = 60;							// How often (in seconds) to write job scripts and submit to the backend
     public static int CREATE_QUEUE_PERIOD = 60;								// How often (in minutes) to check if todays date is the reserved_queue date and then associate nodes
@@ -233,7 +249,7 @@ public class R {
     public static long COMM_ASSOC_UPDATE_PERIOD = 21600000;  //how much time we should wait before requerying for community_assoc table, currentely set to a 10 seconds (milliseconds)
     public static long DEFAULT_DISK_QUOTA = 52428800;						// The default user disk quota to assign new users; currently 50MB
     public static int DEFAULT_PAIR_QUOTA = 750000;							// The default max number of pairs a user should be able to own
-    public static String PERSONAL_SPACE_DESCRIPTION =						// The default text that appears at the top of a user's personal space 
+    public static String PERSONAL_SPACE_DESCRIPTION =						// The default text that appears at the top of a user's personal space
 	"this is your personal space";
     public static int MAX_FAILED_VALIDATIONS=50;						//More than this number of benchmark validation failures triggers a message and ends
 	public static String VALID_BENCHMARK_ATTRIBUTE = "starexec-valid";      //Name of attribute given by benchmark processors to show a benchmark is valid
@@ -244,36 +260,38 @@ public class R {
 	public static String EXPECTED_RESULT = "starexec-expected-result";    // key for key value pair in benchmark attributes
 	public static String SOLVER_DESC_PATH = "starexec_description.txt";		// File that can be included within the archive solver file to include the description
 	public static String SOLVER_BUILD_SCRIPT="starexec_build";
-	public static String PROCESSOR_RUN_SCRIPT="process";
+    public static String UPLOAD_TEST_JOB_XML="run_on_upload.xml";
+
+    public static String PROCESSOR_RUN_SCRIPT="process";
 	public static String BENCHMARK_DESC_PATH = "starexec_description.txt";	// File that can be included within the archive solver file to include the description
 	public static String DESC_PATH = "starexec_description.txt";
 	public static String STAREXEC_UNKNOWN="starexec-unknown";               // Result that indicates a pair should not be counted as wrong
 	// Queue and node status strings
-	
+
 	public static String QUEUE_STATUS_ACTIVE = "ACTIVE";					// Active status for a backend queue (indicates the queue is live)
 	public static String QUEUE_STATUS_INACTIVE = "INACTIVE";				// Inactive status for a backend queue (indicates the queue is not currently live)
 	public static String NODE_STATUS_ACTIVE = "ACTIVE";						// Active status for a backend node (indicates the node is live)
 	public static String NODE_STATUS_INACTIVE = "INACTIVE";					// Inactive status for a backend node (indicates the node is not currently live)
-	
+
     // BACKEND configurations
     public static String BACKEND_ROOT = null; // root directory for the backend executable
     public static String BACKEND_WORKING_DIR = null;
     public static long MAX_PAIR_FILE_WRITE = 2097152;  						// The largest possible amount disk space (in kilobytes) a job pair is allowed to use
     public static long DEFAULT_PAIR_VMEM = 17179869184L;  					// The default limit on memory (in bytes) for job pairs
     public static int NODE_MULTIPLIER = 8;                                  // The number of job scripts to submit is the number of nodes in the queue times this
-  
+
     public static int MAX_STAGES_PER_PIPELINE = 10000;
     public static int NUM_JOB_PAIRS_AT_A_TIME = 5;  // the number of job pairs from a job to submit at the same time, as we cycle through all jobs submitting pairs.
     public static int NUM_REPOSTPROCESS_AT_A_TIME = 200; // number of job pairs to re-postprocess at a time with our periodic task
     public static int DEFAULT_MAX_TIMEOUT = 259200;
-    
-    
+
+
     public static int NO_TYPE_PROC_ID=1;
-    
+
     public static String STATUS_MESSAGE_COOKIE="STATUS_MESSAGE_STRING";
-    
+
     public static String JOB_SCHEMA_LOCATION="public/batchJobSchema.xsd";
-    
+
 	// Role names
 	public static String DEVELOPER_ROLE_NAME="developer";
     public static String SUSPENDED_ROLE_NAME="suspended";
@@ -282,14 +300,14 @@ public class R {
     public static String UNAUTHORIZED_ROLE_NAME="unauthorized";
 
 	public static final String JOB_PAGE_DOWNLOAD_TYPE = "job_page";
-	public static final String MATRIX_ELEMENT_ID_FORMAT ="%s%d-%s%d-%s%d"; 
-    
+	public static final String MATRIX_ELEMENT_ID_FORMAT ="%s%d-%s%d-%s%d";
+
     //some proxy data
     public static String PROXY_ADDRESS = "proxy.divms.uiowa.edu";
     public static int PROXY_PORT = 8888;
-    
+
     public static boolean DEBUG_MODE_ACTIVE = false;
-    
+
     //names of primitive types
 	public static String SOLVER="solver";
 	public static String BENCHMARK="bench";
@@ -305,10 +323,17 @@ public class R {
 	public static String USER = "user";
     public static final String SOLVER_SOURCE = "solverSrc";
 
-	public static final String ANONYMIZE_ALL = "all";
-	public static final String ANONYMIZE_ALL_BUT_BENCH = "allButBench"; 
+    //
+    public static final String CONFIG_ID_ATTR = "config-id";
+    public static final String CONFIG_NAME_ATTR = "config-id";
+
+
+    public static final String ANONYMIZE_ALL = "all";
+	public static final String ANONYMIZE_ALL_BUT_BENCH = "allButBench";
 	public static final String ANONYMIZE_NONE = "none";
 
 	// 2 years
 	public static final int MAX_AGE_OF_ANONYMOUS_LINKS_IN_DAYS = 730;
+
+
 }	

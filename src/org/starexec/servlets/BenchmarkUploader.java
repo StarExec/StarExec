@@ -112,8 +112,7 @@ public class BenchmarkUploader extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			}					
 		} catch (Exception e) {
-			log.error("Benchmark Uploader Servlet says " + e.getMessage(), e);
-			
+			log.warn("Caught Exception in BenchmarkUploader.doPost: " + Util.getStackTrace(e));
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an error uploading the benchmarks.");
 		}
 	}

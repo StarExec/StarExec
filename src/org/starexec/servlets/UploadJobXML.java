@@ -21,7 +21,11 @@ import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
+import org.starexec.data.to.enums.ConfigXmlAttribute;
+import org.starexec.data.to.enums.JobXmlType;
+import org.starexec.data.to.tuples.ConfigAttrMapPair;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.JobUtil;
@@ -104,8 +108,8 @@ public class UploadJobXML extends HttpServlet {
 			}
     	} catch (Exception e) {
     		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-    		log.error(e.getMessage(), e);
-    	}	
+			log.error("Caught Exception in UploadJobXML.doPost: " + Util.getStackTrace(e));
+    	}
 	}
 
 	private boolean userMayUploadJobXML(int userId, int spaceId) {
@@ -123,12 +127,16 @@ public class UploadJobXML extends HttpServlet {
 	 * @param form a hashmap representation of the form on secure/add/batchJob.jsp
 	 * @author Tim Smith
 	 */
-    private List<Integer> handleXMLFile(int userId, int spaceId, HashMap<String, Object> form, JobUtil jobUtil) throws StarExecException {
+    private List<Integer> handleXMLFile(
+    		int userId,
+			int spaceId,
+			HashMap<String, Object> form,
+			JobUtil jobUtil) throws StarExecException {
 		final String method = "handleXMLFile";
 		logUtil.entry(method);
 		try {
 			logUtil.info(method,"Handling Upload of XML File from user with id=" + userId);
-			PartWrapper item = (PartWrapper)form.get(UploadJobXML.UPLOAD_FILE);		
+			PartWrapper item = (PartWrapper)form.get(UploadJobXML.UPLOAD_FILE);
 			// Don't need to keep file long - just using download directory
 			
 			File uniqueDir = new File(R.getBatchSpaceXMLDir(), "Job" + userId);
@@ -155,7 +163,13 @@ public class UploadJobXML extends HttpServlet {
 			logUtil.info(method, "Started creating jobs from XML files");
 			for (File file:uniqueDir.listFiles())
 			{
-				current=jobUtil.createJobsFromFile(file, userId, spaceId);
+				current=jobUtil.createJobsFromFile(
+						file,
+						userId,
+						spaceId,
+						JobXmlType.STANDARD,
+						new ConfigAttrMapPair(ConfigXmlAttribute.ID));
+
 				if (current!=null) {
 					jobIds.addAll(current);		
 				} else {

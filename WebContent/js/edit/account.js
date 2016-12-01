@@ -6,6 +6,7 @@ $(document).ready(function(){
 	attachPasswordMonitor();
 	attachWebsiteMonitor();
 	userId=$("#infoTable").attr("uid");
+	log('Found userId: ' + userId);
 });
 
 
@@ -100,16 +101,32 @@ function initUI(){
 	
 	
 	$("#saveProfile").click(function() {
+		var benchmarkIds = [];
+		$('.benchmark').each(function(i, el) {
+			benchmarkIds.push($(el).attr('value'));
+		});
+
+		log('benchmarkIds is: ');
+		log(benchmarkIds);
+
+			
 		$.post(  
 				starexecRoot+"secure/add/profile",
 				{postp: $("#editPostProcess").val(), prep: $("#editPreProcess").val(), benchp: $("#editBenchProcess").val(),
 					solver: $("#solver").val(), name: $("#settingName").val(), cpu: $("#cpuTimeout").val(),
 					wall: $("#wallclockTimeout").val(), dep: $("#editDependenciesEnabled").val(),
-					bench: $("#benchmark").val(), mem: $("#maxMem").val(), settingId : $("#settingProfile").val(), userIdOfOwner: userId},
+					'bench[]': benchmarkIds, mem: $("#maxMem").val(), settingId : $("#settingProfile").val(), userIdOfOwner: userId},
 				function(returnCode) {
 						showMessage("success","Profile settings updated successfully",5000);
+
 				}
-			).error(function(xhr, textStatus, errorThrown){
+			).error(function(xhr, textStatus, errorThrown) {
+				log('xhr: ');
+				log(xhr);
+				log('textStatus: ');
+				log(textStatus);
+				log('errorThrown: ');
+				log(errorThrown);
 				showMessage('error',"Invalid parameters",5000);
 			});
 	});

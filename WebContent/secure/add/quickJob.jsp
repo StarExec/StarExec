@@ -103,8 +103,8 @@
 						<td class="label"><p>solver</p></td>
 						<td><input id="solver" type="hidden" name="solver"/><p id="solverNameField"></p></td>
 					</tr>
-					<tr class="noHover" title="what benchmark would you like to use?">
-						<td>benchmark selection</td>
+					<tr class="noHover" title="Enter the contents of the benchmark.">
+						<td>benchmark contents</td>
 						<td><textarea id="benchmarkField" name="bench"></textarea></td>
 					</tr>
 				</tbody>
@@ -224,10 +224,7 @@
 			<legend>actions</legend>
 			<div id="actionBar">
 				<button type="submit" class="round" id="btnDone">submit</button>			
-				<button type="button" class="round" id="btnBack">cancel</button>	
-				<c:if test="${!isPublicUser}">
-					<button type="button" class="round" id="btnSave">save profile</button>		
-				</c:if>
+				<button type="button" class="round" id="btnBack">cancel</button>
 			</div>	
 		</fieldset>		
 	</form>		

@@ -1,4 +1,7 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.io.*, java.util.List,org.starexec.data.to.Website.WebsiteType, org.starexec.data.database.*, org.starexec.data.to.*,org.starexec.data.security.*, org.starexec.constants.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%> <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.io.*, java.util.List,org.starexec.data.to.Website.WebsiteType, org.starexec.data.database.*, org.starexec.data.to.*,org.starexec.data.security.*, org.starexec.constants.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
+<%@ page import="java.util.Map" %>
+<%@ page import="java.util.HashMap" %>
+<%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 	try {
@@ -27,6 +30,13 @@
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
 			} else {
 				List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsVisibleByUser(userId);
+
+				Map<Integer, List<Benchmark>> idToBenchmarks = new HashMap<Integer, List<Benchmark>>();
+				for (DefaultSettings setting : listOfDefaultSettings) {
+					idToBenchmarks.put(setting.getId(), Settings.getDefaultBenchmarks(setting.getId()));
+				}
+
+				request.setAttribute("settingIdToDefaultBenchmarks", idToBenchmarks);
 				
 				request.setAttribute("userId", userId);
 				request.setAttribute("diskQuota", Util.byteCountToDisplaySize(t_user.getDiskQuota()));
@@ -50,6 +60,8 @@
 			request.setAttribute("hasAdminReadPrivileges", hasAdminReadPrivileges);
 			request.setAttribute("hasAdminWritePrivileges", hasAdminWritePrivileges);
 			request.setAttribute("user", t_user);
+
+
 		}
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
@@ -57,7 +69,27 @@
 %>
 <star:template title="edit account" css="common/table, common/pass_strength_meter, edit/account" js="common/defaultSettings,lib/jquery.validate.min, lib/jquery.validate.password, edit/account, lib/jquery.dataTables.min">
 	<c:forEach items="${settings}" var="setting">
-		<star:settings setting="${setting}" />
+		<span class="defaultSettingsProfile" name="${setting.name}" value="${setting.getId()}">
+
+			<span class="cpuTimeout" value="${setting.cpuTimeout}" ></span>
+			<span class="clockTimeout" value="${setting.wallclockTimeout}"></span>
+			<span class="maxMemory" value="${setting.getRoundedMaxMemoryAsDouble()}"></span>
+			<span class="solverId" value="${setting.solverId}"></span>
+			<span class="solverName" value="${setting.getSolverName()}"></span>
+
+			<span class="preProcessorId" value="${setting.preProcessorId}"></span>
+			<span class="postProcessorId" value="${setting.postProcessorId}"></span>
+			<span class="benchProcessorId" value="${setting.benchProcessorId}"></span>
+
+			<c:forEach items="${settingIdToDefaultBenchmarks.get(setting.id)}" var="bench">
+				<span class="defaultBenchmark">
+					<span class="benchId" value="${bench.id}"></span>
+					<span class="benchName" value="${bench.name}"></span>
+				</span>
+			</c:forEach>
+
+			<span class="dependency" value="${setting.isDependenciesEnabled()}"></span>
+		</span>
 	</c:forEach>
 	
 	
@@ -297,10 +329,6 @@
 							<option value="false">False</option>
 						</select>
 					</td>
-				</tr>
-				<tr id="defaultBenchRow">
-					<td>default benchmark</td>
-					<td id="benchmark"><p id="benchmarkNameField"></p> <span class="selectPrim clearBenchmark">clear benchmark</span></td>
 				</tr>
 				<tr id="defaultSolverRow">
 					<td>default solver</td>

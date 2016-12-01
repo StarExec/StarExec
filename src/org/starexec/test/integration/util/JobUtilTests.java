@@ -16,7 +16,10 @@ import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.User;
+import org.starexec.data.to.enums.ConfigXmlAttribute;
+import org.starexec.data.to.enums.JobXmlType;
 import org.starexec.data.to.pipelines.StageAttributes;
+import org.starexec.data.to.tuples.ConfigAttrMapPair;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
@@ -36,7 +39,12 @@ public class JobUtilTests extends TestSequence {
 		int cId = solver.getConfigurations().get(0).getId();
 		File xml = loader.getTestXMLFile(cId, cId, benchmarkIds.get(0), benchmarkIds.get(1));
 		JobUtil util = new JobUtil();
-		List<Integer> jobIds = util.createJobsFromFile(xml, admin.getId(), Communities.getTestCommunity().getId());
+		List<Integer> jobIds = util.createJobsFromFile(
+				xml,
+				admin.getId(),
+				Communities.getTestCommunity().getId(),
+				JobXmlType.STANDARD,
+				new ConfigAttrMapPair(ConfigXmlAttribute.ID));
 		Assert.assertEquals(1, jobIds.size());
 		Job j = Jobs.get(jobIds.get(0));
 		j.setJobPairs(Jobs.getJobPairsInJobSpaceHierarchy(j.getPrimarySpace(), PrimitivesToAnonymize.NONE));

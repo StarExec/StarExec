@@ -51,7 +51,7 @@ public class Solvers {
 	 * @return The solverID of the new solver, or -1 on failure
 	 * @author Skylar Stark
 	 */
-	public static int add(Solver s, int spaceId) {
+	public static int add(Solver s, int spaceId) throws SQLException {
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -83,14 +83,11 @@ public class Solvers {
 			}
 
 			return solverId;						
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
-		}		
-		
-		return -1;
+		}
 	}
 	
 	/**
@@ -101,7 +98,7 @@ public class Solvers {
 	 * configuration object
 	 * @author Skylar Stark
 	 */
-	protected static int addConfiguration(Connection con, Configuration c) throws Exception {
+	protected static int addConfiguration(Connection con, Configuration c) throws SQLException {
 		CallableStatement procedure = null;
 		try {
 			procedure = con.prepareCall("{CALL AddConfiguration(?, ?, ?, ?, ?)}");
@@ -113,12 +110,12 @@ public class Solvers {
 			procedure.executeUpdate();
 			c.setId(procedure.getInt(5));
 			return c.getId();
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			log.error("addConfiguration says "+e.getMessage(),e);
+			throw e;
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return -1;
 	}
 	/**
 	 * Adds a configuration entry in the database for a particular solver 
@@ -159,7 +156,7 @@ public class Solvers {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Skylar Stark
 	 */
-	protected static boolean associate(Connection con, int spaceId, int solverId) throws Exception {
+	protected static boolean associate(Connection con, int spaceId, int solverId) throws SQLException {
 		CallableStatement procedure = null;
 		try {
 			 procedure = con.prepareCall("{CALL AddSolverAssociation(?, ?)}");
@@ -168,12 +165,12 @@ public class Solvers {
 			
 			procedure.executeUpdate();		
 			return true;
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			log.error("Solvers.associate says "+e.getMessage(),e);
+			throw e;
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
 	
 	/**

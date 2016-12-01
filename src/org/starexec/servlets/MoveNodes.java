@@ -94,7 +94,7 @@ public class MoveNodes extends HttpServlet {
 	    response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));
 	}
 	catch (Exception e) {
-	    log.error("Move Nodes Servlet encountered this exception: " + e.getMessage(), e);
+		log.error("Caught Exception in MoveNodes.doPost: " + Util.getStackTrace(e));
 	    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error moving the nodes.");
 	}
     }
