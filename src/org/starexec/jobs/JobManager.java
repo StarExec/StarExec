@@ -36,6 +36,7 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.SolverBuildStatus.SolverBuildStatusCode;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
@@ -910,8 +911,21 @@ public abstract class JobManager {
 	 * @param randomSeed a seed to pass into preprocessors
 	 * @return the new job object with the specified properties
 	 */
-	public static Job setupJob(int userId, String name, String description, int preProcessorId, int postProcessorId, int queueId, long randomSeed,
-			int cpuLimit,int wallclockLimit, long memLimit, boolean suppressTimestamp, int resultsInterval, SaveResultsOption otherOutputOption) {
+	public static Job setupJob(
+			int userId,
+			String name,
+			String description,
+			int preProcessorId,
+			int postProcessorId,
+			int queueId,
+			long randomSeed,
+			int cpuLimit,
+			int wallclockLimit,
+			long memLimit,
+			boolean suppressTimestamp,
+			int resultsInterval,
+			SaveResultsOption otherOutputOption,
+			BenchmarkingFramework framework) {
 		log.debug("Setting up job " + name);
 		Job j = new Job();
 
@@ -926,6 +940,7 @@ public abstract class JobManager {
 			j.setDescription(description);
 		}
 
+		j.setBenchmarkingFramework(framework);
 		// Get queue and processor information from the database and put it in the job
 		j.setQueue(Queues.get(queueId));
 		StageAttributes attrs=new StageAttributes();
@@ -1081,7 +1096,9 @@ public abstract class JobManager {
 			R.DEFAULT_PAIR_VMEM,
 			false,
 			15,
-			SaveResultsOption.SAVE);
+			SaveResultsOption.SAVE,
+			R.DEFAULT_BENCHMARKING_FRAMEWORK);
+
 		j.setBuildJob(true);
 		String spaceName = "job space";
 		String sm=Spaces.getName(spaceId);

@@ -8,6 +8,7 @@ import org.starexec.backend.Backend;
 import org.starexec.backend.GridEngineBackend;
 import org.starexec.backend.LocalBackend;
 import org.starexec.backend.OARBackend;
+import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.exceptions.StarExecException;
 import org.w3c.dom.Element;
 
@@ -336,6 +337,7 @@ public class R {
 	public static final int MAX_AGE_OF_ANONYMOUS_LINKS_IN_DAYS = 730;
 
     // Constants for BenchExec
+    public static final BenchmarkingFramework DEFAULT_BENCHMARKING_FRAMEWORK = BenchmarkingFramework.RUNSOLVER;
     public static final String BENCHEXEC_TOOLS_PATH = "/opt/rh/rh-python34/root/usr/lib64/python3.4/site-packages/benchexec/tools";
     public static final String STAREXEC_TOOL_PATH = BENCHEXEC_TOOLS_PATH+"/starexec.py";
 

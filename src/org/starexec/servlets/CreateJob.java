@@ -142,7 +142,13 @@ public class CreateJob extends HttpServlet {
 				preProcessorId,
 				postProcessorId, 
 				Queues.getTestQueue(),
-				0,settings.getCpuTimeout(),settings.getWallclockTimeout(),settings.getMaxMemory(), false, 0, SaveResultsOption.SAVE);
+				0,settings.getCpuTimeout(),
+				settings.getWallclockTimeout(),
+				settings.getMaxMemory(),
+				false,
+				0,
+				SaveResultsOption.SAVE,
+				R.DEFAULT_BENCHMARKING_FRAMEWORK);
 
 		// TODO: need to allow for a selection of bench ids
 		buildQuickJob(j, solverId, settings.getBenchIds(), spaceId);
@@ -241,7 +247,14 @@ public class CreateJob extends HttpServlet {
 					Integer.parseInt((String) request.getParameter(preProcessor)),
 					Integer.parseInt((String) request.getParameter(postProcessor)),
 					Integer.parseInt((String) request.getParameter(workerQueue)),
-					seed, cpuLimit, runLimit, memoryLimit, suppressTimestamp, resultsIntervalNum, option);
+					seed,
+					cpuLimit,
+					runLimit,
+					memoryLimit,
+					suppressTimestamp,
+					resultsIntervalNum,
+					option,
+					framework);
 
 
 			String selection = request.getParameter(run);

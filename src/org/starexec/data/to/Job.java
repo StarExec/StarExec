@@ -14,6 +14,7 @@ import java.util.Set;
 import org.jfree.util.Log;
 import org.starexec.constants.R;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
@@ -37,6 +38,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	private int cpuTimeout = -1;
 	private int wallclockTimeout = -1; 
 	private long maxMemory;		//maximum memory the pair can use, in bytes
+	private BenchmarkingFramework benchmarkingFramework;
 	
 	
 	@Expose private Timestamp createTime;
@@ -59,9 +61,6 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	
 	private boolean usingDependencies = false;
 	private boolean isHighPriority = false;
-
-
-
 
 	private int totalPairs; // number of pairs this job owns
 	private long diskSize; // in bytes
@@ -106,6 +105,14 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 
 	public void setLowPriority() {
 		isHighPriority = false;
+	}
+
+	public BenchmarkingFramework getBenchmarkingFramework() {
+		return benchmarkingFramework;
+	}
+
+	public void setBenchmarkingFramework(BenchmarkingFramework benchmarkingFramework) {
+		this.benchmarkingFramework = benchmarkingFramework;
 	}
 	
 	/**
