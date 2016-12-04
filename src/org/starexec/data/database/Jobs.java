@@ -575,11 +575,11 @@ public class Jobs {
 			procedure.setBoolean(12, job.isBuildJob());
 			procedure.setInt(13, job.getJobPairs().size());
 			procedure.setString(14, job.getBenchmarkingFramework().toString());
-			procedure.registerOutParameter(14, java.sql.Types.INTEGER);	
+			procedure.registerOutParameter(15, java.sql.Types.INTEGER);	
 			procedure.executeUpdate();			
 
 			// Update the job's ID so it can be used outside this method
-			job.setId(procedure.getInt(14));
+			job.setId(procedure.getInt(15));
 		} catch (Exception e) {
 			log.error("addJob says "+e.getMessage(),e);
  		}	finally {
