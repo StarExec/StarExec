@@ -170,7 +170,7 @@ public abstract class JobManager {
 			// Impose resource limits
 			mainTemplate = mainTemplate.replace("$$MAX_WRITE$$", String.valueOf(R.MAX_PAIR_FILE_WRITE));	
 			mainTemplate = mainTemplate.replace("$$BENCH_NAME_LENGTH_MAX$$", String.valueOf(R.BENCH_NAME_LEN));
-			mainTemplate = mainTemplate.replace("$$RUNSOLVER_PATH$$", R.RUNSOLVER_PATH);
+            mainTemplate = mainTemplate.replace("$$RUNSOLVER_PATH$$", R.RUNSOLVER_PATH);
 			mainTemplate = mainTemplate.replace("$$SANDBOX_USER_ONE$$", R.SANDBOX_USER_ONE);
 			mainTemplate = mainTemplate.replace("$$SANDBOX_USER_TWO$$", R.SANDBOX_USER_TWO);
 			mainTemplate = mainTemplate.replace("$$WORKING_DIR_BASE$$", R.BACKEND_WORKING_DIR);
@@ -698,6 +698,14 @@ public abstract class JobManager {
 		replacements.put("$$MAX_CPUTIME$$", "" + Util.clamp(1, queue.getCpuTimeout(), job.getCpuTimeout()));
 		replacements.put("$$MAX_MEM$$", ""+Util.bytesToMegabytes(job.getMaxMemory()));
         replacements.put("$$BENCH_ID$$", ""+pair.getBench().getId());
+
+        replacements.put("$$BENCHMARKING_FRAMEWORK$$",job.getBenchmarkingFramework().toString() );
+
+        if (job.getBenchmarkingFramework() == BenchmarkingFramework.BENCHEXEC) {
+			log.debug("Writing jobscript using BenchExec framework.");
+		} else {
+			log.debug("Writing jobscript using runsolver framework.");
+		}
 
         if(job.isBuildJob()) {
                 replacements.put("$$BUILD_JOB$$", "true");

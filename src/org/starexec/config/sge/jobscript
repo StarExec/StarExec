@@ -55,6 +55,7 @@ export DISK_QUOTA_EXCEEDED=0
 export DB_USER="$$DB_USER$$"
 export DB_PASS="$$DB_PASS$$"
 export SCRIPT_DIR="$$SCRIPT_DIR$$"
+export BENCHMARKING_FRAMEWORK="$$BENCHMARKING_FRAMEWORK$$"
 
 # Path to Olivier Roussel's runSolver
 export RUNSOLVER_PATH='$$RUNSOLVER_PATH$$'
@@ -143,6 +144,8 @@ echo "date: `date`"
 echo "user: $USER_ID"
 echo "pair id: $PAIR_ID"
 echo "execution host: $HOSTNAME"
+echo "benchmarking framework: $BENCHMARKING_FRAMEWORK"
+
 if [ $BUILD_JOB == "true" ]; then
         echo "This is a solver build job"
 fi
