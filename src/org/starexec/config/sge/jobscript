@@ -25,6 +25,9 @@
 # Merge stdout and stderr streams
 #$ -j y
 
+export readonly BENCHEXEC='BENCHEXEC'
+export readonly RUNSOLVER='RUNSOLVER'
+
 export BENCH_NAME_LENGTH_LIMIT='$$BENCH_NAME_LENGTH_MAX$$'
 export PRIMARY_PREPROCESSOR_PATH='$$PRIMARY_PREPROCESSOR_PATH$$'
 export NUM_SLOTS='$$NUM_SLOTS$$'
@@ -145,6 +148,12 @@ echo "user: $USER_ID"
 echo "pair id: $PAIR_ID"
 echo "execution host: $HOSTNAME"
 echo "benchmarking framework: $BENCHMARKING_FRAMEWORK"
+
+if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
+	echo "Using benchexec."
+else
+	echo "Using runsolver."
+fi
 
 if [ $BUILD_JOB == "true" ]; then
         echo "This is a solver build job"
