@@ -198,8 +198,8 @@
 							<p>Benchmarking Framework</p>
 						</td>
 						<td>
-							Use BenchExec<input type="radio" id="radioUseBenchexec" name="runsolverOrBenchexec" value="true"/>
-							Use runsolver<input type="radio" id="radioUseRunsolver" name="runsolverOrBenchexec" value="false" checked="checked"/>
+							Use BenchExec<input type="radio" id="radioUseBenchexec" name="benchmarkingFramework" value="true"/>
+							Use runsolver<input type="radio" id="radioUseRunsolver" name="benchmarkingFramework" value="false" checked="checked"/>
 						</td>
 					</tr>
 				</tbody>
