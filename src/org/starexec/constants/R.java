@@ -335,5 +335,9 @@ public class R {
 	// 2 years
 	public static final int MAX_AGE_OF_ANONYMOUS_LINKS_IN_DAYS = 730;
 
+    // Constants for BenchExec
+    public static final String BENCHEXEC_TOOLS_PATH = "/opt/rh/rh-python34/root/usr/lib64/python3.4/site-packages/benchexec/tools";
+    public static final String STAREXEC_TOOL_PATH = BENCHEXEC_TOOLS_PATH+"/starexec.py";
+
 
 }	

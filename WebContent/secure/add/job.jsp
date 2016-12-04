@@ -193,7 +193,16 @@
 							No<input type="radio" id="radioNoSaveExtraOutput" name="saveOtherOutput" value="false" checked="checked"/>
 						</td>
 					</tr>
-				</tbody>					
+					<tr class="noHover advancedOptions" title="Whether to use BenchExec or runsolver for benchmarking.">
+						<td>
+							<p>Benchmarking Framework</p>
+						</td>
+						<td>
+							Use BenchExec<input type="radio" id="radioUseBenchexec" name="runsolverOrBenchexec" value="true"/>
+							Use runsolver<input type="radio" id="radioUseRunsolver" name="runsolverOrBenchexec" value="false" checked="checked"/>
+						</td>
+					</tr>
+				</tbody>
 			</table>
 		</fieldset>
 		<fieldset id="fieldSolverMethod">
