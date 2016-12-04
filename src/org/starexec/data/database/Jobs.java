@@ -556,7 +556,7 @@ public class Jobs {
 		CallableStatement procedure = null;
 		
 		 try {
-			procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?)}");
+			procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?, ?)}");
 			procedure.setInt(1, job.getUserId());
 			procedure.setString(2, job.getName());
 			procedure.setString(3, job.getDescription());		
@@ -573,6 +573,7 @@ public class Jobs {
 			procedure.setBoolean(11, job.isUsingDependencies());
 			procedure.setBoolean(12, job.isBuildJob());
 			procedure.setInt(13, job.getJobPairs().size());
+			procedure.setString(14, job.getBenchmarkingFramework().toString());
 			procedure.registerOutParameter(14, java.sql.Types.INTEGER);	
 			procedure.executeUpdate();			
 

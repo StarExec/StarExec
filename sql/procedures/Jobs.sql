@@ -690,10 +690,26 @@ CREATE PROCEDURE AddJobPairStage(IN _pairId INT, IN _stageId INT,IN _stageNumber
 -- Adds a new job record to the database
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddJob;
-CREATE PROCEDURE AddJob(IN _userId INT, IN _name VARCHAR(64), IN _desc TEXT, IN _queueId INT, IN _spaceId INT, IN _seed BIGINT, IN _cpu INT, IN _wall INT, IN _mem BIGINT, IN _suppressTimestamp BOOLEAN, IN _usingDeps INT, IN _buildJob BOOLEAN, IN _totalPairs INT, OUT _id INT)
+CREATE PROCEDURE AddJob(
+		IN _userId INT, 
+		IN _name VARCHAR(64), 
+		IN _desc TEXT, 
+		IN _queueId INT, 
+		IN _spaceId INT, 
+		IN _seed BIGINT, 
+		IN _cpu INT, 
+		IN _wall INT, 
+		IN _mem BIGINT, 
+		IN _suppressTimestamp BOOLEAN, 
+		IN _usingDeps INT, 
+		IN _buildJob BOOLEAN, 
+		IN _totalPairs INT, 
+		IN _benchmarkingFramework ENUM('BENCHEXEC', 'RUNSOLVER'),
+		OUT _id INT)
 	BEGIN
-		INSERT INTO jobs (user_id, name, description, queue_id, primary_space,seed,cpuTimeout,clockTimeout,maximum_memory, paused, suppress_timestamp, using_dependencies, buildJob, total_pairs, disk_size)
-		VALUES (_userId, _name, _desc, _queueId, _spaceId,_seed,_cpu,_wall,_mem, true, _suppressTimestamp, _usingDeps, _buildJob, _totalPairs, 0);
+		INSERT INTO jobs (user_id, name, description, queue_id, primary_space,seed,cpuTimeout,clockTimeout,maximum_memory, paused, 
+				suppress_timestamp, using_dependencies, buildJob, total_pairs, disk_size, benchmarking_framework)
+		VALUES (_userId, _name, _desc, _queueId, _spaceId,_seed,_cpu,_wall,_mem, true, _suppressTimestamp, _usingDeps, _buildJob, _totalPairs, 0, _benchmarkingFramework);
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 	
