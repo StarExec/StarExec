@@ -29,6 +29,7 @@ import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.SolverBuildStatus.SolverBuildStatusCode;
 import org.starexec.data.to.compare.JobPairComparator;
 import org.starexec.data.to.compare.SolverComparisonComparator;
+import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.SolverPipeline;
@@ -976,6 +977,7 @@ public class Jobs {
 		j.setDiskSize(results.getLong("disk_size"));
 		j.setSuppressTimestamp(results.getBoolean("suppress_timestamp"));
 		j.setUsingDependencies(results.getBoolean("using_dependencies"));
+		j.setBenchmarkingFramework(BenchmarkingFramework.valueOf(results.getString("benchmarking_framework")));
 
 
 
