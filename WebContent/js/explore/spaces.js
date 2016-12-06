@@ -1126,8 +1126,6 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		}
 	}).always(function() {
 		// Reload the jobs table 10 seconds after receiving the response.
-		log(tableName);
-		log('j' == tableName[0]);
 		if (spaceId != 1 && typeof spaceId != 'undefined' && 'j' == tableName[0]) {
 			log('Setting new call to happen in 10 seconds.');
 			setTimeout(function() {
