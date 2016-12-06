@@ -26,16 +26,6 @@ $(document).ready(function(){
 
 	// Build right-hand side of page (space details)
 	initSpaceDetails();
-	//redraw the job table every 10 seconds so we can see continuous results
-	setInterval(function() {
-		if (spaceId!=1 && typeof spaceId!='undefined') {
-			rows = $(jobTable).children('tbody').children('tr.row_selected');
-			if (rows.length==0) {
-				jobTable.fnDraw(false);
-			}	
-		}
-		
-	},10000);
 });
 
 // Set the userIsDeveloper variable using a GET
@@ -1111,31 +1101,42 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		aoData.push( { "name": "sort_dir", "value":isASC() } );
 	}
 	// Request the next page of primitives from the server via AJAX
-	$.post(  
-			sSource + idOfSelectedSpace + "/" + tableName + "/pagination",
-			aoData,
-			function(nextDataTablePage){
-				s=parseReturnCode(nextDataTablePage,false);
-				if (s) {
-					// Update the number displayed in this DataTable's fieldset
-					updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
-				
-					// Replace the current page with the newly received page
-						fnCallback(nextDataTablePage);
-				
-						// If the primitive type is 'job', then color code the results appropriately
-						if('j' == tableName[0]){
-							colorizeJobStatistics();
-						} 
-				
-				// Make the table that was just populated draggable too
-				initDraggable('#' + tableName);
+	log('Source: '+sSource +idOfSelectedSpace + "/" + tableName + "/pagination");
+	$.ajax({
+		type: 'POST',
+		url: sSource + idOfSelectedSpace + "/" + tableName + "/pagination",
+		data: aoData,
+		dataType: "json"
+	}).done(function(nextDataTablePage) {
+		var s=parseReturnCode(nextDataTablePage,false);
+		if (s) {
+			// Update the number displayed in this DataTable's fieldset
+			updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
+			
+		 	// Replace the current page with the newly received page
+			fnCallback(nextDataTablePage);
+			
+			// If the primitive type is 'job', then color code the results appropriately
+			if('j' == tableName[0]){
+				colorizeJobStatistics();
 			}
-
-			},  
-			"json"
-	).error(function(){
-		//showMessage('error',"Internal error populating table",5000); Seems to show up on redirects
+			
+		 	// Make the table that was just populated draggable too
+			initDraggable('#' + tableName);
+		}
+	}).always(function() {
+		// Reload the jobs table 10 seconds after receiving the response.
+		log(tableName);
+		log('j' == tableName[0]);
+		if (spaceId != 1 && typeof spaceId != 'undefined' && 'j' == tableName[0]) {
+			log('Setting new call to happen in 10 seconds.');
+			setTimeout(function() {
+				var rows = $(jobTable).children('tbody').children('tr.row_selected');
+				if (rows.length == 0) {
+					jobTable.fnDraw(false);
+				}
+			}, 10000);
+		}
 	});
 }
 
