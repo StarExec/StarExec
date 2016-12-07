@@ -700,6 +700,7 @@ public abstract class JobManager {
         replacements.put("$$BENCH_ID$$", ""+pair.getBench().getId());
 
         replacements.put("$$BENCHMARKING_FRAMEWORK$$",job.getBenchmarkingFramework().toString() );
+		replacements.put("$$BENCHEXEC_XML_PATH$$", R.BENCHEXEC_XML_PATH);
 
         if (job.getBenchmarkingFramework() == BenchmarkingFramework.BENCHEXEC) {
 			log.debug("Writing jobscript using BenchExec framework.");
