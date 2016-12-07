@@ -146,6 +146,9 @@ function initWorkspaceVariables {
     else
 	    LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/bin/runsolver"
     fi
+
+	# The path to the xml file to run benchexec on.
+	LOCAL_BENCHEXEC_XML_PATH="$WORKING_DIR/benchexec.xml"
 	
 	OUT_DIR="$WORKING_DIR/output"
 	
@@ -752,6 +755,13 @@ function checkCache {
 	fi	
 }
 
+function setupBenchexecCgroups {
+	echo $$ > /sys/fs/cgroup/cpuset/system.slice/benchexec-cgroup.service/tasks
+	echo $$ > /sys/fs/cgroup/cpuacct/system.slice/benchexec-cgroup.service/tasks
+	echo $$ > /sys/fs/cgroup/memory/system.slice/benchexec-cgroup.service/tasks
+	echo $$ > /sys/fs/cgroup/freezer/system.slice/benchexec-cgroup.service/tasks
+}
+
 function copyBenchmarkDependencies {
 
 	
@@ -961,6 +971,9 @@ if [[ ($SOLVER_CACHED -eq 0) && ($BUILD_JOB != "true") ]]; then
 	fi
         log "chmod gu+rwx on the solver directory on the execution host ($LOCAL_SOLVER_DIR)"
         chmod -R gu+rwx $LOCAL_SOLVER_DIR
+
+	log "Copying BenchExec XML to execution host.."
+	cp "$BENCHEXEC_XML_PATH" "$LOCAL_BENCHEXEC_XML_PATH"
 
 	log "copying runSolver to execution host..."
 	cp "$RUNSOLVER_PATH" "$LOCAL_RUNSOLVER_PATH"
