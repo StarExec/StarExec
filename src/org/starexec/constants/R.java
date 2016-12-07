@@ -1,4 +1,5 @@
 package org.starexec.constants;
+import java.io.File;
 import java.lang.UnsupportedOperationException;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -339,6 +340,7 @@ public class R {
     // Constants for BenchExec
     public static final BenchmarkingFramework DEFAULT_BENCHMARKING_FRAMEWORK = BenchmarkingFramework.RUNSOLVER;
     public static final String BENCHEXEC_TOOLS_PATH = "/opt/rh/rh-python34/root/usr/lib64/python3.4/site-packages/benchexec/tools";
+    public static String BENCHEXEC_XML_PATH = new File(getScriptDir(), "benchexec.xml").getAbsolutePath();
     public static final String STAREXEC_TOOL_PATH = BENCHEXEC_TOOLS_PATH+"/starexec.py";
 
 
