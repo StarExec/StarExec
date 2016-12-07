@@ -347,5 +347,7 @@ public class R {
 
     public static final String STAREXEC_TOOL_PATH = BENCHEXEC_TOOLS_PATH+"/starexec.py";
 
+    public static final String CORES_PER_SANDBOX = "4";
+
 
 }	
