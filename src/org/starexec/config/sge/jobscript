@@ -60,7 +60,6 @@ export DB_PASS="$$DB_PASS$$"
 export SCRIPT_DIR="$$SCRIPT_DIR$$"
 
 export BENCHMARKING_FRAMEWORK="$$BENCHMARKING_FRAMEWORK$$"
-export BENCHEXEC_XML_PATH='$$BENCHEXEC_XML_PATH$$'
 
 # Path to Olivier Roussel's runSolver
 export RUNSOLVER_PATH='$$RUNSOLVER_PATH$$'
@@ -410,7 +409,6 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 	if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
 		log "Running benchexec."
 		setupBenchexecCgroups
-		benchexec $BENCHEXEC_XML_FILE
 	else
 		log "Running runsolver."
 		echo "  $LOCAL_RUNSOLVER_PATH $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $CURRENT_STAGE_CPU -W $CURRENT_STAGE_WALLCLOCK -M $$MAX_MEM$$  -w $OUT_DIR/watcher.out -v $OUT_DIR/var.out -o $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"

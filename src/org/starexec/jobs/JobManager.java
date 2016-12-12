@@ -700,10 +700,6 @@ public abstract class JobManager {
         replacements.put("$$BENCH_ID$$", ""+pair.getBench().getId());
 
         replacements.put("$$BENCHMARKING_FRAMEWORK$$",job.getBenchmarkingFramework().toString() );
-		replacements.put("$$BENCHEXEC_XML_PATH$$", R.getBenchExecXmlPath());
-		// TODO: This will need to be a dynamic tool that depends on the solver.
-		replacements.put("$$BENCHEXEC_TOOL_PATH$$", R.STAREXEC_TOOL_PATH);
-		replacements.put("$$TOTAL_CORES$$", R.CORES_PER_SANDBOX);
 
         if (job.getBenchmarkingFramework() == BenchmarkingFramework.BENCHEXEC) {
 			log.debug("Writing jobscript using BenchExec framework.");
