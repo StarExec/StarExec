@@ -34,7 +34,7 @@ fi
 
 echo "Copying the GridEngine scripts to $SGE_SCRIPT_DIR"
 mkdirIf $SGE_SCRIPT_DIR
-for f in src/org/starexec/config/sge/{jobscript,*.bash,benchexec.xml} ; do
+for f in src/org/starexec/config/sge/{jobscript,*.bash} ; do
   b=`basename $f`
   cp $f $SGE_SCRIPT_DIR
   chmod -f 775 $SGE_SCRIPT_DIR/$b
