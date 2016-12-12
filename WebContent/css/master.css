@@ -134,6 +134,10 @@ ul.horizontal li {
 	cursor: default;
 }
 
+.hidden {
+	display: none;
+}
+
 /***************** Message Styles *************************/
 
 .message {
