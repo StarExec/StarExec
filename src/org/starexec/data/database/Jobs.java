@@ -555,6 +555,10 @@ public class Jobs {
 	 */
 	private static void addJob(Connection con, Job job) throws Exception {				
 		CallableStatement procedure = null;
+
+		if (job.getBenchmarkingFramework() == null) {
+			job.setBenchmarkingFramework(R.DEFAULT_BENCHMARKING_FRAMEWORK);
+		}
 		
 		 try {
 			procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?, ?)}");

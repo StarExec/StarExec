@@ -49,6 +49,7 @@ public class JobUtil {
 	
 	private Boolean jobCreationSuccess = false;
 	private String errorMessage = "";//this will be used to given information to user about failures in validation
+	private String secondaryErrorMessage = ""; // this will be used for additional error message useful to developers.
 
 
 	/**
@@ -76,6 +77,7 @@ public class JobUtil {
 		List<Integer> jobIds=new ArrayList<Integer>();
 		if (!validateAgainstSchema(file, xmlType)){
 			logUtil.warn(method, "File from User " + userId + " is not Schema valid.");
+			errorMessage = "File from User " + userId + " is not Schema valid.";
 			return null;
 		}
 		
@@ -137,6 +139,7 @@ public class JobUtil {
 			SolverPipeline pipe=createPipelineFromElement(userId, (Element) pipeline);
 			if (pipe==null) {
 				log.info("error creating pipeline");
+				secondaryErrorMessage = "Solver pipeline was null.";
 				return null; // this means there was some error. The error message should have been set already 
 							// the call to createPipelineFromElement
 			}
@@ -191,6 +194,7 @@ public class JobUtil {
 						configAttrMapPair);
 
 				if (id < 0) {
+					secondaryErrorMessage = "createJobFromElement returned: " + id;
 					return null; // means there was an error. Error message should have been set
 				}
 				jobIds.add(id);
@@ -493,7 +497,6 @@ public class JobUtil {
 			if(jobId != "" && jobId != null){
 			    log.info("job id set: " + jobId);
 			    job.setId(Integer.parseInt(jobId));
-			    
 			}
 			
 	
@@ -551,7 +554,7 @@ public class JobUtil {
 			//validate memory limits
 			ValidatorStatusCode status=CreateJob.isValid(userId, queueId, cpuTimeout, wallclock, null, null);
 			if (!status.isSuccess()) {
-				errorMessage=status.getMessage();
+				errorMessage="CreateJob.isValid: "+status.getMessage();
 				return -1;
 			}
 			
@@ -568,6 +571,7 @@ public class JobUtil {
 				Element stageAttributes= (Element) stageAttributeElements.item(index);
 				StageAttributes attrs = elementToStageAttributes(stageAttributes, maxStages, userId, cpuTimeout, wallclock, memoryLimit, queueId);
 				if (attrs==null) {
+					errorMessage = "elementToStageAttributes returned null.";
 					return -1;
 				}
 				job.addStageAttributes(attrs);
@@ -598,7 +602,7 @@ public class JobUtil {
 					new ConfigAttrMapPair(ConfigXmlAttribute.ID), // We need to use config-id as the attribute for JobPair elements.
 					jobPairs);
 			if (potentialError.isPresent()) {
-				errorMessage = potentialError.get();
+				errorMessage = "Error parsing JobPair elements: "+potentialError.get();
 				return -1;
 			}
 			final NodeList uploadedSolverJobPairs = jobElement.getElementsByTagName("UploadedSolverJobPair");
@@ -614,7 +618,7 @@ public class JobUtil {
 					configAttrMapPair,
 					uploadedSolverJobPairs);
 			if (potentialError.isPresent()) {
-				errorMessage = potentialError.get();
+				errorMessage = "Error parsing UploadedSolverJopPair elements: "+potentialError.get();
 				return -1;
 			}
 
@@ -777,8 +781,13 @@ public class JobUtil {
 			    Jobs.pause(job.getId());
 			}
 
-			return job.getId();
-
+			int newJobId = job.getId();
+			if (newJobId == -1) {
+				errorMessage = "Job id was never set.";
+				// could just skip this and return newJobId but this makes the -1 return explicit.
+				return -1;
+			}
+			return newJobId;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 			errorMessage = "Internal error when creating your job: "+e.getMessage();
@@ -812,6 +821,10 @@ public class JobUtil {
 		ValidatorStatusCode code = XMLUtil.validateAgainstSchema(file, jobXmlType.schemaPath);
 		errorMessage=code.getMessage();
 		return code.isSuccess();	
+	}
+
+	public String getSecondaryErrorMessage() {
+		return secondaryErrorMessage;
 	}
 
 	public String getErrorMessage() {
