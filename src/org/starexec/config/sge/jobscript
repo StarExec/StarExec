@@ -140,6 +140,7 @@ trap 'handleUsrTwo' USR2
 #==========================================================================
 # Execute (prolog will take care of data staging)
 
+
 whoami
 echo "STAREXEC Job Log"
 echo "(C) `date +%Y` The University of Iowa"
@@ -152,6 +153,7 @@ echo "benchmarking framework: $BENCHMARKING_FRAMEWORK"
 
 if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
 	log "Using benchexec."
+	scl enable rh-python34 bash
 else
 	log "Using runsolver."
 fi
@@ -407,12 +409,13 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 	# run runsolver
 
 	if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
-		log "Running benchexec."
-		enablePython34
-		setupBenchexecCgroups
 
 		MEM_IN_BYTES=$(( CURRENT_STAGE_MEMORY*1000 ))
 
+		setupBenchexecCgroups
+
+		log "Running benchexec."
+		echo "runexec --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
 		runexec --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH
 	else
 		log "Running runsolver."
