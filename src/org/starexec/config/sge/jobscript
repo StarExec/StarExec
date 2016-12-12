@@ -408,7 +408,12 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 
 	if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
 		log "Running benchexec."
+		enablePython34
 		setupBenchexecCgroups
+
+		MEM_IN_BYTES=$(( CURRENT_STAGE_MEMORY*1000 ))
+
+		runexec --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH
 	else
 		log "Running runsolver."
 		echo "  $LOCAL_RUNSOLVER_PATH $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $CURRENT_STAGE_CPU -W $CURRENT_STAGE_WALLCLOCK -M $$MAX_MEM$$  -w $OUT_DIR/watcher.out -v $OUT_DIR/var.out -o $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"

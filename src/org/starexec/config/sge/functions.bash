@@ -755,6 +755,9 @@ function checkCache {
 	fi	
 }
 
+function enablePython34 {
+    scl enable rh-python34 bash
+}
 function setupBenchexecCgroups {
 	echo $$ > /sys/fs/cgroup/cpuset/system.slice/benchexec-cgroup.service/tasks
 	echo $$ > /sys/fs/cgroup/cpuacct/system.slice/benchexec-cgroup.service/tasks
