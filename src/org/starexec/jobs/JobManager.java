@@ -525,6 +525,16 @@ public abstract class JobManager {
 						log.debug("About to submit pair " + pair.getId());
 
 						try {
+
+							// Check to make sure the pair is still pending submit to prevent pairs being submitted twice.
+							// Double submission may be causing job
+							StatusCode statusOfPair = JobPairs.getPair(pair.getId()).getStatus().getCode();
+							if (statusOfPair != StatusCode.STATUS_PENDING_SUBMIT) {
+								log.warn("Pair with id="+pair.getId()+" was caught attempting to be submitted again.");
+								continue;
+							}
+
+
 							// Write the script that will run this individual pair				
 							final String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair, q);
 
@@ -537,9 +547,13 @@ public abstract class JobManager {
 							    file.delete();
 							}
 
+
+
 							// do this first, before we submit to grid engine, to avoid race conditions
 							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 							// Submit to the grid engine
+
+
 							int execId = R.BACKEND.submitScript(scriptPath, R.BACKEND_WORKING_DIR,logPath);
 
 							if(!R.BACKEND.isError(execId)){
