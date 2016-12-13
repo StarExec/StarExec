@@ -280,6 +280,7 @@ CREATE TABLE jobs (
 	total_pairs INT NOT NULL, -- How many pairs are in this job? Used to avoid needing to count from pairs table for efficiency
 	disk_size BIGINT NOT NULL,
 	is_high_priority BOOLEAN NOT NULL DEFAULT FALSE,
+	benchmarking_framework ENUM('RUNSOLVER', 'BENCHEXEC') NOT NULL DEFAULT 'RUNSOLVER',
 	PRIMARY KEY (id),
 	CONSTRAINT jobs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	CONSTRAINT jobs_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL

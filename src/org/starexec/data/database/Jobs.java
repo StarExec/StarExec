@@ -29,6 +29,7 @@ import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.SolverBuildStatus.SolverBuildStatusCode;
 import org.starexec.data.to.compare.JobPairComparator;
 import org.starexec.data.to.compare.SolverComparisonComparator;
+import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.SolverPipeline;
@@ -554,9 +555,13 @@ public class Jobs {
 	 */
 	private static void addJob(Connection con, Job job) throws Exception {				
 		CallableStatement procedure = null;
+
+		if (job.getBenchmarkingFramework() == null) {
+			job.setBenchmarkingFramework(R.DEFAULT_BENCHMARKING_FRAMEWORK);
+		}
 		
 		 try {
-			procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?)}");
+			procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?, ?)}");
 			procedure.setInt(1, job.getUserId());
 			procedure.setString(2, job.getName());
 			procedure.setString(3, job.getDescription());		
@@ -573,11 +578,12 @@ public class Jobs {
 			procedure.setBoolean(11, job.isUsingDependencies());
 			procedure.setBoolean(12, job.isBuildJob());
 			procedure.setInt(13, job.getJobPairs().size());
-			procedure.registerOutParameter(14, java.sql.Types.INTEGER);	
+			procedure.setString(14, job.getBenchmarkingFramework().toString());
+			procedure.registerOutParameter(15, java.sql.Types.INTEGER);	
 			procedure.executeUpdate();			
 
 			// Update the job's ID so it can be used outside this method
-			job.setId(procedure.getInt(14));
+			job.setId(procedure.getInt(15));
 		} catch (Exception e) {
 			log.error("addJob says "+e.getMessage(),e);
  		}	finally {
@@ -975,6 +981,7 @@ public class Jobs {
 		j.setDiskSize(results.getLong("disk_size"));
 		j.setSuppressTimestamp(results.getBoolean("suppress_timestamp"));
 		j.setUsingDependencies(results.getBoolean("using_dependencies"));
+		j.setBenchmarkingFramework(BenchmarkingFramework.valueOf(results.getString("benchmarking_framework")));
 
 
 

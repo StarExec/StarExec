@@ -35,6 +35,7 @@ import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.jobs.JobManager;
 import org.starexec.util.SessionUtil;
@@ -67,6 +68,7 @@ public class CreateJob extends HttpServlet {
 	private static final String randSeed="seed";
 	private static final String resultsInterval="resultsInterval";
 	private static final String otherOutputOption="saveOtherOutput";
+	//private static final String benchmarkingFrameworkOption = "benchmarkingFramework";
 	
 	//unique to quick jobs
 	private static final String benchProcessor = "benchProcess";
@@ -140,7 +142,13 @@ public class CreateJob extends HttpServlet {
 				preProcessorId,
 				postProcessorId, 
 				Queues.getTestQueue(),
-				0,settings.getCpuTimeout(),settings.getWallclockTimeout(),settings.getMaxMemory(), false, 0, SaveResultsOption.SAVE);
+				0,settings.getCpuTimeout(),
+				settings.getWallclockTimeout(),
+				settings.getMaxMemory(),
+				false,
+				0,
+				SaveResultsOption.SAVE,
+				R.DEFAULT_BENCHMARKING_FRAMEWORK);
 
 		// TODO: need to allow for a selection of bench ids
 		buildQuickJob(j, solverId, settings.getBenchIds(), spaceId);
@@ -176,6 +184,9 @@ public class CreateJob extends HttpServlet {
 			} else {
 				cpuLimit = settings.getCpuTimeout();
 			}
+
+
+
 			int runLimit = 0;
 			if (Util.paramExists(clockTimeout, request)) {
 				runLimit = Integer.parseInt((String) request.getParameter(clockTimeout));
@@ -219,6 +230,16 @@ public class CreateJob extends HttpServlet {
 				}
 			}
 
+			//BenchmarkingFramework framework = BenchmarkingFramework.valueOf(request.getParameter(benchmarkingFrameworkOption));
+			BenchmarkingFramework framework = R.DEFAULT_BENCHMARKING_FRAMEWORK;
+
+			if (framework == BenchmarkingFramework.BENCHEXEC) {
+				log.debug("Job will be run with BenchExec.");
+			} else {
+				log.debug("Job will be run with runsolver.");
+			}
+
+
 			//Setup the job's attributes
 			Job j = JobManager.setupJob(
 					userId,
@@ -227,7 +248,14 @@ public class CreateJob extends HttpServlet {
 					Integer.parseInt((String) request.getParameter(preProcessor)),
 					Integer.parseInt((String) request.getParameter(postProcessor)),
 					Integer.parseInt((String) request.getParameter(workerQueue)),
-					seed, cpuLimit, runLimit, memoryLimit, suppressTimestamp, resultsIntervalNum, option);
+					seed,
+					cpuLimit,
+					runLimit,
+					memoryLimit,
+					suppressTimestamp,
+					resultsIntervalNum,
+					option,
+					framework);
 
 
 			String selection = request.getParameter(run);
@@ -378,7 +406,8 @@ public class CreateJob extends HttpServlet {
 				break;
 			}
 		}
-					
+
+
 		if (!queueFound){
 			return new ValidatorStatusCode(false, "The given queue does not exist or you do not have access to it");
 		}
@@ -418,9 +447,13 @@ public class CreateJob extends HttpServlet {
 			if(!Validator.isValidPosInteger(request.getParameter(spaceId))) {
 				return new ValidatorStatusCode(false, "The given space ID needs to be a valid integer");
 			}
-			
-			
-			
+
+			/* TODO: Uncomment during development or delete.
+			if (!Util.paramExists(benchmarkingFrameworkOption, request)) {
+				return new ValidatorStatusCode(false, "You must specify which benchmarking framework you want to use.");
+			}*/
+
+
 			int userId = SessionUtil.getUserId(request);
 			if (Users.isDiskQuotaExceeded(userId)) {
 				return new ValidatorStatusCode(false, "Your disk quota has been exceeded: please clear out some old solvers, jobs, or benchmarks before proceeding");

@@ -7,6 +7,7 @@ var panelArray=null;
 var useWallclock=true;
 var syncResults=false;
 var DETAILS_JOB = {}; 
+var selectedJobSpaceId=null;
 
 // contains requests that have been sent to the server to update pairs, stats, or graphs that 
 // have not yet returned. If the user clicks on a new job space, these requests will all
@@ -14,6 +15,32 @@ var DETAILS_JOB = {};
 var openAjaxRequests = [];
 
 $(document).ready(function(){
+	/*
+	var isAborted = function(req) {
+		'use strict';
+		return (req.xhr.status === 0 && req.xhr.statusText === 'abort');
+	}
+
+	var isNotAborted = function(req) {
+		'use strict';
+		return !isAborted(req);
+	}
+	setInterval(function() {
+		'use strict';
+		log('Checking for aborted XHR calls.');
+		log(openAjaxRequests);
+
+		var abortedRequests = openAjaxRequests.filter(isAborted);	
+		// Get rid of the aborted requests so that we don't try to call them again.
+		openAjaxRequests = openAjaxRequests.filter(isNotAborted)
+		abortedRequests.forEach(function(req) {
+			log('Detected aborted XHR call. Retrying...');
+			// Redo the xhr request and put it in the ajax requests.
+			var newCall = xhrCall();	
+			openAjaxRequests.push(newCall);
+		});
+	}, 15000);
+	*/
 	initializeGlobalPageVariables();
 	//sets up buttons and so on
 	initUI();
@@ -203,17 +230,24 @@ function initSpaceExplorer() {
 		"plugins" : [ "types", "themes", "json_data", "ui", "cookies"] ,
 		"core" : { animation : 200 }
 	}).bind("select_node.jstree", function (event, data) {
-			killAjaxRequests();
 			// When a node is clicked, get its ID and display the info in the details pane
 			id = data.rslt.obj.attr("id");
-			name = data.rslt.obj.attr("name");
-			maxStages = data.rslt.obj.attr("maxStages");
-			setMaxStagesDropdown(parseInt(maxStages));
-			$(".spaceName").text($('.jstree-clicked').text());
-			$("#displayJobSpaceID").text("job space id  = "+id);
-			//no solvers will be selected when a space changes, so hide this button
-			$("#compareSolvers").hide();
-			reloadTables(id);
+			if (selectedJobSpaceId == null) {
+				selectedJobSpaceId = id;
+			}
+			if (selectedJobSpaceId != id) {
+				killAjaxRequests();
+				// Only reload if a different space was clicked.
+				selectedJobSpaceId = id;
+				name = data.rslt.obj.attr("name");
+				maxStages = data.rslt.obj.attr("maxStages");
+				setMaxStagesDropdown(parseInt(maxStages));
+				$(".spaceName").text($('.jstree-clicked').text());
+				$("#displayJobSpaceID").text("job space id  = "+id);
+				//no solvers will be selected when a space changes, so hide this button
+				$("#compareSolvers").hide();
+				reloadTables(id);
+			}
 	}).on( "click", "a", function (event, data) { 
 		event.preventDefault();  // This just disable's links in the node title	
 	});
@@ -222,10 +256,11 @@ function initSpaceExplorer() {
 }
 
 function killAjaxRequests() {
+	log('killing ajax requests');
 	for (var i = 0; i < openAjaxRequests.length; i++) {
 		openAjaxRequests[i].abort();
 	}
-	openAjaxRequests = []
+	openAjaxRequests = [];
 }
 
 function clearPanels() {
@@ -946,14 +981,14 @@ function updateSpaceOverviewGraph() {
 		postUrl = starexecRoot+'services/jobs/' + curSpaceId+'/graphs/spaceOverview/'+getSelectedStage();
 	}
 	log('updateSpaceOverviewGraph postUrl: ' + postUrl);
-	
-	var xhr = $.post(
+
+		$.post(
 			postUrl,
 			{logY : logY, selectedIds: configs},
 			function(returnCode) {
 				s=parseReturnCode(returnCode);
 				if (s) {
-					currentConfigs=new Array();
+					var currentConfigs=new Array();
 					$("#spaceOverviewSelections option:selected").each(function() {
 						currentConfigs.push($(this).attr("value"));
 					});
@@ -976,6 +1011,8 @@ function updateSpaceOverviewGraph() {
 			},
 			"text"
 	);
+
+	
 	openAjaxRequests.push(xhr);
 }
 
@@ -993,31 +1030,32 @@ function updateSolverComparison(size, color) {
 	}
 	
 	var xhr = $.post(
-			postUrl,
-			{},
-			function(returnCode) {
-				s=parseReturnCode(returnCode);
-				if (s) {
-					var jsonObject=$.parseJSON(returnCode);
-					var src=jsonObject.src;
-					var map=jsonObject.map;
-					$("#solverComparison"+size).attr("src",src);
-					$("#solverComparisonMap"+size).remove();
-					if (size==800) {
-						$("#dialog-solverComparison").append(map);
-					} else {
-						$("#graphField").append(map);
-						updateSolverComparison(800, "black");
-					}
-					
+		postUrl,
+		{},
+		function(returnCode) {
+			s=parseReturnCode(returnCode);
+			if (s) {
+				var jsonObject=$.parseJSON(returnCode);
+				var src=jsonObject.src;
+				var map=jsonObject.map;
+				$("#solverComparison"+size).attr("src",src);
+				$("#solverComparisonMap"+size).remove();
+				if (size==800) {
+					$("#dialog-solverComparison").append(map);
 				} else {
-					$("#solverComparison300").attr("src",starexecRoot+"/images/noDisplayGraph.png");
-
+					$("#graphField").append(map);
+					updateSolverComparison(800, "black");
 				}
 				
-			},
-			"text"
+			} else {
+				$("#solverComparison300").attr("src",starexecRoot+"/images/noDisplayGraph.png");
+
+			}
+			
+		},
+		"text"
 	);
+
 	openAjaxRequests.push(xhr);
 }
 
@@ -1320,23 +1358,25 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 		postUrl = sSource +"solvers/pagination/"+curSpaceId+"/false/"+useWallclock+"/"+getSelectedStage();
 	}
 	var xhr = $.post(  
-			postUrl,
-			aoData,
-			function(nextDataTablePage){
-				//if the user has clicked on a different space since this was called, we want those results, not these
-				s=parseReturnCode(nextDataTablePage);
-				if (s) {
-					$("#solverSummaryField").show();
-					$("#graphField").show();
-					$("#statsErrorField").hide();
-					fnCallback(nextDataTablePage);		
-				}
+		postUrl,
+		aoData,
+		function(nextDataTablePage){
+			//if the user has clicked on a different space since this was called, we want those results, not these
+			s=parseReturnCode(nextDataTablePage);
+			if (s) {
+				$("#solverSummaryField").show();
+				$("#graphField").show();
+				$("#statsErrorField").hide();
+				fnCallback(nextDataTablePage);		
+			}
 
-			},  
-			"json"
+		},  
+		"json"
 	).fail(function(code,textStatus){
 		handleAjaxError(textStatus);
 	});
+
+
 	openAjaxRequests.push(xhr);
 }
 
@@ -1366,33 +1406,34 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	}
 
 	var xhr = $.post(  
-			postUrl,
-			aoData,
-			function(nextDataTablePage){
-				var s=parseReturnCode(nextDataTablePage);
-				if (s) {
-					
-					pairTable.fnProcessingIndicator(false);
-					fnCallback(nextDataTablePage);
-					$("#errorField").hide();
-					if (pairTable.fnSettings().fnRecordsTotal()==0) {
-						$("#pairTblField").hide();
-					} else {
-						$("#pairTblField").show();
-					}
+		postUrl,
+		aoData,
+		function(nextDataTablePage){
+			var s=parseReturnCode(nextDataTablePage);
+			if (s) {
+				
+				pairTable.fnProcessingIndicator(false);
+				fnCallback(nextDataTablePage);
+				$("#errorField").hide();
+				if (pairTable.fnSettings().fnRecordsTotal()==0) {
+					$("#pairTblField").hide();
 				} else {
-					//if we weren't successful, we need to check to see if it was because there are too many pairs
-					var code=getStatusCode(nextDataTablePage);
-					if (code==1) {
-						$("#pairTblField").hide();
-						$("#errorField").show();
-					}
+					$("#pairTblField").show();
 				}
-			},  
-			"json"
+			} else {
+				//if we weren't successful, we need to check to see if it was because there are too many pairs
+				var code=getStatusCode(nextDataTablePage);
+				if (code==1) {
+					$("#pairTblField").hide();
+					$("#errorField").show();
+				}
+			}
+		},  
+		"json"
 	).fail(function(code, textStatus){
 		handleAjaxError(textStatus);
 	});
+
 	openAjaxRequests.push(xhr);
 }
 

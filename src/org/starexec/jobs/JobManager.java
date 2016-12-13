@@ -36,6 +36,7 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.SolverBuildStatus.SolverBuildStatusCode;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
@@ -169,7 +170,7 @@ public abstract class JobManager {
 			// Impose resource limits
 			mainTemplate = mainTemplate.replace("$$MAX_WRITE$$", String.valueOf(R.MAX_PAIR_FILE_WRITE));	
 			mainTemplate = mainTemplate.replace("$$BENCH_NAME_LENGTH_MAX$$", String.valueOf(R.BENCH_NAME_LEN));
-			mainTemplate = mainTemplate.replace("$$RUNSOLVER_PATH$$", R.RUNSOLVER_PATH);
+            mainTemplate = mainTemplate.replace("$$RUNSOLVER_PATH$$", R.RUNSOLVER_PATH);
 			mainTemplate = mainTemplate.replace("$$SANDBOX_USER_ONE$$", R.SANDBOX_USER_ONE);
 			mainTemplate = mainTemplate.replace("$$SANDBOX_USER_TWO$$", R.SANDBOX_USER_TWO);
 			mainTemplate = mainTemplate.replace("$$WORKING_DIR_BASE$$", R.BACKEND_WORKING_DIR);
@@ -524,6 +525,16 @@ public abstract class JobManager {
 						log.debug("About to submit pair " + pair.getId());
 
 						try {
+
+							// Check to make sure the pair is still pending submit to prevent pairs being submitted twice.
+							// Double submission may be causing job
+							StatusCode statusOfPair = JobPairs.getPair(pair.getId()).getStatus().getCode();
+							if (statusOfPair != StatusCode.STATUS_PENDING_SUBMIT) {
+								log.warn("Pair with id="+pair.getId()+" was caught attempting to be submitted again.");
+								continue;
+							}
+
+
 							// Write the script that will run this individual pair				
 							final String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair, q);
 
@@ -536,9 +547,13 @@ public abstract class JobManager {
 							    file.delete();
 							}
 
+
+
 							// do this first, before we submit to grid engine, to avoid race conditions
 							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 							// Submit to the grid engine
+
+
 							int execId = R.BACKEND.submitScript(scriptPath, R.BACKEND_WORKING_DIR,logPath);
 
 							if(!R.BACKEND.isError(execId)){
@@ -697,6 +712,14 @@ public abstract class JobManager {
 		replacements.put("$$MAX_CPUTIME$$", "" + Util.clamp(1, queue.getCpuTimeout(), job.getCpuTimeout()));
 		replacements.put("$$MAX_MEM$$", ""+Util.bytesToMegabytes(job.getMaxMemory()));
         replacements.put("$$BENCH_ID$$", ""+pair.getBench().getId());
+
+        replacements.put("$$BENCHMARKING_FRAMEWORK$$",job.getBenchmarkingFramework().toString() );
+
+        if (job.getBenchmarkingFramework() == BenchmarkingFramework.BENCHEXEC) {
+			log.debug("Writing jobscript using BenchExec framework.");
+		} else {
+			log.debug("Writing jobscript using runsolver framework.");
+		}
 
         if(job.isBuildJob()) {
                 replacements.put("$$BUILD_JOB$$", "true");
@@ -910,8 +933,21 @@ public abstract class JobManager {
 	 * @param randomSeed a seed to pass into preprocessors
 	 * @return the new job object with the specified properties
 	 */
-	public static Job setupJob(int userId, String name, String description, int preProcessorId, int postProcessorId, int queueId, long randomSeed,
-			int cpuLimit,int wallclockLimit, long memLimit, boolean suppressTimestamp, int resultsInterval, SaveResultsOption otherOutputOption) {
+	public static Job setupJob(
+			int userId,
+			String name,
+			String description,
+			int preProcessorId,
+			int postProcessorId,
+			int queueId,
+			long randomSeed,
+			int cpuLimit,
+			int wallclockLimit,
+			long memLimit,
+			boolean suppressTimestamp,
+			int resultsInterval,
+			SaveResultsOption otherOutputOption,
+			BenchmarkingFramework framework) {
 		log.debug("Setting up job " + name);
 		Job j = new Job();
 
@@ -926,6 +962,7 @@ public abstract class JobManager {
 			j.setDescription(description);
 		}
 
+		j.setBenchmarkingFramework(framework);
 		// Get queue and processor information from the database and put it in the job
 		j.setQueue(Queues.get(queueId));
 		StageAttributes attrs=new StageAttributes();
@@ -1081,7 +1118,9 @@ public abstract class JobManager {
 			R.DEFAULT_PAIR_VMEM,
 			false,
 			15,
-			SaveResultsOption.SAVE);
+			SaveResultsOption.SAVE,
+			R.DEFAULT_BENCHMARKING_FRAMEWORK);
+
 		j.setBuildJob(true);
 		String spaceName = "job space";
 		String sm=Spaces.getName(spaceId);

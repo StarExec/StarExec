@@ -45,6 +45,10 @@ public class JobUtilTests extends TestSequence {
 				Communities.getTestCommunity().getId(),
 				JobXmlType.STANDARD,
 				new ConfigAttrMapPair(ConfigXmlAttribute.ID));
+
+		if (jobIds == null) {
+			Assert.fail("Error: " +util.getErrorMessage() + "\nSecondary Error: "+util.getSecondaryErrorMessage());
+		}
 		Assert.assertEquals(1, jobIds.size());
 		Job j = Jobs.get(jobIds.get(0));
 		j.setJobPairs(Jobs.getJobPairsInJobSpaceHierarchy(j.getPrimarySpace(), PrimitivesToAnonymize.NONE));
