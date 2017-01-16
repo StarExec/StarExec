@@ -68,7 +68,7 @@ public class CreateJob extends HttpServlet {
 	private static final String randSeed="seed";
 	private static final String resultsInterval="resultsInterval";
 	private static final String otherOutputOption="saveOtherOutput";
-	//private static final String benchmarkingFrameworkOption = "benchmarkingFramework";
+	private static final String benchmarkingFrameworkOption = "benchmarkingFramework";
 	
 	//unique to quick jobs
 	private static final String benchProcessor = "benchProcess";
@@ -230,8 +230,7 @@ public class CreateJob extends HttpServlet {
 				}
 			}
 
-			//BenchmarkingFramework framework = BenchmarkingFramework.valueOf(request.getParameter(benchmarkingFrameworkOption));
-			BenchmarkingFramework framework = R.DEFAULT_BENCHMARKING_FRAMEWORK;
+			BenchmarkingFramework framework = BenchmarkingFramework.valueOf(request.getParameter(benchmarkingFrameworkOption));
 
 			if (framework == BenchmarkingFramework.BENCHEXEC) {
 				log.debug("Job will be run with BenchExec.");
@@ -448,10 +447,9 @@ public class CreateJob extends HttpServlet {
 				return new ValidatorStatusCode(false, "The given space ID needs to be a valid integer");
 			}
 
-			/* TODO: Uncomment during development or delete.
 			if (!Util.paramExists(benchmarkingFrameworkOption, request)) {
 				return new ValidatorStatusCode(false, "You must specify which benchmarking framework you want to use.");
-			}*/
+			}
 
 
 			int userId = SessionUtil.getUserId(request);
