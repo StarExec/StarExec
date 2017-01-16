@@ -318,12 +318,13 @@ CREATE PROCEDURE GetJobPairsWithStatus(IN _status INT)
 		WHERE status_code = _status;
 	END //
 
-DROP PROCEDURE IF EXISTS GetJobPairIdsWithStatusAfterDate;
-CREATE PROCEDURE GetJobPairIdsWithStatusAfterDate(IN _status INT, IN _earliestEndTime DATETIME)
+DROP PROCEDURE IF EXISTS GetJobPairIdsWithStatusNotRerunAfterDate;
+CREATE PROCEDURE GetJobPairIdsWithStatusNotRerunAfterDate(IN _status INT, IN _earliestEndTime DATETIME)
 	BEGIN
 		SELECT id FROM job_pairs
 		WHERE status_code = _status
-		AND job_pairs.end_time >= _earliestEndTime;
+		AND job_pairs.end_time >= _earliestEndTime
+		AND id NOT IN (SELECT pair_id FROM pairs_rerun);
 	END //
 	
 DROP PROCEDURE IF EXISTS SetBrokenPairStatus;

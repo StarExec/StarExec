@@ -3,10 +3,7 @@ package org.starexec.data.database;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.ResultSet;
+import java.sql.*;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.BiFunction;
@@ -1850,15 +1847,15 @@ public class JobPairs {
 	 * @return A list of all pairs with the given status code
 	 */
 	public static List<JobPair> getPairsByStatus(int statusCode) {
-		Connection con=null;
-		CallableStatement procedure=null;
-		ResultSet results=null;
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
 		try {
 			List<JobPair> pairs = new ArrayList<JobPair>();
-			con=Common.getConnection();
-			procedure=con.prepareCall("{CALL GetJobPairsWithStatus(?)}");
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetJobPairsWithStatus(?)}");
 			procedure.setInt(1, statusCode);
-			results=procedure.executeQuery();
+			results = procedure.executeQuery();
 			if (results.next()) {
 				JobPair p = JobPairs.resultToPair(results);
 				p.getStatus().setCode(statusCode);
@@ -1866,14 +1863,35 @@ public class JobPairs {
 			}
 			return pairs;
 		} catch (Exception e) {
-			log.error("getPairsByStatus says "+e.getMessage(),e);
+			log.error("getPairsByStatus says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		
+
 		return null;
+	}
+
+	/**
+	 * Gets all job pairs in the database that have the given status code.
+	 * This should really only be called for rare codes like 2-5, as otherwise
+	 * it may read a very large number of pairs and be very slow.
+	 * @param statusCode
+	 * @return A list of all pairs with the given status code
+	 */
+	public static List<Integer> getPairIdsByStatusNotRerunAfterDate(StatusCode statusCode, Timestamp timestamp) throws SQLException {
+		return Common.query("{CALL GetJobPairIdsWithStatusNotRerunAfterDate(?, ?)}", procedure -> {
+			procedure.setInt(1, statusCode.getVal());
+			procedure.setObject(2, timestamp);
+		}, results -> {
+			List<Integer> pairIds = new ArrayList<>();
+
+			while (results.next()) {
+				pairIds.add(results.getInt("id"));
+			}
+			return pairIds;
+		});
 	}
 	
 	/**

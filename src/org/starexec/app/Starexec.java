@@ -20,16 +20,8 @@ import org.apache.log4j.PropertyConfigurator;
 import org.starexec.backend.*;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
-import org.starexec.data.database.AnonymousLinks;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Cluster;
-import org.starexec.data.database.Common;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Logins;
-import org.starexec.data.database.Reports;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Users;
-import org.starexec.data.database.Communities;
+import org.starexec.data.database.*;
+import org.starexec.data.to.Status;
 import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.jobs.JobManager;
@@ -177,6 +169,28 @@ public class Starexec implements ServletContextListener {
 			    catch(Exception e) {
 				log.warn("submitJobsTask caught exception: "+e,e);
 			    }
+			}
+		};
+
+		final Runnable rerunFailedPairsTask = new RobustRunnable("rerunFailedPairsTask") {
+			@Override
+			protected void dorun() {
+				log.info("rerunFailedPairsTask (periodic)");
+
+				try {
+					// Get all pairs that haven't already been rerun that have the ERROR_RUNSCRIPT status and
+					// rerun them.
+					List<Integer> pairIdsToRerun = JobPairs.getPairIdsByStatusNotRerunAfterDate(
+							Status.StatusCode.ERROR_RUNSCRIPT,
+							R.earliestDateToRerunFailedPairs());
+
+					for (Integer pairId : pairIdsToRerun) {
+						Jobs.rerunPair(pairId);
+						PairsRerun.markPairAsRerun(pairId);
+					}
+				} catch (Exception e) {
+					log.warn("rerunPairsTask caught Exception: "+Util.getStackTrace(e), e);
+				}
 			}
 		};
 		
@@ -336,6 +350,7 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);	
 		    taskScheduler.scheduleAtFixedRate(submitJobsTask, 0, R.JOB_SUBMISSION_PERIOD, TimeUnit.SECONDS);
 		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,45,TimeUnit.SECONDS);
+			taskScheduler.scheduleAtFixedRate(rerunFailedPairsTask, 0, 60, TimeUnit.SECONDS);
 		    taskScheduler.scheduleAtFixedRate(findBrokenJobPairs, 0, 3, TimeUnit.HOURS);
 		}
 	    taskScheduler.scheduleAtFixedRate(clearTemporaryFilesTask, 0, 3, TimeUnit.HOURS);

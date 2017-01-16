@@ -1,6 +1,11 @@
 package org.starexec.constants;
 import java.io.File;
 import java.lang.UnsupportedOperationException;
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.function.BiFunction;
@@ -339,4 +344,18 @@ public class R {
 
     // Constants for BenchExec
     public static final BenchmarkingFramework DEFAULT_BENCHMARKING_FRAMEWORK = BenchmarkingFramework.RUNSOLVER;
+
+
+    public static Timestamp earliestDateToRerunFailedPairs(){
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            // TODO: Change this before deploy to deploy date.
+            java.util.Date date = dateFormat.parse("2017-01-16");
+            long time = date.getTime();
+            return new Timestamp(time);
+        } catch (ParseException e) {
+            // This should never happen.
+            return null;
+        }
+    }
 }
