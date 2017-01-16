@@ -319,7 +319,7 @@ CREATE PROCEDURE GetJobPairsWithStatus(IN _status INT)
 	END //
 
 DROP PROCEDURE IF EXISTS GetJobPairsWithStatusAfterDate;
-CREATE PROCEDURE GetJobPairsWithStatus(IN _status INT, IN _earliestEndTime DATETIME)
+CREATE PROCEDURE GetJobPairsWithStatusAfterDate(IN _status INT, IN _earliestEndTime DATETIME)
 	BEGIN
 		SELECT * FROM job_pairs
 		WHERE status_code = _status
