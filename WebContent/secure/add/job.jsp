@@ -195,11 +195,11 @@
 					</tr>
 					<tr class="noHover advancedOptions">
 						<td>
-							<p class="hidden">Benchmarking Framework</p>
+							<p>Benchmarking Framework</p>
 						</td>
 						<td>
-							<span class="hidden">Use BenchExec<input type="radio" id="radioUseBenchexec" name="benchmarkingFramework" value="BENCHEXEC"/></span>
-							<span class="hidden">Use runsolver<input type="radio" id="radioUseRunsolver" name="benchmarkingFramework" value="RUNSOLVER" checked="checked"/></span>
+							<span>Use BenchExec<input type="radio" id="radioUseBenchexec" name="benchmarkingFramework" value="BENCHEXEC"/></span>
+							<span>Use runsolver<input type="radio" id="radioUseRunsolver" name="benchmarkingFramework" value="RUNSOLVER" checked="checked"/></span>
 						</td>
 					</tr>
 				</tbody>
