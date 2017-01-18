@@ -413,6 +413,16 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 
 		setupBenchexecCgroups
 
+		whoami
+		log "Setting up cpuset cgroup..."
+		echo $$ > /sys/fs/cgroup/cpuset/system.slice/benchexec-cgroup.service/tasks
+		log "Setting up cpuacct cgroup..."
+		echo $$ > /sys/fs/cgroup/cpuacct/system.slice/benchexec-cgroup.service/tasks
+		log "Setting up memory cgroup..."
+		echo $$ > /sys/fs/cgroup/memory/system.slice/benchexec-cgroup.service/tasks
+		log "Setting up freezer cgroup..."
+		echo $$ > /sys/fs/cgroup/freezer/system.slice/benchexec-cgroup.service/tasks
+
 		log "Running benchexec."
 		echo "runexec --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
 		runexec --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH
