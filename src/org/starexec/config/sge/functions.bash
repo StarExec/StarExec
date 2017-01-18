@@ -975,9 +975,6 @@ if [[ ($SOLVER_CACHED -eq 0) && ($BUILD_JOB != "true") ]]; then
         log "chmod gu+rwx on the solver directory on the execution host ($LOCAL_SOLVER_DIR)"
         chmod -R gu+rwx $LOCAL_SOLVER_DIR
 
-	log "Copying BenchExec XML to execution host.."
-	cp "$BENCHEXEC_XML_PATH" "$LOCAL_BENCHEXEC_XML_PATH"
-
 	log "copying runSolver to execution host..."
 	cp "$RUNSOLVER_PATH" "$LOCAL_RUNSOLVER_PATH"
 	log "runsolver copy complete"
