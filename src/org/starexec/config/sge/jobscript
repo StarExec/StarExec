@@ -389,10 +389,12 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 	# Get the process of our defensive killDeadlockedJobPair function.
 	KILL_DEADLOCKED_JOB_PAIR_PID=$!
 	echo "KILL_DEADLOCKED_JOB_PAIR_PID = $KILL_DEADLOCKED_JOB_PAIR_PID"
+		
 	if [ $RESULTS_INTERVAL -gt 0 ] ; then
 		copyOutputIncrementally $RESULTS_INTERVAL $STAREXEC_WALLCLOCK_LIMIT $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION &
 		COPY_OUTPUT_INCREMENTALLY_PID=$!
 	fi
+
     if [ $BUILD_JOB == "true" ]; then
         cd $WORKING_DIR_BASE/$SANDBOX_PARAM/solver
         rm $LOCAL_BENCH_PATH
@@ -400,20 +402,17 @@ if [ "$SANDBOX_FOUND" = true ] ; then
     else
 	    cd $WORKING_DIR_BASE/$SANDBOX_PARAM/solver/bin
     fi
+
 	pwd
 
 	log "listing contents of the output directory"
 	ls -l $OUT_DIR
 
-	# run runsolver
 
 	if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
 
 		MEM_IN_BYTES=$(( CURRENT_STAGE_MEMORY*1000 ))
 
-		setupBenchexecCgroups
-
-		whoami
 		log "Setting up cpuset cgroup..."
 		echo $$ > /sys/fs/cgroup/cpuset/system.slice/benchexec-cgroup.service/tasks
 		log "Setting up cpuacct cgroup..."
@@ -425,11 +424,14 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 
 		log "Running benchexec."
 		echo "runexec --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
-		runexec --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH
+
+		# Run runexec, runexec will output the stdout of the solver to $OUT_DIR/stdout.txt and will output statistics to $OUT_DIR/var.out
+		runexec --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH > $OUT_DIR/var.out
 
 		log "Outputting stdout.txt"
 		cat $OUT_DIR/stdout.txt
 	else
+		# run runsolver
 		log "Running runsolver."
 		echo "  $LOCAL_RUNSOLVER_PATH $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $CURRENT_STAGE_CPU -W $CURRENT_STAGE_WALLCLOCK -M $$MAX_MEM$$  -w $OUT_DIR/watcher.out -v $OUT_DIR/var.out -o $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
 
@@ -469,7 +471,7 @@ WATCHFILE="$OUT_DIR"/watcher.out
 VARFILE="$OUT_DIR"/var.out
 STDOUT_FILE="$OUT_DIR"/stdout.txt
 
-if [ ! -f $WATCHFILE ]; then
+if [ ! -f $WATCHFILE -a  "$BENCHMARKING_FRAMEWORK" == "$RUNSOLVER" ]; then
     log "Runsolver watchfile could not be found. Terminating job pair."
     copyOutput $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION
     markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
@@ -477,7 +479,7 @@ if [ ! -f $WATCHFILE ]; then
 fi
 
 if [ ! -f $VARFILE ]; then
-    echo "Runsolver varfile could not be found. Terminating job pair."
+    echo "Varfile could not be found. Terminating job pair."
     copyOutput $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION
     markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
     exit 0
