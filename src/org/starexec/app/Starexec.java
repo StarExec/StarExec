@@ -15,6 +15,7 @@ import javax.servlet.ServletContextListener;
 import java.sql.SQLException;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.starexec.backend.*;
@@ -180,9 +181,14 @@ public class Starexec implements ServletContextListener {
 				try {
 					// Get all pairs that haven't already been rerun that have the ERROR_RUNSCRIPT status and
 					// rerun them.
+					StopWatch timer = new StopWatch();
+					timer.start();
 					List<Integer> pairIdsToRerun = JobPairs.getPairIdsByStatusNotRerunAfterDate(
 							Status.StatusCode.ERROR_RUNSCRIPT,
 							R.earliestDateToRerunFailedPairs());
+					timer.stop();
+					log.info("(rerunFailedPairsTask) Got " + pairIdsToRerun.size() + " in " + timer.toString());
+
 
 					for (Integer pairId : pairIdsToRerun) {
 						Jobs.rerunPair(pairId);
@@ -350,7 +356,7 @@ public class Starexec implements ServletContextListener {
 		    taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);	
 		    taskScheduler.scheduleAtFixedRate(submitJobsTask, 0, R.JOB_SUBMISSION_PERIOD, TimeUnit.SECONDS);
 		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,45,TimeUnit.SECONDS);
-			taskScheduler.scheduleAtFixedRate(rerunFailedPairsTask, 0, 60, TimeUnit.SECONDS);
+			taskScheduler.scheduleAtFixedRate(rerunFailedPairsTask, 0, 5, TimeUnit.MINUTES);
 		    taskScheduler.scheduleAtFixedRate(findBrokenJobPairs, 0, 3, TimeUnit.HOURS);
 		}
 	    taskScheduler.scheduleAtFixedRate(clearTemporaryFilesTask, 0, 3, TimeUnit.HOURS);
