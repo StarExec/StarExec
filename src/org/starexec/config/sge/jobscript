@@ -422,11 +422,14 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 		log "Setting up freezer cgroup..."
 		echo $$ > /sys/fs/cgroup/freezer/system.slice/benchexec-cgroup.service/tasks
 
-		log "Running benchexec."
+		log "Running runexec."
 		echo "runexec --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
 
 		# Run runexec, runexec will output the stdout of the solver to $OUT_DIR/stdout.txt and will output statistics to $OUT_DIR/var.out
-		runexec --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH > $OUT_DIR/var.out
+		runexec --no-container --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH > $OUT_DIR/var.out
+
+		# make a blank watchfile
+		touch "$OUT_DIR"/watcher.out
 
 		log "Outputting stdout.txt"
 		cat $OUT_DIR/stdout.txt
@@ -471,7 +474,7 @@ WATCHFILE="$OUT_DIR"/watcher.out
 VARFILE="$OUT_DIR"/var.out
 STDOUT_FILE="$OUT_DIR"/stdout.txt
 
-if [ ! -f $WATCHFILE -a  "$BENCHMARKING_FRAMEWORK" == "$RUNSOLVER" ]; then
+if [ ! -f $WATCHFILE ]; then
     log "Runsolver watchfile could not be found. Terminating job pair."
     copyOutput $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION
     markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
@@ -485,21 +488,21 @@ if [ ! -f $VARFILE ]; then
     exit 0
 fi
 
-if ! isOutputValid $STDOUT_FILE $CURRENT_STAGE_NUMBER $SUPPRESS_TIMESTAMP ; then
+if ! isOutputValid $STDOUT_FILE $CURRENT_STAGE_NUMBER $SUPPRESS_TIMESTAMP $BENCHMARKING_FRAMEWORK ; then
 	log "runsolver output was not valid. Terminating job pair."
 	markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
 	exit 0
 fi
 
-log "Watchfile: "
-cat $WATCHFILE
-printf "\n"
-log "Varfile: "
-cat $VARFILE
-printf "\n"
-log "Stdoutfile: "
-cat $STDOUT_FILE
-printf "\n"
+#log "Watchfile: "
+#cat $WATCHFILE
+#printf "\n"
+#log "Varfile: "
+#cat $VARFILE
+#printf "\n"
+#log "Stdoutfile: "
+#cat $STDOUT_FILE
+#printf "\n"
 
 # check for which cores we are on
 log "epilog checking for information on cores, from runsolver's watch file:"

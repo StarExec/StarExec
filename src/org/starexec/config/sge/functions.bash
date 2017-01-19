@@ -1187,6 +1187,7 @@ function markRunscriptError {
 # $1 Output file to check
 # $2 The current stage number
 # $3 The SUPPRESS_TIMESTAMP param. If this is true, we cannot check for EOF, as it does not exist
+# $4 The benchmarking framework
 function isOutputValid {
 	log "checking to see if runsolver output is valid for stage $2"
 	if [ ! -f $1 ]; then
@@ -1194,11 +1195,20 @@ function isOutputValid {
 		markRunscriptError $2
     	return 1
 	fi
+
+	log "Checking values of BENCHEXEC constant and benchmarking framework variable."
+	log "$4"
+	log "$BENCHEXEC"
+	if [ "$4" = "$BENCHEXEC" ] ; then
+		log "benchmarking framework was benchexec so there will be no EOF appended."
+		return 0
+	fi
 	
 	if [ "$3" = true ] ; then
 		log "no EOF line was appended, so we cannot check for it"
 		return 0
 	fi
+
 
 	LAST_LINE=`tail -n 1 $1`
 	if [[ $LAST_LINE == *"EOF"* ]]
