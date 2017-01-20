@@ -503,6 +503,12 @@ function sendStatus {
 	return $?
 }
 
+function sendWallclockExceededStatus {
+    log "epilog detects wall clock time exceeded"
+    sendStatus $EXCEED_RUNTIME
+    sendStageStatus $EXCEED_RUNTIME ${STAGE_NUMBERS[$STAGE_INDEX]}
+}
+
 function setStartTime {
 	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetPairStartTime($PAIR_ID)"
 	log "set start time for pair id = $PAIR_ID"

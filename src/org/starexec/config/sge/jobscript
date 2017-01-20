@@ -521,16 +521,25 @@ fi
 
 ERROR_DETECTED=false
 
-if ( cat "$SGE_STDOUT_PATH" | grep 'job error:' ) then
-  ERROR_DETECTED=true
-elif [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
+if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
+
   log "Checking for errors for benchexec."
+
+  if ( grep 'terminationreason=cputime' $VARFILE) then
+	  log "CPU time exceeded."
+  elif ( grep 'terminationreason=walltime' $VARFILE) then
+	  sendWallclockExceededStatus
+  elif ( grep 'terminationreason=memory' $VARFILE) then
+	  log "Max memory exceeded."
+  fi
+
+
 elif [ "$BENCHMARKING_FRAMEWORK" == "$RUNSOLVER" ]; then 
   log "Checking for errors for runsolver."
-  if ( grep 'wall clock time exceeded' $WATCHFILE ) || [ "$JOB_PAIR_DEADLOCKED" = true ]; then
-    log "epilog detects wall clock time exceeded"
-    sendStatus $EXCEED_RUNTIME
-    sendStageStatus $EXCEED_RUNTIME ${STAGE_NUMBERS[$STAGE_INDEX]}
+  if ( cat "$SGE_STDOUT_PATH" | grep 'job error:' ) then
+	ERROR_DETECTED=true
+  elif ( grep 'wall clock time exceeded' $WATCHFILE ) || [ "$JOB_PAIR_DEADLOCKED" = true ]; then
+	sendWallclockExceededStatus
 	ERROR_DETECTED=true
   elif ( grep 'CPU time exceeded' $WATCHFILE ) then
     log "epilog detects cpu time exceeded"
