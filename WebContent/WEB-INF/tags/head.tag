@@ -41,14 +41,6 @@
 	<!--[if lt IE 9]>
 		<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
 	<![endif]-->
-	<c:choose>
-		<c:when test="${isLocalJobPage}">
-			<script type="text/javascript" src="${starexecRoot}/js/lib/jquery.min.js"></script>
-		</c:when>
-		<c:otherwise>
-			<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-		</c:otherwise>
-	</c:choose>
 	<c:forEach var="globalJsFile" items="${globalJsFiles}">
 		<script type="text/javascript" src="${starexecRoot}/js/${globalJsFile}.js"></script>
 	</c:forEach>
