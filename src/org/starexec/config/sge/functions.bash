@@ -509,6 +509,18 @@ function sendWallclockExceededStatus {
     sendStageStatus $EXCEED_RUNTIME ${STAGE_NUMBERS[$STAGE_INDEX]}
 }
 
+function sendCpuExceededStatus {
+    log "epilog detects cpu time exceeded"
+    sendStatus $EXCEED_CPU
+    sendStageStatus $EXCEED_CPU ${STAGE_NUMBERS[$STAGE_INDEX]}
+}
+
+function sendExceedMemStatus {
+    log "epilog detects max virtual memory exceeded"
+    sendStatus $EXCEED_MEM
+    sendStageStatus $EXCEED_MEM ${STAGE_NUMBERS[$STAGE_INDEX]}
+}
+
 function setStartTime {
 	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetPairStartTime($PAIR_ID)"
 	log "set start time for pair id = $PAIR_ID"
