@@ -21,10 +21,8 @@
 			request.setAttribute(starexecRoot, "/" + R.STAREXEC_APPNAME);
 		}
 
-		List<String> globalJsFiles = Util.csvToList(Web.GLOBAL_JS_FILES);
-		request.setAttribute("globalJsFiles", globalJsFiles);
-		List<String> globalCssFiles = Util.csvToList(Web.GLOBAL_CSS_FILES);
-		request.setAttribute("globalCssFiles", globalCssFiles);
+		request.setAttribute("globalJsFiles", Web.GLOBAL_JS_FILES);
+		request.setAttribute("globalCssFiles", Web.GLOBAL_CSS_FILES);
 
 	} catch (Exception e) {
 	}
@@ -32,19 +30,19 @@
 
 <!DOCTYPE html>
 <html lang="en">
-	<star:head title="${title}" css="${css}" js="${js}"/>	
-	<body>			
+	<star:head title="${title}" css="${css}" js="${js}"/>
+	<body>
 		<div id="wrapper">
 			<star:header />
 			<div id="content" class="round">
 				<div id="mainHeaderWrapper">
 					<h1 style="width:100%; word-wrap:break-word;" id="mainTemplateHeader">${title}</h1>
 				</div>
-				<img alt="loading" src="${starexecRoot}/images/loader.gif" id="loader">			
+				<img alt="loading" src="${starexecRoot}/images/loader.gif" id="loader">
 				<jsp:doBody/>
-			</div>		
-		<star:footer />
-		<div id="buildInfo" title="built by: ${buildUser} (${buildDate})"><a href="${starexecRoot}/public/versionInfo.jsp">StarExec revision ${buildVersion}</a></div>
+			</div>
+			<star:footer />
+			<div id="buildInfo" title="built by: ${buildUser} (${buildDate})"><a href="${starexecRoot}/public/versionInfo.jsp">StarExec revision ${buildVersion}</a></div>
 		</div>
 	</body>
 </html>
