@@ -519,40 +519,39 @@ if [ $EXTRA_SAVE_OPTION -eq 3 ]; then
 	saveExtraOutputAsBenchmarks
 fi
 
-# cleared below if no error
-JOB_ERROR="1";
-
+ERROR_DETECTED=false
 
 if ( cat "$SGE_STDOUT_PATH" | grep 'job error:' ) then
-  true 
-elif ( grep 'wall clock time exceeded' $WATCHFILE ) || [ "$JOB_PAIR_DEADLOCKED" = true ]; then
-  log "epilog detects wall clock time exceeded"
-  sendStatus $EXCEED_RUNTIME
-  sendStageStatus $EXCEED_RUNTIME ${STAGE_NUMBERS[$STAGE_INDEX]}
-  break
-  
-elif ( grep 'CPU time exceeded' $WATCHFILE ) then
-  log "epilog detects cpu time exceeded"
-  sendStatus $EXCEED_CPU
-  sendStageStatus $EXCEED_CPU ${STAGE_NUMBERS[$STAGE_INDEX]}
-  break
-  
-  
-elif ( grep 'VSize exceeded' $WATCHFILE ) then
-  log "epilog detects max virtual memory exceeded"
-  sendStatus $EXCEED_MEM
-  sendStageStatus $EXCEED_MEM ${STAGE_NUMBERS[$STAGE_INDEX]}
-  break
-  
-elif [ $DISK_QUOTA_EXCEEDED -eq 1 ]
-then
+  ERROR_DETECTED=true
+elif [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
+  log "Checking for errors for benchexec."
+elif [ "$BENCHMARKING_FRAMEWORK" == "$RUNSOLVER" ]; then 
+  log "Checking for errors for runsolver."
+  if ( grep 'wall clock time exceeded' $WATCHFILE ) || [ "$JOB_PAIR_DEADLOCKED" = true ]; then
+    log "epilog detects wall clock time exceeded"
+    sendStatus $EXCEED_RUNTIME
+    sendStageStatus $EXCEED_RUNTIME ${STAGE_NUMBERS[$STAGE_INDEX]}
+	ERROR_DETECTED=true
+  elif ( grep 'CPU time exceeded' $WATCHFILE ) then
+    log "epilog detects cpu time exceeded"
+    sendStatus $EXCEED_CPU
+    sendStageStatus $EXCEED_CPU ${STAGE_NUMBERS[$STAGE_INDEX]}
+	ERROR_DETECTED=true
+  elif ( grep 'VSize exceeded' $WATCHFILE ) then
+    log "epilog detects max virtual memory exceeded"
+    sendStatus $EXCEED_MEM
+    sendStageStatus $EXCEED_MEM ${STAGE_NUMBERS[$STAGE_INDEX]}
+	ERROR_DETECTED=true
+  fi
+elif [ $DISK_QUOTA_EXCEEDED -eq 1 ]; then
 	log "Error: disk quota exceeded"
 	sendStatus $ERROR_DISK_QUOTA_EXCEEDED
 	sendStageStatus $ERROR_DISK_QUOTA_EXCEEDED ${STAGE_NUMBERS[$STAGE_INDEX]}
-	break
+	ERROR_DETECTED=true
+fi
 
-else
-  JOB_ERROR="";
+# This appears to be the idiomatic Bash way to test if a value is false.
+if [ "$ERROR_DETECTED" = false ]; then
   log "execution on $HOSTNAME complete"
   sendStageStatus $STATUS_COMPLETE ${STAGE_NUMBERS[$STAGE_INDEX]}
   
@@ -561,18 +560,13 @@ else
   	  log "job finished successfully"
   	  sendStatus $STATUS_COMPLETE
   fi  
+  log "STAREXEC job $PAIR_ID completed successfully"	
+else 
+  log "STAREXEC job $PAIR_ID exited with errors"
+  sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
+  setRunStatsToZeroForLaterStages ${STAGE_NUMBERS[$STAGE_INDEX]}
+  cleanUpAfterKilledBuildJob
 fi
-
-
-if [ "$JOB_ERROR" = "" ]; then
-	log "STAREXEC job $PAIR_ID completed successfully"	
-else
-	log "STAREXEC job $PAIR_ID exited with errors"
-	sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
-  	setRunStatsToZeroForLaterStages ${STAGE_NUMBERS[$STAGE_INDEX]}
-  	cleanUpAfterKilledBuildJob
-fi
-
 
 if [ $BUILD_JOB == "true" ]; then
     copySolverBack
