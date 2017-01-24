@@ -18,6 +18,7 @@ pushsolver f=random-sat-or-unsat-solver.zip id=2 n=random-sat-or-unsat-solver
 pushsolver f=output-random100-solver.zip id=2 n=output-random100-solver
 pushsolver f=sleep-10-solver.zip id=2 n=sleep-10-solver
 pushsolver f=cpu-runner.zip id=2 n=cpu-runner
+pushsolver f=fifteen-mb-output-solver.zip id=2 n=fifteen-mb-output-solver
 
 logout
 login addr=https://stardev.cs.uiowa.edu/appname/ u=user@uiowa.edu p=Starexec4ever
