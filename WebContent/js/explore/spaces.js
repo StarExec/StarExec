@@ -1335,42 +1335,21 @@ function initDataTables(){
 
 
 	//Hook up select all/ none buttons
-	$('.selectAllJobs').click(function () {
-		$(this).parents('.dataTables_wrapper').find('tbody>tr').addClass('row_selected');
-	});
-	$('.unselectAllJobs').click(function() {
-		$(this).parents('.dataTables_wrapper').find('tbody>tr').removeClass('row_selected');
-	});
-
-	$('.selectAllSolvers').click(function () {
-		$(this).parents('.dataTables_wrapper').find('tbody>tr').addClass('row_selected');
-	});
-	$('.unselectAllSolvers').click(function() {
-		$(this).parents('.dataTables_wrapper').find('tbody>tr').removeClass('row_selected');
-	});
-
-	$('.selectAllBenchmarks').click(function () {
-		$(this).parents('.dataTables_wrapper').find('tbody>tr').addClass('row_selected');
-	});
-	$('.unselectAllBenchmarks').click(function() {
-		$(this).parents('.dataTables_wrapper').find('tbody>tr').removeClass('row_selected');
-	});
-
-	$('.selectAllUsers').click(function () {
-		$(this).parents('.dataTables_wrapper').find('tbody>tr').addClass('row_selected');
-	});
-	$('.unselectAllUsers').click(function() {
-		$(this).parents('.dataTables_wrapper').find('tbody>tr').removeClass('row_selected');
+	$('.selectAllJobs,       .unselectAllJobs, \
+	   .selectAllSolvers,    .unselectAllSolvers, \
+	   .selectAllBenchmarks, .unselectAllBenchmarks, \
+	   .selectAllUsers,      .unselectAllUsers').click(function() {
+		$(this).parents('.dataTables_wrapper').find('tbody>tr').toggleClass('row_selected');
 	});
 
 	// Set all fieldsets as expandable (except for action fieldset)
 	$('fieldset:not(.actions)').expandable(true);
 
-    var advancedActionsCollapsed = $.cookie('advancedActions')!='false';
+	var advancedActionsCollapsed = $.cookie('advancedActions')!='false';
 	$('fieldset.advancedActions').expandable(advancedActionsCollapsed).children('legend:first').click(function() {
-        var advancedActionsCollapsed = !$(this).data('open');
-        $.cookie('advancedActions', advancedActionsCollapsed, {expires: 10000, path: '/'});
-    });
+		var advancedActionsCollapsed = !$(this).data('open');
+		$.cookie('advancedActions', advancedActionsCollapsed, {expires: 10000, path: '/'});
+	});
 
 	// Set the DataTable filters to only query the server when the user finishes typing
 	jobTable.fnFilterOnDoneTyping();
