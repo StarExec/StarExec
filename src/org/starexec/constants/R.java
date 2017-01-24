@@ -344,6 +344,8 @@ public class R {
 
     // Constants for BenchExec
     public static final BenchmarkingFramework DEFAULT_BENCHMARKING_FRAMEWORK = BenchmarkingFramework.RUNSOLVER;
+    public static final String BENCHMARKING_FRAMEWORK_OPTION = "benchmarkingFramework";
+
 
 
     public static Timestamp earliestDateToRerunFailedPairs(){

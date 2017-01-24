@@ -2212,6 +2212,8 @@ public class Connection {
 			params.add(new BasicNameValuePair("seed",seed.toString()));
 			params.add(new BasicNameValuePair("resultsInterval", resultsInterval.toString()));
 			params.add(new BasicNameValuePair(C.FORMPARAM_TRAVERSAL,traversalMethod));
+			params.add(new BasicNameValuePair(R.BENCHMARKING_FRAMEWORK_OPTION, R.DEFAULT_BENCHMARKING_FRAMEWORK.toString()));
+
 			if (maxMemory!=null) {
 				params.add(new BasicNameValuePair("maxMem",String.valueOf(maxMemory)));
 			}
