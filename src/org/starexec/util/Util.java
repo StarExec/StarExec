@@ -51,16 +51,16 @@ import org.starexec.test.TestUtil;
  * @author Eric
  *
  */
-public class Util {	
+public class Util {
     private static final Logger log = Logger.getLogger(Util.class);
     private static final LogUtil logUtil = new LogUtil(log);
 
     protected static final ExecutorService threadPool = Executors.newCachedThreadPool();
-    
+
     /**
      * Checks to see if the two given objects are equal without throwing any null pointers.
      * if a and b are both null, returns true
-     * @param a 
+     * @param a
      * @param b
      * @return True if they are equal and false otherwise
      */
@@ -72,10 +72,10 @@ public class Util {
     	} else {
     		return a.equals(b);
     	}
-    	
+
     }
     /**
-     * 
+     *
      * @param c The string color
      * @return The Java color corresponding to the string, or null if no such color exists
      * Obtained at (http://stackoverflow.com/questions/2854043/converting-a-string-to-color-in-java)
@@ -92,7 +92,7 @@ public class Util {
     }
 
 
-	
+
     /**
      * Gives back a String that is the contents of the first n lines of the file where n always less
      * than or equal to lineLimit
@@ -153,8 +153,8 @@ public class Util {
     public static boolean isTestingAllowed() {
 		return R.ALLOW_TESTING;
     }
-	
-    /** 
+
+    /**
      * execute the following Runnable using a thread from our cached thread pool
      * @param c the Runnable to execute
      * @author Aaron Stump
@@ -181,25 +181,25 @@ public class Util {
     public static File getSandboxDirectory() {
     	return new File(R.SANDBOX_DIRECTORY);
     }
-	
+
     /**
      * Ensures a number is within a given range
      * @param min The minimum value the given value can be
      * @param max The maximum value the given value can be
      * @param value The actual value to clamp
-     * @return min if value is less than min, max if value is 
+     * @return min if value is less than min, max if value is
      * greater than max, or value if it is between min and max
      */
     public static int clamp(int min, int max, int value) {
     	return Math.max(Math.min(value, max), min);
     }
-	
+
     /**
      * Clamps the given value to within the given range
      * @param min The min of the range, inclusive
      * @param max The max of the range, inclusive
      * @param value The valu to clamp.
-     * @return min, if the value is lower, and max if the value is larger. 
+     * @return min, if the value is lower, and max if the value is larger.
      * The value itself otherwise
      */
     public static long clamp(long min, long max, long value) {
@@ -211,7 +211,7 @@ public class Util {
 		}
 		return value;
     }
-	
+
     /**
      * Initializes Starexec data directories by creating them if they
      * do not exist
@@ -219,7 +219,7 @@ public class Util {
     public static void initializeDataDirectories() {
 		File file=new File(R.STAREXEC_DATA_DIR);
 		file.mkdir();
-			
+
 		file=new File(R.getJobInboxDir());
 		file.mkdir();
 		file=new File(R.getJobLogDir());
@@ -243,7 +243,7 @@ public class Util {
 		File graphDir=new File(R.STAREXEC_ROOT,R.JOBGRAPH_FILE_DIR);
 		graphDir.mkdirs();
     }
-	
+
     /**
      * Extracts the file extesion from a file path
      * @param s The file path
@@ -252,37 +252,16 @@ public class Util {
     public static String getFileExtension(String s){
 	return s.substring(s.lastIndexOf('.') + 1);
     }
-	
+
     /**
      * @return The platform-dependent line separator
      */
     public static String getLineSeparator(){
 	return System.getProperty("line.separator");
     }
-    /**
-     * Generates a list of strings from a csv, where each string in the list
-     * is a single value (separated by commas) of the csv
-     * @param csv
-     * @return The list
-     */
-	public static List<String> csvToList(String csv) {
-		log.debug("Entering csvToList");
-		log.debug("Got csv: " + csv);
-		// trim whitespace off the ends of the input so we don't get blank elements when we split
-		csv = csv.trim();
-		List<String> csvList = new ArrayList<String>();
-		String[] splitCsv = csv.split(",");
-		for (int i = 0; i < splitCsv.length; i++) {
-			csvList.add(splitCsv[i].trim());
-		}
-		
-		log.debug("csvList.size(): "+csvList.size());
-		return csvList;
-	}
-	
-	
+
 	/**
-	 * 
+	 *
 	 * @param name
 	 * @param request
 	 * @return True if the value of the param given by name is not null in the given request
@@ -291,41 +270,41 @@ public class Util {
     	return !isNullOrEmpty(request.getParameter(name));
     }
 	/**
-	 * 
+	 *
 	 * @param s
 	 * @return True if s is null or empty and false otherwise
 	 */
     public static boolean isNullOrEmpty(String s){
     	return (s == null || s.trim().length() <= 0);
-    }	
-	
+    }
+
     /**
      * Generates a temporary password of between 6-20 characters, with at least 4 letters,
      * 1 number, and 1 special character
      * character
-     * 
+     *
      * @return a temporary password
      */
     public static String getTempPassword() {
         Random r = new Random();
-        
+
         // Random temp password length between 6-20 characters
         int newPassLength = r.nextInt(15) + 6;
         int set = 0;
         String[] charSets = {"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", "0123456789", "`~!@#$%^&*()_+-="};
         StringBuffer sb = new StringBuffer();
-        
+
         // Hash to store which character sets have been used
         HashSet<Integer> setsUsed = new HashSet<Integer>();
-        
+
         while (sb.length() != newPassLength) {
 	    // Choose a random character set to use & get a random character from it
             set = r.nextInt(charSets.length);
             setsUsed.add(set);
             sb.append(charSets[set].charAt(r.nextInt(charSets[set].length())));
-            
+
             // By the end, if the temporary password doesn't contain a character
-            // from all character sets, restart and generate a new temporary password 
+            // from all character sets, restart and generate a new temporary password
             if (sb.length() == newPassLength && setsUsed.size() != 3) {
                 sb.delete(0, sb.length());
                 setsUsed.clear();
@@ -346,19 +325,19 @@ public class Util {
 		for (Part p : request.getParts()) {
 			PartWrapper wrapper = new PartWrapper(p);
 		    // If we're dealing with a regular form field...
-		    if(!wrapper.isFile()) { 
+		    if(!wrapper.isFile()) {
 				// Add the field name and field value to the hashmap
-				form.put(p.getName(), IOUtils.toString(p.getInputStream()));				
+				form.put(p.getName(), IOUtils.toString(p.getInputStream()));
 		    } else {
 				// Else we've encountered a file, so add the entire wrapper to the HashMap.
 		    	// The wrapper provides all the relevant interface of a FileItem
-				form.put(p.getName(), wrapper);					
-		    }	
+				form.put(p.getName(), wrapper);
+		    }
 		}
-			
+
 		return form;
     }
-	
+
     /**
      * Calls executeCommand with a size 1 String[]
      * @param command
@@ -419,7 +398,7 @@ public class Util {
     	}
     	return executeCommand(newCommand,envp,workingDirectory);
     }
-    
+
     /**
      * Runs a command on the system command line (bash for unix, command line for windows)
      * and returns the process representing the command
@@ -435,7 +414,7 @@ public class Util {
 	    Process p;
 	    if (command.length == 1) {
 			log.debug("Executing the following command: " + command[0]);
-				
+
 			p = r.exec(command[0], envp, workingDirectory);
 	    }
 	    else {
@@ -445,15 +424,15 @@ public class Util {
 			    b.append("  ");
 			    b.append(command[i]);
 			}
-	
+
 			log.info(b.toString());
-			
+
 			p = r.exec(command, envp, workingDirectory);
 	    }
 	    return p;
-	
+
     }
-	
+
     /**
      * Runs a command on the system command line (bash for unix, command line for windows)
      * and returns the results from the command as a string
@@ -464,22 +443,22 @@ public class Util {
      * @throws IOException We do not want to catch exceptions at this level, because this code is generic and
      * has no useful way to handle them! Throwing an exception to higher levels is the desired behavior.
      */
-	
+
     public static String executeCommand(String[] command, String[] envp, File workingDirectory) throws IOException {
 	    return drainStreams(executeCommandAndReturnProcess(command,envp,workingDirectory));
     }
-	
 
-    /** 
+
+    /**
      * drains the given InputStream, adding each line read to the given StringBuffer.
-     * @param sb the StringBuffer to which to append lines 
+     * @param sb the StringBuffer to which to append lines
      * @param s the InputStream to drain
-     * @return true iff we read a string 
+     * @return true iff we read a string
      */
     protected static boolean drainInputStream(StringBuffer sb,InputStream s) {
 		InputStreamReader ins = new InputStreamReader(s);
-		BufferedReader reader = new BufferedReader(ins);		
-	
+		BufferedReader reader = new BufferedReader(ins);
+
 		boolean readsomething = false;
 		String line = null;
 		try {
@@ -504,12 +483,12 @@ public class Util {
     }
 
     /**
-     * Drains both the stdout and stderr streams of a process and returns 
+     * Drains both the stdout and stderr streams of a process and returns
      * @param p
      * @return The combined stdout and stderr from the process
      */
     public static String drainStreams(final Process p) {
-		    
+
 		/* to handle the separate streams of regular output and
 		   error output correctly, it is necessary to try draining
 		   them in parallel.  Otherwise, draining one can block
@@ -524,7 +503,7 @@ public class Util {
 						log.error("The process produced stderr output.");
 						log.error(b.toString());
 					}
-					    
+
 				    }
 			    catch(Exception e) {
 			    	log.error("Error draining stderr from process: "+e.toString());
@@ -543,56 +522,56 @@ public class Util {
     public static List<Integer> toIntegerList(String[] stringList) {
 	if (stringList != null) {
 	    ArrayList<Integer> retList = new ArrayList<Integer>(stringList.length);
-		
+
 	    for(String s : stringList){
 		retList.add(Integer.parseInt(s));
 	    }
-		
+
 	    return retList;
 	}
-		
+
 	return new ArrayList<Integer>();
     }
-	
+
     /**
      * Normalizes all line endings in the given file to the line ending of the OS the JVM is running on
      * @param f The file to normalize
      */
-    public static void normalizeFile(File f) {		
+    public static void normalizeFile(File f) {
 		File temp = null;
 		BufferedReader bufferIn = null;
-		BufferedWriter bufferOut = null;		
-			
-		try {			
+		BufferedWriter bufferOut = null;
+
+		try {
 		    if(f.exists()) {
 			// Create a new temp file to write to
 			temp = new File(f.getAbsolutePath() + ".normalized");
 			temp.createNewFile();
-							
+
 			// Get a stream to read from the file un-normalized file
 			FileInputStream fileIn = new FileInputStream(f);
 			DataInputStream dataIn = new DataInputStream(fileIn);
 			bufferIn = new BufferedReader(new InputStreamReader(dataIn));
-					
+
 			// Get a stream to write to the noramlized file
 			FileOutputStream fileOut = new FileOutputStream(temp);
 			DataOutputStream dataOut = new DataOutputStream(fileOut);
 			bufferOut = new BufferedWriter(new OutputStreamWriter(dataOut));
-					
+
 			// For each line in the un-normalized file
 			String line;
 			while ((line = bufferIn.readLine()) != null) {
 			    // Write the original line plus the operating-system dependent newline
 			    bufferOut.write(line);
-			    bufferOut.newLine();								
+			    bufferOut.newLine();
 			}
-				
+
 			bufferIn.close();
 			bufferOut.close();
-					
+
 			// Remove the original file
 			f.delete();
-					
+
 			// And rename the original file to the new one
 			temp.renameTo(f);
 		    } else {
@@ -620,8 +599,8 @@ public class Util {
     		sb.append(",");
     	}
     	sb.delete(sb.length()-1, sb.length());
-    	return sb.toString(); 
-    	
+    	return sb.toString();
+
     }
     /**
      * Retrieves all files in the given directory that are as old as, or older than the specified number of days
@@ -632,22 +611,22 @@ public class Util {
      */
     public static Collection<File> getOldFiles(String directory, int daysAgo, boolean includeDirs) {
     	File dir = new File(directory);
-		
+
 	    if(!dir.exists()) {
 	    	return null;
 	    }
-			
+
 	    // Subtract days from the current time
 	    Calendar calendar = Calendar.getInstance();
-	    calendar.add(Calendar.DATE, -daysAgo);			
+	    calendar.add(Calendar.DATE, -daysAgo);
 	    // Create a new filter for files older than this new time
 	    IOFileFilter dateFilter = FileFilterUtils.ageFileFilter(calendar.getTime());
 	    Collection<File> outdatedFiles;
 	    // Get all of the outdated files
 	    if (!includeDirs) {
 		    outdatedFiles = FileUtils.listFiles(dir, dateFilter, null);
-		    
-	    } else {	    	
+
+	    } else {
 	    	File[] files=dir.listFiles((FileFilter)dateFilter);
 	    	outdatedFiles=new ArrayList<File>();
 	    	for (File f : files) {
@@ -656,7 +635,7 @@ public class Util {
 	    }
 	    return outdatedFiles;
     }
-    
+
     /**
      * Deletes all files in the given directory that are as old as, or older than the specified number of days.
      * The given directory itself is NOT deleted
@@ -675,20 +654,20 @@ public class Util {
 		    	} else {
 		    		FileUtils.deleteQuietly(f);
 		    	}
-		    }					
+		    }
 		} catch (Exception e) {
 		    log.warn(e.getMessage(), e);
 		}
     }
     /**
      * THIS IS NOT SAFE TO RUN ON STAREXEC
-     * 
+     *
      * This code is designed to be used for single uses on Stardev to clear the job directory in a smart way after
      * redeploying and resetting the stardev database causes job directories to clear out. This procedure may also
      * be useful on Starexec, but extreme care needs to be taken to make sure the correct directories are deleted.
      * This should not be used on Starexec without going through the code below line by line, as changes in the
      * job output directory since this was written (April 2016) may cause unexpected results.
-     * 
+     *
      * Clears out directories under joboutput that do not belong to any job in the database. These
      * directories are ones that were not cleared correctly.
      */
@@ -703,7 +682,7 @@ public class Util {
     	log.info("found this many job output subdirectories to consider "+filesToConsider.size());
     	// exclude the log directory from removal
     	filesToConsider.remove(new File(R.getJobLogDir()).getAbsolutePath());
-    	
+
     	// exclude the directories of existing jobs from removal. This should be safe from race conditions
     	// because we are getting the list of jobs after getting the list of files. As such, jobs directories
     	// created between these operations will not be present in filesToConsider
@@ -719,10 +698,10 @@ public class Util {
     			log.error("failed to deleted directory "+s);
     		}
     	}
-    	
-    	
+
+
     }
-    
+
     /**
      * Deletes all files in the given directory that are as old as, or older than the specified number of days
      * @param directory The directory to clear old files out of (non-recursive)
@@ -735,18 +714,18 @@ public class Util {
 		    log.debug("found a total of "+outdatedFiles.size() +" outdated files to delete in "+directory);
 		    // Remove them all
 		    for(File f : outdatedFiles) {
-		    	
+
 		    	FileUtils.deleteQuietly(f);
-		    }					
+		    }
 		} catch (Exception e) {
 		    log.warn(e.getMessage(), e);
 		}
     }
-   
-	
-	
+
+
+
     /**
-     * Returns a configuration's absolute file path given the solver's path and 
+     * Returns a configuration's absolute file path given the solver's path and
      * the configuration's name
      *
      * @param solverPath the absolute path to the solver's directory
@@ -759,7 +738,7 @@ public class Util {
 	if(isNullOrEmpty(solverPath) || isNullOrEmpty(configName)){
 	    return null;
 	}
-		
+
 	StringBuilder sb = new StringBuilder();
 	sb.append(solverPath);			// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/
 	sb.append(R.SOLVER_BIN_DIR);	// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin
@@ -771,17 +750,17 @@ public class Util {
 	sb.append(configName);			// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin/{starexec_run_configName}
 	return sb.toString();
     }
-	
+
     private static String docRoot = null;
     private static String docRootUrl = null;
-    
-    
+
+
     private static void initDocRoot() {
     	if (docRoot == null) {
 	    docRoot = "/" + R.STAREXEC_APPNAME + "/";
     	}
     }
-    
+
     private static void initDocRootUrl() {
     	initDocRoot();
     	if (docRootUrl == null) {
@@ -808,13 +787,13 @@ public class Util {
     	initDocRootUrl();
     	return docRootUrl + s;
     }
-    
+
     /**
      * Given an integer number of bytes, returns a human-readable string
      * approximating the number of bytes given with the proper units
      * @param bytes The number of bytes
      * @return The number of bytes to two decimal places in a useful unit
-     * @author Eric Burns 
+     * @author Eric Burns
      */
     public static String byteCountToDisplaySize(long bytes) {
     	String[] suffix=new String[]{"Bytes", "KB", "MB", "GB", "TB", "PB", "EB"};
@@ -825,7 +804,7 @@ public class Util {
 	    b=b/1024;
     	}
     	DecimalFormat df=new DecimalFormat("#.##");
-    	
+
     	return df.format(b) +" "+suffix[suffixIndex];
     }
     /**
@@ -838,23 +817,23 @@ public class Util {
     	return bytes;
     }
     /**
-     * 
+     *
      * @param bytes
      * @return Converts bytes to megabytes, truncated to the nearest integer megabyte
      */
     public static long bytesToMegabytes(long bytes) {
     	return (bytes / (1024*1024));
     }
-    
+
     /**
-     * 
+     *
      * @param bytes
      * @return the number of gigabytes representing the given number of bytes
      */
     public static double bytesToGigabytes(long bytes) {
     	return ((double)bytes/1073741824.0);
     }
-    
+
     /**
      * Deletes the file specified by the given path, and then moves up and deletes
      * empty directories on the path to the the file that was deleted. Will ignore any directories
@@ -891,10 +870,10 @@ public class Util {
     			log.debug("deleted directory");
     		}
     	}
-    	
+
     	return true;
     }
-    
+
     /**
      * Attempts to delete the directory or file specified the given path without
      * throwing any errors
@@ -916,7 +895,7 @@ public class Util {
     	}
     	return false;
     }
-    
+
     /**
      * Given a list, a comparator, and all of the attributes needed to paginate a DataTables object,
      * returns a sublist of the given list containing the ordered items to display
@@ -927,7 +906,7 @@ public class Util {
      * @param records Number of records to give back (actual number will be less if the size of the list is less than records)
      * @return Entries sorted and filtered according to the given comparator
      */
-    
+
     public static <T> List<T> handlePagination(List<T> arr, Comparator<T> compare,int start, int records) {
     	Collections.sort(arr,compare);
 		List<T> returnList=new ArrayList<T>();
@@ -1006,10 +985,10 @@ public class Util {
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		t.printStackTrace(pw);
-		return sw.toString(); 	
+		return sw.toString();
 	}
-    
-    
+
+
     /**
      * Recursively grants full permission to the owner of everything in the given
      * directory. The top level directory is not affected, only everything inside
@@ -1027,7 +1006,7 @@ public class Util {
 		chmod[2]=R.SANDBOX_USER_ONE;
 		chmod[3]="chmod";
 		chmod[4]="-R";
-		chmod[5]="u+rwx,g+rwx";	
+		chmod[5]="u+rwx,g+rwx";
 		for (File f : dir.listFiles()) {
 			chmod[6]=f.getAbsolutePath();
 			Util.executeCommand(chmod);
@@ -1044,11 +1023,11 @@ public class Util {
 		chmod[0]="chmod";
 		chmod[1]="-R";
 		if (group) {
-		    chmod[2]="g+rwx";	
-	
+		    chmod[2]="g+rwx";
+
 		} else {
-		    chmod[2]="u+rwx";	
-	
+		    chmod[2]="u+rwx";
+
 		}
 		chmod[3]=dir;
 		Util.executeCommand(chmod);
@@ -1057,7 +1036,7 @@ public class Util {
     /**
      * Copies all of the given files to a single, newly created sandbox directory
      * and returns the sandbox directory. The sandbox user will be the owner and
-     * have full permissions over everthing in the sandbox directory. 
+     * have full permissions over everthing in the sandbox directory.
      * @param files
      * @return The sandbox directory that contains all the copied files
      * @throws IOException
@@ -1079,7 +1058,7 @@ public class Util {
 
 	    //next, copy the files over so they are owned by sandbox
 	    String[] sudoCpCmd=new String[4];
-    	
+
 	    sudoCpCmd[0]="cp";
 	    sudoCpCmd[1]="-r";
 	    sudoCpCmd[3]=sandbox2.getAbsolutePath();
@@ -1094,7 +1073,7 @@ public class Util {
 	}
     	return sandbox2;
     }
-    
+
     /**
      * Creates and returns a unique, empty directory immediately inside
      * of the sandbox directory on the head node
@@ -1103,9 +1082,9 @@ public class Util {
     public static File getRandomSandboxDirectory() {
 		File sandboxDirectory=Util.getSandboxDirectory();
 		String randomDirectory=TestUtil.getRandomAlphaString(64);
-		
+
 		File sandboxDir=new File(sandboxDirectory,randomDirectory);
-		                        
+
 		sandboxDir.mkdirs();
 		return sandboxDir;
     }
@@ -1116,10 +1095,10 @@ public class Util {
     	try {
     		log.debug("logging sandbox contents");
         	log.debug(Util.executeCommand("ls -l -R "+Util.getSandboxDirectory().getAbsolutePath()));
-        	
+
     	} catch (Exception e) {
     		log.error(e.getMessage(),e);
-    
+
     	}
     }
 
@@ -1134,14 +1113,14 @@ public class Util {
 	 */
 	public static String getWebPage(String url, Map<String, String> queryParameters, List<Cookie> cookiesToSend) throws IOException {
 		if (queryParameters.keySet().size() == 0) {
-			return url; 
+			return url;
 		}
 
 		// Initially contains the ? necessary for the query string.
 		//StringJoiner queryStringJoiner = new StringJoiner("&", "?", "");
 		StringBuilder queryStringBuilder = new StringBuilder();
 
-		
+
 		queryStringBuilder.append("?");
 		for (String parameter : queryParameters.keySet()) {
 			String value = queryParameters.get(parameter);
@@ -1175,7 +1154,7 @@ public class Util {
 			while ((nextLine = reader.readLine()) != null) {
 				outputHtml.append(nextLine);
 			}
-		} 
+		}
 		return outputHtml.toString();
 	}
 
@@ -1224,5 +1203,5 @@ public class Util {
     	stream.close();
     	output.close();
     }
-    
+
 }
