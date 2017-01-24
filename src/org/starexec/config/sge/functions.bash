@@ -586,46 +586,62 @@ done < $1
 # $2 the watchfile
 # $3 The option on how to copy back stdout
 # $4 The option on how to copy back the other output fiels
+# $5 The benchmarking framework
 function updateStats {
 
-WALLCLOCK_TIME=`sed -n 's/^WCTIME=\([0-9\.]*\)$/\1/p' $1`
-CPU_TIME=`sed -n 's/^CPUTIME=\([0-9\.]*\)$/\1/p' $1`
-CPU_USER_TIME=`sed -n 's/^USERTIME=\([0-9\.]*\)$/\1/p' $1`
-SYSTEM_TIME=`sed -n 's/^SYSTEMTIME=\([0-9\.]*\)$/\1/p' $1`
-MAX_VIRTUAL_MEMORY=`sed -n 's/^MAXVM=\([0-9\.]*\)$/\1/p' $1`
+if [ "$5" == "$BENCHEXEC" ]; then
+	WALLCLOCK_TIME=`sed -n 's/^{\?walltime=\([0-9\.]*\)s}\?$/\1/p' $1`
+	CPU_TIME=`sed -n 's/^{\?cputime=\([0-9\.]*\)s}\?$/\1/p' $1`
+	CPU_USER_TIME=0
+	SYSTEM_TIME=0
+	MAX_VIRTUAL_MEMORY=`sed -n 's/^{\?memory=\([0-9\.]*\)}\?$/\1/p' $1`
 
-log "the max virtual memory was $MAX_VIRTUAL_MEMORY"
-log "the var file was"
-cat $1
-log "end varfile"
+	MAX_RESIDENT_SET_SIZE=0
+	PAGE_RECLAIMS=0
+	PAGE_FAULTS=0
+	BLOCK_INPUT=0
+	BLOCK_OUTPUT=0
+	VOL_CONTEXT_SWITCHES=0
+	INVOL_CONTEXT_SWITCHES=0
+else
+	WALLCLOCK_TIME=`sed -n 's/^WCTIME=\([0-9\.]*\)$/\1/p' $1`
+	CPU_TIME=`sed -n 's/^CPUTIME=\([0-9\.]*\)$/\1/p' $1`
+	CPU_USER_TIME=`sed -n 's/^USERTIME=\([0-9\.]*\)$/\1/p' $1`
+	SYSTEM_TIME=`sed -n 's/^SYSTEMTIME=\([0-9\.]*\)$/\1/p' $1`
+	MAX_VIRTUAL_MEMORY=`sed -n 's/^MAXVM=\([0-9\.]*\)$/\1/p' $1`
+
+	log "the max virtual memory was $MAX_VIRTUAL_MEMORY"
+	log "the var file was"
+	cat $1
+	log "end varfile"
+
+	SOLVER_STATUS_CODE=`awk '/Child status/ { print $3 }' $2`
+
+	log "the solver exit code was $SOLVER_STATUS_CODE"
+
+	MAX_RESIDENT_SET_SIZE=`awk '/maximum resident set size/ { print $5 }' $2`
+	PAGE_RECLAIMS=`awk '/page reclaims/ { print $3 }' $2`
+	PAGE_FAULTS=`awk '/page faults/ { print $3 }' $2`
+	BLOCK_INPUT=`awk '/block input/ { print $4 }' $2`
+	BLOCK_OUTPUT=`awk '/block output/ { print $4 }' $2`
+	VOL_CONTEXT_SWITCHES=`awk '/^voluntary context switches/ { print $4 }' $2`
+	INVOL_CONTEXT_SWITCHES=`awk '/involuntary context switches/ { print $4 }' $2`
+
+	# just sanitize these latter to avoid db errors, since fishing things out of the watchfile is more error-prone apparently.
+	if [[ ! ( "$MAX_RESIDENT_SET_SIZE" =~ ^[0-9\.]+$ ) ]] ; then MAX_RESIDENT_SET_SIZE=0 ; fi
+	if [[ ! ( "$PAGE_RECLAIMS" =~ ^[0-9\.]+$ ) ]] ; then PAGE_RECLAIMS=0 ; fi
+	if [[ ! ( "$PAGE_FAULTS" =~ ^[0-9\.]+$ ) ]] ; then PAGE_FAULTS=0 ; fi
+	if [[ ! ( "$BLOCK_INPUT" =~ ^[0-9\.]+$ ) ]] ; then BLOCK_INPUT=0 ; fi
+	if [[ ! ( "$BLOCK_OUTPUT" =~ ^[0-9\.]+$ ) ]] ; then BLOCK_OUTPUT=0 ; fi
+	if [[ ! ( "$VOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then VOL_CONTEXT_SWITCHES=0 ; fi
+	if [[ ! ( "$INVOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then INVOL_CONTEXT_SWITCHES=0 ; fi
+fi
 
 ROUNDED_WALLCLOCK_TIME=$( printf "%.0f" $WALLCLOCK_TIME )
 ROUNDED_CPU_TIME=$( printf "%.0f" $CPU_TIME )
 
 STAREXEC_WALLCLOCK_LIMIT=$(($STAREXEC_WALLCLOCK_LIMIT-$ROUNDED_WALLCLOCK_TIME))
 STAREXEC_CPU_LIMIT=$(($STAREXEC_CPU_LIMIT-$ROUNDED_CPU_TIME))
-
-
-SOLVER_STATUS_CODE=`awk '/Child status/ { print $3 }' $2`
-
-log "the solver exit code was $SOLVER_STATUS_CODE"
-
-MAX_RESIDENT_SET_SIZE=`awk '/maximum resident set size/ { print $5 }' $2`
-PAGE_RECLAIMS=`awk '/page reclaims/ { print $3 }' $2`
-PAGE_FAULTS=`awk '/page faults/ { print $3 }' $2`
-BLOCK_INPUT=`awk '/block input/ { print $4 }' $2`
-BLOCK_OUTPUT=`awk '/block output/ { print $4 }' $2`
-VOL_CONTEXT_SWITCHES=`awk '/^voluntary context switches/ { print $4 }' $2`
-INVOL_CONTEXT_SWITCHES=`awk '/involuntary context switches/ { print $4 }' $2`
-
-# just sanitize these latter to avoid db errors, since fishing things out of the watchfile is more error-prone apparently.
-if [[ ! ( "$MAX_RESIDENT_SET_SIZE" =~ ^[0-9\.]+$ ) ]] ; then MAX_RESIDENT_SET_SIZE=0 ; fi
-if [[ ! ( "$PAGE_RECLAIMS" =~ ^[0-9\.]+$ ) ]] ; then PAGE_RECLAIMS=0 ; fi
-if [[ ! ( "$PAGE_FAULTS" =~ ^[0-9\.]+$ ) ]] ; then PAGE_FAULTS=0 ; fi
-if [[ ! ( "$BLOCK_INPUT" =~ ^[0-9\.]+$ ) ]] ; then BLOCK_INPUT=0 ; fi
-if [[ ! ( "$BLOCK_OUTPUT" =~ ^[0-9\.]+$ ) ]] ; then BLOCK_OUTPUT=0 ; fi
-if [[ ! ( "$VOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then VOL_CONTEXT_SWITCHES=0 ; fi
-if [[ ! ( "$INVOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then INVOL_CONTEXT_SWITCHES=0 ; fi
 
 EXEC_HOST=`hostname`
 getTotalOutputSizeToCopy $3 $4
@@ -715,8 +731,9 @@ function copyOutputNoStats {
 # $1 The current stage number
 # $2 the stdout copy option (1 means don't save, otherwise save)
 # $3 the other output copy option (same as above)
+# $4 the benchmarking framework
 function copyOutput {
-	updateStats $VARFILE $WATCHFILE $2 $3
+	updateStats $VARFILE $WATCHFILE $2 $3 $4
 
 	if [ "$POST_PROCESSOR_PATH" != "" ]; then
 		log "getting postprocessor"

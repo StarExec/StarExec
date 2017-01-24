@@ -423,10 +423,10 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 		echo $$ > /sys/fs/cgroup/freezer/system.slice/benchexec-cgroup.service/tasks
 
 		log "Running runexec."
-		echo "runexec --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH $OUT_DIR/output_files $OTHER_INPUT_PATH $ARGUMENT_STRING"
+		echo "runexec --no-container --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH $OUT_DIR/output_files $OTHER_INPUT_PATH $ARGUMENT_STRING"
 
 		# Run runexec, runexec will output the stdout of the solver to $OUT_DIR/stdout.txt and will output statistics to $OUT_DIR/var.out
-		runexec --no-container --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH "$OUT_DIR/output_files" $OTHER_INPUT_PATH $ARGUMENT_STRING > $OUT_DIR/var.out
+		sudo -u $SANDBOX_PARAM runexec --no-container --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH "$OUT_DIR/output_files" $OTHER_INPUT_PATH $ARGUMENT_STRING > $OUT_DIR/var.out
 
 		# make a blank watchfile
 		touch "$OUT_DIR"/watcher.out
@@ -476,14 +476,14 @@ STDOUT_FILE="$OUT_DIR"/stdout.txt
 
 if [ ! -f $WATCHFILE ]; then
     log "Runsolver watchfile could not be found. Terminating job pair."
-    copyOutput $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION
+    copyOutput $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION $BENCHMARKING_FRAMEWORK
     markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
     exit 0
 fi
 
 if [ ! -f $VARFILE ]; then
     echo "Varfile could not be found. Terminating job pair."
-    copyOutput $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION
+    copyOutput $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION $BENCHMARKING_FRAMEWORK
     markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
     exit 0
 fi
@@ -509,7 +509,7 @@ log "epilog checking for information on cores, from runsolver's watch file:"
 grep 'cores:' $WATCHFILE
 
 # this also does post processing
-copyOutput $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION
+copyOutput $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION $BENCHMARKING_FRAMEWORK
 
 if [ $STDOUT_SAVE_OPTION -eq 3 ]; then
 	saveStdoutAsBenchmark
