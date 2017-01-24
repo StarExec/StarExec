@@ -3,10 +3,10 @@ var dialog=null;
 
 
 $(document).ready(function(){
-	
+
 	initUI();
 	attachFormValidation();
-	
+
 	$('#radioNoPause').attr('checked','checked');
 
 });
@@ -43,14 +43,14 @@ function getClockTimeoutErrorMessage() {
 function attachFormValidation(){
 	// Add regular expression capabilities to the validator
 	$.validator.addMethod(
-			"regex", 
+			"regex",
 			function(value, element, regexp) {
 				var re = new RegExp(regexp);
 				return this.optional(element) || re.test(value);
 	});
-	
-	
-	
+
+
+
 	// Set up form validation
 	$("#addForm").validate({
 		submitHandler: function(form) {
@@ -72,18 +72,18 @@ function attachFormValidation(){
 				regex: getPrimDescRegex()
 			},
 			cpuTimeout: {
-				required: true,			    
+				required: true,
 			    max: getMaxCpuTimeout(),
 			    min: 1
 			},
 			wallclockTimeout: {
-				required: true,			    
+				required: true,
 			    max: getMaxWallTimeout(),
 			    min: 1
 			},
 			maxMem: {
 				required: true,
-				min : 0 
+				min : 0
 			},
 			queue: {
 				required: true
@@ -107,11 +107,11 @@ function attachFormValidation(){
 			},
 			postProcess: {
 				required: true
-				
+
 			},
 			preProcess: {
 				required: true
-				
+
 			}
 		},
 		messages: {
@@ -137,7 +137,7 @@ function attachFormValidation(){
 				regex: "invalid character(s)"
 			},
 			cpuTimeout: {
-				required: "enter a timeout",			    
+				required: "enter a timeout",
 			    max: getCpuTimeoutErrorMessage(),
 			    min: "1 second minimum timeout"
 			},
@@ -146,13 +146,13 @@ function attachFormValidation(){
 				min: "choose a solver"
 			},
 			wallclockTimeout: {
-				required: "enter a timeout",			    
+				required: "enter a timeout",
 			    max: getClockTimeoutErrorMessage(),
 			    min: "1 second minimum timeout"
 			},
 			maxMem: {
 				required: "enter a maximum memory",
-				max: "100 gigabytes maximum" 
+				max: "100 gigabytes maximum"
 			},
 			queue: {
 				required: "error - no worker queues"
@@ -168,38 +168,38 @@ function attachFormValidation(){
 			}
 		}
 	});
-	
+
 	//when we change queues, we need to refresh the validation to use the new timeouts
 	$("#workerQueue").change(function() {
 		var settings = $('#addForm').validate().settings;
 		settings.rules.cpuTimeout = {
-				required: true,			    
+				required: true,
 			    max: getMaxCpuTimeout(),
 			    min: 1
 			};
-		
+
 		settings.rules.wallclockTimeout = {
-				required: true,			    
+				required: true,
 			    max: getMaxWallTimeout(),
 			    min: 1
 			};
-		
+
 		settings.messages.cpuTimeout = {
-				required: "enter a timeout",			    
+				required: "enter a timeout",
 			    max: getMaxCpuTimeout()+" second max timeout",
 			    min: "1 second minimum timeout"
 			};
-		
+
 		settings.messages.wallclockTimeout = {
-				required: "enter a timeout",			    
+				required: "enter a timeout",
 			    max: getMaxWallTimeout()+" second max timeout",
 			    min: "1 second minimum timeout"
 		};
 		$("#addForm").valid(); //revalidate now that we have new rules
 
-		
+
 	});
-	
+
 	$("#useSolver").button({
 		icons: {
 			primary: "ui-icon-check"
@@ -215,29 +215,34 @@ function attachFormValidation(){
  * Sets up the jQuery button style and attaches click handlers to those buttons.
  */
 function initUI() {
-	
+
 	//there must be some bench processor selected, so make sure we are using one
 	$("#benchProcess").find("option").first().attr("selected","selected");
-		
+
 	$('#btnBack').button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-w"
 	}}).click(function(){
-		
+
 		history.back(-1);
 	});
 
-	$("#advancedSettings").expandable(true);
+	var advancedJobOptionsCollapsed = $.cookie('advancedJobOptions')!='false';
+	$('#advancedSettings').expandable(advancedJobOptionsCollapsed).children('legend:first').click(function() {
+		var advancedJobOptionsCollapsed = !$(this).data('open');
+		$.cookie('advancedJobOptions', advancedJobOptionsCollapsed, {expires: 10000, path: '/'});
+	});
+
 	$("#solverField").expandable(true);
     $('#btnDone').button({
 		icons: {
 			secondary: "ui-icon-check"
 		}
     });
-    
-    
 
-    $("#solverList").dataTable({ 
+
+
+    $("#solverList").dataTable({
 		"sDom"			: getDataTablesDom(),
 		"iDisplayStart"	: 0,
 		"iDisplayLength": defaultPageSize,
@@ -246,7 +251,7 @@ function initUI() {
 		"sServerMethod" : 'POST',
 		"fnServerData"	: fnPaginationHandler
 	});
-    
+
     $("#solverList").on("mousedown", "tr",function() {
 		if ($(this).hasClass("row_selected")) {
 			$(this).removeClass("row_selected");
@@ -263,18 +268,18 @@ function unselectAll() {
 
 function fnPaginationHandler(sSource, aoData, fnCallback){
 	// Request the next page of primitives from the server via AJAX
-	$.post(  
+	$.post(
 			sSource + "users/solvers/pagination",
 			aoData,
 			function(nextDataTablePage){
 				s=parseReturnCode(nextDataTablePage);
 				if (s) {
-					
-				
+
+
 					// Replace the current page with the newly received page
 					fnCallback(nextDataTablePage);
 				}
-			},  
+			},
 			"json"
 	);
 }

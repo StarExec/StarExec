@@ -26,7 +26,7 @@ $(document).ready(function(){
 
 	initUI();
 	attachFormValidation();
-	
+
 	$('#radioDepth').attr('checked','checked');
 	$('#radioNoPause').attr('checked','checked');
 
@@ -42,8 +42,8 @@ $(document).ready(function(){
 	if ($("#remainingQuota").attr("value")<=0) {
 		showMessage("warn","You have reached your pair quota. You will not be able to submit new jobs without removing some old jobs first.", 8000);
 	}
-	
-	
+
+
 });
 
 function getMaxCpuTimeout(){
@@ -78,7 +78,7 @@ function getClockTimeoutErrorMessage() {
 function attachFormValidation(){
 	// Add regular expression capabilities to the validator
 	$.validator.addMethod(
-			"regex", 
+			"regex",
 			function(value, element, regexp) {
 				var re = new RegExp(regexp);
 				return this.optional(element) || re.test(value);
@@ -89,9 +89,9 @@ function attachFormValidation(){
 			return value==0 || value>=10;
 		}
 	);
-	
-	
-	
+
+
+
 	// Set up form validation
 	$("#addForm").validate({
 		rules: {
@@ -107,18 +107,18 @@ function attachFormValidation(){
 				regex: getPrimDescRegex()
 			},
 			cpuTimeout: {
-				required: true,			    
+				required: true,
 			    max: getMaxCpuTimeout(),
 			    min: 1
 			},
 			wallclockTimeout: {
-				required: true,			    
+				required: true,
 			    max: getMaxWallTimeout(),
 			    min: 1
 			},
 			maxMem: {
 				required: true,
-				min : 0 
+				min : 0
 			},
 			queue: {
 				required: true
@@ -141,18 +141,18 @@ function attachFormValidation(){
 				regex: "invalid character(s)"
 			},
 			cpuTimeout: {
-				required: "enter a timeout",			    
+				required: "enter a timeout",
 			    max: getCpuTimeoutErrorMessage(),
 			    min: "1 second minimum timeout"
 			},
 			wallclockTimeout: {
-				required: "enter a timeout",			    
+				required: "enter a timeout",
 			    max: getClockTimeoutErrorMessage(),
 			    min: "1 second minimum timeout"
 			},
 			maxMem: {
 				required: "enter a maximum memory",
-				max: "100 gigabytes maximum" 
+				max: "100 gigabytes maximum"
 			},
 			queue: {
 				required: "error - no worker queues"
@@ -163,36 +163,36 @@ function attachFormValidation(){
 			}
 		}
 	});
-	
+
 	//when we change queues, we need to refresh the validation to use the new timeouts
 	$("#workerQueue").change(function() {
 		settings = $('#addForm').validate().settings;
 		settings.rules.cpuTimeout = {
-				required: true,			    
+				required: true,
 			    max: getMaxCpuTimeout(),
 			    min: 1
 			};
-		
+
 		settings.rules.wallclockTimeout = {
-				required: true,			    
+				required: true,
 			    max: getMaxWallTimeout(),
 			    min: 1
 			};
-		
+
 		settings.messages.cpuTimeout = {
-				required: "enter a timeout",			    
+				required: "enter a timeout",
 			    max: getMaxCpuTimeout()+" second max timeout",
 			    min: "1 second minimum timeout"
 			};
-		
+
 		settings.messages.wallclockTimeout = {
-				required: "enter a timeout",			    
+				required: "enter a timeout",
 			    max: getMaxWallTimeout()+" second max timeout",
 			    min: "1 second minimum timeout"
 		};
 		$("#addForm").valid(); //revalidate now that we have new rules
 
-		
+
 	});
 };
 
@@ -201,10 +201,14 @@ function attachFormValidation(){
  * Sets up the jQuery button style and attaches click handlers to those buttons.
  */
 function initUI() {
-	
-	
-	$('#advancedOptions').expandable(true);
-	
+
+
+	var advancedJobOptionsCollapsed = $.cookie('advancedJobOptions')!='false';
+	$('#advancedOptions').expandable(advancedJobOptionsCollapsed).children('legend:first').click(function() {
+		var advancedJobOptionsCollapsed = !$(this).data('open');
+		$.cookie('advancedJobOptions', advancedJobOptionsCollapsed, {expires: 10000, path: '/'});
+	});
+
 	//If there is only one post processor and for some reason it is not the default, set it as such
 	if ($("#postProcess").find("option").length==2) {
 		$("#postProcess").find("option").last().prop("selected",true);
@@ -213,13 +217,11 @@ function initUI() {
 	if ($("#preProcess").find("option").length==2) {
 		$("#preProcess").find("option").last().prop("selected",true);
 	}
-	
-	
-	
-	
+
+
 	$("#tblBenchConfig").dataTable({
-		"sDom": 'rt<"bottom"f><"clear">',        
-        "bPaginate": false,        
+		"sDom": 'rt<"bottom"f><"clear">',
+        "bPaginate": false,
         "bSort": true,
         "sAjaxSource"	: starexecRoot+"services/job/"+curSpaceId+"/allbench/pagination",
         "sServerMethod" : "POST",
@@ -227,18 +229,18 @@ function initUI() {
 	});
 	// Set up datatables
 	setupSolverConfigDataTable();
-	
+
 	// Place the select all/none buttons in the datatable footer
 	/*$('#fieldStep3 div.solverSelectWrap').detach().prependTo('#fieldStep3 div.bottom');
 	$('#fieldStep4 div.solverSelectWrap').detach().prependTo('#fieldStep4 div.bottom');*/
 	$('#fieldSelectBenchSpace div.solverSelectWrap').detach().prependTo('#fieldSelectBenchSpace div.bottom');
 	$('#fieldSolverSelection div.solverSelectWrap').detach().prependTo('#fieldSolverSelection div.bottom');
-	
+
 	$('#btnBack').button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-w"
 	}}).click(function(){
-		
+
 		history.back(-1);
 	});
 
@@ -254,7 +256,7 @@ function initUI() {
 	});
 
 
-	
+
 	$('#btnNext').button({
 		icons: {
 			secondary: "ui-icon-arrowthick-1-e"
@@ -263,7 +265,7 @@ function initUI() {
 			nextState();
 		}
     });
-	
+
 	$('#btnPrev').button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-w"
@@ -291,7 +293,7 @@ function initUI() {
 		}
     	updateProgress();
     });
-    
+
     $('#btnDone').button({
 		icons: {
 			secondary: "ui-icon-check"
@@ -309,7 +311,7 @@ function initUI() {
     	 }
  		createDialog("Creating your job, please wait. This will take some time for large jobs.");
     });
-    
+
     // Hook up select all/none buttons for solvers
 	registerSelectAllSolversEventHandler();
 	registerSelectNoneSolversEventHandler();
@@ -324,9 +326,9 @@ function initUI() {
 	});
 
 	registerSolverConfigTableRowSelectionEventHandler();
-    
 
-	
+
+
 	$("#tblBenchConfig").on( "click","tr", function() {
 		$(this).toggleClass("row_selected");
 	});
@@ -334,8 +336,8 @@ function initUI() {
 
 	// Step 2 related actions
 	// Selection toggling
-	
-	
+
+
 	// quick hierarchy run selected
 	//$("#runSpace, #runHierarchy, #keepHierarchy").click(function() {
 	$("#keepHierarchy").click(function() {
@@ -346,7 +348,7 @@ function initUI() {
 		$('#btnDone').fadeIn('fast');
 		addRowSelectedAndClearSiblings(this);
 	});
-	
+
 	// Choose benchmarks selected
 	$("#runChoose").click(function() {
 		$("#tblBenchConfig tr").removeClass("row_selected");
@@ -360,27 +362,27 @@ function initUI() {
 		addRowSelectedAndClearSiblings(this);
 		nextState();
 	});
-	
+
 	// Choose benchmarks in space selected
 	$("#someBenchInSpace").click(function() {
 		benchSelectionClick(1, this);
 	});
-	
-	// all benchmarks in space 
+
+	// all benchmarks in space
 	$("#allBenchInSpace").click(function() {
 		benchSelectionClick(0, this);
 	});
-	
-	// all benchmarks in hierarchy 
+
+	// all benchmarks in hierarchy
 	$("#allBenchInHierarchy").click(function() {
 		benchSelectionClick(0, this);
 	});
-	
-	// Set timeout default to 1 day	
+
+	// Set timeout default to 1 day
 	$("#timeoutDay option[value='1']").attr("selected", "selected");
-	
+
     // Initialize the state of the job creator by forcing a progress update
-    updateProgress();           
+    updateProgress();
 
 }
 
@@ -396,34 +398,34 @@ function benchSelectionClick(benchMethod, row) {
 
 function nextState() {
 	var isValid = $('#addForm').valid();
-	
+
 	// Make sure the job config form is valid  before moving on
 	if(progress == 0 && false == isValid) {
 		return;
-	} else if (progress == 1 && $('#tblSpaceSelection tbody tr.row_selected').length <= 0) { 
+	} else if (progress == 1 && $('#tblSpaceSelection tbody tr.row_selected').length <= 0) {
 		// Make sure the user has selected a choice for running the space
 		showMessage('warn', 'You must make a selection to continue.', 3000);
 		return;
 	}
-	else if (progress == 2 && $('#tblBenchMethodSelection tbody tr.row_selected').length <= 0) { 
+	else if (progress == 2 && $('#tblBenchMethodSelection tbody tr.row_selected').length <= 0) {
 			// Make sure the user has selected a method for selecting benchmarks
 			showMessage('warn', 'You must make a selection to continue.', 3000);
-			return;	
+			return;
 	} else if (progress == 3 && $('#tblSolverConfig tbody tr.row_selected').length <= 0) {
 		// Make sure the user selects at least one solver before moving on
 		showMessage('warn', 'You must have at least one solver for this job.', 3000);
 		return;
 	}
-	
+
 	// Move on to the next step if everything is valid
 	if (progress != 3){
-		progress++;    	   
+		progress++;
 	}
 	else{
 		//if choosing bench from space
 		if (benchMethodVal == 1){
 			progress = 4;
-		}	
+		}
 	}
 	updateProgress();
 }
@@ -475,7 +477,7 @@ function updateProgress() {
 	$('#fieldBenchMethod').hide();
 	$('#fieldSelectBenchSpace').hide();
 	//$('#fieldSelectBenchHierarchy').hide();
-		
+
 	log("Progress: "+progress);
 	switch(progress) {
 		case 0:	// Job setup stage
@@ -527,17 +529,17 @@ function clearSelectedRowsOnTable(table) {
 }
 
 function fnBenchPaginationHandler(sSource, aoData, fnCallback) {
-	$.post(  
+	$.post(
 			sSource,
 			aoData,
 			function(nextDataTablePage){
-				
+
 				s=parseReturnCode(nextDataTablePage);
 				if (s) {
-					fnCallback(nextDataTablePage);		
+					fnCallback(nextDataTablePage);
 				}
 
-			},  
+			},
 			"json"
 	).error(function(){
 		showMessage('error',"Internal error populating data table",5000);
