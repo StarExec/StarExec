@@ -1335,11 +1335,11 @@ function initDataTables(){
 
 
 	//Hook up select all/ none buttons
-	$('.selectAllJobs,       .unselectAllJobs, \
-	   .selectAllSolvers,    .unselectAllSolvers, \
-	   .selectAllBenchmarks, .unselectAllBenchmarks, \
-	   .selectAllUsers,      .unselectAllUsers').click(function() {
-		$(this).parents('.dataTables_wrapper').find('tbody>tr').toggleClass('row_selected');
+	$('.selectAllJobs, .selectAllSolvers, .selectAllBenchmarks, .selectAllUsers').click(function() {
+		$(this).parents('.dataTables_wrapper').find('tbody>tr').addClass('row_selected');
+	});
+	$('.unselectAllJobs, .unselectAllSolvers, .unselectAllBenchmarks, .unselectAllUsers').click(function() {
+		$(this).parents('.dataTables_wrapper').find('tbody>tr').removeClass('row_selected');
 	});
 
 	// Set all fieldsets as expandable (except for action fieldset)
