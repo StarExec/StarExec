@@ -430,9 +430,6 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 
 		# make a blank watchfile
 		touch "$OUT_DIR"/watcher.out
-
-		log "Outputting stdout.txt"
-		cat $OUT_DIR/stdout.txt
 	else
 		# run runsolver
 		log "Running runsolver."
