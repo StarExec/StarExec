@@ -351,8 +351,7 @@ public class R {
     public static Timestamp earliestDateToRerunFailedPairs(){
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
-            // TODO: Change this before deploy to deploy date.
-            java.util.Date date = dateFormat.parse("2017-01-16");
+            java.util.Date date = dateFormat.parse("2017-01-25");
             long time = date.getTime();
             return new Timestamp(time);
         } catch (ParseException e) {
