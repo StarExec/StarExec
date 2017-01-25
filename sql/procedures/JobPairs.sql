@@ -302,6 +302,7 @@ CREATE PROCEDURE GetJobpairTimeDeltaData(IN _qid INT)
 		SELECT * FROM jobpair_time_delta WHERE queue_id=_qid OR _qid = -1;
 	END //
 
+
 -- Deletes all data from the jobpair_time_delta table for a specific
 -- queue. -1 means all queues
 DROP PROCEDURE IF EXISTS ClearJobpairTimeDeltaData;
@@ -315,6 +316,15 @@ CREATE PROCEDURE GetJobPairsWithStatus(IN _status INT)
 	BEGIN
 		SELECT * FROM job_pairs
 		WHERE status_code = _status;
+	END //
+
+DROP PROCEDURE IF EXISTS GetJobPairIdsWithStatusNotRerunAfterDate;
+CREATE PROCEDURE GetJobPairIdsWithStatusNotRerunAfterDate(IN _status INT, IN _earliestEndTime DATETIME)
+	BEGIN
+		SELECT id FROM job_pairs
+		WHERE status_code = _status
+		AND job_pairs.end_time >= _earliestEndTime
+		AND id NOT IN (SELECT pair_id FROM pairs_rerun);
 	END //
 	
 DROP PROCEDURE IF EXISTS SetBrokenPairStatus;

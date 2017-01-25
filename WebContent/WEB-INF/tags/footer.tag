@@ -24,6 +24,6 @@
 		<li><a id="quickjob" href="${starexecRoot}/secure/add/quickJob.jsp?sid=-1">Quick Job</a></li>
 	</ul>
 	<a class="copyright" href="http://www.cs.uiowa.edu" target="_blank">&copy;
-		2012-15 The University of Iowa</a>
+		2012-17 The University of Iowa</a>
 </footer>
 

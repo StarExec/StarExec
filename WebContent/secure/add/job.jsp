@@ -193,13 +193,13 @@
 							No<input type="radio" id="radioNoSaveExtraOutput" name="saveOtherOutput" value="false" checked="checked"/>
 						</td>
 					</tr>
-					<tr class="noHover advancedOptions">
-						<td>
-							<p class="hidden">Benchmarking Framework</p>
+					<tr class="noHover advancedOptions hidden">
+						<td class="hidden">
+							<p>Benchmarking Framework</p>
 						</td>
-						<td>
-							<span class="hidden">Use BenchExec<input type="radio" id="radioUseBenchexec" name="benchmarkingFramework" value="BENCHEXEC"/></span>
-							<span class="hidden">Use runsolver<input type="radio" id="radioUseRunsolver" name="benchmarkingFramework" value="RUNSOLVER" checked="checked"/></span>
+						<td class="hidden">
+							<span>Use BenchExec<input type="radio" id="radioUseBenchexec" name="benchmarkingFramework" value="BENCHEXEC"/></span>
+							<span>Use runsolver<input type="radio" id="radioUseRunsolver" name="benchmarkingFramework" value="RUNSOLVER" checked="checked"/></span>
 						</td>
 					</tr>
 				</tbody>

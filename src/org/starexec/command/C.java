@@ -1,5 +1,7 @@
 package org.starexec.command;
 
+import org.starexec.data.to.enums.BenchmarkingFramework;
+
 import java.util.HashMap;
 /**
  * This class holds constants specific to StarexecCommand
@@ -55,8 +57,8 @@ public class C {
 	public static String URL_PAUSEORRESUME="services/{method}/job/{id}";
 	public static String URL_RERUNPAIR="services/jobs/pairs/rerun/{id}";
 	public static String URL_RERUNJOB="services/jobs/rerunallpairs/{id}";
-	
-	
+
+
 	//Success codes for command parsing
 	public static int SUCCESS_EXIT=1;
 	public static int SUCCESS_NOFILE=2;
@@ -237,9 +239,13 @@ public class C {
 	public static String FORMPARAM_TYPE="type";
 	public static String FORMPARAM_SINCE="since";
 	public static String FORMPARAM_ID="id";
-	public static String FORMPARAM_TRAVERSAL="traversal";	
-	
-    public static String STATUS_MESSAGE_COOKIE="STATUS_MESSAGE_STRING";
+	public static String FORMPARAM_TRAVERSAL="traversal";
+
+
+
+
+
+	public static String STATUS_MESSAGE_COOKIE="STATUS_MESSAGE_STRING";
 
     
 }
