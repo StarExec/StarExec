@@ -23,6 +23,7 @@ import org.starexec.data.database.*;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
+import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Queue;
@@ -489,6 +490,13 @@ public class JobUtil {
 			}
 			else{
 			    job.setDescription("no description");
+			}
+
+			if (DOMHelper.hasElement(jobAttributes, R.XML_BENCH_FRAMEWORK_ELE_NAME)) {
+				Element framework = DOMHelper.getElementByName(jobAttributes, R.XML_BENCH_FRAMEWORK_ELE_NAME); 
+				job.setBenchmarkingFramework( BenchmarkingFramework.valueOf(framework.getAttribute("value").toUpperCase()));
+			} else {
+				job.setBenchmarkingFramework(R.DEFAULT_BENCHMARKING_FRAMEWORK);
 			}
 		    
 			job.setUserId(userId);

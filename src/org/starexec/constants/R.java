@@ -346,6 +346,8 @@ public class R {
     public static final BenchmarkingFramework DEFAULT_BENCHMARKING_FRAMEWORK = BenchmarkingFramework.RUNSOLVER;
     public static final String BENCHMARKING_FRAMEWORK_OPTION = "benchmarkingFramework";
 
+	public static final String XML_BENCH_FRAMEWORK_ELE_NAME = "bench-framework";
+
 
 
     public static Timestamp earliestDateToRerunFailedPairs(){

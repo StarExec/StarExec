@@ -43,8 +43,20 @@
     	<element name="results-interval" type="jst:intInfo" maxOccurs="1" minOccurs="0"/>
 		<element name="postproc-id" type="jst:intInfo" maxOccurs="1" minOccurs="0"/>
 		<element name="preproc-id" type="jst:intInfo" maxOccurs="1" minOccurs="0"/>
+		<element name="bench-framework" type="jst:benchFrameworkChoice" maxOccurs="1" minOccurs="0"/>
       </all>
     </complexType>
+
+	<complexType name="benchFrameworkChoice">
+		<attribute name="value" type="jst:benchFrameworkEnum" use="required"/>	
+	</complexType>
+
+	<simpleType name="benchFrameworkEnum">
+		<restriction base="string">
+			<enumeration value="benchexec"/>
+			<enumeration value="runsolver"/>
+		</restriction>
+	</simpleType>
 
     <complexType name="JobPair">
     	<attribute name="bench-id" type="int" use="required"/>
