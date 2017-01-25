@@ -1,5 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.JobSecurity,org.apache.log4j.Logger, org.starexec.data.security.GeneralSecurity,org.starexec.data.database.*, org.starexec.data.to.*,org.starexec.data.to.pipelines.*, org.starexec.util.*, org.starexec.data.to.Status.StatusCode"%>
 <%@ page import="java.util.Optional" %>
+<%@ page import="org.starexec.data.to.enums.BenchmarkingFramework" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -31,6 +32,8 @@
 			String pairlog=GeneralSecurity.getHTMLSafeString(JobPairs.getJobLog(jp.getId()));
 			boolean canRerun=(JobSecurity.canUserRerunPairs(j.getId(),userId,jp.getStatus().getCode().getVal()).isSuccess());
 			boolean moreThanOneStage = jp.getStages().size() > 1;
+			request.setAttribute("isBenchExec", j.getBenchmarkingFramework() == BenchmarkingFramework.BENCHEXEC);
+			request.setAttribute("isRunsolver", j.getBenchmarkingFramework() == BenchmarkingFramework.RUNSOLVER);
 			request.setAttribute("moreThanOneStage", moreThanOneStage);
 			request.setAttribute("pair", jp);
 			request.setAttribute("job", j);
@@ -132,24 +135,38 @@
 							<td>cpu usage</td>
 							<td>${stage.cpuTime}</td>
 						</tr>
-						<tr title="the total amount of time spent executing in user mode, expressed in microseconds">
-							<td>user time</td>
-							<td>${stage.userTime}</td>
-						</tr>
-						<tr title="the total amount of time spent executing in kernel mode, expressed in microseconds">
-							<td>system time</td>
-							<td>${stage.systemTime}</td>
-						</tr>
+						<c:if test="${isRunsolver}">
+							<tr title="the total amount of time spent executing in user mode, expressed in microseconds">
+								<td>user time</td>
+								<td>${stage.userTime}</td>
+							</tr>
+						</c:if>
+						<c:if test="${isRunsolver}">
+							<tr title="the total amount of time spent executing in kernel mode, expressed in microseconds">
+								<td>system time</td>
+								<td>${stage.systemTime}</td>
+							</tr>
+						</c:if>
 						
 						
+						<c:if test="${isBenchExec}">
+						<tr title="the maximum memory size in bytes">
+							<td>max memory</td>
+							<td>${stage.maxVirtualMemory}</td>
+						</tr>
+						</c:if>
+						<c:if test="${isRunsolver}">
 						<tr title="the maximum vmem size in bytes">
 							<td>max virtual memory</td>
 							<td>${stage.maxVirtualMemory}</td>
 						</tr>
-						<tr title="the maximum resident set size used (in kilobytes)">
-							<td>max residence set size</td>
-							<td>${stage.maxResidenceSetSize}</td>
-						</tr>
+						</c:if>	
+						<c:if test="${isRunsolver}">
+							<tr title="the maximum resident set size used (in kilobytes)">
+								<td>max residence set size</td>
+								<td>${stage.maxResidenceSetSize}</td>
+							</tr>
+						</c:if>
 					</tbody>
 				</table>
 			</fieldset>
