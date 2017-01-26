@@ -37,10 +37,6 @@
 		var defaultPageSize=${pagesize};
 		var isLocalJobPage=${isLocalJobPage};
 	</script>
-
-	<!--[if lt IE 9]>
-		<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-	<![endif]-->
 	<c:forEach var="globalJsFile" items="${globalJsFiles}">
 		<script type="text/javascript" src="${starexecRoot}/js/${globalJsFile}.js"></script>
 	</c:forEach>
@@ -51,4 +47,3 @@
 	</c:if>
 	<link type="image/ico" rel="icon" href="${starexecRoot}/images/favicon.ico">
 </head>
-
