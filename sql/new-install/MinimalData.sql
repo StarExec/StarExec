@@ -10,10 +10,15 @@ INSERT INTO users (email, first_name, last_name, institution, created, password,
 	VALUES ('public', 'Public', 'User', 'None', SYSDATE(), 'd32997e9747b65a3ecf65b82533a4c843c4e16dd30cf371e8c81ab60a341de00051da422d41ff29c55695f233a1e06fac8b79aeb0a4d91ae5d3d18c8e09b8c73', 52428800);
 INSERT INTO users (email, first_name,last_name,institution,created,password,disk_quota)
 	VALUES ('test@uiowa.edu','Test', 'User','The University of Iowa', SYSDATE(),'caffab36904a1c155f9fb1b6ea83d6abaa818097eac56d80ff8b70e2555b11a4f363ea7932b48ae8d0f6380bb7ac78fc04f6e2ff4eaf0bab2aa49675f2928b33',107374182400);
+
+INSERT INTO users (email, first_name,last_name,institution,created,password,disk_quota)
+	VALUES ('dev@uiowa.edu','Dev', 'User','The University of Iowa', SYSDATE(),'caffab36904a1c155f9fb1b6ea83d6abaa818097eac56d80ff8b70e2555b11a4f363ea7932b48ae8d0f6380bb7ac78fc04f6e2ff4eaf0bab2aa49675f2928b33',107374182400);
+
 INSERT INTO user_roles VALUES('user@uiowa.edu', 'user');
 INSERT INTO user_roles VALUES('admin@uiowa.edu', 'admin');
 INSERT INTO user_roles VALUES('public', 'user');
 INSERT INTO user_roles VALUES('test@uiowa.edu','user');
+INSERT INTO user_roles VALUES('dev@uiowa.edu','developer');
 -- Starts at 2 (the root default permission is defined in the schema)
 INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, remove_solver, remove_bench, remove_user, remove_space, remove_job, is_leader) VALUES
 	(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1);
@@ -36,6 +41,8 @@ INSERT INTO closure VALUES (2, 2);
 INSERT INTO user_assoc VALUES (1, 1, 2);
 INSERT INTO user_assoc VALUES (2, 2, 3);
 INSERT INTO user_assoc VALUES (4,2,2);
+INSERT INTO user_assoc VALUES (5,2,3);
+
 INSERT INTO website (user_id, name, url) VALUES (1, 'Personal', 'http://www.google.com');
 INSERT INTO website (user_id, name, url) VALUES (1, 'University', 'http://www.cs.uiowa.edu');
 INSERT INTO website (user_id, name, url) VALUES (2, 'Personal', 'http://www.google.com');
