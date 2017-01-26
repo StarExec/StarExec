@@ -1,5 +1,6 @@
 <%@tag description="Template tag for all starexec pages"%>
 <%@tag import="java.util.List, org.starexec.data.to.*, org.starexec.constants.*, org.starexec.util.*"%>
+<%@tag trimDirectiveWhitespaces="true" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 
