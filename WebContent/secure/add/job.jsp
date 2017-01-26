@@ -167,7 +167,7 @@
 							<input type="text" name="seed" id="seed" value="0">
 						</td>
 					</tr>					
-					<tr class="noHover advancedOptions" title="whether to include timestamps in the stdout for the pairs in this job">
+					<tr class="noHover advancedOptions" id="suppressTimestampsRow" title="whether to include timestamps in the stdout for the pairs in this job">
 						<td>
 							<p>Suppress Timestamps</p>
 						</td>
@@ -176,7 +176,7 @@
 							No<input type="radio" id="radioNoSuppressTimestamps" name="${suppressTimestamp}" value="no" checked="checked"/>
 						</td>
 					</tr>
-					<tr class="noHover advancedOptions" title="The interval, in seconds, at which to retrieve incremental results for pairs that are running. 0 means results are only obtained after pairs finish. 10 is the minimum if this is used.">
+					<tr class="noHover advancedOptions" id="resultsIntervalRow" title="The interval, in seconds, at which to retrieve incremental results for pairs that are running. 0 means results are only obtained after pairs finish. 10 is the minimum if this is used.">
 						<td>
 							<p>Results Interval</p>
 						</td>
@@ -184,7 +184,7 @@
 							<input type="text" name="resultsInterval" id="resultsInterval" value="0">
 						</td>
 					</tr>
-					<tr class="noHover advancedOptions" title="Whether to save solver output that is placed into the extra output directory given to each solver">
+					<tr class="noHover advancedOptions" id="saveAdditionalOutputRow" title="Whether to save solver output that is placed into the extra output directory given to each solver">
 						<td>
 							<p>Save Additional Output Files</p>
 						</td>
@@ -193,13 +193,13 @@
 							No<input type="radio" id="radioNoSaveExtraOutput" name="saveOtherOutput" value="false" checked="checked"/>
 						</td>
 					</tr>
-					<tr class="noHover advancedOptions">
+					<tr class="noHover advancedOptions" id="benchmarkingFrameworkRow">
 						<td>
 							<p>Benchmarking Framework</p>
 						</td>
 						<td>
-							<span>Use BenchExec<input type="radio" id="radioUseBenchexec" name="benchmarkingFramework" value="BENCHEXEC"/></span>
-							<span>Use runsolver<input type="radio" id="radioUseRunsolver" name="benchmarkingFramework" value="RUNSOLVER" checked="checked"/></span>
+							<span>BenchExec<input type="radio" id="radioUseBenchexec" name="benchmarkingFramework" value="BENCHEXEC"/></span>
+							<span>runsolver<input type="radio" id="radioUseRunsolver" name="benchmarkingFramework" value="RUNSOLVER" checked="checked"/></span>
 						</td>
 					</tr>
 				</tbody>

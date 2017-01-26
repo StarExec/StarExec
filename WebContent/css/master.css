@@ -138,6 +138,10 @@ ul.horizontal li {
 	display: none;
 }
 
+.italic {
+	font-style: italic;
+}
+
 /***************** Message Styles *************************/
 
 .message {
