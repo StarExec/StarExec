@@ -18,19 +18,13 @@ import org.starexec.data.database.Queues;
 import org.starexec.data.database.Settings;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
-import org.starexec.data.to.DefaultSettings;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.JobSpace;
-import org.starexec.data.to.JobStatus;
-import org.starexec.data.to.Permission;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Queue;
+import org.starexec.data.to.*;
 import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.data.to.Status.StatusCode;
 
 
 import org.starexec.util.LogUtil;
+import org.starexec.util.Validator;
 
 public class JobSecurity {
 
@@ -117,6 +111,19 @@ public class JobSecurity {
 			return new ValidatorStatusCode(false, "The given pair could not be found");
 		}
 		return canUserSeeJob(jp.getJobId(),userId);
+	}
+
+	/**
+	 * Checks if a user can use BenchExec.
+	 * @param userId the user attempting to use BenchExec
+	 * @return a validator status code indicating if a user can use BenchExec.
+	 */
+	public static ValidatorStatusCode canUserUseBenchExec(int userId) {
+		if ( Users.isAdmin(userId) || Users.isDeveloper(userId) ) {
+			return new ValidatorStatusCode(true);
+		} else {
+			return new ValidatorStatusCode(false, "User does not have permission to use BenchExec");
+		}
 	}
 	
 	/**
@@ -456,8 +463,8 @@ public class JobSecurity {
 			
 			return new ValidatorStatusCode(true);
 	}
-	
-	
+
+
 	public static ValidatorStatusCode canUserCreateJobInSpace(int userId, int sId) {
 		Permission p=Permissions.get(userId, sId);
 		
