@@ -74,45 +74,6 @@ public class JspHelpers {
 		throw new UnsupportedOperationException("You may not create an instance of JspHelpers."); 
 	}
 
-	public static void handleAddJobPairsPage(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
-		int jobId = Integer.parseInt( request.getParameter("jobId") ); 
-		final int userId = SessionUtil.getUserId( request );
-		ValidatorStatusCode securityStatus = JobSecurity.canUserAddJobPairs( jobId, userId ); 
-		if ( !securityStatus.isSuccess() ) {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN, securityStatus.getMessage());
-			return;
-		}
-
-		if ( !( Jobs.isJobPaused( jobId )  || Jobs.isJobComplete( jobId ) ) ) {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Job must be finished or paused to add job pairs.");
-			return;
-		}
-
-
-		Comparator<Solver> compareById = (solver1, solver2) -> solver1.getId() - solver2.getId();
-
-		List<Solver> solvers = Solvers.getByJobSimpleWithConfigs( jobId );
-		Collections.sort( solvers,  compareById );
-
-
-		// Get all solvers accessible to the user. Filter out items already in the "solvers" variable.
-		List<Solver> usersSolvers = Solvers.getByUserWithConfigs( userId ).stream()
-				.filter( item -> Collections.binarySearch( solvers, item, compareById ) < 0 ) 
-				.collect( Collectors.toList() );
-
-
-		Set<Integer> configIdSet = Solvers.getConfigIdSetByJob( jobId );	
-        Solvers.sortConfigs(solvers);
-        Solvers.sortConfigs(usersSolvers);
-		Solvers.makeDefaultConfigsFirst( solvers );
-		Solvers.makeDefaultConfigsFirst( usersSolvers );
-
-		request.setAttribute("solvers", solvers);
-		request.setAttribute("usersSolvers", usersSolvers);
-		request.setAttribute("configIdSet", configIdSet);
-		request.setAttribute("jobId", jobId);
-	}
-
 	public static void handleJobPage( HttpServletRequest request, HttpServletResponse response ) throws IOException, SQLException {
 		String localJobPageParameter = request.getParameter(Web.LOCAL_JOB_PAGE_PARAMETER);
 		boolean isLocalJobPage = (localJobPageParameter != null) && localJobPageParameter.equals("true");

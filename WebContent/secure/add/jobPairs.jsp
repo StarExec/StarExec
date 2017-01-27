@@ -1,17 +1,48 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.Collections, java.util.HashMap, java.util.Map, java.util.ArrayList, java.util.List, java.util.Set, org.apache.commons.lang3.StringUtils, org.starexec.app.RESTHelpers, org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.security.*, org.starexec.data.to.*, org.starexec.data.to.JobStatus.JobStatusCode, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType, org.starexec.util.dataStructures.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.lang3.StringUtils, org.starexec.app.RESTHelpers, org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.security.*, org.starexec.data.to.*, org.starexec.data.to.JobStatus.JobStatusCode, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType, org.starexec.util.dataStructures.*"%>
+<%@ page import="java.util.*" %>
+<%@ page import="java.util.stream.Collectors" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%		
 	try {
-		JspHelpers.handleAddJobPairsPage( request, response );
+		int jobId = Integer.parseInt( request.getParameter("jobId") );
+		final int userId = SessionUtil.getUserId( request );
+		ValidatorStatusCode securityStatus = JobSecurity.canUserAddJobPairs( jobId, userId );
+		if ( !securityStatus.isSuccess() ) {
+			response.sendError(HttpServletResponse.SC_FORBIDDEN, securityStatus.getMessage());
+			return;
+		}
+
+		if ( !( Jobs.isJobPaused( jobId )  || Jobs.isJobComplete( jobId ) ) ) {
+			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Job must be finished or paused to add job pairs.");
+			return;
+		}
+
+
+		Comparator<Solver> compareById = (solver1, solver2) -> solver1.getId() - solver2.getId();
+
+		List<Integer> spacesAssociatedWithJob = Spaces.getByJob(jobId);
+		List<Solver> solvers = spacesAssociatedWithJob.stream()
+				.map(Solvers::getBySpace)
+				.flatMap(List::stream)
+				.sorted(compareById)
+				.collect(Collectors.toList());
+
+		Set<Integer> configIdSet = Solvers.getConfigIdSetByJob( jobId );
+		Solvers.sortConfigs(solvers);
+		Solvers.makeDefaultConfigsFirst( solvers );
+
+		request.setAttribute("solvers", solvers);
+		request.setAttribute("configIdSet", configIdSet);
+		request.setAttribute("jobId", jobId);
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, Util.getStackTrace( e ));
 	}	
 %>
 <star:template title="Add Job Pairs" js="util/sortButtons, util/datatablesUtility, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, add/sharedSolverConfigTableFunctions, add/jobPairs" css="common/delaySpinner, explore/common, add/jobPairs">		
 	<form id="addJobPairsForm" method="post" action="${starexecRoot}/secure/add/jobPairs">
-		<input id="jobId" style="display:none" value="${jobId}" name="jobId"></input>
+		<input id="jobId" style="display:none" value="${jobId}" name="jobId" />
 		<p> Unchecking a configuration will delete all job pairs containing that configuration. </p>
 		<br>
 		<p> If "all" is selected for a solver then checking a configuration will add a job pair for each 
@@ -58,29 +89,7 @@
 							</div> 
 						</td>
 					</tr>
-				</c:forEach>			
-				<c:forEach var="s" items="${usersSolvers}">
-					<tr id="solver_${s.id}" class="solverRow">
-						<td>
-							<input type="hidden" name="solver" value="${s.id}"/>
-							<star:solver value='${s}'/>
-						</td>
-						<td>
-							<input type="hidden" name="addToAll" value="${s.id}" />all<br>
-						</td>
-						<td>
-							 <div class="selectConfigs">
-								<div class="selectWrap configSelectWrap">
-									<p class="selectAll selectAllConfigs"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | 
-									<p class="selectNone selectNoneConfigs"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
-								</div><br />
-								<c:forEach var="c" items="${s.configurations}">
-									<input class="config ${c.name}" type="checkbox" name="configs" value="${c.id}" title="${c.description}">${c.name} </input><br />
-								</c:forEach> 
-							</div> 
-						</td>
-					</tr>
-				</c:forEach>			
+				</c:forEach>
 				</tbody>						
 			</table>				
 			<div class="selectWrap solverSelectWrap">
