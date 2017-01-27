@@ -205,6 +205,9 @@
 							</td>
 						</tr>
 					</c:if>
+					<c:if test="${!canUseBenchexec}">
+						<input type="hidden" name="benchmarkingFramework" value="RUNSOLVER"/>
+					</c:if>
 				</tbody>
 			</table>
 		</fieldset>
