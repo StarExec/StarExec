@@ -509,10 +509,10 @@ CREATE PROCEDURE countSubspacesByName(IN _name VARCHAR(255), IN _spaceId INT)
 		;
 	END //
 
-DROP PROCEDURE IF EXISTS GetSpacesByJob
+DROP PROCEDURE IF EXISTS GetSpacesByJob;
 CREATE PROCEDURE GetSpacesByJob(IN _jobId INT)
   BEGIN
-    SELECT UNIQUE space_id
+    SELECT DISTINCT space_id
     FROM job_assoc
     WHERE job_id=_job_id
     ;
