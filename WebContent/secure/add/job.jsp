@@ -33,7 +33,7 @@
 			request.setAttribute("postProcs", ListOfPostProcessors);
 			request.setAttribute("preProcs", ListOfPreProcessors);
 			request.setAttribute("suppressTimestamp", R.SUPPRESS_TIMESTAMP_INPUT_NAME);
-			request.setAttribute("canUseBenchexec", JobSecurity.canUserUseBenchExec(userId));
+			request.setAttribute("canUseBenchexec", JobSecurity.canUserUseBenchExec(userId).isSuccess());
 			List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsVisibleByUser(userId);
 			request.setAttribute("defaultSettings",listOfDefaultSettings);	
 			Integer defaultId=Settings.getDefaultProfileForUser(userId);
@@ -195,15 +195,15 @@
 						</td>
 					</tr>
 					<c:if test="${canUseBenchexec}">
-					<tr class="noHover advancedOptions" id="benchmarkingFrameworkRow">
-						<td>
-							<p>Benchmarking Framework</p>
-						</td>
-						<td>
-							<span>BenchExec<input type="radio" id="radioUseBenchexec" name="benchmarkingFramework" value="BENCHEXEC"/></span>
-							<span>runsolver<input type="radio" id="radioUseRunsolver" name="benchmarkingFramework" value="RUNSOLVER" checked="checked"/></span>
-						</td>
-					</tr>
+						<tr class="noHover advancedOptions" id="benchmarkingFrameworkRow">
+							<td>
+								<p>Benchmarking Framework</p>
+							</td>
+							<td>
+								<span>BenchExec<input type="radio" id="radioUseBenchexec" name="benchmarkingFramework" value="BENCHEXEC"/></span>
+								<span>runsolver<input type="radio" id="radioUseRunsolver" name="benchmarkingFramework" value="RUNSOLVER" checked="checked"/></span>
+							</td>
+						</tr>
 					</c:if>
 				</tbody>
 			</table>
