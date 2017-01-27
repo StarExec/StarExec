@@ -24,6 +24,7 @@ import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.ProcessorSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Configuration;
@@ -174,6 +175,18 @@ public class CreateJob extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 				return;
 			}
+
+			// Check if user can use BenchExec
+			int userId = SessionUtil.getUserId(request);
+			BenchmarkingFramework framework = BenchmarkingFramework.valueOf(request.getParameter(R.BENCHMARKING_FRAMEWORK_OPTION));
+			ValidatorStatusCode benchmarkingFrameworkSecurityStatus = JobSecurity.canUserUseBenchExec(userId);
+
+			if (framework == BenchmarkingFramework.BENCHEXEC && ! benchmarkingFrameworkSecurityStatus.isSuccess()) {
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, benchmarkingFrameworkSecurityStatus.getMessage()));
+				response.sendError(HttpServletResponse.SC_FORBIDDEN, benchmarkingFrameworkSecurityStatus.getMessage());
+				return;
+			}
+
 			int space = Integer.parseInt((String) request.getParameter(spaceId));
 			DefaultSettings settings = Communities.getDefaultSettings(space);
 			// next parameters are optional, and are set to the community defaults if not present
@@ -213,7 +226,8 @@ public class CreateJob extends HttpServlet {
 			//memory is in units of bytes
 			memoryLimit = (memoryLimit <= 0) ? R.DEFAULT_PAIR_VMEM : memoryLimit;
 
-			int userId = SessionUtil.getUserId(request);
+
+
 
 			boolean suppressTimestamp = false;
 			if (Util.paramExists(R.SUPPRESS_TIMESTAMP_INPUT_NAME, request)) {
@@ -229,13 +243,7 @@ public class CreateJob extends HttpServlet {
 				}
 			}
 
-			BenchmarkingFramework framework = BenchmarkingFramework.valueOf(request.getParameter(R.BENCHMARKING_FRAMEWORK_OPTION));
 
-			if (framework == BenchmarkingFramework.BENCHEXEC) {
-				log.debug("Job will be run with BenchExec.");
-			} else {
-				log.debug("Job will be run with runsolver.");
-			}
 
 
 			//Setup the job's attributes

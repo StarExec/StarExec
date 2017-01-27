@@ -20,6 +20,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.*;
+import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
@@ -493,8 +494,16 @@ public class JobUtil {
 			}
 
 			if (DOMHelper.hasElement(jobAttributes, R.XML_BENCH_FRAMEWORK_ELE_NAME)) {
-				Element framework = DOMHelper.getElementByName(jobAttributes, R.XML_BENCH_FRAMEWORK_ELE_NAME); 
-				job.setBenchmarkingFramework( BenchmarkingFramework.valueOf(framework.getAttribute("value").toUpperCase()));
+				Element framework = DOMHelper.getElementByName(jobAttributes, R.XML_BENCH_FRAMEWORK_ELE_NAME);
+
+				// Make sure the user can use the selected benchmarking framework.
+				BenchmarkingFramework selectedFramework = BenchmarkingFramework.valueOf(framework.getAttribute("value").toUpperCase());
+				if (selectedFramework == BenchmarkingFramework.BENCHEXEC && !JobSecurity.canUserUseBenchExec(userId).isSuccess()) {
+					errorMessage = "You are not allowed to use the selected benchmarking framework.";
+					return -1;
+				}
+
+				job.setBenchmarkingFramework( selectedFramework );
 			} else {
 				job.setBenchmarkingFramework(R.DEFAULT_BENCHMARKING_FRAMEWORK);
 			}

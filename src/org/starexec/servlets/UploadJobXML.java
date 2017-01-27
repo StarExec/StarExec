@@ -20,9 +20,11 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
+import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
+import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.enums.ConfigXmlAttribute;
 import org.starexec.data.to.enums.JobXmlType;
 import org.starexec.data.to.tuples.ConfigAttrMapPair;
@@ -79,6 +81,8 @@ public class UploadJobXML extends HttpServlet {
 				    response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 				    return;
 				}
+
+
 
 				Integer spaceId = Integer.parseInt((String)form.get(SPACE_ID));
 				if (!userMayUploadJobXML(userId, spaceId)) {
