@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.lang3.StringUtils, org.starexec.app.RESTHelpers, org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.security.*, org.starexec.data.to.*, org.starexec.data.to.JobStatus.JobStatusCode, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType, org.starexec.util.dataStructures.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.HashSet, org.apache.commons.lang3.StringUtils, org.starexec.app.RESTHelpers, org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.security.*, org.starexec.data.to.*, org.starexec.data.to.JobStatus.JobStatusCode, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType, org.starexec.util.dataStructures.*"%>
 <%@ page import="java.util.*" %>
 <%@ page import="java.util.stream.Collectors" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
@@ -20,19 +20,18 @@
 		}
 
 
-		Comparator<Solver> compareById = (solver1, solver2) -> solver1.getId() - solver2.getId();
-
+		Comparator<Solver> compareById = JspHelpers.getCompareSolverById();
 		List<Integer> spacesAssociatedWithJob = Spaces.getByJob(jobId);
-		List<Solver> solvers = spacesAssociatedWithJob.stream()
-				.map(Solvers::getBySpace)
-				.flatMap(List::stream)
-				.sorted(compareById)
-				.collect(Collectors.toList());
-
+		List<Solver> solvers = JspHelpers.getSolversInSpaces( spacesAssociatedWithJob, compareById );
 		Set<Integer> configIdSet = Solvers.getConfigIdSetByJob( jobId );
 		Solvers.sortConfigs(solvers);
 		Solvers.makeDefaultConfigsFirst( solvers );
 
+		/*
+		request.setAttribute("solvers", new ArrayList<Solver>());
+		request.setAttribute("configIdSet", new HashSet<Integer>());
+		request.setAttribute("jobId", jobId);
+		*/
 		request.setAttribute("solvers", solvers);
 		request.setAttribute("configIdSet", configIdSet);
 		request.setAttribute("jobId", jobId);

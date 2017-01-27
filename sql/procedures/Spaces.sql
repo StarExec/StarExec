@@ -514,7 +514,7 @@ CREATE PROCEDURE GetSpacesByJob(IN _jobId INT)
   BEGIN
     SELECT DISTINCT space_id
     FROM job_assoc
-    WHERE job_id=_job_id
+    WHERE job_id=_jobId
     ;
   END //
 	

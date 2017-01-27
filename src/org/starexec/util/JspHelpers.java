@@ -74,6 +74,19 @@ public class JspHelpers {
 		throw new UnsupportedOperationException("You may not create an instance of JspHelpers."); 
 	}
 
+	public static List<Solver> getSolversInSpaces(List<Integer> spacesAssociatedWithJob, Comparator<Solver> compareById) {
+		return spacesAssociatedWithJob.stream()
+				.map(Solvers::getBySpace)
+				.flatMap(List::stream)
+				.sorted(compareById)
+				.collect(Collectors.toList());
+	}
+
+	public static Comparator<Solver> getCompareSolverById() {
+		return (solver1, solver2) -> solver1.getId() - solver2.getId();
+	}
+
+
 	public static void handleJobPage( HttpServletRequest request, HttpServletResponse response ) throws IOException, SQLException {
 		String localJobPageParameter = request.getParameter(Web.LOCAL_JOB_PAGE_PARAMETER);
 		boolean isLocalJobPage = (localJobPageParameter != null) && localJobPageParameter.equals("true");
