@@ -42,6 +42,8 @@
 <star:template title="Add Job Pairs" js="util/sortButtons, util/datatablesUtility, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, add/sharedSolverConfigTableFunctions, add/jobPairs" css="common/delaySpinner, explore/common, add/jobPairs">		
 	<form id="addJobPairsForm" method="post" action="${starexecRoot}/secure/add/jobPairs">
 		<input id="jobId" style="display:none" value="${jobId}" name="jobId" />
+		<p> The solvers available here are ones that are in the same space as your job.</p>
+		<br>
 		<p> Unchecking a configuration will delete all job pairs containing that configuration. </p>
 		<br>
 		<p> If "all" is selected for a solver then checking a configuration will add a job pair for each 
