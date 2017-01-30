@@ -20,10 +20,10 @@
 		}
 
 
-		Comparator<Solver> compareById = JspHelpers.getCompareSolverById();
-		List<Integer> spacesAssociatedWithJob = Spaces.getByJob(jobId);
-		List<Solver> solvers = JspHelpers.getSolversInSpaces( spacesAssociatedWithJob, compareById );
+		Set<Integer> spacesAssociatedWithJob = Spaces.getByJob(jobId);
+		List<Solver> solvers = JspHelpers.getSolversInSpacesAndJob(jobId, spacesAssociatedWithJob);
 		Set<Integer> configIdSet = Solvers.getConfigIdSetByJob( jobId );
+
 		Solvers.sortConfigs(solvers);
 		Solvers.makeDefaultConfigsFirst( solvers );
 

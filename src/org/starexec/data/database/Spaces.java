@@ -2117,14 +2117,15 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @param jobId Gets the space ids containing the given Job. (not JobSpaces)
 	 * @return a list of space ids.
 	 */
-	public static List<Integer> getByJob(int jobId) throws SQLException {
+	public static Set<Integer> getByJob(int jobId) throws SQLException {
 		return Common.query("{CALL GetSpacesByJob(?)}"
 		, procedure -> procedure.setInt(1, jobId)
 		, results -> {
-			List<Integer> spaceIds = new ArrayList<>();
+			Set<Integer> spaceIds = new HashSet<>();
 			while (results.next()) {
 				spaceIds.add(results.getInt("space_id"));
 			}
+
 			return spaceIds;
 		});
 	}
@@ -2591,7 +2592,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 
 	/**
 	 * Internal recursive method that adds a space and it's benchmarks to the database
-	 * @param con The connection to perform the operations on
 	 * @param space The space to add to the database
 	 * @param parentId The id of the parent space that the given space will belong to
 	 * @param userId The user id of the owner of the new space and its benchmarks

@@ -2,15 +2,9 @@ package org.starexec.util;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -74,17 +68,38 @@ public class JspHelpers {
 		throw new UnsupportedOperationException("You may not create an instance of JspHelpers."); 
 	}
 
-	public static List<Solver> getSolversInSpaces(List<Integer> spacesAssociatedWithJob, Comparator<Solver> compareById) {
-		return spacesAssociatedWithJob.stream()
+	/**
+	 * Gets all the solvers in a list of spaces combined with all the solvers in a job.
+	 * @param jobId the id of the job to get solvers from.
+	 * @param spacesAssociatedWithJob the spaces to get solvers from.
+	 * @return
+	 * @throws SQLException
+	 */
+	public static List<Solver> getSolversInSpacesAndJob(
+			int jobId,
+			Set<Integer> spacesAssociatedWithJob) throws SQLException {
+
+		Comparator<Solver> compareById = (solver1, solver2) -> solver1.getId() - solver2.getId();
+
+
+		// Get all the solvers in the list of provided spaces.
+		List<Solver> solversInSpaces = spacesAssociatedWithJob.stream()
 				.map(Solvers::getBySpace)
 				.flatMap(List::stream)
 				.sorted(compareById)
 				.collect(Collectors.toList());
+
+		// Get all the solvers in the job.
+		List<Solver> solversInJob = Solvers.getByJobSimpleWithConfigs(jobId);
+
+		Stream<Solver> filteredSolversInJob = solversInJob.stream()
+				// filter out all the solvers in the job that are in the spaces.
+				.filter(jobSolver -> !solversInSpaces.stream().anyMatch(spaceSolver -> spaceSolver.getId() == jobSolver.getId()));
+
+		return Stream.concat(filteredSolversInJob, solversInSpaces.stream())
+				.collect(Collectors.toList());
 	}
 
-	public static Comparator<Solver> getCompareSolverById() {
-		return (solver1, solver2) -> solver1.getId() - solver2.getId();
-	}
 
 
 	public static void handleJobPage( HttpServletRequest request, HttpServletResponse response ) throws IOException, SQLException {
