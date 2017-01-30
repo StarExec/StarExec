@@ -1,4 +1,5 @@
 package org.starexec.test.integration.database; 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -28,6 +29,7 @@ import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
+import org.starexec.util.Util;
 import org.starexec.util.dataStructures.TreeNode;
 
 /**
@@ -87,7 +89,19 @@ public class SpaceTests extends TestSequence {
 	private void getSpaceHierarchyTest() {
 		List<Space> spaces=Spaces.getSubSpaceHierarchy(community.getId(),leader.getId());
 		Assert.assertEquals(3, spaces.size());
-		
+
+	}
+
+	@StarexecTest
+	private void getByJobTest() {
+		try {
+			List<Integer> spacesAssociatedWithJob = Spaces.getByJob(job.getId());
+			Assert.assertEquals(spacesAssociatedWithJob.size(), 1);
+			spacesAssociatedWithJob.contains(subspace.getId());
+		} catch (SQLException e) {
+			Assert.fail("SQLException thrown: "+ Util.getStackTrace(e));
+		}
+
 	}
 	
 	@StarexecTest
