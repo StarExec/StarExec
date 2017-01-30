@@ -1,11 +1,6 @@
 package org.starexec.test.integration.database; 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import org.junit.Assert;
 import org.starexec.constants.R;
@@ -95,7 +90,7 @@ public class SpaceTests extends TestSequence {
 	@StarexecTest
 	private void getByJobTest() {
 		try {
-			List<Integer> spacesAssociatedWithJob = Spaces.getByJob(job.getId());
+			Set<Integer> spacesAssociatedWithJob = Spaces.getByJob(job.getId());
 			Assert.assertEquals(spacesAssociatedWithJob.size(), 1);
 			Assert.assertTrue(spacesAssociatedWithJob.contains(subspace.getId()));
 		} catch (SQLException e) {
