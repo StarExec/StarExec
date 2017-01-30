@@ -101,8 +101,8 @@ function initDataTables(){
  * @param fnCallback the function that actually maps the returned page to the DataTable object
  */
 function fnPaginationHandler(sSource, aoData, fnCallback) {
-	curType = $('#pairFilter').find(":selected").attr("value");
-	log(curType);
+	var curType = $('#pairFilter').find(":selected").attr("value");
+	log('Type: '+curType);
 	if (sortOverride!=null) {
 		aoData.push( { "name": "sort_by", "value":getSelectedSort() } );
 		aoData.push( { "name": "sort_dir", "value":isASC() } );

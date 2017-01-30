@@ -2311,8 +2311,8 @@ public class Jobs {
 	 */
 
 	public static List<JobPair> getJobPairsForTableInJobSpaceHierarchy(int jobSpaceId,DataTablesQuery query,int configId, int stageNumber,String type) {
-		final String method = "getJobPairsForTableInJobSpaceHierarchy";
-		logUtil.entry(method);
+		final String methodName = "getJobPairsForTableInJobSpaceHierarchy";
+		logUtil.entry(methodName);
 		Connection con = null;	
 		NamedParameterStatement procedure = null;
 		ResultSet results = null;
@@ -2332,6 +2332,13 @@ public class Jobs {
 			
 			String constructedSQL = builder.getSQL();
 
+			logUtil.debug(methodName, ":jobSpaceId = " +jobSpaceId);
+			logUtil.debug(methodName, ":stageNumber = " +stageNumber);
+			logUtil.debug(methodName, ":configId = " +configId);
+			logUtil.debug(methodName, ":pairType = " +type);
+			logUtil.debug(methodName, ":query = "+query.getSearchQuery());
+			logUtil.debug(methodName, "Constructed SQL: " + constructedSQL);
+
 			procedure = new NamedParameterStatement(con,constructedSQL);
 				
 			
@@ -2350,7 +2357,7 @@ public class Jobs {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
-			logUtil.exit(method);
+			logUtil.exit(methodName);
 		}
 
 		return null;
