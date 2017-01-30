@@ -97,7 +97,7 @@ public class SpaceTests extends TestSequence {
 		try {
 			List<Integer> spacesAssociatedWithJob = Spaces.getByJob(job.getId());
 			Assert.assertEquals(spacesAssociatedWithJob.size(), 1);
-			spacesAssociatedWithJob.contains(subspace.getId());
+			Assert.assertTrue(spacesAssociatedWithJob.contains(subspace.getId()));
 		} catch (SQLException e) {
 			Assert.fail("SQLException thrown: "+ Util.getStackTrace(e));
 		}
