@@ -18,17 +18,63 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 
 /**
- * Created by agieg on 2/1/2017.
+ * Class that contains the periodic task enumerations.
+ * The PeriodicTask enumeration contains all the periodic tasks as constant enum values so that these
+ * values can be references from any location. Storing these values as an enum with fields makes sense because
+ * the period, delay, task, etc. are all related to one task and storing these as separate constants would not enforce
+ * this relationship. Using an enum also allows all the tasks to be gotten with EnumSet.allOf()
  */
-public class PeriodicTasks {
+class PeriodicTasks {
 
     private static Logger log = Logger.getLogger(PeriodicTasks.class);
 
+    // Enum constants of all the periodic tasks.
+    public enum PeriodicTask {
+        UPDATE_CLUSTER(true, UPDATE_CLUSTER_TASK, 0, 600, TimeUnit.SECONDS),
+        SUBMIT_JOBS(true, SUBMIT_JOBS_TASK, 0, 60, TimeUnit.SECONDS),
+        POST_PROCESS_JOBS(true, POST_PROCESS_JOBS_TASK, 0, 45, TimeUnit.SECONDS),
+        RERUN_FAILED_PAIRS(true, RERUN_FAILED_PAIRS_TASK, 0, 5, TimeUnit.MINUTES),
+        FIND_BROKEN_JOB_PAIRS(true, FIND_BROKEN_JOB_PAIRS_TASK, 0, 3, TimeUnit.HOURS),
+        CLEAR_TEMPORARY_FILES(false, CLEAR_TEMPORARY_FILES_TASK, 0, 3, TimeUnit.HOURS),
+        CLEAR_JOB_LOG(false, CLEAR_JOB_LOG_TASK, 0, 7, TimeUnit.DAYS),
+	    CLEAR_JOB_SCRIPTS(false, CLEAR_JOB_SCRIPTS_TASK, 0, 12, TimeUnit.HOURS),
+	    CLEAN_DATABASE(false, CLEAN_DATABASE_TASK, 0, 7, TimeUnit.DAYS),
+	    CREATE_WEEKLY_REPORTS(false, CREATE_WEEKLY_REPORTS_TASK, 0, 1, TimeUnit.DAYS),
+	    DELETE_OLD_ANONYMOUS_LINKS(false, DELETE_OLD_ANONYMOUS_LINKS_TASK, 0, 30, TimeUnit.DAYS),
+	    UPDATE_USER_DISK_SIZES(false, UPDATE_USER_DISK_SIZES_TASK, 0, 1, TimeUnit.DAYS),
+        UPDATE_COMMUNITY_STATS(false, UPDATE_COMMUNITY_STATS_TASK, 0, 6, TimeUnit.HOURS);
+
+        public final boolean fullInstanceOnly;
+        public final Runnable task;
+        public final int delay;
+        public final int period;
+        public final TimeUnit unit;
+
+        /**
+         *
+         * @param fullInstanceOnly true if this task should only be run for a full starexec instance.
+         * @param task the runnable that will be run for the task.
+         * @param delay initial delay before the task should be run.
+         * @param period the period between each successive run of the task.
+         * @param unit the time unit to use for period and delay.
+         */
+        PeriodicTask(boolean fullInstanceOnly, Runnable task, int delay, int period, TimeUnit unit) {
+            this.fullInstanceOnly = fullInstanceOnly;
+            this.delay = delay;
+            this.period = period;
+            this.unit = unit;
+            this.task = task;
+        }
+    }
+
+
     private static final String updateClusterTaskName = "updateClusterTask";
     // Create a task that updates the cluster usage info (this may take some time)
-    public static final Runnable UPDATE_CLUSTER = new RobustRunnable(updateClusterTaskName) {
+    private static final Runnable UPDATE_CLUSTER_TASK = new RobustRunnable(updateClusterTaskName) {
         @Override
         protected void dorun() {
             Cluster.loadWorkerNodes();
@@ -38,7 +84,7 @@ public class PeriodicTasks {
 
     private static final String submitJobTasksName = "submitJobTasks";
     // Create a task that submits jobs that have pending/rejected job pairs
-    public static final Runnable SUBMIT_JOBS= new RobustRunnable(submitJobTasksName) {
+    private static final Runnable SUBMIT_JOBS_TASK= new RobustRunnable(submitJobTasksName) {
         @Override
         protected void dorun() {
             JobManager.checkPendingJobs();
@@ -46,7 +92,7 @@ public class PeriodicTasks {
     };
 
     private static final String rerunFailedPairsTaskName = "rerunFailedPairsTask";
-    public static final Runnable RERUN_FAILED_PAIRS = new RobustRunnable(rerunFailedPairsTaskName) {
+    private static final Runnable RERUN_FAILED_PAIRS_TASK = new RobustRunnable(rerunFailedPairsTaskName) {
         @Override
         protected void dorun() {
             try {
@@ -73,7 +119,7 @@ public class PeriodicTasks {
 
     private static final String postProcessJobsTaskName = "postProcessJobsTask";
     // Create a task that submits jobs that have pending/rejected job pairs
-    public static final Runnable POST_PROCESS_JOBS = new RobustRunnable(postProcessJobsTaskName) {
+    private static final Runnable POST_PROCESS_JOBS_TASK = new RobustRunnable(postProcessJobsTaskName) {
         @Override
         protected void dorun() {
             ProcessingManager.checkProcessingPairs();
@@ -82,7 +128,7 @@ public class PeriodicTasks {
 
     // Create a task that deletes download files older than 1 day
     private static final String clearTemporaryFilesTaskName = "clearTemporaryFilesTask";
-    public static final Runnable CLEAR_TEMPORARY_FILES = new RobustRunnable(clearTemporaryFilesTaskName) {
+    private static final Runnable CLEAR_TEMPORARY_FILES_TASK = new RobustRunnable(clearTemporaryFilesTaskName) {
         @Override
         protected void dorun() {
             Util.clearOldFiles(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR).getAbsolutePath(), 1,false);
@@ -94,7 +140,7 @@ public class PeriodicTasks {
 
     /*  Create a task that deletes job logs older than 7 days */
     private static final String clearJobLogTaskName = "clearJobLogTask";
-    public static final Runnable CLEAR_JOB_LOG = new RobustRunnable(clearJobLogTaskName) {
+    private static final Runnable CLEAR_JOB_LOG_TASK = new RobustRunnable(clearJobLogTaskName) {
         @Override
         protected void dorun() {
             Util.clearOldFiles(R.getJobLogDir(), R.CLEAR_JOB_LOG_PERIOD,true);
@@ -102,7 +148,7 @@ public class PeriodicTasks {
     };
     /*  Create a task that deletes job scripts older than 3 days */
     private static final String clearJobScriptTaskName = "clearJobScriptTask";
-    public static final Runnable CLEAR_JOB_SCRIPTS = new RobustRunnable(clearJobScriptTaskName) {
+    private static final Runnable CLEAR_JOB_SCRIPTS_TASK = new RobustRunnable(clearJobScriptTaskName) {
         @Override
         protected void dorun() {
             Util.clearOldFiles(R.getJobInboxDir(),1,false);
@@ -113,7 +159,7 @@ public class PeriodicTasks {
      * with any spaces or job pairs) AND have already been deleted on disk.
      */
     private static final String cleanDatabaseTaskName = "cleanDatabaseTask";
-    public static final Runnable CLEAN_DATABASE = new RobustRunnable(cleanDatabaseTaskName) {
+    private static final Runnable CLEAN_DATABASE_TASK = new RobustRunnable(cleanDatabaseTaskName) {
         @Override
         protected void dorun() {
             Solvers.cleanOrphanedDeletedSolvers();
@@ -123,14 +169,14 @@ public class PeriodicTasks {
     };
 
     private static final String findBrokenNodesTaskName = "findBrokenNodes";
-    public static final Runnable FIND_BROKEN_NODES = new RobustRunnable(findBrokenNodesTaskName) {
+    private static final Runnable FIND_BROKEN_NODES_TASK = new RobustRunnable(findBrokenNodesTaskName) {
         @Override
         protected void dorun() {
         }
     };
 
     private static final String findBrokenJobPairsTaskName = "findBrokenJobPairs";
-    public static final Runnable FIND_BROKEN_JOB_PAIRS = new RobustRunnable(findBrokenJobPairsTaskName) {
+    private static final Runnable FIND_BROKEN_JOB_PAIRS_TASK = new RobustRunnable(findBrokenJobPairsTaskName) {
         @Override
         protected void dorun() {
             try {
@@ -142,7 +188,7 @@ public class PeriodicTasks {
     };
 
     private static final String updateUserDiskSizesTaskName = "updateUserDiskSizesTask";
-    public static final Runnable UPDATE_USER_DISK_SIZES = new RobustRunnable(updateUserDiskSizesTaskName) {
+    private static final Runnable UPDATE_USER_DISK_SIZES_TASK = new RobustRunnable(updateUserDiskSizesTaskName) {
         @Override
         protected void dorun() {
             if (!Users.updateAllUserDiskSizes()) {
@@ -153,7 +199,7 @@ public class PeriodicTasks {
     };
 
     private static final String deleteOldAnonymousLinksTaskName = "deleteOldAnonymousLinksTask";
-    public static final Runnable DELETE_OLD_ANONYMOUS_LINKS = new RobustRunnable(deleteOldAnonymousLinksTaskName) {
+    private static final Runnable DELETE_OLD_ANONYMOUS_LINKS_TASK = new RobustRunnable(deleteOldAnonymousLinksTaskName) {
         @Override
         protected void dorun() {
             try {
@@ -165,7 +211,7 @@ public class PeriodicTasks {
     };
 
     private static final String updateCommunityStatsTaskName = "updateCommunityStats";
-    public static final Runnable UPDATE_COMMUNITY_STATS = new RobustRunnable(updateCommunityStatsTaskName) {
+    private static final Runnable UPDATE_COMMUNITY_STATS_TASK = new RobustRunnable(updateCommunityStatsTaskName) {
         @Override
         protected void dorun() {
             Communities.updateCommunityMap();
@@ -173,7 +219,7 @@ public class PeriodicTasks {
     };
 
     private static final String weeklyReportsTaskName = "weeklyReportsTask";
-    public static final Runnable CREATE_WEEKLY_REPORTS = new RobustRunnable(weeklyReportsTaskName) {
+    private static final Runnable CREATE_WEEKLY_REPORTS_TASK = new RobustRunnable(weeklyReportsTaskName) {
         @Override
         protected void dorun() {
             // create the reports directory in the starexec data directory if it does not already exist

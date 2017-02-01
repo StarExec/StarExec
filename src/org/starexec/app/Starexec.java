@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.SecurityException;
 import java.util.Calendar;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -151,22 +153,15 @@ public class Starexec implements ServletContextListener {
 		
 		TestManager.initializeTests();
 		//Schedule the recurring tasks above to be run every so often
-		if (R.IS_FULL_STAREXEC_INSTANCE) {
-		    taskScheduler.scheduleAtFixedRate(PeriodicTasks.UPDATE_CLUSTER, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);
-		    taskScheduler.scheduleAtFixedRate(PeriodicTasks.SUBMIT_JOBS, 0, R.JOB_SUBMISSION_PERIOD, TimeUnit.SECONDS);
-		    taskScheduler.scheduleAtFixedRate(PeriodicTasks.POST_PROCESS_JOBS,0,45,TimeUnit.SECONDS);
-			taskScheduler.scheduleAtFixedRate(PeriodicTasks.RERUN_FAILED_PAIRS, 0, 5, TimeUnit.MINUTES);
-		    taskScheduler.scheduleAtFixedRate(PeriodicTasks.FIND_BROKEN_JOB_PAIRS, 0, 3, TimeUnit.HOURS);
+
+
+		Set<PeriodicTasks.PeriodicTask> periodicTasks = EnumSet.allOf(PeriodicTasks.PeriodicTask.class);
+
+		for (PeriodicTasks.PeriodicTask task : periodicTasks) {
+			if ( R.IS_FULL_STAREXEC_INSTANCE || !task.fullInstanceOnly ) {
+				taskScheduler.scheduleAtFixedRate(task.task, task.delay, task.period, task.unit);
+			}
 		}
-	    taskScheduler.scheduleAtFixedRate(PeriodicTasks.CLEAR_TEMPORARY_FILES, 0, 3, TimeUnit.HOURS);
-	    taskScheduler.scheduleAtFixedRate(PeriodicTasks.CLEAR_JOB_LOG, 0, 7, TimeUnit.DAYS);
-	    taskScheduler.scheduleAtFixedRate(PeriodicTasks.CLEAR_JOB_SCRIPTS, 0, 12, TimeUnit.HOURS);
-	    taskScheduler.scheduleAtFixedRate(PeriodicTasks.CLEAN_DATABASE, 0, 7, TimeUnit.DAYS);
-	    // checks every day if reports need to be sent 
-	    taskScheduler.scheduleAtFixedRate(PeriodicTasks.CREATE_WEEKLY_REPORTS, 0, 1, TimeUnit.DAYS);
-	    taskScheduler.scheduleAtFixedRate(PeriodicTasks.DELETE_OLD_ANONYMOUS_LINKS, 0, 30, TimeUnit.DAYS);
-	    taskScheduler.scheduleAtFixedRate(PeriodicTasks.UPDATE_USER_DISK_SIZES, 0, 1, TimeUnit.DAYS);
-        taskScheduler.scheduleAtFixedRate(PeriodicTasks.UPDATE_COMMUNITY_STATS, 0, 6, TimeUnit.HOURS);
 		try {
 			PaginationQueries.loadPaginationQueries();
 		} catch (Exception e) {
