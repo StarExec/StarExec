@@ -255,6 +255,13 @@ public class Starexec implements ServletContextListener {
 				Jobs.cleanOrphanedDeletedJobs();
 			}
 		};
+
+		final Runnable findBrokenNodes = new RobustRunnable("findBrokenNodes") {
+			@Override
+			protected void dorun() {
+				log.info("findBrokenNodes (periodic)");
+			}
+		};
 		
 		final Runnable findBrokenJobPairs = new RobustRunnable("findBrokenJobPairs") {
 			@Override
