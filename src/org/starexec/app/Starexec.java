@@ -153,7 +153,6 @@ public class Starexec implements ServletContextListener {
 			protected void dorun() {
 			    Cluster.loadWorkerNodes();
 			    Cluster.loadQueueDetails();
-
 			}
 		};	
 
@@ -163,12 +162,7 @@ public class Starexec implements ServletContextListener {
 		final Runnable submitJobsTask = new RobustRunnable(submitJobTasksName) {
 			@Override
 			protected void dorun() {
-			    try {
-			    	JobManager.checkPendingJobs();
-			    }
-			    catch(Exception e) {
-					log.warn(this.name+" caught exception: "+e,e);
-			    }
+				JobManager.checkPendingJobs();
 			}
 		};
 
@@ -176,7 +170,6 @@ public class Starexec implements ServletContextListener {
 		final Runnable rerunFailedPairsTask = new RobustRunnable(rerunFailedPairsTaskName) {
 			@Override
 			protected void dorun() {
-
 				try {
 					// Get all pairs that haven't already been rerun that have the ERROR_RUNSCRIPT status and
 					// rerun them.
@@ -193,8 +186,8 @@ public class Starexec implements ServletContextListener {
 						Jobs.rerunPair(pairId);
 						PairsRerun.markPairAsRerun(pairId);
 					}
-				} catch (Exception e) {
-					log.warn(this.name+" caught Exception: "+Util.getStackTrace(e), e);
+				} catch (SQLException e) {
+					log.warn(this.name+" caught SQLException. Could not get pairs to rerun from database.", e);
 				}
 			}
 		};
@@ -204,13 +197,7 @@ public class Starexec implements ServletContextListener {
 		final Runnable postProcessJobsTask = new RobustRunnable(postProcessJobsTaskName) {
 			@Override
 			protected void dorun() {
-			    log.info(this.name+" (periodic)");
-			    try {
-			    	ProcessingManager.checkProcessingPairs();
-			    }
-			    catch(Exception e) {
-				log.warn(this.name+" caught exception: "+e,e);
-			    }
+				ProcessingManager.checkProcessingPairs();
 			}
 		};
 
@@ -270,7 +257,7 @@ public class Starexec implements ServletContextListener {
 				try {
 					Jobs.setBrokenPairsToErrorStatus(R.BACKEND);
 				} catch (IOException e) {
-					log.error(e.getMessage(), e);
+					log.error("Caught IOException: " + e.getMessage(), e);
 				}
 			}
 		};
@@ -290,11 +277,10 @@ public class Starexec implements ServletContextListener {
 		final Runnable deleteOldAnonymousLinksTask = new RobustRunnable(deleteOldAnonymousLinksTaskName) {
 			@Override
 			protected void dorun() {
-				log.info( "deleteOldAnonymousLinksTask (periodic)" );
 				try {
 					AnonymousLinks.deleteOldLinks(R.MAX_AGE_OF_ANONYMOUS_LINKS_IN_DAYS);
 				} catch (SQLException e) {
-					log.error( "Failed to delete old anonymous links." + Util.getStackTrace( e ));
+					log.error( "Caught SQLExcpetion: Failed to delete old anonymous links.", e);
 				}
 			}
 		};
@@ -330,7 +316,7 @@ public class Starexec implements ServletContextListener {
 				try {
 					if (subscribedUsers.size() > Users.getCount()) {
 						// make sure that we're not sending unnecessary emails
-						throw new Exception("There are more users subscribed to reports than users in the system!");
+						throw new StarExecException("There are more users subscribed to reports than users in the system!");
 					}
 
 					Calendar today = Calendar.getInstance();
@@ -347,8 +333,10 @@ public class Starexec implements ServletContextListener {
 					}
 				} catch (IOException e) {
 					log.error("Issue while storing reports email as text file.", e);
-				} catch (Exception e) {
-					log.error("Exception while trying to send reports.", e);
+				} catch (StarExecException e) {
+					log.error("Caught StarExecException: "+e.getMessage(), e);
+				} catch (SQLException e) {
+					log.error("Caught SQLException: "+e.getMessage(), e);
 				}
 			}
 		};
