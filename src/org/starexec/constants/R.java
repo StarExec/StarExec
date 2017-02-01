@@ -244,10 +244,7 @@ public class R {
     public static String CONTACT_EMAIL = "";								// The default e-mail address to use for users to contact for support
     public static boolean IS_FULL_STAREXEC_INSTANCE = true;  				// should we run job tasks (see app/Starexec.java)
     public static int CLEAR_JOB_LOG_PERIOD = 14;                                                        // How often (in days) to clear job logs
-    public static int CLUSTER_UPDATE_PERIOD = 600;							// How often (in seconds) to update the cluster's current usage status
     public static int JOB_SUBMISSION_PERIOD = 60;							// How often (in seconds) to write job scripts and submit to the backend
-    public static int CREATE_QUEUE_PERIOD = 60;								// How often (in minutes) to check if todays date is the reserved_queue date and then associate nodes
-	public static final int EMAIL_REPORTS_PERIOD = 7;						  // How often (in days) to send StarExec reports to subscribed users
 	public static final int MAX_NUMBER_OF_REPORTS_TO_SEND = 30;               // Maximum number of StarExec report emails to send every period
 	public static final int WAIT_TIME_BETWEEN_EMAILING_REPORTS = 2;           // Number of seconds to wait between reports being sent
 	public static final int EMAIL_REPORTS_DAY = Calendar.THURSDAY;              // Day of the week to email reports
