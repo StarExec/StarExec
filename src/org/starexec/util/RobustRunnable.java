@@ -9,6 +9,8 @@ public abstract class RobustRunnable implements Runnable {
 
     abstract protected void dorun();
 
+
+
     public RobustRunnable(String _name) {
     	name = _name;
     }
@@ -16,7 +18,8 @@ public abstract class RobustRunnable implements Runnable {
     @Override
     public void run() {
     	try {
-    		dorun();
+			log.info(name + " (periodic)");
+			dorun();
     	}
     	catch (Throwable e) {
     		log.warn(name+" caught throwable: "+e,e);

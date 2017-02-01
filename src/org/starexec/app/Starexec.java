@@ -139,18 +139,18 @@ public class Starexec implements ServletContextListener {
 		event.getServletContext().setAttribute("buildDate", ConfigUtil.getBuildDate());
 		event.getServletContext().setAttribute("buildUser", ConfigUtil.getBuildUser());
 		event.getServletContext().setAttribute("contactEmail", R.CONTACT_EMAIL);		
-	}	
-	
+	}
+
+
 	/**
 	 * Creates and schedules periodic tasks to be run.
 	 */
 	private void scheduleRecurringTasks() {
+		final String updateClusterTaskName = "updateClusterTask";
 		// Create a task that updates the cluster usage info (this may take some time)
-		final Runnable updateClusterTask = new RobustRunnable("updateClusterTask") {			
+		final Runnable updateClusterTask = new RobustRunnable(updateClusterTaskName) {
 			@Override
 			protected void dorun() {
-			    log.info("updateClusterTask (periodic)");
-
 			    Cluster.loadWorkerNodes();
 			    Cluster.loadQueueDetails();
 
@@ -158,25 +158,24 @@ public class Starexec implements ServletContextListener {
 		};	
 
 		
-		
+		final String submitJobTasksName = "submitJobTasks";
 		// Create a task that submits jobs that have pending/rejected job pairs
-		final Runnable submitJobsTask = new RobustRunnable("submitJobTasks") {			
+		final Runnable submitJobsTask = new RobustRunnable(submitJobTasksName) {
 			@Override
 			protected void dorun() {
-			    log.info("submitJobsTask (periodic)");
 			    try {
 			    	JobManager.checkPendingJobs();
 			    }
 			    catch(Exception e) {
-				log.warn("submitJobsTask caught exception: "+e,e);
+					log.warn(this.name+" caught exception: "+e,e);
 			    }
 			}
 		};
 
-		final Runnable rerunFailedPairsTask = new RobustRunnable("rerunFailedPairsTask") {
+		final String rerunFailedPairsTaskName = "rerunFailedPairsTask";
+		final Runnable rerunFailedPairsTask = new RobustRunnable(rerunFailedPairsTaskName) {
 			@Override
 			protected void dorun() {
-				log.info("rerunFailedPairsTask (periodic)");
 
 				try {
 					// Get all pairs that haven't already been rerun that have the ERROR_RUNSCRIPT status and
@@ -187,7 +186,7 @@ public class Starexec implements ServletContextListener {
 							Status.StatusCode.ERROR_RUNSCRIPT,
 							R.earliestDateToRerunFailedPairs());
 					timer.stop();
-					log.info("(rerunFailedPairsTask) Got " + pairIdsToRerun.size() + " in " + timer.toString());
+					log.info("("+this.name+")"+" Got " + pairIdsToRerun.size() + " in " + timer.toString());
 
 
 					for (Integer pairId : pairIdsToRerun) {
@@ -195,30 +194,31 @@ public class Starexec implements ServletContextListener {
 						PairsRerun.markPairAsRerun(pairId);
 					}
 				} catch (Exception e) {
-					log.warn("rerunPairsTask caught Exception: "+Util.getStackTrace(e), e);
+					log.warn(this.name+" caught Exception: "+Util.getStackTrace(e), e);
 				}
 			}
 		};
-		
+
+		final String postProcessJobsTaskName = "postProcessJobsTask";
 		// Create a task that submits jobs that have pending/rejected job pairs
-		final Runnable postProcessJobsTask = new RobustRunnable("postProcessJobsTask") {			
+		final Runnable postProcessJobsTask = new RobustRunnable(postProcessJobsTaskName) {
 			@Override
 			protected void dorun() {
-			    log.info("checkProcessJobsTask (periodic)");
+			    log.info(this.name+" (periodic)");
 			    try {
 			    	ProcessingManager.checkProcessingPairs();
 			    }
 			    catch(Exception e) {
-				log.warn("postProcessJobsTask caught exception: "+e,e);
+				log.warn(this.name+" caught exception: "+e,e);
 			    }
 			}
 		};
 
 		// Create a task that deletes download files older than 1 day
-		final Runnable clearTemporaryFilesTask = new RobustRunnable("clearTemporaryFilesTask") {			
+		final String clearTemporaryFilesTaskName = "clearTemporaryFilesTask";
+		final Runnable clearTemporaryFilesTask = new RobustRunnable(clearTemporaryFilesTaskName) {
 			@Override
 			protected void dorun() {
-			    log.info("clearTemporaryFilesTask (periodic)");
 				Util.clearOldFiles(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR).getAbsolutePath(), 1,false);
 
 				// clear sandbox files older than one day old
@@ -227,18 +227,18 @@ public class Starexec implements ServletContextListener {
 		};	
 		
 		/*  Create a task that deletes job logs older than 7 days */
-		final Runnable clearJobLogTask = new RobustRunnable("clearJobLogTask") {			
+		final String clearJobLogTaskName = "clearJobLogTask";
+		final Runnable clearJobLogTask = new RobustRunnable(clearJobLogTaskName) {
 			@Override
 			protected void dorun() {
-			    log.info("clearJobLogTask (periodic)");
 				Util.clearOldFiles(R.getJobLogDir(), R.CLEAR_JOB_LOG_PERIOD,true);
 			}
 		};
 		/*  Create a task that deletes job scripts older than 3 days */
-		final Runnable clearJobScriptTask = new RobustRunnable("clearJobScriptTask") {			
+		final String clearJobScriptTaskName = "clearJobScriptTask";
+		final Runnable clearJobScriptTask = new RobustRunnable(clearJobScriptTaskName) {
 			@Override
 			protected void dorun() {
-			    log.info("clearJobScriptTask (periodic)");
 				Util.clearOldFiles(R.getJobInboxDir(),1,false);
 			}
 		};
@@ -246,27 +246,27 @@ public class Starexec implements ServletContextListener {
 		 * Removes solvers and benchmarks from the database that are both orphaned (unaffiliated
 		 * with any spaces or job pairs) AND have already been deleted on disk.
 		 */
-		final Runnable cleanDatabaseTask = new RobustRunnable("cleanDatabaseTask") {
+		final String cleanDatabaseTaskName = "cleanDatabaseTask";
+		final Runnable cleanDatabaseTask = new RobustRunnable(cleanDatabaseTaskName) {
 			@Override
 			protected void dorun() {
-				log.info("cleanDatabaseTask (periodic)");
 				Solvers.cleanOrphanedDeletedSolvers();
 				Benchmarks.cleanOrphanedDeletedBenchmarks();
 				Jobs.cleanOrphanedDeletedJobs();
 			}
 		};
 
-		final Runnable findBrokenNodes = new RobustRunnable("findBrokenNodes") {
+		final String findBrokenNodesTaskName = "findBrokenNodes";
+		final Runnable findBrokenNodes = new RobustRunnable(findBrokenNodesTaskName) {
 			@Override
 			protected void dorun() {
-				log.info("findBrokenNodes (periodic)");
 			}
 		};
-		
-		final Runnable findBrokenJobPairs = new RobustRunnable("findBrokenJobPairs") {
+
+		final String findBrokenJobPairsTaskName = "findBrokenJobPairs";
+		final Runnable findBrokenJobPairs = new RobustRunnable(findBrokenJobPairsTaskName) {
 			@Override
 			protected void dorun() {
-				log.info("findBrokenJobPairs (periodic)");
 				try {
 					Jobs.setBrokenPairsToErrorStatus(R.BACKEND);
 				} catch (IOException e) {
@@ -274,12 +274,11 @@ public class Starexec implements ServletContextListener {
 				}
 			}
 		};
-		
-		final Runnable updateUserDiskSizesTask = new RobustRunnable("updateUserDiskSizesTask") {
+
+		final String updateUserDiskSizesTaskName = "updateUserDiskSizesTask";
+		final Runnable updateUserDiskSizesTask = new RobustRunnable(updateUserDiskSizesTaskName) {
 			@Override
 			protected void dorun() {
-				log.info( "updateUserDiskSizesTask (periodic)" );
-				
 				if (!Users.updateAllUserDiskSizes()) {
 					log.error("failed to update user disk sizes (periodic)");
 				}
@@ -287,7 +286,8 @@ public class Starexec implements ServletContextListener {
 			}
 		};
 
-		final Runnable deleteOldAnonymousLinksTask = new RobustRunnable("deleteOldAnonymousLinksTask") {
+		final String deleteOldAnonymousLinksTaskName = "deleteOldAnonymousLinksTask";
+		final Runnable deleteOldAnonymousLinksTask = new RobustRunnable(deleteOldAnonymousLinksTaskName) {
 			@Override
 			protected void dorun() {
 				log.info( "deleteOldAnonymousLinksTask (periodic)" );
@@ -299,18 +299,18 @@ public class Starexec implements ServletContextListener {
 			}
 		};
 
-        final Runnable updateCommunityStats = new RobustRunnable("updateCommunityStats") {
+		final String updateCommunityStatsTaskName = "updateCommunityStats";
+        final Runnable updateCommunityStats = new RobustRunnable(updateCommunityStatsTaskName) {
             @Override
             protected void dorun() {
-                log.info("updateCommunityStats (periodic)");
                 Communities.updateCommunityMap();
             }
         };
 
-		final Runnable weeklyReportsTask = new RobustRunnable("weeklyReportsTask") {
+        final String weeklyReportsTaskName = "weeklyReportsTask";
+		final Runnable weeklyReportsTask = new RobustRunnable(weeklyReportsTaskName) {
 			@Override
 			protected void dorun() {
-				log.info("weeklyReportsTask (periodic)");
 				// create the reports directory in the starexec data directory if it does not already exist
 				String dataDirectory = R.STAREXEC_DATA_DIR;
 				File reportsDirectory = new File(dataDirectory, "/reports/");
