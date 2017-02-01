@@ -77,7 +77,7 @@ public class CreateStressTest extends HttpServlet {
 				response.sendRedirect((Util.docRoot("secure/admin/testing.jsp")));
 			}
 		} catch (Exception e) {
-			log.warn("Caught Exception in CreateStressTest.doPost: " + Util.getStackTrace(e));
+			log.warn("Caught Exception in CreateStressTest.doPost.", e);
 			throw e;
 		}
 	}

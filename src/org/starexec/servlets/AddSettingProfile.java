@@ -183,7 +183,7 @@ public class AddSettingProfile extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 		} catch (Exception e) {
-			log.warn("Caught Exception in AddSettingProfile.doPost: "+Util.getStackTrace(e));
+			log.warn("Caught Exception in AddSettingProfile.doPost.", e);
 			throw e;
 		}
 	}

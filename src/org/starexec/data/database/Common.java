@@ -310,7 +310,7 @@ public class Common {
 			results = procedure.executeQuery();
 			return resultsConsumer.query(results);
 		} catch (SQLException e) {
-			log.error("Caught SQLException: " + Util.getStackTrace(e));
+			log.error("Caught SQLException: " + e.getMessage(), e);
 			throw e;
 		} finally {
 			Common.safeClose(procedure);
@@ -332,7 +332,7 @@ public class Common {
 			results = procedure.executeQuery();
 			return connectionResultsConsumer.query(con, results);
 		} catch (SQLException e) {
-			log.error("Caught SQLException: " + Util.getStackTrace(e));
+			log.error("Caught SQLException: " + e.getMessage(), e);
 			throw e;
 		} finally {
 			Common.safeClose(procedure);

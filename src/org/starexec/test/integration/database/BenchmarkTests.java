@@ -100,7 +100,7 @@ public class BenchmarkTests extends TestSequence {
 			}
 		} catch (SQLException e) {
 			Assert.fail("Call threw SQL Exception.");
-			log.error(Util.getStackTrace(e));
+			log.error("Caught SQLException: " + e.getMessage(), e);
 		}
 
 	}

@@ -92,7 +92,7 @@ public class ProcessorManager extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Multipart request expected");
 			}
 		} catch (Exception e) {
-			log.warn("Caught Exception in ProcessorManager.doPost: " + Util.getStackTrace(e));
+			log.warn("Caught Exception in ProcessorManager.doPost", e);
 		}
 	}	
 	

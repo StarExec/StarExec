@@ -200,7 +200,7 @@ public class RESTServices {
 			}
 		} catch (RuntimeException e) {
 			// Catch all runtime exceptions so we can debug them
-			logUtil.error( methodName, "Caught a runtime exception: " + Util.getStackTrace(e) ); 
+			logUtil.error( methodName, "Caught a runtime exception: ",e);
 			throw e;
 		}
 	}
@@ -966,7 +966,7 @@ public class RESTServices {
 					stageNumber, primitivesToAnonymize, request );
 		} catch (RuntimeException e) {
 			// Catch all runtime exceptions so we can debug them
-			logUtil.error( methodName, "Caught a runtime exception: " + Util.getStackTrace(e) ); 
+			logUtil.error( methodName, "Caught a runtime exception: ", e);
 			throw e;
 		}
 	}
@@ -1205,7 +1205,7 @@ public class RESTServices {
 			return RESTHelpers.getSolverComparisonGraphJson(
 					jobSpaceId, config1, config2, edgeLengthInPixels, axisColor, stageNumber, primitivesToAnonymize );
 		} catch ( RuntimeException e ) {
-			logUtil.error( methodName, "Caught a runtime exception: " + Util.getStackTrace( e ));
+			logUtil.error( methodName, "Caught a runtime exception: ",e);
 			return gson.toJson( ERROR_INTERNAL_SERVER );
 		} 
 	}
@@ -1289,7 +1289,7 @@ public class RESTServices {
 			}
 		} catch (RuntimeException e) {
 			// Catch all runtime exceptions so we can debug them
-			logUtil.error( methodName, "Caught a runtime exception: " + Util.getStackTrace(e) ); 
+			logUtil.error( methodName, "Caught a runtime exception: ", e );
 			throw e;
 		}
 	}
@@ -1502,7 +1502,7 @@ public class RESTServices {
 		} catch ( SQLException e ) {
 			return gson.toJson( new ValidatorStatusCode( false, e.getMessage() ));	
 		} catch ( RuntimeException e) {
-			logUtil.error( methodName, Util.getStackTrace( e ));
+			logUtil.error( methodName, e.getMessage(), e);
 			return gson.toJson( new ValidatorStatusCode( false, e.getMessage() ));	
 		}
 	}
@@ -2118,7 +2118,7 @@ public class RESTServices {
 			return gson.toJson(new ValidatorStatusCode(true, "Default Benchmark Removed From Profile"));
 
 		} catch (SQLException e) {
-			logUtil.error(methodName, "Database error occurred: " + Util.getStackTrace(e));
+			logUtil.error(methodName, "Database error occurred: ", e);
 			return gson.toJson(ERROR_DATABASE);
 		}
 	}
@@ -2151,7 +2151,7 @@ public class RESTServices {
 		try {
 			defaultSettingAttribute = DefaultSettingAttribute.valueOf(attribute);
 		} catch (Exception e) {
-			log.warn("Illegal value of DefaultSettingAttribute enum: " + Util.getStackTrace(e));
+			log.warn("Illegal value of DefaultSettingAttribute enum: ", e);
 		}
 
 		try {

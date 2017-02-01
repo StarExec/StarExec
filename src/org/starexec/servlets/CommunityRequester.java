@@ -57,7 +57,7 @@ public class CommunityRequester extends HttpServlet {
 				response.sendRedirect(Util.docRoot("secure/add/to_community.jsp?result=requestNotSent&cid=" + comRequest.getCommunityId()));
 			}
 		} catch (Exception e) {
-			log.warn("Caught Exception in CommunityRequester.doPost: " + Util.getStackTrace(e));
+			log.warn("Caught Exception in CommunityRequester.doPost", e);
 			throw e;
 		}
 	}

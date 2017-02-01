@@ -64,7 +64,7 @@ public class AssocCommunities extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 		} catch (Exception e) {
-			log.warn("Caught Exception in AssocCommunities.doPost: " + Util.getStackTrace(e));
+			log.warn("Caught Exception in AssocCommunities.doPost.", e);
 			throw e;
 		}
 	}

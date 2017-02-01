@@ -58,7 +58,7 @@ public class PasswordReset extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
 			}
 		} catch (Exception e) {
-			log.warn("Caught Exception in PasswordReset.doGet: " + Util.getStackTrace(e));
+			log.warn("Caught Exception in PasswordReset.doGet", e);
 			throw e;
 		}
 	}
@@ -98,7 +98,7 @@ public class PasswordReset extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			}
 		} catch (Exception e) {
-			log.warn("Caught Exception in PasswordReset.doPost: " + Util.getStackTrace(e));
+			log.warn("Caught Exception in PasswordReset.doPost", e);
 			throw e;
 		}
 	}

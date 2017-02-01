@@ -139,7 +139,7 @@ public class GetPicture extends HttpServlet{
 				log.warn("picture with path " + file.getPath() + "could not be found");
 			}
 		} catch (Exception e) {
-			log.warn("Caught Exception in GetPicture.doGet: " + Util.getStackTrace(e));
+			log.warn("Caught Exception in GetPicture.doGet", e);
 			throw e;
 		}
 	}

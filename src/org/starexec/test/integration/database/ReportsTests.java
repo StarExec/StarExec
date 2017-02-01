@@ -66,7 +66,7 @@ public class ReportsTests extends TestSequence {
 			Assert.assertEquals(pairsRun+3, getPairsRunCount());
 			Assert.assertTrue(Reports.addToEventOccurrencesForQueue(pairsEvent, -3, allQ.getName()));
 		} catch ( SQLException e ) {
-			log.error( "Caught SQLException: " + Util.getStackTrace( e ) );
+			log.error( "Caught SQLException: "+ e.getMessage(), e);
 		}
 
 	}

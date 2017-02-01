@@ -327,7 +327,7 @@ public class JobPairs {
 			log.debug("addJobPairs three");
 			return success;
 		} catch ( SQLException e ) {
-			logUtil.error( methodName, "SQLException thrown: " + Util.getStackTrace( e ) );
+			logUtil.error( methodName, "SQLException thrown: " + e.getMessage(), e);
 			Common.doRollback( con );
 			throw e;
 		} finally  {

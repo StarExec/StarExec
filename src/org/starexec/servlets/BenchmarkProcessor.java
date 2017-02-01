@@ -73,7 +73,7 @@ public class BenchmarkProcessor extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an error processing the benchmarks");	
 			}									
 		} catch (Exception e) {
-			log.warn("Caught Exception in BenchmarkProcessor.doPost: " + Util.getStackTrace(e));
+			log.warn("Caught Exception in BenchmarkProcessor.doPost.", e);
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an error processing the benchmarks");
 		}	
 	}	

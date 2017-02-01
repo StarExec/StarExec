@@ -111,7 +111,7 @@ public class CreateQueue extends HttpServlet {
 				response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));
 			}
 		} catch (Exception e) {
-			log.warn("Caught Exception in CreateQueue.doPost: " + Util.getStackTrace(e));
+			log.warn("Caught Exception in CreateQueue.doPost", e);
 			throw e;
 		}
 	}

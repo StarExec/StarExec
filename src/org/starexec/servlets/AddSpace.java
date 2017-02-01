@@ -169,7 +169,7 @@ public class AddSpace extends HttpServlet {
 				response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
 			}
 		} catch (Exception e) {
-			log.warn("Caught Exception in AddSpace.doPost: " + Util.getStackTrace(e));
+			log.warn("Caught Exception in AddSpace.doPost", e);
 			throw e;
 		}
 	}

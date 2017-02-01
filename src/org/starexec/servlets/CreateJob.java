@@ -387,7 +387,7 @@ public class CreateJob extends HttpServlet {
 						"Your job failed to submit for an unknown reason. Please try again.");
 			}
 		} catch (Exception e) {
-			log.warn("Caught Exception in CreateJob.doPost: " + Util.getStackTrace(e));
+			log.warn("Caught Exception in CreateJob.doPost.", e);
 			throw e;
 		}
 	}

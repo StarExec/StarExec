@@ -443,7 +443,7 @@ public class AnonymousLinks {
 			}
 			Common.endTransaction( con );
 		} catch (SQLException e) {
-			logUtil.error( methodName, Util.getStackTrace( e ));
+			logUtil.error( methodName, "Caught SQLException e: " + e.getMessage(), e);
 			Common.doRollback( con );
 			throw e;
 		} finally {
@@ -465,7 +465,7 @@ public class AnonymousLinks {
 			delete( uuid, con );
 			Common.endTransaction(con);
 		} catch (SQLException e) {
-			logUtil.error( methodName, Util.getStackTrace( e ));
+			logUtil.error( methodName, "Caught SQLException: "+e.getMessage(), e);
 			Common.doRollback( con );
 		} finally {
 			Common.safeClose( con );
@@ -506,7 +506,7 @@ public class AnonymousLinks {
 			// return true/false depending on if there are any results.
 			return results.next();
 		} catch( SQLException e ) {
-			logUtil.error( methodName, Util.getStackTrace(e));
+			logUtil.error( methodName, "Caught SQLException: "+e.getMessage(), e);
 			throw e;
 		} finally {
 			Common.safeClose( con );
@@ -569,7 +569,7 @@ public class AnonymousLinks {
 
 			Common.endTransaction( con );
 		} catch (SQLException e) {
-			logUtil.error( methodName, Util.getStackTrace( e ) );
+			logUtil.error( methodName, e.getMessage(), e );
 			throw e;
 		} finally {
 			Common.doRollback( con );
@@ -603,7 +603,7 @@ public class AnonymousLinks {
 			}
 			return anonymizedSolverNamesKey;
 		} catch (SQLException e) {
-			logUtil.error(methodName, "Database failure while geting anonymized solver names key.\n"+Util.getStackTrace( e ) );
+			logUtil.error(methodName, "Database failure while geting anonymized solver names key.", e);
 			throw e;
 		} finally {
 			Common.safeClose(con);
@@ -635,7 +635,7 @@ public class AnonymousLinks {
 			procedure.executeUpdate();
 
 		} catch ( SQLException e ) {
-			logUtil.error( methodName, Util.getStackTrace( e ) );
+			logUtil.error( methodName, "Caught SQLException: "+e.getMessage(), e );
 			throw e;
 		} finally {
 			Common.safeClose( procedure );

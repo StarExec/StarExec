@@ -62,7 +62,7 @@ public class Verify extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 			}
 		} catch (Exception e) {
-			log.warn("Caught Exception in Verify.doGet: " + Util.getStackTrace(e));
+			log.warn("Caught Exception in Verify.doGet", e);
 			throw e;
 		}
     }

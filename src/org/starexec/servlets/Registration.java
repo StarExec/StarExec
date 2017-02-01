@@ -63,7 +63,7 @@ public class Registration extends HttpServlet {
 			}
 			logUtil.exit(method);
 		} catch(Exception e) {
-			log.warn("Caught Exception in Registration.doPost: " + Util.getStackTrace(e));
+			log.warn("Caught Exception in Registration.doPost.", e);
 			throw e;
 		}
 	}

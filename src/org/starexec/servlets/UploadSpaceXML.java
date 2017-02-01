@@ -87,7 +87,7 @@ public class UploadSpaceXML extends HttpServlet {
 			}
     	} catch (Exception e) {
     		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-			log.error("Caught Exception in UploadSpaceXML.doPost: " + Util.getStackTrace(e));
+			log.error("Caught Exception in UploadSpaceXML.doPost", e);
     	}
 	}
 

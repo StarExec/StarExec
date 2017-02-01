@@ -318,7 +318,7 @@ public class Download extends HttpServlet {
 			}
 
 		} catch (Exception e) {
-			log.warn("Caught Exception in Download.doGet: " + Util.getStackTrace(e));
+			log.warn("Caught Exception in Download.doGet", e);
 			response.getOutputStream().close();
 			//this won't work because we have already opened the response output stream
 			//response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());

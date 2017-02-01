@@ -162,7 +162,7 @@ public class UploadSolver extends HttpServlet {
 			}
     	} catch (Exception e) {
     		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-			log.error("Caught Exception in UploadSolver.doPost: " + Util.getStackTrace(e));
+			log.error("Caught Exception in UploadSolver.doPost", e);
     	}
 	}
     /**

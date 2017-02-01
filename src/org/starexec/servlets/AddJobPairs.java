@@ -163,7 +163,7 @@ public class AddJobPairs extends HttpServlet {
 			response.sendRedirect( Util.docRoot( "secure/details/job.jsp?id=" + jobId ) );
 			return;
 		} catch (Exception e) {
-			logUtil.debug(methodName, "Caught exception while doing post for AddJobPairs: "+Util.getStackTrace(e ));
+			logUtil.warn(methodName, "Caught exception while doing post for AddJobPairs: " + e.getMessage(), e);
 			response.sendError( HttpServletResponse.SC_INTERNAL_SERVER_ERROR, Util.getStackTrace( e ) );
 			return;
 		}
