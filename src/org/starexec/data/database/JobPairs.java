@@ -1554,6 +1554,24 @@ public class JobPairs {
 		}
 		return false;
 	}
+
+	/**
+	 * Gets pair ids that have been enqueued longer than a given number of hours.
+	 * @param hours if a pair has been enqueued longer than this number of hours it will be returned.
+	 * @return the pair ids that have been enqueued longer than the given amount of time.
+	 * @throws SQLException if something goes wrong in the database.
+	 */
+	public static List<Integer> getPairsEnqueuedLongerThan(int hours) throws SQLException {
+		return Common.query("{CALL GetPairsEnqueuedLongerThan(?)}"
+				, procedure -> procedure.setInt(1, hours)
+				, results -> {
+					List<Integer> pairsEnqueuedLongerThanGivenTime = new ArrayList<>();
+					while(results.next()) {
+						pairsEnqueuedLongerThanGivenTime.add(results.getInt("pair_id"));
+					}
+					return pairsEnqueuedLongerThanGivenTime;
+				});
+	}
 	
 	/**
 	 * Sets the status of a given job pair to the given status

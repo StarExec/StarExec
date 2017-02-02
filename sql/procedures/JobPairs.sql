@@ -76,10 +76,10 @@ CREATE PROCEDURE RemoveJobPairDiskSize(IN _jobPairId INT)
 		UPDATE jobpair_stage_data SET disk_size=0 WHERE jobpair_id=_jobPairId;
 	END //
 
-DROP PROCEDURE IF EXISTS GetEnqueuedJobPairsOlderThan;
-CREATE PROCEDURE GetEnqueuedJobPairsOlderThan(IN _ageInHours INT)
+DROP PROCEDURE IF EXISTS GetPairsEnqueuedLongerThan;
+CREATE PROCEDURE GetPairsEnqueuedLongerThan(IN _ageInHours INT)
 	BEGIN
-		SELECT jp.id
+		SELECT jp.id as pair_id
 	  FROM job_pairs jp
 		WHERE HOUR(TIMEDIFF(NOW(), jp.queuesub_time)) >  _ageInHours AND jp.status_code = 2;
 	END //
