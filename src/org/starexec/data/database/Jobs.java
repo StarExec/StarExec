@@ -4036,7 +4036,7 @@ public class Jobs {
 	    procedure.setInt(1, jobId);		
 	    procedure.executeUpdate();	
 
-	    log.debug("Pausation of job id = " + jobId + " was successful");
+	    log.debug("Pausing of job with id = " + jobId + " was successful");
 			
 	    //Get the enqueued job pairs and remove them
 	    List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(jobId);
