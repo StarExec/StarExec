@@ -152,16 +152,16 @@ public class Starexec implements ServletContextListener {
 		Util.initializeDataDirectories();
 		
 		TestManager.initializeTests();
-		//Schedule the recurring tasks above to be run every so often
 
-
+		// Gets all the periodic tasks and runs them.
+		// If you need to create a new periodic task, add another enum instance to PeriodicTasks.PeriodicTask
 		Set<PeriodicTasks.PeriodicTask> periodicTasks = EnumSet.allOf(PeriodicTasks.PeriodicTask.class);
-
 		for (PeriodicTasks.PeriodicTask task : periodicTasks) {
 			if ( R.IS_FULL_STAREXEC_INSTANCE || !task.fullInstanceOnly ) {
 				taskScheduler.scheduleAtFixedRate(task.task, task.delay, task.period, task.unit);
 			}
 		}
+
 		try {
 			PaginationQueries.loadPaginationQueries();
 		} catch (Exception e) {
