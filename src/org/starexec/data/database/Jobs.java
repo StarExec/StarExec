@@ -1372,7 +1372,7 @@ public class Jobs {
 	 * @return A list of job pair objects that belong to the given queue.
 	 * @author Wyatt Kaiser
 	 */
-	protected static List<JobPair> getEnqueuedPairs(Connection con, int jobId){	
+	protected static List<JobPair> getEnqueuedPairs(Connection con, int jobId) throws SQLException {
 		log.debug("getEnqueuePairs2 beginning...");
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -1392,13 +1392,13 @@ public class Jobs {
 			}			
 			log.debug("returnList = " + returnList);
 			return returnList;
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			log.error("getEnqueuedPairs says "+e.getMessage(),e);
+             throw e;
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
-		return null;
 	}
 	
 
@@ -1408,19 +1408,18 @@ public class Jobs {
 	 * @return A list of job pair objects that belong to the given queue.
 	 * @author Wyatt Kaiser
 	 */
-	public static List<JobPair> getEnqueuedPairs(int jobId) {
+	public static List<JobPair> getEnqueuedPairs(int jobId) throws SQLException {
 		Connection con = null;			
 
 		try {			
 			con = Common.getConnection();		
 			return Jobs.getEnqueuedPairs(con, jobId);
-		} catch (Exception e){			
-			log.error("getEnqueuedPairsDetailed for queue " + jobId + " says " + e.getMessage(), e);		
+		} catch (SQLException e){
+			log.error("getEnqueuedPairsDetailed for queue " + jobId + " says " + e.getMessage(), e);
+            throw e;
 		} finally {
 			Common.safeClose(con);
 		}
-
-		return null;		
 	}
 	
 	/**
