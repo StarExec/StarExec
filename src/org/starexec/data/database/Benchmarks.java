@@ -114,7 +114,7 @@ public class Benchmarks {
      * @param statusId the id of the upload page, or null if there isn't one
      * @return True on success and false otherwise
      */
-    protected static boolean addAttributeSetToDbIfValid(Connection con, Map<String, String> attrs, Benchmark benchmark, Integer statusId) {
+    private static boolean addAttributeSetToDbIfValid(Connection con, Map<String, String> attrs, Benchmark benchmark, Integer statusId) {
 		if(!Benchmarks.isBenchValid(attrs)) {
 		    Uploads.setBenchmarkErrorMessage(statusId, ("The benchmark processor did not validate the benchmark "
 						       +benchmark.getName()+" ("+R.VALID_BENCHMARK_ATTRIBUTE+" was not true)."));
