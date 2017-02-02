@@ -4028,7 +4028,7 @@ public class Jobs {
 	 */
 	
     protected static boolean pause(int jobId, Connection con) {
-	log.info("Pausing job "+new Integer(jobId));
+	log.info("Pausing job "+jobId);
 	CallableStatement procedure = null;
 	try {
 	    procedure = con.prepareCall("{CALL PauseJob(?)}");
@@ -4039,7 +4039,7 @@ public class Jobs {
 			
 	    //Get the enqueued job pairs and remove them
 	    List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(jobId);
-	    for (JobPair jp : jobPairsEnqueued) {
+	    for (JobPair jp : jobPairsEnqueued)  {
 			int execId = jp.getBackendExecId();
 			R.BACKEND.killPair(execId);
 		    JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_PAUSED.getVal());
