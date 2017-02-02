@@ -33,7 +33,7 @@ class PeriodicTasks {
     private static Logger log = Logger.getLogger(PeriodicTasks.class);
 
     // Enum constants of all the periodic tasks.
-    public enum PeriodicTask {
+    enum PeriodicTask {
         UPDATE_CLUSTER(true, UPDATE_CLUSTER_TASK, 0, 600, TimeUnit.SECONDS),
         SUBMIT_JOBS(true, SUBMIT_JOBS_TASK, 0, 60, TimeUnit.SECONDS),
         POST_PROCESS_JOBS(true, POST_PROCESS_JOBS_TASK, 0, 45, TimeUnit.SECONDS),
@@ -172,6 +172,7 @@ class PeriodicTasks {
     private static final Runnable FIND_BROKEN_NODES_TASK = new RobustRunnable(findBrokenNodesTaskName) {
         @Override
         protected void dorun() {
+
         }
     };
 
