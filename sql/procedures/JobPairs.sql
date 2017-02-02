@@ -79,9 +79,9 @@ CREATE PROCEDURE RemoveJobPairDiskSize(IN _jobPairId INT)
 DROP PROCEDURE IF EXISTS GetEnqueuedJobPairsOlderThan;
 CREATE PROCEDURE GetEnqueuedJobPairsOlderThan(IN _ageInHours INT)
 	BEGIN
-		SELECT jp.job_id, jp.id, j.created, jp.status_code, HOUR(TIMEDIFF(NOW(), j.created)) AS age_in_hours
-		FROM job_pairs jp JOIN jobs j ON jp.job_id=j.id
-		WHERE age_in_hours > _ageInHours;
+		SELECT jp.id
+	  FROM job_pairs jp
+		WHERE HOUR(TIMEDIFF(NOW(), jp.queuesub_time)) >  _ageInHours AND jp.status_code = 2;
 	END //
 
 -- Updates a job pair's status
