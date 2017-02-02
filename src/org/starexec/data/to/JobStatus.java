@@ -7,7 +7,7 @@ import com.google.gson.annotations.Expose;
  * @author Eric Burns
  */
 public class JobStatus {
-	public static enum JobStatusCode {
+	public enum JobStatusCode {
 		STATUS_UNKNOWN(0),
 		STATUS_COMPLETE(1),
 		STATUS_RUNNING(2),
@@ -16,7 +16,7 @@ public class JobStatus {
 		STATUS_PROCESSING(5);		
 		private int val;
 		
-		private JobStatusCode(int val) {
+		JobStatusCode(int val) {
 			this.val = val;			
 		}				
 		
