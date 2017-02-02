@@ -4096,12 +4096,16 @@ public class Jobs {
 			if (jobs != null) {
 				for (Integer jobId : jobs) {
 					//Get the enqueued job pairs and remove them
-					List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(jobId);
-					if (jobPairsEnqueued != null) {
-						for (JobPair jp : jobPairsEnqueued) {
-							JobPairs.UpdateStatus(jp.getId(), 1);
-						}
-					}
+                    try {
+					    List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(jobId);
+
+                        for (JobPair jp : jobPairsEnqueued) {
+                            JobPairs.UpdateStatus(jp.getId(), 1);
+                        }
+                    } catch (SQLException e) {
+                        log.warn("Caught SQLException while getting enqueued pairs.");
+                    }
+
 					//Get the running job pairs and remove them
 					List<JobPair> jobPairsRunning = Jobs.getRunningPairs(jobId);
 					log.debug("JPR = " + jobPairsRunning);
