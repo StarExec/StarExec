@@ -76,6 +76,14 @@ CREATE PROCEDURE RemoveJobPairDiskSize(IN _jobPairId INT)
 		UPDATE jobpair_stage_data SET disk_size=0 WHERE jobpair_id=_jobPairId;
 	END //
 
+DROP PROCEDURE IF EXISTS GetEnqueuedJobPairsOlderThan;
+CREATE PROCEDURE GetEnqueuedJobPairsOlderThan(IN _ageInHours INT)
+	BEGIN
+		SELECT jp.job_id, jp.id, j.created, jp.status_code, HOUR(TIMEDIFF(NOW(), j.created)) AS age_in_hours
+		FROM job_pairs jp JOIN jobs j ON jp.job_id=j.id
+		WHERE age_in_hours > _ageInHours;
+	END //
+
 -- Updates a job pair's status
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS UpdatePairStatus;
