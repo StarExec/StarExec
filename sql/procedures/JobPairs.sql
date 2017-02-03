@@ -76,14 +76,20 @@ CREATE PROCEDURE RemoveJobPairDiskSize(IN _jobPairId INT)
 		UPDATE jobpair_stage_data SET disk_size=0 WHERE jobpair_id=_jobPairId;
 	END //
 
-DROP PROCEDURE IF EXISTS GetPairsEnqueuedLongerThan;
-CREATE PROCEDURE GetPairsEnqueuedLongerThan(IN _ageInHours INT)
+
+-- Gets all the nodes that could have pairs that have been enqueued longer than
+-- some given amount of time. This works by getting all the queues with pairs that
+-- have been enqueued longer than _timeThreshold and then returning all the nodes
+-- from that queue that have not run any pairs since the _timeThreshold (basically filtering out
+-- nodes that appear to be working).
+DROP PROCEDURE IF EXISTS GetNodesThatMayHavePairsEnqueuedLongerThan;
+CREATE PROCEDURE GetNodesThatMayHavePairsEnqueuedLongerThan(IN _timeThreshold INT)
   BEGIN
-	SELECT DISTINCT qa.node_id AS node_id, jp.id AS pair_id, j.id AS job_id
+	SELECT DISTINCT qa.node_id as node_id
 	FROM job_pairs jp JOIN jobs j ON jp.job_id=j.id
 	JOIN queues q ON q.id=j.queue_id
 	JOIN queue_assoc qa ON q.id=qa.queue_id
-	WHERE HOUR(TIMEDIFF(NOW(), jp.queuesub_time)) > _ageInHours 
+	WHERE MINUTE(TIMEDIFF(NOW(), jp.queuesub_time)) > _timeThreshold
 		AND jp.status_code=2
 		AND qa.node_id NOT IN 
 			-- This subquery will get all the working nodes.
@@ -91,8 +97,18 @@ CREATE PROCEDURE GetPairsEnqueuedLongerThan(IN _ageInHours INT)
 			  FROM job_pairs i_jp JOIN jobs i_j ON i_jp.job_id=i_j.id
 				JOIN queues i_q ON i_q.id=i_j.queue_id
 				JOIN queue_assoc i_qa ON i_q.id=i_qa.queue_id
-			  WHERE HOUR(TIMEDIFF(NOW(), i_jp.queuesub_time)) <= _ageInHours);
-END //
+			  WHERE MINUTE(TIMEDIFF(NOW(), i_jp.start_time)) <= _timeThreshold);
+  END //
+
+DROP PROCEDURE IF EXISTS GetPairsEnqueuedLongerThan;
+CREATE PROCEDURE GetPairsEnqueuedLongerThan(IN _timeThreshold INT)
+  BEGIN
+	SELECT DISTINCT jp.id AS pair_id, j.id AS job_id
+	FROM job_pairs jp JOIN jobs j ON jp.job_id=j.id
+	JOIN queues q ON q.id=j.queue_id
+	JOIN queue_assoc qa ON q.id=qa.queue_id
+	WHERE MINUTE(TIMEDIFF(NOW(), jp.queuesub_time)) > _timeThreshold AND jp.status_code=2;
+  END //
 
 -- Updates a job pair's status
 -- Author: Tyler Jensen

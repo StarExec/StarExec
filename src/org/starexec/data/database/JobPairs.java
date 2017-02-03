@@ -1566,19 +1566,15 @@ public class JobPairs {
 	 * @return the pair ids and their node ids and jobs ids that have been enqueued longer than the given amount of time.
 	 * @throws SQLException if something goes wrong in the database.
 	 */
-	public static PairsAndNodes getPairsEnqueuedLongerThan(int hours) throws SQLException {
+	public static ImmutableSet<PairIdJobId> getPairsEnqueuedLongerThan(int hours) throws SQLException {
 		return Common.query("{CALL GetPairsEnqueuedLongerThan(?)}"
 				, procedure -> procedure.setInt(1, hours)
 				, results -> {
-					Set<Integer> potentiallyBrokenNodes = new HashSet<>();
 					Set<PairIdJobId> brokenPairs = new HashSet<>();
 					while(results.next()) {
-						potentiallyBrokenNodes.add(results.getInt("node_id"));
 						brokenPairs.add(new PairIdJobId(results.getInt("pair_id"), results.getInt("job_id")));
 					}
-					return new PairsAndNodes(
-							ImmutableSet.copyOf(brokenPairs),
-							ImmutableSet.copyOf(potentiallyBrokenNodes));
+					return ImmutableSet.copyOf(brokenPairs);
 				});
 	}
 	

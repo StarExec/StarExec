@@ -177,12 +177,13 @@ class PeriodicTasks {
         @Override
         protected void dorun() {
             try {
-                PairsAndNodes brokenPairsAndNodes = JobPairs.getPairsEnqueuedLongerThan(R.BROKEN_PAIR_HOUR_THRESHOLD);
-                for (PairIdJobId pairAndJob : brokenPairsAndNodes.jobPairIds) {
+                ImmutableSet<PairIdJobId> brokenPairs = JobPairs.getPairsEnqueuedLongerThan(R.BROKEN_PAIR_HOUR_THRESHOLD);
+                for (PairIdJobId pairAndJob : brokenPairs) {
                     log.warn("Detected pair that has been enqueued for "+R.BROKEN_PAIR_HOUR_THRESHOLD+" hours "+
                             "without running. Pair has id "+pairAndJob.pairId+" and is in job with id "+pairAndJob.jobId);
 
                 }
+				/*
                 String message = "Nodes that broken pairs might be on:\n";
                 if (brokenPairsAndNodes.nodeIds.size() == 0) {
                     message += "Could not detect any broken nodes.";
@@ -191,6 +192,7 @@ class PeriodicTasks {
                     message += "\t"+potentiallyBrokenNodeId+"\n";
                 }
                 log.warn(message);
+				*/
             } catch (SQLException e) {
                 log.error("Database error while searching for broken pairs.");
             }
