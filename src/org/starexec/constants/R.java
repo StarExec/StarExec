@@ -213,7 +213,7 @@ public class R {
     public static String JOB_XML_SCHEMA_RELATIVE_LOC = "public/batchJobSchema.xsd";
     public static String STAREXEC_URL_PREFIX = null;						//either "https" or "http"
 	public static String JOBGRAPH_FILE_DIR = "/secure/jobgraphs";			// Location to store job graph image files. Relative to webapp root.
-	public static String SANDBOX_DIRECTORY=null;                            //the sandbox directory for doing processing / building on the head node
+	public static String SANDBOX_DIRECTORY=null;                          //the sandbox directory for doing processing / building on the head node
 
 	//Admin user info
     public static int ADMIN_USER_ID = 9;									//user id to use when administrator
@@ -288,6 +288,10 @@ public class R {
     public static int NUM_JOB_PAIRS_AT_A_TIME = 5;  // the number of job pairs from a job to submit at the same time, as we cycle through all jobs submitting pairs.
     public static int NUM_REPOSTPROCESS_AT_A_TIME = 200; // number of job pairs to re-postprocess at a time with our periodic task
     public static int DEFAULT_MAX_TIMEOUT = 259200;
+
+    // The number of hours that is considered ok for a pair to be enqueued but not running.
+    // May need to be minutes.
+    public static int BROKEN_PAIR_HOUR_THRESHOLD = 1;
 
 
     public static int NO_TYPE_PROC_ID=1;

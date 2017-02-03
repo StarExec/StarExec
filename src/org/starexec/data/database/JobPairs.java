@@ -8,8 +8,11 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.BiFunction;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.UnmodifiableIterator;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.StopWatch;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.log4j.Logger;
 import org.apache.tomcat.dbcp.pool.impl.GenericKeyedObjectPool;
 import org.starexec.constants.R;
@@ -28,6 +31,8 @@ import org.starexec.data.to.enums.JobXmlType;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PairStageProcessorTriple;
 import org.starexec.data.to.tuples.ConfigAttrMapPair;
+import org.starexec.data.to.tuples.PairIdJobId;
+import org.starexec.data.to.tuples.PairsAndNodes;
 import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
 import org.w3c.dom.Element;
@@ -1556,20 +1561,24 @@ public class JobPairs {
 	}
 
 	/**
-	 * Gets pair ids that have been enqueued longer than a given number of hours.
-	 * @param hours if a pair has been enqueued longer than this number of hours it will be returned.
-	 * @return the pair ids that have been enqueued longer than the given amount of time.
+	 * Gets pair ids, node ids, and job ids, that have been enqueued longer than a given number of hours.
+	 * @param hours if a pair has been enqueued longer than this number of hours it will be returned with its node and job ids.
+	 * @return the pair ids and their node ids and jobs ids that have been enqueued longer than the given amount of time.
 	 * @throws SQLException if something goes wrong in the database.
 	 */
-	public static List<Integer> getPairsEnqueuedLongerThan(int hours) throws SQLException {
+	public static PairsAndNodes getPairsEnqueuedLongerThan(int hours) throws SQLException {
 		return Common.query("{CALL GetPairsEnqueuedLongerThan(?)}"
 				, procedure -> procedure.setInt(1, hours)
 				, results -> {
-					List<Integer> pairsEnqueuedLongerThanGivenTime = new ArrayList<>();
+					Set<Integer> potentiallyBrokenNodes = new HashSet<>();
+					Set<PairIdJobId> brokenPairs = new HashSet<>();
 					while(results.next()) {
-						pairsEnqueuedLongerThanGivenTime.add(results.getInt("pair_id"));
+						potentiallyBrokenNodes.add(results.getInt("node_id"));
+						brokenPairs.add(new PairIdJobId(results.getInt("pair_id"), results.getInt("job_id")));
 					}
-					return pairsEnqueuedLongerThanGivenTime;
+					return new PairsAndNodes(
+							ImmutableSet.copyOf(brokenPairs),
+							ImmutableSet.copyOf(potentiallyBrokenNodes));
 				});
 	}
 	

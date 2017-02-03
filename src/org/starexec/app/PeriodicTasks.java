@@ -1,11 +1,14 @@
 package org.starexec.app;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.*;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.User;
+import org.starexec.data.to.tuples.PairIdJobId;
+import org.starexec.data.to.tuples.PairsAndNodes;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.jobs.JobManager;
 import org.starexec.jobs.ProcessingManager;
@@ -41,6 +44,7 @@ class PeriodicTasks {
         FIND_BROKEN_JOB_PAIRS(true, FIND_BROKEN_JOB_PAIRS_TASK, 0, 3, TimeUnit.HOURS),
         CLEAR_TEMPORARY_FILES(false, CLEAR_TEMPORARY_FILES_TASK, 0, 3, TimeUnit.HOURS),
         CLEAR_JOB_LOG(false, CLEAR_JOB_LOG_TASK, 0, 7, TimeUnit.DAYS),
+        FIND_BROKEN_NODES(true, FIND_BROKEN_NODES_TASK, 0, 6, TimeUnit.HOURS),
 	    CLEAR_JOB_SCRIPTS(false, CLEAR_JOB_SCRIPTS_TASK, 0, 12, TimeUnit.HOURS),
 	    CLEAN_DATABASE(false, CLEAN_DATABASE_TASK, 0, 7, TimeUnit.DAYS),
 	    CREATE_WEEKLY_REPORTS(false, CREATE_WEEKLY_REPORTS_TASK, 0, 1, TimeUnit.DAYS),
@@ -172,7 +176,24 @@ class PeriodicTasks {
     private static final Runnable FIND_BROKEN_NODES_TASK = new RobustRunnable(findBrokenNodesTaskName) {
         @Override
         protected void dorun() {
+            try {
+                PairsAndNodes brokenPairsAndNodes = JobPairs.getPairsEnqueuedLongerThan(R.BROKEN_PAIR_HOUR_THRESHOLD);
+                for (PairIdJobId pairAndJob : brokenPairsAndNodes.jobPairIds) {
+                    log.warn("Detected pair that has been enqueued for "+R.BROKEN_PAIR_HOUR_THRESHOLD+" hours "+
+                            "without running. Pair has id "+pairAndJob.pairId+" and is in job with id "+pairAndJob.jobId);
 
+                }
+                String message = "Nodes that broken pairs might be on:\n";
+                if (brokenPairsAndNodes.nodeIds.size() == 0) {
+                    message += "Could not detect any broken nodes.";
+                }
+                for (Integer potentiallyBrokenNodeId : brokenPairsAndNodes.nodeIds) {
+                    message += "\t"+potentiallyBrokenNodeId+"\n";
+                }
+                log.warn(message);
+            } catch (SQLException e) {
+                log.error("Database error while searching for broken pairs.");
+            }
         }
     };
 
