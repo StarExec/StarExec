@@ -1,0 +1,5 @@
+@import "properties";
+
+@function stylesheet_url($path) {
+	@return url($rootUrl + "css/" + $path)
+}

@@ -1,0 +1,98 @@
+.processing {
+	margin-right: 8px;
+	margin-bottom: -4px;
+}
+
+.qtip .processing {
+	margin-top: 45px;
+	text-align: center;
+}
+
+select {
+	width: 95%;
+}
+
+table {
+	table-layout: fixed;
+	width: 100%;
+	max-width: 100%;
+	overflow-x: scroll;
+	word-wrap: break-word;
+
+	&.tooltipTable {
+		table-layout: auto;
+		word-wrap: normal;
+	}
+}
+
+#content {
+	tbody {
+		tr {
+			&:not(.row_selected):not(.noHover):hover {
+				background-color: #ae0000;
+			}
+
+			.dataTables_empty:hover {
+				background-color: #222222;
+			}
+		}
+
+		td {
+			padding: 10px;
+		}
+	}
+
+	thead {
+		th {
+			padding: 10px;
+		}
+
+		tr {
+			background-color: #111111;
+		}
+	}
+}
+
+tr {
+	&.odd {
+		background-color: #222222;
+	}
+
+	&.even {
+		background-color: #111111;
+	}
+}
+
+tbody tr.row_selected {
+	background-color: #dc6f04 !important;
+}
+
+.bottom {
+	border-top: 1px solid #111111;
+	padding-top: 10px;
+}
+
+.clear {
+	clear: both;
+}
+
+.dataTables_empty {
+	text-align: center;
+}
+
+tbody tr.row_selected .dataTables_empty {
+	background-color: #222222;
+}
+
+td {
+	&.group {
+		background-color: #d1cfd0;
+		border-bottom: 2px solid #A19B9E;
+		border-top: 2px solid #A19B9E;
+	}
+
+	&.details {
+		background-color: #d1cfd0;
+		border: 2px solid #A19B9E;
+	}
+}
