@@ -120,7 +120,7 @@
 	<target name="css">
 		<copy file="${css-input-dir}/_properties.scss.template" tofile="${css-input-dir}/_properties.scss" />
 		<replaceregexp file="${css-input-dir}/_properties.scss" match="\$\{appname\}" replace="${appname}" />
-		<exec executable="sass">
+		<exec executable="sass" failonerror="true">
 			<arg line="--style compressed" />
 			<arg line="--update ${css-input-dir}:${css-output-dir}" />
 		</exec>
