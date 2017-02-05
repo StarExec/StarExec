@@ -1,0 +1,52 @@
+// Message Styles
+
+@import "colors";
+
+.message {
+	color: $text-main-color;
+	height: 40px;
+	padding: 8px;
+	font-weight: bold;
+	position: fixed;
+	display: block;
+	line-height: 35px;
+	width: 100%;
+	z-index: 998;
+	top: 0px;
+
+	&.error {
+		background-color: $accent-red;
+	}
+
+	&.warn {
+		background-color: $accent-orange;
+	}
+
+	&.info {
+		background-color: $accent-blue;
+	}
+
+	&.success {
+		background-color: $accent-green;
+	}
+
+	.exit {
+		cursor: pointer;
+		position: absolute;
+		top: -3px;
+		right: 23px;
+		font-weight: bold;
+		z-index: 999;
+	}
+
+	img:first-child {
+		width: 28px;
+		height: 28px;
+		margin-right: 16px;
+		margin-top: -14px;
+		position: relative;
+		top: 50%;
+		float: left;
+		z-index: 999;
+	}
+}

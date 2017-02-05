@@ -1,0 +1,45 @@
+#pageHeader {
+	height: 75px;
+	margin-bottom: 10px;
+
+	img {
+		width: 300px;
+		height: 70px;
+	}
+
+	h1 {
+		font-size: 60px;
+		display: inline;
+		margin-left: 10px;
+		position: relative;
+		bottom: 15px;
+		text-align: center;
+	}
+
+	@include mobile {
+		width: inherit;
+	}
+
+	@import "nav"
+}
+
+#starexecLogoWrapper {
+	float: left;
+
+	@include mobile {
+		float: none;
+		width: inherit;
+		text-align: center;
+
+		a {
+			display: inline;
+		}
+	}
+}
+
+@include mobile {
+	#mainHeaderWrapper {
+		text-align: center;
+		width: inherit;
+	}
+}

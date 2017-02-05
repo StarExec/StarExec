@@ -1,4 +1,11 @@
-@import "helper";
+@import "global/helper";
 @import "global/html5";
-@import "global/master";
+@import "global/elements";
+@import "global/common";
+@import "global/message";
+@import "global/page";
+@import "global/pageHeader";
+@import "global/footer";
+@import "global/support";
+@import "global/mobile";
 @import "global/dataTable";
