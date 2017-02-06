@@ -7,18 +7,18 @@ import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Space;
+import org.starexec.logger.StarLogger;
 
 /**
  * Handles all database interaction for communities (closely tied with the Spaces class)
  * @see Spaces
  */
 public class Communities {
-	private static final Logger log = Logger.getLogger(Communities.class);
+	private static final StarLogger log = StarLogger.getLogger(Communities.class);
 	
 	/**
 	 * @return A list of child spaces belonging to the root space (community spaces)

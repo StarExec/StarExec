@@ -37,12 +37,12 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.LineIterator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
-import org.apache.log4j.Logger;
 
 import org.starexec.app.RESTHelpers;
 import org.starexec.constants.R;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.to.enums.Primitive;
+import org.starexec.logger.StarLogger;
 import org.starexec.test.TestUtil;
 
 /**
@@ -52,8 +52,7 @@ import org.starexec.test.TestUtil;
  *
  */
 public class Util {
-    private static final Logger log = Logger.getLogger(Util.class);
-    private static final LogUtil logUtil = new LogUtil(log);
+    private static final StarLogger log = StarLogger.getLogger(Util.class);
 
     protected static final ExecutorService threadPool = Executors.newCachedThreadPool();
 
@@ -103,7 +102,7 @@ public class Util {
     public static Optional<String> readFileLimited(File f, int lineLimit) throws IOException {
 		final String methodName = "readFileLimited";
 		LineIterator lineItr = null;
-		logUtil.debug(methodName, "calling readFileLimited");
+		log.debug(methodName, "calling readFileLimited");
 		try {
 			// Set limit to max if it's less than 0 (anything less than 0 inclusive indicates no limit)
 			lineLimit = Math.min(lineLimit, Integer.MAX_VALUE);
@@ -133,11 +132,11 @@ public class Util {
 				return Optional.of(sb.toString());
 			} else {
 				// If the file doesn't exist...
-				logUtil.warn(methodName, "Could not find file to open: " + f.getAbsolutePath());
+				log.warn(methodName, "Could not find file to open: " + f.getAbsolutePath());
 				return Optional.empty();
 			}
 		} catch (IOException e) {
-			logUtil.error(methodName, "Caught IOException with inputs: "
+			log.error(methodName, "Caught IOException with inputs: "
 					+"\n\tFile f: "+f.getAbsolutePath()
 					+"\n\tint lineLimit: "+lineLimit);
 			throw e;
@@ -964,7 +963,7 @@ public class Util {
                 primitiveNameInLink = "pair";
                 break;
             default:
-                logUtil.error(methodName, "Threw and IllegalArgumentException because the input type does not have a details page.");
+                log.error(methodName, "Threw and IllegalArgumentException because the input type does not have a details page.");
                 throw new IllegalArgumentException("Util.getPrimitiveDetailsLink does not support the given enum type.");
 
         }

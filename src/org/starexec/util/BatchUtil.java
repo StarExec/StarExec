@@ -18,7 +18,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Permissions;
@@ -34,6 +33,7 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.DOMHelper;
 import org.starexec.util.Util;
 import org.starexec.servlets.BenchmarkUploader;
@@ -51,7 +51,7 @@ import org.xml.sax.SAXException;
  * 
  */
 public class BatchUtil {
-	private static final Logger log = Logger.getLogger(BatchUtil.class);
+	private static final StarLogger log = StarLogger.getLogger(BatchUtil.class);
 	
 	private Document doc = null;
 	private String errorMessage = "";//this will be used to given information to user about failures in validation

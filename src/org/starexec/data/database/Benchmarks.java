@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import java.util.*;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
@@ -20,6 +19,7 @@ import org.starexec.data.to.Processor;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.compare.BenchmarkComparator;
 import org.starexec.exceptions.StarExecException;
+import org.starexec.logger.StarLogger;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.DataTablesQuery;
 import org.starexec.util.NamedParameterStatement;
@@ -32,8 +32,8 @@ import org.starexec.util.Validator;
  * Handles all database interaction for benchmarks.
  */
 public class Benchmarks {
-	private static final Logger log = Logger.getLogger(Benchmarks.class);
-	
+	private static final StarLogger log = StarLogger.getLogger(Benchmarks.class);
+
 	/**
 	 * Deletes a benchmark and permanently removes it from the database. This is NOT
 	 * the normal procedure for deleting a benchmark. It is used for testing. Calling "delete"

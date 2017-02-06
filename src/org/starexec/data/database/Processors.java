@@ -9,16 +9,16 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
+import org.starexec.logger.StarLogger;
 
 /**
  * Handles all database interaction for bench, pre and post processors
  */
 public class Processors {
-	private static final Logger log = Logger.getLogger(Processors.class);
+	private static final StarLogger log = StarLogger.getLogger(Processors.class);
 	
 	/**
 	 * Given a result set where the current row points to a  processor, return the processor

@@ -14,20 +14,20 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.mail.DefaultAuthenticator;
 import org.apache.commons.mail.Email;
 import org.apache.commons.mail.SimpleEmail;
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Reports;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.Report;
 import org.starexec.data.to.User;
+import org.starexec.logger.StarLogger;
 import org.starexec.servlets.PasswordReset;
 
 /**
  * Contains utilities for sending mail from the local SMTP server
  */
 public class Mail {
-	private static final Logger log = Logger.getLogger(Mail.class);
+	private static final StarLogger log = StarLogger.getLogger(Mail.class);
 	public static final String EMAIL_CODE = "conf";			// Param string for email verification codes
 	public static final String CHANGE_EMAIL_CODE = "changeEmail";
 	public static final String LEADER_RESPONSE = "lead";	// Param string for leader response decisions	

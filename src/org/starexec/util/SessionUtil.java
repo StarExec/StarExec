@@ -5,13 +5,13 @@ import java.util.HashMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.User;
+import org.starexec.logger.StarLogger;
 
 /**
  * Contains handy methods for accessing data within a user's session
@@ -19,7 +19,7 @@ import org.starexec.data.to.User;
  */
 
 public class SessionUtil {	
-	private static final Logger log = Logger.getLogger(SessionUtil.class);
+	private static final StarLogger log = StarLogger.getLogger(SessionUtil.class);
 	public static final String USER = "user";	// The string we store the user's User object under
 	public static final String PERMISSION_CACHE = "perm";	// The string we store the user's permission cache object under
 	private static User publicUser = null;

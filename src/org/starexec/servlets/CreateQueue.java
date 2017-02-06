@@ -11,13 +11,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Queues;
 import org.starexec.data.security.QueueSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Queue;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -29,7 +29,7 @@ import org.starexec.util.Validator;
  */
 @SuppressWarnings("serial")
 public class CreateQueue extends HttpServlet {		
-	private static final Logger log = Logger.getLogger(CreateQueue.class);	
+	private static final StarLogger log = StarLogger.getLogger(CreateQueue.class);
 
 	// Request attributes
 	private static final String name = "name";

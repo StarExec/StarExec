@@ -11,7 +11,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -47,6 +46,7 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
 import org.starexec.jobs.JobManager;
+import org.starexec.logger.StarLogger;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.servlets.ProcessorManager;
 import org.starexec.test.TestUtil;
@@ -67,7 +67,7 @@ import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
  */
 
 public class ResourceLoader {
-	private final Logger log = Logger.getLogger(ResourceLoader.class);	
+	private final StarLogger log = StarLogger.getLogger(ResourceLoader.class);
 	
 	// this class keeps track of all the primitives it creates. Calling deleteAllPrimitives
 	// will delete all of these objects

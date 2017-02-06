@@ -9,12 +9,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Requests;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.User;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.Mail;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -29,7 +29,7 @@ import org.starexec.util.Validator;
 
 @SuppressWarnings("serial")
 public class PasswordReset extends HttpServlet {
-	private static final Logger log = Logger.getLogger(PasswordReset.class);
+	private static final StarLogger log = StarLogger.getLogger(PasswordReset.class);
 	public static final String PASS_RESET = "reset";		// Param string for password reset codes
 	
 	/**

@@ -2,7 +2,6 @@ package org.starexec.app;
 
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.time.StopWatch;
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.*;
 import org.starexec.data.to.Status;
@@ -12,6 +11,7 @@ import org.starexec.data.to.tuples.PairsAndNodes;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.jobs.JobManager;
 import org.starexec.jobs.ProcessingManager;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.Mail;
 import org.starexec.util.RobustRunnable;
 import org.starexec.util.Util;
@@ -33,7 +33,7 @@ import java.util.concurrent.TimeUnit;
  */
 class PeriodicTasks {
 
-    private static Logger log = Logger.getLogger(PeriodicTasks.class);
+    private static StarLogger log = StarLogger.getLogger(PeriodicTasks.class);
 
     // Enum constants of all the periodic tasks.
     enum PeriodicTask {

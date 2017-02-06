@@ -1,9 +1,10 @@
 package org.starexec.util;
 
-import org.apache.log4j.Logger;
+
+import org.starexec.logger.StarLogger;
 
 public abstract class RobustRunnable implements Runnable {
-    private static final Logger log = Logger.getLogger(RobustRunnable.class);	 
+    private static final StarLogger log = StarLogger.getLogger(RobustRunnable.class);
     
     protected String name;
 

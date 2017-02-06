@@ -7,10 +7,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import jdk.nashorn.internal.codegen.CompilerConstants;
-import org.apache.log4j.Logger;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
 import org.starexec.constants.R;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.Util;
 
@@ -20,7 +20,7 @@ import org.starexec.util.Util;
  * data pool of available connections to the MySql database.
  */
 public class Common {	
-	private static final Logger log = Logger.getLogger(Common.class);
+	private static final StarLogger log = StarLogger.getLogger(Common.class);
 	private static DataSource dataPool = null;		
 	
 	private static Integer connectionsOpened = 0;

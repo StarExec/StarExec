@@ -5,13 +5,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.to.Queue;
+import org.starexec.logger.StarLogger;
 
 public class ClearCacheManager {
-	private static final Logger log = Logger.getLogger(ClearCacheManager.class);
+	private static final StarLogger log = StarLogger.getLogger(ClearCacheManager.class);
 
 	private static String scriptTemplate=null;
 	protected static void initScriptTemplateIf() {

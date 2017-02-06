@@ -2,13 +2,13 @@ package org.starexec.data.to.compare;
 
 import java.util.Comparator;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.logger.StarLogger;
 
 public class JobPairComparator implements Comparator<JobPair> {
-	protected static final Logger log = Logger.getLogger(JobPairComparator.class);	
+	protected static final StarLogger log = StarLogger.getLogger(JobPairComparator.class);
 
 	private int column; //will specify which field we are using to sort the job pairs
 	private int stageNumber;

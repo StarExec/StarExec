@@ -18,13 +18,13 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.to.*;
 import org.starexec.exceptions.StarExecException;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.DataTablesQuery;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
@@ -34,7 +34,7 @@ import org.starexec.util.dataStructures.TreeNode;
  * Handles all database interaction for spaces
  */
 public class Spaces {
-	private static final Logger log = Logger.getLogger(Spaces.class);
+	private static final StarLogger log = StarLogger.getLogger(Spaces.class);
 	
 	/**
 	 * Adds a new space to the system. This action adds the space, adds a

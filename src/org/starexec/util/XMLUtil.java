@@ -17,9 +17,9 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.logger.StarLogger;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -28,7 +28,7 @@ import org.xml.sax.SAXException;
  * @author Eric
  */
 public class XMLUtil {
-	private static Logger log = Logger.getLogger(XMLUtil.class);
+	private static StarLogger log = StarLogger.getLogger(XMLUtil.class);
 	
 	/**
 	 * Validates an XML document using a schema

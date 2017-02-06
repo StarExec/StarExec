@@ -1,106 +1,44 @@
 package org.starexec.app;
 
-import org.apache.catalina.Session;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.apache.commons.lang3.tuple.Triple;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-
-import java.sql.SQLException;
+import com.google.gson.*;
+import com.google.gson.annotations.Expose;
+import org.apache.commons.io.FileUtils;
+import org.starexec.constants.R;
+import org.starexec.constants.R.DefaultSettingAttribute;
+import org.starexec.data.database.*;
+import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
+import org.starexec.data.security.*;
+import org.starexec.data.to.*;
+import org.starexec.data.to.Website.WebsiteType;
+import org.starexec.data.to.enums.Primitive;
+import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.exceptions.StarExecDatabaseException;
+import org.starexec.exceptions.StarExecException;
+import org.starexec.jobs.ClearCacheManager;
+import org.starexec.jobs.JobManager;
+import org.starexec.logger.StarLevel;
+import org.starexec.logger.StarLogger;
+import org.starexec.test.integration.TestManager;
+import org.starexec.test.integration.TestResult;
+import org.starexec.test.integration.TestSequence;
+import org.starexec.util.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.swing.text.html.Option;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
-import org.starexec.constants.R;
-import org.starexec.constants.R.DefaultSettingAttribute;
-import org.starexec.data.database.AnonymousLinks;
-import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Cluster;
-import org.starexec.data.database.Communities;
-import org.starexec.data.database.JobPairs;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Processors;
-import org.starexec.data.database.Queues;
-import org.starexec.data.database.Requests;
-import org.starexec.data.database.Settings;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Statistics;
-import org.starexec.data.database.Uploads;
-import org.starexec.data.database.Users;
-import org.starexec.data.database.Websites;
-import org.starexec.data.security.BenchmarkSecurity;
-import org.starexec.data.security.GeneralSecurity;
-import org.starexec.data.security.JobSecurity;
-import org.starexec.data.security.ProcessorSecurity;
-import org.starexec.data.security.QueueSecurity;
-import org.starexec.data.security.SettingSecurity;
-import org.starexec.data.security.ValidatorStatusCode;
-import org.starexec.data.security.WebsiteSecurity;
-import org.starexec.data.security.SolverSecurity;
-import org.starexec.data.security.SpaceSecurity;
-import org.starexec.data.security.UploadSecurity;
-import org.starexec.data.security.UserSecurity;
-import org.starexec.data.to.*;
-import org.starexec.data.to.enums.Primitive;
-import org.starexec.data.to.pipelines.JoblineStage;
-import org.starexec.data.to.tuples.TimePair;
-import org.starexec.exceptions.StarExecDatabaseException;
-import org.starexec.exceptions.StarExecException;
-import org.starexec.exceptions.StarExecSecurityException;
-import org.starexec.jobs.ClearCacheManager;
-import org.starexec.jobs.JobManager;
-import org.starexec.data.to.Website.WebsiteType;
-import org.starexec.test.integration.TestManager;
-import org.starexec.test.integration.TestResult;
-import org.starexec.test.integration.TestSequence;
-import org.starexec.util.LoggingManager;
-import org.starexec.util.DataTablesQuery;
-import org.starexec.util.LogUtil;
-import org.starexec.util.Mail;
-import org.starexec.util.SessionUtil;
-import org.starexec.util.Util;
-import org.starexec.util.Validator;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.annotations.Expose;
+import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * Class which handles all RESTful web service requests.
  */
 @Path("")
 public class RESTServices {	
-	private static final Logger log = Logger.getLogger(RESTServices.class);			
-	private static final LogUtil logUtil = new LogUtil(log);
+	private static final StarLogger log = StarLogger.getLogger(RESTServices.class);
 	private static Gson gson = new Gson();
 	private static Gson limitGson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
@@ -179,12 +117,12 @@ public class RESTServices {
 			@Context HttpServletRequest request) {					
 		final String methodName = "getJobSpaces";
 		try {
-			logUtil.entry( methodName );
+			log.entry( methodName );
 			Optional<Integer> potentialJobId = Optional.empty();
 			try {
 				potentialJobId = AnonymousLinks.getIdOfJobAssociatedWithLink( anonymousLinkUuid );
 			} catch ( SQLException e ) {
-				logUtil.error( methodName, "Caught an SQLException while trying to retrieve a job id from the anonymous links table in the database." );
+				log.error( methodName, "Caught an SQLException while trying to retrieve a job id from the anonymous links table in the database." );
 				return gson.toJson( ERROR_DATABASE );
 			}
 			 
@@ -200,7 +138,7 @@ public class RESTServices {
 			}
 		} catch (RuntimeException e) {
 			// Catch all runtime exceptions so we can debug them
-			logUtil.error( methodName, "Caught a runtime exception: ",e);
+			log.error( methodName, "Caught a runtime exception: ",e);
 			throw e;
 		}
 	}
@@ -407,7 +345,7 @@ public class RESTServices {
 	public String getBenchmarkContent(@PathParam("id") int id, @QueryParam("limit") int limit, @Context HttpServletRequest request) {
 		final String methodName = "getBenchmarkContent";
 
-		logUtil.entry(methodName);
+		log.entry(methodName);
 		int userId = SessionUtil.getUserId(request);
 
 		final String notAvailableMessage = "not available";
@@ -423,7 +361,7 @@ public class RESTServices {
 				return notAvailableMessage;
 			}
 		} catch (IOException e) {
-			logUtil.warn(methodName, "Caught IOException.");
+			log.warn(methodName, "Caught IOException.");
 			return "Internal Error: not available";
 		}
 	}
@@ -548,7 +486,7 @@ public class RESTServices {
 				return "not available";
 			}
 		} catch (IOException e) {
-			logUtil.warn(methodName, "Caught IOException while trying to get jobpair stdout.");
+			log.warn(methodName, "Caught IOException while trying to get jobpair stdout.");
 			return "not available";
 		}
 	}
@@ -764,8 +702,8 @@ public class RESTServices {
 		int jobId = Spaces.getJobSpace(jobSpaceId).getJobId();
 
 		final String method = "getFinishedJobPairsForMatrix";
-		logUtil.entry(method);
-		logUtil.debug(method, "Inputs: jobId="+jobId+" jobSpaceId="+jobSpaceId+" stageId="+stageNumber);
+		log.entry(method);
+		log.debug(method, "Inputs: jobId="+jobId+" jobSpaceId="+jobSpaceId+" stageId="+stageNumber);
 
 
 		Map<String, SimpleMatrixElement> benchSolverConfigElementMap = new HashMap<String, SimpleMatrixElement>();
@@ -799,7 +737,7 @@ public class RESTServices {
 		boolean isComplete = Jobs.isJobComplete(jobId);
 		MatrixJson matrixData = new MatrixJson(isComplete, benchSolverConfigElementMap);
 
-		logUtil.exit(method);
+		log.exit(method);
 		return gson.toJson(matrixData);
 	}
 
@@ -952,7 +890,7 @@ public class RESTServices {
 
 		final String methodName = "getJobPairsPaginatedWithAnonymousLink";
 		try {
-			logUtil.entry( methodName );
+			log.entry( methodName );
 			
 			ValidatorStatusCode status = JobSecurity.isAnonymousLinkAssociatedWithJobSpace(anonymousLinkUuid, jobSpaceId);
 
@@ -966,7 +904,7 @@ public class RESTServices {
 					stageNumber, primitivesToAnonymize, request );
 		} catch (RuntimeException e) {
 			// Catch all runtime exceptions so we can debug them
-			logUtil.error( methodName, "Caught a runtime exception: ", e);
+			log.error( methodName, "Caught a runtime exception: ", e);
 			throw e;
 		}
 	}
@@ -1021,7 +959,7 @@ public class RESTServices {
 			@Context HttpServletRequest request) {			
 
 		final String methodName = "getSpaceOverviewGraph";
-		logUtil.entry( methodName );
+		log.entry( methodName );
 
 		ValidatorStatusCode status = JobSecurity.isAnonymousLinkAssociatedWithJobSpace( anonymousLinkUuid, jobSpaceId );
 		if ( !status.isSuccess() ) {
@@ -1066,7 +1004,7 @@ public class RESTServices {
 		try {
 			setJobAsPriority(jobId, true);
 		} catch (SQLException e) {
-			logUtil.logException(methodName, "Caught exception while trying to set job priority to high.", e);
+			log.error(methodName, "Caught exception while trying to set job priority to high.", e);
 			return gson.toJson(ERROR_DATABASE);
 		}
 		return gson.toJson(status);
@@ -1085,7 +1023,7 @@ public class RESTServices {
 		try {
 			setJobAsPriority(jobId, false);
 		} catch (SQLException e) {
-			logUtil.logException(methodName, "Caught exception while trying to set job priority to low.", e);
+			log.error(methodName, "Caught exception while trying to set job priority to low.", e);
 			return gson.toJson(ERROR_DATABASE);
 		}
 		return gson.toJson(status);
@@ -1186,8 +1124,8 @@ public class RESTServices {
 
 		final String methodName = "getAnonymousSolverComparisonGraph";
 		try {
-			logUtil.entry( methodName );
-			logUtil.debug( methodName, "Got request to get an anonymous solver comparison graph with parameters:\n"+
+			log.entry( methodName );
+			log.debug( methodName, "Got request to get an anonymous solver comparison graph with parameters:\n"+
 					"\tanonymousLinkUuid: "+anonymousLinkUuid+"\n"+
 					"\tstageNumber: "+stageNumber+"\n"+
 					"\tjobSpaceId: "+jobSpaceId+"\n"+
@@ -1205,7 +1143,7 @@ public class RESTServices {
 			return RESTHelpers.getSolverComparisonGraphJson(
 					jobSpaceId, config1, config2, edgeLengthInPixels, axisColor, stageNumber, primitivesToAnonymize );
 		} catch ( RuntimeException e ) {
-			logUtil.error( methodName, "Caught a runtime exception: ",e);
+			log.error( methodName, "Caught a runtime exception: ",e);
 			return gson.toJson( ERROR_INTERNAL_SERVER );
 		} 
 	}
@@ -1230,8 +1168,8 @@ public class RESTServices {
 			@PathParam("config1") int config1, @PathParam("config2") int config2, 
 			@PathParam("edgeLengthInPixels") int edgeLengthInPixels,@PathParam("axisColor") String axisColor, @Context HttpServletRequest request) {		
 		final String methodName = "getSolverComparisonGraph";
-		logUtil.entry(methodName);
-		logUtil.debug( methodName, "Got request to get an anonymous solver comparison graph with parameters:\n"+
+		log.entry(methodName);
+		log.debug( methodName, "Got request to get an anonymous solver comparison graph with parameters:\n"+
 				"\tstageNumber: "+stageNumber+"\n"+
 				"\tjobSpaceId: "+jobSpaceId+"\n"+
 				"\tconfig1: "+config1+"\n"+
@@ -1289,7 +1227,7 @@ public class RESTServices {
 			}
 		} catch (RuntimeException e) {
 			// Catch all runtime exceptions so we can debug them
-			logUtil.error( methodName, "Caught a runtime exception: ", e );
+			log.error( methodName, "Caught a runtime exception: ", e );
 			throw e;
 		}
 	}
@@ -1475,8 +1413,8 @@ public class RESTServices {
 
 		final String methodName = "getAnonymousLinkForPrimitive";
 		try {
-			logUtil.entry( methodName );
-			logUtil.debug( methodName, "primitiveType = " + primitiveType + ", primitiveId = " + primitiveId + 
+			log.entry( methodName );
+			log.debug( methodName, "primitiveType = " + primitiveType + ", primitiveId = " + primitiveId + 
 					", primitivesToAnonymizeName = " + primitivesToAnonymizeName );
 
 			int userId = SessionUtil.getUserId(request);
@@ -1502,7 +1440,7 @@ public class RESTServices {
 		} catch ( SQLException e ) {
 			return gson.toJson( new ValidatorStatusCode( false, e.getMessage() ));	
 		} catch ( RuntimeException e) {
-			logUtil.error( methodName, e.getMessage(), e);
+			log.error( methodName, e.getMessage(), e);
 			return gson.toJson( new ValidatorStatusCode( false, e.getMessage() ));	
 		}
 	}
@@ -1565,8 +1503,8 @@ public class RESTServices {
 	@Produces("application/json")
 	public String editJobName(@PathParam("jobId") int jobId, @PathParam("newName") String newName, @Context HttpServletRequest request) {
 		final String method = "editJobName";
-		logUtil.entry(method);
-		logUtil.debug(method, "Editing job name for job with id="+jobId+" where the new name="+newName);
+		log.entry(method);
+		log.debug(method, "Editing job name for job with id="+jobId+" where the new name="+newName);
 
 		int userId = SessionUtil.getUserId(request);
 
@@ -1582,7 +1520,7 @@ public class RESTServices {
 			status = new ValidatorStatusCode(false, "You do not have permission to change this job's name.");	
 		}
 
-		logUtil.exit(method);
+		log.exit(method);
 		return gson.toJson(status);
 	}
 	/**
@@ -1598,8 +1536,8 @@ public class RESTServices {
 	public String editJobDescription(@PathParam("jobId") int jobId, @PathParam("newDescription") String newDescription, 
 			                  @Context HttpServletRequest request) {
 		final String method = "editJobDescription";
-		logUtil.entry(method);
-		logUtil.debug(method, "Editing job description for job with id="+jobId+" where the new description="+newDescription);
+		log.entry(method);
+		log.debug(method, "Editing job description for job with id="+jobId+" where the new description="+newDescription);
 
 		int userId = SessionUtil.getUserId(request);
 
@@ -1615,7 +1553,7 @@ public class RESTServices {
 			status = new ValidatorStatusCode(false, "You do not have permission to change this job's description.");	
 		}
 
-		logUtil.exit(method);
+		log.exit(method);
 		return gson.toJson(status);
 	}
 
@@ -2075,7 +2013,7 @@ public class RESTServices {
 				return gson.toJson(status);
 			}
 		} catch (SQLException e) {
-			logUtil.logException(methodName, e);
+			log.error(methodName, e);
 			return gson.toJson(ERROR_DATABASE);
 		}
 		
@@ -2118,7 +2056,7 @@ public class RESTServices {
 			return gson.toJson(new ValidatorStatusCode(true, "Default Benchmark Removed From Profile"));
 
 		} catch (SQLException e) {
-			logUtil.error(methodName, "Database error occurred: ", e);
+			log.error(methodName, "Database error occurred: ", e);
 			return gson.toJson(ERROR_DATABASE);
 		}
 	}
@@ -2160,7 +2098,7 @@ public class RESTServices {
 				return gson.toJson(status);
 			}
 		} catch (SQLException e) {
-			logUtil.logException(methodName, e);
+			log.error(methodName, e);
 			return gson.toJson(ERROR_DATABASE);
 		}
 		
@@ -4139,7 +4077,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String copySubSpaceToSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request, @Context HttpServletResponse response) {
 		final String methodName = "copySubSpaceToSpace";
-		logUtil.entry(methodName);
+		log.entry(methodName);
 		// Make sure we have a list of spaces to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
 		if(null == request.getParameterValues("selectedIds[]") 
 				|| !Util.paramExists("copyHierarchy", request)
@@ -4151,7 +4089,7 @@ public class RESTServices {
 		int requestUserId = SessionUtil.getUserId(request);
 		
 		boolean copyPrimitives = Boolean.parseBoolean(request.getParameter("copyPrimitives"));
-		logUtil.debug(methodName, "copyPrimitives = " + copyPrimitives);
+		log.debug(methodName, "copyPrimitives = " + copyPrimitives);
 		
 		boolean copyHierarchy = Boolean.parseBoolean(request.getParameter("copyHierarchy"));
 		
@@ -4517,19 +4455,19 @@ public class RESTServices {
 		}
 		boolean success=false;
 		if (level.equalsIgnoreCase("trace")) {
-			success=LoggingManager.setLoggingLevelForClass(Level.TRACE,className);
+			success=LoggingManager.setLoggingLevelForClass(StarLevel.TRACE,className);
 		} else if (level.equalsIgnoreCase("debug")) {
-			success=LoggingManager.setLoggingLevelForClass(Level.DEBUG,className);
+			success=LoggingManager.setLoggingLevelForClass(StarLevel.DEBUG,className);
 		} else if (level.equalsIgnoreCase("info")) {
-			success=LoggingManager.setLoggingLevelForClass(Level.INFO,className);
+			success=LoggingManager.setLoggingLevelForClass(StarLevel.INFO,className);
 		} else if (level.equalsIgnoreCase("error")) {
-			success=LoggingManager.setLoggingLevelForClass(Level.ERROR,className);
+			success=LoggingManager.setLoggingLevelForClass(StarLevel.ERROR,className);
 		} else if(level.equalsIgnoreCase("fatal")) {
-			success=LoggingManager.setLoggingLevelForClass(Level.FATAL,className);
+			success=LoggingManager.setLoggingLevelForClass(StarLevel.FATAL,className);
 		} else if (level.equalsIgnoreCase("off")) {
-			success=LoggingManager.setLoggingLevelForClass(Level.OFF,className);
+			success=LoggingManager.setLoggingLevelForClass(StarLevel.OFF,className);
 		} else if (level.equalsIgnoreCase("warn")) {
-			success=LoggingManager.setLoggingLevelForClass(Level.WARN,className);
+			success=LoggingManager.setLoggingLevelForClass(StarLevel.WARN,className);
 		} else if (level.equalsIgnoreCase("clear")) {
 			success=LoggingManager.setLoggingLevelForClass(null,className);
 		} else {
@@ -4558,24 +4496,24 @@ public class RESTServices {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 
-		Level level = null; 
+		StarLevel level = null; 
 
 		boolean success=false;
 		log.debug("Attempting to turn off logging for all classes except " +  className + " at level " + inputLevel + ".");
 		if (inputLevel.equalsIgnoreCase("trace")) {
-			level = Level.TRACE;
+			level =StarLevel.TRACE;
 		} else if (inputLevel.equalsIgnoreCase("debug")) {
-			level = Level.DEBUG;
+			level =StarLevel.DEBUG;
 		} else if (inputLevel.equalsIgnoreCase("info")) {
-			level = Level.INFO;
+			level =StarLevel.INFO;
 		} else if (inputLevel.equalsIgnoreCase("error")) {
-			level = Level.ERROR;
+			level =StarLevel.ERROR;
 		} else if(inputLevel.equalsIgnoreCase("fatal")) {
-			level = Level.FATAL;
+			level =StarLevel.FATAL;
 		} else if (inputLevel.equalsIgnoreCase("off")) {
-			level = Level.OFF;
+			level =StarLevel.OFF;
 		} else if (inputLevel.equalsIgnoreCase("warn")) {
-			level = Level.WARN;
+			level =StarLevel.WARN;
 		} else if (inputLevel.equalsIgnoreCase("clear")) {
 			// no action needed: level is already null
 		} else {
@@ -4590,7 +4528,7 @@ public class RESTServices {
 			log.debug("could not find logger for class "+className);
 		} else {
 			// Set all levels to off.
-			LoggingManager.setLoggingLevel(Level.OFF);
+			LoggingManager.setLoggingLevel(StarLevel.OFF);
 			// Set logging level for class again.
 			LoggingManager.setLoggingLevelForClass(level, className);
 		}
@@ -4614,19 +4552,19 @@ public class RESTServices {
 		}
 		
 		if (level.equalsIgnoreCase("trace")) {
-			LoggingManager.setLoggingLevel(Level.TRACE);
+			LoggingManager.setLoggingLevel(StarLevel.TRACE);
 		} else if (level.equalsIgnoreCase("debug")) {
-			LoggingManager.setLoggingLevel(Level.DEBUG);
+			LoggingManager.setLoggingLevel(StarLevel.DEBUG);
 		} else if (level.equalsIgnoreCase("info")) {
-			LoggingManager.setLoggingLevel(Level.INFO);
+			LoggingManager.setLoggingLevel(StarLevel.INFO);
 		} else if (level.equalsIgnoreCase("error")) {
-			LoggingManager.setLoggingLevel(Level.ERROR);
+			LoggingManager.setLoggingLevel(StarLevel.ERROR);
 		} else if(level.equalsIgnoreCase("fatal")) {
-			LoggingManager.setLoggingLevel(Level.FATAL);
+			LoggingManager.setLoggingLevel(StarLevel.FATAL);
 		} else if (level.equalsIgnoreCase("off")) {
-			LoggingManager.setLoggingLevel(Level.OFF);
+			LoggingManager.setLoggingLevel(StarLevel.OFF);
 		} else if (level.equalsIgnoreCase("warn")) {
-			LoggingManager.setLoggingLevel(Level.WARN);
+			LoggingManager.setLoggingLevel(StarLevel.WARN);
 		} else {
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
@@ -5073,7 +5011,7 @@ public class RESTServices {
         try {
 			nextDataTablesPage = RESTHelpers.convertJobAttributesToJsonObject(jobSpaceId);
 		} catch (SQLException e) {
-			logUtil.error(methodName, "Caught database exception while attempting to get job attributes.", e);
+			log.error(methodName, "Caught database exception while attempting to get job attributes.", e);
 			return gson.toJson(ERROR_DATABASE);
 		}
         return gson.toJson(nextDataTablesPage);
@@ -5146,7 +5084,7 @@ public class RESTServices {
 //			dataTableWrapper.add("aaData", table);
 //			return gson.toJson(dataTableWrapper);
 //		} catch (SQLException e) {
-//			logUtil.error(methodName, "Caught SQLException while getting attr totals for jobspace id="+jobSpaceId, e);
+//			log.error(methodName, "Caught SQLException while getting attr totals for jobspace id="+jobSpaceId, e);
 //			return gson.toJson(ERROR_DATABASE);
 //		}
 //	}

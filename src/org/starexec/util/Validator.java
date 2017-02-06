@@ -5,15 +5,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.logger.StarLogger;
 
 /**
  * Contains methods for validating strings from user input to be stored in the database. 
  * @author Todd Elvers & Tyler Jensen
  */
 public class Validator {
-	private static final Logger log = Logger.getLogger(Validator.class);
+	private static final StarLogger log = StarLogger.getLogger(Validator.class);
 
 	// Compiled patterns used for validation	
 	private static Pattern patternBoolean;

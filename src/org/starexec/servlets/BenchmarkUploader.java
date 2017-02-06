@@ -21,7 +21,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Reports;
@@ -35,10 +34,10 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecException;
+import org.starexec.logger.StarLogger;
 import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.SessionUtil;
-import org.starexec.util.LogUtil;
 import org.starexec.util.PartWrapper;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -48,8 +47,7 @@ import org.starexec.util.Validator;
 @SuppressWarnings("serial")
 @MultipartConfig
 public class BenchmarkUploader extends HttpServlet {
-	private static final Logger log = Logger.getLogger(BenchmarkUploader.class);	
-	private static final LogUtil logUtil = new LogUtil(log);
+	private static final StarLogger log = StarLogger.getLogger(BenchmarkUploader.class);	
 
 	// The unique date stamped file name format
 	private static DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);    
@@ -445,8 +443,8 @@ public class BenchmarkUploader extends HttpServlet {
 			
 			Permission perm = SessionUtil.getPermission(request, Integer.parseInt((String)form.get(R.SPACE)));
 
-			logUtil.trace(method, "perm="+perm);
-			logUtil.trace(method, "uploadMethod="+uploadMethod);
+			log.trace(method, "perm="+perm);
+			log.trace(method, "uploadMethod="+uploadMethod);
 			
 
 			if( perm == null || (!perm.canAddBenchmark() && uploadMethod.equals("dump")) ) {

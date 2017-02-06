@@ -7,15 +7,16 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.SpaceXMLUploadStatus;
+import org.starexec.logger.StarLogger;
+
 /**
  * Handles database interaction for the uploading Benchmarks Status Page.
  */
 public class Uploads {
-	private static final Logger log = Logger.getLogger(Uploads.class);
+	private static final StarLogger log = StarLogger.getLogger(Uploads.class);
 
 	/**
 	 * Adds failed benchmark name to db

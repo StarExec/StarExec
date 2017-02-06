@@ -7,12 +7,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.starexec.logger.StarLevel;
+import org.starexec.logger.StarLogger;
 import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
 
 public abstract class TestSequence {
-	protected static final Logger log = Logger.getLogger(TestSequence.class);	
+	protected static final StarLogger log = StarLogger.getLogger(TestSequence.class);
 	protected String sequenceName="No Name";
 	protected TestStatus status=new TestStatus();
 	protected String message="No Message";
@@ -102,45 +103,45 @@ public abstract class TestSequence {
 	 * tend to be extremely verbose and drown out our logging
 	 */
 	private void turnOffExternalLogging() {
-		Logger.getLogger("java_cup.runtime").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("trax").setLevel(org.apache.log4j.Level.OFF);
+		StarLogger.getLogger("java_cup.runtime").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("trax").setLevel(StarLevel.OFF);
 
-		Logger.getLogger("selenium.webdriver").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.openqa").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.eclipse").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.jboss").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.apache").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.hamcrest").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.cyberneko").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.testng").setLevel(org.apache.log4j.Level.OFF);
+		StarLogger.getLogger("selenium.webdriver").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.openqa").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.eclipse").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.jboss").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.apache").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.hamcrest").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.cyberneko").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.testng").setLevel(StarLevel.OFF);
 
-		Logger.getLogger("org.w3c").setLevel(org.apache.log4j.Level.OFF);
+		StarLogger.getLogger("org.w3c").setLevel(StarLevel.OFF);
 
-		Logger.getLogger("bsh").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("net.sf").setLevel(org.apache.log4j.Level.OFF);
+		StarLogger.getLogger("bsh").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("net.sf").setLevel(StarLevel.OFF);
 
-		Logger.getLogger("org.apache.http.wire").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.apache.http.impl.conn.Wire").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.apache.http.impl.conn.LoggingManagedHttpClientConnection").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.apache.http.impl.execchain.MainClientExec").setLevel(org.apache.log4j.Level.OFF);
+		StarLogger.getLogger("org.apache.http.wire").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.apache.http.impl.conn.Wire").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.apache.http.impl.conn.LoggingManagedHttpClientConnection").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.apache.http.impl.execchain.MainClientExec").setLevel(StarLevel.OFF);
 
-		Logger.getLogger("org.apache.http").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("selenium.webdriver.remote.remote_connection").setLevel(org.apache.log4j.Level.OFF);
+		StarLogger.getLogger("org.apache.http").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("selenium.webdriver.remote.remote_connection").setLevel(StarLevel.OFF);
 
-		Logger.getLogger("com.google").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("com.opera").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("com.thoughtworks").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("com.steadystate").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("com.beust").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("com.sun").setLevel(org.apache.log4j.Level.OFF);
+		StarLogger.getLogger("com.google").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("com.opera").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("com.thoughtworks").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("com.steadystate").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("com.beust").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("com.sun").setLevel(StarLevel.OFF);
 
-		Logger.getLogger("com.keypoint").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.jfree").setLevel(org.apache.log4j.Level.OFF);
+		StarLogger.getLogger("com.keypoint").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.jfree").setLevel(StarLevel.OFF);
 
-		Logger.getLogger("netscape.javascript").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("net.sourceforge").setLevel(org.apache.log4j.Level.OFF);
+		StarLogger.getLogger("netscape.javascript").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("net.sourceforge").setLevel(StarLevel.OFF);
 		
-		Logger.getLogger("com.gargoylesoftware").setLevel(org.apache.log4j.Level.OFF);
+		StarLogger.getLogger("com.gargoylesoftware").setLevel(StarLevel.OFF);
 	}
 	
 	/**

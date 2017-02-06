@@ -8,8 +8,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.RobustRunnable;
 import org.starexec.util.Util;
 
@@ -19,7 +19,7 @@ import org.starexec.util.Util;
  *
  */
 public class LocalBackend implements Backend {
-	private static Logger log = Logger.getLogger(LocalBackend.class);
+	private static StarLogger log = StarLogger.getLogger(LocalBackend.class);
 
 	private class LocalJob {
 		public int execId = 0;

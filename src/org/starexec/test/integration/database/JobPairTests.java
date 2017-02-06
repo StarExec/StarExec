@@ -110,6 +110,27 @@ public class JobPairTests extends TestSequence {
 		
 		Assert.assertEquals(test.getPrimarySolver().getName(),solver.getName());
 	}
+
+	@StarexecTest
+	private void  getNodesThatMayHavePairsEnqueuedLongerThanExceptionTest() {
+		try {
+			int testTimeThreshold = 100000;
+			JobPairs.getNodesThatMayHavePairsEnqueuedLongerThan(testTimeThreshold);
+		} catch (SQLException e) {
+			Assert.fail("Caught an SQLException.");
+		}
+	}
+
+	// Basic test to make sure that the procedure will actually work.
+	@StarexecTest
+	private void getPairsEnqueuedLongerThanExceptionTest() {
+		try {
+			int testTimeThreshold = 100000;
+			JobPairs.getPairsEnqueuedLongerThan(testTimeThreshold);
+		} catch (SQLException e) {
+			Assert.fail("Caught an SQLException.");
+		}
+	}
 	
 	@StarexecTest
 	private void setPairStatusTest() {

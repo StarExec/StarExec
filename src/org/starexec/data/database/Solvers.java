@@ -21,15 +21,14 @@ import java.util.Comparator;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.apache.log4j.Logger;
 import org.apache.commons.lang3.tuple.Triple;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.to.*;
 import org.starexec.data.to.Solver.ExecutableType;
 import org.starexec.data.to.compare.SolverComparator;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.DataTablesQuery;
-import org.starexec.util.LogUtil;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
 import org.starexec.util.Util;
@@ -38,8 +37,7 @@ import org.starexec.util.Util;
  * Handles all database interaction for solvers
  */
 public class Solvers {
-	private static final Logger log = Logger.getLogger(Solvers.class);
-	private static final LogUtil logUtil = new LogUtil( log );
+	private static final StarLogger log = StarLogger.getLogger(Solvers.class);
 	private static DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT); 
 	private static final String CONFIG_PREFIX = R.CONFIGURATION_PREFIX;
 	
@@ -982,7 +980,7 @@ public class Solvers {
 
 			return solvers;
 		} catch ( SQLException e ) {
-			logUtil.error( methodName, "Caught an SQL exception. Database failed.");
+			log.error( methodName, "Caught an SQL exception. Database failed.");
 			throw e;
 		} finally {
 			Common.safeClose( results );
@@ -1036,7 +1034,7 @@ public class Solvers {
 
 			return configs;
 		} catch ( SQLException e ) {
-			logUtil.error( methodName, "Caught an SQL exception. Database failed.");
+			log.error( methodName, "Caught an SQL exception. Database failed.");
 			throw e;
 		} finally {
 			Common.safeClose( results );
@@ -1680,7 +1678,7 @@ public class Solvers {
 				return (results.getInt("solverDefault") > 0);
 			}
 		} catch(Exception e) {
-			logUtil.logException(methodName, e);
+			log.error(methodName,"Caught Exception.", e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);

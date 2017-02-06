@@ -12,7 +12,6 @@ import java.util.Set;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.log4j.Logger;
 import org.junit.Assert;
 
 import org.starexec.constants.R;
@@ -30,16 +29,14 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecSecurityException;
+import org.starexec.logger.StarLogger;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
-import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
 
 public class AnonymousLinkTests extends TestSequence {
-	private static final Logger log = Logger.getLogger(AnonymousLinkTests.class);	
-	private static final LogUtil logUtil = new LogUtil( log );
+	private static final StarLogger log = StarLogger.getLogger(AnonymousLinkTests.class);	
 	private User admin;
 	private User user;
 	private Space space;
@@ -81,7 +78,7 @@ public class AnonymousLinkTests extends TestSequence {
 			Assert.assertEquals( "Duplicate entries in newUuids.", newUuidsSet.size(), newUuids.size() );
 
 		} catch ( SQLException e ) {
-			logUtil.error( methodName, "An SQLException was thrown during the test", e);
+			log.error( methodName, "An SQLException was thrown during the test", e);
 			Assert.fail( "An SQLException was thrown during the test: " + Util.getStackTrace(e) );
 		}
 	}
@@ -138,7 +135,7 @@ public class AnonymousLinkTests extends TestSequence {
 			// Cleanup the anonymous links.
 			AnonymousLinks.delete( newUuids );
 		} catch ( SQLException e ) {
-			logUtil.error( methodName, "An SQLException was thrown during the test", e);
+			log.error( methodName, "An SQLException was thrown during the test", e);
 			Assert.fail( "An SQLException was thrown during the test: " + Util.getStackTrace(e) );
 		}
 	}
@@ -208,7 +205,7 @@ public class AnonymousLinkTests extends TestSequence {
 			AnonymousLinks.delete( newUuids );
 
 		} catch ( SQLException e ) {
-			logUtil.error( methodName, "An SQLException was thrown during the test", e);
+			log.error( methodName, "An SQLException was thrown during the test", e);
 			Assert.fail( "An SQLException was thrown during the test: " + Util.getStackTrace(e) );
 		}
 	}
@@ -265,7 +262,7 @@ public class AnonymousLinkTests extends TestSequence {
 			AnonymousLinks.delete( newUuids );
 
 		} catch ( SQLException e ) {
-			logUtil.error( methodName, "An SQLException was thrown during the test", e);
+			log.error( methodName, "An SQLException was thrown during the test", e);
 			Assert.fail( "An SQLException was thrown during the test: " + Util.getStackTrace(e) );
 		}
 	}
@@ -281,7 +278,7 @@ public class AnonymousLinkTests extends TestSequence {
 			Assert.assertFalse( AnonymousLinks.hasJobBeenAnonymized( job.getId() ) );
 			Assert.assertFalse( AnonymousLinks.getIdOfJobAssociatedWithLink( uuid ).isPresent() );
 		} catch ( SQLException e ) {
-			logUtil.error( methodName, "An SQLException was thrown during the test: " + Util.getStackTrace(e) );
+			log.error( methodName, "An SQLException was thrown during the test: " + Util.getStackTrace(e) );
 			Assert.fail( "An SQLException was thrown during the test: " + Util.getStackTrace(e) );
 		}
 	}
@@ -297,7 +294,7 @@ public class AnonymousLinkTests extends TestSequence {
 			Assert.assertFalse( AnonymousLinks.hasJobBeenAnonymized( job.getId() ) );
 			Assert.assertFalse( AnonymousLinks.getIdOfJobAssociatedWithLink( uuid ).isPresent() );
 		} catch ( SQLException e ) {
-			logUtil.error( methodName, "An SQLException was thrown during the test", e);
+			log.error( methodName, "An SQLException was thrown during the test", e);
 			Assert.fail( "An SQLException was thrown during the test: " + Util.getStackTrace(e) );
 		}
 	}
@@ -365,7 +362,7 @@ public class AnonymousLinkTests extends TestSequence {
 			}
 
 		} catch ( SQLException e ) {
-			logUtil.error( methodName, "An SQLException was thrown during the test", e);
+			log.error( methodName, "An SQLException was thrown during the test", e);
 			Assert.fail( "An SQLException was thrown during the test: " + Util.getStackTrace(e) );
 		}
 		

@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
@@ -39,6 +38,7 @@ import org.starexec.data.to.User;
 import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.jobs.JobManager;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -49,7 +49,7 @@ import org.starexec.util.Validator;
  */
 @SuppressWarnings("serial")
 public class CreateJob extends HttpServlet {		
-	private static final Logger log = Logger.getLogger(CreateJob.class);	
+	private static final StarLogger log = StarLogger.getLogger(CreateJob.class);
 
 	// Request attributes	
 	private static final String name = "name";

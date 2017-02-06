@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
 
 import org.starexec.data.to.Report;
+import org.starexec.logger.StarLogger;
 
 
 /**
@@ -20,7 +20,7 @@ import org.starexec.data.to.Report;
  * @author Albert Giegerich
  */ 
 public class Reports {
-	private static final Logger log = Logger.getLogger(Reports.class);
+	private static final StarLogger log = StarLogger.getLogger(Reports.class);
 
 
 	/**

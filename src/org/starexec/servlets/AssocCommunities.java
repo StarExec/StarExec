@@ -10,12 +10,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.GeneralSecurity;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 
@@ -26,7 +26,7 @@ import org.starexec.util.Util;
  */
 @SuppressWarnings("serial")
 public class AssocCommunities extends HttpServlet {		
-	private static final Logger log = Logger.getLogger(AssocCommunities.class);	
+	private static final StarLogger log = StarLogger.getLogger(AssocCommunities.class);
 
 	// Request attributes
 	private static final String name = "name";

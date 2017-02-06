@@ -17,7 +17,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.log4j.Logger;
 import org.starexec.backend.Backend;
 import org.starexec.backend.GridEngineBackend;
 import org.starexec.constants.PaginationQueries;
@@ -39,8 +38,8 @@ import org.starexec.data.to.tuples.AttributesTableData;
 import org.starexec.data.to.tuples.TimePair;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.exceptions.StarExecException;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.DataTablesQuery;
-import org.starexec.util.LogUtil;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
 import org.starexec.util.Util;
@@ -51,8 +50,7 @@ import org.starexec.util.Util;
  */
 
 public class Jobs {
-	private static final Logger log = Logger.getLogger(Jobs.class);
-	private static final LogUtil logUtil = new LogUtil(log);
+	private static final StarLogger log = StarLogger.getLogger(Jobs.class);
 	
 	/**
 	 * Returns a list of job spaces that are present in the given
@@ -1296,7 +1294,7 @@ public class Jobs {
             final Job j = resultsToJob(results);
             j.setStageAttributes(Jobs.getStageAttrsForJob(jobId, con));
 			if (getCompletedPairsOnly) {
-				logUtil.debug(method, "Getting job pairs for job with id="+jobId+" since completionID="+since);	
+				log.debug(method, "Getting job pairs for job with id="+jobId+" since completionID="+since);	
 				j.setJobPairs(Jobs.getNewCompletedPairsDetailed(j.getId(), since));
 			} else {
 				j.setJobPairs(Jobs.getAllPairs(jobId));
@@ -2167,12 +2165,12 @@ public class Jobs {
 	 */
 	public static List<JobPair> getJobPairsInJobSpaceHierarchy(int jobSpaceId, Integer since, PrimitivesToAnonymize primitivesToAnonymize) {
 		final String methodName = "getJobPairsInJobSpaceHierarchy";
-		logUtil.entry( methodName );
+		log.entry( methodName );
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
 		log.debug("called with jobSpaceId = "+ jobSpaceId);
-		logUtil.debug(methodName, "primitivesToAnonymize equals " + AnonymousLinks.getPrimitivesToAnonymizeName( primitivesToAnonymize ));
+		log.debug(methodName, "primitivesToAnonymize equals " + AnonymousLinks.getPrimitivesToAnonymizeName( primitivesToAnonymize ));
 		try {
 			Spaces.updateJobSpaceClosureTable(jobSpaceId);
 
@@ -2311,7 +2309,7 @@ public class Jobs {
 
 	public static List<JobPair> getJobPairsForTableInJobSpaceHierarchy(int jobSpaceId,DataTablesQuery query,int configId, int stageNumber,String type) {
 		final String methodName = "getJobPairsForTableInJobSpaceHierarchy";
-		logUtil.entry(methodName);
+		log.entry(methodName);
 		Connection con = null;	
 		NamedParameterStatement procedure = null;
 		ResultSet results = null;
@@ -2331,12 +2329,12 @@ public class Jobs {
 			
 			String constructedSQL = builder.getSQL();
 
-			logUtil.debug(methodName, ":jobSpaceId = " +jobSpaceId);
-			logUtil.debug(methodName, ":stageNumber = " +stageNumber);
-			logUtil.debug(methodName, ":configId = " +configId);
-			logUtil.debug(methodName, ":pairType = " +type);
-			logUtil.debug(methodName, ":query = "+query.getSearchQuery());
-			logUtil.debug(methodName, "Constructed SQL: " + constructedSQL);
+			log.debug(methodName, ":jobSpaceId = " +jobSpaceId);
+			log.debug(methodName, ":stageNumber = " +stageNumber);
+			log.debug(methodName, ":configId = " +configId);
+			log.debug(methodName, ":pairType = " +type);
+			log.debug(methodName, ":query = "+query.getSearchQuery());
+			log.debug(methodName, "Constructed SQL: " + constructedSQL);
 
 			procedure = new NamedParameterStatement(con,constructedSQL);
 				
@@ -2356,7 +2354,7 @@ public class Jobs {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
-			logUtil.exit(methodName);
+			log.exit(methodName);
 		}
 
 		return null;
@@ -2478,9 +2476,9 @@ public class Jobs {
 		ResultSet results = null;
 		try {
 			con =Common.getConnection();
-			logUtil.debug(methodName, "Sorting on col: " + query.getSortColumn());
+			log.debug(methodName, "Sorting on col: " + query.getSortColumn());
 			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_JOBS_BY_USER_QUERY, getJobOrderColumn(query.getSortColumn()), query);
-			logUtil.debug(methodName, "SQL: "+builder.getSQL());
+			log.debug(methodName, "SQL: "+builder.getSQL());
 			procedure = new NamedParameterStatement(con,builder.getSQL());
 			procedure.setString("query",query.getSearchQuery());
 			procedure.setInt("userId",userId);
@@ -2693,7 +2691,7 @@ public class Jobs {
 		try {			
 			con = Common.getConnection();	
 			
-			logUtil.debug(method, "Getting all detailed pairs for job " + jobId);
+			log.debug(method, "Getting all detailed pairs for job " + jobId);
 			
 			procedure = con.prepareCall("{CALL GetAllJobPairsByJob(?)}");
 			procedure.setInt(1, jobId);
@@ -4162,7 +4160,7 @@ public class Jobs {
 	 */
 	public static void setJobName(int jobId, String newName) throws StarExecDatabaseException {
 		final String method = "setJobName";
-		logUtil.entry(method);
+		log.entry(method);
 		Connection connection = null;
 		CallableStatement procedure = null;
 		try {
@@ -4177,7 +4175,7 @@ public class Jobs {
 		} finally {
 			Common.safeClose(connection);
 			Common.safeClose(procedure);
-			logUtil.exit(method);
+			log.exit(method);
 		}
 	}
 	/**
@@ -4188,7 +4186,7 @@ public class Jobs {
 	 */
 	public static void setJobDescription(int jobId, String newDescription) throws StarExecDatabaseException {
 		final String method = "setJobDescription";
-		logUtil.entry(method);
+		log.entry(method);
 		Connection connection = null;
 		CallableStatement procedure = null;
 		try {
@@ -4203,7 +4201,7 @@ public class Jobs {
 		} finally {
 			Common.safeClose(connection);
 			Common.safeClose(procedure);
-			logUtil.exit(method);
+			log.exit(method);
 		}
 	}
 	
@@ -4373,7 +4371,7 @@ public class Jobs {
 
 
 			stopWatch.stop();
-			logUtil.debug(methodName, "Time taken to process job pairs to stats for job with "+Jobs.getPairCount(jobId)+" pairs: "+stopWatch.toString());
+			log.debug(methodName, "Time taken to process job pairs to stats for job with "+Jobs.getPairCount(jobId)+" pairs: "+stopWatch.toString());
 			return returnValues;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -5293,9 +5291,9 @@ public class Jobs {
 				Integer slots = backend.getSlotsInQueue(job.getQueue().getName());
 				return slots.toString();
 			} catch (IOException e) {
-				logUtil.logException(methodName, "Caught IOException while trying to get number of slots in queue.", e);
+				log.error(methodName, "Caught IOException while trying to get number of slots in queue.", e);
 			} catch (StarExecException e) {
-				logUtil.logException(methodName, "Could not get number of slots from backend.getSlotsInQueue. "
+				log.error(methodName, "Could not get number of slots from backend.getSlotsInQueue. "
 						+ "SGE may not have returned an integer when queryed.", e);
 			}
 		}

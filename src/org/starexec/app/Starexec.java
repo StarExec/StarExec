@@ -18,7 +18,6 @@ import java.sql.SQLException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.starexec.backend.*;
 import org.starexec.constants.PaginationQueries;
@@ -29,6 +28,7 @@ import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.jobs.JobManager;
 import org.starexec.jobs.ProcessingManager;
+import org.starexec.logger.StarLogger;
 import org.starexec.test.integration.TestManager;
 import org.starexec.util.ConfigUtil;
 import org.starexec.util.Mail;
@@ -43,7 +43,7 @@ import org.starexec.util.Validator;
  * @author Tyler Jensen
  */
 public class Starexec implements ServletContextListener {
-    private Logger log;
+    private StarLogger log;
     private ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(10);	
     // private Session session; // GridEngine session
 	
@@ -88,7 +88,7 @@ public class Starexec implements ServletContextListener {
 		// Before we do anything we must configure log4j!
 		PropertyConfigurator.configure(new File(R.STAREXEC_ROOT, LOG4J_PATH).getAbsolutePath());
 										
-		log = Logger.getLogger(Starexec.class);
+		log = StarLogger.getLogger(Starexec.class);
 		
 		log.info(String.format("StarExec started at [%s]", R.STAREXEC_ROOT));
 		try {

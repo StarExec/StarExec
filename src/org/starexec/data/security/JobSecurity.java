@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.log4j.Logger;
 
 import org.starexec.app.RESTServices;
 import org.starexec.data.database.AnonymousLinks;
@@ -21,15 +20,13 @@ import org.starexec.data.database.Users;
 import org.starexec.data.to.*;
 import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.logger.StarLogger;
 
-
-import org.starexec.util.LogUtil;
-import org.starexec.util.Validator;
 
 public class JobSecurity {
 
-	private static final Logger log = Logger.getLogger(JobSecurity.class);
-	private static final LogUtil logUtil = new LogUtil(log);
+	private static final StarLogger log = StarLogger.getLogger(JobSecurity.class);
+
 	
 	
 	/**
@@ -150,7 +147,7 @@ public class JobSecurity {
 	 */
 	public static ValidatorStatusCode isAnonymousLinkAssociatedWithJob( String anonymousLinkUuid, int jobId ) {
 		final String methodName = "isAnonymousLinkAssociatedWithJob"; 
-		logUtil.entry( methodName );
+		log.entry( methodName );
 		try {
 			Optional<Integer> potentialJobId = AnonymousLinks.getIdOfJobAssociatedWithLink( anonymousLinkUuid );
 			if ( !potentialJobId.isPresent() || potentialJobId.get() != jobId ) {
@@ -159,7 +156,7 @@ public class JobSecurity {
 				return new ValidatorStatusCode( true );
 			}
 		} catch ( SQLException e ) {
-			logUtil.error( methodName, "Caught an SQLException while trying to access anonymous links table data." );
+			log.error( methodName, "Caught an SQLException while trying to access anonymous links table data." );
 			return new ValidatorStatusCode( false, "Database error.");
 		}
 	}
@@ -455,7 +452,7 @@ public class JobSecurity {
 					return new ValidatorStatusCode(false, "The selected community has no default benchmark selected");
 				}
 			} catch (SQLException e) {
-				logUtil.logException(methodName, e);
+				log.error(methodName,"Caught SQLException.", e);
 				return RESTServices.ERROR_DATABASE;
 			}
 			

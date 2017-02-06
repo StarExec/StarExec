@@ -7,16 +7,16 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.to.Website;
 import org.starexec.data.to.Website.WebsiteType;
+import org.starexec.logger.StarLogger;
 
 /**
  * Handles all database interaction for user-defined websites
  */
 public class Websites {
-	private static final Logger log = Logger.getLogger(Websites.class);;
+	private static final StarLogger log = StarLogger.getLogger(Websites.class);;
 	
 	/**
 	 * Adds a new website associated with the specified entity

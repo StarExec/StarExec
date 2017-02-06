@@ -17,13 +17,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Permission;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.BatchUtil;
 import org.starexec.util.PartWrapper;
@@ -41,7 +41,7 @@ import org.starexec.util.Validator;
 @MultipartConfig
 public class UploadSpaceXML extends HttpServlet {
 	
-	private static final Logger log = Logger.getLogger(UploadSpaceXML.class);	
+	private static final StarLogger log = StarLogger.getLogger(UploadSpaceXML.class);
     private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);   
     private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
     private static final String SPACE_ID = R.SPACE;

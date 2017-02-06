@@ -1,34 +1,31 @@
 package org.starexec.util;
 
-import java.util.Enumeration;
+import java.util.List;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.starexec.logger.StarLevel;
+import org.starexec.logger.StarLogger;
 
 public class LoggingManager {
-	private static final Logger log = Logger.getLogger(LoggingManager.class);
+	private static final StarLogger log = StarLogger.getLogger(LoggingManager.class);
 
-	public static void setLoggingLevel(Level level) {
-		Logger.getRootLogger().setLevel(level);
+	public static void setLoggingLevel(StarLevel level) {
+		StarLogger.getRootLogger().setLevel(level);
 		
 	}
 	
-	public static boolean setLoggingLevelForClass(Level level, String className) {
+	public static boolean setLoggingLevelForClass(StarLevel level, String className) {
 		
 		if (!loggerExists(className)) {
 			return false;
 		}
-		Logger.getLogger(className).setLevel(level);
+		StarLogger.getLogger(className).setLevel(level);
 		return true;
 	}
 	
 	public static boolean loggerExists(String className) {
-		 Enumeration logs=Logger.getRootLogger().getLoggerRepository().getCurrentLoggers();
+		 List<StarLogger> logs=StarLogger.getCurrentLoggers();
 		 
-		 while (logs.hasMoreElements()) {
-			
-			 
-		     Logger log=(Logger)logs.nextElement();
+		 for (StarLogger log : logs) {
 			 log.debug("found this logger = "+log.getName());
 			 if (log.getName().equals(className)) {
 				 return true;

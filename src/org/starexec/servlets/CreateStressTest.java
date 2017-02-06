@@ -9,10 +9,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.logger.StarLogger;
 import org.starexec.test.integration.TestManager;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -24,7 +24,7 @@ import org.starexec.util.Validator;
  */
 @SuppressWarnings("serial")
 public class CreateStressTest extends HttpServlet {		
-	private static final Logger log = Logger.getLogger(CreateStressTest.class);	
+	private static final StarLogger log = StarLogger.getLogger(CreateStressTest.class);
 
 	// Request attributes
 	private static final String USER_COUNT="userCount";
