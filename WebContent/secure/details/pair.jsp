@@ -1,11 +1,12 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.JobSecurity,org.apache.log4j.Logger, org.starexec.data.security.GeneralSecurity,org.starexec.data.database.*, org.starexec.data.to.*,org.starexec.data.to.pipelines.*, org.starexec.util.*, org.starexec.data.to.Status.StatusCode"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.JobSecurity, org.starexec.data.security.GeneralSecurity,org.starexec.data.database.*, org.starexec.data.to.*,org.starexec.data.to.pipelines.*, org.starexec.util.*, org.starexec.data.to.Status.StatusCode"%>
 <%@ page import="java.util.Optional" %>
 <%@ page import="org.starexec.data.to.enums.BenchmarkingFramework" %>
+<%@ page import="org.starexec.logger.StarLogger" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%		
-	Logger log = Logger.getLogger(JobPair.class);			
+	StarLogger log = StarLogger.getLogger(JobPair.class);
 
 	try {
 		int userId = SessionUtil.getUserId(request);

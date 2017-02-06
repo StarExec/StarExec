@@ -1,9 +1,10 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.to.*,java.util.*,org.starexec.servlets.CreateJob,org.apache.log4j.*, org.starexec.constants.*,java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.to.*,java.util.*,org.starexec.servlets.CreateJob, org.starexec.constants.*,java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
+<%@ page import="org.starexec.logger.StarLogger" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%	
-	Logger log=Logger.getLogger(CreateJob.class);
+	StarLogger log=StarLogger.getLogger(CreateJob.class);
 
 	try {		
 		// Get parent space info for display
