@@ -73,25 +73,18 @@
 	height: 50px;
 	background: transparent;
 	text-align: left;
-	float: right;
-	position: relative;
-	left: 60px;
+	position: fixed;
+	margin-left: 72px;
 	border: 1px dashed #008d03;
 	border-radius: 2px;
 
 	&:hover, &.hover {
 		background-color: #008d03;
-		border-radius: 2px;
 	}
 
 	.ui-icon {
 		margin-top: -8px;
 		margin-right: 10px;
-	}
-
-	&.active {
-		border: 1px dashed #008d03;
-		border-radius: 2px;
 	}
 }
 
