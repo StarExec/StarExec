@@ -6,25 +6,34 @@ import org.apache.log4j.Priority;
 import java.io.Serializable;
 
 /**
- * Created by agieg on 2/6/2017.
+ * Wrapper class for logging levels.
  */
-public class StarLevel {
-    public static final StarLevel OFF = new StarLevel(Level.OFF);
-    public static final StarLevel FATAL = new StarLevel(Level.FATAL);
-    public static final StarLevel ERROR = new StarLevel(Level.ERROR);
-    public static final StarLevel WARN = new StarLevel(Level.WARN);
-    public static final StarLevel INFO = new StarLevel(Level.INFO);
-    public static final StarLevel DEBUG = new StarLevel(Level.DEBUG);
-    public static final StarLevel TRACE = new StarLevel(Level.TRACE);
-    public static final StarLevel ALL = new StarLevel(Level.ALL);
+public enum StarLevel {
+    OFF(Level.OFF, "OFF"),
+    FATAL(Level.FATAL, "FATAL"),
+    ERROR(Level.ERROR, "ERROR"),
+    WARN(Level.WARN, "WARN"),
+    INFO(Level.INFO, "INFO"),
+    DEBUG(Level.DEBUG, "DEBUG"),
+    TRACE(Level.TRACE, "TRACE"),
+    ALL(Level.ALL, "ALL");
 
-    private Level level;
+    private final Level level;
 
-    private StarLevel(Level level) {
+    // Corresponds to values in logging_levels database table.
+    private final String name;
+
+    StarLevel(Level level, String name) {
         this.level = level;
+        this.name = name;
     }
 
     Level get() {
         return level;
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }
