@@ -733,6 +733,27 @@ CREATE TABLE pairs_rerun (
 	CONSTRAINT id_of_rerun_pair FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE CASCADE
 );
 
+CREATE TABLE log_levels(
+	id INT NOT NULL AUTO_INCREMENT,
+	name VARCHAR(32) NOT NULL,
+
+	PRIMARY KEY(id),
+	UNIQUE KEY(name)
+);
+
+INSERT INTO log_levels (name) VALUES ('OFF'),('FATAL'),('ERROR'),('WARN'),('INFO'),('DEBUG'),('TRACE'),('ALL');
+
+CREATE TABLE error_reports(
+	id INT NOT NULL AUTO_INCREMENT,
+	message TEXT NOT NULL,
+	time TIMESTAMP NOT NULL DEFAULT NOW(),
+	log_level_id INT,
+
+	PRIMARY KEY(id),
+	CONSTRAINT error_level FOREIGN KEY (log_level_id) REFERENCES log_levels(id) ON DELETE SET NULL
+);
+
+
 -- Creates a view of the closure table that includes only communities as ancestors
 CREATE VIEW community_assoc AS 
 SELECT ancestor AS comm_id, descendant AS space_id FROM closure 
