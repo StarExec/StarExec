@@ -95,7 +95,7 @@ public class Common {
 	 */
 	public static void logConnectionsOpen() {
 		log.debug("connection counts  = "+dataPool.getIdle()+" "+dataPool.getActive());
-		log.debug((connectionsOpened-connectionsClosed));
+		log.debug(String.valueOf(connectionsOpened-connectionsClosed));
 	}
 	
 	/**

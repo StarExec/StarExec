@@ -12,6 +12,7 @@ import java.util.Set;
 
 
 import org.starexec.data.to.Report;
+import org.starexec.logger.StarLevel;
 import org.starexec.logger.StarLogger;
 
 
@@ -21,6 +22,19 @@ import org.starexec.logger.StarLogger;
  */ 
 public class Reports {
 	private static final StarLogger log = StarLogger.getLogger(Reports.class);
+
+	/**
+	 * Adds an error reports to the error_reports table.
+	 * @param message the message to add to the table.
+	 * @param level the level the error was logged at.
+	 * @throws SQLException on database error.
+	 */
+	public static void addErrorReport(String message, StarLevel level) throws SQLException {
+		Common.update("{CALL AddErrorReport(?, ?)}", procedure -> {
+			procedure.setString(1, message);
+			procedure.setString(2, level.toString());
+		});
+	}
 
 
 	/**

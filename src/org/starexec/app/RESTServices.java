@@ -1359,7 +1359,7 @@ public class RESTServices {
 		    nextDataTablesPage = RESTHelpers.getNextDataTablesPageCluster("queue", id, userId, request);
 		}
 		catch(Exception e) {
-		    log.error(e);
+		    log.error("Caught exception.", e);
 		}
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
@@ -3538,7 +3538,7 @@ public class RESTServices {
 		}
 		log.debug("found the following spaces");
 		for (Integer i : selectedSubspaces) {
-			log.debug(i);
+			log.debug(i.toString());
 		}
 		ValidatorStatusCode status=SpaceSecurity.canUserRemoveSpace(userId,selectedSubspaces);
 		if (!status.isSuccess()) {
@@ -3572,7 +3572,7 @@ public class RESTServices {
 					}
 					log.debug("found the following benchmarks");
 					for (Benchmark b : benchmarks) {
-						log.debug(b.getId());
+						log.debug(String.valueOf(b.getId()));
 					}
 					// Remove the subspaces from the space
 					boolean success=true;

@@ -75,7 +75,7 @@ public class BenchmarkTests extends TestSequence {
 		Assert.assertNotNull(benches);
 		Assert.assertEquals(benchmarks.size(),benches.size());
 		for (Benchmark b : benches) {
-			log.debug(b.getId());
+			log.debug(String.valueOf(b.getId()));
 			Assert.assertTrue(containsBenchmark(benchmarks,b));
 		}
 	}

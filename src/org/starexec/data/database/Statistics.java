@@ -409,7 +409,7 @@ public class Statistics {
 			dataset.addSeries(d);
 
 			String key=debugSeries+":"+debugItem;
-			log.debug(urls.get(key));
+			log.debug(urls.get(key).toString());
 			JFreeChart chart=ChartFactory.createScatterPlot("Solver Comparison Plot",xAxisName, yAxisName, dataset, PlotOrientation.VERTICAL, true, true,false);
 			Color color=new Color(0,0,0,0); //makes the background clear
 			chart.setBackgroundPaint(color);

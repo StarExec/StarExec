@@ -742,7 +742,7 @@ public class Jobs {
 		Job j=Jobs.get(jobId);
 		if (j!=null) {
 			log.debug("Called deleteAndRemove on the following job");
-			log.debug(jobId);
+			log.debug(String.valueOf(jobId));
 			log.debug(j.getName());
 		}
 		boolean success=delete(jobId);
@@ -4170,7 +4170,7 @@ public class Jobs {
 			procedure.setString(2, newName);
 			procedure.executeUpdate();
 		} catch (Exception e) {
-			log.error(e);
+			log.error("Caught exception.", e);
 			throw new StarExecDatabaseException("Could not save job name to database.", e);
 		} finally {
 			Common.safeClose(connection);
@@ -4196,7 +4196,7 @@ public class Jobs {
 			procedure.setString(2, newDescription);
 			procedure.executeUpdate();
 		} catch (Exception e) {
-			log.error(e);
+			log.error("Caught exception.", e);
 			throw new StarExecDatabaseException("Could not save job description to database.", e);
 		} finally {
 			Common.safeClose(connection);
