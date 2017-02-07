@@ -159,15 +159,20 @@ public class StarLogger {
     }
 
     private void reportError(final StarLevel level, final String message, final Throwable t) {
-        String messageAndTrace = message.toString();
-        if (t != null) {
-            messageAndTrace += "\nStack Trace:\n" + Util.getStackTrace(t);
-        }
-        try {
-            Reports.addErrorReport(messageAndTrace, level);
-        } catch (SQLException e) {
-            log.error("Failed to generate error report due to SQLException!", e);
-        }
+		String messageAndTrace = "";
+		if (message != null) {
+			messageAndTrace = message.toString();
+		}
+		if (t != null) {
+			messageAndTrace += "\nStack Trace:\n" + Util.getStackTrace(t);
+		}
+		/*
+		try {
+		Reports.addErrorReport(messageAndTrace, level);
+		} catch (SQLException e) {
+			log.error("Failed to generate error report due to SQLException!", e);
+		}
+		*/
     }
 
 
