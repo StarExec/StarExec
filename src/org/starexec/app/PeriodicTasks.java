@@ -38,8 +38,8 @@ class PeriodicTasks {
 
     // Enum constants of all the periodic tasks.
     enum PeriodicTask {
+        // period needs to be a supplier since CLUSTER_UPDATE_PERIOD is dynamically set by configuration.
         UPDATE_CLUSTER(true, UPDATE_CLUSTER_TASK, 0, () -> R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS),
-
         SUBMIT_JOBS(true, SUBMIT_JOBS_TASK, 0, () -> 60, TimeUnit.SECONDS),
         POST_PROCESS_JOBS(true, POST_PROCESS_JOBS_TASK, 0, () -> 45, TimeUnit.SECONDS),
         RERUN_FAILED_PAIRS(true, RERUN_FAILED_PAIRS_TASK, 0, () -> 5, TimeUnit.MINUTES),
@@ -57,7 +57,7 @@ class PeriodicTasks {
         public final boolean fullInstanceOnly;
         public final Runnable task;
         public final int delay;
-        public final Supplier period;
+        public final Supplier<Integer> period;
         public final TimeUnit unit;
 
         /**

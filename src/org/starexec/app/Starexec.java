@@ -158,7 +158,7 @@ public class Starexec implements ServletContextListener {
 		Set<PeriodicTasks.PeriodicTask> periodicTasks = EnumSet.allOf(PeriodicTasks.PeriodicTask.class);
 		for (PeriodicTasks.PeriodicTask task : periodicTasks) {
 			if ( R.IS_FULL_STAREXEC_INSTANCE || !task.fullInstanceOnly ) {
-				taskScheduler.scheduleAtFixedRate(task.task, task.delay, task.period, task.unit);
+				taskScheduler.scheduleAtFixedRate(task.task, task.delay, task.period.get(), task.unit);
 			}
 		}
 
