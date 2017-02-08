@@ -1,14 +1,13 @@
 package org.starexec.data.security;
 
-import org.apache.log4j.Logger;
 
 import org.owasp.esapi.ESAPI;
 
 import org.starexec.constants.R;
 import org.starexec.data.database.Users;
+import org.starexec.logger.StarLogger;
 import org.starexec.test.integration.TestManager;
 import org.starexec.util.Hash;
-import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
@@ -17,8 +16,7 @@ import java.sql.Connection;
 
 public class GeneralSecurity {
 
-	private static final Logger log = Logger.getLogger(GeneralSecurity.class);			
-	private static final LogUtil logUtil = new LogUtil( log );
+	private static final StarLogger log = StarLogger.getLogger(GeneralSecurity.class);			
 
 	/**
 	 * Checks to see if the given user has permission to execute tests without checking to see if tests are already running
@@ -163,18 +161,18 @@ public class GeneralSecurity {
 	 */
 	public static ValidatorStatusCode canUserGetAnonymousLinkForPrimitive( int userId, String primitiveType, int primitiveId ) {
 		final String methodName = "canUserGetAnonymousLinkForPrimitive";
-		logUtil.entry( methodName );
+		log.entry( methodName );
 		log.debug("Checking if user can get anonymous link for primitive of type " + primitiveType);
 		if ( primitiveType.equals( R.BENCHMARK )) {
-			logUtil.debug( methodName, 
+			log.debug( methodName, 
 					"Found that primitive was of type " + R.BENCHMARK + " while checking if an anonymous link could be generated for it." );
 			return BenchmarkSecurity.canUserGetAnonymousLink( primitiveId, userId );
 		} else if ( primitiveType.equals( R.SOLVER )) {
-			logUtil.debug( methodName, 
+			log.debug( methodName, 
 					"Found that primitive was of type " + R.SOLVER + " while checking if an anonymous link could be generated for it." );
 			return SolverSecurity.canUserGetAnonymousLink( primitiveId, userId );
 		} else if ( primitiveType.equals( R.JOB )) {
-			logUtil.debug( methodName, 
+			log.debug( methodName, 
 					"Found that primitive was of type " + R.JOB + " while checking if an anonymous link could be generated for it." );
 			return JobSecurity.canUserGetAnonymousLink( primitiveId, userId );
 		} else {

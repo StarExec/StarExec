@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.log4j.Logger;
 
 import org.junit.Assert;
 import org.starexec.constants.R;
@@ -29,6 +28,7 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.exceptions.StarExecSecurityException;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.matrixView.Matrix;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.test.TestUtil;
@@ -36,7 +36,7 @@ import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 
 public class MatrixTests extends TestSequence {
-	private static final Logger log = Logger.getLogger(MatrixTests.class);
+	private static final StarLogger log = StarLogger.getLogger(MatrixTests.class);
 
 	private Space space=null; //space to put the test job
 	private Solver solver=null; //solver to use for the job

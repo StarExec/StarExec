@@ -314,6 +314,10 @@
 								<td>owner</td>			
 								<td><star:user value="${usr}" /></td>
 							</tr>							
+							<tr title="the benchmarking framework used to run the job">
+								<td>benchmarking framework</td>
+								<td>${job.benchmarkingFramework.toString().toLowerCase()}</td>
+							</tr>
 							<tr title="the date/time the job was created on StarExec">
 								<td>created</td>			
 								<td><fmt:formatDate pattern="MMM dd yyyy  hh:mm:ss a" value="${job.createTime}" /></td>

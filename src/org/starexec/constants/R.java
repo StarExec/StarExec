@@ -133,6 +133,9 @@ public class R {
     public static int QUEUE_NAME_LEN=64;
     public static int TEXT_FIELD_LEN = 65000;
 
+    // This value is dynamically set by configuration.
+    public static int CLUSTER_UPDATE_PERIOD = 600;
+
     public enum DefaultSettingAttribute {
         PostProcess,
         BenchProcess,
@@ -213,7 +216,7 @@ public class R {
     public static String JOB_XML_SCHEMA_RELATIVE_LOC = "public/batchJobSchema.xsd";
     public static String STAREXEC_URL_PREFIX = null;						//either "https" or "http"
 	public static String JOBGRAPH_FILE_DIR = "/secure/jobgraphs";			// Location to store job graph image files. Relative to webapp root.
-	public static String SANDBOX_DIRECTORY=null;                            //the sandbox directory for doing processing / building on the head node
+	public static String SANDBOX_DIRECTORY=null;                          //the sandbox directory for doing processing / building on the head node
 
 	//Admin user info
     public static int ADMIN_USER_ID = 9;									//user id to use when administrator
@@ -244,10 +247,7 @@ public class R {
     public static String CONTACT_EMAIL = "";								// The default e-mail address to use for users to contact for support
     public static boolean IS_FULL_STAREXEC_INSTANCE = true;  				// should we run job tasks (see app/Starexec.java)
     public static int CLEAR_JOB_LOG_PERIOD = 14;                                                        // How often (in days) to clear job logs
-    public static int CLUSTER_UPDATE_PERIOD = 600;							// How often (in seconds) to update the cluster's current usage status
     public static int JOB_SUBMISSION_PERIOD = 60;							// How often (in seconds) to write job scripts and submit to the backend
-    public static int CREATE_QUEUE_PERIOD = 60;								// How often (in minutes) to check if todays date is the reserved_queue date and then associate nodes
-	public static final int EMAIL_REPORTS_PERIOD = 7;						  // How often (in days) to send StarExec reports to subscribed users
 	public static final int MAX_NUMBER_OF_REPORTS_TO_SEND = 30;               // Maximum number of StarExec report emails to send every period
 	public static final int WAIT_TIME_BETWEEN_EMAILING_REPORTS = 2;           // Number of seconds to wait between reports being sent
 	public static final int EMAIL_REPORTS_DAY = Calendar.THURSDAY;              // Day of the week to email reports
@@ -291,6 +291,10 @@ public class R {
     public static int NUM_JOB_PAIRS_AT_A_TIME = 5;  // the number of job pairs from a job to submit at the same time, as we cycle through all jobs submitting pairs.
     public static int NUM_REPOSTPROCESS_AT_A_TIME = 200; // number of job pairs to re-postprocess at a time with our periodic task
     public static int DEFAULT_MAX_TIMEOUT = 259200;
+
+    // The number of hours that is considered ok for a pair to be enqueued but not running.
+    // May need to be minutes.
+    public static int BROKEN_PAIR_HOUR_THRESHOLD = 1;
 
 
     public static int NO_TYPE_PROC_ID=1;
@@ -345,6 +349,8 @@ public class R {
     // Constants for BenchExec
     public static final BenchmarkingFramework DEFAULT_BENCHMARKING_FRAMEWORK = BenchmarkingFramework.RUNSOLVER;
     public static final String BENCHMARKING_FRAMEWORK_OPTION = "benchmarkingFramework";
+
+	public static final String XML_BENCH_FRAMEWORK_ELE_NAME = "bench-framework";
 
 
 

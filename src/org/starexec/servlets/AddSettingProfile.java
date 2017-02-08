@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.owasp.esapi.waf.internal.InterceptingHTTPServletResponse;
 import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
@@ -24,7 +23,7 @@ import org.starexec.data.security.SettingSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
-import org.starexec.util.LogUtil;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -36,8 +35,7 @@ import org.starexec.util.Validator;
  */
 @SuppressWarnings("serial")
 public class AddSettingProfile extends HttpServlet {
-	private static final Logger log = Logger.getLogger(AddSettingProfile.class);
-	private static final LogUtil logUtil = new LogUtil(log);
+	private static final StarLogger log = StarLogger.getLogger(AddSettingProfile.class);
 
 	// Param strings for processing
 	private static String POST_PROCESSOR = "postp";
@@ -76,7 +74,7 @@ public class AddSettingProfile extends HttpServlet {
 				}
 				log.debug("Validated add setting profile request.");
 			} catch (SQLException e) {
-				logUtil.warn(method, "Caught SQLException, returning internal error.", e);
+				log.warn(method, "Caught SQLException, returning internal error.", e);
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error while trying to check permissions.");
 				return;
 			}
@@ -183,7 +181,7 @@ public class AddSettingProfile extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 		} catch (Exception e) {
-			log.warn("Caught Exception in AddSettingProfile.doPost: "+Util.getStackTrace(e));
+			log.warn("Caught Exception in AddSettingProfile.doPost.", e);
 			throw e;
 		}
 	}

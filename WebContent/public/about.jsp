@@ -1,4 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page trimDirectiveWhitespaces="true" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags"%>
 
 <star:template title="StarExec" css="about">
@@ -8,29 +9,29 @@
 		investigators Aaron Stump (Iowa), Geoff Sutcliffe (University
 		of Miami), and Cesare Tinelli (Iowa).
  	</p>
-	
+
 	<p>Its main goal is to facilitate the experimental evaluation of logic
 		solvers, broadly understood as automated tools based on formal reasoning.
 		The service is designed to provide a single piece of storage and computing
-		infrastructure to logic solving communities and their members. 
-		It aims at reducing duplication of effort and resources as well as 
+		infrastructure to logic solving communities and their members.
+		It aims at reducing duplication of effort and resources as well as
 		enabling individual researchers or groups with no access to comparable
-		infrastructure. 
+		infrastructure.
 	</p>
-	
-	<p>StarExec allows </p> 
+
+	<p>StarExec allows </p>
 		<ul>
 			<li>community organizers to store, manage and make available
 			benchmark libraries;
 			</li>
-			<li>competition organizers to run logic solver competitions; and 
+			<li>competition organizers to run logic solver competitions; and
 			<li>
-			community members to perform comparative evaluations of logic solvers 
+			community members to perform comparative evaluations of logic solvers
 			on public or private benchmark problems.
 			</li>
 	  	</ul>
 
-	<p>The first public events ran on StarExec in Summer 2013 (CoCo 2013 and SMT-EVAL 2013). 
+	<p>The first public events ran on StarExec in Summer 2013 (CoCo 2013 and SMT-EVAL 2013).
   Several more will run in Summer 2014.
 	</p>
 
@@ -38,7 +39,7 @@
 
         <p>A virtual machine for StarExec is <a href="https://www.starexec.org/vmimage/">here</a>.  It is recommended to upgrade to the latest <a href="http://www.virtualbox.org">VirtualBox</a> for this (confirmed working for version 4.3.24).</p>
 
-	<p>Use of StarExec is bound by the following 
+	<p>Use of StarExec is bound by the following
 	<a href="STAREXEC TERMS OF SERVICE.doc">terms of service</a>.
 	</p>
 
@@ -46,7 +47,7 @@
 		<a href="http://wiki.uiowa.edu/display/stardev/Home">public development wiki</a>.
 	</p>
   <h2>StarExec Advisory Committee</h2>
-  
+
 	<ul>
 		<li>Nikolaj Bjørner (Microsoft Research)</li>
 		<li>Ewen Denney (NASA Ames)</li>
@@ -59,8 +60,8 @@
 
   <h2>Credits</h2>
 
-	<p>StarExec is supported by a $1.85 million USD grant from the 
-	National Science Foundation, the details of which can be found 
+	<p>StarExec is supported by a $1.85 million USD grant from the
+	National Science Foundation, the details of which can be found
 	<a href="http://www.fastlane.nsf.gov/servlet/showaward?award=1058748">here</a>
 	and
 	<a href="http://www.fastlane.nsf.gov/servlet/showaward?award=1058925">here</a>.
@@ -70,24 +71,24 @@
 	</p>
 
 <p>
-The following people were involved in the development 
+The following people were involved in the development
 of the software infrastructure at various stages of the project:
 Eric Burns,
-Todd Elvers, 
-Tyler Jensen, 
+Todd Elvers,
+Tyler Jensen,
 Wyatt Kaiser,
 Ben McCune,
 Muhammad Nassar,
 CJ Palmer,
-Vivek Sardeshmukh, 
+Vivek Sardeshmukh,
 Skylar Stark,
 and
 Ruoyu Zhang.
 </p>
 
 <p>
-Computer system support and assistance in designing and building 
-the hardware infrastructure was provided by 
+Computer system support and assistance in designing and building
+the hardware infrastructure was provided by
 Hugh Brown,
 Dan Holstad,
 Jamie Tisdale,

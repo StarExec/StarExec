@@ -1,13 +1,11 @@
 package org.starexec.data.database;
 
-import org.apache.log4j.Logger;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Space;
-import org.starexec.util.LogUtil;
+import org.starexec.logger.StarLogger;
 
-import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -15,8 +13,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 public class Settings {
-	private static Logger log=Logger.getLogger(Settings.class);
-	private static LogUtil logUtil = new LogUtil(log);
+	private static StarLogger log=StarLogger.getLogger(Settings.class);
 
 	public static int addNewSettingsProfile(DefaultSettings settings) {
 		Connection con=null;
@@ -272,7 +269,7 @@ public class Settings {
 			settings.setType(results.getInt("setting_type"));
 			return settings;
 		} catch (SQLException e) {
-			logUtil.error(methodName, "Caught SQL exception while getting results. Throwing...",e);
+			log.error(methodName, "Caught SQL exception while getting results. Throwing...",e);
 			throw e;
 		}
 	}
@@ -390,7 +387,7 @@ public class Settings {
 			con = Common.getConnection();
 			return canUserSeeSolverInSettings(con, userId, solverId);
 		} catch (Exception e) {
-			logUtil.logException(methodName, e);
+			log.error("Caught exception", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -486,7 +483,7 @@ public class Settings {
 				return settings;
 			}
 		} catch (SQLException e) {
-			logUtil.error(methodName, "SQLException caught while querying database.", e);
+			log.error(methodName, "SQLException caught while querying database.", e);
 			throw e;
 		} finally {
 			Common.safeClose(con);

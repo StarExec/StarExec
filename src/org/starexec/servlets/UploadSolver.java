@@ -24,7 +24,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
@@ -40,6 +39,7 @@ import org.starexec.data.to.SolverBuildStatus;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Solver.ExecutableType;
 import org.starexec.data.to.tuples.UploadSolverResult;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.*;
 import org.starexec.jobs.JobManager;
 import org.xml.sax.SAXException;
@@ -55,8 +55,7 @@ import org.xml.sax.SAXException;
 @MultipartConfig
 public class UploadSolver extends HttpServlet {
 	
-	private static final Logger log = Logger.getLogger(UploadSolver.class);	
-	private static final LogUtil logUtil = new LogUtil(log);
+	private static final StarLogger log = StarLogger.getLogger(UploadSolver.class);	
     private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);   
     private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
     
@@ -162,7 +161,7 @@ public class UploadSolver extends HttpServlet {
 			}
     	} catch (Exception e) {
     		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-			log.error("Caught Exception in UploadSolver.doPost: " + Util.getStackTrace(e));
+			log.error("Caught Exception in UploadSolver.doPost", e);
     	}
 	}
     /**
@@ -444,7 +443,7 @@ public class UploadSolver extends HttpServlet {
 	private ValidatorStatusCode isValidRequest(HashMap<String, Object> form, HttpServletRequest request) {
 		final String method = "isValidRequest";
 		try {
-			logUtil.entry(method);
+			log.entry(method);
 			int userId=SessionUtil.getUserId(request);
 			//defines the set of attributes that are required
 			if (!form.containsKey(UPLOAD_METHOD) ||

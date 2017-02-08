@@ -3,7 +3,6 @@ package org.starexec.data.security;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
@@ -12,7 +11,6 @@ import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
-import org.starexec.data.database.Websites;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
@@ -23,10 +21,11 @@ import org.starexec.data.to.SpaceXMLUploadStatus;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
 import org.starexec.data.to.Website.WebsiteType;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.Validator;
 
 public class SpaceSecurity {
-	private static final Logger log = Logger.getLogger(SpaceSecurity.class);			
+	private static final StarLogger log = StarLogger.getLogger(SpaceSecurity.class);
 	
 	/**
 	 * Checks to see whether a user can update the properties of a space (such as default permissions, sticky leaders,

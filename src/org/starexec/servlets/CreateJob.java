@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
@@ -24,6 +23,7 @@ import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.ProcessorSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Configuration;
@@ -38,6 +38,7 @@ import org.starexec.data.to.User;
 import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.jobs.JobManager;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -48,7 +49,7 @@ import org.starexec.util.Validator;
  */
 @SuppressWarnings("serial")
 public class CreateJob extends HttpServlet {		
-	private static final Logger log = Logger.getLogger(CreateJob.class);	
+	private static final StarLogger log = StarLogger.getLogger(CreateJob.class);
 
 	// Request attributes	
 	private static final String name = "name";
@@ -174,6 +175,18 @@ public class CreateJob extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 				return;
 			}
+
+			// Check if user can use BenchExec
+			int userId = SessionUtil.getUserId(request);
+			BenchmarkingFramework framework = BenchmarkingFramework.valueOf(request.getParameter(R.BENCHMARKING_FRAMEWORK_OPTION));
+			ValidatorStatusCode benchmarkingFrameworkSecurityStatus = JobSecurity.canUserUseBenchExec(userId);
+
+			if (framework == BenchmarkingFramework.BENCHEXEC && ! benchmarkingFrameworkSecurityStatus.isSuccess()) {
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, benchmarkingFrameworkSecurityStatus.getMessage()));
+				response.sendError(HttpServletResponse.SC_FORBIDDEN, benchmarkingFrameworkSecurityStatus.getMessage());
+				return;
+			}
+
 			int space = Integer.parseInt((String) request.getParameter(spaceId));
 			DefaultSettings settings = Communities.getDefaultSettings(space);
 			// next parameters are optional, and are set to the community defaults if not present
@@ -213,7 +226,8 @@ public class CreateJob extends HttpServlet {
 			//memory is in units of bytes
 			memoryLimit = (memoryLimit <= 0) ? R.DEFAULT_PAIR_VMEM : memoryLimit;
 
-			int userId = SessionUtil.getUserId(request);
+
+
 
 			boolean suppressTimestamp = false;
 			if (Util.paramExists(R.SUPPRESS_TIMESTAMP_INPUT_NAME, request)) {
@@ -229,13 +243,7 @@ public class CreateJob extends HttpServlet {
 				}
 			}
 
-			BenchmarkingFramework framework = BenchmarkingFramework.valueOf(request.getParameter(R.BENCHMARKING_FRAMEWORK_OPTION));
 
-			if (framework == BenchmarkingFramework.BENCHEXEC) {
-				log.debug("Job will be run with BenchExec.");
-			} else {
-				log.debug("Job will be run with runsolver.");
-			}
 
 
 			//Setup the job's attributes
@@ -379,7 +387,7 @@ public class CreateJob extends HttpServlet {
 						"Your job failed to submit for an unknown reason. Please try again.");
 			}
 		} catch (Exception e) {
-			log.warn("Caught Exception in CreateJob.doPost: " + Util.getStackTrace(e));
+			log.warn("Caught Exception in CreateJob.doPost.", e);
 			throw e;
 		}
 	}

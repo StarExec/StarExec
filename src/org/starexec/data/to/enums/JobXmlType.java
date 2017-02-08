@@ -1,11 +1,6 @@
 package org.starexec.data.to.enums;
 
-import org.apache.log4j.Logger;
-import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by agieg on 11/14/2016.

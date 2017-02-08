@@ -2,22 +2,15 @@ package org.starexec.util;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 
 import org.apache.commons.lang3.tuple.Triple;
-import org.apache.log4j.Logger;
 
 import org.starexec.app.RESTHelpers;
 import org.starexec.constants.R;
@@ -62,56 +55,51 @@ import org.starexec.data.to.Website;
 import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.SolverBuildStatus;
+import org.starexec.logger.StarLogger;
 
 /**
  * Contains helper methods for JSP pages.
  */
 public class JspHelpers {
-    private static final Logger log = Logger.getLogger( JspHelpers.class );
-	private static final LogUtil logUtil = new LogUtil( log );
+    private static final StarLogger log = StarLogger.getLogger( JspHelpers.class );
 
 	private JspHelpers() {
 		throw new UnsupportedOperationException("You may not create an instance of JspHelpers."); 
 	}
 
-	public static void handleAddJobPairsPage(HttpServletRequest request, HttpServletResponse response) throws SQLException, IOException {
-		int jobId = Integer.parseInt( request.getParameter("jobId") ); 
-		final int userId = SessionUtil.getUserId( request );
-		ValidatorStatusCode securityStatus = JobSecurity.canUserAddJobPairs( jobId, userId ); 
-		if ( !securityStatus.isSuccess() ) {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN, securityStatus.getMessage());
-			return;
-		}
-
-		if ( !( Jobs.isJobPaused( jobId )  || Jobs.isJobComplete( jobId ) ) ) {
-			response.sendError(HttpServletResponse.SC_FORBIDDEN, "Job must be finished or paused to add job pairs.");
-			return;
-		}
-
+	/**
+	 * Gets all the solvers in a list of spaces combined with all the solvers in a job.
+	 * @param jobId the id of the job to get solvers from.
+	 * @param spacesAssociatedWithJob the spaces to get solvers from.
+	 * @return
+	 * @throws SQLException
+	 */
+	public static List<Solver> getSolversInSpacesAndJob(
+			int jobId,
+			Set<Integer> spacesAssociatedWithJob) throws SQLException {
 
 		Comparator<Solver> compareById = (solver1, solver2) -> solver1.getId() - solver2.getId();
 
-		List<Solver> solvers = Solvers.getByJobSimpleWithConfigs( jobId );
-		Collections.sort( solvers,  compareById );
 
+		// Get all the solvers in the list of provided spaces.
+		List<Solver> solversInSpaces = spacesAssociatedWithJob.stream()
+				.map(Solvers::getBySpace)
+				.flatMap(List::stream)
+				.sorted(compareById)
+				.collect(Collectors.toList());
 
-		// Get all solvers accessible to the user. Filter out items already in the "solvers" variable.
-		List<Solver> usersSolvers = Solvers.getByUserWithConfigs( userId ).stream()
-				.filter( item -> Collections.binarySearch( solvers, item, compareById ) < 0 ) 
-				.collect( Collectors.toList() );
+		// Get all the solvers in the job.
+		List<Solver> solversInJob = Solvers.getByJobSimpleWithConfigs(jobId);
 
+		Stream<Solver> filteredSolversInJob = solversInJob.stream()
+				// filter out all the solvers in the job that are in the spaces.
+				.filter(jobSolver -> !solversInSpaces.stream().anyMatch(spaceSolver -> spaceSolver.getId() == jobSolver.getId()));
 
-		Set<Integer> configIdSet = Solvers.getConfigIdSetByJob( jobId );	
-        Solvers.sortConfigs(solvers);
-        Solvers.sortConfigs(usersSolvers);
-		Solvers.makeDefaultConfigsFirst( solvers );
-		Solvers.makeDefaultConfigsFirst( usersSolvers );
-
-		request.setAttribute("solvers", solvers);
-		request.setAttribute("usersSolvers", usersSolvers);
-		request.setAttribute("configIdSet", configIdSet);
-		request.setAttribute("jobId", jobId);
+		return Stream.concat(filteredSolversInJob, solversInSpaces.stream())
+				.collect(Collectors.toList());
 	}
+
+
 
 	public static void handleJobPage( HttpServletRequest request, HttpServletResponse response ) throws IOException, SQLException {
 		String localJobPageParameter = request.getParameter(Web.LOCAL_JOB_PAGE_PARAMETER);
@@ -268,7 +256,7 @@ public class JspHelpers {
 	public static void handleAnonymousSolverPage( String uniqueId, HttpServletRequest request, HttpServletResponse response) 
 			throws IOException, SQLException {
 		final String methodName = "handleAnonymousSolverPage";
-		logUtil.entry( methodName );
+		log.entry( methodName );
 		try {
 			Optional<Integer> solverId = AnonymousLinks.getIdOfSolverAssociatedWithLink( uniqueId );	
 			Optional<PrimitivesToAnonymize> primitivesToAnonymize = AnonymousLinks.getPrimitivesToAnonymizeForSolver( uniqueId );
@@ -285,10 +273,10 @@ public class JspHelpers {
 				return;
 			}
 		} catch ( IOException e ) {
-			logUtil.error( methodName, "Caught an IOException while handling anonymous solver page: " + e.getMessage() );
+			log.error( methodName, "Caught an IOException while handling anonymous solver page: " + e.getMessage() );
 			throw e;
 		} catch ( SQLException e) {
-			logUtil.error( methodName, "Caught a SQLException while handling anonymous solver page: " + e.getMessage() );
+			log.error( methodName, "Caught a SQLException while handling anonymous solver page: " + e.getMessage() );
 			throw e;
 		}
 	}
@@ -321,7 +309,7 @@ public class JspHelpers {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Solver does not exist or is restricted");
 			}
 		} catch ( IOException e ) {
-			logUtil.error( methodName, "Caught an IOException while handling non-anonymous solver page: " + e.getMessage() );
+			log.error( methodName, "Caught an IOException while handling non-anonymous solver page: " + e.getMessage() );
 			throw e;
 		} 	
 	}
@@ -447,7 +435,7 @@ public class JspHelpers {
 			HttpServletResponse response ) throws IOException {
 		
 		final String methodName = "setBenchmarkPageRequestAttributes";
-		logUtil.entry( methodName );
+		log.entry( methodName );
 
 		// Set to true so anonymous user will be able to see the bench.
 		boolean userCanSeeBench = true;
@@ -510,7 +498,7 @@ public class JspHelpers {
 			String content = GeneralSecurity.getHTMLSafeString(benchmarkContents.get());
 			request.setAttribute( "content", content );
 		} catch (IOException e) {
-			logUtil.warn(methodName, "Caught exception while trying to set benchmark contents.");
+			log.warn(methodName, "Caught exception while trying to set benchmark contents.");
 			request.setAttribute("content", "IO Error: Could not get benchmark contents.");
 		}
 	}

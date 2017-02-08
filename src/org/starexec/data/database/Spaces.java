@@ -18,13 +18,13 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.to.*;
 import org.starexec.exceptions.StarExecException;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.DataTablesQuery;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
@@ -34,7 +34,7 @@ import org.starexec.util.dataStructures.TreeNode;
  * Handles all database interaction for spaces
  */
 public class Spaces {
-	private static final Logger log = Logger.getLogger(Spaces.class);
+	private static final StarLogger log = StarLogger.getLogger(Spaces.class);
 	
 	/**
 	 * Adds a new space to the system. This action adds the space, adds a
@@ -1751,7 +1751,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * 
 	 * @param spaceId The id of the space to get the subspaces of
 	 * @param userId The id of the user making the request for the subspaces
-	 * @param isRecursive True if we want all subspaces of a space recursively; False if we want only the first level of subspaces of a space
 	 * @param con the database connection to use
 	 * @return the list of subspaces of the given space
 	 * @throws Exception
@@ -1835,8 +1834,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	/**
 	 * Gets all the subspaces of the given job space.
 	 * Job spaces will be in alphabetically ascending order
-	 * @param spaceId The id of the space to get the subspaces of
-	 * @param jobId The job for which we want to get used spaces
+	 * @param jobSpaceId The id of the jobspace to get the subspaces of
 	 * @param con the open database connection to use
 	 * @return the list of subspaces of the given space used in the given job
 	 * @throws Exception
@@ -2113,6 +2111,24 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 		}
 		return false;
 	}
+
+	/**
+	 * Gets the space ids of spaces that have a given job associated with them.
+	 * @param jobId Gets the space ids containing the given Job. (not JobSpaces)
+	 * @return a list of space ids.
+	 */
+	public static Set<Integer> getByJob(int jobId) throws SQLException {
+		return Common.query("{CALL GetSpacesByJob(?)}"
+		, procedure -> procedure.setInt(1, jobId)
+		, results -> {
+			Set<Integer> spaceIds = new HashSet<>();
+			while (results.next()) {
+				spaceIds.add(results.getInt("space_id"));
+			}
+
+			return spaceIds;
+		});
+	}
 	
 	/**
 	 * Removes a list of jobs from a given space in an all-or-none fashion (creates a transaction)
@@ -2309,9 +2325,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	/**
 	 * Given a single space, removes all of the subspaces of that space from the database
 	 * recursively
-	 * 
-	 * @param subspaceIds the list of subspaces to remove
-	 * @param parentSpaceId the id of the space to remove the subspaces from
+	 * @param spaceId the id of the space to remove the subspaces from
 	 * @param con the database transaction to use
 	 * @author Todd Elvers
 	 */
@@ -2578,7 +2592,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 
 	/**
 	 * Internal recursive method that adds a space and it's benchmarks to the database
-	 * @param con The connection to perform the operations on
 	 * @param space The space to add to the database
 	 * @param parentId The id of the parent space that the given space will belong to
 	 * @param userId The user id of the owner of the new space and its benchmarks
@@ -2865,7 +2878,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	/**
 	 * Detects if a valid solver / config pair exists in the space hierarchy.
      * Used in error messages in the CreateJob servelet
-	 * @param userId The ID of the user who owns the orphaned primitives
+	 * @param usrId The ID of the user who owns the orphaned primitives
 	 * @param spaceId The ID of the space in question
 	 * @return True if a valid pair exists in the hierarchy, false otherwise.
 	 */

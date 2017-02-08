@@ -11,7 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.log4j.Logger;
 import org.starexec.backend.Backend;
 import org.starexec.backend.GridEngineBackend;
 import org.starexec.constants.R;
@@ -45,8 +44,8 @@ import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.data.to.tuples.JobCount;
 import org.starexec.exceptions.BenchmarkDependencyMissingException;
 import org.starexec.exceptions.StarExecException;
+import org.starexec.logger.StarLogger;
 import org.starexec.servlets.BenchmarkUploader;
-import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
 
 /**
@@ -54,8 +53,7 @@ import org.starexec.util.Util;
  * @author Tyler Jensen
  */
 public abstract class JobManager {
-	private static final Logger log = Logger.getLogger(JobManager.class);
-	private static final LogUtil logUtil = new LogUtil(log);
+	private static final StarLogger log = StarLogger.getLogger(JobManager.class);
 
 	private static String mainTemplate = null; // initialized below
 
@@ -229,7 +227,7 @@ public abstract class JobManager {
         logMessage.append("( jobId: "+s.job.getId()+", userId: "+s.job.getUserId()
                 +", isHighPriority: "+s.job.isHighPriority()+", hasNext: "+s.pairIter.hasNext()+" )");
 
-        logUtil.debug(methodName, logMessage.toString());
+        log.debug(methodName, logMessage.toString());
     }
 
     private static Map<Integer, JobCount> buildUserToJobCountMap(final List<Job> joblist) {
@@ -387,7 +385,7 @@ public abstract class JobManager {
 			final Map<Integer, List<SchedulingState>> userToHighPriorityStates = new HashMap<>();
 
 			Iterator<SchedulingState> it = schedule.iterator();
-			logUtil.debug(methodName, "All States In Schedule: ");
+			log.debug(methodName, "All States In Schedule: ");
 			while (it.hasNext()) {
 				final SchedulingState s = it.next();
 
@@ -467,7 +465,7 @@ public abstract class JobManager {
 						userToHighPriorityStates.put(currentStateUserId, highPriorityStates);
 
 						if (highPriorityStates.size() == 0) {
-							logUtil.info(methodName, "No high priority states with pairs left.");
+							log.info(methodName, "No high priority states with pairs left.");
 							// Remove the user from the map if they don't have any high priority jobs left to look at.
 							userToHighPriorityStates.remove(currentStateUserId);
 
@@ -489,7 +487,7 @@ public abstract class JobManager {
 									}
 								}
 							} catch (StarExecException e) {
-								logUtil.logException(methodName, e);
+								log.error(methodName, e);
 								// s will not have changed.
 							}
 						}

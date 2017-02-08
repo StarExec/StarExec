@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.log4j.Logger;
 
 import org.starexec.app.RESTServices;
 import org.starexec.data.database.AnonymousLinks;
@@ -18,24 +17,16 @@ import org.starexec.data.database.Queues;
 import org.starexec.data.database.Settings;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
-import org.starexec.data.to.DefaultSettings;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.JobSpace;
-import org.starexec.data.to.JobStatus;
-import org.starexec.data.to.Permission;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Queue;
+import org.starexec.data.to.*;
 import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.logger.StarLogger;
 
-
-import org.starexec.util.LogUtil;
 
 public class JobSecurity {
 
-	private static final Logger log = Logger.getLogger(JobSecurity.class);
-	private static final LogUtil logUtil = new LogUtil(log);
+	private static final StarLogger log = StarLogger.getLogger(JobSecurity.class);
+
 	
 	
 	/**
@@ -118,6 +109,19 @@ public class JobSecurity {
 		}
 		return canUserSeeJob(jp.getJobId(),userId);
 	}
+
+	/**
+	 * Checks if a user can use BenchExec.
+	 * @param userId the user attempting to use BenchExec
+	 * @return a validator status code indicating if a user can use BenchExec.
+	 */
+	public static ValidatorStatusCode canUserUseBenchExec(int userId) {
+		if ( Users.isAdmin(userId) || Users.isDeveloper(userId) ) {
+			return new ValidatorStatusCode(true);
+		} else {
+			return new ValidatorStatusCode(false, "User does not have permission to use BenchExec");
+		}
+	}
 	
 	/**
 	 * Checks if a job is associated with a given anonymous link uuid.
@@ -143,7 +147,7 @@ public class JobSecurity {
 	 */
 	public static ValidatorStatusCode isAnonymousLinkAssociatedWithJob( String anonymousLinkUuid, int jobId ) {
 		final String methodName = "isAnonymousLinkAssociatedWithJob"; 
-		logUtil.entry( methodName );
+		log.entry( methodName );
 		try {
 			Optional<Integer> potentialJobId = AnonymousLinks.getIdOfJobAssociatedWithLink( anonymousLinkUuid );
 			if ( !potentialJobId.isPresent() || potentialJobId.get() != jobId ) {
@@ -152,7 +156,7 @@ public class JobSecurity {
 				return new ValidatorStatusCode( true );
 			}
 		} catch ( SQLException e ) {
-			logUtil.error( methodName, "Caught an SQLException while trying to access anonymous links table data." );
+			log.error( methodName, "Caught an SQLException while trying to access anonymous links table data." );
 			return new ValidatorStatusCode( false, "Database error.");
 		}
 	}
@@ -448,7 +452,7 @@ public class JobSecurity {
 					return new ValidatorStatusCode(false, "The selected community has no default benchmark selected");
 				}
 			} catch (SQLException e) {
-				logUtil.logException(methodName, e);
+				log.error(methodName,"Caught SQLException.", e);
 				return RESTServices.ERROR_DATABASE;
 			}
 			
@@ -456,8 +460,8 @@ public class JobSecurity {
 			
 			return new ValidatorStatusCode(true);
 	}
-	
-	
+
+
 	public static ValidatorStatusCode canUserCreateJobInSpace(int userId, int sId) {
 		Permission p=Permissions.get(userId, sId);
 		

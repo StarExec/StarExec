@@ -7,13 +7,13 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecDatabaseException;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.DataTablesQuery;
 
 /**
@@ -21,7 +21,7 @@ import org.starexec.util.DataTablesQuery;
  * user activation, community and password reset requests
  */
 public class Requests {
-	private static final Logger log = Logger.getLogger(Requests.class);
+	private static final StarLogger log = StarLogger.getLogger(Requests.class);
 	
 	/**
 	 * Adds an activation code to the database for a given user (used during registration)

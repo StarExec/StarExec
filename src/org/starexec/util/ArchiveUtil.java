@@ -21,14 +21,14 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.IOUtils;
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.logger.StarLogger;
 
 /**
  * Contains helper methods for dealing with .zip files
  */
 public class ArchiveUtil {
-	private static final Logger log = Logger.getLogger(ArchiveUtil.class);	
+	private static final StarLogger log = StarLogger.getLogger(ArchiveUtil.class);
 	
 	/**
 	 * Gets the uncompressed size of an archive

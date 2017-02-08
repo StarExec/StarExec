@@ -151,22 +151,6 @@ function initDraggable(table) {
 	log($(table).attr('id') + ' table initialized as draggable');
 }
 
-/*
- * @Author Eric Burns
- * The following function is executed while the page scrolls
- * and moves the trashcan draggable target along with the page
- */
-
-
-$(window).scroll(function(){
-	var scrolldown= ($(document).scrollTop());
-	$("#trashcan").css("top", scrolldown+"px");
-	if (!$("#trashcan").css("display")=="none") {
-		$("#trashcan").hide();
-		$("#trashcan").show(); //required to move drop target
-	}
-});
-
 /**
  * Called when any item is starting to be dragged within the browser
  */

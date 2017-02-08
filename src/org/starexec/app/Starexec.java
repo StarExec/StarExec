@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.SecurityException;
 import java.util.Calendar;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -16,7 +18,6 @@ import java.sql.SQLException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.starexec.backend.*;
 import org.starexec.constants.PaginationQueries;
@@ -27,6 +28,7 @@ import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.jobs.JobManager;
 import org.starexec.jobs.ProcessingManager;
+import org.starexec.logger.StarLogger;
 import org.starexec.test.integration.TestManager;
 import org.starexec.util.ConfigUtil;
 import org.starexec.util.Mail;
@@ -41,7 +43,7 @@ import org.starexec.util.Validator;
  * @author Tyler Jensen
  */
 public class Starexec implements ServletContextListener {
-    private Logger log;
+    private StarLogger log;
     private ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(10);	
     // private Session session; // GridEngine session
 	
@@ -86,7 +88,7 @@ public class Starexec implements ServletContextListener {
 		// Before we do anything we must configure log4j!
 		PropertyConfigurator.configure(new File(R.STAREXEC_ROOT, LOG4J_PATH).getAbsolutePath());
 										
-		log = Logger.getLogger(Starexec.class);
+		log = StarLogger.getLogger(Starexec.class);
 		
 		log.info(String.format("StarExec started at [%s]", R.STAREXEC_ROOT));
 		try {
@@ -139,243 +141,32 @@ public class Starexec implements ServletContextListener {
 		event.getServletContext().setAttribute("buildDate", ConfigUtil.getBuildDate());
 		event.getServletContext().setAttribute("buildUser", ConfigUtil.getBuildUser());
 		event.getServletContext().setAttribute("contactEmail", R.CONTACT_EMAIL);		
-	}	
-	
+	}
+
+
 	/**
 	 * Creates and schedules periodic tasks to be run.
 	 */
 	private void scheduleRecurringTasks() {
-		// Create a task that updates the cluster usage info (this may take some time)
-		final Runnable updateClusterTask = new RobustRunnable("updateClusterTask") {			
-			@Override
-			protected void dorun() {
-			    log.info("updateClusterTask (periodic)");
-
-			    Cluster.loadWorkerNodes();
-			    Cluster.loadQueueDetails();
-
-			}
-		};	
-
-		
-		
-		// Create a task that submits jobs that have pending/rejected job pairs
-		final Runnable submitJobsTask = new RobustRunnable("submitJobTasks") {			
-			@Override
-			protected void dorun() {
-			    log.info("submitJobsTask (periodic)");
-			    try {
-			    	JobManager.checkPendingJobs();
-			    }
-			    catch(Exception e) {
-				log.warn("submitJobsTask caught exception: "+e,e);
-			    }
-			}
-		};
-
-		final Runnable rerunFailedPairsTask = new RobustRunnable("rerunFailedPairsTask") {
-			@Override
-			protected void dorun() {
-				log.info("rerunFailedPairsTask (periodic)");
-
-				try {
-					// Get all pairs that haven't already been rerun that have the ERROR_RUNSCRIPT status and
-					// rerun them.
-					StopWatch timer = new StopWatch();
-					timer.start();
-					List<Integer> pairIdsToRerun = JobPairs.getPairIdsByStatusNotRerunAfterDate(
-							Status.StatusCode.ERROR_RUNSCRIPT,
-							R.earliestDateToRerunFailedPairs());
-					timer.stop();
-					log.info("(rerunFailedPairsTask) Got " + pairIdsToRerun.size() + " in " + timer.toString());
-
-
-					for (Integer pairId : pairIdsToRerun) {
-						Jobs.rerunPair(pairId);
-						PairsRerun.markPairAsRerun(pairId);
-					}
-				} catch (Exception e) {
-					log.warn("rerunPairsTask caught Exception: "+Util.getStackTrace(e), e);
-				}
-			}
-		};
-		
-		// Create a task that submits jobs that have pending/rejected job pairs
-		final Runnable postProcessJobsTask = new RobustRunnable("postProcessJobsTask") {			
-			@Override
-			protected void dorun() {
-			    log.info("checkProcessJobsTask (periodic)");
-			    try {
-			    	ProcessingManager.checkProcessingPairs();
-			    }
-			    catch(Exception e) {
-				log.warn("postProcessJobsTask caught exception: "+e,e);
-			    }
-			}
-		};
-
-		// Create a task that deletes download files older than 1 day
-		final Runnable clearTemporaryFilesTask = new RobustRunnable("clearTemporaryFilesTask") {			
-			@Override
-			protected void dorun() {
-			    log.info("clearTemporaryFilesTask (periodic)");
-				Util.clearOldFiles(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR).getAbsolutePath(), 1,false);
-
-				// clear sandbox files older than one day old
-				Util.clearOldSandboxFiles(Util.getSandboxDirectory().getAbsolutePath(), 1);
-			}
-		};	
-		
-		/*  Create a task that deletes job logs older than 7 days */
-		final Runnable clearJobLogTask = new RobustRunnable("clearJobLogTask") {			
-			@Override
-			protected void dorun() {
-			    log.info("clearJobLogTask (periodic)");
-				Util.clearOldFiles(R.getJobLogDir(), R.CLEAR_JOB_LOG_PERIOD,true);
-			}
-		};
-		/*  Create a task that deletes job scripts older than 3 days */
-		final Runnable clearJobScriptTask = new RobustRunnable("clearJobScriptTask") {			
-			@Override
-			protected void dorun() {
-			    log.info("clearJobScriptTask (periodic)");
-				Util.clearOldFiles(R.getJobInboxDir(),1,false);
-			}
-		};
-		/**
-		 * Removes solvers and benchmarks from the database that are both orphaned (unaffiliated
-		 * with any spaces or job pairs) AND have already been deleted on disk.
-		 */
-		final Runnable cleanDatabaseTask = new RobustRunnable("cleanDatabaseTask") {
-			@Override
-			protected void dorun() {
-				log.info("cleanDatabaseTask (periodic)");
-				Solvers.cleanOrphanedDeletedSolvers();
-				Benchmarks.cleanOrphanedDeletedBenchmarks();
-				Jobs.cleanOrphanedDeletedJobs();
-			}
-		};
-		
-		final Runnable findBrokenJobPairs = new RobustRunnable("findBrokenJobPairs") {
-			@Override
-			protected void dorun() {
-				log.info("findBrokenJobPairs (periodic)");
-				try {
-					Jobs.setBrokenPairsToErrorStatus(R.BACKEND);
-				} catch (IOException e) {
-					log.error(e.getMessage(), e);
-				}
-			}
-		};
-		
-		final Runnable updateUserDiskSizesTask = new RobustRunnable("updateUserDiskSizesTask") {
-			@Override
-			protected void dorun() {
-				log.info( "updateUserDiskSizesTask (periodic)" );
-				
-				if (!Users.updateAllUserDiskSizes()) {
-					log.error("failed to update user disk sizes (periodic)");
-				}
-				
-			}
-		};
-
-		final Runnable deleteOldAnonymousLinksTask = new RobustRunnable("deleteOldAnonymousLinksTask") {
-			@Override
-			protected void dorun() {
-				log.info( "deleteOldAnonymousLinksTask (periodic)" );
-				try {
-					AnonymousLinks.deleteOldLinks(R.MAX_AGE_OF_ANONYMOUS_LINKS_IN_DAYS);
-				} catch (SQLException e) {
-					log.error( "Failed to delete old anonymous links." + Util.getStackTrace( e ));
-				}
-			}
-		};
-
-        final Runnable updateCommunityStats = new RobustRunnable("updateCommunityStats") {
-            @Override
-            protected void dorun() {
-                log.info("updateCommunityStats (periodic)");
-                Communities.updateCommunityMap();
-            }
-        };
-
-		final Runnable weeklyReportsTask = new RobustRunnable("weeklyReportsTask") {
-			@Override
-			protected void dorun() {
-				log.info("weeklyReportsTask (periodic)");
-				// create the reports directory in the starexec data directory if it does not already exist
-				String dataDirectory = R.STAREXEC_DATA_DIR;
-				File reportsDirectory = new File(dataDirectory, "/reports/");
-				if (!reportsDirectory.exists()) {
-					try {
-						log.debug("Attempting to create reports directory " + dataDirectory + "/reports/");
-						boolean reportsDirectoryCreated = reportsDirectory.mkdir();
-						if (!reportsDirectoryCreated) {
-							log.error("Starexec does not have permission to create the reports directory in " + dataDirectory);
-						}
-					} catch (SecurityException e) {
-						log.error("Starexec does not have permission to create the reports directory in " + dataDirectory, e);
-					}
-				}
-
-				List<User> subscribedUsers = Users.getAllUsersSubscribedToReports();
-				try {
-					if (subscribedUsers.size() > Users.getCount()) {
-						// make sure that we're not sending unnecessary emails
-						throw new Exception("There are more users subscribed to reports than users in the system!");
-					}
-
-					Calendar today = Calendar.getInstance();
-					// check if it's the day to email reports and check if reports were already sent today
-					if (today.get(Calendar.DAY_OF_WEEK) == R.EMAIL_REPORTS_DAY && !Mail.reportsEmailedToday()) {
-						String reportsEmail = Mail.generateGenericReportsEmail();
-						log.info("Storing reports and sending reports to subscribed users.");
-						Mail.storeReportsEmail(reportsEmail);
-						Mail.sendReports(subscribedUsers, reportsEmail);
-						// Set all the events occurrences in the reports table back to 0.
-						Reports.resetReports();
-						// Erase all data from the logins table.
-						Logins.resetLogins();
-					}
-				} catch (IOException e) {
-					log.error("Issue while storing reports email as text file.", e);
-				} catch (Exception e) {
-					log.error("Exception while trying to send reports.", e);
-				}
-			}
-		};
-		
-		
 		//created directories expected by the system to exist
 		Util.initializeDataDirectories();
 		
 		TestManager.initializeTests();
-		//Schedule the recurring tasks above to be run every so often
-		if (R.IS_FULL_STAREXEC_INSTANCE) {
-		    taskScheduler.scheduleAtFixedRate(updateClusterTask, 0, R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS);	
-		    taskScheduler.scheduleAtFixedRate(submitJobsTask, 0, R.JOB_SUBMISSION_PERIOD, TimeUnit.SECONDS);
-		    taskScheduler.scheduleAtFixedRate(postProcessJobsTask,0,45,TimeUnit.SECONDS);
-			taskScheduler.scheduleAtFixedRate(rerunFailedPairsTask, 0, 5, TimeUnit.MINUTES);
-		    taskScheduler.scheduleAtFixedRate(findBrokenJobPairs, 0, 3, TimeUnit.HOURS);
+
+		// Gets all the periodic tasks and runs them.
+		// If you need to create a new periodic task, add another enum instance to PeriodicTasks.PeriodicTask
+		Set<PeriodicTasks.PeriodicTask> periodicTasks = EnumSet.allOf(PeriodicTasks.PeriodicTask.class);
+		for (PeriodicTasks.PeriodicTask task : periodicTasks) {
+			if ( R.IS_FULL_STAREXEC_INSTANCE || !task.fullInstanceOnly ) {
+				taskScheduler.scheduleAtFixedRate(task.task, task.delay, task.period.get(), task.unit);
+			}
 		}
-	    taskScheduler.scheduleAtFixedRate(clearTemporaryFilesTask, 0, 3, TimeUnit.HOURS);
-	    taskScheduler.scheduleAtFixedRate(clearJobLogTask, 0, 7, TimeUnit.DAYS);
-	    taskScheduler.scheduleAtFixedRate(clearJobScriptTask, 0, 12, TimeUnit.HOURS);
-	    taskScheduler.scheduleAtFixedRate(cleanDatabaseTask, 0, 7, TimeUnit.DAYS);
-	    // checks every day if reports need to be sent 
-	    taskScheduler.scheduleAtFixedRate(weeklyReportsTask, 0, 1, TimeUnit.DAYS);
-	    taskScheduler.scheduleAtFixedRate(deleteOldAnonymousLinksTask, 0, 30, TimeUnit.DAYS);
-	    taskScheduler.scheduleAtFixedRate(updateUserDiskSizesTask, 0, 1, TimeUnit.DAYS);
-        taskScheduler.scheduleAtFixedRate(updateCommunityStats, 0, 6, TimeUnit.HOURS);
+
 		try {
 			PaginationQueries.loadPaginationQueries();
-
 		} catch (Exception e) {
 			log.error("unable to correctly load pagination queries");
 			log.error(e.getMessage(),e);
-		}	
-		
+		}
 	}
-	
 }

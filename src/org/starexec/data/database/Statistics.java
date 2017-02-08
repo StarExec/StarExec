@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.apache.log4j.Logger;
-
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.ChartUtilities;
@@ -47,9 +45,9 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.Status;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.BenchmarkTooltipGenerator;
 import org.starexec.util.BenchmarkURLGenerator;
-import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
 
 import com.google.gson.JsonObject;
@@ -60,8 +58,7 @@ import com.mysql.jdbc.ResultSetMetaData;
  * @author Tyler Jensen
  */
 public class Statistics {
-	private static final Logger log = Logger.getLogger(Statistics.class);
-	private static final LogUtil logUtil = new LogUtil(log);
+	private static final StarLogger log = StarLogger.getLogger(Statistics.class);
 	/**
 	 * This string is returned in place of a file path whenever there
 	 * are too many pairs to render a graph.
@@ -291,7 +288,7 @@ public class Statistics {
 			int stageNumber, 
 			PrimitivesToAnonymize primitivesToAnonymize) {
 		final String methodName = "makeSolverComparisonChart( int, int, int, int, boolean, int )";
-		logUtil.entry(methodName);
+		log.entry(methodName);
 
 		try {
 			List<Integer> configIds = new ArrayList<Integer>();
@@ -412,7 +409,7 @@ public class Statistics {
 			dataset.addSeries(d);
 
 			String key=debugSeries+":"+debugItem;
-			log.debug(urls.get(key));
+			log.debug(urls.get(key).toString());
 			JFreeChart chart=ChartFactory.createScatterPlot("Solver Comparison Plot",xAxisName, yAxisName, dataset, PlotOrientation.VERTICAL, true, true,false);
 			Color color=new Color(0,0,0,0); //makes the background clear
 			chart.setBackgroundPaint(color);

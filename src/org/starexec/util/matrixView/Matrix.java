@@ -11,7 +11,6 @@ import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.log4j.Logger;
 
 import org.starexec.constants.R;
 import org.starexec.data.database.Jobs;
@@ -24,7 +23,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.compare.NameableComparators;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecException;
-import org.starexec.util.LogUtil;
+import org.starexec.logger.StarLogger;
 
 
 /**
@@ -41,8 +40,7 @@ public class Matrix {
 	private Integer jobSpaceId;
 
 
-	private static final Logger log = Logger.getLogger(Matrix.class);
-	private static final LogUtil logUtil = new LogUtil(log);
+	private static final StarLogger log = StarLogger.getLogger(Matrix.class);
 
 
 	/**
@@ -53,9 +51,9 @@ public class Matrix {
 	 */
 	private Matrix(List<JobPair> jobPairs, final Integer jobSpaceId, final int stageNumber) {
 		final String method = "Matrix constructor";
-		logUtil.entry(method);
+		log.entry(method);
 		try {
-			logUtil.debug(method, "Found "+jobPairs.size()+" job pairs.");
+			log.debug(method, "Found "+jobPairs.size()+" job pairs.");
 			String jobSpaceName = Spaces.getJobSpace(jobSpaceId).getName();
 			initializeMatrixFields(jobSpaceName, jobSpaceId);
 
@@ -77,7 +75,7 @@ public class Matrix {
 			}
 
 
-			logUtil.debug(method,"Sorting benchmarks and solver-config pairs.");
+			log.debug(method,"Sorting benchmarks and solver-config pairs.");
 			// Sort the benchmarks alphabetically by name ignoring case.
 			ArrayList<Benchmark> uniqueBenchmarkList = new ArrayList<Benchmark>(uniqueBenchmarks);
 			Collections.sort(uniqueBenchmarkList, NameableComparators.getCaseInsensitiveAlphabeticalComparator());
@@ -102,9 +100,9 @@ public class Matrix {
 			// Populate the matrix.
 			populateRowAndColumnHeaders(uniqueBenchmarkList, uniqueSolverConfigList); 
 			populateMatrixData(uniqueBenchmarkList, uniqueSolverConfigList, vectorIntersectionToCellDataMap);
-			logUtil.exit(method);
+			log.exit(method);
 		} catch (Exception e) {
-			logUtil.warn(method, "Error in constructing matrix for matrix view page." + e.getMessage());
+			log.warn(method, "Error in constructing matrix for matrix view page." + e.getMessage());
 		}
 	}
 
@@ -115,8 +113,8 @@ public class Matrix {
 	 */
 	public static Matrix getMatrixForJobSpaceFromJobAndStageNumber(Job job, int jobSpaceId, int stageNumber) throws StarExecException {
 		final String method = "getMatricesByJobSpaceFromJobStage";
-		logUtil.entry(method);
-		logUtil.debug(method, "Found "+job.getJobPairs().size()+" job pairs.");
+		log.entry(method);
+		log.debug(method, "Found "+job.getJobPairs().size()+" job pairs.");
 		/*
 		List<Matrix> matricesByJobSpace = new LinkedList<Matrix>();
 		*/
@@ -147,7 +145,7 @@ public class Matrix {
 		List<JobPair> jobPairsInJobSpace = new ArrayList<JobPair>();
 		for (JobPair pair : jobPairs) {
 			Integer pairJobSpaceId = pair.getJobSpaceId();
-			logUtil.debug(method, "job space id="+pairJobSpaceId);
+			log.debug(method, "job space id="+pairJobSpaceId);
 			// Filter by jobSpaceId
 			if (pairJobSpaceId == jobSpaceId) {
 				jobPairsInJobSpace.add(pair);	

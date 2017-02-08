@@ -7,11 +7,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.WorkerNode;
+import org.starexec.logger.StarLogger;
 
 
 /**
@@ -20,7 +20,7 @@ import org.starexec.data.to.WorkerNode;
 
 
 public class Cluster {
-	private static final Logger log = Logger.getLogger(Cluster.class);	
+	private static final StarLogger log = StarLogger.getLogger(Cluster.class);
 	
 	/**
 	 * Gets the worker nodes from BACKEND and adds them to the database if they don't already exist. This must be done

@@ -6,12 +6,10 @@ import java.io.StringReader;
 import java.sql.*;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.function.BiFunction;
 
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.time.StopWatch;
-import org.apache.log4j.Logger;
-import org.apache.tomcat.dbcp.pool.impl.GenericKeyedObjectPool;
+
 import org.starexec.constants.R;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Configuration;
@@ -24,25 +22,23 @@ import org.starexec.data.to.SolverComparison;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.enums.ConfigXmlAttribute;
-import org.starexec.data.to.enums.JobXmlType;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PairStageProcessorTriple;
 import org.starexec.data.to.tuples.ConfigAttrMapPair;
-import org.starexec.util.LogUtil;
+import org.starexec.data.to.tuples.PairIdJobId;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.Util;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.swing.text.html.Option;
 
 /**
  * Contains handles on database queries for retrieving and updating
  * job pairs.
  */
 public class JobPairs {
-	private static final Logger log = Logger.getLogger(JobPairs.class);
-	private static final LogUtil logUtil = new LogUtil( log );
+	private static final StarLogger log = StarLogger.getLogger(JobPairs.class);
 	
 
 	private static boolean addJobPairInputs(List<JobPair> pairs, Connection con) {
@@ -65,7 +61,7 @@ public class JobPairs {
 					final int batchSize = 1000;
 					if (batchCounter > batchSize) {
 						totalPairsSubmitted += batchSize;
-						logUtil.debug( methodName, "Submitting batch of "+ batchSize+", total pairs submitted: "+totalPairsSubmitted);
+						log.debug( methodName, "Submitting batch of "+ batchSize+", total pairs submitted: "+totalPairsSubmitted);
 						procedure.executeBatch();
 						batchCounter = 0;
 					}
@@ -74,7 +70,7 @@ public class JobPairs {
 			}
 			if (batchCounter>0) {
 				totalPairsSubmitted += batchCounter;
-				logUtil.debug( methodName, "Submitting batch of "+ batchCounter+", total pairs submitted: "+totalPairsSubmitted);
+				log.debug( methodName, "Submitting batch of "+ batchCounter+", total pairs submitted: "+totalPairsSubmitted);
 				procedure.executeBatch();
 			}			
 
@@ -193,7 +189,7 @@ public class JobPairs {
 			}
 			return Optional.empty();
 		} catch (SQLException e) {
-			logUtil.logException(methodName, e);
+			log.error(methodName,"Caught SQLException.", e);
 			throw e;
 		} finally {
 			Common.safeClose(con);
@@ -288,7 +284,7 @@ public class JobPairs {
 					final int batchSize = 1000;
 					if (batchCounter > batchSize) {
 						totalPairsSubmitted += batchSize;
-						logUtil.debug( methodName, "Submitting batch of " + batchSize +", total pairs submitted: "+totalPairsSubmitted );
+						log.debug( methodName, "Submitting batch of " + batchSize +", total pairs submitted: "+totalPairsSubmitted );
 						procedure.executeBatch();
 						batchCounter = 0;
 					}
@@ -297,7 +293,7 @@ public class JobPairs {
 			}
 			if (batchCounter > 0) {
 				totalPairsSubmitted += batchCounter;
-				logUtil.debug( methodName, "Submitting batch of " + batchCounter +", total pairs submitted: "+totalPairsSubmitted );
+				log.debug( methodName, "Submitting batch of " + batchCounter +", total pairs submitted: "+totalPairsSubmitted );
 				procedure.executeBatch();
 			}
 			return true;
@@ -327,7 +323,7 @@ public class JobPairs {
 			log.debug("addJobPairs three");
 			return success;
 		} catch ( SQLException e ) {
-			logUtil.error( methodName, "SQLException thrown: " + Util.getStackTrace( e ) );
+			log.error( methodName, "SQLException thrown: " + e.getMessage(), e);
 			Common.doRollback( con );
 			throw e;
 		} finally  {
@@ -345,7 +341,7 @@ public class JobPairs {
 	 */
 	protected static boolean addJobPairs(Connection con, int jobId, List<JobPair> pairs) throws SQLException {
 		final String methodName = "addJobPairs";
-		logUtil.entry( methodName );
+		log.entry( methodName );
 		CallableStatement procedure = null;
 		 try {
 			procedure = con.prepareCall("{CALL AddJobPair(?, ?, ?, ?, ?, ?, ?, ?)}");
@@ -371,14 +367,14 @@ public class JobPairs {
 
 				pairsProcessed+=1;
 				if (pairsProcessed % 1000 == 0) {
-					logUtil.debug(methodName, "Pairs Processed: "+pairsProcessed);
+					log.debug(methodName, "Pairs Processed: "+pairsProcessed);
 				}
 			}
-			logUtil.debug(methodName, "Pairs Processed: "+pairsProcessed);
+			log.debug(methodName, "Pairs Processed: "+pairsProcessed);
 
-			logUtil.debug( methodName, "Adding job pair stages." );
+			log.debug( methodName, "Adding job pair stages." );
 			addJobPairStages(pairs,con);
-			logUtil.debug( methodName, "Adding job pair inputs." );
+			log.debug( methodName, "Adding job pair inputs." );
 			addJobPairInputs(pairs,con);
 			return true;
 		} catch (Exception e) {
@@ -484,7 +480,7 @@ public class JobPairs {
 				log.debug("pair deleted");
 			}
 		} catch ( SQLException e ) {
-			logUtil.debug( methodName, "Caught an SQLException, database failed." );
+			log.debug( methodName, "Caught an SQLException, database failed." );
 			Common.doRollback( con );
 			throw e;
 		} finally {
@@ -1554,7 +1550,46 @@ public class JobPairs {
 		}
 		return false;
 	}
-	
+
+	/**
+	 * Gets pair ids, node ids, and job ids, that have been enqueued longer than a given amount of time.
+	 * @param minutes if a pair has been enqueued longer than this number of minutes it will be returned with its node and job ids.
+	 * @return the pair ids and their node ids and jobs ids that have been enqueued longer than the given amount of time.
+	 * @throws SQLException if something goes wrong in the database.
+	 */
+	public static ImmutableSet<PairIdJobId> getPairsEnqueuedLongerThan(int minutes) throws SQLException {
+		return Common.query("{CALL GetPairsEnqueuedLongerThan(?)}"
+				, procedure -> procedure.setInt(1, minutes)
+				, results -> {
+					Set<PairIdJobId> brokenPairs = new HashSet<>();
+					while(results.next()) {
+						brokenPairs.add(new PairIdJobId(results.getInt("pair_id"), results.getInt("job_id")));
+					}
+					return ImmutableSet.copyOf(brokenPairs);
+				});
+	}
+
+
+	/**
+	 * Gets nodes that may have had pairs enqueued longer than the given amount of time without setting them to "running".
+	 * The SQL procedure gets the queues for pairs that have been enqueued for the amount of time without being set to running
+	 * and then gets the nodes from that queue that haven't been running jobs in that time.
+	 * @param minutes the time that nodes must have been idle for to qualify as broken.
+	 * @return the ids of the identified nodes.
+	 * @throws SQLException if there is a database error.
+	 */
+	public static ImmutableSet<Integer> getNodesThatMayHavePairsEnqueuedLongerThan(int minutes) throws SQLException {
+		return Common.query("{CALL GetNodesThatMayHavePairsEnqueuedLongerThan(?)}"
+				, procedure -> procedure.setInt(1, minutes)
+				, results -> {
+					Set<Integer> potentiallyBrokenNodes = new HashSet<>();
+					while(results.next()) {
+						potentiallyBrokenNodes.add(results.getInt("node_id"));
+					}
+					return ImmutableSet.copyOf(potentiallyBrokenNodes);
+				});
+	}
+
 	/**
 	 * Sets the status of a given job pair to the given status
 	 * @param pairId

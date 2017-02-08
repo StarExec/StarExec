@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Spaces;
@@ -19,12 +18,13 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
+import org.starexec.logger.StarLogger;
 import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
 
 public class StressTest {
-	private static final Logger log = Logger.getLogger(StressTest.class);
+	private static final StarLogger log = StarLogger.getLogger(StressTest.class);
 
 	private static String SOLVER_NAME="smallsolver.zip";
 	private static String BENCHMARK_NAME="app12.zip"; //contains about 1500 benchmarks

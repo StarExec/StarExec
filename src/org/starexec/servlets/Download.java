@@ -22,7 +22,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.constants.Web;
 import org.starexec.data.database.AnonymousLinks;
@@ -46,9 +45,9 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.BatchUtil;
-import org.starexec.util.LogUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -60,8 +59,7 @@ import org.starexec.util.JobToXMLer;
  */
 @SuppressWarnings("serial")
 public class Download extends HttpServlet {
-	private static final Logger log = Logger.getLogger(Download.class);
-	private static final LogUtil logUtil = new LogUtil( log );
+	private static final StarLogger log = StarLogger.getLogger(Download.class);
 	private static final String JS_FILE_TYPE = "js";
 	private static final String CSS_FILE_TYPE = "css";
 	private static final String PNG_FILE_TYPE = "png";
@@ -81,7 +79,7 @@ public class Download extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		final String methodName = "doGet";
-		logUtil.entry( methodName );
+		log.entry( methodName );
 
 		User u = SessionUtil.getUser(request);
 		boolean success;
@@ -154,10 +152,10 @@ public class Download extends HttpServlet {
 				String universallyUniqueId = request.getParameter( PARAM_ANON_ID );
 				if ( universallyUniqueId == null ) {
 					int benchId = Integer.parseInt(request.getParameter(PARAM_ID));
-					logUtil.debug( methodName, "Getting benchmark with id: " + benchId );
+					log.debug( methodName, "Getting benchmark with id: " + benchId );
 					b = Benchmarks.get( benchId );
 				} else {
-					logUtil.debug( methodName, "Getting benchmark from anonymous link UUID: " + universallyUniqueId );
+					log.debug( methodName, "Getting benchmark from anonymous link UUID: " + universallyUniqueId );
 					Optional<Integer> benchId =  AnonymousLinks.getIdOfBenchmarkAssociatedWithLink( universallyUniqueId );
 					if ( benchId.isPresent() ) {
 						b = Benchmarks.get( benchId.get() );
@@ -258,12 +256,12 @@ public class Download extends HttpServlet {
 
 
 			} else if (request.getParameter(PARAM_TYPE).equals(R.PROCESSOR)) {
-				logUtil.debug(methodName, "Got download request for processor.");
+				log.debug(methodName, "Got download request for processor.");
 				List<Processor> proc=null;
 				shortName="Processor";
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
 				if (request.getParameter("procClass").equals("post")) {
-					logUtil.debug(methodName, "download request is for post-processor.");
+					log.debug(methodName, "download request is for post-processor.");
 
 					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter(PARAM_ID)), Processor.ProcessorType.POST);
 				} else if (request.getParameter("procClass").equals("pre")){
@@ -309,16 +307,16 @@ public class Download extends HttpServlet {
 
 			if (success) {
 				response.getOutputStream().close();
-				logUtil.exit(methodName);
+				log.exit(methodName);
 				return;
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");
-				logUtil.exit(methodName);
+				log.exit(methodName);
 				return;
 			}
 
 		} catch (Exception e) {
-			log.warn("Caught Exception in Download.doGet: " + Util.getStackTrace(e));
+			log.warn("Caught Exception in Download.doGet", e);
 			response.getOutputStream().close();
 			//this won't work because we have already opened the response output stream
 			//response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
@@ -373,7 +371,7 @@ public class Download extends HttpServlet {
 
 	private static boolean handleProc(List<Processor> procs, int userId, int spaceId, HttpServletResponse response) throws Exception {
 			final String methodName = "handleProc";
-			logUtil.entry(methodName);
+			log.entry(methodName);
 
 			List<File> files=new LinkedList<File>();
 			for (Processor x : procs) {
@@ -381,17 +379,17 @@ public class Download extends HttpServlet {
 				if (newProc.exists()) {
 					files.add(new File(x.getFilePath()));
 				} else {
-					logUtil.warn(methodName, "processor with id = "+x.getId()+" exists in the database but not on disk");
+					log.warn(methodName, "processor with id = "+x.getId()+" exists in the database but not on disk");
 				}
 			}
 			if (files.size()>0) {
-				logUtil.debug(methodName, "Outputting zip of processors.");
+				log.debug(methodName, "Outputting zip of processors.");
 				ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), "processors");
 				return true;
 			}
 
 
-		logUtil.warn(methodName, "Didn't find any files on disk.");
+		log.warn(methodName, "Didn't find any files on disk.");
 		return false;
 	}
 
@@ -488,7 +486,7 @@ public class Download extends HttpServlet {
 		List<JobPair> pairs=new ArrayList<JobPair>();
 		Job j=null;
 		final String methodName = "handlePairOutputs";
-		logUtil.entry(methodName);
+		log.entry(methodName);
 
 		for (Integer id : pairIds) {
 			JobPair jp = JobPairs.getPair(id);
@@ -514,7 +512,7 @@ public class Download extends HttpServlet {
 		String baseName="Job"+String.valueOf(j.getId())+"_output";
 
 		Download.addJobPairsToZipOutput(pairs,response,baseName,longPath,null);
-		logUtil.exit(methodName);
+		log.exit(methodName);
     	return true;
     }
 

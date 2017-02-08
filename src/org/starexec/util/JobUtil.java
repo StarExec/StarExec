@@ -2,27 +2,17 @@ package org.starexec.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletResponse;
-import javax.swing.text.html.Option;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
-import org.apache.commons.lang3.time.StopWatch;
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.*;
+import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
+import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Queue;
@@ -34,9 +24,8 @@ import org.starexec.data.to.pipelines.*;
 import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.data.to.tuples.ConfigAttrMapPair;
+import org.starexec.logger.StarLogger;
 import org.starexec.servlets.CreateJob;
-import org.starexec.util.DOMHelper;
-import org.starexec.util.LogUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -44,8 +33,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class JobUtil {
-	private static final Logger log = Logger.getLogger(JobUtil.class);
-	private static final LogUtil logUtil = new LogUtil(log);
+	private static final StarLogger log = StarLogger.getLogger(JobUtil.class);
 	
 	private Boolean jobCreationSuccess = false;
 	private String errorMessage = "";//this will be used to given information to user about failures in validation
@@ -76,14 +64,14 @@ public class JobUtil {
 		final String method = "createJobsFromFile";
 		List<Integer> jobIds=new ArrayList<Integer>();
 		if (!validateAgainstSchema(file, xmlType)){
-			logUtil.warn(method, "File from User " + userId + " is not Schema valid.");
+			log.warn(method, "File from User " + userId + " is not Schema valid.");
 			errorMessage = "File from User " + userId + " is not Schema valid.";
 			return null;
 		}
 		
 		Permission p = Permissions.get(userId, spaceId);
 		if (!p.canAddJob()){
-			logUtil.info(method, "User with id="+userId+" does not have permission to create a job on space with id="+spaceId);
+			log.info(method, "User with id="+userId+" does not have permission to create a job on space with id="+spaceId);
 			errorMessage = "You do not have permission to create a job on this space";
 			return null;
 		}
@@ -95,20 +83,20 @@ public class JobUtil {
 		NodeList listOfJobElements = jobsElement.getElementsByTagName("Job");
 		
 		NodeList listOfPipelines = doc.getElementsByTagName("SolverPipeline");
-		logUtil.info(method, "# of pipelines = " + listOfPipelines.getLength());
+		log.info(method, "# of pipelines = " + listOfPipelines.getLength());
 		
         //Check Jobs and Job Pairs
         NodeList listOfJobs = doc.getElementsByTagName("Job");
-		logUtil.info(method, "# of Jobs = " + listOfJobs.getLength());
+		log.info(method, "# of Jobs = " + listOfJobs.getLength());
         NodeList listOfJobPairs = doc.getElementsByTagName("JobPair");
 		NodeList listOfUploadedSolverJobPairs = doc.getElementsByTagName("UploadedSolverJobPair");
 
 
-		logUtil.info(method, "# of JobPairs = " + listOfJobPairs.getLength());
-		logUtil.info(method, "# of UploadedSolverJobPairs = " + listOfUploadedSolverJobPairs.getLength());
+		log.info(method, "# of JobPairs = " + listOfJobPairs.getLength());
+		log.info(method, "# of UploadedSolverJobPairs = " + listOfUploadedSolverJobPairs.getLength());
 
 		NodeList listOfJobLines= doc.getElementsByTagName("JobLine");
-		logUtil.info(method, " # of JobLines = "+listOfJobLines.getLength());
+		log.info(method, " # of JobLines = "+listOfJobLines.getLength());
 		//this job has nothing to run
 		int pairCount = listOfJobPairs.getLength()+listOfJobLines.getLength()+listOfUploadedSolverJobPairs.getLength();
 		if (pairCount == 0) {
@@ -133,7 +121,7 @@ public class JobUtil {
 		
 		//data structure to ensure all pipeline names in this upload are unique
 		HashMap<String,SolverPipeline> pipelineNames=new HashMap<String,SolverPipeline>();
-		logUtil.info(method, "Creating pipelines from elements.");
+		log.info(method, "Creating pipelines from elements.");
 		for (int i=0; i< listOfPipelines.getLength(); i++) {
 			Node pipeline = listOfPipelines.item(i);
 			SolverPipeline pipe=createPipelineFromElement(userId, (Element) pipeline);
@@ -149,21 +137,21 @@ public class JobUtil {
 			}
 			pipelineNames.put(pipe.getName(),pipe);
 		}
-		logUtil.info(method, "Finished creating pipelines from elements.");
+		log.info(method, "Finished creating pipelines from elements.");
 		
 		// Make sure jobs are named
-		logUtil.info(method, "Checking to make sure jobs are named.");
+		log.info(method, "Checking to make sure jobs are named.");
 		for (int i = 0; i < listOfJobs.getLength(); i++){
 			Node jobNode = listOfJobs.item(i);
 			if (jobNode.getNodeType() == Node.ELEMENT_NODE){
 				Element jobElement = (Element)jobNode;
 				String name = jobElement.getAttribute("name");
 				if (name == null) {
-					logUtil.info(method, "Name not found");
+					log.info(method, "Name not found");
 					errorMessage = "Job elements must include a 'name' attribute.";
 					return null;
 				}
-				logUtil.debug(method, "Job Name = " + name);
+				log.debug(method, "Job Name = " + name);
 				
 				if (!org.starexec.util.Validator.isValidJobName(name)){
 					errorMessage = name + "is not a valid job name";
@@ -176,10 +164,10 @@ public class JobUtil {
 			}
 		}
 		
-		logUtil.info(method, "Finished checking to make sure jobs are named.");
+		log.info(method, "Finished checking to make sure jobs are named.");
 		
 		
-		logUtil.info(method, "Creating jobs from elements.");
+		log.info(method, "Creating jobs from elements.");
 		for (int i = 0; i < listOfJobElements.getLength(); i++){
 			Node jobNode = listOfJobElements.item(i);
 			if (jobNode.getNodeType() == Node.ELEMENT_NODE){
@@ -200,7 +188,7 @@ public class JobUtil {
 				jobIds.add(id);
 			}
 		}
-		logUtil.info(method, "Finished creating jobs from elements, returning job ids.");
+		log.info(method, "Finished creating jobs from elements, returning job ids.");
 		this.jobCreationSuccess = true;
 
 		return jobIds;
@@ -489,6 +477,21 @@ public class JobUtil {
 			}
 			else{
 			    job.setDescription("no description");
+			}
+
+			if (DOMHelper.hasElement(jobAttributes, R.XML_BENCH_FRAMEWORK_ELE_NAME)) {
+				Element framework = DOMHelper.getElementByName(jobAttributes, R.XML_BENCH_FRAMEWORK_ELE_NAME);
+
+				// Make sure the user can use the selected benchmarking framework.
+				BenchmarkingFramework selectedFramework = BenchmarkingFramework.valueOf(framework.getAttribute("value").toUpperCase());
+				if (selectedFramework == BenchmarkingFramework.BENCHEXEC && !JobSecurity.canUserUseBenchExec(userId).isSuccess()) {
+					errorMessage = "You are not allowed to use the selected benchmarking framework.";
+					return -1;
+				}
+
+				job.setBenchmarkingFramework( selectedFramework );
+			} else {
+				job.setBenchmarkingFramework(R.DEFAULT_BENCHMARKING_FRAMEWORK);
 			}
 		    
 			job.setUserId(userId);

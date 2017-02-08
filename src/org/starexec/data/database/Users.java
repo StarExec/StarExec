@@ -9,30 +9,27 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
-import org.starexec.data.database.Jobs;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecSecurityException;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.DataTablesQuery;
 import org.starexec.util.Hash;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
-import org.starexec.util.LogUtil;
 import org.starexec.util.Util;
 
 /**
  * Handles all database interaction for users
  */
 public class Users {
-	private static final Logger log = Logger.getLogger(Users.class);
-	private static final LogUtil logUtil = new LogUtil( log );
-		
+	private static final StarLogger log = StarLogger.getLogger(Users.class);
+
 	/**
 	 * Associates a user with a space (i.e. adds the user to the space)
 	 * @param con The connection to perform the database operation on
@@ -1157,11 +1154,11 @@ public class Users {
 	 */
 	private static void deleteUsersJobDirectories(int userId) {
 		final String method = "deleteUsersJobDirectories";
-		logUtil.entry(method);
+		log.entry(method);
 		List<Job> jobs = Jobs.getByUserId(userId);
 		for (Job job : jobs) {
 			final String jobDirectory = Jobs.getDirectory( job.getId() );
-			logUtil.debug( method, "User is being deleted, deleting job directory with path: " + jobDirectory );
+			log.debug( method, "User is being deleted, deleting job directory with path: " + jobDirectory );
 			Util.safeDeleteDirectory( jobDirectory );
 		}
 	}

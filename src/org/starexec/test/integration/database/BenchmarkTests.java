@@ -7,7 +7,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
@@ -18,6 +17,7 @@ import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.*;
+import org.starexec.logger.StarLogger;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
@@ -31,7 +31,7 @@ import org.starexec.util.Util;
  * @author Eric
  */
 public class BenchmarkTests extends TestSequence {
-	private static final Logger log = Logger.getLogger(BenchmarkTests.class);	
+	private static final StarLogger log = StarLogger.getLogger(BenchmarkTests.class);
 	private User user=null;
 	private User user2=null;
 	private User admin=null;
@@ -75,7 +75,7 @@ public class BenchmarkTests extends TestSequence {
 		Assert.assertNotNull(benches);
 		Assert.assertEquals(benchmarks.size(),benches.size());
 		for (Benchmark b : benches) {
-			log.debug(b.getId());
+			log.debug(String.valueOf(b.getId()));
 			Assert.assertTrue(containsBenchmark(benchmarks,b));
 		}
 	}
@@ -100,7 +100,7 @@ public class BenchmarkTests extends TestSequence {
 			}
 		} catch (SQLException e) {
 			Assert.fail("Call threw SQL Exception.");
-			log.error(Util.getStackTrace(e));
+			log.error("Caught SQLException: " + e.getMessage(), e);
 		}
 
 	}

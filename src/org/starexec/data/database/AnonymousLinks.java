@@ -17,11 +17,10 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.UUID;
 
-import org.apache.log4j.Logger;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 
-import org.starexec.util.LogUtil;
+import org.starexec.logger.StarLogger;
 import org.starexec.constants.R;
 import org.starexec.constants.Web;
 
@@ -40,8 +39,7 @@ import org.starexec.util.Util;
 
 
 public class AnonymousLinks {
-	private static final Logger log = Logger.getLogger(AnonymousLinks.class);			
-	private static final LogUtil logUtil = new LogUtil(log);
+	private static final StarLogger log = StarLogger.getLogger(AnonymousLinks.class);
 	private static final int MAX_UUID_LENGTH = 36;
 
 
@@ -152,7 +150,7 @@ public class AnonymousLinks {
 			final PrimitivesToAnonymize primitivesToAnonymize ) throws SQLException {
 
 		final String methodName = "addAnonymousLink";
-		logUtil.entry(methodName);
+		log.entry(methodName);
 
 		final String universallyUniqueId = UUID.randomUUID().toString();
 
@@ -179,7 +177,7 @@ public class AnonymousLinks {
 
 			return universallyUniqueId;
 		} catch (SQLException e) { 
-			logUtil.error( methodName, "Threw an exception while adding anonymous link for " + primitiveType + " with id=" + primitiveId +
+			log.error( methodName, "Threw an exception while adding anonymous link for " + primitiveType + " with id=" + primitiveId +
 				"\nError message: " + e.getMessage() );
 			Common.doRollback( con );
 
@@ -205,7 +203,7 @@ public class AnonymousLinks {
 			final PrimitivesToAnonymize primitivesToAnonymize ) throws SQLException {
 
 		final String methodName = "getAnonymousLinkCode";
-		logUtil.entry(methodName);
+		log.entry(methodName);
 
 		Connection con = null;
 		CallableStatement procedure = null;
@@ -287,7 +285,7 @@ public class AnonymousLinks {
 			final String primitiveType ) throws SQLException {
 
 		final String methodName = "getIdOfPrimitiveAssociatedWithCode";
-		logUtil.entry( methodName );
+		log.entry( methodName );
 
 		// UUIDs have a max size of 36.
 		if ( universallyUniqueId.length() > MAX_UUID_LENGTH ) {
@@ -316,7 +314,7 @@ public class AnonymousLinks {
 				return Optional.empty();
 			}
 		} catch (SQLException e) {
-			logUtil.error( methodName, e.toString() );
+			log.error( methodName, e.toString() );
 			Common.doRollback( con );
 			throw e;
 		} finally {
@@ -361,7 +359,7 @@ public class AnonymousLinks {
 
 	private static Optional<PrimitivesToAnonymize> getPrimitivesToAnonymize( String linkUuid, String primitiveType ) throws SQLException {
 		final String methodName = "getPrimitivesToAnonymize";
-		logUtil.entry( methodName );
+		log.entry( methodName );
 
 		// UUIDs have a max size of 36.
 		if ( linkUuid.length() > MAX_UUID_LENGTH ) {
@@ -388,7 +386,7 @@ public class AnonymousLinks {
 				return Optional.empty();
 			}
 		} catch (SQLException e) {
-			logUtil.error( methodName, e.toString() );
+			log.error( methodName, e.toString() );
 			throw e;
 		} finally {
 			Common.safeClose( con );
@@ -418,7 +416,7 @@ public class AnonymousLinks {
 
 			Common.endTransaction(con);
 		} catch (SQLException e) {
-			logUtil.error( methodName, Util.getStackTrace( e ));
+			log.error( methodName, Util.getStackTrace( e ));
 			Common.doRollback( con );
 			throw e;
 		} finally {
@@ -443,7 +441,7 @@ public class AnonymousLinks {
 			}
 			Common.endTransaction( con );
 		} catch (SQLException e) {
-			logUtil.error( methodName, Util.getStackTrace( e ));
+			log.error( methodName, "Caught SQLException e: " + e.getMessage(), e);
 			Common.doRollback( con );
 			throw e;
 		} finally {
@@ -465,7 +463,7 @@ public class AnonymousLinks {
 			delete( uuid, con );
 			Common.endTransaction(con);
 		} catch (SQLException e) {
-			logUtil.error( methodName, Util.getStackTrace( e ));
+			log.error( methodName, "Caught SQLException: "+e.getMessage(), e);
 			Common.doRollback( con );
 		} finally {
 			Common.safeClose( con );
@@ -490,7 +488,7 @@ public class AnonymousLinks {
 
 	public static boolean hasJobBeenAnonymized( final int jobId ) throws SQLException {
 		final String methodName= "hasJobBeenAnonymized";
-		logUtil.entry(methodName);
+		log.entry(methodName);
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -506,7 +504,7 @@ public class AnonymousLinks {
 			// return true/false depending on if there are any results.
 			return results.next();
 		} catch( SQLException e ) {
-			logUtil.error( methodName, Util.getStackTrace(e));
+			log.error( methodName, "Caught SQLException: "+e.getMessage(), e);
 			throw e;
 		} finally {
 			Common.safeClose( con );
@@ -523,7 +521,7 @@ public class AnonymousLinks {
 	 */
 	public static void addAnonymousNamesForJob( final int jobId ) throws SQLException {
 		final String methodName = "addAnonymousNamesForJob";
-		logUtil.entry( methodName );
+		log.entry( methodName );
 
 		Job job = Jobs.getWithSimplePairs( jobId );
 
@@ -569,7 +567,7 @@ public class AnonymousLinks {
 
 			Common.endTransaction( con );
 		} catch (SQLException e) {
-			logUtil.error( methodName, Util.getStackTrace( e ) );
+			log.error( methodName, e.getMessage(), e );
 			throw e;
 		} finally {
 			Common.doRollback( con );
@@ -603,7 +601,7 @@ public class AnonymousLinks {
 			}
 			return anonymizedSolverNamesKey;
 		} catch (SQLException e) {
-			logUtil.error(methodName, "Database failure while geting anonymized solver names key.\n"+Util.getStackTrace( e ) );
+			log.error(methodName, "Database failure while geting anonymized solver names key.", e);
 			throw e;
 		} finally {
 			Common.safeClose(con);
@@ -621,7 +619,7 @@ public class AnonymousLinks {
 			final Connection con ) throws SQLException {
 
 		final String methodName = "addAnonymousPrimitiveName";
-		logUtil.entry( methodName );
+		log.entry( methodName );
 
 		CallableStatement procedure = null;
 
@@ -635,7 +633,7 @@ public class AnonymousLinks {
 			procedure.executeUpdate();
 
 		} catch ( SQLException e ) {
-			logUtil.error( methodName, Util.getStackTrace( e ) );
+			log.error( methodName, "Caught SQLException: "+e.getMessage(), e );
 			throw e;
 		} finally {
 			Common.safeClose( procedure );
@@ -690,7 +688,7 @@ public class AnonymousLinks {
 	 */
 	private static Map<Integer, String> buildAnonymizedBenchmarkNamesMap( final List<Benchmark> benchmarks ) {
 		final String methodName = "buildAnonymizedBenchmarkNamesMap";
-		logUtil.entry( methodName );
+		log.entry( methodName );
 
 		Map<Integer, String> benchmarkIdToAnonymizedName = new HashMap<>();
 		int numberToAppend = 1;

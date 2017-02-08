@@ -4,9 +4,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
-import org.starexec.util.Util;
 import org.starexec.constants.R;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Pipelines;
@@ -17,6 +14,7 @@ import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.PipelineStage;
 import org.starexec.data.to.pipelines.SolverPipeline;
 import org.starexec.data.to.pipelines.StageAttributes;
+import org.starexec.logger.StarLogger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -27,7 +25,7 @@ import org.w3c.dom.Element;
  */
 
 public class JobToXMLer {
-    private static final Logger log = Logger.getLogger(JobToXMLer.class);
+    private static final StarLogger log = StarLogger.getLogger(JobToXMLer.class);
 	
 	private Document doc = null;
 	

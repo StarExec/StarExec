@@ -1,19 +1,18 @@
 package org.starexec.backend;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import java.util.regex.Pattern;
-
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
 import org.starexec.exceptions.StarExecException;
-import org.starexec.util.LogUtil;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * This is a backend implementation that uses Sun Grid Engine
@@ -33,8 +32,7 @@ public class GridEngineBackend implements Backend{
 	
 	
     private Session session = null;
-    private Logger log;
-	private LogUtil logUtil;
+    private StarLogger log;
     private String BACKEND_ROOT = null;
     
     // The regex patterns used to parse SGE output
@@ -50,8 +48,7 @@ public class GridEngineBackend implements Backend{
      * after construction.
      */
     public GridEngineBackend(){
-		log = Logger.getLogger(GridEngineBackend.class);
-		logUtil = new LogUtil(log);
+		log = StarLogger.getLogger(GridEngineBackend.class);
     }
 
     /**
@@ -298,13 +295,13 @@ public class GridEngineBackend implements Backend{
 		final String methodName = "getSlotsInQueue";
 		try {
 			String getSlotsInQueueCommand = QUEUE_GET_SLOTS_PATTERN.replace(QUEUE_NAME_PATTERN, queueName);
-			logUtil.debug(methodName, "Executing command: " + getSlotsInQueueCommand);
+			log.debug(methodName, "Executing command: " + getSlotsInQueueCommand);
 			String results = Util.executeCommand(getSlotsInQueueCommand);
-			logUtil.debug(methodName, "Got result: '" + results + "'");
+			log.debug(methodName, "Got result: '" + results + "'");
 
 			// Trim outer whitespace and replace all consecutive whitespace with a single space.
 			String condensedResults = results.trim().replaceAll("\\s+", " ");
-			logUtil.debug(methodName, "Condensed results: "+condensedResults);
+			log.debug(methodName, "Condensed results: "+condensedResults);
 
 			List<String> resultsWords = Arrays.asList(condensedResults.split(" "));
 			int slotsIndex = resultsWords.indexOf("slots");
@@ -327,7 +324,7 @@ public class GridEngineBackend implements Backend{
 
 			return Integer.parseInt(slots);
 		} catch (IOException e) {
-			logUtil.logException(methodName, e);
+			log.error("Caught IOException.", e);
 			throw e;
 		}
 	}

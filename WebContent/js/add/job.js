@@ -42,9 +42,8 @@ $(document).ready(function(){
 	if ($("#remainingQuota").attr("value")<=0) {
 		showMessage("warn","You have reached your pair quota. You will not be able to submit new jobs without removing some old jobs first.", 8000);
 	}
-
-
 });
+
 
 function getMaxCpuTimeout(){
 	maxtime=$( "#workerQueue option:selected" ).attr("cpumax");
@@ -325,6 +324,10 @@ function initUI() {
 		$('#tblBenchConfig tbody tr').removeClass('row_selected');
 	});
 
+	log('Setting up runsolver/BenchExec clicked functions.');
+	$('#radioUseBenchexec').click(useBenchexecClicked);
+	$('#radioUseRunsolver').click(useRunsolverClicked);
+
 	registerSolverConfigTableRowSelectionEventHandler();
 
 
@@ -385,6 +388,27 @@ function initUI() {
     updateProgress();
 
 }
+
+function useRunsolverClicked() {
+	'use strict';
+	log('runsolver clicked.');
+	$('#suppressTimestampsRow').show();
+
+	$('#resultsIntervalRow').css('background-color', '#111111');
+	$('#saveAdditionalOutputRow').css('background', 'transparent');
+	$('#benchmarkingFrameworkRow').css('background-color', '#111111');
+}
+
+function useBenchexecClicked() {
+	'use strict';
+	log('BenchExec clicked.');
+	$('#suppressTimestampsRow').hide();
+
+	$('#resultsIntervalRow').css('background', 'transparent');
+	$('#saveAdditionalOutputRow').css('background-color', '#111111');
+	$('#benchmarkingFrameworkRow').css('background', 'transparent');
+}
+
 
 function benchSelectionClick(benchMethod, row) {
 	benchMethodVal = benchMethod;

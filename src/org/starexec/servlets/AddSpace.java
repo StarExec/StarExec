@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Benchmarks;
@@ -24,6 +23,7 @@ import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -34,7 +34,7 @@ import org.starexec.util.Validator;
  */
 @SuppressWarnings("serial")
 public class AddSpace extends HttpServlet {		
-	private static final Logger log = Logger.getLogger(AddSpace.class);	
+	private static final StarLogger log = StarLogger.getLogger(AddSpace.class);
 
 	// Request attributes
 	private static final String parentSpace = "parent";
@@ -169,7 +169,7 @@ public class AddSpace extends HttpServlet {
 				response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
 			}
 		} catch (Exception e) {
-			log.warn("Caught Exception in AddSpace.doPost: " + Util.getStackTrace(e));
+			log.warn("Caught Exception in AddSpace.doPost", e);
 			throw e;
 		}
 	}

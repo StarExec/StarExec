@@ -1,5 +1,16 @@
 package org.starexec.data.database;
 
+import org.starexec.constants.PaginationQueries;
+import org.starexec.constants.R;
+import org.starexec.data.security.GeneralSecurity;
+import org.starexec.data.to.*;
+import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.logger.StarLogger;
+import org.starexec.util.DataTablesQuery;
+import org.starexec.util.NamedParameterStatement;
+import org.starexec.util.PaginationQueryBuilder;
+
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -8,34 +19,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-import org.starexec.constants.PaginationQueries;
-import org.starexec.constants.R;
-import org.starexec.data.security.GeneralSecurity;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Queue;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Status;
-import org.starexec.data.to.Status.StatusCode;
-import org.starexec.data.to.User;
-import org.starexec.data.to.WorkerNode;
-import org.starexec.data.to.pipelines.JoblineStage;
-import org.starexec.util.DataTablesQuery;
-import org.starexec.util.LogUtil;
-import org.starexec.util.NamedParameterStatement;
-import org.starexec.util.PaginationQueryBuilder;
-
 
 /**
  * Handles all DB interaction for queues
  * @author Tyler Jensen
  */
 public class Queues {
-	private static final Logger log = Logger.getLogger(Queues.class);
-	private static final LogUtil logUtil = new LogUtil(log);
+	private static final StarLogger log = StarLogger.getLogger(Queues.class);
 
     /**
      * @return returns the default queue name, default queue should always exist

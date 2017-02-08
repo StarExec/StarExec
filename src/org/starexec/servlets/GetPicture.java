@@ -10,9 +10,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
@@ -24,7 +24,7 @@ import org.starexec.util.Validator;
  */
 @SuppressWarnings("serial")
 public class GetPicture extends HttpServlet{
-	private static final Logger log = Logger.getLogger(GetPicture.class);
+	private static final StarLogger log = StarLogger.getLogger(GetPicture.class);
     
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -139,7 +139,7 @@ public class GetPicture extends HttpServlet{
 				log.warn("picture with path " + file.getPath() + "could not be found");
 			}
 		} catch (Exception e) {
-			log.warn("Caught Exception in GetPicture.doGet: " + Util.getStackTrace(e));
+			log.warn("Caught Exception in GetPicture.doGet", e);
 			throw e;
 		}
 	}

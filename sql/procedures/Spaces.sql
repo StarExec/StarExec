@@ -508,6 +508,15 @@ CREATE PROCEDURE countSubspacesByName(IN _name VARCHAR(255), IN _spaceId INT)
 		WHERE parent.id = _spaceId AND child.name = _name
 		;
 	END //
+
+DROP PROCEDURE IF EXISTS GetSpacesByJob;
+CREATE PROCEDURE GetSpacesByJob(IN _jobId INT)
+  BEGIN
+    SELECT DISTINCT space_id
+    FROM job_assoc
+    WHERE job_id=_jobId
+    ;
+  END //
 	
 -- Retrieves all jobs belonging to a space (but not their job pairs)
 -- Author: Tyler Jensen

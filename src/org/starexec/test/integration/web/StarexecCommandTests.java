@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.junit.Assert;
 import org.starexec.command.Connection;
 import org.starexec.command.Status;
@@ -32,6 +31,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.User;
+import org.starexec.logger.StarLogger;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
@@ -39,7 +39,7 @@ import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
 
 public class StarexecCommandTests extends TestSequence {
-	private static final Logger log = Logger.getLogger(StarexecCommandTests.class);	
+	private static final StarLogger log = StarLogger.getLogger(StarexecCommandTests.class);
 	private Connection con;
 	private Space space1=null; //will contain both solvers and benchmarks
 	private Space space2=null;

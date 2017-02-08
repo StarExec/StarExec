@@ -1,0 +1,55 @@
+// Main Footer
+
+#pageFooter {
+	margin-top: 10px;
+	margin-bottom: 30px;
+
+	@include mobile {
+		width: inherit;
+		text-align: center;
+	}
+
+	ul {
+		display: inline;
+
+		@include mobile {
+			width: inherit;
+			display: block;
+			text-align: center;
+			margin: 0 0 10px 0;
+		}
+
+		li {
+			display: inline-block;
+			list-style-type: none;
+			margin-right: 10px;
+			color: #666666;
+
+			@include mobile {
+				margin: 0 0 10px 0;
+			}
+		}
+	}
+
+	a {
+		cursor: pointer;
+
+		&a:link {
+			color: #666666;
+		}
+
+		&a:hover {
+			color: #FFFFFF;
+		}
+	}
+
+	.copyright {
+		float: right;
+		display: inline;
+
+		@include mobile {
+			float: none;
+			display: inline;
+		}
+	}
+}

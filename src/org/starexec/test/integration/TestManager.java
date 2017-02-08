@@ -8,12 +8,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 
 
 import org.starexec.constants.R;
 
 
+import org.starexec.logger.StarLogger;
 import org.starexec.test.integration.StateTests.IntroStateTests;
 import org.starexec.test.integration.app.RESTHelpersTests;
 import org.starexec.test.integration.app.RESTServicesSecurityTests;
@@ -32,7 +32,7 @@ import org.starexec.util.Util;
  *
  */
 public class TestManager {
-	private static final Logger log = Logger.getLogger(TestManager.class);
+	private static final StarLogger log = StarLogger.getLogger(TestManager.class);
 	private final static AtomicBoolean isRunning=new AtomicBoolean(false);
 	private final static AtomicBoolean isRunningStress=new AtomicBoolean(false);
 	//this should never be modified outside of the initializeTests method

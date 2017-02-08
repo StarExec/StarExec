@@ -210,7 +210,8 @@ public class PermissionsTests extends TestSequence {
 		Benchmarks.updateDetails(benchmarkNoDownload.getId(), benchmarkNoDownload.getName(), 
 				benchmarkNoDownload.getDescription(), false, benchmarkNoDownload.getType().getId());
 		job = loader.loadJobIntoDatabase(space.getId(), owner.getId(), solver.getId(), benchmarks);
-		developer = loader.loadUserIntoDatabase("test", "dev", "dev@uiowa.edu", "pass", "Iowa", R.DEVELOPER_ROLE_NAME);		
+		developer = loader.loadUserIntoDatabase("test", "test-dev", "test-dev@uiowa.edu", "pass", "Iowa", R.DEVELOPER_ROLE_NAME);
+
 	}
 
 	@Override

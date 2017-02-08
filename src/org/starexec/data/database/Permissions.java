@@ -6,16 +6,16 @@ import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.to.*;
+import org.starexec.logger.StarLogger;
 
 /**
  * Handles all database interaction for permissions
  */
 public class Permissions {
-	private static final Logger log = Logger.getLogger(Permissions.class);
+	private static final StarLogger log = StarLogger.getLogger(Permissions.class);
 
 	/**
 	 * Adds a new permission record to the database. This is an internal helper method.

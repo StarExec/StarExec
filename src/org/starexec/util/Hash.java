@@ -3,8 +3,8 @@ package org.starexec.util;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.logger.StarLogger;
 
 
 /**
@@ -13,7 +13,7 @@ import org.starexec.constants.R;
  * @author Skylar Stark
  */
 public class Hash {
-	private static final Logger log = Logger.getLogger(Hash.class);
+	private static final StarLogger log = StarLogger.getLogger(Hash.class);
 	
 	/**
 	 * Hashes a password using a pre-specified hashing algorithm.

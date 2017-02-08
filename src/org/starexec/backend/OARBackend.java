@@ -11,7 +11,7 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.Util;
 
 import com.google.gson.JsonElement;
@@ -22,7 +22,7 @@ import com.google.gson.JsonParser;
  * Implementation of the Backend interface depending on the OAR scheduler (https://oar.imag.fr/)
  */
 public class OARBackend implements Backend {    
-	private static Logger log = Logger.getLogger(OARBackend.class);
+	private static StarLogger log = StarLogger.getLogger(OARBackend.class);
 	
 	private static String JOB_ID_PATTERN = "OAR_JOB_ID=(-?\\d+)";
 	

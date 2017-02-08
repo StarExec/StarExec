@@ -1,5 +1,6 @@
 <%@tag description="Standard html header info for all starexec pages"%>
 <%@tag import="java.util.List, org.starexec.util.Validator, org.starexec.util.Util, org.starexec.command.HTMLParser, org.starexec.util.SessionUtil,org.starexec.data.database.Users, org.starexec.data.to.*, org.starexec.constants.*"%>
+<%@tag trimDirectiveWhitespaces="true" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
@@ -11,7 +12,7 @@
 <head>
 	<title>${title} - StarExec</title>
 	<meta charset="utf-8" />
-	<!-- This viewport meta tag should not be deleted. Allows website to render on phones. -->
+	<%-- This viewport meta tag should not be deleted. Allows website to render on phones. --%>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 	<%
 		try {
@@ -37,10 +38,6 @@
 		var defaultPageSize=${pagesize};
 		var isLocalJobPage=${isLocalJobPage};
 	</script>
-
-	<!--[if lt IE 9]>
-		<script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-	<![endif]-->
 	<c:forEach var="globalJsFile" items="${globalJsFiles}">
 		<script type="text/javascript" src="${starexecRoot}/js/${globalJsFile}.js"></script>
 	</c:forEach>
@@ -51,4 +48,3 @@
 	</c:if>
 	<link type="image/ico" rel="icon" href="${starexecRoot}/images/favicon.ico">
 </head>
-

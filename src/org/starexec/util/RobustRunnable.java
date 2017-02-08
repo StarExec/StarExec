@@ -1,13 +1,16 @@
 package org.starexec.util;
 
-import org.apache.log4j.Logger;
+
+import org.starexec.logger.StarLogger;
 
 public abstract class RobustRunnable implements Runnable {
-    private static final Logger log = Logger.getLogger(RobustRunnable.class);	 
+    private static final StarLogger log = StarLogger.getLogger(RobustRunnable.class);
     
     protected String name;
 
     abstract protected void dorun();
+
+
 
     public RobustRunnable(String _name) {
     	name = _name;
@@ -16,7 +19,8 @@ public abstract class RobustRunnable implements Runnable {
     @Override
     public void run() {
     	try {
-    		dorun();
+			log.info(name + " (periodic)");
+			dorun();
     	}
     	catch (Throwable e) {
     		log.warn(name+" caught throwable: "+e,e);

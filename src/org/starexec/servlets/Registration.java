@@ -9,13 +9,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.User;
-import org.starexec.util.LogUtil;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -28,8 +27,7 @@ import org.starexec.util.Validator;
  */
 @SuppressWarnings("serial")
 public class Registration extends HttpServlet {
-	private static final Logger log = Logger.getLogger(Registration.class);	
-	private static final LogUtil logUtil = new LogUtil(log);
+	private static final StarLogger log = StarLogger.getLogger(Registration.class);
 	
 	
 	// Param strings for processing
@@ -50,7 +48,7 @@ public class Registration extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {
 			final String method = "doPost";
-			logUtil.entry(method);
+			log.entry(method);
 
 			// Begin registration for a new user
 			ValidatorStatusCode result = register(request, response);
@@ -61,9 +59,9 @@ public class Registration extends HttpServlet {
 				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, result.getMessage()));
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, result.getMessage());
 			}
-			logUtil.exit(method);
+			log.exit(method);
 		} catch(Exception e) {
-			log.warn("Caught Exception in Registration.doPost: " + Util.getStackTrace(e));
+			log.warn("Caught Exception in Registration.doPost.", e);
 			throw e;
 		}
 	}

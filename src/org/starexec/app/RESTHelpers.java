@@ -7,7 +7,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.annotations.Expose;
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.*;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
@@ -21,10 +20,10 @@ import org.starexec.data.to.tuples.AttributesTableData;
 import org.starexec.data.to.tuples.AttributesTableRow;
 import org.starexec.data.to.tuples.SolverConfig;
 import org.starexec.exceptions.StarExecDatabaseException;
+import org.starexec.logger.StarLogger;
 import org.starexec.test.integration.TestResult;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.util.DataTablesQuery;
-import org.starexec.util.LogUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.w3c.dom.Attr;
@@ -41,8 +40,7 @@ import java.util.stream.Collectors;
  * Holds all helper methods and classes for our restful web services
  */
 public class RESTHelpers {
-	private static final Logger log = Logger.getLogger(RESTHelpers.class);
-	private static final LogUtil logUtil = new LogUtil( log );
+	private static final StarLogger log = StarLogger.getLogger(RESTHelpers.class);
 	private static Gson gson = new Gson();
 
 
@@ -446,16 +444,16 @@ public class RESTHelpers {
 
 		final String methodName = "getJobPairsPaginatedJson";
 
-		logUtil.entry(methodName);
+		log.entry(methodName);
 		// Query for the next page of job pairs and return them to the user
 		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageOfPairsInJobSpace(jobSpaceId, request,wallclock,
 					syncResults,stageNumber, primitivesToAnonymize);
 
 		if (nextDataTablesPage==null) {
-			logUtil.debug( methodName, "There was a database error while trying to get paginated job pairs for table." );
+			log.debug( methodName, "There was a database error while trying to get paginated job pairs for table." );
 			return gson.toJson(RESTServices.ERROR_DATABASE);
 		} else if (nextDataTablesPage.has("maxpairs")) {
-			logUtil.debug( methodName, "User had too many job pairs for data table to be populated." );
+			log.debug( methodName, "User had too many job pairs for data table to be populated." );
 			return gson.toJson(RESTServices.ERROR_TOO_MANY_JOB_PAIRS);
 		}
 
@@ -559,7 +557,7 @@ public class RESTHelpers {
 			PrimitivesToAnonymize primitivesToAnonymize ) {
 
 		final String methodName = "getNextDataTablesPageOfPairsInJobSpace";
-		logUtil.entry( methodName );
+		log.entry( methodName );
 
 		
 		log.debug("beginningGetNextDataTablesPageOfPairsInJobSpace with stage = " +stageNumber);
@@ -2189,7 +2187,7 @@ public class RESTHelpers {
 
 	protected static void anonymizeJobSpaceNames( List<JobSpace> jobSpaces, int jobId ) {
 		final String methodName = "anonymizeJobSpaceNames";
-		logUtil.entry( methodName );
+		log.entry( methodName );
 
 		Map<Integer, String> jobSpaceNames = AnonymousLinks.getAnonymizedJobSpaceNames( jobId );
 		for ( JobSpace space : jobSpaces ) {

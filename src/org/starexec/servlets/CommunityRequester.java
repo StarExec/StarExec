@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Requests;
@@ -17,6 +16,7 @@ import org.starexec.data.database.Users;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.User;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -27,7 +27,7 @@ import org.starexec.util.Validator;
  */
 @SuppressWarnings("serial")
 public class CommunityRequester extends HttpServlet {
-	private static final Logger log = Logger.getLogger(CommunityRequester.class);	
+	private static final StarLogger log = StarLogger.getLogger(CommunityRequester.class);
 	private String errorMessage;
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -57,7 +57,7 @@ public class CommunityRequester extends HttpServlet {
 				response.sendRedirect(Util.docRoot("secure/add/to_community.jsp?result=requestNotSent&cid=" + comRequest.getCommunityId()));
 			}
 		} catch (Exception e) {
-			log.warn("Caught Exception in CommunityRequester.doPost: " + Util.getStackTrace(e));
+			log.warn("Caught Exception in CommunityRequester.doPost", e);
 			throw e;
 		}
 	}
