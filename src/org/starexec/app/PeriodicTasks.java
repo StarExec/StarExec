@@ -22,6 +22,7 @@ import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 
 /**
@@ -37,25 +38,26 @@ class PeriodicTasks {
 
     // Enum constants of all the periodic tasks.
     enum PeriodicTask {
-        UPDATE_CLUSTER(true, UPDATE_CLUSTER_TASK, 0, 600, TimeUnit.SECONDS),
-        SUBMIT_JOBS(true, SUBMIT_JOBS_TASK, 0, 60, TimeUnit.SECONDS),
-        POST_PROCESS_JOBS(true, POST_PROCESS_JOBS_TASK, 0, 45, TimeUnit.SECONDS),
-        RERUN_FAILED_PAIRS(true, RERUN_FAILED_PAIRS_TASK, 0, 5, TimeUnit.MINUTES),
-        FIND_BROKEN_JOB_PAIRS(true, FIND_BROKEN_JOB_PAIRS_TASK, 0, 3, TimeUnit.HOURS),
-        CLEAR_TEMPORARY_FILES(false, CLEAR_TEMPORARY_FILES_TASK, 0, 3, TimeUnit.HOURS),
-        CLEAR_JOB_LOG(false, CLEAR_JOB_LOG_TASK, 0, 7, TimeUnit.DAYS),
-        FIND_BROKEN_NODES(true, FIND_BROKEN_NODES_TASK, 0, 6, TimeUnit.HOURS),
-	    CLEAR_JOB_SCRIPTS(false, CLEAR_JOB_SCRIPTS_TASK, 0, 12, TimeUnit.HOURS),
-	    CLEAN_DATABASE(false, CLEAN_DATABASE_TASK, 0, 7, TimeUnit.DAYS),
-	    CREATE_WEEKLY_REPORTS(false, CREATE_WEEKLY_REPORTS_TASK, 0, 1, TimeUnit.DAYS),
-	    DELETE_OLD_ANONYMOUS_LINKS(false, DELETE_OLD_ANONYMOUS_LINKS_TASK, 0, 30, TimeUnit.DAYS),
-	    UPDATE_USER_DISK_SIZES(false, UPDATE_USER_DISK_SIZES_TASK, 0, 1, TimeUnit.DAYS),
-        UPDATE_COMMUNITY_STATS(false, UPDATE_COMMUNITY_STATS_TASK, 0, 6, TimeUnit.HOURS);
+        UPDATE_CLUSTER(true, UPDATE_CLUSTER_TASK, 0, () -> R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS),
+
+        SUBMIT_JOBS(true, SUBMIT_JOBS_TASK, 0, () -> 60, TimeUnit.SECONDS),
+        POST_PROCESS_JOBS(true, POST_PROCESS_JOBS_TASK, 0, () -> 45, TimeUnit.SECONDS),
+        RERUN_FAILED_PAIRS(true, RERUN_FAILED_PAIRS_TASK, 0, () -> 5, TimeUnit.MINUTES),
+        FIND_BROKEN_JOB_PAIRS(true, FIND_BROKEN_JOB_PAIRS_TASK, 0, () -> 3, TimeUnit.HOURS),
+        CLEAR_TEMPORARY_FILES(false, CLEAR_TEMPORARY_FILES_TASK, 0, () -> 3, TimeUnit.HOURS),
+        CLEAR_JOB_LOG(false, CLEAR_JOB_LOG_TASK, 0, () -> 7, TimeUnit.DAYS),
+        FIND_BROKEN_NODES(true, FIND_BROKEN_NODES_TASK, 0, () -> 6, TimeUnit.HOURS),
+	    CLEAR_JOB_SCRIPTS(false, CLEAR_JOB_SCRIPTS_TASK, 0, () -> 12, TimeUnit.HOURS),
+	    CLEAN_DATABASE(false, CLEAN_DATABASE_TASK, 0, () -> 7, TimeUnit.DAYS),
+	    CREATE_WEEKLY_REPORTS(false, CREATE_WEEKLY_REPORTS_TASK, 0, () -> 1, TimeUnit.DAYS),
+	    DELETE_OLD_ANONYMOUS_LINKS(false, DELETE_OLD_ANONYMOUS_LINKS_TASK, 0, () -> 30, TimeUnit.DAYS),
+	    UPDATE_USER_DISK_SIZES(false, UPDATE_USER_DISK_SIZES_TASK, 0, () -> 1, TimeUnit.DAYS),
+        UPDATE_COMMUNITY_STATS(false, UPDATE_COMMUNITY_STATS_TASK, 0, () -> 6, TimeUnit.HOURS);
 
         public final boolean fullInstanceOnly;
         public final Runnable task;
         public final int delay;
-        public final int period;
+        public final Supplier period;
         public final TimeUnit unit;
 
         /**
@@ -66,7 +68,7 @@ class PeriodicTasks {
          * @param period the period between each successive run of the task.
          * @param unit the time unit to use for period and delay.
          */
-        PeriodicTask(boolean fullInstanceOnly, Runnable task, int delay, int period, TimeUnit unit) {
+        PeriodicTask(boolean fullInstanceOnly, Runnable task, int delay, Supplier<Integer> period, TimeUnit unit) {
             this.fullInstanceOnly = fullInstanceOnly;
             this.delay = delay;
             this.period = period;

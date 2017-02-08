@@ -133,6 +133,8 @@ public class R {
     public static int QUEUE_NAME_LEN=64;
     public static int TEXT_FIELD_LEN = 65000;
 
+    public static int CLUSTER_UPDATE_PERIOD = 600;
+
     public enum DefaultSettingAttribute {
         PostProcess,
         BenchProcess,
