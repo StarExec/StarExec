@@ -220,12 +220,13 @@ public class Common {
 	}
 
 	/**
-	 * This method will start a new transaction and do an update. Does a rollback if there is an error.
+	 * This method will start a new transaction and do an update. This method will not do any logging on error.
+	 * Does a rollback if there is an error.
 	 * @param callPreparationSql the SQL needed to prepare the call.
 	 * @param procedureConsumer the code that should be run to setup the procedure. (Set parameters)
 	 * @throws SQLException
 	 */
-	protected static void update(String callPreparationSql, ProcedureConsumer procedureConsumer) throws SQLException {
+	protected static void updateNoLogging(String callPreparationSql, ProcedureConsumer procedureConsumer) throws SQLException {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
@@ -233,11 +234,25 @@ public class Common {
 			updateUsingConnection(con, callPreparationSql, procedureConsumer);
 			Common.endTransaction(con);
 		} catch (SQLException e) {
-			log.warn("Caught SQLException in Common.query. Doing rollback, Throwing exception...");
 			Common.doRollback(con);
 			throw e;
 		} finally {
 			Common.safeClose(con);
+		}
+	}
+
+	/**
+	 * This method will start a new transaction and do an update. Does a rollback if there is an error.
+	 * @param callPreparationSql the SQL needed to prepare the call.
+	 * @param procedureConsumer the code that should be run to setup the procedure. (Set parameters)
+	 * @throws SQLException
+	 */
+	protected static void update(String callPreparationSql, ProcedureConsumer procedureConsumer) throws SQLException {
+		try {
+			updateNoLogging(callPreparationSql, procedureConsumer);
+		} catch (SQLException e) {
+			log.warn("Caught SQLException in Common.query. Doing rollback, Throwing exception...");
+			throw e;
 		}
 	}
 
