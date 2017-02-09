@@ -202,7 +202,7 @@ public class Common {
 	 * @return the results of the query as type T.
 	 * @throws SQLException if there is a database error.
 	 */
-	public static <T> T queryKeepConnection(
+	static <T> T queryKeepConnection(
 			String callPreparationSql,
 			ProcedureConsumer procedureConsumer,
 			ConnectionResultsConsumer<T> connectionResultsConsumer) throws SQLException
@@ -226,7 +226,7 @@ public class Common {
 	 * @param procedureConsumer the code that should be run to setup the procedure. (Set parameters)
 	 * @throws SQLException
 	 */
-	protected static void updateNoLogging(String callPreparationSql, ProcedureConsumer procedureConsumer) throws SQLException {
+	public static void updateNoLogging(String callPreparationSql, ProcedureConsumer procedureConsumer) throws SQLException {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
@@ -242,12 +242,29 @@ public class Common {
 	}
 
 	/**
+	 * Runs some SQL code. Useful for testing purposes.
+	 * @param sql the sql to run.
+	 * @throws SQLException on database error.
+	 */
+	public static void runSql(String sql) throws SQLException {
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+		} catch (SQLException e) {
+			Common.doRollback(con);
+			throw e;
+		} finally {
+			Common.safeClose(con);
+		}
+	}
+
+	/**
 	 * This method will start a new transaction and do an update. Does a rollback if there is an error.
 	 * @param callPreparationSql the SQL needed to prepare the call.
 	 * @param procedureConsumer the code that should be run to setup the procedure. (Set parameters)
 	 * @throws SQLException
 	 */
-	protected static void update(String callPreparationSql, ProcedureConsumer procedureConsumer) throws SQLException {
+	public static void update(String callPreparationSql, ProcedureConsumer procedureConsumer) throws SQLException {
 		try {
 			updateNoLogging(callPreparationSql, procedureConsumer);
 		} catch (SQLException e) {
@@ -292,7 +309,7 @@ public class Common {
 	 * @return Whatever we queried for and assembled from our ResultSet.
 	 * @throws SQLException
 	 */
-	protected static <T> T query(String callPreparationSql, ProcedureConsumer procedureConsumer, ResultsConsumer<T> resultsConsumer) throws SQLException {
+	public static <T> T query(String callPreparationSql, ProcedureConsumer procedureConsumer, ResultsConsumer<T> resultsConsumer) throws SQLException {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
@@ -316,7 +333,7 @@ public class Common {
          * @return Whatever we queried for and assembled from our ResultSet.
          * @throws SQLException
          */
-	public static <T> T queryUsingConnection(Connection con, String callPreparationSql, ProcedureConsumer procedureConsumer, ResultsConsumer<T> resultsConsumer) throws SQLException {
+	protected static <T> T queryUsingConnection(Connection con, String callPreparationSql, ProcedureConsumer procedureConsumer, ResultsConsumer<T> resultsConsumer) throws SQLException {
 		CallableStatement procedure=null;
 		ResultSet results = null;
 		try {
@@ -333,7 +350,7 @@ public class Common {
 		}
 	}
 
-	public static <T> T queryUsingConnectionKeepConnection(
+	protected static <T> T queryUsingConnectionKeepConnection(
 			String callPreparationSql,
 			Connection con,
 			ProcedureConsumer procedureConsumer,

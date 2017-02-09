@@ -23,5 +23,5 @@ source procedures/Queues.sql;
 source procedures/Settings.sql;
 source procedures/UploadStatus.sql;
 source procedures/Pipelines.sql;
-
+source procedures/ErrorLogs.sql;
 source procedures/pagination/RequestPagination.sql;

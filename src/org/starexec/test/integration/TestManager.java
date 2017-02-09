@@ -80,6 +80,7 @@ public class TestManager {
 		tests.add(new WebsiteSecurityTests());
 		tests.add(new JobUtilTests());
 		tests.add(new ReportsTests());
+		tests.add(new ErrorLogsTests());
 	}
 	/**
 	 * 
