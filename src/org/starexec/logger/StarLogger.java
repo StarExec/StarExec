@@ -2,6 +2,7 @@ package org.starexec.logger;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.starexec.data.database.ErrorLogs;
 import org.starexec.data.database.Reports;
 import org.starexec.util.Util;
 
@@ -161,18 +162,18 @@ public class StarLogger {
     private void reportError(final StarLevel level, final String message, final Throwable t) {
 		String messageAndTrace = "";
 		if (message != null) {
-			messageAndTrace = message.toString();
+			messageAndTrace = message;
 		}
 		if (t != null) {
 			messageAndTrace += "\nStack Trace:\n" + Util.getStackTrace(t);
 		}
-		/*
+
 		try {
-		Reports.addErrorReport(messageAndTrace, level);
+		    ErrorLogs.addErrorLog(messageAndTrace, level);
 		} catch (SQLException e) {
 			log.error("Failed to generate error report due to SQLException!", e);
 		}
-		*/
+
     }
 
 

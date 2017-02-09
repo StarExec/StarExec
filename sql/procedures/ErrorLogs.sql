@@ -4,7 +4,7 @@ DROP PROCEDURE IF EXISTS AddErrorLog;
 CREATE PROCEDURE AddErrorLog(IN _message TEXT, _logLevel VARCHAR(32))
   BEGIN
     SET @llid := (SELECT id FROM log_levels WHERE _logLevel = name);
-    INSERT INTO error_reports (message, log_level_id) VALUES (_message, @llid);
+    INSERT INTO error_logs (message, log_level_id) VALUES (_message, @llid);
   END //
 
 
