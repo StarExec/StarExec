@@ -7,5 +7,13 @@ CREATE PROCEDURE AddErrorLog(IN _message TEXT, _logLevel VARCHAR(32))
     INSERT INTO error_logs (message, log_level_id) VALUES (_message, @llid);
   END //
 
+-- DROP PROCEDURE IF EXISTS ClearErrorLogsSince;
+-- CREATE PROCEDURE ClearErrorLogsSince(IN _since DATE)
+--  BEGIN
+--    DELETE FROM error_logs
+--    WHERE error_logs.time < _since;
+--  END //
+
+
 
 DELIMITER ; -- this should always be at the end of the file

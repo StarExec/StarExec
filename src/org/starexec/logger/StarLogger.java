@@ -169,7 +169,7 @@ public class StarLogger {
 		}
 
 		try {
-		    ErrorLogs.addErrorLog(messageAndTrace, level);
+		    ErrorLogs.add(messageAndTrace, level);
 		} catch (SQLException e) {
 			log.error("Failed to generate error report due to SQLException!", e);
 		}
