@@ -150,9 +150,10 @@ public class StarLogger {
             log.log(level.get(), prefixedMessage, t);
         }
 
+		/*
         if (level == StarLevel.ERROR || level == StarLevel.FATAL || level == StarLevel.WARN) {
             reportError(level, prefixedMessage);
-        }
+        }*/
     }
 
     private void reportError(final StarLevel level, final String message) {
