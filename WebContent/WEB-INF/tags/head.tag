@@ -28,7 +28,7 @@
 	<c:forEach var="globalCssFile" items="${globalCssFiles}">
 		<link rel="stylesheet" href="${starexecRoot}/css/${globalCssFile}.css" />
 	</c:forEach>
-	<c:forEach var="cssFile" items="${fn:split(css, ',')}">
+	<c:forEach var="cssFile" items="${css}">
 		<link rel="stylesheet" href="${starexecRoot}/css/${fn:trim(cssFile)}.css" />
 	</c:forEach>
 	<script>
@@ -39,7 +39,7 @@
 	<c:forEach var="globalJsFile" items="${globalJsFiles}">
 		<script type="text/javascript" src="${starexecRoot}/js/${globalJsFile}.js"></script>
 	</c:forEach>
-	<c:forEach var="jsFile" items="${fn:split(js, ',')}">
+	<c:forEach var="jsFile" items="${js}">
 		<script type="text/javascript" src="${starexecRoot}/js/${fn:trim(jsFile)}.js"></script>
 	</c:forEach>
 	<link type="image/ico" rel="icon" href="${starexecRoot}/images/favicon.ico">
