@@ -1048,50 +1048,58 @@ public class RESTServices {
     @Path("/secure/explore/community/overview")
     @Produces("application/json")	
 	public String getCommunityOverview(@Context HttpServletRequest request){
+		final String methodName = "getCommunityOverview";
+		log.entry(methodName);
+		try {
+			Communities.updateCommunityMapIf();
 
-	    Communities.updateCommunityMapIf();
+			if(R.COMM_INFO_MAP == null){
+				log.warn(methodName, "COMM_INFO_MAP was null.");
+				return gson.toJson(ERROR_DATABASE);
+			}
+			log.info("R.COMM_INFO_MAP: " + R.COMM_INFO_MAP);
+			JsonObject graphs = null;
+			
+			List<Space> communities = Communities.getAll();
 
-	    if(R.COMM_INFO_MAP == null){
-		
-	    	return gson.toJson(ERROR_DATABASE);
-	    }
-	    log.info("R.COMM_INFO_MAP: " + R.COMM_INFO_MAP);
-		JsonObject graphs = null;
-		
-		List<Space> communities = Communities.getAll();
-		
-		graphs=Statistics.makeCommunityGraphs(communities,R.COMM_INFO_MAP);
-		if (graphs==null) {
-			return gson.toJson(ERROR_DATABASE);
+			graphs=Statistics.makeCommunityGraphs(communities,R.COMM_INFO_MAP);
+			if (graphs==null) {
+				log.warn("makeCommunityGraphs returned null (indicating an error)");
+				return gson.toJson(ERROR_DATABASE);
+			}
+			JsonObject info = new JsonObject();
+			for(Space c : communities){
+				String name = c.getName();
+				int id = c.getId();
+
+
+
+				JsonObject Comm = new JsonObject();
+				Comm.addProperty("users",R.COMM_INFO_MAP.get(id).get("users").toString());
+				Comm.addProperty("solvers",R.COMM_INFO_MAP.get(id).get("solvers").toString());
+				Comm.addProperty("benchmarks",R.COMM_INFO_MAP.get(id).get("benchmarks").toString());
+				Comm.addProperty("jobs",R.COMM_INFO_MAP.get(id).get("jobs").toString());
+				Comm.addProperty("job_pairs",R.COMM_INFO_MAP.get(id).get("job_pairs").toString());
+				Comm.addProperty("disk_usage",Util.byteCountToDisplaySize(R.COMM_INFO_MAP.get(id).get("disk_usage")));
+
+				info.add(name,Comm);
+
+			}
+
+			// Instantiate a Date object
+			Date last_update = new Date(R.COMM_ASSOC_LAST_UPDATE);
+			
+			JsonObject json=new JsonObject();
+			json.add("graphs", graphs);
+			json.add("info",info);
+			json.addProperty("date",last_update.toString());
+			
+			log.exit(methodName);
+			return gson.toJson(json);
+		} catch (Exception e) {
+			log.error("Caught exception while getting community overview.", e);
+			return gson.toJson( ERROR_INTERNAL_SERVER );
 		}
-		JsonObject info = new JsonObject();
-		for(Space c : communities){
-		    String name = c.getName();
-		    int id = c.getId();
-
-
-
-		    JsonObject Comm = new JsonObject();
-		    Comm.addProperty("users",R.COMM_INFO_MAP.get(id).get("users").toString());
-		    Comm.addProperty("solvers",R.COMM_INFO_MAP.get(id).get("solvers").toString());
-		    Comm.addProperty("benchmarks",R.COMM_INFO_MAP.get(id).get("benchmarks").toString());
-		    Comm.addProperty("jobs",R.COMM_INFO_MAP.get(id).get("jobs").toString());
-		    Comm.addProperty("job_pairs",R.COMM_INFO_MAP.get(id).get("job_pairs").toString());
-		    Comm.addProperty("disk_usage",Util.byteCountToDisplaySize(R.COMM_INFO_MAP.get(id).get("disk_usage")));
-
-		    info.add(name,Comm);
-
-		}
-
-		// Instantiate a Date object
-		Date last_update = new Date(R.COMM_ASSOC_LAST_UPDATE);
-		
-		JsonObject json=new JsonObject();
-		json.add("graphs", graphs);
-		json.add("info",info);
-		json.addProperty("date",last_update.toString());
-		
-		return gson.toJson(json);
 	}
 
 	/**
