@@ -1,22 +1,16 @@
 package org.starexec.data.database;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.concurrent.Callable;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
-import jdk.nashorn.internal.codegen.CompilerConstants;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.apache.tomcat.jdbc.pool.PoolProperties;
 import org.starexec.constants.R;
 import org.starexec.logger.NonSavingStarLogger;
-import org.starexec.logger.StarLogger;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.Util;
+import org.starexec.util.functionalInterfaces.ThrowingBiFunction;
+import org.starexec.util.functionalInterfaces.ThrowingConsumer;
+import org.starexec.util.functionalInterfaces.ThrowingFunction;
+
+import java.sql.*;
 
 /**
  * The common database class which provides common methods used by other database accessors such
@@ -204,7 +198,7 @@ public class Common {
 	 * Makes a query and allows the user to make additional calls on the same connection.
 	 * @param callPreparationSql the SQL to prepare the SQL Procedure (e.g. "{Call MyProcedure(?, ?)}")
 	 * @param setParameters lambda used to set arguments to procedure.
-	 * @param connectionResultsConsumer lambda used to transform results to desired type and use open DB connection.
+	 * @param connectionResultsFunction lambda used to transform results to desired type and use open DB connection.
 	 * @param <T> the type we want to transform the results to.
 	 * @return the results of the query as type T.
 	 * @throws SQLException if there is a database error.
@@ -212,12 +206,12 @@ public class Common {
 	static <T> T queryKeepConnection(
 			String callPreparationSql,
 			ThrowingConsumer<CallableStatement, SQLException> setParameters,
-			ConnectionResultsConsumer<T> connectionResultsConsumer) throws SQLException
+			ThrowingBiFunction<Connection, ResultSet, T, SQLException> connectionResultsFunction) throws SQLException
 	{
 		Connection con = null;
 		try {
 			con = Common.getConnection();
-			return queryUsingConnectionKeepConnection(callPreparationSql, con, setParameters, connectionResultsConsumer);
+			return queryUsingConnectionKeepConnection(callPreparationSql, con, setParameters, connectionResultsFunction);
 		} catch (SQLException e) {
 			log.warn("Caught SQLException in Common.queryKeepConnect. Throwing exception...");
 			throw e;
@@ -248,26 +242,44 @@ public class Common {
 		}
 	}
 
-//	public static <T> T updateWithOutput(
-//			String callPreparationSql,
-//			ThrowingConsumer<CallableStatement,SQLException> setParameters,
-//			Function<CallableStatement, T> getOutput) throws SQLException {
-//		Connection con = null;
-//		try {
-//			con = Common.getConnection();
-//			Common.beginTransaction(con);
-//			CallableStatement procedure;
-//			procedure = con.prepareCall(callPreparationSql);
-//			setParameters.accept(procedure);
-//			procedure.executeUpdate();
-//			return getOutput.apply(procedure);
-//		} catch (SQLException e) {
-//			Common.doRollback(con);
-//			throw e;
-//		} finally {
-//			Common.safeClose(con);
-//		}
-//	}
+
+	/**
+	 * Runs an update that produces some output.
+	 * @param callPreparationSql The SQL to call the stored procedure.
+	 * @param setParameters a void function (consumer) that sets the parameters of the procedure.
+	 * @param getOutput a function that gets the output from the procedure after it is run.
+	 * @param <T> the type of the output
+	 * @return the output of the procedure.
+	 * @throws SQLException on database error.
+	 */
+	static <T> T updateWithOutput(
+			String callPreparationSql,
+			ThrowingConsumer<CallableStatement,SQLException> setParameters,
+			ThrowingFunction<CallableStatement, T, SQLException> getOutput) throws SQLException {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			// Setup the stored procedure.
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			procedure = con.prepareCall(callPreparationSql);
+
+			// Apply the parameter setting function.
+			setParameters.accept(procedure);
+
+			// Run the procedure.
+			procedure.executeUpdate();
+
+			// Apply the output getting function and return the result.
+			return getOutput.accept(procedure);
+		} catch (SQLException e) {
+			Common.doRollback(con);
+			throw e;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
 
 	/**
 	 * Runs some SQL code. Useful for testing purposes.
@@ -323,7 +335,10 @@ public class Common {
 	 * @return Whatever we queried for and assembled from our ResultSet.
 	 * @throws SQLException
 	 */
-	public static <T> T query(String callPreparationSql, ThrowingConsumer<CallableStatement,SQLException> setParameters, ResultsConsumer<T> resultsConsumer) throws SQLException {
+	public static <T> T query(
+			String callPreparationSql,
+			ThrowingConsumer<CallableStatement,SQLException> setParameters,
+			ResultsConsumer<T> resultsConsumer) throws SQLException {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
@@ -368,7 +383,7 @@ public class Common {
 			String callPreparationSql,
 			Connection con,
 			ThrowingConsumer<CallableStatement,SQLException> setParameters,
-			ConnectionResultsConsumer<T> connectionResultsConsumer) throws SQLException
+			ThrowingBiFunction<Connection, ResultSet, T, SQLException> connectionResultsFunction) throws SQLException
 	{
 		CallableStatement procedure=null;
 		ResultSet results = null;
@@ -376,7 +391,7 @@ public class Common {
 			procedure = con.prepareCall(callPreparationSql);
 			setParameters.accept(procedure);
 			results = procedure.executeQuery();
-			return connectionResultsConsumer.query(con, results);
+			return connectionResultsFunction.accept(con, results);
 		} catch (SQLException e) {
 			log.error("Caught SQLException: " + e.getMessage(), e);
 			throw e;

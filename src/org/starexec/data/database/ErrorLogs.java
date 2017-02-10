@@ -23,12 +23,13 @@ public class ErrorLogs {
      * @throws SQLException on database error.
      */
     public static void add(String message, StarLevel level) throws SQLException {
-//        Common.updateWithOutput("{CALL AddErrorLog(?, ?)}", procedure -> {
-//            procedure.setString(1, message);
-//            procedure.setString(2, level.toString());
-//        }, procedure -> {
-//
-//        });
+        Common.updateWithOutput("{CALL AddErrorLog(?, ?)}", procedure -> {
+            procedure.setString(1, message);
+            procedure.setString(2, level.toString());
+        }, procedure -> {
+            procedure.registerOutParameter(1, java.sql.Types.INTEGER);
+            return 1;
+        });
     }
 
     public static void clearSince(Date date) throws SQLException {
