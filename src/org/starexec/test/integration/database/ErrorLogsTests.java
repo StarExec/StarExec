@@ -2,6 +2,8 @@ package org.starexec.test.integration.database;
 
 import org.junit.Assert;
 import org.starexec.data.database.Common;
+import org.starexec.data.database.ErrorLogs;
+import org.starexec.logger.StarLevel;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.util.Util;
@@ -33,6 +35,8 @@ public class ErrorLogsTests extends TestSequence {
     @StarexecTest
     private void addTest() {
 //        try {
+//            ErrorLogs.add("test", StarLevel.DEBUG);
+//            ErrorLogs.getSince()
 //        } catch (SQLException e) {
 //            Assert.fail("Caught SQLException:\n"+ Util.getStackTrace(e));
 //        }

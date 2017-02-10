@@ -8,6 +8,6 @@ import java.sql.SQLException;
  * Created by agieg on 8/31/2016.
  */
 @FunctionalInterface
-public interface ProcedureConsumer {
-    void setupProcedure(CallableStatement procedure) throws SQLException;
+public interface ThrowingConsumer<T, U extends Throwable> {
+    void accept(T procedure) throws U;
 }

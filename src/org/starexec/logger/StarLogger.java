@@ -1,9 +1,7 @@
 package org.starexec.logger;
 
-import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.starexec.data.database.ErrorLogs;
-import org.starexec.data.database.Reports;
 import org.starexec.util.Util;
 
 import java.sql.SQLException;
@@ -11,22 +9,24 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
-public class StarLogger {
-    private Logger log;
-    private static final String methodSeparator = " - ";
+public class StarLogger extends BaseStarLogger {
 
     private StarLogger(Class clazz) {
-        log = Logger.getLogger(clazz);
+        super(clazz);
     }
-    private StarLogger(Logger log) {
-        this.log = log;
+    private StarLogger(String name) {
+        super(name);
+    }
+
+    private StarLogger(Logger logger) {
+        super(logger);
     }
 
     public static StarLogger getLogger(Class clazz) {
         return new StarLogger(clazz);
     }
     public static StarLogger getLogger(String name) {
-        return new StarLogger(Logger.getLogger(name));
+        return new StarLogger(name);
     }
 
     public static List<StarLogger> getCurrentLoggers() {
@@ -38,110 +38,13 @@ public class StarLogger {
         return currentLoggers;
     }
 
-    public static void turnOffLogging() {
-        Logger.getRootLogger().setLevel(Level.OFF);
-    }
-
-    public String getName() {
-        return log.getName();
-    }
-
-
-    public void setLevel(StarLevel level) {
-        log.setLevel(level.get());
-    }
-
     public static StarLogger getRootLogger() {
         return new StarLogger(Logger.getRootLogger());
     }
 
-    public void entry(String method) {
-        log.debug(prefix(method) + "Entering method " + method + ".");
-    }
-    public void exit(String method) {
-        log.debug(prefix(method)+"Leaving method "+method+".");
-    }
 
-    public void debug(final String message) {
-        log(StarLevel.DEBUG, null, message, null);
-    }
-    public void debug(final String method, final String message) {
-        log(StarLevel.DEBUG, method, message, null);
-    }
-    public void debug(final String message, final Throwable t) {
-        log(StarLevel.DEBUG, null, message, t);
-    }
-    public void debug(final String method, final String message, final Throwable t) {
-        log(StarLevel.DEBUG, method, message, t);
-    }
-
-    public void info(final String method, final String message) {
-        log(StarLevel.INFO, method, message, null);
-    }
-    public void info(final String message) {
-        log(StarLevel.INFO, null, message, null);
-    }
-    public void info(final String message, final Throwable t) {
-        log(StarLevel.INFO, null, message, t);
-    }
-    public void info(final String method, final String message, final Throwable t) {
-        log(StarLevel.INFO, method, message, t);
-    }
-
-    public void trace(final String method, final String message) {
-        log(StarLevel.TRACE, method, message, null);
-    }
-    public void trace(final String message) {
-        log(StarLevel.TRACE, null, message, null);
-    }
-    public void trace(final String message, final Throwable t) {
-        log(StarLevel.TRACE, null, message, t);
-    }
-    public void trace(final String method, final String message, final Throwable t) {
-        log(StarLevel.TRACE, method, message, t);
-    }
-
-
-    public void warn(final String method, final String message) {
-        log(StarLevel.WARN, method, message, null);
-    }
-    public void warn(final String message) {
-        log(StarLevel.WARN, null, message, null);
-    }
-    public void warn(final String method, final String message, final Throwable t) {
-        log(StarLevel.WARN, method, message, t);
-    }
-    public void warn(final String message, final Throwable t) {
-        log(StarLevel.WARN, null, message, t);
-    }
-
-    public void error(final String method, final String message) {
-        log(StarLevel.ERROR, method, message, null);
-    }
-    public void error(final String message) {
-        log(StarLevel.ERROR, null, message, null);
-    }
-    public void error(final String method, final String message, final Throwable t) {
-        log(StarLevel.ERROR, method, message, t);
-    }
-    public void error(final String message, final Throwable t) {
-        log(StarLevel.ERROR, null, message, t);
-    }
-
-    public void fatal(final String method, final String message, final Throwable t) {
-        log(StarLevel.FATAL, method, message, t);
-    }
-    public void fatal(final String method, final String message) {
-        log(StarLevel.FATAL, method, message, null);
-    }
-    public void fatal(final String message) {
-        log(StarLevel.FATAL, null, message, null);
-    }
-    public void fatal(final String message, final Throwable t) {
-        log(StarLevel.FATAL, null, message, t);
-    }
-
-    private void log(StarLevel level, final String method, final String message, final Throwable t) {
+    @Override
+    protected void log(StarLevel level, final String method, final String message, final Throwable t, boolean save) {
         final String prefixedMessage = method == null ? message : prefix(method)+message;
 
         if (t == null) {
@@ -178,10 +81,5 @@ public class StarLogger {
     }
 
 
-    /**
-     * Builds the prefix that appears at the beginning of each message.
-     */
-    private static String prefix(String method) {
-        return method+methodSeparator;
-    }
+
 }
