@@ -50,85 +50,85 @@ public abstract class BaseStarLogger {
     }
 
     public void debug(final String message) {
-        log(StarLevel.DEBUG, null, message, null, true);
+        log(StarLevel.DEBUG, null, message, null);
     }
     public void debug(final String method, final String message) {
-        log(StarLevel.DEBUG, method, message, null, true);
+        log(StarLevel.DEBUG, method, message, null);
     }
     public void debug(final String message, final Throwable t) {
-        log(StarLevel.DEBUG, null, message, t, true);
+        log(StarLevel.DEBUG, null, message, t);
     }
     public void debug(final String method, final String message, final Throwable t) {
-        log(StarLevel.DEBUG, method, message, t, true);
+        log(StarLevel.DEBUG, method, message, t);
     }
 
     public void info(final String method, final String message) {
-        log(StarLevel.INFO, method, message, null, true);
+        log(StarLevel.INFO, method, message, null);
     }
     public void info(final String message) {
-        log(StarLevel.INFO, null, message, null, true);
+        log(StarLevel.INFO, null, message, null);
     }
     public void info(final String message, final Throwable t) {
-        log(StarLevel.INFO, null, message, t, true);
+        log(StarLevel.INFO, null, message, t);
     }
     public void info(final String method, final String message, final Throwable t) {
-        log(StarLevel.INFO, method, message, t, true);
+        log(StarLevel.INFO, method, message, t);
     }
 
     public void trace(final String method, final String message) {
-        log(StarLevel.TRACE, method, message, null, true);
+        log(StarLevel.TRACE, method, message, null);
     }
     public void trace(final String message) {
-        log(StarLevel.TRACE, null, message, null, true);
+        log(StarLevel.TRACE, null, message, null);
     }
     public void trace(final String message, final Throwable t) {
-        log(StarLevel.TRACE, null, message, t, true);
+        log(StarLevel.TRACE, null, message, t);
     }
     public void trace(final String method, final String message, final Throwable t) {
-        log(StarLevel.TRACE, method, message, t, true);
+        log(StarLevel.TRACE, method, message, t);
     }
 
 
     public void warn(final String method, final String message) {
-        log(StarLevel.WARN, method, message, null, true);
+        log(StarLevel.WARN, method, message, null);
     }
     public void warn(final String message) {
-        log(StarLevel.WARN, null, message, null, true);
+        log(StarLevel.WARN, null, message, null);
     }
     public void warn(final String method, final String message, final Throwable t) {
-        log(StarLevel.WARN, method, message, t, true);
+        log(StarLevel.WARN, method, message, t);
     }
     public void warn(final String message, final Throwable t) {
-        log(StarLevel.WARN, null, message, t, true);
+        log(StarLevel.WARN, null, message, t);
     }
 
     public void error(final String method, final String message) {
-        log(StarLevel.ERROR, method, message, null, true);
+        log(StarLevel.ERROR, method, message, null);
     }
     public void error(final String message) {
-        log(StarLevel.ERROR, null, message, null, true);
+        log(StarLevel.ERROR, null, message, null);
     }
     public void error(final String method, final String message, final Throwable t) {
-        log(StarLevel.ERROR, method, message, t, true);
+        log(StarLevel.ERROR, method, message, t);
     }
     public void error(final String message, final Throwable t) {
-        log(StarLevel.ERROR, null, message, t, true);
+        log(StarLevel.ERROR, null, message, t);
     }
 
     public void fatal(final String method, final String message, final Throwable t) {
-        log(StarLevel.FATAL, method, message, t, true);
+        log(StarLevel.FATAL, method, message, t);
     }
     public void fatal(final String method, final String message) {
-        log(StarLevel.FATAL, method, message, null, true);
+        log(StarLevel.FATAL, method, message, null);
     }
     public void fatal(final String message) {
-        log(StarLevel.FATAL, null, message, null, true);
+        log(StarLevel.FATAL, null, message, null);
     }
     public void fatal(final String message, final Throwable t) {
-        log(StarLevel.FATAL, null, message, t, true);
+        log(StarLevel.FATAL, null, message, t);
     }
 
-    protected abstract void log(StarLevel level, String method, String message, Throwable t, boolean save);
+    protected abstract void log(StarLevel level, String method, String message, Throwable t);
 
     /**
      * Builds the prefix that appears at the beginning of each message.

@@ -16,7 +16,7 @@ public class NonSavingStarLogger extends BaseStarLogger {
         return new NonSavingStarLogger(name);
     }
     @Override
-    protected void log(StarLevel level, final String method, final String message, final Throwable t, boolean save) {
+    protected void log(StarLevel level, final String method, final String message, final Throwable t) {
         final String prefixedMessage = method == null ? message : prefix(method)+message;
 
         if (t == null) {
