@@ -22,13 +22,13 @@ $(document).ready(function(){
 	statsTable = $('#statsTable').dataTable({
 		"sDom": getDataTablesDom()
 	    });
-	
-	
+
+
 	// Make leaders and members expandable
 	$('.expd').parent().expandable(true);
-	
-	
-       
+
+
+
        	$("#compareUsers").click(function(){
 		changeCommunityOverviewGraph('users');
 	    });
@@ -56,7 +56,7 @@ $(document).ready(function(){
 	$("#lastUpdate").text(loadingMessage);
 
 	updateCommunityOverview();
-	
+
 });
 
 function initTableHeaderUI(){
@@ -151,7 +151,7 @@ function updateCommunityStatsTable(info){
 		var benchmarks = value.benchmarks;
 		var jobs = value.jobs;
 		var job_pairs = value.job_pairs;
-		var disk_usage = value.disk_usage; 
+		var disk_usage = value.disk_usage;
 
 		console.log("users: " + users);
 
@@ -167,9 +167,8 @@ function updateCommunityOverview() {
 	$.post(
 			starexecRoot+"services/secure/explore/community/overview",
 			function(returnCode) {
-				
 				switch (returnCode) {
-				
+
 				case "1":
 					showMessage('error',"an internal error occured while processing your request: please try again",5000);
 					$("#communityOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
@@ -199,11 +198,14 @@ function updateCommunityOverview() {
 				    $("#options").show();
 				    $("#graph").show();
 				    $("#statsTableField").show();
-					
+
 				}
 			},
 			"text"
-	);
+	).fail(function() {
+		showMessage('error',"an internal error occured while processing your request: please try again",5000);
+		$("#lastUpdate").text("There was a problem loading data. Please try reloading the page.");
+	});
 }
 
 function changeCommunityOverviewGraph(type){
