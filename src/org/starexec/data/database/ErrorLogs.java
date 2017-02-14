@@ -26,12 +26,12 @@ public class ErrorLogs {
      * @throws SQLException on database error.
      */
     public static int add(String message, StarLevel level) throws SQLException {
-        return Common.updateWithOutput("{CALL AddErrorLog(?, ?)}", procedure -> {
+        return Common.updateWithOutput("{CALL AddErrorLog(?, ?, ?)}", procedure -> {
             procedure.setString(1, message);
             procedure.setString(2, level.toString());
             procedure.registerOutParameter(3, java.sql.Types.INTEGER);
 
-        }, procedure -> procedure.getInt(15) );
+        }, procedure -> procedure.getInt(3) );
     }
 
     public static Optional<ErrorLog> getById(final int id) throws SQLException {
