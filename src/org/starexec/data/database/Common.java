@@ -338,7 +338,7 @@ public class Common {
 	public static <T> T query(
 			String callPreparationSql,
 			ThrowingConsumer<CallableStatement,SQLException> setParameters,
-			ResultsConsumer<T> resultsConsumer) throws SQLException {
+			 ResultsConsumer<T> resultsConsumer) throws SQLException {
 		Connection con = null;
 		try {
 			con = Common.getConnection();

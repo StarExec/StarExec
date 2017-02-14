@@ -7,7 +7,9 @@ import org.starexec.logger.StarLevel;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.SQLType;
+import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 public class ErrorLogs {
 
@@ -20,16 +22,36 @@ public class ErrorLogs {
      * Adds an error reports to the error_reports table.
      * @param message the message to add to the table.
      * @param level the level the error was logged at.
+     * @return the id of the new log.
      * @throws SQLException on database error.
      */
-    public static void add(String message, StarLevel level) throws SQLException {
-        Common.updateWithOutput("{CALL AddErrorLog(?, ?)}", procedure -> {
+    public static int add(String message, StarLevel level) throws SQLException {
+        return Common.updateWithOutput("{CALL AddErrorLog(?, ?)}", procedure -> {
             procedure.setString(1, message);
             procedure.setString(2, level.toString());
-        }, procedure -> {
-            procedure.registerOutParameter(1, java.sql.Types.INTEGER);
-            return 1;
-        });
+            procedure.registerOutParameter(3, java.sql.Types.INTEGER);
+
+        }, procedure -> procedure.getInt(15) );
+    }
+
+    public static Optional<ErrorLog> getById(final int id) throws SQLException {
+        return Common.query("{CALL GetErrorLogById(?)}"
+                , procedure -> procedure.setInt(1, id)
+                , results -> {
+                    if (results.next()) {
+                        int retrievedId = results.getInt("id");
+                        String message = results.getString("message");
+                        Timestamp time = results.getTimestamp("time");
+                        StarLevel level = StarLevel.valueOf(results.getString("level"));
+
+                        return Optional.of(new ErrorLog(retrievedId, message, level, time));
+                    } else {
+                        return Optional.empty();
+                    }
+                });
+    }
+
+    public static void deleteWithId(final int id) throws SQLException {
     }
 
     public static void clearSince(Date date) throws SQLException {
