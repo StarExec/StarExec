@@ -35,6 +35,29 @@ public class ErrorLogsTests extends TestSequence {
     }
 
     @StarexecTest
+    private void getDoesntThrowExceptionTest() {
+        try {
+            int unlikelyId = 10000000;
+            Optional<ErrorLog> optionalLog = ErrorLogs.getById(unlikelyId);
+        } catch (SQLException e) {
+            Assert.fail("Caught SQLException:\n"+ Util.getStackTrace(e));
+        }
+    }
+
+    @StarexecTest
+    private void deleteTest() {
+        try {
+            int id = ErrorLogs.add("test", StarLevel.DEBUG);
+            ErrorLogs.deleteWithId(id);
+            Optional<ErrorLog> log = ErrorLogs.getById(id);
+
+            Assert.assertFalse("Error log was still in database after deletion.",log.isPresent());
+        } catch (SQLException e) {
+            Assert.fail("Caught SQLException:\n"+ Util.getStackTrace(e));
+        }
+    }
+
+    @StarexecTest
     private void addTest() {
         try {
             StarLevel level = StarLevel.DEBUG;
@@ -47,6 +70,8 @@ public class ErrorLogsTests extends TestSequence {
                 Assert.assertEquals(log.getId(), id);
                 Assert.assertEquals(level, log.getLevel());
                 Assert.assertEquals(message, log.getMessage());
+
+                ErrorLogs.deleteWithId(id);
             }
         } catch (SQLException e) {
             Assert.fail("Caught SQLException:\n"+ Util.getStackTrace(e));

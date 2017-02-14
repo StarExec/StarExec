@@ -34,6 +34,13 @@ public class ErrorLogs {
         }, procedure -> procedure.getInt(3) );
     }
 
+
+    /**
+     * Gets an Error Log with the given id.
+     * @param id the id of the error log to get.
+     * @return the error log.
+     * @throws SQLException on database error.
+     */
     public static Optional<ErrorLog> getById(final int id) throws SQLException {
         return Common.query("{CALL GetErrorLogById(?)}"
                 , procedure -> procedure.setInt(1, id)
@@ -52,6 +59,7 @@ public class ErrorLogs {
     }
 
     public static void deleteWithId(final int id) throws SQLException {
+        Common.update("{CALL DeleteErrorLogWithId(?)", procedure -> procedure.setInt(1, id));
     }
 
     public static void clearSince(Date date) throws SQLException {

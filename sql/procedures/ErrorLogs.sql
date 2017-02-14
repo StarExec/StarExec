@@ -16,9 +16,11 @@ CREATE PROCEDURE GetErrorLogById(IN _id INT)
     WHERE el.id=_id;
   END //
 
-DROP PROCEDURE IF EXISTS DeleteWithId;
-CREATE PROCEDURE DeleteWithId(IN _id INT)
+DROP PROCEDURE IF EXISTS DeleteErrorLogWithId;
+CREATE PROCEDURE DeleteErrorLogWithId(IN _id INT)
   BEGIN
+    DELETE FROM error_logs
+    WHERE id=_id;
   END //
 
 -- DROP PROCEDURE IF EXISTS ClearErrorLogsSince;
