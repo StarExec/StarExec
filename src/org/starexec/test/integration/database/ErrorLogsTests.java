@@ -10,6 +10,8 @@ import org.starexec.test.integration.TestSequence;
 import org.starexec.util.Util;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Optional;
 
 /**
@@ -32,6 +34,26 @@ public class ErrorLogsTests extends TestSequence {
     @Override
     protected void teardown() throws Exception {
 
+    }
+
+    @StarexecTest
+    private void clearBeforeTest() {
+        try {
+            int firstId = ErrorLogs.add("test", StarLevel.DEBUG);
+            int secondId = ErrorLogs.add("test", StarLevel.DEBUG);
+            int thirdId = ErrorLogs.add("test", StarLevel.DEBUG);
+
+            Thread.sleep(500);
+            ErrorLogs.deleteBefore(Timestamp.from(Instant.now()));
+
+            Assert.assertFalse("First log was still in database.", ErrorLogs.getById(firstId).isPresent());
+            Assert.assertFalse("Second log was still in database.", ErrorLogs.getById(secondId).isPresent());
+            Assert.assertFalse("Third log was still in database.", ErrorLogs.getById(thirdId).isPresent());
+        } catch (SQLException e) {
+            Assert.fail("Caught SQLException:\n"+ Util.getStackTrace(e));
+        } catch (InterruptedException e) {
+            Assert.fail("Thread couldn't sleep.\n" + Util.getStackTrace(e));
+        }
     }
 
     @StarexecTest

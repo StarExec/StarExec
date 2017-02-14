@@ -4,10 +4,8 @@ import org.starexec.data.to.ErrorLog;
 import org.starexec.logger.NonSavingStarLogger;
 import org.starexec.logger.StarLevel;
 
-import java.sql.Date;
-import java.sql.SQLException;
-import java.sql.SQLType;
-import java.sql.Timestamp;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,29 +42,69 @@ public class ErrorLogs {
     public static Optional<ErrorLog> getById(final int id) throws SQLException {
         return Common.query("{CALL GetErrorLogById(?)}"
                 , procedure -> procedure.setInt(1, id)
-                , results -> {
-                    if (results.next()) {
-                        int retrievedId = results.getInt("id");
-                        String message = results.getString("message");
-                        Timestamp time = results.getTimestamp("time");
-                        StarLevel level = StarLevel.valueOf(results.getString("level"));
-
-                        return Optional.of(new ErrorLog(retrievedId, message, level, time));
-                    } else {
-                        return Optional.empty();
-                    }
-                });
+                , ErrorLogs::getFirst);
     }
 
+    /**
+     * Deletes the error log with the given id.
+     * @param id the id of the error log to delete.
+     * @throws SQLException on database error.
+     */
     public static void deleteWithId(final int id) throws SQLException {
-        Common.update("{CALL DeleteErrorLogWithId(?)}", procedure -> procedure.setInt(1, id));
+        Common.update("{CALL DeleteErrorLogWithId(?)}"
+                , procedure -> procedure.setInt(1, id));
     }
 
-    public static void clearSince(Date date) throws SQLException {
-
+    /**
+     * Deletes logs before (not including) the given time.
+     * @param time delete logs before this time.
+     * @throws SQLException on database error.
+     */
+    public static void deleteBefore(Timestamp time) throws SQLException {
+        Common.update("{CALL DeleteErrorLogsBefore(?)}"
+                , procedure -> procedure.setTimestamp(1, time));
     }
 
-    public static List<ErrorLog> getSince(Date date) throws SQLException {
-        return null;
+    /**
+     * Gets logs since (including) this time.
+     * @param time the time to get logs since.
+     * @return the logs since the given time as a list.
+     * @throws SQLException on databse error.
+     */
+    public static List<ErrorLog> getSince(Timestamp time) throws SQLException {
+        return Common.query("{CALL GetErrorLogsSince(?)}"
+                , procedure -> procedure.setTimestamp(1, time)
+                , ErrorLogs::resultsToErrorLogs);
+    }
+
+    /**
+     * Gets the first error log in a set of error log results.
+     * @param results the result set to get the logs from.
+     * @return the first log or an empty optional if there were no logs.
+     * @throws SQLException
+     */
+    private static Optional<ErrorLog> getFirst(ResultSet results) throws SQLException {
+        List<ErrorLog> logs = resultsToErrorLogs(results);
+        return logs.size() > 0 ? Optional.of(logs.get(0)) : Optional.empty();
+    }
+
+    /**
+     * Converts a result set to a set of error logs.
+     * @param results the result set to get error logs from.
+     * @return the list of error logs from the result set.
+     * @throws SQLException on database error.
+     */
+    private static List<ErrorLog> resultsToErrorLogs(ResultSet results) throws SQLException {
+        List<ErrorLog> errorLogs = new ArrayList<>();
+        while (results.next()) {
+            int id = results.getInt("id");
+            StarLevel level = StarLevel.valueOf(results.getString("level"));
+            Timestamp time = results.getTimestamp("time");
+            String message = results.getString("message");
+
+            errorLogs.add(new ErrorLog(id, message, level, time));
+        }
+
+        return errorLogs;
     }
 }
