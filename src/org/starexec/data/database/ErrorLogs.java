@@ -59,7 +59,7 @@ public class ErrorLogs {
     }
 
     public static void deleteWithId(final int id) throws SQLException {
-        Common.update("{CALL DeleteErrorLogWithId(?)", procedure -> procedure.setInt(1, id));
+        Common.update("{CALL DeleteErrorLogWithId(?)}", procedure -> procedure.setInt(1, id));
     }
 
     public static void clearSince(Date date) throws SQLException {
