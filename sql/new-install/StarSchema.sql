@@ -17,6 +17,7 @@ CREATE TABLE users (
 	default_page_size INT NOT NULL DEFAULT 10,
 	default_settings_profile INT DEFAULT NULL,
 	disk_size BIGINT NOT NULL DEFAULT 0,
+	subscribed_to_error_logs BOOLEAN NOT NULL DEFAULT FALSE,
 	PRIMARY KEY (id),
 	-- the following foreign key is used, but it is added at the end because you can't declare a foreign key before declaring the table
 	-- CONSTRAINT users_default_settings_profile FOREIGN KEY (default_settings_profile) REFERENCES default_settings(id) ON DELETE SET NULL,
