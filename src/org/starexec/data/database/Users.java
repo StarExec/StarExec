@@ -620,7 +620,7 @@ public class Users {
 				, procedure -> procedure.setInt(1, userId));
 	}
 
-	public static List<User> getUsersSubscribedToErrorLogs(int userId) throws SQLException {
+	public static List<User> getUsersSubscribedToErrorLogs() throws SQLException {
 		return Common.query("{CALL GetUsersSubscribedToErrorLogs()}"
 				, procedure -> {} // no parameters to set
 				, Users::resultsToUsers);

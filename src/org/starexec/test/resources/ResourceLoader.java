@@ -607,6 +607,7 @@ public class ResourceLoader {
 		u.setRole(role);
 		u.setDiskQuota(Long.MAX_VALUE);
 		u.setPairQuota(Integer.MAX_VALUE);
+		u.setSubscribedToErrorLogs(false);
 		int id=Users.add(u);
 		if (id>0) {
 			createdUserIds.add(id);

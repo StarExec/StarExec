@@ -91,11 +91,10 @@ public class UserTests extends TestSequence {
 
 	@StarexecTest
 	private void subscribeToErrorLogsTest() {
-		User test = Users.get(testUser.getId());
-		Assert.assertFalse("Test user shouldn't be subscribed to error reports yet.", test.isSubscribedToErrorLogs());
+		Assert.assertFalse("Test user shouldn't be subscribed to error reports yet.", testUser.isSubscribedToErrorLogs());
 		try {
-			Users.subscribeToErrorLogs(test.getId());
-			test = Users.get(test.getId());
+			Users.subscribeToErrorLogs(testUser.getId());
+			User test = Users.get(testUser.getId());
 			Assert.assertTrue("Test user should be subscribed to error reports.",test.isSubscribedToErrorLogs());
 			Users.unsubscribeUserFromErrorLogs(test.getId());
 			test = Users.get(test.getId());
@@ -104,6 +103,27 @@ public class UserTests extends TestSequence {
 			Assert.fail("Caught an SQLException: " + Util.getStackTrace(e));
 		}
 
+	}
+
+	@StarexecTest
+	private void temp() {
+		try {
+			Users.subscribeToErrorLogs(testUser.getId());
+			Users.subscribeToErrorLogs(user1.getId());
+			Users.subscribeToErrorLogs(user2.getId());
+
+			List<User> users = Users.getUsersSubscribedToErrorLogs();
+			Assert.assertTrue(users.stream().anyMatch(u -> u.getId() == testUser.getId()));
+			Assert.assertTrue(users.stream().anyMatch(u -> u.getId() == user1.getId()));
+			Assert.assertTrue(users.stream().anyMatch(u -> u.getId() == user2.getId()));
+
+			Users.unsubscribeUserFromErrorLogs(testUser.getId());
+			Users.unsubscribeUserFromErrorLogs(user1.getId());
+			Users.unsubscribeUserFromErrorLogs(user2.getId());
+
+		} catch (SQLException e) {
+			Assert.fail("Caught an SQLException: " + Util.getStackTrace(e));
+		}
 	}
 	
 	@StarexecTest
