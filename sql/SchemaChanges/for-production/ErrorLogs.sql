@@ -20,3 +20,4 @@ CREATE TABLE error_logs(
 	CONSTRAINT error_level FOREIGN KEY (log_level_id) REFERENCES log_levels(id) ON DELETE SET NULL
 );
 
+ALTER TABLE users ADD COLUMN subscribed_to_error_logs BOOLEAN NOT NULL DEFAULT FALSE;
