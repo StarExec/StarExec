@@ -72,11 +72,13 @@ public class StarLogger extends BaseStarLogger {
 			messageAndTrace += "\nStack Trace:\n" + Util.getStackTrace(t);
 		}
 
+		/*
 		try {
 		    ErrorLogs.add(messageAndTrace, level);
 		} catch (SQLException e) {
 			log.error("Failed to generate error report due to SQLException!", e);
 		}
+		*/
 
     }
 
