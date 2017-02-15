@@ -88,6 +88,23 @@ public class UserTests extends TestSequence {
 		}
 		Assert.assertTrue(found);
 	}
+
+	@StarexecTest
+	private void subscribeToErrorLogsTest() {
+		User test = Users.get(testUser.getId());
+		Assert.assertFalse("Test user shouldn't be subscribed to error reports yet.", test.isSubscribedToErrorLogs());
+		try {
+			Users.subscribeToErrorLogs(test.getId());
+			test = Users.get(test.getId());
+			Assert.assertTrue("Test user should be subscribed to error reports.",test.isSubscribedToErrorLogs());
+			Users.unsubscribeUserFromErrorLogs(test.getId());
+			test = Users.get(test.getId());
+			Assert.assertFalse("Test user should not be subscribed to error reports any more.", test.isSubscribedToErrorLogs());
+		} catch (SQLException e) {
+			Assert.fail("Caught an SQLException: " + Util.getStackTrace(e));
+		}
+
+	}
 	
 	@StarexecTest
 	private void registerUserTest() {
