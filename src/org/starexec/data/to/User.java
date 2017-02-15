@@ -24,6 +24,7 @@ public class User extends Identifiable {
 	private long diskQuota;
 	private long diskUsage;
 	private boolean subscribedToReports;
+	private boolean subscribedToErrorLogs;
 	private int pairQuota;
 	
 	
@@ -187,8 +188,12 @@ public class User extends Identifiable {
 		subscribedToReports = subscribe;
 	}
 
-	public void toggleSubscribedToReports() {
-		subscribedToReports = !subscribedToReports;
+	public boolean isSubscribedToErrorLogs() {
+		return subscribedToErrorLogs;
+	}
+
+	public void setSubscribedToErrorLogs(boolean subscribedToErrorLogs) {
+		this.subscribedToErrorLogs = subscribedToErrorLogs;
 	}
 	
 	@Override
