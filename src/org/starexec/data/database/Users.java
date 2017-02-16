@@ -621,7 +621,7 @@ public class Users {
 	}
 
 	public static List<User> getUsersSubscribedToErrorLogs() throws SQLException {
-		return Common.query("{CALL GetUsersSubscribedToErrorLogs()}"
+		return Common.query("{CALL GetAllUsersSubscribedToErrorLogs()}"
 				, procedure -> {} // no parameters to set
 				, Users::resultsToUsers);
 	}

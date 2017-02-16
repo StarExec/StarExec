@@ -106,16 +106,17 @@ public class UserTests extends TestSequence {
 	}
 
 	@StarexecTest
-	private void temp() {
+	private void getUsersSubscribedToErrorLogsTest() {
 		try {
 			Users.subscribeToErrorLogs(testUser.getId());
 			Users.subscribeToErrorLogs(user1.getId());
 			Users.subscribeToErrorLogs(user2.getId());
 
 			List<User> users = Users.getUsersSubscribedToErrorLogs();
-			Assert.assertTrue(users.stream().anyMatch(u -> u.getId() == testUser.getId()));
-			Assert.assertTrue(users.stream().anyMatch(u -> u.getId() == user1.getId()));
-			Assert.assertTrue(users.stream().anyMatch(u -> u.getId() == user2.getId()));
+
+			Assert.assertTrue("testUser should be subscribed to error logs.", users.stream().anyMatch(u -> u.getId() == testUser.getId()));
+			Assert.assertTrue("user1 should be subscribed to error logs.", users.stream().anyMatch(u -> u.getId() == user1.getId()));
+			Assert.assertTrue("user2 should be subscribed to error logs.", users.stream().anyMatch(u -> u.getId() == user2.getId()));
 
 			Users.unsubscribeUserFromErrorLogs(testUser.getId());
 			Users.unsubscribeUserFromErrorLogs(user1.getId());

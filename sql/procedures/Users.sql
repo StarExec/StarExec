@@ -169,15 +169,15 @@ DROP PROCEDURE IF EXISTS SubscribeUserToErrorLogs;
 CREATE PROCEDURE SubscribeUserToErrorLogs(IN _id INT)
 	BEGIN
 		UPDATE users
-		SET subscribed_to_reports=TRUE
+		SET subscribed_to_error_logs=TRUE
 		WHERE id=_id;
 	END //
 
 DROP PROCEDURE IF EXISTS GetAllUsersSubscribedToErrorLogs;
-CREATE PROCEDURE GetAllUsersSubscribedToErrorLogs(IN _id INT)
+CREATE PROCEDURE GetAllUsersSubscribedToErrorLogs()
 	BEGIN
 		SELECT *
-		FROM users
+		FROM users NATURAL JOIN user_roles
 		WHERE subscribed_to_error_logs=TRUE;
 	END //
 	
