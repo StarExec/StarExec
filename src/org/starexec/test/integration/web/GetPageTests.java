@@ -393,8 +393,10 @@ public class GetPageTests extends TestSequence {
 		con=new Connection(user.getEmail(),user.getPassword(),Util.url(""));
 		adminCon=new Connection(admin.getEmail(),admin.getPassword(),Util.url(""));
 		nonUserCon = new Connection("empty", "empty", Util.url(""));
-		Assert.assertEquals(0, con.login());
-		Assert.assertEquals(0, adminCon.login());
+		int status = con.login();
+		int adminStatus = adminCon.login();
+		Assert.assertEquals("login returned "+status, 0, status);
+		Assert.assertEquals("admin login returned " + adminStatus, 0, adminStatus);
 		//space1 will contain solvers and benchmarks
 		space1=loader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());
 		newCommunity = loader.loadSpaceIntoDatabase(admin.getId(), 1);
