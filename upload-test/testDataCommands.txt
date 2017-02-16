@@ -1,4 +1,10 @@
 returnids
+
+login addr=https://stardev.cs.uiowa.edu/appname/ u=admin@uiowa.edu p=Starexec4ever
+pushsolver f=fifteen-mb-output-solver.zip id=1 n=fifteen-mb-output-solver
+pushsolver f=one-gb-output-solver.zip id=1 n=one-gb-output-solver
+logout
+
 login addr=https://stardev.cs.uiowa.edu/appname/ u=test@uiowa.edu p=Starexec4ever
 pushbenchproc id=2 f=smt2-validator.zip n=smt2orig
 pushbenchproc id=2 f=smt2nonincremental.zip n=smt2nonincremental
@@ -18,11 +24,9 @@ pushsolver f=random-sat-or-unsat-solver.zip id=2 n=random-sat-or-unsat-solver
 pushsolver f=output-random100-solver.zip id=2 n=output-random100-solver
 pushsolver f=sleep-10-solver.zip id=2 n=sleep-10-solver
 pushsolver f=cpu-runner.zip id=2 n=cpu-runner
-pushsolver f=fifteen-mb-output-solver.zip id=2 n=fifteen-mb-output-solver
-pushsolver f=one-gb-output-solver.zip id=2 n=one-gb-output-solver
 pushsolver f=chain-solver.zip id=2 n=chain-solver
-
 logout
+
 login addr=https://stardev.cs.uiowa.edu/appname/ u=user@uiowa.edu p=Starexec4ever
 pushbenchmarks id=2 f=benchmarks.zip bt=2 hier=
 sleep t=4
