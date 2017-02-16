@@ -83,7 +83,7 @@ public class JspHelpers {
 
 		// Get all the solvers in the list of provided spaces.
 		List<Solver> solversInSpaces = spacesAssociatedWithJob.stream()
-				.map(Solvers::getBySpace)
+				.map(Solvers::getBySpaceDetailed)
 				.flatMap(List::stream)
 				.sorted(compareById)
 				.collect(Collectors.toList());

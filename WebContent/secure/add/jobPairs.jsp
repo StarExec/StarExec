@@ -21,7 +21,7 @@
 
 
 		Set<Integer> spacesAssociatedWithJob = Spaces.getByJob(jobId);
-		List<Solver> solvers = JspHelpers.getSolversInSpacesAndJob(jobId, spacesAssociatedWithJob);
+		List<Solver> solvers = Solvers.getSolversInSpacesAndJob(jobId, spacesAssociatedWithJob);
 		Set<Integer> configIdSet = Solvers.getConfigIdSetByJob( jobId );
 
 		Solvers.sortConfigs(solvers);
