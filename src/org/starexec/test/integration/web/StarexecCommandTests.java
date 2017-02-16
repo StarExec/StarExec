@@ -568,10 +568,11 @@ public class StarexecCommandTests extends TestSequence {
 	private void downloadJobCSV() {
 		String fileName=TestUtil.getRandomSolverName()+".zip";
 		File downloadDir=new File(loader.getDownloadDirectory(),fileName);
-		Assert.assertFalse(downloadDir.exists());
+		Assert.assertFalse("Download directory already exists when it shouldn't.", downloadDir.exists());
 		try {
-			Assert.assertEquals(0, con.downloadJobInfo(job.getId(), downloadDir.getAbsolutePath(), true, false));
-			Assert.assertTrue(downloadDir.exists());
+			int status = con.downloadJobInfo(job.getId(), downloadDir.getAbsolutePath(), true, false);
+			Assert.assertEquals("downloadJobInfo returned " + status,0, status);
+			Assert.assertTrue("Download directory did not exist when it should.", downloadDir.exists());
 		} catch (IOException e) {
 			Assert.fail("Caught IOException: " + Util.getStackTrace(e));
 		}
