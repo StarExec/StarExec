@@ -286,10 +286,12 @@ public class Common {
 	 * @param sql the sql to run.
 	 * @throws SQLException on database error.
 	 */
-	public static void runSql(String sql) throws SQLException {
+	public static void execute(String sql) throws SQLException {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
+			Statement statement = con.createStatement();
+			statement.execute(sql);
 		} catch (SQLException e) {
 			Common.doRollback(con);
 			throw e;
