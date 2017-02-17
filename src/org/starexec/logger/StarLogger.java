@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Optional;
 
 public class StarLogger extends BaseStarLogger {
 
@@ -47,6 +48,8 @@ public class StarLogger extends BaseStarLogger {
     protected void log(StarLevel level, final String method, final String message, final Throwable t) {
         final String prefixedMessage = method == null ? message : prefix(method)+message;
 
+		log.log(level.get(), "StarLogger log method called.");
+
         if (t == null) {
             log.log(level.get(), prefixedMessage);
         } else {
@@ -55,7 +58,7 @@ public class StarLogger extends BaseStarLogger {
 
 
         if (level == StarLevel.ERROR || level == StarLevel.FATAL || level == StarLevel.WARN) {
-            reportError(level, prefixedMessage);
+            reportError(level, prefixedMessage, t);
         }
     }
 
@@ -74,14 +77,13 @@ public class StarLogger extends BaseStarLogger {
 			messageAndTrace += "\nStack Trace:\n" + Util.getStackTrace(t);
 		}
 
-		/*
-		try {
-		    ErrorLogs.add(messageAndTrace, level);
-		} catch (SQLException e) {
-			log.error("Failed to generate error report due to SQLException!", e);
+		
+		
+		Optional<Integer> logId = ErrorLogs.add(messageAndTrace, level);
+		if (!logId.isPresent()) {
+			// This log is just a basic log4j logger.
+			log.error("Failed to add error message to logs.");
 		}
-		*/
-
     }
 
 

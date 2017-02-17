@@ -271,7 +271,9 @@ public class Common {
 			procedure.executeUpdate();
 
 			// Apply the output getting function and return the result.
-			return getOutput.accept(procedure);
+			T output = getOutput.accept(procedure);
+			Common.endTransaction(con);
+			return output;
 		} catch (SQLException e) {
 			Common.doRollback(con);
 			throw e;
@@ -288,15 +290,19 @@ public class Common {
 	 */
 	public static void execute(String sql) throws SQLException {
 		Connection con = null;
+		Statement statement = null;
 		try {
 			con = Common.getConnection();
-			Statement statement = con.createStatement();
+			Common.beginTransaction(con);
+			statement = con.createStatement();
 			statement.execute(sql);
+			Common.endTransaction(con);
 		} catch (SQLException e) {
 			Common.doRollback(con);
 			throw e;
 		} finally {
 			Common.safeClose(con);
+			Common.safeClose(statement);
 		}
 	}
 
@@ -414,6 +420,17 @@ public class Common {
 	}
 	
 	protected static void safeClose(CallableStatement statement) {
+		try {
+			if (statement!=null) {
+				statement.close();
+			}
+		
+		} catch (Exception e) {
+			log.error("safeClose statement says "+e.getMessage(),e);
+		}	
+	}
+
+	protected static void safeClose(Statement statement) {
 		try {
 			if (statement!=null) {
 				statement.close();

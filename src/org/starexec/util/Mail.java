@@ -342,7 +342,6 @@ public class Mail {
 			message.append(log.getLevel().toString());
 			message.append("\n");
 
-			message.append("Message:\n");
 			message.append(log.getMessage());
 			message.append("\n\n");
 		}
