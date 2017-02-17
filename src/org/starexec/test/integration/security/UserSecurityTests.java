@@ -14,6 +14,7 @@ public class UserSecurityTests extends TestSequence {
 
 	User user1=null;
 	User user2=null;
+	User dev = null;
 	User admin=null;
 	
 	@StarexecTest
@@ -22,6 +23,51 @@ public class UserSecurityTests extends TestSequence {
 		Assert.assertEquals(true, UserSecurity.canUpdateData(user1.getId(), admin.getId(), "firstname","test").isSuccess());
 		Assert.assertNotEquals(true, UserSecurity.canUpdateData(admin.getId(), user1.getId(), "firstname","test").isSuccess());
 		Assert.assertNotEquals(true, UserSecurity.canUpdateData(user1.getId(), user2.getId(), "firstname","test").isSuccess());
+	}
+
+	@StarexecTest
+	private void canUserSubscribeOrUnsubscribeUserToErrorLogsTest() {
+		Assert.assertFalse(UserSecurity.canUserSubscribeOrUnsubscribeUser(user2.getId(), user1.getId()).isSuccess());
+	}
+	@StarexecTest
+	private void canUserSubscribeOrUnsubscribeSelfToErrorLogsTest() {
+		Assert.assertFalse(UserSecurity.canUserSubscribeOrUnsubscribeUser(user1.getId(), user1.getId()).isSuccess());
+	}
+	@StarexecTest
+	private void canUserSubscribeOrUnsubscribeDevToErrorLogsTest() {
+		Assert.assertFalse(UserSecurity.canUserSubscribeOrUnsubscribeUser(dev.getId(), user1.getId()).isSuccess());
+	}
+	@StarexecTest
+	private void canUserSubscribeOrUnsubscribeAdminToErrorLogsTest() {
+		Assert.assertFalse(UserSecurity.canUserSubscribeOrUnsubscribeUser(admin.getId(), user1.getId()).isSuccess());
+	}
+
+	@StarexecTest
+	private void canDevSubscribeOrUnsubscribeUserToErrorLogsTest() {
+		Assert.assertFalse(UserSecurity.canUserSubscribeOrUnsubscribeUser(user1.getId(), dev.getId()).isSuccess());
+	}
+	@StarexecTest
+	private void canDevSubscribeOrUnsubscribeAdminToErrorLogsTest() {
+		Assert.assertFalse(UserSecurity.canUserSubscribeOrUnsubscribeUser(admin.getId(), dev.getId()).isSuccess());
+	}
+	@StarexecTest
+	private void canDevSubscribeOrUnsubscribeSelfToErrorLogsTest() {
+		Assert.assertTrue(UserSecurity.canUserSubscribeOrUnsubscribeUser(dev.getId(), dev.getId()).isSuccess());
+	}
+
+	@StarexecTest
+	private void canAdminSubscribeOrUnsubscribeUserToErrorLogsTest() {
+		Assert.assertFalse(UserSecurity.canUserSubscribeOrUnsubscribeUser(dev.getId(), admin.getId()).isSuccess());
+	}
+
+	@StarexecTest
+	private void canAdminSubscribeOrUnsubscribeSelfToErrorLogsTest() {
+		Assert.assertTrue(UserSecurity.canUserSubscribeOrUnsubscribeUser(admin.getId(), admin.getId()).isSuccess());
+	}
+
+	@StarexecTest
+	private void canAdminSubscribeOrUnsubscribeDevToErrorLogsTest() {
+		Assert.assertTrue(UserSecurity.canUserSubscribeOrUnsubscribeUser(dev.getId(), admin.getId()).isSuccess());
 	}
 	
 	@StarexecTest
@@ -81,7 +127,8 @@ public class UserSecurityTests extends TestSequence {
 		user1=loader.loadUserIntoDatabase();
 		user2=loader.loadUserIntoDatabase();
 
-		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
+		admin=loader.loadAdminIntoDatabase();
+		dev = loader.loadDevIntoDatabase();
 		Assert.assertNotNull(user1);
 		Assert.assertNotNull(user2);
 		Assert.assertNotNull(admin);

@@ -571,6 +571,10 @@ public class ResourceLoader {
 	public User loadAdminIntoDatabase() {
 		return loadUserIntoDatabase(TestUtil.getRandomPassword(), R.ADMIN_ROLE_NAME);
 	}
+
+	public User loadDevIntoDatabase() {
+		return loadUserIntoDatabase(TestUtil.getRandomPassword(), R.DEVELOPER_ROLE_NAME);
+	}
 	
 	public User loadUserIntoDatabase(String password, String role) {
 		return loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),password,password,"The University of Iowa",role);
