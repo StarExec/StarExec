@@ -75,13 +75,13 @@ public class ErrorLogs {
     }
 
     public static boolean existBefore(Timestamp time) throws SQLException {
-        return Common.query("{GetErrorLogsBefore(?)}"
+        return Common.query("{CALL GetErrorLogsBefore(?)}"
                 , procedure -> procedure.setTimestamp(1, time)
                 , results -> getFirst(results).isPresent());
     }
 
     public static List<ErrorLog> getAll() throws SQLException {
-        return Common.query("{GetAllErrorLogs()}"
+        return Common.query("{CALL GetAllErrorLogs()}"
                 , procedure -> {}
                 , ErrorLogs::resultsToErrorLogs);
     }

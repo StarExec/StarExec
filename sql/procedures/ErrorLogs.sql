@@ -40,8 +40,8 @@ CREATE PROCEDURE GetErrorLogsBefore(IN _time TIMESTAMP)
   BEGIN
     SELECT el.id AS id, el.message AS message, el.time AS time, ll.name AS level
     FROM error_logs el JOIN log_levels ll ON el.log_level_id=ll.id
-    WHERE error_logs.time < _time
-    ORDER BY error_logs.time DESC;
+    WHERE el.time < _time
+    ORDER BY el.time DESC;
   END //
 
 -- Gets all error logs since the given time (inclusive).
@@ -50,8 +50,8 @@ CREATE PROCEDURE GetErrorLogsSince(IN _since TIMESTAMP)
   BEGIN
     SELECT el.id AS id, el.message AS message, el.time AS time, ll.name AS level
     FROM error_logs el JOIN log_levels ll ON el.log_level_id = ll.id
-    WHERE error_logs.time >= _since
-    ORDER BY error_logs.time DESC;
+    WHERE el.time >= _since
+    ORDER BY el.time DESC;
   END //
 
 DROP PROCEDURE IF EXISTS GetAllErrorLogs;
@@ -59,7 +59,7 @@ CREATE PROCEDURE GetAllErrorLogs()
   BEGIN
     SELECT el.id AS id, el.message AS message, el.time AS time, ll.name AS level
     FROM error_logs el JOIN log_levels ll ON el.log_level_id = ll.id
-    ORDER BY error_logs.time DESC;
+    ORDER BY el.time DESC;
   END //
 
 
