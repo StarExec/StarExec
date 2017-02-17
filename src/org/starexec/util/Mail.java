@@ -5,10 +5,12 @@ import java.io.IOException;
 import java.lang.NullPointerException;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.mail.DefaultAuthenticator;
@@ -18,6 +20,7 @@ import org.starexec.constants.R;
 import org.starexec.data.database.Reports;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.to.CommunityRequest;
+import org.starexec.data.to.ErrorLog;
 import org.starexec.data.to.Report;
 import org.starexec.data.to.User;
 import org.starexec.logger.StarLogger;
@@ -31,13 +34,19 @@ public class Mail {
 	public static final String EMAIL_CODE = "conf";			// Param string for email verification codes
 	public static final String CHANGE_EMAIL_CODE = "changeEmail";
 	public static final String LEADER_RESPONSE = "lead";	// Param string for leader response decisions	
-	
-	/**
-	 * Sends an e-mail from the configured SMTP server
-	 * @param message The body of the message
-	 * @param subject The subject of the message
-	 * @param to The list of e-mail addresses to send the message to
-	 */
+
+
+	public static void mail(String message, String subject, List<String> to) {
+		mail(message, subject, to.toArray(new String[]{}));
+	}
+
+
+		/**
+         * Sends an e-mail from the configured SMTP server
+         * @param message The body of the message
+         * @param subject The subject of the message
+         * @param to The list of e-mail addresses to send the message to
+         */
 	public static void mail(String message, String subject, String[] to) {
 		try {
 			if(to == null || to.length < 1) {
@@ -320,6 +329,29 @@ public class Mail {
 		email = email.replace("$$QUEUE_REPORTS$$", reportBuilder.toString());
 
 		return email;
+	}
+
+
+
+	public static void sendErrorLogEmails(List<ErrorLog> errorLogs, List<User> usersToEmail) {
+		StringBuilder message = new StringBuilder();
+		for (ErrorLog log : errorLogs) {
+			message.append("Time: ");
+			message.append(log.getTime());
+			message.append("\nLevel: ");
+			message.append(log.getLevel().toString());
+			message.append("\n");
+
+			message.append("Message:\n");
+			message.append(log.getMessage());
+			message.append("\n\n");
+		}
+
+		Mail.mail(
+				message.toString(),
+				"Error Reports",
+				usersToEmail.stream().map(User::getEmail).collect(Collectors.toList()));
+
 	}
 
 	/**

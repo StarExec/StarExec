@@ -5,6 +5,7 @@ import org.starexec.logger.NonSavingStarLogger;
 import org.starexec.logger.StarLevel;
 
 import java.sql.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -71,6 +72,22 @@ public class ErrorLogs {
     public static void deleteBefore(Timestamp time) throws SQLException {
         Common.update("{CALL DeleteErrorLogsBefore(?)}"
                 , procedure -> procedure.setTimestamp(1, time));
+    }
+
+    public static boolean existBefore(Timestamp time) throws SQLException {
+        return Common.query("{GetErrorLogsBefore(?)}"
+                , procedure -> procedure.setTimestamp(1, time)
+                , results -> getFirst(results).isPresent());
+    }
+
+    public static List<ErrorLog> getAll() throws SQLException {
+        return Common.query("{GetAllErrorLogs()}"
+                , procedure -> {}
+                , ErrorLogs::resultsToErrorLogs);
+    }
+
+    public static void deleteAll() throws SQLException {
+        deleteBefore(Timestamp.from(Instant.now()));
     }
 
     /**

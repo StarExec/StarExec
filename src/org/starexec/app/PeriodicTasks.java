@@ -4,6 +4,9 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.time.StopWatch;
 import org.starexec.constants.R;
 import org.starexec.data.database.*;
+import org.starexec.data.security.GeneralSecurity;
+import org.starexec.data.security.UserSecurity;
+import org.starexec.data.to.ErrorLog;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.User;
 import org.starexec.data.to.tuples.PairIdJobId;
@@ -19,10 +22,12 @@ import org.starexec.util.Util;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 
 /**
@@ -44,7 +49,7 @@ class PeriodicTasks {
         POST_PROCESS_JOBS(true, POST_PROCESS_JOBS_TASK, 0, () -> 45, TimeUnit.SECONDS),
         RERUN_FAILED_PAIRS(true, RERUN_FAILED_PAIRS_TASK, 0, () -> 5, TimeUnit.MINUTES),
         FIND_BROKEN_JOB_PAIRS(true, FIND_BROKEN_JOB_PAIRS_TASK, 0, () -> 3, TimeUnit.HOURS),
-        //SEND_ERROR_LOGS(true, SEND_ERROR_LOGS_TASK, 0, () -> 1, TimeUnit.DAYS),
+        SEND_ERROR_LOGS(true, SEND_ERROR_LOGS_TASK, 0, () -> 1, TimeUnit.DAYS),
         CLEAR_TEMPORARY_FILES(false, CLEAR_TEMPORARY_FILES_TASK, 0, () -> 3, TimeUnit.HOURS),
         CLEAR_JOB_LOG(false, CLEAR_JOB_LOG_TASK, 0, () -> 7, TimeUnit.DAYS),
         FIND_BROKEN_NODES(true, FIND_BROKEN_NODES_TASK, 0, () -> 6, TimeUnit.HOURS),
@@ -82,7 +87,35 @@ class PeriodicTasks {
     private static final Runnable SEND_ERROR_LOGS_TASK = new RobustRunnable(sendErrorLogsTaskName) {
         @Override
         protected void dorun() {
+            // Calculate the timestamp from a week ago.
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.DAY_OF_YEAR, -7);
+            Timestamp aWeekAgo = new Timestamp(calendar.getTime().getTime());
 
+            try {
+                if (ErrorLogs.existBefore(aWeekAgo)) {
+                    // Make sure users we're emailing are developers and admins.
+                    List<User> usersSubscribedToErrorLogs = Users.getUsersSubscribedToErrorLogs();
+                    for (User user : usersSubscribedToErrorLogs) {
+                        if (!GeneralSecurity.hasAdminReadPrivileges(user.getId())) {
+                            log.error("Found user who wasn't developer/admin while emailing error logs: "+user.getEmail());
+                        }
+                    }
+
+                    usersSubscribedToErrorLogs = usersSubscribedToErrorLogs.stream()
+                            .filter(u -> GeneralSecurity.hasAdminReadPrivileges(u.getId()))
+                            .collect(Collectors.toList());
+
+                    // Gather the error logs and send them.
+                    List<ErrorLog> allLogs = ErrorLogs.getAll();
+                    Mail.sendErrorLogEmails(allLogs, usersSubscribedToErrorLogs);
+
+                    // Delete all the error logs, in the future we may keep some until they get too old.
+                    ErrorLogs.deleteAll();
+                }
+            } catch (SQLException e) {
+                log.error("Failed to send error log emails.");
+            }
         }
     };
 
