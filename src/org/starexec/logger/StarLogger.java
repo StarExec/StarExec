@@ -68,6 +68,8 @@ public class StarLogger extends BaseStarLogger {
 		if (message != null) {
 			messageAndTrace = message;
 		}
+		// Add the logger name.
+		messageAndTrace += "("+log.getName()+") - " + messageAndTrace;
 		if (t != null) {
 			messageAndTrace += "\nStack Trace:\n" + Util.getStackTrace(t);
 		}

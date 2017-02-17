@@ -12,18 +12,23 @@ import java.util.List;
  */
 public abstract class BaseStarLogger {
     protected final Logger log;
+    protected final String name;
     private static final String methodSeparator = " - ";
 
     protected BaseStarLogger(Class clazz) {
+
         log = Logger.getLogger(clazz);
+        this.name = clazz.getName();
     }
 
     protected BaseStarLogger(String name) {
         log = Logger.getLogger(name);
+        this.name = name;
     }
 
     protected BaseStarLogger(Logger log) {
         this.log = log;
+        this.name = log.getName();
     }
 
 
