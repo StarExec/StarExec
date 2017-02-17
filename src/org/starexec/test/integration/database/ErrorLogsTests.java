@@ -66,9 +66,17 @@ public class ErrorLogsTests extends TestSequence {
         try {
             Timestamp begin = Timestamp.from(Instant.now());
 
-            int firstId = ErrorLogs.add("test", StarLevel.DEBUG);
-            int secondId = ErrorLogs.add("test", StarLevel.DEBUG);
-            int thirdId = ErrorLogs.add("test", StarLevel.DEBUG);
+            Optional<Integer> optFirstId = ErrorLogs.add("test", StarLevel.DEBUG);
+            Optional<Integer> optSecondId = ErrorLogs.add("test", StarLevel.DEBUG);
+            Optional<Integer> optThirdId = ErrorLogs.add("test", StarLevel.DEBUG);
+
+            Assert.assertTrue(optFirstId.isPresent());
+            Assert.assertTrue(optSecondId.isPresent());
+            Assert.assertTrue(optThirdId.isPresent());
+
+            int firstId = optFirstId.get();
+            int secondId = optSecondId.get();
+            int thirdId = optThirdId.get();
 
             List<ErrorLog> logs = ErrorLogs.getSince(begin);
 
@@ -100,9 +108,10 @@ public class ErrorLogsTests extends TestSequence {
     @StarexecTest
     private void deleteTest() {
         try {
-            int id = ErrorLogs.add("test", StarLevel.DEBUG);
-            ErrorLogs.deleteWithId(id);
-            Optional<ErrorLog> log = ErrorLogs.getById(id);
+            Optional<Integer> optId = ErrorLogs.add("test", StarLevel.DEBUG);
+            Assert.assertTrue(optId.isPresent()) ;
+            ErrorLogs.deleteWithId(optId.get());
+            Optional<ErrorLog> log = ErrorLogs.getById(optId.get());
 
             Assert.assertFalse("Error log was still in database after deletion.",log.isPresent());
         } catch (SQLException e) {
@@ -115,8 +124,9 @@ public class ErrorLogsTests extends TestSequence {
         try {
             StarLevel level = StarLevel.DEBUG;
             String message = "test";
-            int id = ErrorLogs.add(message, level);
-            Optional<ErrorLog> optionalLog = ErrorLogs.getById(id);
+            Optional<Integer> id = ErrorLogs.add(message, level);
+            Assert.assertTrue(id.isPresent());
+            Optional<ErrorLog> optionalLog = ErrorLogs.getById(id.get());
             Assert.assertTrue("Log did not exist in database.",optionalLog.isPresent());
             if (optionalLog.isPresent()) {
                 ErrorLog log = optionalLog.get();
@@ -124,7 +134,7 @@ public class ErrorLogsTests extends TestSequence {
                 Assert.assertEquals(level, log.getLevel());
                 Assert.assertEquals(message, log.getMessage());
 
-                ErrorLogs.deleteWithId(id);
+                ErrorLogs.deleteWithId(id.get());
             }
         } catch (SQLException e) {
             Assert.fail("Caught SQLException:\n"+ Util.getStackTrace(e));
