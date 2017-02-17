@@ -48,8 +48,6 @@ public class StarLogger extends BaseStarLogger {
     protected void log(StarLevel level, final String method, final String message, final Throwable t) {
         final String prefixedMessage = method == null ? message : prefix(method)+message;
 
-		log.log(level.get(), "StarLogger log method called.");
-
         if (t == null) {
             log.log(level.get(), prefixedMessage);
         } else {
