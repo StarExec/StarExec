@@ -82,7 +82,7 @@ public class TestManager {
 		tests.add(new JobUtilTests());
 		tests.add(new ReportsTests());
 		tests.add(new ErrorLogsTests());
-		tests.add(new RESTServicesTests());
+		//tests.add(new RESTServicesTests());
 	}
 	/**
 	 * 
