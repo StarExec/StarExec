@@ -4795,7 +4795,7 @@ public class RESTServices {
 	 * @return JSON object containing information about whether the unsubscription attempt succeeded or failed.
 	 */
 	@POST
-	@Path("/unsubscribe/user/errorLogs{userId}")
+	@Path("/unsubscribe/user/errorLogs/{userId}")
 	@Produces("application/json")
 	public String unsubscribeUserFromErrorLogs(@PathParam("userId") int userId, @Context HttpServletRequest request) {
 		int callingUserId = SessionUtil.getUserId(request);

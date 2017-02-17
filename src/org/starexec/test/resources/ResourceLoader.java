@@ -568,6 +568,10 @@ public class ResourceLoader {
 		return loadUserIntoDatabase(TestUtil.getRandomPassword(), R.DEFAULT_USER_ROLE_NAME);
 	}
 
+	public User loadUserIntoDatabase(String password) {
+		return loadUserIntoDatabase(password, R.DEFAULT_USER_ROLE_NAME);
+	}
+
 	public User loadAdminIntoDatabase() {
 		return loadUserIntoDatabase(TestUtil.getRandomPassword(), R.ADMIN_ROLE_NAME);
 	}
