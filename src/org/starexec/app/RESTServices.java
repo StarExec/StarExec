@@ -4761,6 +4761,12 @@ public class RESTServices {
 
 	}
 
+	/**
+	 * Subscribes a user to the error logs e-mail system.
+	 * @param userId the user to be subscribed from the system.
+	 * @param request HTTP request sent to the server.
+	 * @return JSON object containing information about whether the subscription attempt succeeded or failed.
+	 */
 	@POST
 	@Path("/subscribe/user/errorLogs/{userId}")
 	@Produces("application/json")
@@ -4777,6 +4783,32 @@ public class RESTServices {
 			return gson.toJson(new ValidatorStatusCode(true, "User subscribed successfully."));
 		} catch (SQLException e) {
 			log.error("Caught SQLException while trying to subscribe user to error logs.", e);
+			return gson.toJson(ERROR_DATABASE);
+		}
+	}
+
+	/**
+	 * Unsubscribes a user from the error logs e-mail system.
+	 * @param userId the user to be unsubscribed from the system.
+	 * @param request HTTP request sent to the server.
+	 * @return JSON object containing information about whether the unsubscription attempt succeeded or failed.
+	 */
+	@POST
+	@Path("/unsubscribe/user/errorLogs{userId}")
+	@Produces("application/json")
+	public String unsubscribeUserFromErrorLogs(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		int callingUserId = SessionUtil.getUserId(request);
+		ValidatorStatusCode status = UserSecurity.canUserSubscribeOrUnsubscribeUserToErrorLogs(userId, callingUserId);
+
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+
+		try {
+			Users.unsubscribeUserFromErrorLogs(userId);
+			return gson.toJson(new ValidatorStatusCode(true, "User unsubscribed successfully."));
+		} catch (SQLException e) {
+			log.error("Caught SQLException while trying to unsubscribe user from error logs.", e);
 			return gson.toJson(ERROR_DATABASE);
 		}
 	}
