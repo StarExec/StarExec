@@ -345,11 +345,16 @@ public class Mail {
 			message.append(log.getMessage());
 			message.append("\n\n");
 		}
+		List<String> emails = usersToEmail.stream().map(User::getEmail).collect(Collectors.toList());
+
+		for (String email : emails) {
+			log.info("Emailing error log reports to: "+email);
+		}
 
 		Mail.mail(
 				message.toString(),
 				"Error Reports",
-				usersToEmail.stream().map(User::getEmail).collect(Collectors.toList()));
+				emails);
 
 	}
 
