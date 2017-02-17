@@ -14,22 +14,30 @@ public class ErrorLogs {
     // We have to use NonSavingStarLogger here to prevent us from attempting to save errors that occur in this class.
     // If we tried to save an error that occurred in this class to the error_logs table it would call us to recursively
     // call the methods in this class again potentially leading to infinite recursion.
-    NonSavingStarLogger log = NonSavingStarLogger.getLogger(ErrorLogs.class);
+    private static NonSavingStarLogger log = NonSavingStarLogger.getLogger(ErrorLogs.class);
 
     /**
      * Adds an error reports to the error_reports table.
+     * This method must catch all exceptions so that another method doesn't catch them and call this method.
      * @param message the message to add to the table.
      * @param level the level the error was logged at.
      * @return the id of the new log.
-     * @throws SQLException on database error.
      */
-    public static int add(String message, StarLevel level) throws SQLException {
-        return Common.updateWithOutput("{CALL AddErrorLog(?, ?, ?)}", procedure -> {
-            procedure.setString(1, message);
-            procedure.setString(2, level.toString());
-            procedure.registerOutParameter(3, java.sql.Types.INTEGER);
+    public static Optional<Integer> add(String message, StarLevel level) {
+        try {
+            return Common.updateWithOutput("{CALL AddErrorLog(?, ?, ?)}", procedure -> {
+                procedure.setString(1, message);
+                procedure.setString(2, level.toString());
+                procedure.registerOutParameter(3, java.sql.Types.INTEGER);
 
-        }, procedure -> procedure.getInt(3) );
+            }, procedure -> Optional.of(procedure.getInt(3)));
+        } catch (Exception e) {
+            // Must catch all exceptions since we don't want another method to catch them and indirectly call this
+            // method again to add error to the database.
+            log.error("Caught exception while trying to add message to database.");
+
+            return Optional.empty();
+        }
     }
 
 

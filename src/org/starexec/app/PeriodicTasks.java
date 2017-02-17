@@ -44,6 +44,7 @@ class PeriodicTasks {
         POST_PROCESS_JOBS(true, POST_PROCESS_JOBS_TASK, 0, () -> 45, TimeUnit.SECONDS),
         RERUN_FAILED_PAIRS(true, RERUN_FAILED_PAIRS_TASK, 0, () -> 5, TimeUnit.MINUTES),
         FIND_BROKEN_JOB_PAIRS(true, FIND_BROKEN_JOB_PAIRS_TASK, 0, () -> 3, TimeUnit.HOURS),
+        //SEND_ERROR_LOGS(true, SEND_ERROR_LOGS_TASK, 0, () -> 1, TimeUnit.DAYS),
         CLEAR_TEMPORARY_FILES(false, CLEAR_TEMPORARY_FILES_TASK, 0, () -> 3, TimeUnit.HOURS),
         CLEAR_JOB_LOG(false, CLEAR_JOB_LOG_TASK, 0, () -> 7, TimeUnit.DAYS),
         FIND_BROKEN_NODES(true, FIND_BROKEN_NODES_TASK, 0, () -> 6, TimeUnit.HOURS),
@@ -76,6 +77,14 @@ class PeriodicTasks {
             this.task = task;
         }
     }
+
+    private static final String sendErrorLogsTaskName = "sendErrorReportsTask";
+    private static final Runnable SEND_ERROR_LOGS_TASK = new RobustRunnable(sendErrorLogsTaskName) {
+        @Override
+        protected void dorun() {
+
+        }
+    };
 
 
     private static final String updateClusterTaskName = "updateClusterTask";

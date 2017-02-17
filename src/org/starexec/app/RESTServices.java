@@ -3516,6 +3516,8 @@ public class RESTServices {
 	
 		return gson.toJson(new ValidatorStatusCode(true,"Job(s) deleted successfully"));
 	}
+
+
 	
 	
 	/**
@@ -4757,6 +4759,26 @@ public class RESTServices {
 		boolean success = Users.reinstate(userId);
 		return success ? gson.toJson(new ValidatorStatusCode(true,"User reinstated successfully")) : gson.toJson(ERROR_DATABASE);
 
+	}
+
+	@POST
+	@Path("/subscribe/user/errorLogs/{userId}")
+	@Produces("application/json")
+	public String subscribeUserToErrorLogs(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		int callingUserId = SessionUtil.getUserId(request);
+		ValidatorStatusCode status = UserSecurity.canUserSubscribeOrUnsubscribeUserToErrorLogs(userId, callingUserId);
+
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+
+		try {
+			Users.subscribeToErrorLogs(userId);
+			return gson.toJson(new ValidatorStatusCode(true, "User subscribed successfully."));
+		} catch (SQLException e) {
+			log.error("Caught SQLException while trying to subscribe user to error logs.", e);
+			return gson.toJson(ERROR_DATABASE);
+		}
 	}
 
 	
