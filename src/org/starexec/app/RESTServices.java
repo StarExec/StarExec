@@ -56,7 +56,8 @@ public class RESTServices {
 		
 	protected static final ValidatorStatusCode ERROR_TOO_MANY_JOB_PAIRS=new ValidatorStatusCode(false, "There are too many job pairs to display",1);
 	protected static final ValidatorStatusCode  ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS=new ValidatorStatusCode(false, "There are too many solver / configuraiton pairs to display");
-	
+
+	public static final ValidatorStatusCode ERROR_LOG_SUBSCRIPTION_SUCCESS = new ValidatorStatusCode(true, "User subscribed successfully.");
 	
 	/**
 	 * Recompiles all the job spaces for the given job
@@ -4780,7 +4781,7 @@ public class RESTServices {
 
 		try {
 			Users.subscribeToErrorLogs(userId);
-			return gson.toJson(new ValidatorStatusCode(true, "User subscribed successfully."));
+			return gson.toJson(ERROR_LOG_SUBSCRIPTION_SUCCESS);
 		} catch (SQLException e) {
 			log.error("Caught SQLException while trying to subscribe user to error logs.", e);
 			return gson.toJson(ERROR_DATABASE);
