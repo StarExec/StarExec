@@ -6,7 +6,7 @@
 the space explorer page.  Then set the given execution parameters such as
 including wall clock timeout and CPU timeout (see <a
 href="http://en.wikipedia.org/wiki/Wall-clock_time">here</a> for the
-difference).  
+difference).
 </p>
 
 <h2 class="helpPage">Options for Creating Jobs</h2>
@@ -18,13 +18,13 @@ Each job queue is assigned a number of nodes with identical technical specs.
 The queues all.q and all2.q are always available for all users to use.
 They differ in the kind of compute nodes that are assigned to them.
 Those in all2.q are slightly slower and have less RAM.
-Community leaders may request the creation of new queues for exclusive access 
-to nodes, for special, community-related tasks (such as running a competition).  
+Community leaders may request the creation of new queues for exclusive access
+to nodes, for special, community-related tasks (such as running a competition).
 </p>
 
 <h3 class="helpPage">Choosing a pre processor</h3>
 
-<p class="helpPage">With this option you can choose a benchmark pre processor that will alter the 
+<p class="helpPage">With this option you can choose a benchmark pre processor that will alter the
 benchmarks before the solvers on them.</p>
 
 <h3 class="helpPage">Choosing a post processor</h3>
@@ -33,8 +33,8 @@ benchmarks before the solvers on them.</p>
 job results as defined by the post processor.</p>
 
 <h3 class="helpPage">Timeouts</h3>
-<p class="helpPage">Timeouts are specified in number of seconds. Any job pairs that exceed the wallclock timeout or cpu 
-timeout you specify will be terminated. Using these options will ensure that job pairs that are 
+<p class="helpPage">Timeouts are specified in number of seconds. Any job pairs that exceed the wallclock timeout or cpu
+timeout you specify will be terminated. Using these options will ensure that job pairs that are
 taking an unreasonable amount of time won't keep your other pairs from running.</p>
 
 <h3 class="helpPage">Maximum Memory</h3>
@@ -71,11 +71,11 @@ are only obtained after pairs finish. 10 is the minimum if this is used.</p>
 
 
 <p class="helpPage">You can then select whether to "run and keep the hierarchy structure" or
-choose which benchmarks and solvers to execute.  The first option will find 
-all subspaces in the current hierarchy (rooted at the node where you are 
-creating the job) which have solvers and benchmarks, and execute all possible 
-combinations of those benchmarks and solvers.  So to run several divisions of 
-a competition, for example, you can create a subspace for each division, 
+choose which benchmarks and solvers to execute.  The first option will find
+all subspaces in the current hierarchy (rooted at the node where you are
+creating the job) which have solvers and benchmarks, and execute all possible
+combinations of those benchmarks and solvers.  So to run several divisions of
+a competition, for example, you can create a subspace for each division,
 copy the solvers and benchmarks for that division into that subspace, and
 the run a single job from the space containing those subspaces.
 </p>
@@ -84,8 +84,9 @@ the run a single job from the space containing those subspaces.
 
 <p class="helpPage">Once the job is created, it will begin queueing immediately.  If
 other jobs are running, of course, it may take some time for your job
-to make it through the queue to execute on the compute nodes.  
-You can look at the <a href="explore/cluster.jsp">cluster status page</a> 
+to make it through the queue to execute on the compute nodes.
+You can look at the <a href="explore/cluster.jsp">cluster status page</a>
 to monitor queues and nodes.
 </p>
 
+<iframe width="640" height="360" src="https://www.youtube-nocookie.com/embed/FvVr9izgb6w?rel=0&amp;showinfo=0?ecver=1" frameborder="0" allowfullscreen></iframe>
