@@ -590,13 +590,26 @@ function initSpaceExplorer(){
 	jsTree=makeSpaceTree("#exploreList",!usingSpaceChain);
 	jsTree.bind("select_node.jstree", function (event, data) {
 		// When a node is clicked, get its ID and display the info in the details pane
+		// Bug: This is creating a global variable. Intentional?
 		id = data.rslt.obj.attr("id");
+
+		/**
+		 * The URL linking directly to this space
+		 * @const {string}
+		 */
+		var permalink = "?id=" + String(id);
+
 		isLeafSpace = spaceIsLeaf(id);
 		log('Selected space isLeafSpace='+isLeafSpace);
 		log('Space explorer node ' + id + ' was clicked');
 
 		updateButtonIds(id);
 		getSpaceDetails(id);
+
+		// Replace the current URL with a URL linking directly to this space
+		// We replace rather than push so the Back button still navigates away
+		//   from the Space Explorer
+		window.history.replaceState(null, "Space Explorer", permalink);
 
 		// Remove all non-permanent tooltips from the page; helps keep
 		// the page from getting filled with hundreds of qtip divs
