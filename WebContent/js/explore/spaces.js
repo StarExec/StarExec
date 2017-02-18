@@ -598,7 +598,7 @@ function initSpaceExplorer(){
 		 * The URL linking directly to this space
 		 * @const {string}
 		 */
-		var permalink = "?id=" + String(id);
+		var PERMALINK = "?id=" + String(id);
 
 		// Update global variable `isLeafSpace`
 		window.isLeafSpace = spaceIsLeaf(id);
@@ -611,7 +611,7 @@ function initSpaceExplorer(){
 		// Replace the current URL with a URL linking directly to this space
 		// We replace rather than push so the Back button still navigates away
 		//   from the Space Explorer
-		window.history.replaceState(null, "Space Explorer", permalink);
+		window.history.replaceState(null, "Space Explorer", PERMALINK);
 
 		// Remove all non-permanent tooltips from the page; helps keep
 		// the page from getting filled with hundreds of qtip divs
