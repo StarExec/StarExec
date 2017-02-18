@@ -587,6 +587,7 @@ function spaceIsLeaf(spaceId) {
  */
 function initSpaceExplorer(){
 	// Initialize the jstree plugin for the explorer list
+	// Bug: This is creating a global variable. Intentional?
 	jsTree=makeSpaceTree("#exploreList",!usingSpaceChain);
 	jsTree.bind("select_node.jstree", function (event, data) {
 		// When a node is clicked, get its ID and display the info in the details pane
@@ -599,7 +600,8 @@ function initSpaceExplorer(){
 		 */
 		var permalink = "?id=" + String(id);
 
-		isLeafSpace = spaceIsLeaf(id);
+		// Update global variable `isLeafSpace`
+		window.isLeafSpace = spaceIsLeaf(id);
 		log('Selected space isLeafSpace='+isLeafSpace);
 		log('Space explorer node ' + id + ' was clicked');
 
@@ -618,7 +620,8 @@ function initSpaceExplorer(){
 	}).bind("loaded.jstree", function(event,data) {
 		handleSpaceChain("#spaceChain");
 	}).bind("open_node.jstree",function(event,data) {
-		openDone=true;
+		// Update global variable `openDone`
+		window.openDone=true;
 	});
 
 	log('Space explorer node list initialized');
