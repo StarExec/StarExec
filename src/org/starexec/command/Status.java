@@ -46,6 +46,8 @@ public class Status {
 	public static int ERROR_SEED=-35;
 	public static int ERROR_JOB_INCOMPLETE=-36;
 	public static int ERROR_INVALID_RESULTS_INTERVAL=-37;
+	public static int ERROR_INTERNAL_EXCEPTION =-38;
+
 	//error messages
 	private static HashMap<Integer,String> messages=new HashMap<Integer,String>();
 	static {

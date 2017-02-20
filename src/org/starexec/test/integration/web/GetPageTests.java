@@ -15,6 +15,7 @@ import org.starexec.data.database.Queues;
 import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.logger.StarLogger;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.BenchmarkUploadStatus;
@@ -41,6 +42,8 @@ import org.starexec.util.Util;
  *
  */
 public class GetPageTests extends TestSequence {
+
+	private static final StarLogger log = StarLogger.getLogger(GetPageTests.class);
 	private Connection con; // connection of a normal user
 	private Connection adminCon;
 	private Connection nonUserCon; // connection for someone who is not logged in
@@ -395,8 +398,11 @@ public class GetPageTests extends TestSequence {
 		nonUserCon = new Connection("empty", "empty", Util.url(""));
 		int status = con.login();
 		int adminStatus = adminCon.login();
-		Assert.assertEquals("login returned "+status, 0, status);
-		Assert.assertEquals("admin login returned " + adminStatus, 0, adminStatus);
+
+		log.debug("status was: "+status);
+		log.debug("adminStatus was: "+adminStatus);
+		Assert.assertEquals("login returned "+status+" "+ con.getLastError(), 0, status);
+		Assert.assertEquals("admin login returned " + adminStatus+" "+con.getLastError(), 0, adminStatus);
 		//space1 will contain solvers and benchmarks
 		space1=loader.loadSpaceIntoDatabase(user.getId(),testCommunity.getId());
 		newCommunity = loader.loadSpaceIntoDatabase(admin.getId(), 1);
