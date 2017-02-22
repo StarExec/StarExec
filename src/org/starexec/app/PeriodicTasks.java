@@ -87,14 +87,14 @@ class PeriodicTasks {
     private static final Runnable SEND_ERROR_LOGS_TASK = new RobustRunnable(sendErrorLogsTaskName) {
         @Override
         protected void dorun() {
-            // Calculate the timestamp from a week ago.
+            // Calculate the timestamp from yesterday.
             Calendar calendar = Calendar.getInstance();
-            calendar.add(Calendar.DAY_OF_YEAR, -7);
-            Timestamp aWeekAgo = new Timestamp(calendar.getTime().getTime());
+            calendar.add(Calendar.DAY_OF_YEAR, -R.TIME_BETWEEN_SENDING_ERROR_LOGS);
+            Timestamp yesterday = new Timestamp(calendar.getTime().getTime());
 
             try {
-                if (ErrorLogs.existBefore(aWeekAgo)) {
-					log.info("Found error logs from over a week ago. Sending error logs...");
+                if (ErrorLogs.existBefore(yesterday)) {
+					log.info("Found error logs from "+R.TIME_BETWEEN_SENDING_ERROR_LOGS+" days ago. Sending error logs...");
                     // Make sure users we're emailing are developers and admins.
                     List<User> usersSubscribedToErrorLogs = Users.getUsersSubscribedToErrorLogs();
                     for (User user : usersSubscribedToErrorLogs) {
@@ -114,7 +114,7 @@ class PeriodicTasks {
                     // Delete all the error logs, in the future we may keep some until they get too old.
                     ErrorLogs.deleteAll();
                 } else {
-					log.info("No error logs from over a week ago. Not sending error logs.");
+					log.info("No error logs from "+R.TIME_BETWEEN_SENDING_ERROR_LOGS+" days ago. Not sending error logs.");
 				}
             } catch (SQLException e) {
                 log.error("Failed to send error log emails.", e);
@@ -224,22 +224,12 @@ class PeriodicTasks {
         @Override
         protected void dorun() {
             try {
-                ImmutableSet<PairIdJobId> brokenPairs = JobPairs.getPairsEnqueuedLongerThan(R.BROKEN_PAIR_HOUR_THRESHOLD);
+                ImmutableSet<PairIdJobId> brokenPairs = JobPairs.getPairsEnqueuedLongerThan(R.PAIR_ENQUEUE_TIME_THRESHOLD);
                 for (PairIdJobId pairAndJob : brokenPairs) {
-                    log.warn("Detected pair that has been enqueued for "+R.BROKEN_PAIR_HOUR_THRESHOLD+" hours "+
+                    log.warn("Detected pair that has been enqueued for "+R.PAIR_ENQUEUE_TIME_THRESHOLD+" hours "+
                             "without running. Pair has id "+pairAndJob.pairId+" and is in job with id "+pairAndJob.jobId);
 
                 }
-				/*
-                String message = "Nodes that broken pairs might be on:\n";
-                if (brokenPairsAndNodes.nodeIds.size() == 0) {
-                    message += "Could not detect any broken nodes.";
-                }
-                for (Integer potentiallyBrokenNodeId : brokenPairsAndNodes.nodeIds) {
-                    message += "\t"+potentiallyBrokenNodeId+"\n";
-                }
-                log.warn(message);
-				*/
             } catch (SQLException e) {
                 log.error("Database error while searching for broken pairs.");
             }

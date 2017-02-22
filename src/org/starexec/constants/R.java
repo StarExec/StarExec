@@ -292,9 +292,10 @@ public class R {
     public static int NUM_REPOSTPROCESS_AT_A_TIME = 200; // number of job pairs to re-postprocess at a time with our periodic task
     public static int DEFAULT_MAX_TIMEOUT = 259200;
 
-    // The number of hours that is considered ok for a pair to be enqueued but not running.
-    // May need to be minutes.
-    public static int BROKEN_PAIR_HOUR_THRESHOLD = 1;
+    // The number of minutes that is considered ok for a pair to be enqueued but not running.
+    public static int PAIR_ENQUEUE_TIME_THRESHOLD = 30;
+
+    public static final int TIME_BETWEEN_SENDING_ERROR_LOGS = 1; // in days
 
 
     public static int NO_TYPE_PROC_ID=1;
