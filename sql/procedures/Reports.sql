@@ -5,12 +5,7 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 
 
 
-DROP PROCEDURE IF EXISTS AddErrorReport;
-CREATE PROCEDURE AddErrorReport(IN _message TEXT, _logLevel VARCHAR(32))
-	BEGIN
-		SET @llid := (SELECT id FROM log_levels WHERE _logLevel = name);
-		INSERT INTO error_reports (message, log_level_id) VALUES (_message, @llid);
-	END // 
+
 
 -- Set the value of an event's occurrences not related to a queue.
 -- Author: Albert Giegerich

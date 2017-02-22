@@ -25,6 +25,9 @@
 		<li>
 			<a href="${starexecRoot}/public/WebInterface.pdf">Web Interface Documentation</a> for making direct HTTP calls to Starexec
 		</li>
+		<li>
+			<a href="https://www.youtube.com/channel/UCoYhHKXD5agIia60z-RiX2A">Video Tutorials</a>
+		</li>
 	</ul>
 </div>
 </star:template>

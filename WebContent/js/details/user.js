@@ -132,6 +132,47 @@ $(document).ready(function(){
 		$(this).toggleClass("row_selected");
 		handleSelectChange();
 	});
+
+	$("#subscribeToErrorLogs").button({
+		icons: {
+			primary: "ui-icon-check"
+		}
+	});
+
+	$('#subscribeToErrorLogs').click(function() {
+		'use strict';
+		$.post(
+			starexecRoot +'services/subscribe/user/errorLogs/'+userId, 
+			{},
+			function(returnCode) {
+				var success = parseReturnCode(returnCode);
+				if (success) {
+					location.reload();
+				}
+			},
+			'json'
+		);
+	});
+
+	$("#unsubscribeFromErrorLogs").button({
+		icons: {
+			primary: "ui-icon-check"
+		}
+	});
+	$('#unsubscribeFromErrorLogs').click(function() {
+		'use strict';
+		$.post(
+			starexecRoot +'services/unsubscribe/user/errorLogs/'+userId, 
+			{},
+			function(returnCode) {
+				var success = parseReturnCode(returnCode);
+				if (success) {
+					location.reload();
+				}
+			},
+			'json'
+		);
+	});
 	
 	$("#showSpaceExplorer").button({
 		icons: {

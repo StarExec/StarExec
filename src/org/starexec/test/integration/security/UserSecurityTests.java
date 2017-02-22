@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.starexec.constants.R;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.UserSecurity;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.User;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
@@ -14,6 +15,7 @@ public class UserSecurityTests extends TestSequence {
 
 	User user1=null;
 	User user2=null;
+	User dev = null;
 	User admin=null;
 	
 	@StarexecTest
@@ -22,6 +24,52 @@ public class UserSecurityTests extends TestSequence {
 		Assert.assertEquals(true, UserSecurity.canUpdateData(user1.getId(), admin.getId(), "firstname","test").isSuccess());
 		Assert.assertNotEquals(true, UserSecurity.canUpdateData(admin.getId(), user1.getId(), "firstname","test").isSuccess());
 		Assert.assertNotEquals(true, UserSecurity.canUpdateData(user1.getId(), user2.getId(), "firstname","test").isSuccess());
+	}
+
+	@StarexecTest
+	private void canUserSubscribeOrUnsubscribeUserToErrorLogsTest() {
+		Assert.assertFalse(UserSecurity.canUserSubscribeOrUnsubscribeUserToErrorLogs(user2.getId(), user1.getId()).isSuccess());
+	}
+	@StarexecTest
+	private void canUserSubscribeOrUnsubscribeSelfToErrorLogsTest() {
+		Assert.assertFalse(UserSecurity.canUserSubscribeOrUnsubscribeUserToErrorLogs(user1.getId(), user1.getId()).isSuccess());
+	}
+	@StarexecTest
+	private void canUserSubscribeOrUnsubscribeDevToErrorLogsTest() {
+		Assert.assertFalse(UserSecurity.canUserSubscribeOrUnsubscribeUserToErrorLogs(dev.getId(), user1.getId()).isSuccess());
+	}
+	@StarexecTest
+	private void canUserSubscribeOrUnsubscribeAdminToErrorLogsTest() {
+		Assert.assertFalse(UserSecurity.canUserSubscribeOrUnsubscribeUserToErrorLogs(admin.getId(), user1.getId()).isSuccess());
+	}
+
+	@StarexecTest
+	private void canDevSubscribeOrUnsubscribeUserToErrorLogsTest() {
+		Assert.assertFalse(UserSecurity.canUserSubscribeOrUnsubscribeUserToErrorLogs(user1.getId(), dev.getId()).isSuccess());
+	}
+	@StarexecTest
+	private void canDevSubscribeOrUnsubscribeAdminToErrorLogsTest() {
+		Assert.assertFalse(UserSecurity.canUserSubscribeOrUnsubscribeUserToErrorLogs(admin.getId(), dev.getId()).isSuccess());
+	}
+	@StarexecTest
+	private void canDevSubscribeOrUnsubscribeSelfToErrorLogsTest() {
+		ValidatorStatusCode status = UserSecurity.canUserSubscribeOrUnsubscribeUserToErrorLogs(dev.getId(), dev.getId());
+		Assert.assertTrue(status.getMessage(), status.isSuccess());
+	}
+
+	@StarexecTest
+	private void canAdminSubscribeOrUnsubscribeUserToErrorLogsTest() {
+		Assert.assertFalse(UserSecurity.canUserSubscribeOrUnsubscribeUserToErrorLogs(user1.getId(), admin.getId()).isSuccess());
+	}
+
+	@StarexecTest
+	private void canAdminSubscribeOrUnsubscribeSelfToErrorLogsTest() {
+		Assert.assertTrue(UserSecurity.canUserSubscribeOrUnsubscribeUserToErrorLogs(admin.getId(), admin.getId()).isSuccess());
+	}
+
+	@StarexecTest
+	private void canAdminSubscribeOrUnsubscribeDevToErrorLogsTest() {
+		Assert.assertTrue(UserSecurity.canUserSubscribeOrUnsubscribeUserToErrorLogs(dev.getId(), admin.getId()).isSuccess());
 	}
 	
 	@StarexecTest
@@ -81,7 +129,8 @@ public class UserSecurityTests extends TestSequence {
 		user1=loader.loadUserIntoDatabase();
 		user2=loader.loadUserIntoDatabase();
 
-		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
+		admin=loader.loadAdminIntoDatabase();
+		dev = loader.loadDevIntoDatabase();
 		Assert.assertNotNull(user1);
 		Assert.assertNotNull(user2);
 		Assert.assertNotNull(admin);

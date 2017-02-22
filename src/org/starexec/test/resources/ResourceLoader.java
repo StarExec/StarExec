@@ -565,11 +565,23 @@ public class ResourceLoader {
 	 * @return The user, with their ID and all parameters set, or null on error
 	 */
 	public User loadUserIntoDatabase() {
-		return loadUserIntoDatabase(TestUtil.getRandomPassword());
+		return loadUserIntoDatabase(TestUtil.getRandomPassword(), R.DEFAULT_USER_ROLE_NAME);
+	}
+
+	public User loadUserIntoDatabase(String password) {
+		return loadUserIntoDatabase(password, R.DEFAULT_USER_ROLE_NAME);
+	}
+
+	public User loadAdminIntoDatabase() {
+		return loadUserIntoDatabase(TestUtil.getRandomPassword(), R.ADMIN_ROLE_NAME);
+	}
+
+	public User loadDevIntoDatabase() {
+		return loadUserIntoDatabase(TestUtil.getRandomPassword(), R.DEVELOPER_ROLE_NAME);
 	}
 	
-	public User loadUserIntoDatabase(String password) {
-		return loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),password,password,"The University of Iowa",R.DEFAULT_USER_ROLE_NAME);
+	public User loadUserIntoDatabase(String password, String role) {
+		return loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),password,password,"The University of Iowa",role);
 	}
 	
 	public CommunityRequest loadCommunityRequestIntoDatabase(int userId, int commId) {
@@ -607,6 +619,7 @@ public class ResourceLoader {
 		u.setRole(role);
 		u.setDiskQuota(Long.MAX_VALUE);
 		u.setPairQuota(Integer.MAX_VALUE);
+		u.setSubscribedToErrorLogs(false);
 		int id=Users.add(u);
 		if (id>0) {
 			createdUserIds.add(id);

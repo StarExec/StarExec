@@ -20,6 +20,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecException;
+import org.starexec.logger.StarLogger;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
@@ -33,6 +34,7 @@ import org.starexec.util.dataStructures.TreeNode;
  */
 public class SpaceTests extends TestSequence {
 	
+	private static final StarLogger log = StarLogger.getLogger(SpaceTests.class);
 	Space community=null;
 	Space subspace=null;  //subspace of community
 	Space subspace2=null; //subspace of community
@@ -41,6 +43,7 @@ public class SpaceTests extends TestSequence {
 	User admin=null;
 	User member1=null;
 	User member2=null;
+	List<Integer> ids=null;
 	
 	
 	//all primitives owned by leader and placed into subspace
@@ -89,10 +92,21 @@ public class SpaceTests extends TestSequence {
 
 	@StarexecTest
 	private void getByJobTest() {
+		final String methodName = "getByJobTest";
 		try {
-			Set<Integer> spacesAssociatedWithJob = Spaces.getByJob(job.getId());
-			Assert.assertEquals(spacesAssociatedWithJob.size(), 1);
-			Assert.assertTrue(spacesAssociatedWithJob.contains(subspace.getId()));
+			Space tempSpace=loader.loadSpaceIntoDatabase(leader.getId(), community.getId());
+			Job tempJob = loader.loadJobIntoDatabase(tempSpace.getId(), leader.getId(), solver.getId(), ids);
+
+			Set<Integer> spacesAssociatedWithJob = Spaces.getByJob(tempJob.getId());
+
+			String got = "[ ";
+			for (Integer spaceId : spacesAssociatedWithJob) {
+				got += spaceId + " ";	
+			}
+			got += "]";
+
+			Assert.assertEquals("Expected: ["+subspace.getId()+"], Got: "+got,spacesAssociatedWithJob.size(), 1);
+			Assert.assertTrue(spacesAssociatedWithJob.contains(tempSpace.getId()));
 		} catch (SQLException e) {
 			Assert.fail("SQLException thrown: "+ Util.getStackTrace(e));
 		}
@@ -356,14 +370,18 @@ public class SpaceTests extends TestSequence {
 	
 	@Override
 	protected void setup() {
+		final String methodName="setup";
 		leader=loader.loadUserIntoDatabase();
 		member1=loader.loadUserIntoDatabase();
 		member2=loader.loadUserIntoDatabase();
 		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 		community = loader.loadSpaceIntoDatabase(leader.getId(), 1);	
 		subspace=loader.loadSpaceIntoDatabase(leader.getId(), community.getId());
+		log.debug(methodName, "subspace id="+subspace.getId());
 		subspace2=loader.loadSpaceIntoDatabase(leader.getId(), community.getId());
+		log.debug(methodName, "subspace2 id="+subspace2.getId());
 		subspace3=loader.loadSpaceIntoDatabase(leader.getId(), subspace2.getId());
+		log.debug(methodName, "subspace3 id="+subspace3.getId());
 		Users.associate(member1.getId(), community.getId());
 		Users.associate(member2.getId(), community.getId());
 		Users.associate(member1.getId(), subspace.getId());
@@ -375,7 +393,7 @@ public class SpaceTests extends TestSequence {
 		
 		solver=loader.loadSolverIntoDatabase("CVC4.zip", subspace.getId(), leader.getId());
 
-		List<Integer> ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", subspace.getId(), leader.getId());
+		ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", subspace.getId(), leader.getId());
 		benchmarks=new ArrayList<Benchmark>();
 		for (Integer id : ids) {
 			benchmarks.add(Benchmarks.get(id));

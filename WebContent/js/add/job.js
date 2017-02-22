@@ -393,20 +393,12 @@ function useRunsolverClicked() {
 	'use strict';
 	log('runsolver clicked.');
 	$('#suppressTimestampsRow').show();
-
-	$('#resultsIntervalRow').css('background-color', '#111111');
-	$('#saveAdditionalOutputRow').css('background', 'transparent');
-	$('#benchmarkingFrameworkRow').css('background-color', '#111111');
 }
 
 function useBenchexecClicked() {
 	'use strict';
 	log('BenchExec clicked.');
 	$('#suppressTimestampsRow').hide();
-
-	$('#resultsIntervalRow').css('background', 'transparent');
-	$('#saveAdditionalOutputRow').css('background-color', '#111111');
-	$('#benchmarkingFrameworkRow').css('background', 'transparent');
 }
 
 

@@ -93,6 +93,32 @@ public class UserSecurity {
 		return new ValidatorStatusCode(true);
 	}
 
+	/**
+	 * Checks to see whether the given user can subscribe or unsubscribe users from the report e-mails
+	 * @param userIdMakingRequest The Id of the user making the request
+	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCode otherwise
+	 * @author Albert Giegerich
+	 */
+	public static ValidatorStatusCode canUserSubscribeOrUnsubscribeUserToErrorLogs(int userIdBeingUpdated,int userIdMakingRequest) {
+		if (Users.get(userIdBeingUpdated)==null) {
+			return new ValidatorStatusCode(false, "The given user could not be found");
+		}
+
+		if (!GeneralSecurity.hasAdminReadPrivileges(userIdBeingUpdated)) {
+			return new ValidatorStatusCode(false, "This user is not a dev or an admin.");
+		}
+
+		boolean isAdmin = GeneralSecurity.hasAdminWritePrivileges(userIdMakingRequest);
+		boolean userIsUpdatingSelf = userIdBeingUpdated == userIdMakingRequest;
+
+		if (isAdmin || userIsUpdatingSelf){
+			return new ValidatorStatusCode(true);
+		} else {
+			return new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
+		}
+
+	}
+
 	public static ValidatorStatusCode canUserGrantOrSuspendDeveloperPrivileges(int userIdToUpdate, int userIdMakingRequest) {
 		if (Users.get(userIdToUpdate)==null) {
 			return new ValidatorStatusCode(false, "The given user could not be found");

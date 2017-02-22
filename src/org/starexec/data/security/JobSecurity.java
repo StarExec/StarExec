@@ -109,19 +109,6 @@ public class JobSecurity {
 		}
 		return canUserSeeJob(jp.getJobId(),userId);
 	}
-
-	/**
-	 * Checks if a user can use BenchExec.
-	 * @param userId the user attempting to use BenchExec
-	 * @return a validator status code indicating if a user can use BenchExec.
-	 */
-	public static ValidatorStatusCode canUserUseBenchExec(int userId) {
-		if ( Users.isAdmin(userId) || Users.isDeveloper(userId) ) {
-			return new ValidatorStatusCode(true);
-		} else {
-			return new ValidatorStatusCode(false, "User does not have permission to use BenchExec");
-		}
-	}
 	
 	/**
 	 * Checks if a job is associated with a given anonymous link uuid.

@@ -209,7 +209,9 @@ public class Statistics {
      * to the graphs for those types
      */
     public static JsonObject makeCommunityGraphs(List<Space> communities, HashMap<Integer,HashMap<String,Long>> communityInfo) {
+		final String methodName = "makeCommunityGraphs";
 		try {
+			log.entry(methodName);
 				
 
 			String[] infoTypes = {"users","solvers","benchmarks","jobs","job_pairs","disk_usage"};
@@ -224,7 +226,9 @@ public class Statistics {
 			Color backgroundColor =new Color(0,0,0,0); //makes the background clear
 			Color titleColor = new Color(255,255,255);
 
+			log.debug(methodName, "Creating "+infoTypes.length+" community graphs...");
 			for(int i = 0; i < infoTypes.length; i++){
+				log.debug(methodName, "\tCreating graph " + i);
 			    dataset = createCommunityDataset(communities,communityInfo,infoTypes[i]);
 			    chart = ChartFactory.createPieChart(
 									   "Comparing Communities by " + infoTypes[i],  // chart title
@@ -246,10 +250,13 @@ public class Statistics {
 			    filename="community" + infoTypes[i] + "Comparison.png";
 			    output = new File(new File(R.STAREXEC_ROOT, R.JOBGRAPH_FILE_DIR), filename);
 			 
+				log.debug(methodName, "\tsaving chart as PNG");
 			    ChartUtilities.saveChartAsPNG(output, chart, 400, 400);
+				log.debug(methodName, "\tsaved chart as PNG");
 
 			    filenames.add(filename);
 			}
+			log.debug(methodName, "Finished generating graphs.");
 			
 			JsonObject graphs = new JsonObject();
 			for(int i = 0 ; i < infoTypes.length ; i++){

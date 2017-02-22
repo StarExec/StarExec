@@ -1,23 +1,23 @@
 <h1>Adding benchmarks</h1>
 
-<p>Benchmarks are single text files that are fed to solvers when jobs are created. 
-The name of a benchmark can be any legal file name in Linux, with a maximum length 
+<p>Benchmarks are single text files that are fed to solvers when jobs are created.
+The name of a benchmark can be any legal file name in Linux, with a maximum length
 of 255 characters.
 You can add benchmarks to a space either by copying or liking them from another space
 or by uploading new ones.
-You own, and so have complete control on, any benchmark that you copied or uploaded. 
+You own, and so have complete control on, any benchmark that you copied or uploaded.
 As a consequence, their size is counted against your quota.
-In contrast, you do not own benchmarks that you link and they not count against your quota. 
+In contrast, you do not own benchmarks that you link and they not count against your quota.
 However, keep in mind that if the original benchmarks are owned by somebody else,
 those originals can be later deleted by their owner.
 </p>
 
 <h2>Uploading benchmarks</h2>
 
-<p>Benchmarks must be uploaded as an archive in one of the following archive formats 
-(and have the corresponding suffix): 
+<p>Benchmarks must be uploaded as an archive in one of the following archive formats
+(and have the corresponding suffix):
 <code>tar</code>, <code>tar.gz</code>, <code>tgz</code>, and <code>zip</code>.
-The archive can contain multiple files and directories. 
+The archive can contain multiple files and directories.
 However, every file contained in the archive will be treated as a benchmark,
 so make sure to remove any non-benchmark files before creating the archive.
 </p>
@@ -25,9 +25,9 @@ so make sure to remove any non-benchmark files before creating the archive.
 <h3>Benchmarks info</h3>
 
 <p>To upload benchmarks navigate to a space where you have permissions to do so
-and choose the action "upload benchmarks" from the list at the bottom of the space 
+and choose the action "upload benchmarks" from the list at the bottom of the space
 explorer page.
-Once you do that, you will be asked for several pieces of information, 
+Once you do that, you will be asked for several pieces of information,
 as described next.
 </p>
 
@@ -36,37 +36,40 @@ as described next.
 </li>
 <li>You specify how one of two ways to treat the directory structure of the archive:
 ignore it or convert it to a space structure.
-In the first case, StarExec will recursively find all files within the archive and 
-add them to the destination space. 
-In the second case, for every (sub)directory in your archive, StarExec will create 
+In the first case, StarExec will recursively find all files within the archive and
+add them to the destination space.
+In the second case, for every (sub)directory in your archive, StarExec will create
 a space with the same name and place the directory's file in that space.
-(Any files in the archive's top level directory will be placed directy in the 
+(Any files in the archive's top level directory will be placed directy in the
 chosen destination space.)
 </li>
-<li>You set the default permissions for any spaces that are created as 
+<li>You set the default permissions for any spaces that are created as
 a result of the benchmark upload.
 See the <a href="https://wiki.uiowa.edu/display/stardev/User+Guide#UserGuide-Permissions">
 User Guide</a> for more details on permissions.
 </li>
-<li>You specify the type of benchmarks you are uploading. Each benchmark will be 
+<li>You specify the type of benchmarks you are uploading. Each benchmark will be
 validated by a benchmark processor corresponding to that type.
 </li>
-<li>You choose whether to allow other users who can see your benchmarks 
-to download the benchmarks you are uploading, or otherwise see their contents. 
+<li>You choose whether to allow other users who can see your benchmarks
+to download the benchmarks you are uploading, or otherwise see their contents.
 </li>
-<li>You specify if the benchmarks are dependent on a previously uploaded set 
+<li>You specify if the benchmarks are dependent on a previously uploaded set
 of benchmarks, such as a set of axioms.
-If so, you also chose from a list the root space for those previous benchmarks. 
+If so, you also chose from a list the root space for those previous benchmarks.
 </li>
 </ul>
 
-<p>After the archive is uploaded, you will be taken to an upload status page 
-that will update you on the progress of processing your upload and inform you 
+<p>After the archive is uploaded, you will be taken to an upload status page
+that will update you on the progress of processing your upload and inform you
 if any benchmarks fail validation.
 </p>
 
+<!--
 <h2>Copying or linking benchmarks</h2>
 
 <p>[to do]
 </p>
+-->
 
+<iframe width="640" height="360" src="https://www.youtube-nocookie.com/embed/9cT29nFdy4Q?rel=0&amp;showinfo=0?ecver=1" frameborder="0" allowfullscreen></iframe>

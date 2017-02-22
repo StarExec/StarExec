@@ -56,7 +56,8 @@ public class RESTServices {
 		
 	protected static final ValidatorStatusCode ERROR_TOO_MANY_JOB_PAIRS=new ValidatorStatusCode(false, "There are too many job pairs to display",1);
 	protected static final ValidatorStatusCode  ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS=new ValidatorStatusCode(false, "There are too many solver / configuraiton pairs to display");
-	
+
+	public static final ValidatorStatusCode ERROR_LOG_SUBSCRIPTION_SUCCESS = new ValidatorStatusCode(true, "User subscribed successfully.");
 	
 	/**
 	 * Recompiles all the job spaces for the given job
@@ -1048,50 +1049,58 @@ public class RESTServices {
     @Path("/secure/explore/community/overview")
     @Produces("application/json")	
 	public String getCommunityOverview(@Context HttpServletRequest request){
+		final String methodName = "getCommunityOverview";
+		log.entry(methodName);
+		try {
+			Communities.updateCommunityMapIf();
 
-	    Communities.updateCommunityMapIf();
+			if(R.COMM_INFO_MAP == null){
+				log.warn(methodName, "COMM_INFO_MAP was null.");
+				return gson.toJson(ERROR_DATABASE);
+			}
+			log.info("R.COMM_INFO_MAP: " + R.COMM_INFO_MAP);
+			JsonObject graphs = null;
+			
+			List<Space> communities = Communities.getAll();
 
-	    if(R.COMM_INFO_MAP == null){
-		
-	    	return gson.toJson(ERROR_DATABASE);
-	    }
-	    log.info("R.COMM_INFO_MAP: " + R.COMM_INFO_MAP);
-		JsonObject graphs = null;
-		
-		List<Space> communities = Communities.getAll();
-		
-		graphs=Statistics.makeCommunityGraphs(communities,R.COMM_INFO_MAP);
-		if (graphs==null) {
-			return gson.toJson(ERROR_DATABASE);
+			graphs=Statistics.makeCommunityGraphs(communities,R.COMM_INFO_MAP);
+			if (graphs==null) {
+				log.warn("makeCommunityGraphs returned null (indicating an error)");
+				return gson.toJson(ERROR_DATABASE);
+			}
+			JsonObject info = new JsonObject();
+			for(Space c : communities){
+				String name = c.getName();
+				int id = c.getId();
+
+
+
+				JsonObject Comm = new JsonObject();
+				Comm.addProperty("users",R.COMM_INFO_MAP.get(id).get("users").toString());
+				Comm.addProperty("solvers",R.COMM_INFO_MAP.get(id).get("solvers").toString());
+				Comm.addProperty("benchmarks",R.COMM_INFO_MAP.get(id).get("benchmarks").toString());
+				Comm.addProperty("jobs",R.COMM_INFO_MAP.get(id).get("jobs").toString());
+				Comm.addProperty("job_pairs",R.COMM_INFO_MAP.get(id).get("job_pairs").toString());
+				Comm.addProperty("disk_usage",Util.byteCountToDisplaySize(R.COMM_INFO_MAP.get(id).get("disk_usage")));
+
+				info.add(name,Comm);
+
+			}
+
+			// Instantiate a Date object
+			Date last_update = new Date(R.COMM_ASSOC_LAST_UPDATE);
+			
+			JsonObject json=new JsonObject();
+			json.add("graphs", graphs);
+			json.add("info",info);
+			json.addProperty("date",last_update.toString());
+			
+			log.exit(methodName);
+			return gson.toJson(json);
+		} catch (Exception e) {
+			log.error("Caught exception while getting community overview.", e);
+			return gson.toJson( ERROR_INTERNAL_SERVER );
 		}
-		JsonObject info = new JsonObject();
-		for(Space c : communities){
-		    String name = c.getName();
-		    int id = c.getId();
-
-
-
-		    JsonObject Comm = new JsonObject();
-		    Comm.addProperty("users",R.COMM_INFO_MAP.get(id).get("users").toString());
-		    Comm.addProperty("solvers",R.COMM_INFO_MAP.get(id).get("solvers").toString());
-		    Comm.addProperty("benchmarks",R.COMM_INFO_MAP.get(id).get("benchmarks").toString());
-		    Comm.addProperty("jobs",R.COMM_INFO_MAP.get(id).get("jobs").toString());
-		    Comm.addProperty("job_pairs",R.COMM_INFO_MAP.get(id).get("job_pairs").toString());
-		    Comm.addProperty("disk_usage",Util.byteCountToDisplaySize(R.COMM_INFO_MAP.get(id).get("disk_usage")));
-
-		    info.add(name,Comm);
-
-		}
-
-		// Instantiate a Date object
-		Date last_update = new Date(R.COMM_ASSOC_LAST_UPDATE);
-		
-		JsonObject json=new JsonObject();
-		json.add("graphs", graphs);
-		json.add("info",info);
-		json.addProperty("date",last_update.toString());
-		
-		return gson.toJson(json);
 	}
 
 	/**
@@ -3508,6 +3517,8 @@ public class RESTServices {
 	
 		return gson.toJson(new ValidatorStatusCode(true,"Job(s) deleted successfully"));
 	}
+
+
 	
 	
 	/**
@@ -4749,6 +4760,58 @@ public class RESTServices {
 		boolean success = Users.reinstate(userId);
 		return success ? gson.toJson(new ValidatorStatusCode(true,"User reinstated successfully")) : gson.toJson(ERROR_DATABASE);
 
+	}
+
+	/**
+	 * Subscribes a user to the error logs e-mail system.
+	 * @param userId the user to be subscribed from the system.
+	 * @param request HTTP request sent to the server.
+	 * @return JSON object containing information about whether the subscription attempt succeeded or failed.
+	 */
+	@POST
+	@Path("/subscribe/user/errorLogs/{userId}")
+	@Produces("application/json")
+	public String subscribeUserToErrorLogs(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		int callingUserId = SessionUtil.getUserId(request);
+		ValidatorStatusCode status = UserSecurity.canUserSubscribeOrUnsubscribeUserToErrorLogs(userId, callingUserId);
+
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+
+		try {
+			Users.subscribeToErrorLogs(userId);
+			return gson.toJson(ERROR_LOG_SUBSCRIPTION_SUCCESS);
+		} catch (SQLException e) {
+			log.error("Caught SQLException while trying to subscribe user to error logs.", e);
+			return gson.toJson(ERROR_DATABASE);
+		}
+	}
+
+	/**
+	 * Unsubscribes a user from the error logs e-mail system.
+	 * @param userId the user to be unsubscribed from the system.
+	 * @param request HTTP request sent to the server.
+	 * @return JSON object containing information about whether the unsubscription attempt succeeded or failed.
+	 */
+	@POST
+	@Path("/unsubscribe/user/errorLogs/{userId}")
+	@Produces("application/json")
+	public String unsubscribeUserFromErrorLogs(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+		int callingUserId = SessionUtil.getUserId(request);
+		ValidatorStatusCode status = UserSecurity.canUserSubscribeOrUnsubscribeUserToErrorLogs(userId, callingUserId);
+
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+
+		try {
+			Users.unsubscribeUserFromErrorLogs(userId);
+			return gson.toJson(new ValidatorStatusCode(true, "User unsubscribed successfully."));
+		} catch (SQLException e) {
+			log.error("Caught SQLException while trying to unsubscribe user from error logs.", e);
+			return gson.toJson(ERROR_DATABASE);
+		}
 	}
 
 	

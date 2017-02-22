@@ -156,6 +156,30 @@ CREATE PROCEDURE GetUserById(IN _id INT)
 		FROM users NATURAL JOIN user_roles
 		WHERE users.id = _id;
 	END //
+
+DROP PROCEDURE IF EXISTS UnsubscribeUserFromErrorLogs;
+CREATE PROCEDURE UnsubscribeUserFromErrorLogs(IN _id INT)
+	BEGIN
+		UPDATE users
+		SET subscribed_to_error_logs=FALSE
+		WHERE id=_id;
+	END //
+
+DROP PROCEDURE IF EXISTS SubscribeUserToErrorLogs;
+CREATE PROCEDURE SubscribeUserToErrorLogs(IN _id INT)
+	BEGIN
+		UPDATE users
+		SET subscribed_to_error_logs=TRUE
+		WHERE id=_id;
+	END //
+
+DROP PROCEDURE IF EXISTS GetAllUsersSubscribedToErrorLogs;
+CREATE PROCEDURE GetAllUsersSubscribedToErrorLogs()
+	BEGIN
+		SELECT *
+		FROM users NATURAL JOIN user_roles
+		WHERE subscribed_to_error_logs=TRUE;
+	END //
 	
 -- Retrieves all users belonging to a space
 -- Author: Tyler Jensen

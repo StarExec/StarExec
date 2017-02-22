@@ -1,9 +1,9 @@
 <h1>Uploading solvers</h1>
 
-<p>Solvers must be uploaded as an archive in one of the following archive formats 
-(and have the corresponding suffix): 
-<code>tar</code>, <code>tar.gz</code>, <code>tgz</code>, and <code>zip</code>. 
-A solver can contain any collection of folders and files as long as it contains 
+<p>Solvers must be uploaded as an archive in one of the following archive formats
+(and have the corresponding suffix):
+<code>tar</code>, <code>tar.gz</code>, <code>tgz</code>, and <code>zip</code>.
+A solver can contain any collection of folders and files as long as it contains
 at least one run script (aka <em>configuration</em>).
 </p>
 
@@ -14,12 +14,12 @@ For more information please refer to the <a href="https://wiki.uiowa.edu/display
 <h2>Solver info</h2>
 
 <p>To upload a solver navigate to a space where you have permissions to do so
-and choose the action "upload solver" from the list at the bottom of the space 
+and choose the action "upload solver" from the list at the bottom of the space
 explorer page.
-Once you do that, you will be asked for several pieces of information, 
+Once you do that, you will be asked for several pieces of information,
 as described next.
 <ul>
-<li>You specify if you want upload the solver from a local disk or from a web 
+<li>You specify if you want upload the solver from a local disk or from a web
 address.
 </li>
 <li>You enter a name for the solver.</li>
@@ -38,19 +38,21 @@ able to run the solver on StarExec but not to download a copy of it.
 
 <h2>Configurations</h2>
 
-<p>A configuration is a script that begins with a special prefix 
-<code>starexec_run_</code> that tells StarExec how to execute your solver. 
-You must place your configurations in a special folder so StarExec knows 
-where to find them. StarExec will look in a <code>/bin</code> folder in 
-the top level directory of the archive you upload.  The </code>/bin</code> folder 
+<p>A configuration is a script that begins with a special prefix
+<code>starexec_run_</code> that tells StarExec how to execute your solver.
+You must place your configurations in a special folder so StarExec knows
+where to find them. StarExec will look in a <code>/bin</code> folder in
+the top level directory of the archive you upload.  The </code>/bin</code> folder
 will also be your working directory at the job's run time.
 </p>
 
 <p>Anything after the underscore is treated as the configuration's name. For example,
-if you have two configuration files <code>starexec_run_default</code> and 
-<code>starexec_run_OtherConfig</code>, then your solver will list two configurations 
+if you have two configuration files <code>starexec_run_default</code> and
+<code>starexec_run_OtherConfig</code>, then your solver will list two configurations
 in StarExec named respectively <code>default</code> and <code>OtherConfig</code>.
 </p>
 
 <p>See the <a href="https://wiki.uiowa.edu/display/stardev/User+Guide#UserGuide-Configurations">User Guide</a> for more details on how to write configuration scripts.
 </p>
+
+<iframe width="640" height="360" src="https://www.youtube-nocookie.com/embed/St-XKdMI8dc?rel=0&amp;showinfo=0?ecver=1" frameborder="0" allowfullscreen></iframe>

@@ -3,9 +3,7 @@ package org.starexec.test.integration.database;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.junit.Assert;
 import org.starexec.data.database.Benchmarks;
@@ -24,6 +22,8 @@ import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
+import org.starexec.util.Util;
+
 /**
  * Tests for org.starexec.data.database.Solvers.java
  * @author Eric
@@ -49,6 +49,22 @@ public class SolverTests extends TestSequence {
 		List<Solver> cs=Solvers.get(list);
 		Assert.assertEquals(1,cs.size());
 		Assert.assertEquals(solver.getId(), cs.get(0).getId());
+	}
+
+	@StarexecTest
+	private void getSolversInSpacesAndJobsContainsConfigs() {
+		Set<Integer> spaces = new HashSet<>();
+		spaces.add(space1.getId());
+		try {
+			List<Solver> solvers = Solvers.getSolversInSpacesAndJob(job.getId(), spaces);
+			for (Solver s : solvers) {
+				Assert.assertTrue(
+						"Solver had no configurations. This method must return detailed solvers.",
+						s.getConfigurations().size() > 0);
+			}
+		} catch (SQLException e) {
+			Assert.fail("Caught SQLException: "+ Util.getStackTrace(e));
+		}
 	}
 	
 	@StarexecTest 

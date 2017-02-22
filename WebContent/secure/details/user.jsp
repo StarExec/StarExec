@@ -40,8 +40,10 @@
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
 				}
 			}
+			boolean canSubscribeToErrorLogs = owner && (Users.isDeveloper(id) || Users.isAdmin(id));
 			request.setAttribute("owner", owner);	
 			request.setAttribute("sites", Websites.getAllForHTML(id,WebsiteType.USER));
+			request.setAttribute("canSubscribeToErrorLogs", canSubscribeToErrorLogs);
 
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "User does not exist");
@@ -222,6 +224,13 @@
 		<fieldset id="actionField">
 		<legend>actions</legend>
 			<button id="showSpaceExplorer">show space explorer</button>
+
+			<c:if test="${!t_user.subscribedToErrorLogs && canSubscribeToErrorLogs}">
+				<button id="subscribeToErrorLogs">subscribe to error logs</button>
+			</c:if>
+			<c:if test="${t_user.subscribedToErrorLogs && canSubscribeToErrorLogs}">
+				<button id="unsubscribeFromErrorLogs">unsubscribe from error logs</button>
+			</c:if>
 			<button title="This will add all of your 'orphaned' solvers, benchmarks, and jobs to the space selected in the space explorer
 			on the left. An item is 'orphaned' if it is not linked to any spaces" id="linkOrphanedButton">associate orphaned primitives with space</button>
 			<a id="editButton" href="${starexecRoot}/secure/edit/account.jsp?id=${t_user.id}">edit</a>

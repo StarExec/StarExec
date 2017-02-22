@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
 import org.starexec.constants.PaginationQueries;
@@ -252,22 +253,28 @@ public class Users {
 	 * @return
 	 * @throws SQLException
 	 */
-	private static User resultSetToUser(ResultSet results) throws SQLException {
-		User u = new User();
-		u.setId(results.getInt("id"));
-		u.setEmail(results.getString("email"));
-		u.setFirstName(results.getString("first_name"));
-		u.setLastName(results.getString("last_name"));
-		u.setInstitution(results.getString("institution"));
-		u.setCreateDate(results.getTimestamp("created"));
-		u.setDiskQuota(results.getLong("disk_quota"));
-		u.setSubscribedToReports(results.getBoolean("subscribed_to_reports"));
-		u.setRole(results.getString("role"));
-		u.setPairQuota(results.getInt("job_pair_quota"));
-		u.setDiskUsage(results.getLong("disk_size"));
-		return u;
+	private static List<User> resultsToUsers(ResultSet results) throws SQLException {
+		List<User> users = new ArrayList<>();
+		while (results.next()) {
+			User u = new User();
+			u.setId(results.getInt("id"));
+			u.setEmail(results.getString("email"));
+			u.setFirstName(results.getString("first_name"));
+			u.setLastName(results.getString("last_name"));
+			u.setInstitution(results.getString("institution"));
+			u.setCreateDate(results.getTimestamp("created"));
+			u.setDiskQuota(results.getLong("disk_quota"));
+			u.setSubscribedToReports(results.getBoolean("subscribed_to_reports"));
+			u.setRole(results.getString("role"));
+			u.setPairQuota(results.getInt("job_pair_quota"));
+			u.setDiskUsage(results.getLong("disk_size"));
+			u.setSubscribedToErrorLogs(results.getBoolean("subscribed_to_error_logs"));
+			users.add(u);
+		}
+		return users;
 	}
-	
+
+
 	/**
 	 * Retrieves a user from the database given the user's id
 	 * @param id the id of the user to get
@@ -296,11 +303,11 @@ public class Users {
 			procedure.setInt(1, id);
 			results = procedure.executeQuery();
 
-			if(results.next()){
-				return resultSetToUser(results);
-			} else {
-				log.debug("Could not find user with id = "+id);
+			List<User> users = resultsToUsers(results);
+			if (users.size() > 0) {
+				return users.get(0);
 			}
+			log.debug("Could not find user with id = " + id);
 
 		} catch (Exception e){
 			log.error(e.getMessage(), e);
@@ -308,7 +315,6 @@ public class Users {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-
 		return null;
 	}
 
@@ -327,12 +333,11 @@ public class Users {
 			 procedure = con.prepareCall("{CALL GetUserByEmail(?)}");
 			procedure.setString(1, email);					
 			results = procedure.executeQuery();
-			
-			if(results.next()){
-				return resultSetToUser(results);
 
-			}			
-			
+			List<User> users = resultsToUsers(results);
+			if (users.size() > 0) {
+				return users.get(0);
+			}
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -361,7 +366,7 @@ public class Users {
 
 	/**
 	 * NOTE: Make sure your your queries result-set has all the columns
-	 * 		 that resultSetToUser checks for or it will throw an
+	 * 		 that resultsToUser checks for or it will throw an
 	 * 		 exception. 
 	 * Returns a list of users based on the sql database stored procedure that is
 	 * input.
@@ -378,13 +383,7 @@ public class Users {
 			procedure = con.prepareCall(sql);
 			results = procedure.executeQuery();
 			
-			List<User> users =  new LinkedList<User>();
-			while (results.next()) {
-				User u = resultSetToUser(results);
-				users.add(u);
-			}
-			return users;
-				
+			return resultsToUsers(results);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
@@ -586,10 +585,10 @@ public class Users {
 			procedure.setInt(1, id);
 			results = procedure.executeQuery();
 			
-			if (results.next()) {
-				return resultSetToUser(results);
+			List<User> users = resultsToUsers(results);
+			if (users.size() > 0) {
+				return users.get(0);
 			}
-
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
@@ -599,6 +598,32 @@ public class Users {
 		}
 		
 		return null;
+	}
+
+	/**
+	 * Subscribes a user to error log reports.
+	 * @param userId the user to subscribe.
+	 * @throws SQLException on database error.
+	 */
+	public static void subscribeToErrorLogs(int userId) throws SQLException {
+		Common.update("{CALL SubscribeUserToErrorLogs(?)}"
+				, procedure -> procedure.setInt(1, userId));
+	}
+
+	/**
+	 * Unsubscribes a user from error log reports.
+	 * @param userId the user to unsubscribe.
+	 * @throws SQLException on database error.
+	 */
+	public static void unsubscribeUserFromErrorLogs(int userId) throws SQLException {
+		Common.update("{CALL UnsubscribeUserFromErrorLogs(?)}"
+				, procedure -> procedure.setInt(1, userId));
+	}
+
+	public static List<User> getUsersSubscribedToErrorLogs() throws SQLException {
+		return Common.query("{CALL GetAllUsersSubscribedToErrorLogs()}"
+				, procedure -> {} // no parameters to set
+				, Users::resultsToUsers);
 	}
 
 	

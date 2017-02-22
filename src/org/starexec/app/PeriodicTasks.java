@@ -4,6 +4,9 @@ import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.time.StopWatch;
 import org.starexec.constants.R;
 import org.starexec.data.database.*;
+import org.starexec.data.security.GeneralSecurity;
+import org.starexec.data.security.UserSecurity;
+import org.starexec.data.to.ErrorLog;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.User;
 import org.starexec.data.to.tuples.PairIdJobId;
@@ -19,10 +22,12 @@ import org.starexec.util.Util;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 
 /**
@@ -44,6 +49,7 @@ class PeriodicTasks {
         POST_PROCESS_JOBS(true, POST_PROCESS_JOBS_TASK, 0, () -> 45, TimeUnit.SECONDS),
         RERUN_FAILED_PAIRS(true, RERUN_FAILED_PAIRS_TASK, 0, () -> 5, TimeUnit.MINUTES),
         FIND_BROKEN_JOB_PAIRS(true, FIND_BROKEN_JOB_PAIRS_TASK, 0, () -> 3, TimeUnit.HOURS),
+        SEND_ERROR_LOGS(true, SEND_ERROR_LOGS_TASK, 0, () -> 1, TimeUnit.DAYS),
         CLEAR_TEMPORARY_FILES(false, CLEAR_TEMPORARY_FILES_TASK, 0, () -> 3, TimeUnit.HOURS),
         CLEAR_JOB_LOG(false, CLEAR_JOB_LOG_TASK, 0, () -> 7, TimeUnit.DAYS),
         FIND_BROKEN_NODES(true, FIND_BROKEN_NODES_TASK, 0, () -> 6, TimeUnit.HOURS),
@@ -76,6 +82,45 @@ class PeriodicTasks {
             this.task = task;
         }
     }
+
+    private static final String sendErrorLogsTaskName = "sendErrorReportsTask";
+    private static final Runnable SEND_ERROR_LOGS_TASK = new RobustRunnable(sendErrorLogsTaskName) {
+        @Override
+        protected void dorun() {
+            // Calculate the timestamp from yesterday.
+            Calendar calendar = Calendar.getInstance();
+            calendar.add(Calendar.DAY_OF_YEAR, -R.TIME_BETWEEN_SENDING_ERROR_LOGS);
+            Timestamp yesterday = new Timestamp(calendar.getTime().getTime());
+
+            try {
+                if (ErrorLogs.existBefore(yesterday)) {
+					log.info("Found error logs from "+R.TIME_BETWEEN_SENDING_ERROR_LOGS+" days ago. Sending error logs...");
+                    // Make sure users we're emailing are developers and admins.
+                    List<User> usersSubscribedToErrorLogs = Users.getUsersSubscribedToErrorLogs();
+                    for (User user : usersSubscribedToErrorLogs) {
+                        if (!GeneralSecurity.hasAdminReadPrivileges(user.getId())) {
+                            log.error("Found user who wasn't developer/admin while emailing error logs: "+user.getEmail());
+                        }
+                    }
+
+                    usersSubscribedToErrorLogs = usersSubscribedToErrorLogs.stream()
+                            .filter(u -> GeneralSecurity.hasAdminReadPrivileges(u.getId()))
+                            .collect(Collectors.toList());
+
+                    // Gather the error logs and send them.
+                    List<ErrorLog> allLogs = ErrorLogs.getAll();
+                    Mail.sendErrorLogEmails(allLogs, usersSubscribedToErrorLogs);
+
+                    // Delete all the error logs, in the future we may keep some until they get too old.
+                    ErrorLogs.deleteAll();
+                } else {
+					log.info("No error logs from "+R.TIME_BETWEEN_SENDING_ERROR_LOGS+" days ago. Not sending error logs.");
+				}
+            } catch (SQLException e) {
+                log.error("Failed to send error log emails.", e);
+            }
+        }
+    };
 
 
     private static final String updateClusterTaskName = "updateClusterTask";
@@ -179,22 +224,12 @@ class PeriodicTasks {
         @Override
         protected void dorun() {
             try {
-                ImmutableSet<PairIdJobId> brokenPairs = JobPairs.getPairsEnqueuedLongerThan(R.BROKEN_PAIR_HOUR_THRESHOLD);
+                ImmutableSet<PairIdJobId> brokenPairs = JobPairs.getPairsEnqueuedLongerThan(R.PAIR_ENQUEUE_TIME_THRESHOLD);
                 for (PairIdJobId pairAndJob : brokenPairs) {
-                    log.warn("Detected pair that has been enqueued for "+R.BROKEN_PAIR_HOUR_THRESHOLD+" hours "+
+                    log.warn("Detected pair that has been enqueued for "+R.PAIR_ENQUEUE_TIME_THRESHOLD+" hours "+
                             "without running. Pair has id "+pairAndJob.pairId+" and is in job with id "+pairAndJob.jobId);
 
                 }
-				/*
-                String message = "Nodes that broken pairs might be on:\n";
-                if (brokenPairsAndNodes.nodeIds.size() == 0) {
-                    message += "Could not detect any broken nodes.";
-                }
-                for (Integer potentiallyBrokenNodeId : brokenPairsAndNodes.nodeIds) {
-                    message += "\t"+potentiallyBrokenNodeId+"\n";
-                }
-                log.warn(message);
-				*/
             } catch (SQLException e) {
                 log.error("Database error while searching for broken pairs.");
             }

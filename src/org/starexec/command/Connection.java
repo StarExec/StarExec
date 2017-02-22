@@ -1214,7 +1214,8 @@ public class Connection {
 			return Status.ERROR_BAD_URL;
 			
 		} catch (Exception e) {
-			return Status.ERROR_INTERNAL;
+			setLastError(e.getMessage()+": "+Util.getStackTrace(e));
+			return Status.ERROR_INTERNAL_EXCEPTION;
 		} finally {
 			safeCloseResponse(response);
 		}

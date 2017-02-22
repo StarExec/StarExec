@@ -10,7 +10,7 @@ CREATE TABLE log_levels(
 
 INSERT INTO log_levels (name) VALUES ('OFF'),('FATAL'),('ERROR'),('WARN'),('INFO'),('DEBUG'),('TRACE'),('ALL');
 
-CREATE TABLE error_reports(
+CREATE TABLE error_logs(
 	id INT NOT NULL AUTO_INCREMENT,
 	message TEXT NOT NULL,
 	time TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -20,3 +20,4 @@ CREATE TABLE error_reports(
 	CONSTRAINT error_level FOREIGN KEY (log_level_id) REFERENCES log_levels(id) ON DELETE SET NULL
 );
 
+ALTER TABLE users ADD COLUMN subscribed_to_error_logs BOOLEAN NOT NULL DEFAULT FALSE;
