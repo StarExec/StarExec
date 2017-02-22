@@ -179,13 +179,6 @@ public class CreateJob extends HttpServlet {
 			// Check if user can use BenchExec
 			int userId = SessionUtil.getUserId(request);
 			BenchmarkingFramework framework = BenchmarkingFramework.valueOf(request.getParameter(R.BENCHMARKING_FRAMEWORK_OPTION));
-			ValidatorStatusCode benchmarkingFrameworkSecurityStatus = JobSecurity.canUserUseBenchExec(userId);
-
-			if (framework == BenchmarkingFramework.BENCHEXEC && ! benchmarkingFrameworkSecurityStatus.isSuccess()) {
-				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, benchmarkingFrameworkSecurityStatus.getMessage()));
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, benchmarkingFrameworkSecurityStatus.getMessage());
-				return;
-			}
 
 			int space = Integer.parseInt((String) request.getParameter(spaceId));
 			DefaultSettings settings = Communities.getDefaultSettings(space);

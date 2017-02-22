@@ -482,12 +482,7 @@ public class JobUtil {
 			if (DOMHelper.hasElement(jobAttributes, R.XML_BENCH_FRAMEWORK_ELE_NAME)) {
 				Element framework = DOMHelper.getElementByName(jobAttributes, R.XML_BENCH_FRAMEWORK_ELE_NAME);
 
-				// Make sure the user can use the selected benchmarking framework.
 				BenchmarkingFramework selectedFramework = BenchmarkingFramework.valueOf(framework.getAttribute("value").toUpperCase());
-				if (selectedFramework == BenchmarkingFramework.BENCHEXEC && !JobSecurity.canUserUseBenchExec(userId).isSuccess()) {
-					errorMessage = "You are not allowed to use the selected benchmarking framework.";
-					return -1;
-				}
 
 				job.setBenchmarkingFramework( selectedFramework );
 			} else {
