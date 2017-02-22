@@ -15,10 +15,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -36,7 +37,7 @@ import org.starexec.util.PartWrapper;
 @SuppressWarnings("serial")
 @MultipartConfig
 public class UploadPicture extends HttpServlet {
-	private static final Logger log = Logger.getLogger(UploadPicture.class);	 
+	private static final StarLogger log = StarLogger.getLogger(UploadPicture.class);
     
     // Request attributes
     private static final String PICTURE_FILE = "f";
@@ -68,7 +69,7 @@ public class UploadPicture extends HttpServlet {
 
 
 			boolean callerIsOwner = (userIdOfOwner == userIdOfCaller);
-			boolean callerIsAdmin = Users.hasAdminWritePrivileges(userIdOfCaller);
+			boolean callerIsAdmin = GeneralSecurity.hasAdminWritePrivileges(userIdOfCaller);
 			if ( !(callerIsOwner || callerIsAdmin) || Users.isPublicUser(userIdOfCaller)) {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, "You cannot change this user's picture.");
 				return;
@@ -85,7 +86,7 @@ public class UploadPicture extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			}					
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.warn("Caught Exception in UploadPicture.doPost", e);
 		}
 	}
     

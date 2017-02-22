@@ -9,17 +9,15 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.security.UserSecurity;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecSecurityException;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.DataTablesQuery;
 import org.starexec.util.Hash;
 import org.starexec.util.NamedParameterStatement;
@@ -30,14 +28,13 @@ import org.starexec.util.Util;
  * Handles all database interaction for users
  */
 public class Users {
-	private static final Logger log = Logger.getLogger(Users.class);
-		
+	private static final StarLogger log = StarLogger.getLogger(Users.class);
+
 	/**
 	 * Associates a user with a space (i.e. adds the user to the space)
 	 * @param con The connection to perform the database operation on
 	 * @param userId The id of the user to add to the space
 	 * @param spaceId The space to add the user to
-	 * @param permId The permissions the user should have on the space
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
@@ -266,6 +263,8 @@ public class Users {
 		u.setDiskQuota(results.getLong("disk_quota"));
 		u.setSubscribedToReports(results.getBoolean("subscribed_to_reports"));
 		u.setRole(results.getString("role"));
+		u.setPairQuota(results.getInt("job_pair_quota"));
+		u.setDiskUsage(results.getLong("disk_size"));
 		return u;
 	}
 	
@@ -277,28 +276,39 @@ public class Users {
 	 */
 	public static User get(int id){
 		Connection con = null;			
+		try {
+			con = Common.getConnection();		
+			return Users.get(con, id);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+
+	public static User get(Connection con, int id) {
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetUserById(?)}");
-			procedure.setInt(1, id);					
-			 results = procedure.executeQuery();
-			
+			procedure = con.prepareCall("{CALL GetUserById(?)}");
+			procedure.setInt(1, id);
+			results = procedure.executeQuery();
+
 			if(results.next()){
 				return resultSetToUser(results);
 			} else {
 				log.debug("Could not find user with id = "+id);
 			}
-			
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		
+
 		return null;
 	}
 
@@ -423,27 +433,7 @@ public class Users {
 	 * @author Todd Elvers
 	 */
 	public static int getCountInSpace(int spaceId) {
-		Connection con = null;
-		CallableStatement procedure= null;
-		ResultSet results=null;
-		try {
-			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetUserCountInSpace(?)}");
-			procedure.setInt(1, spaceId);
-			 results = procedure.executeQuery();
-
-			if (results.next()) {
-				return results.getInt("userCount");
-			}
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-
-		return 0;
+		return getCountInSpace(spaceId, "");
 	}
 	
 	/**
@@ -479,45 +469,62 @@ public class Users {
 		return 0;
 	}
 	
+	public static boolean isDiskQuotaExceeded(int userId) {
+		return Users.get(userId).getDiskQuota() <= Users.getDiskUsage(userId);
+	}
+	
 	/**
-	 * Gets the number of bytes a user is consuming on disk
+	 * Iterates through every user in the DB, updating their disk_size fields
+	 * in the DB. 
+	 * @return
+	 */
+	public static boolean updateAllUserDiskSizes() {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			for (User u: Users.getUsersForNextPageAdmin(new DataTablesQuery(0,Integer.MAX_VALUE,0,false,""))) {
+				procedure = con.prepareCall("{CALL UpdateUserDiskUsage(?,?)}");
+				procedure.setInt(1, u.getId());
+				procedure.registerOutParameter(2, java.sql.Types.BIGINT);
+				procedure.executeUpdate();
+				long difference = procedure.getLong(2);
+				Common.safeClose(procedure);
+				
+				if (difference!=0) {
+					log.info("Disk usage did not match between users table "
+							+ "and other tables for user "+u.getId()+". Difference was "+difference);
+				}
+			}
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
+	 * Gets the number of bytes a user is consuming on disk by returning the disk_usage column from the
+	 * users table.
 	 * 
 	 * @param userId the id of the user to get the disk usage of
 	 * @return the disk usage of the given user
-	 * @author Todd Elvers
 	 */
 	public static long getDiskUsage(int userId) {
 		Connection con = null;
-		long solverUsage=0;
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetUserSolverDiskUsage(?)}");
+			procedure = con.prepareCall("{CALL GetUserDiskUsage(?)}");
 			procedure.setInt(1, userId);
 
 			results = procedure.executeQuery();
-			while(results.next()){
-				solverUsage=results.getLong("disk_usage");
-			}
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		
-		con = null;
-		
-		try {
-			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetUserBenchmarkDiskUsage(?)}");
-			procedure.setInt(1, userId);
-
-			 results = procedure.executeQuery();
-			while(results.next()){
-				return solverUsage+results.getLong("disk_usage");
+			if(results.next()){
+				return results.getLong("disk_size");
 			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -575,9 +582,9 @@ public class Users {
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetUnregisteredUserById(?)}");
+			procedure = con.prepareCall("{CALL GetUnregisteredUserById(?)}");
 			procedure.setInt(1, id);
-			 results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			
 			if (results.next()) {
 				return resultSetToUser(results);
@@ -629,36 +636,6 @@ public class Users {
 		return false;
 	}
 
-	/**
-	 * 
-	 * @param jobId the job id to get the user for
-	 * @return the user/owner of the job
-	 * @author Wyatt Kaiser
-	 */
-	public static User getUserByJob(int jobId) {
-		Connection con = null;
-		CallableStatement procedure= null;
-		ResultSet results=null;
-		try {
-			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetUserByJob(?)}");
-			procedure.setInt(1, jobId);
-			 results = procedure.executeQuery();
-			while (results.next()) {
-				User u = resultSetToUser(results);
-				return u;
-			}
-				
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return null;
-	}
-	
 	private static String getUserOrderColumn(int columnIndex) {
 		if (columnIndex==0) {
 			return "full_name";
@@ -727,21 +704,16 @@ public class Users {
 	 * @return a list of 10, 25, 50, or 100 Users containing the minimal amount of data necessary
 	 * @author Wyatt Kaiser
 	 **/
-	
-	//TODO: This pagination function is not formed correctly
 	public static List<User> getUsersForNextPageAdmin(DataTablesQuery query) {
 		Connection con = null;			
-		CallableStatement procedure= null;
+		NamedParameterStatement procedure= null;
 		ResultSet results=null;
 		try {
 			con = Common.getConnection();
-			
-			procedure = con.prepareCall("{CALL GetNextPageOfUsersAdmin(?, ?, ?, ?, ?)}");
-			procedure.setInt(1, query.getStartingRecord());
-			procedure.setInt(2,	query.getNumRecords());
-			procedure.setInt(3, query.getSortColumn());
-			procedure.setBoolean(4, query.isSortASC());
-			procedure.setString(5, query.getSearchQuery());
+			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_USERS_ADMIN_QUERY, getUserOrderColumn(query.getSortColumn()), query);
+
+			procedure = new NamedParameterStatement(con,builder.getSQL());
+        	procedure.setString("query", query.getSearchQuery());		
 			results = procedure.executeQuery();
 			List<User> users = new LinkedList<User>();
 			
@@ -754,11 +726,7 @@ public class Users {
 				u.setEmail(results.getString("email"));
 				u.setRole(results.getString("role"));
 				u.setSubscribedToReports(results.getBoolean("subscribed_to_reports"));
-
-				//Prevents public user from appearing in table.
-				users.add(u);
-				
-							
+				users.add(u);			
 			}	
 			
 			return users;
@@ -786,10 +754,21 @@ public class Users {
 	
 	public static boolean isMemberOfCommunity(int userId, int communityId) {
 		Connection con=null;
+		try {
+			con=Common.getConnection();
+			return isMemberOfCommunity(con, userId, communityId);
+		} catch (Exception e) {
+			log.error("isMemberOfCommunity says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
+
+	protected static boolean isMemberOfCommunity(Connection con, int userId, int communityId) {
 		CallableStatement procedure=null;
 		ResultSet results=null;
 		try {
-			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL IsMemberOfCommunity(?,?)}");
 			procedure.setInt(1, userId);
 			procedure.setInt(2,communityId);
@@ -800,13 +779,11 @@ public class Users {
 		} catch (Exception e) {
 			log.error("isMemberOfCommunity says "+e.getMessage(),e);
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
 		return false;
 	}
-	
 	
 
 	/**
@@ -866,7 +843,7 @@ public class Users {
 			procedure.setString(3, user.getEmail());
 			procedure.setString(4, user.getInstitution());
 			procedure.setString(5, hashedPass);
-			procedure.setLong(6, R.DEFAULT_USER_QUOTA);
+			procedure.setLong(6, R.DEFAULT_DISK_QUOTA);
 			
 			// Register output of ID the user is inserted under
 			procedure.registerOutParameter(7, java.sql.Types.INTEGER);
@@ -906,6 +883,34 @@ public class Users {
 	}
 	
 	/**
+	 * Sets a new pair quota for a given user
+	 * 
+	 * @param userId the user to set the new pair quota for
+	 * @param newPairQuota The new number of job pairs
+	 * @return true iff the new pair quota is successfully set, false otherwise
+	 */
+	public static boolean setPairQuota(int userId, int newPairQuota) {
+		Connection con = null;			
+		CallableStatement procedure= null;
+		try {
+			con = Common.getConnection();		
+			procedure = con.prepareCall("{CALL UpdateUserPairQuota(?, ?)}");
+			procedure.setInt(1, userId);					
+			procedure.setInt(2, newPairQuota);
+			
+			procedure.executeUpdate();	
+			
+			return true;			
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+	
+	/**
 	 * Sets a new disk quota for a given user (input should always be bytes)
 	 * 
 	 * @param userId the user to set the new disk quota for
@@ -933,8 +938,7 @@ public class Users {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		
-		
+
 		log.warn(String.format("Failed to change disk quota to [%s] for user [%d]", FileUtils.byteCountToDisplaySize(newDiskQuota), userId));
 		return false;
 	}
@@ -1099,23 +1103,15 @@ public class Users {
 	/**
 	 * Completely deletes a user from the database. 
 	 * @param userToDeleteId The ID of the user to delete
-	 * @param userMakingRequestId The ID of the user trying to perform the deletion
 	 * @throws StarExecSecurityException if user making request cannot delete user.
 	 * @return True on success, false on error
 	 */
-	public static boolean deleteUser(int userToDeleteId, int userMakingRequestId) throws StarExecSecurityException{
-		log.debug("User with id="+userMakingRequestId+" is attempting to delete user with id="+userToDeleteId);
+	public static boolean deleteUser(int userToDeleteId){
+		log.debug("User with id="+userToDeleteId+" is about to be deleted");
 		Connection con=null;
 		CallableStatement procedure=null;
 		try {
-			//Only allow the deletion of non-admin users, and only if the admin is asking
-			if (!UserSecurity.canDeleteUser(userToDeleteId, userMakingRequestId).isSuccess()) {
-				log.debug("security permission error when trying to delete user with id = "+userToDeleteId);
-				throw new StarExecSecurityException(
-						"User with id="+userMakingRequestId+" does not have permissions to delete user with id="
-						+userToDeleteId);
-
-			}
+			
 			// Delete the users primitive directories. This must occur before we delete the user
 			// so we can still get the users job id's from the database.
 			deleteUsersPrimitiveDirectories(userToDeleteId);
@@ -1130,8 +1126,6 @@ public class Users {
 
 			log.debug("Successfully deleted user with id="+userToDeleteId);
 			return true;
-		} catch (StarExecSecurityException e) {
-			throw e;
 		} catch (Exception e) {
 			log.error("deleteUser says "+e.getMessage(),e);
 		} finally {
@@ -1156,14 +1150,16 @@ public class Users {
 
 	/**
 	 * Deletes the given jobs' directories.
-	 * @param jobs Jobs whose directories are to be deleted.
 	 * @author Albert Giegerich
 	 */
 	private static void deleteUsersJobDirectories(int userId) {
+		final String method = "deleteUsersJobDirectories";
+		log.entry(method);
 		List<Job> jobs = Jobs.getByUserId(userId);
 		for (Job job : jobs) {
-			int jobId = job.getId();
-			Util.safeDeleteDirectory(Jobs.getDirectory(jobId));
+			final String jobDirectory = Jobs.getDirectory( job.getId() );
+			log.debug( method, "User is being deleted, deleting job directory with path: " + jobDirectory );
+			Util.safeDeleteDirectory( jobDirectory );
 		}
 	}
 
@@ -1198,35 +1194,26 @@ public class Users {
 		return u!=null && u.getRole().equals(R.ADMIN_ROLE_NAME);
 	}
 
+	public static boolean isAdmin(Connection con, int userId) {
+		User u=Users.get(con, userId);
+		return u!=null && u.getRole().equals(R.ADMIN_ROLE_NAME);
+	}
+
 	/**
 	 * Checks to see whether the given user is a developer
 	 * @param userId
 	 * @return True if the user is a developer and false otherwise (including if there was an error)
 	 */
+
 	public static boolean isDeveloper(int userId) {
 		User u = Users.get(userId);
 		return u != null && u.getRole().equals(R.DEVELOPER_ROLE_NAME);
 	}
-
-	/**
-	 * Checks to see if a user can view admin only pages.
-	 * @param userId
-	 * @return True if the user is either an admin or developer and false otherwise
-	 * @author Albert Giegerich
-	 */
-	public static boolean hasAdminReadPrivileges(int userId) {
-		return isAdmin(userId) || isDeveloper(userId); 
+	public static boolean isDeveloper(Connection con, int userId) {
+		User u = Users.get(con, userId);
+		return u != null && u.getRole().equals(R.DEVELOPER_ROLE_NAME);
 	}
 
-	/**
-	 * Checks to see whether a user can make admin-only changes to the website/backend.
-	 * @param userId
-	 * @return True if the user is an admin and false otherwise
-	 * @author Albert Giegerich
-	 */
-	public static boolean hasAdminWritePrivileges(int userId) {
-		return isAdmin(userId);
-	}
 	
 	/**
 	 * Checks to see whether the given user is the public user
@@ -1237,18 +1224,7 @@ public class Users {
 	public static boolean isPublicUser(int userId) {
 		return userId==R.PUBLIC_USER_ID;
 	}
-	
-	
-	/**
-	 * Checks to see whether the given user is a test user
-	 * @param userId
-	 * @return True if the user has the test role and false otherwise (including errors)
-	 */
-	public static boolean isTestUser(int userId) {
-		User u=Users.get(userId);
-		return u!=null && u.getRole().equals(R.TEST_ROLE_NAME);
-	}
-	
+
 	/**
 	 * Checks to see whether the given user is unauthorized
 	 * @param userId
@@ -1278,18 +1254,7 @@ public class Users {
 		User u=Users.get(userId);
 		return u!=null && u.getRole().equals(R.DEFAULT_USER_ROLE_NAME);
 	}
-	
-	/**
-		@return The user with the configurable test user role. Returns null
-		if no such user exists
-	 */
-	public static User getTestUser() {
-		User u=Users.get(R.TEST_USER_ID);
-		if (u==null) {
-			log.warn("getTestUser could not find the test user. Please configure one");
-		}
-		return u;
-	}
+
 	/**
 	 * Adds the given user to the database
 	 * @param user The user to add. The user's password should be in plaintext and will be hashed
@@ -1306,22 +1271,22 @@ public class Users {
 			
 			String hashedPass = Hash.hashPassword(user.getPassword());
 			log.debug("hashedPass = " + hashedPass);
-			procedure = con.prepareCall("{CALL AddUserAuthorized(?, ?, ?, ?, ?, ?, ?,?)}");
+			procedure = con.prepareCall("{CALL AddUserAuthorized(?, ?, ?, ?, ?, ?, ?,?,?)}");
 			procedure.setString(1, user.getFirstName());
 			procedure.setString(2, user.getLastName());
 			procedure.setString(3, user.getEmail());
 			procedure.setString(4, user.getInstitution());
 			procedure.setString(5, hashedPass);
-			procedure.setLong(6, R.DEFAULT_USER_QUOTA);
+			procedure.setLong(6, user.getDiskQuota());
 			procedure.setString(7,user.getRole());
-
+			procedure.setInt(8, user.getPairQuota());
 			// Register output of ID the user is inserted under
-			procedure.registerOutParameter(8, java.sql.Types.INTEGER);
+			procedure.registerOutParameter(9, java.sql.Types.INTEGER);
 			
 			// Add user to the users table and check to be sure 1 row was modified
 			procedure.executeUpdate();						
 			// Extract id from OUT parameter
-			user.setId(procedure.getInt(8));
+			user.setId(procedure.getInt(9));
 			log.debug("newid = " + user.getId());
 			return user.getId();
 		} catch (Exception e){	
@@ -1371,7 +1336,7 @@ public class Users {
 	 * @param willBeSubscribed True to subscribe and false to unsubscribe
 	 * @return True on success and false otherwise
 	 */
-	public static boolean setUserReportSubscription(int userId, Boolean willBeSubscribed) {
+	private static boolean setUserReportSubscription(int userId, Boolean willBeSubscribed) {
 		Connection con = null;
 		CallableStatement procedure= null;
 		try{

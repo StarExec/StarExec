@@ -7,18 +7,18 @@ import java.util.LinkedList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Space;
+import org.starexec.logger.StarLogger;
 
 /**
  * Handles all database interaction for communities (closely tied with the Spaces class)
  * @see Spaces
  */
 public class Communities {
-	private static final Logger log = Logger.getLogger(Communities.class);
+	private static final StarLogger log = StarLogger.getLogger(Communities.class);
 	
 	/**
 	 * @return A list of child spaces belonging to the root space (community spaces)
@@ -26,32 +26,42 @@ public class Communities {
 	 */
 	public static List<Space> getAll() {
 		Connection con = null;			
+		try {
+			con = Common.getConnection();		
+			return getAll(con);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+		}
+		
+		return null;
+	}
+	protected static List<Space> getAll(Connection con) {
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
-			con = Common.getConnection();		
 			procedure = con.prepareCall("{CALL GetSubSpacesOfRoot}");
 			results = procedure.executeQuery();
 			List<Space> commSpaces = new LinkedList<Space>();
-			
+
 			while(results.next()){
 				Space s = new Space();
 				s.setName(results.getString("name"));
 				s.setId(results.getInt("id"));
 				s.setDescription(results.getString("description"));
-				s.setLocked(results.getBoolean("locked"));				
+				s.setLocked(results.getBoolean("locked"));
 				commSpaces.add(s);
-			}			
-						
+			}
+
 			return commSpaces;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		
+
 		return null;
 	}
 
@@ -74,7 +84,22 @@ public class Communities {
 		return communitiesUserIsIn;
 	}
 
+	public static List<Space> getAllCommunitiesUserIsIn(Connection con, int userId) {
+		List<Space> allCommunities = Communities.getAll(con);
+		List<Space> communitiesUserIsIn = new LinkedList<Space>();
+		for (Space community : allCommunities) {
+			int communityId = community.getId();
+			if (Users.isMemberOfCommunity(con, userId, communityId)) {
+				// If user is in community add community to list of communities user is in
+				communitiesUserIsIn.add(community);
+			}
+		}
+		return communitiesUserIsIn;
+	}
 
+	/**
+	 * @return Whether the current time is more than R.COMM_ASSOC_UPDATE_PERIOD after R.COMM_ASSOC_LAST_UPDATE
+	 */
     public static boolean commAssocExpired(){
 		long timeNow = System.currentTimeMillis();
 	
@@ -97,52 +122,6 @@ public class Communities {
 
     }
 
-    public static void dropCommunityAssoc(){
-	    Connection con = null;			
-		CallableStatement procedure= null;
-		try {
-		    con = Common.getConnection();
-			
-		    procedure = con.prepareCall("{CALL DropCommunityAssoc()}");
-
-		    procedure.executeQuery();
-
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-    }
-    public static void updateCommunityAssoc(){
-
-	    Connection con = null;			
-		CallableStatement procedure= null;
-		ResultSet results=null;
-		try {
-		    
-			log.info("updated comm_assoc");
-			con = Common.getConnection();
-			
-			procedure = con.prepareCall("{CALL UpdateCommunityAssoc()}");
-
-			results = procedure.executeQuery();
-			while(results.next()){
-			    //TODO: What goes in this block?
-			}
-		    
-		    
-			
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-
-    }
-
     /**
      *Helper function for updateCommunityMapIf
      * @return A HashMap mapping keys for primitives to 0
@@ -151,27 +130,23 @@ public class Communities {
     public static HashMap<String,Long> initializeCommInfo(){
 		HashMap<String,Long> stats = new HashMap<String, Long>();
 	
-		stats.put("users",new Long(0));
-		stats.put("jobs",new Long(0));
-		stats.put("benchmarks",new Long(0));
-		stats.put("solvers",new Long(0));
-		stats.put("job_pairs", new Long(0));
-		stats.put("disk_usage",new Long(0));
+		stats.put("users",0l);
+		stats.put("jobs",0l);
+		stats.put("benchmarks",0l);
+		stats.put("solvers",0l);
+		stats.put("job_pairs", 0l);
+		stats.put("disk_usage",0l);
 	
 		return stats;
-
     }
-
     /**
-     * retrieves information for community stats page if current information has expired
-     * @author Julio Cervantes
-     **/
-    public synchronized static void updateCommunityMapIf(){
-	    Connection con = null;			
+     * Updates R.COMM_INFO_MAP with new data, and sets R.COMM_ASSOC_LAST_UPDATE to the current time
+     */
+    public static void updateCommunityMap() {
+    	Connection con = null;			
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
-		    if(commAssocExpired()){
 				List<Space> communities = Communities.getAll();
 		    
 	
@@ -180,8 +155,6 @@ public class Communities {
 				for(Space c : communities){
 				    commInfo.put(c.getId(),initializeCommInfo());
 				}
-
-		        updateCommunityAssoc();
 
 				Integer commId;
 				Long infoCount, infoExtra;
@@ -273,15 +246,9 @@ public class Communities {
 				    log.info("commId: " + commId + " | jobCount: " + infoCount + " | jobPairCount: " + infoExtra);
 				    
 				}
-	
-				
-	
-				
-				dropCommunityAssoc();
-	
+					
 				R.COMM_INFO_MAP = commInfo;
 				R.COMM_ASSOC_LAST_UPDATE = System.currentTimeMillis();
-			 }
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
 		} finally {
@@ -289,6 +256,16 @@ public class Communities {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
+    }
+
+    /**
+     * retrieves information for community stats page if current information has expired
+     * @author Julio Cervantes
+     **/
+    public synchronized static void updateCommunityMapIf(){
+    	if(commAssocExpired()){
+    		updateCommunityMap();
+		}		    
     }
 	
 	/**
@@ -313,35 +290,49 @@ public class Communities {
 	 * @author Ruoyu Zhang
 	 */
 	public static DefaultSettings getDefaultSettings(int id) {
-		Connection con = null;			
+		Connection con = null;
+		try {			
+			//first, find the ID of the community this space is a part of
+			con = Common.getConnection();
+			return getDefaultSettings(con, id);
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);		
+		} finally {
+			Common.safeClose(con);
+
+		}
+		
+		return null;
+	}
+
+	protected static DefaultSettings getDefaultSettings(Connection con, int id) {
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		//if the current space is the root, we just want to return the default profile
 		if (id==1) {
 			return new DefaultSettings();
 		}
-		try {			
+		try {
 			//first, find the ID of the community this space is a part of
-			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetCommunityOfSpace(?)}");
 			procedure.setInt(1, id);
 			results = procedure.executeQuery();
-			
+
 			int community;
 			if (results.next()) {
 				//if we found the community, get the default settings
-			    community = results.getInt("community");
-			    Common.safeClose(results);
-			    Common.safeClose(procedure);
-			    
-			    //this means the community was NULL, which occurs when this is called on the root space.
-			    if (community<=0) {
-			    	log.debug("no default settings profile set for space = "+id);
-			    	return null;
-			    }
-			    
-			    List<DefaultSettings> settings=Settings.getDefaultSettingsByPrimIdAndType(community, SettingType.COMMUNITY);
-				
+				community = results.getInt("community");
+				Common.safeClose(results);
+				Common.safeClose(procedure);
+
+				//this means the community was NULL, which occurs when this is called on the root space.
+				if (community<=0) {
+					log.debug("no default settings profile set for space = "+id);
+					return null;
+				}
+
+				List<DefaultSettings> settings=Settings.getDefaultSettingsByPrimIdAndType(community, SettingType.COMMUNITY);
+
 				if(settings.size()>0){
 					return settings.get(0);
 				}
@@ -356,30 +347,29 @@ public class Communities {
 					d.setName(name);
 					d.setPrimId(community);
 					log.debug("calling createNewDefaultSettings on community with id = "+community);
-				    int newId=createNewDefaultSettings(d);
-				    if (newId>0) {
-					    return d;
+					int newId=createNewDefaultSettings(d);
+					if (newId>0) {
+						return d;
 
-				    } else {
-				    	//failed to create new profile
-				    	log.error("error creating new default settings profile");
-				    	return null;
-				    }
+					} else {
+						//failed to create new profile
+						log.error("error creating new default settings profile");
+						return null;
+					}
 				}
-			   
+
 			} else {
 				log.error("We were unable to find the community for the space ="+id);
 				return null;
 			}
 
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
 		} finally {
-			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		
+
 		return null;
 	}
 	

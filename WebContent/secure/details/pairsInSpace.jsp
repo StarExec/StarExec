@@ -5,7 +5,6 @@
 <%		
 	try {
 		int userId = SessionUtil.getUserId(request);
-		int jobId = Integer.parseInt(request.getParameter("id"));
 		int configId=Integer.parseInt(request.getParameter("configid"));
 		String stageCheck=request.getParameter("stagenum");
 		int stageId=0;
@@ -14,13 +13,15 @@
 			stageId=Integer.parseInt(stageCheck);
 		}
 		String type=request.getParameter("type");
-		Job j=null;
 		int jobSpaceId=Integer.parseInt(request.getParameter("sid"));
-		
-		if(Permissions.canUserSeeJob(jobId, userId)) {
-			j = Jobs.get(jobId);
+		JobSpace space = Spaces.getJobSpace(jobSpaceId);
+		if( space==null || !JobSecurity.canUserSeeJob(space.getJobId(), userId).isSuccess()) {
+			response.sendError(HttpServletResponse.SC_FORBIDDEN, "This job has been deleted or is restricted");
+			return;
 		}
 		
+		Job j= Jobs.get(space.getJobId());
+
 		
 		if(j != null && JobSecurity.isValidGetPairType(type)) {	
 			JobSpace s=Spaces.getJobSpace(jobSpaceId);
@@ -30,7 +31,7 @@
 			request.setAttribute("pairType",type);
 			
 		} else {
-				if (Jobs.isJobDeleted(jobId)) {
+				if (Jobs.isJobDeleted(space.getJobId())) {
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
 				} else {
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
@@ -43,7 +44,7 @@
 	}
 %>
 
-<star:template title="Job Pairs for ${solver.name} in ${jobspace.name} hierarchy" js="util/sortButtons, util/jobDetailsUtilityFunctions, lib/jquery.dataTables.min, details/shared, details/pairsInSpace, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/pairsInSpace">			
+<star:template title="Job Pairs for ${solver.name} in ${jobspace.name} hierarchy" js="util/sortButtons, util/jobDetailsUtilityFunctions, util/datatablesUtility, lib/jquery.dataTables.min, details/shared, details/pairsInSpace, lib/jquery.ba-throttle-debounce.min" css="common/table, details/shared, details/pairsInSpace">			
 	<fieldset id="#pairTblField">	
 	<legend>job pairs</legend>	
 	<fieldset id="pairActions" class="tableActions">

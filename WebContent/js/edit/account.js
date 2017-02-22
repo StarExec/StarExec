@@ -6,6 +6,7 @@ $(document).ready(function(){
 	attachPasswordMonitor();
 	attachWebsiteMonitor();
 	userId=$("#infoTable").attr("uid");
+	log('Found userId: ' + userId);
 });
 
 
@@ -69,9 +70,6 @@ function initDataTables(){
  * Initializes the user-interface
  */
 function initUI(){
-	$("#dialog-confirm-delete").hide();
-	$("#dialog-createSettingsProfile").hide();
-
 	initDataTables();
 	initButtonIcons();
 	
@@ -90,6 +88,7 @@ function initUI(){
 	editable("lastname");
 	editable("institution");
 	editable("diskquota");
+	editable("pairquota");
 	editable("pagesize");
 	editable("email");
 	// If the client's picture is clicked on, pop it up in a JQuery modal window
@@ -102,16 +101,32 @@ function initUI(){
 	
 	
 	$("#saveProfile").click(function() {
+		var benchmarkIds = [];
+		$('.benchmark').each(function(i, el) {
+			benchmarkIds.push($(el).attr('value'));
+		});
+
+		log('benchmarkIds is: ');
+		log(benchmarkIds);
+
+			
 		$.post(  
 				starexecRoot+"secure/add/profile",
 				{postp: $("#editPostProcess").val(), prep: $("#editPreProcess").val(), benchp: $("#editBenchProcess").val(),
 					solver: $("#solver").val(), name: $("#settingName").val(), cpu: $("#cpuTimeout").val(),
 					wall: $("#wallclockTimeout").val(), dep: $("#editDependenciesEnabled").val(),
-					bench: $("#benchmark").val(), mem: $("#maxMem").val(), settingId : $("#settingProfile").val()},
+					'bench[]': benchmarkIds, mem: $("#maxMem").val(), settingId : $("#settingProfile").val(), userIdOfOwner: userId},
 				function(returnCode) {
 						showMessage("success","Profile settings updated successfully",5000);
+
 				}
-			).error(function(xhr, textStatus, errorThrown){
+			).error(function(xhr, textStatus, errorThrown) {
+				log('xhr: ');
+				log(xhr);
+				log('textStatus: ');
+				log(textStatus);
+				log('errorThrown: ');
+				log(errorThrown);
 				showMessage('error',"Invalid parameters",5000);
 			});
 	});
@@ -226,7 +241,7 @@ function initUI(){
 	});
 	
 	 $("#solverList").dataTable({ 
-			"sDom"			: 'rt<"bottom"flpi><"clear">',
+			"sDom"			: getDataTablesDom(),
 			"iDisplayStart"	: 0,
 			"iDisplayLength": defaultPageSize,
 			"bServerSide"	: true,
@@ -244,7 +259,7 @@ function initUI(){
 		});
 	    
 	    $("#benchmarkList").dataTable({ 
-			"sDom"			: 'rt<"bottom"flpi><"clear">',
+			"sDom"			: getDataTablesDom(),
 			"iDisplayStart"	: 0,
 			"iDisplayLength": defaultPageSize,
 			"bServerSide"	: true,
@@ -302,8 +317,6 @@ function fnPaginationHandler(sSource, aoData, fnCallback,prim){
 			function(nextDataTablePage){
 				s=parseReturnCode(nextDataTablePage);
 				if (s) {
-					
-				
 					// Replace the current page with the newly received page
 					fnCallback(nextDataTablePage);
 				}

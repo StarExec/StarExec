@@ -2,8 +2,6 @@ var solverTable;
 var benchTable;
 $(document).ready(function(){
 	$("fieldset").expandable(false);
-	$("#dialog-confirm-delete").hide();
-	$("#dialog-confirm-restore").hide();
 	$('#clearSolvers').button({
 		icons: {
 			secondary: "ui-icon-trash"
@@ -92,7 +90,7 @@ $(document).ready(function(){
 
 	//Initiate solver table
 	solverTable = $('#rsolvers').dataTable( {
-        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "sDom"			: getDataTablesDom(),
         "iDisplayStart"	: 0,
         "iDisplayLength": defaultPageSize,
         "bServerSide"	: true,
@@ -103,7 +101,7 @@ $(document).ready(function(){
    
 	//Initiate benchmark table
 	benchTable = $('#rbenchmarks').dataTable( {
-        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "sDom"			: getDataTablesDom(),
         "iDisplayStart"	: 0,
         "iDisplayLength": defaultPageSize,
         "bServerSide"	: true,

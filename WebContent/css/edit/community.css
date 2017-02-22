@@ -122,6 +122,7 @@ tr th {
 	float:right;
 	font-size: 14px;
 	margin-top: 10px;
+	cursor: pointer;
 }
 
 
@@ -138,4 +139,32 @@ tr th {
 
 #postRadioURL.radioURL, #preRadioURL.radioURL, #typeRadioURL.radioURL, #updateRadioURL.radioURL {
 	width: 90px;
+}
+
+@media only screen and (max-width: 767px) {
+	#wrapper fieldset {
+		width: 85%;
+	}
+
+	#wrapper table td, #wrapper table th, #wrapper button {
+		text-align: center;
+		font-size: 12px;
+	}
+
+	#wrapper #leaders tr > *:nth-child(2) {
+		display: none;
+	}
+	#wrapper #leaders tr > *:nth-child(3) {
+		display: none;
+	}
+
+	#wrapper #Members tr > *:nth-child(2) {
+		display: none;
+	}
+	#wrapper #Members tr > *:nth-child(3) {
+		display: none;
+	}
+
+
+
 }

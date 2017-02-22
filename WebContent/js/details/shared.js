@@ -14,8 +14,7 @@ $(document).ready(function(){
 
 	$('#anonymousLink').button({
 		icons: {
-			// TODO change to something more appropriate
-			secondary: "ui-icon-arrowthick-1-s"
+			secondary: "ui-icon-link"
 		}
 	});
 	
@@ -51,4 +50,35 @@ function PopUp(uri) {
 			width: 'auto'
 		});
 	});  
+}
+
+function makeAnonymousLinkPost( primitiveType, primitiveId, primitivesToAnonymize ) {
+	'use strict';
+	var isAnonymizedJobPage = (primitiveType === "job") && (primitivesToAnonymize === "allButBench" || primitivesToAnonymize === "all");
+
+	log("Should create spinner: " + isAnonymizedJobPage );
+	if ( isAnonymizedJobPage ) {
+		createDialog("Generating anonymized job page. Please wait. (May take a minute or two for large jobs.)");
+	}
+	$.post(
+		starexecRoot + 'services/anonymousLink/'+primitiveType+'/'+primitiveId + '/' + primitivesToAnonymize,
+		'',
+		function( returnCode ) {
+			log( 'Anonymous Link Return Code: ' + returnCode );
+			if ( isAnonymizedJobPage ) {
+				destroyDialog();
+			}
+			if ( returnCode.success ) {
+				$('#dialog-show-anonymous-link').html('<a href="'+returnCode.message+'">'+returnCode.message+'</a>');
+
+				$('#dialog-show-anonymous-link').dialog({
+					width: 750,
+					height: 200,
+				});	
+			} else {
+				parseReturnCode( returnCode );
+			}
+		},
+		'json'
+	);
 }

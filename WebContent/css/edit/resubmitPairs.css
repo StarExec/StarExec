@@ -1,3 +1,13 @@
 #actionList {
 	list-style: none;
 }
+
+@media only screen and (max-width: 767px) {
+	body fieldset {
+		width: 85%;
+	}
+	
+	#actionList a {
+		margin: 0 5px 5px 0;
+	}
+}

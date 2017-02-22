@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-	import="org.starexec.data.database.*,org.starexec.data.to.*,org.starexec.util.*,org.starexec.data.to.Processor.ProcessorType"%>
+	import="org.starexec.data.database.*,org.starexec.data.to.*,org.starexec.util.*,org.starexec.data.security.*,org.starexec.data.to.Processor.ProcessorType"%>
 <%@page import="java.util.ArrayList, java.util.List"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
@@ -13,16 +13,18 @@
 		List<Space> userSpaces = new ArrayList<Space>();
 		List<Processor> postProcs = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId), ProcessorType.BENCH);
 		userSpaces = Spaces.getSpacesByUser(userId);
+        Integer defaultProc = settings.getBenchProcessorId();
 
 		postProcs.add(Processors.getNoTypeProcessor());
 
 		request.setAttribute("space", Spaces.get(spaceId));
 		request.setAttribute("types", postProcs);
 		request.setAttribute("userSpaces",userSpaces);
+        request.setAttribute("defaultProc", defaultProc);
 		request.setAttribute("dependenciesEnabled",settings.isDependenciesEnabled());
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
-		if ( (p == null || !p.canAddBenchmark()) && !Users.hasAdminReadPrivileges(userId)) {
+		if ( (p == null || !p.canAddBenchmark()) && !GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN,
 					"You do not have permission to add benchmarks here");
 		}
@@ -72,16 +74,21 @@
 					</tr>
 					<tr id="permRow"
 						title="if StarExec expands your archive into spaces, the new spaces will have these default permissions">
-						<td class="label"><p>default</p></td>
+						<td class="label">
+							<p>default</p>
+							<span class="showMobile">
+								<br /><br />so = solver<br />b = bench<br />u = user<br />sp = space<br />j = job
+							</span>
+						</td>
 						<td>
 							<table id="tblDefaultPerm">
 								<tr>
 									<th></th>
-									<th>solver</th>
-									<th>bench</th>
-									<th>users</th>
-									<th>space</th>
-									<th>job</th>
+									<th><span class="hideMobile">solver</span><span class="showMobile">so</span></th>
+									<th><span class="hideMobile">bench</span><span class="showMobile">b</span></th>
+									<th><span class="hideMobile">users</span><span class="showMobile">u</span></th>
+									<th><span class="hideMobile">space</span><span class="showMobile">sp</span></th>
+									<th><span class="hideMobile">job</span><span class="showMobile">j</span></th>
 								</tr>
 								<tr>
 									<td>add</td>
@@ -107,8 +114,8 @@
 						<td class="label"><p>benchmark type</p></td>
 						<td><select id="benchType" name="benchType">
 								<c:forEach var="type" items="${types}">
-									<option value="${type.id}">${type.name}</option>
-								</c:forEach>
+                                <option ${type.id == defaultProc ? 'selected' : ''} value="${type.id}">${type.name} ${type.id == defaultProc ? '(community default)' : ''}</option>
+                                </c:forEach>
 						</select></td>
 					</tr>
 					<tr

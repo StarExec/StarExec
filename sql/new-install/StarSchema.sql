@@ -12,9 +12,11 @@ CREATE TABLE users (
 	created TIMESTAMP NOT NULL,
 	password VARCHAR(128) NOT NULL,
 	disk_quota BIGINT NOT NULL,
+	job_pair_quota INT DEFAULT 750000 NOT NULL,
 	subscribed_to_reports BOOLEAN NOT NULL DEFAULT FALSE,
 	default_page_size INT NOT NULL DEFAULT 10,
 	default_settings_profile INT DEFAULT NULL,
+	disk_size BIGINT NOT NULL DEFAULT 0,
 	PRIMARY KEY (id),
 	-- the following foreign key is used, but it is added at the end because you can't declare a foreign key before declaring the table
 	-- CONSTRAINT users_default_settings_profile FOREIGN KEY (default_settings_profile) REFERENCES default_settings(id) ON DELETE SET NULL,
@@ -157,7 +159,8 @@ CREATE TABLE solvers (
 	disk_size BIGINT NOT NULL,
 	deleted BOOLEAN DEFAULT FALSE,
 	recycled BOOLEAN DEFAULT FALSE,
-	executable_type INT DEFAULT 1, 
+	executable_type INT DEFAULT 1,
+	build_status INT DEFAULT 1,
 	PRIMARY KEY (id),	
 	CONSTRAINT solvers_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	CONSTRAINT solvers_executable_type FOREIGN KEY (executable_type) REFERENCES executable_types(type_id) ON DELETE SET NULL 
@@ -182,10 +185,6 @@ CREATE TABLE queues (
 	id INT NOT NULL AUTO_INCREMENT, 	
 	name VARCHAR(64) NOT NULL,
 	status VARCHAR(32),
-	slots_used INTEGER DEFAULT 0,
-	slots_reserved INTEGER DEFAULT 0,
-	slots_free INTEGER DEFAULT 0,
-	slots_total INTEGER DEFAULT 0,
 	global_access BOOLEAN DEFAULT FALSE,
 	cpuTimeout INT DEFAULT 259200,
 	clockTimeout INT DEFAULT 259200, -- timeouts are maxes for any jobs created on the queue
@@ -195,7 +194,6 @@ CREATE TABLE queues (
 
 -- All the SGE worker nodes that jobs can be executed on in the cluster.
 -- This just maintains hardware information manually to be viewed by
--- TODO: Do we actually want any node data except these three columns?
 CREATE TABLE nodes (
 	id INT NOT NULL AUTO_INCREMENT, 	
 	name VARCHAR(128) NOT NULL,
@@ -219,6 +217,7 @@ CREATE TABLE comm_queue (
 	queue_id INT NOT NULL REFERENCES queues(id) ON DELETE CASCADE,
 	PRIMARY KEY (space_id, queue_id)
 );
+
 
 
 
@@ -277,6 +276,11 @@ CREATE TABLE jobs (
 	primary_space INT, -- This is a JOB_SPACE, not simply a "space"
 	using_dependencies BOOLEAN NOT NULL DEFAULT FALSE, -- whether jobline dependencies are used by any pair
 	suppress_timestamp BOOLEAN NOT NULL DEFAULT FALSE,
+	buildJob BOOLEAN NOT NULL DEFAULT FALSE,
+	total_pairs INT NOT NULL, -- How many pairs are in this job? Used to avoid needing to count from pairs table for efficiency
+	disk_size BIGINT NOT NULL,
+	is_high_priority BOOLEAN NOT NULL DEFAULT FALSE,
+	benchmarking_framework ENUM('RUNSOLVER', 'BENCHEXEC') NOT NULL DEFAULT 'RUNSOLVER',
 	PRIMARY KEY (id),
 	CONSTRAINT jobs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	CONSTRAINT jobs_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL
@@ -294,6 +298,8 @@ CREATE TABLE job_stage_params (
 	post_processor INT,
 	pre_processor INT,
 	results_interval INT DEFAULT 0, -- Interval at which to copy back incremental results for pairs, in seconds. 0 means do not use incremental results
+	stdout_save_option INT NOT NULL DEFAULT 2,         -- see SaveResultsOption enum (same for below).
+	extra_output_save_option INT NOT NULL DEFAULT 2,
 	PRIMARY KEY (job_id,stage_number),
 	CONSTRAINT job_stage_params_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE,
 	CONSTRAINT job_stage_params_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE SET NULL,
@@ -319,7 +325,6 @@ CREATE TABLE job_pairs (
 	queuesub_time TIMESTAMP(3) DEFAULT 0,
 	start_time TIMESTAMP DEFAULT 0,
 	end_time TIMESTAMP DEFAULT 0,
-	exit_status INT,
 	job_space_id INT,
 	path VARCHAR(2048),
 	sandbox_num INT,
@@ -328,12 +333,13 @@ CREATE TABLE job_pairs (
 	KEY(sge_id),
 	KEY (job_space_id, bench_name),
 	KEY (node_id, status_code),
-	KEY (status_code), -- TODO: Do we actually want this change?
+	KEY (status_code),
 	-- Name is what exists on Starexec: easier to use the name here than rename there.
 	KEY job_id_2 (job_id, status_code), -- we very often get all pairs with a particular status code for a job
 	CONSTRAINT job_pairs_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE, -- not necessary as an index
 	CONSTRAINT job_pairs_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION -- not used as an index
 );
+
 
 CREATE TABLE jobpair_stage_data (
 	stage_number INT NOT NULL, -- this id orders the stages
@@ -351,9 +357,9 @@ CREATE TABLE jobpair_stage_data (
 	solver_id INT,
 	config_id INT,
 	job_space_id INT,
+	disk_size BIGINT NOT NULL,
 	KEY (job_space_id, config_id),
 	KEY (job_space_id, solver_name),
-	-- KEY (job_space_id, bench_name),
 	KEY (job_space_id, config_name),
 	KEY (status_code),
 	PRIMARY KEY (jobpair_id,stage_number),
@@ -378,7 +384,6 @@ CREATE TABLE jobpair_time_delta (
 );
 
 -- Stores all inputs to a particular job pair, outside of the primary benchmark
--- TODO: Do we want delete cascades on benchmarks? Might confuse users who accidentally delete benchmark inputs
 CREATE TABLE jobpair_inputs (
 	jobpair_id INT NOT NULL,
 	input_number SMALLINT NOT NULL, -- ordered from 1 to n, with n being the number of inputs
@@ -389,8 +394,7 @@ CREATE TABLE jobpair_inputs (
 );
 
 -- Stores the IDs of completed jobs and gives each a completion ID, indicating order of completion
--- TODO: Consider eliminating this table, as we store end_time in the job_pairs table. Need to be careful porting 
--- over old pairs.
+-- We cannot use job_pairs.end_time to simulate this table, as it is possible to have job pairs finish at the same time
 CREATE TABLE job_pair_completion (
 	pair_id INT NOT NULL,
 	completion_id INT NOT NULL AUTO_INCREMENT,
@@ -505,11 +509,22 @@ CREATE TABLE community_requests (
 CREATE TABLE anonymous_links (
 	unique_id VARCHAR(36) NOT NULL,
 	primitive_id INT NOT NULL,
-	primitive_type VARCHAR(36),
-	hide_primitive_name BOOLEAN,
+	primitive_type ENUM('solver', 'job', 'bench') NOT NULL,
+	primitives_to_anonymize ENUM('all', 'allButBench', 'none') NOT NULL,
+	date_created DATE NOT NULL,
 
 	PRIMARY KEY (unique_id),
-	UNIQUE KEY (primitive_id, primitive_type, hide_primitive_name)
+	UNIQUE KEY (primitive_id, primitive_type, primitives_to_anonymize)
+);
+
+CREATE TABLE anonymous_primitive_names (
+	anonymous_name VARCHAR(36) NOT NULL,
+	primitive_id INT NOT NULL,
+	primitive_type ENUM('solver', 'job', 'bench', 'config') NOT NULL,
+	job_id INT NOT NULL,
+
+	PRIMARY KEY (primitive_id, primitive_type, job_id),
+	CONSTRAINT anonymous_names_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
 );
 
 CREATE TABLE change_email_requests (
@@ -570,6 +585,15 @@ CREATE TABLE default_settings (
 	CONSTRAINT default_settings_pre_processor FOREIGN KEY (pre_processor) REFERENCES processors(id) ON DELETE SET NULL,
 	CONSTRAINT default_settings_default_solver FOREIGN KEY (default_solver) REFERENCES solvers(id) ON DELETE SET NULL,
 	CONSTRAINT default_settings_bench_processor FOREIGN KEY (bench_processor) REFERENCES processors(id) ON DELETE SET NULL
+);
+
+
+CREATE TABLE default_bench_assoc(
+	setting_id INT NOT NULL,
+	bench_id INT NOT NULL,
+	PRIMARY KEY(setting_id, bench_id),
+	CONSTRAINT default_setting_id FOREIGN KEY (setting_id) REFERENCES default_settings(id) ON DELETE CASCADE,
+	CONSTRAINT default_bench_id FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE
 );
 
 
@@ -670,6 +694,7 @@ CREATE TABLE job_stats (
 	correct INT NOT NULL,
 	incorrect INT NOT NULL,
 	incomplete INT NOT NULL,
+	conflicts INT NOT NULL,
 	failed INT NOT NULL,
 	wallclock DOUBLE,
 	cpu DOUBLE,
@@ -678,17 +703,6 @@ CREATE TABLE job_stats (
 	PRIMARY KEY (job_space_id,config_id,stage_number),
 	CONSTRAINT job_stats_job_space_id FOREIGN KEY (job_space_id) REFERENCES job_spaces(id) ON DELETE CASCADE,
 	KEY (config_id)
-);
-
--- Associates space IDs with the cache of their downloads. cache_type refers to the type of the archive that is stored-- space,
--- solver, benchmark, job, etc
--- Author: Eric Burns
-CREATE TABLE file_cache (
-	id INT NOT NULL,
-	path TEXT NOT NULL,
-	cache_type INT NOT NULL,
-	last_access TIMESTAMP NOT NULL,
-	PRIMARY KEY (id,cache_type)
 );
 
 -- Table that contains some global flags
@@ -705,18 +719,56 @@ CREATE TABLE system_flags (
 CREATE TABLE report_data (
 	id INT NOT NULL AUTO_INCREMENT,
 	event_name VARCHAR(64),
-	queue_id INT, -- NULL if data is not associated with a queue 
+	queue_name VARCHAR(64), -- NULL if data is not associated with a queue 
 	occurrences INT NOT NULL,
 
-	UNIQUE KEY(event_name, queue_id),
 	PRIMARY KEY(id),
-	CONSTRAINT report_data_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE NO ACTION
+	UNIQUE KEY event_name_queue_name (event_name, queue_name)
 );
+
+-- Pairs that have been rerun after job script failure.
+CREATE TABLE pairs_rerun (
+	pair_id INT NOT NULL,
+	PRIMARY KEY (pair_id),
+	CONSTRAINT id_of_rerun_pair FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE CASCADE
+);
+
+CREATE TABLE log_levels(
+	id INT NOT NULL AUTO_INCREMENT,
+	name VARCHAR(32) NOT NULL,
+
+	PRIMARY KEY(id),
+	UNIQUE KEY(name)
+);
+
+INSERT INTO log_levels (name) VALUES ('OFF'),('FATAL'),('ERROR'),('WARN'),('INFO'),('DEBUG'),('TRACE'),('ALL');
+
+CREATE TABLE error_reports(
+	id INT NOT NULL AUTO_INCREMENT,
+	message TEXT NOT NULL,
+	time TIMESTAMP NOT NULL DEFAULT NOW(),
+	log_level_id INT,
+
+	PRIMARY KEY(id),
+	CONSTRAINT error_level FOREIGN KEY (log_level_id) REFERENCES log_levels(id) ON DELETE SET NULL
+);
+
+
+-- Creates a view of the closure table that includes only communities as ancestors
+CREATE VIEW community_assoc AS 
+SELECT ancestor AS comm_id, descendant AS space_id FROM closure 
+JOIN set_assoc ON set_assoc.child_id=closure.ancestor 
+WHERE set_assoc.space_id=1;
 
 ALTER TABLE solver_pipelines ADD CONSTRAINT primary_stage_id FOREIGN KEY (primary_stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL;
 
 ALTER TABLE users ADD CONSTRAINT users_default_settings_profile FOREIGN KEY (default_settings_profile) REFERENCES default_settings(id) ON DELETE SET NULL;
 
 
-INSERT INTO report_data (event_name, queue_id, occurrences) VALUES ('unique logins', NULL, 0), ('jobs initiated', NULL, 0),
+INSERT INTO report_data (event_name, queue_name, occurrences) VALUES ('unique logins', NULL, 0), ('jobs initiated', NULL, 0),
 	('job pairs run', NULL, 0), ('solvers uploaded', NULL, 0), ('benchmarks uploaded', NULL, 0), ('benchmark archives uploaded', NULL, 0); 
+
+-- insert no_type processor, which the system does not expect actually exists on disk. This is mandatory for
+-- the system to function.
+INSERT INTO processors (id,name,description,path,community,processor_type,disk_size) 
+VALUES (1,"no_type", "this is the default benchmark type for rejected benchmarks and benchmarks that are not associated with a type n=no_type","no path",1,3,0);

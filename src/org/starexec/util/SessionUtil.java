@@ -5,13 +5,13 @@ import java.util.HashMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.User;
+import org.starexec.logger.StarLogger;
 
 /**
  * Contains handy methods for accessing data within a user's session
@@ -19,7 +19,7 @@ import org.starexec.data.to.User;
  */
 
 public class SessionUtil {	
-	private static final Logger log = Logger.getLogger(SessionUtil.class);
+	private static final StarLogger log = StarLogger.getLogger(SessionUtil.class);
 	public static final String USER = "user";	// The string we store the user's User object under
 	public static final String PERMISSION_CACHE = "perm";	// The string we store the user's permission cache object under
 	private static User publicUser = null;
@@ -117,17 +117,7 @@ public class SessionUtil {
 		// Return null if the cache couldn't add it and space is private, or it doesn't exist
 		return null;
 	}
-	
-	/**
-	 * Looks up the user's permissions on the given space from the database and adds it
-	 * to the user's permission cache
-	 * @param request The request where the cache is located
-	 * @param spaceId The id of the space to cache the permission for
-	 */
-	public static void cachePermission(HttpServletRequest request, int spaceId) {
-		SessionUtil.cachePermission(request.getSession(), spaceId);
-	}
-	
+
 	/**
 	 * Looks up the user's permissions on the given space from the database and adds it
 	 * to the user's permission cache

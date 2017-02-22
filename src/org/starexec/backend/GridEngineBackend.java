@@ -1,20 +1,18 @@
 package org.starexec.backend;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
-
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
+import org.starexec.exceptions.StarExecException;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * This is a backend implementation that uses Sun Grid Engine
@@ -27,13 +25,14 @@ public class GridEngineBackend implements Backend{
     private static String QUEUE_STATS_COMMAND = "qstat -f";				// The SGE command to get stats about all the queues
     private static String NODE_LIST_COMMAND = "qconf -sel";					// The SGE command to execute to get a list of all worker nodes
     private static String QUEUE_ASSOC_PATTERN = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,16}\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
-
+	public static String QUEUE_NAME_PATTERN = "QUEUE_NAME";
+	public static String QUEUE_GET_SLOTS_PATTERN = "qconf -sq " + QUEUE_NAME_PATTERN;// + " | grep 'slots' | grep -o '[0-9]\\{1,\\}'";
 
     private static String GRID_ENGINE_PATH = "/cluster/gridengine-8.1.8/bin/lx-amd64/";
 	
 	
     private Session session = null;
-    private Logger log;
+    private StarLogger log;
     private String BACKEND_ROOT = null;
     
     // The regex patterns used to parse SGE output
@@ -49,7 +48,7 @@ public class GridEngineBackend implements Backend{
      * after construction.
      */
     public GridEngineBackend(){
-    	log = Logger.getLogger(GridEngineBackend.class);
+		log = StarLogger.getLogger(GridEngineBackend.class);
     }
 
     /**
@@ -286,6 +285,50 @@ public class GridEngineBackend implements Backend{
 
     }
 
+	/**
+	 * Gets the number of slots in a given queue.
+	 * @param queueName the name of the queue to get the number of slots for.
+	 * @return An optional with the number of slots for the queue. Empty if the queue doesn't exist.
+	 * @throws IOException
+	 */
+    public Integer getSlotsInQueue(String queueName) throws IOException, StarExecException {
+		final String methodName = "getSlotsInQueue";
+		try {
+			String getSlotsInQueueCommand = QUEUE_GET_SLOTS_PATTERN.replace(QUEUE_NAME_PATTERN, queueName);
+			log.debug(methodName, "Executing command: " + getSlotsInQueueCommand);
+			String results = Util.executeCommand(getSlotsInQueueCommand);
+			log.debug(methodName, "Got result: '" + results + "'");
+
+			// Trim outer whitespace and replace all consecutive whitespace with a single space.
+			String condensedResults = results.trim().replaceAll("\\s+", " ");
+			log.debug(methodName, "Condensed results: "+condensedResults);
+
+			List<String> resultsWords = Arrays.asList(condensedResults.split(" "));
+			int slotsIndex = resultsWords.indexOf("slots");
+
+			if (slotsIndex == -1) {
+				throw new StarExecException("The result of getting the queue details from SGE did not include a slots attribute.");
+			}
+
+			if (slotsIndex == resultsWords.size()) {
+				throw new StarExecException("The slots attribute was not followed by a numberal.");
+			}
+
+
+			String slots = resultsWords.get(slotsIndex+1);
+			if (!slots.matches("[0-9]+")) {
+				throw new StarExecException("The slots attribute was not followed by a numeral.");
+			}
+
+
+
+			return Integer.parseInt(slots);
+		} catch (IOException e) {
+			log.error("Caught IOException.", e);
+			throw e;
+		}
+	}
+
     /**
      * should clear any states caused by errors on both queues and nodes
      * @return true if sucessful, false otherwise
@@ -350,7 +393,14 @@ public class GridEngineBackend implements Backend{
      *@param queueNames the names of the source queues
      *@return true if successful, false otherwise
      */
-    public boolean createQueue(String queueName, String[] nodeNames, String[] queueNames){
+
+    public boolean createQueue(String queueName, String[] nodeNames, String[] queueNames) {
+        return createQueueWithSlots(queueName, nodeNames, queueNames, 2);
+    }
+
+
+    @Override
+    public boolean createQueueWithSlots(String queueName, String[] nodeNames, String[] queueNames, Integer slots){
     	try {
 			log.debug("begin createQueue");
 			String[] split = queueName.split("\\.");
@@ -388,6 +438,7 @@ public class GridEngineBackend implements Backend{
 		
 			newHost = "group_name @" + shortQueueName + "hosts" +
 					  "\nhostlist " + hostList;
+			
 			File f = new File("/tmp/newHost30.hgrp");
 			FileUtils.writeStringToFile(f, newHost);
 			f.setReadable(true, false);
@@ -414,7 +465,7 @@ public class GridEngineBackend implements Backend{
 						"\nckpt_list             NONE" +
 						"\npe_list               make" +
 						"\nrerun                 FALSE" +
-						"\nslots                 2" +
+						"\nslots                 " + slots +
 						"\ntmpdir                /tmp" +
 						"\nshell                 /bin/csh" +
 						"\nprolog                NONE" +

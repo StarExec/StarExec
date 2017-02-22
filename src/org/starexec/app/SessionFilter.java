@@ -12,15 +12,15 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Common;
 import org.starexec.data.database.Logins;
 import org.starexec.data.database.Reports;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.User;
-import org.starexec.util.LogUtil;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 
@@ -33,8 +33,7 @@ import org.starexec.util.Util;
  * @author Tyler Jensen
  */
 public class SessionFilter implements Filter {
-	private static final Logger log = Logger.getLogger(SessionFilter.class);
-	private static final LogUtil logUtil = new LogUtil(log);
+	private static final StarLogger log = StarLogger.getLogger(SessionFilter.class);
 	
 	
 	@Override
@@ -45,7 +44,7 @@ public class SessionFilter implements Filter {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 		final String method = "doFilter";
-		logUtil.entry(method);
+		log.entry(method);
 		// Cast the servlet request to an httpRequest so we have access to the session
 		HttpServletRequest httpRequest = (HttpServletRequest) request; 		
 		
@@ -68,7 +67,7 @@ public class SessionFilter implements Filter {
 				this.logUserLogin(user, httpRequest);				
 			}
 			if (R.DEBUG_MODE_ACTIVE){
-				if (!Users.hasAdminReadPrivileges(Users.get(userEmail).getId())) {
+				if (!GeneralSecurity.hasAdminReadPrivileges(Users.get(userEmail).getId())) {
 					httpRequest.getSession().invalidate();
 					httpResponse.sendRedirect(Util.docRoot(""));	
 					return;
@@ -86,7 +85,7 @@ public class SessionFilter implements Filter {
 		
 		// Be nice and pass on the request to the next filter
 		chain.doFilter(request, response);
-		logUtil.exit(method);
+		log.exit(method);
 	}
 	
 	/**

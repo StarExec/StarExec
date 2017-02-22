@@ -16,3 +16,29 @@ function getSelectedRows(dataTable){
 	return idArray;
 }
 
+function addFilterOnDoneTyping() {
+	// Changes the filter so that it only queries when the user is done typing
+	jQuery.fn.dataTableExt.oApi.fnFilterOnDoneTyping = function (oSettings) {
+	    var _that = this;
+	    this.each(function (i) {
+	        $.fn.dataTableExt.iApiIndex = i;
+	        var anControl = $('input', _that.fnSettings().aanFeatures.f);
+	        anControl.unbind('keyup').bind('keyup', $.debounce( 400, function (e) {
+                $.fn.dataTableExt.iApiIndex = i;
+                _that.fnFilter(anControl.val());
+	        }));
+	        return this;
+	    });
+	    return this;
+	};
+}
+
+function addProcessingIndicator() {
+	jQuery.fn.dataTableExt.oApi.fnProcessingIndicator = function (oSettings, onoff)	{
+		if( typeof(onoff) == 'undefined' ) {
+			onoff = true;
+		}
+		this.oApi._fnProcessingDisplay(oSettings, onoff);
+	};
+}
+

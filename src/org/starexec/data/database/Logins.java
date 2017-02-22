@@ -1,17 +1,18 @@
 package org.starexec.data.database;
 
+import org.starexec.logger.StarLogger;
+
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 
-import org.apache.log4j.Logger;
 
 /**
  * Class for accessing the logins table.
  */
 public class Logins {
 
-	private static final Logger log = Logger.getLogger(Logins.class);
+	private static final StarLogger log = StarLogger.getLogger(Logins.class);
 
 	/**
 	 * Gets the number of unique user logins in the logins table.

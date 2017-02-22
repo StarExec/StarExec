@@ -6,12 +6,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.starexec.logger.StarLogger;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.User;
 
 public class LoadBalanceMonitor {
-	private static final Logger log = Logger.getLogger(LoadBalanceMonitor.class);
+	private static final StarLogger log = StarLogger.getLogger(LoadBalanceMonitor.class);
 	class UserLoadData implements Comparable<UserLoadData> {
 		int userId;
 		
@@ -289,7 +289,11 @@ public class LoadBalanceMonitor {
 		}
 		StringBuilder sb = new StringBuilder();
 		User u = Users.get(d.userId);
-		sb.append(u.getFullName());
+		if (u==null) {
+			sb.append("unknown user");
+		} else {
+			sb.append(u.getFullName());
+		}
 		sb.append(" ");
 		if (!d.active()) {
 			sb.append("(inactive) ");

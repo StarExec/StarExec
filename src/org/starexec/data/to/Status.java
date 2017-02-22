@@ -14,7 +14,7 @@ import com.google.gson.annotations.Expose;
 // Do NOT reuse codes 3, 5, and 6! We should always use completely new codes
 // for new statuses and never reuse deleted codes.
 public class Status {
-	public static enum StatusCode {
+	public enum StatusCode {
 		STATUS_UNKNOWN(0),
 		STATUS_PENDING_SUBMIT(1),
 		STATUS_ENQUEUED(2),
@@ -25,7 +25,7 @@ public class Status {
 		ERROR_RESULTS(10),
 		ERROR_RUNSCRIPT(11),
 		ERROR_BENCHMARK(12),
-		ERROR_ENVIRONMENT(13),
+		ERROR_DISK_QUOTA_EXCEEDED(13),
 		EXCEED_RUNTIME(14),
 		EXCEED_CPU(15),
 		EXCEED_FILE_WRITE(16),
@@ -40,7 +40,7 @@ public class Status {
 		private int val;
 		private int count;
 		
-		private StatusCode(int val) {
+		StatusCode(int val) {
 			this.val = val;			
 		}		
 		
@@ -60,6 +60,10 @@ public class Status {
 		    return (val<=6 || val>=19);
 		}
 		
+		public boolean running() {
+		    return val == 4;
+		}
+
 		public void setCount(int c) {
 			this.count=c;
 		}
@@ -98,7 +102,7 @@ public class Status {
 			    case 12:
 				return ERROR_BENCHMARK;
 			    case 13:
-				return ERROR_ENVIRONMENT;
+				return ERROR_DISK_QUOTA_EXCEEDED;
 			    case 14:
 				return EXCEED_RUNTIME;
 			    case 15:
@@ -237,7 +241,7 @@ public class Status {
 	
 	public static List<StatusCode> rerunCodes() {
 		Status.StatusCode[] codes=Status.StatusCode.values();
-		List<Status.StatusCode> filteredCodes=new ArrayList<Status.StatusCode>();
+		List<Status.StatusCode> filteredCodes=new ArrayList<>();
 		for (Status.StatusCode code: codes) {
 			if (code.getVal()>6 && code.getVal()<19) {
 				filteredCodes.add(code);

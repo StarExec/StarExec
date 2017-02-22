@@ -3,6 +3,7 @@ package org.starexec.test.integration.database;
 import java.util.UUID;
 
 import org.junit.Assert;
+import org.starexec.constants.R;
 import org.starexec.data.database.*;
 import org.starexec.data.to.*;
 import org.starexec.exceptions.*;
@@ -12,6 +13,10 @@ import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.DataTablesQuery;
 
+/**
+ * Tests for org.starexec.data.database.Requests.java
+ * @author Eric
+ */
 public class RequestsTests extends TestSequence {
 
 	User registeredUser=null;
@@ -53,16 +58,14 @@ public class RequestsTests extends TestSequence {
 		try {
 			commRequestsSizeBefore = Requests.getPendingCommunityRequestsForCommunity(query, comm.getId()).size();
 			comm2RequestsSizeBefore = Requests.getPendingCommunityRequestsForCommunity(query, comm2.getId()).size();
-			User tempUser=ResourceLoader.loadUserIntoDatabase();
-			CommunityRequest tempRequest=ResourceLoader.loadCommunityRequestIntoDatabase(tempUser.getId(), comm.getId());
+			User tempUser=loader.loadUserIntoDatabase();
+			loader.loadCommunityRequestIntoDatabase(tempUser.getId(), comm.getId());
 			commRequestsSizeAfter = Requests.getPendingCommunityRequestsForCommunity(query, comm.getId()).size();
 			comm2RequestsSizeAfter = Requests.getPendingCommunityRequestsForCommunity(query, comm2.getId()).size();
 
-			Assert.assertTrue(Users.deleteUser(tempUser.getId(), admin.getId()));
+			Assert.assertTrue(Users.deleteUser(tempUser.getId()));
 		} catch (StarExecDatabaseException e) {
 			Assert.fail("Requests.getPendingCommunityRequestsForCommunity threw an exception: "+e.getMessage());
-		} catch (StarExecSecurityException e) {
-			Assert.fail(e.getMessage());
 		}
 
 		Assert.assertEquals(commRequestsSizeBefore, commRequestsSizeAfter-1);
@@ -81,34 +84,26 @@ public class RequestsTests extends TestSequence {
 	
 	@StarexecTest
 	private void approveCommunityRequestTest() {
-		User tempUser=ResourceLoader.loadUserIntoDatabase();
-		CommunityRequest tempRequest=ResourceLoader.loadCommunityRequestIntoDatabase(tempUser.getId(), comm.getId());
+		User tempUser=loader.loadUserIntoDatabase();
+		CommunityRequest tempRequest=loader.loadCommunityRequestIntoDatabase(tempUser.getId(), comm.getId());
 		Assert.assertFalse(Users.isMemberOfCommunity(tempUser.getId(), comm.getId()));
 
 		Assert.assertTrue(Requests.approveCommunityRequest(tempUser.getId(), comm.getId()));
 		Assert.assertNull(Requests.getCommunityRequest(tempRequest.getCode()));
 		Assert.assertTrue(Users.isMemberOfCommunity(tempUser.getId(), comm.getId()));
-		try {
-			Assert.assertTrue(Users.deleteUser(tempUser.getId(), admin.getId()));
-		} catch (StarExecSecurityException e) {
-			Assert.fail(e.getMessage());
-		}
+		Assert.assertTrue(Users.deleteUser(tempUser.getId()));
 	}
 	
 	@StarexecTest
 	private void declineCommunityRequestTest() {
-		User tempUser=ResourceLoader.loadUserIntoDatabase();
-		CommunityRequest tempRequest=ResourceLoader.loadCommunityRequestIntoDatabase(tempUser.getId(), comm.getId());
+		User tempUser=loader.loadUserIntoDatabase();
+		CommunityRequest tempRequest=loader.loadCommunityRequestIntoDatabase(tempUser.getId(), comm.getId());
 		Assert.assertFalse(Users.isMemberOfCommunity(tempUser.getId(), comm.getId()));
 
 		Assert.assertTrue(Requests.declineCommunityRequest(tempUser.getId(), comm.getId()));
 		Assert.assertNull(Requests.getCommunityRequest(tempRequest.getCode()));
 		Assert.assertFalse(Users.isMemberOfCommunity(tempUser.getId(), comm.getId()));
-		try {
-			Assert.assertTrue(Users.deleteUser(tempUser.getId(), admin.getId()));
-		} catch (StarExecSecurityException e) {
-			Assert.fail(e.getMessage());
-		}
+		Assert.assertTrue(Users.deleteUser(tempUser.getId()));
 	}
 	
 	@StarexecTest
@@ -135,21 +130,18 @@ public class RequestsTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		registeredUser=ResourceLoader.loadUserIntoDatabase();
-		requestedUser=ResourceLoader.loadUserIntoDatabase();
+		registeredUser=loader.loadUserIntoDatabase();
+		requestedUser=loader.loadUserIntoDatabase();
    
-		admin=Users.getAdmins().get(0);
-		comm=ResourceLoader.loadSpaceIntoDatabase(admin.getId(), 1);
-		comm2=ResourceLoader.loadSpaceIntoDatabase(admin.getId(), 1);
-		request= ResourceLoader.loadCommunityRequestIntoDatabase(requestedUser.getId(), comm.getId());
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
+		comm=loader.loadSpaceIntoDatabase(admin.getId(), 1);
+		comm2=loader.loadSpaceIntoDatabase(admin.getId(), 1);
+		request= loader.loadCommunityRequestIntoDatabase(requestedUser.getId(), comm.getId());
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Spaces.removeSubspace(comm.getId());
-		Spaces.removeSubspace(comm2.getId());
-		Users.deleteUser(registeredUser.getId(), admin.getId());
-		Users.deleteUser(requestedUser.getId(), admin.getId());
+		loader.deleteAllPrimitives();
 		
 	}
 

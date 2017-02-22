@@ -1,0 +1,12 @@
+<benchmark tool="$$BENCHEXEC_TOOL$$"
+           timelimit="$$BENCHEXEC_TIMELIMIT$$"
+           hardtimelimit="$$BENCHEXEC_HARDTIMELIMIT$$"
+           memlimit="$$BENCHEXEC_MEMLIMIT$$"
+           cpuCores="$$BENCHEXEC_CPUCORES$$"
+           threads="$$BENCHEXEC_THREADS$$">
+    <rundefinition>
+    </rundefinition>
+    <tasks>
+        <include>$$BENCHEXEC_BENCHMARK$$</include>
+    </tasks>
+</benchmark>

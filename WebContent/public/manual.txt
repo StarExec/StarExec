@@ -54,6 +54,8 @@ corresponding permission should be set to true. None requires a value.
 
 "cpu" -Specifies the cpu timeout that should be used for a new job, in seconds.
 
+"copyprimitives" -When set to true copyspace command copies primitives instead of linking
+
 "d" -Specifies a description. When optional, the empty string is used as a default.
 
 "recycleprims" -When removing a subspace from an existing space, specifies that all the solvers and benchmarks
@@ -86,6 +88,10 @@ structure. By default, all benchmarks are placed in the space being uploaded to.
 corresponds to a dependent bench space.
 
 "lock" -Sets a newly created subspace as locked.
+
+"longpath" - When set to "true" uses a alternative zip directory path for getjobpair command. The longer path
+            format is: Job##_output/SpaceName/SolverName/PairId/
+            whereas the shorter path format is: Job##_output/
 
 "mem" -Sets the maximum memory, in gigabytes, that each pair of a job is allowed to utilize.
 
@@ -253,7 +259,7 @@ OPTIONAL: "ow"
 
 --getjobpair -Downloads the output from the job pair associated with the given id.
 REQUIRED: "id" "out"
-OPTIONAL: "ow"
+OPTIONAL: "ow", "longpath"
 
 --getjobpairs -Downloads the output from every pair in the given list. Every pair must belong to the same job. 
 The value of the "id" parameter should be a comma-separated list of job pair ids.
@@ -353,7 +359,10 @@ EXAMPLE: 'pushsolver id=153 f=solverdirectory.tar n=fakesolver d=Solver Descript
 --pushbenchmarks -Uploads a benchmark archive to an existing space. "id" refers to a space ID.
 				  The ID of newly uploaded benchmarks will NOT be printed, even if "returnids" has been called.
 				  Instead, an ID for this upload request will be returned. This upload ID can be used to query the
-				  status of the benchmark upload to see its progress using "viewuploadstatus".
+				  status of the benchmark upload to see its progress using "viewuploadstatus". In addition the
+                  upload status of an upload request can be seen through the web interface at
+                  https://www.starexec.org/starexec/secure/details/uploadStatus.jsp?id=XX
+                  Where XX is the upload request ID.
 REQUIRED: ("f" OR "url") "id" "bt"
 OPTIONAL: ("d" OR "df") "dep" "downloadable" "hier" "link" "allPerm" (also all other permission parameters)
 EXAMPLE: 'pushbenchmarks id=231 url=http://www.benchmarksite.com/benchmarks.zip df=descriptionfile.tar bt=1 '
@@ -523,7 +532,7 @@ OPTIONAL: "from"
 
 --copyspace -Copies an existing space or space hierarchy rooted at "id" from to the space space given by "to"
 REQUIRED: "id" "to"
-OPTIONAL: "hier"
+OPTIONAL: "hier","copyprimitives"
 
 --linkuser -Associates an existing user with a space. "id" is a user id, and "to" is a
 space id.

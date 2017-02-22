@@ -10,7 +10,8 @@
 -- query = The query to filter spaces by
 				SELECT DISTINCT	child_id AS id,
 						spaces.name AS name,
-						spaces.description AS description
+						spaces.description AS description,
+						set_assoc.space_id AS parent
 				
 				FROM	set_assoc
 				-- Exclude Spaces that aren't children of the specified space

@@ -11,7 +11,7 @@ import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.log4j.Logger;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.Util;
 
 import com.google.gson.JsonElement;
@@ -22,7 +22,7 @@ import com.google.gson.JsonParser;
  * Implementation of the Backend interface depending on the OAR scheduler (https://oar.imag.fr/)
  */
 public class OARBackend implements Backend {    
-	private static Logger log = Logger.getLogger(OARBackend.class);
+	private static StarLogger log = StarLogger.getLogger(OARBackend.class);
 	
 	private static String JOB_ID_PATTERN = "OAR_JOB_ID=(-?\\d+)";
 	
@@ -54,7 +54,7 @@ public class OARBackend implements Backend {
 	public int submitScript(String scriptPath, String workingDirectoryPath, String logPath) {
 		try {
 			String output = Util.executeCommand(new String[]{"oarsub","-O", logPath,"-E",logPath,"-d",workingDirectoryPath,
-					"-l","/nodes=1/slots=1","-S",scriptPath});
+					"-l","/cpuset=1","-S",scriptPath});
 			Matcher jobId = jobIdPattern.matcher(output);
 			if (jobId.find()) {
 				return Integer.parseInt(jobId.group(1));
@@ -175,7 +175,6 @@ public class OARBackend implements Backend {
 	@Override
 	public boolean createQueue(String newQueueName, String[] nodeNames, String[] sourceQueueNames) {
 		try {
-			//TODO: Check different scheduling algorithms
 			Util.executeCommand("oarnotify --add_queue "+newQueueName+",1,oar_sched_gantt_with_timesharing");
 			moveNodes(newQueueName, nodeNames, sourceQueueNames);
 			return true;
@@ -185,6 +184,10 @@ public class OARBackend implements Backend {
 		
 		return false;
 	}
+
+    public boolean createQueueWithSlots(String newQueueName, String[] nodeNames, String[] sourceQueueNames, Integer slots) {
+        return createQueue(newQueueName, nodeNames, sourceQueueNames); 
+    }
 	
 	
 	@Override

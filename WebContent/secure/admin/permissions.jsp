@@ -7,13 +7,7 @@
 <%		
 	try {
 		int id = Integer.parseInt(request.getParameter("id"));
-		int userId = SessionUtil.getUserId(request);
-		if (!Users.hasAdminReadPrivileges(userId)) {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
-		} else {
-			request.setAttribute("userId", id);
-		}		
-				
+		request.setAttribute("userId", id);				
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given user id was in an invalid format");
 	} catch (Exception e) {
@@ -21,7 +15,7 @@
 	}
 %>
 
-<star:template title="${t_user.fullName}" js="admin/permissions, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, details/shared, explore/common, admin/admin">
+<star:template title="${t_user.fullName}" js="admin/permissions, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, shared/sharedFunctions" css="common/table, details/shared, explore/common, admin/admin">
 	<div id="explorer">
 		<h3>official</h3>
 		<ul id="exploreList"></ul>
@@ -61,7 +55,7 @@
 				</tr>				
 			</table>
 			<button type="button" id="editPermissions">Update</button>	
-			<div id="dialog-confirm-update" title="confirm update">
+			<div id="dialog-confirm-update" title="confirm update" class="hiddenDialog">
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-update-txt"></span></p>
 			</div>
 				

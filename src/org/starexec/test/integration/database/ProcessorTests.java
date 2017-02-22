@@ -3,17 +3,25 @@ package org.starexec.test.integration.database;
 import java.util.List;
 
 import org.junit.Assert;
+import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Processors;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 
+/**
+ * Tests for org.starexec.data.database.Processors.java
+ * @author Eric
+ */
 public class ProcessorTests extends TestSequence {
+	User user = null;
 	private Processor postProc;
 	private Space community;
 	@Override
@@ -62,6 +70,24 @@ public class ProcessorTests extends TestSequence {
 	}
 	
 	@StarexecTest
+	private void getPostProcessByUserTest() {
+		boolean found = false;
+		for (Processor p : Processors.getByUser(user.getId(), ProcessorType.POST)) {
+			found = found || p.getId()==postProc.getId();
+		}
+		Assert.assertTrue(found);
+	}
+	
+	@StarexecTest
+	private void getBenchProcessByUserTest() {
+		boolean found = false;
+		for (Processor p : Processors.getByUser(user.getId(), ProcessorType.BENCH)) {
+			found = found || p.getId()==R.NO_TYPE_PROC_ID;
+		}
+		Assert.assertTrue(found);
+	}
+	
+	@StarexecTest
 	private void GetAllByType() {
 		List<Processor> procs=Processors.getAll(postProc.getType());
 		boolean foundProc=false;
@@ -72,17 +98,45 @@ public class ProcessorTests extends TestSequence {
 		}
 		Assert.assertTrue(foundProc);
 	}
+	
+	@StarexecTest
+	private void getNoTypeProcessorTest() {
+		Processor p = Processors.getNoTypeProcessor();
+		Assert.assertNotNull(p);
+	}
+	
+	@StarexecTest
+	private void processorExistsTest() {
+		Assert.assertTrue(Processors.processorExists(postProc.getId()));
+	}
+	
+	@StarexecTest
+	private void processorDoesNotExistTest() {
+		Assert.assertFalse(Processors.processorExists(-1));
+	}
+	
+	@StarexecTest
+	private void updateFilePathTest() {
+		String newPath = "test path postproc";
+		String oldPath = postProc.getFilePath();
+		Assert.assertTrue(Processors.updateFilePath(postProc.getId(), newPath));
+		Assert.assertEquals(newPath, Processors.get(postProc.getId()).getFilePath());
+		Assert.assertTrue(Processors.updateFilePath(postProc.getId(), oldPath));
+
+	}
 
 	@Override
 	protected void setup() throws Exception {
+		user = loader.loadUserIntoDatabase();
 		community=Communities.getTestCommunity();
-		postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, community.getId());
+		Users.associate(user.getId(), community.getId());
+		postProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, community.getId());
 		
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Processors.delete(postProc.getId());
+		loader.deleteAllPrimitives();
 		
 	}
 	

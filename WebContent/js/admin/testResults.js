@@ -13,7 +13,7 @@ $(document).ready(function(){
 function initUI(){
 	
 	testTable=$('#tableTests').dataTable( {
-        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "sDom"			: getDataTablesDom(),
         "iDisplayStart"	: 0,
         "iDisplayLength": defaultPageSize,
         "bSort": true,

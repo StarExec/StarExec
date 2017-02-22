@@ -3,19 +3,16 @@ package org.starexec.jobs;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.starexec.backend.Backend;
+import org.starexec.backend.GridEngineBackend;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Common;
@@ -25,6 +22,7 @@ import org.starexec.data.database.Processors;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkDependency;
 import org.starexec.data.to.Configuration;
@@ -34,27 +32,39 @@ import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.SolverBuildStatus.SolverBuildStatusCode;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.StageAttributes;
+import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
+import org.starexec.data.to.tuples.JobCount;
+import org.starexec.exceptions.BenchmarkDependencyMissingException;
+import org.starexec.exceptions.StarExecException;
+import org.starexec.logger.StarLogger;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.Util;
-
 
 /**
  * Handles all SGE interactions for job submission and maintenance
  * @author Tyler Jensen
  */
 public abstract class JobManager {
-	private static final Logger log = Logger.getLogger(JobManager.class);
+	private static final StarLogger log = StarLogger.getLogger(JobManager.class);
 
 	private static String mainTemplate = null; // initialized below
 
 	private static HashMap<Integer, LoadBalanceMonitor> queueToMonitor = new HashMap<Integer, LoadBalanceMonitor>();
 	
+	/**
+	 * Returns the string representation of the LoadBalanceMonitor for the given queue.
+	 * @param queueId
+	 * @return The string. Note that it may be slightly out of date, as it is only updated once per run of
+	 * JobManager.submitJobs.
+	 */
 	public static String getLoadRepresentationForQueue(int queueId) {
 		log.debug("retrieving load data for queue = "+queueId);
 		if (queueToMonitor.containsKey(queueId)){
@@ -77,15 +87,22 @@ public abstract class JobManager {
 	
     public synchronized static boolean checkPendingJobs(){
     	try {
+            Boolean devJobsOnly = false;
     		log.debug("about to check if the system is paused");
 		    if (Jobs.isSystemPaused()) { 
-	    	    	log.info("Not adding more job pairs to any queues, as the system is paused");
-	    	    	return false;
+	    	    	if(Queues.developerJobsExist()) {
+                            log.info("Submitting only developer jobs");
+                            devJobsOnly = true;
+                    }
+                    else {
+	    	    	        log.info("Not adding more job pairs to any queues, as the system is paused");
+                            return false;
+                    }
 	    	}
 		    Common.logConnectionsOpen();
 		    log.debug("about to get all queues");
 		    
-		    List<Queue> queues = Queues.getAll();
+		    List<Queue> queues = Queues.getAllActive();
 		    log.debug("found this many queues "+queues.size());
 		    for (Queue q : queues) {
 		    	log.debug("about to submit to queue "+q.getId());
@@ -95,7 +112,12 @@ public abstract class JobManager {
 				int queueSize = Queues.getSizeOfQueue(qId);
 				log.debug("trying to submit on queue "+qId+" with "+nodeCount+" nodes and "+ queueSize +" pairs");
 				if (queueSize < R.NODE_MULTIPLIER * nodeCount) {
-				    List<Job> joblist = Queues.getPendingJobs(qId);
+				    List<Job> joblist;
+                    if (devJobsOnly) {
+                            joblist = Queues.getPendingDeveloperJobs(qId);
+                    } else {
+                            joblist = Queues.getPendingJobs(qId);
+                    }
 				    log.debug("about to submit this many jobs "+joblist.size());
 				    if (joblist.size() > 0) {
 				    	submitJobs(joblist, q, queueSize,nodeCount);
@@ -139,12 +161,18 @@ public abstract class JobManager {
 				log.error("Error reading the jobscript at "+f,e);
 			}
 			mainTemplate = mainTemplate.replace("$$DB_NAME$$", R.MYSQL_DATABASE);
-			mainTemplate = mainTemplate.replace("$$REPORT_HOST$$", R.REPORT_HOST);
+			mainTemplate = mainTemplate.replace("$$DB_USER$$", R.COMPUTE_NODE_MYSQL_USERNAME);
+			mainTemplate = mainTemplate.replace("$$DB_PASS$$", R.COMPUTE_NODE_MYSQL_PASSWORD);
 			mainTemplate = mainTemplate.replace("$$REPORT_HOST$$", R.REPORT_HOST);
 			mainTemplate = mainTemplate.replace("$$STAREXEC_DATA_DIR$$", R.STAREXEC_DATA_DIR);
 			// Impose resource limits
 			mainTemplate = mainTemplate.replace("$$MAX_WRITE$$", String.valueOf(R.MAX_PAIR_FILE_WRITE));	
 			mainTemplate = mainTemplate.replace("$$BENCH_NAME_LENGTH_MAX$$", String.valueOf(R.BENCH_NAME_LEN));
+            mainTemplate = mainTemplate.replace("$$RUNSOLVER_PATH$$", R.RUNSOLVER_PATH);
+			mainTemplate = mainTemplate.replace("$$SANDBOX_USER_ONE$$", R.SANDBOX_USER_ONE);
+			mainTemplate = mainTemplate.replace("$$SANDBOX_USER_TWO$$", R.SANDBOX_USER_TWO);
+			mainTemplate = mainTemplate.replace("$$WORKING_DIR_BASE$$", R.BACKEND_WORKING_DIR);
+			mainTemplate = mainTemplate.replace("$$SCRIPT_DIR$$", R.getScriptDir());
 		}
 	}
 
@@ -172,6 +200,111 @@ public abstract class JobManager {
 		return queueToMonitor.get(queueId);
 	}
 
+	// Builds a map from user to the SchedulingStates containing high priority jobs in the schedule.
+	private static void addToHighPriorityStateMap(SchedulingState state, Map<Integer, List<SchedulingState>> userToHighPriorityStates) {
+		int userId = state.job.getUserId();
+		// Add the state to the map for the user if the state represents a high priority job.
+		if (userToHighPriorityStates.containsKey(userId)) {
+			userToHighPriorityStates.get(userId).add(state);
+		} else {
+			List<SchedulingState> highPriorityStatesForUser = new ArrayList<>();
+			highPriorityStatesForUser.add(state);
+			userToHighPriorityStates.put(userId, highPriorityStatesForUser);
+		}
+	}
+
+
+	private static void logSchedulingState(final String methodName, final SchedulingState s) {
+        logSchedulingState(methodName, s, 0);
+    }
+
+	private static void logSchedulingState(final String methodName, final SchedulingState s, final int tabLevel) {
+        final StringBuilder logMessage = new StringBuilder();
+        for (int i = 0; i < tabLevel; i++) {
+            logMessage.append("\t");
+        }
+
+        logMessage.append("( jobId: "+s.job.getId()+", userId: "+s.job.getUserId()
+                +", isHighPriority: "+s.job.isHighPriority()+", hasNext: "+s.pairIter.hasNext()+" )");
+
+        log.debug(methodName, logMessage.toString());
+    }
+
+    private static Map<Integer, JobCount> buildUserToJobCountMap(final List<Job> joblist) {
+		final Map<Integer, JobCount> userToJobCountMap = new HashMap<>();
+		for (final Job j : joblist) {
+			final int userId = j.getUserId();
+			if (!userToJobCountMap.containsKey(userId)) {
+				userToJobCountMap.put(userId, new JobCount(0, 0));
+			}
+
+			JobCount jobCount = userToJobCountMap.get(userId);
+
+			jobCount.all += 1;
+			if (j.isHighPriority()) {
+				jobCount.highPriority += 1;
+			}
+		}
+		return userToJobCountMap;
+	}
+
+	private static void addToHighPriorityJobBalance(SchedulingState state, Map<Integer, Map<Integer, Integer>> balance) {
+		final int userId = state.job.getUserId();
+		if (!balance.containsKey(userId)) {
+			balance.put(userId, new HashMap<>());
+		}
+
+		Map<Integer, Integer> jobIdToTimesSelected = balance.get(userId);
+		jobIdToTimesSelected.put(state.job.getId(), 0);
+	}
+
+	/**
+	 * Selects a high priority SchedulingState from the user's high priority states taking into consideration how many
+	 * times those state have been selected previously
+	 * @param userId the user that we need to pick a new state for.
+	 * @param usersHighPriorityStates the high priority states owned by the user.
+	 * @param usersHighPriorityJobBalance a mapping from high priority state to the number of times that state has already
+	 *                               been chosen for the user.
+	 * @return
+	 * @throws StarExecException
+	 */
+	private static SchedulingState selectHighPriorityJob(
+			int userId,
+			List<SchedulingState> usersHighPriorityStates,
+			Map<Integer, Integer> usersHighPriorityJobBalance) throws StarExecException {
+
+
+		// Check if all the high priority jobs have been selected an equal number of times.
+		HashSet<Integer> valueSet = new HashSet<Integer>(usersHighPriorityJobBalance.values());
+		boolean allEquals = valueSet.size() == 1;
+
+		if (allEquals) {
+			// If all the high priority jobs have been selected an equal number of times, randomly pick one to use.
+			Random random = new Random();
+			SchedulingState selectedState = usersHighPriorityStates.get(random.nextInt(usersHighPriorityStates.size()));
+			Integer currentBalanceForState = usersHighPriorityJobBalance.get(selectedState.job.getId());
+			usersHighPriorityJobBalance.put(selectedState.job.getId(), currentBalanceForState+1);
+			return selectedState;
+		}
+
+		// Get and return the high priority job that has been selected the least number of times.
+		Map.Entry<Integer, Integer> minEntry =
+				Collections.min(usersHighPriorityJobBalance.entrySet(), (a, b) -> a.getValue().compareTo(b.getValue()));
+
+		// Find the high priority state with the job id that has been selected the minimum number of times.
+		for (SchedulingState state : usersHighPriorityStates) {
+			if (state.job.getId() == minEntry.getKey()) {
+				return state;
+			}
+		}
+
+		throw new StarExecException("The state with jobId="+minEntry.getKey()+" was not in the high priority state list for" +
+				"user with id="+userId+" but it was in their high priority job balance.");
+
+	}
+
+
+
 	/**
 	 * Submits a job to the grid engine
 	 * @param joblist The list of jobs for which we will be submitted new pairs
@@ -180,64 +313,109 @@ public abstract class JobManager {
 	 * @param nodeCount The number of nodes in the given queue
 
 	 */
-	public static void submitJobs(List<Job> joblist, Queue q, int queueSize, int nodeCount) {
-		LoadBalanceMonitor monitor = getMonitor(q.getId());
+	public static void submitJobs(final List<Job> joblist, final Queue q, int queueSize, final int nodeCount) {
+		final Random random = new Random();
+		final String methodName = "submitJobs";
+		final LoadBalanceMonitor monitor = getMonitor(q.getId());
 		try {
-
-			
 			log.debug("submitJobs() begins");
 
 			initMainTemplateIf();
 
-			LinkedList<SchedulingState> schedule = new LinkedList<SchedulingState>();
+			Map<Integer, JobCount> userToJobCountMap = buildUserToJobCountMap(joblist); 
+
+			final LinkedList<SchedulingState> schedule = new LinkedList<SchedulingState>();
 			// add all the jobs in jobList to a SchedulingState in the schedule.
-			for (Job job : joblist) {
+			for (final Job job : joblist) {
+				// contains users that we have identified as exceeding their quota. These users will be skipped
+				final HashMap<Integer, Boolean> quotaExceededUsers = new HashMap<Integer,Boolean>();
+				
+				if (!quotaExceededUsers.containsKey(job.getUserId())) {
+					//TODO: Handle in a new thread if this looks slow on Starexec
+					quotaExceededUsers.put(job.getUserId(), Users.isDiskQuotaExceeded(job.getUserId()));
+					if (quotaExceededUsers.get(job.getUserId())) {
+						Jobs.pauseAllUserJobs(job.getUserId());
+					}
+				}
+				if (quotaExceededUsers.get(job.getUserId())) {
+					continue;
+				}
+				// By default we split the memory
+				final String queueSlots = Jobs.getSlotsInJobQueue(job);
 				// jobTemplate is a version of mainTemplate customized for this job
-				String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());			
-				jobTemplate = jobTemplate.replace("$$JOBID$$", "" + job.getId());
+				String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());
+
+				jobTemplate = jobTemplate.replace("$$NUM_SLOTS$$", queueSlots);
+
 				jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
 				jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
+				jobTemplate = jobTemplate.replace("$$DISK_QUOTA$$", ""+job.getUser().getDiskQuota());
 				jobTemplate = jobTemplate.replace("$$BENCH_SAVE_PATH$$", BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null).getAbsolutePath());
 				// for every job, retrieve no more than the number of pairs that would fill the queue. 
 				// retrieving more than this is wasteful.
 				int limit=Math.max(R.NUM_JOB_PAIRS_AT_A_TIME, (nodeCount*R.NODE_MULTIPLIER)-queueSize);
-				log.debug("calling Jobs.getPendingPairsDetailed for job "+job.getId());
-				Iterator<JobPair> pairIter = Jobs.getPendingPairsDetailed(job,limit).iterator();
+				log.debug("calling Jobs.getPendingPairsDetailed for job "+job.getId() + " with limit="+limit+"and queueSize="+queueSize+" and nodeCount="+nodeCount);
+				if ( job.isHighPriority() ) {
+					JobCount jobCount = userToJobCountMap.get( job.getUserId() );
+					// Assuming only high priority jobs will be scheduled this makes it so a user will have just as many pairs scheduled as if they had pairs scheduled from all jobs.
+					limit = (limit * jobCount.all) / jobCount.highPriority;
+				}
+				final List<JobPair> pairs = Jobs.getPendingPairsDetailed(job,limit);
 				log.debug("finished call to getPendingPairsDetailed");
-				SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
 
-				schedule.add(s);
+				if (pairs.size()>0) {
+					final Iterator<JobPair> pairIter = pairs.iterator();
+					final SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
+					schedule.add(s);
+				} else {
+					log.debug("not adding any pairs from job "+job.getId());
+				}
+
 			}
+
+			// Map from (user id) -> ( (high priority job id) -> (# of times job been selected) )
+			// Balances out the number of times a high priority job can be selected.
+			final Map<Integer, Map<Integer, Integer>> highPriorityJobBalance = new HashMap<>();
 			
 			// maps user IDs to the total 'load' that user is responsible for on the current queue,
 			// where load is the sum of wallclock timeouts of all active pairs on the queue
-			HashMap<Integer, Integer> userToCurrentQueueLoad = new HashMap<Integer, Integer>();
+			final HashMap<Integer, Integer> userToCurrentQueueLoad = new HashMap<Integer, Integer>();
+
+			// maps user IDs to the scheduling states containing high priority jobs that the user owns.
+			final Map<Integer, List<SchedulingState>> userToHighPriorityStates = new HashMap<>();
+
 			Iterator<SchedulingState> it = schedule.iterator();
+			log.debug(methodName, "All States In Schedule: ");
 			while (it.hasNext()) {
-				SchedulingState s = it.next();
+				final SchedulingState s = it.next();
+
+				// Add all high priority states to the user to high priority states map.
+				if (s.job.isHighPriority()) {
+					addToHighPriorityStateMap(s, userToHighPriorityStates);
+					addToHighPriorityJobBalance(s, highPriorityJobBalance);
+				}
+
 				if (!userToCurrentQueueLoad.containsKey(s.job.getUserId())) {
 					userToCurrentQueueLoad.put(s.job.getUserId(), Queues.getUserLoadOnQueue(q.getId(), s.job.getUserId()));
 				}
 			}
+
 			// updates user load values to take into account actual job pair runtimes.
 			monitor.subtractTimeDeltas(JobPairs.getAndClearTimeDeltas(q.getId()));
 
 			log.info("Beginning scheduling of "+schedule.size()+" jobs on queue "+q.getName());
+
 			
 			/*
 			 * we are going to loop through the schedule adding a few job
-			 * pairs at a time to SGE.  If the count of jobs enqueued
-			 * (starting from how many jobs we though we had enqueued when
-			 * this method was called) exceeds the threshold R.NUM_JOB_SCRIPTS,
-			 * then we will not continue with our next pass through the
-			 * schedule.  
-			 *
+			 * pairs at a time to SGE.
 			 */
 			
 			//transient database errors can cause us to loop forever here, and we need to make sure that does not happen
-			int maxLoops=500;
+			final int maxLoops=500;
 			int curLoops=0;
 			while (!schedule.isEmpty()) {
+
 				curLoops++;
 				if (queueSize >= R.NODE_MULTIPLIER * nodeCount) {
 					break; // out of while (!schedule.isEmpty())
@@ -251,9 +429,9 @@ public abstract class JobManager {
 				it = schedule.iterator();
 				
 				//add all of the users that still have pending entries to the list of users
-				HashMap<Integer, Integer> pendingUsers=new HashMap<Integer, Integer>();
+				final HashMap<Integer, Integer> pendingUsers=new HashMap<Integer, Integer>();
 				while (it.hasNext()) {
-					SchedulingState s = it.next();
+					final SchedulingState s = it.next();
 					pendingUsers.put(s.job.getUserId(), userToCurrentQueueLoad.get(s.job.getUserId()));
 				}
 				
@@ -264,18 +442,61 @@ public abstract class JobManager {
 				while (it.hasNext()) {
 					SchedulingState s = it.next();
 
+
+
 					if (!s.pairIter.hasNext()) {
 						// we will remove this SchedulingState from the schedule, since it is out of job pairs
 						it.remove();
 						continue;
-					}		
-					
+					}
+
+					final int currentStateUserId = s.job.getUserId();
+					if (!s.job.isHighPriority() && userToHighPriorityStates.containsKey(currentStateUserId)) {
+						List<SchedulingState> highPriorityStates = userToHighPriorityStates.get(currentStateUserId);
+
+
+						// Filter out all of the high priority states that have no more job pairs.
+						highPriorityStates = highPriorityStates
+								.stream()
+								.filter(state -> state.pairIter.hasNext())
+								.collect(Collectors.toList());
+						
+						// Replace the high priority states with the filtered ones.
+						userToHighPriorityStates.put(currentStateUserId, highPriorityStates);
+
+						if (highPriorityStates.size() == 0) {
+							log.info(methodName, "No high priority states with pairs left.");
+							// Remove the user from the map if they don't have any high priority jobs left to look at.
+							userToHighPriorityStates.remove(currentStateUserId);
+
+							// Leave the current scheduling state as is.
+						} else {
+							try {
+								if (!highPriorityJobBalance.containsKey(s.job.getUserId())) {
+									throw new StarExecException("Being in this block means there must be a high priority job user with"
+											+ "id=" + s.job.getUserId() + " but there was not.");
+								} else {
+									Map<Integer, Integer> highPriorityJobBalanceForUser = highPriorityJobBalance.get(s.job.getUserId());
+
+									if (highPriorityJobBalanceForUser.entrySet().size() == 0) {
+										throw new StarExecException("There should be high priority jobs for this user in the high" +
+												"priority job balance but there isn't!, userId=" + s.job.getUserId());
+									} else {
+										// Change the state to a high priority one
+										s = selectHighPriorityJob(s.job.getUserId(), highPriorityStates, highPriorityJobBalanceForUser);
+									}
+								}
+							} catch (StarExecException e) {
+								log.error(methodName, e);
+								// s will not have changed.
+							}
+						}
+					}
 
 					log.info("About to submit "+R.NUM_JOB_PAIRS_AT_A_TIME+" pairs "
 							+"for job " + s.job.getId() 
 							+ ", queue = "+q.getName() 
 							+ ", user = "+s.job.getUserId());
-					
 					int i = 0;
 					while (i < R.NUM_JOB_PAIRS_AT_A_TIME && s.pairIter.hasNext()) {
 						//skip if this user has many more pairs than some other user
@@ -289,7 +510,8 @@ public abstract class JobManager {
 							break;
 						}
 
-						JobPair pair = s.pairIter.next();
+						final JobPair pair = s.pairIter.next();
+
 						monitor.changeLoad(s.job.getUserId(), s.job.getWallclockTimeout());
 						if (pair.getPrimarySolver()==null || pair.getBench()==null) {
 							// if the solver or benchmark is null, they were deleted. Indicate that the pair's
@@ -301,11 +523,21 @@ public abstract class JobManager {
 						log.debug("About to submit pair " + pair.getId());
 
 						try {
-							// Write the script that will run this individual pair				
-							String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair);
 
-							String logPath=JobPairs.getLogFilePath(pair);
-							File file=new File(logPath);
+							// Check to make sure the pair is still pending submit to prevent pairs being submitted twice.
+							// Double submission may be causing job
+							StatusCode statusOfPair = JobPairs.getPair(pair.getId()).getStatus().getCode();
+							if (statusOfPair != StatusCode.STATUS_PENDING_SUBMIT) {
+								log.warn("Pair with id="+pair.getId()+" was caught attempting to be submitted again.");
+								continue;
+							}
+
+
+							// Write the script that will run this individual pair				
+							final String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair, q);
+
+							final String logPath=JobPairs.getLogFilePath(pair);
+							final File file=new File(logPath);
 							file.getParentFile().mkdirs();
 			
 							if (file.exists()) {
@@ -313,21 +545,29 @@ public abstract class JobManager {
 							    file.delete();
 							}
 
-							// do this first, before we submit to grid engine, to avoid race conditions
-							JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
-							// Submit to the grid engine
-							int execId = R.BACKEND.submitScript(scriptPath, "/export/starexec/sandbox",logPath);
 
-							//TODO : need a better way to handle error codes
+
+							// do this first, before we submit to grid engine, to avoid race conditions
+							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+							// Submit to the grid engine
+
+
+							int execId = R.BACKEND.submitScript(scriptPath, R.BACKEND_WORKING_DIR,logPath);
+
 							if(!R.BACKEND.isError(execId)){
 							    JobPairs.updateBackendExecId(pair.getId(),execId);
 							} else{
-							    JobPairs.setPairStatus(pair.getId(),StatusCode.ERROR_SGE_REJECT.getVal());
+							    JobPairs.setStatusForPairAndStages(pair.getId(),StatusCode.ERROR_SGE_REJECT.getVal());
 							}
 							queueSize++; 
-						} catch(Exception e) {
+						} catch(BenchmarkDependencyMissingException e) {
+                            log.error("submitJobs() received exception " + e.getMessage());
+                            log.error("setting pair with following ID to benchmark fail "+pair.getId());
+                            JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_BENCHMARK.getVal());
+                        } catch(Exception e) {
 							log.error("submitJobs() received exception " + e.getMessage(), e);
-							JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
+							log.error("setting pair with following ID to submit_fail "+pair.getId());
+							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
 						}
 					}
 				} // end iterating once through the schedule
@@ -363,7 +603,7 @@ public abstract class JobManager {
 	 * @param pair The job pair to tailor the script for
 	 * @return The absolute path to the newly written script
 	 */
-	private static String writeJobScript(String template, Job job, JobPair pair) throws Exception {
+	private static String writeJobScript(String template, Job job, JobPair pair, Queue queue) throws Exception {
 		String jobScript = template;		
 		
 		// all of these arrays are for containing individual attributes ordered by state number for all the stages in the pair.
@@ -383,6 +623,8 @@ public abstract class JobManager {
 		List<String> argStrings=new ArrayList<String>();
 		List<String> benchSuffixes=new ArrayList<String>();
 		List<Integer> resultsIntervals = new ArrayList<Integer>();
+		List<Integer> stdoutSaveOptions = new ArrayList<Integer>();
+		List<Integer> extraSaveOptions = new ArrayList<Integer>();
 		for (String path : pair.getBenchInputPaths()) {
 			log.debug("adding the following path to benchInputPaths ");
 			log.debug(path);
@@ -405,6 +647,8 @@ public abstract class JobManager {
 			solverPaths.add(stage.getSolver().getPath());
 			argStrings.add(JobManager.pipelineDependenciesToArgumentString(stage.getDependencies()));
 			resultsIntervals.add(attrs.getResultsInterval());
+			stdoutSaveOptions.add(attrs.getStdoutSaveOption().getVal());
+			extraSaveOptions.add(attrs.getExtraOutputSaveOption().getVal());
 			if (attrs.getSpaceId()==null) {
 				spaceIds.add(null);
 			} else {
@@ -434,7 +678,7 @@ public abstract class JobManager {
 				}
 			}
 		}
-		File outputFile=new File(JobPairs.getFilePath(pair));
+		File outputFile=new File(JobPairs.getPairStdout(pair));
 		
 		//if there is exactly 1 stage, we use the old output format
 		if (stageNumbers.size()==1) {
@@ -446,8 +690,13 @@ public abstract class JobManager {
 		//Dependencies
 		if (pair.getBench().getUsesDependencies())
 		{
+            int pairBenchId = pair.getBench().getId();
+	    /*            log.debug("Benchmark has broken deps:"+ Benchmarks.benchHasBrokenDependencies(pairBenchId));
+            if(Benchmarks.benchHasBrokenDependencies(pairBenchId)) {
+                throw new BenchmarkDependencyMissingException(pairBenchId);
+		}*/
 			replacements.put("$$HAS_DEPENDS$$", "1");
-			writeDependencyFile(pair.getId(),Benchmarks.getBenchDependencies(pair.getBench().getId()));	
+			writeDependencyFile(pair.getId(),Benchmarks.getBenchDependencies(pairBenchId));	
 		}
 		else{
 			replacements.put("$$HAS_DEPENDS$$", "0");
@@ -457,11 +706,25 @@ public abstract class JobManager {
 		replacements.put("$$SPACE_PATH$$", pair.getPath());
 		replacements.put("$$PRIMARY_PREPROCESSOR_PATH$$", primaryPreprocessorPath);
 		replacements.put("$$PAIR_OUTPUT_DIRECTORY$$", base64encode(outputFile.getAbsolutePath()));
-		replacements.put("$$MAX_RUNTIME$$","" + Util.clamp(1, R.MAX_PAIR_RUNTIME, job.getWallclockTimeout()));
-		replacements.put("$$MAX_CPUTIME$$", "" + Util.clamp(1, R.MAX_PAIR_CPUTIME, job.getCpuTimeout()));
+		replacements.put("$$MAX_RUNTIME$$","" + Util.clamp(1, queue.getWallTimeout(), job.getWallclockTimeout()));
+		replacements.put("$$MAX_CPUTIME$$", "" + Util.clamp(1, queue.getCpuTimeout(), job.getCpuTimeout()));
 		replacements.put("$$MAX_MEM$$", ""+Util.bytesToMegabytes(job.getMaxMemory()));
-		
-		
+        replacements.put("$$BENCH_ID$$", ""+pair.getBench().getId());
+
+        replacements.put("$$BENCHMARKING_FRAMEWORK$$",job.getBenchmarkingFramework().toString() );
+
+        if (job.getBenchmarkingFramework() == BenchmarkingFramework.BENCHEXEC) {
+			log.debug("Writing jobscript using BenchExec framework.");
+		} else {
+			log.debug("Writing jobscript using runsolver framework.");
+		}
+
+        if(job.isBuildJob()) {
+                replacements.put("$$BUILD_JOB$$", "true");
+        }
+        else {
+                replacements.put("$$BUILD_JOB$$", "false");
+        }
 		
 		// all arrays from above. Note that we are base64 encoding some for safety
 		replacements.put("$$CPU_TIMEOUT_ARRAY$$", numsToBashArray("STAGE_CPU_TIMEOUTS",stageCpuTimeouts));
@@ -480,6 +743,9 @@ public abstract class JobManager {
 		replacements.put("$$STAGE_DEPENDENCY_ARRAY$$", toBashArray("STAGE_DEPENDENCIES",argStrings,false));
 		replacements.put("$$BENCH_SUFFIX_ARRAY$$",toBashArray("BENCH_SUFFIXES",benchSuffixes,true));
 		replacements.put("$$RESULTS_INTERVAL_ARRAY$$", numsToBashArray("RESULTS_INTERVALS", resultsIntervals));
+		replacements.put("$$STDOUT_SAVE_OPTION_ARRAY$$", numsToBashArray("STDOUT_SAVE_OPTIONS", stdoutSaveOptions));
+		replacements.put("$$EXTRA_SAVE_OPTION_ARRAY$$", numsToBashArray("EXTRA_SAVE_OPTIONS", extraSaveOptions));
+
 		String scriptPath = String.format("%s/%s", R.getJobInboxDir(), String.format(R.JOBFILE_FORMAT, pair.getId()));
 		replacements.put("$$SCRIPT_PATH$$",scriptPath);
 		replacements.put("$$SUPPRESS_TIMESTAMP_OPTION$$", String.valueOf(job.timestampIsSuppressed()));
@@ -665,8 +931,21 @@ public abstract class JobManager {
 	 * @param randomSeed a seed to pass into preprocessors
 	 * @return the new job object with the specified properties
 	 */
-	public static Job setupJob(int userId, String name, String description, int preProcessorId, int postProcessorId, int queueId, long randomSeed,
-			int cpuLimit,int wallclockLimit, long memLimit, boolean suppressTimestamp, int resultsInterval) {
+	public static Job setupJob(
+			int userId,
+			String name,
+			String description,
+			int preProcessorId,
+			int postProcessorId,
+			int queueId,
+			long randomSeed,
+			int cpuLimit,
+			int wallclockLimit,
+			long memLimit,
+			boolean suppressTimestamp,
+			int resultsInterval,
+			SaveResultsOption otherOutputOption,
+			BenchmarkingFramework framework) {
 		log.debug("Setting up job " + name);
 		Job j = new Job();
 
@@ -681,6 +960,7 @@ public abstract class JobManager {
 			j.setDescription(description);
 		}
 
+		j.setBenchmarkingFramework(framework);
 		// Get queue and processor information from the database and put it in the job
 		j.setQueue(Queues.get(queueId));
 		StageAttributes attrs=new StageAttributes();
@@ -690,6 +970,7 @@ public abstract class JobManager {
 		attrs.setStageNumber(1);
 		attrs.setSpaceId(null);
 		attrs.setResultsInterval(resultsInterval);
+		attrs.setExtraOutputSaveOption(otherOutputOption);
 		if(preProcessorId > 0) {
 			attrs.setPreProcessor(Processors.get(preProcessorId));
 		} else {
@@ -712,9 +993,7 @@ public abstract class JobManager {
 	 * selection on job creation)
 	 * 
 	 * @param j the job to add job pairs to
-	 * @param userId The ID of the user creating this job
 	 * @param benchmarkIds A list of benchmarks to use in this job
-	 * @param solverIds A list of solvers to use in this job
 	 * @param configIds A list of configurations (that match in order with solvers) to use for the specified solvers
 	 * @param spaceId the id of the space we are adding from
 	 */
@@ -758,7 +1037,6 @@ public abstract class JobManager {
 	 * resulting job pairs to a given job object. Accessed from running the space / keep hierarchy
 	 * structure in job creation.
 	 * 
-	 * @param j the Job to add Job Pairs to
 	 * @param userId the id of the user adding the job pairs
 	 * @param spaceId the id of the space to build the job pairs from
 	 * @param path The space path to give to every job pair created by this function
@@ -813,7 +1091,72 @@ public abstract class JobManager {
 		}
 		return pairs;
 	}
-	
+    /**
+     * This method creates and adds the build job that compiles the solver on the woker nodes
+     * @author Andrew Lubinus
+     * @param solverId the id of the unbuilt solver
+     * @param spaceId the space where the solver is, at this point also the space where the job is added
+     * @return int jobId of the job that has been added, or -1 if failed to add job.
+     */
+
+	public static int addBuildJob(Integer solverId, Integer spaceId) {
+		Solver s = Solvers.get(solverId);
+		log.info("Adding build job for solver " + s.getName() + " in space: " + spaceId);
+        Queue q = Queues.getAllQ();
+		Job j = JobManager.setupJob(
+			s.getUserId(),
+			s.getName() + " Build",
+			s.getName() + " Build Job",
+			-1,
+			-1,
+			R.DEFAULT_QUEUE_ID, //This is the same queue referenced by variable q
+			0,
+			q.getCpuTimeout(),
+			q.getWallTimeout(),
+			R.DEFAULT_PAIR_VMEM,
+			false,
+			15,
+			SaveResultsOption.SAVE,
+			R.DEFAULT_BENCHMARKING_FRAMEWORK);
+
+		j.setBuildJob(true);
+		String spaceName = "job space";
+		String sm=Spaces.getName(spaceId);
+		if (sm!=null) {
+			spaceName = sm;
+		}
+        Configuration c = new Configuration();
+        c.setName("starexec_build");
+        c.setSolverId(solverId);
+        c.setDescription("Build Configuration for solver: " + solverId);
+        int cId = Solvers.addConfiguration(s,c);
+		JobPair pair = new JobPair();
+		JoblineStage stage = new JoblineStage();
+		stage.setStageNumber(1);
+		pair.setPrimaryStageNumber(1);
+		stage.setNoOp(false);
+		stage.setSolver(s);
+        stage.setConfiguration(c);
+        int bench = BenchmarkUploader.addBenchmarkFromText(
+                        "dummy benchmark",
+                        "starexec_build",
+                        s.getUserId(),
+                        R.NO_TYPE_PROC_ID, true);
+		pair.addStage(stage);
+        pair.setBench(Benchmarks.get(bench)); //This hard coded value should be changed before feature is used.
+		pair.setSpace(Spaces.get(spaceId));
+		pair.setPath(spaceName);
+		j.addJobPair(pair);
+		boolean submitSuccess = Jobs.add(j, spaceId);
+		if (submitSuccess) {
+			return j.getId();
+		} else {
+            int status = SolverBuildStatusCode.BUILD_FAILED.getVal();
+            Solvers.setSolverBuildStatus(s, status);
+		    return -1; //error
+        }
+	}
+
 	/**
 	 * With the given solvers and configurations, will find all benchmarks in the current space hierarchy
 	 * and create job pairs from the result. Will then return those job pairs
@@ -918,7 +1261,6 @@ public abstract class JobManager {
 	 * 
 	 * @param spaceId the id of the space we start in
 	 * @param userId the id of the user creating the job
-	 * @param solverIds a list of solvers to use
 	 * @param configIds a list of configurations to use
 	 * @param SP A mapping from space IDs to the path of the space rooted at "spaceId"
 	 * @return A HashMap that maps space IDs to all the job pairs in that space. These can then be added to a job in any

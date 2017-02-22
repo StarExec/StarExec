@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.constants.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*,org.starexec.data.security.*, org.starexec.constants.*, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%	
@@ -13,7 +13,7 @@
 		request.setAttribute("descLength", R.SPACE_DESC_LEN);
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
-		if( (p == null || !p.canAddSpace()) && !Users.hasAdminReadPrivileges(userId)) {
+		if( (p == null || !p.canAddSpace()) && !GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to add a space here");
 		}
 	} catch (NumberFormatException nfe) {
@@ -45,16 +45,21 @@
 						<td><textarea id="txtDesc" name="desc" rows="6" draggable="false" length="${descLength}"></textarea></td>
 					</tr>
 					<tr>
-						<td class="label"><p>default</p></td>
+						<td class="label">
+							<p>default</p>
+							<span class="showMobile">
+								<br />so = solver<br />b = bench<br />u = user<br />sp = space<br />j = job
+							</span>
+						</td>
 						<td>			
 							<table id="tblDefaultPerm">
 								<tr>
 									<th></th>
-									<th>solver</th>
-									<th>bench</th>
-									<th>users</th>
-									<th>space</th>
-									<th>jobs</th>
+									<th><span class="hideMobile">solver</span><span class="showMobile">so</span></th>
+									<th><span class="hideMobile">bench</span><span class="showMobile">b</span></th>
+									<th><span class="hideMobile">users</span><span class="showMobile">u</span></th>
+									<th><span class="hideMobile">space</span><span class="showMobile">sp</span></th>
+									<th><span class="hideMobile">job</span><span class="showMobile">j</span></th>
 								</tr>
 								<tr>
 									<td>add</td>

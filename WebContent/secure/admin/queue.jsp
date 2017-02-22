@@ -5,15 +5,12 @@
 
 try {
 	int userId = SessionUtil.getUserId(request);
-	if (Users.hasAdminReadPrivileges(userId)) {
-		List<Space> spaces = Spaces.GetAllSpaces();
-		List<WorkerNode> nodes = Cluster.getAllNodes();
-		request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);
-		request.setAttribute("nodes", nodes);
-		request.setAttribute("defaultTimeout", R.DEFAULT_MAX_TIMEOUT);
-	} else {
-		response.sendError(HttpServletResponse.SC_FORBIDDEN,"Invalid permissions");
-	}
+	List<Space> spaces = Spaces.GetAllSpaces();
+	List<WorkerNode> nodes = Cluster.getAllNodes();
+	request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);
+	request.setAttribute("nodes", nodes);
+	request.setAttribute("defaultTimeout", R.DEFAULT_MAX_TIMEOUT);
+	
 	
 			
 } catch (NumberFormatException nfe) {
@@ -73,7 +70,15 @@ try {
 				</c:forEach>
 				</tbody>					
 			</table>		
-		</fieldset>
+    </fieldset>
+	<fieldset id="numberOfJobsField">
+        <legend>jobs per node</legend>
+        Select number of jobs run per node:
+        <select id="numberOfJobs" name="numberOfJobs">
+                <option value="1">1</option>
+                <option selected="selected" value="2">2</option>
+        </select>
+    </fieldset>
 	<div id="actionBar">
 		<fieldset>
 			<legend>actions</legend>

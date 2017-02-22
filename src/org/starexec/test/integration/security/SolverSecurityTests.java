@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
+import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
@@ -16,6 +17,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Website.WebsiteType;
+import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
@@ -129,33 +131,6 @@ public class SolverSecurityTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void canAssociateWebsite() {
-		Assert.assertEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId(),"new","http://www.test.url").isSuccess());
-		Assert.assertEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"new","http://www.test.url").isSuccess());
-		Assert.assertNotEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), regular.getId(),"new","http://www.test.url").isSuccess());
-		
-		Assert.assertNotEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId(),"<script>","http://www.test.url").isSuccess());
-		Assert.assertNotEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"<script>","http://www.test.url").isSuccess());
-		
-		Assert.assertNotEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), owner.getId(),"new","<script>").isSuccess());
-		Assert.assertNotEquals(true, SolverSecurity.canAssociateWebsite(solver.getId(), admin.getId(),"new","<script>").isSuccess());
-	}
-	
-	@StarexecTest
-	private void CanDeleteWebsiteTest() {
-		Websites.add(solver.getId(), "https://www.fake.edu", "new", WebsiteType.SOLVER);
-		int websiteId=Websites.getAll(solver.getId(), WebsiteType.SOLVER).get(0).getId();
-		Assert.assertEquals(true,SolverSecurity.canDeleteWebsite(solver.getId(), websiteId, owner.getId()).isSuccess());
-		Assert.assertEquals(true,SolverSecurity.canDeleteWebsite(solver.getId(), websiteId, admin.getId()).isSuccess());
-
-		Assert.assertNotEquals(true,SolverSecurity.canDeleteWebsite(solver.getId(), websiteId, regular.getId()).isSuccess());
-		
-		Assert.assertNotEquals(true,SolverSecurity.canDeleteWebsite(solver.getId(), -1, owner.getId()).isSuccess());
-		Assert.assertNotEquals(true,SolverSecurity.canDeleteWebsite(solver.getId(), -1, admin.getId()).isSuccess());
-	}
-	
-	
-	@StarexecTest
 	private void recycleSolverPermissionTest() {
 		Assert.assertEquals(true,SolverSecurity.canUserRecycleSolver(solver.getId(), owner.getId()).isSuccess());
 		Assert.assertEquals(true,SolverSecurity.canUserRecycleSolver(solver.getId(), admin.getId()).isSuccess());
@@ -216,16 +191,16 @@ public class SolverSecurityTests extends TestSequence {
 	
 	@Override
 	protected void setup() throws Exception {
-		admin=Users.getAdmins().get(0);
-		owner=ResourceLoader.loadUserIntoDatabase();
-		regular=ResourceLoader.loadUserIntoDatabase();
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
+		owner=loader.loadUserIntoDatabase();
+		regular=loader.loadUserIntoDatabase();
 		
-		tempCommunity=ResourceLoader.loadSpaceIntoDatabase(owner.getId(), 1);
-		tempCommunity2=ResourceLoader.loadSpaceIntoDatabase(regular.getId(), 1);
+		tempCommunity=loader.loadSpaceIntoDatabase(owner.getId(), 1);
+		tempCommunity2=loader.loadSpaceIntoDatabase(regular.getId(), 1);
 
-		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", Communities.getTestCommunity().getId(), owner.getId());
-		solver2=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", Communities.getTestCommunity().getId(), owner.getId());
-		solver3=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", Communities.getTestCommunity().getId(), regular.getId());
+		solver=loader.loadSolverIntoDatabase("CVC4.zip", Communities.getTestCommunity().getId(), owner.getId());
+		solver2=loader.loadSolverIntoDatabase("CVC4.zip", Communities.getTestCommunity().getId(), owner.getId());
+		solver3=loader.loadSolverIntoDatabase("CVC4.zip", Communities.getTestCommunity().getId(), regular.getId());
 		
 		c=Solvers.getConfigsForSolver(solver.getId()).get(0);
 		c2=Solvers.getConfigsForSolver(solver2.getId()).get(0);
@@ -237,17 +212,7 @@ public class SolverSecurityTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Solvers.deleteAndRemoveSolver(solver.getId());
-		Solvers.deleteAndRemoveSolver(solver2.getId());
-		Solvers.deleteAndRemoveSolver(solver3.getId());
-		
-		Users.deleteUser(regular.getId(),admin.getId());
-		Users.deleteUser(owner.getId(), admin.getId());
-		
-		Spaces.removeSubspace(tempCommunity.getId());
-		Spaces.removeSubspace(tempCommunity2.getId());
-
-	
+		loader.deleteAllPrimitives();
 	}
 
 	@Override

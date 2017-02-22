@@ -11,7 +11,7 @@ import org.starexec.util.Validator;
 public class QueueSecurity {
 	
 	public static ValidatorStatusCode canUserClearErrorStates(int userId) {
-		if (!Users.hasAdminWritePrivileges(userId)) {
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			return new ValidatorStatusCode(false, "Only administrators can perform this action");
 		}
 		return new ValidatorStatusCode(true);
@@ -24,7 +24,7 @@ public class QueueSecurity {
 	 */
 	
 	public static ValidatorStatusCode canUserMakeQueue(int userId, String queueName) {
-		if (!Users.isAdmin(userId)){
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)){
 			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
 		}
 		
@@ -47,7 +47,7 @@ public class QueueSecurity {
 	 */
 	
 	public static ValidatorStatusCode canUserEditQueue(int userId, int clockTimeout, int cpuTimeout) {
-		if (!Users.isAdmin(userId)) {
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
 		}
 		
@@ -58,31 +58,18 @@ public class QueueSecurity {
 		return new ValidatorStatusCode(true);
 	}
 	
-	/**
-	 * Checks to see whether the given user is allowed to update a queue reservation request
-	 * @param userId The ID of the user making the request
-	 * @param queueName The name the new queue would be given
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status from ValidatorStatusCodes if not
-	 */
-	public static ValidatorStatusCode canUserUpdateRequest(int userId, String queueName) {
-		if (!Users.isAdmin(userId)){
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
+	public static ValidatorStatusCode canUserEditQueue(int userId, int queueId) {
+		if (Queues.get(queueId)==null) {
+			return new ValidatorStatusCode(false, "The given queue could not be found");
 		}
-		
-		// Make sure that the queue has a unique name
-		if(Queues.notUniquePrimitiveName(queueName)) {
-			return new ValidatorStatusCode(false, "The queue must have a unique name after the update");
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+			return new ValidatorStatusCode(false, "You do not have permission to update the given queue");
 		}
-		
-		if (!Validator.isValidQueueName(queueName)) {
-			return new ValidatorStatusCode(false, "The given name is not formatted correctly. Please refer to the help pages to see the proper format");
-		}
-		
 		return new ValidatorStatusCode(true);
 	}
-	
+
 	public static ValidatorStatusCode canUserSetTestQueue(int userId, int queueId) {
-		ValidatorStatusCode status=canUserModifyQueues(userId);
+		ValidatorStatusCode status = canUserEditQueue(userId, queueId);
 		if (!status.isSuccess()) {
 			return status;
 		}
@@ -93,16 +80,9 @@ public class QueueSecurity {
 		return new ValidatorStatusCode(true);
 	}
 	
-	public static ValidatorStatusCode canUserModifyQueues(int userId) {
-		if (!Users.isAdmin(userId)){
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
-		}
-		return new ValidatorStatusCode(true);
-	}
-
 	public static ValidatorStatusCode canGetJsonQueue(int queueId, int userId) {
 		
-		List<Queue> queues=Queues.getQueuesForUser(userId);
+		List<Queue> queues=Queues.getUserQueues(userId);
 		for (Queue q : queues) {
 			if (q.getId()==queueId) {
 				return new ValidatorStatusCode(true);
@@ -110,20 +90,5 @@ public class QueueSecurity {
 		}
 		
 		return new ValidatorStatusCode(false, "The given queue does not exist or you do not have permission to see it");
-	}
-	
-	public static ValidatorStatusCode canUserSubmitToQueue(int userId, int queueId, int spaceId) {
-		if (Queues.get(queueId)==null) {
-			return new ValidatorStatusCode(false, "The given queue could not be found");
-		}
-		List<Queue> validQueues=Queues.getQueuesForUser(userId);
-		validQueues.addAll(Queues.getQueuesForSpace(spaceId));
-		for (Queue q : validQueues) {
-			if (q.getId()==queueId) {
-				return new ValidatorStatusCode(true);
-			}
-		}
-		
-		return new ValidatorStatusCode(false, "You do not have permission to utilize the selected queue");
 	}
 }

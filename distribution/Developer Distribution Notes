@@ -1,0 +1,23 @@
+These are a few steps that should be taken before releasing a Starexec distribution. This mostly consists
+of deleting the few files that users do not need-- files that may contain Starexec passwords or which are
+used only to deploy Starexec on our specific systems.
+
+1) Remove org/starexec/config/starexec-config.xml and rename starexec-config-deploy.xml to starexec-config.xml.
+
+2) Delete the files 'production.properties' and 'stardev.properties'
+
+3) In the scripts-common directory, delete the stardeploy.sh, starjobs.sh, and updateSQL scripts.
+
+4) Delete the local-properties directory.
+
+5) Under sql/new-install, delete the MinimalData.sql file and rename MinimalDataDistribute.sql to MinimalData.sql.
+
+6) Delete the local-lib directory
+
+7) Delete the utility-scripts directory
+
+8) Delete this file.
+
+
+The file createDistroArchive.sh creates an archive and performs all of these steps automatically.
+This file will be generated whenever you build the project using Ant.

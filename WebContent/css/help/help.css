@@ -1,3 +1,4 @@
+
 #topicList a.active {
 	border: 1px dashed rgb(230, 46, 37);
 }
@@ -72,7 +73,7 @@
 
 #detailPanel h3 {
 	color: #999999;
-	font-size: 20px;
+	font-size: 18px;
 	padding-top: 6px;
 	padding-bottom: 2px;
 }

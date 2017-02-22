@@ -1,10 +1,16 @@
 package org.starexec.data.to.pipelines;
 
+/**
+ * Class represents a dependency for some solver pipeline. Dependencies
+ * can be either on benchmarks or on the output of a previous stage
+ * @author Eric
+ *
+ */
 public class PipelineDependency {
 	
-	
 	/**
-	 * Represents the type of the processor (along with it's SQL storage values)
+	 * Type of pipeline dependency is either a benchmark or an 'artifact,' the
+	 * output of some previous stage.
 	 */
 	public static enum PipelineInputType {
 		

@@ -3,6 +3,7 @@ package org.starexec.util;
 import java.io.File;
 import java.io.IOException;
 import java.lang.NullPointerException;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Iterator;
@@ -13,30 +14,28 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.mail.DefaultAuthenticator;
 import org.apache.commons.mail.Email;
 import org.apache.commons.mail.SimpleEmail;
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Reports;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.Report;
 import org.starexec.data.to.User;
+import org.starexec.logger.StarLogger;
 import org.starexec.servlets.PasswordReset;
 
 /**
  * Contains utilities for sending mail from the local SMTP server
  */
 public class Mail {
-	private static final Logger log = Logger.getLogger(Mail.class);
+	private static final StarLogger log = StarLogger.getLogger(Mail.class);
 	public static final String EMAIL_CODE = "conf";			// Param string for email verification codes
 	public static final String CHANGE_EMAIL_CODE = "changeEmail";
 	public static final String LEADER_RESPONSE = "lead";	// Param string for leader response decisions	
-	public static final String ADMIN_RESPONSE = "admin";
 	
 	/**
 	 * Sends an e-mail from the configured SMTP server
 	 * @param message The body of the message
 	 * @param subject The subject of the message
-	 * @param from Who the message is from (null to send from default account)
 	 * @param to The list of e-mail addresses to send the message to
 	 */
 	public static void mail(String message, String subject, String[] to) {
@@ -111,7 +110,6 @@ public class Mail {
 	 * activate their account
 	 * 
 	 * @param user the user to send the email to
-	 * @param request the servlet containing the incoming POST
 	 * @param code the activation code to send
 	 * @throws IOException if verification_email cannot be found
 	 * @author Todd Elvers
@@ -270,7 +268,7 @@ public class Mail {
 	 * @author Albert Giegerich
 	 * @return the String representation of the email.
 	 */
-	public static String generateGenericReportsEmail() throws IOException {
+	public static String generateGenericReportsEmail() throws IOException, SQLException {
 		String email = null;
 		try {
 			email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/reports_email.txt"));

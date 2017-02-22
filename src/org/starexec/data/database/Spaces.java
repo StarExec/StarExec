@@ -18,12 +18,13 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
+import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.to.*;
 import org.starexec.exceptions.StarExecException;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.DataTablesQuery;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
@@ -33,7 +34,7 @@ import org.starexec.util.dataStructures.TreeNode;
  * Handles all database interaction for spaces
  */
 public class Spaces {
-	private static final Logger log = Logger.getLogger(Spaces.class);
+	private static final StarLogger log = StarLogger.getLogger(Spaces.class);
 	
 	/**
 	 * Adds a new space to the system. This action adds the space, adds a
@@ -43,12 +44,11 @@ public class Spaces {
 	 * an atomic unit.
 	 * @param con The connection to perform the operation on
 	 * @param s The space to add (should have default permissions set)
-	 * @param parentId The parent space s is being added to
 	 * @param userId The user who is adding the space
 	 * @return The ID of the newly inserted space, -1 if the operation failed
 	 * @author Tyler Jensen
 	 */
-	protected static int add(Connection con, Space s, int parentId, int userId)  {			
+	protected static int add(Connection con, Space s, int userId)  {			
 		
 		CallableStatement procAddSpace = null;
 		CallableStatement procSubspace = null;
@@ -58,12 +58,12 @@ public class Spaces {
 			int defaultPermId = Permissions.add(s.getPermission(), con);
 			
 			// Add the space with the default permissions
-			 procAddSpace = con.prepareCall("{CALL AddSpace(?, ?, ?, ?, ?, ?,?)}");	
+			procAddSpace = con.prepareCall("{CALL AddSpace(?, ?, ?, ?, ?, ?,?)}");	
 			procAddSpace.setString(1, s.getName());
 			procAddSpace.setString(2, s.getDescription());
 			procAddSpace.setBoolean(3, s.isLocked());
 			procAddSpace.setInt(4, defaultPermId);
-			procAddSpace.setInt(5, parentId);
+			procAddSpace.setInt(5, s.getParentSpace());
 			procAddSpace.setBoolean(6, s.isStickyLeaders());
 			procAddSpace.registerOutParameter(7, java.sql.Types.INTEGER);	
 			procAddSpace.executeUpdate();
@@ -71,14 +71,14 @@ public class Spaces {
 			
 			log.debug("Calling AssociateSpace");
 			// Add the new space as a child space of the parent space
-			 procSubspace = con.prepareCall("{CALL AssociateSpaces(?, ?)}");	
-			procSubspace.setInt(1, parentId);
+			procSubspace = con.prepareCall("{CALL AssociateSpaces(?, ?)}");	
+			procSubspace.setInt(1, s.getParentSpace());
 			procSubspace.setInt(2, newSpaceId);
 			procSubspace.executeUpdate();		
 			
 			log.debug("Calling AddUserToSpace");
 			// Add the adding user to the space with the maximal permissions
-			 procAddUser = con.prepareCall("{CALL AddUserToSpace(?, ?)}");			
+			procAddUser = con.prepareCall("{CALL AddUserToSpace(?, ?)}");			
 			procAddUser.setInt(1, userId);
 			procAddUser.setInt(2, newSpaceId);			
 			procAddUser.executeUpdate();
@@ -88,7 +88,7 @@ public class Spaces {
 			// Set maximal permissions for the user who added the space	
 			Permissions.set(userId, newSpaceId, perm, con);
 
-			log.info(String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId, parentId));
+			log.info(String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId, s.getParentSpace()));
 			return newSpaceId;
 		} catch (Exception e) {
 			log.error("Spaces.add says "+e.getMessage(),e);
@@ -133,21 +133,19 @@ public class Spaces {
 	 * default permission record for the space, and adds a new association
 	 * to the space with the given user with full leadership permissions
 	 * @param s The space to add (should have default permissions set)
-	 * @param parentId The parent space s is being added to
 	 * @param userId The user who is adding the space
 	 * @return The ID of the newly inserted space, -1 if the operation failed
 	 * @author Tyler Jensen
 	 */
-	public static int add(Space s, int parentId, int userId) {
+	public static int add(Space s, int userId) {
 		Connection con = null;			
 		
 		try {
 			con = Common.getConnection();
 			
 			Common.beginTransaction(con);	
-			
 			// Add space is a multi-step process, so we need to use a transaction
-			int newSpaceId = Spaces.add(con, s, parentId, userId);
+			int newSpaceId = Spaces.add(con, s, userId);
 
 			Common.endTransaction(con);			
 			return newSpaceId;
@@ -207,6 +205,7 @@ public class Spaces {
 	/**
 	 * Creates a new job space with the given name
 	 * @param name The name to be given to the job space
+	 * @param jobId The ID of the job that owns this job space
 	 * @return The ID of the newly created job space, or -1 on failure
 	 * @author Eric Burns
 	 */
@@ -416,79 +415,36 @@ public class Spaces {
 	 * 
 	 * @param parent The parent space that is the 'root' of the new subtree to be added
 	 * @param userId The user that will own the new spaces and benchmarks
-	 * @param statusId ID of a benchmark upload status to update with space information
-	 * @return A list of the new benchmark IDs if successful, and null otherwise
-	 * @throws Exception Any exceptions thrown when traversing spaces or adding benchmarks
-	 * @author Tyler Jensen
-	 */
-	public static List<Integer> addWithBenchmarks(Space parent, int userId, int statusId) throws Exception{
-		ArrayList<Integer> ids=new ArrayList<Integer>();
-		log.info("adding with benchmarks and no dependencies for user " + userId);
-		// We'll be doing everything with a single connection so we can roll back if needed
-		
-		// For each subspace...
-		log.info("about to begin traversing (no deps)");
-		for(Space s : parent.getSubspaces()) {
-			// Apply the recursive algorithm to add each subspace
-			ids.addAll(Spaces.traverse(s, parent.getId(), userId, statusId));
-		}
-		// Add any new benchmarks in the space to the database			
-		
-		if (parent.getBenchmarks().size() > 0){
-			log.info("adding benchmarks in main space");
-			ids.addAll(Benchmarks.add(parent.getBenchmarks(), parent.getId(), statusId));
-		}
-		// We're done (notice that 'parent' is never added because it should already exist)
-				
-		return ids;
-		
-		
-		
-	}
-	
-	/**
-	 * Adds all subspaces and their benchmarks to the database. The first space given should be
-	 * an existing space (it must have an ID that will be the ancestor space of all subspaces) and
-	 * it can optionally contain NEW benchmarks to be added to the space. The method then traverses
-	 * into its subspaces recursively and adds them to the database aint with their benchmarks.
-	 * 
-	 * @param parent The parent space that is the 'root' of the new subtree to be added
-	 * @param userId The user that will own the new spaces and benchmarks
-	 * @param depRootSpaceId the id of the space where the axiom benchmarks lie
-	 * @param linked true if the depRootSpace is the same as the first directory in the include statements
+	 * @param depRootSpaceId the id of the space where the axiom benchmarks lie. If no dependencies exist,
+	 * this is ignored.
+	 * @param linked true if the depRootSpace is the same as the first directory in the include statements. If 
+	 * no dependencies exist, this is ignored
 	 * @param statusId ID of a benchmark upload status to update with space information
 
 	 * @return A list of benchmark IDs if successful, and null otherwise
 	 * @author Benton McCune
 	 */
-	public static List<Integer> addWithBenchmarksAndDeps(Space parent, int userId, Integer depRootSpaceId, boolean linked, Integer statusId) {
+	public static List<Integer> addWithBenchmarks(Space parent, int userId, Integer depRootSpaceId, boolean linked, Integer statusId, Boolean usesDeps) {
 		ArrayList<Integer> ids=new ArrayList<Integer>();
-		Connection con = null;
 		log.info("addWithBenchmarksAndDeps called on space " + parent.getName());
 		try {
-			// We'll be doing everything with a single connection so we can roll back if needed
-			con = Common.getConnection();
-			Common.beginTransaction(con);
 			
 			// For each subspace...
 			for(Space sub : parent.getSubspaces()) {
 				// Apply the recursive algorithm to add each subspace
-				Spaces.traverseWithDeps(con, sub, parent.getId(), userId, depRootSpaceId, linked, statusId);
+				sub.setParentSpace(parent.getId());
+				Spaces.traverse(sub, userId, depRootSpaceId, linked, statusId);
 			}
 			
 			// Add any new benchmarks in the space to the database
 			if (parent.getBenchmarks().size()>0){
-				ids.addAll(Benchmarks.addWithDeps(parent.getBenchmarks(), parent.getId(), con, depRootSpaceId, linked, userId, statusId));
+				ids.addAll(Benchmarks.processAndAdd(parent.getBenchmarks(), parent.getId(), depRootSpaceId, linked, statusId, usesDeps));
 			}
 			
 			// We're done (notice that 'parent' is never added because it should already exist)
-			Common.endTransaction(con);			
 			return ids;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
-			Common.doRollback(con);
-		} finally {					
-			Common.safeClose(con);
 		}
 		
 		return null;
@@ -797,7 +753,7 @@ public class Spaces {
 	 */
 	public static int getCountInSpace(int spaceId, int userId,boolean hierarchy) {
 		//the admin can see every space, so we don't need to worry about finding only spaces some user can see
-		if (Users.hasAdminReadPrivileges(userId)) {
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			if (hierarchy) {
 				return getCountInSpaceHierarchy(spaceId);
 			}
@@ -873,18 +829,32 @@ public class Spaces {
 	/**
 	 * Copy a space into another space
 	 * 
-	 * @param srcId
-	 *            The Id of the space which is being copied.
-	 * @param desId
-	 *            The Id of the destination space which is copied into.
-	 * @param usrId
-	 *            The Id of the user doing the copy.
+	 * @param srcId The Id of the space which is being copied.
+	 * @param desId The Id of the destination space which is copied into.
+	 * @param usrId The Id of the user doing the copy.
 	 * @return The Id of the new copy of the space.
 	 * @throws StarExecException if space copy fails.
 	 * @author Ruoyu Zhang
 	 */
 
 	public static int copySpace(int srcId, int desId, int usrId) throws StarExecException {
+        //invoke helper method assuming final paramater of copyPrimites is set to false
+        return copySpace(srcId, desId, usrId, false);
+    }
+
+	/**
+	 * Copy a space into another space
+	 * 
+	 * @param srcId The Id of the space which is being copied.
+	 * @param desId The Id of the destination space which is copied into.
+	 * @param usrId The Id of the user doing the copy.
+     * @param copyPrimitives if true copy the primitives to the new space
+	 * @return The Id of the new copy of the space.
+	 * @throws StarExecException if space copy fails.
+	 * @author Ruoyu Zhang
+	 */
+
+	public static int copySpace(int srcId, int desId, int usrId, Boolean copyPrimitives) throws StarExecException {
 		if (srcId == desId) {
 			throw new StarExecException("A space can't be copied into itself.");
 		}
@@ -902,7 +872,8 @@ public class Spaces {
 
 		// Set the default permission on the space
 		tempSpace.setPermission(sourceSpace.getPermission());
-		int newSpaceId = Spaces.add(tempSpace, desId, usrId);
+		tempSpace.setParentSpace(desId);
+		int newSpaceId = Spaces.add(tempSpace, usrId);
 
 		if (newSpaceId <= 0) {
 			throw new StarExecException( "Copying space with name '"+sourceSpace.getName()+"' to space with id '"+
@@ -913,26 +884,34 @@ public class Spaces {
 			// Copying the references of benchmarks
 			List<Benchmark> benchmarks = sourceSpace.getBenchmarks();
 			List<Integer> benchmarkIds = new LinkedList<Integer>();
-			int benchId = 0;
-			for (Benchmark benchmark : benchmarks) {
-				benchId = benchmark.getId();
-				if (Permissions.canUserSeeBench(benchId, usrId)) {
-					benchmarkIds.add(benchId);
-				}
-			}
-			Benchmarks.associate(benchmarkIds, newSpaceId);
+            if(copyPrimitives){
+                benchmarkIds = Benchmarks.copyBenchmarks(benchmarks, usrId, newSpaceId);
+            } else {
+                int benchId = 0;
+                for (Benchmark benchmark : benchmarks) {
+                    benchId = benchmark.getId();
+                    if (Permissions.canUserSeeBench(benchId, usrId)) {
+                        benchmarkIds.add(benchId);
+                    }
+                }
+                Benchmarks.associate(benchmarkIds, newSpaceId);
+            }
 
 			// Copying the references of solvers
 			List<Solver> solvers = sourceSpace.getSolvers();
 			List<Integer> solverIds = new LinkedList<Integer>();
-			int solverId = 0;
-			for (Solver solver : solvers) {
-				solverId = solver.getId();
-				if (Permissions.canUserSeeSolver(solverId, usrId)) {
-					solverIds.add(solverId);
-				}
-			}
-			Solvers.associate(solverIds, newSpaceId);
+            if(copyPrimitives){
+                solverIds = Solvers.copySolvers(solvers,usrId, newSpaceId);
+            } else {
+                int solverId = 0;
+                for (Solver solver : solvers) {
+                    solverId = solver.getId();
+                    if (Permissions.canUserSeeSolver(solverId, usrId)) {
+                        solverIds.add(solverId);
+                    }
+                }
+                Solvers.associate(solverIds, newSpaceId);
+            }
 
 			// Copying the references of jobs
 			List<Job> jobs = sourceSpace.getJobs();
@@ -957,27 +936,40 @@ public class Spaces {
 	}
 
 	/**
-	 * Copy a hierarchy of the space into another space
+	 * Copy a hierarchy of the space into another space helper method.
 	 * 
 	 * @param srcId The Id of the source space which is being copied.
 	 * @param desId The Id of the destination space which is copied into.
 	 * @param usrId The Id of the user doing the copy.
 	 * @return The Id of the root space of the copied hierarchy.
-	 * @author Ruoyu Zhang
 	 * @throws StarExecException If the source and destination are the same
 	 */
 	public static int copyHierarchy(int srcId, int desId, int usrId) throws StarExecException {
+        return copyHierarchy(srcId, desId, usrId, false);
+    }
+
+	/**
+	 * Copy a hierarchy of the space into another space
+	 * 
+	 * @param srcId The Id of the source space which is being copied.
+	 * @param desId The Id of the destination space which is copied into.
+	 * @param usrId The Id of the user doing the copy.
+     * @param copyPrimitives if true copy primitives instead of linking
+	 * @return The Id of the root space of the copied hierarchy.
+	 * @author Ruoyu Zhang
+	 * @throws StarExecException If the source and destination are the same
+	 */
+	public static int copyHierarchy(int srcId, int desId, int usrId, Boolean copyPrimitives) throws StarExecException {
 		if (srcId == desId) {
 			throw new StarExecException("You can't copy a space into itself.");
 		}
-
 
 		Space sourceSpace = Spaces.get(srcId);
 		TreeNode<Space> spaceTree = Spaces.buildSpaceTree(sourceSpace, usrId);
 		log.debug("Space tree built during space hierarchy copy:");
 		logSpaceTree(spaceTree);
 
-		return Spaces.copySpaceTree(spaceTree, desId, usrId);
+		return Spaces.copySpaceTree(spaceTree, desId, usrId, copyPrimitives);
 	}
 
 	private static void logSpaceTree(TreeNode<Space> tree) {
@@ -999,6 +991,18 @@ public class Spaces {
 	}
 
 	/**
+	 * Copies a whole space tree (helper method).
+	 * @param spaceTree The tree to copy
+	 * @param desId the id of the space which will be the parent of the root of the space tree.
+	 * @param usrId the id of the user who is copying the space tree.
+	 * @return the id of the root of the new space tree.
+	 * @throws StarExecException if something went wrong while copying the space tree.
+	 */
+	public static int copySpaceTree(TreeNode<Space> spaceTree, int desId, int usrId) throws StarExecException {
+        return copySpaceTree(spaceTree, desId, usrId, false);
+    }
+
+	/**
 	 * Copies a whole space tree.
 	 * @param spaceTree The tree to copy
 	 * @param desId the id of the space which will be the parent of the root of the space tree.
@@ -1007,12 +1011,12 @@ public class Spaces {
 	 * @throws StarExecException if something went wrong while copying the space tree.
 	 * @author Albert Giegerich
 	 */
-	public static int copySpaceTree(TreeNode<Space> spaceTree, int desId, int usrId) throws StarExecException {
+	public static int copySpaceTree(TreeNode<Space> spaceTree, int desId, int usrId, Boolean copyPrimitives) throws StarExecException {
 		Space rootSpace = spaceTree.getData();
-		int newSpaceId = copySpace(rootSpace.getId(), desId, usrId);
+		int newSpaceId = copySpace(rootSpace.getId(), desId, usrId, copyPrimitives);
 		for (TreeNode<Space> child : spaceTree) {
 			// Recursively copy each child into the newly created space.
-			copySpaceTree(child, newSpaceId, usrId);
+			copySpaceTree(child, newSpaceId, usrId, copyPrimitives);
 		}
 		return newSpaceId;
 	}
@@ -1080,6 +1084,9 @@ public class Spaces {
 	public static Space getDetails(int spaceId, int userId) {		
 		try {			
 			Space s = Spaces.get(spaceId);
+			if (s==null) {
+				return null;
+			}
 			s.setUsers(Spaces.getUsers(spaceId));
 			s.setBenchmarks(Benchmarks.getBySpace(spaceId));
 			s.setSolvers(Solvers.getBySpace(spaceId));
@@ -1323,7 +1330,7 @@ public class Spaces {
 			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_SUBSPACES_IN_SPACE_QUERY, getSpaceOrderColumn(query.getSortColumn()), query);
 
 			procedure = new NamedParameterStatement(con, builder.getSQL());
-			;
+			
 			procedure.setInt("spaceId", spaceId);
 			procedure.setInt("userId", userId);
 			procedure.setString("query", query.getSearchQuery());			
@@ -1335,7 +1342,7 @@ public class Spaces {
 				s.setId(results.getInt("id"));
 				s.setName(results.getString("name"));
 				s.setDescription(results.getString("description"));
-				
+				s.setParentSpace(results.getInt("parent"));
 				spaces.add(s);			
 			}	
 			
@@ -1564,7 +1571,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @return A List of Space objects
 	 */
 	public static List<Space> getSubSpaceHierarchy(int spaceId, int userId) {
-		if (Users.isAdmin(userId)) {
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return getSubSpaceHierarchy(spaceId); //not dependent on user, as admins can see everything
 		}
 		Connection con = null;			
@@ -1681,33 +1688,86 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 		return null;
 	}
 	
+	
+	/**
+	 * Gets all subspaces of the given space
+	 * @param spaceId The ID of the space to get subspaces for
+	 * @return A list of subspaces, or null on error
+	 */
+	public static List<Space> getSubSpaces(int spaceId) {
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			return getSubSpaces(spaceId,con);
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return null;
+	}
+	
+	/**
+	 * Gets all subspaces of the given space
+	 * @param spaceId The ID of the space to get subspaces for
+	 * @param con The open connection to make the call on
+	 * @return A list of subspaces, or null on error
+	 */
+	public static List<Space> getSubSpaces(int spaceId, Connection con) {
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			procedure = con.prepareCall("{CALL GetSubSpacesAdmin(?)}");
+			procedure.setInt(1, spaceId);
+			results = procedure.executeQuery();
+			
+			results = procedure.executeQuery();
+			List<Space> subSpaces = new LinkedList<Space>();
+			
+			while(results.next()){
+				Space s = new Space();
+				s.setName(results.getString("name"));
+				s.setId(results.getInt("id"));
+				s.setDescription(results.getString("description"));
+				s.setLocked(results.getBoolean("locked"));
+				subSpaces.add(s);
+			}
+			
+			return subSpaces;
+			
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+	
 	/**
 	 * Helper method for getSubSpaces() - gets either the first level of subspaces of a space or, recursively, all
 	 * subspaces of a given space
 	 * 
 	 * @param spaceId The id of the space to get the subspaces of
 	 * @param userId The id of the user making the request for the subspaces
-	 * @param isRecursive True if we want all subspaces of a space recursively; False if we want only the first level of subspaces of a space
 	 * @param con the database connection to use
 	 * @return the list of subspaces of the given space
 	 * @throws Exception
 	 * @author Todd Elvers & Skylar Stark & Benton McCune & Wyatt Kaiser
 	 */
-	
 
 	protected static List<Space> getSubSpaces(int spaceId, int userId,Connection con) throws Exception{
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
+			return getSubSpaces(spaceId,con);
+		}
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		
-		if (Users.hasAdminReadPrivileges(userId)) {
-			procedure = con.prepareCall("{CALL GetSubSpacesAdmin(?)}");
-			procedure.setInt(1, spaceId);
-		} else {
+
+		try {
 			procedure = con.prepareCall("{CALL GetSubSpacesById(?, ?)}");
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, userId);
-		}
-		try {
 			results = procedure.executeQuery();
 			List<Space> subSpaces = new LinkedList<Space>();
 			
@@ -1733,7 +1793,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	
 	
 	/**
-	 * Gets all the subspaces of the given space that are used by the given job
+	 * Gets all the subspaces of the given job space
 	 * 
 	 * @param jobSpaceId The id of the space to get the subspaces of
 	 * @param recursive Whether to get all subspaces (true) or only the first level (false)
@@ -1774,8 +1834,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	/**
 	 * Gets all the subspaces of the given job space.
 	 * Job spaces will be in alphabetically ascending order
-	 * @param spaceId The id of the space to get the subspaces of
-	 * @param jobId The job for which we want to get used spaces
+	 * @param jobSpaceId The id of the jobspace to get the subspaces of
 	 * @param con the open database connection to use
 	 * @return the list of subspaces of the given space used in the given job
 	 * @throws Exception
@@ -2007,7 +2066,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 			
 			// Commit changes to database
 			Common.endTransaction(con);
-			//Cache.invalidateAndDeleteCache(spaceId,CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);	
@@ -2052,6 +2110,24 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 			Common.safeClose(procedure);
 		}
 		return false;
+	}
+
+	/**
+	 * Gets the space ids of spaces that have a given job associated with them.
+	 * @param jobId Gets the space ids containing the given Job. (not JobSpaces)
+	 * @return a list of space ids.
+	 */
+	public static Set<Integer> getByJob(int jobId) throws SQLException {
+		return Common.query("{CALL GetSpacesByJob(?)}"
+		, procedure -> procedure.setInt(1, jobId)
+		, results -> {
+			Set<Integer> spaceIds = new HashSet<>();
+			while (results.next()) {
+				spaceIds.add(results.getInt("space_id"));
+			}
+
+			return spaceIds;
+		});
 	}
 	
 	/**
@@ -2142,7 +2218,6 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 			Common.beginTransaction(con);
 			Spaces.removeSolvers(solverIds, spaceId, con);
 			Common.endTransaction(con);
-			//Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE);
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);	
@@ -2250,9 +2325,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	/**
 	 * Given a single space, removes all of the subspaces of that space from the database
 	 * recursively
-	 * 
-	 * @param subspaceIds the list of subspaces to remove
-	 * @param parentSpaceId the id of the space to remove the subspaces from
+	 * @param spaceId the id of the space to remove the subspaces from
 	 * @param con the database transaction to use
 	 * @author Todd Elvers
 	 */
@@ -2517,89 +2590,32 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 		return paths;
 	}
 
-	
-
-	protected static List<Integer> traverse(Space space, int parentId, int userId, int statusId) throws Exception {
-		// Add the new space to the database and get it's ID		
-		log.info("traversing space without deps for user " + userId);
-		if (space == null) {
-		    log.error("traverse(): space is null.");
-		}
-		Connection con = null;
-		
-		ArrayList<Integer> ids=new ArrayList<Integer>();
-		try{
-			con = Common.getConnection();	
-			Common.beginTransaction(con);	
-			int spaceId = Spaces.add(con, space, parentId, userId);
-			Common.endTransaction(con);	
-			
-			for(Space s : space.getSubspaces()) {
-				// Recursively go through and add all of it's subspaces with itself as the parent
-				log.info("about to traverse space " + spaceId);
-				List<Integer> newIds = Spaces.traverse(s, spaceId, userId, statusId);
-				if (newIds == null) {
-					return null; // pass up the error
-				}
-				ids.addAll(newIds);
-			}			
-		
-			// Finally, add the benchmarks in the space to the database
-			//not really using connection parameter right now due to problems
-			List<Integer> newIds = Benchmarks.add(space.getBenchmarks(), spaceId, statusId);
-
-			if (newIds == null) {
-				return null; // pass up the error
-			}
-			
-			ids.addAll(newIds);
-			Uploads.incrementCompletedSpaces(statusId,1);		
-			return ids;
-		}
-		catch (Exception e){			
-			log.error("traverse says " + e.getMessage(), e);
-			String message = "Major Error encountered traversing spaces";
-			Uploads.setBenchmarkErrorMessage(statusId, message);
-			return null;//need to pass up
-		} finally {
-			Common.safeClose(con);
-		}
-		
-	}
-
 	/**
 	 * Internal recursive method that adds a space and it's benchmarks to the database
-	 * @param con The connection to perform the operations on
 	 * @param space The space to add to the database
 	 * @param parentId The id of the parent space that the given space will belong to
 	 * @param userId The user id of the owner of the new space and its benchmarks
 	 * @author Benton McCune
 	 */
-	protected static List<Integer> traverseWithDeps(Connection conParam, Space space, int parentId, int userId, Integer depRootSpaceId, Boolean linked, Integer statusId) throws Exception {
+	protected static List<Integer> traverse(Space space, int userId, Integer depRootSpaceId, Boolean linked, Integer statusId) throws Exception {
 		ArrayList<Integer> ids=new ArrayList<Integer>();
-		Connection con = null;		
 		try{
-
-			con = Common.getConnection();	
-			Common.beginTransaction(con);	
-			// Add the new space to the database and get it's ID		
-			int spaceId = Spaces.add(con, space, parentId, userId);
-			Common.endTransaction(con);	
+			// Add the new space to the database and get it's ID	
+			int spaceId = Spaces.add(space, userId);
 			
 			log.info("traversing (with deps) space " + space.getName() );
 			for(Space sub : space.getSubspaces()) {
+				sub.setParentSpace(spaceId);
 				// Recursively go through and add all of it's subspaces with itself as the parent
-				ids.addAll(Spaces.traverseWithDeps(con, sub, spaceId, userId, depRootSpaceId, linked, statusId));
+				ids.addAll(Spaces.traverse(sub, userId, depRootSpaceId, linked, statusId));
 			}			
 			// Finally, add the benchmarks in the space to the database
-			ids.addAll(Benchmarks.addWithDeps(space.getBenchmarks(), spaceId, con, depRootSpaceId, linked, userId, statusId));
+			ids.addAll(Benchmarks.processAndAdd(space.getBenchmarks(), spaceId, depRootSpaceId, linked, statusId));
 			Uploads.incrementCompletedSpaces(statusId,1);
 			return ids;
 		}
 		catch (Exception e){			
-			log.error("traverseWithDeps says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
+			log.error("traverse says " + e.getMessage(), e);		
 		}
 		return null;
 	}
@@ -2614,7 +2630,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @author Wyatt Kaiser
 	 */
 	public static List<Space> trimSubSpaces(int userId, List<Space> spaces) {
-		if (Users.isAdmin(userId)){
+		if (GeneralSecurity.hasAdminWritePrivileges(userId)){
 			return spaces;
 		}
 		Iterator<Space> iter = spaces.iterator();
@@ -2669,17 +2685,15 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 		boolean success = false;
 		try {
 			con = Common.getConnection();
-			// Only perform this update if we have permission to
-			if (Permissions.get(userId, s.getId()).isLeader()) {
-				Common.beginTransaction(con);
 
-				success = Spaces.updateDetails(s, con);
+			Common.beginTransaction(con);
+
+			success = Spaces.updateDetails(s, con);
 				
-				Common.endTransaction(con);
-			}
+			Common.endTransaction(con);
+			
 			
 			log.info(String.format("Space with name [%s] successfully edited by user [%d].", s.getName(), userId));
-			//Cache.invalidateAndDeleteCache(s.getId(), CacheType.CACHE_SPACE);
 			return success;		
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -2860,4 +2874,26 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 		
 		return false;
 	}
+
+	/**
+	 * Detects if a valid solver / config pair exists in the space hierarchy.
+     * Used in error messages in the CreateJob servelet
+	 * @param usrId The ID of the user who owns the orphaned primitives
+	 * @param spaceId The ID of the space in question
+	 * @return True if a valid pair exists in the hierarchy, false otherwise.
+	 */
+    public static boolean configBenchPairExistsInHierarchy(int spaceId, int usrId) {
+        Space space = Spaces.getDetails(spaceId, usrId);
+        if (space.getSolvers().size() == 0 || space.getBenchmarks().size() == 0) {
+            List<Space> subspaces = space.getSubspaces();
+            for (Space subspace : subspaces) {
+               if(configBenchPairExistsInHierarchy(subspace.getId(), usrId)) {
+                    return true;
+               }
+            }
+            return false;
+        } else {
+                return true;
+        }
+    }
 }

@@ -10,9 +10,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
@@ -24,7 +24,7 @@ import org.starexec.util.Validator;
  */
 @SuppressWarnings("serial")
 public class GetPicture extends HttpServlet{
-	private static final Logger log = Logger.getLogger(GetPicture.class);
+	private static final StarLogger log = StarLogger.getLogger(GetPicture.class);
     
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -33,109 +33,114 @@ public class GetPicture extends HttpServlet{
 	
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// If the request is not valid, then respond with an error
-		ValidatorStatusCode status=validateRequest(request);
-		if (!status.isSuccess()) {
-			//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
-			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
-			return;
-		}
-		
-		// Check what type is the request, and generate file in different folders according to it.
-    	String defaultPicFilename = new String();
-    	String picFilename = new String();
-    	String pictureDir = R.getPicturePath();
-    	StringBuilder sb = new StringBuilder();
-    	
-		if (request.getParameter("type").equals("uthn")) {
-			sb.delete(0, sb.length());
-			sb.append("users");
-			sb.append(File.separator);
-			sb.append("Pic");
-			sb.append(request.getParameter("Id").toString());
-			sb.append("_thn.jpg");
-			
-			defaultPicFilename = GetPicture.getDefaultPicture("users");
-		} else if (request.getParameter("type").equals("uorg")) {
-			sb.delete(0, sb.length());
-			sb.append("users");
-			sb.append(File.separator);
-			sb.append("Pic");
-			sb.append(request.getParameter("Id").toString());
-			sb.append("_org.jpg");
-			
-			defaultPicFilename = GetPicture.getDefaultPicture("users");
-		} else if (request.getParameter("type").equals("sthn")) {
-			sb.delete(0, sb.length());
-			sb.append("solvers");
-			sb.append(File.separator);
-			sb.append("Pic");
-			sb.append(request.getParameter("Id").toString());
-			sb.append("_thn.jpg");
-			
-			defaultPicFilename = GetPicture.getDefaultPicture("solvers");
-		} else if (request.getParameter("type").equals("sorg")) {
-			sb.delete(0, sb.length());
-			sb.append("solvers");
-			sb.append(File.separator);
-			sb.append("Pic");
-			sb.append(request.getParameter("Id").toString());
-			sb.append("_org.jpg");
-			
-			defaultPicFilename = GetPicture.getDefaultPicture("solvers");
-		} else if (request.getParameter("type").equals("bthn")) {
-			sb.delete(0, sb.length());
-			sb.append("benchmarks");
-			sb.append(File.separator);
-			sb.append("Pic");
-			sb.append(request.getParameter("Id").toString());
-			sb.append("_thn.jpg");
-			
-			defaultPicFilename = GetPicture.getDefaultPicture("benchmarks");
-		} else if (request.getParameter("type").equals("borg")) {
-			sb.delete(0, sb.length());
-			sb.append("benchmarks");
-			sb.append(File.separator);
-			sb.append("Pic");
-			sb.append(request.getParameter("Id").toString());
-			sb.append("_org.jpg");
-			
-			defaultPicFilename = GetPicture.getDefaultPicture("benchmarks");
-		} else if (request.getParameter("type").equals("corg")) {
-			sb.delete(0, sb.length());
-			sb.append("resultCharts");
-			sb.append(File.separator);
-			sb.append("Pic");
-			sb.append(request.getParameter("Id").toString());
-			sb.append(".jpg");
-			
-			defaultPicFilename = GetPicture.getDefaultPicture("chart");
-		}
-		
-		picFilename = sb.toString();
-		
-    	sb.delete(0, sb.length());
-    	sb.append(pictureDir);
-    	sb.append(File.separator);
-    	sb.append(picFilename);
-		File file = new File(sb.toString());
-		
-		// If the desired file exists, then the file will return it, or else return the default file Pic0.jpg
-		if (file.exists() == false) {
+		try {
+			// If the request is not valid, then respond with an error
+			ValidatorStatusCode status = validateRequest(request);
+			if (!status.isSuccess()) {
+				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
+				return;
+			}
+
+			// Check what type is the request, and generate file in different folders according to it.
+			String defaultPicFilename = new String();
+			String picFilename = new String();
+			String pictureDir = R.getPicturePath();
+			StringBuilder sb = new StringBuilder();
+
+			if (request.getParameter("type").equals("uthn")) {
+				sb.delete(0, sb.length());
+				sb.append("users");
+				sb.append(File.separator);
+				sb.append("Pic");
+				sb.append(request.getParameter("Id").toString());
+				sb.append("_thn.jpg");
+
+				defaultPicFilename = GetPicture.getDefaultPicture("users");
+			} else if (request.getParameter("type").equals("uorg")) {
+				sb.delete(0, sb.length());
+				sb.append("users");
+				sb.append(File.separator);
+				sb.append("Pic");
+				sb.append(request.getParameter("Id").toString());
+				sb.append("_org.jpg");
+
+				defaultPicFilename = GetPicture.getDefaultPicture("users");
+			} else if (request.getParameter("type").equals("sthn")) {
+				sb.delete(0, sb.length());
+				sb.append("solvers");
+				sb.append(File.separator);
+				sb.append("Pic");
+				sb.append(request.getParameter("Id").toString());
+				sb.append("_thn.jpg");
+
+				defaultPicFilename = GetPicture.getDefaultPicture("solvers");
+			} else if (request.getParameter("type").equals("sorg")) {
+				sb.delete(0, sb.length());
+				sb.append("solvers");
+				sb.append(File.separator);
+				sb.append("Pic");
+				sb.append(request.getParameter("Id").toString());
+				sb.append("_org.jpg");
+
+				defaultPicFilename = GetPicture.getDefaultPicture("solvers");
+			} else if (request.getParameter("type").equals("bthn")) {
+				sb.delete(0, sb.length());
+				sb.append("benchmarks");
+				sb.append(File.separator);
+				sb.append("Pic");
+				sb.append(request.getParameter("Id").toString());
+				sb.append("_thn.jpg");
+
+				defaultPicFilename = GetPicture.getDefaultPicture("benchmarks");
+			} else if (request.getParameter("type").equals("borg")) {
+				sb.delete(0, sb.length());
+				sb.append("benchmarks");
+				sb.append(File.separator);
+				sb.append("Pic");
+				sb.append(request.getParameter("Id").toString());
+				sb.append("_org.jpg");
+
+				defaultPicFilename = GetPicture.getDefaultPicture("benchmarks");
+			} else if (request.getParameter("type").equals("corg")) {
+				sb.delete(0, sb.length());
+				sb.append("resultCharts");
+				sb.append(File.separator);
+				sb.append("Pic");
+				sb.append(request.getParameter("Id").toString());
+				sb.append(".jpg");
+
+				defaultPicFilename = GetPicture.getDefaultPicture("chart");
+			}
+
+			picFilename = sb.toString();
+
 			sb.delete(0, sb.length());
 			sb.append(pictureDir);
 			sb.append(File.separator);
-			sb.append(defaultPicFilename);
-			file = new File(sb.toString());
-		}
-		
-		// Return the file in the response.
-		try {
-			java.io.OutputStream os = response.getOutputStream();
-			FileUtils.copyFile(file, os);
+			sb.append(picFilename);
+			File file = new File(sb.toString());
+
+			// If the desired file exists, then the file will return it, or else return the default file Pic0.jpg
+			if (file.exists() == false) {
+				sb.delete(0, sb.length());
+				sb.append(pictureDir);
+				sb.append(File.separator);
+				sb.append(defaultPicFilename);
+				file = new File(sb.toString());
+			}
+
+			// Return the file in the response.
+			try {
+				java.io.OutputStream os = response.getOutputStream();
+				FileUtils.copyFile(file, os);
+			} catch (Exception e) {
+				log.warn("picture with path " + file.getPath() + "could not be found");
+			}
 		} catch (Exception e) {
-			log.warn("picture with path "+file.getPath()+"could not be found");
+			log.warn("Caught Exception in GetPicture.doGet", e);
+			throw e;
 		}
 	}
 	

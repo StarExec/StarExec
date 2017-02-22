@@ -7,7 +7,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.apache.commons.lang3.tuple.Pair;
 import org.starexec.constants.R;
 import org.starexec.constants.Web;
@@ -20,6 +19,7 @@ import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecDatabaseException;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -35,7 +35,7 @@ import com.google.gson.Gson;
  */
 @SuppressWarnings("serial")
 public class Verify extends HttpServlet {
-	private static final Logger log = Logger.getLogger(Verify.class);     
+	private static final StarLogger log = StarLogger.getLogger(Verify.class);
 	private static Gson gson = new Gson();
 	
 	
@@ -47,19 +47,24 @@ public class Verify extends HttpServlet {
     
     @Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		if (Util.paramExists(Mail.CHANGE_EMAIL_CODE, request)) { 
-			// Handle change email request
-			handleEmailChange(request, response);
+		try {
+			if (Util.paramExists(Mail.CHANGE_EMAIL_CODE, request)) {
+				// Handle change email request
+				handleEmailChange(request, response);
 
-		} else if(Util.paramExists(Mail.EMAIL_CODE, request) && !Util.paramExists(Mail.LEADER_RESPONSE, request)) {
-    		// Handle user activation request
-    		handleActivation(request, response);
-    	} else if(Util.paramExists(Mail.EMAIL_CODE, request) && Util.paramExists(Mail.LEADER_RESPONSE, request)) {
-    		// Handle community request accept/decline
-    		handleAcceptance(request, response);
-    	} else {
-    		response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-    	}
+			} else if (Util.paramExists(Mail.EMAIL_CODE, request) && !Util.paramExists(Mail.LEADER_RESPONSE, request)) {
+				// Handle user activation request
+				handleActivation(request, response);
+			} else if (Util.paramExists(Mail.EMAIL_CODE, request) && Util.paramExists(Mail.LEADER_RESPONSE, request)) {
+				// Handle community request accept/decline
+				handleAcceptance(request, response);
+			} else {
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+			}
+		} catch (Exception e) {
+			log.warn("Caught Exception in Verify.doGet", e);
+			throw e;
+		}
     }
 
 	/**
@@ -113,7 +118,6 @@ public class Verify extends HttpServlet {
 		String verdict = (String)request.getParameter(Mail.LEADER_RESPONSE);
 		
 		CommunityRequest comRequest = Requests.getCommunityRequest(code);
-
 
 		// TODO Give requests that were sent by email parameter too.
 		boolean sentFromCommunityPage = Util.paramExists(Web.SENT_FROM_COMMUNITY_PAGE, request);
@@ -273,7 +277,8 @@ public class Verify extends HttpServlet {
 		s.setPermission(new Permission(true));
 		
 		// Return true if the subspace is successfully created, false otherwise
-    	return Spaces.add(s, parentSpaceId, user.getId()) > 0;
+		s.setParentSpace(parentSpaceId);
+    	return Spaces.add(s, user.getId()) > 0;
     }
  
 }

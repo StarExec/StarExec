@@ -1,6 +1,7 @@
 package org.starexec.test.integration.security;
 
 import org.junit.Assert;
+import org.starexec.constants.R;
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.QueueSecurity;
@@ -17,32 +18,11 @@ public class QueueSecurityTests extends TestSequence {
 	User admin=null;
 	
 	@StarexecTest
-	private void ModifyQueuesTest() {
-		Assert.assertEquals(true,QueueSecurity.canUserModifyQueues(admin.getId()).isSuccess());
-		Assert.assertNotEquals(true,QueueSecurity.canUserModifyQueues(user1.getId()).isSuccess());
-		Assert.assertNotEquals(true,QueueSecurity.canUserModifyQueues(user2.getId()).isSuccess());
-	}
-	
-	@StarexecTest
 	private void canUserMakeQueueTest() {
 		String randomName=TestUtil.getRandomQueueName();
 		Assert.assertEquals(true,QueueSecurity.canUserMakeQueue(admin.getId(), randomName).isSuccess());
 		Assert.assertNotEquals(true,QueueSecurity.canUserMakeQueue(user1.getId(),randomName).isSuccess());
 		Assert.assertNotEquals(true,QueueSecurity.canUserMakeQueue(user2.getId(),randomName).isSuccess());
-	}
-	
-	
-	
-	
-	
-	@StarexecTest
-	private void canUserUpdateRequest() {
-		String randomName=TestUtil.getRandomQueueName();
-		Assert.assertEquals(true,QueueSecurity.canUserUpdateRequest(admin.getId(),randomName).isSuccess());
-		//queues need unique names, so make sure we can't choose a name we already have
-		Assert.assertNotEquals(true,QueueSecurity.canUserUpdateRequest(admin.getId(),Queues.getAll().get(0).getName()).isSuccess());
-		Assert.assertNotEquals(true,QueueSecurity.canUserUpdateRequest(user1.getId(),randomName).isSuccess());
-		Assert.assertNotEquals(true,QueueSecurity.canUserUpdateRequest(user2.getId(),randomName).isSuccess());
 	}
 	
 	@StarexecTest
@@ -63,9 +43,9 @@ public class QueueSecurityTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		user1=ResourceLoader.loadUserIntoDatabase();
-		user2=ResourceLoader.loadUserIntoDatabase();
-		admin=Users.getAdmins().get(0);
+		user1=loader.loadUserIntoDatabase();
+		user2=loader.loadUserIntoDatabase();
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 		Assert.assertNotNull(user1);
 		Assert.assertNotNull(user2);
 		Assert.assertNotNull(admin);
@@ -74,8 +54,7 @@ public class QueueSecurityTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Users.deleteUser(user1.getId(),admin.getId());
-		Users.deleteUser(user2.getId(),admin.getId());
+		loader.deleteAllPrimitives();
 	}
 
 }

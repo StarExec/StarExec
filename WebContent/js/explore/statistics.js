@@ -20,7 +20,7 @@ $(document).ready(function(){
 	initTableHeaderUI();
 
 	statsTable = $('#statsTable').dataTable({
-		"sDom": 'rt<"bottom"flpi><"clear">'
+		"sDom": getDataTablesDom()
 	    });
 	
 	

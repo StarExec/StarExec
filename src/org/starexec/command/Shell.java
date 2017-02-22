@@ -1,10 +1,9 @@
 package org.starexec.command;
 
+import org.starexec.logger.StarLogger;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 
 
 /**
@@ -64,7 +63,7 @@ public class Shell {
 	 */
 	public static void main(String[] args) {
 		// log4j is not used for StarexecCommand
-		Logger.getRootLogger().setLevel(Level.OFF);
+		StarLogger.turnOffLogging();
 		Shell shell=new Shell();
 		System.out.println("Last update = "+C.VERSION); // version is just the date of the last update.
 		//if we get a single argument, it's a file we should try to run

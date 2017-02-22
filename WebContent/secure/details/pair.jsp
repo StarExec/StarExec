@@ -1,9 +1,12 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.JobSecurity,org.apache.log4j.Logger, org.starexec.data.security.GeneralSecurity,org.starexec.data.database.*, org.starexec.data.to.*,org.starexec.data.to.pipelines.*, org.starexec.util.*, org.starexec.data.to.Status.StatusCode"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.JobSecurity, org.starexec.data.security.GeneralSecurity,org.starexec.data.database.*, org.starexec.data.to.*,org.starexec.data.to.pipelines.*, org.starexec.util.*, org.starexec.data.to.Status.StatusCode"%>
+<%@ page import="java.util.Optional" %>
+<%@ page import="org.starexec.data.to.enums.BenchmarkingFramework" %>
+<%@ page import="org.starexec.logger.StarLogger" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%		
-	Logger log = Logger.getLogger(JobPair.class);			
+	StarLogger log = StarLogger.getLogger(JobPair.class);
 
 	try {
 		int userId = SessionUtil.getUserId(request);
@@ -18,13 +21,20 @@
 		} else if(Permissions.canUserSeeJob(jp.getJobId(), userId)) {
 			Job j = Jobs.get(jp.getJobId());
 			for (JoblineStage stage : jp.getStages()) {
-				String output=GeneralSecurity.getHTMLSafeString(JobPairs.getStdOut(jp.getId(),stage.getStageNumber(),100));
+				Optional<String> pairOutput = JobPairs.getStdOut(jp.getId(),stage.getStageNumber(),100);
+				String tempOutput = "not available";
+				if (pairOutput.isPresent()) {
+					tempOutput = pairOutput.get();
+				}
+				String output=GeneralSecurity.getHTMLSafeString(tempOutput);
 				stage.setOutput(output);
 			}
 			User u = Users.get(j.getUserId());
 			String pairlog=GeneralSecurity.getHTMLSafeString(JobPairs.getJobLog(jp.getId()));
 			boolean canRerun=(JobSecurity.canUserRerunPairs(j.getId(),userId,jp.getStatus().getCode().getVal()).isSuccess());
 			boolean moreThanOneStage = jp.getStages().size() > 1;
+			request.setAttribute("isBenchExec", j.getBenchmarkingFramework() == BenchmarkingFramework.BENCHEXEC);
+			request.setAttribute("isRunsolver", j.getBenchmarkingFramework() == BenchmarkingFramework.RUNSOLVER);
 			request.setAttribute("moreThanOneStage", moreThanOneStage);
 			request.setAttribute("pair", jp);
 			request.setAttribute("job", j);
@@ -44,7 +54,7 @@
 	}
 %>
 
-<star:template title="${job.name} pair #${pair.id}" js="lib/jquery.dataTables.min, details/pair, details/shared" css="common/table, details/shared">			
+<star:template title="${job.name} pair #${pair.id}" js="lib/jquery.dataTables.min, details/pair, details/shared" css="common/table, details/shared, details/pair">			
 	<span id="pairId" value="${pair.id}"></span>
 	<fieldset id="fieldDetails">
 		<legend>details</legend>
@@ -97,10 +107,10 @@
 	<c:forEach var="stage" items="${pair.getStages()}">
 		<c:if test="${moreThanOneStage}">
 			<%-- This fieldset is terminated in an identical <c:if> element further down --%>
-			<fieldset id="fieldStats">
+			<fieldset class="fieldStats">
 			<legend>stage ${stage.stageNumber} statistics</legend>	
 		</c:if>
-			<fieldset id="stageStats">
+			<fieldset class="stageStats">
 				<legend>run statistics</legend>
 				<table id="pairStats" class="shaded">
 					<thead>
@@ -126,29 +136,43 @@
 							<td>cpu usage</td>
 							<td>${stage.cpuTime}</td>
 						</tr>
-						<tr title="the total amount of time spent executing in user mode, expressed in microseconds">
-							<td>user time</td>
-							<td>${stage.userTime}</td>
-						</tr>
-						<tr title="the total amount of time spent executing in kernel mode, expressed in microseconds">
-							<td>system time</td>
-							<td>${stage.systemTime}</td>
-						</tr>
+						<c:if test="${isRunsolver}">
+							<tr title="the total amount of time spent executing in user mode, expressed in microseconds">
+								<td>user time</td>
+								<td>${stage.userTime}</td>
+							</tr>
+						</c:if>
+						<c:if test="${isRunsolver}">
+							<tr title="the total amount of time spent executing in kernel mode, expressed in microseconds">
+								<td>system time</td>
+								<td>${stage.systemTime}</td>
+							</tr>
+						</c:if>
 						
 						
+						<c:if test="${isBenchExec}">
+						<tr title="the maximum memory size in bytes">
+							<td>max memory</td>
+							<td>${stage.maxVirtualMemory}</td>
+						</tr>
+						</c:if>
+						<c:if test="${isRunsolver}">
 						<tr title="the maximum vmem size in bytes">
 							<td>max virtual memory</td>
 							<td>${stage.maxVirtualMemory}</td>
 						</tr>
-						<tr title="the maximum resident set size used (in kilobytes)">
-							<td>max residence set size</td>
-							<td>${stage.maxResidenceSetSize}</td>
-						</tr>
+						</c:if>	
+						<c:if test="${isRunsolver}">
+							<tr title="the maximum resident set size used (in kilobytes)">
+								<td>max residence set size</td>
+								<td>${stage.maxResidenceSetSize}</td>
+							</tr>
+						</c:if>
 					</tbody>
 				</table>
 			</fieldset>
 				
-			<fieldset id="fieldAttrs">
+			<fieldset class="fieldAttrs">
 				<legend>stage attributes</legend>	
 				<c:choose>
 					<c:when test="${stage.status.code == 'STATUS_COMPLETE' && empty stage.attributes}">
@@ -177,7 +201,7 @@
 					</c:otherwise>
 				</c:choose>		
 			</fieldset>
-			<fieldset id="fieldOutput">		
+			<fieldset class="fieldOutput">		
 					<legend><img alt="loading" src="${starexecRoot}/images/loader.gif"> output</legend>			
 					<textarea class=contentTextarea id="jpStdout" readonly="readonly">${stage.output}</textarea>	
 					<a href="${starexecRoot}/services/jobs/pairs/${pair.id}/stdout/${stage.stageNumber}?limit=-1" target="_blank" class="popoutLink">popout</a>

@@ -7,12 +7,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.WorkerNode;
-import org.starexec.util.DataTablesQuery;
+import org.starexec.logger.StarLogger;
 
 
 /**
@@ -21,7 +20,7 @@ import org.starexec.util.DataTablesQuery;
 
 
 public class Cluster {
-	private static final Logger log = Logger.getLogger(Cluster.class);	
+	private static final StarLogger log = StarLogger.getLogger(Cluster.class);
 	
 	/**
 	 * Gets the worker nodes from BACKEND and adds them to the database if they don't already exist. This must be done
@@ -49,21 +48,12 @@ public class Cluster {
 		}
 		log.info("Completed loading info for worker nodes into db");
 	}
-
-	/**
-	 * Gets the queue list from BACKEND and adds them to the database if they don't already exist. This must
-	 * be done AFTER nodes are loaded as the queues will make associations to the nodes. This also loads
-	 * attributes for the queue as well as its current usage.
-	 */
-	public static synchronized void loadQueues() {
-		Cluster.loadQueueDetails();
-	}
-
+	
 	/**
 	 * Loads the list of active queues on the system, loads their attributes into the database
 	 * as well as their associations to worker nodes that belong to each queue.
 	 */
-	private static void loadQueueDetails() {
+	public synchronized static void loadQueueDetails() {
 		log.info("Loading queue details into the db");
 		try {			
 
@@ -105,36 +95,7 @@ public class Cluster {
 	    return true;
 	    
 	}
-	
-	/**
-	 * Gets the total number of active nodes in the system
-	 * @return The number of active nodes, or -1 on error.
-	 */
-	public static int getNodeCount() {
-		log.debug("Calling GetNodeCount");
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		
-		try {		
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetActiveNodeCount()}");
-			results = procedure.executeQuery();	
-			
-			
-			if (results.next()){
-				return results.getInt("nodeCount");
-			}						
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}	
-		return -1;
-	}	
-	
+
 	/**
 	 * Gets a worker node with detailed information (Id and name along with all attributes)
 	 * @param con The connection to make the query with
@@ -187,51 +148,7 @@ public class Cluster {
 		
 		return null;
 	}
-	
-	/**
-	 * Gets the next page of nodes for the admin to view
-	 * @param query a DataTablesQuery object
-	 * @return The list of nodes to display, or null on error
-	 */
-	//TODO: This pagination function is not formed correctly
-	public static List<WorkerNode> getNodesForNextPageAdmin(DataTablesQuery query) {
-		Connection con = null;			
-		CallableStatement procedure= null;
-		ResultSet results=null;
-		try {
-			con = Common.getConnection();
-			
-			procedure = con.prepareCall("{CALL GetNextPageOfNodesAdmin(?, ?, ?, ?, ?)}");
-			procedure.setInt(1, query.getStartingRecord());
-			procedure.setInt(2, query.getNumRecords());
-			procedure.setInt(3, query.getSortColumn());
-			procedure.setBoolean(4, query.isSortASC());
-			procedure.setString(5, query.getSearchQuery());
-			results = procedure.executeQuery();
-			List<WorkerNode> nodes = new LinkedList<WorkerNode>();
-			
-			while(results.next()){
-				WorkerNode n = new WorkerNode();
-				n.setId(results.getInt("id"));
-				n.setName(results.getString("name"));
-				n.setStatus(results.getString("status"));
-				nodes.add(n);
-				
-							
-			}	
-			
-			return nodes;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		
-		return null;
-	}
-	
+
 	/**
 	 * Gets all nodes in the cluster that belong to the queue
 	 * @param id The id of the queue to get nodes for
@@ -304,7 +221,6 @@ public class Cluster {
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
-			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -313,7 +229,34 @@ public class Cluster {
 		log.debug(String.format("Status for node [%s] failed to be updated.", (name == null) ? "ALL" : name));
 		return false;
 	}
-
+	/**
+	 * Removes a node from the database. This does not do anything to the backend.
+	 * @param nodeId The ID of the node to remove
+	 * @return true on success and false otherwise
+	 */
+	public static boolean deleteNode(int nodeId) {
+		Connection con = null;			
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			
+			procedure = con.prepareCall("{CALL DeleteNode(?)}");
+			
+			// First, add the node (MySQL will ignore this if it already exists)
+			procedure.setInt(1, nodeId);
+			procedure.executeUpdate();
+						
+			// Done, commit the changes	
+			return true;
+		} catch (Exception e){			
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		
+		return false;
+	}
 	
 	/**
 	 * Takes in a node name and adds it to the database if it doesn't aleady exist
@@ -321,7 +264,7 @@ public class Cluster {
 	 * @return True if the operation was a success, false otherwise.
 	 * @author Tyler Jensen
 	 */
-	private static boolean addNodeIfNotExists(String name) {
+	public static boolean addNodeIfNotExists(String name) {
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
@@ -337,7 +280,6 @@ public class Cluster {
 			return true;
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);
-			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -551,74 +493,5 @@ public class Cluster {
 			Common.safeClose(results);
 		}
 		return null;
-	}
-	/**
-	 * Gets the system default queue
-	 * @return The id of the queue, or 01 on error
-	 */
-	public static int getDefaultQueueId() {
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetDefaultQueueId(?)}");
-			procedure.setString(1, R.DEFAULT_QUEUE_NAME);
-			results = procedure.executeQuery();
-			
-			if (results.next()) {
-				return results.getInt("id");
-			}
-			
-			return -1;
-			
-		} catch (Exception e) {
-			log.error("GetDefaultQueueId says " + e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return -1;
-	}
-
-	/**
-	 * Gives one or more communities access to a queue
-	 * @param community_ids The IDs of the communities to give access to
-	 * @param queue_id The ID of the queue
-	 * @return True on success and false on error.
-	 */
-	public static boolean setQueueCommunityAccess(List<Integer> community_ids, int queue_id) {
-		log.debug("SetQueueCommunityAccess beginning...");
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();
-			Common.beginTransaction(con);
-			
-			if (community_ids != null) {
-				for (int id : community_ids) {
-					procedure = con.prepareCall("{CALL SetQueueCommunityAccess(?, ?)}");
-					procedure.setInt(1, id);
-					procedure.setInt(2, queue_id);
-					
-					procedure.executeUpdate();
-				}
-			}
-			
-			Common.endTransaction(con);
-			
-			return true;
-			
-		} catch (Exception e) {
-			log.error("SetQueueCommunityAccess says " + e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return false;
-		
 	}
 }

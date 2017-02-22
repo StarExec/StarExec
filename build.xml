@@ -1,28 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- This build file must be configured for local use, using a file
-     called local.properties, in this directory.  
+	 called local.properties, in this directory.
 
-     See example.local.properties in this directory for an example. -->
+	 See example.local.properties in this directory for an example. -->
 
 <!-- Starexec production build script. Author: Tyler Jensen, changes by Aaron Stump, Eric Burns -->
 <project name="starexec" default="epilog-test" basedir=".">
 
-        <loadproperties srcFile="local.properties"/>
+		<loadproperties srcFile="local.properties"/>
 
 	<!-- Set up path information for use throughout this script -->
-	<property name="project-name" value="${appname}" />	
+	<property name="project-name" value="${appname}" />
 	<property name="war-file-name" value="${project-name}.war" />
 	<property name="source-dir" value="src" />
 	<property name="data-to-source-dir" value="${source-dir}/org/starexec/data/to"/>
 	<property name="scripts-dir" value="scripts-common" />
 	<property name="build-dir" value="build" />
-	<property name="class-dir" value="${build-dir}/classes" />		
+	<property name="class-dir" value="${build-dir}/classes" />
 	<property name="config-dir" value="${class-dir}/org/starexec/config" />
 	<property name="esapi-dir" value="${class-dir}/esapi"/>
 	<property name="resource-dir" value="${class-dir}/org/starexec/test/resources" />
-	<property name="web-inf" value="WebContent/WEB-INF" />		
-	<property name="meta-inf" value="WebContent/META-INF" />		
+	<property name="web-inf" value="WebContent/WEB-INF" />
+	<property name="meta-inf" value="WebContent/META-INF" />
+	<property name="css-input-dir" value="WebContent/css" />
+	<property name="css-output-dir" value="WebContent/css" />
 	<property name="starcom-base" value="${source-dir}/org/starexec/command"/>
 	<property name="starcom-comp" value="${starcom-base}/compile"/>
 	<property name="starcom-build" value="${starcom-base}/build" />
@@ -31,64 +33,64 @@
 	<property name="starcomsrc" value="${starcom-base}"/>
 	<!-- Tell java where to look for JAR files while compiling (our application lib and the apache lib) -->
 	<path id="classpath">
-        <fileset dir="${web-inf}/lib" includes="**/*.jar"/>
+		<fileset dir="${web-inf}/lib" includes="**/*.jar"/>
 		<fileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
 		<fileset dir="local-lib" includes="**/*.jar"/>
-    </path>
+	</path>
 	<path id="starcomclasspath">
 		<fileset dir="${starcomlib}" includes="**/*.jar"/>
 		<fileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
 
 	</path>
-	
+
 	<!-- Action for compiling the project and building the WAR file.
 
-             1. we first compile the Java sources and copy over scripts and
-                configurations to ${build-dir}.
-             2. then we rewrite some of the configurations, using information
-	        from local.properties.
-         -->
+			 1. we first compile the Java sources and copy over scripts and
+				configurations to ${build-dir}.
+			 2. then we rewrite some of the configurations, using information
+			from local.properties.
+		 -->
 		<!-- Removes old StarExecCommand version  -->
-	
+
 	<target name="cleanstarcom" depends="">
 		<delete dir="${starcom-build}" />
 		<mkdir dir="${starcom-build}" />
 		<delete dir="${starcom-comp}" />
 		<mkdir dir="${starcom-comp}" />
-		<delete dir="${starcomzip}" /> 
+		<delete dir="${starcomzip}" />
 	</target>
-	
+
 	<target name="compilestarcom" depends="cleanstarcom">
 		<javac debug="true" debuglevel="lines,vars,source" srcdir="${source-dir}" includes="org/starexec/command/*.java,org/starexec/data/to/Permission.java,org/starexec/data/to/Identifiable.java,org/starexec/constants/R.java,org/starexec/util/Validator.java,org/starexec/backend/Backend.java, org/starexec/util/ArchiveUtil.java" destdir="${starcom-comp}" classpathref="starcomclasspath">
 </javac>
 	</target>
-	
+
 	<!-- Builds a runnable jar with all necessasry libraries built in -->
 	<target name="command" depends="compilestarcom">
 		<jar destfile="${starcom-build}/StarexecCommand.jar">
 			<manifest>
-		    	<attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
-		        <attribute name="Rsrc-Main-Class" value="org.starexec.command.Shell"/>
-		        <attribute name="Class-Path" value="command"/>
-		        <attribute name="Rsrc-Class-Path" value="./ commons-codec-1.9.jar commons-logging-1.1.3.jar fluent-hc-4.2.5.jar httpclient-4.3.4.jar httpclient-cache-4.2.5.jar httpcore-4.3.2.jar httpmime-4.3.4.jar commons-compress-1.4.1.jar gson-2.3.jar log4j-1.2.16.jar"/>
-		    </manifest>
-		    <zipfileset src="${starcomlib}/jar-in-jar-loader.zip"/>
-		    <fileset dir="${starcom-comp}"/>
-		    <zipfileset dir="${starcomlib}" includes="commons-codec-1.9.jar"/>
-		    <zipfileset dir="${starcomlib}" includes="commons-logging-1.1.3.jar"/>
-		    <zipfileset dir="${starcomlib}" includes="fluent-hc-4.2.5.jar"/>
-		    <zipfileset dir="${starcomlib}" includes="httpclient-4.3.4.jar"/>
-		    <zipfileset dir="${starcomlib}" includes="httpclient-cache-4.2.5.jar"/>
-		    <zipfileset dir="${starcomlib}" includes="httpcore-4.3.2.jar"/>
-		    <zipfileset dir="${starcomlib}" includes="httpmime-4.3.4.jar"/>
-		    <zipfileset dir="${starcomlib}" includes="commons-compress-1.4.1.jar"/>
-		    <zipfileset dir="${starcomlib}" includes="gson-2.3.jar"/>
-		    <zipfileset dir="${starcomlib}" includes="log4j-1.2.16.jar"/>
-	            <zipfileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
+				<attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
+				<attribute name="Rsrc-Main-Class" value="org.starexec.command.Shell"/>
+				<attribute name="Class-Path" value="command"/>
+				<attribute name="Rsrc-Class-Path" value="./ commons-codec-1.9.jar commons-logging-1.1.3.jar fluent-hc-4.2.5.jar httpclient-4.3.4.jar httpclient-cache-4.2.5.jar httpcore-4.3.2.jar httpmime-4.3.4.jar commons-compress-1.4.1.jar gson-2.3.jar log4j-1.2.16.jar"/>
+			</manifest>
+			<zipfileset src="${starcomlib}/jar-in-jar-loader.zip"/>
+			<fileset dir="${starcom-comp}"/>
+			<zipfileset dir="${starcomlib}" includes="commons-codec-1.9.jar"/>
+			<zipfileset dir="${starcomlib}" includes="commons-logging-1.1.3.jar"/>
+			<zipfileset dir="${starcomlib}" includes="fluent-hc-4.2.5.jar"/>
+			<zipfileset dir="${starcomlib}" includes="httpclient-4.3.4.jar"/>
+			<zipfileset dir="${starcomlib}" includes="httpclient-cache-4.2.5.jar"/>
+			<zipfileset dir="${starcomlib}" includes="httpcore-4.3.2.jar"/>
+			<zipfileset dir="${starcomlib}" includes="httpmime-4.3.4.jar"/>
+			<zipfileset dir="${starcomlib}" includes="commons-compress-1.4.1.jar"/>
+			<zipfileset dir="${starcomlib}" includes="gson-2.3.jar"/>
+			<zipfileset dir="${starcomlib}" includes="log4j-1.2.16.jar"/>
+				<zipfileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
 
 		</jar>
 	</target>
-		
+
 		<!-- Zips up the StarExecCommand folder with the readme and runnable jar  -->
 	<target name="zipstarcom" depends="command">
 		<copy file="WebContent/public/manual.txt" tofile="${starcom-build}/Manual.txt" />
@@ -98,10 +100,10 @@
 	<target name="register-commands" depends="">
 		<!-- Register commands and create build timestamp for build properties file -->
 		<tstamp>
-	        <format property="builtat" pattern="MM/dd/yyyy hh:mm:ss aa" />
-	    </tstamp>        
-	    <exec executable="svnversion" outputproperty="svnversion"/>
-	    <exec executable="whoami" outputproperty="whoami"/>
+			<format property="builtat" pattern="MM/dd/yyyy hh:mm:ss aa" />
+		</tstamp>
+		<exec executable="svnversion" outputproperty="svnversion"/>
+		<exec executable="whoami" outputproperty="whoami"/>
 	</target>
 
 	<target name="compilestarexec" depends="register-commands">
@@ -114,8 +116,17 @@
 			<compilerarg value="-Xlint:unchecked"/>
 		</javac>
 	</target>
-	
-	<target name="war" depends="register-commands">		
+
+	<target name="css">
+		<copy file="${css-input-dir}/_properties.scss.template" tofile="${css-input-dir}/_properties.scss" />
+		<replaceregexp file="${css-input-dir}/_properties.scss" match="\$\{appname\}" replace="${appname}" />
+		<exec executable="sass" failonerror="true">
+			<arg line="--style compressed" />
+			<arg line="--update ${css-input-dir}:${css-output-dir}" />
+		</exec>
+	</target>
+
+	<target name="war" depends="register-commands, css">
 		<!-- Copy over the org.starexec.config folder from source to classes -->
 		<mkdir dir="${class-dir}/org/starexec/config" />
 		<copy todir="${class-dir}/org/starexec/config">
@@ -130,46 +141,54 @@
 				<include name="**/*" />
 			</fileset>
 		</copy>
-	        <mkdir dir="${esapi-dir}" />
-	        <copy todir="${esapi-dir}">
+			<mkdir dir="${esapi-dir}" />
+			<copy todir="${esapi-dir}">
 			<fileset dir="${source-dir}/esapi">
 				<include name="**/*"/>
 			</fileset>
 		</copy>
-                <!-- Copy the soft-deploy template and fill it in -->
+				<!-- Copy the soft-deploy template and fill it in -->
 		<delete file="soft-deploy.sh" />
-                <copy file="${scripts-dir}/soft-deploy.template" tofile="soft-deploy.sh"/>
-                <replaceregexp file="soft-deploy.sh" match="the_appname" replace="${appname}" flags="g"/>
-                <replaceregexp file="soft-deploy.sh" match="the_sge_script_dir" replace="${sge-script-dir}"/>
-                <replaceregexp file="soft-deploy.sh" match="the_data_dir" replace="${data_dir}"/>
+				<copy file="${scripts-dir}/soft-deploy.template" tofile="soft-deploy.sh"/>
+				<replaceregexp file="soft-deploy.sh" match="the_appname" replace="${appname}" flags="g"/>
+				<replaceregexp file="soft-deploy.sh" match="the_data_dir" replace="${data_dir}"/>
+				<replaceregexp file="soft-deploy.sh" match="the_web_home" replace="${web-home}"/>
+
 		<chmod file="soft-deploy.sh" perm="774"/>
 
-                <!-- Copy the context template and fill it in -->
+		<!-- Fill in the createDistroArchive.sh template -->
+		<delete file="createDistroArchive.sh" />
+		<copy file="${scripts-dir}/createDistroArchiveTemplate.sh" tofile="createDistroArchive.sh"/>
+		<replaceregexp file="createDistroArchive.sh" match="current_checkout_dir" replace="${basedir}"/>
+		<replaceregexp file="createDistroArchive.sh" match="current_starexec_vesion" replace="${svnversion}"/>
+
+		<chmod file="createDistroArchive.sh" perm="774"/>
+				<!-- Copy the context template and fill it in -->
 		<delete file="${meta-inf}/context.xml" />
-                <copy file="context.template" tofile="${meta-inf}/context.xml"/>
-                <replaceregexp file="${meta-inf}/context.xml" match="the_appname" replace="${appname}" flags="g"/>
-                <replaceregexp file="${meta-inf}/context.xml" match="the_db_name" replace="${db_name}"/>
-                <replaceregexp file="${meta-inf}/context.xml" match="the_connection_name" replace="${connection-name}"/>
-                <replaceregexp file="${meta-inf}/context.xml" match="the_connection_password" replace="${connection-password}"/>
+				<copy file="context.template" tofile="${meta-inf}/context.xml"/>
+				<replaceregexp file="${meta-inf}/context.xml" match="the_appname" replace="${appname}" flags="g"/>
+				<replaceregexp file="${meta-inf}/context.xml" match="the_db_name" replace="${db_name}"/>
+				<replaceregexp file="${meta-inf}/context.xml" match="the_connection_name" replace="${connection-name}"/>
+				<replaceregexp file="${meta-inf}/context.xml" match="the_connection_password" replace="${connection-password}"/>
 
 
 		<!-- Create/update the build property file -->
-	    <propertyfile file="${config-dir}/build.properties"
-	        comment="This file contains automatically generated build metadata. DO NOT EDIT!">        
-	        <entry key="buildtime" value="${builtat}"/>
-	        <entry key="build" value="${svnversion}"/>
-	        <entry key="builder" value="${whoami}"/>
-	    </propertyfile>
-		
+		<propertyfile file="${config-dir}/build.properties"
+			comment="This file contains automatically generated build metadata. DO NOT EDIT!">
+			<entry key="buildtime" value="${builtat}"/>
+			<entry key="build" value="${svnversion}"/>
+			<entry key="builder" value="${whoami}"/>
+		</propertyfile>
+
 		<!-- Update the starexec-config file to use the production configuration -->
 		<replaceregexp file="${config-dir}/starexec-config.xml"
-		               match="default=(.+)"
-		               replace="default=&quot;${configuration}&quot;&gt;"
-		               byline="false"
+					   match="default=(.+)"
+					   replace="default=&quot;${configuration}&quot;&gt;"
+					   byline="false"
 		/>
-		
+
 		<!-- Copy over SQL files to the deployed-sql directory.  They are there for updating the
-                     deployment.  They do not need to go in the WAR file. -->
+					 deployment.  They do not need to go in the WAR file. -->
 		<delete dir="deployed-sql" />
 		<mkdir dir="deployed-sql" />
 		<mkdir dir="${data_dir}" />
@@ -177,17 +196,17 @@
 			<fileset dir="sql">
 				<include name="**/*" />
 			</fileset>
-		</copy>		
+		</copy>
 
 		<!-- Update the sql scripts to use the correct database -->
 		<replaceregexp match="USE (.+);" replace="USE ${db_name};" byline="false">
 			<fileset dir="deployed-sql" includes="**/*.sql"/>
 		</replaceregexp>
-		
+
 		<!-- Update the sql schema to use the correct database -->
 		<replaceregexp file="deployed-sql/NewInstall.sql" match="DROP DATABASE IF EXISTS (.+);" replace="DROP DATABASE IF EXISTS ${db_name};" byline="false" />
 		<replaceregexp file="deployed-sql/NewInstall.sql" match="CREATE DATABASE (.+);" replace="CREATE DATABASE ${db_name};" byline="false" />
-		
+
 		<!-- Copy over files to upload for testing purposes. -->
 		<delete dir="deployed-upload-test" />
 		<mkdir dir="deployed-upload-test" />
@@ -201,18 +220,18 @@
 		</copy>
 
 		<!-- Update the upload commands to use the correct app -->
-		<replaceregexp file="deployed-upload-test/testDataCommands.txt" match="login addr=https://stardev.cs.uiowa.edu/(.+)/" 
+		<replaceregexp file="deployed-upload-test/testDataCommands.txt" match="login addr=https://stardev.cs.uiowa.edu/(.+)/"
 				replace="login addr=https://${server-name}/${appname}/"  flags="g" byline="false" />
 		<chmod file="deployed-upload-test/uploadTestData.sh" perm="774" />
 
 		<!-- Update the schemas to use the currect server and app -->
 		<delete>
 		   <fileset dir= "WebContent/public">
-		      <include name="**/*.xsd"/>
-		      <include name="**/*.xml"/>
+			  <include name="**/*.xsd"/>
+			  <include name="**/*.xml"/>
 		   </fileset>
 		</delete>
-		
+
 		<copy todir="WebContent/public/">
 			<fileset dir="schemas">
 				<include name="**/*.xsd"/>
@@ -220,32 +239,32 @@
 			</fileset>
 		</copy>
 
-		<replaceregexp  match="www.starexec.org/starexec/" 
+		<replaceregexp	match="www.starexec.org/starexec/"
 				replace="${server-name}/${appname}/" byline="false" flags="g">
 		   <fileset dir="WebContent/public">
-		                <include name="**/*.xsd"/>
+						<include name="**/*.xsd"/>
 				<include name="**/*.xml"/>
 		   </fileset>
 		</replaceregexp>
 
-		<!-- Update the log4j config file to only record INFO level events  -->
-		<propertyfile file="${config-dir}/log4j.properties" comment="This file has been modified by ANT">        
-	        <entry key="log4j.rootLogger" value="${logging_levels}"/>
-                <entry key="log4j.appender.STAREXEC.File" value="${catalina.base}/logs/${logfile_name}.log" />
-  	        </propertyfile>
-		
-	
-		<!-- Create the war file! -->		
+		<!-- Update the log4j config file to only record INFO level events	-->
+		<propertyfile file="${config-dir}/log4j.properties" comment="This file has been modified by ANT">
+			<entry key="log4j.rootLogger" value="${logging_levels}"/>
+				<entry key="log4j.appender.STAREXEC.File" value="${catalina.base}/logs/${logfile_name}.log" />
+			</propertyfile>
+
+
+		<!-- Create the war file! -->
 		<war warfile="${war-file-name}" webxml="${web-inf}/web.xml">
-			<classes dir="${class-dir}" />	
-			<fileset dir="WebContent"/>
-			<lib dir="${web-inf}/lib"/>			
+			<classes dir="${class-dir}" />
+			<fileset dir="WebContent" excludes="**/*.scss"/>
+			<lib dir="${web-inf}/lib"/>
 		</war>
 	</target>
 
 	<target name="skipcompilation" depends="war">
 	</target>
-	
+
 	<target name="epilog-test" depends="zipstarcom, compilestarexec, war">
 		<!-- Execute JUnit tests -->
 		<path id="testpath">
@@ -262,7 +281,7 @@
 			<batchtest todir="junittestoutput">
 				<fileset dir="${class-dir}" includes="**/junit/**/*.class"/>
 			</batchtest>
-        </junit>
+		</junit>
 	</target>
-		
+
 </project>

@@ -1,14 +1,19 @@
 package org.starexec.test.integration.security;
 
 import org.junit.Assert;
+import org.starexec.constants.R;
 import org.starexec.data.database.Settings;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.SettingSecurity;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.User;
+import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
+import org.starexec.util.Util;
+
+import java.sql.SQLException;
 
 public class SettingSecurityTests extends TestSequence {
 	User u=null;
@@ -22,10 +27,14 @@ public class SettingSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void canModifySettingsTest() {
-		Assert.assertTrue(SettingSecurity.canModifySettings(s.getId(), u.getId()).isSuccess());
-		Assert.assertTrue(SettingSecurity.canModifySettings(s.getId(), admin.getId()).isSuccess());
-		Assert.assertFalse(SettingSecurity.canModifySettings(s.getId(), u2.getId()).isSuccess());
-		Assert.assertFalse(SettingSecurity.canModifySettings(-1, u2.getId()).isSuccess());
+		try {
+			Assert.assertTrue(SettingSecurity.canModifySettings(s.getId(), u.getId()).isSuccess());
+			Assert.assertTrue(SettingSecurity.canModifySettings(s.getId(), admin.getId()).isSuccess());
+			Assert.assertFalse(SettingSecurity.canModifySettings(s.getId(), u2.getId()).isSuccess());
+			Assert.assertFalse(SettingSecurity.canModifySettings(-1, u2.getId()).isSuccess());
+		} catch (SQLException e) {
+			Assert.fail("Caught SQLException: " + Util.getStackTrace(e));
+		}
 	}
 	
 	@StarexecTest
@@ -35,20 +44,15 @@ public class SettingSecurityTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		u=ResourceLoader.loadUserIntoDatabase();
-		u2=ResourceLoader.loadUserIntoDatabase();
-		s=ResourceLoader.loadDefaultSettingsProfileIntoDatabase(u.getId());
-		admin=Users.getAdmins().get(0);
+		u=loader.loadUserIntoDatabase();
+		u2=loader.loadUserIntoDatabase();
+		s=loader.loadDefaultSettingsProfileIntoDatabase(u.getId());
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Settings.deleteProfile(s.getId());
-
-		Users.deleteUser(u.getId(), admin.getId());
-		Users.deleteUser(u2.getId(), admin.getId());
-
-		
+		loader.deleteAllPrimitives();
 	}
 
 }

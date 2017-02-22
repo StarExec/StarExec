@@ -16,6 +16,8 @@ function makeSpaceTree(selector,usingCookies){
 		"json_data" : { 
 			"ajax" : { 
 				"url" : starexecRoot+"services/space/subspaces",	// Where we will be getting json data from 
+		        "async_data": function () { return { "ts": new Date().getTime()} },  
+		        "cache": false, 
 				"data" : function (n) {
 					
 					return { id : n.attr ? n.attr("id") : -1 }; 	// What the default space id should be

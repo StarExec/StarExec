@@ -19,7 +19,7 @@
 	request.setAttribute("sentFromCommunityPage", Web.SENT_FROM_COMMUNITY_PAGE);
 %>
 
-<star:template title="Communities" js="shared/sharedFunctions, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, explore/communities" css="common/delaySpinner, common/table, explore/common">			
+<star:template title="Communities" js="shared/sharedFunctions, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, explore/communities" css="common/delaySpinner, common/table, explore/common, explore/communities">
 	<span id="leaderResponse" value="${leaderResponseParameterName}" hidden></span>
 	<span id="emailCode" value="${emailCodeParameterName}" hidden></span>
 	<span id="approveRequest" value="${approveCommunityRequestName}" hidden></span>
@@ -100,10 +100,10 @@
 		</fieldset>				
 	</div>	
 	
-	<div id="dialog-confirm-delete" title="confirm delete">
+	<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>
-	<div id="dialog-confirm-leave" title="leave community">
+	<div id="dialog-confirm-leave" title="leave community" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-leave-txt"></span></p>
 	</div>
 	<c:if test="${not empty param.result and param.result == 'alreadyMember'}">			

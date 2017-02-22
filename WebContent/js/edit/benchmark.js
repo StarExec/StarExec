@@ -20,7 +20,6 @@ function initUI(){
 			secondary: "ui-icon-check"
 		}
 	});
-	$('#dialog-confirm-delete').hide();
 }
 
 
@@ -52,7 +51,6 @@ function attachFormValidation(){
 				regex : getPrimNameRegex()
 			},
 			description : {
-				required : true,
 				maxlength: $("#description").attr("length"),
 				regex: getPrimDescRegex()
 			}
@@ -64,7 +62,6 @@ function attachFormValidation(){
 				regex 	 : "invalid character(s)"
 			},
 			description : {
-				required : "description required",
 				maxlength: $("#description").attr("length") + " characters maximum",
 				regex	 : "invalid character(s)"
 			}

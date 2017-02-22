@@ -1,5 +1,24 @@
 package org.starexec.servlets;
 
+import org.apache.commons.io.FilenameUtils;
+import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
+import org.starexec.constants.R;
+import org.starexec.data.database.Permissions;
+import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.data.to.Permission;
+import org.starexec.data.to.enums.ConfigXmlAttribute;
+import org.starexec.data.to.enums.JobXmlType;
+import org.starexec.data.to.tuples.ConfigAttrMapPair;
+import org.starexec.exceptions.StarExecException;
+import org.starexec.logger.StarLogger;
+import org.starexec.util.*;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -8,29 +27,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-
-import javax.servlet.ServletException;
-import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
-import org.starexec.constants.R;
-import org.starexec.data.database.Permissions;
-import org.starexec.data.security.ValidatorStatusCode;
-import org.starexec.data.to.Permission;
-import org.starexec.exceptions.StarExecException;
-import org.starexec.util.ArchiveUtil;
-import org.starexec.util.JobUtil;
-import org.starexec.util.LogUtil;
-import org.starexec.util.PartWrapper;
-import org.starexec.util.SessionUtil;
-import org.starexec.util.Util;
-import org.starexec.util.Validator;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
 
 /**
  * Allows for the creation of job pairs as represented in xml. Files can come in .zip,
@@ -42,8 +38,7 @@ import org.apache.log4j.Logger;
 public class UploadJobXML extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
-	private static final Logger log = Logger.getLogger(UploadJobXML.class);
-	private static final LogUtil logUtil = new LogUtil(log);
+	private static final StarLogger log = StarLogger.getLogger(UploadJobXML.class);
 	private static final String UPLOAD_FILE = "f";
 	private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
 	private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
@@ -51,29 +46,31 @@ public class UploadJobXML extends HttpServlet {
 	
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		final String method = "doPost";
-		logUtil.entry(method);
+		log.entry(method);
     	int userId = SessionUtil.getUserId(request);
     	try {	
     		// If we're dealing with an upload request...
 			if (ServletFileUpload.isMultipartContent(request)) {
-				logUtil.info(method, "Got request to upload job xml from user with id="+userId);
+				log.info(method, "Got request to upload job xml from user with id="+userId);
 
-				logUtil.info(method, "Parsing job xml upload request.");
+				log.info(method, "Parsing job xml upload request.");
 				HashMap<String, Object> form = Util.parseMultipartRequest(request); 
-				logUtil.info(method, "Finished parsing job xml upload request.");
+				log.info(method, "Finished parsing job xml upload request.");
 				
 				// Make sure the request is valid
-				logUtil.info(method, "Checking that the job xml upload request is valid.");
+				log.info(method, "Checking that the job xml upload request is valid.");
 				ValidatorStatusCode status =  this.isValidRequest(form);
-				logUtil.info(method, "Finished checking that the job xml upload request is valid.");
+				log.info(method, "Finished checking that the job xml upload request is valid.");
 
 				if (!status.isSuccess()) {
-					logUtil.info(method, "Request to upload job xml was not valid. Sending bad request error.");
+					log.info(method, "Request to upload job xml was not valid. Sending bad request error.");
 					//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
 					response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
 				    response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 				    return;
 				}
+
+
 
 				Integer spaceId = Integer.parseInt((String)form.get(SPACE_ID));
 				if (!userMayUploadJobXML(userId, spaceId)) {
@@ -88,7 +85,7 @@ public class UploadJobXML extends HttpServlet {
 				// Redirect based on success/failure
 				if(result!=null) {
 					//send back new ids to the user
-					logUtil.info(method, "Sending back new job ids to user.");
+					log.info(method, "Sending back new job ids to user.");
 					response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(result)));
 
 					
@@ -103,8 +100,8 @@ public class UploadJobXML extends HttpServlet {
 			}
     	} catch (Exception e) {
     		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-    		log.error(e.getMessage(), e);
-    	}	
+			log.error("Caught Exception in UploadJobXML.doPost", e);
+    	}
 	}
 
 	private boolean userMayUploadJobXML(int userId, int spaceId) {
@@ -122,15 +119,18 @@ public class UploadJobXML extends HttpServlet {
 	 * @param form a hashmap representation of the form on secure/add/batchJob.jsp
 	 * @author Tim Smith
 	 */
-    private List<Integer> handleXMLFile(int userId, int spaceId, HashMap<String, Object> form, JobUtil jobUtil) throws StarExecException {
+    private List<Integer> handleXMLFile(
+    		int userId,
+			int spaceId,
+			HashMap<String, Object> form,
+			JobUtil jobUtil) throws StarExecException {
 		final String method = "handleXMLFile";
-		logUtil.entry(method);
+		log.entry(method);
 		try {
-			logUtil.info(method,"Handling Upload of XML File from user with id=" + userId);
-			PartWrapper item = (PartWrapper)form.get(UploadJobXML.UPLOAD_FILE);		
+			log.info(method,"Handling Upload of XML File from user with id=" + userId);
+			PartWrapper item = (PartWrapper)form.get(UploadJobXML.UPLOAD_FILE);
 			// Don't need to keep file long - just using download directory
 			
-			// TODO Should we use the same directory as batchSpaces with a slightly different name for job xml uploads?
 			File uniqueDir = new File(R.getBatchSpaceXMLDir(), "Job" + userId);
 			uniqueDir = new File(uniqueDir, "TEMP_JOB_XML_FOLDER_");
 			uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
@@ -152,23 +152,29 @@ public class UploadJobXML extends HttpServlet {
 			// Makes sure there are no directories in archive file.
 			checkForIllegalDirectoriesInXMLArchive(uniqueDir);
 
-			logUtil.info(method, "Started creating jobs from XML files");
+			log.info(method, "Started creating jobs from XML files");
 			for (File file:uniqueDir.listFiles())
 			{
-				current=jobUtil.createJobsFromFile(file, userId, spaceId);
+				current=jobUtil.createJobsFromFile(
+						file,
+						userId,
+						spaceId,
+						JobXmlType.STANDARD,
+						new ConfigAttrMapPair(ConfigXmlAttribute.ID));
+
 				if (current!=null) {
 					jobIds.addAll(current);		
 				} else {
-					log.warn("the uploaded job xml was not formatted corectly");
+					log.warn("the uploaded job xml was not formatted correctly");
 				}
 			}
-			logUtil.info(method, "Finished creating jobs from XML files.");
+			log.info(method, "Finished creating jobs from XML files.");
 			if (jobUtil.getJobCreationSuccess()) {
-				logUtil.info(method, "Job(s) created successfully.");
+				log.info(method, "Job(s) created successfully.");
 				return jobIds;
 			} 
-			logUtil.warn(method, jobUtil.getErrorMessage());
-			logUtil.warn(method, "Job(s) could not be created from XML.");
+			log.warn(method, jobUtil.getErrorMessage());
+			log.warn(method, "Job(s) could not be created from XML.");
 			return null;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -178,17 +184,17 @@ public class UploadJobXML extends HttpServlet {
 
 	private void checkForIllegalDirectoriesInXMLArchive(File extractedArchiveDirectory) throws StarExecException {
 		final String method = "checkForIllegalDirectoriesInXMLArchive";
-		logUtil.info(method, "checking for directories in extracted XML archive.");
+		log.info(method, "checking for directories in extracted XML archive.");
 		for (String name: extractedArchiveDirectory.list()) 
 		{
-			logUtil.info(method,"Found file with name="+name);
+			log.info(method,"Found file with name="+name);
 			File file = new File(extractedArchiveDirectory, name);
 			if (file.isDirectory()) {
-				logUtil.info(method, "Found directrory in JobXML archive file. Throwing exception.");
+				log.info(method, "Found directrory in JobXML archive file. Throwing exception.");
 				throw new StarExecException("Directories not allowed in job XML archive.");
 			}
 		}
-		logUtil.info(method, "Finished checking for directories in extracted XML archive.");
+		log.info(method, "Finished checking for directories in extracted XML archive.");
 	}
 
 	private ValidatorStatusCode isValidRequest(HashMap<String, Object> form) {

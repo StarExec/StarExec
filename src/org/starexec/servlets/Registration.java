@@ -9,12 +9,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.User;
-import org.starexec.util.LogUtil;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -27,8 +27,7 @@ import org.starexec.util.Validator;
  */
 @SuppressWarnings("serial")
 public class Registration extends HttpServlet {
-	private static final Logger log = Logger.getLogger(Registration.class);	
-	private static final LogUtil logUtil = new LogUtil(log);
+	private static final StarLogger log = StarLogger.getLogger(Registration.class);
 	
 	
 	// Param strings for processing
@@ -46,20 +45,25 @@ public class Registration extends HttpServlet {
 	}
 
 	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
-		final String method = "doPost";
-		logUtil.entry(method);
-			
-		// Begin registration for a new user		
-		ValidatorStatusCode result = register(request, response);
-		if (result.isSuccess()) {
-		      response.sendRedirect(Util.docRoot("public/registrationConfirmation.jsp"));
-		} else {
-			//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
-			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, result.getMessage()));
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, result.getMessage());
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		try {
+			final String method = "doPost";
+			log.entry(method);
+
+			// Begin registration for a new user
+			ValidatorStatusCode result = register(request, response);
+			if (result.isSuccess()) {
+				response.sendRedirect(Util.docRoot("public/registrationConfirmation.jsp"));
+			} else {
+				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, result.getMessage()));
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, result.getMessage());
+			}
+			log.exit(method);
+		} catch(Exception e) {
+			log.warn("Caught Exception in Registration.doPost.", e);
+			throw e;
 		}
-		logUtil.exit(method);
 	}
 	
 	/**
@@ -89,6 +93,8 @@ public class Registration extends HttpServlet {
 		user.setEmail(request.getParameter(Registration.USER_EMAIL));
 		user.setPassword(request.getParameter(Registration.USER_PASSWORD));
 		user.setInstitution(request.getParameter(Registration.USER_INSTITUTION));
+		user.setPairQuota(R.DEFAULT_PAIR_QUOTA);
+		user.setDiskQuota(R.DEFAULT_DISK_QUOTA);
 		user.setRole("user");
 		int communityId = Integer.parseInt(request.getParameter(Registration.USER_COMMUNITY));
 		
@@ -101,7 +107,7 @@ public class Registration extends HttpServlet {
 		}
 
 		
-		boolean adminCreated = Users.isAdmin(userIdOfRequest);
+		boolean adminCreated = GeneralSecurity.hasAdminWritePrivileges(userIdOfRequest);
 		
 		if (!adminCreated) {
 			
@@ -182,7 +188,7 @@ public class Registration extends HttpServlet {
 			}
 			
 			//administrators don't need to provide a message
-			if (!Users.isAdmin(userIdOfRequest)) {
+			if (!GeneralSecurity.hasAdminWritePrivileges(userIdOfRequest)) {
 				if (!Validator.isValidRequestMessage(request.getParameter(Registration.USER_MESSAGE))) {
 		    		return new ValidatorStatusCode(false, "The given request message is not valid-- please refer to the help files to see the proper format");
 		    	}

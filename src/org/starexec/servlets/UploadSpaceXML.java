@@ -17,13 +17,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Permission;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.BatchUtil;
 import org.starexec.util.PartWrapper;
@@ -41,7 +41,7 @@ import org.starexec.util.Validator;
 @MultipartConfig
 public class UploadSpaceXML extends HttpServlet {
 	
-	private static final Logger log = Logger.getLogger(UploadSpaceXML.class);	
+	private static final StarLogger log = StarLogger.getLogger(UploadSpaceXML.class);
     private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);   
     private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
     private static final String SPACE_ID = R.SPACE;
@@ -87,8 +87,8 @@ public class UploadSpaceXML extends HttpServlet {
 			}
     	} catch (Exception e) {
     		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-    		log.error(e.getMessage(), e);
-    	}	
+			log.error("Caught Exception in UploadSpaceXML.doPost", e);
+    	}
 	}
 
 	private boolean userMayUploadSpaceXML(int userId, int spaceId) {
@@ -110,30 +110,32 @@ public class UploadSpaceXML extends HttpServlet {
 	 */
     public void handleXMLFile(final int userId, final int spaceId, final HashMap<String, Object> form, final BatchUtil batchUtil, final int statusId) throws Exception {
 		try {
+            log.debug("Handling Upload of XML File from User " + userId);
+            PartWrapper item = (PartWrapper)form.get(UploadSpaceXML.UPLOAD_FILE);		
+            // Don't need to keep file long - just using download directory
+            File uniqueDir = new File(R.getBatchSpaceXMLDir(), "" + userId);
+            uniqueDir = new File(uniqueDir, "TEMP_XML_FOLDER_");
+            uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
+            
+            uniqueDir.mkdirs();
+            
+            //Process the archive file and extract
+        
+            File archiveFile = new File(uniqueDir, FilenameUtils.getName(item.getName()));
+            new File(archiveFile.getParent()).mkdir();
+            item.write(archiveFile);
+            final String archivePath = uniqueDir.getCanonicalPath();
 			Util.threadPoolExecute(new Runnable() {
 				@Override
 				public void run(){
 					try{ 
-						log.debug("Handling Upload of XML File from User " + userId);
-						PartWrapper item = (PartWrapper)form.get(UploadSpaceXML.UPLOAD_FILE);		
-						// Don't need to keep file long - just using download directory
-						File uniqueDir = new File(R.getBatchSpaceXMLDir(), "" + userId);
-						uniqueDir = new File(uniqueDir, "TEMP_XML_FOLDER_");
-						uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
-						
-						uniqueDir.mkdirs();
-						
-						//Process the archive file and extract
-					
-						File archiveFile = new File(uniqueDir, FilenameUtils.getName(item.getName()));
-						new File(archiveFile.getParent()).mkdir();
-						item.write(archiveFile);
 						ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
 						archiveFile.delete();
 						Uploads.XMLFileUploadComplete(statusId);
+                        //create new file reference for inside the scope of the Runnable, same as uniqueDir:
+						File archiveLocation = new File(archivePath);
 						//Typically there will just be 1 file, but might as well allow more
-						
-						for (File file:uniqueDir.listFiles())
+						for (File file:archiveLocation.listFiles())
 						{
 							List<Integer> current=new ArrayList<Integer>();
 							if (!file.isFile()) {

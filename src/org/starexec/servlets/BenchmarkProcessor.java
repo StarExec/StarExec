@@ -10,14 +10,15 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Processor;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -29,7 +30,7 @@ import org.starexec.util.Validator;
  */
 @SuppressWarnings("serial")
 public class BenchmarkProcessor extends HttpServlet {		
-	private static final Logger log = Logger.getLogger(BenchmarkProcessor.class);
+	private static final StarLogger log = StarLogger.getLogger(BenchmarkProcessor.class);
 	
 	// Request attributes
 	private static final String PROCESSOR_ID = "pid";
@@ -72,7 +73,7 @@ public class BenchmarkProcessor extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an error processing the benchmarks");	
 			}									
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.warn("Caught Exception in BenchmarkProcessor.doPost.", e);
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an error processing the benchmarks");
 		}	
 	}	
@@ -112,10 +113,10 @@ public class BenchmarkProcessor extends HttpServlet {
 				return new ValidatorStatusCode(false, "Could not find the processor referenced by the processor id = "+pid);
 			}
 			
-			if (!Users.isMemberOfCommunity(userId, p.getCommunityId()) && !Users.hasAdminReadPrivileges(userId)) {
+			if (!Users.isMemberOfCommunity(userId, p.getCommunityId()) && !GeneralSecurity.hasAdminReadPrivileges(userId)) {
 				return new ValidatorStatusCode(false,  "You must be a member of the community that owns the processor");
 			}
-			if (!Users.isMemberOfSpace(userId,spaceId) && !Users.isAdmin(userId)) {
+			if (!Users.isMemberOfSpace(userId,spaceId) && !GeneralSecurity.hasAdminWritePrivileges(userId)) {
 				return new ValidatorStatusCode(false,  "You must be a member of the space you are trying to process");
 
 			}

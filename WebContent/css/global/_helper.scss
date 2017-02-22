@@ -1,0 +1,30 @@
+@import "../properties";
+
+	@function stylesheet-url($path) {
+		@return url($rootUrl + "css/" + $path)
+	}
+
+	@function image-url($path) {
+		@return url($rootUrl + "images/" + $path)
+	}
+
+	@mixin mobile {
+		@media only screen and (max-width: 767px) {
+			@content;
+		}
+	}
+
+	@mixin not-mobile {
+		@media only screen and (min-width: 768px) {
+			@content;
+		}
+	}
+
+$helper-first-include: true !default;
+@if $helper-first-include {
+	%rounded-corners {
+		border-radius: 2px;
+	}
+
+	$helper-already-imported: false;
+}

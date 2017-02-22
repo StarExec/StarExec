@@ -15,17 +15,19 @@ $(document).ready(function(){
     });
 });
 
-//	solverId = getParameterByName('id');
-
-
-
-
-
 function initUI(){
 	$('#downLink3').button({
 		icons: {
 			secondary: "ui-icon-arrowthick-1-s"
     }});
+
+
+	$('#srcLink').button({
+		icons: {
+			secondary: "ui-icon-arrowthick-1-s"
+    }});
+
+	registerAnonymousLinkButtonEventHandler();
 
 	$('#fieldSites').expandable(true);
 	$('#actions').expandable(true);
@@ -33,15 +35,15 @@ function initUI(){
 	
 	// Setup datatable of configurations
 	$('#tblSolverConfig').dataTable( {
-        "sDom": 'rt<"bottom"flpi><"clear">',        
+        "sDom": getDataTablesDom(),        
         "bPaginate": true,        
         "bSort": true        
     });
 
-	
-	
-	$( "#dialog-confirm-delete" ).hide();
-	$( "#dialog-warning").hide();
+	$('#downBuildInfo').button({
+		icons: {
+			secondary: "ui-icon-newwin"
+    }});
 	// Setup button icons
 	
 	$('#uploadConfig, #uploadConfigMargin').button({
@@ -55,7 +57,7 @@ function initUI(){
 			primary: "ui-icon-gear"
 		}
     });
-	
+
 	//Warn if there was some error during upload (no configs, running test job failed).
 	var msg = getParameterByName("msg");
 	if (stringExists(msg)) {
@@ -63,8 +65,8 @@ function initUI(){
 		
 		$('#dialog-warning').dialog({
 			modal: true,
-			width: 380,
-			height: 165,
+			width: 700,
+			height: 500,
 			buttons: {
 				'OK': function() {
 					$('#dialog-warning').dialog('close');
@@ -72,10 +74,30 @@ function initUI(){
 			}
 		});
 	}
+
+
+	//Display feedback if the solver is being built on starexec.
+	var msg = getParameterByName("buildmsg");
+	if (stringExists(msg)) {
+        $('#dialog-building-job').text(msg);
+		$('#dialog-building-job').dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'OK': function() {
+					$('#dialog-building-job').dialog('close');
+				}
+			}
+		});
+	}
 }
 
-
 function attachButtonActions() {
+    $("#srcLink").click(function(){
+        var token=Math.floor(Math.random()*100000000);
+        window.location.href = starexecRoot+"secure/download?token=" + token + "&type=solverSrc&id="+$("#solverId").attr("value");
+        destroyOnReturn(token);})
 	$("#downLink3").click(function(){
 		$('#dialog-confirm-copy-txt').text('How would you like to download the solver?');		
 		$('#dialog-confirm-copy').dialog({
@@ -87,9 +109,13 @@ function attachButtonActions() {
 					log("default selected");
 					$(this).dialog("close");
 					createDialog("Processing your download request, please wait. This will take some time for large solvers.");
-					token=Math.floor(Math.random()*100000000);
-					window.location.href = starexecRoot+"secure/download?token=" + token + "&type=solver&id="+$("#solverId").attr("value");
-					//$('#downLink3').attr('href', starexecRoot+"secure/download?token=" + token + "&type=solver&id=" + $("#solverId").attr("value"));
+					var token=Math.floor(Math.random()*100000000);
+					if ( $('#isAnonymousPage').attr('value') === 'true' ) {
+						var anonId = getParameterByName('anonId');
+						window.location.href = starexecRoot+"secure/download?token=" + token + "&type=solver&anonId="+anonId;
+					} else {
+						window.location.href = starexecRoot+"secure/download?token=" + token + "&type=solver&id="+$("#solverId").attr("value");
+					}
 					destroyOnReturn(token);
 				},
 				'Re-upload': function() {
@@ -97,7 +123,12 @@ function attachButtonActions() {
 					$(this).dialog("close");
 					createDialog("Processing your download request, please wait. This will take some time for large solvers.");
 					token=Math.floor(Math.random()*100000000);
-					window.location.href = starexecRoot+"secure/download?token=" + token + "&reupload=true&type=solver&id="+$("#solverId").attr("value");
+					if ( $('#isAnonymousPage').attr('value') === 'true' ) {
+						var anonId = getParameterByName('anonId');
+						window.location.href = starexecRoot+"secure/download?token=" + token + "&reupload=true&type=solver&anonId=" + anonId;
+					} else {
+						window.location.href = starexecRoot+"secure/download?token=" + token + "&reupload=true&type=solver&id="+$("#solverId").attr("value");
+					}
 					destroyOnReturn(token);
 				},
 				"cancel": function() {
@@ -126,5 +157,51 @@ function popUp(uri) {
 		});
 	});  
 }
+
+function registerAnonymousLinkButtonEventHandler() {
+	'use strict';
+	$('#anonymousLink').unbind('click');
+	$('#anonymousLink').click( function() {
+		$('#dialog-confirm-anonymous-link').text( "Do you want the solver's name to be hidden on the linked page?" );
+		$('#dialog-confirm-anonymous-link').dialog({
+			modal: true,
+			width: 600,
+			height: 200,
+			buttons: {
+				'yes': function() { 
+					$(this).dialog('close');
+					makeAnonymousLinkPost( 'solver', $('#solverId').attr('value'), 'all');
+				},
+				'no': function() {
+					$(this).dialog('close');
+					makeAnonymousLinkPost( 'solver', $('#solverId').attr('value'), 'none');
+				}
+			}
+		});	
+	});
+}
+
+/*
+function makeAnonymousLinkPost( hidePrimitiveName ) {
+	'use strict';
+	$.post(
+		starexecRoot + 'services/anonymousLink/solver/' + $('#solverId').attr('value') + '/' + hidePrimitiveName,
+		'',
+		function( returnCode ) {
+			log( 'Anonymous Link Return Code: ' + returnCode );
+			if ( returnCode.success ) {
+				$('#dialog-show-anonymous-link').html('<a href="'+returnCode.message+'">'+returnCode.message+'</a>');
+				$('#dialog-show-anonymous-link').dialog({
+					width: 750,
+					height: 200,
+				});	
+			} else {
+				parseReturnCode( returnCode );
+			}
+		},
+		'json'
+	);
+}
+*/
 
 

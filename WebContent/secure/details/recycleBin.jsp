@@ -13,7 +13,7 @@
 	}
 %>
 
-<star:template title="Personal Recycle Bin" js="common/delaySpinner, details/recycleBin, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/delaySpinner, common/table, explore/spaces, details/shared">
+<star:template title="Personal Recycle Bin" js="common/delaySpinner, details/recycleBin, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/delaySpinner, common/table, explore/spaces, details/shared, details/recycleBin">
 		<fieldset id="recycledSolverField">
 			<legend class="expd" id="recycledSolverExpd"><span>0</span> recycled solvers</legend>
 			<table id="rsolvers" uid="${userId}">
@@ -49,10 +49,10 @@
 			<button type="button" id="restoreBenchmarks">restore all benchmarks</button>
 			<button type="button" id="restoreSolvers">restore all solvers</button>
 		</fieldset>
-	<div id="dialog-confirm-delete" title="confirm delete">
+	<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>
-	<div id="dialog-confirm-restore" title="confirm restore">
+	<div id="dialog-confirm-restore" title="confirm restore" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-restore-txt"></span></p>
 	</div>
 </star:template>

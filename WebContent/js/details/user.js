@@ -15,7 +15,6 @@ $(document).ready(function(){
 
 	$("#detailPanel").css("width","100%");
 
-	$(".dialog").hide(); // hide all dialogs
 	$("fieldset:not(:first)").expandable(true);
 	
 	$('.popoutLink').button({
@@ -76,35 +75,56 @@ $(document).ready(function(){
 	});
 	//Initiate job table
 	jTable=$('#jobs').dataTable( {
-        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "sDom"			: getDataTablesDom(),
         "iDisplayStart"	: 0,
         "iDisplayLength": defaultPageSize,
         "bServerSide"	: true,
         "sAjaxSource"	: starexecRoot+"services/users/",
+		/*
+		"aoColumns"		: [
+			{ "mData"	: "jobLink" },
+			{ "mData"	: "status" },
+			{ "mData"	: "completion" },
+			{ "mData"	: "totalPairs" },
+			{ "mData"	: "errorPercentage" },
+			{ "mData"	: "createTime" },
+			{ "mData"	: "diskSize",
+			  	"mRender": function(data, type, full) {
+					console.log(data);
+					console.log('type: ' + type);
+					console.log(full);
+					if (type === 'sort') {
+						return data.bytes;
+					} else {
+						return data.display;
+					}
+				}	
+			}
+		],*/
         "sServerMethod" : "POST",
-        "fnServerData"	: fnPaginationHandler 
+        "fnServerData"	: getFnPaginationHandler('')
     });
 	
 	//Initiate solver table
 	solverTable=$('#solvers').dataTable( {
-        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "sDom"			: getDataTablesDom(),
         "iDisplayStart"	: 0,
         "iDisplayLength": defaultPageSize,
         "bServerSide"	: true,
         "sAjaxSource"	: starexecRoot+"services/users/",
         "sServerMethod" : "POST",
-        "fnServerData"	: fnPaginationHandler
+        "fnServerData"	: getFnPaginationHandler('')
     });
 	
 	//Initiate benchmark table
 	benchTable=$('#benchmarks').dataTable( {
-        "sDom"			: 'rt<"bottom"flpi><"clear">',
+        "sDom"			: getDataTablesDom(),
         "iDisplayStart"	: 0,
         "iDisplayLength": defaultPageSize,
         "bServerSide"	: true,
         "sAjaxSource"	: starexecRoot+"services/users/",
         "sServerMethod" : "POST",
-        "fnServerData"	: fnPaginationHandler
+        "fnServerData"	: getFnPaginationHandler('')
     });
 
 	
@@ -154,31 +174,34 @@ function PopUp(uri) {
 	});  
 }
 
-function fnPaginationHandler(sSource, aoData, fnCallback) {
-	
-	var tableName = $(this).attr('id');
-	var usrId = $(this).attr("uid");
-	
-	$.post(  
-			sSource + usrId + "/" + tableName + "/pagination",
-			aoData,
-			function(nextDataTablePage){
-				s=parseReturnCode(nextDataTablePage);
-				if (s) {
-					updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
-						fnCallback(nextDataTablePage);
-						makeTableDraggable("#"+tableName,onDragStart,getDragClone);
 
-						if('j' == tableName[0]){
-							colorizeJobStatistics();
-						} 
+function getFnPaginationHandler(urlSuffix) {
+	var fnPaginationHandler = function(sSource, aoData, fnCallback) {
+		var tableName = $(this).attr('id');
+		var usrId = $(this).attr("uid");
+		
+		$.post(  
+				sSource + usrId + "/" + tableName + "/pagination" + urlSuffix,
+				aoData,
+				function(nextDataTablePage){
+					s=parseReturnCode(nextDataTablePage);
+					if (s) {
+						updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
+							fnCallback(nextDataTablePage);
+							makeTableDraggable("#"+tableName,onDragStart,getDragClone);
 
-				}
-			},  
-			"json"
-	).error(function(){
-		showMessage('error',"Internal error populating table",5000);
-	});
+							if('j' == tableName[0]){
+								colorizeJobStatistics();
+							} 
+
+					}
+				},  
+				"json"
+		).error(function(){
+			showMessage('error',"Internal error populating table",5000);
+		});
+	}
+	return fnPaginationHandler;
 }
 
 /**

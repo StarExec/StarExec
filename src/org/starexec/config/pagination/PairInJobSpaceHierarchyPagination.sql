@@ -44,9 +44,10 @@
 				( :pairType = "incomplete" AND job_pairs.status_code!=7 AND !(job_pairs.status_code>=14 AND job_pairs.status_code<=17)) OR
 				( :pairType="failed" AND ((job_pairs.status_code>=8 AND job_pairs.status_code<=13) OR job_pairs.status_code=18)) OR
 				( :pairType ="complete" AND (job_pairs.status_code=7 OR (job_pairs.status_code<=14 ANd job_pairs.status_code<=17))) OR
-				( :pairType= "unknown" AND job_pairs.status_code=7 AND (job_attributes.attr_value="starexec-unknown"OR bench_attributes.attr_value is null)) OR
+				( :pairType= "unknown" AND job_pairs.status_code=7 AND (job_attributes.attr_value="starexec-unknown"OR bench_attributes.attr_value IS NULL)) OR
 				( :pairType = "solved" AND job_pairs.status_code=7 AND job_attributes.attr_value=bench_attributes.attr_value) OR
-				( :pairType = "wrong" AND job_pairs.status_code=7 AND (bench_attributes.attr_value is not null) and (job_attributes.attr_value!=bench_attributes.attr_value)))
+				( :pairType = "wrong" AND job_pairs.status_code=7 AND (bench_attributes.attr_value IS NOT NULL) 
+						AND ( job_attributes.attr_value IS NULL OR (job_attributes.attr_value!=bench_attributes.attr_value))))
 				
 				
 				-- Exclude JobPairs whose benchmark name, configuration name, solver name, status and wallclock

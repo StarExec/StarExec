@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?><tns:Jobs xmlns:tns="$$SCHEMA_LOC$$" xmlns:xsi="$$SCHEMA_LOC$$ batchJobSchema.xsd">
+<SolverPipeline name="pipeline">
+		<PipelineStage config-id="$$CONFIG_ONE$$">
+		</PipelineStage>
+		<noop/>
+		<PipelineStage config-id="$$CONFIG_ONE$$">
+		</PipelineStage>
+		<PipelineStage config-id="$$CONFIG_TWO$$" primary="true">
+			<StageDependency stage="1"/>
+			<BenchmarkDependency input="1"/>
+		</PipelineStage>
+</SolverPipeline>
+
+<Job name="test xml job">
+<JobAttributes>
+<description value="test job"/>
+<queue-id value="1"/>
+<cpu-timeout value="12"/>
+<wallclock-timeout value="11"/>
+<mem-limit value="2.0"/>
+</JobAttributes>
+
+<StageAttributes>
+<stage-num value="1"/>
+<cpu-timeout value="2000"/>
+<wallclock-timeout value="5"/>
+<mem-limit value="3"/>
+<results-interval value="0"/>
+</StageAttributes>
+
+<StageAttributes>
+<stage-num value="3"/>
+<cpu-timeout value="1"/>
+<wallclock-timeout value="1000"/>
+<mem-limit value="7"/>
+
+</StageAttributes>
+<JobLine pipe-name="pipeline" job-space-path="cvc" bench-id="$$BENCH_ONE$$">
+	<BenchmarkInput bench-id="$$BENCH_TWO$$"/>
+</JobLine>
+</Job>
+</tns:Jobs>

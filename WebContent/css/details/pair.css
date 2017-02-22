@@ -1,0 +1,22 @@
+
+
+@media only screen and (max-width: 767px) {
+	#wrapper fieldset {
+		width: 75%;
+	}
+
+	#wrapper #detailTable tr > *:nth-child(1) {
+		width: 50%;
+	}
+	#wrapper #detailTable tr > *:nth-child(2) {
+		width: 50%;
+	}
+
+	th, td {
+		text-align: center;
+	}
+
+	#fieldActions a {
+		margin: 0 5px 5px 0;
+	}
+}

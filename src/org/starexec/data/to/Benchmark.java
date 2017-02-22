@@ -1,7 +1,11 @@
 package org.starexec.data.to;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
@@ -14,22 +18,24 @@ import com.google.gson.annotations.Expose;
  * 
  * @author Tyler Jensen
  */
-public class Benchmark extends Identifiable implements Iterable<Entry<Object, Object>>, Nameable{
+public class Benchmark extends Identifiable implements Nameable{
 	private int userId = -1;	
 	@Expose private String name;	
 	@Expose private String description = "no description";	
 	@Expose private Processor type;
 	private Timestamp uploadDate;	
-	private Properties attributes;
+	private Map<String,String> attributes;
 	private String path;
 	private boolean isDownloadable;
 	private long diskSize;	
 	private boolean deleted;
 	private boolean recycled;
 	private Boolean usesDependencies = null;
-	
+	private List<BenchmarkDependency> dependencies = null;
 	public Benchmark() {
-		attributes=new Properties();
+		description = "";
+		attributes=new HashMap<String,String>();
+		setDependencies(new ArrayList<BenchmarkDependency>());
 	}
 	
 	/**
@@ -150,21 +156,16 @@ public class Benchmark extends Identifiable implements Iterable<Entry<Object, Ob
 	/**
 	 * @return the attributes
 	 */
-	public Properties getAttributes() {
+	public Map<String,String> getAttributes() {
 		return attributes;
 	}
 
 	/**
 	 * @param attributes the attributes to set
 	 */
-	public void setAttributes(Properties attributes) {
+	public void setAttributes(Map<String,String> attributes) {
 		this.attributes = attributes;
 	}	
-
-	@Override
-	public Iterator<Entry<Object, Object>> iterator() {
-		return this.attributes.entrySet().iterator();
-	}
 
 	public void setDeleted(boolean deleted) {
 		this.deleted = deleted;
@@ -188,5 +189,17 @@ public class Benchmark extends Identifiable implements Iterable<Entry<Object, Ob
 
 	public void setUsesDependencies(Boolean usesDependencies) {
 		this.usesDependencies = usesDependencies;
+	}
+
+	public List<BenchmarkDependency> getDependencies() {
+		return dependencies;
+	}
+
+	public void setDependencies(List<BenchmarkDependency> dependencies) {
+		this.dependencies = dependencies;
+	}
+	
+	public void addDependency(BenchmarkDependency depend) {
+		this.dependencies.add(depend);
 	}
 }

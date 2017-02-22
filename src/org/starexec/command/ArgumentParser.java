@@ -12,16 +12,20 @@ package org.starexec.command;
  */
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.starexec.util.Util;
 import org.starexec.constants.R;
 import org.starexec.data.to.Permission;
 
 class ArgumentParser {
+
+	final private CommandLogger log = CommandLogger.getLogger(ArgumentParser.class);
 	
 	Connection con;
 	
@@ -186,7 +190,6 @@ class ArgumentParser {
 	 * Sends a link request to the StarExec server and returns a status code
 	 * indicating the result of the request
 	 * @param commandParams The parameters given by the user at the command line.
-	 * @param copy True if a copy should be performed, and false if a link should be performed.
 	 * @param type The type of primitive being copied.
 	 * @return An integer error code where 0 indicates success and a negative number is an error.
 	 */
@@ -225,7 +228,6 @@ class ArgumentParser {
 	 * Sends a copy or link request to the StarExec server and returns a status code
 	 * indicating the result of the request
 	 * @param commandParams The parameters given by the user at the command line.
-	 * @param copy True if a copy should be performed, and false if a link should be performed.
 	 * @param type The type of primitive being copied.
 	 * @return An integer error code where 0 indicates success and a negative number is an error.
 	 */
@@ -237,10 +239,14 @@ class ArgumentParser {
 				fail.add(valid);
 				return fail;
 			}
+
 			Integer[] ids=CommandParser.convertToIntArray(commandParams.get(C.PARAM_ID));
+            Boolean copyPrimitives = commandParams.containsKey(C.PARAM_COPY_PRIMITIVES) ? Boolean.parseBoolean(commandParams.get(C.PARAM_COPY_PRIMITIVES)) : false;
 			return con.copyPrimitives(ids,getParamFrom(commandParams),
 						  Integer.parseInt(commandParams.get(C.PARAM_TO)),
-						  commandParams.containsKey(C.PARAM_HIERARCHY),type);
+						  commandParams.containsKey(C.PARAM_HIERARCHY),
+                          copyPrimitives,
+                          type);
 		
 		} catch (Exception e) {
 			fail.add(Status.ERROR_INTERNAL);
@@ -250,7 +256,7 @@ class ArgumentParser {
 	
 	/**
 	 * Creates a subspace of an existing space on StarExec
-	 * @param commandParam A HashMap containing key/value pairs gathered from user input at the command line
+	 * @param commandParams A HashMap containing key/value pairs gathered from user input at the command line
 	 * @return the new space ID on success and a negative error code otherwise
 	 * @author Eric Burns
 	 */
@@ -402,7 +408,6 @@ class ArgumentParser {
 	/**
 	 * Function for downloading archives from StarExec with the given parameters and 
 	 * file output location.
-	 * @param urlParams A list of name/value pairs that will be encoded into the URL
 	 * @param commandParams A list of name/value pairs that the user entered into the command line
 	 * @return 0 on success, a negative integer on error
 	 * @author Eric Burns
@@ -412,27 +417,35 @@ class ArgumentParser {
 		try {
 			int valid=CommandValidator.isValidDownloadRequest(commandParams,type,since);
 			if (valid<0) {
+				log.log("Not a valid download request");
 				return valid;
 			}
 			String location=commandParams.get(C.PARAM_OUTPUT_FILE);
 
 			if (type.equals(R.JOB_OUTPUTS)) {
+				log.log("Type was "+R.JOB_OUTPUTS);
 				List<Integer> ids=CommandParser.convertToIntList(commandParams.get(C.PARAM_ID));
 				return con.downloadJobPairs(ids, location);
 			} else { 
+				log.log("Type was not "+R.JOB_OUTPUTS);
 				Integer id=Integer.parseInt(commandParams.get(C.PARAM_ID));		
 				Integer updateId=null;
 				if (commandParams.containsKey(C.PARAM_PROCID)) {
 					updateId=Integer.parseInt(commandParams.get(C.PARAM_PROCID));
 				}
+
+				log.log("Putting in request for server to generate desired archive.");
+
 				//First, put in the request for the server to generate the desired archive			
 				return con.downloadArchive(id, type, since,lastModified, location, commandParams.containsKey(C.PARAM_EXCLUDE_SOLVERS),
 						commandParams.containsKey(C.PARAM_EXCLUDE_BENCHMARKS), commandParams.containsKey(C.PARAM_INCLUDE_IDS),
-						hierarchy,procClass,commandParams.containsKey(C.PARAM_ONLY_COMPLETED),commandParams.containsKey(C.PARAM_GET_ATTRIBUTES),updateId);
+						hierarchy,procClass,commandParams.containsKey(C.PARAM_ONLY_COMPLETED),commandParams.containsKey(C.PARAM_GET_ATTRIBUTES),
+						updateId,Boolean.parseBoolean(commandParams.get(C.PARAM_LONG_PATH)));
 			}
 			
 
-		} catch (Exception e) {
+		} catch (IOException e) {
+			log.log("Caught exception in downloadArchive: "+Util.getStackTrace(e));
 			return Status.ERROR_INTERNAL;
 		}
 		
@@ -441,7 +454,6 @@ class ArgumentParser {
 	/**
 	 * Lists the IDs and names of some kind of primitives in a given space or by user, depending on the
 	 * parameters given
-	 * @param urlParams Parameters to be encoded into the URL to send to the server
 	 * @param commandParams Parameters given by the user at the command line
 	 * @return An integer error code with 0 indicating success and a negative number indicating an
 	 * error
@@ -706,7 +718,7 @@ class ArgumentParser {
 	 * This function handles user requests for uploading an xml archive (space or job).
 	 * @param commandParams The key/value pairs given by the user at the command line. Should contain
 	 * ID and File keys
-	 * @param isJobUpload true if job xml upload, false otherwise
+	 * @param isJobXML true if job xml upload, false otherwise
 	 * @return 0 on success, and a negative error code otherwise
 	 * @author Julio Cervantes
 	 */

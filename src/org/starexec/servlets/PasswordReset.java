@@ -9,12 +9,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Requests;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.User;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.Mail;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -29,7 +29,7 @@ import org.starexec.util.Validator;
 
 @SuppressWarnings("serial")
 public class PasswordReset extends HttpServlet {
-	private static final Logger log = Logger.getLogger(PasswordReset.class);
+	private static final StarLogger log = StarLogger.getLogger(PasswordReset.class);
 	public static final String PASS_RESET = "reset";		// Param string for password reset codes
 	
 	/**
@@ -37,59 +37,69 @@ public class PasswordReset extends HttpServlet {
 	 */
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		if(Util.paramExists(PasswordReset.PASS_RESET, request)) {
-			// Try and redeem the code from the database
-			String code = request.getParameter(PasswordReset.PASS_RESET);
-			int userId = Requests.redeemPassResetRequest(code);
-			// If code is successfully redeemed, set a new temporary password and display it to the user
-			if(userId > 0){
-				String tempPass = Util.getTempPassword();
-				request.getSession().setAttribute("pwd", tempPass);
-				if(Users.updatePassword(userId, tempPass)){
-					log.debug(String.format("Temporary password successfully set for user id [%d]", userId));
-					response.sendRedirect(Util.docRoot("public/temp_pass.jsp"));
+		try {
+			if (Util.paramExists(PasswordReset.PASS_RESET, request)) {
+				// Try and redeem the code from the database
+				String code = request.getParameter(PasswordReset.PASS_RESET);
+				int userId = Requests.redeemPassResetRequest(code);
+				// If code is successfully redeemed, set a new temporary password and display it to the user
+				if (userId > 0) {
+					String tempPass = Util.getTempPassword();
+					request.getSession().setAttribute("pwd", tempPass);
+					if (Users.updatePassword(userId, tempPass)) {
+						log.debug(String.format("Temporary password successfully set for user id [%d]", userId));
+						response.sendRedirect(Util.docRoot("public/temp_pass.jsp"));
+					}
+				} else {
+					// Hyperlinks can only be visited once; notify user this hyperlink has expired
+					response.sendRedirect(Util.docRoot("public/password_reset.jsp?result=expired"));
 				}
 			} else {
-				// Hyperlinks can only be visited once; notify user this hyperlink has expired
-			    response.sendRedirect(Util.docRoot("public/password_reset.jsp?result=expired"));
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
 			}
-		} else {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameters");
+		} catch (Exception e) {
+			log.warn("Caught Exception in PasswordReset.doGet", e);
+			throw e;
 		}
 	}
 	
 	
 	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {				
-		// Ensure the parameters are well formed
-		ValidatorStatusCode status=isPostRequestValid(request);
-		if(status.isSuccess()){
-			
-			// Check if the provided credentials match any in the database
-			User user = Users.get(request.getParameter(Registration.USER_EMAIL));
-			if(user == null
-					|| !user.getFirstName().equalsIgnoreCase(request.getParameter(Registration.USER_FIRSTNAME))
-					|| !user.getLastName().equalsIgnoreCase(request.getParameter(Registration.USER_LASTNAME))){
-			    response.sendRedirect(Util.docRoot("public/password_reset.jsp?result=noUserFound"));
-				return;
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		try {
+			// Ensure the parameters are well formed
+			ValidatorStatusCode status = isPostRequestValid(request);
+			if (status.isSuccess()) {
+
+				// Check if the provided credentials match any in the database
+				User user = Users.get(request.getParameter(Registration.USER_EMAIL));
+				if (user == null
+						|| !user.getFirstName().equalsIgnoreCase(request.getParameter(Registration.USER_FIRSTNAME))
+						|| !user.getLastName().equalsIgnoreCase(request.getParameter(Registration.USER_LASTNAME))) {
+					response.sendRedirect(Util.docRoot("public/password_reset.jsp?result=noUserFound"));
+					return;
+				}
+
+				String code = UUID.randomUUID().toString();
+
+				// Add the reset request to the database
+				if (false == Requests.addPassResetRequest(user.getId(), code)) {
+					log.info(String.format("Failed to add password reset request for user [%s]", user.getFullName()));
+					return;
+				}
+
+				// Email the password reset hyperlink to the user
+				Mail.sendPasswordReset(user, code);
+
+				response.sendRedirect(Util.docRoot("public/password_reset.jsp?result=success"));
+			} else {
+				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			}
-			
-			String code = UUID.randomUUID().toString();
-			
-			// Add the reset request to the database
-			if(false == Requests.addPassResetRequest(user.getId(), code)){
-				log.info(String.format("Failed to add password reset request for user [%s]", user.getFullName()));
-				return;
-			}
-			
-			// Email the password reset hyperlink to the user 
-			Mail.sendPasswordReset(user, code);
-			
-			response.sendRedirect(Util.docRoot("public/password_reset.jsp?result=success"));
-		} else {
-			//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
-			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
+		} catch (Exception e) {
+			log.warn("Caught Exception in PasswordReset.doPost", e);
+			throw e;
 		}
 	}
 	

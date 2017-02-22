@@ -1,4 +1,7 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.io.*, java.util.List,org.starexec.data.to.Website.WebsiteType, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.constants.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%> <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.io.*, java.util.List,org.starexec.data.to.Website.WebsiteType, org.starexec.data.database.*, org.starexec.data.to.*,org.starexec.data.security.*, org.starexec.constants.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
+<%@ page import="java.util.Map" %>
+<%@ page import="java.util.HashMap" %>
+<%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 	try {
@@ -13,13 +16,13 @@
 		User t_user = Users.get(userId);
 		int visiting_userId = SessionUtil.getUserId(request);		
 		
-		long disk_usage = Users.getDiskUsage(t_user.getId());		
 		
 		if(t_user != null) {
-			
+			long disk_usage = Users.getDiskUsage(t_user.getId());		
+
 			boolean owner = true;
-			boolean hasAdminReadPrivileges = Users.hasAdminReadPrivileges(visiting_userId);
-			boolean hasAdminWritePrivileges = Users.hasAdminWritePrivileges(visiting_userId);
+			boolean hasAdminReadPrivileges = GeneralSecurity.hasAdminReadPrivileges(visiting_userId);
+			boolean hasAdminWritePrivileges = GeneralSecurity.hasAdminWritePrivileges(visiting_userId);
 			// The user can be deleted if the visting user has admin write privileges and the user being deleted is NOT an admin.
 			boolean canDeleteUser =  hasAdminWritePrivileges && !Users.isAdmin(userId);
 			if( (visiting_userId != userId) && !hasAdminReadPrivileges){
@@ -27,6 +30,13 @@
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
 			} else {
 				List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsVisibleByUser(userId);
+
+				Map<Integer, List<Benchmark>> idToBenchmarks = new HashMap<Integer, List<Benchmark>>();
+				for (DefaultSettings setting : listOfDefaultSettings) {
+					idToBenchmarks.put(setting.getId(), Settings.getDefaultBenchmarks(setting.getId()));
+				}
+
+				request.setAttribute("settingIdToDefaultBenchmarks", idToBenchmarks);
 				
 				request.setAttribute("userId", userId);
 				request.setAttribute("diskQuota", Util.byteCountToDisplaySize(t_user.getDiskQuota()));
@@ -40,6 +50,9 @@
 				request.setAttribute("postProcs", ListOfPostProcessors);
 				request.setAttribute("preProcs", ListOfPreProcessors);
 				request.setAttribute("benchProcs",ListOfBenchProcessors);
+				request.setAttribute("pairQuota", t_user.getPairQuota());
+				request.setAttribute("pairUsage",Jobs.countPairsByUser(t_user.getId()));
+
 			}
 			
 			request.setAttribute("owner", owner);
@@ -47,6 +60,8 @@
 			request.setAttribute("hasAdminReadPrivileges", hasAdminReadPrivileges);
 			request.setAttribute("hasAdminWritePrivileges", hasAdminWritePrivileges);
 			request.setAttribute("user", t_user);
+
+
 		}
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
@@ -54,7 +69,27 @@
 %>
 <star:template title="edit account" css="common/table, common/pass_strength_meter, edit/account" js="common/defaultSettings,lib/jquery.validate.min, lib/jquery.validate.password, edit/account, lib/jquery.dataTables.min">
 	<c:forEach items="${settings}" var="setting">
-		<star:settings setting="${setting}" />
+		<span class="defaultSettingsProfile" name="${setting.name}" value="${setting.getId()}">
+
+			<span class="cpuTimeout" value="${setting.cpuTimeout}" ></span>
+			<span class="clockTimeout" value="${setting.wallclockTimeout}"></span>
+			<span class="maxMemory" value="${setting.getRoundedMaxMemoryAsDouble()}"></span>
+			<span class="solverId" value="${setting.solverId}"></span>
+			<span class="solverName" value="${setting.getSolverName()}"></span>
+
+			<span class="preProcessorId" value="${setting.preProcessorId}"></span>
+			<span class="postProcessorId" value="${setting.postProcessorId}"></span>
+			<span class="benchProcessorId" value="${setting.benchProcessorId}"></span>
+
+			<c:forEach items="${settingIdToDefaultBenchmarks.get(setting.id)}" var="bench">
+				<span class="defaultBenchmark">
+					<span class="benchId" value="${bench.id}"></span>
+					<span class="benchName" value="${bench.name}"></span>
+				</span>
+			</c:forEach>
+
+			<span class="dependency" value="${setting.isDependenciesEnabled()}"></span>
+		</span>
 	</c:forEach>
 	
 	
@@ -106,7 +141,7 @@
 	</fieldset>
 	<c:if test="${hasAdminReadPrivileges}">
 		<fieldset>
-			<legend>user disk quota</legend>
+			<legend>user quotas</legend>
 				<table id="diskUsageTable" class="shaded" uid="${userId}">
 					<thead>
 						<tr>
@@ -122,6 +157,14 @@
 						<tr>
 							<td>current disk usage</td>
 							<td>${diskUsage}</td>
+						</tr>
+						<tr>
+							<td>job pair quota</td>
+							<td id="editpairquota">${pairQuota}</td>
+						</tr>
+						<tr>
+							<td>job pairs owned</td>
+							<td>${pairUsage}</td>
 						</tr>
 					</tbody>			
 				</table>
@@ -287,10 +330,6 @@
 						</select>
 					</td>
 				</tr>
-				<tr id="defaultBenchRow">
-					<td>default benchmark</td>
-					<td id="benchmark"><p id="benchmarkNameField"></p> <span class="selectPrim clearBenchmark">clear benchmark</span></td>
-				</tr>
 				<tr id="defaultSolverRow">
 					<td>default solver</td>
 					<td id="solver"><p id="solverNameField"></p> <span class="selectPrim clearSolver">clear solver</span></td>
@@ -352,10 +391,10 @@
 		</fieldset>
 	</c:if>
 	
-	<div id="dialog-confirm-delete" title="confirm delete">
+	<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>
-	<div id="dialog-createSettingsProfile" title="create settings profile">
+	<div id="dialog-createSettingsProfile" title="create settings profile" class="hiddenDialog">
 		<p><span id="dialog-createSettingsProfile-txt"></span></p><br/>
 		<p><label>name: </label><input id="settingName" type="text"/></p>			
 	</div>

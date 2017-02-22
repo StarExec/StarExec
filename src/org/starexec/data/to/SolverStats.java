@@ -2,6 +2,9 @@ package org.starexec.data.to;
 
 import com.google.gson.annotations.Expose;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * This class stores the statistics for a single solver/configuration pair for a job
  * @author Eric
@@ -17,6 +20,7 @@ public class SolverStats extends Identifiable {
 	@Expose private int incorrectJobPairs=0;//7 status with result != expected
 	@Expose private int incompleteJobPairs=0;// any status indicating this pair is being worked on OR FAILED
 	@Expose private int resourceOutJobPairs=0; //status 14-17
+	@Expose private int conflicts=0;
 	@Expose private double wallTime=0;
 	@Expose private double cpuTime=0;
 	@Expose private int stageNumber=0;
@@ -25,7 +29,19 @@ public class SolverStats extends Identifiable {
 		this.solver=new Solver();
 		this.configuration=new Configuration();
 	}
-	
+
+
+	public void incrementConflicts() {
+		conflicts++;
+	}
+
+	public int getConflicts() {
+		return conflicts;
+	}
+
+	public void setConflicts(final int conflicts) {
+	    this.conflicts = conflicts;
+    }
 
 	
 	public int getTotalJobPairs() {

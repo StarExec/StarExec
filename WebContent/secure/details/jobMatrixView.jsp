@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" 
+<%@page contentType="text/html" pageEncoding="UTF-8"
 import="java.util.ArrayList,
 		java.util.HashMap,
 		java.util.HashSet,
@@ -7,18 +7,18 @@ import="java.util.ArrayList,
 		org.starexec.data.to.*,
 		org.starexec.util.*,
 		org.starexec.util.matrixView.*"
-		
+
 %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%		
+<%
 	try {
 		int userId = SessionUtil.getUserId(request);
-		int jobId = Integer.parseInt(request.getParameter("id"));
 		int stageNumber = Integer.parseInt(request.getParameter("stage"));
 		int jobSpaceId = Integer.parseInt(request.getParameter("jobSpaceId"));
-		Job job = MatrixViewUtil.getJobIfAvailableToUser(jobId, userId, response);
+		JobSpace space = Spaces.getJobSpace(jobSpaceId);
+		Job job = MatrixViewUtil.getJobIfAvailableToUser(space.getJobId(), userId, response);
 
 		Matrix matrix = Matrix.getMatrixForJobSpaceFromJobAndStageNumber(job, jobSpaceId, stageNumber);
 
@@ -35,7 +35,7 @@ import="java.util.ArrayList,
 	}
 
 %>
-<star:template title="${job.name}" js="util/sortButtons, util/jobDetailsUtilityFunctions, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/jobMatrixView, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/dataTables.fixedColumns.min" css="details/jobMatrixView, common/dataTable, common/dataTables.fixedColumns.min">			
+<star:template title="${job.name}" js="util/sortButtons, util/jobDetailsUtilityFunctions, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/jobMatrixView, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/dataTables.fixedColumns.min" css="details/jobMatrixView, common/dataTable, common/dataTables.fixedColumns">
 <div id="matrixPanel">
 	<span id="jobId" style="display: none;">${job.id}</span>
 	<span id="jobSpaceId" style="display: none;">${jobSpaceId}</span>
@@ -47,9 +47,9 @@ import="java.util.ArrayList,
 		<span class="wallclock">runtime (wallclock)</span>
 		<span class="cpuTimeWallclockDivider"> / </span>
 		<span class="memUsageWallclockDivider" hidden> / </span>
-		<span class="cpuTime">cpu usage</span> 
-		<span class="cpuTimeMemUsageDivider"> / </span> 
-		<span class="memUsage">max virtual memory</span> 
+		<span class="cpuTime">cpu usage</span>
+		<span class="cpuTimeMemUsageDivider"> / </span>
+		<span class="memUsage">max virtual memory</span>
 		</p>
 		<table class="legendColorTable">
 			<thead>
@@ -70,18 +70,18 @@ import="java.util.ArrayList,
 	<div class="matrixControls">
 		<form class="matrixLegendSelection">
 			<input class="wallclockCheckbox" type="checkbox" checked> runtime (wallclock)
-			<input class="cpuTimeCheckbox" type="checkbox" checked> cpu usage 
-			<input class="memUsageCheckbox" type="checkbox" checked> max virtual memory 
+			<input class="cpuTimeCheckbox" type="checkbox" checked> cpu usage
+			<input class="memUsageCheckbox" type="checkbox" checked> max virtual memory
 		</form>
 		<c:if test="${matrix.hasMultipleStages()}">
 			<form class="matrixStageSelection">
 				Stage: <input id="selectStageInput" type="text" name="stage" value="${stage}">
 				<button id="selectStageButton" type="button">Show Stage</button>
-				<span id="selectStageError" style="color: red; display: none;">Stage must be a positive integer.</span> 
+				<span id="selectStageError" style="color: red; display: none;">Stage must be a positive integer.</span>
 			</form>
 		</c:if>
 	</div>
-	
+
 	<table id="jobMatrix">
 		<thead>
 			<tr class="matrixHeaderRow">
@@ -116,7 +116,7 @@ import="java.util.ArrayList,
 										<span class="cpuTimeMemUsageDivider"> / </span>
 										<span class="memUsage">${matrixElement.getMemUsage()}</span>
 									</a>
-								</td>	
+								</td>
 							</c:when>
 							<c:otherwise>
 								<td class="jobMatrixCell" width="120px"></td>

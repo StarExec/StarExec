@@ -7,10 +7,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.log4j.Logger;
 
 import org.junit.Assert;
-
+import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
@@ -29,13 +28,15 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.exceptions.StarExecSecurityException;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.matrixView.Matrix;
 import org.starexec.test.resources.ResourceLoader;
+import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 
 public class MatrixTests extends TestSequence {
-	private static final Logger log = Logger.getLogger(MatrixTests.class);
+	private static final StarLogger log = StarLogger.getLogger(MatrixTests.class);
 
 	private Space space=null; //space to put the test job
 	private Solver solver=null; //solver to use for the job
@@ -60,21 +61,21 @@ public class MatrixTests extends TestSequence {
 
 	@Override
 	protected void setup() {
-		user=ResourceLoader.loadUserIntoDatabase();
-		user2=ResourceLoader.loadUserIntoDatabase();
-		nonOwner=ResourceLoader.loadUserIntoDatabase();
-		admin=Users.getAdmins().get(0);
-		space=ResourceLoader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
+		user=loader.loadUserIntoDatabase();
+		user2=loader.loadUserIntoDatabase();
+		nonOwner=loader.loadUserIntoDatabase();
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
+		space=loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
 		
-		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
-		postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
-		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
+		solver=loader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
+		postProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
+		benchmarkIds=loader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
 		
 		List<Integer> solverIds=new ArrayList<Integer>();
 		solverIds.add(solver.getId());
-		job=ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,
+		job=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,
 											   cpuTimeout,wallclockTimeout,gbMemory);
-		job2=ResourceLoader.loadJobIntoDatabase(space.getId(), user2.getId(), -1, postProc.getId(), solverIds, 
+		job2=loader.loadJobIntoDatabase(space.getId(), user2.getId(), -1, postProc.getId(), solverIds, 
 												benchmarkIds, cpuTimeout, wallclockTimeout, gbMemory);
 		Spaces.addJobSpace(space.getName(), job.getId());
 		Assert.assertNotNull(Jobs.get(job.getId()));
@@ -82,21 +83,7 @@ public class MatrixTests extends TestSequence {
 
 	@Override
 	protected void teardown() {
-		Jobs.deleteAndRemove(job.getId());
-		Jobs.deleteAndRemove(job2.getId());
-		Solvers.deleteAndRemoveSolver(solver.getId());
-		for (Integer i : benchmarkIds) {
-			Benchmarks.deleteAndRemoveBenchmark(i);
-		}
-		Processors.delete(postProc.getId());
-		Spaces.removeSubspace(space.getId());
-		try {
-			Users.deleteUser(user.getId(), admin.getId());
-			Users.deleteUser(user2.getId(), admin.getId());
-			Users.deleteUser(nonOwner.getId(), admin.getId());
-		} catch (StarExecSecurityException e) {
-			log.error("Failed to delete test users.", e);
-		}
+		loader.deleteAllPrimitives();
 	}
 
 	@StarexecTest

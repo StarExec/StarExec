@@ -1,29 +1,23 @@
 package org.starexec.data.database;
 
+import org.starexec.constants.PaginationQueries;
+import org.starexec.constants.R;
+import org.starexec.data.security.GeneralSecurity;
+import org.starexec.data.to.*;
+import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.logger.StarLogger;
+import org.starexec.util.DataTablesQuery;
+import org.starexec.util.NamedParameterStatement;
+import org.starexec.util.PaginationQueryBuilder;
+
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.apache.log4j.Logger;
-import org.starexec.constants.PaginationQueries;
-import org.starexec.constants.R;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Queue;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Status;
-import org.starexec.data.to.Status.StatusCode;
-import org.starexec.data.to.User;
-import org.starexec.data.to.WorkerNode;
-import org.starexec.data.to.pipelines.JoblineStage;
-import org.starexec.util.DataTablesQuery;
-import org.starexec.util.LogUtil;
-import org.starexec.util.NamedParameterStatement;
-import org.starexec.util.PaginationQueryBuilder;
+import java.util.Map;
 
 
 /**
@@ -31,8 +25,7 @@ import org.starexec.util.PaginationQueryBuilder;
  * @author Tyler Jensen
  */
 public class Queues {
-	private static final Logger log = Logger.getLogger(Queues.class);
-	private static final LogUtil logUtil = new LogUtil(log);
+	private static final StarLogger log = StarLogger.getLogger(Queues.class);
 
     /**
      * @return returns the default queue name, default queue should always exist
@@ -49,7 +42,9 @@ public class Queues {
 	public static boolean removeQueue(int queueId) {
 	    
 	    Queue q=Queues.get(queueId);
-		
+		if (q==null) {
+			return true;
+		}
 	    //Pause jobs that are running on the queue
 	    List<Job> jobs = Cluster.getJobsRunningOnQueue(queueId);
 
@@ -77,32 +72,29 @@ public class Queues {
 	    R.BACKEND.deleteQueue(q.getName());
 			
 	    Cluster.loadWorkerNodes();
-	    Cluster.loadQueues();	
+	    Cluster.loadQueueDetails();	
 	    return success;
 	}
 
     /** 
-     *Will pause jobs associated with this queue if queue only has one worker node, used by MoveNodes
-     *@param queue the Queue object whose jobs might be paused
+     *Will pause jobs associated with queues if the number of nodes being removed from them
+     *is equal to the number of nodes they have. used by MoveNodes
+     *@param queueIdsToNodesRemoved A mapping from queueID to the number of ndoes being removed
+     *from that queue
      **/
-    public static void pauseJobsIfOneWorker(Queue queue){
-	//if this is going to make the queue empty...... need to pause all jobs first
-	if(queue != null){
-	    List<WorkerNode> workers = Cluster.getNodesForQueue(queue.getId());
-		    
-	    if (workers != null) {
-		if (workers.size() == 1 ) {
-		    log.info("checking for jobs running on queue "+queue.getName()+", since this is the last node in the queue.");
-		    List<Job> jobs = Cluster.getJobsRunningOnQueue(queue.getId());
-		    if (jobs != null) {
-			for (Job j : jobs) {
-			    Jobs.pause(j.getId());
-			}
-		    }
-		}
-	    }
-	}
-		    
+    public static void pauseJobsIfNoRemainingNodes(Map<Integer,Integer> queueIdsToNodesRemoved){
+		//if this is going to make the queue empty...... need to pause all jobs first
+    	for (int queueId : queueIdsToNodesRemoved.keySet()) {
+    		List<WorkerNode> workers = Cluster.getNodesForQueue(queueId);
+    		if (workers != null && workers.size()<=queueIdsToNodesRemoved.get(queueId)) {
+    			List<Job> jobs = Cluster.getJobsRunningOnQueue(queueId);
+    			if (jobs != null) {
+    				for (Job j : jobs) {
+    					Jobs.pause(j.getId());
+    				}
+    			}	
+    		}
+    	}
     }
 
 	/**
@@ -157,18 +149,9 @@ public class Queues {
 		
 		try {
 			con = Common.getConnection();
-						
-			Common.beginTransaction(con);	
-
-			// Add queue is a multi-step process, so we need to use a transaction
 			int newQueueId = Queues.add(con, queueName,cpuTimeout,wallTimeout);
-
-			Common.endTransaction(con);			
-			
 			return newQueueId;
 		} catch (Exception e){	
-			Common.doRollback(con);			
-
 			log.error(e.getMessage(), e);		
 		} finally {
 			Common.safeClose(con);
@@ -176,35 +159,6 @@ public class Queues {
 		
 		return -1;
 	}
-	
-	/**
-	 * Associates a queue and a worker node to indicate the node belongs to the queue.
-	 * If the association already exists, any errors are ignored.
-	 * @param queueId the ID of the queue
-	 * @param nodeId The ID of the worker node that belongs to the queue
-	 * @return True if the operation was a success, false otherwise. 
-	 */
-	public static boolean associate(int queueId, int nodeId) {
-		Connection con = null;			
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();		
-			procedure = con.prepareCall("{CALL AssociateQueueById(?, ?)}");
-			procedure.setInt(1, queueId);
-			procedure.setInt(2, nodeId);
-			
-			procedure.executeUpdate();						
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-		
-		return false;
-	}
-	
 	
 	/**
 	 * Associates a queue and a worker node to indicate the node belongs to the queue.
@@ -276,18 +230,7 @@ public class Queues {
 			procedure.setInt(1, qid);			
 			results = procedure.executeQuery();
 			if(results.next()){
-				Queue queue = new Queue();
-				queue.setName(results.getString("name"));
-				queue.setId(results.getInt("id"));
-				queue.setStatus(results.getString("status"));
-				queue.setSlotsTotal(results.getInt("slots_total"));
-				queue.setSlotsAvailable(results.getInt("slots_free"));
-				queue.setSlotsReserved(results.getInt("slots_reserved"));
-				queue.setSlotsUsed(results.getInt("slots_used"));
-				queue.setWallTimeout(results.getInt("clockTimeout"));
-				queue.setCpuTimeout(results.getInt("cpuTimeout"));
-				queue.setGlobalAccess(results.getBoolean("global_access"));
-				return queue;				
+				return resultSetToQueue(results);
 			}										
 			
 		} catch (Exception e) {
@@ -298,9 +241,7 @@ public class Queues {
 		}
 		return null;
 	}	
-	
-	
-	
+
 	/**
 	 * Gets a queue with very basic information, not including any SGE attributes with the queue
 	 * @param qid The id of the queue to retrieve
@@ -326,7 +267,7 @@ public class Queues {
 	 * @return A list of queues 
 	 * @author Aaron Stump
 	 */
-	public static List<Queue> getAll() {
+	public static List<Queue> getAllActive() {
 	    return getQueues(0);
 	}
 	
@@ -339,52 +280,8 @@ public class Queues {
 	    return getQueues(-2);
 	}
 
-	/**
-	 * Gets a queue with detailed information (Id and name)
-	 * @param id The id of the queue to get detailed information for
-	 * @return A queue object containing all of its attributes
-	 * @author Tyler Jensen
-	 */
-	
-	public static Queue getDetails(int id) {
-		Connection con = null;			
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetQueueDetails(?)}");
-			procedure.setInt(1, id);			
-			 results = procedure.executeQuery();
-			Queue queue = new Queue();
-			
-			if(results.next()){
-				queue.setName(results.getString("name"));
-				queue.setId(results.getInt("id"));
-				queue.setStatus(results.getString("status"));
-				queue.setSlotsTotal(results.getInt("slots_total"));
-				queue.setSlotsAvailable(results.getInt("slots_free"));
-				queue.setSlotsReserved(results.getInt("slots_reserved"));
-				queue.setSlotsUsed(results.getInt("slots_used"));
-				queue.setWallTimeout(results.getInt("clockTimeout"));
-				queue.setCpuTimeout(results.getInt("cpuTimeout"));
-				queue.setGlobalAccess(results.getBoolean("global_access"));
-				return queue;
-			}
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		
-		return null;
-	}
-	
-	
-	
 
-	protected static int getCountOfEnqueuedPairsShallow(Connection con, int qId) throws Exception {	
+	protected static int getCountOfEnqueuedPairsByQueue(Connection con, int qId) throws Exception {	
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		
@@ -408,17 +305,17 @@ public class Queues {
 	}
 	
 	/**
-	 * Gets all job pairs that are enqueued (up to limit) for the given queue 
+	 * Gets the number of pairs that are enqueued in the given queue.
 	 * @param qId The id of the queue to get pairs for
 	 * @return A list of job pair objects that belong to the given queue.
 	 * @author Wyatt Kaiser
 	 */
-	public static int getCountOfEnqueuedPairsShallow(int qId) {
+	public static int getCountOfEnqueuedPairsByQueue(int qId) {
 		Connection con = null;			
 
 		try {			
 			con = Common.getConnection();		
-			return getCountOfEnqueuedPairsShallow(con, qId);
+			return getCountOfEnqueuedPairsByQueue(con, qId);
 		} catch (Exception e){			
 			log.error("getCountOfEnqueuedPairsShallow for queue " + qId + " says " + e.getMessage(), e);		
 		} finally {
@@ -480,26 +377,102 @@ public class Queues {
 	}
 	
 	/**
+	 * Given a ResultSet containing job pairs with fields set for the cluster DataTable page,
+	 * returns the list of job pairs.
+	 * @return
+	 * @throws SQLException 
+	 */
+	private static List<JobPair> resultSetToClusterPagePairs(ResultSet results) throws SQLException {
+		List<JobPair> returnList = new LinkedList<JobPair>();
+		
+		while(results.next()){
+			JobPair jp=new JobPair();
+			jp.setPrimaryStageNumber(results.getInt("job_pairs.primary_jobpair_data")); //because we are only populating the one stage
+			jp.setPath(results.getString("job_pairs.path"));
+			jp.setJobId(results.getInt("job_pairs.job_id"));
+			jp.setId(results.getInt("job_pairs.id"));
+			jp.setQueueSubmitTime(results.getTimestamp("job_pairs.queuesub_time"));
+			Status stat = new Status();
+			//enqueued by definition, so we don't want to retrieve extra data from the db
+			stat.setCode(StatusCode.STATUS_ENQUEUED);
+			
+			jp.setStatus(stat);
+			
+			JoblineStage stage=new JoblineStage();
+			stage.setStageNumber(jp.getPrimaryStageNumber());
+
+			jp.addStage(stage);
+
+			log.debug("attempting to get benchmark with ID = "+results.getInt("bench_id"));
+			Benchmark b=new Benchmark();
+			b.setId(results.getInt("job_pairs.bench_id"));
+			b.setName(results.getString("job_pairs.bench_name"));
+			jp.setBench(b);
+			
+			Solver s=new Solver();
+			s.setId(results.getInt("jobpair_stage_data.solver_id"));
+			s.setName(results.getString("jobpair_stage_data.solver_name"));
+			stage.setSolver(s);
+			
+			Configuration c = new Configuration();
+			c.setId(results.getInt("jobpair_stage_data.config_id"));
+			c.setName(results.getString("jobpair_stage_data.config_name"));
+			stage.setConfiguration(c);
+			jp.getPrimarySolver().addConfiguration(c);
+			
+			User u=new User();
+			u.setId(results.getInt("users.id"));
+			u.setFirstName(results.getString("users.first_name"));
+			u.setLastName(results.getString("users.last_name"));
+			jp.setOwningUser(u);
+			
+			Job j = new Job();
+			j.setId(results.getInt("jobs.id"));
+			j.setName(results.getString("jobs.name"));
+			
+			jp.setOwningJob(j);
+			
+			returnList.add(jp);
+		}
+		return returnList;
+	}
+	
+	/**
+	 * Gets the pairs running on the given node. Only the fields required for the DataTables on the explore/cluster
+	 * page are populated
+	 * @param nodeId
+	 * @return The list of job pairs
+	 */
+	public static List<JobPair> getPairsRunningOnNode(int nodeId) {
+		Connection con=null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("CALL GetPairsRunningOnNode(?)");
+			procedure.setInt(1, nodeId);
+			results = procedure.executeQuery();
+			return resultSetToClusterPagePairs(results);
+		} catch (Exception e) {
+			log.error(e.getMessage(),e);
+		}  finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+	
+	/**
 	 * Gets all the necessary job pairs for populating a datatables page on the cluster status page
 	 * @param query A DataTablesQuery object
 	 * @param id The ID of the queue or node
-	 * @param type The type of the table on the cluster status page (either queue or node)
 	 * @return A list of JobPairs running on the node
 	 */
 	
-	public static List<JobPair> getJobPairsForNextClusterPage(DataTablesQuery query, int id, String type) {
+	public static List<JobPair> getJobPairsForNextClusterPage(DataTablesQuery query, int id) {
 		PaginationQueryBuilder builder = null;
-
-		if (type == "queue") {
-			builder = new PaginationQueryBuilder(PaginationQueries.GET_PAIRS_ENQUEUED_QUERY,getPairOrderColumnForClusterPage(query.getSortColumn()), query);
-		} else if (type == "node") {
-			
-			builder = new PaginationQueryBuilder(PaginationQueries.GET_PAIRS_RUNNING_QUERY,getPairOrderColumnForClusterPage(query.getSortColumn()), query);
-
-		} else {
-			return null;
-		}
-		
+		builder = new PaginationQueryBuilder(PaginationQueries.GET_PAIRS_ENQUEUED_QUERY,getPairOrderColumnForClusterPage(query.getSortColumn()), query);
 		Connection con = null;		
 		NamedParameterStatement procedure = null;
 		ResultSet results = null;
@@ -509,63 +482,9 @@ public class Queues {
 			procedure = new NamedParameterStatement(con, builder.getSQL());
 			
 			procedure.setInt("id", id);
-			
-			
-			 results = procedure.executeQuery();
-			List<JobPair> returnList = new LinkedList<JobPair>();
-			
-			while(results.next()){
-				JobPair jp=new JobPair();
-				jp.setPrimaryStageNumber(results.getInt("job_pairs.primary_jobpair_data")); //because we are only populating the one stage
-				jp.setPath(results.getString("job_pairs.path"));
-				jp.setJobId(results.getInt("job_pairs.job_id"));
-				jp.setId(results.getInt("job_pairs.id"));
-				jp.setQueueSubmitTime(results.getTimestamp("job_pairs.queuesub_time"));
-				Status stat = new Status();
-				//enqueued by definition, so we don't want to retrieve extra data from the db
-				stat.setCode(StatusCode.STATUS_ENQUEUED);
-				
-				jp.setStatus(stat);
-				
-				JoblineStage stage=new JoblineStage();
-				stage.setStageNumber(jp.getPrimaryStageNumber());
-
-				jp.addStage(stage);
-
-				log.debug("attempting to get benchmark with ID = "+results.getInt("bench_id"));
-				Benchmark b=new Benchmark();
-				b.setId(results.getInt("job_pairs.bench_id"));
-				b.setName(results.getString("job_pairs.bench_name"));
-				jp.setBench(b);
-				
-				Solver s=new Solver();
-				s.setId(results.getInt("jobpair_stage_data.solver_id"));
-				s.setName(results.getString("jobpair_stage_data.solver_name"));
-				stage.setSolver(s);
-				
-				Configuration c = new Configuration();
-				c.setId(results.getInt("jobpair_stage_data.config_id"));
-				c.setName(results.getString("jobpair_stage_data.config_name"));
-				stage.setConfiguration(c);
-				jp.getPrimarySolver().addConfiguration(c);
-				
-				User u=new User();
-				u.setId(results.getInt("users.id"));
-				u.setFirstName(results.getString("users.first_name"));
-				u.setLastName(results.getString("users.last_name"));
-				jp.setOwningUser(u);
-				
-				Job j = new Job();
-				j.setId(results.getInt("jobs.id"));
-				j.setName(results.getString("jobs.name"));
-				
-				jp.setOwningJob(j);
-				
-				returnList.add(jp);
-			}			
-			log.debug("the returnlist had "+returnList.size()+" items");
-			Common.safeClose(results);
-			return returnList;			
+			results = procedure.executeQuery();
+						
+			return resultSetToClusterPagePairs(results);			
 			
 		} catch (Exception e){			
 			log.error("getNextPageOfEnqueuedJobPairs for queue " + id + " says " + e.getMessage(), e);		
@@ -586,43 +505,55 @@ public class Queues {
 	public static List<WorkerNode> getNodes(int id) {
 		return Cluster.getNodesForQueue(id);
 	}
-	
-	
-	
-	
-	
+
+	/**
+     * Wrapper method that gets jobs with pending job pairs for the given queue
+     * @param queueId the id of the queue
+     * @return the list of Jobs for that queue which have pending job pairs
+     */
+	public static List<Job> getPendingJobs(int queueId) {
+        return getPendingJobsHelper(queueId, false);
+	}
+
+    
+	/**
+     * Wrapper method that only gets developer or admin jobs with pending job pairs for the given queue
+     * @param queueId the id of the queue
+     * @return the list of Jobs for that queue which have pending job pairs
+     */
+    public static List<Job> getPendingDeveloperJobs(int queueId) {
+        return getPendingJobsHelper(queueId, true);
+    
+    }
 	/**
      * Gets jobs with pending job pairs for the given queue
      * @param queueId the id of the queue
+     * @param developerOnly true if only developer jobs will be returned
      * @return the list of Jobs for that queue which have pending job pairs
      * @author Ben McCune and Aaron Stump
      */
-	public static List<Job> getPendingJobs(int queueId) {
+	private static List<Job> getPendingJobsHelper(int queueId, Boolean developerOnly) {
 		Connection con = null;		
 		CallableStatement procedure = null;
 		ResultSet results = null;
+
 		try {
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetPendingJobs(?)}");					
+			con = Common.getConnection();
+			Queue queue = Queues.get(con, queueId);
+            if(developerOnly) {
+                procedure = con.prepareCall("{CALL GetPendingDeveloperJobs(?)}");                  
+            } else {
+                procedure = con.prepareCall("{CALL GetPendingJobs(?)}");
+            }
 			procedure.setInt(1, queueId);					
 			 results = procedure.executeQuery();
 			List<Job> jobs = new LinkedList<Job>();
 
 			while(results.next()){
-				Job j = new Job();
-				j.setId(results.getInt("jobs.id"));
-				j.setUserId(results.getInt("user_id"));
-				j.setName(results.getString("name"));				
-				j.setPrimarySpace(results.getInt("primary_space"));
-				j.setSeed(results.getLong("seed"));
-				j.setCpuTimeout(results.getInt("cpuTimeout"));
-				j.setWallclockTimeout(results.getInt("clockTimeout"));
-				j.setMaxMemory(results.getLong("maximum_memory"));
-				j.setSuppressTimestamp(results.getBoolean("suppress_timestamp"));
-				j.setUsingDependencies(results.getBoolean("using_dependencies"));
-				j.getQueue().setId(queueId);
-
+				Job j = Jobs.resultsToJob(results);
+				j.setQueue(queue);
 				j.setStageAttributes(Jobs.getStageAttrsForJob(j.getId(), con));
+				j.setUser(Users.get(j.getUserId()));
 				jobs.add(j);				
 			}							
 			return jobs;
@@ -635,6 +566,46 @@ public class Queues {
 		}
 
 		return null;
+	}
+
+	/**
+     * Tests to see if there exist developer jobs in all active queues
+     * @return true if there are developer jobs, false if none are in any queue
+     */
+    public static boolean developerJobsExist() {
+        List<Queue> queues = Queues.getAllActive();
+        for (Queue q : queues) {
+                int queueId = q.getId();
+                Connection con = null;      
+                CallableStatement procedure = null;
+                ResultSet results = null;
+                try {
+                    con = Common.getConnection();       
+                     procedure = con.prepareCall("{CALL GetPendingDeveloperJobs(?)}");                  
+                    procedure.setInt(1, queueId);                   
+                     results = procedure.executeQuery();
+                     return results.next(); 
+                } catch (Exception e){          
+                    log.error(e.getMessage(), e);       
+                } finally {
+                    Common.safeClose(con);
+                    Common.safeClose(procedure);
+                    Common.safeClose(results);
+                }
+        }
+        return false;
+    }
+	
+	private static Queue resultSetToQueue(ResultSet results) throws SQLException  {
+		Queue q = new Queue();
+		q.setName(results.getString("name"));
+		q.setId(results.getInt("id"));	
+		q.setStatus(results.getString("status"));
+		q.setWallTimeout(results.getInt("clockTimeout"));
+		q.setCpuTimeout(results.getInt("cpuTimeout"));
+		q.setGlobalAccess(results.getBoolean("global_access"));
+		
+		return q;
 	}
 	
 	/**
@@ -656,7 +627,7 @@ public class Queues {
 				//includes inactive queues
 				procedure = con.prepareCall("{CALL GetAllQueuesAdmin}");
 			} else {
-			    procedure = con.prepareCall("{CALL GetUserQueues(?)}");
+			    procedure = con.prepareCall("{CALL GetQueuesForUser(?)}");
 			    procedure.setInt(1, userId);
 			}
 
@@ -664,13 +635,7 @@ public class Queues {
 			List<Queue> queues = new LinkedList<Queue>();
 			
 			while(results.next()){
-				Queue q = new Queue();
-				q.setName(results.getString("name"));
-				q.setId(results.getInt("id"));	
-				q.setStatus(results.getString("status"));
-				q.setWallTimeout(results.getInt("clockTimeout"));
-				q.setCpuTimeout(results.getInt("cpuTimeout"));
-				queues.add(q);
+				queues.add(Queues.resultSetToQueue(results));
 			}			
 						
 			return queues;
@@ -684,141 +649,6 @@ public class Queues {
 		
 		return null;
 	}
-	
-	/**
-	 * Retrieves all of the queues that the given user has access to when running a job
-	 * @param userId Id of the user to get queues for
-	 * @return A list of queues, or null on error
-	 */
-	public static List<Queue> getQueuesForUser(int userId) {
-		final String method = "getQueuesForUser";
-		if (Users.isAdmin(userId)) {
-			logUtil.debug(method, "Getting queues for admin user.");
-			return getQueues(0);
-		} else {
-			logUtil.debug(method, "Getting queues for non-admin user.");
-			
-			Connection con = null;
-			ResultSet results = null;
-			CallableStatement procedure = null;
-			try {
-				con = Common.getConnection();
-				procedure = con.prepareCall("{CALL GetQueuesForUser(?)}");
-				procedure.setInt(1, userId);
-				results = procedure.executeQuery();
-				List<Queue> queues = new LinkedList<Queue>();
-				
-				while (results.next()) {
-					Queue q = new Queue();
-					q.setId(results.getInt("id"));
-					q.setName(results.getString("name"));
-					q.setStatus(results.getString("status"));
-					q.setGlobalAccess(results.getBoolean("global_access"));
-					q.setCpuTimeout(results.getInt("cpuTimeout"));
-					q.setWallTimeout(results.getInt("clockTimeout"));
-					queues.add(q);
-				}
-				return queues;
-			} catch (Exception e) {
-				log.error("GetQueuesForUser says " + e.getMessage(), e);
-			} finally {
-				Common.safeClose(con);
-				Common.safeClose(results);
-				Common.safeClose(procedure);
-			}
-			return null;
-		}
-	}
-
-	/**
-	 * Get all the queues that have been reserved for a particular space
-	 * @param spaceId The ID of the space to check
-	 * @return A list of valid queues or null on errors
-	 */
-	public static List<Queue> getQueuesForSpace(int spaceId) {
-		Connection con = null;
-		ResultSet results = null;
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetQueuesForSpace(?)}");
-			procedure.setInt(1, spaceId);
-	
-			results = procedure.executeQuery();
-			List<Queue> queues = new LinkedList<Queue>();
-			
-			while(results.next()){
-				Queue q = Queues.get(results.getInt("queue_id"));
-				queues.add(q);
-			}			
-						
-			return queues;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		
-		return null;
-	}
-	
-	
-	/**
-	 * Gets all job pairs that are enqueued(up to limit) for the given queue and also populates its used resource TOs 
-	 * (Worker node, status, benchmark and solver WILL be populated)
-	 * @param con The connection to make the query on 
-	 * @param qId The id of the queue to get pairs for
-	 * @return A list of job pair objects that belong to the given queue.
-	 * @author Wyatt Kaiser
-	 * @throws Exception 
-	 */
-	protected static int getCountOfRunningPairsDetailed(Connection con, int qId) throws Exception {	
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			procedure = con.prepareCall("{CALL GetCountOfRunningJobPairsByQueue(?)}");
-			procedure.setInt(1, qId);					
-			results = procedure.executeQuery();
-
-			if(results.next()){
-				return results.getInt("count");
-			}			
-
-			return -1;
-		} catch (Exception e) {
-			log.error("getRunningPairsDetailed says "+e.getMessage(),e);
-		} finally {
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return -1;
-	}
-	
-	
-	/**
-	 * Gets all job pairs that are running (up to limit) for the given queue and also populates its used resource TOs 
-	 * (Worker node, status, benchmark and solver WILL be populated) 
-	 * @param qId The id of the queue to get pairs for
-	 * @return A list of job pair objects that belong to the given queue.
-	 * @author Wyatt Kaiser
-	 */
-	public static int getCountOfRunningPairsDetailed(int qId) {
-		Connection con = null;			
-
-		try {			
-			con = Common.getConnection();		
-			return getCountOfRunningPairsDetailed(con, qId);
-		} catch (Exception e){			
-			log.error("getRunningPairsDetailed for job " + qId + " says " + e.getMessage(), e);		
-		} finally {
-			Common.safeClose(con);
-		}
-
-		return -1;		
-	}
-	
 	/**
 	 * Returns the sum of wallclock timeouts for all pairs that are in the given queue (running
 	 * or enqueued) that are owned by the given user.
@@ -833,10 +663,10 @@ public class Queues {
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetUserLoadOnQueue(?,?)}");					
+			procedure = con.prepareCall("{CALL GetUserLoadOnQueue(?,?)}");					
 			procedure.setInt(1, queueId);					
 			procedure.setInt(2, userId);
-			 results = procedure.executeQuery();
+			results = procedure.executeQuery();
 
 			while(results.next()){
 				return results.getInt("queue_load");	
@@ -892,8 +722,8 @@ public class Queues {
 
 	 */
 	public static List<Queue> getUserQueues(int userId) {
-		if (Users.hasAdminReadPrivileges(userId)) {
-			return getAll();
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
+			return getAllActive();
 		} else {
 			return getQueues(userId);
 		}
@@ -919,9 +749,7 @@ public class Queues {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			
-			procedure = null;
-			
+						
 			if(name == null) {
 				// If no name was supplied, apply to all queues
 				procedure = con.prepareCall("{CALL UpdateAllQueueStatus(?)}");
@@ -1121,7 +949,7 @@ public class Queues {
 	
 	/**
 	 * Sets the global_access column of the given queue to false
-	 * @param queueId The ID of hte queue to remove
+	 * @param queueId The ID of the queue to remove
 	 * @return True on success and false on error
 	 */
 	public static boolean removeGlobal(int queueId) {
@@ -1206,6 +1034,47 @@ public class Queues {
 			Common.safeClose(results);
 		}
 		return -1;
+	}
+	
+
+	/**
+	 * Gives one or more communities access to a queue
+	 * @param community_ids The IDs of the communities to give access to
+	 * @param queue_id The ID of the queue
+	 * @return True on success and false on error.
+	 */
+	public static boolean setQueueCommunityAccess(List<Integer> community_ids, int queue_id) {
+		log.debug("SetQueueCommunityAccess beginning...");
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			
+			if (community_ids != null) {
+				for (int id : community_ids) {
+					procedure = con.prepareCall("{CALL SetQueueCommunityAccess(?, ?)}");
+					procedure.setInt(1, id);
+					procedure.setInt(2, queue_id);
+					
+					procedure.executeUpdate();
+				}
+			}
+			
+			Common.endTransaction(con);
+			
+			return true;
+			
+		} catch (Exception e) {
+			log.error("SetQueueCommunityAccess says " + e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return false;
+		
 	}
 
 }

@@ -12,7 +12,7 @@
 #$ -notify
 
 # Submit under sandbox user 
-#$ -u sandbox
+#$ -u $$SANDBOX_USER_ONE$$
 
 # Resource limits
 #$ -l s_fsize=$$MAX_WRITE$$G 
@@ -25,11 +25,46 @@
 # Merge stdout and stderr streams
 #$ -j y
 
-# Variables in local environment.  Note that SOLVER_NAME, SOLVER_PATH, and BENCH_PATH are base64 encoded (we will decode in the prolog)
-#$ -v JOB_STAR_ID='$$JOBID$$',PAIR_OUTPUT_DIRECTORY='$$PAIR_OUTPUT_DIRECTORY$$',BENCH_NAME_LENGTH_LIMIT='$$BENCH_NAME_LENGTH_MAX$$',PRIMARY_PREPROCESSOR_PATH='$$PRIMARY_PREPROCESSOR_PATH$$',RAND_SEED='$$RANDSEED$$',MAX_MEM='$$MAX_MEM$$',BENCH_SAVE_DIR='$$BENCH_SAVE_PATH$$',USER_ID='$$USERID$$',HAS_DEPENDS='$$HAS_DEPENDS$$',BENCH_PATH='$$BENCH$$',PAIR_ID='$$PAIRID$$',STAREXEC_MAX_WRITE='$$MAX_WRITE$$',STAREXEC_CPU_LIMIT='$$MAX_CPUTIME$$',STAREXEC_WALLCLOCK_LIMIT='$$MAX_RUNTIME$$',REPORT_HOST='$$REPORT_HOST$$',DB_NAME='$$DB_NAME$$',SHARED_DIR='$$STAREXEC_DATA_DIR$$',SPACE_PATH='$$SPACE_PATH$$',SCRIPT_PATH='$$SCRIPT_PATH$$'
+export readonly BENCHEXEC='BENCHEXEC'
+export readonly RUNSOLVER='RUNSOLVER'
 
+export BENCH_NAME_LENGTH_LIMIT='$$BENCH_NAME_LENGTH_MAX$$'
+export PRIMARY_PREPROCESSOR_PATH='$$PRIMARY_PREPROCESSOR_PATH$$'
+export NUM_SLOTS='$$NUM_SLOTS$$'
+export RAND_SEED='$$RANDSEED$$'
+export MAX_MEM='$$MAX_MEM$$'
+export BENCH_SAVE_DIR='$$BENCH_SAVE_PATH$$'
+export USER_ID='$$USERID$$'
+export HAS_DEPENDS='$$HAS_DEPENDS$$'
+export BENCH_PATH='$$BENCH$$'
+export PAIR_ID='$$PAIRID$$'
+export STAREXEC_MAX_WRITE='$$MAX_WRITE$$'
+export STAREXEC_CPU_LIMIT='$$MAX_CPUTIME$$'
+export STAREXEC_WALLCLOCK_LIMIT='$$MAX_RUNTIME$$'
+export REPORT_HOST='$$REPORT_HOST$$'
+export SHARED_DIR='$$STAREXEC_DATA_DIR$$'
+export SPACE_PATH='$$SPACE_PATH$$'
+export SCRIPT_PATH='$$SCRIPT_PATH$$'
+export PAIR_OUTPUT_DIRECTORY='$$PAIR_OUTPUT_DIRECTORY$$'
+export DB_NAME='$$DB_NAME$$'
+export BUILD_JOB='$$BUILD_JOB$$'
+export WORKING_DIR_BASE='$$WORKING_DIR_BASE$$'
+export BENCH_ID='$$BENCH_ID$$'
+export SANDBOX_USER_ONE='$$SANDBOX_USER_ONE$$'
+export SANDBOX_USER_TWO='$$SANDBOX_USER_TWO$$'
+export DISK_QUOTA='$$DISK_QUOTA$$'
+export DISK_QUOTA_EXCEEDED=0
+# DB username and password for status reporting
+export DB_USER="$$DB_USER$$"
+export DB_PASS="$$DB_PASS$$"
+export SCRIPT_DIR="$$SCRIPT_DIR$$"
+
+export BENCHMARKING_FRAMEWORK="$$BENCHMARKING_FRAMEWORK$$"
+
+# Path to Olivier Roussel's runSolver
+export RUNSOLVER_PATH='$$RUNSOLVER_PATH$$'
 # Include common functions and status codes
-. /home/starexec/sge_scripts/functions.bash
+. $SCRIPT_DIR/functions.bash
 
 
 # Array of secondary benchmarks starexec paths
@@ -74,6 +109,10 @@ $$BENCH_SUFFIX_ARRAY$$
 
 $$RESULTS_INTERVAL_ARRAY$$
 
+$$STDOUT_SAVE_OPTION_ARRAY$$
+
+$$EXTRA_SAVE_OPTION_ARRAY$$
+
 STAGE_INDEX=0
 
 NUM_STAGES=${#STAGE_NUMBERS[@]}
@@ -101,20 +140,32 @@ trap 'handleUsrTwo' USR2
 #==========================================================================
 # Execute (prolog will take care of data staging)
 
+
 whoami
 echo "STAREXEC Job Log"
 echo "(C) `date +%Y` The University of Iowa"
 echo "====================================="
 echo "date: `date`"
-echo "user: #$USER_ID"
-echo "sge job: #$JOB_ID"
+echo "user: $USER_ID"
 echo "pair id: $PAIR_ID"
 echo "execution host: $HOSTNAME"
+echo "benchmarking framework: $BENCHMARKING_FRAMEWORK"
+
+if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
+	log "Using benchexec."
+else
+	log "Using runsolver."
+fi
+
+if [ $BUILD_JOB == "true" ]; then
+        echo "This is a solver build job"
+fi
+
 echo ""
 
 sendStatus $STATUS_RUNNING
 
-initSandbox "$JOB_ID"
+initSandbox
 
 
 if ! isInteger $SANDBOX ; then
@@ -159,12 +210,14 @@ NODE_MEM=$(($NODE_MEM/1024))
 log "node memory in megabytes = $NODE_MEM"
 
 #then, set to half the memory
-NODE_MEM=$(($NODE_MEM/2))
+NODE_MEM=$(($NODE_MEM/$NUM_SLOTS))
+
+log "node memory after accounting for pairs allowed to run on node = $NODE_MEM"
 
 if [ $MAX_MEM -gt $NODE_MEM ]
 then
 
-echo "truncating max memory from requested $MAX_MEM to $NODE_MEM (half max memory on the node)"
+echo "truncating max memory from requested $MAX_MEM to $NODE_MEM"
 
 export MAX_MEM=$NODE_MEM
 
@@ -175,7 +228,8 @@ fillDependArrays
 #todo: alter the way we copy runsolver over so it only happens once
 copyBenchmarkDependencies
 
-TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`
+TMP=`mktemp --tmpdir=$TMPDIR starexec_base64.XXXXXXXX`
+log "the temp directory is $TMP"
 echo $PAIR_OUTPUT_DIRECTORY > $TMP
 PAIR_OUTPUT_DIRECTORY=`base64 -d $TMP`
 #==============================================================================
@@ -183,6 +237,19 @@ PAIR_OUTPUT_DIRECTORY=`base64 -d $TMP`
 #
 #
 #==============================================================================
+
+
+# directory containing all the output files from a solver. This won't exist until the second stage
+# and onwards
+OTHER_INPUT_PATH=""
+
+# if we are using pipelines, the OTHER_INPUT_PATH should always exist.
+# so, we start with an empty directory here
+if [ $NUM_STAGES -gt 1 ] 
+then
+	mkdir "$OUT_DIR"/empty_output_dir
+	OTHER_INPUT_PATH="$OUT_DIR"/empty_output_dir
+fi
 
 log "the number of stages is $NUM_STAGES"
 
@@ -227,49 +294,49 @@ ARGUMENT_STRING=${STAGE_DEPENDENCIES[$STAGE_INDEX]}
 CURRENT_BENCH_SUFFIX=${BENCH_SUFFIXES[$STAGE_INDEX]}
 SUPPRESS_TIMESTAMP=$$SUPPRESS_TIMESTAMP_OPTION$$
 RESULTS_INTERVAL=${RESULTS_INTERVALS[$STAGE_INDEX]}
+STDOUT_SAVE_OPTION=${STDOUT_SAVE_OPTIONS[$STAGE_INDEX]}
+EXTRA_SAVE_OPTION=${EXTRA_SAVE_OPTIONS[$STAGE_INDEX]}
+
 #path to where cached solvers are stored
-SOLVER_CACHE_PATH="/export/starexec/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
+SOLVER_CACHE_PATH="$WORKING_DIR_BASE/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
 
 #whether the solver was found in the cache
 SOLVER_CACHED=0
 
-
+if [ $BUILD_JOB == "true" ]; then
+    LOCAL_CONFIG_PATH="$LOCAL_SOLVER_DIR/starexec_build"
+else
 # The path to the config run script on the execution host
-LOCAL_CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/starexec_run_$CONFIG_NAME"
+    LOCAL_CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/starexec_run_$CONFIG_NAME"
+fi
 
+createDir "$OUT_DIR/output_files"
+chmod g+w "$OUT_DIR/output_files"
 
 checkCache
 copyDependencies
 verifyWorkspace
 sandboxWorkspace
 
+log "listing contents of sandbox..."
+ls -l $WORKING_DIR
+
 
 CURRENT_STAGE_NUMBER=${STAGE_NUMBERS[$STAGE_INDEX]}
 
-if [ "$SUPPRESS_TIMESTAMP" = true ] ; then
-	log "Suppressing timestamp."
-else
-	log "Not suppressing timestamp."
-fi
 
 SANDBOX_FOUND=true
+# SANDBOX_PARAM designates which user will run runsolver
 if [ $SANDBOX -eq 1 ] ; then
-	SANDBOX_PARAM="sandbox"
+	SANDBOX_PARAM=$SANDBOX_USER_ONE
 	CORES="0-3"
 elif [ $SANDBOX -eq 2 ] ; then
-	SANDBOX_PARAM="sandbox2"
+	SANDBOX_PARAM=$SANDBOX_USER_TWO
 	CORES="4-7"
 else
 	SANDBOX_FOUND=false
 fi
 
-if [ "$SUPPRESS_TIMESTAMP" = true ] ; then
-  TIMESTAMP_PARAM=""
-  ADDEOF_PARAM=""
-else
-  TIMESTAMP_PARAM="--timestamp"
-  ADDEOF_PARAM="--add-eof"
-fi
 
 #Give job pairs 2 extra minutes before we kill them.
 JOB_PAIR_EXTRA_TIME=120
@@ -281,8 +348,6 @@ log "clock timeout : $CURRENT_STAGE_WALLCLOCK"
 log "global cpu timeout : $STAREXEC_CPU_LIMIT"
 log "global wallclock timeout : $STAREXEC_WALLCLOCK_LIMIT"
 log "extra time for job pair after wallclock timeout : $JOB_PAIR_EXTRA_TIME"
-log "stage cpu timeout : ${STAGE_CPU_TIMEOUTS[$STAGE_INDEX]}"
-log "stage wallclock timeout : ${STAGE_WALLCLOCK_TIMEOUTS[$STAGE_INDEX]}"
 log "mem limit : $CURRENT_STAGE_MEMORY"
 log "solver id : $SOLVER_ID"
 log "solver name : $SOLVER_NAME"
@@ -296,39 +361,95 @@ log "bench path : $BENCH_PATH"
 log "benchmark suffix : $CURRENT_BENCH_SUFFIX"
 log "argument string : $ARGUMENT_STRING"
 log "results interval : $RESULTS_INTERVAL"
+log "stdout save option : $STDOUT_SAVE_OPTION"
+log "additional output save option : $EXTRA_SAVE_OPTION"
+log "user disk quota : $DISK_QUOTA"
+
 
 if [ "$SANDBOX_FOUND" = true ] ; then
-	# The SANDBOX_PARAM designates which user will run runsolver, sandbox or sandbox2  
 	echo "Checking who current user is using: whoami ..."	
 	whoami
 
 	# this will be set to true in killDeadlockedJobPair if the job pair gets deadlocked
 	echo "Calling killDeadlockedJobPair"
 
-	killDeadlockedJobPair $STAREXEC_WALLCLOCK_LIMIT $JOB_PAIR_EXTRA_TIME $SANDBOX_PARAM &
+	killDeadlockedJobPair $CURRENT_STAGE_WALLCLOCK $JOB_PAIR_EXTRA_TIME $SANDBOX_PARAM &
 	# Get the process of our defensive killDeadlockedJobPair function.
 	KILL_DEADLOCKED_JOB_PAIR_PID=$!
 	echo "KILL_DEADLOCKED_JOB_PAIR_PID = $KILL_DEADLOCKED_JOB_PAIR_PID"
+		
 	if [ $RESULTS_INTERVAL -gt 0 ] ; then
-		copyOutputIncrementally $RESULTS_INTERVAL $STAREXEC_WALLCLOCK_LIMIT $CURRENT_STAGE_NUMBER &
+		copyOutputIncrementally $RESULTS_INTERVAL $STAREXEC_WALLCLOCK_LIMIT $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION &
+		COPY_OUTPUT_INCREMENTALLY_PID=$!
 	fi
-	COPY_OUTPUT_INCREMENTALL_PID=$!
-	cd /export/starexec/$SANDBOX_PARAM/solver/bin
+
+    if [ $BUILD_JOB == "true" ]; then
+        cd $WORKING_DIR_BASE/$SANDBOX_PARAM/solver
+        rm $LOCAL_BENCH_PATH
+        LOCAL_BENCH_PATH=""
+    else
+	    cd $WORKING_DIR_BASE/$SANDBOX_PARAM/solver/bin
+    fi
+
 	pwd
 
-	# run runsolver
-	echo "  $LOCAL_RUNSOLVER_PATH $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $$MAX_MEM$$  -w $OUT_DIR/watcher.out -v $OUT_DIR/var.out -o $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
-
-	sudo -u $SANDBOX_PARAM TMPDIR=$LOCAL_TMP_DIR STAREXEC_MAX_MEM=$CURRENT_STAGE_MEMORY STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$CURRENT_STAGE_CPU STAREXEC_WALLCLOCK_LIMIT=$CURRENT_STAGE_WALLCLOCK "$LOCAL_RUNSOLVER_PATH" $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $$MAX_CPUTIME$$ -W $$MAX_RUNTIME$$ -M $MAX_MEM  -w "$OUT_DIR/watcher.out" -v "$OUT_DIR/var.out" -o "$OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" $ARGUMENT_STRING
+	log "listing contents of the output directory"
+	ls -l $OUT_DIR
 
 
+	if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
+
+		MEM_IN_BYTES=$(( CURRENT_STAGE_MEMORY*1000 ))
+
+		log "Setting up cpuset cgroup..."
+		echo $$ > /sys/fs/cgroup/cpuset/system.slice/benchexec-cgroup.service/tasks
+		log "Setting up cpuacct cgroup..."
+		echo $$ > /sys/fs/cgroup/cpuacct/system.slice/benchexec-cgroup.service/tasks
+		log "Setting up memory cgroup..."
+		echo $$ > /sys/fs/cgroup/memory/system.slice/benchexec-cgroup.service/tasks
+		log "Setting up freezer cgroup..."
+		echo $$ > /sys/fs/cgroup/freezer/system.slice/benchexec-cgroup.service/tasks
+
+		log "Running runexec."
+		echo "runexec --no-container --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH $OUT_DIR/output_files $OTHER_INPUT_PATH $ARGUMENT_STRING"
+
+		# Run runexec, runexec will output the stdout of the solver to $OUT_DIR/stdout.txt and will output statistics to $OUT_DIR/var.out
+		sudo -u $SANDBOX_PARAM runexec --no-container --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH "$OUT_DIR/output_files" $OTHER_INPUT_PATH $ARGUMENT_STRING > $OUT_DIR/var.out
+
+		# make a blank watchfile
+		touch "$OUT_DIR"/watcher.out
+	else
+		# run runsolver
+		log "Running runsolver."
+		echo "  $LOCAL_RUNSOLVER_PATH $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $CURRENT_STAGE_CPU -W $CURRENT_STAGE_WALLCLOCK -M $$MAX_MEM$$  -w $OUT_DIR/watcher.out -v $OUT_DIR/var.out -o $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
+
+	if [ "$SUPPRESS_TIMESTAMP" = true ] ; then
+		log "Suppressing timestamp."
+	else
+		log "Not suppressing timestamp."
+	fi
+
+	if [ "$SUPPRESS_TIMESTAMP" = true ] ; then
+	  TIMESTAMP_PARAM=""
+	  ADDEOF_PARAM=""
+	else
+	  TIMESTAMP_PARAM="--timestamp"
+	  ADDEOF_PARAM="--add-eof"
+	fi
+
+		sudo -u $SANDBOX_PARAM TMPDIR=$LOCAL_TMP_DIR STAREXEC_MAX_MEM=$CURRENT_STAGE_MEMORY STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$CURRENT_STAGE_CPU STAREXEC_WALLCLOCK_LIMIT=$CURRENT_STAGE_WALLCLOCK "$LOCAL_RUNSOLVER_PATH" $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $CURRENT_STAGE_CPU -W $CURRENT_STAGE_WALLCLOCK -M $MAX_MEM  -w "$OUT_DIR/watcher.out" -v "$OUT_DIR/var.out" -o "$OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" "$OUT_DIR/output_files" $OTHER_INPUT_PATH $ARGUMENT_STRING
+	fi
+
+
+	# move the working directory back to the top level sandbox
+	cd $WORKING_DIR_BASE/$SANDBOX_PARAM
 	if [ $RESULTS_INTERVAL -gt 0 ] ; then
 		kill $COPY_OUTPUT_INCREMENTALLY_PID
-		kill $KILL_DEADLOCKED_JOB_PAIR_PID
 	fi
 
 	# If runsolver finishes then stop the killDeadlockedJobPair function.
 	log "Runsolver finished. Killing the defensive killall function."
+	kill $KILL_DEADLOCKED_JOB_PAIR_PID
 	KILL_EXIT_STATUS=$?
 	JOB_PAIR_DEADLOCKED=false
 	if [ $KILL_EXIT_STATUS = 1 ]; then
@@ -341,58 +462,108 @@ else
 	sendStatus $ERROR_RUNSCRIPT
 fi
 
-
+log "listing contents of the output directory"
 ls -l $OUT_DIR
+
+log "recording header of job pair output"
+head -5 "$OUT_DIR/stdout.txt"
+
 # runsolver dumps a lot of information to the WATCHFILE, and summary of times and such to VARFILE
 WATCHFILE="$OUT_DIR"/watcher.out
 VARFILE="$OUT_DIR"/var.out
+STDOUT_FILE="$OUT_DIR"/stdout.txt
 
+if [ ! -f $WATCHFILE ]; then
+    log "Runsolver watchfile could not be found. Terminating job pair."
+    copyOutput $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION $BENCHMARKING_FRAMEWORK
+    markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
+    exit 0
+fi
 
+if [ ! -f $VARFILE ]; then
+    echo "Varfile could not be found. Terminating job pair."
+    copyOutput $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION $BENCHMARKING_FRAMEWORK
+    markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
+    exit 0
+fi
+
+if ! isOutputValid $STDOUT_FILE $CURRENT_STAGE_NUMBER $SUPPRESS_TIMESTAMP $BENCHMARKING_FRAMEWORK ; then
+	log "runsolver output was not valid. Terminating job pair."
+	markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
+	exit 0
+fi
+
+#log "Watchfile: "
+#cat $WATCHFILE
+#printf "\n"
+#log "Varfile: "
+#cat $VARFILE
+#printf "\n"
+#log "Stdoutfile: "
+#cat $STDOUT_FILE
+#printf "\n"
 
 # check for which cores we are on
 log "epilog checking for information on cores, from runsolver's watch file:"
 grep 'cores:' $WATCHFILE
 
 # this also does post processing
-copyOutput $CURRENT_STAGE_NUMBER
+copyOutput $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION $BENCHMARKING_FRAMEWORK
 
-if [ "$SPACE_ID" != "" ]; then
-	saveOutputAsBenchmark
+if [ $STDOUT_SAVE_OPTION -eq 3 ]; then
+	saveStdoutAsBenchmark
 fi
 
-# cleared below if no error
-JOB_ERROR="1";
+if [ $EXTRA_SAVE_OPTION -eq 3 ]; then
+	saveExtraOutputAsBenchmarks
+fi
+
+ERROR_DETECTED=false
+
+if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
+
+  log "Checking for errors for benchexec."
+
+  if ( grep 'terminationreason=cputime' $VARFILE) then
+	sendCpuExceededStatus
+	ERROR_DETECTED=true
+  elif ( grep 'terminationreason=walltime' $VARFILE) then
+	sendWallclockExceededStatus
+	ERROR_DETECTED=true
+  elif ( grep 'terminationreason=memory' $VARFILE) then
+	sendExceedMemStatus
+	ERROR_DETECTED=true
+  elif (grep 'terminationreason=' $VARFILE) then
+	# generic case for failure
+	ERROR_DETECTED=true
+  fi
 
 
-if ( grep 'job error:' "$SGE_STDOUT_PATH" ) then
-  true 
-elif ( grep 'wall clock time exceeded' $WATCHFILE ) || [ "$JOB_PAIR_DEADLOCKED" = true ]; then
-  log "epilog detects wall clock time exceeded"
-  sendStatus $EXCEED_RUNTIME
-  sendStageStatus $EXCEED_RUNTIME ${STAGE_NUMBERS[$STAGE_INDEX]}
-  sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
-  setRunStatsToZeroForLaterStages ${STAGE_NUMBERS[$STAGE_INDEX]}
-  break
-  
-elif ( grep 'CPU time exceeded' $WATCHFILE ) then
-  log "epilog detects cpu time exceeded"
-  sendStatus $EXCEED_CPU
-  sendStageStatus $EXCEED_CPU ${STAGE_NUMBERS[$STAGE_INDEX]}
-  sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
-  setRunStatsToZeroForLaterStages ${STAGE_NUMBERS[$STAGE_INDEX]}
-  break
-  
-  
-elif ( grep 'VSize exceeded' $WATCHFILE ) then
-  log "epilog detects max virtual memory exceeded"
-  sendStatus $EXCEED_MEM
-  sendStageStatus $EXCEED_MEM ${STAGE_NUMBERS[$STAGE_INDEX]}
-  sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
-  setRunStatsToZeroForLaterStages ${STAGE_NUMBERS[$STAGE_INDEX]}
-  break
-  
-else
-  JOB_ERROR="";
+elif [ "$BENCHMARKING_FRAMEWORK" == "$RUNSOLVER" ]; then 
+  log "Checking for errors for runsolver."
+  if ( cat "$SGE_STDOUT_PATH" | grep 'job error:' ) then
+	ERROR_DETECTED=true
+  elif ( grep 'wall clock time exceeded' $WATCHFILE ) || [ "$JOB_PAIR_DEADLOCKED" = true ]; then
+	sendWallclockExceededStatus
+	ERROR_DETECTED=true
+  elif ( grep 'CPU time exceeded' $WATCHFILE ) then
+	sendCpuExceededStatus
+	ERROR_DETECTED=true
+  elif ( grep 'VSize exceeded' $WATCHFILE ) then
+	sendExceedMemStatus
+	ERROR_DETECTED=true
+  fi
+fi
+
+if [ "$ERROR_DETECTED" = false ] && [ $DISK_QUOTA_EXCEEDED -eq 1 ]; then
+	log "Error: disk quota exceeded"
+	sendStatus $ERROR_DISK_QUOTA_EXCEEDED
+	sendStageStatus $ERROR_DISK_QUOTA_EXCEEDED ${STAGE_NUMBERS[$STAGE_INDEX]}
+	ERROR_DETECTED=true
+fi
+
+# This appears to be the idiomatic Bash way to test if a value is false.
+if [ "$ERROR_DETECTED" = false ]; then
   log "execution on $HOSTNAME complete"
   sendStageStatus $STATUS_COMPLETE ${STAGE_NUMBERS[$STAGE_INDEX]}
   
@@ -400,16 +571,17 @@ else
   then
   	  log "job finished successfully"
   	  sendStatus $STATUS_COMPLETE
-  fi
-  
-  
+  fi  
+  log "STAREXEC job $PAIR_ID completed successfully"	
+else 
+  log "STAREXEC job $PAIR_ID exited with errors"
+  sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
+  setRunStatsToZeroForLaterStages ${STAGE_NUMBERS[$STAGE_INDEX]}
+  cleanUpAfterKilledBuildJob
 fi
 
-if [ "$JOB_ERROR" = "" ]; then
-	
-	log "STAREXEC job $JOB_ID completed successfully"	
-else
-	log "STAREXEC job $JOB_ID exited with errors"
+if [ $BUILD_JOB == "true" ]; then
+    copySolverBack
 fi
 
 cleanForNextStage
@@ -417,7 +589,7 @@ cleanForNextStage
 
 # update the path to the input to the output of the last stage
 BENCH_PATH="$SAVED_OUTPUT_DIR/$CURRENT_STAGE_NUMBER"
-
+OTHER_INPUT_PATH=$SAVED_OUTPUT_DIR"/"$CURRENT_STAGE_NUMBER"_output"
 
 STAGE_INDEX=$(($STAGE_INDEX+1))
 
@@ -427,7 +599,9 @@ setEndTime
 
 recordJobPairRun
 
-cleanWorkspace 0
+cleanWorkspace 0 $SANDBOX_PARAM
+
+rm $TMP
 
 echo "Jobscript ending."
 

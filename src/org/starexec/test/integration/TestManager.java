@@ -8,16 +8,18 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 
 
 import org.starexec.constants.R;
 
 
+import org.starexec.logger.StarLogger;
 import org.starexec.test.integration.StateTests.IntroStateTests;
 import org.starexec.test.integration.app.RESTHelpersTests;
+import org.starexec.test.integration.app.RESTServicesSecurityTests;
 import org.starexec.test.integration.database.*;
 import org.starexec.test.integration.security.*;
+import org.starexec.test.integration.util.JobUtilTests;
 import org.starexec.test.integration.util.dataStructures.TreeNodeTests;
 import org.starexec.test.integration.web.*;
 import org.starexec.util.Util;
@@ -30,13 +32,17 @@ import org.starexec.util.Util;
  *
  */
 public class TestManager {
-	private static final Logger log = Logger.getLogger(TestManager.class);
+	private static final StarLogger log = StarLogger.getLogger(TestManager.class);
 	private final static AtomicBoolean isRunning=new AtomicBoolean(false);
 	private final static AtomicBoolean isRunningStress=new AtomicBoolean(false);
 	//this should never be modified outside of the initializeTests method
 	private final static List<TestSequence> tests=new ArrayList<TestSequence>();
-	//all test sequences need to be initialized here
+	/**
+	 * all test sequences need to be initialized here. Simply add new TestSequences to the 
+	 * list of all tests. This is called once on Starexec startup.
+	 */
 	public static void initializeTests() {
+		tests.add(new AnonymousLinkTests());
 		tests.add(new SolverTests());
 		tests.add(new SpaceTests());
 		tests.add(new StarexecCommandTests());
@@ -47,7 +53,6 @@ public class TestManager {
 		tests.add(new GeneralSecurityTests());
 		tests.add(new JobSecurityTests());
 		tests.add(new BenchmarkSecurityTests());
-		tests.add(new CacheSecurityTests());
 		tests.add(new UserTests());
 		tests.add(new PermissionsTests());
 		tests.add(new IntroStateTests());
@@ -67,15 +72,28 @@ public class TestManager {
 		tests.add(new PipelineTests());
 		tests.add(new TreeNodeTests());
 		tests.add(new RESTHelpersTests());
-		//tests.add(new LoginTests());
-		//tests.add(new UploadSolverTests());
-		//tests.add(new UploadBenchmarksTests());
-		//tests.add(new SpaceExplorerTests());
+		tests.add(new CommunitiesTests());
+		tests.add(new ProcessorSecurityTests());
+		tests.add(new StatisticsTests());
+		tests.add(new UploadSecurityTests());
+		tests.add(new RESTServicesSecurityTests());
+		tests.add(new WebsiteSecurityTests());
+		tests.add(new JobUtilTests());
+		tests.add(new ReportsTests());
 	}
-	
+	/**
+	 * 
+	 * @return Whether any tests are currently running. Only one sequence can run at once.
+	 */
 	public static boolean areTestsRunning() {
 		return isRunning.get();
 	}
+	
+	/**
+	 * 
+	 * @return Whether a stress test is currently running, meaning whether things
+	 * are still being added to the database.
+	 */
 	
 	public static boolean isStressTestRunning() {
 		return isRunningStress.get();
@@ -86,7 +104,7 @@ public class TestManager {
 	 * @return True if the tests were started, and false if they were not for some reason
 	 */
 	public static boolean executeAllTestSequences() {
-		if (Util.isProduction()) {
+		if (!Util.isTestingAllowed()) {
 			return false; //right now, don't run anything on production
 		}
 		//don't do anything if the tests are already running
@@ -94,7 +112,6 @@ public class TestManager {
 			return false;
 		}
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
-		
 		
 		//we want to return here, not wait until all the tests finish, which is why we spin off a new threads
 		threadPool.execute(new Runnable() {
@@ -114,20 +131,30 @@ public class TestManager {
 		});	
 		return true;
 	}
-	
+	/**
+	 * @return all TestSequences registered during initializeTests
+	 */
 	public static List<TestSequence> getAllTestSequences() {
 		return tests;
 	}
+	/**
+	 * @param sequenceName
+	 * @return results for all tests in the sequence with the given name
+	 */
 	public static List<TestResult> getAllTestResults(String sequenceName) {
-		return TestManager.getTestSequence(sequenceName).getTestResults();
+		TestSequence seq = TestManager.getTestSequence(sequenceName);
+		if (seq==null) {
+			return null;
+		}
+		return seq.getTestResults();
 	}
 	/**
 	 * Executes the tests that have the given name.
-	 * @param testName The name of the test that should be run
+	 * @param testNames The names of the test sequences that should be run
 	 * @return True if the test could be found, false otherwise
 	 */
 	public static boolean executeTests(String[] testNames) {
-		if (Util.isProduction()) {
+		if (!Util.isTestingAllowed()) {
 			return false; //right now, don't run anything on production
 		}
 		//don't run anything if we are already going
@@ -169,11 +196,11 @@ public class TestManager {
 	 * @param minBenchmarksPerSpace
 	 * @param maxBenchmarksPerSpace
 	 * @param spacesPerJobCount
-	 * @return
+	 * @return True if the test was started and false if it was not
 	 */
 	public static boolean executeStressTest(final int userCount,final int spaceCount,final int jobCount, final int minUsersPerSpace, final int maxUsersPerSpace, final int minSolversPerSpace, 
 			final int maxSolversPerSpace,final int minBenchmarksPerSpace,final int maxBenchmarksPerSpace,final int spacesPerJobCount) {
-		if (Util.isProduction()) {
+		if (!Util.isTestingAllowed()) {
 			return false; //right now, don't run anything on production
 		}
 		//don't run anything if we are already going
@@ -204,8 +231,7 @@ public class TestManager {
 	}
 	
 	/**
-	 * Returns the names of all TestSequences known to the manager
-	 * @return
+	 * @return the names of all TestSequences known to the manager
 	 */
 	public static List<String> getTestNames() {
 		List<String> names=new ArrayList<String>();
@@ -216,9 +242,8 @@ public class TestManager {
 	}
 	
 	/**
-	 * Gets the status of a TestSequence given its name
 	 * @param testName The name of the TestSequence of interest
-	 * @return
+	 * @return the status of a TestSequence given its name
 	 */
 	public static TestStatus getTestStatus(String testName) {
 		TestSequence t = getTestSequence(testName);
@@ -229,9 +254,8 @@ public class TestManager {
 	}
 	
 	/**
-	 * Gets back the message contained by a given TestSequence
 	 * @param testName
-	 * @return
+	 * @return the message contained by a given TestSequence
 	 */
 	public static String getTestMessage(String testName) {
 		TestSequence t = getTestSequence(testName);
@@ -260,7 +284,7 @@ public class TestManager {
 	 * be running this on production!
 	 */
 	public static void emptyJobOutputDirectory() {
-		if (Util.isProduction()) {
+		if (!Util.isTestingAllowed()) {
 			return;
 		}
 		final ExecutorService threadPool = Executors.newCachedThreadPool();

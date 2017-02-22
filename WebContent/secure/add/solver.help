@@ -7,6 +7,10 @@ A solver can contain any collection of folders and files as long as it contains
 at least one run script (aka <em>configuration</em>).
 </p>
 
+<p>A solver can be built on starexec. To do this write a script that compiles your solver,
+name it starexec_build, and place it in the top level directory of your compressed solver file.
+For more information please refer to the <a href="https://wiki.uiowa.edu/display/stardev/User+Guide#UserGuide-Solvers">User Guide</a>.</p>
+
 <h2>Solver info</h2>
 
 <p>To upload a solver navigate to a space where you have permissions to do so

@@ -1,9 +1,11 @@
 package org.starexec.test.integration.security;
 
 import org.junit.Assert;
+import org.starexec.constants.R;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.UserSecurity;
 import org.starexec.data.to.User;
+import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
@@ -62,13 +64,6 @@ public class UserSecurityTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void canSuspendOrReinstateUser() {
-		Assert.assertEquals(true, UserSecurity.canUserSuspendOrReinstateUser(admin.getId()).isSuccess());
-		Assert.assertNotEquals(true, UserSecurity.canUserSuspendOrReinstateUser(user1.getId()).isSuccess());
-		Assert.assertNotEquals(true, UserSecurity.canUserSuspendOrReinstateUser(user2.getId()).isSuccess());
-	}
-	
-	@StarexecTest
 	private void canViewUserPrimitives() {
 		Assert.assertEquals(true, UserSecurity.canViewUserPrimitives(user1.getId(),user1.getId()).isSuccess());
 		Assert.assertEquals(true, UserSecurity.canViewUserPrimitives(user1.getId(),admin.getId()).isSuccess());
@@ -83,10 +78,10 @@ public class UserSecurityTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		user1=ResourceLoader.loadUserIntoDatabase();
-		user2=ResourceLoader.loadUserIntoDatabase();
+		user1=loader.loadUserIntoDatabase();
+		user2=loader.loadUserIntoDatabase();
 
-		admin=Users.getAdmins().get(0);
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 		Assert.assertNotNull(user1);
 		Assert.assertNotNull(user2);
 		Assert.assertNotNull(admin);
@@ -94,8 +89,7 @@ public class UserSecurityTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Users.deleteUser(user1.getId(),admin.getId());
-		Users.deleteUser(user2.getId(),admin.getId());
+		loader.deleteAllPrimitives();
 	}
 
 }

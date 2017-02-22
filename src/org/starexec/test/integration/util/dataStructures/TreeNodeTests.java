@@ -3,14 +3,14 @@ package org.starexec.test.integration.util.dataStructures;
 import java.lang.IndexOutOfBoundsException;
 import java.lang.NullPointerException;
 
-import org.apache.log4j.Logger;
 import org.junit.Assert;
+import org.starexec.logger.StarLogger;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.util.dataStructures.TreeNode;
 
 public class TreeNodeTests extends TestSequence {
-	private static final Logger log = Logger.getLogger(TreeNodeTests.class);
+	private static final StarLogger log = StarLogger.getLogger(TreeNodeTests.class);
 
 	@Override 
 	protected String getTestName() {

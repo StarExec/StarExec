@@ -6,26 +6,17 @@
 
 <%		
 	try {
-		int userId = SessionUtil.getUserId(request);
-		User user = Users.get(userId);
-		if (!Users.hasAdminReadPrivileges(userId)) {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
-		} else {
-			request.setAttribute("isSystemPaused", Jobs.isSystemPaused());
-		}		
-		
-	} catch (NumberFormatException nfe) {
-		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given user id was in an invalid format");
+		request.setAttribute("isSystemPaused", Jobs.isSystemPaused());	
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
 
-<star:template title="${t_user.fullName}" js="admin/job, lib/jquery-ui-1.8.16.custom.min.js, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/table, explore/common, explore/spaces, admin/admin, jqueryui/jquery-ui-1.8.16.starexec">
+<star:template title="${t_user.fullName}" js="admin/job, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/table, explore/common, explore/spaces, admin/admin, jqueryui/jquery-ui-1.8.16.starexec">
 	
 	
 	<fieldset  id="jobField">
-			<legend class="expd" id="jobExpd"><span>0</span> jobs</legend>
+			<legend class="expd" id="jobExpd">jobs</legend>
 			<table id="jobs">
 				<thead>
 					<tr>
@@ -50,7 +41,7 @@
 				</c:if>
 			</ul>
 	</fieldset>	
-	<div id="dialog-confirm-pause" title="confirm pause">
+	<div id="dialog-confirm-pause" title="confirm pause" class="hiddenDialog">
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-pause-txt"></span></p>
 	</div>
 </star:template>

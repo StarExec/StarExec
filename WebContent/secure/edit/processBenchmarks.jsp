@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.List, org.starexec.constants.*, java.lang.StringBuilder, java.io.File, org.apache.commons.io.FileUtils, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.constants.R" session="true"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.List, org.starexec.constants.*,org.starexec.data.security.*, java.lang.StringBuilder, java.io.File, org.apache.commons.io.FileUtils, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.constants.R" session="true"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
@@ -8,7 +8,7 @@ try {
 	int spaceId = Integer.parseInt((String)request.getParameter("sid"));
 
 	// Grab relevant user id & processor info
-	if (Users.isMemberOfSpace(userId,spaceId) || Users.hasAdminReadPrivileges(userId)) {
+	if (Users.isMemberOfSpace(userId,spaceId) || GeneralSecurity.hasAdminReadPrivileges(userId)) {
 		request.setAttribute("sid",spaceId);
 		List<Processor> procs=Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),Processor.ProcessorType.BENCH);
 		request.setAttribute("procs",procs);
@@ -38,7 +38,7 @@ try {
 			<tbody>
 				<c:forEach var="proc" items="${procs}">
 					<tr>
-						<td><input name="pid" type="hidden" value="${proc.id}"/><a href="${starexecRoot}/secure/edit/processor.jsp?type=bench&id=${proc.id}">${proc.name} <img class="extLink" src="${starexecRoot}/images/external.png"/> </a></td>
+						<td><input name="pid" type="hidden" value="${proc.id}"/><a href="${starexecRoot}/secure/edit/processor.jsp?id=${proc.id}">${proc.name} <img class="extLink" src="${starexecRoot}/images/external.png"/> </a></td>
 						<td>${proc.description}</td>
 					</tr>
 				</c:forEach>
@@ -57,12 +57,26 @@ try {
 			<tbody>
 				<tr title="Decide whether to process all the benchmarks in the hierarchy rooted at this space or process only this space" class="noHover">
 					<td class="label">process hierarchy</td>
-					<td><input type="radio" name="hier" id="hierTrue" value="true"/>full hierarchy <input type="radio" name="hier" id="hierFalse" checked="checked" value="false"/>this space</td>
+					<td>
+						<div class="mobileBlock">
+							<input type="radio" name="hier" id="hierTrue" value="true"/>full hierarchy
+						</div>
+						<div class="mobileBlock">
+							<input type="radio" name="hier" id="hierFalse" checked="checked" value="false"/>this space
+						</div>
+					</td>
 				</tr>
 				<tr title="If yes, all attributes for all benchmarks being processed will be deleted before processing begins. If no, benchmarks will retain old attributes, and attribute values will be overwritten wherever the new
 		 a new attribute has the same name as an old one" class="noHover">
 					<td class="label">clear old attributes</td>
-					<td><input type="radio" name="clear" id="clearOldTrue" value="true"/>yes <input type="radio" name="clear" id="clearOldFalse" checked="checked" value="false"/>no</td>
+					<td>
+						<div class="mobileBlock">
+							<input type="radio" name="clear" id="clearOldTrue" value="true"/>yes
+						</div>
+						<div class="mobileBlock">
+							<input type="radio" name="clear" id="clearOldFalse" checked="checked" value="false"/>no
+						</div>
+					</td>
 				</tr>
 				
 			</tbody>	

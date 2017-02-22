@@ -2,44 +2,30 @@ package org.starexec.util;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-
+import java.util.*;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
-
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Pipelines;
-import org.starexec.data.database.Processors;
-import org.starexec.data.database.Queues;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
+import org.starexec.data.database.*;
+import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
+import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.User;
+import org.starexec.data.to.enums.ConfigXmlAttribute;
+import org.starexec.data.to.enums.JobXmlType;
 import org.starexec.data.to.pipelines.*;
 import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
+import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
+import org.starexec.data.to.tuples.ConfigAttrMapPair;
+import org.starexec.logger.StarLogger;
 import org.starexec.servlets.CreateJob;
-import org.starexec.util.DOMHelper;
-import org.starexec.util.LogUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -47,12 +33,13 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 public class JobUtil {
-	private static final Logger log = Logger.getLogger(JobUtil.class);
-	private static final LogUtil logUtil = new LogUtil(log);
+	private static final StarLogger log = StarLogger.getLogger(JobUtil.class);
 	
 	private Boolean jobCreationSuccess = false;
 	private String errorMessage = "";//this will be used to given information to user about failures in validation
-	
+	private String secondaryErrorMessage = ""; // this will be used for additional error message useful to developers.
+
+
 	/**
 	 * Creates jobs from the xml file. This also creates any solver pipelines defined in the XML document
 	 * @author Tim Smith
@@ -65,17 +52,26 @@ public class JobUtil {
 	 * @throws ParserConfigurationException
 	 * @throws IOException
 	 */
-	public List<Integer> createJobsFromFile(File file, int userId, Integer spaceId) throws Exception {
+	public List<Integer> createJobsFromFile(
+			File file,
+			int userId,
+			Integer spaceId,
+			JobXmlType xmlType,
+			ConfigAttrMapPair configAttrMapPair)
+			throws IOException, ParserConfigurationException, SAXException {
+
+		final String methodName = "createJobsFromFile";
 		final String method = "createJobsFromFile";
 		List<Integer> jobIds=new ArrayList<Integer>();
-		if (!validateAgainstSchema(file)){
-			logUtil.warn(method, "File from User " + userId + " is not Schema valid.");
+		if (!validateAgainstSchema(file, xmlType)){
+			log.warn(method, "File from User " + userId + " is not Schema valid.");
+			errorMessage = "File from User " + userId + " is not Schema valid.";
 			return null;
 		}
 		
 		Permission p = Permissions.get(userId, spaceId);
 		if (!p.canAddJob()){
-			logUtil.info(method, "User with id="+userId+" does not have permission to create a job on space with id="+spaceId);
+			log.info(method, "User with id="+userId+" does not have permission to create a job on space with id="+spaceId);
 			errorMessage = "You do not have permission to create a job on this space";
 			return null;
 		}
@@ -87,31 +83,51 @@ public class JobUtil {
 		NodeList listOfJobElements = jobsElement.getElementsByTagName("Job");
 		
 		NodeList listOfPipelines = doc.getElementsByTagName("SolverPipeline");
-		logUtil.info(method, "# of pipelines = " + listOfPipelines.getLength());
+		log.info(method, "# of pipelines = " + listOfPipelines.getLength());
 		
         //Check Jobs and Job Pairs
         NodeList listOfJobs = doc.getElementsByTagName("Job");
-		logUtil.info(method, "# of Jobs = " + listOfJobs.getLength());
+		log.info(method, "# of Jobs = " + listOfJobs.getLength());
         NodeList listOfJobPairs = doc.getElementsByTagName("JobPair");
-        
-		logUtil.info(method, "# of JobPairs = " + listOfJobPairs.getLength());
+		NodeList listOfUploadedSolverJobPairs = doc.getElementsByTagName("UploadedSolverJobPair");
+
+
+		log.info(method, "# of JobPairs = " + listOfJobPairs.getLength());
+		log.info(method, "# of UploadedSolverJobPairs = " + listOfUploadedSolverJobPairs.getLength());
+
 		NodeList listOfJobLines= doc.getElementsByTagName("JobLine");
-		logUtil.info(method, " # of JobLines = "+listOfJobLines.getLength());
+		log.info(method, " # of JobLines = "+listOfJobLines.getLength());
 		//this job has nothing to run
-		if (listOfJobLines.getLength()+listOfJobPairs.getLength()==0) {
+		int pairCount = listOfJobPairs.getLength()+listOfJobLines.getLength()+listOfUploadedSolverJobPairs.getLength();
+		if (pairCount == 0) {
 			errorMessage="Every job must have at least one job pair or job line to be created";
 			return null;
-		}		
+		}
+		User u = Users.get(userId);
+		int pairsAvailable = Math.max(0, u.getPairQuota() - Jobs.countPairsByUser(userId));
+		// This just checks if a quota is totally full, which is sufficient for quick jobs and as a fast sanity check
+		// for full jobs. After the number of pairs have been acquired for a full job this check will be done factoring them in.
+		if (pairsAvailable < pairCount) {
+			errorMessage = "Error: You are trying to create "+pairCount+" pairs, but you have "+pairsAvailable+" remaining in your quota. Please delete some old jobs before continuing.";
+			return null;
+		}
+		
+		if (Users.isDiskQuotaExceeded(userId)) {
+			errorMessage = "Your disk quota has been exceeded: please clear out some old solvers, jobs, or benchmarks before proceeding";
+			return null;
+		}
 		
 		//validate all solver pipelines
 		
 		//data structure to ensure all pipeline names in this upload are unique
 		HashMap<String,SolverPipeline> pipelineNames=new HashMap<String,SolverPipeline>();
-		logUtil.info(method, "Creating pipelines from elements.");
+		log.info(method, "Creating pipelines from elements.");
 		for (int i=0; i< listOfPipelines.getLength(); i++) {
 			Node pipeline = listOfPipelines.item(i);
 			SolverPipeline pipe=createPipelineFromElement(userId, (Element) pipeline);
 			if (pipe==null) {
+				log.info("error creating pipeline");
+				secondaryErrorMessage = "Solver pipeline was null.";
 				return null; // this means there was some error. The error message should have been set already 
 							// the call to createPipelineFromElement
 			}
@@ -121,21 +137,21 @@ public class JobUtil {
 			}
 			pipelineNames.put(pipe.getName(),pipe);
 		}
-		logUtil.info(method, "Finished creating pipelines from elements.");
+		log.info(method, "Finished creating pipelines from elements.");
 		
 		// Make sure jobs are named
-		logUtil.info(method, "Checking to make sure jobs are named.");
+		log.info(method, "Checking to make sure jobs are named.");
 		for (int i = 0; i < listOfJobs.getLength(); i++){
 			Node jobNode = listOfJobs.item(i);
 			if (jobNode.getNodeType() == Node.ELEMENT_NODE){
 				Element jobElement = (Element)jobNode;
 				String name = jobElement.getAttribute("name");
 				if (name == null) {
-					logUtil.info(method, "Name not found");
+					log.info(method, "Name not found");
 					errorMessage = "Job elements must include a 'name' attribute.";
 					return null;
 				}
-				logUtil.debug(method, "Job Name = " + name);
+				log.debug(method, "Job Name = " + name);
 				
 				if (!org.starexec.util.Validator.isValidJobName(name)){
 					errorMessage = name + "is not a valid job name";
@@ -148,25 +164,32 @@ public class JobUtil {
 			}
 		}
 		
-		logUtil.info(method, "Finished checking to make sure jobs are named.");
+		log.info(method, "Finished checking to make sure jobs are named.");
 		
-		this.jobCreationSuccess = true;
 		
-		logUtil.info(method, "Creating jobs from elements.");
+		log.info(method, "Creating jobs from elements.");
 		for (int i = 0; i < listOfJobElements.getLength(); i++){
 			Node jobNode = listOfJobElements.item(i);
 			if (jobNode.getNodeType() == Node.ELEMENT_NODE){
 				Element jobElement = (Element)jobNode;
 				log.info("about to create job from element");
-				Integer id = createJobFromElement(userId, spaceId, jobElement,pipelineNames);
+
+				Integer id = createJobFromElement(
+						userId,
+						spaceId,
+						jobElement,
+						pipelineNames,
+						configAttrMapPair);
+
 				if (id < 0) {
-				    this.jobCreationSuccess = false;
-				    break; // out of for loop
+					secondaryErrorMessage = "createJobFromElement returned: " + id;
+					return null; // means there was an error. Error message should have been set
 				}
 				jobIds.add(id);
 			}
 		}
-		logUtil.info(method, "Finished creating jobs from elements, returning job ids.");
+		log.info(method, "Finished creating jobs from elements, returning job ids.");
+		this.jobCreationSuccess = true;
 
 		return jobIds;
 	}
@@ -230,8 +253,12 @@ public class JobUtil {
 				s.setConfigId(Integer.parseInt(stage.getAttribute("config-id")));
 				// make sure the user is authorized to use the solver they are trying to use
 				Solver solver = Solvers.getSolverByConfig(s.getConfigId(), false);
+				if (solver==null) {
+					errorMessage = "The given configuration could not be found";
+					return null;
+				}
 				if (!Permissions.canUserSeeSolver(solver.getId(), userId)){
-				    errorMessage = "You do not have permission to see the solver " + solver.getId();
+				    errorMessage = "You do not have permission to see the solver" + solver.getId();
 				    return null;
 				}
 				
@@ -311,6 +338,115 @@ public class JobUtil {
 		}
 		return pipeline;
 	}
+	
+	/**
+	 * Converts an XML element to a StageAttributes object
+	 * @param stageAttributes The element to convert
+	 * @param maxStages The max stages present in any pipeline in the job that owns this element. Used
+	 * to verify that stage-nums are chosen properly
+	 * @param userId ID of user that will own this job. Used to verify they have permission to create benchmarks
+	 * in their chosen space
+	 * @param cpuTimeout Default when not specified
+	 * @param wallclock Default when not specified
+	 * @param memoryLimit Default when not specified
+	 * @param queueId ID of the queue for this job. Used to validate chosen timeouts.
+	 * @return
+	 */
+	private StageAttributes elementToStageAttributes(Element stageAttributes, int maxStages, int userId, int cpuTimeout, int wallclock,
+			long memoryLimit, int queueId) {
+		StageAttributes attrs=new StageAttributes();
+		
+		//first,  we need to find which stage this is for, given the name of a pipeline and the stage number (not ID)
+		
+		int neededStageNum=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "stage-num").getAttribute("value"));
+		// the stage number needs to be between 1 and n if there are a maximum of n stages in any pipeline in this job
+		if (neededStageNum<=0 || neededStageNum>maxStages) {
+			errorMessage="StageAttributes tag has invalid stage-num = "+neededStageNum;
+			return null;
+		}
+		attrs.setStageNumber(neededStageNum);
+
+		
+		// all timeouts are optional-- they default to job timeouts if not given
+		int stageCpu=cpuTimeout;
+		if (DOMHelper.hasElement(stageAttributes, "cpu-timeout")) {
+			stageCpu=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "cpu-timeout").getAttribute("value"));
+		}
+		int stageWallclock=wallclock;
+		if (DOMHelper.hasElement(stageAttributes, "wallclock-timeout")) {
+			stageWallclock=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "wallclock-timeout").getAttribute("value"));
+		}
+		long stageMemory=memoryLimit;
+		if (DOMHelper.hasElement(stageAttributes, "mem-limit")) {
+			Double gigMem=Double.parseDouble(DOMHelper.getElementByName(stageAttributes, "mem-limit").getAttribute("value"));
+			stageMemory=Util.gigabytesToBytes(gigMem);
+		}
+		
+		//the space to put new benchmarks created from the job output into
+		Integer stageSpace=null;
+		if (DOMHelper.hasElement(stageAttributes, "space-id")) {
+			stageSpace=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "space-id").getAttribute("value"));
+		}
+		
+		// if no suffix is given, benchmarks will retain their old suffixes when they are created
+		String stageBenchSuffix=null;
+		if (DOMHelper.hasElement(stageAttributes, "bench-suffix")) {
+			stageBenchSuffix=DOMHelper.getElementByName(stageAttributes, "bench-suffix").getAttribute("value");
+		}
+		
+		// If processors are not given in the stage attributes, that means they are not used for this ttage
+		Integer stagePostProcId=null;
+		if (DOMHelper.hasElement(stageAttributes, "postproc-id")) {
+			stagePostProcId=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "postproc-id").getAttribute("value"));
+			attrs.setPostProcessor(Processors.get(stagePostProcId));
+
+		}
+		Integer stagePreProcId=null;
+		if (DOMHelper.hasElement(stageAttributes, "preproc-id")) {
+			stagePreProcId=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "preproc-id").getAttribute("value"));
+			attrs.setPreProcessor(Processors.get(stagePreProcId));
+		
+		}
+		
+		if (DOMHelper.hasElement(stageAttributes, "results-interval")) {
+			int resultsInterval=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "results-interval").getAttribute("value"));
+			attrs.setResultsInterval(resultsInterval);
+		} else {
+			attrs.setResultsInterval(0);
+		}
+		
+		if (DOMHelper.hasElement(stageAttributes, "stdout-save")) {
+			attrs.setStdoutSaveOption(SaveResultsOption.stringToOption(DOMHelper.getElementByName(stageAttributes, "stdout-save").getAttribute("value")));
+		}
+		
+		if (DOMHelper.hasElement(stageAttributes, "other-save")) {
+			attrs.setExtraOutputSaveOption(SaveResultsOption.stringToOption(DOMHelper.getElementByName(stageAttributes, "other-save").getAttribute("value")));
+		}
+		
+		//validate this new set of parameters
+		ValidatorStatusCode stageStatus=CreateJob.isValid(userId, queueId, cpuTimeout, wallclock, stagePreProcId, stagePostProcId);
+		if (!stageStatus.isSuccess()) {
+			errorMessage=stageStatus.getMessage();
+			return null;
+		}
+		
+		//also make sure the user can add both spaces and benchmarks to the given space
+		if (stageSpace!=null) {
+			Permission p = Permissions.get(userId,stageSpace);
+			if (!p.canAddBenchmark() || !p.canAddSpace()) {
+				errorMessage="You do not have permission to add benchmarks or spaces to the space with id = "+stageSpace;
+				return null;
+			}
+		}
+		
+					
+		attrs.setWallclockTimeout(stageWallclock);
+		attrs.setCpuTimeout(stageCpu);
+		attrs.setMaxMemory(stageMemory);
+		attrs.setSpaceId(stageSpace);
+		attrs.setBenchSuffix(stageBenchSuffix);
+		return attrs;
+	}
 
 	/**
 	 * Creates a single job from an XML job element.
@@ -320,11 +456,15 @@ public class JobUtil {
 	 * @return The id of the new job on success or -1 on failure
 	 * @author Tim Smith
 	 */
-	private Integer createJobFromElement(int userId, Integer spaceId,
-			Element jobElement, HashMap<String,SolverPipeline> pipelines) {
+	private Integer createJobFromElement(
+			int userId,
+			Integer spaceId,
+			Element jobElement,
+			HashMap<String,SolverPipeline> pipelines,
+			ConfigAttrMapPair configAttrMapPair) {
 	    try {
-			
-	    	
+			final String methodName = "createJobFromElement";
+
 			Element jobAttributes = DOMHelper.getElementByName(jobElement,"JobAttributes");
 			HashMap<Integer,Solver> configIdsToSolvers=new HashMap<Integer,Solver>();
 	
@@ -338,6 +478,21 @@ public class JobUtil {
 			else{
 			    job.setDescription("no description");
 			}
+
+			if (DOMHelper.hasElement(jobAttributes, R.XML_BENCH_FRAMEWORK_ELE_NAME)) {
+				Element framework = DOMHelper.getElementByName(jobAttributes, R.XML_BENCH_FRAMEWORK_ELE_NAME);
+
+				// Make sure the user can use the selected benchmarking framework.
+				BenchmarkingFramework selectedFramework = BenchmarkingFramework.valueOf(framework.getAttribute("value").toUpperCase());
+				if (selectedFramework == BenchmarkingFramework.BENCHEXEC && !JobSecurity.canUserUseBenchExec(userId).isSuccess()) {
+					errorMessage = "You are not allowed to use the selected benchmarking framework.";
+					return -1;
+				}
+
+				job.setBenchmarkingFramework( selectedFramework );
+			} else {
+				job.setBenchmarkingFramework(R.DEFAULT_BENCHMARKING_FRAMEWORK);
+			}
 		    
 			job.setUserId(userId);
 			
@@ -345,7 +500,6 @@ public class JobUtil {
 			if(jobId != "" && jobId != null){
 			    log.info("job id set: " + jobId);
 			    job.setId(Integer.parseInt(jobId));
-			    
 			}
 			
 	
@@ -403,7 +557,7 @@ public class JobUtil {
 			//validate memory limits
 			ValidatorStatusCode status=CreateJob.isValid(userId, queueId, cpuTimeout, wallclock, null, null);
 			if (!status.isSuccess()) {
-				errorMessage=status.getMessage();
+				errorMessage="CreateJob.isValid: "+status.getMessage();
 				return -1;
 			}
 			
@@ -418,161 +572,59 @@ public class JobUtil {
 			NodeList stageAttributeElements=jobElement.getElementsByTagName("StageAttributes");
 			for (int index=0;index<stageAttributeElements.getLength();index++) {
 				Element stageAttributes= (Element) stageAttributeElements.item(index);
-				StageAttributes attrs=new StageAttributes();
-				
-				
-				//first,  we need to find which stage this is for, given the name of a pipeline and the stage number (not ID)
-				
-				int neededStageNum=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "stage-num").getAttribute("value"));
-				// the stage number needs to be between 1 and n if there are a maximum of n stages in any pipeline in this job
-				if (neededStageNum<=0 || neededStageNum>maxStages) {
-					errorMessage="StageAttributes tag has invalid stage-num = "+neededStageNum;
+				StageAttributes attrs = elementToStageAttributes(stageAttributes, maxStages, userId, cpuTimeout, wallclock, memoryLimit, queueId);
+				if (attrs==null) {
+					errorMessage = "elementToStageAttributes returned null.";
 					return -1;
 				}
-				attrs.setStageNumber(neededStageNum);
-
-				
-				// all timeouts are optional-- they default to job timeouts if not given
-				int stageCpu=cpuTimeout;
-				if (DOMHelper.hasElement(stageAttributes, "cpu-timeout")) {
-					stageCpu=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "cpu-timeout").getAttribute("value"));
-				}
-				int stageWallclock=wallclock;
-				if (DOMHelper.hasElement(stageAttributes, "wallclock-timeout")) {
-					stageWallclock=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "wallclock-timeout").getAttribute("value"));
-				}
-				long stageMemory=memoryLimit;
-				if (DOMHelper.hasElement(stageAttributes, "mem-limit")) {
-					Double gigMem=Double.parseDouble(DOMHelper.getElementByName(stageAttributes, "mem-limit").getAttribute("value"));
-					stageMemory=Util.gigabytesToBytes(gigMem);
-				}
-				
-				//the space to put new benchmarks created from the job output into
-				Integer stageSpace=null;
-				if (DOMHelper.hasElement(stageAttributes, "space-id")) {
-					stageSpace=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "space-id").getAttribute("value"));
-				}
-				
-				// if no suffix is given, benchmarks will retain their old suffixes when they are created
-				String stageBenchSuffix=null;
-				if (DOMHelper.hasElement(stageAttributes, "bench-suffix")) {
-					stageBenchSuffix=DOMHelper.getElementByName(stageAttributes, "bench-suffix").getAttribute("value");
-				}
-				
-				// If processors are not given in the stage attributes, that means they are not used for this ttage
-				Integer stagePostProcId=null;
-				if (DOMHelper.hasElement(stageAttributes, "postproc-id")) {
-					stagePostProcId=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "postproc-id").getAttribute("value"));
-					attrs.setPostProcessor(Processors.get(stagePostProcId));
-
-				}
-				Integer stagePreProcId=null;
-				if (DOMHelper.hasElement(stageAttributes, "preproc-id")) {
-					stagePreProcId=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "preproc-id").getAttribute("value"));
-					attrs.setPreProcessor(Processors.get(stagePreProcId));
-				
-				}
-				
-				if (DOMHelper.hasElement(stageAttributes, "results-interval")) {
-					int resultsInterval=Integer.parseInt(DOMHelper.getElementByName(stageAttributes, "results-interval").getAttribute("value"));
-					attrs.setResultsInterval(resultsInterval);
-				} else {
-					attrs.setResultsInterval(0);
-				}
-				
-				//validate this new set of parameters
-				ValidatorStatusCode stageStatus=CreateJob.isValid(userId, queueId, cpuTimeout, wallclock, stagePreProcId, stagePostProcId);
-				if (!stageStatus.isSuccess()) {
-					errorMessage=stageStatus.getMessage();
-					return -1;
-				}
-				
-				//also make sure the user can add both spaces and benchmarks to the given space
-				if (stageSpace!=null) {
-					Permission p = Permissions.get(userId,stageSpace);
-					if (!p.canAddBenchmark() || !p.canAddSpace()) {
-						errorMessage="You do not have permission to add benchmarks or spaces to the space with id = "+stageSpace;
-						return -1;
-					}
-				}
-							
-				attrs.setWallclockTimeout(stageWallclock);
-				attrs.setCpuTimeout(stageCpu);
-				attrs.setMaxMemory(stageMemory);
-				attrs.setSpaceId(stageSpace);
-				attrs.setBenchSuffix(stageBenchSuffix);
 				job.addStageAttributes(attrs);
 			}
 			
 			if (!job.containsStageOneAttributes()) {
 				job.addStageAttributes(stageOneAttributes);
 			}
-			
 			//this is the set of every top level space path given in the XML. There must be exactly 1 top level space,
-			// so if there is more than one then we will need to prepend the rootName onto every pair path to condense it
+			// so if there is
+            // more than one then we will need to prepend the rootName onto every pair path to condense it
 			// to a single root space
 			HashSet<String> jobRootPaths=new HashSet<String>();
-			NodeList jobPairs = jobElement.getElementsByTagName("JobPair");
-			
-			//we now iterate through all the job pair elements and add them all to the job
-			for (int i = 0; i < jobPairs.getLength(); i++) {
-			    Node jobPairNode = jobPairs.item(i);
-			    if (jobPairNode.getNodeType() == Node.ELEMENT_NODE){
-					Element jobPairElement = (Element)jobPairNode;
-						
-					JobPair jobPair = new JobPair();
-					int benchmarkId = Integer.parseInt(jobPairElement.getAttribute("bench-id"));
-					int configId = Integer.parseInt(jobPairElement.getAttribute("config-id"));
-					String path = jobPairElement.getAttribute("job-space-path");
-					if (path.equals("")) {
-						path=rootName;
-						
-					}
-					jobPair.setPath(path);
-					if (path.contains(R.JOB_PAIR_PATH_DELIMITER)) {
-						jobRootPaths.add(path.substring(0,path.indexOf(R.JOB_PAIR_PATH_DELIMITER)));
-					} else {
-						jobRootPaths.add(path);
-					}
-						
-					//permissions check on the benchmark for this job pair
-					Benchmark b = Benchmarks.get(benchmarkId);
-					if (!Permissions.canUserSeeBench(benchmarkId, userId)){
-					    errorMessage = "You do not have permission to see benchmark " + benchmarkId;
-					    return -1;
-					}
-					jobPair.setBench(b);
-					if (!configIdsToSolvers.containsKey(configId)) {
-						//permissions check on the solver for the pair. Configurations do
-						//not have permissions by themselves-- their permissions are identical to the solver permissions
-						Solver s = Solvers.getSolverByConfig(configId, false);
-						if (!Permissions.canUserSeeSolver(s.getId(), userId)){
-						    errorMessage = "You do not have permission to see the solver " + s.getId();
-						    return -1;
-						}
-						
-						s.addConfiguration(Solvers.getConfiguration(configId));
-						configIdsToSolvers.put(configId, s);
-					}
-					Solver s = configIdsToSolvers.get(configId);
-					
-					//JobPair elements are for pairs with exactly one stage, so we create a stage
-					//to house the solver and benchmark
-					JoblineStage stage=new JoblineStage();
-					stage.setStageNumber(1);
-					stage.setSolver(s);
-					stage.setConfiguration(s.getConfigurations().get(0));
-					
-					jobPair.addStage(stage);
-					//the primary stage is the one we just added
-					jobPair.setPrimaryStageNumber(jobPair.getStages().size());
-					jobPair.setSpace(Spaces.get(spaceId));
-					
-						
-					job.addJobPair(jobPair);
-			    }
+			Map<Integer, Benchmark> accessibleCachedBenchmarks = new HashMap<>();
+			// IMPORTANT: For efficieny reasons this function has the side-effect of populating configIdsToSolvers
+			//			  as well as accessibleCachedBenchmarks
+
+			final NodeList jobPairs = jobElement.getElementsByTagName("JobPair");
+			Optional<String> potentialError = JobPairs.populateConfigIdsToSolversMapAndJobPairsForJobXMLUpload(
+					jobElement,
+					rootName,
+					userId,
+					accessibleCachedBenchmarks,
+					configIdsToSolvers,
+					job,
+					spaceId,
+					jobRootPaths,
+					new ConfigAttrMapPair(ConfigXmlAttribute.ID), // We need to use config-id as the attribute for JobPair elements.
+					jobPairs);
+			if (potentialError.isPresent()) {
+				errorMessage = "Error parsing JobPair elements: "+potentialError.get();
+				return -1;
 			}
-			
+			final NodeList uploadedSolverJobPairs = jobElement.getElementsByTagName("UploadedSolverJobPair");
+			potentialError = JobPairs.populateConfigIdsToSolversMapAndJobPairsForJobXMLUpload(
+					jobElement,
+					rootName,
+					userId,
+					accessibleCachedBenchmarks,
+					configIdsToSolvers,
+					job,
+					spaceId,
+					jobRootPaths,
+					configAttrMapPair,
+					uploadedSolverJobPairs);
+			if (potentialError.isPresent()) {
+				errorMessage = "Error parsing UploadedSolverJopPair elements: "+potentialError.get();
+				return -1;
+			}
+
 			//JobLine elements are still job pairs, but they are how multi-stage pairs are denoted
 			//in the XML
 			NodeList jobLines = jobElement.getElementsByTagName("JobLine");
@@ -607,11 +659,17 @@ public class JobUtil {
 					} else {
 						jobRootPaths.add(path);
 					}
-					
-					Benchmark b = Benchmarks.get(benchmarkId);
-					if (!Permissions.canUserSeeBench(benchmarkId, userId)){
-					    errorMessage = "You do not have permission to see benchmark " + benchmarkId;
-					    return -1;
+
+					Benchmark b = null;
+					if (!accessibleCachedBenchmarks.containsKey(benchmarkId)) {
+						b = Benchmarks.get(benchmarkId);
+						if (!Permissions.canUserSeeBench(benchmarkId, userId)) {
+							errorMessage = "You do not have permission to see benchmark " + benchmarkId;
+							return -1;
+						}
+						accessibleCachedBenchmarks.put(benchmarkId, b);
+					} else {
+						b = accessibleCachedBenchmarks.get(benchmarkId);
 					}
 					jobPair.setBench(b);
 					
@@ -620,9 +678,12 @@ public class JobUtil {
 					for (int inputIndex=0;inputIndex<inputs.getLength();inputIndex++) {
 						Element inputElement=(Element)inputs.item(inputIndex);
 						int benchmarkInput=Integer.parseInt(inputElement.getAttribute("bench-id"));
-						if (!Permissions.canUserSeeBench(benchmarkInput, userId)){
-						    errorMessage = "You do not have permission to see benchmark input " + benchmarkId;
-						    return -1;
+						// If the benchmark cache already contains the bench id then we know the user can see it.
+						if (!accessibleCachedBenchmarks.containsKey(benchmarkInput)) {
+							if (!Permissions.canUserSeeBench(benchmarkInput, userId)) {
+								errorMessage = "You do not have permission to see benchmark input " + benchmarkId;
+								return -1;
+							}
 						}
 						jobPair.addBenchInput(benchmarkInput);
 					}
@@ -631,6 +692,7 @@ public class JobUtil {
 					if (currentPipe.getRequiredNumberOfInputs()!=jobPair.getBenchInputs().size()) {
 						errorMessage="Job pairs have invalid inputs. Given inputs = "+jobPair.getBenchInputs().size()+", but "
 								+ "required inputs = "+currentPipe.getRequiredNumberOfInputs();
+						return -1;
 					}
 					
 					
@@ -675,7 +737,6 @@ public class JobUtil {
 			    }
 			}
 			
-			
 			log.info("job pairs set");
 	
 			if (job.getJobPairs().size() == 0) {
@@ -683,7 +744,8 @@ public class JobUtil {
 			    errorMessage = "Error: no job pairs created for the job. Could not proceed with job submission.";
 			    return -1;
 			}
-			
+
+
 			// pairs must have exactly 1 root space, so if there is more than one, we prepend the rootname onto every path
 			if (jobRootPaths.size()>1) {
 				for (JobPair p : job.getJobPairs()) {
@@ -692,7 +754,6 @@ public class JobUtil {
 			} else {
 				rootName=jobRootPaths.iterator().next();
 			}
-			
 			//check to make sure that, for all spaces where we will be creating mirrored hierarchies to store new benchmarks,
 			//that we actually can create the mirrored hierarchy without name collisions.
 			for (StageAttributes attrs: job.getStageAttributes()) {
@@ -705,16 +766,13 @@ public class JobUtil {
 				}
 			}
 			
-			
 			log.info("job pair size nonzero");
 	
-			boolean startPaused = false;
-	
-			if(DOMHelper.hasElement(jobAttributes,"start-paused")){
-			    Element startPausedEle = DOMHelper.getElementByName(jobAttributes,"start-paused");
-			    log.info("startPausedEle: " + startPausedEle.getAttribute("value"));
-			    startPaused = Boolean.valueOf(startPausedEle.getAttribute("value"));
-			}
+			boolean startPaused = getBooleanElementValue( false, "start-paused", jobAttributes );
+			boolean suppressTimestamps = getBooleanElementValue( false, "suppress-timestamps", jobAttributes );
+
+			job.setSuppressTimestamp( suppressTimestamps );
+
 	
 			log.info("start-paused: " + (new Boolean(startPaused).toString()));
 	
@@ -725,10 +783,15 @@ public class JobUtil {
 			} else if (startPaused) {
 			    Jobs.pause(job.getId());
 			}
-			return job.getId();
-		
-	    }
-	    catch (Exception e) {
+
+			int newJobId = job.getId();
+			if (newJobId == -1) {
+				errorMessage = "Job id was never set.";
+				// could just skip this and return newJobId but this makes the -1 return explicit.
+				return -1;
+			}
+			return newJobId;
+		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 			errorMessage = "Internal error when creating your job: "+e.getMessage();
 			return -1;
@@ -736,35 +799,35 @@ public class JobUtil {
 	}
 
 	/**
+	 * Gets the value of a boolean element contained in an XML element.
+	 * @param defaultValue return this value if the element is not found.
+	 * @param elementName the name of the element to get the value of.
+	 * @param attributes the containing element of the element to find.
+	 * @author Albert Giegerich
+	 */
+	public boolean getBooleanElementValue( boolean defaultValue, String elementName, Element attributes ) {
+		if( DOMHelper.hasElement( attributes, elementName ) ) {
+			Element booleanElement = DOMHelper.getElementByName( attributes, elementName );
+			log.info( elementName + booleanElement.getAttribute( "value" ) );
+			return Boolean.valueOf( booleanElement.getAttribute( "value" ) );
+		} else {
+			return defaultValue;
+		}
+	}
+
+	/**
 	 * Checks that the XML file uploaded is valid against the deployed public/batchJobSchema.xsd
 	 * @param file the XML file to be validated against the XSD
 	 * @author Tim Smith
 	 */
-	public Boolean validateAgainstSchema(File file) throws ParserConfigurationException, IOException{
-		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-		factory.setValidating(false);//This is true for DTD, but not W3C XML Schema that we're using
-		factory.setNamespaceAware(true);
+	public Boolean validateAgainstSchema(File file, JobXmlType jobXmlType) throws ParserConfigurationException, IOException{
+		ValidatorStatusCode code = XMLUtil.validateAgainstSchema(file, jobXmlType.schemaPath);
+		errorMessage=code.getMessage();
+		return code.isSuccess();	
+	}
 
-		SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
-
-		try {
-			String schemaLoc = Util.url("public/batchJobSchema.xsd");
-			factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource(schemaLoc)}));
-			Schema schema = factory.getSchema();
-			DocumentBuilder builder = factory.newDocumentBuilder();
-			Document document = builder.parse(file);
-			Validator validator = schema.newValidator();
-			DOMSource source = new DOMSource(document);
-            validator.validate(source);
-            log.debug("Job XML File has been validated against the schema.");
-            return true;
-        } catch (SAXException ex) {
-            log.warn("File is not valid because: \"" + ex.getMessage() + "\"");
-            errorMessage = "File is not valid because: \"" + ex.getMessage() + "\"";
-            this.jobCreationSuccess = false;
-            return false;
-        }
-		
+	public String getSecondaryErrorMessage() {
+		return secondaryErrorMessage;
 	}
 
 	public String getErrorMessage() {

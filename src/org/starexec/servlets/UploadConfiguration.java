@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.database.Solvers;
@@ -19,6 +18,7 @@ import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
@@ -32,7 +32,7 @@ import org.starexec.util.PartWrapper;
  */
 @SuppressWarnings("serial")@MultipartConfig
 public class UploadConfiguration extends HttpServlet {
-	private static final Logger log = Logger.getLogger(UploadConfiguration.class);	
+	private static final StarLogger log = StarLogger.getLogger(UploadConfiguration.class);
     
     // Param constants to use to process the form
     private static final String CONFIG_DESC = "uploadConfigDesc";
@@ -90,8 +90,8 @@ public class UploadConfiguration extends HttpServlet {
 			}
     	} catch (Exception e) {
     		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-    		log.error(e.getMessage(), e);
-    	}	
+			log.warn("Caught Exception in UploadConfiguration.doPost", e);
+    	}
 	}
     
     

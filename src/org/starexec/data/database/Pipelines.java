@@ -7,9 +7,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.starexec.data.to.pipelines.*;
 import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
+import org.starexec.logger.StarLogger;
 
 /**
  * Class responsible for inserting and removing pipelines from the database
@@ -17,10 +17,11 @@ import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
  *
  */
 public class Pipelines {
-	private static final Logger log=Logger.getLogger(Pipelines.class);
+	private static final StarLogger log=StarLogger.getLogger(Pipelines.class);
 	
 	/**
-	 * Returns a list of dependencies that go with the pipeline stage with the given ID
+	 * Returns a list of dependencies that go with the pipeline stage with the given ID. Dependencies
+	 * will be returned in order of their input_number.
 	 * @param stageId The ID of a pipeline_stage
 	 * @param con An open SQL connection to make the call on 
 	 * @return A list of all the dependencies for the given stage

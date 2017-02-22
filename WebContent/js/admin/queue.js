@@ -4,12 +4,6 @@ var progress = 0;
 
 
 $(document).ready(function() {
-	
-	$('#dialog-warning').hide();
-
-
-
-	
 	InitUI();
 	
 	$('#btnDone').button({
@@ -116,7 +110,7 @@ function initDataTables() {
 	
 	// Setup the DataTable objects
 	nodeTable = $('#nodes').dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
+		"sDom"			: getDataTablesDom(),
 		"bFilter"		: false,
 		"bInfo"			: false,
 		"bPaginate"		: false,

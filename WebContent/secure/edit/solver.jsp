@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*, org.starexec.data.database.*,org.starexec.data.to.Website.WebsiteType, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*,org.starexec.data.security.*, org.starexec.data.database.*,org.starexec.data.to.Website.WebsiteType, org.starexec.data.to.*, org.starexec.util.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -15,7 +15,7 @@
 
 		if(s != null) {
 			// Ensure the user visiting this page is the owner of the solver or has admin read privileges
-			if (userId == s.getUserId() || Users.hasAdminReadPrivileges(userId)) {
+			if (userId == s.getUserId() || GeneralSecurity.hasAdminReadPrivileges(userId)) {
 				request.setAttribute("solver", s);
 				request.setAttribute("sites", Websites.getAllForHTML(solverId, WebsiteType.SOLVER));
 				if(s.isDownloadable()){
@@ -48,7 +48,7 @@
 
 		<fieldset>
 			<legend>solver details</legend>
-			<table class="shaded">
+			<table id="solverDetails" class="shaded">
 				<thead>
 					<tr>
 						<th>attribute</th>
@@ -107,7 +107,7 @@
 			<button id="addWebsite">add</button>
 		</div>
 	</fieldset>
-		<div id="dialog-confirm-delete" title="confirm delete">
+		<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 		</div>
 </star:template>

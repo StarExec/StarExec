@@ -1,70 +1,23 @@
 package org.starexec.data.security;
 
-import org.apache.log4j.Logger;
 
 import org.owasp.esapi.ESAPI;
 
 import org.starexec.constants.R;
 import org.starexec.data.database.Users;
+import org.starexec.logger.StarLogger;
 import org.starexec.test.integration.TestManager;
 import org.starexec.util.Hash;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
+import java.sql.Connection;
+
 
 public class GeneralSecurity {
 
-	private static final Logger log = Logger.getLogger(GeneralSecurity.class);			
+	private static final StarLogger log = StarLogger.getLogger(GeneralSecurity.class);			
 
-	/**
-	 * Checks to see if the given user has permission to restart Starexec
-	 * @param userId The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 */
-	public static ValidatorStatusCode canUserRestartStarexec(int userId){
-		if (!Users.isAdmin(userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
-		}
-		return new ValidatorStatusCode(true);
-	}
-	
-	/**
-	 * Checks to see if the given user has permission to clear load balancing data
-	 * @param userId The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 */
-	public static ValidatorStatusCode canUserClearLoadBalanceData(int userId){
-		if (!Users.isAdmin(userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
-		}
-		return new ValidatorStatusCode(true);
-	}
-	
-	/**
-	 * Checks to see if the given user has permission to change logging settings
-	 * @param userId The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 */
-	public static ValidatorStatusCode canUserChangeLogging(int userId){
-		if (!Users.hasAdminReadPrivileges(userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
-		}
-		return new ValidatorStatusCode(true);
-	}
-	/**
-	 * Checks to see if the given user has permission to view information related to
-	 * testing
-	 * @param userId The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 */
-
-	public static ValidatorStatusCode canUserSeeTestInformation(int userId) {
-		if (!Users.hasAdminReadPrivileges(userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
-		}
-		return new ValidatorStatusCode(true);
-	}
-	
 	/**
 	 * Checks to see if the given user has permission to execute tests without checking to see if tests are already running
 	 * @param userId The ID of the user making the request
@@ -73,7 +26,7 @@ public class GeneralSecurity {
 
 	public static ValidatorStatusCode canUserRunTestsNoRunningCheck(int userId) {
 		//only the admin can run tests, and they cannot be run on production
-		if (!Users.hasAdminWritePrivileges(userId) || Util.isProduction()) {
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId) || !Util.isTestingAllowed()) {
 			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
 		}
 		return new ValidatorStatusCode(true);
@@ -137,7 +90,7 @@ public class GeneralSecurity {
 	public static ValidatorStatusCode canUserUpdatePassword(int userId, int userIdMakingRequest, String oldPass, 
 															String newPass, String confirmNewPass) {
 		boolean userIsChangingOwnPassword = (userId == userIdMakingRequest);
-		boolean userIsAdmin = Users.hasAdminWritePrivileges(userIdMakingRequest);
+		boolean userIsAdmin = GeneralSecurity.hasAdminWritePrivileges(userIdMakingRequest);
 		if ( !(userIsChangingOwnPassword || userIsAdmin) ) {
 			return new ValidatorStatusCode(false, "You do not have permission to change this user's password.");
 		}
@@ -160,6 +113,44 @@ public class GeneralSecurity {
 		
 		return new ValidatorStatusCode(true);
 	}
+	
+
+	/**
+	 * Checks to see if a user can view admin only pages.
+	 * @param userId
+	 * @return True if the user is either an admin or developer and false otherwise
+	 * @author Albert Giegerich
+	 */
+	public static boolean hasAdminReadPrivileges(int userId) {
+		return Users.isAdmin(userId) || Users.isDeveloper(userId);
+	}
+
+	public static boolean hasAdminReadPrivileges(Connection con, int userId) {
+		return Users.isAdmin(con, userId) || Users.isDeveloper(con, userId);
+	}
+
+	/**
+	 * Checks to see whether a user can make admin-only changes to the website/backend.
+	 * @param userId
+	 * @return True if the user is an admin and false otherwise
+	 * @author Albert Giegerich
+	 */
+	public static boolean hasAdminWritePrivileges(int userId) {
+		return Users.isAdmin(userId);
+	}
+	
+	public static ValidatorStatusCode canUserSuspendOrReinstateUser(int userIdBeingUpdated, int userIdMakingCall) {
+		if (Users.get(userIdBeingUpdated)==null) {
+			return new ValidatorStatusCode(false, "The given user could not be found");
+		}
+		if (!GeneralSecurity.hasAdminWritePrivileges(userIdMakingCall)) {
+			return new ValidatorStatusCode(false, "You do not have permission to suspend or reinstate users");
+		}
+		
+		return new ValidatorStatusCode(false);
+		
+	}
+	
 
 	/**
 	 * Checks if a user can generate a public anonymous link for a given primitive.
@@ -169,14 +160,22 @@ public class GeneralSecurity {
 	 * @author Albert Giegerich
 	 */
 	public static ValidatorStatusCode canUserGetAnonymousLinkForPrimitive( int userId, String primitiveType, int primitiveId ) {
+		final String methodName = "canUserGetAnonymousLinkForPrimitive";
+		log.entry( methodName );
 		log.debug("Checking if user can get anonymous link for primitive of type " + primitiveType);
-		if ( Users.isAdmin( userId )) {
-			return new ValidatorStatusCode( true );
-		} else if ( primitiveType.equals( R.BENCHMARK )) {
-			log.debug( "Found that primitive was of type " + R.BENCHMARK + " while checking if an anonymous link could be generated for it." );
+		if ( primitiveType.equals( R.BENCHMARK )) {
+			log.debug( methodName, 
+					"Found that primitive was of type " + R.BENCHMARK + " while checking if an anonymous link could be generated for it." );
 			return BenchmarkSecurity.canUserGetAnonymousLink( primitiveId, userId );
+		} else if ( primitiveType.equals( R.SOLVER )) {
+			log.debug( methodName, 
+					"Found that primitive was of type " + R.SOLVER + " while checking if an anonymous link could be generated for it." );
+			return SolverSecurity.canUserGetAnonymousLink( primitiveId, userId );
+		} else if ( primitiveType.equals( R.JOB )) {
+			log.debug( methodName, 
+					"Found that primitive was of type " + R.JOB + " while checking if an anonymous link could be generated for it." );
+			return JobSecurity.canUserGetAnonymousLink( primitiveId, userId );
 		} else {
-			// TODO Add branches for all primitive types.
 			return new ValidatorStatusCode( false, "You do not have permission to get an anonymous link for this primitive." );
 		}
 	}

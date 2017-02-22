@@ -96,25 +96,26 @@ CREATE PROCEDURE SetDefaultSettingsById(IN _id INT, IN _num INT, IN _setting INT
 -- Insert a default setting of a space given by id when it's initiated.
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS CreateDefaultSettings;
-CREATE PROCEDURE CreateDefaultSettings(IN _prim_id INT, IN _pp INT, IN _cto INT, IN _clto INT, IN _dp BOOLEAN, IN _db INT, IN _dm BIGINT, IN _defaultSolver INT, IN _benchProc INT, IN _preProc INT, IN _type INT, IN _name VARCHAR(32), OUT _id INT)
+CREATE PROCEDURE CreateDefaultSettings(IN _prim_id INT, IN _pp INT, IN _cto INT, IN _clto INT, IN _dp BOOLEAN, IN _dm BIGINT, IN _defaultSolver INT, IN _benchProc INT, IN _preProc INT, IN _type INT, IN _name VARCHAR(32), OUT _id INT)
 	BEGIN
-		INSERT INTO default_settings (prim_id, post_processor, cpu_timeout, clock_timeout, dependencies_enabled, default_benchmark, maximum_memory, default_solver, bench_processor, pre_processor, setting_type,name) VALUES (_prim_id, _pp, _cto, _clto, _dp, _db,_dm,_defaultSolver,_benchProc, _preProc, _type,_name);
+		INSERT INTO default_settings (prim_id, post_processor, cpu_timeout, clock_timeout, dependencies_enabled, maximum_memory, default_solver, bench_processor, pre_processor, setting_type,name) VALUES (_prim_id, _pp, _cto, _clto, _dp,_dm,_defaultSolver,_benchProc, _preProc, _type,_name);
 		SELECT LAST_INSERT_ID() INTO _id;
 
 	END //
+
+
 	
 	
 -- Insert a default setting of a space given by id when it's initiated.
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS UpdateDefaultSettings;
-CREATE PROCEDURE UpdateDefaultSettings(IN _pp INT, IN _cto INT, IN _clto INT, IN _dp BOOLEAN, IN _db INT, IN _dm BIGINT, IN _defaultSolver INT, IN _benchProc INT, IN _preProc INT, IN _id INT)
+CREATE PROCEDURE UpdateDefaultSettings(IN _pp INT, IN _cto INT, IN _clto INT, IN _dp BOOLEAN, IN _dm BIGINT, IN _defaultSolver INT, IN _benchProc INT, IN _preProc INT, IN _id INT)
 	BEGIN
 		UPDATE default_settings SET
 		post_processor = _pp,
 		cpu_timeout=_cto,
 		clock_timeout=_clto,
 		dependencies_enabled=_dp,
-		default_benchmark=_db,
 		maximum_memory=_dm,
 		default_solver=_defaultSolver,
 		bench_processor=_benchProc,
@@ -132,6 +133,12 @@ CREATE PROCEDURE DeleteDefaultSettings(IN _id INT)
 		DELETE FROM default_settings WHERE id=_id;
 	END //
 
+DROP PROCEDURE IF EXISTS DeleteAllDefaultBenchmarks;
+CREATE PROCEDURE DeleteAllDefaultBenchmarks(IN _settingId INT)
+	BEGIN
+		DELETE FROM default_bench_assoc WHERE setting_id=_settingId;
+	END //
+
 DROP PROCEDURE IF EXISTS SetDefaultProfileForUser;
 CREATE PROCEDURE SetDefaultProfileForUser(IN _uid INT, IN _sid INT) 
 	BEGIN
@@ -144,5 +151,38 @@ CREATE PROCEDURE GetDefaultProfileForUser(IN _uid INT)
 	BEGIN
 		SELECT default_settings_profile FROM users WHERE id=_uid;
 	END //
+
+DROP PROCEDURE IF EXISTS AddDefaultBenchmark;
+CREATE PROCEDURE AddDefaultBenchmark(IN _settingId INT, IN _benchId INT)
+	BEGIN
+		INSERT INTO default_bench_assoc (setting_id, bench_id)
+		VALUES (_settingId, _benchId);
+	END //
+
+DROP PROCEDURE IF EXISTS GetDefaultBenchmarksForSetting;
+CREATE PROCEDURE GetDefaultBenchmarksForSetting(IN _settingId INT)
+	BEGIN
+		SELECT b.*
+		FROM benchmarks b JOIN default_bench_assoc dba ON b.id=dba.bench_id
+				JOIN default_settings ds ON dba.setting_id=ds.id
+		WHERE _settingId=ds.id;
+
+	END //
+
+DROP PROCEDURE IF EXISTS GetDefaultBenchmarkIdsForSetting;
+CREATE PROCEDURE GetDefaultBenchmarkIdsForSetting(IN _settingId INT)
+  BEGIN
+    SELECT b.id as default_bench_id
+    FROM benchmarks b JOIN default_bench_assoc dba ON b.id=dba.bench_id
+      JOIN default_settings ds ON dba.setting_id=ds.id
+    WHERE _settingId=ds.id;
+  END //
+
+DROP PROCEDURE IF EXISTS DeleteDefaultBenchmark;
+CREATE PROCEDURE DeleteDefaultBenchmark(IN _settingId INT, _benchId INT)
+  BEGIN
+    DELETE FROM default_bench_assoc
+    WHERE setting_id=_settingID AND bench_id=_benchid;
+  END //
 	
 DELIMITER ; -- This should always be at the end of this file

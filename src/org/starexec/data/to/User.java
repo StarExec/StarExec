@@ -22,7 +22,10 @@ public class User extends Identifiable {
 	private transient String password;		
 	private List<Website> websites;
 	private long diskQuota;
+	private long diskUsage;
 	private boolean subscribedToReports;
+	private int pairQuota;
+	
 	
 	/**
 	 * @return the user's disk quota (in bytes)
@@ -191,5 +194,33 @@ public class User extends Identifiable {
 	@Override
 	public String toString() {
 		return this.getFullName();
+	}
+
+	/**
+	 * @return the pairQuota
+	 */
+	public int getPairQuota() {
+		return pairQuota;
+	}
+
+	/**
+	 * @param pairQuota the pairQuota to set
+	 */
+	public void setPairQuota(int pairQuota) {
+		this.pairQuota = pairQuota;
+	}
+
+	/**
+	 * @return the diskUsage
+	 */
+	public long getDiskUsage() {
+		return diskUsage;
+	}
+
+	/**
+	 * @param diskUsage the diskUsage to set
+	 */
+	public void setDiskUsage(long diskUsage) {
+		this.diskUsage = diskUsage;
 	}
 }

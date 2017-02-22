@@ -10,8 +10,6 @@ $(document).ready(function(){
 });
 
 function initButton() {
-	$('#dialog-confirm-pause').hide();
-
 	$("#pauseAll").button({
 		icons: {
 			primary: "ui-icon-pause"
@@ -90,7 +88,7 @@ function initButton() {
 function initDataTables() {
 	// Setup the DataTable objects
 	jobTable = $('#jobs').dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
+		"sDom"			: getDataTablesDom(),
 		"iDisplayStart"	: 0,
 		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
@@ -104,7 +102,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 
 	// Request the next page of primitives from the server via AJAX
 	$.post(  
-			sSource + "jobs/pagination",
+			sSource + "jobs/admin/pagination",
 			aoData,
 			function(nextDataTablePage){
 				s=parseReturnCode(nextDataTablePage);

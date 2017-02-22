@@ -1,0 +1,232 @@
+.dragClone {
+	max-width: 200px;
+	overflow: hidden;
+	position: fixed;
+	background-color: #fff;
+	color: #111;
+	z-index: 999;
+	text-align: center;
+	padding: 14px;
+	border-radius: 3px;
+	box-shadow: 4px 4px 5px #111;
+	opacity: 0.8;
+
+	span {
+		float: left;
+		margin-right: 5px;
+	}
+}
+
+#exploreList a {
+	&.active {
+		border: 1px dashed #008d03;
+	}
+
+	&.hover {
+		background-color: #008d03;
+		border-radius: 2px;
+	}
+}
+
+#spaceField a.spaceLink {
+	cursor: pointer;
+}
+
+.leaderWrap {
+	position: absolute;
+	bottom: 10px;
+	left: 72px;
+	width: 70px;
+
+	h2 {
+		text-align: right;
+		font-weight: bold;
+		color: #008d03;
+	}
+
+	span {
+		display: block;
+		position: absolute;
+	}
+}
+
+.leaderBtn {
+	width: 150px;
+	position: relative;
+	left: 24px;
+	top: 6px;
+}
+
+#jobs p.stat {
+	margin: auto;
+	text-align: center;
+	width: 80px;
+	height: 30px;
+	padding-top: 10px;
+	color: #111;
+	display: block;
+	border: 1px solid #111;
+}
+
+#trashcan {
+	width: 50px;
+	height: 50px;
+	background: transparent;
+	text-align: left;
+	position: fixed;
+	margin-left: 72px;
+	border: 1px dashed #008d03;
+	border-radius: 2px;
+
+	&:hover, &.hover {
+		background-color: #008d03;
+	}
+
+	.ui-icon {
+		margin-top: -8px;
+		margin-right: 10px;
+	}
+}
+
+div.selectWrap {
+	p, span {
+		display: inline-block;
+	}
+
+	font-size: 13px;
+	display: inline-block;
+
+	p {
+		cursor: pointer;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+
+	span {
+		position: relative;
+		top: 3px;
+	}
+}
+
+/* these are tooltip styles
+*/
+
+/**
+	 * Custom tooltip style for tooltips that will never be deleted
+	 * (i.e. tooltips on the spaces in #exploreList)
+	 */
+
+.spaceTooltipLeader {
+	background-color: #E1E1E1;
+	padding: 10px;
+	height: 144px;
+	width: 220px;
+}
+
+.spaceTooltipNormal {
+	background-color: #E1E1E1;
+	padding: 10px;
+	height: 120px;
+	width: 220px;
+}
+
+.userTooltipLeader {
+	background-color: #E1E1E1;
+	height: 144px;
+	width: 220px;
+	padding: 10px;
+}
+
+.userTooltipNormal {
+	background-color: #E1E1E1;
+	height: 120px;
+	width: 220px;
+	padding: 10px;
+}
+
+.expdTooltip {
+	background-color: #E1E1E1;
+	width: 220px;
+	padding: 10px;
+}
+
+.userTooltip {
+	background-color: #E1E1E1;
+	height: 144px;
+	width: 220px;
+	padding: 10px;
+}
+
+.copy-options-hidden {
+	display: none;
+}
+
+@media only screen and (max-width: 767px) {
+	body fieldset {
+		width: 85%;
+	}
+
+	#explorer {
+		width: 100%;
+		float: none;
+	}
+
+	#jobs tr > * {
+		&:first-child {
+			width: 100% !important;
+		}
+
+		&:nth-child(2), &:nth-child(3), &:nth-child(4), &:nth-child(5), &:nth-child(6) {
+			display: none;
+		}
+	}
+
+	#solvers tr > * {
+		&:first-child {
+			width: 100% !important;
+		}
+
+		&:nth-child(2), &:nth-child(3) {
+			display: none;
+		}
+	}
+
+	#users tr > *:nth-child(2) {
+		display: none;
+	}
+
+	#spaces tr > * {
+		&:first-child {
+			width: 100% !important;
+		}
+
+		&:nth-child(2) {
+			display: none;
+		}
+	}
+
+	/*
+	#benchmarks tr > *:nth-child(2) {
+		display: none;
+	}
+	*/
+
+	.jstree-icon {
+		width: 30px;
+	}
+
+	#wrapper #detailPanel {
+		width: 100%;
+		float: none;
+		margin: auto;
+		border-left: initial;
+	}
+
+	body {
+		th, td {
+			text-align: center;
+		}
+	}
+}

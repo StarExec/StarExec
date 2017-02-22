@@ -1,5 +1,6 @@
 package org.starexec.test.integration.database;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -7,9 +8,12 @@ import java.util.Random;
 
 import org.junit.Assert;
 import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Communities;
+import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Processors;
+import org.starexec.data.database.Queues;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -18,16 +22,21 @@ import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
+import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.jobs.JobManager;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
+import org.starexec.util.Util;
 
-
-//TODO: Test counting functions
+/**
+ * Tests for org.starexec.data.database.Jobs.java
+ * @author Eric
+ */
 public class JobTests extends TestSequence {
 	private Space space=null; //space to put the test job
 	private Solver solver=null; //solver to use for the job
@@ -35,8 +44,6 @@ public class JobTests extends TestSequence {
 	private Processor postProc=null; //post processor to use for the job
 	private List<Integer> benchmarkIds=null; // benchmarks to use for the job
 	private User user=null;                  //owner of all the test primitives
-	private User nonOwner=null;
-	private User admin=null;
 	private int wallclockTimeout=100;
 	private int cpuTimeout=100;
 	private int gbMemory=1;
@@ -51,15 +58,30 @@ public class JobTests extends TestSequence {
 		Assert.assertEquals(testJob.getName(),job.getName());
 		
 	}
-	
+
 	@StarexecTest
-	private void getUserByJobTest() {
-		User u=Users.getUserByJob(job.getId());
-		Assert.assertEquals(user.getId(),u.getId());
+	private void IsHighPriorityTest() {
+		try {
+			Jobs.setAsHighPriority(job.getId());
+			Job testJob = Jobs.get(job.getId());
+			Assert.assertTrue(testJob.isHighPriority());
+		} catch (SQLException e) {
+			Assert.fail("Caught SQL exception while trying to change job priority: " + Util.getStackTrace(e));
+		}
 	}
-	
-	
-	
+
+	@StarexecTest
+	private void SetAsLowPrioirtyTest() {
+		try {
+			Jobs.setAsLowPriority(job.getId());
+			Job testJob = Jobs.get(job.getId());
+			Assert.assertFalse(testJob.isHighPriority());
+		} catch (SQLException e) {
+			Assert.fail("Caught SQL exception while trying to change job priority: " + Util.getStackTrace(e));
+		}
+
+	}
+
 	@StarexecTest
 	private void GetByUserTest() {
 		List<Job> jobs=Jobs.getByUserId(user.getId());
@@ -86,6 +108,16 @@ public class JobTests extends TestSequence {
 	@StarexecTest
 	private void GetTotalCountTest() {
 		Assert.assertTrue(Jobs.getJobCount()>0);
+	}
+	
+	@StarexecTest
+	private void countPairsByUserTest() {
+		Assert.assertEquals(job.getJobPairs().size(), Jobs.countPairsByUser(user.getId()));
+	}
+	
+	@StarexecTest
+	private void countPairsByFakeUserTest() {
+		Assert.assertEquals(0, Jobs.countPairsByUser(-1));
 	}
 	
 	@StarexecTest
@@ -152,14 +184,16 @@ public class JobTests extends TestSequence {
 	private void DeleteJobTest() {
 		List<Integer> solverIds=new ArrayList<Integer>();
 		solverIds.add(solver.getId());
-		Job temp=ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
+		Job temp=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
 		Assert.assertFalse(Jobs.isJobDeleted(temp.getId()));
-		Assert.assertTrue(Jobs.delete(temp.getId()));
-		
-		
-		Assert.assertTrue(Jobs.isJobDeleted(temp.getId()));
-		
-		Assert.assertTrue(Jobs.deleteAndRemove(temp.getId()));
+
+		try {
+			Assert.assertTrue(Jobs.delete(temp.getId()));
+			Assert.assertTrue(Jobs.isJobDeleted(temp.getId()));
+			Assert.assertTrue(Jobs.deleteAndRemove(temp.getId()));
+		} catch (SQLException e) {
+			Assert.fail("Caught sql exception while trying to delete job: " + Util.getStackTrace(e));
+		}
 		
 		
 	}
@@ -254,17 +288,70 @@ public class JobTests extends TestSequence {
 		Assert.assertTrue(count>=0);		
 	}
 	
-	//TODO: This only checks for SQL errors right now
 	@StarexecTest
 	private void getPairsByStatusTest() {
-		List<Integer> pairs=Jobs.getPairsByStatus(job.getId(), 7);
-		Assert.assertNotNull(pairs);
+		List<Integer> pairs=Jobs.getPairsByStatus(job.getId(), StatusCode.STATUS_COMPLETE.getVal());
+		Assert.assertEquals(job.getJobPairs().size(), pairs.size());
 	}
 	
 	@StarexecTest
 	private void getTimelessPairsByStatusTest() {
-		List<Integer> pairs= Jobs.getTimelessPairsByStatus(job.getId(), 7);
+		List<Integer> pairs= Jobs.getTimelessPairsByStatus(job.getId(), StatusCode.STATUS_COMPLETE.getVal());
 		Assert.assertNotNull(pairs);
+	}
+	
+	@StarexecTest
+	private void cleanOrphanedDeletedJobTest() {
+		Job tempJob = loader.loadJobIntoDatabase(space.getId(), user.getId(), solver.getId(), benchmarkIds);
+		List<Integer> job = new ArrayList<Integer>();
+		job.add(tempJob.getId());
+		try {
+			Jobs.delete(tempJob.getId());
+		} catch (SQLException e) {
+			Assert.fail("Caught SQLException while trying to delete job: " + Util.getStackTrace(e));
+		}
+		Assert.assertTrue(Jobs.cleanOrphanedDeletedJobs());
+		Assert.assertNotNull(Jobs.getIncludeDeleted(tempJob.getId()));
+		
+		Spaces.removeJobs(job, space.getId());
+		
+		Assert.assertTrue(Jobs.cleanOrphanedDeletedJobs());
+		Assert.assertNull(Jobs.getIncludeDeleted(tempJob.getId()));
+	}
+	
+	@StarexecTest
+	private void countOlderPairsTest() {
+		int maxCompletionId = 0;
+		int minCompletionId = Integer.MAX_VALUE;
+		for (JobPair p : job.getJobPairs()) {
+			int completionId = JobPairs.getPairDetailed(p.getId()).getCompletionId();
+			maxCompletionId = Math.max(maxCompletionId, completionId);
+			minCompletionId = Math.min(minCompletionId, completionId);
+		}
+		Assert.assertEquals(job.getJobPairs().size(), Jobs.countOlderPairs(job.getId(), maxCompletionId));
+		Assert.assertEquals(1, Jobs.countOlderPairs(job.getId(), minCompletionId));
+
+	}
+	
+	@StarexecTest
+	private void associateJobsTest() {
+		List<Integer> jobIds = new ArrayList<Integer>();
+		jobIds.add(job.getId());
+		jobIds.add(job2.getId());
+		Space newSpace = loader.loadSpaceIntoDatabase(user.getId(), space.getId());
+		Assert.assertTrue(Jobs.associate(jobIds, newSpace.getId()));
+		Assert.assertEquals(2, Jobs.getBySpace(newSpace.getId()).size());
+		
+		Spaces.removeSubspace(newSpace.getId());
+	}
+	
+	@StarexecTest
+	private void updateNodeTest() {
+		JobPair jp = job.getJobPairs().get(0);
+		WorkerNode n = Cluster.getAllNodes().get(0);
+		Assert.assertTrue(JobPairs.updatePairExecutionHost(jp.getId(), n.getId()));
+		Assert.assertEquals(n.getId(), JobPairs.getPairDetailed(jp.getId()).getNode().getId());
+		jp.setNode(n);
 	}
 	
 	@Override
@@ -274,36 +361,24 @@ public class JobTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		user=ResourceLoader.loadUserIntoDatabase();
-		user2=ResourceLoader.loadUserIntoDatabase();
-		nonOwner=ResourceLoader.loadUserIntoDatabase();
-		admin=Users.getAdmins().get(0);
-		space=ResourceLoader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
-		solver=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
-		postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
-		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
+		user=loader.loadUserIntoDatabase();
+		user2=loader.loadUserIntoDatabase();
+		space=loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
+		solver=loader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
+		postProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
+		benchmarkIds=loader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
 		
 		List<Integer> solverIds=new ArrayList<Integer>();
 		solverIds.add(solver.getId());
-		job=ResourceLoader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
-		job2=ResourceLoader.loadJobIntoDatabase(space.getId(), user2.getId(), -1, postProc.getId(), solverIds, benchmarkIds, cpuTimeout, wallclockTimeout, gbMemory);
+		job=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
+		job2=loader.loadJobIntoDatabase(space.getId(), user2.getId(), -1, postProc.getId(), solverIds, benchmarkIds, cpuTimeout, wallclockTimeout, gbMemory);
 		Assert.assertNotNull(Jobs.get(job.getId()));
 		
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Jobs.deleteAndRemove(job.getId());
-		Jobs.deleteAndRemove(job2.getId());
-		Solvers.deleteAndRemoveSolver(solver.getId());
-		for (Integer i : benchmarkIds) {
-			Benchmarks.deleteAndRemoveBenchmark(i);
-		}
-		Processors.delete(postProc.getId());
-		Spaces.removeSubspace(space.getId());
-		Users.deleteUser(user.getId(), admin.getId());
-		Users.deleteUser(user2.getId(),admin.getId());
-		Users.deleteUser(nonOwner.getId(),admin.getId());
+		loader.deleteAllPrimitives();
 		
 	}
 

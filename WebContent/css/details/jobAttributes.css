@@ -1,0 +1,72 @@
+#explorer {
+	margin-right: 30px;
+}
+
+
+
+
+.dataTables_scrollBody #attributeTable thead {
+	display: none;
+}
+
+.bold {
+	font-weight: bold;
+}
+
+.attributesLegend {
+	margin: 10px 0;
+}
+
+div#attributeTable_wrapper {
+	width: 1000px;
+	min-height: 500px;
+}
+
+div.DTFC_ScrollWrapper {
+	min-height: 500px;
+}
+
+div.dataTables_scroll {
+	min-height: 500px;
+}
+
+div.dataTables_scrollBody {
+	min-height: 500px;
+}
+
+td {
+	/*
+	padding: 0 0 20px;
+	min-width: 240px;
+	*/
+	text-align: center;
+}
+
+
+#wrapper {
+	width: 100%;
+}
+
+#pageHeader {
+	width: 1020px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+#pageFooter {
+	width: 1024px;
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.scrollable {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	overflow: auto;
+}
+
+.DTFC_LeftBodyWrapper {
+	background-color: #222;
+}

@@ -13,7 +13,7 @@ $(document).ready(function(){
 function initUI(){
 	//initialize primitive table
 	primTable = $('#prims').dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
+		"sDom"			: getDataTablesDom(),
 		"iDisplayStart"	: 0,
 		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,

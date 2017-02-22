@@ -1,9 +1,10 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.to.*,java.util.*,org.starexec.servlets.CreateJob,org.apache.log4j.*, org.starexec.constants.*,java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.to.*,java.util.*,org.starexec.servlets.CreateJob, org.starexec.constants.*,java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
+<%@ page import="org.starexec.logger.StarLogger" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%	
-	Logger log=Logger.getLogger(CreateJob.class);
+	StarLogger log=StarLogger.getLogger(CreateJob.class);
 
 	try {		
 		// Get parent space info for display
@@ -37,7 +38,7 @@
 			
 			ListOfBenchProcessors.add(Processors.getNoTypeProcessor());
 
-			request.setAttribute("queues", Queues.getQueuesForUser(userId));
+			request.setAttribute("queues", Queues.getUserQueues(userId));
 
 			request.setAttribute("postProcs", ListOfPostProcessors);
 			request.setAttribute("preProcs", ListOfPreProcessors);
@@ -103,8 +104,8 @@
 						<td class="label"><p>solver</p></td>
 						<td><input id="solver" type="hidden" name="solver"/><p id="solverNameField"></p></td>
 					</tr>
-					<tr class="noHover" title="what benchmark would you like to use?">
-						<td>benchmark selection</td>
+					<tr class="noHover" title="Enter the contents of the benchmark.">
+						<td>benchmark contents</td>
 						<td><textarea id="benchmarkField" name="bench"></textarea></td>
 					</tr>
 				</tbody>
@@ -224,14 +225,11 @@
 			<legend>actions</legend>
 			<div id="actionBar">
 				<button type="submit" class="round" id="btnDone">submit</button>			
-				<button type="button" class="round" id="btnBack">cancel</button>	
-				<c:if test="${!isPublicUser}">
-					<button type="button" class="round" id="btnSave">save profile</button>		
-				</c:if>
+				<button type="button" class="round" id="btnBack">cancel</button>
 			</div>	
 		</fieldset>		
 	</form>		
-	<div id="dialog-createSettingsProfile" title="create settings profile">
+	<div id="dialog-createSettingsProfile" title="create settings profile" class="hiddenDialog">
 		<p><span id="dialog-createSettingsProfile-txt"></span></p><br/>
 		<p><label>name: </label><input id="settingName" type="text"/></p>			
 	</div>

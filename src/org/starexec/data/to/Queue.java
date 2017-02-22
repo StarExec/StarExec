@@ -14,10 +14,6 @@ import com.google.gson.annotations.Expose;
 public class Queue extends Identifiable implements Iterable<WorkerNode>, Nameable{
 	@Expose private String name;
 	@Expose private String status;
-	@Expose private int slotsUsed;
-	@Expose private int slotsReserved;
-	@Expose private int slotsAvailable;
-	@Expose private int slotsTotal;
 	@Expose private boolean global_access;
 	@Expose private List<WorkerNode> nodes;
 	@Expose private HashMap<String, String> attributes;
@@ -55,63 +51,7 @@ public class Queue extends Identifiable implements Iterable<WorkerNode>, Nameabl
 	public void setStatus(String status) {
 		this.status = status;
 	}
-	/**
-	 * @return the number of slots currently running jobs in the queue
-	 */
-	public int getSlotsUsed() {
-		return slotsUsed;
-	}
 
-	/**
-	 * @param slotsUsed number of slots currently running jobs in the queue to set
-	 */
-	public void setSlotsUsed(int slotsUsed) {
-		this.slotsUsed = slotsUsed;
-	}
-
-	/**
-	 * @return the number of slots currently reserved in the queue
-	 */
-	public int getSlotsReserved() {
-		return slotsReserved;
-	}
-
-	/**
-	 * Note this will not actually reserve slots for the queue.
-	 * @param slotsReserved the number of slots currently reserved in the queue to set 
-	 */
-	public void setSlotsReserved(int slotsReserved) {
-		this.slotsReserved = slotsReserved;
-	}
-
-	/**
-	 * @return the number of slots available in the queue
-	 */
-	public int getSlotsAvailable() {
-		return slotsAvailable;
-	}
-
-	/**
-	 * @param slotsAvailable the number of slots available in the queue to set
-	 */
-	public void setSlotsAvailable(int slotsAvailable) {
-		this.slotsAvailable = slotsAvailable;
-	}
-
-	/**
-	 * @return the total number of slots in this queue
-	 */
-	public int getSlotsTotal() {
-		return slotsTotal;
-	}
-
-	/**
-	 * @param slotaTotal the total number of slots to set for this queue
-	 */
-	public void setSlotsTotal(int slotaTotal) {
-		this.slotsTotal = slotaTotal;
-	}
-	
 	/**
 	 * @return true if the queue is global, false otherwise
 	 */

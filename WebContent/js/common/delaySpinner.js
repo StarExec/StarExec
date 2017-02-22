@@ -13,9 +13,11 @@ $(document).ready(function() {
 	$("body").append("<img style=\"display:none;\" alt=\"spinner\" id=\"spinnerImage\" src=\""+starexecRoot+"images/ajaxloader.gif\"/>");
 });
 
+$(window).unload(function() {
+	destroyDialog();
+});
 
 //Creates a new delay dialog. If one already exists, does nothing.
-
 function createDialog(message) {
 	//indicate that we're in the middle of creating the delay
 	creatingDelaySpinner=true;

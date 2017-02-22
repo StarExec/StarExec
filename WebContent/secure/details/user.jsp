@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*,org.starexec.data.to.Website.WebsiteType, org.starexec.data.to.*, org.starexec.util.*, java.util.List"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*,org.starexec.data.to.Website.WebsiteType, org.starexec.data.to.*,org.starexec.data.security.*, org.starexec.util.*, java.util.List"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -23,18 +23,20 @@
 			String userFullName = t_user.getFullName();
 			request.setAttribute("sites", Websites.getAllForHTML(id, WebsiteType.USER));
 			// Ensure the user visiting this page is the owner of the solver
-			if( (visiting_userId != id) && (!Users.hasAdminReadPrivileges(visiting_userId))  ){
+			if( (visiting_userId != id) && (!GeneralSecurity.hasAdminReadPrivileges(visiting_userId))  ){
 				owner = false;
 			} else {
 				List<Job> jList = Jobs.getByUserId(t_user.getId());
 				long disk_usage = Users.getDiskUsage(t_user.getId());
 				request.setAttribute("diskQuota", Util.byteCountToDisplaySize(t_user.getDiskQuota()));
+				request.setAttribute("pairQuota", t_user.getPairQuota());
+				request.setAttribute("pairUsage",Jobs.countPairsByUser(t_user.getId()));
 				request.setAttribute("diskUsage", Util.byteCountToDisplaySize(disk_usage));
 				
 				if(jList != null) {			
 					request.setAttribute("jobList", jList);
 					request.setAttribute("userFullName", userFullName);
-				} else {;
+				} else {
 					response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist or is restricted");
 				}
 			}
@@ -54,7 +56,7 @@
 	}
 %>
 
-<star:template title="${t_user.fullName}" js="util/draggable, util/spaceTree, common/delaySpinner, details/user, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="explore/common, details/user, common/delaySpinner, common/table, explore/spaces, details/shared">
+<star:template title="${t_user.fullName}" js="util/draggable, util/spaceTree, common/delaySpinner, details/user, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="explore/common, details/user, common/delaySpinner, common/table, details/shared">
 	<span id="userId" value="${userId}"></span>
 	<div id="popDialog">
   		<img id="popImage" src=""/>
@@ -128,7 +130,7 @@
 	</fieldset>
 	<c:if test="${owner}">
 		<fieldset>
-			<legend>user disk quota</legend>
+			<legend>user quotas</legend>
 			<table id="diskUsageTable" class="shaded">
 				<thead>
 					<tr>
@@ -144,6 +146,14 @@
 					<tr>
 						<td>current disk usage</td>
 						<td>${diskUsage}</td>
+					</tr>
+					<tr>
+						<td>job pair quota</td>
+						<td>${pairQuota}</td>
+					</tr>
+					<tr>
+						<td>job pairs owned</td>
+						<td>${pairUsage}</td>
 					</tr>
 				</tbody>			
 			</table>
@@ -195,6 +205,7 @@
 						<th>total</th>
 						<th>failed</th>
 						<th>time</th>
+                        <th>disk size</th>
 					</tr>
 				</thead>			
 			</table>
@@ -217,13 +228,13 @@
 			<a id="recycleBinButton" href="${starexecRoot}/secure/details/recycleBin.jsp">manage recycle bin</a>
 		</fieldset>
 		
-		<div id="dialog-confirm-delete" title="confirm delete" class="dialog">
+		<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 		</div>
-		<div id="dialog-confirm-recycle" title="confirm recycle" class="dialog">
+		<div id="dialog-confirm-recycle" title="confirm recycle" class="hiddenDialog">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-recycle-txt"></span></p>
 		</div>
-			<div id="dialog-confirm-copy" title="confirm copy" class="dialog">
+			<div id="dialog-confirm-copy" title="confirm copy" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-copy-txt"></span></p>
 	</div>
 	</c:if>

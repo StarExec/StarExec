@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Spaces;
@@ -19,30 +18,19 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
+import org.starexec.logger.StarLogger;
 import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
 
 public class StressTest {
-	private static final Logger log = Logger.getLogger(StressTest.class);
+	private static final StarLogger log = StarLogger.getLogger(StressTest.class);
 
 	private static String SOLVER_NAME="smallsolver.zip";
 	private static String BENCHMARK_NAME="app12.zip"; //contains about 1500 benchmarks
-	
+	private static ResourceLoader loader = new ResourceLoader();
 	
 	private static Random rand=new Random();
-	
-	private static void writeFakeJobPairOutput(JobPair pair) {
-		try {
-			File f=new File(JobPairs.getFilePath(pair));
-			f.getParentFile().mkdirs();
-			String randomOutput=TestUtil.getRandomAlphaString(1000);
-			FileUtils.writeStringToFile(f, randomOutput);
-			
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		}
-	}
 	
 	private static Job loadBigJob(int parentSpaceId, int ownerId, int spaceCount, String solverName, String benchmarkName,
 			int minSolversPerSpace, int maxSolversPerSpace, int minBenchmarksPerSpace, int maxBenchmarksPerSpace) {
@@ -55,14 +43,14 @@ public class StressTest {
 		addSolvers(spaces,owner,minSolversPerSpace,maxSolversPerSpace,solverName);
 		addBenchmarks(spaces,owner,minBenchmarksPerSpace,maxBenchmarksPerSpace,benchmarkName);
 		
-		Processor postProc=ResourceLoader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Spaces.getCommunityOfSpace(parentSpaceId));
-		Job job=ResourceLoader.loadJobHierarchyIntoDatabase(parentSpaceId, ownerId, 1, postProc.getId());
+		Processor postProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Spaces.getCommunityOfSpace(parentSpaceId));
+		Job job=loader.loadJobHierarchyIntoDatabase(parentSpaceId, ownerId, 1, postProc.getId());
 		
 		Jobs.pause(job.getId()); //we don't want to actually run this job, as it will be too large
 		
 		for (JobPair pair : job.getJobPairs()) {
-			writeFakeJobPairOutput(pair);
-			JobPairs.setPairStatus(pair.getId(), StatusCode.STATUS_COMPLETE.getVal());
+			loader.writeFakeJobPairOutput(pair);
+			JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_COMPLETE.getVal());
 		}
 		Jobs.resume(job.getId());
 		
@@ -79,7 +67,7 @@ public class StressTest {
 	private static List<User> loadUsers(int count) {
 		List<User> users=new ArrayList<User>();
 		for (int i=0;i<count;i++) {
-			users.add(ResourceLoader.loadUserIntoDatabase());
+			users.add(loader.loadUserIntoDatabase());
 		}
 		return users;
 	}
@@ -108,7 +96,7 @@ public class StressTest {
 				}
 				int uid=owners.get(rand.nextInt(owners.size())).getId();
 
-				spaces.add(ResourceLoader.loadSpaceIntoDatabase(uid, parentSpace.getId()));
+				spaces.add(loader.loadSpaceIntoDatabase(uid, parentSpace.getId()));
 			}
 			parentSpaceIndex++; //go to the next parent space.
 		}
@@ -147,7 +135,7 @@ public class StressTest {
 			while (solverCount>0) {
 				solverCount--;
 				int uid=users.get(rand.nextInt(users.size())).getId();
-				solvers.add(ResourceLoader.loadSolverIntoDatabase(solverName,s.getId(),uid));
+				solvers.add(loader.loadSolverIntoDatabase(solverName,s.getId(),uid));
 			}
 		}
 		return solvers;
@@ -167,7 +155,7 @@ public class StressTest {
 			while (benchCount>0) {
 				benchCount--;
 				int uid=users.get(rand.nextInt(users.size())).getId();
-				benchmarks.addAll(ResourceLoader.loadBenchmarksIntoDatabase(benchName,s.getId(),uid));
+				benchmarks.addAll(loader.loadBenchmarksIntoDatabase(benchName,s.getId(),uid));
 			}
 		}
 		return benchmarks;
@@ -191,16 +179,15 @@ public class StressTest {
 			int jobCount, int spaceCountPerJob) {
 		List<User> users=loadUsers(userCount);
 		int communityLeaderId=users.get(rand.nextInt(users.size())).getId();
-		Space community=ResourceLoader.loadSpaceIntoDatabase(communityLeaderId, 1);
+		Space community=loader.loadSpaceIntoDatabase(communityLeaderId, 1);
 		List<Space> spaces=loadSpaces(users,community.getId(), spaceCount);
 		associateUsers(spaces,users,minUsersPerSpace,maxUsersPerSpace);
 		addSolvers(spaces,users,minSolversPerSpace,maxSolversPerSpace,SOLVER_NAME);
 		addBenchmarks(spaces,users,minBenchmarksPerSpace,maxBenchmarksPerSpace,BENCHMARK_NAME);
-		String name=null;
-		name="aaaaJobSpace";
-		Space jobParentSpace=ResourceLoader.loadSpaceIntoDatabase(users.get(0).getId(), spaces.get(0).getId(), name);
+		String name="JobSpace";
+		Space jobParentSpace=loader.loadSpaceIntoDatabase(users.get(0).getId(), spaces.get(0).getId(), name);
 		for (int x=0;x<jobCount;x++) {
-			Space jobRootSpace=ResourceLoader.loadSpaceIntoDatabase(users.get(0).getId(), jobParentSpace.getId());
+			Space jobRootSpace=loader.loadSpaceIntoDatabase(users.get(0).getId(), jobParentSpace.getId());
 			StressTest.loadBigJob(jobRootSpace.getId(), users.get(0).getId(), spaceCountPerJob, SOLVER_NAME, BENCHMARK_NAME,minSolversPerSpace,maxSolversPerSpace, minBenchmarksPerSpace,maxBenchmarksPerSpace);
 		}
 		

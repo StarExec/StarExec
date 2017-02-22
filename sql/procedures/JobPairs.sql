@@ -19,21 +19,30 @@ CREATE PROCEDURE UpdateJobSpaceId(IN _pairId INT, IN _jobSpaceId INT)
 		WHERE id = _pairId;
 	END //
 	
+DROP PROCEDURE IF EXISTS UpdatePairNodeId;
+CREATE PROCEDURE UpdatePairNodeId(IN _jobPairId INT, IN _nodeId INT)
+	BEGIN
+		UPDATE job_pairs SET node_id=_nodeId WHERE id=_jobPairId;
+	END  //
 	
 -- Updates a job pair's statistics directly from the execution node
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS UpdatePairRunSolverStats;
-CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHAR(64), IN _wallClock DOUBLE, IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT, IN _stageNumber INT)
+CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHAR(64), IN _wallClock DOUBLE, IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT, IN _stageNumber INT, IN _diskSize BIGINT)
 	BEGIN
 		UPDATE job_pairs SET node_id=(SELECT id FROM nodes WHERE name=_nodeName) WHERE id=_jobPairId;
+		UPDATE users SET users.disk_size=users.disk_size+_diskSize 
+		WHERE id = (SELECT user_id FROM job_pairs JOIN jobs ON jobs.id = job_pairs.job_id WHERE job_pairs.id=_jobPairId);
 		UPDATE jobpair_stage_data
 		SET wallclock = _wallClock,
 			cpu=_cpu,
 			user_time=_userTime,
 			system_time=_systemTime,
 			max_vmem=_maxVmem,
-			max_res_set=_maxResSet
+			max_res_set=_maxResSet,
+			disk_size=_diskSize
 		WHERE jobpair_id=_jobPairId AND stage_number=_stageNumber;
+		UPDATE jobs SET disk_size=disk_size+_diskSize WHERE id=(SELECT job_id FROM job_pairs WHERE id=_jobPairId);
 	END //
 	
 -- Updates a job pairs node Id
@@ -55,6 +64,52 @@ CREATE PROCEDURE UpdateNodeId(IN _jobPairId INT, IN _nodeName VARCHAR(128), IN _
 		UPDATE job_pairs SET status_code = 10 WHERE node_id = _nodeID AND status_code = 4 AND id!=_jobPairId AND sandbox_num=_sandbox;
 	END //
 	
+-- Sets a pair's disk_usage to 0, updating jobpair_stage_data, jobs, and users
+DROP PROCEDURE IF EXISTS RemoveJobPairDiskSize;
+CREATE PROCEDURE RemoveJobPairDiskSize(IN _jobPairId INT)
+	BEGIN
+		DECLARE _sumDiskSize BIGINT;
+		SELECT SUM(disk_size) FROM jobpair_stage_data WHERE jobpair_id=_jobPairId INTO _sumDiskSize;
+		UPDATE jobs SET jobs.disk_size=jobs.disk_size - (_sumDiskSize) WHERE jobs.id=(SELECT job_id FROM job_pairs WHERE job_pairs.id=_jobPairId);
+		UPDATE users SET users.disk_size=users.disk_size - (_sumDiskSize) 
+		WHERE users.id=(SELECT user_id FROM jobs JOIN job_pairs ON job_pairs.job_id=jobs.id WHERE job_pairs.id=_jobPairId);
+		UPDATE jobpair_stage_data SET disk_size=0 WHERE jobpair_id=_jobPairId;
+	END //
+
+
+-- Gets all the nodes that could have pairs that have been enqueued longer than
+-- some given amount of time. This works by getting all the queues with pairs that
+-- have been enqueued longer than _timeThreshold and then returning all the nodes
+-- from that queue that have not run any pairs since the _timeThreshold (basically filtering out
+-- nodes that appear to be working).
+DROP PROCEDURE IF EXISTS GetNodesThatMayHavePairsEnqueuedLongerThan;
+CREATE PROCEDURE GetNodesThatMayHavePairsEnqueuedLongerThan(IN _timeThreshold INT)
+  BEGIN
+	SELECT DISTINCT qa.node_id as node_id
+	FROM job_pairs jp JOIN jobs j ON jp.job_id=j.id
+	JOIN queues q ON q.id=j.queue_id
+	JOIN queue_assoc qa ON q.id=qa.queue_id
+	WHERE MINUTE(TIMEDIFF(NOW(), jp.queuesub_time)) > _timeThreshold
+		AND jp.status_code=2
+		AND qa.node_id NOT IN 
+			-- This subquery will get all the working nodes.
+			( SELECT i_qa.node_id
+			  FROM job_pairs i_jp JOIN jobs i_j ON i_jp.job_id=i_j.id
+				JOIN queues i_q ON i_q.id=i_j.queue_id
+				JOIN queue_assoc i_qa ON i_q.id=i_qa.queue_id
+			  WHERE MINUTE(TIMEDIFF(NOW(), i_jp.start_time)) <= _timeThreshold);
+  END //
+
+DROP PROCEDURE IF EXISTS GetPairsEnqueuedLongerThan;
+CREATE PROCEDURE GetPairsEnqueuedLongerThan(IN _timeThreshold INT)
+  BEGIN
+	SELECT DISTINCT jp.id AS pair_id, j.id AS job_id
+	FROM job_pairs jp JOIN jobs j ON jp.job_id=j.id
+	JOIN queues q ON q.id=j.queue_id
+	JOIN queue_assoc qa ON q.id=qa.queue_id
+	WHERE MINUTE(TIMEDIFF(NOW(), jp.queuesub_time)) > _timeThreshold AND jp.status_code=2;
+  END //
+
 -- Updates a job pair's status
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS UpdatePairStatus;
@@ -123,6 +178,7 @@ CREATE PROCEDURE GetJobPairById(IN _Id INT)
 		SELECT *
 		FROM job_pairs 
 		LEFT JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
+		LEFT JOIN job_pair_completion ON job_pairs.id = job_pair_completion.pair_id
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
 		WHERE job_pairs.id=_Id AND jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data;
 	END //
@@ -153,7 +209,8 @@ CREATE PROCEDURE SetBackendExecId(IN _jobPairId INT, IN _execId INT)
 DROP PROCEDURE IF EXISTS GetJobPairFilePathInfo;
 CREATE PROCEDURE GetJobPairFilePathInfo(IN _pairId INT)
 	BEGIN
-		SELECT job_id,job_pairs.job_space_id,path,jobpair_stage_data.solver_name,jobpair_stage_data.config_name,bench_name,jobpair_stage_data.stage_number FROM job_pairs
+		SELECT job_id,job_pairs.job_space_id,path,jobpair_stage_data.solver_name,
+		jobpair_stage_data.config_name,bench_name,jobpair_stage_data.stage_number FROM job_pairs
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
 		WHERE job_pairs.id=_pairId and jobpair_stage_data.stage_number = job_pairs.primary_jobpair_data;
 	END //
@@ -182,6 +239,48 @@ CREATE PROCEDURE SetPairStartTime(IN _id INT)
 	BEGIN
 		UPDATE job_pairs SET start_time=NOW() WHERE id=_id;
 	END //
+
+-- Deletes a job pair from the database. The _pairSize argument is in bytes, and it is only
+-- used in cases where the disk_size field is not set in the stages of the pair to be deleted.
+-- This is necessary only for old pairs with no disk_size set
+DROP PROCEDURE IF EXISTS DeleteJobPair;
+CREATE PROCEDURE DeleteJobPair( IN _pairId INT)
+	BEGIN
+		DECLARE pair_disk_size BIGINT DEFAULT 0;
+		SELECT sum(jobpair_stage_data.disk_size) INTO pair_disk_size
+		FROM job_pairs JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id=job_pairs.id 
+		WHERE job_pairs.id=_pairId;
+		
+		UPDATE users
+		SET users.disk_size=users.disk_size-pair_disk_size
+		WHERE id = (SELECT user_id FROM jobs JOIN job_pairs ON jobs.id=job_pairs.job_id WHERE job_pairs.id=_pairId);
+		
+		UPDATE jobs 
+		SET jobs.disk_size=jobs.disk_size-pair_disk_size,
+		total_pairs=total_pairs-1 
+		WHERE id=(SELECT job_id FROM job_pairs WHERE id=_pairId);
+
+		DELETE FROM job_pairs
+		WHERE job_pairs.id = _pairId;
+	END //
+
+-- Gets all of the job pairs in a job that contain a given benchmark.
+-- Author: Albert Giegerich
+DROP PROCEDURE IF EXISTS GetJobPairsInJobContainingBenchmark;
+CREATE PROCEDURE GetJobPairsInJobContainingBenchmark(IN _jobId INT, IN _benchmarkId INT )
+	BEGIN
+		SELECT job_pairs.*
+		FROM job_pairs
+		WHERE job_id=_jobId AND bench_id=_benchmarkId;
+	END //
+
+DROP PROCEDURE IF EXISTS GetJobPairsInJobContainingSolver;
+CREATE PROCEDURE GetJobPairsInJobContainingSolver(IN _jobId INT, IN _solverId INT)
+  BEGIN
+    SELECT job_pairs.*
+    FROM job_pairs INNER JOIN jobpair_stage_data ON job_pairs.id=jobpair_stage_data.jobpair_id
+	WHERE job_id=_jobId AND solver_id=_solverId;
+  END //
 	
 -- Sets the completion time to now (the moment this is called) for the pair with the given id
 -- Also sets the time_delta for the pair in the jobpair_time_delta table.
@@ -199,9 +298,8 @@ CREATE PROCEDURE SetPairEndTime(IN _id INT)
 		SET time_delta = (SELECT jobs.clockTimeout - CEIL(SUM(jobpair_stage_data.wallclock)+1)+time_delta
 						  FROM jobpair_stage_data JOIN job_pairs ON job_pairs.id=jobpair_stage_data.jobpair_id
 						  JOIN jobs ON jobs.id = job_pairs.job_id WHERE jobpair_stage_data.jobpair_id=_id)
-		WHERE user_id=(SELECT user_id FROM jobs JOIN job_pairs ON jobs.id=job_pairs.job_id 
-		WHERE job_pairs.id=_id 
-		AND queue_id=(SELECT queue_id FROM jobs JOIN job_pairs ON jobs.id=job_pairs.job_id WHERE job_pairs.id=_id));
+		WHERE user_id=(SELECT user_id FROM jobs JOIN job_pairs ON jobs.id=job_pairs.job_id WHERE job_pairs.id=_id)
+		AND queue_id=(SELECT queue_id FROM jobs JOIN job_pairs ON jobs.id=job_pairs.job_id WHERE job_pairs.id=_id);
 		
 	END //
 	
@@ -238,6 +336,7 @@ CREATE PROCEDURE GetJobpairTimeDeltaData(IN _qid INT)
 		SELECT * FROM jobpair_time_delta WHERE queue_id=_qid OR _qid = -1;
 	END //
 
+
 -- Deletes all data from the jobpair_time_delta table for a specific
 -- queue. -1 means all queues
 DROP PROCEDURE IF EXISTS ClearJobpairTimeDeltaData;
@@ -251,6 +350,15 @@ CREATE PROCEDURE GetJobPairsWithStatus(IN _status INT)
 	BEGIN
 		SELECT * FROM job_pairs
 		WHERE status_code = _status;
+	END //
+
+DROP PROCEDURE IF EXISTS GetJobPairIdsWithStatusNotRerunAfterDate;
+CREATE PROCEDURE GetJobPairIdsWithStatusNotRerunAfterDate(IN _status INT, IN _earliestEndTime DATETIME)
+	BEGIN
+		SELECT id FROM job_pairs
+		WHERE status_code = _status
+		AND job_pairs.end_time >= _earliestEndTime
+		AND id NOT IN (SELECT pair_id FROM pairs_rerun);
 	END //
 	
 DROP PROCEDURE IF EXISTS SetBrokenPairStatus;

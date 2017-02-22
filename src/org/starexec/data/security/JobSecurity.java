@@ -1,9 +1,15 @@
 package org.starexec.data.security;
 
 
+import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
+
+import org.starexec.app.RESTServices;
+import org.starexec.data.database.AnonymousLinks;
 import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
@@ -11,23 +17,38 @@ import org.starexec.data.database.Queues;
 import org.starexec.data.database.Settings;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
-import org.starexec.data.to.DefaultSettings;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobSpace;
-import org.starexec.data.to.JobStatus;
-import org.starexec.data.to.Permission;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Queue;
+import org.starexec.data.to.*;
 import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.logger.StarLogger;
+
 
 public class JobSecurity {
+
+	private static final StarLogger log = StarLogger.getLogger(JobSecurity.class);
+
 	
+	
+	/**
+	 * Checks to see whether a user can delete all the orphaned jobs owned by some user
+	 * @param userIdToDelete The ID of the user having their jobs deleted
+	 * @param userIdMakingRequest The ID of the user making the request
+	 * @return A ValidatorStatusCide
+	 */
+	public static ValidatorStatusCode canUserDeleteOrphanedJobs(int userIdToDelete, int userIdMakingRequest) {
+		if (Users.get(userIdToDelete)==null) {
+			return new ValidatorStatusCode(false, "The given user could not be found");
+		}
+		if (userIdToDelete!=userIdMakingRequest && !GeneralSecurity.hasAdminWritePrivileges(userIdMakingRequest)) {
+			return new ValidatorStatusCode(false, "You do not have permission to delete jobs belonging to another user");
+		}
+		
+		return new ValidatorStatusCode(true);
+	}
 	
 	public static ValidatorStatusCode canUserRecompileJob(int jobId, int userId) {
-		if (!Users.isAdmin(userId)) {
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			return new ValidatorStatusCode(false, "Only administrators can perform this action");
-			
 		}
 		
 		Job j=Jobs.get(jobId);
@@ -35,6 +56,14 @@ public class JobSecurity {
 			return new ValidatorStatusCode(false, "The given job could not be found");
 		}
 		
+		return new ValidatorStatusCode(true);
+	}
+
+	public static ValidatorStatusCode canUserChangeJobPriority(int jobId, int userId) {
+		if (!userOwnsJobOrIsAdmin(jobId, userId)) {
+			return new ValidatorStatusCode(false, "You do not have permission to change the priority of this job.");
+		}
+
 		return new ValidatorStatusCode(true);
 	}
 	
@@ -49,6 +78,9 @@ public class JobSecurity {
 	 */
 	public static ValidatorStatusCode canUserSeeJobSpace(int jobSpaceId, int userId) {
 		JobSpace s = Spaces.getJobSpace(jobSpaceId);
+		if (s==null) {
+			return new ValidatorStatusCode(false, "The given job space could not be found");
+		}
 		return canUserSeeJob(s.getJobId(), userId);
 	}
 	
@@ -64,7 +96,70 @@ public class JobSecurity {
 		}
 		return new ValidatorStatusCode(true);
 	}
+	/**
+	 * Checks to see if the given user has permission to see the details of the job that owns the given pair
+	 * @param pairId The ID of the pair
+	 * @param userId The ID of the user making the request
+	 * @return A ValidatorSTatusCode
+	 */
+	public static ValidatorStatusCode canUserSeeJobWithPair(int pairId, int userId) {
+		JobPair jp = JobPairs.getPair(pairId);
+		if (jp==null) {
+			return new ValidatorStatusCode(false, "The given pair could not be found");
+		}
+		return canUserSeeJob(jp.getJobId(),userId);
+	}
+
+	/**
+	 * Checks if a user can use BenchExec.
+	 * @param userId the user attempting to use BenchExec
+	 * @return a validator status code indicating if a user can use BenchExec.
+	 */
+	public static ValidatorStatusCode canUserUseBenchExec(int userId) {
+		if ( Users.isAdmin(userId) || Users.isDeveloper(userId) ) {
+			return new ValidatorStatusCode(true);
+		} else {
+			return new ValidatorStatusCode(false, "User does not have permission to use BenchExec");
+		}
+	}
 	
+	/**
+	 * Checks if a job is associated with a given anonymous link uuid.
+	 * @param anonymousLinkUuid A uuid that needs to be checked if it is connected to the given job space.
+	 * @param jobSpaceId The id of the job space to check
+	 * @return true ValidatorStatusCode if successful otherwise a false ValidatorStatusCode 
+	 * @author Eric Burns
+	 */
+	public static ValidatorStatusCode isAnonymousLinkAssociatedWithJobSpace( String anonymousLinkUuid, int jobSpaceId ) {
+		JobSpace space = Spaces.getJobSpace(jobSpaceId);
+		if (space==null) {
+			return new ValidatorStatusCode(false, "The given job space could not be found");
+		}
+		return isAnonymousLinkAssociatedWithJob(anonymousLinkUuid, space.getJobId());
+	}
+	
+	/**
+	 * Checks if a job is associated with a given anonymous link uuid.
+	 * @param anonymousLinkUuid A uuid that needs to be checked if it is connected to the given job.
+	 * @param jobId The id of the job to check
+	 * @return true ValidatorStatusCode if successful otherwise a false ValidatorStatusCode 
+	 * @author Albert Giegerich
+	 */
+	public static ValidatorStatusCode isAnonymousLinkAssociatedWithJob( String anonymousLinkUuid, int jobId ) {
+		final String methodName = "isAnonymousLinkAssociatedWithJob"; 
+		log.entry( methodName );
+		try {
+			Optional<Integer> potentialJobId = AnonymousLinks.getIdOfJobAssociatedWithLink( anonymousLinkUuid );
+			if ( !potentialJobId.isPresent() || potentialJobId.get() != jobId ) {
+				return new ValidatorStatusCode( false, "Job does not exist." );
+			} else {
+				return new ValidatorStatusCode( true );
+			}
+		} catch ( SQLException e ) {
+			log.error( methodName, "Caught an SQLException while trying to access anonymous links table data." );
+			return new ValidatorStatusCode( false, "Database error.");
+		}
+	}
 	
 	/**
 	 * Checks whether a given string is a valid type for the pairsInSpace page
@@ -93,13 +188,13 @@ public class JobSecurity {
 		if (job==null) {
 			return new ValidatorStatusCode(false, "The job could not be found");
 		}
-		boolean isAdmin=Users.isAdmin(userId);
+		boolean isAdmin=GeneralSecurity.hasAdminWritePrivileges(userId);
 		
 		if (job.getUserId()!=userId && !isAdmin) {
 			return new ValidatorStatusCode(false, "You do not have permission to post process this job");
 		}
 		Processor p=Processors.get(pid);
-		if (!Users.isMemberOfCommunity(userId, p.getCommunityId()) && !isAdmin) {
+		if (p==null || !Users.isMemberOfCommunity(userId, p.getCommunityId()) && !isAdmin) {
 			return new ValidatorStatusCode(false, "You do not have permission to use the selected post processor");
 		}
 		
@@ -127,23 +222,34 @@ public class JobSecurity {
 		}
 		
 		//can't rerun pairs that are not complete
-		if (statusCode>StatusCode.ERROR_GENERAL.getVal()) {
+		if (statusCode>StatusCode.ERROR_GENERAL.getVal() || statusCode==StatusCode.STATUS_ENQUEUED.getVal()  ||
+				statusCode==StatusCode.STATUS_RUNNING.getVal() || statusCode==StatusCode.STATUS_PENDING_SUBMIT.getVal()) {
 			return new ValidatorStatusCode(false, "This pair is not yet completed");
 		}
 		return new ValidatorStatusCode(true);
 	}
+
+	public static ValidatorStatusCode canUserSeeRerunPairsPage(int jobId, int userId) {
+		return rerunPairsHelper(jobId, userId, GeneralSecurity.hasAdminReadPrivileges(userId));
+	}
 	
 	public static ValidatorStatusCode canUserRerunPairs(int jobId, int userId) {
+		return rerunPairsHelper(jobId, userId, GeneralSecurity.hasAdminWritePrivileges(userId));
+	}
+
+	private static ValidatorStatusCode rerunPairsHelper(int jobId, int userId, boolean readOrWritePrivileges) {
 		Job job=Jobs.get(jobId);
 		if (job==null) {
 			return new ValidatorStatusCode(false, "The job could not be found");
 		}
-		boolean isAdmin=Users.isAdmin(userId);
-		
-		if (job.getUserId()!=userId && !isAdmin) {
+
+		if (job.getUserId()!=userId && !readOrWritePrivileges) {
 			return new ValidatorStatusCode(false, "You do not have permission to rerun pairs in this job");
 		}
-		
+		if (job.isBuildJob()) {
+			return new ValidatorStatusCode(false, "You may not rerun solver build jobs. Please reupload your solver instead.");
+		}
+
 		JobStatus status= Jobs.getJobStatusCode(jobId);
 		if (status.getCode().getVal()==JobStatusCode.STATUS_PAUSED.getVal()) {
 			return new ValidatorStatusCode(false, "This job is currently paused. Please unpause it before rerunning pairs");
@@ -180,9 +286,24 @@ public class JobSecurity {
 		}
 		return new ValidatorStatusCode(true);
 	}
+
+	/**
+	 *
+	 * @param jobId The id of the job to get an anonymous link for.
+	 * @param userId The id of the user trying to get the anonymous link.
+	 * @return A successful ValidatorStatusCode if the user can get an anonymous link for this job. An unsuccesful one otherwise.
+	 * @author Albert Giegerich
+	 */
+	public static ValidatorStatusCode canUserGetAnonymousLink( int jobId, int userId ) {
+		if ( userOwnsJobOrIsAdmin( jobId, userId )) {
+			return new ValidatorStatusCode( true );
+		} else {
+			return new ValidatorStatusCode( false, "You do not have permission to get an anonymous link for this job." );
+		}
+	}
 	
 	/**
-	 * Checks to see if the given user has permission to resume of the given job
+	 * Checks to see if the given user has permission to resume the given job
 	 * @param jobId The ID of the job being checked
 	 * @param userId The ID of the user making the request
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
@@ -191,6 +312,10 @@ public class JobSecurity {
 	public static ValidatorStatusCode canUserResumeJob(int jobId, int userId) {
 		if (!userOwnsJobOrIsAdmin(jobId,userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to resume this job");
+		}
+		
+		if (Users.isDiskQuotaExceeded(userId)) {
+			return new ValidatorStatusCode(false, "Your disk quota has been exceeded: please clear out some old solvers, jobs, or benchmarks before proceeding");
 		}
 		
 		return new ValidatorStatusCode(true);
@@ -244,7 +369,7 @@ public class JobSecurity {
 		if (q==null){
 			return new ValidatorStatusCode(false, "The given queue could not be found");
 		}
-		List<Queue> queues=Queues.getQueuesForUser(userId);
+		List<Queue> queues=Queues.getUserQueues(userId);
 		for (Queue queue : queues) {
 			if (queue.getId()==queueId) {
 				return new ValidatorStatusCode(true);
@@ -254,6 +379,24 @@ public class JobSecurity {
 		return new ValidatorStatusCode(false, "You do not have permission to access the selected queue");
 
 	}
+
+	/**
+	 * Checks if a user can add job pairs to a given job.
+	 * @param jobId the id of the job to check permissions for.
+	 * @param userId the id of the user to check permissions for.
+	 * @return an appropriate ValidatorStatusCode.  
+	 * @author Albert Giegerich
+	 */
+	public static ValidatorStatusCode canUserAddJobPairs( int jobId, int userId ) {
+		if ( !userOwnsJobOrIsAdmin( jobId, userId ) ) {
+			return new ValidatorStatusCode( false, "You do not have permission to add job pairs for this job." );
+		}
+		Job j = Jobs.get(jobId);
+		if (j.isBuildJob()) {
+			return new ValidatorStatusCode(false, "You can not add job pairs to a solver build job");
+		}
+		return new ValidatorStatusCode( true );
+	}
 	
 	/**
 	 * Checks to see if the given user either owns the given job or is an admin
@@ -261,40 +404,17 @@ public class JobSecurity {
 	 * @param userId The ID of the user making the request
 	 */
 	public static boolean userOwnsJobOrIsAdmin(int jobId, int userId) {
-		if (Users.isAdmin(userId)){
+		Job j = Jobs.get(jobId);
+		if (j==null) {
+			return false;
+		}
+		if (GeneralSecurity.hasAdminWritePrivileges(userId)){
 			return true;
 		}
-
-		Job j = Jobs.get(jobId);
-		if(j == null || j.getUserId() != userId){
+		if(j.getUserId() != userId){
 			return false;
 		}
 		return true;
-	}
-	
-	/**
-	 * Checks to see whether the given user is allowed to pause all jobs currently running
-	 * on the system
-	 * @param userId The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise.
-	 */
-	public static ValidatorStatusCode canUserPauseAllJobs(int userId){
-		if (!Users.isAdmin(userId)){
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
-		}
-		return new ValidatorStatusCode(true);
-	}
-	
-	/**
-	 * Checks to see whether the given user is allowed to resume all jobs that the admin has paused
-	 * @param userId the ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and the status code from ValidatorStatusCodes otherwise.
-	 */
-	public static ValidatorStatusCode canUserResumeAllJobs(int userId){
-		if (!Users.isAdmin(userId)){
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
-		}
-		return new ValidatorStatusCode(true);
 	}
 	
 	/**
@@ -321,22 +441,27 @@ public class JobSecurity {
 	 * @return
 	 */
 	public static ValidatorStatusCode canCreateQuickJobWithCommunityDefaults(int userId, int sId,int statusId) {
-			
+			final String methodName = "canCreateQuickJobWithCommunityDefaults";
 			ValidatorStatusCode status = JobSecurity.canUserCreateJobInSpace(userId,sId);
 			if (!status.isSuccess()) {
 				return status;
 			}
-			DefaultSettings settings=Settings.getProfileById(statusId);
-			
-			
-			if (Benchmarks.get(settings.getBenchId())==null) {
-				return new ValidatorStatusCode(false, "The selected community has no default benchmark selected");
+			try {
+				DefaultSettings settings = Settings.getProfileById(statusId);
+				if (settings.getBenchIds().size() == 0 || Benchmarks.get(settings.getBenchIds().get(0))==null)  {
+					return new ValidatorStatusCode(false, "The selected community has no default benchmark selected");
+				}
+			} catch (SQLException e) {
+				log.error(methodName,"Caught SQLException.", e);
+				return RESTServices.ERROR_DATABASE;
 			}
+			
+
 			
 			return new ValidatorStatusCode(true);
 	}
-	
-	
+
+
 	public static ValidatorStatusCode canUserCreateJobInSpace(int userId, int sId) {
 		Permission p=Permissions.get(userId, sId);
 		

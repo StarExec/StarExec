@@ -3,6 +3,7 @@ package org.starexec.servlets;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.HashMap;
 import java.util.LinkedList;
 
 import javax.servlet.ServletException;
@@ -11,14 +12,15 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Users;
+import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.database.Queues;
 
 
 import org.starexec.data.to.Queue;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 
@@ -28,7 +30,7 @@ import org.starexec.util.Util;
  */
 @SuppressWarnings("serial")
 public class MoveNodes extends HttpServlet {		
-	private static final Logger log = Logger.getLogger(MoveNodes.class);	
+	private static final StarLogger log = StarLogger.getLogger(MoveNodes.class);
 
 	// Request attributes
 	private static final String name = "name";
@@ -49,7 +51,7 @@ public class MoveNodes extends HttpServlet {
 
 	try {
 		int userId=SessionUtil.getUserId(request);
-		if (!Users.hasAdminWritePrivileges(userId)) {
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			String message="You do not have permission to perform the requested operation";
 			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
 			response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
@@ -64,31 +66,35 @@ public class MoveNodes extends HttpServlet {
 	    
 	    LinkedList<String> nodeNames = new LinkedList<String>();
 	    LinkedList<String> queueNames = new LinkedList<String>();
-
+	    // map for counting how many nodes will be removed from each queue
+	    HashMap<Integer, Integer> queueIdToNodesRemoved = new HashMap<Integer, Integer>();
 	    if (nodeIds != null) {
-		for (int id : nodeIds) {
-		    Queue q = Cluster.getQueueForNode(id);
-		    nodeNames.add(Cluster.getNodeNameById(id));
-		    if(q == null){
-		    	queueNames.add(null);
-		    } else{
-		    	queueNames.add(q.getName());
-		    	//Need to call this in prepartion for moving the nodes
-		    	Queues.pauseJobsIfOneWorker(q);
-		    }
-
-		}
+			for (int id : nodeIds) {
+			    Queue q = Cluster.getQueueForNode(id);
+			   
+			    nodeNames.add(Cluster.getNodeNameById(id));
+			    if(q == null){
+			    	queueNames.add(null);
+			    } else{
+			    	queueNames.add(q.getName());
+			    	 if (!queueIdToNodesRemoved.containsKey(q.getId())) {
+			    		 queueIdToNodesRemoved.put(q.getId(), 0);
+					 }
+					 queueIdToNodesRemoved.put(q.getId(), queueIdToNodesRemoved.get(q.getId())+1);
+			    }
+	
+			}
 	    }
 		
 	    //BACKEND Changes
 	    R.BACKEND.moveNodes(queueName,nodeNames.toArray(new String[nodeNames.size()]),queueNames.toArray(new String[queueNames.size()]));
 
 	    Cluster.loadWorkerNodes();
-	    Cluster.loadQueues();		
+	    Cluster.loadQueueDetails();		
 	    response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));
 	}
 	catch (Exception e) {
-	    log.error("Move Nodes Servlet encountered this exception: " + e.getMessage(), e);
+		log.error("Caught Exception in MoveNodes.doPost", e);
 	    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error moving the nodes.");
 	}
     }

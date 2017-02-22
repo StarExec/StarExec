@@ -8,17 +8,19 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 -- Adds a benchmark into the system and associates it with a space
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddBenchmark;
-CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(256), IN _path TEXT, IN _downloadable TINYINT(1), IN _userId INT, IN _typeId INT, IN _diskSize BIGINT, OUT _benchId INT)
+CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(256), IN _path TEXT, IN _downloadable TINYINT(1), IN _userId INT, IN _typeId INT, IN _diskSize BIGINT, IN _description TEXT, OUT _benchId INT)
 	BEGIN	
-		INSERT INTO benchmarks (user_id, name, bench_type, uploaded, path, downloadable, disk_size)
-		VALUES (_userId, _name, _typeId, SYSDATE(), _path, _downloadable, _diskSize);
+		UPDATE users SET disk_size=disk_size+_diskSize WHERE id = _userId;
+		INSERT INTO benchmarks (user_id, name, bench_type, uploaded, path, downloadable, disk_size, description)
+		VALUES (_userId, _name, _typeId, SYSDATE(), _path, _downloadable, _diskSize, _description);
 		
 		SELECT LAST_INSERT_ID() INTO _benchId;		
 	END //	
 	
 DROP PROCEDURE IF EXISTS AddAndAssociateBenchmark;
 CREATE PROCEDURE AddAndAssociateBenchmark(IN _name VARCHAR(256), IN _path TEXT, IN _downloadable TINYINT(1), IN _userId INT, IN _typeId INT, IN _diskSize BIGINT, IN _spaceId INT, OUT _benchId INT)
-	BEGIN	
+	BEGIN
+		UPDATE users SET disk_size=disk_size+_diskSize WHERE id = _userId;
 		INSERT INTO benchmarks (user_id, name, bench_type, uploaded, path, downloadable, disk_size)
 		VALUES (_userId, _name, _typeId, SYSDATE(), _path, _downloadable, _diskSize);
 		
@@ -26,7 +28,19 @@ CREATE PROCEDURE AddAndAssociateBenchmark(IN _name VARCHAR(256), IN _path TEXT, 
 		
 		INSERT IGNORE INTO bench_assoc (space_id, bench_id) VALUES (_spaceId, _benchId);
 
-	END //	
+	END //
+
+-- Gets all benchmarks that are in a job (in job pairs in that job)
+-- Author: Albert Giegerich
+DROP PROCEDURE IF EXISTS GetBenchmarksByJob;
+CREATE PROCEDURE GetBenchmarksByJob(IN _jobId INT)
+	BEGIN
+		SELECT DISTINCT benchmarks.*
+		FROM benchmarks
+			INNER JOIN job_pairs
+			ON benchmarks.id=job_pairs.bench_id
+		WHERE job_id=_jobId;
+	END //
 		
 -- Adds a new attribute to a benchmark 
 -- Author: Tyler Jensen
@@ -73,8 +87,7 @@ CREATE PROCEDURE GetBenchByName(IN _id INT, IN _name VARCHAR(256))
 				(SELECT bench_id
 				FROM bench_assoc
 				WHERE space_id = _id)
-		AND bench.name = _name		
-		ORDER BY bench.name;
+		AND bench.name = _name;
 	END //	
 	
 -- Retrieves all benchmark dependencies for a given primary benchmark id
@@ -92,12 +105,12 @@ CREATE PROCEDURE GetBenchmarkDependencies(IN _pBenchId INT)
 DROP PROCEDURE IF EXISTS SetBenchmarkToDeletedById;
 CREATE PROCEDURE SetBenchmarkToDeletedById(IN _benchmarkId INT, OUT _path TEXT)
 	BEGIN
+		UPDATE users JOIN benchmarks on benchmarks.user_id=users.id
+		SET users.disk_size=users.disk_size-benchmarks.disk_size 
+		WHERE benchmarks.id = _benchmarkId;
 		SELECT path INTO _path FROM benchmarks WHERE id = _benchmarkId;
 		UPDATE benchmarks
-		SET deleted=true
-		WHERE id = _benchmarkId;
-		UPDATE benchmarks
-		SET disk_size=0
+		SET deleted=true, disk_size=0
 		WHERE id = _benchmarkId;
 
 	END //	
@@ -142,15 +155,6 @@ CREATE PROCEDURE GetXMLUploadStatusById(IN _id INT)
 		FROM space_xml_uploads 
 		WHERE id = _id;
 	END //	
--- Returns the number of benchmarks in a given space
--- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS GetBenchmarkCountInSpace;
-CREATE PROCEDURE GetBenchmarkCountInSpace(IN _spaceId INT)
-	BEGIN
-		SELECT 	COUNT(*) AS benchCount
-		FROM 	bench_assoc
-		WHERE 	_spaceId=space_id;
-	END //
 
 -- Returns the number of benchmarks in a given space that match a given query
 -- Author: Eric Burns
@@ -160,10 +164,11 @@ CREATE PROCEDURE GetBenchmarkCountInSpaceWithQuery(IN _spaceId INT, IN _query TE
 		SELECT 	COUNT(*) AS benchCount
 		FROM 	bench_assoc
 			JOIN	benchmarks AS benchmarks ON benchmarks.id = bench_assoc.bench_id	
-			JOIN	processors  AS benchType ON benchmarks.bench_type=benchType.id
+			LEFT JOIN	processors  AS benchType ON benchmarks.bench_type=benchType.id
 		WHERE 	_spaceId=space_id AND
 				(benchmarks.name LIKE	CONCAT('%', _query, '%')
-				OR		benchType.name	LIKE 	CONCAT('%', _query, '%'));
+				OR		(benchType.name	LIKE 	CONCAT('%', _query, '%') 
+				OR (benchType.name is null AND 'none' LIKE CONCAT('%', _query, '%'))));
 	END //
 -- Retrieves all benchmarks belonging to a space
 -- Author: Eric Burns
@@ -293,9 +298,12 @@ CREATE PROCEDURE GetRecycledBenchmarkPaths(IN _userId INT)
 DROP PROCEDURE IF EXISTS SetRecycledBenchmarksToDeleted;
 CREATE PROCEDURE SetRecycledBenchmarksToDeleted(IN _userId INT) 
 	BEGIN
+		UPDATE users
+		SET users.disk_size=users.disk_size-(SELECT COALESCE(SUM(disk_size),0) FROM benchmarks WHERE user_id=_userId AND recycled=true AND deleted=false)
+		WHERE users.id=_userId;
 		UPDATE benchmarks
 		SET deleted=true, disk_size=0
-		WHERE user_id = _userId AND recycled=true;
+		WHERE user_id = _userId AND recycled=true AND deleted=false;
 	END //
 	
 -- Gets all recycled benchmark ids a user has
@@ -378,7 +386,7 @@ CREATE PROCEDURE GetBenchmarksAssociatedWithPairs()
 DROP PROCEDURE IF EXISTS GetDeletedBenchmarks;
 CREATE PROCEDURE GetDeletedBenchmarks()
 	BEGIN	
-		SELECT id FROM benchmarks WHERE deleted=true;
+		SELECT * FROM benchmarks WHERE deleted=true;
 	END //
 	
 	
@@ -409,4 +417,17 @@ CREATE PROCEDURE GetPublicBenchmarks()
 		WHERE public_access=1 AND deleted=false AND recycled=false
 		GROUP BY benchmarks.id;
 	END //
+
+DROP PROCEDURE IF EXISTS GetBrokenBenchDependencies;
+CREATE PROCEDURE GetBrokenBenchDependencies(IN _benchId INT)
+    BEGIN
+        SELECT DISTINCT benchmarks.id 
+        FROM benchmarks join bench_dependency 
+            ON benchmarks.id=bench_dependency.secondary_bench_id 
+        WHERE 
+            benchmarks.deleted = 1 
+            OR benchmarks.recycled = 1 
+            AND primary_bench_id = _benchId;
+    END //
+
 DELIMITER ; -- This should always be at the end of this file

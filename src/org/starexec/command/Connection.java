@@ -1,15 +1,10 @@
 package org.starexec.command;
 
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
@@ -28,6 +23,7 @@ import org.starexec.constants.R;
 import org.starexec.data.to.Permission;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.Validator;
+import org.starexec.util.Util;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -44,6 +40,7 @@ import com.google.gson.JsonPrimitive;
  */
 @SuppressWarnings({"deprecation"})
 public class Connection {
+	final private CommandLogger log = CommandLogger.getLogger(Connection.class);
 	private String baseURL;
 	private String sessionID=null;
 	HttpClient client=null;
@@ -429,7 +426,6 @@ public class Connection {
 	 * Uploads an xml (job or space) to specified space
 	 * @param filePath An absolute file path to the file to upload
 	 * @param spaceID The ID of the space where the job is being uploaded to
-	 * @param isJobUpload true if job xml upload, false otherwise
 	 * @return The ids of the newly created jobs. On failure, a size 1 list with a negative error code
 	 * @author Julio Cervantes
 	 * @param isJobXML True if this is a job XML and false if it is a space XML
@@ -1002,7 +998,6 @@ public class Connection {
 	
 	/**
 	 * Pauses or resumes a job depending on the value of pause
-	 * @param commandParams Parameters given by the user at the command line
 	 * @param pause Pauses a job if true and resumes it if false
 	 * @return 0 on success or a negative error code on failure
 	 */
@@ -1088,7 +1083,6 @@ public class Connection {
 	/**
 	 * Removes the given subspaces from the given space.
 	 * @param subspaceIds The IDs of the subspaces to remove
-	 * @param spaceID The ID of the space
 	 * @param recyclePrims If true, all primitives owned by the calling user that are present in any
 	 * space being removed will be deleted (or moved to the recycle bin, if applicable)
 	 * @return 0 on success, or a negative integer status code on failure
@@ -1100,7 +1094,6 @@ public class Connection {
 	
 	/**
 	 * Removes the association between a primitive and a space on StarExec
-	 * @param commandParams Parameters given by the user
 	 * @param type The type of primitive being remove
 	 * @return 0 on success, and a negative error code on failure
 	 * @author Eric Burns
@@ -1287,7 +1280,7 @@ public class Connection {
 	 */
 	
 	public List<Integer> copySolvers(Integer[] solverIds, Integer oldSpaceId, Integer newSpaceId, Boolean hierarchy) {
-		return copyPrimitives(solverIds,oldSpaceId,newSpaceId,hierarchy,R.SOLVER);
+		return copyPrimitives(solverIds,oldSpaceId,newSpaceId,hierarchy,false,R.SOLVER);
 	}
 	
 	
@@ -1300,7 +1293,7 @@ public class Connection {
 	 */
 	
 	public List<Integer> copyBenchmarks(Integer[] benchmarkIds, Integer oldSpaceId, Integer newSpaceId) {
-		return copyPrimitives(benchmarkIds,oldSpaceId,newSpaceId,false,"benchmark");
+		return copyPrimitives(benchmarkIds,oldSpaceId,newSpaceId,false,false,"benchmark");
 	}
 	
 	/**
@@ -1313,8 +1306,8 @@ public class Connection {
 	 */
 	
 	
-	public List<Integer> copySpaces(Integer[] spaceIds, Integer oldSpaceId, Integer newSpaceId, Boolean hierarchy) {
-		return copyPrimitives(spaceIds,oldSpaceId,newSpaceId,hierarchy,R.SPACE);
+	public List<Integer> copySpaces(Integer[] spaceIds, Integer oldSpaceId, Integer newSpaceId, Boolean hierarchy, Boolean copyPrimitives) {
+		return copyPrimitives(spaceIds,oldSpaceId,newSpaceId,hierarchy,copyPrimitives,R.SPACE);
 	}
 	
 	/**
@@ -1327,8 +1320,8 @@ public class Connection {
 	 * @return A list of positive IDs on success, or size 1 list with a negative error code on failure
 	 */
 	
-	protected List<Integer> copyPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean hierarchy, String type) {
-		return copyOrLinkPrimitives( ids, oldSpaceId, newSpaceID, true, hierarchy, type);
+	protected List<Integer> copyPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean hierarchy, Boolean copyPrimitives, String type) {
+		return copyOrLinkPrimitives( ids, oldSpaceId, newSpaceID, true, hierarchy, copyPrimitives, type);
 	}
 	
 	/**
@@ -1343,18 +1336,17 @@ public class Connection {
 	
 	protected int linkPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean hierarchy, String type) {
 
-		return copyOrLinkPrimitives( ids, oldSpaceId, newSpaceID, false, hierarchy, type).get(0);
+		return copyOrLinkPrimitives( ids, oldSpaceId, newSpaceID, false, hierarchy, false, type).get(0);
 	}
 	
 	/**
 	 * Sends a copy or link request to the StarExec server and returns a status code
 	 * indicating the result of the request
-	 * @param commandParams The parameters given by the user at the command line.
 	 * @param copy True if a copy should be performed, and false if a link should be performed.
 	 * @param type The type of primitive being copied.
 	 * @return An integer error code where 0 indicates success and a negative number is an error.
 	 */
-	private List<Integer> copyOrLinkPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean copy, Boolean hierarchy, String type) {
+	private List<Integer> copyOrLinkPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean copy, Boolean hierarchy, Boolean copyPrimitives, String type) {
 		List<Integer> fail=new ArrayList<Integer>();
 		HttpResponse response = null;
 		try {
@@ -1390,6 +1382,7 @@ public class Connection {
 			
 			params.add(new BasicNameValuePair("copy",copy.toString()));
 			params.add(new BasicNameValuePair("copyHierarchy", String.valueOf(hierarchy.toString())));
+            params.add(new BasicNameValuePair("copyPrimitives", String.valueOf(copyPrimitives.toString())));
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 			
 			post=(HttpPost) setHeaders(post);
@@ -1608,8 +1601,6 @@ public class Connection {
     }
 	/**
 	 * Lists the IDs and names of some kind of primitives in a given space
-	 * @param urlParams Parameters to be encoded into the URL to send to the server
-	 * @param commandParams Parameters given by the user at the command line
 	 * @return A HashMap mapping integer ids to string names
 	 * @author Eric Burns
 	 */
@@ -1735,8 +1726,8 @@ public class Connection {
  	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadSolver(Integer solverId, String filePath) {
-		return downloadArchive(solverId, R.SOLVER,null,null,filePath,false,false,false,false,null,false,false,null);
+	public int downloadSolver(Integer solverId, String filePath) throws IOException {
+		return downloadArchive(solverId, R.SOLVER,null,null,filePath,false,false,false,false,null,false,false,null,false);
 	}
 	/**
 	 * Downloads job pair output for one pair from StarExec in the form of a zip file
@@ -1744,8 +1735,8 @@ public class Connection {
  	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadJobPair(Integer pairId, String filePath) {
-		return downloadArchive(pairId,R.PAIR_OUTPUT,null,null,filePath,false,false,false,false,null,false,false,null);
+	public int downloadJobPair(Integer pairId, String filePath, Boolean longPath) throws IOException {
+		return downloadArchive(pairId,R.PAIR_OUTPUT,null,null,filePath,false,false,false,false,null,false,false,null,longPath);
 	}
 	
 	/**
@@ -1767,7 +1758,6 @@ public class Connection {
 			String ids=sb.substring(0,sb.length()-1);
 			
 			urlParams.put(C.FORMPARAM_ID+"[]",ids);
-			
 			
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, false);
 			//First, put in the request for the server to generate the desired archive			
@@ -1821,8 +1811,8 @@ public class Connection {
  	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadJobOutput(Integer jobId, String filePath) {
-		return downloadArchive(jobId,R.JOB_OUTPUT,null,null,filePath,false,false,false,false,null,false,false,null);
+	public int downloadJobOutput(Integer jobId, String filePath) throws IOException {
+		return downloadArchive(jobId,R.JOB_OUTPUT,null,null,filePath,false,false,false,false,null,false,false,null,false);
 	}
 	/**
 	 * Downloads a CSV describing a job from StarExec in the form of a zip file
@@ -1832,8 +1822,8 @@ public class Connection {
  	 * @param onlyCompleted If true, only include completed pairs in the csv
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadJobInfo(Integer jobId, String filePath, boolean includeIds, boolean onlyCompleted) {
-		return downloadArchive(jobId,R.JOB,null,null,filePath,false,false,includeIds,false,null,onlyCompleted,false,null);
+	public int downloadJobInfo(Integer jobId, String filePath, boolean includeIds, boolean onlyCompleted) throws IOException {
+		return downloadArchive(jobId,R.JOB,null,null,filePath,false,false,includeIds,false,null,onlyCompleted,false,null,false);
 	}
 	/**
 	 * Downloads a space XML file from StarExec in the form of a zip file
@@ -1843,8 +1833,8 @@ public class Connection {
 	 * @param updateId The ID of the update processor to use in the XML. No update processor if null
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadSpaceXML(Integer spaceId, String filePath,boolean getAttributes, Integer updateId) {
-		return downloadArchive(spaceId, R.SPACE_XML,null,null,filePath,false,false,false,false,null,false,getAttributes,updateId);
+	public int downloadSpaceXML(Integer spaceId, String filePath,boolean getAttributes, Integer updateId) throws IOException {
+		return downloadArchive(spaceId, R.SPACE_XML,null,null,filePath,false,false,false,false,null,false,getAttributes,updateId,false);
 	}
 	/**
 	 * Downloads the data contained in a single space 
@@ -1854,8 +1844,8 @@ public class Connection {
 	 * @param excludeBenchmarks If true, excludes benchmarks from the ZIP file
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadSpace(Integer spaceId, String filePath, boolean excludeSolvers, boolean excludeBenchmarks) {
-		return downloadArchive(spaceId, R.SPACE,null,null,filePath,excludeSolvers,excludeBenchmarks,false,false,null,false,false,null);
+	public int downloadSpace(Integer spaceId, String filePath, boolean excludeSolvers, boolean excludeBenchmarks) throws IOException {
+		return downloadArchive(spaceId, R.SPACE,null,null,filePath,excludeSolvers,excludeBenchmarks,false,false,null,false,false,null,false);
 	}
 	/**
 	 * Downloads the data contained in a space hierarchy rooted at the given space 
@@ -1865,8 +1855,8 @@ public class Connection {
 	 * @param excludeBenchmarks If true, excludes benchmarks from the ZIP file
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadSpaceHierarchy(Integer spaceId, String filePath,boolean excludeSolvers,boolean excludeBenchmarks) {
-		return downloadArchive(spaceId,R.SPACE,null,null,filePath,excludeSolvers,excludeBenchmarks,false,true,null,false,false,null);
+	public int downloadSpaceHierarchy(Integer spaceId, String filePath,boolean excludeSolvers,boolean excludeBenchmarks) throws IOException {
+		return downloadArchive(spaceId,R.SPACE,null,null,filePath,excludeSolvers,excludeBenchmarks,false,true,null,false,false,null,false);
 	}
 	/**
 	 * Downloads a pre processor from StarExec in the form of a zip file
@@ -1874,8 +1864,8 @@ public class Connection {
  	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadPreProcessor(Integer procId, String filePath) {
-		return downloadArchive(procId,R.PROCESSOR,null,null,filePath,false,false,false,false,"pre",false,false,null);
+	public int downloadPreProcessor(Integer procId, String filePath) throws IOException {
+		return downloadArchive(procId,R.PROCESSOR,null,null,filePath,false,false,false,false,"pre",false,false,null,false);
 	}
 	/**
 	 * Downloads a benchmark processor from StarExec in the form of a zip file
@@ -1883,8 +1873,8 @@ public class Connection {
  	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadBenchProcessor(Integer procId, String filePath) {
-		return downloadArchive(procId,R.PROCESSOR,null,null,filePath,false,false,false,false,R.BENCHMARK,false,false,null);
+	public int downloadBenchProcessor(Integer procId, String filePath) throws IOException {
+		return downloadArchive(procId,R.PROCESSOR,null,null,filePath,false,false,false,false,R.BENCHMARK,false,false,null,false);
 	}
 	/**
 	 * Downloads a post processor from StarExec in the form of a zip file
@@ -1892,8 +1882,8 @@ public class Connection {
  	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadPostProcessor(Integer procId, String filePath) {
-		return downloadArchive(procId,R.PROCESSOR,null,null,filePath,false,false,false,false,"post",false,false,null);
+	public int downloadPostProcessor(Integer procId, String filePath) throws IOException {
+		return downloadArchive(procId,R.PROCESSOR,null,null,filePath,false,false,false,false,"post",false,false,null,false);
 	}
 	/**
 	 * Downloads a benchmark from StarExec in the form of a zip file
@@ -1901,8 +1891,8 @@ public class Connection {
  	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadBenchmark(Integer benchId,String filePath) {
-		return downloadArchive(benchId,R.BENCHMARK,null,null,filePath,false,false,false,false,null,false,false,null);
+	public int downloadBenchmark(Integer benchId,String filePath) throws IOException {
+		return downloadArchive(benchId,R.BENCHMARK,null,null,filePath,false,false,false,false,null,false,false,null,false);
 	}
 	/**
 	 * Downloads a CSV describing a job from StarExec in the form of a zip file. Only job pairs
@@ -1913,8 +1903,8 @@ public class Connection {
  	 * @param since A completion ID, indicating that only pairs with completion IDs greater should be included
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadNewJobInfo(Integer jobId, String filePath, boolean includeIds, int since) {
-		return downloadArchive(jobId,R.JOB,since,null,filePath,false,false,includeIds,false,null,false,false,null);
+	public int downloadNewJobInfo(Integer jobId, String filePath, boolean includeIds, int since) throws IOException {
+		return downloadArchive(jobId,R.JOB,since,null,filePath,false,false,includeIds,false,null,false,false,null,false);
 	}
 	/**
 	 * Downloads output from a job from StarExec in the form of a zip file. Only job pairs
@@ -1924,8 +1914,8 @@ public class Connection {
  	 * @param since A completion ID, indicating that only pairs with completion IDs greater should be included
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadNewJobOutput(Integer jobId, String filePath, int since, long lastModified) {
-		return downloadArchive(jobId,R.JOB_OUTPUT,since,lastModified,filePath,false,false,false,false,null,false,false,null);
+	public int downloadNewJobOutput(Integer jobId, String filePath, int since, long lastModified) throws IOException {
+		return downloadArchive(jobId,R.JOB_OUTPUT,since,lastModified,filePath,false,false,false,false,null,false,false,null,false);
 	}
 	
 	/**
@@ -1942,13 +1932,14 @@ public class Connection {
 	 * @param procClass If downloading a processor, what type of processor it is (R.BENCHMARK,"post",or "pre")
 	 * @return
 	 */
-	protected int downloadArchive(Integer id, String type, Integer since, Long lastTimestamp, String filePath,
+	protected int downloadArchive(Integer id, String type, Integer since, Long lastTimestamp, final String filePath,
 			boolean excludeSolvers, boolean excludeBenchmarks, boolean includeIds, Boolean hierarchy,
-			String procClass, boolean onlyCompleted,boolean includeAttributes,Integer updateId) {
+			String procClass, boolean onlyCompleted,boolean includeAttributes,Integer updateId, Boolean longPath) throws IOException {
 		HttpResponse response=null;
 		
 		try {
 			HashMap<String,String> urlParams=new HashMap<String,String>();
+			log.log("Downloading archive of type: "+type);
 			urlParams.put(C.FORMPARAM_TYPE, type);
 			urlParams.put(C.FORMPARAM_ID, id.toString());
 			if (type.equals(R.SPACE)) {
@@ -1983,6 +1974,9 @@ public class Connection {
 			if (excludeSolvers) {
 				urlParams.put("includesolvers","false");
 			}
+            if (longPath) {
+                urlParams.put("longpath","true");
+            }
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, false);
 			//First, put in the request for the server to generate the desired archive			
 			
@@ -2013,6 +2007,7 @@ public class Connection {
 			Integer totalPairs=null;
 			Integer pairsFound=null;
 			Integer oldPairs=null;
+            //Integer runningPairsFound=null;
 			int lastSeen=-1;
 			//if we're sending 'since,' it means this is a request for new job data
 			boolean isNewJobRequest=urlParams.containsKey(C.FORMPARAM_SINCE);
@@ -2022,6 +2017,7 @@ public class Connection {
 				totalPairs=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Total-Pairs"));
 				pairsFound=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Pairs-Found"));
 				oldPairs=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Older-Pairs"));
+				//runningPairsFound=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Running-Pairs"));
 				
 				//check to see if the job is complete
 				done=totalPairs==(pairsFound+oldPairs);
@@ -2046,16 +2042,15 @@ public class Connection {
 			IOUtils.copy(response.getEntity().getContent(), outs);
 			outs.close();
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
-			
-			if (!CommandValidator.isValidZip(out)) {
-				out.delete();
-				if (isNewOutputRequest) {
-					return C.SUCCESS_NOFILE;
-				}
-				return Status.ERROR_INTERNAL; //we got back an invalid archive for some reason
+
+			// If it's not a valid zipfile we need to return SUCCESS_NOFILE if the request was a
+			// new output request, otherwise throw the exception. Don't return anything if it is a valid zipfile.
+			Optional<Integer> statusCode = checkIfValidZipFile(out, isNewOutputRequest);
+			if (statusCode.isPresent()) {
+				return statusCode.get();
 			}
+
 			long lastModified = ArchiveUtil.getMostRecentlyModifiedFileInZip(out);
-			
 			
 			//only after we've successfully saved the file should we update the maximum completion index,
 			//which keeps us from downloading the same stuff twice
@@ -2066,21 +2061,51 @@ public class Connection {
 				} else if (urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB_OUTPUT)) {
 					this.setJobOutCompletion(id, new PollJobData(lastSeen,lastModified));
 				}
-				System.out.println("pairs found ="+(oldPairs+1)+"-"+(oldPairs+pairsFound)+"/"+totalPairs +" (highest="+lastSeen+")");
+                if(pairsFound != 0) {
+				    System.out.println("completed pairs found ="+(oldPairs+1)+"-"+(oldPairs+pairsFound)+"/"+totalPairs +" (highest="+lastSeen+")");
+                }
+				/*
+                if(runningPairsFound != 0) {
+                    System.out.println("output from running pairs found="+runningPairsFound); 
+                }*/
 
 			}
 			if (done) {
 				return C.SUCCESS_JOBDONE;
 			}
 			return 0;
-		} catch (Exception e) {
+		} catch (IOException e) {
+			log.log("Caught exception in downloadArchive: " + Util.getStackTrace(e));
 
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
-			return Status.ERROR_INTERNAL;
+			throw e;
 		} finally {
 			safeCloseResponse(response);
 		}
-		
+	}
+
+	private static Optional<Integer> checkIfValidZipFile(File out, boolean isNewOutputRequest) throws IOException {
+		ZipFile zipfile = null;
+		try {
+			// Make sure the file is a valid zipfile.
+			zipfile = new ZipFile(out);
+			return Optional.empty();
+		} catch (IOException e) {
+			out.delete();
+			if (isNewOutputRequest) {
+				// The file shouldn't be a valid zipfile if it was a new output request.
+				return Optional.of(C.SUCCESS_NOFILE);
+			}
+			throw e; //we got back an invalid archive for some reason
+		} finally {
+			try {
+				if (zipfile != null) {
+					zipfile.close();
+					zipfile = null;
+				}
+			} catch (IOException e) {
+			}
+		}
 	}
 	
 	/**
@@ -2095,7 +2120,6 @@ public class Connection {
 	/**
 	 * Sets the highest seen completion ID for output on a given job
 	 * @param jobID An ID of a job on StarExec
-	 * @param completion The completion ID
 	 */
 	protected void setJobOutCompletion(int jobID,PollJobData data) {
 		job_out_indices.put(jobID,data);
@@ -2188,6 +2212,8 @@ public class Connection {
 			params.add(new BasicNameValuePair("seed",seed.toString()));
 			params.add(new BasicNameValuePair("resultsInterval", resultsInterval.toString()));
 			params.add(new BasicNameValuePair(C.FORMPARAM_TRAVERSAL,traversalMethod));
+			params.add(new BasicNameValuePair(R.BENCHMARKING_FRAMEWORK_OPTION, R.DEFAULT_BENCHMARKING_FRAMEWORK.toString()));
+
 			if (maxMemory!=null) {
 				params.add(new BasicNameValuePair("maxMem",String.valueOf(maxMemory)));
 			}

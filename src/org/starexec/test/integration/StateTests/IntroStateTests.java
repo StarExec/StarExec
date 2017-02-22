@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.HashSet;
 
 import org.junit.Assert;
+import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
+import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -31,7 +33,7 @@ public class IntroStateTests extends TestSequence {
 	private void UniqueSubspaceNamesTest() {
 		List<Space> spaces=Spaces.GetAllSpaces();
 		for (Space s : spaces) {
-			List<Space> subspaces=Spaces.getSubSpaces(s.getId(), admin.getId());
+			List<Space> subspaces=Spaces.getSubSpaces(s.getId());
 			HashSet<String> names=new HashSet<String>();
 			for (Space sub : subspaces) {
 				if (names.contains(sub.getName())) {
@@ -46,7 +48,7 @@ public class IntroStateTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		admin=Users.getAdmins().get(0);
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 		
 	}
 

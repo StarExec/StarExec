@@ -3,93 +3,29 @@ package org.starexec.data.security;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
-import org.starexec.data.database.Websites;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.SolverBuildStatus.SolverBuildStatusCode;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.SpaceXMLUploadStatus;
+import org.starexec.data.to.User;
 import org.starexec.data.to.Website;
 import org.starexec.data.to.Website.WebsiteType;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.Validator;
 
 public class SpaceSecurity {
-	private static final Logger log = Logger.getLogger(SpaceSecurity.class);			
-
-	/**
-	 * Checks to see whether the given user is allowed to associate a website with a space
-	 * @param spaceId The ID of the space that would be given a website
-	 * @param userId The ID of the user making the request
-	 * @param name The name to be given the new website
-	 * @param URL The URL of the new website
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 */
-	public static ValidatorStatusCode canAssociateWebsite(int spaceId,int userId, String name, String URL){
-		Permission p=Permissions.get(userId, spaceId);
-		if (p==null || !p.isLeader()) {
-			return new ValidatorStatusCode(false, "You do not have permission to associate websites with this space");
-		}
-		
-		if (!Validator.isValidWebsite(URL)) {
-			return new ValidatorStatusCode(false, "The given URL is not in the proper format. Please refer to the help pages to see the correct format");
-		}
-		
-		if (!Validator.isValidWebsiteName(name)) {
-			return new ValidatorStatusCode(false, "The given name is not in the proper format. Please refer to the help pages to see the correct format");
-		}
-		return new ValidatorStatusCode(true);
-	}
-	
-	/**
-	 * Checks to see whether the given user can view websites associated with the given space
-	 * @param spaceId The ID of the space being checked
-	 * @param userId The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed or a status code from ValidatorStatusCodes if not
-	 */
-	public static ValidatorStatusCode canViewWebsites(int spaceId, int userId) {
-		
-		if(!Permissions.canUserSeeSpace(spaceId, userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to see this space");
-		}
-		
-		return new ValidatorStatusCode(true);
-	}
-	
-	/**
-	 * Checks to see whether the given user is allowed to delete a website associated with a space
-	 * @param spaceId The ID of the space that contains the site to be deleted
-	 * @param websiteId The ID of the website to be deleted
-	 * @param userId The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 */
-	public static ValidatorStatusCode canDeleteWebsite(int spaceId,int websiteId,int userId){
-		Permission p=Permissions.get(userId, spaceId);
-		if (p==null || !p.isLeader()) {
-			return new ValidatorStatusCode(false, "You do not have permission to delete websites associated with this space");
-		}
-		List<Website> websites=Websites.getAllForJavascript(spaceId,WebsiteType.SPACE);
-		boolean websiteInSpace=false;
-		for (Website w : websites) {
-			if (w.getId()==websiteId) {
-				websiteInSpace=true;
-				break;
-			}
-		}
-		
-		if (!websiteInSpace) {
-			return new ValidatorStatusCode(false, "The given website is not associated with the given space");
-		}
-		
-		return new ValidatorStatusCode(true);
-	}
+	private static final StarLogger log = StarLogger.getLogger(SpaceSecurity.class);
 	
 	/**
 	 * Checks to see whether a user can update the properties of a space (such as default permissions, sticky leaders,
@@ -201,7 +137,6 @@ public class SpaceSecurity {
 	}
 	/**
 	 * Checks to see if the given user can remove all of the given subspaces
-	 * @param spaceId
 	 * @param userId
 	 * @param subspaceIds
 	 * @return
@@ -250,7 +185,13 @@ public class SpaceSecurity {
 	//TODO: Leaders can demote other leaders except at the community level, right?
 	public static ValidatorStatusCode canDemoteLeader(int spaceId, int userIdBeingDemoted, int userIdDoingDemoting) {
 		// Permissions check; ensures user is the leader of the community or is an admin
-		if(!Users.hasAdminWritePrivileges(userIdDoingDemoting)) {
+		if (Users.get(userIdBeingDemoted)==null) {
+			return new ValidatorStatusCode(false, "The given user could not be found");
+		}
+		if (Spaces.get(spaceId)==null) {
+			return new ValidatorStatusCode(false, "The given space could not be found");
+		}
+		if(!GeneralSecurity.hasAdminWritePrivileges(userIdDoingDemoting)) {
 			return new ValidatorStatusCode(false, "You do not have permission to demote leaders in this space");
 		}
 		return new ValidatorStatusCode(true);
@@ -337,7 +278,7 @@ public class SpaceSecurity {
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	private static ValidatorStatusCode canCopyPrimFromSpace(int spaceId, int userIdDoingCopying) {
-		if (Users.isAdmin(userIdDoingCopying)) {
+		if (GeneralSecurity.hasAdminWritePrivileges(userIdDoingCopying)) {
 			return new ValidatorStatusCode(true);
 		}
 		// And the space the user is being copied from must not be locked
@@ -378,7 +319,6 @@ public class SpaceSecurity {
 	}
 	/**
 	 * Checks to see whether a user can copy a given space from the given space
-	 * @param fromSpaceId The space ID the user is being copied FROM
 	 * @param userId The ID of the user making the request
 	 * @param spaceIdBeingCopied The ID of the space that would be copied
 	 * @return new ValidatorStatusCode(true) if allowed, or a status code from ValidatorStatusCodes if not
@@ -448,23 +388,23 @@ public class SpaceSecurity {
 	}
 	/**
 	 * Checks whether the user has enough disk quota to fit all of a list of solvers
-	 * @param solverIds The solver IDs that would be added
+	 * @param solvers The solvers that would be added
 	 * @param userId The ID of the user in question
 	 * @return new ValidatorStatusCode(true) if allowed, or a status code from ValidatorStatusCodes if not
 	 */
-	private static ValidatorStatusCode doesUserHaveDiskQuotaForSolvers(List<Integer> solverIds,int userId) {
-		List<Solver> oldSolvers=Solvers.get(solverIds);
-		for (Solver s : oldSolvers) {
+	private static ValidatorStatusCode doesUserHaveDiskQuotaForSolvers(List<Solver> solvers,int userId) {
+		for (Solver s : solvers) {
 			if (s==null) {
 				return new ValidatorStatusCode(false, "At least one of the given solvers does not exist or has been deleted");
 			}
 		}
 		//first, validate that the user has enough disk quota to copy all the selected solvers
 		//we don't copy any unless they have room for all of them
-		long userDiskUsage=Users.getDiskUsage(userId);
-		long userDiskQuota=Users.get(userId).getDiskQuota();
+		User u = Users.get(userId);
+		long userDiskUsage=u.getDiskUsage();
+		long userDiskQuota=u.getDiskQuota();
 		userDiskQuota-=userDiskUsage;
-		for (Solver s : oldSolvers) {
+		for (Solver s : solvers) {
 			userDiskQuota-=s.getDiskSize();
 		}
 		if (userDiskQuota<0) {
@@ -484,8 +424,9 @@ public class SpaceSecurity {
 		List<Benchmark> oldBenches=Benchmarks.get(benchIDs);
 		//first, validate that the user has enough disk quota to copy all the selected solvers
 		//we don't copy any unless they have room for all of them
-		long userDiskUsage=Users.getDiskUsage(userId);
-		long userDiskQuota=Users.get(userId).getDiskQuota();
+		User u = Users.get(userId);
+		long userDiskUsage=u.getDiskUsage();
+		long userDiskQuota=u.getDiskQuota();
 		userDiskQuota-=userDiskUsage;
 		for (Benchmark b : oldBenches) {
 			userDiskQuota-=b.getDiskSize();
@@ -498,8 +439,7 @@ public class SpaceSecurity {
 	
 	/**
 	 * Checks to see whether a user can copy one set of subspaces from a space to another space
-	 * @param fromSpaceId The ID of the spaces that subspaces are being copied FROM
-	 * @param toSpaceId The ID of the space that new subspaces will be copied TO
+\s	 * @param toSpaceId The ID of the space that new subspaces will be copied TO
 	 * @param userId The ID of the user making the request
 	 * @param subspaceIds The IDs of the subspaces that would be copied
  	 * @return new ValidatorStatusCode(true) if allowed, or a status code from ValidatorStatusCodes if not
@@ -541,7 +481,7 @@ public class SpaceSecurity {
 	public static ValidatorStatusCode canLinkJobsBetweenSpaces(Integer fromSpaceId, int toSpaceId, int userId, List<Integer> jobIdsBeingCopied) {
 		
 		ValidatorStatusCode status=null;
-		boolean isAdmin=Users.isAdmin(userId);
+		boolean isAdmin=GeneralSecurity.hasAdminWritePrivileges(userId);
 		if (fromSpaceId!=null) {
 			for(Integer jid : jobIdsBeingCopied) {
 				status=	canCopyJobFromSpace(fromSpaceId,userId,jid);
@@ -553,6 +493,9 @@ public class SpaceSecurity {
 		} else {
 			for (Integer jid : jobIdsBeingCopied) {
 				Job j=Jobs.get(jid);
+				if (j==null) {
+					return new ValidatorStatusCode(false, "The given job could not be found");
+				}
 				if (j.getUserId()!=userId && !isAdmin) {
 					return new ValidatorStatusCode(false, "You are not the owner of all the jobs you are trying to move");
 				}
@@ -579,13 +522,7 @@ public class SpaceSecurity {
 	 */
 	
 	public static ValidatorStatusCode canCopyOrLinkBenchmarksBetweenSpaces(Integer fromSpaceId, int toSpaceId, int userId, List<Integer> benchmarkIdsBeingCopied,boolean copy) {
-		//if we are copying, but not linking, disk quota must be checked
-		if (copy) {
-			if (!doesUserHaveDiskQuotaForBenchmarks(benchmarkIdsBeingCopied,userId)) {
-				return new ValidatorStatusCode(false, "You do not have enough disk quota space to copy the benchmark(s)");
-			}
-		}
-		boolean isAdmin=Users.isAdmin(userId);
+		boolean isAdmin=GeneralSecurity.hasAdminWritePrivileges(userId);
 		ValidatorStatusCode status=null;
 		if (fromSpaceId!=null) {
 			for(Integer bid : benchmarkIdsBeingCopied) {
@@ -598,8 +535,8 @@ public class SpaceSecurity {
 		} else {
 			for (Integer bid : benchmarkIdsBeingCopied) {
 				Benchmark b=Benchmarks.get(bid);
-				if (b.getUserId()!=userId && !isAdmin) {
-					return new ValidatorStatusCode(false, "You are not the owner of all the benchmarks you are trying to move");
+				if (b==null || (b.getUserId()!=userId && !isAdmin)) {
+					return new ValidatorStatusCode(false, "You are not the owner of all the benchmarks you are trying to move, or some do not exist");
 				}
 			}
 		}
@@ -608,6 +545,13 @@ public class SpaceSecurity {
 		status=canCopyBenchmarkToSpace(toSpaceId,userId);
 		if (!status.isSuccess()) {
 			return status;
+		}
+		
+		//if we are copying, but not linking, disk quota must be checked
+		if (copy) {
+			if (!doesUserHaveDiskQuotaForBenchmarks(benchmarkIdsBeingCopied,userId)) {
+				return new ValidatorStatusCode(false, "You do not have enough disk quota space to copy the benchmark(s)");
+			}
 		}
 			
 		return new ValidatorStatusCode(true);
@@ -626,7 +570,19 @@ public class SpaceSecurity {
 	public static ValidatorStatusCode canCopyOrLinkSolverBetweenSpaces(Integer fromSpaceId, int toSpaceId, int userId, List<Integer> solverIdsBeingCopied, boolean hierarchy,boolean copy) {
 		//if we are copying, but not linking, make sure the user has enough disk space
 		if (copy) {
-			if (!doesUserHaveDiskQuotaForSolvers(solverIdsBeingCopied,userId).isSuccess()) {
+			List<Solver> solvers=Solvers.get(solverIdsBeingCopied);
+			int index=0;
+			for (Solver s : solvers) {
+				if (s==null) {
+					return new ValidatorStatusCode(false, "The following solver could not be found. ID = "+solverIdsBeingCopied.get(index));
+				}
+				if (s.buildStatus().getCode()==SolverBuildStatusCode.UNBUILT) {
+					return new ValidatorStatusCode(false, "Solvers cannot be copied until they are finished building");
+				}
+				index++;
+			}
+			
+			if (!doesUserHaveDiskQuotaForSolvers(solvers,userId).isSuccess()) {
 				return new ValidatorStatusCode(false, "You do not have enough disk quota space to copy the solver(s)");
 			}
 		}
@@ -675,7 +631,6 @@ public class SpaceSecurity {
 	}
 	/**
 	 * Checks to see whether a list of users can be copied from one space to another
-	 * @param fromSpaceId The ID of the space the users are already in
 	 * @param toSpaceId The ID of the space the users would be placed in
 	 * @param userIdDoingCopying The ID of the user making the request
 	 * @param userIdsBeingCopied The IDs of the users that would be copied
@@ -720,7 +675,7 @@ public class SpaceSecurity {
 			return new ValidatorStatusCode(false, "You do not have permission to add a user to this space");
 		}
 		
-		if (!Users.isMemberOfCommunity(userIdToAdd, Spaces.getCommunityOfSpace(spaceId)) && !Users.isAdmin(userIdMakingRequest)) {
+		if (!Users.isMemberOfCommunity(userIdToAdd, Spaces.getCommunityOfSpace(spaceId)) && !GeneralSecurity.hasAdminWritePrivileges(userIdMakingRequest)) {
 			return new ValidatorStatusCode(false, "The user is not a member of the community you are trying to move them to. They must request to join the community first");
 		}
 
@@ -805,7 +760,7 @@ public class SpaceSecurity {
 				return new ValidatorStatusCode(false, "You do not have permission to remove a user from this space");
 			}
 			
-			if (!Users.isAdmin(userIdDoingRemoval)) {
+			if (!GeneralSecurity.hasAdminWritePrivileges(userIdDoingRemoval)) {
 				// Validate the list of users to remove by:
 				// 1 - Ensuring the leader who initiated the removal of users from a space isn't themselves in the list of users to remove
 				// 2 - Ensuring other leaders of the space aren't in the list of users to remove
@@ -846,7 +801,7 @@ public class SpaceSecurity {
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	public static ValidatorStatusCode canUserViewCommunityRequests(int userId) {
-		if (!Users.hasAdminReadPrivileges(userId)){
+		if (!GeneralSecurity.hasAdminReadPrivileges(userId)){
 			return new ValidatorStatusCode(false, "You do not have permission to perform this operation");
 		}
 		return new ValidatorStatusCode(true);
@@ -855,17 +810,18 @@ public class SpaceSecurity {
 	/**
 	 * Checks whether the given user is allowed to see the current new community requests
 	 * @param userId The ID of the user in question
+	 * @param communityId The ID of the community to get requests for
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	public static ValidatorStatusCode canUserViewCommunityRequestsForCommunity(int userId, int communityId) {
 		Permission perm=Permissions.get(userId, communityId);
 		//must be a leader to make a space public
-		if (Users.hasAdminReadPrivileges(userId)) { 
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) { 
 			return new ValidatorStatusCode(true);
 		} else if (!(perm == null) && perm.isLeader()) {
 			return new ValidatorStatusCode(true);
 		} else {
-			return new ValidatorStatusCode(false, "You do not have permission to perform this operation.");
+			return new ValidatorStatusCode(false, "Only community leaders may view requests to join communities");
 		}
 	}
 	
@@ -904,14 +860,11 @@ public class SpaceSecurity {
 		
 		for (Space s : subspaces) {
 		    spaceIds.add(s.getId());
-	
 		}
-			
-		ValidatorStatusCode status;
-	    
+		    
 		List<Integer> permittedSpaceIds = new ArrayList<Integer>();
 		for (Integer sid : spaceIds) {
-		    status=canUpdatePermissions(sid,userIdBeingUpdated,requestUserId);
+		    ValidatorStatusCode status=canUpdatePermissions(sid,userIdBeingUpdated,requestUserId);
 		    if (status.isSuccess()) {
 		    	permittedSpaceIds.add(sid);
 		    }
@@ -937,7 +890,10 @@ public class SpaceSecurity {
 		
 		// Ensure the user to edit the permissions of isn't themselves a leader
 		perm = Permissions.get(userIdBeingUpdated, spaceId);
-		if(perm.isLeader() && !Users.isAdmin(requestUserId) && Communities.isCommunity(spaceId)){
+		if (perm==null) {
+			return new ValidatorStatusCode(false, "The given user is not a member of the given space");
+		}
+		if(perm.isLeader() && !GeneralSecurity.hasAdminWritePrivileges(requestUserId) && Communities.isCommunity(spaceId)){
 			return new ValidatorStatusCode(false, "You do not have permission to update permissions for a leader here");
 		}	
 		
@@ -948,7 +904,10 @@ public class SpaceSecurity {
     
     
     public static ValidatorStatusCode canUserLinkAllOrphaned(int userId, int userIdOfCaller,  int spaceId) {
-    	if (!Users.isAdmin(userIdOfCaller) && userId!=userIdOfCaller) {
+    	if (Users.get(userId)==null) {
+    		return new ValidatorStatusCode(false, "The given user could not be found");
+    	}
+    	if (!GeneralSecurity.hasAdminWritePrivileges(userIdOfCaller) && userId!=userIdOfCaller) {
     		return new ValidatorStatusCode(false, "You can only perform this operation on your own primitives");
     	}
     	Space s=Spaces.getDetails(spaceId, userIdOfCaller);
@@ -1017,6 +976,14 @@ public class SpaceSecurity {
 		
 		
 		return new ValidatorStatusCode(true);
+	}
+	
+	public static boolean canUserSeeSpaceXMLStatus(int statusId, int userId) {		
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
+			return true;
+		}
+		SpaceXMLUploadStatus status=Uploads.getSpaceXMLStatus(statusId);
+		return status.getUserId()==userId;
 	}
 
 }

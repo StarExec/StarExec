@@ -7,17 +7,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.starexec.logger.StarLevel;
+import org.starexec.logger.StarLogger;
 import org.starexec.test.TestUtil;
+import org.starexec.test.resources.ResourceLoader;
 
 public abstract class TestSequence {
-	protected static final Logger log = Logger.getLogger(TestSequence.class);	
+	protected static final StarLogger log = StarLogger.getLogger(TestSequence.class);
 	protected String sequenceName="No Name";
 	protected TestStatus status=new TestStatus();
 	protected String message="No Message";
 	protected int testsPassed=0;
 	protected int testsFailed=0;
 	protected Throwable error = null;
+	protected ResourceLoader loader = null; 
 	//maps the names of tests to some data about them. Every test gets an entry when the TestSequence object is created
 	HashMap<String,TestResult> testResults=new HashMap<String,TestResult>();
 	
@@ -63,6 +66,7 @@ public abstract class TestSequence {
 		try {
 			testsPassed=0;
 			testsFailed=0;
+			loader = new ResourceLoader();
 			clearResults();
 			status.setCode(TestStatus.TestStatusCode.STATUS_RUNNING.getVal());
 			turnOffExternalLogging(); 
@@ -99,45 +103,45 @@ public abstract class TestSequence {
 	 * tend to be extremely verbose and drown out our logging
 	 */
 	private void turnOffExternalLogging() {
-		Logger.getLogger("java_cup.runtime").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("trax").setLevel(org.apache.log4j.Level.OFF);
+		StarLogger.getLogger("java_cup.runtime").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("trax").setLevel(StarLevel.OFF);
 
-		Logger.getLogger("selenium.webdriver").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.openqa").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.eclipse").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.jboss").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.apache").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.hamcrest").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.cyberneko").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.testng").setLevel(org.apache.log4j.Level.OFF);
+		StarLogger.getLogger("selenium.webdriver").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.openqa").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.eclipse").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.jboss").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.apache").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.hamcrest").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.cyberneko").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.testng").setLevel(StarLevel.OFF);
 
-		Logger.getLogger("org.w3c").setLevel(org.apache.log4j.Level.OFF);
+		StarLogger.getLogger("org.w3c").setLevel(StarLevel.OFF);
 
-		Logger.getLogger("bsh").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("net.sf").setLevel(org.apache.log4j.Level.OFF);
+		StarLogger.getLogger("bsh").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("net.sf").setLevel(StarLevel.OFF);
 
-		Logger.getLogger("org.apache.http.wire").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.apache.http.impl.conn.Wire").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.apache.http.impl.conn.LoggingManagedHttpClientConnection").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.apache.http.impl.execchain.MainClientExec").setLevel(org.apache.log4j.Level.OFF);
+		StarLogger.getLogger("org.apache.http.wire").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.apache.http.impl.conn.Wire").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.apache.http.impl.conn.LoggingManagedHttpClientConnection").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.apache.http.impl.execchain.MainClientExec").setLevel(StarLevel.OFF);
 
-		Logger.getLogger("org.apache.http").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("selenium.webdriver.remote.remote_connection").setLevel(org.apache.log4j.Level.OFF);
+		StarLogger.getLogger("org.apache.http").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("selenium.webdriver.remote.remote_connection").setLevel(StarLevel.OFF);
 
-		Logger.getLogger("com.google").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("com.opera").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("com.thoughtworks").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("com.steadystate").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("com.beust").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("com.sun").setLevel(org.apache.log4j.Level.OFF);
+		StarLogger.getLogger("com.google").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("com.opera").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("com.thoughtworks").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("com.steadystate").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("com.beust").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("com.sun").setLevel(StarLevel.OFF);
 
-		Logger.getLogger("com.keypoint").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("org.jfree").setLevel(org.apache.log4j.Level.OFF);
+		StarLogger.getLogger("com.keypoint").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("org.jfree").setLevel(StarLevel.OFF);
 
-		Logger.getLogger("netscape.javascript").setLevel(org.apache.log4j.Level.OFF);
-		Logger.getLogger("net.sourceforge").setLevel(org.apache.log4j.Level.OFF);
+		StarLogger.getLogger("netscape.javascript").setLevel(StarLevel.OFF);
+		StarLogger.getLogger("net.sourceforge").setLevel(StarLevel.OFF);
 		
-		Logger.getLogger("com.gargoylesoftware").setLevel(org.apache.log4j.Level.OFF);
+		StarLogger.getLogger("com.gargoylesoftware").setLevel(StarLevel.OFF);
 	}
 	
 	/**
@@ -157,6 +161,7 @@ public abstract class TestSequence {
 		
 		try {
 			List<Method> tests=getTests();
+			List<Method> afters = getAfters();
 			for (Method m : tests) {
 				TestResult t=testResults.get(m.getName());
 				t.clearMessages();
@@ -177,6 +182,17 @@ public abstract class TestSequence {
 					t.setError(e);
 					t.addMessage(e.getMessage());
 					t.getStatus().setCode(TestStatus.TestStatusCode.STATUS_FAILED.getVal());
+				}
+				// after every test, we run the methods marked with @StarexecAfter
+				// these functions are passed the test method so they can easily log the time they are running, if necessary
+				for (Method after : afters) {
+					try {
+						after.setAccessible(true);
+						after.invoke(this, m);
+					} catch (Throwable e) {
+						log.error("error in after method!");
+						log.error(e.getMessage(), e);
+					}
 				}
 				
 			}
@@ -272,11 +288,24 @@ public abstract class TestSequence {
 	 */
 	
 	protected List<Method> getTests() {
+		return getMethodsWithAnnotation(StarexecTest.class);
+	}
+	
+	/**
+	 * Retrieves a list of all methods that have the @StarexecAfter annotation
+	 * @return
+	 */
+	protected List<Method> getAfters() {
+		return getMethodsWithAnnotation(StarexecAfter.class);
+	}
+	
+	
+	private List<Method> getMethodsWithAnnotation(Class annotationClass) {
 		Method[] methods=this.getClass().getDeclaredMethods();
 		
 		List<Method> tests=new ArrayList<Method>();
 		for (Method m : methods) {
-			if (isTest(m)) {
+			if (hasAnnotation(m, annotationClass)) {
 				tests.add(m);
 			}
 		}
@@ -284,29 +313,19 @@ public abstract class TestSequence {
 		return tests;
 	}
 	/**
-	 * Determines whether the given method is a test, based on whether
-	 * it has the @StarexecTest annotation
+	 * Determines whether the given method is an after test method, based on whether
+	 * it has the @StarexecAfter annotation
 	 * @param m The method to check
 	 * @return
 	 */
-	protected static boolean isTest(Method m) {
+	protected static boolean hasAnnotation(Method m, Class annotationClass) {
 		Annotation[] anns=m.getAnnotations();
 		for (Annotation a : anns) {
-			if (isTestAnnotation(a)) {
+			if (a.annotationType().equals(annotationClass)) {
 				return true;
 			}
 		}
 		return false;
-	}
-	
-	/**
-	 * Determines whether the given annotation is the @StarexecTest annotation
-	 * @param a The annotation to check
-	 * @return
-	 */
-	
-	protected static boolean isTestAnnotation(Annotation a) {
-		return a.annotationType().equals(StarexecTest.class);
 	}
 	
 	/**

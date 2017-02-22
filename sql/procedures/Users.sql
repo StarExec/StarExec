@@ -19,10 +19,10 @@ CREATE PROCEDURE AddUser(IN _firstName VARCHAR(32), IN _lastName VARCHAR(32), IN
 	END //
 	
 DROP PROCEDURE IF EXISTS AddUserAuthorized;
-CREATE PROCEDURE AddUserAuthorized(IN _firstName VARCHAR(32), IN _lastName VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128), IN _diskQuota BIGINT(20),IN _role VARCHAR(24), OUT _id INT)
+CREATE PROCEDURE AddUserAuthorized(IN _firstName VARCHAR(32), IN _lastName VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128), IN _diskQuota BIGINT(20),IN _role VARCHAR(24), IN _pairQuota INT, OUT _id INT)
 	BEGIN
-		INSERT INTO users(email, first_name, last_name, institution, created, password, disk_quota)
-		VALUES (_email, _firstName, _lastName, _institute, SYSDATE(), _password, _diskQuota);
+		INSERT INTO users(email, first_name, last_name, institution, created, password, disk_quota, job_pair_quota)
+		VALUES (_email, _firstName, _lastName, _institute, SYSDATE(), _password, _diskQuota, _pairQuota);
 		SELECT LAST_INSERT_ID() INTO _id;
 		
 		INSERT INTO user_roles(email, role)
@@ -90,110 +90,7 @@ CREATE PROCEDURE AddUserToSpace(IN _userId INT, IN _spaceId INT)
 	END //
 			
 	
--- Gets the fewest necessary Users in order to service a client's
--- request for the next page of Users in their DataTable object.  
--- This services the DataTable object by supporting filtering by a query, 
--- ordering results by a column, and sorting results in ASC or DESC order.  
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetNextPageOfUsersAdmin;
-CREATE PROCEDURE GetNextPageOfUsersAdmin(IN _startingRecord INT, IN _recordsPerPage INT, IN _colSortedOn INT, IN _sortASC BOOLEAN, IN _query TEXT)
-	BEGIN
-		-- If _query is empty, get next page of Users without filtering for _query
-		IF (_query = '' OR _query = NULL) THEN
-			IF _sortASC = TRUE THEN
-				SELECT 	id,
-						institution,
-						email,
-						first_name,
-						last_name,
-						CONCAT(first_name, ' ', last_name) AS full_name,
-						role,
-						subscribed_to_reports
-						
-				FROM	users NATURAL JOIN user_roles
 
-				-- Order results depending on what column is being sorted on
-				ORDER BY 
-				(CASE _colSortedOn
-					WHEN 0 THEN full_name
-					WHEN 1 THEN institution
-					WHEN 2 THEN email
-				END) ASC
-				
-				-- Shrink the results to only those required for the next page of Users
-				LIMIT _startingRecord, _recordsPerPage;
-			ELSE
-				SELECT 	id,
-						institution,
-						email,
-						first_name,
-						last_name,
-						CONCAT(first_name, ' ', last_name) AS full_name,
-						role,
-						subscribed_to_reports
-				FROM	users NATURAL JOIN user_roles
-				ORDER BY 
-				(CASE _colSortedOn
-					WHEN 0 THEN full_name
-					WHEN 1 THEN institution
-					WHEN 2 THEN email
-				END) DESC
-				LIMIT _startingRecord, _recordsPerPage;
-			END IF;
-		-- Otherwise, ensure the target Users contain _query
-		ELSE
-			IF _sortASC = TRUE THEN
-				SELECT 	id,
-						institution,
-						email,
-						first_name,
-						last_name,
-						CONCAT(first_name, ' ', last_name) AS full_name,
-						role,
-						subscribed_to_reports
-				
-				FROM	users NATURAL JOIN user_roles WHERE 
-							
-				-- Exclude Users whose name and description don't contain the query string
-				(CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
-				OR		institution							LIKE 	CONCAT('%', _query, '%')
-				OR		email								LIKE 	CONCAT('%', _query, '%'))
-								
-				-- Order results depending on what column is being sorted on
-				ORDER BY 
-				(CASE _colSortedOn
-					WHEN 0 THEN full_name
-					WHEN 1 THEN institution
-					WHEN 2 THEN email
-				END) ASC
-					 
-				-- Shrink the results to only those required for the next page of Users
-				LIMIT _startingRecord, _recordsPerPage;
-			ELSE
-				SELECT 	id,
-						institution,
-						email,
-						first_name,
-						last_name,
-						CONCAT(first_name, ' ', last_name) AS full_name,
-						role,
-						subscribed_to_reports
-				FROM	users NATURAL JOIN user_roles WHERE
-				(CONCAT(first_name, ' ', last_name)	LIKE	CONCAT('%', _query, '%')
-				OR		institution							LIKE 	CONCAT('%', _query, '%')
-				OR		email								LIKE 	CONCAT('%', _query, '%'))
-				ORDER BY 
-				(CASE _colSortedOn
-					WHEN 0 THEN full_name
-					WHEN 1 THEN institution
-					WHEN 2 THEN email
-				END) DESC
-				LIMIT _startingRecord, _recordsPerPage;
-			END IF;
-		END IF;
-	END //
-	
-	
 -- Returns the (hashed) password of the user with the given user id
 -- Author: Skylar Stark
 DROP PROCEDURE IF EXISTS GetPasswordById;
@@ -211,7 +108,7 @@ DROP PROCEDURE IF EXISTS GetUnregisteredUserById;
 CREATE PROCEDURE GetUnregisteredUserById(IN _id INT)
 	BEGIN
 		SELECT * 
-		FROM users NATURAL JOIN user_roles
+		FROM users JOIN user_roles ON users.email = user_roles.email
 		WHERE users.id = _id 
 		AND user_roles.role = 'unauthorized';
 	END //
@@ -224,16 +121,7 @@ CREATE PROCEDURE GetUserCount()
 		SELECT COUNT(*) as userCount
 		FROM users;
 	END //
-	
--- Returns the number of users in a given space
--- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS GetUserCountInSpace;
-CREATE PROCEDURE GetUserCountInSpace(IN _spaceId INT)
-	BEGIN
-		SELECT 	COUNT(*) AS userCount
-		FROM 	user_assoc
-		WHERE 	space_id=_spaceId;
-	END //
+
 -- Returns the number of users in a given space that match a given query
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetUserCountInSpaceWithQuery;
@@ -244,7 +132,7 @@ CREATE PROCEDURE GetUserCountInSpaceWithQuery(IN _spaceId INT, IN _query TEXT)
 			JOIN users ON users.id=user_id
 		WHERE 	space_id=_spaceId AND
 				(CONCAT(users.first_name, ' ', users.last_name)	LIKE	CONCAT('%', _query, '%')
-				OR		users.institution							LIKE 	CONCAT('%', _query, '%')
+				OR		users.institution						LIKE 	CONCAT('%', _query, '%')
 				OR		users.email								LIKE 	CONCAT('%', _query, '%')); 
 	END //
 	
@@ -370,9 +258,45 @@ CREATE PROCEDURE UpdateUserDiskQuota(IN _userId INT, IN _newQuota BIGINT)
 		WHERE id = _userId;
 	END //
 	
+-- Sets the user pair quota limit for the given user
+DROP PROCEDURE IF EXISTS UpdateUserPairQuota;
+CREATE PROCEDURE UpdateUserPairQuota(IN _userId INT, IN _newQuota INT)
+	BEGIN
+		UPDATE users
+		SET job_pair_quota = _newQuota
+		WHERE id = _userId;
+	END //
+	
+-- Gets the total disk usage for a given user.
+DROP PROCEDURE IF EXISTS GetUserDiskUsage;
+CREATE PROCEDURE GetUserDiskUsage(IN _userID INT)
+	BEGIN
+		SELECT disk_size FROM users WHERE id=_userID;
+	END //
+
+-- Sums up the disk_size columns of solvers, benchmarks, and jobs and places that value in the
+-- the user disk_size column. Returns the difference between the old and new values in _sizeDelta
+DROP PROCEDURE IF EXISTS UpdateUserDiskUsage;
+CREATE PROCEDURE UpdateUserDiskUsage(IN _userID INT, OUT _sizeDelta BIGINT)
+	BEGIN
+		DECLARE _sumDiskSize BIGINT;
+		DECLARE _userDiskSize BIGINT;
+		SELECT COALESCE(SUM(disk_size),0) AS disk_usage FROM
+		(SELECT disk_size FROM solvers WHERE user_id=_userID AND deleted=false
+		UNION ALL 
+		SELECT disk_size FROM benchmarks WHERE user_id=_userID AND deleted=false
+		UNION ALL
+		SELECT disk_size FROM jobs WHERE user_id=_userID AND deleted=false) AS tmp INTO _sumDiskSize;
+		
+		SELECT disk_size FROM users WHERE id=_userID INTO _userDiskSize;
+		
+		SELECT (_userDiskSize-_sumDiskSize) INTO _sizeDelta;
+		
+		UPDATE users SET disk_size=_sumDiskSize WHERE id=_userID;
+	END //
+
 -- Returns the number of bytes a given user's benchmarks is consuming on disk
 -- Author: Eric Burns	
-	
 DROP PROCEDURE IF EXISTS GetUserBenchmarkDiskUsage;
 CREATE PROCEDURE GetUserBenchmarkDiskUsage(IN _userID INT)
 	BEGIN
@@ -405,18 +329,6 @@ CREATE PROCEDURE IsMemberOfSpace(IN _userId INT, IN _spaceId INT)
 		WHERE user_id  = _userId
 		AND   space_id = _spaceId;
 	END // 
-	
--- Gets the user that owns the given job
-DROP PROCEDURE IF EXISTS GetUserByJob;
-CREATE PROCEDURE GetUserByJob(IN _jobId INT)
-	BEGIN
-		SELECT *
-		FROM users
-			INNER JOIN jobs AS owner ON users.id = owner.user_id
-			INNER JOIN user_roles AS roles ON users.email = roles.email
-
-		WHERE owner.id = _jobId;
-	END //
 
 -- Gets every user subscribed to the weekly reports
 -- Author: Albert Giegerich

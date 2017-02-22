@@ -8,10 +8,11 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 -- Adds a solver and returns the solver ID
 -- Author: Skylar Stark
 DROP PROCEDURE IF EXISTS AddSolver;
-CREATE PROCEDURE AddSolver(IN _userId INT, IN _name VARCHAR(128), IN _downloadable BOOLEAN, IN _path TEXT, IN _description TEXT, OUT _id INT, IN _diskSize BIGINT, IN _type INT)
+CREATE PROCEDURE AddSolver(IN _userId INT, IN _name VARCHAR(128), IN _downloadable BOOLEAN, IN _path TEXT, IN _description TEXT, OUT _id INT, IN _diskSize BIGINT, IN _type INT, IN _build_status INT)
 	BEGIN
-		INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable, disk_size, executable_type)
-		VALUES (_userId, _name, SYSDATE(), _path, _description, _downloadable, _diskSize, _type);
+		UPDATE users SET disk_size=disk_size+_diskSize WHERE id = _userId;
+		INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable, disk_size, executable_type, build_status)
+		VALUES (_userId, _name, SYSDATE(), _path, _description, _downloadable, _diskSize, _type, _build_status);
 		
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
@@ -26,6 +27,93 @@ CREATE PROCEDURE GetPublicSolvers()
 		JOIN spaces ON spaces.id=solver_assoc.space_id
 		where public_access=1 AND deleted=false AND recycled=false
 		GROUP BY(solvers.id);
+	END //
+
+-- Gets the number of conflicting benchmarks a given config was run against for a stage.
+-- A conflicting benchmark is a benchmark for which two solvers gave different results.
+DROP PROCEDURE IF EXISTS GetConflictsForConfigInJob;
+CREATE PROCEDURE GetConflictsForConfigInJob(IN _jobId INT, IN _configId INT, IN _stageNumber INT)
+  BEGIN
+	SELECT COUNT(DISTINCT jp_o.bench_id) AS conflicting_benchmarks
+	FROM jobs j_o JOIN job_pairs jp_o ON j_o.id=jp_o.job_id
+		JOIN jobpair_stage_data jpsd_o ON jpsd_o.jobpair_id=jp_o.id
+		JOIN job_attributes ja_o ON ja_o.pair_id=jp_o.id
+		JOIN 
+			(SELECT jp.bench_id
+			FROM jobs j join job_pairs jp ON j.id=jp.job_id
+				JOIN jobpair_stage_data jpsd ON jpsd.jobpair_id=jp.id
+				JOIN job_attributes ja ON ja.pair_id=jp.id
+			WHERE j.id=_jobId
+				AND ja.stage_number=_stageNumber
+				AND ja.attr_key='starexec-result'
+				AND ja.attr_value!='starexec-unknown'
+			GROUP BY jp.bench_id
+			HAVING COUNT(DISTINCT ja.attr_value) > 1) AS conflicting
+		ON jp_o.bench_id=conflicting.bench_id
+	WHERE jpsd_o.config_id=_configId
+		AND ja_o.attr_key='starexec-result'
+		AND ja_o.attr_value!='starexec-unknown'
+	;
+  END //
+
+-- Gets the data for conflicting benchmarks in the job.
+-- A conflicting benchmark is a benchmark for which two solvers gave different results.
+DROP PROCEDURE IF EXISTS GetConflictingBenchmarksForConfigInJob;
+CREATE PROCEDURE GetConflictingBenchmarksForConfigInJob(IN _jobId INT, IN _configId INT, IN _stageNumber INT)
+	BEGIN
+		SELECT b_o.*
+		FROM jobs j_o JOIN job_pairs jp_o ON j_o.id=jp_o.job_id
+			JOIN jobpair_stage_data jpsd_o ON jpsd_o.jobpair_id=jp_o.id
+			JOIN job_attributes ja_o ON ja_o.pair_id=jp_o.id
+			JOIN benchmarks b_o ON b_o.id=jp_o.bench_id
+			JOIN
+			(SELECT jp.bench_id
+			 FROM jobs j join job_pairs jp ON j.id=jp.job_id
+				 JOIN jobpair_stage_data jpsd ON jpsd.jobpair_id=jp.id
+				 JOIN job_attributes ja ON ja.pair_id=jp.id
+			 WHERE j.id=_jobId
+						 AND ja.stage_number=_stageNumber
+						 AND ja.attr_key='starexec-result'
+						 AND ja.attr_value!='starexec-unknown'
+			 GROUP BY jp.bench_id
+			 HAVING COUNT(DISTINCT ja.attr_value) > 1) AS conflicting
+				ON jp_o.bench_id=conflicting.bench_id
+		WHERE jpsd_o.config_id=_configId
+					AND ja_o.attr_key='starexec-result'
+					AND ja_o.attr_value!='starexec-unknown'
+		GROUP BY b_o.id
+		;
+	END //
+
+-- Gets the all of the solvers, configs, and results run on a benchmark in a job.
+-- Author: Albert Giegerich
+DROP PROCEDURE IF EXISTS GetSolverConfigResultsForBenchmarkInJob;
+CREATE PROCEDURE GetSolverConfigResultsForBenchmarkInJob(IN _jobId INT, IN _benchId INT, IN _stageNum INT)
+	BEGIN
+		SELECT
+				s.*, c.*,
+				-- solver fields
+				/*
+				s.id AS s_id, s.user_id AS s_user_id, s.name AS s_name, s.uploaded AS s_uploaded, s.path AS s_path, s.description AS s_description,
+				s.downloadable AS s_downloadable, s.disk_size AS s_disk_size, s.deleted AS s_deleted, s.recycled AS s_recycled,
+				s.executable_type AS s_exectuable_type, s.build_status AS s_build_status,
+				-- configuration fields
+				c.id AS c_id, c.solver_id AS c_solver_id, c.name AS c_name, c.description AS c_description, c.updated AS c_updated,
+				-- Value of starexec-result attribute
+				*/
+			 	ja.attr_value
+		FROM jobs j JOIN job_pairs jp ON j.id=jp.job_id
+				JOIN jobpair_stage_data jpsd ON jpsd.jobpair_id=jp.id
+				JOIN solvers s ON jpsd.solver_id=s.id
+				JOIN configurations c ON jpsd.config_id=c.id
+				JOIN job_attributes ja ON ja.pair_id=jp.id
+		WHERE
+				j.id = _jobId
+				AND jp.bench_id=_benchid
+				AND ja.attr_key='starexec-result'
+				AND ja.attr_value!='starexec-unknown'
+				AND jpsd.stage_number=_stageNum
+		;
 	END //
 
 	
@@ -65,13 +153,14 @@ CREATE PROCEDURE DeleteConfigurationById(IN _configId INT)
 DROP PROCEDURE IF EXISTS SetSolverToDeletedById;
 CREATE PROCEDURE SetSolverToDeletedById(IN _solverId INT, OUT _path TEXT)
 	BEGIN
+		UPDATE users JOIN solvers ON solvers.user_id=users.id
+		SET users.disk_size=users.disk_size-solvers.disk_size 
+		WHERE solvers.id = _solverId;
+		
 		SELECT path INTO _path FROM solvers WHERE id = _solverId;
 		UPDATE solvers
-		SET deleted=true
+		SET deleted=true, disk_size=0
 		WHERE id = _solverId;
-		UPDATE solvers
-		SET disk_size=0
-		WHERE id = _solverId;		
 	END //	
 	
 -- Gets the IDs of all the spaces associated with the given solver
@@ -92,6 +181,33 @@ CREATE PROCEDURE GetConfiguration(IN _id INT)
 		SELECT *
 		FROM configurations
 		WHERE id = _id;
+	END //
+
+DROP PROCEDURE IF EXISTS GetAllSolversInJob;
+CREATE PROCEDURE GetAllSolversInJob(IN _jobId INT)
+	BEGIN
+		SELECT DISTINCT solver_id, solver_name
+		FROM jobpair_stage_data
+		INNER JOIN job_pairs ON jobpair_stage_data.jobpair_id=job_pairs.id
+		WHERE job_pairs.job_id=_jobId;
+	END //
+
+DROP PROCEDURE IF EXISTS GetAllConfigsInJob;
+CREATE PROCEDURE GetAllConfigsInJob(IN _jobId INT)
+	BEGIN
+		SELECT DISTINCT config_id, config_name
+		FROM jobpair_stage_data
+		INNER JOIN job_pairs ON jobpair_stage_data.jobpair_id=job_pairs.id
+		WHERE job_pairs.job_id=_jobId;
+	END //
+
+DROP PROCEDURE IF EXISTS GetAllConfigIdsInJob;
+CREATE PROCEDURE GetAllConfigIdsInJob( IN _jobId INT)
+	BEGIN
+		SELECT DISTINCT config_id
+		FROM jobpair_stage_data
+		INNER JOIN job_pairs ON jobpair_stage_data.jobpair_id=job_pairs.id
+		WHERE job_pairs.job_id=_jobId;
 	END //
 	
 	
@@ -148,17 +264,6 @@ CREATE PROCEDURE GetSolverByIdIncludeDeleted(IN _id INT)
 		SELECT *
 		FROM solvers
 		WHERE id = _id;
-	END //
-	
-	
--- Returns the number of solvers in a given space
--- Author: Todd Elvers	
-DROP PROCEDURE IF EXISTS GetSolverCountInSpace;
-CREATE PROCEDURE GetSolverCountInSpace(IN _spaceId INT)
-	BEGIN
-		SELECT COUNT(*) AS solverCount
-		FROM solver_assoc
-		WHERE _spaceId=space_id;
 	END //
 	
 -- Returns the number of solvers in a given space that match a given query
@@ -221,6 +326,9 @@ CREATE PROCEDURE RemoveSolverFromSpace(IN _solverId INT, IN _spaceId INT)
 DROP PROCEDURE IF EXISTS UpdateSolverDiskSize;
 CREATE PROCEDURE UpdateSolverDiskSize(IN _solverId INT, IN _newDiskSize BIGINT)
 	BEGIN
+		UPDATE users JOIN solvers ON solvers.user_id=users.id
+		SET users.disk_size=(users.disk_size-solvers.disk_size)+_newDiskSize
+		WHERE solvers.id = _solverId;
 		UPDATE solvers
 		SET disk_size = _newDiskSize
 		WHERE id = _solverId;
@@ -318,9 +426,12 @@ CREATE PROCEDURE GetRecycledSolverPaths(IN _userId INT)
 DROP PROCEDURE IF EXISTS SetRecycledSolversToDeleted;
 CREATE PROCEDURE SetRecycledSolversToDeleted(IN _userId INT) 
 	BEGIN
+		UPDATE users
+		SET users.disk_size=users.disk_size-(SELECT COALESCE(SUM(disk_size),0) FROM solvers WHERE user_id=_userId AND recycled=true AND deleted=false)
+		WHERE users.id=_userId;
 		UPDATE solvers
 		SET deleted=true, disk_size=0
-		WHERE user_id = _userId AND recycled=true;
+		WHERE user_id = _userId AND recycled=true AND deleted=false;
 	END //
 	
 -- Gets all recycled solver ids a user has in the database
@@ -362,7 +473,7 @@ CREATE PROCEDURE GetSolversAssociatedWithPairs()
 DROP PROCEDURE IF EXISTS GetDeletedSolvers;
 CREATE PROCEDURE GetDeletedSolvers()
 	BEGIN	
-		SELECT id FROM solvers WHERE deleted=true;
+		SELECT * FROM solvers WHERE deleted=true;
 	END //
 -- Sets the recycled flag for a single solver back to false
 -- Author: Eric Burns
@@ -405,4 +516,33 @@ CREATE PROCEDURE GetSolversInSharedSpaces(IN _userId INT)
 		WHERE user_assoc.user_id=_userId
 		GROUP BY(solvers.id);
 	END //
+
+-- Sets the build_status status code of the solver
+-- Author: Andrew Lubinus
+DROP PROCEDURE IF EXISTS SetSolverBuildStatus;
+CREATE PROCEDURE SetSolverBuildStatus(IN _solverId INT, IN _build_status INT)
+    BEGIN
+        UPDATE solvers
+        SET build_status = _build_status
+        WHERE id = _solverId;
+    END //
+
+-- Updates path to solver
+-- Author: Andrew Lubinus
+DROP PROCEDURE IF EXISTS SetSolverPath;
+CREATE PROCEDURE SetSolverPath(IN _solverId INT, IN _path TEXT)
+    BEGIN
+        UPDATE solvers
+        SET path = _path
+        WHERE id = _solverId;
+    END //
+
+-- This deletes the dummy config from a solver built on Starexec
+DROP PROCEDURE IF EXISTS DeleteBuildConfig;
+CREATE PROCEDURE DeleteBuildConfig(IN _solverId INT)
+    BEGIN
+        DELETE FROM configurations
+        WHERE solver_id=_solverId AND name="starexec_build";
+    END //
+
 DELIMITER ; -- This should always be at the end of this file

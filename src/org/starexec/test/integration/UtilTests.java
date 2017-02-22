@@ -60,19 +60,16 @@ public class UtilTests extends TestSequence{
 	@Override
 	protected void setup() throws Exception {
 		Space test=Communities.getTestCommunity();
-		u=ResourceLoader.loadUserIntoDatabase();
-		s=ResourceLoader.loadSpaceIntoDatabase(u.getId(), test.getId());
-		s1=ResourceLoader.loadSolverIntoDatabase(s.getId(), u.getId());
-		s2=ResourceLoader.loadSolverIntoDatabase(s.getId(), u.getId());
+		u=loader.loadUserIntoDatabase();
+		s=loader.loadSpaceIntoDatabase(u.getId(), test.getId());
+		s1=loader.loadSolverIntoDatabase(s.getId(), u.getId());
+		s2=loader.loadSolverIntoDatabase(s.getId(), u.getId());
 
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Assert.assertTrue(Solvers.deleteAndRemoveSolver(s1.getId()));
-		Assert.assertTrue(Solvers.deleteAndRemoveSolver(s2.getId()));
-		Assert.assertTrue(Spaces.removeSubspace(s.getId()));
-		Assert.assertTrue(Users.deleteUser(u.getId(), Users.getAdmins().get(0).getId()));
+		loader.deleteAllPrimitives();
 	}
 
 }

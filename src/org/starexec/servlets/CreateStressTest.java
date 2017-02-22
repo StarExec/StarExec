@@ -9,10 +9,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.logger.StarLogger;
 import org.starexec.test.integration.TestManager;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -24,7 +24,7 @@ import org.starexec.util.Validator;
  */
 @SuppressWarnings("serial")
 public class CreateStressTest extends HttpServlet {		
-	private static final Logger log = Logger.getLogger(CreateStressTest.class);	
+	private static final StarLogger log = StarLogger.getLogger(CreateStressTest.class);
 
 	// Request attributes
 	private static final String USER_COUNT="userCount";
@@ -51,29 +51,34 @@ public class CreateStressTest extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
-		// Make sure the request is valid
-		ValidatorStatusCode status=isValid(request);
-		if(!status.isSuccess()) {
-			//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
-			response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
-			return;
-		}
-		
-		boolean success=TestManager.executeStressTest(Integer.parseInt(request.getParameter(USER_COUNT)),
-				Integer.parseInt(request.getParameter(SPACE_COUNT)), Integer.parseInt(request.getParameter(JOB_COUNT)),
-				Integer.parseInt(request.getParameter(MIN_USERS_PER_SPACE)), Integer.parseInt(request.getParameter(MAX_USERS_PER_SPACE)),
-				Integer.parseInt(request.getParameter(MIN_SOLVERS_PER_SPACE)),
-				Integer.parseInt(request.getParameter(MAX_SOLVERS_PER_SPACE)), 
-				Integer.parseInt(request.getParameter(MIN_BENCHMARKS_PER_SPACE)), 
-				Integer.parseInt(request.getParameter(MAX_BENCHMARKS_PER_SPACE)),
-				Integer.parseInt(request.getParameter(SPACES_PER_JOB)));
-		if (!success) {
-			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error when starting the stress test");
-			return;
-		}else {
-			response.sendRedirect((Util.docRoot("secure/admin/testing.jsp")));
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		try {
+			// Make sure the request is valid
+			ValidatorStatusCode status = isValid(request);
+			if (!status.isSuccess()) {
+				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
+				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
+				return;
+			}
+
+			boolean success = TestManager.executeStressTest(Integer.parseInt(request.getParameter(USER_COUNT)),
+					Integer.parseInt(request.getParameter(SPACE_COUNT)), Integer.parseInt(request.getParameter(JOB_COUNT)),
+					Integer.parseInt(request.getParameter(MIN_USERS_PER_SPACE)), Integer.parseInt(request.getParameter(MAX_USERS_PER_SPACE)),
+					Integer.parseInt(request.getParameter(MIN_SOLVERS_PER_SPACE)),
+					Integer.parseInt(request.getParameter(MAX_SOLVERS_PER_SPACE)),
+					Integer.parseInt(request.getParameter(MIN_BENCHMARKS_PER_SPACE)),
+					Integer.parseInt(request.getParameter(MAX_BENCHMARKS_PER_SPACE)),
+					Integer.parseInt(request.getParameter(SPACES_PER_JOB)));
+			if (!success) {
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error when starting the stress test");
+				return;
+			} else {
+				response.sendRedirect((Util.docRoot("secure/admin/testing.jsp")));
+			}
+		} catch (Exception e) {
+			log.warn("Caught Exception in CreateStressTest.doPost.", e);
+			throw e;
 		}
 	}
 

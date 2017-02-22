@@ -156,14 +156,6 @@ CREATE PROCEDURE GetSubSpaceHierarchyById(IN _spaceId INT, IN _userId INT)
 		END IF;
 	END //
 	
-
-DROP PROCEDURE IF EXISTS GetClosureTableTest;
-CREATE PROCEDURE GetClosureTableTest()
-       BEGIN
-              SELECT *
-	      FROM closure;
-       END //	
-	
 -- Returns all spaces belonging to the space with the given id.
 -- Author: Tyler Jensen & Benton McCune & Eric Burns
 DROP PROCEDURE IF EXISTS GetSubSpacesById;
@@ -355,7 +347,6 @@ CREATE PROCEDURE GetSubspaceCountBySpaceId(IN _spaceId INT, IN _userId INT)
 	END //
 -- Returns the number of subspaces in a given space that match a given query
 -- Author: Eric Burns
--- TODO: This procedure does not work for the admin user
 DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceIdWithQuery;
 CREATE PROCEDURE GetSubspaceCountBySpaceIdWithQuery(IN _spaceId INT, IN _userId INT, IN _query TEXT)
 	BEGIN
@@ -363,7 +354,10 @@ CREATE PROCEDURE GetSubspaceCountBySpaceIdWithQuery(IN _spaceId INT, IN _userId 
 		FROM	set_assoc
 		JOIN 	spaces ON spaces.id=set_assoc.child_id
 		JOIN	user_assoc ON set_assoc.child_id = user_assoc.space_id
-		WHERE 	set_assoc.space_id = _spaceId AND (user_assoc.user_id = _userId OR spaces.public_access)										
+		JOIN 	users ON users.id=_userId
+		JOIN 	user_roles ON user_roles.email=users.email
+		WHERE 	set_assoc.space_id = _spaceId AND (user_assoc.user_id = _userId OR spaces.public_access OR role="admin"
+		OR role="developer")										
 				AND 	(name			LIKE	CONCAT('%', _query, '%')
 				OR		description		LIKE 	CONCAT('%', _query, '%'));	
 	END //
@@ -514,6 +508,15 @@ CREATE PROCEDURE countSubspacesByName(IN _name VARCHAR(255), IN _spaceId INT)
 		WHERE parent.id = _spaceId AND child.name = _name
 		;
 	END //
+
+DROP PROCEDURE IF EXISTS GetSpacesByJob;
+CREATE PROCEDURE GetSpacesByJob(IN _jobId INT)
+  BEGIN
+    SELECT DISTINCT space_id
+    FROM job_assoc
+    WHERE job_id=_jobId
+    ;
+  END //
 	
 -- Retrieves all jobs belonging to a space (but not their job pairs)
 -- Author: Tyler Jensen

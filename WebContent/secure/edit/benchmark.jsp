@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*,org.starexec.data.security.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -16,7 +16,7 @@
 
 		if(b != null) {
 			// Ensure the user visiting this page is the owner of the benchmark
-			if(userId != b.getUserId() && !Users.hasAdminReadPrivileges(userId)){
+			if(userId != b.getUserId() && !GeneralSecurity.hasAdminReadPrivileges(userId)){
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, "Only the owner of this benchmark can edit details about it.");
 			} else {
 				request.setAttribute("bench", b);
@@ -44,11 +44,11 @@
 	}
 %>
 
-<star:template title="edit ${bench.name}" js="lib/jquery.validate.min, edit/benchmark" css="edit/shared">				
+<star:template title="edit ${bench.name}" js="lib/jquery.validate.min, edit/benchmark" css="edit/shared, edit/benchmark">				
 	<form id="editBenchmarkForm">
 		<fieldset>
 			<legend>benchmark details</legend>
-			<table class="shaded">
+			<table id="editBenchmark" class="shaded">
 				<thead>
 					<tr>
 						<th>attribute</th>
@@ -72,7 +72,7 @@
 							<select id="benchType" name="benchType">
 								<c:forEach var="type" items="${types}">
 										<c:choose>
-											<c:when test="${type.name == bench.type.name}">
+											<c:when test="${type.id == bench.type.id}">
 												<option selected value="${type.id}">${type.name}</option>	
 											</c:when>
 											<c:otherwise>
@@ -95,7 +95,7 @@
 			<button type="button" id="delete">recycle</button>
 			<button type="button" id="update">update</button>
 		</fieldset>
-		<div id="dialog-confirm-delete" title="confirm delete">
+		<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 		</div>		
 	</form>

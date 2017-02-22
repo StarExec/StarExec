@@ -5,10 +5,10 @@ $(document).ready(function(){
 	var id = $('#comId').val();
 	
 	leaderTable = $('#leaders').dataTable( {
-        "sDom": 'rt<"bottom"flpi><"clear">'
+        "sDom": getDataTablesDom()
     });
 	memberTable = $('#Members').dataTable( {
-        "sDom": 'rt<"bottom"flpi><"clear">'
+        "sDom": getDataTablesDom()
     });
 	
 	$.get(  
@@ -260,13 +260,31 @@ function initUI(){
 	$('#editDependenciesEnabled').change(function() {
 		saveChanges($(this).children('option:selected').attr('value'), true, 'DependenciesEnabled', 0);
 	});
+
+	$('.deleteBenchmark').click(function() {
+		'use strict';
+		var settingId = $('#settingId').attr('value');
+		var benchId = $(this).attr('value');
+		log('About to make delete benchmark request for settingId='+settingId+' and benchId='+benchId);
+		$.post(
+			starexecRoot+'services/delete/defaultBenchmark/'+settingId+'/'+benchId,
+			'',
+			function(returnCode){  	
+				'use strict';
+				var success = parseReturnCode(returnCode);
+				if (success) {
+					location.reload(true);
+				}
+			 },  
+			'json'  
+		);
+	});
 	
 	$('#newWebsite').hide();
 	$('#newTypeTbl').hide();
 	$('#newPostProcessTbl').hide();
         $('#newPreProcessTbl').hide();
         $('#newUpdateProcessTbl').hide();
-	$('#dialog-confirm-delete').hide();
 	
 	$('#leaderField').expandable(false);
 	$('#memberField').expandable(false);

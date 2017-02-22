@@ -16,7 +16,7 @@
 # /////////////////////////////////////////////
 
 # Include the predefined status codes and functions
-. /home/starexec/sge_scripts/status_codes.bash
+. $SCRIPT_DIR/status_codes.bash
 
 #################################################################################
 # base64 decode some names which could otherwise have nasty characters in them
@@ -25,9 +25,9 @@
 # will do a base 64 decode on all solver_names, all solver_paths, and the bench path
 function decodePathArrays {
 	log "decoding all base 64 encoded strings"
-	# create a temporary file in /tmp using the template starexec_base64.XXXXXXXX
+	# create a temporary file in $TMPDIR using the template starexec_base64.XXXXXXXX
 	
-	TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`
+	TMP=`mktemp --tmpdir=$TMPDIR starexec_base64.XXXXXXXX`
 	
 	TEMP_ARRAY_INDEX=0
 	
@@ -63,7 +63,7 @@ function decodePathArrays {
 
 function decodeBenchmarkName {
 	
-	TMP=`mktemp --tmpdir=/tmp starexec_base64.XXXXXXXX`
+	TMP=`mktemp --tmpdir=$TMPDIR starexec_base64.XXXXXXXX`
 	
 
 	echo $BENCH_PATH > $TMP
@@ -76,25 +76,15 @@ decodeBenchmarkName
 
 #################################################################################
 
-# DB username and password for status reporting
-DB_USER=star_report
-DB_PASS=5t4rr3p0rt2012
-
 #lock files that indicate a particular sandbox is in use
-SANDBOX_LOCK_DIR='/export/starexec/sandboxlock.lock'
-SANDBOX2_LOCK_DIR='/export/starexec/sandbox2lock.lock'
+SANDBOX_LOCK_DIR=$WORKING_DIR_BASE'/sandboxlock.lock'
+SANDBOX2_LOCK_DIR=$WORKING_DIR_BASE'/sandbox2lock.lock'
 
 #files that indicate that lock files are currently being modified
-SANDBOX_LOCK_USED='/export/starexec/sandboxlock.active'
-SANDBOX2_LOCK_USED='/export/starexec/sandbox2lock.active'
+SANDBOX_LOCK_USED=$WORKING_DIR_BASE'/sandboxlock.active'
+SANDBOX2_LOCK_USED=$WORKING_DIR_BASE'/sandbox2lock.active'
 
 # Path to local workspace for each node in cluster.
-
-
-# Path to Olivier Roussel's runSolver
-RUNSOLVER_PATH="/home/starexec/Solvers/runsolver"
-
-
 
 # Path to the job input directory
 JOB_IN_DIR="$SHARED_DIR/jobin"
@@ -110,13 +100,13 @@ JOB_OUT_DIR="$SHARED_DIR/joboutput"
 
 
 #initializes all workspace variables based on the value of the SANDBOX variable, which should already be set
-# either by calling initSandbox or findSandbox
+# either by calling initSandbox
 function initWorkspaceVariables {
 	if [ $SANDBOX -eq 1 ]
 	then
-	WORKING_DIR='/export/starexec/sandbox'
+	WORKING_DIR=$WORKING_DIR_BASE'/sandbox'
 	else
-	WORKING_DIR='/export/starexec/sandbox2'
+	WORKING_DIR=$WORKING_DIR_BASE'/sandbox2'
 	fi
 
 	LOCAL_TMP_DIR="$WORKING_DIR/tmp"
@@ -151,7 +141,14 @@ function initWorkspaceVariables {
 	LOCAL_PREPROCESSOR_DIR="$WORKING_DIR/preprocessor"
 	
 	# The path to the bin directory of the solver on the execution host
-	LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/bin/runsolver"
+    if [ $BUILD_JOB == "true" ]; then 
+	    LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/runsolver"
+    else
+	    LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/bin/runsolver"
+    fi
+
+	# The path to the xml file to run benchexec on.
+	LOCAL_BENCHEXEC_XML_PATH="$WORKING_DIR/benchexec.xml"
 	
 	OUT_DIR="$WORKING_DIR/output"
 	
@@ -159,9 +156,7 @@ function initWorkspaceVariables {
 	PROCESSED_BENCH_PATH="$OUT_DIR/procBenchmark"
 	
 	SAVED_OUTPUT_DIR="$WORKING_DIR/savedoutput"
-	
-	
-	
+
 }
 
 function createLocalTmpDirectory {
@@ -185,33 +180,45 @@ function isInteger {
 	fi
 	return 0
 }
-# checks to see whether the pair with the given pair SGE ID is actually running using qstat
+# checks to see whether the pair with the given PID is actually running
 function isPairRunning {
-	log "isPairRunning called on pair id = $1" 
-	
-	
+	log "isPairRunning called on pair pid = $1" 
+
 	if ! isInteger $1 ; then
 		log "$1 is not a valid integer, so no pair is running"
-	
 		return 1
 	fi
-	HOST=${HOSTNAME:0:4}
-	output=`ls /cluster/gridengine-8.1.8/default/spool/$HOST/active_jobs/`
-	log "$output"
-	
-	#be conservative and say that the pair is running if we fail to check properly
-	if [[ $output == *cannot* ]]
+	output=`cat "$LOCK_DIR/$1"`
+	if [ -z "${output// }" ]
 	then
-		log "could not carry out ls command-- assuming pair is still running"
+		echo "no process output was saved in the lock file, so assuming pair was deleted"
+		# the job is not still running
+        return 1
+	fi
+	
+	log "$output"
+	currentOutput=`ps -p $1 -o pid,cmd | awk 'NR>1'`
+	log "$currentOutput"
+	#check to make sure the output of ps from when the lock was written is equivalent to what we see now
+	if [[ $currentOutput == *$output* ]]
+	then
+		log "process is still running, so the sandbox is still in use"
 		return 0
 	fi
-	if [[ $output == *$1* ]]
-	then
-		#the active jobs directory still contains the job, so it is still running
-		return 0
-  	fi
   	#otherwise, the job is not still running
 	return 1
+}
+
+# Makes a lock file in for a single sandbox
+# $1 The sandbox to use
+function makeLockFile {
+	log "able to get sandbox $1!"
+	# make a file that is named with the current PID so we know which pair should be running here
+	touch "$LOCK_DIR/$$"
+	processString=`ps -p $$ -o pid,cmd | awk 'NR>1'`
+	log "Found data for this process $processString"
+	echo $processString > "$LOCK_DIR/$$"
+	log "putting this job into sandbox $1 $$"
 }
 
 #first argument is the sandbox (1 or 2) and second argument is the pair ID
@@ -226,7 +233,6 @@ function trySandbox {
 		fi
 	#force script to wait until it can get the outer lock file to do the block in parens
 	#timeout is 4 seconds-- we give up if we aren't able to get the lock in that amount of time
-	
 	if (
 	flock -x -w 4 200 || return 1
 		#we have exclusive rights to work on the lock for this sandbox within this block
@@ -234,34 +240,25 @@ function trySandbox {
 		log "got the right to use the lock for sandbox $1"
 		#check to see if we can make the lock directory-- if so, we can run in sandbox 
 		if mkdir "$LOCK_DIR" ; then
-			log "able to get sandbox $1!"
-			# make a file that is named with the given ID so we know which pair should be running here
-			touch "$LOCK_DIR/$2"
-			
-			log "putting this job into sandbox $1 $2"
+			makeLockFile $1
 			return 0
 		fi
-		#if we couldn't get the sandbox directory, there are 2 possibilites. Either it is occupied,
+		#if we couldnt get the sandbox directory, there are 2 possibilites. Either it is occupied,
 		#or a previous job did not clean up the lock correctly. To check, we see if the pair given
 		#in the directory is still running
 			
-		pairID=`ls "$LOCK_DIR"`
-		log "found the pairID = $pairID"
+		pairPID=`ls "$LOCK_DIR"`
+		log "found the pairID = $pairPID"
 		
 		
-		if ! isPairRunning $pairID ; then
+		if ! isPairRunning $pairPID ; then
 			#this means the sandbox is NOT actually in use, and that the old pair just did not clean up
 			log "found that the pair is not running in sandbox $1"
 			safeRmLock "$LOCK_DIR"
 			
 			#try again to get the sandbox1 directory-- we still may fail if another pair is doing this at the same time
 			if mkdir "$LOCK_DIR" ; then
-				#we got the lock, so take this sandbox
-				touch "$LOCK_DIR/$2"
-				# if we successfully made the directory
-				
-				log "putting this job into sandbox $1 $2"
-				
+				makeLockFile $1
 				return 0
 			fi
 		else
@@ -281,17 +278,17 @@ function trySandbox {
 }
 
 
-#figures out which sandbox the given job pair should run in. First argument is a job pair ID
+#figures out which sandbox the given job pair should run in.
 function initSandbox {
 	#try to get sandbox1 first
-	if trySandbox 1 $1; then
+	if trySandbox 1; then
 		SANDBOX=1
 		initWorkspaceVariables
 		return 0
 	fi
 	
 	#couldn't get sandbox 1, so try sandbox2 next
-	if trySandbox 2 $1 ; then
+	if trySandbox 2 ; then
 		SANDBOX=2
 		initWorkspaceVariables
 		return 0
@@ -300,35 +297,6 @@ function initSandbox {
 	SANDBOX=-1
 	return 1
 	
-	
-}
-
-#determines whether we should be running in sandbox 1 or sandbox 2, based on the existence of this pairs' lock file
-function findSandbox {
-	log "trying to find sandbox for pair ID = $1"
-	log "sandbox 1 contents:"
-	ls "$SANDBOX_LOCK_DIR"
-	
-	log "sandbox 2 contents:"
-	ls "$SANDBOX2_LOCK_DIR"
-	
-	if [ -e "$SANDBOX_LOCK_DIR/$1" ]
-	then
-		log "found that the sandbox is 1 for job $1"
-		SANDBOX=1
-		initWorkspaceVariables
-		return 0
-	fi
-	if [ -e "$SANDBOX2_LOCK_DIR/$1" ] 
-	then
-		log "found that the sandbox is 2 for job $1"
-		SANDBOX=2
-		initWorkspaceVariables
-		return 0
-	fi
-	
-	log "couldn't find a sandbox for pair ID = $1"
-	SANDBOX=-1
 	
 }
 
@@ -374,6 +342,10 @@ function safeRm {
 #cleans up files to prepare for the next stage of the job
 function cleanForNextStage {
 		# Clear the output directory	
+	sudo chown -R `whoami` $WORKING_DIR 
+
+	chmod -R gu+rxw $WORKING_DIR
+
 	safeRm output-directory "$OUT_DIR"
 
 	# Clear the local solver directory	
@@ -408,6 +380,10 @@ function killDeadlockedJobPair {
 
 	log "killDeadlockedJobPair: About to kill jobpair run by $CURRENT_USER because it has exceeded it's total allotted runtime."
 	sudo -u $CURRENT_USER killall -SIGKILL --user $CURRENT_USER
+
+    if [ $BUILD_JOB == "true" ]; then
+        cleanUpAfterKilledBuildJob       
+    fi
 }
 
 # Calls copyOutput at an increment specified. Should be killed
@@ -415,19 +391,27 @@ function killDeadlockedJobPair {
 # $1 Increment, in seconds, at which to copy back output
 # $2 Maximum amount of time to run, in seconds. Should be the timeout for the pair
 # $3 Current stage number
+# $4 the stdout copy option (1 means don't save, otherwise save)
+# $5 the other output copy option (same as above)
 function copyOutputIncrementally {
 	PERIOD=$1
 	TIMEOUT=$2
 	while [ $TIMEOUT -gt 0 ]
 	do
 		sleep $PERIOD
-		copyOutputNoStats $3
+		copyOutputNoStats $3 $4 $5
+		
+		if [ $DISK_QUOTA_EXCEEDED -eq 1 ]
+		then
+			break
+		fi
 		TIMEOUT=$(($TIMEOUT-$PERIOD))
 	done
 	log "done copying incremental output: the pair's timeout has been reached"
 }
 
-#takes in 1 argument-- 0 if we are done with the job and 1 otherwise. Used to decide whether to clean up scripts and locks
+# $1 0 if we are done with the job and 1 otherwise. Used to decide whether to clean up scripts and locks
+# $2 The name of the user that executed this job. Used to clear out the /tmp directory. Only used if we are done with the job
 function cleanWorkspace {
 	log "cleaning execution host workspace..."
 	# change ownership and permissions to make sure we can clean everything up
@@ -440,8 +424,6 @@ function cleanWorkspace {
 	log "WORKING_DIR is $WORKING_DIR"
 	
 	chmod -R gu+rxw $WORKING_DIR
-
-    
 
 	# Clear the output directory	
 	safeRm output-directory "$OUT_DIR"
@@ -458,15 +440,16 @@ function cleanWorkspace {
 	
 	safeRm saved-output-dir "$SAVED_OUTPUT_DIR"
 	
-	
-	
-	
 	#only delete the job script / lock files if we are done with the job
 	log "about to check whether to delete lock files given $1"
 	if [ $1 -eq 0 ] ; then
 		log "cleaning up scripts and lock files"
 		rm -f "$SCRIPT_PATH"
 		rm -f "$JOB_IN_DIR/depend_$PAIR_ID.txt"
+		# remove all /tmp files owned by the user that executed this job
+		cd /tmp
+        sudo -u $2 find /tmp/* -user $2 -exec rm -fr {} \; 2>/dev/null
+        cd $WORKING_DIR
 		if [ $SANDBOX -eq 1 ] 
 		then
 			safeRmLock "$SANDBOX_LOCK_DIR"
@@ -476,9 +459,6 @@ function cleanWorkspace {
 			safeRmLock "$SANDBOX2_LOCK_DIR"
 		fi
 	fi
-	 
-	
-	
 	log "execution host $HOSTNAME cleaned"
 	return $?
 }
@@ -521,6 +501,24 @@ function sendStatus {
     fi
 	log "sent job status $1 to $REPORT_HOST"
 	return $?
+}
+
+function sendWallclockExceededStatus {
+    log "epilog detects wall clock time exceeded"
+    sendStatus $EXCEED_RUNTIME
+    sendStageStatus $EXCEED_RUNTIME ${STAGE_NUMBERS[$STAGE_INDEX]}
+}
+
+function sendCpuExceededStatus {
+    log "epilog detects cpu time exceeded"
+    sendStatus $EXCEED_CPU
+    sendStageStatus $EXCEED_CPU ${STAGE_NUMBERS[$STAGE_INDEX]}
+}
+
+function sendExceedMemStatus {
+    log "epilog detects max virtual memory exceeded"
+    sendStatus $EXCEED_MEM
+    sendStageStatus $EXCEED_MEM ${STAGE_NUMBERS[$STAGE_INDEX]}
 }
 
 function setStartTime {
@@ -574,7 +572,7 @@ product=$[keySize*valueSize]
 #testing to see if key or value is empty
 if (( $product ))
    then
-	log "processing attribute $a (pair=$PAIR_ID, job=$JOB_STAR_ID, key='$key', value='$value')"
+	log "processing attribute $a (pair=$PAIR_ID, key='$key', value='$value' stage='$2')"
 	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddJobAttr($PAIR_ID,'$key','$value',$2)"
 else
         log "bad post processing - cannot process attribute $a"
@@ -582,22 +580,62 @@ fi
 done < $1
 }
 
-
 # updates stats for the pair - parameters are var.out ($1) and watcher.out ($2) from runsolver
 # Ben McCune
+# $1 the varfile
+# $2 the watchfile
+# $3 The option on how to copy back stdout
+# $4 The option on how to copy back the other output fiels
+# $5 The benchmarking framework
 function updateStats {
 
+if [ "$5" == "$BENCHEXEC" ]; then
+	WALLCLOCK_TIME=`sed -n 's/^{\?walltime=\([0-9\.]*\)s}\?$/\1/p' $1`
+	CPU_TIME=`sed -n 's/^{\?cputime=\([0-9\.]*\)s}\?$/\1/p' $1`
+	CPU_USER_TIME=0
+	SYSTEM_TIME=0
+	MAX_VIRTUAL_MEMORY=`sed -n 's/^{\?memory=\([0-9\.]*\)}\?$/\1/p' $1`
 
-WALLCLOCK_TIME=`sed -n 's/^WCTIME=\([0-9\.]*\)$/\1/p' $1`
-CPU_TIME=`sed -n 's/^CPUTIME=\([0-9\.]*\)$/\1/p' $1`
-CPU_USER_TIME=`sed -n 's/^USERTIME=\([0-9\.]*\)$/\1/p' $1`
-SYSTEM_TIME=`sed -n 's/^SYSTEMTIME=\([0-9\.]*\)$/\1/p' $1`
-MAX_VIRTUAL_MEMORY=`sed -n 's/^MAXVM=\([0-9\.]*\)$/\1/p' $1`
+	MAX_RESIDENT_SET_SIZE=0
+	PAGE_RECLAIMS=0
+	PAGE_FAULTS=0
+	BLOCK_INPUT=0
+	BLOCK_OUTPUT=0
+	VOL_CONTEXT_SWITCHES=0
+	INVOL_CONTEXT_SWITCHES=0
+else
+	WALLCLOCK_TIME=`sed -n 's/^WCTIME=\([0-9\.]*\)$/\1/p' $1`
+	CPU_TIME=`sed -n 's/^CPUTIME=\([0-9\.]*\)$/\1/p' $1`
+	CPU_USER_TIME=`sed -n 's/^USERTIME=\([0-9\.]*\)$/\1/p' $1`
+	SYSTEM_TIME=`sed -n 's/^SYSTEMTIME=\([0-9\.]*\)$/\1/p' $1`
+	MAX_VIRTUAL_MEMORY=`sed -n 's/^MAXVM=\([0-9\.]*\)$/\1/p' $1`
 
-log "the max virtual memory was $MAX_VIRTUAL_MEMORY"
-log "temp line: the var file was"
-cat $1
-log "end varfile"
+	log "the max virtual memory was $MAX_VIRTUAL_MEMORY"
+	log "the var file was"
+	cat $1
+	log "end varfile"
+
+	SOLVER_STATUS_CODE=`awk '/Child status/ { print $3 }' $2`
+
+	log "the solver exit code was $SOLVER_STATUS_CODE"
+
+	MAX_RESIDENT_SET_SIZE=`awk '/maximum resident set size/ { print $5 }' $2`
+	PAGE_RECLAIMS=`awk '/page reclaims/ { print $3 }' $2`
+	PAGE_FAULTS=`awk '/page faults/ { print $3 }' $2`
+	BLOCK_INPUT=`awk '/block input/ { print $4 }' $2`
+	BLOCK_OUTPUT=`awk '/block output/ { print $4 }' $2`
+	VOL_CONTEXT_SWITCHES=`awk '/^voluntary context switches/ { print $4 }' $2`
+	INVOL_CONTEXT_SWITCHES=`awk '/involuntary context switches/ { print $4 }' $2`
+
+	# just sanitize these latter to avoid db errors, since fishing things out of the watchfile is more error-prone apparently.
+	if [[ ! ( "$MAX_RESIDENT_SET_SIZE" =~ ^[0-9\.]+$ ) ]] ; then MAX_RESIDENT_SET_SIZE=0 ; fi
+	if [[ ! ( "$PAGE_RECLAIMS" =~ ^[0-9\.]+$ ) ]] ; then PAGE_RECLAIMS=0 ; fi
+	if [[ ! ( "$PAGE_FAULTS" =~ ^[0-9\.]+$ ) ]] ; then PAGE_FAULTS=0 ; fi
+	if [[ ! ( "$BLOCK_INPUT" =~ ^[0-9\.]+$ ) ]] ; then BLOCK_INPUT=0 ; fi
+	if [[ ! ( "$BLOCK_OUTPUT" =~ ^[0-9\.]+$ ) ]] ; then BLOCK_OUTPUT=0 ; fi
+	if [[ ! ( "$VOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then VOL_CONTEXT_SWITCHES=0 ; fi
+	if [[ ! ( "$INVOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then INVOL_CONTEXT_SWITCHES=0 ; fi
+fi
 
 ROUNDED_WALLCLOCK_TIME=$( printf "%.0f" $WALLCLOCK_TIME )
 ROUNDED_CPU_TIME=$( printf "%.0f" $CPU_TIME )
@@ -605,32 +643,11 @@ ROUNDED_CPU_TIME=$( printf "%.0f" $CPU_TIME )
 STAREXEC_WALLCLOCK_LIMIT=$(($STAREXEC_WALLCLOCK_LIMIT-$ROUNDED_WALLCLOCK_TIME))
 STAREXEC_CPU_LIMIT=$(($STAREXEC_CPU_LIMIT-$ROUNDED_CPU_TIME))
 
-
-SOLVER_STATUS_CODE=`awk '/Child status/ { print $3 }' $2`
-
-log "the solver exit code was $SOLVER_STATUS_CODE"
-
-MAX_RESIDENT_SET_SIZE=`awk '/maximum resident set size/ { print $5 }' $2`
-PAGE_RECLAIMS=`awk '/page reclaims/ { print $3 }' $2`
-PAGE_FAULTS=`awk '/page faults/ { print $3 }' $2`
-BLOCK_INPUT=`awk '/block input/ { print $4 }' $2`
-BLOCK_OUTPUT=`awk '/block output/ { print $4 }' $2`
-VOL_CONTEXT_SWITCHES=`awk '/^voluntary context switches/ { print $4 }' $2`
-INVOL_CONTEXT_SWITCHES=`awk '/involuntary context switches/ { print $4 }' $2`
-
-# just sanitize these latter to avoid db errors, since fishing things out of the watchfile is more error-prone apparently.
-if [[ ! ( "$MAX_RESIDENT_SET_SIZE" =~ ^[0-9\.]+$ ) ]] ; then MAX_RESIDENT_SET_SIZE=0 ; fi
-if [[ ! ( "$PAGE_RECLAIMS" =~ ^[0-9\.]+$ ) ]] ; then PAGE_RECLAIMS=0 ; fi
-if [[ ! ( "$PAGE_FAULTS" =~ ^[0-9\.]+$ ) ]] ; then PAGE_FAULTS=0 ; fi
-if [[ ! ( "$BLOCK_INPUT" =~ ^[0-9\.]+$ ) ]] ; then BLOCK_INPUT=0 ; fi
-if [[ ! ( "$BLOCK_OUTPUT" =~ ^[0-9\.]+$ ) ]] ; then BLOCK_OUTPUT=0 ; fi
-if [[ ! ( "$VOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then VOL_CONTEXT_SWITCHES=0 ; fi
-if [[ ! ( "$INVOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then INVOL_CONTEXT_SWITCHES=0 ; fi
-
 EXEC_HOST=`hostname`
-log "mysql -u... -p... -h $REPORT_HOST $DB_NAME -e \"CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER)\""
+getTotalOutputSizeToCopy $3 $4
+log "mysql -u... -p... -h $REPORT_HOST $DB_NAME -e \"CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER, $DISK_SIZE)\""
 
-if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER)" ; then
+if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER, $DISK_SIZE)" ; then
 log "Error copying stats from watchfile into database. Copying varfile to log {"
 cat $1
 log "} End varfile."
@@ -638,8 +655,6 @@ log "Copying watchfile to log {"
 cat $2
 log "} End watchfile."
 fi
-
-#log "job is $JOB_ID"
 
 log "sent job stats to $REPORT_HOST"
 
@@ -673,35 +688,53 @@ function createDir {
 
 # copys output without doing post-processing or updating the database stats
 # $1 The current stage number
+# $2 the stdout copy option (1 means don't save, otherwise save)
+# $3 the other output copy option (same as above)
 function copyOutputNoStats {
-
+	setDiskQuotaExceeded $2 $3
+	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]
+	then
+		log "not saving output: user disk quota exceeded"
+		return
+	fi
 	createDir "$PAIR_OUTPUT_DIRECTORY"
 	createDir "$SAVED_OUTPUT_DIR"
-	
+	OUTPUT_SUFFIX="_output"
 	if [ $NUM_STAGES -eq 1 ] 
 	then
 		PAIR_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$PAIR_ID.txt"
-		
+		PAIR_OTHER_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$PAIR_ID$OUTPUT_SUFFIX"
 	else
 		PAIR_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$1.txt"
+		PAIR_OTHER_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$1$OUTPUT_SUFFIX"
 		
-	
 	fi
 	
-	SAVED_PAIR_OUTPUT_PATH="$SAVED_OUTPUT_DIR/$1"
+	if [ $2 -ne 1 ]
+	then
+		cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
+	fi
 	
-	cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
+	if [ $3 -ne 1 ]
+	then
+		rsync --prune-empty-dirs -r -u "$OUT_DIR/output_files/" "$PAIR_OTHER_OUTPUT_PATH"
+	fi
+	SAVED_PAIR_OUTPUT_PATH="$SAVED_OUTPUT_DIR/$1"
+	SAVED_PAIR_OTHER_OUTPUT_PATH=$SAVED_OUTPUT_DIR"/"$1"_output"
+	
 	cp "$OUT_DIR"/stdout.txt "$SAVED_PAIR_OUTPUT_PATH"
+	
+	rsync -r -u "$OUT_DIR/output_files/" "$SAVED_PAIR_OTHER_OUTPUT_PATH"
 }
 
 # takes in a stage number as an argument so we know where to put the output
-# TODO: This should also look for the new output directory
 # $1 The current stage number
+# $2 the stdout copy option (1 means don't save, otherwise save)
+# $3 the other output copy option (same as above)
+# $4 the benchmarking framework
 function copyOutput {
-	copyOutputNoStats $1
-	
-	log "job output copy complete - now sending stats"
-	updateStats $VARFILE $WATCHFILE
+	updateStats $VARFILE $WATCHFILE $2 $3 $4
+
 	if [ "$POST_PROCESSOR_PATH" != "" ]; then
 		log "getting postprocessor"
 		mkdir $OUT_DIR/postProcessor
@@ -709,11 +742,14 @@ function copyOutput {
 		chmod -R gu+rwx $OUT_DIR/postProcessor
 		cd "$OUT_DIR"/postProcessor
 		log "executing post processor"
-		./process $OUT_DIR/stdout.txt $LOCAL_BENCH_PATH > "$OUT_DIR"/attributes.txt
+		./process $OUT_DIR/stdout.txt $LOCAL_BENCH_PATH "$OUT_DIR/output_files" > "$OUT_DIR"/attributes.txt
 		log "processing attributes"
-		#cat $OUT_DIR/attributes.txt
 		processAttributes $OUT_DIR/attributes.txt $1
 	fi
+
+	copyOutputNoStats $1 $2 $3
+
+	log "copying job output complete"
 
 	return $?	
 }
@@ -752,6 +788,16 @@ function checkCache {
   			SOLVER_CACHED=1
 		fi
 	fi	
+}
+
+function enablePython34 {
+    scl enable rh-python34 bash
+}
+function setupBenchexecCgroups {
+	echo $$ > /sys/fs/cgroup/cpuset/system.slice/benchexec-cgroup.service/tasks
+	echo $$ > /sys/fs/cgroup/cpuacct/system.slice/benchexec-cgroup.service/tasks
+	echo $$ > /sys/fs/cgroup/memory/system.slice/benchexec-cgroup.service/tasks
+	echo $$ > /sys/fs/cgroup/freezer/system.slice/benchexec-cgroup.service/tasks
 }
 
 function copyBenchmarkDependencies {
@@ -833,13 +879,15 @@ function sandboxWorkspace {
 	if [[ $WORKING_DIR == *sandbox2* ]] 
 	
 	then
-	log "sandboxing workspace with sandbox2 user"
-	sudo chown -R sandbox2 $WORKING_DIR 
+	log "sandboxing workspace with second sandbox user"
+	sudo chown -R $SANDBOX_USER_TWO $WORKING_DIR 
 	else
-		log "sandboxing workspace with sandbox user"
-		sudo chown -R sandbox $WORKING_DIR
+		log "sandboxing workspace with first sandbox user"
+		sudo chown -R $SANDBOX_USER_ONE $WORKING_DIR
 	fi
-	ls -lR "$WORKING_DIR"
+	sudo chown -R `whoami` $LOCAL_BENCH_PATH
+    chmod 644 $LOCAL_BENCH_PATH
+    ls -lR "$WORKING_DIR"
 	return 0
 }
 
@@ -877,14 +925,71 @@ return $?
 }
 
 
+#this is run after a solver is built on starexec
+function copySolverBack {
+
+NEW_SOLVER_PATH="$(echo "$SOLVER_PATH" | sed 's/....$//')"
+
+log "Old Solverpath: $SOLVER_PATH"
+log "NEW solver path is $NEW_SOLVER_PATH"
+
+if [ -e $LOCAL_RUNSOLVER_PATH ]; then
+        rm $LOCAL_RUNSOLVER_PATH
+fi
+
+if [ -e $LOCAL_CONFIG_PATH ]; then
+        rm $LOCAL_CONFIG_PATH
+fi
+
+mkdir $SHARED_DIR/Solvers/buildoutput/$SOLVER_ID
+log "the output to be copied back $PAIR_OUTPUT_DIRECTORY/$PAIR_ID.txt" 
+log "the directory copying to: $SHARED_DIR/Solvers/buildoutput/$SOLVER_ID"
+cp "$PAIR_OUTPUT_DIRECTORY/$PAIR_ID.txt" $SHARED_DIR/Solvers/buildoutput/$SOLVER_ID/starexec_build_log
+
+safeCpAll "copying solver back" "$LOCAL_SOLVER_DIR" "$NEW_SOLVER_PATH"
+log "solver copied back to head node"
+log "updating build status to built and changing path for solver to $NEW_SOLVER_PATH"
+mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetSolverPath('$SOLVER_ID','$NEW_SOLVER_PATH')" 
+log "set build status to built on starexec for $SOLVER_ID"
+mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetSolverBuildStatus('$SOLVER_ID','2')"
+log "deleting build configuration from db for solver: $SOLVER_ID"
+mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL DeleteBuildConfig('$SOLVER_ID')"
+log "removing benchmark bench name: $BENCH_NAME id: $BENCH_ID from the db"
+mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL RemoveBenchmarkFromDatabase('$BENCH_ID')"
+
+rm $BENCH_PATH
 
 
+}
+
+#For build jobs this cleans up files used in the build script.
+
+function cleanUpAfterKilledBuildJob {
+ if [ $BUILD_JOB == "true" ]; then
+
+    log "Build job has been failed, cleaning up:"
+
+    mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetSolverBuildStatus('$SOLVER_ID','3')"
+    log "deleting build configuration from db for solver: $SOLVER_ID"
+    mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL DeleteBuildConfig('$SOLVER_ID')"
+    log "removing benchmark bench name: $BENCH_NAME id: $BENCH_ID from the db"
+    mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL RemoveBenchmarkFromDatabase('$BENCH_ID')"
+
+    BENCH_PATH_DIR=$(dirname $BENCH_PATH)
+
+    log "Deleting benchmark directory: $BENCH_PATH_DIR"
+
+    safeRm $BENCH_PATH_DIR
+    rm $BENCH_PATH
+
+ fi
+}
 
 
 function copyDependencies {
 safeCpAll "copying solver" "$SOLVER_PATH" "$LOCAL_SOLVER_DIR"
 log "solver copy complete"
-	if [ $SOLVER_CACHED -eq 0 ]; then
+if [[ ($SOLVER_CACHED -eq 0) && ($BUILD_JOB != "true") ]]; then
 		mkdir -p "$SOLVER_CACHE_PATH"
 		if mkdir "$SOLVER_CACHE_PATH/lock.lock" ; then
 			if [ ! -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
@@ -909,7 +1014,6 @@ log "solver copy complete"
 	cp "$RUNSOLVER_PATH" "$LOCAL_RUNSOLVER_PATH"
 	log "runsolver copy complete"
 	ls -l "$LOCAL_RUNSOLVER_PATH"
-
 	log "copying benchmark $BENCH_PATH to $LOCAL_BENCH_PATH on execution host..."
 	cp "$BENCH_PATH" "$LOCAL_BENCH_PATH"
 	log "benchmark copy complete"
@@ -930,35 +1034,37 @@ log "solver copy complete"
 	fi
 	
 	
-	
 	return $?	
 }
 
-# Saves the current output 
-function saveOutputAsBenchmark {
-	log "saving output as benchmark for stage $CURRENT_STAGE_NUMBER" 
-	CURRENT_OUTPUT_FILE=$SAVED_OUTPUT_DIR/$CURRENT_STAGE_NUMBER
+# Saves a file as a benchmark on Starexec
+# $1 The path to the file to save
+# $2 1 or 2. Whether to use the pair's benchmark name for the new benchmark name. If 2,
+# uses the name of the given file
+function saveFileAsBenchmark {
+	CURRENT_OUTPUT_FILE=$1
 	BENCH_NAME_ADDON="stage-"
-	
-	# if no suffix is give, we just use the suffix of the benchmark
+	FILE_NAME=$BENCH_NAME
+	if [ $2 -eq 2 ]
+	then
+		FILE_NAME=`basename $1`
+	fi
+	# if no suffix is given, we just use the suffix of the benchmark
 	if [ "$CURRENT_BENCH_SUFFIX" == "" ] ; then
-		if [[ "$BENCH_NAME" = *.* ]] ; then
-			CURRENT_BENCH_SUFFIX=".${BENCH_NAME##*.}"
+		if [[ "$FILE_NAME" = *.* ]] ; then
+			CURRENT_BENCH_SUFFIX=".${FILE_NAME##*.}"
 		fi
-		#CURRENT_BENCH_SUFFIX=$([[ "$BENCH_NAME" = *.* ]] && echo ".${BENCH_NAME##*.}" || echo '')
 	fi
 	 
-	CURRENT_BENCH_NAME=${BENCH_NAME%%.*}$BENCH_NAME_ADDON$CURRENT_STAGE_NUMBER
+	CURRENT_BENCH_NAME=${FILE_NAME%%.*}$BENCH_NAME_ADDON$CURRENT_STAGE_NUMBER
 	MAX_BENCH_NAME_LENGTH=$(($BENCH_NAME_LENGTH_LIMIT-${#CURRENT_BENCH_SUFFIX}))
 	CURRENT_BENCH_NAME=${CURRENT_BENCH_NAME:0:$MAX_BENCH_NAME_LENGTH}
 	CURRENT_BENCH_NAME="$CURRENT_BENCH_NAME$CURRENT_BENCH_SUFFIX"
 	
 	
-	CURRENT_BENCH_PATH=$BENCH_SAVE_DIR/$SPACE_PATH
+	CURRENT_BENCH_PATH=$BENCH_SAVE_DIR/$SPACE_PATH/$CURRENT_STAGE_NUMBER
 	
 	FILE_SIZE_IN_BYTES=`wc -c < $CURRENT_OUTPUT_FILE`
-	
-	
 	
 	createDir $CURRENT_BENCH_PATH
 	
@@ -970,6 +1076,109 @@ function saveOutputAsBenchmark {
 		cp $CURRENT_OUTPUT_FILE "$CURRENT_BENCH_PATH"
 		log "benchmark $CURRENT_BENCH_NAME copied to $CURRENT_BENCH_PATH"
 	fi
+}
+
+# sets the variable REMAINING_DISK_QUOTA with the number of bytes the user should be allowed
+# to write. This includes a 1G buffer for going over their quota
+function setRemainingDiskQuota {
+	DISK_USAGE=$(mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -N -e "CALL GetUserDiskUsage($USER_ID)")
+	log "user disk usage is $DISK_USAGE"
+	REMAINING_DISK_QUOTA=$(($DISK_QUOTA - $DISK_USAGE))
+	REMAINING_DISK_QUOTA=$(($REMAINING_DISK_QUOTA + 1073741824))
+	log "remaining user disk quota is"
+	log $REMAINING_DISK_QUOTA
+	if [ $REMAINING_DISK_QUOTA -lt 0 ]
+	then
+		REMAINING_DISK_QUOTA=0
+	fi
+}
+
+# Sets the DISK_QUOTA_EXCEEDED variable to 1 if the user is over their quota.
+# Option to copy back stdout 
+# Option to copy back other output files
+function setDiskQuotaExceeded {
+	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]
+	then
+		return
+	fi
+	getTotalOutputSizeToCopy $1 $2
+	setRemainingDiskQuota
+	if [ $DISK_SIZE -gt $REMAINING_DISK_QUOTA ]
+	then
+		DISK_QUOTA_EXCEEDED=1
+		# we may have already copied some data, so we want to delete that
+		safeRm $PAIR_OUTPUT_DIRECTORY
+	fi
+}
+
+# Gets the size, in bytes, of all the output we are copying back to the head node. If DISK_QUOTA_EXCEEDED
+# is already set, this will simply set DISK_QUOTA to 0, as we won't be copying anything
+# $1 The argument for whether we are copying back the stdout (1 = no copy, 2 = copy, 3 = copy + benchmark)
+# $2 The argument for whether we are copying back the other output files
+function getTotalOutputSizeToCopy {
+	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]
+	then
+		DISK_SIZE=0
+		return
+	fi
+	STDOUT_SIZE=0
+	OTHER_SIZE=0
+	if [ $1 -ne 1 ]
+	then
+		STDOUT_SIZE=`wc -c < $OUT_DIR/stdout.txt`
+	fi
+	
+	if [ $1 -eq 3 ]
+	then
+		# user is requesting two copies
+		STDOUT_SIZE=$(($STDOUT_SIZE * 2))
+	fi
+	log "found the following stdout size"
+	log $STDOUT_SIZE
+	
+	if [ $2 -ne 1 ]
+	then
+		OTHER_SIZE=`du -sb "$OUT_DIR/output_files" | awk '{print $1}'`
+	fi
+	
+	if [ $2 -eq 3 ]
+	then
+		# user is requesting two copies
+		OTHER_SIZE=$(($OTHER_SIZE * 2))
+	fi
+	log "found the following other files size"
+	log $OTHER_SIZE
+	DISK_SIZE=$(($OTHER_SIZE + $STDOUT_SIZE))
+	log "returning the following disk size"
+	log $DISK_SIZE
+}
+
+# Saves the current stdout as a new benchmark
+function saveStdoutAsBenchmark {
+	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]
+	then
+		log "not saving new benchmark: user disk quota has been exceeded"
+		return
+	fi
+	log "saving output as benchmark for stage $CURRENT_STAGE_NUMBER" 
+	saveFileAsBenchmark $SAVED_OUTPUT_DIR/$CURRENT_STAGE_NUMBER 1
+}
+
+# Saves the extra output directory as a new set of benchmarks
+function saveExtraOutputAsBenchmarks {
+	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]
+	then
+		log "not saving new benchmarks: user disk quota has been exceeded"
+		return
+	fi
+	OUTPUT_DIR=$SAVED_OUTPUT_DIR"/"$CURRENT_STAGE_NUMBER"_output/*"
+	for f in $OUTPUT_DIR 
+	do
+		if [ -f $f ]
+		then
+			saveFileAsBenchmark $f 2
+		fi
+	done
 }
 
 
@@ -995,4 +1204,53 @@ function verifyWorkspace {
 	fi		
 
 	return $?
+}
+
+# Marks this pair as having had a runscript error
+# $1 The current stage number
+function markRunscriptError {
+	sendStatus $ERROR_RUNSCRIPT
+    sendStatusToLaterStages $ERROR_RUNSCRIPT $(($1-1))
+    setRunStatsToZeroForLaterStages $(($1-1))
+}
+
+
+# this function checks to make sure that runsolver output was generated correctly.
+# runsolver output should have a terminating line that contains 'EOF'. If this is not present,
+# output was cut off for some reason and we should mark the pair as invalid
+# returns 0 if valid and 1 if invalid
+# $1 Output file to check
+# $2 The current stage number
+# $3 The SUPPRESS_TIMESTAMP param. If this is true, we cannot check for EOF, as it does not exist
+# $4 The benchmarking framework
+function isOutputValid {
+	log "checking to see if runsolver output is valid for stage $2"
+	if [ ! -f $1 ]; then
+    	log "Runsolver output could not be found"
+		markRunscriptError $2
+    	return 1
+	fi
+
+	log "Checking values of BENCHEXEC constant and benchmarking framework variable."
+	log "$4"
+	log "$BENCHEXEC"
+	if [ "$4" = "$BENCHEXEC" ] ; then
+		log "benchmarking framework was benchexec so there will be no EOF appended."
+		return 0
+	fi
+	
+	if [ "$3" = true ] ; then
+		log "no EOF line was appended, so we cannot check for it"
+		return 0
+	fi
+
+
+	LAST_LINE=`tail -n 1 $1`
+	if [[ $LAST_LINE == *"EOF"* ]]
+	then
+		log "Runsolver output was valid"
+		return 0
+	fi
+	log "runsolver output was not valid"
+	return 1
 }

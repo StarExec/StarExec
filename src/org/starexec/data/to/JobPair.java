@@ -311,10 +311,7 @@ public class JobPair extends Identifiable {
 
 		}
 		
-		
-		// just return the first stage if there is none marked as primary
 		return null;
-		
 	}
 	
 	/**
@@ -469,6 +466,10 @@ public class JobPair extends Identifiable {
 		}
 		return null;
 		
+	}
+
+	public boolean hasStage( int stageNumber ) {
+		return getStageFromNumber( stageNumber ) != null;
 	}
 	
 	/**

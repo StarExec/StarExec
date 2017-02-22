@@ -1,10 +1,13 @@
 package org.starexec.data.to;
 
-import org.apache.log4j.Logger;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
 import org.starexec.util.Util;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class DefaultSettings extends Identifiable {
 	public enum SettingType {
@@ -30,13 +33,14 @@ public class DefaultSettings extends Identifiable {
 		}
 		return null;
 	}
+
 }
 
 	private Integer primId;
 	private Integer preProcessorId;
 	private Integer postProcessorId;
 	private Integer benchProcessorId;
-	private Integer benchId;
+	private List<Integer> benchIds;
 	private Integer solverId;
 	private int wallclockTimeout;
 	private int cpuTimeout;
@@ -51,7 +55,7 @@ public class DefaultSettings extends Identifiable {
 		postProcessorId=null;
 		wallclockTimeout=10;
 		cpuTimeout=10;
-		benchId=null;
+		benchIds=new ArrayList<>();
 		solverId=null;
 		maxMemory=1073741824;
 		preProcessorId=null;
@@ -61,31 +65,80 @@ public class DefaultSettings extends Identifiable {
 		type=null;
 		setPrimId(-1);
 	}
-	public void setPreProcessorId(int preProcessorId) {
+
+	public static DefaultSettings copy(DefaultSettings settingsToCopy) {
+		return new DefaultSettings(
+				settingsToCopy.primId,
+		settingsToCopy.preProcessorId,
+		settingsToCopy.postProcessorId,
+		settingsToCopy.benchProcessorId,
+		settingsToCopy.benchIds,
+		settingsToCopy.solverId,
+		settingsToCopy.wallclockTimeout,
+		settingsToCopy.cpuTimeout,
+		settingsToCopy.maxMemory,
+		settingsToCopy.dependenciesEnabled,
+		settingsToCopy.name,
+		settingsToCopy.type
+		);
+	}
+
+	private DefaultSettings(
+			final Integer primId,
+			final Integer preProcessorId,
+			final Integer postProcessorId,
+			final Integer benchProcessorId,
+			final List<Integer> benchIds,
+			final Integer solverId,
+			final int wallclockTimeout,
+			final int cpuTimeout,
+			final long maxMemory,
+			final boolean dependenciesEnabled,
+			final String name,
+			final SettingType type
+	) {
+		this.primId=primId;
+		this.preProcessorId=preProcessorId;
+		this.postProcessorId=postProcessorId;
+		this.benchProcessorId=benchProcessorId;
+		this.benchIds=new ArrayList<>(benchIds);
+		this.solverId=solverId;
+		this.wallclockTimeout=wallclockTimeout;
+		this.cpuTimeout=cpuTimeout;
+		this.maxMemory=maxMemory;
+		this.dependenciesEnabled=dependenciesEnabled;
+		this.name=name;
+		this.type=type;
+	}
+
+	public void setPreProcessorId(Integer preProcessorId) {
 		this.preProcessorId = preProcessorId;
 	}
 	public Integer getPreProcessorId() {
 		return preProcessorId;
 	}
-	public void setPostProcessorId(int postProcessorId) {
+	public void setPostProcessorId(Integer postProcessorId) {
 		this.postProcessorId = postProcessorId;
 	}
 	public Integer getPostProcessorId() {
 		return postProcessorId;
 	}
-	public void setBenchProcessorId(int benchProcessorId) {
+	public void setBenchProcessorId(Integer benchProcessorId) {
 		this.benchProcessorId = benchProcessorId;
 	}
 	public Integer getBenchProcessorId() {
 		return benchProcessorId;
 	}
-	public void setBenchId(int benchId) {
-		this.benchId = benchId;
+	public void addBenchId(Integer benchId) {
+		benchIds.add(benchId);
 	}
-	public Integer getBenchId() {
-		return benchId;
+	public List<Integer> getBenchIds() {
+		return this.benchIds;
 	}
-	public void setSolverId(int solverId) {
+	public void setBenchIds(final List<Integer> benchIds) {
+		this.benchIds = benchIds;
+	}
+	public void setSolverId(Integer solverId) {
 		this.solverId = solverId;
 	}
 	public Integer getSolverId() {
@@ -138,7 +191,8 @@ public class DefaultSettings extends Identifiable {
 		return s.getName();
 	}
 	
-	public String getBenchmarkName() {
+	public String getBenchmarkName(Integer index) {
+		Integer benchId = benchIds.get(index);
 		if (benchId==null) {
 			return "None";
 		}
@@ -185,7 +239,12 @@ public class DefaultSettings extends Identifiable {
 		sb.append(" | ");
 		sb.append(this.getSolverId());
 		sb.append(" | ");
-		sb.append(this.getBenchId());
+		for(int i = 0; i < benchIds.size(); i++) {
+			sb.append(benchIds.get(i));
+			if (i != benchIds.size() - 1) {
+				sb.append(", ");
+			}
+		}
 		sb.append(" | ");
 		sb.append(this.getCpuTimeout());
 		sb.append(" | ");
@@ -198,13 +257,31 @@ public class DefaultSettings extends Identifiable {
 	/**
 	 * Checks for deep equality between this object and another DefaultSettings profile
 	 */
-	
+
 	@Override
 	public boolean equals(Object s) {
 		if (!(s instanceof DefaultSettings)) {
             return false;
 		}
 		DefaultSettings set=(DefaultSettings) s;
+
+		List<Integer> thisBenchIds = this.getBenchIds();
+		List<Integer> setBenchIds = set.getBenchIds();
+		if (this.getBenchIds().size() != set.getBenchIds().size()) {
+			return false;
+		}
+
+		Collections.sort(thisBenchIds);
+		Collections.sort(setBenchIds);
+
+		// If we make it past this loop we've established that the default bench ids are the same.
+		for (int i = 0; i < thisBenchIds.size(); i++) {
+			if (thisBenchIds.get(i) != setBenchIds.get(i)) {
+				return false;
+			}
+		}
+
+
 
 		return (this.getId()==set.getId() &&
 				Util.objectsEqual(this.getName(), set.getName()) &&
@@ -215,8 +292,6 @@ public class DefaultSettings extends Identifiable {
 				this.getCpuTimeout()==set.getCpuTimeout() &&
 				this.getWallclockTimeout()==set.getWallclockTimeout()&&
 				this.getMaxMemory()==set.getMaxMemory() &&
-				Util.objectsEqual(this.getSolverId(),set.getSolverId()) &&
-				Util.objectsEqual(this.getBenchId(),set.getBenchId()));
-		
+				Util.objectsEqual(this.getSolverId(),set.getSolverId()));
 	}
 }

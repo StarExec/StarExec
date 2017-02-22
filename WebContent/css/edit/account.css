@@ -139,3 +139,37 @@ input[type="text"] {
 	margin-top: 10px;
 	cursor:pointer;
 }
+
+@media only screen and (max-width: 767px) {
+	#wrapper #picSection {
+		width: 0%;
+	}
+
+	body td, body th {
+		text-align: center;
+	}
+
+	#settingActions button {
+		margin: 0 5px 5px 0;
+	}
+
+	#wrapper #showPicture {
+		display: none;
+	}
+
+	/*Hide the "change image" button*/
+	#wrapper #picSection ul {
+		display: none;
+	}
+
+	#wrapper #userDetail {
+		width: 100%;
+	}
+
+	#wrapper #personal tr > *:nth-child(1) {
+		width: 40%;
+	}
+	#wrapper #personal tr > *:nth-child(2) {
+		width: 60%;
+	}
+}

@@ -17,34 +17,18 @@ import org.starexec.data.to.Website;
 import org.starexec.data.to.Website.WebsiteType;
 
 public class SolverSecurity {
-	/**
-	 * Checks to see whether the given user can add a new website to the given solver
-	 * @param solverId The ID of the solver being checked
-	 * @param userId The ID of the user making the request
-	 * @param name The name to be given the new website
-	 * @param URL The URL of the new website
-	 * @return new ValidatorStatusCode(true) if the operation is allowed or a status code from ValidatorStatusCodes if not
-	 */
-	public static ValidatorStatusCode canAssociateWebsite(int solverId, int userId,String name, String URL) {
-		if (!userOwnsSolverOrIsAdmin(Solvers.get(solverId),userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to associate a website with this solver");
-		}
-		
-		if (!Validator.isValidWebsiteName(name) ) {
-			return new ValidatorStatusCode(false, "The website name is not formatted correctly. Please refer to the help pages to see the correct format");
-		}
-		
-		if (!Validator.isValidWebsite(URL)) {
-			return new ValidatorStatusCode(false, "The website url is not formatted correctly. Please refer to the help pages to see the correct format");
-		}
-		
-		
-		return new ValidatorStatusCode(true);
-	}
+
 	
+	/**
+	 * Checks whether the user can see the build log for the given solver. They must
+	 * own the solver or be an admin
+	 * @param solverId
+	 * @param userId
+	 * @return A validatorStatusCode object
+	 */
 	public static ValidatorStatusCode canUserSeeBuildLog(int solverId,int userId) {
 		Solver s=Solvers.get(solverId);
-		if (userId!=s.getUserId() &&!Users.isAdmin(userId) ) {
+		if (s==null || userId!=s.getUserId() &&!GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to see the build log for this solver");
 		}
 		return new ValidatorStatusCode(true);
@@ -71,25 +55,38 @@ public class SolverSecurity {
 	 * @param userId
 	 * @return
 	 */
-	
 	public static ValidatorStatusCode canUserAddConfiguration(int solverId, int userId) {
 		Solver s=Solvers.get(solverId);
 		if (s==null) {
 			return new ValidatorStatusCode(false, "The solver could not be found");
 		}
-		if (!Users.isAdmin(userId) && !(s.getUserId()==userId)) {
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId) && !(s.getUserId()==userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to add a configuration to this solver");
 		}
 		return new ValidatorStatusCode(true);
 	}
+
+	/**
+	 * Checks if a user can get an anonymou link for a solver.
+	 * @param solverId The id of the solver that we're getting a link for
+	 * @param userId The id of the user trying to get the anonymous link.
+	 * @author Albert Giegeich
+	 */
+	public static ValidatorStatusCode canUserGetAnonymousLink( int solverId, int userId ) {
+		if ( userOwnsSolverOrIsAdmin( Solvers.get( solverId ), userId )) {
+			return new ValidatorStatusCode( true );
+		} else {
+			return new ValidatorStatusCode( false, "You do not have permission to get an anonymous link for this solver." );
+		}
+	}
 	
 	/**
-	 * Checks to see whether the given user can add a new website to the given solver
+	 * Checks to see whether the given user can view the given solver
 	 * @param solverId The ID of the solver being checked
 	 * @param userId The ID of the user making the request
 	 * @return new ValidatorStatusCode(true) if the operation is allowed or a status code from ValidatorStatusCodes if not
 	 */
-	public static ValidatorStatusCode canViewWebsites(int solverId, int userId) {
+	public static ValidatorStatusCode canUserSeeSolver(int solverId, int userId) {
 		
 		if(!Permissions.canUserSeeSolver(solverId, userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to see this solver");
@@ -98,31 +95,7 @@ public class SolverSecurity {
 		return new ValidatorStatusCode(true);
 	}
 	
-	/**
-	 * Checks to see whether the given user is allowed to delete a website associated with a solver
-	 * @param solverId The ID of the solver that contains the site to be deleted
-	 * @param websiteId The ID of the website to be deleted
-	 * @param userId The ID of the user making the request
-	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
-	 */
-	public static ValidatorStatusCode canDeleteWebsite(int solverId,int websiteId,int userId){
-		if (!userOwnsSolverOrIsAdmin(Solvers.get(solverId),userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to delete websites from this solver");
-		}
-		List<Website> websites=Websites.getAllForJavascript(solverId,WebsiteType.SOLVER);
-		boolean websiteInSolver=false;
-		for (Website w : websites) {
-			if (w.getId()==websiteId) {
-				websiteInSolver=true;
-				break;
-			}
-		}
-		if (!websiteInSolver) {
-			return new ValidatorStatusCode(false, "The given website is not associated with the given solver");
-		}
-		
-		return new ValidatorStatusCode(true);
-	}
+
 	
 	/**
 	 * Checks to see whether the user can update a solver with the given attributes
@@ -169,6 +142,9 @@ public class SolverSecurity {
 		}
 		
 		Configuration c= Solvers.getConfiguration(configId);
+		if (c==null) {
+			return new ValidatorStatusCode(false, "The given configuration could not be found");
+		}
 		Solver solver = Solvers.getSolverByConfig(configId,false);
 
 		// If the old config and new config names are NOT the same, ensure the file pointed to by
@@ -231,7 +207,10 @@ public class SolverSecurity {
 	 * @return A ValidatorStatusCode
 	 */
 	public static ValidatorStatusCode canUserRecycleOrphanedSolvers(int userIdToDelete, int userIdMakingRequest) {
-		if (userIdToDelete!=userIdMakingRequest && !Users.isAdmin(userIdMakingRequest)) {
+		if (Users.get(userIdToDelete)==null) {
+			return new ValidatorStatusCode(false, "The given user does not exist");
+		}
+		if (userIdToDelete!=userIdMakingRequest && !GeneralSecurity.hasAdminWritePrivileges(userIdMakingRequest)) {
 			return new ValidatorStatusCode(false, "You do not have permission to recycle solvers belonging to another user");
 		}
 		
@@ -309,6 +288,16 @@ public class SolverSecurity {
 		return new ValidatorStatusCode(true);
 	}
 	
+	/**
+	 * Checks to see if the given user either owns the given solver or is an admin
+	 * @param solverId
+	 * @param userId
+	 * @return True if the user owns the solver OR is an admin, and false otherwise
+	 */
+	public static boolean userOwnsSolverOrIsAdmin(int solverId,int userId) {
+		return userOwnsSolverOrIsAdmin(Solvers.get(solverId), userId);
+	}
+	
 
 	/**
 	 * Checks to see if the given user either owns the given solver or is an admin
@@ -317,7 +306,7 @@ public class SolverSecurity {
 	 * @return True if the user owns the solver OR is an admin, and false otherwise
 	 */
 	public static boolean userOwnsSolverOrIsAdmin(Solver solver,int userId) {
-		return (solver.getUserId()==userId || Users.isAdmin(userId));
+		return (solver!=null && (solver.getUserId()==userId || GeneralSecurity.hasAdminWritePrivileges(userId)));
 	}
 	/**
 	 * Checks whether a user can remove a solver from a space
@@ -376,7 +365,9 @@ public class SolverSecurity {
 
 	public static ValidatorStatusCode canUserDeleteConfiguration(int configId, int userId) {
 		Configuration config=Solvers.getConfiguration(configId);
-		
+		if (config==null) {
+			return new ValidatorStatusCode(false, "The given configuration could not be found");
+		}
 		Solver solver = Solvers.get(config.getSolverId());
 		if (solver==null) {
 			return new ValidatorStatusCode(false, "The solver associated with the given configuration could not be found");
@@ -395,7 +386,7 @@ public class SolverSecurity {
 	 */
 	public static ValidatorStatusCode canUserDownloadSolver(int solverId, int userId) {
 		Solver s=Solvers.get(solverId);
-		boolean userHasAdminReadPrivileges = Users.hasAdminReadPrivileges(userId);
+		boolean userHasAdminReadPrivileges = GeneralSecurity.hasAdminReadPrivileges(userId);
 		if (!Permissions.canUserSeeSolver(s.getId(), userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to see this solver");
 		
@@ -432,6 +423,9 @@ public class SolverSecurity {
 	 */
 	public static ValidatorStatusCode canGetJsonConfiguration(int configId, int userId) {
 		Solver s=Solvers.getSolverByConfig(configId, true);
+		if (s==null) {
+			return new ValidatorStatusCode(false, "The given configuration could not be found");
+		}
 		if (!Permissions.canUserSeeSolver(s.getId(), userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to see the specified solver");
 		}

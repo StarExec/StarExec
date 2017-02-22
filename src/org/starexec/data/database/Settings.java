@@ -1,40 +1,47 @@
 package org.starexec.data.database;
 
-import org.apache.log4j.Logger;
+import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Space;
+import org.starexec.logger.StarLogger;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 public class Settings {
-	private static Logger log=Logger.getLogger(Settings.class);
-	protected static int addNewSettingsProfile(DefaultSettings settings) {
+	private static StarLogger log=StarLogger.getLogger(Settings.class);
+
+	public static int addNewSettingsProfile(DefaultSettings settings) {
 		Connection con=null;
 		CallableStatement procedure=null;
 		try {
 			con=Common.getConnection();
-			procedure = con.prepareCall("{CALL CreateDefaultSettings(?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?)}");
+			procedure = con.prepareCall("{CALL CreateDefaultSettings(?, ?, ?, ?, ?, ?,?,?,?,?,?,?)}");
 			procedure.setInt(1, settings.getPrimId());
 			procedure.setObject(2, settings.getPostProcessorId());
 			procedure.setInt(3, settings.getCpuTimeout());
 			procedure.setInt(4, settings.getWallclockTimeout());
 			procedure.setBoolean(5, settings.isDependenciesEnabled());
-			procedure.setObject(6, settings.getBenchId());
-			procedure.setLong(7,settings.getMaxMemory()); //memory initialized to 1 gigabyte
-			procedure.setObject(8,settings.getSolverId());
-			procedure.setObject(9, settings.getBenchProcessorId());
-			procedure.setObject(10,settings.getPreProcessorId());
-			procedure.setInt(11, settings.getType().getValue());
-			procedure.setString(12,settings.getName());
-			procedure.registerOutParameter(13, java.sql.Types.INTEGER);	
+			procedure.setLong(6,settings.getMaxMemory()); //memory initialized to 1 gigabyte
+			procedure.setObject(7,settings.getSolverId());
+			procedure.setObject(8, settings.getBenchProcessorId());
+			procedure.setObject(9,settings.getPreProcessorId());
+			procedure.setInt(10, settings.getType().getValue());
+			procedure.setString(11,settings.getName());
+			procedure.registerOutParameter(12, java.sql.Types.INTEGER);
 			procedure.executeUpdate();			
 
 			// Update the job's ID so it can be used outside this method
-			settings.setId(procedure.getInt(13));
+			settings.setId(procedure.getInt(12));
+
+			for (Integer benchId : settings.getBenchIds()) {
+				addDefaultBenchmark(settings.getId(), benchId);
+			}
+
 			return settings.getId();
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -43,8 +50,144 @@ public class Settings {
 			Common.safeClose(procedure);
 		}
 		return -1;
-	
 	}
+
+	/**
+	 * Adds a default benchmark for a given setting.
+	 * @param settingId the id of the setting to add a default benchmark to.
+	 * @param benchId the id of the benchmark to add to the setting.
+	 * @throws SQLException on database error.
+	 */
+	public static void addDefaultBenchmark(final int settingId, final int benchId) throws SQLException {
+		Common.update("{CALL AddDefaultBenchmark(?, ?)}", procedure -> {
+			procedure.setInt(1, settingId);
+			procedure.setInt(2, benchId);
+		});
+	}
+
+	/**
+	 * Deletes a default benchmark from a setting.
+	 * @param settingId the id of the DefaultSetting
+	 * @param benchId the id of the benchmark to delete.s
+	 * @throws SQLException on database error.
+	 */
+	public static void deleteDefaultBenchmark(final int settingId, final int benchId) throws SQLException {
+		Common.update("{CALL DeleteDefaultBenchmark(?, ?)}", procedure -> {
+			procedure.setInt(1, settingId);
+			procedure.setInt(2, benchId);
+		});
+	}
+
+	/**
+	 * Deletes all the default benchmarks for a given setting.
+	 * @param settingId the id of the setting for which to delete all default benchmarks.
+	 * @throws SQLException on database error.
+	 */
+	protected static void deleteAllDefaultBenchmarks(final int settingId) throws SQLException {
+		Common.update("{CALL DeleteAllDefaultBenchmarks(?)}",
+				procedure -> procedure.setInt(1, settingId));
+	}
+
+	/**
+	 * Deletes all the default benchmarks for a given setting using a Connection.
+	 * @param con the database connections to use to call the procedure.
+	 * @param settingId the id of the setting for which to delete all default benchmarks.
+	 * @throws SQLException on database error.
+	 */
+	protected static void deleteAllDefaultBenchmarks(final Connection con, final int settingId) throws SQLException {
+		Common.updateUsingConnection(con, "{CALL DeleteAllDefaultBenchmarks(?)}",
+				procedure -> procedure.setInt(1, settingId));
+	}
+
+
+
+	/**
+	 * Adds a default benchmark for a given setting using a connection.
+	 * @param con the database connection to use for the update.
+	 * @param settingId the id of the setting to add a default benchmark to.
+	 * @param benchId the id of the benchmark to add to the setting.
+	 * @throws SQLException on database error.
+	 */
+	protected static void addDefaultBenchmark(
+			final Connection con,
+			final int settingId,
+			final int benchId) throws SQLException {
+
+		Common.updateUsingConnection(con, "{CALL AddDefaultBenchmark(?, ?)}", procedure -> {
+			procedure.setInt(1, settingId);
+			procedure.setInt(2, benchId);
+		});
+	}
+
+
+	/**
+	 * Gets all the default benchmarks for a given setting.
+	 * @param settingId the id of the setting to get the default benchmarks for.
+	 * @return all the default benchmarks for a setting.
+	 * @throws SQLException on database error.
+	 */
+	public static List<Benchmark> getDefaultBenchmarks(final int settingId) throws SQLException {
+		return Common.query("{CALL GetDefaultBenchmarksForSetting(?)}",
+				procedure -> procedure.setInt(1, settingId),
+				Settings::resultsToBenchmarks);
+	}
+
+	/**
+	 * Gets all the default benchmarks for a given setting using a Connection.
+	 * @param con the connection to the database to use for the query.
+	 * @param settingId the id of the setting to get the default benchmarks for.
+	 * @return all the default benchmarks for a setting.
+	 * @throws SQLException on database error.
+	 */
+	protected static List<Benchmark> getDefaultBenchmarks(Connection con, final int settingId) throws SQLException {
+		return Common.queryUsingConnection(con, "{CALL GetDefaultBenchmarksForSetting(?)}",
+				procedure -> procedure.setInt(1, settingId),
+				Settings::resultsToBenchmarks);
+	}
+	private static List<Benchmark> resultsToBenchmarks(ResultSet results) throws SQLException {
+		List<Benchmark> benchmarks = new ArrayList<>();
+
+		while (results.next()) {
+			benchmarks.add(Benchmarks.resultToBenchmark(results));
+		}
+
+		return benchmarks;
+	}
+
+
+	/**
+	 * Gets the default benchmark ids for a given default setting.
+	 * @param settingId the id of the setting to get the default benchmark ids for.
+	 * @return a list of benchmark ids.
+	 * @throws SQLException on database error.
+	 */
+	public static List<Integer> getDefaultBenchmarkIds(final int settingId) throws SQLException {
+		return Common.query("{CALL GetDefaultBenchmarkIdsForSetting(?)}",
+				procedure -> procedure.setInt(1, settingId),
+				Settings::resultsToBenchmarkIds);
+	}
+
+	/**
+	 * Gets the default benchmark ids for a given default setting.
+	 * @param settingId the id of the setting to get the default benchmark ids for.
+	 * @return a list of benchmark ids.
+	 * @throws SQLException on database error.
+	 */
+	public static List<Integer> getDefaultBenchmarkIds(Connection con, final int settingId) throws SQLException {
+		return Common.query("{CALL GetDefaultBenchmarkIdsForSetting(?)}",
+				procedure -> procedure.setInt(1, settingId),
+				Settings::resultsToBenchmarkIds);
+	}
+
+	private static List<Integer> resultsToBenchmarkIds(ResultSet results) throws SQLException {
+		List<Integer> benchmarkIds = new ArrayList<>();
+		while (results.next()) {
+			benchmarkIds.add(results.getInt("default_bench_id"));
+		}
+		return benchmarkIds;
+	}
+
+
 	
 	/**
 	 * Given a DefaultSettings object with all of its fields set, including id,
@@ -58,21 +201,30 @@ public class Settings {
 		CallableStatement procedure=null;
 		try {
 			con=Common.getConnection();
-			procedure = con.prepareCall("{CALL UpdateDefaultSettings(?, ?, ?, ?, ?, ?,?,?,?,?)}");
+			Common.beginTransaction(con);
+
+
+			procedure = con.prepareCall("{CALL UpdateDefaultSettings(?, ?, ?, ?, ?, ?,?,?,?)}");
 			procedure.setObject(1, settings.getPostProcessorId());
 			procedure.setInt(2, settings.getCpuTimeout());
 			procedure.setInt(3, settings.getWallclockTimeout());
 			procedure.setBoolean(4, settings.isDependenciesEnabled());
-			procedure.setObject(5, settings.getBenchId());
-			procedure.setLong(6,settings.getMaxMemory()); //memory initialized to 1 gigabyte
-			procedure.setObject(7,settings.getSolverId());
-			procedure.setObject(8, settings.getBenchProcessorId());
-			procedure.setObject(9,settings.getPreProcessorId());
-			procedure.setInt(10,settings.getId());
-			procedure.executeUpdate();			
+			procedure.setLong(5,settings.getMaxMemory()); //memory initialized to 1 gigabyte
+			procedure.setObject(6,settings.getSolverId());
+			procedure.setObject(7, settings.getBenchProcessorId());
+			procedure.setObject(8,settings.getPreProcessorId());
+			procedure.setInt(9,settings.getId());
+			procedure.executeUpdate();
 
+			Settings.deleteAllDefaultBenchmarks(con, settings.getId());
+			for (Integer bid : settings.getBenchIds()) {
+				Settings.addDefaultBenchmark(con, settings.getId(), bid);
+			}
+
+			Common.endTransaction(con);
 			return true;
 		} catch (Exception e) {
+			Common.doRollback(con);
 			log.error(e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
@@ -87,28 +239,39 @@ public class Settings {
 	 * @param results
 	 * @return
 	 */
-	protected static DefaultSettings resultsToSettings(ResultSet results) {
+	protected static DefaultSettings resultsToSettings(ResultSet results) throws SQLException {
+		final String methodName = "resultsToSettings";
 		try {
 			DefaultSettings settings=new DefaultSettings();
 			settings.setId(results.getInt("id"));
 			settings.setPreProcessorId(results.getInt("pre_processor"));
+			if (results.wasNull()) {
+				settings.setPreProcessorId(null);
+			}
 			settings.setWallclockTimeout(results.getInt("clock_timeout"));
 			settings.setCpuTimeout(results.getInt("cpu_timeout"));
 			settings.setPostProcessorId(results.getInt("post_processor"));
+			if (results.wasNull()) {
+				settings.setPostProcessorId(null);
+			}
 			settings.setDependenciesEnabled(results.getBoolean("dependencies_enabled"));
-			settings.setBenchId(results.getInt("default_benchmark"));
 			settings.setSolverId(results.getInt("default_solver"));
+			if (results.wasNull()) {
+				settings.setSolverId(null);
+			}
 			settings.setBenchProcessorId(results.getInt("bench_processor"));
+			if (results.wasNull()) {
+				settings.setBenchProcessorId(null);
+			}
 			settings.setMaxMemory(results.getLong("maximum_memory"));
 			settings.setName(results.getString("name"));
 			settings.setPrimId(results.getInt("prim_id"));
 			settings.setType(results.getInt("setting_type"));
 			return settings;
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
+		} catch (SQLException e) {
+			log.error(methodName, "Caught SQL exception while getting results. Throwing...",e);
+			throw e;
 		}
-		return null;
-		
 	}
 	
 	/**
@@ -121,29 +284,43 @@ public class Settings {
 	public static List<DefaultSettings> getDefaultSettingsByPrimIdAndType(int id, SettingType type) {
 
 		Connection con=null;
-		CallableStatement procedure=null;
-		ResultSet results=null;
-		
+
 		try {
 			List<DefaultSettings> settings=new ArrayList<DefaultSettings>();
 			con=Common.getConnection();
-		    procedure = con.prepareCall("{CALL GetDefaultSettingsByIdAndType(?,?)}");
-		    procedure.setInt(1, id);
-		    procedure.setInt(2, type.getValue());
-			results=procedure.executeQuery();
-			while (results.next()) {
-				settings.add(resultsToSettings(results));
-			}
-			return settings;
+            return getDefaultSettingsByPrimIdAndType(con, id, type);
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
 		}
 		return null; //error;
 	}
+    protected static List<DefaultSettings> getDefaultSettingsByPrimIdAndType(Connection con, int id, SettingType type) {
+
+        CallableStatement procedure=null;
+        ResultSet results=null;
+
+        try {
+            List<DefaultSettings> settings=new ArrayList<DefaultSettings>();
+            procedure = con.prepareCall("{CALL GetDefaultSettingsByIdAndType(?,?)}");
+            procedure.setInt(1, id);
+            procedure.setInt(2, type.getValue());
+            results=procedure.executeQuery();
+            while (results.next()) {
+				DefaultSettings setting = resultsToSettings(results);
+				setting.setBenchIds(Settings.getDefaultBenchmarkIds(con, setting.getId()));
+                settings.add(setting);
+            }
+            return settings;
+        } catch (Exception e) {
+            log.error(e.getMessage(),e);
+        } finally {
+            Common.safeClose(procedure);
+            Common.safeClose(results);
+        }
+        return null; //error;
+    }
 	/**
 	 * Returns every DefaultSettings profile a user has access to, either by community
 	 * or individually
@@ -152,7 +329,7 @@ public class Settings {
 	 */
 	public static List<DefaultSettings>getDefaultSettingsVisibleByUser(int userId) {
 		List<DefaultSettings> listOfDefaultSettings=new ArrayList<DefaultSettings>();
-		List<Space> comms=Communities.getAll();
+		List<Space> comms=Communities.getAllCommunitiesUserIsIn(userId);
 		if (comms.size()>0) {
 			for (int i=0;i<comms.size();i++) {
 				DefaultSettings s=Communities.getDefaultSettings(comms.get(i).getId());
@@ -162,7 +339,23 @@ public class Settings {
 		}
 		List<DefaultSettings> userSettings=Settings.getDefaultSettingsOwnedByUser(userId);
 		if (userSettings!=null) {
-			
+			listOfDefaultSettings.addAll(userSettings);
+		}
+		return listOfDefaultSettings;
+	}
+
+	public static List<DefaultSettings>getDefaultSettingsVisibleByUser(Connection con, int userId) {
+		List<DefaultSettings> listOfDefaultSettings=new ArrayList<DefaultSettings>();
+		List<Space> comms=Communities.getAllCommunitiesUserIsIn(con, userId);
+		if (comms.size()>0) {
+			for (int i=0;i<comms.size();i++) {
+				DefaultSettings s=Communities.getDefaultSettings(con, comms.get(i).getId());
+				listOfDefaultSettings.add(s);
+
+			}
+		}
+		List<DefaultSettings> userSettings=Settings.getDefaultSettingsOwnedByUser(con, userId);
+		if (userSettings!=null) {
 			listOfDefaultSettings.addAll(userSettings);
 		}
 		return listOfDefaultSettings;
@@ -176,6 +369,10 @@ public class Settings {
 	public static List<DefaultSettings> getDefaultSettingsOwnedByUser(int userId) {
 		return getDefaultSettingsByPrimIdAndType(userId, SettingType.USER);
 	}
+
+    protected static List<DefaultSettings> getDefaultSettingsOwnedByUser(Connection con, int userId) {
+        return getDefaultSettingsByPrimIdAndType(con, userId, SettingType.USER);
+    }
 	
 	/**
 	 * Checks whether the given user has access to the given solver through a settings profile
@@ -184,7 +381,21 @@ public class Settings {
 	 * @return
 	 */
 	public static boolean canUserSeeSolverInSettings(int userId, int solverId) {
-		List<DefaultSettings> settings=Settings.getDefaultSettingsVisibleByUser(userId);
+		final String methodName = "canUserSeeSolverInSettings";
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			return canUserSeeSolverInSettings(con, userId, solverId);
+		} catch (Exception e) {
+			log.error("Caught exception", e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
+	}
+
+	public static boolean canUserSeeSolverInSettings(Connection con, int userId, int solverId) {
+		List<DefaultSettings> settings=Settings.getDefaultSettingsVisibleByUser(con, userId);
 		for (DefaultSettings s : settings) {
 			if (s.getSolverId()==null) {
 				continue;
@@ -194,8 +405,8 @@ public class Settings {
 			}
 		}
 		return false;
-	} 
-	
+	}
+
 	/**
 	 * Checks whether the given user has access to the given benchmark through a settings profile
 	 * @param userId
@@ -203,19 +414,32 @@ public class Settings {
 	 * @return
 	 */
 	public static boolean canUserSeeBenchmarkInSettings(int userId, int benchId) {
-		List<DefaultSettings> settings=Settings.getDefaultSettingsVisibleByUser(userId);
-		for (DefaultSettings s : settings) {
-			if (s.getBenchId()==null) {
-				continue;
-			}
-			if (s.getBenchId()==benchId) {
-				return true;
-			}
-		}
-		return false;
-	} 
-	
-	/**
+        List<DefaultSettings> settings=Settings.getDefaultSettingsVisibleByUser(userId);
+        for (DefaultSettings s : settings) {
+            if (s.getBenchIds().size() == 0) {
+                continue;
+            }
+            if (s.getBenchIds().contains(benchId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean canUserSeeBenchmarkInSettings(Connection con, int userId, int benchId) {
+        List<DefaultSettings> settings=Settings.getDefaultSettingsVisibleByUser(con, userId);
+        for (DefaultSettings s : settings) {
+            if (s.getBenchIds().size() == 0) {
+                continue;
+            }
+            if (s.getBenchIds().contains(benchId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
 	 * Deletes the DefaultSettings profile with the given ID
 	 * @param id 
 	 * @return True on success and false otherwise
@@ -243,7 +467,8 @@ public class Settings {
 	 * @param id 
 	 * @return
 	 */
-	public static DefaultSettings getProfileById(int id) {
+	public static DefaultSettings getProfileById(int id) throws SQLException {
+		final String methodName = "getProfileById";
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
@@ -253,16 +478,19 @@ public class Settings {
 			procedure.setInt(1,id);
 			results=procedure.executeQuery();
 			if (results.next()) {
-				return resultsToSettings(results);
+                DefaultSettings settings = resultsToSettings(results);
+                settings.setBenchIds(Settings.getDefaultBenchmarkIds(con, settings.getId()));
+				return settings;
 			}
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
+		} catch (SQLException e) {
+			log.error(methodName, "SQLException caught while querying database.", e);
+			throw e;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		return null; //error;
+		return null;
 	}
 	
 	

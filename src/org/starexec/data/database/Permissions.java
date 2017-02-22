@@ -6,18 +6,16 @@ import java.sql.ResultSet;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-import org.starexec.data.to.BenchmarkUploadStatus;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.Permission;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.SpaceXMLUploadStatus;
+import org.starexec.constants.R;
+import org.starexec.data.security.GeneralSecurity;
+import org.starexec.data.to.*;
+import org.starexec.logger.StarLogger;
 
 /**
  * Handles all database interaction for permissions
  */
 public class Permissions {
-	private static final Logger log = Logger.getLogger(Permissions.class);
+	private static final StarLogger log = StarLogger.getLogger(Permissions.class);
 
 	/**
 	 * Adds a new permission record to the database. This is an internal helper method.
@@ -64,14 +62,20 @@ public class Permissions {
 	 * @author Tyler Jensen
 	 */
 	
-	private static boolean canUserSeeBench(int benchId, int userId, Connection con) {
-		if (Benchmarks.isPublic(benchId)){
-			return true;
-		}	
-		if (Users.hasAdminReadPrivileges(userId)) {
+	public static boolean canUserSeeBench(Connection con, int benchId, int userId) {
+		Benchmark b = Benchmarks.getIncludeDeletedAndRecycled(con, benchId, false);
+		if (b==null) {
+			return false;
+		}
+		if (Benchmarks.isPublic(con, benchId)){
 			return true;
 		}
-		if (Settings.canUserSeeBenchmarkInSettings(userId, benchId)) {
+
+		User u=Users.get(con, userId);
+		if (u!=null && (u.getRole().equals(R.ADMIN_ROLE_NAME) || u.getRole().equals(R.DEVELOPER_ROLE_NAME))) {
+			return true;
+		}
+		if (Settings.canUserSeeBenchmarkInSettings(con, userId, benchId)) {
 			return true;
 		}
 
@@ -108,7 +112,7 @@ public class Permissions {
 		Connection con = null;			
 		try {
 			con = Common.getConnection();		
-			return canUserSeeBench(benchId, userId, con);
+			return canUserSeeBench(con, benchId, userId);
 		
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -129,14 +133,14 @@ public class Permissions {
 	 */
 	public static boolean canUserSeeBenchs(List<Integer> benchIds, int userId) {
 		Connection con = null;			
-		if (Users.isAdmin(userId)) {
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return true;
 		}
 		try {
 			con = Common.getConnection();		
 			//check the permissions for every benchmark
 			for(int id : benchIds) {
-				if (!canUserSeeBench(id,userId,con)) {
+				if (!canUserSeeBench(con, id,userId)) {
 					return false;
 				}
 			}			
@@ -169,7 +173,7 @@ public class Permissions {
 			if (j==null) {
 				return false;
 			}
-			if (Jobs.isPublic(jobId) || Users.hasAdminReadPrivileges(userId) ){
+			if (Jobs.isPublic(jobId) || GeneralSecurity.hasAdminReadPrivileges(userId) ){
 				return true;
 			}
 			
@@ -203,14 +207,18 @@ public class Permissions {
 	 * @author Tyler Jensen
 	 * 
 	 */
-	private static boolean canUserSeeSolver(int solverId, int userId, Connection con) {
-		if (Solvers.isPublic(solverId)){
+	public static boolean canUserSeeSolver(Connection con, int solverId, int userId) {
+		Solver s = Solvers.getIncludeDeleted(con, solverId);
+		if (s==null) {
+			return false;
+		}
+		if (Solvers.isPublic(con, solverId)){
 			return true;
 		}
-		if (Users.hasAdminReadPrivileges(userId)) {
+		if (GeneralSecurity.hasAdminReadPrivileges(con, userId)) {
 			return true;
 		}
-		if (Settings.canUserSeeSolverInSettings(userId, solverId)) {
+		if (Settings.canUserSeeSolverInSettings(con, userId, solverId)) {
 			return true;
 		}
 
@@ -247,7 +255,7 @@ public class Permissions {
 		Connection con = null;			
 		try {
 			con = Common.getConnection();	
-			return canUserSeeSolver(solverId,userId,con);
+			return canUserSeeSolver(con, solverId,userId);
 			
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -268,14 +276,14 @@ public class Permissions {
 	 */
 	public static boolean canUserSeeSolvers(Collection<Integer> solverIds, int userId) {
 		Connection con = null;			
-		if (Users.isAdmin(userId)) {
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return true;
 		}
 		try {
 			con = Common.getConnection();
 			//do the check for every solver
 			for(int id : solverIds) {	
-				if (!canUserSeeSolver(id,userId,con)) {
+				if (!canUserSeeSolver(con, id,userId)) {
 					return false;
 				}
 			}
@@ -290,7 +298,9 @@ public class Permissions {
 	}
 
 	/**
-	 * Checks to see if the user belongs to the given space.
+	 * Checks to see if the user belongs to the given space. Note that this is to check whether a user can 
+	 * see the details of a space, not to check whether they can see the space in the explorer tree due
+	 * to being a member of a subspace.
 	 * @param spaceId The space to check if the user can see
 	 * @param userId The user that is requesting to view the given space
 	 * @return True if the user belongs to the space, false otherwise
@@ -304,7 +314,7 @@ public class Permissions {
 		if (Spaces.isPublicSpace(spaceId)){
 			return true;
 		}
-		if (Users.hasAdminReadPrivileges(userId)) {
+		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return true;
 		}
 		Connection con = null;			
@@ -332,32 +342,6 @@ public class Permissions {
 	}
 
 	/**
-	 * Checks to see if the user belongs to the given upload status
-	 * @param statusId The space to check if the user can see
-	 * @param userId The user that is requesting to view the given upload status
-	 * @return True if the user owns the status, false otherwise
-	 * @author Benton McCune
-	 */
-	public static boolean canUserSeeBenchmarkStatus(int statusId, int userId) {		
-		if (Users.hasAdminReadPrivileges(userId)) {
-			return true;
-		}
-		BenchmarkUploadStatus status=Uploads.getBenchmarkStatus(statusId);
-		return status.getUserId()==userId;
-	}
-	
-	public static boolean canUserSeeSpaceXMLStatus(int statusId, int userId) {		
-		if (Users.hasAdminReadPrivileges(userId)) {
-			return true;
-		}
-		SpaceXMLUploadStatus status=Uploads.getSpaceXMLStatus(statusId);
-		return status.getUserId()==userId;
-	}
-
-
-
-	
-	/**
 	 * Retrieves the user's maximum set of permissions in a space.
 	 * @param userId The user to get permissions for	
 	 * @param spaceId The id of the space to get the user's permissions on
@@ -376,7 +360,7 @@ public class Permissions {
 		}
 		
 		//the admin has full permissions everywhere
-		if (Users.isAdmin(userId)) {
+		if (GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			log.debug("permissions for an admin were obtained userId = "+userId);
 			return Permissions.getFullPermission();
 		}
@@ -413,6 +397,13 @@ public class Permissions {
 					/* If the permission doesn't exist we always get a result
 					but all of it's values are null, so here we check for a 
 					null result and return null */
+					
+					if (GeneralSecurity.hasAdminReadPrivileges(userId)){ 
+						Permission empty = Permissions.getEmptyPermission();
+						empty.setAddSpace(true);
+						empty.setAddUser(true);
+						return empty;
+					}
 					return null;
 				}
 
@@ -431,7 +422,7 @@ public class Permissions {
 	
 	/**
 	 * Returns a permissions object with every permission set to true. The ID is not set
-	 * @return 
+	 * @return Permissions object
 	 * @author Eric Burns
 	 */
 	
@@ -453,7 +444,7 @@ public class Permissions {
 
 	/**
 	 * Returns a permissions object with every permission set to false. The ID is not set
-	 * @return 
+	 * @return Permissions object
 	 * @author Eric Burns
 	 */
 	
@@ -526,12 +517,6 @@ public class Permissions {
 	 * @param newPerm the new set of permissions to set
 	 * @return true iff the permissions were successfully set, false otherwise
 	 * @author Todd Elvers
-	 */
-	/**
-	 * @param userId
-	 * @param spaceId
-	 * @param newPerm
-	 * @return
 	 */
 	public static boolean set(int userId, int spaceId, Permission newPerm) {
 		Connection con = null;			

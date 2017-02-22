@@ -64,11 +64,9 @@ CREATE PROCEDURE CanViewJob(IN _jobId INT, IN _userId INT)
 DROP PROCEDURE IF EXISTS CanViewSpace;
 CREATE PROCEDURE CanViewSpace(IN _spaceId INT, IN _userId INT)
 	BEGIN
-			SELECT IF(
-				(SELECT COUNT(*)
-				FROM user_assoc 
-				WHERE space_id=_spaceId AND user_id=_userId)	-- Directly find how many times the user belongs to a space
-			> 0, 1, 0) AS verified;                             -- If there were more than 0 results, return 1, else return 0, and return under the name 'verified'
+		SELECT COUNT(*) -- will return 1 if the user is in the space and 0 if they are not
+		FROM user_assoc 
+		WHERE space_id=_spaceId AND user_id=_userId;
 	END //
 
 	

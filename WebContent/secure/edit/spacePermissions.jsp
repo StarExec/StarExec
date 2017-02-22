@@ -44,7 +44,7 @@
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
-<star:template title="edit permissions" js="util/spaceTree, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, edit/spacePermissions, util/datatablesUtility, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/delaySpinner, common/table, explore/common, explore/spaces, edit/spacePermissions">			
+<star:template title="edit permissions" js="util/spaceTree, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, edit/spacePermissions, util/datatablesUtility, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min, shared/sharedFunctions" css="common/delaySpinner, common/table, explore/common, explore/spaces, edit/spacePermissions">			
 	<span id="userId" value="${userId}" ></span>
 	<span id="isAdmin" value="${isAdmin}"></span>
 	<span id="spaceChain" value="${spaceChain}"></span>
@@ -63,12 +63,12 @@
 		<p id="spaceID" class="accent"></p>																			
 		<fieldset  id="userField">
 			<legend id="usersLegend" class="userExpd"><span>0</span> users</legend>
-			<table id="users">
+			<table id="usersTable">
 				<thead>
 					<tr>
 						<th>name</th>
 						<th>institution</th>
-						<th style="width:270px;">email</th>
+						<th>email</th>
 					</tr>
 				</thead>			
 			</table>
@@ -202,7 +202,7 @@
 
 				</tr>
 			</table>
-			<div id="dialog-confirm-update" title="confirm update">
+			<div id="dialog-confirm-update" title="confirm update" class="hiddenDialog">
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-update-txt"></span></p>
 			</div>
 		</fieldset>
@@ -215,7 +215,7 @@
 					<tr>
 						<th>name</th>
 						<th>institution</th>
-						<th style="width:270px;">email</th>
+						<th>email</th>
 					</tr>
 				</thead>			
 			</table>
@@ -241,7 +241,7 @@
 
 	</div>	
 	
-	<div id="dialog-confirm-change" title="confirm change">
+	<div id="dialog-confirm-change" title="confirm change" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-change-txt"></span></p>
 	</div>
 	

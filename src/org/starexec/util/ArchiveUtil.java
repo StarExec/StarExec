@@ -8,11 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.nio.ByteBuffer;
 import java.nio.file.attribute.FileTime;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -24,14 +21,14 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.IOUtils;
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.logger.StarLogger;
 
 /**
  * Contains helper methods for dealing with .zip files
  */
 public class ArchiveUtil {
-	private static final Logger log = Logger.getLogger(ArchiveUtil.class);	
+	private static final StarLogger log = StarLogger.getLogger(ArchiveUtil.class);
 	
 	/**
 	 * Gets the uncompressed size of an archive
@@ -133,6 +130,13 @@ public class ArchiveUtil {
 		}
 	}
 	
+	/**
+	 * Extracts an archive as the sandbox user, meaning the files extracted
+	 * will be owned by the sandbox user
+	 * @param fileName The absolute path to the archive
+	 * @param destination The directory to place the output in
+	 * @return True on success and false otherwise
+	 */
 	public static Boolean extractArchiveAsSandbox(String fileName,String destination) {
 		log.debug("ExtractingArchive for " + fileName);
 		try {
@@ -141,7 +145,7 @@ public class ArchiveUtil {
 				String[] unzipCmd = new String[7];
 				unzipCmd[0] = "sudo";
 				unzipCmd[1] = "-u";
-				unzipCmd[2] = "sandbox";
+				unzipCmd[2] = R.SANDBOX_USER_ONE;
 				unzipCmd[3] = "unzip";
 				unzipCmd[4] = fileName;
 				unzipCmd[5] = "-d";
@@ -157,7 +161,7 @@ public class ArchiveUtil {
 			        String[] tarCmd = new String[8];
 				tarCmd[0] = "sudo";
 				tarCmd[1] = "-u";
-				tarCmd[2] = "sandbox";
+				tarCmd[2] = R.SANDBOX_USER_ONE;
 				tarCmd[3] = "tar";
 				tarCmd[4] = "-xf";
 				tarCmd[5] = fileName;
@@ -377,9 +381,13 @@ public class ArchiveUtil {
 			}
 		}
 	}
-
-
-	
+	/**
+	 * Adds a raw string to a zip archive, saving the string in a file specified by zipFileName
+	 * @param zos
+	 * @param str
+	 * @param zipFileName
+	 * @throws Exception
+	 */
 	public static void addStringToArchive(ZipOutputStream zos, String str, String zipFileName) throws Exception {
 		ZipEntry entry=new ZipEntry(zipFileName);
 		zos.putNextEntry(entry);
@@ -403,10 +411,6 @@ public class ArchiveUtil {
 		}
 	}
 	
-	private static byte[] longToBytes(long l) {
-		return ByteBuffer.allocate(Long.SIZE / Byte.SIZE).putLong(l).array();
-	}
-	
 	/**
 	 * Adds the given source file to the given zip output stream using the given name
 	 * @param zos
@@ -414,20 +418,27 @@ public class ArchiveUtil {
 	 * @param zipFileName
 	 * @throws IOException
 	 */
-	public static void addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {
-		ZipEntry entry=new ZipEntry(zipFileName);
-		zos.putNextEntry(entry);
-		FileInputStream input=new FileInputStream(srcFile);
-		entry.setLastModifiedTime(FileTime.fromMillis(srcFile.lastModified()));
-		IOUtils.copy(input, zos);
-		zos.closeEntry();
-		input.close();
-	}
-	
+    public static void addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {
+         ZipEntry entry=new ZipEntry(zipFileName);
+         try{
+             zos.putNextEntry(entry);
+             FileInputStream input=new FileInputStream(srcFile);
+             entry.setLastModifiedTime(FileTime.fromMillis(srcFile.lastModified()));
+             IOUtils.copy(input, zos);
+             zos.closeEntry();
+             input.close();
+         } catch(java.io.FileNotFoundException e) {
+             if(srcFile.getCanonicalPath() == srcFile.getAbsolutePath()) {
+                 throw e;
+             }
+             log.debug("File not found exception probably broken symlink for: " + srcFile.getAbsolutePath());
+         }
+        
+    }	
 	/**
-	 * 
+	 * Given a zip file, returns the file that was modified most recently. Directories are not checked.
 	 * @param file
-	 * @return
+	 * @return The lastModified timestamp of the file that was most recently changed in the archive
 	 * @throws IOException 
 	 */
 	public static long getMostRecentlyModifiedFileInZip(File file) throws IOException {
@@ -450,7 +461,7 @@ public class ArchiveUtil {
 	 * @param zos
 	 * @param srcFile
 	 * @param zipFileName
-	 * @param modifiedAfter
+	 * @param earlyDate
 	 * @throws IOException
 	 */
 	public static void addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName,long earlyDate) throws IOException {
@@ -464,6 +475,13 @@ public class ArchiveUtil {
 		}
 	}
 	
+	/**
+	 * See addDirToArchive overload. All files are included with no date filter
+	 * @param zos
+	 * @param srcFile
+	 * @param zipFileName
+	 * @throws IOException
+	 */
 	public static void addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {
 		File[] files=srcFile.listFiles();
 		for (int index=0;index<files.length;index++) {
@@ -479,11 +497,12 @@ public class ArchiveUtil {
 	 * @param paths The list of files to add to the zip
 	 * @param output The outputstream to write to
 	 * @param baseName If not null or empty, all files will be in one directory with this name
-	 * @throws Exception
+	 * @throws IOException
 	 */
 	public static void createAndOutputZip(List<File> paths, OutputStream output, String baseName) throws IOException {
 		String newFileName=baseName;
 		ZipOutputStream stream=new ZipOutputStream(output);
+		Set<String> pathsSeen = new HashSet<>();
 		for (File f : paths) {
 			log.debug("adding new file to zip = "+f.getAbsolutePath());
 			log.debug("directory status = "+f.isDirectory());
@@ -492,17 +511,26 @@ public class ArchiveUtil {
 			} else {
 				newFileName=baseName+File.separator+f.getName();
 			}
+
+			if (pathsSeen.contains(newFileName)) {
+				continue;
+			} else {
+				pathsSeen.add(newFileName);
+			}
+
 			if (f.isDirectory()) {
 				addDirToArchive(stream,f,newFileName);
 			} else {
 				addFileToArchive(stream,f,newFileName);
 			}
 		}
+        stream.finish();
+        stream.flush();
 		stream.close();
 	}
 	/**
 	 * Writes a directory recursively to a zip file at the location indicated by the given output stream.
-	 * @param paths The directory or file to zip
+	 * @param path The directory or file to zip
 	 * @param output The outputstream to write to
 	 * @param baseName If not null or empty, all files will be in one directory with this name
 	 * @param removeTopLevel If true, includes all files in the given directory but not the directory itself. Basename will

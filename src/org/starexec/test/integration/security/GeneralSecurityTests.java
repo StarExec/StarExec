@@ -1,9 +1,11 @@
 package org.starexec.test.integration.security;
 
 import org.junit.Assert;
+import org.starexec.constants.R;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.to.User;
+import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
@@ -13,25 +15,6 @@ public class GeneralSecurityTests extends TestSequence {
 	User user1=null;
 	String plaintextPassword=null;
 	User admin=null;
-	
-	
-	@StarexecTest
-	private void CanRestartStarexecTest() {
-		Assert.assertEquals(true, GeneralSecurity.canUserRestartStarexec(admin.getId()).isSuccess());
-		Assert.assertNotEquals(true, GeneralSecurity.canUserRestartStarexec(user1.getId()).isSuccess());
-	}
-	
-	@StarexecTest
-	private void CanViewTestInfo() {
-		Assert.assertEquals(true, GeneralSecurity.canUserSeeTestInformation(admin.getId()).isSuccess());
-		Assert.assertNotEquals(true, GeneralSecurity.canUserSeeTestInformation(user1.getId()).isSuccess());
-	}
-	
-	@StarexecTest
-	private void CanUserChangeLoggingTest() {
-		Assert.assertEquals(true, GeneralSecurity.canUserChangeLogging(admin.getId()).isSuccess());
-		Assert.assertNotEquals(true, GeneralSecurity.canUserChangeLogging(user1.getId()).isSuccess());
-	}
 	
 	@StarexecTest 
 	private void canUserRunTests() {
@@ -61,15 +44,14 @@ public class GeneralSecurityTests extends TestSequence {
 	@Override
 	protected void setup() throws Exception {
 		plaintextPassword=Util.getTempPassword();
-		user1=ResourceLoader.loadUserIntoDatabase(plaintextPassword);
-		admin=Users.getAdmins().get(0);
+		user1=loader.loadUserIntoDatabase(plaintextPassword);
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 		
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Users.deleteUser(user1.getId(),admin.getId());
-		
+		loader.deleteAllPrimitives();
 	}
 
 }

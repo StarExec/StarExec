@@ -1,0 +1,64 @@
+
+@media only screen and (max-width: 767px) {
+	#explorer {
+		width: 100%;
+		float:none;
+	}
+
+	.jstree-icon {
+		width: 30px;
+	}
+
+	#wrapper #detailPanel {
+		width: 75%;
+		float: none;
+		margin: auto;
+		border-left: initial;
+	}
+
+	body fieldset {
+		width: 90%;
+	}
+
+	#leaders {
+		width: 100%;
+	}
+
+	#leaders td, #leaders th, #members td, #members th {
+		width: 50% !important;
+	}
+
+	#leaders tr > *:nth-child(2) {
+		display: none;
+	}
+
+	#members {
+		width: 100%;
+	}
+
+	#members tr > *:nth-child(2) {
+		display: none;
+	}
+
+	#commRequests {
+		width: 100%;
+	}
+
+	#commRequests tr > *:nth-child(1), #commRequests tr > *:nth-child(2), 
+	#commRequests tr > *:nth-child(4), #commRequests tr > *:nth-child(5) {
+		width: 25% !important;
+
+	}
+
+	#commRequests td, #commRequests th {
+		font-size: 12px;
+	}
+
+	#commRequests tr > *:nth-child(3) {
+		display: none;
+	}
+
+	body th, body td {
+		text-align: center;
+	}
+}

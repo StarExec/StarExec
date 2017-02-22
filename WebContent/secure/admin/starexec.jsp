@@ -6,11 +6,7 @@
 
 <%		
 	try {
-		int userId = SessionUtil.getUserId(request);
-		User u = Users.get(userId);
-		if (!Users.hasAdminReadPrivileges(userId)) {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Must be the administrator to access this page");
-		}
+		
 		request.setAttribute("debugModeActive", R.DEBUG_MODE_ACTIVE);
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given user id was in an invalid format");
@@ -29,8 +25,9 @@
 				<li><button id="clearStatsCache">Clear Job Stats</button></li>
 				<li><a href="${starexecRoot}/secure/admin/logging.jsp"><button type="button" id="manageLogging">manage logging</button></a></li>
 				<li><button type="button" id="clearLoadData">clear load balance data</button></li>
+				<li><button type="button" id="clearSolverCacheData">clear compute node solver cache</button></li>
 			</ul>
-			<div id="dialog-confirm-restart" title="confirm restart">
+			<div id="dialog-confirm-restart" title="confirm restart" class="hiddenDialog">
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-restart-txt"></span></p>
 			</div>	
 		</fieldset>

@@ -12,7 +12,7 @@ $(document).ready(function(){
 function initDataTables() {
 	// Setup the DataTable objects
 	userTable = $('#users').dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
+		"sDom"			: getDataTablesDom(),
 		"iDisplayStart"	: 0,
 		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
@@ -26,7 +26,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 
 	// Request the next page of primitives from the server via AJAX
 	$.post(  
-			sSource + "users/pagination",
+			sSource + "users/admin/pagination",
 			aoData,
 			function(nextDataTablePage){
 				s=parseReturnCode(nextDataTablePage);

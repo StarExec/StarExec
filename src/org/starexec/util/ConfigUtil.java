@@ -10,8 +10,8 @@ import java.util.Properties;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
+import org.starexec.logger.StarLogger;
 import org.w3c.dom.CharacterData;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -24,7 +24,7 @@ import org.w3c.dom.NodeList;
  *
  */
 public class ConfigUtil {
-	private static final Logger log = Logger.getLogger(ConfigUtil.class);
+	private static final StarLogger log = StarLogger.getLogger(ConfigUtil.class);
 	
 	// XML Metadata to parse starexec's config file	
 	private static String NODE_CLASS = "class";

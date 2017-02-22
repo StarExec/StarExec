@@ -7,3 +7,57 @@
 	width: 96%;
 	height:300px;	
 }
+
+@media only screen and (max-width: 767px) {
+	#explorer {
+		width: 100%;
+		float:none;
+	}
+
+	.jstree-icon {
+		width: 30px;
+	}
+
+	#wrapper #detailPanel {
+		width: 75%;
+		float: none;
+		margin: auto;
+		border-left: initial;
+	}
+
+	#detailField {
+		width: 90%;
+	}
+
+	#details {
+		width: 100%;
+	}
+	body #details tr > *:first-child {
+		width: 33.33% !important;
+	}
+	body #details tr > *:nth-child(2) {
+		width: 33.33% !important;
+	}
+	body #details tr > *:nth-child(3) {
+		width: 33.33% !important;
+	}
+	
+
+	#details tr > *:nth-child(4) {
+		display: none;
+	}
+	#details tr > *:nth-child(5) {
+		display: none;
+	}
+	#details tr > *:nth-child(6) {
+		display: none;
+	}
+	#details tr > *:nth-child(7) {
+		display: none;
+	}
+
+	#details td, #details th {
+		text-align: center;
+		font-size: 12px;
+	}
+}

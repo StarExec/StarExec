@@ -35,15 +35,27 @@ CREATE PROCEDURE GetIdByName(IN _queueName VARCHAR(64))
 DROP PROCEDURE IF EXISTS GetPendingJobs;
 CREATE PROCEDURE GetPendingJobs(IN _queueId INT)
 	BEGIN
-		SELECT distinct jobs.id, user_id,name,seed,primary_space, jobs.clockTimeout,
-		jobs.cpuTimeout,jobs.maximum_memory, jobs.suppress_timestamp, jobs.using_dependencies
+		SELECT distinct jobs.*
 		FROM jobs WHERE queue_id = _queueId 
 		AND EXISTS (select 1 from job_pairs FORCE INDEX (job_id_2) WHERE status_code=1 and job_id=jobs.id);
 	END //
+
+--Retreives all pending job pairs for a give queue owned by a developer
+DROP PROCEDURE IF EXISTS GetPendingDeveloperJobs;
+CREATE PROCEDURE GetPendingDeveloperJobs(IN _queueId INT)
+    BEGIN
+        SELECT DISTINCT jobs.*
+        FROM users u
+        INNER JOIN user_roles ur 
+            ON u.email = ur.email
+        INNER JOIN jobs
+            ON jobs.user_id = u.id 
+        WHERE ur.role = 'developer' OR ur.role = 'admin' AND queue_id = _queueId
+        AND EXISTS (select 1 from job_pairs FORCE INDEX (job_id_2) WHERE status_code=1 and job_id=jobs.id);
+    END //
 		
 -- Retrieves the number of enqueued job pairs for the given queue
 -- Author: Benton McCune and Aaron Stump
--- TODO: This might be slow. Think about a possible index on queueId?
 DROP PROCEDURE IF EXISTS GetNumEnqueuedJobs;
 CREATE PROCEDURE GetNumEnqueuedJobs(IN _queueId INT)
 	BEGIN
@@ -71,17 +83,7 @@ CREATE PROCEDURE GetCountOfEnqueuedJobPairsByQueue(IN _id INT)
 			-- Where the job_pair is running on the input Queue
 			INNER JOIN jobs AS enqueued ON job_pairs.job_id = enqueued.id
 		WHERE enqueued.queue_id = _id AND job_pairs.status_code = 2;
-	END //
-	
--- Retrieves basic info about running job pairs for the given node id
--- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetCountOfRunningJobPairsByQueue;
-CREATE PROCEDURE GetCountOfRunningJobPairsByQueue(IN _id INT)
-	BEGIN
-		SELECT count(*) AS count
-		FROM job_pairs
-		WHERE node_id = _id AND (status_code = 4 OR status_code = 3);
-		END //	
+	END //	
 
 -- Get the name of a queue given its id
 -- Author: Wyatt Kaiser
@@ -155,24 +157,6 @@ CREATE PROCEDURE RemoveQueueGlobal(IN _queueId INT)
 		WHERE id = _queueId;
 	END //
 	
--- Gets all of the queues that the given user is allowed to use
-DROP PROCEDURE IF EXISTS GetQueuesForUser;
-CREATE PROCEDURE GetQueuesForUser(IN _userID INT)
-	BEGIN
-		SELECT DISTINCT id, name, status, global_access, cpuTimeout,clockTimeout
-		FROM queues 
-			JOIN queue_assoc ON queues.id = queue_assoc.queue_id
-			LEFT JOIN comm_queue ON queues.id = comm_queue.queue_id
-		WHERE 	
-			queues.status = "ACTIVE"
-			AND (
-				(IsLeader(comm_queue.space_id, _userId) = 1)	-- Either you are the leader of the community it was given access to
-				OR
-				(global_access = true)							-- or it is a global queue
-				);				 
-	END //
-
-	
 -- Sets the test queue in the database to a new value
 DROP PROCEDURE IF EXISTS SetTestQueue;
 CREATE PROCEDURE SetTestQueue(IN _qid INT)
@@ -186,5 +170,58 @@ CREATE PROCEDURE GetTestQueue()
 	BEGIN
 		SELECT test_queue FROM system_flags;
 	END //
+
+-- Give the community (leaders) Access to a queue
+-- Author: Wyatt Kaiser
+DROP PROCEDURE IF EXISTS SetQueueCommunityAccess;
+CREATE PROCEDURE SetQueueCommunityAccess(IN _communityId INT, IN _queueId INT)
+	BEGIN
+		INSERT INTO comm_queue
+		VALUES (_communityId, _queueId);
+	END //
+		
+
+DROP PROCEDURE IF EXISTS GetPairsRunningOnNode;
+CREATE PROCEDURE GetPairsRunningOnNode(IN _nodeId INT)
+	BEGIN
+		SELECT job_pairs.id,
+			   job_pairs.path,
+			   job_pairs.primary_jobpair_data,
+			   job_pairs.job_id,
+			   job_pairs.bench_id,
+			   job_pairs.bench_name,
+			   job_pairs.queuesub_time,
+			   jobpair_stage_data.solver_id,
+			   jobpair_stage_data.solver_name,
+			   jobpair_stage_data.config_id,
+			   jobpair_stage_data.config_name,
+			   jobs.id,
+			   jobs.name,
+			   users.id,
+			   users.first_name,
+			   users.last_name
+		FROM job_pairs
+		JOIN jobs ON jobs.id = job_pairs.job_id
+		JOIN users ON users.id = jobs.user_id
+		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
+
+		WHERE node_id = _nodeId AND (job_pairs.status_code = 4 OR job_pairs.status_code = 3) AND jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data;
+	END //
 	
+	
+-- Gets all of the queues that the given user is allowed to use
+DROP PROCEDURE IF EXISTS GetQueuesForUser;
+CREATE PROCEDURE GetQueuesForUser(IN _userID INT)
+	BEGIN
+		SELECT DISTINCT id, name, status, global_access, cpuTimeout,clockTimeout
+		FROM queues 
+			LEFT JOIN comm_queue ON queues.id = comm_queue.queue_id
+		WHERE 	
+			queues.status = "ACTIVE"
+			AND (
+				(IsLeader(comm_queue.space_id, _userId) = 1)	-- Either you are the leader of the community it was given access to
+				OR
+				(global_access)							-- or it is a global queue
+				);				 
+	END //
 DELIMITER ; -- This should always be at the end of this file

@@ -16,16 +16,18 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.Comparator;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
+import org.starexec.data.to.*;
 import org.starexec.data.to.Solver.ExecutableType;
 import org.starexec.data.to.compare.SolverComparator;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.DataTablesQuery;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
@@ -35,7 +37,7 @@ import org.starexec.util.Util;
  * Handles all database interaction for solvers
  */
 public class Solvers {
-	private static final Logger log = Logger.getLogger(Solvers.class);
+	private static final StarLogger log = StarLogger.getLogger(Solvers.class);
 	private static DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT); 
 	private static final String CONFIG_PREFIX = R.CONFIGURATION_PREFIX;
 	
@@ -47,14 +49,15 @@ public class Solvers {
 	 * @return The solverID of the new solver, or -1 on failure
 	 * @author Skylar Stark
 	 */
-	public static int add(Solver s, int spaceId) {
+	public static int add(Solver s, int spaceId) throws SQLException {
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
 			long diskUsage=FileUtils.sizeOf(new File(s.getPath()));
+			s.setDiskSize(diskUsage);
 			// Add the solver
-			 procedure = con.prepareCall("{CALL AddSolver(?, ?, ?, ?, ?, ?, ?,?)}");
+			 procedure = con.prepareCall("{CALL AddSolver(?, ?, ?, ?, ?, ?, ?, ?,?)}");
 			procedure.setInt(1, s.getUserId());
 			procedure.setString(2, s.getName());
 			procedure.setBoolean(3, s.isDownloadable());
@@ -63,6 +66,7 @@ public class Solvers {
 			procedure.registerOutParameter(6, java.sql.Types.INTEGER);
 			procedure.setLong(7, diskUsage);
 			procedure.setInt(8,s.getType().getVal());
+			procedure.setInt(9, s.buildStatus().getCode().getVal());
 			
 			procedure.executeUpdate();
 			
@@ -77,14 +81,11 @@ public class Solvers {
 			}
 
 			return solverId;						
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
-		}		
-		
-		return -1;
+		}
 	}
 	
 	/**
@@ -95,7 +96,7 @@ public class Solvers {
 	 * configuration object
 	 * @author Skylar Stark
 	 */
-	protected static int addConfiguration(Connection con, Configuration c) throws Exception {
+	protected static int addConfiguration(Connection con, Configuration c) throws SQLException {
 		CallableStatement procedure = null;
 		try {
 			procedure = con.prepareCall("{CALL AddConfiguration(?, ?, ?, ?, ?)}");
@@ -107,12 +108,12 @@ public class Solvers {
 			procedure.executeUpdate();
 			c.setId(procedure.getInt(5));
 			return c.getId();
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			log.error("addConfiguration says "+e.getMessage(),e);
+			throw e;
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return -1;
 	}
 	/**
 	 * Adds a configuration entry in the database for a particular solver 
@@ -134,9 +135,6 @@ public class Solvers {
 			
 			// Update the disk size of the parent solver to include the new configuration file's size
 			Solvers.updateSolverDiskSize(con, s);
-			//invalidate the cache of any spaces with this solver
-			//Cache.invalidateSpacesAssociatedWithSolver(c.getSolverId());
-			//Cache.invalidateAndDeleteCache(c.getSolverId(), CacheType.CACHE_SOLVER);
 			
 			return newConfigId;						
 		} catch (Exception e){			
@@ -156,7 +154,7 @@ public class Solvers {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Skylar Stark
 	 */
-	protected static boolean associate(Connection con, int spaceId, int solverId) throws Exception {
+	protected static boolean associate(Connection con, int spaceId, int solverId) throws SQLException {
 		CallableStatement procedure = null;
 		try {
 			 procedure = con.prepareCall("{CALL AddSolverAssociation(?, ?)}");
@@ -164,14 +162,13 @@ public class Solvers {
 			procedure.setInt(2, solverId);
 			
 			procedure.executeUpdate();		
-			//Cache.invalidateAndDeleteCache(spaceId, CacheType.CACHE_SPACE);
 			return true;
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			log.error("Solvers.associate says "+e.getMessage(),e);
+			throw e;
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
 	
 	/**
@@ -204,43 +201,7 @@ public class Solvers {
 		solverIds.add(solverId);
 		return associate(solverIds,spaceId);
 	}
-	
-	/*
-	public static boolean associate(List<Integer> solverIds, int spaceId, int XMLUploadId) {
-		Connection con = null;			
-		int counter=0;
-		Timer timer=new Timer();
-		try {
-			con = Common.getConnection();
-			Common.beginTransaction(con);
-			
-			for(int sid : solverIds) {
-				Solvers.associate(con, spaceId, sid);
-				counter++;
-				if (timer.getTime()>R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
-					Uploads.incrementXMLCompletedSolvers(XMLUploadId, counter);
-					counter=0;
-					timer.reset();
-				}
-			}	
-			if (counter>0) {
-				Uploads.incrementXMLCompletedSolvers(XMLUploadId, counter);
 
-			}
-			Common.endTransaction(con);
-			
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);
-			Common.doRollback(con);
-		} finally {
-			Common.safeClose(con);
-		}
-		log.error("Failed to add solvers " + solverIds.toString() + " to space [" + spaceId + "]");
-		return false;
-	}
-	*/
-	
 	/**
 	 * Adds an association between all the given solver ids and the given space
 	 * @param solverIds the ids of the solvers we are associating to the space
@@ -273,6 +234,15 @@ public class Solvers {
 		return false;
 	}
 	
+	/**
+	 * Associates a set of solvers with a given space or space hierarchy
+	 * @param solverIds
+	 * @param rootSpaceId
+	 * @param linkInSubspaces Whether to link solvers recursively or not
+	 * @param userId ID of user making the request
+	 * @param includeRoot If linking recursivley, whether to include the space given by rootSpaceId
+	 * @return True on success and false otherwise
+	 */
 	public static boolean associate(List<Integer> solverIds, int rootSpaceId, boolean linkInSubspaces, int userId, boolean includeRoot) {
 		// Either copy the solvers to the destination space or the destination space and all of its subspaces (that the user can see)
 		if (linkInSubspaces) {
@@ -393,10 +363,17 @@ public class Solvers {
 			procedure=con.prepareCall("CALL GetDeletedSolvers()");
 			results=procedure.executeQuery();
 			while (results.next()) {
-				int id=results.getInt("id");
+				Solver s = resultSetToSolver(results);
+				if (new File(s.getPath()).exists()) {
+					log.warn("a deleted solver still has an on-disk directory! ID = "+s.getId());
+					if (!FileUtils.deleteQuietly(new File(s.getPath()))) {
+						log.warn("failed to delete solver on disk! Not removing solver from database.");
+						continue;
+					}
+				}
 				// the solver has been deleted AND it is not associated with any spaces or job pairs
-				if (!parentedSolvers.contains(id)) {
-					removeSolverFromDatabase(id,con);
+				if (!parentedSolvers.contains(s.getId())) {
+					removeSolverFromDatabase(s.getId(),con);
 				}
 			}	
 			return true;
@@ -446,6 +423,7 @@ public class Solvers {
 		newSolver.setDiskSize(s.getDiskSize());
 		newSolver.setDownloadable(s.isDownloadable());
 		newSolver.setType(s.getType());
+		newSolver.setBuildStatus(s.buildStatus());
 		File solverDirectory=new File(s.getPath());
 		
 		File uniqueDir = new File(R.getSolverPath(), "" + userId);
@@ -470,13 +448,20 @@ public class Solvers {
 	/**
 	 * Deletes a solver and permanently removes it from the database. This is NOT
 	 * the normal procedure for deleting a solver. It is used for testing. Calling "delete"
-	 * is typically what is desired
+	 * is typically what is desired.
 	 * @param id
-	 * @return
+	 * @return True on success and false otherwise.
 	 */
 	
 	public static boolean deleteAndRemoveSolver(int id) {
-		boolean success=delete(id);
+		Solver s = Solvers.getIncludeDeleted(id);
+		if (s==null) {
+			return true;
+		}
+		boolean success=true;
+		if (!s.isDeleted()) {
+			success=delete(id);
+		}
 		if (!success) {
 			return false;
 		}
@@ -493,20 +478,6 @@ public class Solvers {
 		return false;
 	}
 
-	/**
-	 * Deletes every solver in a list of solvers from disk and sets the deleted flag. 
-	 * @param solversToDelete the list of solvers to delete.
-	 * @author Albert Giegerich
-	 */
-	public static void deleteEach(List<Solver> solversToDelete) {
-		for (Solver solver : solversToDelete) {
-			boolean success = delete(solver.getId());
-			if (!success) {
-				log.error("Solver with id="+solver.getId()+" was not deleted successfully.");
-			}
-		}
-	}
-	
 	
 	/**
 	 * Sets the deleted flag of a solver and removes it from disk (cascading deletes handle all dependencies) 
@@ -530,7 +501,15 @@ public class Solvers {
 			procedure.setInt(1, id);
 			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
 			procedure.executeUpdate();
-			
+
+            String sourcePath = procedure.getString(2) + "_src";
+	        log.info("Deleting solver source from disk, path: " + sourcePath);
+			Util.safeDeleteDirectory(sourcePath);
+			File srcFile=new File(sourcePath);
+			if (srcFile.getParentFile().exists()) {
+				srcFile.getParentFile().delete();
+			}
+
 			// Delete solver file from disk, and the parent directory if it's empty
 			Util.safeDeleteDirectory(procedure.getString(2));
 			File file=new File(procedure.getString(2));
@@ -581,7 +560,8 @@ public class Solvers {
 		return false;
 	}
 	/**
-	 * Deletes a given configuration object's physical file from disk
+	 * Deletes a given configuration object's physical file from disk, then deletes the configuration in the 
+	 * database and updates the solver disk size in the database
 	 *
 	 * @param config the configuration whose physical file is to be deleted from disk
 	 * @return true iff the configuration object's corresponding physical file is successfully deleted from disk,
@@ -590,14 +570,27 @@ public class Solvers {
 	 */
 	public static boolean deleteConfigurationFile(Configuration config) {
 		try {
+			Solver s = Solvers.getSolverByConfig(config.getId(), false);
 			// Builds the path to the configuration object's physical file on disk, then deletes it from disk
-			File configFile = new File(Util.getSolverConfigPath(Solvers.getSolverByConfig(config.getId(),false).getPath(), config.getName()));
+			File configFile = new File(Util.getSolverConfigPath(s.getPath(), config.getName()));
 			if(configFile.delete()){
 				log.info(String.format("Configuration %d has been successfully deleted from disk.", config.getId()));
-				return true;
 			}
+			
+			
+			// Attempt to remove the configuration's entry in the database
+			if(!Solvers.deleteConfiguration(config.getId())){
+				return false;
+			}
+			
+			// Attempt to update the disk_size of the parent solver to reflect the file deletion
+			if(!Solvers.updateSolverDiskSize(s)){
+				return false;
+			}
+			return true;
+
 		} catch (Exception e) {
-			log.warn(e.getMessage(), e);
+			log.error(e.getMessage(), e);
 		}
 		
 		log.warn(String.format("Configuration %d has failed to be deleted from disk.", config.getId()));
@@ -633,14 +626,15 @@ public class Solvers {
 		setHierarchyExecutable(binDir);//should make entire hierarchy executable
 		return returnList;
 	}
-	
+
 	/**
 	 * @param con The connection to make the query on
 	 * @param solverId The id of the solver to retrieve
+	 * @param includeDeleted If true, also return any solvers marked as 'deleted'. Ignore such solvers otherwise
 	 * @return A solver object representing the solver with the given ID
 	 * @author Tyler Jensen
 	 */
-	protected static Solver get(Connection con, int solverId, boolean includeDeleted) throws Exception {	
+	public static Solver get(Connection con, int solverId, boolean includeDeleted) {	
 		CallableStatement procedure=null;
 		
 		ResultSet results= null;
@@ -654,7 +648,7 @@ public class Solvers {
 			procedure.setInt(1, solverId);					
 			results = procedure.executeQuery();
 			if(results.next()){
-				Solver s = resultToSolver(results,null);
+				Solver s = resultSetToSolver(results,null);
 				Common.safeClose(results);
 				return s;
 			}
@@ -669,29 +663,38 @@ public class Solvers {
 		return null;
 	}
 	
+	/**
+	 * 
+	 * @param solverId
+	 * @return The solver specified by the given ID. Null if the solver could not be found or has
+	 * been deleted
+	 */
 	public static Solver get(int solverId) {
 		return get(solverId,false);
 	}
-	
+
 	/**
 	 * @param solverId The id of the solver to retrieve
+	 * @param includeDeleted True to include solvers with a true 'deleted' flag in the DB
+	 * and false to exclude those solvers
 	 * @return A solver object representing the solver with the given ID
 	 * @author Tyler Jensen
 	 */
 	public static Solver get(int solverId, boolean includeDeleted) {
-		Connection con = null;			
-		
-		try {			
-			con = Common.getConnection();		
-			return Solvers.get(con, solverId,includeDeleted);		
-		} catch (Exception e){			
-			log.error("Solver get says " + e.getMessage(), e);		
+		Connection con = null;
+
+		try {
+			con = Common.getConnection();
+			return Solvers.get(con, solverId,includeDeleted);
+		} catch (Exception e){
+			log.error("Solver get says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;
 	}
+
 	
 	/**
 	 * @param solverIds The ids of the solvers to retrieve
@@ -757,7 +760,7 @@ public class Solvers {
 	 * 
 	 * @author Skylar Stark
 	 */
-	private static Solver getByConfigId(int configId) {
+	public static Solver getByConfigId(int configId) {
 		Connection con = null;			
 		ResultSet results=null;
 		CallableStatement procedure = null;
@@ -821,11 +824,26 @@ public class Solvers {
 	}
 	
 	/**
+	 * Retrieves a list of every solver the given user is allowed to use along with it's configs.
+	 * Solvers a user can see include solvers they own, solvers in public spaces,
+	 * and solvers in spaces the user is also in
+	 * @param userId
+	 * @return The list of solvers
+	 */
+	public static List<Solver> getByUserWithConfigs(int userId) {
+		List<Solver> solvers = getByUser( userId );
+		for(Solver s : solvers) {
+			s.getConfigurations().addAll(Solvers.getConfigsForSolver(s.getId()));
+		}
+		return solvers;
+	}
+
+	/**
 	 * Retrieves a list of every solver the given user is allowed to use. Used for quick jobs.
 	 * Solvers a user can see include solvers they own, solvers in public spaces,
 	 * and solvers in spaces the user is also in
 	 * @param userId
-	 * @return
+	 * @return The list of solvers
 	 */
 	public static List<Solver> getByUser(int userId) {
 		try {
@@ -927,6 +945,103 @@ public class Solvers {
 		
 		return null;
 	}
+
+	/**
+	 * Gets a list of solvers that appear in a job.
+	 * Only populates name, id, and configs.
+	 * @param jobId the id of the job that we want to get all the solvers for.
+	 * @return a list of solvers in the given job.
+	 * @throws SQLException on database failure.
+	 * @author Albert Giegerich
+	 */
+	public static List<Solver> getByJobSimpleWithConfigs( int jobId ) throws SQLException {
+		final String methodName = "getByJobSimpleWithConfigs";
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetAllSolversInJob(?)}");	
+			procedure.setInt(1, jobId);					
+
+			results = procedure.executeQuery();
+			List<Solver> solvers = new ArrayList<>();
+			while ( results.next() ) {
+				Solver s = new Solver();
+				s.setId( results.getInt("solver_id") );
+				s.setName( results.getString("solver_name") );
+				solvers.add( s );
+			}
+
+			for(Solver s : solvers) {
+				s.getConfigurations().addAll(Solvers.getConfigsForSolver(s.getId()));
+			}
+
+			return solvers;
+		} catch ( SQLException e ) {
+			log.error( methodName, "Caught an SQL exception. Database failed.");
+			throw e;
+		} finally {
+			Common.safeClose( results );
+			Common.safeClose( procedure );
+			Common.safeClose( con );
+		}
+	}
+
+	/**
+	 * Gets a set of all the id's of configs being used in a job.
+	 * @param jobId the id of the job for which to get configurations.
+	 * @return the set of configuration ids that are being used in the job.
+	 * @throws SQLException if something goes wrong in the database.
+	 * @author Albert Giegerich
+	 */
+	public static Set<Integer> getConfigIdSetByJob( int jobId ) throws SQLException {
+		List<Configuration> configurations = getConfigsByJobSimple( jobId );
+		Set<Integer> setOfConfigIds = new HashSet<>();
+		for ( Configuration c : configurations ) {
+			setOfConfigIds.add( c.getId() );
+		}
+		return setOfConfigIds;
+	}
+
+	/**
+	 * Gets all the configurations being used in a job.
+	 * @param jobId the id of the job for which to get configurations.
+	 * @return the list of configurations being used in the job.
+	 * @throws SQLException if something goes wrong in the database.
+	 * @author Albert Giegerich
+	 */
+	private static List<Configuration> getConfigsByJobSimple( int jobId ) throws SQLException {
+		final String methodName = "getConfigsByJob";
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetAllConfigsInJob(?)}");	
+			procedure.setInt(1, jobId);					
+
+			results = procedure.executeQuery();
+			List<Configuration> configs = new ArrayList<>();
+			while ( results.next() ) {
+				Configuration c = new Configuration();
+				c.setId( results.getInt("config_id") );
+				c.setName( results.getString("config_name") );
+				configs.add( c );
+			}
+
+			return configs;
+		} catch ( SQLException e ) {
+			log.error( methodName, "Caught an SQL exception. Database failed.");
+			throw e;
+		} finally {
+			Common.safeClose( results );
+			Common.safeClose( procedure );
+			Common.safeClose( con );
+		}
+	}
 	
 	/**
 	 * @param spaceId The id of the space to get solvers for
@@ -959,6 +1074,8 @@ public class Solvers {
 	 * Gets a list of all the unique solvers in the space hierarchy rooted
 	 * at the given space.
 	 * @param spaceId The root space of the hierarchy in question
+	 * @param userId The ID of the user making the request. Used to filter which spaces
+	 * the caller can see
 	 * @return A list of all the solvers associated with any space in the current hierarchy.
 	 * Duplicates are filtered out by solver id
 	 * @author Eric Burns
@@ -979,6 +1096,16 @@ public class Solvers {
 			}
 		}
 		return filteredSolvers;
+	}
+
+	public static Set<Integer> getConfigIdSetForSolver( int solverId ) {
+		List<Configuration> configs = getConfigsForSolver( solverId );
+		Set<Integer> configIds = new HashSet<>();
+		for ( Configuration c : configs ) {
+			configIds.add( c.getId() );
+		}
+
+		return configIds;
 	}
 	
 	
@@ -1019,12 +1146,7 @@ public class Solvers {
 		
 		return null;		
 	}
-	
-	public static boolean isTestSolver(int solverId) {
-		return Users.isTestUser(Solvers.get(solverId).getUserId());
-	}
 
-	
 	/**
 	 * Gets a particular Configuration on a connection
 	 * @param con The connection to query with
@@ -1032,7 +1154,7 @@ public class Solvers {
 	 * @return The configuration with the given id
 	 * @author Tyler Jensen
 	 */
-	protected static Configuration getConfiguration(Connection con, int configId) throws Exception {
+	protected static Configuration getConfiguration(Connection con, int configId) throws SQLException {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		 
@@ -1060,6 +1182,41 @@ public class Solvers {
 				
 		return null;
 	}
+
+    /**
+     *
+     * @param jobId The job id to get conflic
+     * @param stageId
+     * @return
+     * @throws SQLException
+     */
+	public static List<Benchmark> getConflictingBenchmarksInJobForStage(int jobId, int configId, int stageId) throws SQLException {
+       return Common.query("{CALL GetConflictingBenchmarksForConfigInJob(?,?,?)}", procedure -> {
+            procedure.setInt(1, jobId);
+		   	procedure.setInt(2, configId);
+            procedure.setInt(3, stageId);
+        }, results -> {
+            List<Benchmark> benchmarks = new ArrayList<>();
+            while (results.next()) {
+                benchmarks.add(Benchmarks.resultToBenchmark(results));
+            }
+            return benchmarks;
+        });
+    }
+
+	public static Integer getConflictsForConfigInJobWithStage(int jobId, int configId, int stageId) throws SQLException {
+		return Common.query("{CALL GetConflictsForConfigInJob(?, ?, ?)}", procedure -> {
+			procedure.setInt(1, jobId);
+			procedure.setInt(2, configId);
+			procedure.setInt(3, stageId);
+		}, results -> {
+			if (results.next()) {
+				return results.getInt("conflicting_benchmarks");
+			}
+			throw new SQLException("The database did not return a row for procedure GetConflictsForConfigInJob");
+		});
+	}
+
 	
 	/**
 	 * Gets a particular Configuration
@@ -1090,27 +1247,7 @@ public class Solvers {
 	 * @author Todd Elvers
 	 */
 	public static int getCountInSpace(int spaceId) {
-		Connection con = null;
-		ResultSet results=null;
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL GetSolverCountInSpace(?)}");
-			procedure.setInt(1, spaceId);
-			 results = procedure.executeQuery();
-
-			if (results.next()) {
-				return results.getInt("solverCount");
-			}
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-
-		return 0;
+		return getCountInSpace(spaceId, "");
 	}
 	
 	/**
@@ -1145,37 +1282,17 @@ public class Solvers {
 
 		return 0;
 	}
-	
-	
+
 	/**
-	 *  A method for the public job page.  Gets a default configuration for a solver
-	 *  and returns a singleton List with its id.  A default configuration is a configuration
-	 *  named "default" if it exists, or simply the first configuration if it doesn't.
-	 * @param solverId The solver id to get configurations for
-	 * @return A list with the default configuration Id for the solver 
-	 * @author Benton McCune
+	 * 
+	 * @param solverId
+	 * @return The given solver, even if it has been deleted. Null if the solver could not be found
 	 */
-	public static List<Integer> getDefaultConfigForSolver(int solverId){
-		List<Configuration> allConfigs = getConfigsForSolver(solverId);
-		List<Integer> defaultConfigList = new LinkedList<Integer>();
-		if (allConfigs!=null && allConfigs.size()>0){
-		Integer defaultConfig = allConfigs.get(0).getId();
-		for (Configuration c: allConfigs)
-		{
-			log.info("Configuration Name = " + c.getName() + ", id = " + c.getId());
-			if (c.getName().equals("default")){
-					defaultConfig = c.getId();
-					break;
-			}
-		}
-		log.info("default config has id " + defaultConfig);
-		defaultConfigList.add(defaultConfig);
-		}
-		return defaultConfigList;
-	}
-	
 	public static Solver getIncludeDeleted(int solverId) {
 		return get(solverId,true);
+	}
+	public static Solver getIncludeDeleted( Connection con, int solverId) {
+		return get(con, solverId,true);
 	}
 	
 	/**
@@ -1185,7 +1302,7 @@ public class Solvers {
 	 * @throws SQLException 
 	 */
 	private static Solver resultSetToSolver(ResultSet results) throws SQLException {
-		return resultToSolver(results,"");
+		return resultSetToSolver(results,"");
 	}
 	
 	/**
@@ -1193,7 +1310,6 @@ public class Solvers {
 	 * @author Benton McCune
 	 */
 	
-	//TODO: This does not currently return community default solvers
 	public static List<Solver> getPublicSolvers(){
 		Connection con = null;	
 		CallableStatement procedure = null;
@@ -1218,9 +1334,11 @@ public class Solvers {
 		}
 		return null;
 	}
-	
-	
-	
+	/**
+	 * 
+	 * @param userId
+	 * @return The number of recycled solvers owned by the given user
+	 */
 	public static int getRecycledSolverCountByUser(int userId) {
 		return getRecycledSolverCountByUser(userId,"");
 	}
@@ -1263,7 +1381,7 @@ public class Solvers {
 	 * if the solver does not exist
 	 * @author Tyler Jensen
 	 */
-	protected static Solver getSolverByConfig(Connection con, int configId, boolean includeDeleted) throws Exception {		
+	protected static Solver getSolverByConfig(Connection con, int configId, boolean includeDeleted) throws SQLException {
 		Configuration c = Solvers.getConfiguration(con, configId);
 		if (c==null) {
 			log.debug("getSolverByConfig called with configId = "+configId+" but config was null");
@@ -1271,9 +1389,9 @@ public class Solvers {
 		}
 		Solver s;
 		if (includeDeleted) {
-			s=Solvers.getIncludeDeleted(c.getSolverId());
+			s=Solvers.getIncludeDeleted(con, c.getSolverId());
 		} else {
-			s=Solvers.get(c.getSolverId());
+			s=Solvers.get(con, c.getSolverId(), false);
 		}
 		if (s==null) {
 			return null;
@@ -1285,6 +1403,7 @@ public class Solvers {
 	
 	/**
 	 * @param configId The id of the configuration to retrieve the owning solver for
+	 * @param includeDeleted Whether to include deleted solvers (deleted flag is true)
 	 * @return A solver object representing the solver that contains the given configuration
 	 * @author Tyler Jensen
 	 */
@@ -1336,6 +1455,8 @@ public class Solvers {
 	/**
 	 * Get the total count of the solvers belong to a specific user
 	 * @param userId Id of the user we are looking for
+	 * @param query The search query that solvers must match to be returned. Considers solver name
+	 * and description
 	 * @return The count of the solvers
 	 * @author Wyatt Kaiser
 	 */
@@ -1366,12 +1487,9 @@ public class Solvers {
 
 	/**
 	 * Get next page of the solvers belong to a specific user
-	 * @param startingRecord specifies the number of the entry where should the query start
-	 * @param recordsPerPage specifies how many records are going to be on one page
-	 * @param isSortedASC specifies whether the sorting is in ascending order
-	 * @param indexOfColumnSortedBy specifies which column the sorting is applied
-	 * @param searchQuery the search query provided by the client
+	 * @param query A DataTablesQuery object containing the parameters for the search
 	 * @param userId Id of the user we are looking for
+	 * @param recycled Whether to include recycled solvers
 	 * @return a list of Solvers belong to the user
 	 * @author Wyatt Kaiser + Eric Burns
 	 */
@@ -1388,7 +1506,7 @@ public class Solvers {
 			procedure.setString("query", query.getSearchQuery());
 			procedure.setBoolean("recycled", recycled);
 				
-			 results = procedure.executeQuery();
+			results = procedure.executeQuery();
 			List<Solver> solvers = new LinkedList<Solver>();
 			
 			// Only get the necessary information to display this solver
@@ -1509,9 +1627,8 @@ public class Solvers {
 	/**
 	 * This takes in a list of configuration ids and matches them up with the solvers they go with,
 	 * returning one solver object for each configuration.
-	 * @param solverIds A list of solvers to retrieve
 	 * @param configIds A list of configurations, where each one is retrieved along with the solvers in the given order.
-	 * @return A list of solvers, where each one has one configuration as specified in the configIds list
+	 * @return A list of solvers, where each one ownsconfiguration as specified in the configIds list
 	 * @author Tyler Jensen & Skylar Stark
 	 */
 	public static List<Solver> getWithConfig(List<Integer> configIds) {
@@ -1533,47 +1650,59 @@ public class Solvers {
 		return null;
 	}
 
+	public static boolean isPublic(Connection con, int solverId) {
+		final String methodName = "isPublic";
+		ResultSet results=null;
+		CallableStatement procedure = null;
+		try {
+			procedure = con.prepareCall("{CALL IsSolverPublic(?)}");
+			procedure.setInt(1, solverId);
+			results = procedure.executeQuery();
+
+			boolean publicSpace = false;
+			if (results.next()) {
+				publicSpace = (results.getInt("solverPublic") > 0);
+			}
+			if (publicSpace) {
+				return true;
+			}
+
+			Common.safeClose(results);
+
+			Common.safeClose(procedure);
+			//if the solver is in no public spaces, check to see if it is the default solver for some community
+			procedure = con.prepareCall("CALL IsSolverACommunityDefault(?)");
+			procedure.setInt(1, solverId);
+			results = procedure.executeQuery();
+			if (results.next()) {
+				return (results.getInt("solverDefault") > 0);
+			}
+		} catch(Exception e) {
+			log.error(methodName,"Caught Exception.", e);
+		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return false;
+	}
+
 	
 	
 	/**
 	 * A solver is public if it is in any public space or if it is the default solver for a community
 	 * @param solverId
-	 * @return
+	 * @return True on success and false otherwise
 	 */
 	public static boolean isPublic(int solverId) {
 		Connection con = null;
-		ResultSet results=null;
-		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL IsSolverPublic(?)}");
-			procedure.setInt(1, solverId);
-			 results = procedure.executeQuery();
-
-			boolean publicSpace=false;
-			if (results.next()) {
-				publicSpace= (results.getInt("solverPublic") > 0);
-			}
-			if (publicSpace) {
-				return true;
-			}
-			
-			Common.safeClose(results);
-
-			Common.safeClose(procedure);
-			//if the solver is in no public spaces, check to see if it is the default solver for some community
-			procedure=con.prepareCall("CALL IsSolverACommunityDefault(?)");
-			procedure.setInt(1,solverId);
-			results = procedure.executeQuery();
-			if (results.next()) {
-				return (results.getInt("solverDefault") > 0);
-			}
+			return isPublic(con, solverId);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
-			Common.safeClose(results);
-			Common.safeClose(procedure);
+
 		}
 
 		return false;
@@ -1634,7 +1763,6 @@ public class Solvers {
 	 * Returns whether a solver with the given ID is present in the database with the 
 	 * "recycled" column set to true
 	 * @param solverId The ID of the solver to check
-	 * @param the open connection to make the SQL call on
 	 * @return True if the solver exists in the database with the "recycled" column set to
 	 * true, and false otherwise
 	 * @author Eric Burns
@@ -1699,7 +1827,7 @@ public class Solvers {
 	 * that the user owns
 	 * @param solvers
 	 * @param userId
-	 * @return
+	 * @return True on success and false otherwise
 	 */
 	public static boolean recycleSolversOwnedByUser(Collection<Solver> solvers, int userId) {
 		boolean success=true;
@@ -1753,6 +1881,36 @@ public class Solvers {
 		}
 		return false;
 	}
+
+	public static List<Triple<Solver,Configuration,String>> getSolverConfigResultsForBenchmarkInJob(int jobId, int benchId, int stageNum) throws SQLException {
+		return Common.query("{CALL GetSolverConfigResultsForBenchmarkInJob(?,?,?)}", procedure -> {
+			procedure.setInt(1, jobId);
+			procedure.setInt(2, benchId);
+			procedure.setInt(3, stageNum);
+		}, results -> {
+            List<Triple<Solver,Configuration,String>> solverConfigResult = new ArrayList<>();
+			while (results.next()) {
+				Solver solver = resultSetToSolver(results, "s");
+				Configuration configuration = resultSetToConfiguration(results, "c");
+				String starexecResult = results.getString("attr_value");
+                solverConfigResult.add(new ImmutableTriple<>(solver, configuration, starexecResult));
+			}
+			return solverConfigResult;
+		});
+	}
+
+	private static String transformPrefix(String prefix) {
+		// first format the prefix so it is either empty OR is the prefix plus a period
+		if (prefix==null) {
+			return "";
+		}
+		if (!prefix.isEmpty()) {
+			return prefix + ".";
+		}
+
+		return "";
+	}
+
 	
 	
 	/**
@@ -1764,15 +1922,10 @@ public class Solvers {
 	 * @throws SQLException
 	 */
 	
-	protected static Solver resultToSolver(ResultSet results, String prefix) throws SQLException {
+	protected static Solver resultSetToSolver(ResultSet results, String prefix) throws SQLException {
 		Solver s=new Solver();
-		// first format the prefix so it is either empty OR is the prefix plus a period
-		if (prefix==null) {
-			prefix="";
-		}
-		if (!prefix.isEmpty()) {
-			prefix=prefix+".";
-		}
+
+		prefix = transformPrefix(prefix);
 	
 		s.setId(results.getInt(prefix+"id"));
 		s.setUserId(results.getInt(prefix+"user_id"));
@@ -1783,9 +1936,30 @@ public class Solvers {
 		s.setDownloadable(results.getBoolean(prefix+"downloadable"));
 		s.setDiskSize(results.getLong(prefix+"disk_size"));
 		s.setType(ExecutableType.valueOf(results.getInt("executable_type")));
-
+		s.setRecycled(results.getBoolean("recycled"));
+		s.setDeleted(results.getBoolean("deleted"));
+        SolverBuildStatus status = new SolverBuildStatus();
+        status.setCode(results.getInt(prefix+"build_status"));
+		s.setBuildStatus(status);
+		
 		return s;
 	}
+
+	public static Configuration resultSetToConfiguration(ResultSet results) throws SQLException {
+		return resultSetToConfiguration(results, "");
+	}
+
+	public static Configuration resultSetToConfiguration(ResultSet results, String prefix) throws SQLException {
+		prefix=transformPrefix(prefix);
+		Configuration config = new Configuration();
+		config.setId(results.getInt(prefix+"id"));
+		config.setDescription(results.getString(prefix+"description"));
+		config.setName(results.getString(prefix+"name"));
+		config.setSolverId(results.getInt(prefix+"solver_id"));
+		return config;
+	}
+
+
 	
 	
 	/**
@@ -1823,6 +1997,7 @@ public class Solvers {
 			
 			while (results.next()) {
 				Util.safeDeleteDirectory(results.getString("path")); 
+				Util.safeDeleteDirectory(results.getString("path")+"_src"); 
 				File buildOutput=Solvers.getSolverBuildOutput(results.getInt("id"));
 				if (buildOutput.exists()) {
 					Util.safeDeleteDirectory(buildOutput.getParent());
@@ -1847,6 +2022,7 @@ public class Solvers {
 	/**
 	 * Sets the "recycled" flag in the database to the given value. 
 	 * @param id the id of the solver to recycled or restored
+	 * @param state The value to assign to the recycled field
 	 * @return True if the operation was a success, false otherwise
 	 * @author Eric Burns
 	 */
@@ -2049,6 +2225,7 @@ public class Solvers {
 	 * Gets the timestamp of the configuration associated with this solver
 	 * that was added or updated the most recently
 	 * @param solverId The ID of the solver in question
+	 * @param con An open connection to make the call on
 	 * @return The timestamp as a string, or null on failure
 	 * @author Eric Burns
 	 */
@@ -2081,6 +2258,12 @@ public class Solvers {
 		return null;
 	}
 	
+	/**
+	 * Returns the path on disk to where a new solver should be stored
+	 * @param userId
+	 * @param solverName
+	 * @return The absolute path as a string
+	 */
 	public static String getDefaultSolverPath(int userId,String solverName) {
 		File uniqueDir = new File(R.getSolverPath(), "" + userId);
 		uniqueDir = new File(uniqueDir, solverName);
@@ -2106,7 +2289,8 @@ public class Solvers {
 	/**
 	 * Gets the ID of every orphaned solver the given user owns
 	 * @param userId 
-	 * @return
+	 * @return A list of IDs of solvers that are not in any spaces and are owned
+	 * by the given user
 	 */
 	public static List<Integer> getOrphanedSolvers(int userId) {
 		Connection con=null;
@@ -2135,7 +2319,7 @@ public class Solvers {
 	/**
 	 * Recycles all of the solvers a user has that are not in any spaces
 	 * @param userId The ID of the user who will have their solvers recycled
-	 * @return
+	 * @return True on success and false otherwise
 	 */
 	public static boolean recycleOrphanedSolvers(int userId) {
 		List<Integer> ids  = getOrphanedSolvers(userId);
@@ -2169,7 +2353,7 @@ public class Solvers {
 		}
 		searchQuery=searchQuery.toLowerCase();
 		List<Solver> filteredSolvers=new ArrayList<Solver>();
-		for (Solver s : filteredSolvers) {
+		for (Solver s : solvers) {
 			try {
 				if (s.getName().toLowerCase().contains(searchQuery) || s.getDescription().toLowerCase().contains(searchQuery)) {
 					filteredSolvers.add(s);
@@ -2186,11 +2370,12 @@ public class Solvers {
 	/**
 	 * Returns the Solvers needed to populate a DataTables page for a given user. Solvers include all
 	 * solvers the user can see
-	 * @query DataTablesQuery object containing data for this search
+	 * @param query DataTablesQuery object containing data for this search
+	 * 
 	 * @param userId ID of user to get solvers for
 	 * @param totals Size 2 array that, on return, will contain the total number of records as the first element
 	 * and the total number of elements after filtering as the second element
-	 * @return
+	 * @return Solvers to display on the next page, in order
 	 */
 	public static List<Solver> getSolversForNextPageByUser(DataTablesQuery query, int userId,int[] totals) {
 		List<Solver> solvers=Solvers.getByUser(userId);
@@ -2226,4 +2411,46 @@ public class Solvers {
 			}
 		}
 	}
+
+	/**
+	 * Sorts configurations alphabetically for a list of solvers 
+	 * @param solvers The list of solvers to sort configs for
+	 * @author Andrew Lubinus
+	 */
+    public static void sortConfigs(List<Solver> solvers) {
+        for(Solver s : solvers) {
+            Collections.sort(s.getConfigurations(), new Comparator<Configuration>() {
+                @Override
+                public int compare(Configuration c1, Configuration c2) {
+                    return c1.getName().compareTo(c2.getName());
+                }
+            });
+        }
+    }
+
+	/**
+	 * Sets the solver build status
+	 * @param s the solver id for the solver to be updated
+     * @param status the integer status code to be set
+	 * @author Andrew Lubinus
+	 */
+    public static boolean setSolverBuildStatus(Solver s, int status) {
+        Connection con = null;
+        CallableStatement procedure = null;
+        try {
+            con = Common.getConnection();
+            procedure = con.prepareCall("{CALL SetSolverBuildStatus(?, ?)}");
+            procedure.setInt(1, s.getId());
+            procedure.setInt(2, status);
+            procedure.executeUpdate();      
+            return true;
+                        
+        } catch (Exception e){          
+            log.error(e.getMessage(), e);       
+        } finally {
+            Common.safeClose(con);
+        }       
+        
+        return false;
+    }
 }

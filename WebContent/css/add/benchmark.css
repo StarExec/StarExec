@@ -37,3 +37,37 @@ button {
 #tblDefaultPerm tr th {
 	text-align: left;
 }
+
+@media only screen and (max-width: 767px) {
+	#uploadForm > fieldset {
+		width: 75%;
+	}
+
+	#tblDefaultPerm {
+		table-layout: auto;
+		width: 100%;
+	}
+
+	#wrapper #tblDefaultPerm th, #wrapper #tblDefaultPerm td {
+		width: 11px;
+		text-align: center;
+	}
+
+	#wrapper #tblDefaultPerm tr > *:nth-child(1){
+		width: 55px;
+		text-align: left;
+	}
+
+	#benchFile {
+		width: 100%;
+	}
+
+	#wrapper #tblDefaultPerm tr td {
+		padding-right: 0px;
+	}
+	
+	#wrapper #btnPrev {
+		float: left;
+		
+	}
+}

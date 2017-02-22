@@ -32,3 +32,17 @@ tr th {
 #actionField button {
 	float:right;
 }
+
+@media only screen and (max-width: 767px) {
+	body fieldset {
+		width: 85%;
+	}
+	
+	#processorSelectionTable td, #processorSelectionTable th {
+		width: 50%;
+	}
+
+	body #detailsTbl td, #detailsTbl th  {
+		width: 50%;
+	}
+}

@@ -12,9 +12,12 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.jfree.util.Log;
+import org.starexec.constants.R;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.StageAttributes;
+import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.util.Util;
 
 import com.google.gson.annotations.Expose;
@@ -26,6 +29,7 @@ import com.google.gson.annotations.Expose;
  */
 public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	private int userId = -1;		
+	private User user = null; // this is populated for the JobManager
 	@Expose private String name;
 	@Expose private String description = "no description"; 
 	private Queue queue = null;
@@ -34,6 +38,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	private int cpuTimeout = -1;
 	private int wallclockTimeout = -1; 
 	private long maxMemory;		//maximum memory the pair can use, in bytes
+	private BenchmarkingFramework benchmarkingFramework;
 	
 	
 	@Expose private Timestamp createTime;
@@ -47,7 +52,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	private boolean deleted; // if true, this job has been deleted on disk and exists only in the database so we can see space associations
 	private boolean paused; // if true, this job is currently paused
 
-	
+	private boolean buildJob;
 	//a list of all the stage attributes for this job, in no particular order
 	private List<StageAttributes> stageAttributes;
 
@@ -55,13 +60,17 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	private boolean suppressTimestamp;
 	
 	private boolean usingDependencies = false;
-	
+	private boolean isHighPriority = false;
+
+	private int totalPairs; // number of pairs this job owns
+	private long diskSize; // in bytes
 	public Job() {
 		jobPairs = new LinkedList<JobPair>();
 		
 		queue = new Queue();		
 		setStageAttributes(new ArrayList<StageAttributes>());
 		setSuppressTimestamp(false); // false is default
+		setBuildJob(false); //false is default
 	}
 	
 	/**
@@ -83,6 +92,27 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	 */
 	public int getPrimarySpace() {
 		return primarySpace;
+	}
+
+
+	public boolean isHighPriority() {
+		return isHighPriority;
+	}
+
+	public void setHighPriority() {
+		isHighPriority = true;
+	}
+
+	public void setLowPriority() {
+		isHighPriority = false;
+	}
+
+	public BenchmarkingFramework getBenchmarkingFramework() {
+		return benchmarkingFramework;
+	}
+
+	public void setBenchmarkingFramework(BenchmarkingFramework benchmarkingFramework) {
+		this.benchmarkingFramework = benchmarkingFramework;
 	}
 	
 	/**
@@ -320,13 +350,10 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 		
 		StageAttributes attrs=new StageAttributes();
 		attrs.setStageNumber(stageNumber);
-		attrs.setSpaceId(null);
 		attrs.setCpuTimeout(cpuTimeout);
 		attrs.setWallclockTimeout(wallclockTimeout);
 		attrs.setJobId(this.getId());
 		attrs.setMaxMemory(maxMemory);
-		attrs.setPostProcessor(null);
-		attrs.setPreProcessor(null);
 		return attrs;
 	}
 
@@ -356,5 +383,81 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 		this.usingDependencies = usingDependencies;
 	}
 
+	/**
+	 * Gets whether or not this is a buildjob
+	 * @return Whether or not the job is a build job
+	 * @author Andrew Lubinus
+	 */
+
+	public boolean isBuildJob() {
+		return buildJob;
+	}
+
+	/**
+	 * Sets whether or not this is a build job
+	 * @param buildJob boolean representing if this a build job or not
+	 * @author Andrew Lubinus
+	 */
+
+	public void setBuildJob(boolean buildJob) {
+		this.buildJob = buildJob;
+	}
 	
+	/**
+	 * Gets the name of the root space for this job. Doing this requires that at least one job pair
+	 * is populated and that it has the correct path info set.
+	 * @Return the root space name, or null if it cannot be found
+	 */
+	public String getRootSpaceName() {
+		if (getJobPairs().size()==0) {
+			return null;
+		}
+		String rootName=getJobPairs().get(0).getPath();
+		if (rootName.contains(R.JOB_PAIR_PATH_DELIMITER)) {
+			rootName=rootName.substring(0,rootName.indexOf(R.JOB_PAIR_PATH_DELIMITER));
+		}
+		return rootName;
+	}
+
+	/**
+	 * @return the totalPairs
+	 */
+	public int getTotalPairs() {
+		return totalPairs;
+	}
+
+	/**
+	 * @param totalPairs the totalPairs to set
+	 */
+	public void setTotalPairs(int totalPairs) {
+		this.totalPairs = totalPairs;
+	}
+
+	/**
+	 * @return the user
+	 */
+	public User getUser() {
+		return user;
+	}
+
+	/**
+	 * @param user the user to set
+	 */
+	public void setUser(User user) {
+		this.user = user;
+	}
+
+	/**
+	 * @return the diskSize
+	 */
+	public long getDiskSize() {
+		return diskSize;
+	}
+
+	/**
+	 * @param diskSize the diskSize to set
+	 */
+	public void setDiskSize(long diskSize) {
+		this.diskSize = diskSize;
+	}
 }

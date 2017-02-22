@@ -17,7 +17,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Path;
 
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.database.Processors;
@@ -25,6 +24,7 @@ import org.starexec.exceptions.StarExecException;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -39,7 +39,7 @@ import org.starexec.util.PartWrapper;
 @SuppressWarnings("serial")
 @MultipartConfig
 public class ProcessorManager extends HttpServlet {		
-	private static final Logger log = Logger.getLogger(ProcessorManager.class);
+	private static final StarLogger log = StarLogger.getLogger(ProcessorManager.class);
 
 	// The unique date stamped file name format (for saving processor files)
 	private static DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
@@ -92,7 +92,7 @@ public class ProcessorManager extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Multipart request expected");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.warn("Caught Exception in ProcessorManager.doPost", e);
 		}
 	}	
 	

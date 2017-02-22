@@ -14,8 +14,10 @@ import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
-/*
- * todo getfailedbenches, addfailedbench
+
+/**
+ * Tests for org.starexec.data.database.Uploads.java
+ * @author Eric
  */
 public class UploadTests extends TestSequence {
 	private User u=null;
@@ -276,8 +278,8 @@ public class UploadTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		u=ResourceLoader.loadUserIntoDatabase();
-		s=ResourceLoader.loadSpaceIntoDatabase(u.getId(), Communities.getTestCommunity().getId());
+		u=loader.loadUserIntoDatabase();
+		s=loader.loadSpaceIntoDatabase(u.getId(), Communities.getTestCommunity().getId());
 		bs=Uploads.getBenchmarkStatus(Uploads.createBenchmarkUploadStatus(s.getId(), u.getId()));
 		Assert.assertNotNull(bs);
 		ss=Uploads.getSpaceXMLStatus(Uploads.createSpaceXMLUploadStatus(u.getId()));
@@ -287,9 +289,7 @@ public class UploadTests extends TestSequence {
 
 	@Override
 	protected void teardown() throws Exception {
-		Spaces.removeSubspace(s.getId());
-		Users.deleteUser(u.getId(),Users.getAdmins().get(0).getId());
-		
+		loader.deleteAllPrimitives();
 	}
 
 }

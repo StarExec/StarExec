@@ -45,3 +45,22 @@ textarea {
 	height: 100px;
 	margin-left: 1px;
 }
+
+@media only screen and (max-width: 767px) {
+	#wrapper input {
+		width: 90%;
+	}
+
+	body #wrapper textarea {
+		width: 90%;
+	}
+
+	body #wrapper #configFile {
+		width: 90%;
+	}
+
+	#wrapper fieldset table tr td:first-child {
+		width: 30%;
+		margin: 0;
+	}
+}

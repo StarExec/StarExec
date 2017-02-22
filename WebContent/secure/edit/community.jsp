@@ -1,10 +1,10 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*, java.util.List,org.starexec.data.to.Website.WebsiteType, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*,org.starexec.data.security.*, java.util.List,org.starexec.data.to.Website.WebsiteType, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 	try {
 		int userId = SessionUtil.getUserId(request);
-		boolean admin = Users.hasAdminReadPrivileges(userId);
+		boolean admin =GeneralSecurity.hasAdminReadPrivileges(userId);
 		
 		request.setAttribute("isAdmin", admin);
 		request.setAttribute("communityNameLen", R.SPACE_NAME_LEN);
@@ -43,12 +43,8 @@
 			request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(settings.getMaxMemory()));
 			request.setAttribute("settingId",settings.getId());
 			try {
-				Benchmark bench=Benchmarks.get(settings.getBenchId());
-				if (bench!=null) {
-					request.setAttribute("defaultBenchmark", bench.getName());
-				} else {
-					request.setAttribute("defaultBenchmark", "none specified");
-				}
+				List<Benchmark> benches=Benchmarks.get(settings.getBenchIds());
+				request.setAttribute("defaultBenchmarks", benches);
 			} catch (Exception e) {
 				request.setAttribute("defaultBenchmark", "none specified");
 			}
@@ -172,7 +168,7 @@
 				<tbody>
 				<c:forEach var="proc" items="${bench_proc}">
 					<tr id="proc_${proc.id}">
-						<td><a href="${starexecRoot}/secure/edit/processor.jsp?type=bench&id=${proc.id}">${proc.name} <img class="extLink" src="${starexecRoot}/images/external.png"/> </a></td>
+						<td><a href="${starexecRoot}/secure/edit/processor.jsp?id=${proc.id}">${proc.name} <img class="extLink" src="${starexecRoot}/images/external.png"/> </a></td>
 						<td>${proc.description}</td>
 						<td>${proc.fileName}</td>
 					</tr>
@@ -298,9 +294,15 @@
 					</select>
 				</td>
 			</tr>
-			<tr id="defaultBenchRow">
-				<td>default benchmark</td>
-				<td>${defaultBenchmark} <a href="${defaultBenchLink}"><span class="selectPrim">select benchmark</span></a></td>
+			<c:forEach items="${defaultBenchmarks}" var="defaultBench">
+				<tr id="defaultBenchRow">
+					<td>default benchmark</td>
+					<td>${defaultBench.getName()}<span class="selectPrim deleteBenchmark" value="${defaultBench.id}">clear benchmark</span></td>
+				</tr>
+			</c:forEach>
+			<tr id="addDefaultBenchmark">
+				<td>new default benchmark</td>
+				<td><a href="${defaultBenchLink}"><span class="selectPrim">add benchmark</span></a></td>
 			</tr>
 			<tr id="defaultSolverRow">
 				<td>default solver</td>
@@ -323,7 +325,7 @@
 			<tbody>
 				<c:forEach var="proc" items="${pre_proc}">
 					<tr id="proc_${proc.id}">
-						<td><a href="${starexecRoot}/secure/edit/processor.jsp?type=pre&id=${proc.id}">${proc.name} <img class="extLink" src="${starexecRoot}/images/external.png"/> </a></td>
+						<td><a href="${starexecRoot}/secure/edit/processor.jsp?id=${proc.id}">${proc.name} <img class="extLink" src="${starexecRoot}/images/external.png"/> </a></td>
 						<td>${proc.description}</td>
 						<td>${proc.fileName}</td>
 					</tr>
@@ -384,7 +386,7 @@
 				<tbody>
 					<c:forEach var="proc" items="${post_proc}">
 						<tr id="proc_${proc.id}">
-							<td><a href="${starexecRoot}/secure/edit/processor.jsp?type=post&id=${proc.id}">${proc.name}<img class="extLink" src="${starexecRoot}/images/external.png"/>  </a></td>
+							<td><a href="${starexecRoot}/secure/edit/processor.jsp?id=${proc.id}">${proc.name}<img class="extLink" src="${starexecRoot}/images/external.png"/>  </a></td>
 							<td>${proc.description}</td>
 							<td>${proc.fileName}</td>
 						</tr>
@@ -445,7 +447,7 @@
 				<tbody>
 					<c:forEach var="proc" items="${update_proc}">
 						<tr id="proc_${proc.id}">
-							<td><a href="${starexecRoot}/secure/edit/processor.jsp?type=post&id=${proc.id}">${proc.name}<img class="extLink" src="${starexecRoot}/images/external.png"/>  </a></td>
+							<td><a href="${starexecRoot}/secure/edit/processor.jsp?id=${proc.id}">${proc.name}<img class="extLink" src="${starexecRoot}/images/external.png"/>  </a></td>
 							<td>${proc.description}</td>
 							<td>${proc.fileName}</td>
 						</tr>
@@ -493,7 +495,7 @@
 			</table>
 		</form>
 	</fieldset>
-	<div id="dialog-confirm-delete" title="confirm delete">
+	<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>
 </star:template>

@@ -1,9 +1,8 @@
-	-- Gets the fewest necessary Benchmarks in order to service a client's
+-- Gets the fewest necessary Benchmarks in order to service a client's
 -- request for the next page of Benchmarks in their DataTable object.  
 -- This services the DataTable object by supporting filtering by a query, 
 -- ordering results by a column, and sorting results in ASC or DESC order.
 -- Gets benchmarks across all spaces for one user. Excludes deleted benchmarks
--- TODO: Make this look like the space version, assuming that one works correctly
 -- Author: Wyatt Kaiser
 
 	

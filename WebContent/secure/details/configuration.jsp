@@ -42,7 +42,7 @@ try {
 }
 %>
 
-<star:template title="edit ${config.name}" css="details/configuration, details/shared" js="details/configuration, details/shared">
+<star:template title="${config.name}" css="details/configuration, details/shared" js="details/configuration, details/shared">
 	<input type="hidden" id="solverId" value="${solver.id}"/>
 	<fieldset>
 		<legend>details</legend>
@@ -73,7 +73,7 @@ try {
 		<legend>contents</legend>			
 		<textarea id="contents" readonly="readonly">${contents}</textarea>	
 	</fieldset>
-	<div id="dialog-confirm-delete" title="confirm delete">
+	<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>
 	<c:if test="${ownerId == user.id}">

@@ -47,7 +47,7 @@ function setupHandlersForCommunityRequestAcceptDeclineButtons() {
 function initCommunityRequestsTable(tableSelector, getAllCommunities, communityId) {
 	'use strict';
 	return $(tableSelector).dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
+		"sDom"			: getDataTablesDom(),
 		"iDisplayStart"	: 0,
 		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
@@ -133,3 +133,117 @@ function buildPaginationHandler(getAllCommunities, communityId) {
 }
 
 /*-------------------------------END SHARED BETWEEN admin/community AND explore/communities------------------------------*/
+
+/*-------------------------------BEGIN SHARED BETWEEN explore/spaces AND edit/spacePermissions---------------------------*/
+
+/**
+ * Populates the space details of the currently selected space and queries
+ * for the primitives of any fieldsets that are expanded
+ * @param jsonData the basic information about the currently selected space
+ */
+function populateSpaceDetails(jsonData, id) {
+	// If the space is null, the user can see the space but is not a member
+	if(jsonData.space == null) {
+		// Go ahead and show the space's name
+		$('.spaceName').fadeOut('fast', function(){
+			$('.spaceName').text($('.jstree-clicked').text()).fadeIn('fast');
+		});
+
+		// Show a message why they can't see the space's details
+		$('#spaceDesc').fadeOut('fast', function(){
+			$('#spaceDesc').text('you cannot view this space\'s details since you are not a member. you can see this space exists because you are a member of one of its descendants.').fadeIn('fast');
+		});		
+		$('#spaceID').fadeOut('fast');
+		// Hide all the info table fieldsets
+		$('#detailPanel fieldset').fadeOut('fast');		
+		$('#loader').hide();
+
+		// Stop executing the rest of this function
+		return;
+	} else {
+		// Or else the user can see the space, make sure the info table fieldsets are visible
+		$('#userField').show(); // this fieldset is present only on the spacePermissions page
+		$('#detailPanel fieldset').show();
+	}
+
+	// Update the selected space id
+	spaceId = jsonData.space.id;
+	spaceName = jsonData.space.name;
+
+	
+	// Populate space defaults
+	$('.spaceName').fadeOut('fast', function(){
+		$('.spaceName').text(jsonData.space.name).fadeIn('fast');
+	});
+	$('#spaceDesc').fadeOut('fast', function(){
+		$('#spaceDesc').text(jsonData.space.description).fadeIn('fast');
+	});	
+	$('#spaceID').fadeOut('fast', function() {
+		$('#spaceID').text("id = "+spaceId).fadeIn('fast');
+	});
+	
+	
+	// on the space permissions page, we display when the user is the space leader
+	if(spaceId != "1"){
+	    curIsLeader = jsonData.perm.isLeader;
+	} else {
+		curIsLeader = false;
+	}	
+	$('#spaceLeader').fadeOut('fast', function(){
+		if(curIsLeader){
+		    $('#spaceLeader').text("leader of current space").fadeIn('fast');
+		}
+	});
+	/*
+	 * Issue a redraw to all DataTable objects to force them to requery for
+	 * the newly selected space's primitives.  This will effectively clear
+	 * all entries in every table, update every table with the current space's
+	 * primitives, and update the number displayed in every table's fieldset.
+	 */
+	redrawAllTables()
+
+	// Check the new permissions for the loaded space. Varies between spaces.js and spacePermissions.js
+	checkPermissions(jsonData.perm, id);
+
+	// Done loading, hide the loader
+	$('#loader').hide();
+
+	log('Client side UI updated with details for ' + spaceName);
+}
+
+/**
+ * Populates the space details panel with the basic information about the space
+ * (e.g. the name, description) but does not query for details about primitives 
+ */
+function getSpaceDetails(id) {
+	$('#loader').show();
+	$.post(  
+			starexecRoot+"services/space/" + id,  
+			function(data){ 
+				log('AJAX response received for details of space ' + id);
+				populateSpaceDetails(data, id);			
+			},  
+			"json"
+	).error(function(){
+		showMessage('error',"Internal error getting space details",5000);
+	});
+}
+
+/*-------------------------------END SHARED BETWEEN explore/spaces AND edit/spacePermissions-----------------------------*/
+
+/*-------------------------------BEGIN SHARED BETWEEN admin/permissions AND edit/spacePermissions------------------------*/
+
+
+function getPermissionDetails(user_id, space_id) {	
+	$.get(  
+		starexecRoot+"services/permissions/details/" + user_id + "/" + space_id,  
+		function(data){  			
+		    populatePermissionDetails(data, user_id);			
+		},  
+		"json"
+	).error(function(){
+		showMessage('error',"Internal error getting selectd user's permission details",5000);
+	});
+}
+/*-------------------------------END SHARED BETWEEN admin/permissions AND edit/spacePermissions-------------------------*/
+

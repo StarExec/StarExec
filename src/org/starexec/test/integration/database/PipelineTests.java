@@ -17,6 +17,7 @@ import org.starexec.test.resources.ResourceLoader;
  * @author Eric
  *
  */
+//TODO: Write tests for getting pipelines by job
 public class PipelineTests extends TestSequence {
 	User u=null;
 	Solver s=null;
@@ -35,37 +36,33 @@ public class PipelineTests extends TestSequence {
 		Assert.assertEquals(pipe.getId(),p.getId());
 		Assert.assertEquals(pipe.getStages().size(),p.getStages().size());
 		for (int i=0;i<pipe.getStages().size();i++) {
-			Assert.assertEquals(pipe.getStages().get(i).getId(),p.getStages().get(i).getId());
-			Assert.assertEquals(pipe.getStages().get(i).getConfigId(),p.getStages().get(i).getConfigId());
+			PipelineStage actualStage = pipe.getStages().get(i);
+			PipelineStage retrievedStage = p.getStages().get(i);
+			Assert.assertEquals(actualStage.getId(),retrievedStage.getId());
+			Assert.assertEquals(actualStage.getConfigId(),retrievedStage.getConfigId());
+			
+			for (int dep=0;dep<actualStage.getDependencies().size();dep++) {
+				PipelineDependency actualDep = actualStage.getDependencies().get(i);
+				PipelineDependency retrievedDep = retrievedStage.getDependencies().get(i);
+				Assert.assertEquals(actualDep.getInputNumber(), retrievedDep.getInputNumber());
+				Assert.assertEquals(actualDep.getType(), retrievedDep.getType());
+			}
 
-		}
-		
+		}	
 	}
-	
-	/*@StarexecTest
-	private void addStageToDatabase() {
-		PipelineStage newStage=new PipelineStage();
-		newStage.setConfigId(s.getConfigurations().get(0).getId());
-		newStage.setPipelineId(pipe.getId());
-		Assert.assertTrue(Pipelines.addPipelineStageToDatabase(stage, con));
-	}*/
 
 	@Override
 	protected void setup() throws Exception {
-		u=ResourceLoader.loadUserIntoDatabase();
-		space=ResourceLoader.loadSpaceIntoDatabase(u.getId(), Communities.getTestCommunity().getId());
-		s=ResourceLoader.loadSolverIntoDatabase("CVC4.zip", space.getId(), u.getId());
-		pipe=ResourceLoader.loadPipelineIntoDatabase(u.getId(), s.getConfigurations());
+		u=loader.loadUserIntoDatabase();
+		space=loader.loadSpaceIntoDatabase(u.getId(), Communities.getTestCommunity().getId());
+		s=loader.loadSolverIntoDatabase(space.getId(), u.getId());
+		pipe=loader.loadPipelineIntoDatabase(u.getId(), s.getConfigurations());
 		
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		Solvers.deleteAndRemoveSolver(s.getId());
-		Spaces.removeSubspace(space.getId());
-		Pipelines.deletePipelineFromDatabase(pipe.getId());
-		Users.deleteUser(u.getId(), Users.getAdmins().get(0).getId());
-		
+		loader.deleteAllPrimitives();		
 	}
 
 }

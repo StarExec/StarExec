@@ -1,0 +1,10 @@
+#!/bin/bash
+
+x=0
+
+while true ; do
+  echo "x is $x"
+  echo "extra output $x" > $2/$x.txt
+  x=$((x+1))
+  sleep 1
+done

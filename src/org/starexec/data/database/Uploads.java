@@ -7,15 +7,16 @@ import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.SpaceXMLUploadStatus;
+import org.starexec.logger.StarLogger;
+
 /**
  * Handles database interaction for the uploading Benchmarks Status Page.
  */
 public class Uploads {
-	private static final Logger log = Logger.getLogger(Uploads.class);
+	private static final StarLogger log = StarLogger.getLogger(Uploads.class);
 
 	/**
 	 * Adds failed benchmark name to db
@@ -83,7 +84,6 @@ public class Uploads {
 	
 	/**
 	 * Creates object representing the current status of a user's upload of benchmarks
-	 * @param spaceId - the id of the parent space that benchmarks are being uploaded to
 	 * @param userId - id of the user uploading benchmarks
 	 * @return the id of the UploadStatus object
 	 * @author Benton McCune
@@ -111,7 +111,12 @@ public class Uploads {
 		}
 	}
 	
-	
+	/**
+	 * Sets the 'everything complete' flag to true for the XML upload entry
+	 * with the given ID
+	 * @param statusId
+	 * @return True on success and false otherwise, including if the given statusId is null
+	 */
 	public static boolean XMLEverythingComplete(Integer statusId){
 		if (statusId==null) {
 			return false;
@@ -280,9 +285,9 @@ public class Uploads {
 	}
 	
 	/**
-	 * Retrieves the upload status object for a space XML upload
+	 *
 	 * @param statusId
-	 * @return
+	 * @return the upload status object for a space XML upload
 	 */
 	public static SpaceXMLUploadStatus getSpaceXMLStatus(int statusId) {
 		Connection con = null;			
@@ -479,10 +484,11 @@ public class Uploads {
 	/**
 	 * Adds incrementCount to the count of completed benchmarks when a benchmark is finished and added to the db.
 	 * @param statusId - id of status object being incremented
+	 * @param incrementCount The number to increment by
 	 * @return true if successful, false if not
 	 */
 	public static Boolean incrementCompletedBenchmarks(Integer statusId,int incrementCount){
-		if (statusId==null) {
+		if (statusId==null || statusId<=0) {
 			return false;
 		}
 		Connection con = null;			
@@ -507,6 +513,7 @@ public class Uploads {
 	/**
 	 * Adds 1 to the count of completed spaces when a space is finished and added to the db.
 	 * @param statusId - id of status object being incremented
+	 * @param incrementCount The number to increment by
 	 * @return true if successful, false if not
 	 */
 	public static Boolean incrementCompletedSpaces(Integer statusId, int incrementCount){
@@ -536,6 +543,7 @@ public class Uploads {
 	/**
 	 * Adds 1 to the count of failed benchmarks when a benchmark fails validation.
 	 * @param statusId - id of status object being incremented
+	 * @param incrementCounter The number to increment by
 	 * @return true if successful, false if not
 	 */
 	public static Boolean incrementFailedBenchmarks(Integer statusId,int incrementCounter){
@@ -647,6 +655,9 @@ public class Uploads {
 		if (statusId==null) {
 			return false;
 		}
+		if (incrementCounter==0) {
+			return true;
+		}
 		Connection con = null;			
 		CallableStatement procedure = null;
 		try {
@@ -670,11 +681,15 @@ public class Uploads {
 	 * Adds 1 to the count of total spaces when a directory is encountered in the creation of space
 	 * java objects.
 	 * @param statusId - id of status object being incremented
+	 * @param incrementCounter The number to increment by
 	 * @return true if successful, false if not
 	 */
 	public static Boolean incrementTotalSpaces(Integer statusId, int incrementCounter){
 		if (statusId==null) {
 			return false;
+		}
+		if (incrementCounter==0) {
+			return true;
 		}
 		Connection con = null;			
 		CallableStatement procedure = null;
@@ -700,6 +715,7 @@ public class Uploads {
 	 *  Adds 1 to the count of validated benchmarks when a benchmark is processed and validated.  Benchmark must still be 
 	 *  added to the db at this point.
 	 * @param statusId - id of status object being incremented
+	 * @param incrementCounter The number to increment by
 	 * @return true if successful, false if not
 	 */
 	public static Boolean incrementValidatedBenchmarks(Integer statusId, int incrementCounter){
@@ -754,7 +770,12 @@ public class Uploads {
 			Common.safeClose(procedure);
 		}
 	}
-	
+	/**
+	 * 
+	 * @param statusId
+	 * @param message
+	 * @return True on success and false on error
+	 */
 	public static Boolean setXMLErrorMessage(Integer statusId, String message){
 	    if (statusId == null) {
 			return false;
@@ -785,6 +806,7 @@ public class Uploads {
 	/**
 	 * Sets error message
 	 * @param statusId - id of status object being changed
+	 * @param message The error message to set.
 	 * @return true if successful, false if not
 	 */
 	public static Boolean setBenchmarkErrorMessage(Integer statusId, String message){

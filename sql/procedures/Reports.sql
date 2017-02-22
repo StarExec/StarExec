@@ -5,6 +5,13 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 
 
 
+DROP PROCEDURE IF EXISTS AddErrorReport;
+CREATE PROCEDURE AddErrorReport(IN _message TEXT, _logLevel VARCHAR(32))
+	BEGIN
+		SET @llid := (SELECT id FROM log_levels WHERE _logLevel = name);
+		INSERT INTO error_reports (message, log_level_id) VALUES (_message, @llid);
+	END // 
+
 -- Set the value of an event's occurrences not related to a queue.
 -- Author: Albert Giegerich
 DROP PROCEDURE IF EXISTS SetEventOccurrencesNotRelatedToQueue;
@@ -12,7 +19,7 @@ CREATE PROCEDURE SetEventOccurrencesNotRelatedToQueue(IN _eventName VARCHAR(64),
 	BEGIN
 		UPDATE report_data
 		SET occurrences = _eventOccurrences
-		WHERE event_name = _eventName AND queue_id IS NULL;
+		WHERE event_name = _eventName AND queue_name IS NULL;
 	END //
 
 -- Set the value of an event's occurrences not related to a queue.
@@ -20,19 +27,15 @@ CREATE PROCEDURE SetEventOccurrencesNotRelatedToQueue(IN _eventName VARCHAR(64),
 DROP PROCEDURE IF EXISTS SetEventOccurrencesForQueue;
 CREATE PROCEDURE SetEventOccurrencesForQueue(IN _eventName VARCHAR(64), IN _eventOccurrences INT, IN _queueName VARCHAR(64))
 	BEGIN
-		SET @queueId := (SELECT id FROM queues WHERE name=_queueName);
-		-- make sure the queue exists
-		IF @queueId IS NOT NULL THEN
-			-- check if the event already exists for this queue and set it if it does 
-			IF EXISTS (SELECT 1 FROM report_data WHERE queue_id=@queueId) AND EXISTS (SELECT 1 FROM report_data WHERE event_name=_eventName) THEN
-				UPDATE report_data
-				SET occurrences = _eventOccurrences
-				WHERE event_name = _eventName AND queue_id = @queueId;
-			-- otherwise create the event with the given number of occurrences
-			ELSE 
-				INSERT INTO report_data (event_name, queue_id, occurrences)
-				VALUES (_eventName, @queueId, _eventOccurrences);
-			END IF;
+		-- check if the event already exists for this queue and set it if it does 
+		IF EXISTS (SELECT 1 FROM report_data WHERE queue_name=_queueName) AND EXISTS (SELECT 1 FROM report_data WHERE event_name=_eventName) THEN
+			UPDATE report_data
+			SET occurrences = _eventOccurrences
+			WHERE event_name = _eventName AND queue_name = _queueName;
+		-- otherwise create the event with the given number of occurrences
+		ELSE 
+			INSERT INTO report_data (event_name, queue_name, occurrences)
+			VALUES (_eventName, _queueName, _eventOccurrences);
 		END IF;
 	END //
 
@@ -44,7 +47,7 @@ CREATE PROCEDURE AddToEventOccurrencesNotRelatedToQueue(IN _eventName VARCHAR(64
 	BEGIN
 		UPDATE report_data
 		SET occurrences = occurrences + _eventOccurrences
-		WHERE event_name = _eventName AND queue_id IS NULL;
+		WHERE event_name = _eventName AND queue_name IS NULL;
 	END //
 
 -- Add to the value of an event's occurrences for a specific queue.
@@ -52,16 +55,12 @@ CREATE PROCEDURE AddToEventOccurrencesNotRelatedToQueue(IN _eventName VARCHAR(64
 DROP PROCEDURE IF EXISTS AddToEventOccurrencesForQueue;
 CREATE PROCEDURE AddToEventOccurrencesForQueue(IN _eventName VARCHAR(64), IN _eventOccurrences INT, IN _queueName VARCHAR(64))
 	BEGIN
-		SET @queueId := (SELECT id FROM queues WHERE name=_queueName);
-		-- make sure the queue exists
-		IF @queueId IS NOT NULL THEN
 			
-			INSERT IGNORE INTO report_data (event_name, queue_id, occurrences) VALUES (_eventName, @queueId, 0);
+		INSERT IGNORE INTO report_data (event_name, queue_name, occurrences) VALUES (_eventName, _queueName, 0);
 
-			UPDATE report_data
-			SET occurrences = occurrences + _eventOccurrences
-			WHERE event_name = _eventName AND queue_id = @queueId;
-		END IF;
+		UPDATE report_data
+		SET occurrences = occurrences + _eventOccurrences
+		WHERE event_name = _eventName AND queue_name = _queueName;
 	END //
 
 -- Add to the value of an event's occurrences for a specific queue related to a specific job pair.
@@ -76,9 +75,10 @@ CREATE PROCEDURE AddToEventOccurrencesForJobPairsQueue(IN _eventName VARCHAR(64)
 			 			  WHERE job_pairs.id=_pairId);
 
 		IF @queueId IS NOT NULL THEN
-			INSERT IGNORE INTO report_data (event_name, occurrences, queue_id) VALUES (_eventName, 0, @queueId);
-
 			SET @queueName := (SELECT name FROM queues WHERE id=@queueId);
+
+			INSERT IGNORE INTO report_data (event_name, occurrences, queue_name) VALUES (_eventName, 0, @queueName);
+
 
 			CALL AddToEventOccurrencesForQueue(_eventName, _eventOccurrences, @queueName);	
 		END IF;
@@ -91,18 +91,15 @@ CREATE PROCEDURE GetAllEventsAndOccurrencesNotRelatedToQueues()
 	BEGIN
 		SELECT event_name, occurrences 
 		FROM report_data
-		WHERE queue_id IS NULL;
+		WHERE queue_name IS NULL;
 	END // 
 
--- Gets all event names and occurrences for every queue along with the associated queue_id.
+-- Gets all event names and occurrences for every queue
 -- Author: Albert Giegerich
 DROP PROCEDURE IF EXISTS GetAllEventsAndOccurrencesForAllQueues;
 CREATE PROCEDURE GetAllEventsAndOccurrencesForAllQueues()
 	BEGIN
-		SELECT report_data.event_name, report_data.occurrences, report_data.queue_id, queues.name
-		FROM report_data
-		INNER JOIN queues
-		ON report_data.queue_id = queues.id; 
+		SELECT event_name, occurrences, queue_name FROM report_data WHERE queue_name IS NOT NULL;
 	END //
 
 -- Gets the number of occurrences for an event not related to a queue.
@@ -112,7 +109,7 @@ CREATE PROCEDURE GetEventOccurrencesNotRelatedToQueues(IN _eventName VARCHAR(64)
 	BEGIN
 		SELECT occurrences 
 		FROM report_data
-		WHERE event_name = _eventName AND queue_id IS NULL;
+		WHERE event_name = _eventName AND queue_name IS NULL;
 	END //
 
 
@@ -121,10 +118,9 @@ CREATE PROCEDURE GetEventOccurrencesNotRelatedToQueues(IN _eventName VARCHAR(64)
 DROP PROCEDURE IF EXISTS GetEventOccurrencesForQueue;
 CREATE PROCEDURE GetEventOccurrencesForQueue(IN _eventName VARCHAR(64), _queueName VARCHAR(64))
 	BEGIN
-		SET @queueId := (SELECT id FROM queues WHERE name=_queueName);
 		SELECT occurrences
 		FROM report_data
-		WHERE event_name = _eventName AND queue_id = @queueId;
+		WHERE event_name = _eventName AND queue_name=_queueName;
 	END //
 
 
@@ -135,9 +131,9 @@ CREATE PROCEDURE ResetReports()
 	BEGIN
 		UPDATE report_data
 		SET occurrences = 0
-		WHERE queue_id IS NULL;
+		WHERE queue_name IS NULL;
 		DELETE FROM report_data
-		WHERE queue_id IS NOT NULL;
+		WHERE queue_name IS NOT NULL;
 	END //
 
 

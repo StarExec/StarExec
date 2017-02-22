@@ -13,8 +13,6 @@ function setDebugText() {
 }
 
 function initUI(){
-	$('#dialog-confirm-restart').hide();
-
 	$("#restartStarExec").button({
 		icons: {
 			primary: "ui-icon-power"
@@ -47,6 +45,12 @@ function initUI(){
 	});
 	
 	$("#clearLoadData").button({
+		icons: {
+			primary: "ui-icon-trash"
+		}
+    });
+	
+	$("#clearSolverCacheData").button({
 		icons: {
 			primary: "ui-icon-trash"
 		}
@@ -99,6 +103,16 @@ function initUI(){
 	$("#clearLoadData").click(function(){
 		$.post(
 				starexecRoot+"services/jobs/clearloadbalance/",
+				function(returnCode) {
+					parseReturnCode(returnCode);
+				},
+				"json"
+			);
+	});
+	
+	$("#clearSolverCacheData").click(function(){
+		$.post(
+				starexecRoot+"services/jobs/clearsolvercache/",
 				function(returnCode) {
 					parseReturnCode(returnCode);
 				},

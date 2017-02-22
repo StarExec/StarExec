@@ -4,15 +4,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
+import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.BenchmarkSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
@@ -27,7 +31,8 @@ public class BenchmarkSecurityTests extends TestSequence {
 	Space space2=null;
 	List<Integer> benchmarkIds=null; //these are benchmarks owned by user1 and placed in space
 	List<Integer> benchmarkIds2=null; //these are benchmarks owned by user2 and placed in space2
-	
+	BenchmarkUploadStatus benchmarkStatus = null;
+
 	@StarexecTest
 	private void CanDeleteBenchTest() {
 		Assert.assertEquals(true,BenchmarkSecurity.canUserDeleteBench(benchmarkIds.get(0), user1.getId()).isSuccess());
@@ -153,6 +158,13 @@ public class BenchmarkSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true,BenchmarkSecurity.canUserSeeBenchmarkContents(b.getId(), user3.getId()).isSuccess());
 	}
 	
+	@StarexecTest
+	private void canSeeBenchmarkUploadStatusTest() {
+		Assert.assertTrue(BenchmarkSecurity.canUserSeeBenchmarkStatus(benchmarkStatus.getId(), user1.getId()));
+		Assert.assertTrue(BenchmarkSecurity.canUserSeeBenchmarkStatus(benchmarkStatus.getId(), admin.getId()));
+		Assert.assertFalse(BenchmarkSecurity.canUserSeeBenchmarkStatus(benchmarkStatus.getId(), user2.getId()));
+	}
+	
 	
 	@Override
 	protected String getTestName() {
@@ -161,37 +173,26 @@ public class BenchmarkSecurityTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		user1=ResourceLoader.loadUserIntoDatabase();
-		user2=ResourceLoader.loadUserIntoDatabase();
-		user3=ResourceLoader.loadUserIntoDatabase();
+		user1=loader.loadUserIntoDatabase();
+		user2=loader.loadUserIntoDatabase();
+		user3=loader.loadUserIntoDatabase();
 		
 		Users.associate(user2.getId(), Communities.getTestCommunity().getId());
 		
-		space=ResourceLoader.loadSpaceIntoDatabase(user2.getId(),Communities.getTestCommunity().getId());
-		space2=ResourceLoader.loadSpaceIntoDatabase(user2.getId(), Communities.getTestCommunity().getId());
-		admin=Users.getAdmins().get(0);
-		benchmarkIds=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user1.getId());
-		benchmarkIds2=ResourceLoader.loadBenchmarksIntoDatabase("benchmarks.zip", space2.getId(), user2.getId());
+		space=loader.loadSpaceIntoDatabase(user2.getId(),Communities.getTestCommunity().getId());
+		space2=loader.loadSpaceIntoDatabase(user2.getId(), Communities.getTestCommunity().getId());
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
+		benchmarkIds=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user1.getId());
+		benchmarkIds2=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space2.getId(), user2.getId());
 		Assert.assertNotNull(benchmarkIds);	
 		Assert.assertNotNull(benchmarkIds2);
+		benchmarkStatus = Uploads.getBenchmarkStatus(Uploads.createBenchmarkUploadStatus(space.getId(), user1.getId()));
+
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		for (Integer i : benchmarkIds) {
-			Benchmarks.deleteAndRemoveBenchmark(i);
-		}
-		for (Integer i : benchmarkIds2) {
-			Benchmarks.deleteAndRemoveBenchmark(i);
-		}
-		Users.deleteUser(user1.getId(),admin.getId());
-		Users.deleteUser(user2.getId(),admin.getId());
-		Users.deleteUser(user3.getId(),admin.getId());
-		Spaces.removeSubspace(space.getId());
-		Spaces.removeSubspace(space2.getId());
-
-		
-		
+		loader.deleteAllPrimitives();
 	}
 
 }

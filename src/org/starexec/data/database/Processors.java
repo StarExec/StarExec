@@ -9,18 +9,24 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.Logger;
 import org.starexec.constants.R;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
+import org.starexec.logger.StarLogger;
 
 /**
  * Handles all database interaction for bench, pre and post processors
  */
 public class Processors {
-	private static final Logger log = Logger.getLogger(Processors.class);
+	private static final StarLogger log = StarLogger.getLogger(Processors.class);
 	
-	
+	/**
+	 * Given a result set where the current row points to a  processor, return the processor
+	 * @param results
+	 * @param prefix The table alias given to the processor table in this query. Empty means no prefix.
+	 * @return The processor if it exists
+	 * @throws SQLException If the ResultSet does not contain a required processor attribute
+	 */
 	public static Processor resultSetToProcessor(ResultSet results, String prefix) throws SQLException {
 		if (prefix==null || prefix.isEmpty()) {
 			prefix="";
@@ -53,7 +59,6 @@ public class Processors {
 		try {
 			con = Common.getConnection();		
 			
-			 procedure = null;			
 			procedure = con.prepareCall("{CALL AddProcessor(?, ?, ?, ?, ?, ?, ?)}");			
 			procedure.setString(1, processor.getName());
 			procedure.setString(2, processor.getDescription());
@@ -84,12 +89,18 @@ public class Processors {
 	 * @author Todd Elvers
 	 */
 	public static boolean delete(int processorId){
+		if (processorId==R.NO_TYPE_PROC_ID) {
+			return false; // the no type processor is required for the system
+		}
+		if (Processors.get(processorId)==null) {
+			return true;
+		}
 		Connection con = null;			
 		File processorFile = null;
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			 procedure = con.prepareCall("{CALL DeleteProcessor(?, ?)}");
+			procedure = con.prepareCall("{CALL DeleteProcessor(?, ?)}");
 			procedure.setInt(1, processorId);
 			procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
 			procedure.executeUpdate();
@@ -99,12 +110,18 @@ public class Processors {
 			log.debug(String.format("Removal of processor [id=%d] was successful.", processorId));
 			
 			// Try and delete file referenced by processor_path and its parent directory
-			if(processorFile.delete()){
-				log.debug(String.format("File [%s] was deleted at [%s] because it was no inter referenced anywhere.", processorFile.getName(), processorFile.getAbsolutePath()));
+			if (processorFile.exists()) {
+				if(processorFile.delete()){
+					log.debug(String.format("File [%s] was deleted at [%s] because it was not inter referenced anywhere.", processorFile.getName(), processorFile.getAbsolutePath()));
+				}
+				if (processorFile.getParentFile()!=null) {
+					if(processorFile.getParentFile().delete()){
+						log.debug(String.format("Directory [%s] was deleted because it was empty.", processorFile.getParentFile().getAbsolutePath()));
+					}
+				}
+				
 			}
-			if(processorFile.getParentFile().delete()){
-				log.debug(String.format("Directory [%s] was deleted because it was empty.", processorFile.getParentFile().getAbsolutePath()));
-			}
+			
 			
 			return true;
 		} catch (Exception e){			
@@ -203,6 +220,9 @@ public class Processors {
 		return null;
 	}	
 	
+	/**
+	 * @return the system NoType benchmark processor, which is applied when the user has no processor.
+	 */
 	public static Processor getNoTypeProcessor() {
 		return Processors.get(R.NO_TYPE_PROC_ID);
 	}

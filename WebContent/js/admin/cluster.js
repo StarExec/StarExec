@@ -73,9 +73,7 @@ $(document).ready(function(){
 });
 
 function initUI(id){
-	
-	$('#dialog-confirm-remove').hide();
-	
+		
 	$("#newQueue").button({
 		icons: {
 			primary: "ui-icon-plusthick"
@@ -323,7 +321,7 @@ function updateActionId(id, type, global) {
 function initDataTables(){
 	// Setup the DataTable objects
 	requests = $('#qreserves').dataTable( {
-		"sDom"			: 'rt<"bottom"flpi><"clear">',
+		"sDom"			: getDataTablesDom(),
 		"iDisplayStart"	: 0,
 		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
@@ -364,20 +362,3 @@ function clearErrorStates() {
 			"json"
 		);
 }
-
-function cancelReservation(spaceId, queueId) {
-	$.post(
-		starexecRoot+"services/cancel/queueReservation/" + spaceId + "/" + queueId,
-		function(returnCode) {
-			s=parseReturnCode(returnCode);
-			if (s) {
-				setTimeout(function() {location.reload(true);}, 1000);
-			}
-				
-		},
-		"json"
-	);
-}
-
-
-
