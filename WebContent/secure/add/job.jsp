@@ -167,13 +167,13 @@
 							<input type="text" name="seed" id="seed" value="0">
 						</td>
 					</tr>					
-					<tr class="noHover advancedOptions" id="suppressTimestampsRow" title="whether to include timestamps in the stdout for the pairs in this job">
+					<tr class="noHover advancedOptions" id="benchmarkingFrameworkRow">
 						<td>
-							<p>Suppress Timestamps</p>
+							<p>Benchmarking Framework</p>
 						</td>
 						<td>
-							Yes<input type="radio" id="radioYesSuppressTimestamps" name="${suppressTimestamp}" value="yes"/>
-							No<input type="radio" id="radioNoSuppressTimestamps" name="${suppressTimestamp}" value="no" checked="checked"/>
+							<span>BenchExec<input type="radio" id="radioUseBenchexec" name="benchmarkingFramework" value="BENCHEXEC"/></span>
+							<span>runsolver<input type="radio" id="radioUseRunsolver" name="benchmarkingFramework" value="RUNSOLVER" checked="checked"/></span>
 						</td>
 					</tr>
 					<tr class="noHover advancedOptions" id="resultsIntervalRow" title="The interval, in seconds, at which to retrieve incremental results for pairs that are running. 0 means results are only obtained after pairs finish. 10 is the minimum if this is used.">
@@ -193,13 +193,13 @@
 							No<input type="radio" id="radioNoSaveExtraOutput" name="saveOtherOutput" value="false" checked="checked"/>
 						</td>
 					</tr>
-					<tr class="noHover advancedOptions" id="benchmarkingFrameworkRow">
+					<tr class="noHover advancedOptions" id="suppressTimestampsRow" title="whether to include timestamps in the stdout for the pairs in this job">
 						<td>
-							<p>Benchmarking Framework</p>
+							<p>Suppress Timestamps</p>
 						</td>
 						<td>
-							<span>BenchExec<input type="radio" id="radioUseBenchexec" name="benchmarkingFramework" value="BENCHEXEC"/></span>
-							<span>runsolver<input type="radio" id="radioUseRunsolver" name="benchmarkingFramework" value="RUNSOLVER" checked="checked"/></span>
+							Yes<input type="radio" id="radioYesSuppressTimestamps" name="${suppressTimestamp}" value="yes"/>
+							No<input type="radio" id="radioNoSuppressTimestamps" name="${suppressTimestamp}" value="no" checked="checked"/>
 						</td>
 					</tr>
 				</tbody>
