@@ -1,12 +1,12 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" 
+<%@page contentType="text/html" pageEncoding="UTF-8"
 import="org.apache.commons.io.FileUtils,
-		org.starexec.data.database.*, 
+		org.starexec.data.database.*,
 		org.starexec.data.to.*,
-		org.starexec.constants.*, 
-		org.starexec.util.*, 
+		org.starexec.constants.*,
+		org.starexec.util.*,
 		java.io.File,
 		java.text.ParseException,
-		java.util.*" 
+		java.util.*"
 %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -17,7 +17,7 @@ import="org.apache.commons.io.FileUtils,
 		// Get all the report data.
 		List<Report> reportsNotRelatedToQueues = Reports.getAllReportsNotRelatedToQueues();
 		List<List<Report>> reportsForAllQueues = Reports.getAllReportsForAllQueues();
-		
+
 		File pastReportsDirectory = new File(R.STAREXEC_DATA_DIR, "/reports/");
 		List<File> pastReports = (List)FileUtils.listFiles(pastReportsDirectory, new String[]{"txt"}, false);
 
@@ -26,15 +26,15 @@ import="org.apache.commons.io.FileUtils,
 		Collections.reverse(pastReports);
 
 		// Get the name of the last report and remove the file ending to get a string representation of the last
-		// reports date. 
+		// reports date.
 		String lastReportDay = "";
-		if (!pastReports.isEmpty()) { 
+		if (!pastReports.isEmpty()) {
 			File lastReport = pastReports.get(0);
 			lastReportDay = lastReport.getName().replace(".txt", "");
 		}
 
 
-		// Only add "since" to the title suffix if their is a last report.	
+		// Only add "since" to the title suffix if their is a last report.
 		String titleSuffix = "";
 		if (!lastReportDay.equals("")) {
 			titleSuffix = "since " + lastReportDay;
@@ -57,17 +57,21 @@ import="org.apache.commons.io.FileUtils,
 		request.setAttribute("userId", userId);
 		request.setAttribute("pastReports", pastReports);
 		request.setAttribute("titleSuffix", titleSuffix);
-		
+
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
-<star:template title="Reports ${titleSuffix}" js="explore/reports" css="explore/reports, common/table, details/shared,explore/jquery.qtip, explore/common">			
+<star:template title="Reports ${titleSuffix}" js="explore/reports" css="explore/reports, common/table, details/shared,explore/jquery.qtip, explore/common">
 	<div id="mainPanel">
 		<span id="userId" value="${userId}"></span>
-		<div id="subscribeUnsubscribeButtonContainer" class="center">
-			<input id="${subscribeUnsubscribeButtonId}" type="button" value="${subscribeUnsubscribeButtonMessage}">
-		</div>
+
+		<star:userLoggedIn>
+			<div id="subscribeUnsubscribeButtonContainer" class="center">
+				<input id="${subscribeUnsubscribeButtonId}" type="button" value="${subscribeUnsubscribeButtonMessage}">
+			</div>
+		</star:userLoggedIn>
+
 		<fieldset id="mainReports">
 			<legend>main reports</legend>
 			<table id="mainReportsTable">
@@ -100,7 +104,7 @@ import="org.apache.commons.io.FileUtils,
 			</table>
 		</fieldset>
 		</c:forEach>
-		
+
 		<div id="pastReports">
 			<fieldset>
 				<legend>past reports</legend>
@@ -118,5 +122,5 @@ import="org.apache.commons.io.FileUtils,
 				</table>
 			</fieldset>
 		</div>
-	</div>	
+	</div>
 </star:template>
