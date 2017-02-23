@@ -1230,37 +1230,34 @@ function initDataTables(){
 
 	// Setup the DataTable objects
 	userTable = $('#users').dataTable( {
-		"sDom"			: getDataTablesDom(),
-		"iDisplayStart"	: 0,
+		"sDom"          : getDataTablesDom(),
+		"iDisplayStart" : 0,
 		"iDisplayLength": defaultPageSize,
-		"bServerSide"	: true,
-		"pagingType"    : "full_numbers",
-
-		"sAjaxSource"	: starexecRoot+"services/space/",
+		"bServerSide"   : true,
+		"pagingType"    : "only_when_necessary",
+		"sAjaxSource"   : starexecRoot+"services/space/",
 		"sServerMethod" : 'POST',
-		"fnServerData"	: fnPaginationHandler
+		"fnServerData"  : fnPaginationHandler
 	});
 	solverTable = $('#solvers').dataTable( {
-		"sDom"			: getDataTablesDom(),
-		"iDisplayStart"	: 0,
+		"sDom"          : getDataTablesDom(),
+		"iDisplayStart" : 0,
 		"iDisplayLength": defaultPageSize,
-		"bServerSide"	: true,
-		"pagingType"    : "full_numbers",
-
-		"sAjaxSource"	: starexecRoot+"services/space/",
+		"bServerSide"   : true,
+		"pagingType"    : "only_when_necessary",
+		"sAjaxSource"   : starexecRoot+"services/space/",
 		"sServerMethod" : 'POST',
-		"fnServerData"	: fnPaginationHandler
+		"fnServerData"  : fnPaginationHandler
 	});
 	benchTable = $('#benchmarks').dataTable( {
-		"sDom"			: getDataTablesDom(),
-		"iDisplayStart"	: 0,
+		"sDom"          : getDataTablesDom(),
+		"iDisplayStart" : 0,
 		"iDisplayLength": defaultPageSize,
-		"bServerSide"	: true,
-		"pagingType"    : "full_numbers",
-
-		"sAjaxSource"	: starexecRoot+"services/space/",
+		"bServerSide"   : true,
+		"pagingType"    : "only_when_necessary",
+		"sAjaxSource"   : starexecRoot+"services/space/",
 		"sServerMethod" : "POST",
-		"fnServerData"	: fnPaginationHandler
+		"fnServerData"  : fnPaginationHandler
 	});
 
 	setSortTable(benchTable);
@@ -1274,7 +1271,7 @@ function initDataTables(){
 		"iDisplayStart"	: 0,
 		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
-		"pagingType"    : "full_numbers",
+		"pagingType"    : "only_when_necessary",
 
 		"sAjaxSource"	: starexecRoot+"services/space/",
 		"bProcessing"	: false,
@@ -1291,7 +1288,7 @@ function initDataTables(){
 		"iDisplayStart"	: 0,
 		"iDisplayLength": defaultPageSize,
 		"bServerSide"	: true,
-		"pagingType"    : "full_numbers",
+		"pagingType"    : "only_when_necessary",
 		"sAjaxSource"	: starexecRoot+"services/space/",
 		"sServerMethod" : "POST",
 		"bProcessing"	: false,
