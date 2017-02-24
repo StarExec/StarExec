@@ -1,8 +1,10 @@
 package org.starexec.data.to;
 
+import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Solvers;
+import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.util.Util;
 
 import java.util.ArrayList;
@@ -42,6 +44,7 @@ public class DefaultSettings extends Identifiable {
 	private Integer benchProcessorId;
 	private List<Integer> benchIds;
 	private Integer solverId;
+	private BenchmarkingFramework benchmarkingFramework;
 	private int wallclockTimeout;
 	private int cpuTimeout;
 	private long maxMemory;
@@ -64,22 +67,24 @@ public class DefaultSettings extends Identifiable {
 		benchProcessorId=Processors.getNoTypeProcessor().getId();
 		type=null;
 		setPrimId(-1);
+		benchmarkingFramework= R.DEFAULT_BENCHMARKING_FRAMEWORK;
 	}
 
 	public static DefaultSettings copy(DefaultSettings settingsToCopy) {
 		return new DefaultSettings(
 				settingsToCopy.primId,
-		settingsToCopy.preProcessorId,
-		settingsToCopy.postProcessorId,
-		settingsToCopy.benchProcessorId,
-		settingsToCopy.benchIds,
-		settingsToCopy.solverId,
-		settingsToCopy.wallclockTimeout,
-		settingsToCopy.cpuTimeout,
-		settingsToCopy.maxMemory,
-		settingsToCopy.dependenciesEnabled,
-		settingsToCopy.name,
-		settingsToCopy.type
+				settingsToCopy.preProcessorId,
+				settingsToCopy.postProcessorId,
+				settingsToCopy.benchProcessorId,
+				settingsToCopy.benchIds,
+				settingsToCopy.solverId,
+				settingsToCopy.wallclockTimeout,
+				settingsToCopy.cpuTimeout,
+				settingsToCopy.maxMemory,
+				settingsToCopy.dependenciesEnabled,
+				settingsToCopy.name,
+				settingsToCopy.type,
+				settingsToCopy.benchmarkingFramework
 		);
 	}
 
@@ -95,7 +100,8 @@ public class DefaultSettings extends Identifiable {
 			final long maxMemory,
 			final boolean dependenciesEnabled,
 			final String name,
-			final SettingType type
+			final SettingType type,
+			final BenchmarkingFramework benchmarkingFramework
 	) {
 		this.primId=primId;
 		this.preProcessorId=preProcessorId;
@@ -175,11 +181,16 @@ public class DefaultSettings extends Identifiable {
 		this.name = name;
 	}
 	public String getName() {
-		
 		return name;
 	}
 
-	
+	public BenchmarkingFramework getBenchmarkingFramework() {
+		return benchmarkingFramework;
+	}
+	public void setBenchmarkingFramework(final BenchmarkingFramework benchmarkingFramework) {
+		this.benchmarkingFramework = benchmarkingFramework;
+	}
+
 	public String getSolverName() {
 		if (solverId==null) {
 			return "None";
@@ -291,6 +302,7 @@ public class DefaultSettings extends Identifiable {
 				Util.objectsEqual(this.getPostProcessorId(),set.getPostProcessorId()) &&
 				this.getCpuTimeout()==set.getCpuTimeout() &&
 				this.getWallclockTimeout()==set.getWallclockTimeout()&&
+				this.getBenchmarkingFramework() == set.getBenchmarkingFramework() &&
 				this.getMaxMemory()==set.getMaxMemory() &&
 				Util.objectsEqual(this.getSolverId(),set.getSolverId()));
 	}
