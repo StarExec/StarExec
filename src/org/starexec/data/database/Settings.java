@@ -21,7 +21,7 @@ public class Settings {
 		CallableStatement procedure=null;
 		try {
 			con=Common.getConnection();
-			procedure = con.prepareCall("{CALL CreateDefaultSettings(?, ?, ?, ?, ?, ?,?,?,?,?,?,?)}");
+			procedure = con.prepareCall("{CALL CreateDefaultSettings(?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?)}");
 			procedure.setInt(1, settings.getPrimId());
 			procedure.setObject(2, settings.getPostProcessorId());
 			procedure.setInt(3, settings.getCpuTimeout());
@@ -38,7 +38,7 @@ public class Settings {
 			procedure.executeUpdate();			
 
 			// Update the job's ID so it can be used outside this method
-			settings.setId(procedure.getInt(12));
+			settings.setId(procedure.getInt(13));
 
 			for (Integer benchId : settings.getBenchIds()) {
 				addDefaultBenchmark(settings.getId(), benchId);
