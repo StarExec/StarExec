@@ -167,6 +167,7 @@ public class DefaultSettingsTests extends TestSequence {
         Assert.assertEquals("DependenciesEnabled was not equal.", newSettings.isDependenciesEnabled(), dbSettings.isDependenciesEnabled());
         Assert.assertEquals("Name was not equal.", newSettings.getName(), dbSettings.getName());
         Assert.assertEquals("Type was not equal.", newSettings.getType(), dbSettings.getType());
+        Assert.assertEquals("Benchmarking framework was not equal.", newSettings.getBenchmarkingFramework(), dbSettings.getBenchmarkingFramework());
 
         List<Integer> settingsBenchIds = newSettings.getBenchIds();
         List<Integer> dbSettingsBenchIds = dbSettings.getBenchIds();

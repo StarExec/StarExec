@@ -4,6 +4,7 @@ import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.logger.StarLogger;
 
 import java.sql.CallableStatement;
@@ -32,7 +33,8 @@ public class Settings {
 			procedure.setObject(9,settings.getPreProcessorId());
 			procedure.setInt(10, settings.getType().getValue());
 			procedure.setString(11,settings.getName());
-			procedure.registerOutParameter(12, java.sql.Types.INTEGER);
+			procedure.setString(12, settings.getBenchmarkingFramework().toString());
+			procedure.registerOutParameter(13, java.sql.Types.INTEGER);
 			procedure.executeUpdate();			
 
 			// Update the job's ID so it can be used outside this method
@@ -204,7 +206,7 @@ public class Settings {
 			Common.beginTransaction(con);
 
 
-			procedure = con.prepareCall("{CALL UpdateDefaultSettings(?, ?, ?, ?, ?, ?,?,?,?)}");
+			procedure = con.prepareCall("{CALL UpdateDefaultSettings(?, ?, ?, ?, ?, ?,?,?,?,?)}");
 			procedure.setObject(1, settings.getPostProcessorId());
 			procedure.setInt(2, settings.getCpuTimeout());
 			procedure.setInt(3, settings.getWallclockTimeout());
@@ -213,7 +215,8 @@ public class Settings {
 			procedure.setObject(6,settings.getSolverId());
 			procedure.setObject(7, settings.getBenchProcessorId());
 			procedure.setObject(8,settings.getPreProcessorId());
-			procedure.setInt(9,settings.getId());
+			procedure.setString(9, settings.getBenchmarkingFramework().toString());
+			procedure.setInt(10,settings.getId());
 			procedure.executeUpdate();
 
 			Settings.deleteAllDefaultBenchmarks(con, settings.getId());
@@ -267,6 +270,7 @@ public class Settings {
 			settings.setName(results.getString("name"));
 			settings.setPrimId(results.getInt("prim_id"));
 			settings.setType(results.getInt("setting_type"));
+			settings.setBenchmarkingFramework(BenchmarkingFramework.valueOf(results.getString("benchmarking_framework")));
 			return settings;
 		} catch (SQLException e) {
 			log.error(methodName, "Caught SQL exception while getting results. Throwing...",e);
