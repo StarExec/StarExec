@@ -2150,7 +2150,7 @@ public class RESTServices {
 				// Update the benchmarking framework and save it.
 				DefaultSettings settings = Settings.getProfileById(id);
 				settings.setBenchmarkingFramework(BenchmarkingFramework.valueOf(newValue));
-				Settings.updateDefaultSettings(settings);
+				success = Settings.updateDefaultSettings(settings);
 			}
 			
 			// Passed validation AND Database update successful

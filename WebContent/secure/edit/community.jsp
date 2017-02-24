@@ -1,4 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*,org.starexec.data.security.*, java.util.List,org.starexec.data.to.Website.WebsiteType, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
+<%@ page import="org.starexec.data.to.enums.BenchmarkingFramework" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
@@ -38,6 +39,8 @@
                         request.setAttribute("update_proc", Processors.getByCommunity(id, ProcessorType.UPDATE));
 			request.setAttribute("defaultCpuTimeout", settings.getCpuTimeout());
 			request.setAttribute("defaultClockTimeout", settings.getWallclockTimeout());
+			request.setAttribute("usingBenchExec", settings.getBenchmarkingFramework() == BenchmarkingFramework.BENCHEXEC);
+			request.setAttribute("usingRunsolver", settings.getBenchmarkingFramework() == BenchmarkingFramework.RUNSOLVER);
 			
 	
 			request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(settings.getMaxMemory()));
@@ -131,7 +134,7 @@
 
 		</fieldset>
 	</c:if>
-		
+	
 	<fieldset id= "websiteField">
 		<legend>associated websites</legend>
 		<table id="websiteTable" class="shaded">
@@ -270,6 +273,21 @@
 					<c:forEach var="proc" items="${update_proc}">
 							<option value="${proc.id}">${proc.name}</option>
 					</c:forEach>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td>benchmarking framework</td>
+				<td>					
+					<select id="editBenchmarkingFramework" name="editBenchmarkingFramework">
+						<c:if test="${usingRunsolver}">
+							<option value="RUNSOLVER" selected="selected">runsolver</option>
+							<option value="BENCHEXEC">BenchExec</option>
+						</c:if>
+						<c:if test="${usingBenchExec}">
+							<option value="RUNSOLVER">runsolver</option>
+							<option value="BENCHEXEC" selected="selected">BenchExec</option>
+						</c:if>
 					</select>
 				</td>
 			</tr>
