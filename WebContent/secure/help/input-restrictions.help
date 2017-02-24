@@ -1,20 +1,20 @@
 <h1>Input Restrictions</h1>
 
-<p>This page summarizes the character restrictions that exist for all uploads 
+<p>This page summarizes the character restrictions that exist for all uploads
 to StarExec.
 </p>
 
 <h2>Length Restrictions</h2>
 
-<p>Names for users must be between 2 and 32 characters. Institutions may have 
+<p>Names for users must be between 2 and 32 characters. Institutions may have
 between 2 and 64 characters.</p>
 
 <p>For all primitives except for spaces and benchmarks, the maximum length for a name is
 128 characters. Spaces and benchmarks may have 250 characters. All names must be at least
 1 character.</p>
 
-<p>All descriptions must be between 0 and 1024 characters, inclusive. 
-Messages, which are required when requesting a queue reservation or trying 
+<p>All descriptions must be between 0 and 1024 characters, inclusive.
+Messages, which are required when requesting a queue reservation or trying
 to join a new community, must be between 2 and 512 characters.
 </p>
 
@@ -35,8 +35,8 @@ may have these characters and also numbers.</p>
 
 <h2>Regular Expressions</h2>
 
-<p>These are the regular expressions, in Java syntax, that are applied to validate 
-inputs. If there appears to be a contradiction between these regular expressions 
+<p>These are the regular expressions, in Java syntax, that are applied to validate
+inputs. If there appears to be a contradiction between these regular expressions
 and the rules laid out above, then these expressions take precedence:
 
 <dl>
@@ -49,7 +49,7 @@ and the rules laid out above, then these expressions take precedence:
 <dt>url pattern</dt>
   <dd><code>"https?://.\\S+{2,128}"</code></dd>
 <dt>name pattern for all primitives</dt>
-  <dd><code>"^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,128}$"code</dd>
+  <dd><code>"^[\\w\\-\\. \\+\\^=,!?:$%#@]{1,128}$"</code></dd>
   <dd>(space and benchmark names may be 250 characters long)</dd>
 <dt>request message pattern</dt>
   <dd><code>"^[\\w\\]\\[\\!\"#\\$%&'()\\*\\+,\\./:;=\\?@\\^_`{\\|}~\\- ]{2,512}$"</code></dd>
