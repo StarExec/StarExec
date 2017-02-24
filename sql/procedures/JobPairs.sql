@@ -357,7 +357,7 @@ CREATE PROCEDURE GetJobPairIdsWithStatusNotRerunAfterDate(IN _status INT, IN _ea
 	BEGIN
 		SELECT id FROM job_pairs
 		WHERE status_code = _status
-		AND job_pairs.end_time >= _earliestEndTime
+		AND (job_pairs.end_time >= _earliestEndTime OR job_pairs.end_time < "1970-01-01")
 		AND id NOT IN (SELECT pair_id FROM pairs_rerun);
 	END //
 	
