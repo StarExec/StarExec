@@ -115,6 +115,7 @@ public class DefaultSettings extends Identifiable {
 		this.dependenciesEnabled=dependenciesEnabled;
 		this.name=name;
 		this.type=type;
+		this.benchmarkingFramework = benchmarkingFramework;
 	}
 
 	public void setPreProcessorId(Integer preProcessorId) {
