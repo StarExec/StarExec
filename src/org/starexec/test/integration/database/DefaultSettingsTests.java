@@ -1,10 +1,7 @@
 package org.starexec.test.integration.database;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import org.junit.Assert;
 import org.starexec.constants.R;
@@ -75,10 +72,13 @@ public class DefaultSettingsTests extends TestSequence {
 
         newSettings.setBenchIds(benchIds);
 
-		Settings.addNewSettingsProfile(newSettings);
+		int id = Settings.addNewSettingsProfile(newSettings);
+
+        Assert.assertNotEquals("Error while adding new settings.", id, -1);
 
         try {
             DefaultSettings dbSettings = Settings.getProfileById(newSettings.getId());
+
             assertDefaultSettingsEqual(newSettings, dbSettings);
         } catch(SQLException e) {
             Assert.fail("Caught SQLException: " + Util.getStackTrace(e));
@@ -154,6 +154,9 @@ public class DefaultSettingsTests extends TestSequence {
     }
 
     private void assertDefaultSettingsEqual(DefaultSettings newSettings, DefaultSettings dbSettings) {
+
+        Assert.assertNotNull("The new setting object was null.", newSettings);
+        Assert.assertNotNull("The DB setting object was null.", dbSettings);
 
 
         Assert.assertEquals("PrimId was not equal.", newSettings.getPrimId(), dbSettings.getPrimId());
