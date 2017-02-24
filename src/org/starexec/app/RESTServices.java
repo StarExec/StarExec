@@ -10,6 +10,7 @@ import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.security.*;
 import org.starexec.data.to.*;
 import org.starexec.data.to.Website.WebsiteType;
+import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.enums.Primitive;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecDatabaseException;
@@ -2092,7 +2093,7 @@ public class RESTServices {
 		final String methodName = "editCommunityDefaultSettings";
 
 		int userId=SessionUtil.getUserId(request);
-		String newValue=(String)request.getParameter("val");
+		String newValue=request.getParameter("val");
 
 		DefaultSettingAttribute defaultSettingAttribute = null;
 		try {
@@ -2113,11 +2114,13 @@ public class RESTServices {
 		
 
 		try {			
-			if(Util.isNullOrEmpty((String)request.getParameter("val"))){
+			if(Util.isNullOrEmpty(request.getParameter("val"))){
 				return gson.toJson(ERROR_EDIT_VAL_ABSENT);
 			}
 			
 			boolean success = false;
+
+
 			// Go through all the cases, depending on what attribute we are changing.
 			if (defaultSettingAttribute == DefaultSettingAttribute.PostProcess) {
 				success = Settings.updateSettingsProfile(id, 1, Integer.parseInt(newValue));
@@ -2143,6 +2146,11 @@ public class RESTServices {
 				success=Settings.setDefaultMaxMemory(id, bytes);
 			} else if (defaultSettingAttribute == DefaultSettingAttribute.PreProcess) {
 				success=Settings.updateSettingsProfile(id, 6, Integer.parseInt(newValue));
+			} else if (defaultSettingAttribute == DefaultSettingAttribute.BENCHMARKING_FRAMEWORK) {
+				// Update the benchmarking framework and save it.
+				DefaultSettings settings = Settings.getProfileById(id);
+				settings.setBenchmarkingFramework(BenchmarkingFramework.valueOf(newValue));
+				Settings.updateDefaultSettings(settings);
 			}
 			
 			// Passed validation AND Database update successful
