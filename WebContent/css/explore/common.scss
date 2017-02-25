@@ -6,20 +6,20 @@
 	height: 90%;
 	overflow: auto;
 	overflow-y:hidden;
-	position: relative; 
+	position: relative;
 }
 
 #explorer a:link {
-	text-decoration: none;	
+	text-decoration: none;
 }
 
 #detailPanel {
 	padding-left: 10px;
 	padding-right:55px;
 	margin-top: 15px;
-	float:right;	
+	float:right;
 	width: 65%;
-	border-left: solid 3px #111111;	
+	border-left: solid 3px #111111;
 }
 
 #detailPanel hr {
@@ -42,12 +42,12 @@
 	color: #666666;
 	font-style: italic;
 }
-	
+
 #detailPanel .button{
 	margin-bottom:9px;
 }
 
-#detailPanel fieldset {	
+#detailPanel fieldset {
 	margin-top: 35px;
 }
 
@@ -64,17 +64,17 @@
 }
 .actionList li {
 	float: left;
-	margin-left: 5px;
+	margin-right: 4px;
 	margin-bottom: 10px;
 }
 
 .expd, .actionList li a , #actionList li a,
-.qtip-nonPermanentLeader a.tooltipButton, img {	
+.qtip-nonPermanentLeader a.tooltipButton, img {
 	cursor: pointer;
 }
 
 #content table {
- 	width: 100%;	
+ 	width: 100%;
 }
 
 #progressBar {
@@ -92,7 +92,7 @@
 }
 
 .ui-icon-info, .ui-icon-alert {
-	float: left; 
+	float: left;
 	margin: 0 7px 20px 0;
 }
 
