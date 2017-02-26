@@ -170,30 +170,12 @@ jQuery(function($) {
 			"sDom"            : 'rt<"bottom"flpi><"clear">',
 			"iDisplayStart"   : 0,
 			"iDisplayLength"  : 10,
-			"bServerSide"     : true,
 			"pagingType"      : "only_when_necessary",
 			"sServerMethod"   : "POST",
 			"oLanguage"       : {"sProcessing": "processing request"},
-			"fnServerData"    : function(sSource, aoData, fnCallback) {
-				$.get(
-					sSource,
-					function(nextPage){
-						if (parseReturnCode(nextPage)) {
-							fnCallback(nextPage);
-						}
-					},
-					"json"
-				).error(function(){
-					showMessage("error", "Internal error populating data table", 5000);
-				});
-			}
 		};
 		$.extend(true, this, config, overrides);
 	};
-
-	/* DataTable defualt config */
-	$.extend(star.DataTableConfig.prototype, {
-	});
 });
 
 function checkForHelpFile() {
