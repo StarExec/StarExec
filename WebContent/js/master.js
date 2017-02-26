@@ -97,6 +97,7 @@ $(document).ready(function(){
  * https://datatables.net/reference/event/
  */
 jQuery(function($) {
+	"use strict";
 	/* Everything in here depends on DataTables
 	 * If DataTables are not used on this page, we can just return
 	 *
@@ -104,8 +105,9 @@ jQuery(function($) {
 	 * only called when DataTables are used, but that would invlove some
 	 * refactoring.
 	 */
+	var extpager;
 	try {
-		var extpager = $.fn.dataTable.ext.pager;
+		extpager = $.fn.dataTable.ext.pager;
 	} catch (e) {
 		return;
 	}
