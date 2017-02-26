@@ -168,6 +168,7 @@
 				<li><a class="btnDown" id="downloadXML" >download space xml</a></li>
 				<li><a class="btnDown" id="downloadSpace">download space</a></li>
 			</ul>
+			<p style="color:#008c03;clear:both">Some action buttons have moved.<br />They are now higher on this page, grouped with the primitives they act on.</p>
 		</fieldset>
 
 	</div>
