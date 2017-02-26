@@ -154,7 +154,7 @@ jQuery(function($) {
 		else
 			footer.show();
 
-		// Hide "Select all/none" if there is fewer than one record
+		// Hide "Select all/none" if there are not multiple records
 		if (info.recordsTotal <= 1)
 			selectAll.hide();
 		else
