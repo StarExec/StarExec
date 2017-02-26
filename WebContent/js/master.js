@@ -169,7 +169,7 @@ jQuery(function($) {
 		var config = {
 			"sDom"            : 'rt<"bottom"flpi><"clear">',
 			"iDisplayStart"   : 0,
-			"iDisplayLength"  : 10,
+			"iDisplayLength"  : defaultPageSize,
 			"pagingType"      : "only_when_necessary",
 			"sServerMethod"   : "POST",
 			"oLanguage"       : {"sProcessing": "processing request"},
