@@ -113,7 +113,7 @@
 			</tr>
 		</table>
 	</fieldset>
-	<fieldset>
+	<fieldset class="expd">
 		<legend>communities</legend>
 		<table id="member of communities" class="shaded">
 			<thead>
@@ -131,7 +131,7 @@
 		</table>
 	</fieldset>
 	<c:if test="${owner}">
-		<fieldset>
+		<fieldset class="expd">
 			<legend>user quotas</legend>
 			<table id="diskUsageTable" class="shaded">
 				<thead>
@@ -160,7 +160,7 @@
 				</tbody>
 			</table>
 		</fieldset>
-		<fieldset id="solverField">
+		<fieldset id="solverField" class="expd">
 			<legend class="expd" id="solverExpd"><span>0</span> solvers</legend>
 			<ul class="actionList">
 				<li><button prim="solver" id="recycleSolver" class="recycleButton recycleSelected">recycle selected</button></li>
@@ -176,7 +176,7 @@
 				</thead>
 			</table>
 		</fieldset>
-		<fieldset id="benchField">
+		<fieldset id="benchField" class="expd">
 			<legend class="expd" id="benchExpd"><span>0</span> benchmarks</legend>
 			<ul class="actionList">
 				<li><button prim="benchmark" id="recycleBench" class="recycleButton recycleSelected">recycle selected</button></li>
@@ -191,7 +191,7 @@
 				</thead>
 			</table>
 		</fieldset>
-		<fieldset id="jobField">
+		<fieldset id="jobField" class="expd">
 			<legend class="expd" id="jobExpd"><span>0</span> jobs</legend>
 			<ul class="actionList">
 				<li><button id="deleteJob" class="deleteButton deleteSelected">delete selected</button></li>
@@ -211,7 +211,6 @@
 				</thead>
 			</table>
 		</fieldset>
-
 
 		<fieldset id="actionField">
 			<legend>user actions</legend>

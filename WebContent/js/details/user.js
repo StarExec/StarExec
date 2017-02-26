@@ -15,7 +15,7 @@ $(document).ready(function(){
 
 	$("#detailPanel").css("width","100%");
 
-	$("fieldset:not(:first)").expandable(true);
+	$(".expd").expandable(true);
 
 	$('.popoutLink').button({
 		icons: {
