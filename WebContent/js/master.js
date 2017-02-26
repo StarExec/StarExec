@@ -1,6 +1,12 @@
 var debugMode = true; //console.log statements are turned off by default
 
 /**
+ * StarExec namespace
+ * Let's try to put global vars here going forward
+ */
+var star = star || {};
+
+/**
  * Contains javascript relevant to all pages within starexec
  */
 
@@ -151,6 +157,42 @@ jQuery(function($) {
 			selectAll.hide();
 		else
 			selectAll.show();
+	});
+
+	/**
+	 * DataTables configuration
+	 * @constructor
+	 * @dict
+	 * @param {object} overrides to default configuration
+	 */
+	star.DataTableConfig = function( overrides ) {
+		var config = {
+			"sDom"            : 'rt<"bottom"flpi><"clear">',
+			"iDisplayStart"   : 0,
+			"iDisplayLength"  : 10,
+			"bServerSide"     : true,
+			"pagingType"      : "only_when_necessary",
+			"sServerMethod"   : "POST",
+			"oLanguage"       : {"sProcessing": "processing request"},
+			"fnServerData"    : function(sSource, aoData, fnCallback) {
+				$.get(
+					sSource,
+					function(nextPage){
+						if (parseReturnCode(nextPage)) {
+							fnCallback(nextPage);
+						}
+					},
+					"json"
+				).error(function(){
+					showMessage("error", "Internal error populating data table", 5000);
+				});
+			}
+		};
+		$.extend(true, this, config, overrides);
+	};
+
+	/* DataTable defualt config */
+	$.extend(star.DataTableConfig.prototype, {
 	});
 });
 

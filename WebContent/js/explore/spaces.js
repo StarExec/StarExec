@@ -1228,76 +1228,29 @@ function initDataTables(){
 	// Extend the DataTables api and add our custom features
 	extendDataTableFunctions();
 
+	var dataTableConfig = new window.star.DataTableConfig({
+		"sAjaxSource"  : starexecRoot + "services/space/",
+		"fnServerData" : fnPaginationHandler // included in this file
+	});
+
+	var dataTableConfigNoSort = new window.star.DataTableConfig({
+		"sAjaxSource"  : starexecRoot + "services/space/",
+		"fnServerData" : fnPaginationHandler, // included in this file
+		"aaSorting"    : [] // tells server to sort by 'created'
+	});
+
 	// Setup the DataTable objects
-	userTable = $('#users').dataTable( {
-		"sDom"          : getDataTablesDom(),
-		"iDisplayStart" : 0,
-		"iDisplayLength": defaultPageSize,
-		"bServerSide"   : true,
-		"pagingType"    : "only_when_necessary",
-		"sAjaxSource"   : starexecRoot+"services/space/",
-		"sServerMethod" : 'POST',
-		"fnServerData"  : fnPaginationHandler
-	});
-	solverTable = $('#solvers').dataTable( {
-		"sDom"          : getDataTablesDom(),
-		"iDisplayStart" : 0,
-		"iDisplayLength": defaultPageSize,
-		"bServerSide"   : true,
-		"pagingType"    : "only_when_necessary",
-		"sAjaxSource"   : starexecRoot+"services/space/",
-		"sServerMethod" : 'POST',
-		"fnServerData"  : fnPaginationHandler
-	});
-	benchTable = $('#benchmarks').dataTable( {
-		"sDom"          : getDataTablesDom(),
-		"iDisplayStart" : 0,
-		"iDisplayLength": defaultPageSize,
-		"bServerSide"   : true,
-		"pagingType"    : "only_when_necessary",
-		"sAjaxSource"   : starexecRoot+"services/space/",
-		"sServerMethod" : "POST",
-		"fnServerData"  : fnPaginationHandler
-	});
+	userTable   = $('#users'     ).dataTable(dataTableConfig);
+	solverTable = $('#solvers'   ).dataTable(dataTableConfig);
+	benchTable  = $('#benchmarks').dataTable(dataTableConfig);
+	spaceTable  = $('#spaces'    ).dataTable(dataTableConfig);
+	jobTable    = $('#jobs'      ).dataTable(dataTableConfigNoSort);
 
 	setSortTable(benchTable);
 
 	$("#benchmarks thead").click(function(){
 		resetSortButtons();
 	});
-
-	jobTable = $('#jobs').dataTable( {
-		"sDom"			: getDataTablesDom(),
-		"iDisplayStart"	: 0,
-		"iDisplayLength": defaultPageSize,
-		"bServerSide"	: true,
-		"pagingType"    : "only_when_necessary",
-
-		"sAjaxSource"	: starexecRoot+"services/space/",
-		"bProcessing"	: false,
-		"oLanguage": {
-			"sProcessing": getProcessingMessage()
-		},
-		"sServerMethod" : "POST",
-		"aaSorting"		: [],	// On page load, don't sort by any column - tells server to sort by 'created'
-		"fnServerData"	: fnPaginationHandler
-	});
-
-	spaceTable = $('#spaces').dataTable( {
-		"sDom"			: getDataTablesDom(),
-		"iDisplayStart"	: 0,
-		"iDisplayLength": defaultPageSize,
-		"bServerSide"	: true,
-		"pagingType"    : "only_when_necessary",
-		"sAjaxSource"	: starexecRoot+"services/space/",
-		"sServerMethod" : "POST",
-		"bProcessing"	: false,
-		"oLanguage": {
-			"sProcessing": getProcessingMessage()
-		},
-		"fnServerData"	: fnPaginationHandler
-	});
-
 
 	var tables=["#users","#solvers","#benchmarks","#jobs","#spaces"];
 
