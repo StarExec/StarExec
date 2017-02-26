@@ -1229,11 +1229,13 @@ function initDataTables(){
 	extendDataTableFunctions();
 
 	var dataTableConfig = new window.star.DataTableConfig({
+		"bServerSide"  : true,
 		"sAjaxSource"  : starexecRoot + "services/space/",
 		"fnServerData" : fnPaginationHandler // included in this file
 	});
 
 	var dataTableConfigNoSort = new window.star.DataTableConfig({
+		"bServerSide"  : true,
 		"sAjaxSource"  : starexecRoot + "services/space/",
 		"fnServerData" : fnPaginationHandler, // included in this file
 		"aaSorting"    : [] // tells server to sort by 'created'
