@@ -51,6 +51,11 @@
 		<p id="spaceID" class="accent"></p>
 		<fieldset id="jobField">
 			<legend class="expd" id="jobExpd"><span>0</span> jobs</legend>
+			<ul class="actionList">
+				<li><a class="btnRun" id="addJob" href="${starexecRoot}/secure/add/job.jsp">create job</a></li>
+				<li><a class="btnRun" id="addQuickJob" href="${starexecRoot}/secure/add/quickJob.jsp">quick job</a></li>
+				<li><a class="btnUp" id="uploadJobXML" href="${starexecRoot}/secure/add/batchJob.jsp">upload job xml</a></li>
+			</ul>
 			<table id="jobs">
 				<thead>
 					<tr>
@@ -74,6 +79,9 @@
 
 		<fieldset id="solverField">
 			<legend class="expd" id="solverExpd"><span>0</span> solvers</legend>
+			<ul class="actionList">
+				<li><a class="btnUp" id="uploadSolver" href="${starexecRoot}/secure/add/solver.jsp">upload solver</a></li>
+			</ul>
 			<table id="solvers">
 				<thead>
 					<tr>
@@ -94,7 +102,11 @@
 
 		<fieldset id="benchField">
 			<legend class="expd" id="benchExpd"><span>0</span> benchmarks</legend>
-			<button title="sorts benchmarks in the order they were added to this space" asc="true" class="sortButton" id="additionSort" value="2">sort by addition order</button>
+			<ul class="actionList">
+				<li><button title="sorts benchmarks in the order they were added to this space" asc="true" class="sortButton" id="additionSort" value="2">sort by addition order</button></li>
+				<li><a class="btnUp" id="uploadBench" href="${starexecRoot}/secure/add/benchmarks.jsp">upload benchmarks</a></li>
+				<li><a class="btnRun" id="processBenchmarks" href="${starexecRoot}/edit/processBenchmarks.jsp">process benchmarks</a></li>
+			</ul>
 			<table id="benchmarks">
 				<thead>
 					<tr>
@@ -134,6 +146,10 @@
 
 		<fieldset id="spaceField">
 			<legend class="expd" id="spaceExpd"><span>0</span> subspaces</legend>
+			<ul class="actionList">
+				<li><a class="btnAdd" id="addSpace" href="${starexecRoot}/secure/add/space.jsp">add subspace</a></li>
+				<li><a class="btnUp" id="uploadXML" href="${starexecRoot}/secure/add/batchSpace.jsp">upload space xml</a></li>
+			</ul>
 			<table id="spaces">
 				<thead>
 					<tr>
@@ -145,26 +161,12 @@
 		</fieldset>
 
 		<fieldset class="actions">
-			<legend>actions</legend>
+			<legend>space actions</legend>
 			<ul class="actionList">
-				<li><a class="btnAdd" id="addSpace" href="${starexecRoot}/secure/add/space.jsp">add subspace</a></li>
-				<li><a class="btnUp" id="uploadBench" href="${starexecRoot}/secure/add/benchmarks.jsp">upload benchmarks</a></li>
-				<li><a class="btnUp" id="uploadSolver" href="${starexecRoot}/secure/add/solver.jsp">upload solver</a></li>
-				<li><a class="btnRun" id="addJob" href="${starexecRoot}/secure/add/job.jsp">create job</a></li>
-				<li><a class="btnRun" id="addQuickJob" href="${starexecRoot}/secure/add/quickJob.jsp">quick job</a></li>
 				<li><a class="btnEdit" id="editSpace" href="${starexecRoot}/secure/edit/space.jsp">edit space</a></li>
-			</ul>
-		</fieldset>
-
-		<fieldset class="advancedActions actions">
-			<legend>advanced actions</legend>
-			<ul class="actionList">
 				<li><a class="btnEdit" id="editSpacePermissions" href="${starexecRoot}/secure/edit/spacePermissions.jsp">edit space permissions</a></li>
 				<li><a class="btnDown" id="downloadXML" >download space xml</a></li>
-				<li><a class="btnUp" id="uploadXML" href="${starexecRoot}/secure/add/batchSpace.jsp">upload space xml</a></li>
-				<li><a class="btnUp" id="uploadJobXML" href="${starexecRoot}/secure/add/batchJob.jsp">upload job xml</a></li>
 				<li><a class="btnDown" id="downloadSpace">download space</a></li>
-				<li><a class="btnRun" id="processBenchmarks" href="${starexecRoot}/edit/processBenchmarks.jsp">process benchmarks</a></li>
 			</ul>
 		</fieldset>
 

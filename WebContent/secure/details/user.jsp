@@ -2,18 +2,18 @@
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%		
+<%
 	try {
 		int id=-1;
 		try {
-			id = Integer.parseInt(request.getParameter("id"));	
+			id = Integer.parseInt(request.getParameter("id"));
 		} catch (Exception e) {
 			id = SessionUtil.getUserId(request);
 		}
 		User t_user = Users.get(id);
 		int visiting_userId = SessionUtil.getUserId(request);
-		
-		
+
+
 
 		if(t_user != null) {
 			request.setAttribute("t_user", t_user);
@@ -32,8 +32,8 @@
 				request.setAttribute("pairQuota", t_user.getPairQuota());
 				request.setAttribute("pairUsage",Jobs.countPairsByUser(t_user.getId()));
 				request.setAttribute("diskUsage", Util.byteCountToDisplaySize(disk_usage));
-				
-				if(jList != null) {			
+
+				if(jList != null) {
 					request.setAttribute("jobList", jList);
 					request.setAttribute("userFullName", userFullName);
 				} else {
@@ -41,16 +41,16 @@
 				}
 			}
 			boolean canSubscribeToErrorLogs = owner && (Users.isDeveloper(id) || Users.isAdmin(id));
-			request.setAttribute("owner", owner);	
+			request.setAttribute("owner", owner);
 			request.setAttribute("sites", Websites.getAllForHTML(id,WebsiteType.USER));
 			request.setAttribute("canSubscribeToErrorLogs", canSubscribeToErrorLogs);
 
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "User does not exist");
 		}
-		
-		
-		
+
+
+
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given user id was in an invalid format");
 	} catch (Exception e) {
@@ -62,14 +62,14 @@
 	<span id="userId" value="${userId}"></span>
 	<div id="popDialog">
   		<img id="popImage" src=""/>
-	</div>	
+	</div>
 	<div id="explorer">
 		<h3>Spaces</h3>
 		<ul id="exploreList">
 		</ul>
 	</div>
-	
-	
+
+
 	<div id="detailPanel" class="userDetailPanel">
 	<fieldset>
 		<legend>details</legend>
@@ -81,38 +81,38 @@
 			<td id="userDetail" class="detail">
 			<table id="personal" class="shaded">
 				<tr>
-					<td>e-mail address</td>			
+					<td>e-mail address</td>
 					<td><a href="mailto:${t_user.email}">${t_user.email}<img class="extLink" src="${starexecRoot}/images/external.png"/></a></td>
-				</tr>				
+				</tr>
 				<tr>
-					<td>institution</td>			
+					<td>institution</td>
 					<td>${t_user.institution}</td>
 				</tr>
 				<tr>
-					<td>member since</td>			
+					<td>member since</td>
 					<td><fmt:formatDate pattern="MMM dd yyyy" value="${t_user.createDate}" /></td>
 				</tr>
 				<tr>
-					<td>member type</td>			
+					<td>member type</td>
 					<td>${t_user.role}</td>
 				</tr>
-				<c:if test="${not empty sites}">			
+				<c:if test="${not empty sites}">
 				<tr>
-					<td>websites</td>	
-					<td>		
+					<td>websites</td>
+					<td>
 						<ul>
 							<c:forEach var="site" items="${sites}">
 								<li>${site}<img class="extLink" src="${starexecRoot}/images/external.png"/></li>
-							</c:forEach>	
+							</c:forEach>
 						</ul>
 					</td>
 				</tr>
-				</c:if>			
+				</c:if>
 			</table>
 			</td>
 			</tr>
 		</table>
-	</fieldset>	
+	</fieldset>
 	<fieldset>
 		<legend>communities</legend>
 		<table id="member of communities" class="shaded">
@@ -127,7 +127,7 @@
 					<td class="community">${community.getName()}</td>
 				</tr>
 				</c:forEach>
-			</tbody>			
+			</tbody>
 		</table>
 	</fieldset>
 	<c:if test="${owner}">
@@ -157,11 +157,15 @@
 						<td>job pairs owned</td>
 						<td>${pairUsage}</td>
 					</tr>
-				</tbody>			
+				</tbody>
 			</table>
 		</fieldset>
 		<fieldset id="solverField">
 			<legend class="expd" id="solverExpd"><span>0</span> solvers</legend>
+			<ul class="actionList">
+				<li><button prim="solver" id="recycleSolver" class="recycleButton recycleSelected">recycle selected</button></li>
+				<li><button title="This will move all of the solvers you own that are not in any spaces to the recycle bin." prim="solver" id="recycleOrphanedSolvers" class="recycleButton recycleOrphaned">recycle orphaned</button>
+		 	 </ul>
 			<table id="solvers" uid="${t_user.id}" class="selectableTable">
 				<thead>
 					<tr>
@@ -171,33 +175,28 @@
 					</tr>
 				</thead>
 			</table>
-			<fieldset id="solverActions" class="actionField">
-				<legend>actions</legend>
-				<button prim="solver" id="recycleSolver" class="recycleButton recycleSelected">recycle selected</button>
-				<button title="This will move all of the solvers you own that are not in any spaces to the recycle bin."
-				 prim="solver" id="recycleOrphanedSolvers" class="recycleButton recycleOrphaned">recycle orphaned</button>
-				
-			</fieldset>
 		</fieldset>
 		<fieldset id="benchField">
 			<legend class="expd" id="benchExpd"><span>0</span> benchmarks</legend>
+			<ul class="actionList">
+				<li><button prim="benchmark" id="recycleBench" class="recycleButton recycleSelected">recycle selected</button></li>
+				<li><button title="This will move all of the benchmarkss you own that are not in any spaces to the recycle bin" prim="benchmark" id="recycleOrphanedBench" class="recycleButton recycleOrphaned">recycle orphaned</button></li>
+			</ul>
 			<table id="benchmarks" uid="${t_user.id}" class="selectableTable">
 				<thead>
 					<tr>
 						<th> name</th>
-						<th> type</th>											
+						<th> type</th>
 					</tr>
-				</thead>		
+				</thead>
 			</table>
-			<fieldset id="benchActions" class="actionField">
-				<legend>actions</legend>
-				<button prim="benchmark" id="recycleBench" class="recycleButton recycleSelected">recycle selected</button>
-				<button title="This will move all of the benchmarkss you own that are not in any spaces to the recycle bin" prim="benchmark" id="recycleOrphanedBench" class="recycleButton recycleOrphaned">recycle orphaned</button>
-				
-			</fieldset>
-		</fieldset>			
+		</fieldset>
 		<fieldset id="jobField">
 			<legend class="expd" id="jobExpd"><span>0</span> jobs</legend>
+			<ul class="actionList">
+				<li><button id="deleteJob" class="deleteButton deleteSelected">delete selected</button></li>
+				<li><button id="deleteOrphanedJob" class="deleteButton deleteOrphaned" title="This will permanently delete all of the jobs you created that are no longer in any spaces">delete orphaned</button></li>
+		 	 </ul>
 			<table id="jobs" uid="${t_user.id}" class="selectableTable">
 				<thead>
 					<tr>
@@ -207,22 +206,15 @@
 						<th>total</th>
 						<th>failed</th>
 						<th>time</th>
-                        <th>disk size</th>
+						<th>disk size</th>
 					</tr>
-				</thead>			
+				</thead>
 			</table>
-			<fieldset id="jobActions" class="actionField">
-				<legend>actions</legend>
-				<button id="deleteJob" class="deleteButton deleteSelected">delete selected</button>
-				<button title="This will permanently delete all of the jobs you created that are no longer in any spaces"
-				 id="deleteOrphanedJob" class="deleteButton deleteOrphaned">delete orphaned</button>
-				
-			</fieldset>
 		</fieldset>
-		
-			
+
+
 		<fieldset id="actionField">
-		<legend>actions</legend>
+			<legend>user actions</legend>
 			<button id="showSpaceExplorer">show space explorer</button>
 
 			<c:if test="${!t_user.subscribedToErrorLogs && canSubscribeToErrorLogs}">
@@ -236,7 +228,7 @@
 			<a id="editButton" href="${starexecRoot}/secure/edit/account.jsp?id=${t_user.id}">edit</a>
 			<a id="recycleBinButton" href="${starexecRoot}/secure/details/recycleBin.jsp">manage recycle bin</a>
 		</fieldset>
-		
+
 		<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 		</div>
