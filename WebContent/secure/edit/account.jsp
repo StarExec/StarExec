@@ -289,15 +289,7 @@
 						</select>
 					</td>
 				</tr>
-				<tr>
-					<td>benchmarking framework</td>
-					<td>					
-						<select id="editBenchmarkingFramework" name="editBenchmarkingFramework">
-							<option class="runsolverOption" value="RUNSOLVER" selected="selected">runsolver</option>
-							<option class="benchexecOption" value="BENCHEXEC">BenchExec</option>
-						</select>
-					</td>
-				</tr>
+				<star:benchmarkingFrameworkRow />
 				<tr>
 					<td title="the wallclock timeout that will be selected by default for new jobs">wallclock timeout</td>
 					<td id="editClockTimeout"><input type="text" name="wallclockTimeout" id="wallclockTimeout"/></td>

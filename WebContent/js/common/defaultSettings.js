@@ -3,6 +3,9 @@ var COM_DS = {
 	setBenchmarkingFramework: function(benchmarkingFramework) {
 		'use strict';
 		log('setting benchmarking framework...');
+		log('new benchmarking framework is '+benchmarkingFramework);
+		$('#editBenchmarkingFramework').val(benchmarkingFramework);
+		/*
 		var runsolverOptionSelector = '.runsolverOption';
 		var benchexecOptionSelector = '.benchexecOption';
 		if ( benchmarkingFramework === 'BENCHEXEC' ) {
@@ -11,7 +14,7 @@ var COM_DS = {
 		} else {
 			$(benchexecOptionSelector).removeAttr('selected');	
 			$(runsolverOptionSelector).attr('selected', 'selected')
-		}
+		}*/
 	}
 }
 

@@ -122,6 +122,7 @@ function initUI(){
 					'bench[]': benchmarkIds, mem: $("#maxMem").val(), settingId : $("#settingProfile").val(), userIdOfOwner: userId, benchmarkingFramework: newBenchmarkingFramework},
 				function(returnCode) {
 						showMessage("success","Profile settings updated successfully",5000);
+						location.reload();
 
 				}
 			).error(function(xhr, textStatus, errorThrown) {

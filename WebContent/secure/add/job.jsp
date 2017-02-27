@@ -167,15 +167,7 @@
 							<input type="text" name="seed" id="seed" value="0">
 						</td>
 					</tr>					
-					<tr class="noHover advancedOptions" id="benchmarkingFrameworkRow">
-						<td>
-							<p>Benchmarking Framework</p>
-						</td>
-						<td>
-							<span>BenchExec<input type="radio" id="radioUseBenchexec" name="benchmarkingFramework" value="BENCHEXEC"/></span>
-							<span>runsolver<input type="radio" id="radioUseRunsolver" name="benchmarkingFramework" value="RUNSOLVER" checked="checked"/></span>
-						</td>
-					</tr>
+					<star:benchmarkingFrameworkRow />
 					<tr class="noHover advancedOptions" id="resultsIntervalRow" title="The interval, in seconds, at which to retrieve incremental results for pairs that are running. 0 means results are only obtained after pairs finish. 10 is the minimum if this is used.">
 						<td>
 							<p>Results Interval</p>
