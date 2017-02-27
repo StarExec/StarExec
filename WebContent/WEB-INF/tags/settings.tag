@@ -14,6 +14,7 @@
 			<span class="preProcessorId" value="${setting.preProcessorId}"></span>
 			<span class="postProcessorId" value="${setting.postProcessorId}"></span>
 			<span class="benchProcessorId" value="${setting.benchProcessorId}"></span>
+			<span class="benchmarkingFramework" value="${setting.benchmarkingFramework}"></span>
 
 			<c:forEach items="${Settings.getDefaultBenchmarks(setting.id)}" var="bench">
 				<span class="benchId" value="${bench.id}"></span>

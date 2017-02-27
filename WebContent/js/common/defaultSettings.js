@@ -1,3 +1,20 @@
+// common/defaultSettings global object
+var COM_DS = {
+	setBenchmarkingFramework: function(benchmarkingFramework) {
+		'use strict';
+		log('setting benchmarking framework...');
+		var runsolverOptionSelector = '.runsolverOption';
+		var benchexecOptionSelector = '.benchexecOption';
+		if ( benchmarkingFramework === 'BENCHEXEC' ) {
+			$(runsolverOptionSelector).removeAttr('selected');	
+			$(benchexecOptionSelector).attr('selected', 'selected')
+		} else {
+			$(benchexecOptionSelector).removeAttr('selected');	
+			$(runsolverOptionSelector).attr('selected', 'selected')
+		}
+	}
+}
+
 $(document).ready(function() {
 	$("#settingProfile").change(function() {
 		
@@ -56,6 +73,12 @@ function populateDefaultsWithId(selectedSettingId) {
 	var postProcessorId=$(profile).find("span.postProcessorId").attr("value");
 	var deps = $(profile).find("span.dependency").attr("value");
 	var benchProcessorId=$(profile).find("span.benchProcessorId").attr("value");
+	var benchmarkingFramework = $(profile).find("span.benchmarkingFramework").attr("value");
+
+	COM_DS.setBenchmarkingFramework( benchmarkingFramework );
+
+
+
 	setInputToValue("#cpuTimeout",cpuTimeout);
 	setInputToValue("#wallclockTimeout",clockTimeout);
 	setInputToValue("#maxMem",maxMemory);
@@ -100,6 +123,7 @@ function populateDefaultsWithId(selectedSettingId) {
 	
 	
 }
+
 
 /**
  * Sets all of the fields that have defaults according to the currently selected default setting

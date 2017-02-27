@@ -40,7 +40,6 @@
 			request.setAttribute("defaultCpuTimeout", settings.getCpuTimeout());
 			request.setAttribute("defaultClockTimeout", settings.getWallclockTimeout());
 			request.setAttribute("usingBenchExec", settings.getBenchmarkingFramework() == BenchmarkingFramework.BENCHEXEC);
-			request.setAttribute("usingRunsolver", settings.getBenchmarkingFramework() == BenchmarkingFramework.RUNSOLVER);
 			
 	
 			request.setAttribute("defaultMaxMem",Util.bytesToGigabytes(settings.getMaxMemory()));
@@ -280,7 +279,7 @@
 				<td>benchmarking framework</td>
 				<td>					
 					<select id="editBenchmarkingFramework" name="editBenchmarkingFramework">
-						<c:if test="${usingRunsolver}">
+						<c:if test="${!usingBenchExec}">
 							<option value="RUNSOLVER" selected="selected">runsolver</option>
 							<option value="BENCHEXEC">BenchExec</option>
 						</c:if>

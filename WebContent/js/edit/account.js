@@ -109,13 +109,17 @@ function initUI(){
 		log('benchmarkIds is: ');
 		log(benchmarkIds);
 
+		var newBenchmarkingFramework = $('#editBenchmarkingFramework').find(':selected').attr('value')
+		log('New benchmarking framework is: '+newBenchmarkingFramework);
+
+
 			
 		$.post(  
 				starexecRoot+"secure/add/profile",
 				{postp: $("#editPostProcess").val(), prep: $("#editPreProcess").val(), benchp: $("#editBenchProcess").val(),
 					solver: $("#solver").val(), name: $("#settingName").val(), cpu: $("#cpuTimeout").val(),
 					wall: $("#wallclockTimeout").val(), dep: $("#editDependenciesEnabled").val(),
-					'bench[]': benchmarkIds, mem: $("#maxMem").val(), settingId : $("#settingProfile").val(), userIdOfOwner: userId},
+					'bench[]': benchmarkIds, mem: $("#maxMem").val(), settingId : $("#settingProfile").val(), userIdOfOwner: userId, benchmarkingFramework: newBenchmarkingFramework},
 				function(returnCode) {
 						showMessage("success","Profile settings updated successfully",5000);
 
