@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.lang.StringBuilder;
 import java.io.BufferedReader;
@@ -23,6 +24,7 @@ import org.starexec.data.security.SettingSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
+import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -48,6 +50,8 @@ public class AddSettingProfile extends HttpServlet {
 	private static String MAX_MEMORY="mem";
 	private static String SETTING_ID= "settingId"; //this is set if we are doing an update only
 	private static String USER_ID_OF_OWNER = "userIdOfOwner";
+	private static String BENCHMARKING_FRAMEWORK = "benchmarkingFramework";
+
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
@@ -112,6 +116,7 @@ public class AddSettingProfile extends HttpServlet {
 			d.setCpuTimeout(Integer.parseInt(request.getParameter(CPU_TIMEOUT)));
 			d.setMaxMemory(Util.gigabytesToBytes(Double.parseDouble(request.getParameter(MAX_MEMORY))));
 			d.setDependenciesEnabled(Boolean.parseBoolean(request.getParameter(DEPENDENCIES)));
+			d.setBenchmarkingFramework(BenchmarkingFramework.valueOf(request.getParameter(BENCHMARKING_FRAMEWORK)));
 			
 			//the next attributes do not necessarily need to be set, as they can be null
 			String postId=request.getParameter(POST_PROCESSOR);
@@ -218,6 +223,12 @@ public class AddSettingProfile extends HttpServlet {
 		
 		if (!Validator.isValidPosDouble(request.getParameter(MAX_MEMORY))) {
 			return new ValidatorStatusCode(false, "invalid maximum memory");
+		}
+
+		// Check if the benchmarking framework parameter doesn't match any available benchmarking frameworks.
+		final String benchmarkingFramework = request.getParameter(BENCHMARKING_FRAMEWORK);
+		if (EnumSet.allOf(BenchmarkingFramework.class).stream().noneMatch(framework -> framework.toString().equals(benchmarkingFramework))) {
+			return new ValidatorStatusCode(false, "invalid benchmarking framework");
 		}
 		
 		String postId=request.getParameter(POST_PROCESSOR);
