@@ -150,7 +150,6 @@ public class CreateJob extends HttpServlet {
 				SaveResultsOption.SAVE,
 				R.DEFAULT_BENCHMARKING_FRAMEWORK);
 
-		// TODO: need to allow for a selection of bench ids
 		buildQuickJob(j, solverId, settings.getBenchIds(), spaceId);
 		boolean submitSuccess = Jobs.add(j, spaceId);
 		if (submitSuccess) {
