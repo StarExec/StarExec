@@ -7,7 +7,7 @@
 	<ul>
 	<c:if test="${not empty user}">
 			<li><a target="_blank"
-				href="${starexecRoot}/secure/details/user.jsp?id=${user.id}">${fn:toLowerCase(user.fullName)}</a></li>
+				href="${starexecRoot}/secure/details/user.jsp?id=${user.id}">${user.fullName}</a></li>
 			<li>|</li>
 			<li><a onclick="javascript:logout();">Logout</a></li>
 	</c:if>
