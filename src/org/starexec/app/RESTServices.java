@@ -11,6 +11,7 @@ import org.starexec.data.security.*;
 import org.starexec.data.to.*;
 import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.data.to.enums.BenchmarkingFramework;
+import org.starexec.data.to.enums.CopyPrimitivesOption;
 import org.starexec.data.to.enums.Primitive;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecDatabaseException;
@@ -4108,6 +4109,7 @@ public class RESTServices {
 		int requestUserId = SessionUtil.getUserId(request);
 		
 		boolean copyPrimitives = Boolean.parseBoolean(request.getParameter("copyPrimitives"));
+		CopyPrimitivesOption copyPrimitivesOption = copyPrimitives ? CopyPrimitivesOption.COPY : CopyPrimitivesOption.LINK;
 		log.debug(methodName, "copyPrimitives = " + copyPrimitives);
 		
 		boolean copyHierarchy = Boolean.parseBoolean(request.getParameter("copyHierarchy"));
@@ -4124,7 +4126,7 @@ public class RESTServices {
 			for (int id : selectedSubSpaces) {
 				int newSpaceId;
 				try {
-					newSpaceId = Spaces.copySpace(id, spaceId, requestUserId, copyPrimitives);
+					newSpaceId = Spaces.copySpace(id, spaceId, requestUserId, copyPrimitivesOption, null);
 				} catch (StarExecException e) {
 					return gson.toJson(new ValidatorStatusCode(false, e.getMessage()));
 				}
@@ -4136,7 +4138,7 @@ public class RESTServices {
 			for (int id : selectedSubSpaces) {
 				int newSpaceId;
 				try {
-					newSpaceId = Spaces.copyHierarchy(id, spaceId, requestUserId, copyPrimitives);
+					newSpaceId = Spaces.copyHierarchy(id, spaceId, requestUserId, copyPrimitivesOption, null);
 				} catch (StarExecException e) {
 					return gson.toJson(new ValidatorStatusCode(false, e.getMessage()));
 				}
