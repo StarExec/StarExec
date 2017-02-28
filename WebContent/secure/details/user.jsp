@@ -214,18 +214,21 @@
 
 		<fieldset id="actionField">
 			<legend>user actions</legend>
-			<button id="showSpaceExplorer">show space explorer</button>
+			<ul class="actionList">
+				<li><button id="showSpaceExplorer">show space explorer</button></li>
 
-			<c:if test="${!t_user.subscribedToErrorLogs && canSubscribeToErrorLogs}">
-				<button id="subscribeToErrorLogs">subscribe to error logs</button>
-			</c:if>
-			<c:if test="${t_user.subscribedToErrorLogs && canSubscribeToErrorLogs}">
-				<button id="unsubscribeFromErrorLogs">unsubscribe from error logs</button>
-			</c:if>
-			<button title="This will add all of your 'orphaned' solvers, benchmarks, and jobs to the space selected in the space explorer
-			on the left. An item is 'orphaned' if it is not linked to any spaces" id="linkOrphanedButton">associate orphaned primitives with space</button>
-			<a id="editButton" href="${starexecRoot}/secure/edit/account.jsp?id=${t_user.id}">edit</a>
-			<a id="recycleBinButton" href="${starexecRoot}/secure/details/recycleBin.jsp">manage recycle bin</a>
+				<c:if test="${!t_user.subscribedToErrorLogs && canSubscribeToErrorLogs}">
+					<li><button id="subscribeToErrorLogs">subscribe to error logs</button></li>
+				</c:if>
+				<c:if test="${t_user.subscribedToErrorLogs && canSubscribeToErrorLogs}">
+					<li><button id="unsubscribeFromErrorLogs">unsubscribe from error logs</button></li>
+				</c:if>
+				<li><button title="This will add all of your 'orphaned' solvers, benchmarks, and jobs to the space selected in the
+				  space explorer on the left. An item is 'orphaned' if it is not linked to any spaces" id="linkOrphanedButton">
+					associate orphaned primitives with space
+			 	</button></li>
+				<li><a id="editButton" href="${starexecRoot}/secure/edit/account.jsp?id=${t_user.id}">edit</a></li>
+				<li><a id="recycleBinButton" href="${starexecRoot}/secure/details/recycleBin.jsp">manage recycle bin</a></li>
 		</fieldset>
 
 		<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
