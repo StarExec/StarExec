@@ -32,7 +32,6 @@ table.dataTable {
 	thead {
 		.sorting_asc, .sorting_desc, .sorting {
 			cursor: pointer;
-			*cursor: hand;
 			background: stylesheet-url("images/sort_both.png") no-repeat center right;
 		}
 
@@ -442,7 +441,6 @@ table.dataTable {
 .dataTables_wrapper {
 	position: relative;
 	clear: both;
-	*zoom: 1;
 	zoom: 1;
 
 	.dataTables_length {
@@ -479,7 +477,6 @@ table.dataTable {
 			text-align: center;
 			text-decoration: none !important;
 			cursor: pointer;
-			*cursor: hand;
 			color: #fff !important;
 			border: 1px solid transparent;
 
@@ -534,7 +531,6 @@ table.dataTable {
 		clear: both;
 
 		div.dataTables_scrollBody {
-			*margin-top: -1px;
 			-webkit-overflow-scrolling: touch;
 
 			th > div.dataTables_sizing, td > div.dataTables_sizing {
