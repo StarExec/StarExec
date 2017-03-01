@@ -206,6 +206,7 @@ public class AddSettingProfile extends HttpServlet {
 	}
 	
 	private ValidatorStatusCode isValidRequest(HttpServletRequest request) throws SQLException {
+		final String methodName = "isValidRequest";
 		int userId=SessionUtil.getUserId(request);
 		if (Users.isPublicUser(userId)) {
 			return new ValidatorStatusCode(false, "Only registered users can take this action");
@@ -227,8 +228,9 @@ public class AddSettingProfile extends HttpServlet {
 
 		// Check if the benchmarking framework parameter doesn't match any available benchmarking frameworks.
 		final String benchmarkingFramework = request.getParameter(BENCHMARKING_FRAMEWORK);
+		log.debug(methodName, "Benchmarking framework was: "+benchmarkingFramework);
 		if (EnumSet.allOf(BenchmarkingFramework.class).stream().noneMatch(framework -> framework.toString().equals(benchmarkingFramework))) {
-			return new ValidatorStatusCode(false, "invalid benchmarking framework");
+			return new ValidatorStatusCode(false, "invalid benchmarking framework: "+benchmarkingFramework);
 		}
 		
 		String postId=request.getParameter(POST_PROCESSOR);
