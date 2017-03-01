@@ -41,8 +41,8 @@ public class SpaceTests extends TestSequence {
 	Space subspace=null;  //subspace of community
 	Space subspace2=null; //subspace of community
 	Space subspace3=null; //subspace of subspace2
-	List<Space> testSpaces = Arrays.asList(community, subspace, subspace2, subspace3);
-	List<Space> testSubSpaces = Arrays.asList(subspace, subspace2, subspace3);
+	List<Space> testSpaces;
+	List<Space> testSubSpaces;
 	User leader=null;
 	User admin=null;
 	User member1=null;
@@ -392,6 +392,8 @@ public class SpaceTests extends TestSequence {
 		log.debug(methodName, "subspace2 id="+subspace2.getId());
 		subspace3=loader.loadSpaceIntoDatabase(leader.getId(), subspace2.getId());
 		log.debug(methodName, "subspace3 id="+subspace3.getId());
+		testSpaces = Arrays.asList(community, subspace, subspace2, subspace3);
+		testSubSpaces = Arrays.asList(subspace, subspace2, subspace3);
 		Users.associate(member1.getId(), community.getId());
 		Users.associate(member2.getId(), community.getId());
 		Users.associate(member1.getId(), subspace.getId());

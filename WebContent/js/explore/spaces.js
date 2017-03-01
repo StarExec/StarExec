@@ -148,7 +148,7 @@ function initDraggable(table) {
 		window.location.href=starexecRoot+"secure/details/recycleBin.jsp";
 	});
 
-	log($(table).attr('id') + ' table initialized as draggable');
+	//log($(table).attr('id') + ' table initialized as draggable');
 }
 
 /**
@@ -423,14 +423,8 @@ function setupSpaceCopyDialog(ids, destSpace, destName) {
         spaceCopyDialogButtons['confirm'] = function() {
             var copyHierOption = $("input[type='radio'][name='copySpace']:checked").val();
 			log('copyHierOption: ' + copyHierOption);
-            if(copyHierOption) {
-                $('#dialog-confirm-copy').dialog('close');
-				log('Copying hierarchy');
-                doSpaceCopyPost(ids,destSpace,true,destName);
-            } else {
-				log('Copying single space');
-                singleSpaceCopy();
-            }
+			$('#dialog-confirm-copy').dialog('close');
+			doSpaceCopyPost(ids,destSpace,copyHierOption,destName);
             $('#hier-copy-options').addClass('copy-options-hidden');
         }
 	}
@@ -488,6 +482,7 @@ function setupUserCopyDialog(ids, destSpace, destName, ui, destIsLeafSpace) {
 function doSpaceCopyPost(ids,destSpace,copyHierarchy,destName) {
     var copyPrimitives = $("input[type='radio'][name='copyPrimitives']:checked").val();
 	log('copyPrimitives: ' + copyPrimitives);
+	log('copyHierarchy: ' + copyHierarchy);
     $('#copy-primitives-options').addClass('copy-options-hidden');
 	$.post(
 			starexecRoot+'services/spaces/' + destSpace + '/copySpace',
@@ -1127,7 +1122,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	}).always(function() {
 		// Reload the jobs table 10 seconds after receiving the response.
 		if (spaceId != 1 && typeof spaceId != 'undefined' && 'j' == tableName[0]) {
-			log('Setting new call to happen in 10 seconds.');
+			//log('Setting new call to happen in 10 seconds.');
 			setTimeout(function() {
 				var rows = $(jobTable).children('tbody').children('tr.row_selected');
 				if (rows.length == 0) {
