@@ -100,9 +100,10 @@ public class SpaceTests extends TestSequence {
 	@StarexecTest
 	private void getByJobTest() {
 		final String methodName = "getByJobTest";
+		ResourceLoader tempLoader = new ResourceLoader();
 		try {
-			Space tempSpace=loader.loadSpaceIntoDatabase(leader.getId(), community.getId());
-			Job tempJob = loader.loadJobIntoDatabase(tempSpace.getId(), leader.getId(), solver.getId(), ids);
+			Space tempSpace=tempLoader.loadSpaceIntoDatabase(leader.getId(), community.getId());
+			Job tempJob = tempLoader.loadJobIntoDatabase(tempSpace.getId(), leader.getId(), solver.getId(), ids);
 
 			Set<Integer> spacesAssociatedWithJob = Spaces.getByJob(tempJob.getId());
 
@@ -116,6 +117,8 @@ public class SpaceTests extends TestSequence {
 			Assert.assertTrue(spacesAssociatedWithJob.contains(tempSpace.getId()));
 		} catch (SQLException e) {
 			Assert.fail("SQLException thrown: "+ Util.getStackTrace(e));
+		} finally {
+			tempLoader.deleteAllPrimitives();
 		}
 
 	}
