@@ -1,7 +1,9 @@
 package org.starexec.test.integration.database; 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
+import com.google.common.base.Joiner;
 import org.junit.Assert;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
@@ -39,6 +41,8 @@ public class SpaceTests extends TestSequence {
 	Space subspace=null;  //subspace of community
 	Space subspace2=null; //subspace of community
 	Space subspace3=null; //subspace of subspace2
+	List<Space> testSpaces = Arrays.asList(community, subspace, subspace2, subspace3);
+	List<Space> testSubSpaces = Arrays.asList(subspace, subspace2, subspace3);
 	User leader=null;
 	User admin=null;
 	User member1=null;
@@ -86,7 +90,10 @@ public class SpaceTests extends TestSequence {
 	@StarexecTest
 	private void getSpaceHierarchyTest() {
 		List<Space> spaces=Spaces.getSubSpaceHierarchy(community.getId(),leader.getId());
-		Assert.assertEquals(3, spaces.size());
+		String spacesGot = getJoinedSpaceIds(spaces);
+		String spacesExpected = getTestSubSpacesIds();
+		String communityId = ((Integer)community.getId()).toString();
+		Assert.assertEquals("Got: "+spacesGot+" Expected: "+spacesExpected + " Community ID was: "+communityId, 3, spaces.size());
 
 	}
 
@@ -400,6 +407,20 @@ public class SpaceTests extends TestSequence {
 		}
 		job = loader.loadJobIntoDatabase(subspace.getId(), leader.getId(), solver.getId(), ids);
 		
+	}
+
+	private String getTestSubSpacesIds() {
+		return getJoinedSpaceIds(testSubSpaces);
+	}
+
+	private String getTestSpacesIds() {
+		return getJoinedSpaceIds(testSpaces);
+	}
+
+	private String getJoinedSpaceIds(List<Space> spaces) {
+		Joiner joiner = Joiner.on(", ");
+		// Join all the ids.
+		return joiner.join(spaces.stream().map(Space::getId).collect(Collectors.toList()));
 	}
 	
 	@Override
