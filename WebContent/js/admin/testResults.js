@@ -1,23 +1,13 @@
 $(document).ready(function(){
-	var $tableTests=$('#tableTests');
-	initUI();
-	setInterval(function() {
-		$tableTests.dataTable().api().ajax.reload(null,false);
-	},5000);
-});
-
-
-function initUI(){
-	var $tableTests=$('#tableTests');
 	var tableConfig = new window.star.DataTableConfig({
 		"sAjaxSource"  : starexecRoot+"services/testResults/pagination/"+$("#sequenceName").attr("value"),
 		"fnServerData" : fnPaginationHandler // included in this file
 	});
-
-	$tableTests.dataTable(tableConfig).on( "click", "tr", function() {
-		$(this).toggleClass("row_selected");
-	});
-}
+	var $tableTests=$('#tableTests').dataTable(tableConfig);
+	setInterval(function() {
+		$tableTests.dataTable().api().ajax.reload(null,false);
+	},5000);
+});
 
 
 function fnPaginationHandler(sSource, aoData, fnCallback) {
