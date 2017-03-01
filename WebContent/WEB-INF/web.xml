@@ -346,6 +346,7 @@
       <web-resource-name>Users Only</web-resource-name>
       <url-pattern>/secure/index.jsp</url-pattern>
       <url-pattern>/secure/details/recycleBin.jsp</url-pattern>
+      <url-pattern>/secure/add/to_community.jsp</url-pattern>
     </web-resource-collection>
     <auth-constraint>
       <role-name>user</role-name>
