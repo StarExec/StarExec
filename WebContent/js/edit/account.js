@@ -98,6 +98,12 @@ function initUI(){
 	
 	
 	$("button").button();
+
+	var getNewBenchmarkingFramework = function() {
+		var newBenchmarkingFramework = $('#editBenchmarkingFramework').find(':selected').attr('value')
+		log('New benchmarking framework is: '+newBenchmarkingFramework);
+		return newBenchmarkingFramework;
+	}
 	
 	
 	$("#saveProfile").click(function() {
@@ -108,16 +114,16 @@ function initUI(){
 
 		log('benchmarkIds is: ');
 		log(benchmarkIds);
-
 			
 		$.post(  
 				starexecRoot+"secure/add/profile",
 				{postp: $("#editPostProcess").val(), prep: $("#editPreProcess").val(), benchp: $("#editBenchProcess").val(),
 					solver: $("#solver").val(), name: $("#settingName").val(), cpu: $("#cpuTimeout").val(),
 					wall: $("#wallclockTimeout").val(), dep: $("#editDependenciesEnabled").val(),
-					'bench[]': benchmarkIds, mem: $("#maxMem").val(), settingId : $("#settingProfile").val(), userIdOfOwner: userId},
+					'bench[]': benchmarkIds, mem: $("#maxMem").val(), settingId : $("#settingProfile").val(), userIdOfOwner: userId, benchmarkingFramework: getNewBenchmarkingFramework()},
 				function(returnCode) {
 						showMessage("success","Profile settings updated successfully",5000);
+						location.reload();
 
 				}
 			).error(function(xhr, textStatus, errorThrown) {
@@ -146,9 +152,10 @@ function initUI(){
 							{postp: $("#editPostProcess").val(), prep: $("#editPreProcess").val(), benchp: $("#editBenchProcess").val(),
 								solver: $("#solver").val(), name: $("#settingName").val(), cpu: $("#cpuTimeout").val(),
 								wall: $("#wallclockTimeout").val(), dep: $("#editDependenciesEnabled").val(),
-								bench: $("#benchmark").val(), mem: $("#maxMem").val(), userIdOfOwner: userId},
+								bench: $("#benchmark").val(), mem: $("#maxMem").val(), userIdOfOwner: userId, benchmarkingFramework: getNewBenchmarkingFramework()},
 							function(returnCode) {
-									showMessage("success","Profile created successfully",5000);
+								showMessage("success","Profile created successfully",5000);
+								location.reload();
 							}
 						).error(function(xhr, textStatus, errorThrown){
 							log(xhr.statusText);

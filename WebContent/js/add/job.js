@@ -325,8 +325,7 @@ function initUI() {
 	});
 
 	log('Setting up runsolver/BenchExec clicked functions.');
-	$('#radioUseBenchexec').click(useBenchexecClicked);
-	$('#radioUseRunsolver').click(useRunsolverClicked);
+	$('#editBenchmarkingFramework').change(benchmarkingFrameworkChanged);
 
 	registerSolverConfigTableRowSelectionEventHandler();
 
@@ -389,16 +388,16 @@ function initUI() {
 
 }
 
-function useRunsolverClicked() {
-	'use strict';
-	log('runsolver clicked.');
-	$('#suppressTimestampsRow').show();
-}
 
-function useBenchexecClicked() {
+function benchmarkingFrameworkChanged() {
 	'use strict';
-	log('BenchExec clicked.');
-	$('#suppressTimestampsRow').hide();
+
+	var newBenchmarkingFramework = $('#editBenchmarkingFramework').find(':selected').attr('value')
+	if (newBenchmarkingFramework === 'BENCHEXEC') {
+		$('#suppressTimestampsRow').hide();
+	} else {
+		$('#suppressTimestampsRow').show();
+	}
 }
 
 

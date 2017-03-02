@@ -13,12 +13,12 @@ $(document).ready(function(){
 			var pairId = $(this).find('input').val();
 			window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
 		}
-		
+
 	});
 	// Build left-hand side of page (cluster explorer)
 	 initClusterExplorer();
 	 loadQstatOutput();
-	 
+
 	 $("#refreshQstat").button( {
 		 icons: {
 		 	primary: "ui-icon-refresh"
@@ -35,16 +35,16 @@ $(document).ready(function(){
 	 $("#refreshLoads").click(function() {
 		 loadQueueLoads();
 	 });
-	 
+
 	 $("#qstatField").expandable(true);
 	 $("#loadsField").expandable(true);
 
-	 
+
 	 setInterval(function() {
 		 jobPairTable.fnDraw(false);
 	 }, 10000);
 });
-	 
+
 function initClusterExplorer() {
 	// Set the path to the css theme fr the jstree plugin
 	 $.jstree._themes = starexecRoot+"css/jstree/";
@@ -52,26 +52,26 @@ function initClusterExplorer() {
 	 $("#exploreList").bind("loaded.jstree", function(e, data) {
 		 // Register a callback for when the jstree has finished loading
 		addNodeCountsToTree();
-	 }).jstree({  
+	 }).jstree({
 		 // Initialize the jstree plugin for the explorer list
-		"json_data" : { 
-			"ajax" : { 
-				"url" : starexecRoot+"services/cluster/queues",	// Where we will be getting json data from 
-				"data" : function (n) {  							
+		"json_data" : {
+			"ajax" : {
+				"url" : starexecRoot+"services/cluster/queues",	// Where we will be getting json data from
+				"data" : function (n) {
 					return { id : n.attr ? n.attr("id") : -1 }; // What the default space id should be
-				} 
-			} 
-		}, 
-		"themes" : { 
-			"theme" : "default", 					
-			"dots" : true, 
+				}
+			}
+		},
+		"themes" : {
+			"theme" : "default",
+			"dots" : true,
 			"icons" : true
-		},		
-		"types" : {				
+		},
+		"types" : {
 			"max_depth" : -2,
-			"max_children" : -2,					
+			"max_children" : -2,
 			"valid_children" : [ "queue" ],
-			"types" : {						
+			"types" : {
 				"active_queue" : {
 					"valid_children" : [ "enabled_node", "disabled_node" ],
 					"icon" : {
@@ -101,8 +101,8 @@ function initClusterExplorer() {
 		"plugins" : [ "types", "themes", "json_data", "ui", "cookies"] ,
 		"core" : { animation : 200 }
 	}).bind("select_node.jstree", function (event, data) {
-		// When a node is clicked, get its ID and display the info in the details pane		
-		id = data.rslt.obj.attr("id");		
+		// When a node is clicked, get its ID and display the info in the details pane
+		id = data.rslt.obj.attr("id");
 		parent_node = $.jstree._reference('#exploreList')._get_parent(data.rslt.obj);
 		getDetails(id,data.rslt.obj.attr("rel"),parent_node);
 	}).on( "click", "a", function (event, data) { event.preventDefault(); });	// This just disable's links in the node title
@@ -110,19 +110,15 @@ function initClusterExplorer() {
 
 
 function initDataTables() {
-	jobPairTable = $('#details').dataTable( {
-        "sDom"			: getDataTablesDom(),
-        "iDisplayStart"	: 0,
-        "iDisplayLength": defaultPageSize,
-        "bServerSide"	: true,
-        "bFilter"		: false,
-        "sAjaxSource"	: starexecRoot+"services/cluster/",
-        "sServerMethod" : "POST",
-        "fnServerData"	: fnPaginationHandler 
-    });
+	jobPairTable = $('#details').dataTable(new star.DataTableConfig({
+		"bServerSide"  : true,
+		"bFilter"      : false,
+		"sAjaxSource"  : starexecRoot+"services/cluster/",
+		"fnServerData" : fnPaginationHandler
+	}));
 }
 
-function fnPaginationHandler(sSource, aoData, fnCallback) {		
+function fnPaginationHandler(sSource, aoData, fnCallback) {
 	var id = $('#exploreList').find('.jstree-clicked').parent().attr("id");
 	//If we can't find the id of the queue/node from the DOM, get it from the cookie instead
 	if (id == null || typeof id == 'undefined') {
@@ -141,7 +137,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		window['type'] = 'queues';
 	}
 	//we have no pagination for inactive queues
-		$.get(  
+		$.get(
 				sSource + window['type'] + "/" + id + "/pagination",
 				aoData,
 				function(nextDataTablePage){
@@ -150,14 +146,14 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 						fnCallback(nextDataTablePage);
 					}
 
-				},  
+				},
 				"json"
 		).error(function(){
 			showMessage('error',"Internal error populating table",5000);
 		});
-	
+
 }
- 
+
 /**
  * Populates the node details panel with information on the given node
  */
@@ -166,7 +162,7 @@ function getDetails(id, type, parent_node) {
 	selectedId=id;
 	jobPairTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
 	if(type == 'active_queue' || type == 'inactive_queue') {
-		url = starexecRoot+"services/cluster/queues/details/" + id;	
+		url = starexecRoot+"services/cluster/queues/details/" + id;
 		qid=id;
 		window['type'] = 'queues';
 	} else if(type == 'enabled_node' || type == 'disabled_node') {
@@ -180,13 +176,13 @@ function getDetails(id, type, parent_node) {
 	loadQueueLoads();
 
 	$('#loader').show();
-	
+
 	jobPairTable.fnDraw();
-	$.get(  
-		url,  
-		function(data){  			
-			populateAttributes(data);			
-		},  
+	$.get(
+		url,
+		function(data){
+			populateAttributes(data);
+		},
 		"json"
 	).error(function(){
 		showMessage('error',"Internal error getting node details",5000);
@@ -194,25 +190,25 @@ function getDetails(id, type, parent_node) {
 }
 
 function loadQstatOutput() {
-	$.get(  
+	$.get(
 			starexecRoot+"services/cluster/qstat",
 			{},
 			function(data){
 				$("#qstatOutput").val(data);
 
-			},  
+			},
 			"text"
 	);
 }
 
 function loadQueueLoads() {
-	$.get(  
+	$.get(
 			starexecRoot+"services/cluster/loads/"+qid,
 			{},
 			function(data){
 				$("#loadOutput").val(data);
 
-			},  
+			},
 			"text"
 	);
 }
@@ -221,8 +217,8 @@ function loadQueueLoads() {
  * Takes in a json  response and populates the details panel with information
  * @param jsonData the json data to populate the details page with
  */
-function populateAttributes(jsonData) {	
-	// Populate node details	
+function populateAttributes(jsonData) {
+	// Populate node details
 	$('#workerName').text(jsonData.name.split('.')[0]);
 	$('#queueID').text("id = "+selectedId);
 
@@ -233,7 +229,7 @@ function populateAttributes(jsonData) {
 	} else {
 		//It is a node
 		$('#activeStatus').show();
-		
+
 		if(jsonData.status == 'ACTIVE') {
 			$('#activeStatus').text('[ACTIVE]');
 			$('#activeStatus').css('color', '#008d03');
@@ -242,7 +238,7 @@ function populateAttributes(jsonData) {
 			$('#activeStatus').css('color', '#ae0000');
 		}
 	}
-	
+
 	// Done loading, hide the loader
 	$('#loader').hide();
 }

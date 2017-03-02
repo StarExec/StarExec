@@ -1,6 +1,7 @@
 package org.starexec.data.security;
 
 import java.sql.SQLException;
+import java.util.EnumSet;
 import java.util.List;
 import org.starexec.constants.R.DefaultSettingAttribute;
 
@@ -16,6 +17,7 @@ import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Processor.ProcessorType;
+import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.util.Validator;
 /**
  * Security functions for handling DefaultSettings objects
@@ -173,7 +175,13 @@ public class SettingSecurity {
 					return new ValidatorStatusCode(false,"The given processor is not a preprocessor");
 				}
 			}
-			
+		} else if (attribute == DefaultSettingAttribute.BENCHMARKING_FRAMEWORK) {
+			boolean isLegalFrameworkName = EnumSet.allOf(BenchmarkingFramework.class).stream()
+					.anyMatch(framework -> framework.toString().equals(newValue));
+
+			if (!isLegalFrameworkName) {
+				return new ValidatorStatusCode(false, newValue+" is not a legal benchmarking framework name.");
+			}
 		}
 		
 		return canModifySettings(id,userId);

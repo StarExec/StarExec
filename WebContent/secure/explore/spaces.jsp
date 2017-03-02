@@ -27,26 +27,35 @@
 
 	request.setAttribute("userId",uid);
 	request.setAttribute("isAdmin",Users.isAdmin(uid));
-	
-	
+
+
 %>
-<star:template title="Space Explorer" js="util/draggable, util/spaceTree, util/sortButtons, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, explore/spaces, util/datatablesUtility, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min, shared/sharedFunctions" css="common/delaySpinner, common/table, explore/common, explore/jquery.qtip, explore/spaces">			
+<star:template title="Space Explorer" js="util/draggable, util/spaceTree, util/sortButtons, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, explore/spaces, util/datatablesUtility, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min, shared/sharedFunctions" css="common/delaySpinner, common/table, explore/common, explore/jquery.qtip, explore/spaces">
 	<span id="userId" value="${userId}" ></span>
 	<span id="spaceChain" value="${spaceChain}"></span>
 	<div id="explorer">
 		<h3>Spaces</h3>
-		 
+
 		<ul id="exploreList">
 		</ul>
 	</div>
-	
-	<div id="detailPanel">				
+
+	<div id="detailPanel">
 		<h3 class="spaceName"></h3>
-		<a id="trashcan" class="active"></a>
+
+		<star:userLoggedIn>
+			<a id="trashcan" class="active"></a>
+		</star:userLoggedIn>
+
 		<p id="spaceDesc" class="accent"></p>
 		<p id="spaceID" class="accent"></p>
 		<fieldset id="jobField">
 			<legend class="expd" id="jobExpd"><span>0</span> jobs</legend>
+			<ul class="actionList">
+				<li><a class="btnRun" id="addJob" href="${starexecRoot}/secure/add/job.jsp">create job</a></li>
+				<li><a class="btnRun" id="addQuickJob" href="${starexecRoot}/secure/add/quickJob.jsp">quick job</a></li>
+				<li><a class="btnUp" id="uploadJobXML" href="${starexecRoot}/secure/add/batchJob.jsp">upload job xml</a></li>
+			</ul>
 			<table id="jobs">
 				<thead>
 					<tr>
@@ -57,7 +66,7 @@
 						<th id="jobFailedHead"><span title="Job pairs for which there was a timeout, mem-out, or internal error">failed</span></th>
 						<th id="jobTimeHead">time</th>
 					</tr>
-				</thead>			
+				</thead>
 			</table>
 			<div class="selectWrap">
 				<p class="selectAllJobs">
@@ -66,18 +75,21 @@
 				<p class="unselectAllJobs">
 					<span class="ui-icon ui-icon-circlesmall-plus"></span>None
 			</div>
-		</fieldset>	
-			
+		</fieldset>
+
 		<fieldset id="solverField">
 			<legend class="expd" id="solverExpd"><span>0</span> solvers</legend>
+			<ul class="actionList">
+				<li><a class="btnUp" id="uploadSolver" href="${starexecRoot}/secure/add/solver.jsp">upload solver</a></li>
+			</ul>
 			<table id="solvers">
 				<thead>
 					<tr>
 						<th id="solverNameHead">name</th>
-						<th id="solverDescHead">description</th>		
-						<th id="solverTypeHead">Type</th>				
+						<th id="solverDescHead">description</th>
+						<th id="solverTypeHead">Type</th>
 					</tr>
-				</thead>			
+				</thead>
 			</table>
 			<div class="selectWrap">
 				<p class="selectAllSolvers">
@@ -86,18 +98,22 @@
 				<p class="unselectAllSolvers">
 					<span class="ui-icon ui-icon-circlesmall-plus"></span>None
 			</div>
-		</fieldset>						
-		
+		</fieldset>
+
 		<fieldset id="benchField">
 			<legend class="expd" id="benchExpd"><span>0</span> benchmarks</legend>
-			<button title="sorts benchmarks in the order they were added to this space" asc="true" class="sortButton" id="additionSort" value="2">sort by addition order</button>
+			<ul class="actionList">
+				<li><button title="sorts benchmarks in the order they were added to this space" asc="true" class="sortButton" id="additionSort" value="2">sort by addition order</button></li>
+				<li><a class="btnUp" id="uploadBench" href="${starexecRoot}/secure/add/benchmarks.jsp">upload benchmarks</a></li>
+				<li><a class="btnRun" id="processBenchmarks" href="${starexecRoot}/edit/processBenchmarks.jsp">process benchmarks</a></li>
+			</ul>
 			<table id="benchmarks">
 				<thead>
 					<tr>
 						<th id="benchNameHead">name</th>
-						<th id="benchTypeHead">type</th>											
+						<th id="benchTypeHead">type</th>
 					</tr>
-				</thead>		
+				</thead>
 			</table>
 			<div class="selectWrap">
 				<p class="selectAllBenchmarks">
@@ -106,8 +122,8 @@
 				<p class="unselectAllBenchmarks">
 					<span class="ui-icon ui-icon-circlesmall-plus"></span>None
 			</div>
-		</fieldset>											
-		
+		</fieldset>
+
 		<fieldset  id="userField">
 			<legend class="expd" id="userExpd"><span>0</span> users</legend>
 			<table id="users">
@@ -117,7 +133,7 @@
 						<th id="userInstitutionHead">institution</th>
 						<th id="userEmailHead">email</th>
 					</tr>
-				</thead>			
+				</thead>
 			</table>
 			<div class="selectWrap">
 				<p class="selectAllUsers">
@@ -126,46 +142,38 @@
 				<p class="unselectAllUsers">
 					<span class="ui-icon ui-icon-circlesmall-plus"></span>None
 			</div>
-		</fieldset>		
-		
+		</fieldset>
+
 		<fieldset id="spaceField">
 			<legend class="expd" id="spaceExpd"><span>0</span> subspaces</legend>
+			<ul class="actionList">
+				<li><a class="btnAdd" id="addSpace" href="${starexecRoot}/secure/add/space.jsp">add subspace</a></li>
+				<li><a class="btnUp" id="uploadXML" href="${starexecRoot}/secure/add/batchSpace.jsp">upload space xml</a></li>
+			</ul>
 			<table id="spaces">
 				<thead>
 					<tr>
 						<th id="spaceNameHead">name</th>
 						<th id="spaceDescriptionHead">description</th>
 					</tr>
-				</thead>			
+				</thead>
 			</table>
-		</fieldset>		
+		</fieldset>
 
 		<fieldset class="actions">
-			<legend>actions</legend>
+			<legend>space actions</legend>
 			<ul class="actionList">
-				<li><a class="btnAdd" id="addSpace" href="${starexecRoot}/secure/add/space.jsp">add subspace</a></li>
-				<li><a class="btnUp" id="uploadBench" href="${starexecRoot}/secure/add/benchmarks.jsp">upload benchmarks</a></li>
-				<li><a class="btnUp" id="uploadSolver" href="${starexecRoot}/secure/add/solver.jsp">upload solver</a></li>				
-				<li><a class="btnRun" id="addJob" href="${starexecRoot}/secure/add/job.jsp">create job</a></li>
-				<li><a class="btnRun" id="addQuickJob" href="${starexecRoot}/secure/add/quickJob.jsp">quick job</a></li>
 				<li><a class="btnEdit" id="editSpace" href="${starexecRoot}/secure/edit/space.jsp">edit space</a></li>
-			</ul>
-			
-		</fieldset>	
-		<fieldset class="advancedActions actions">
-			<legend>advanced actions</legend>
-			<ul class="actionList">
 				<li><a class="btnEdit" id="editSpacePermissions" href="${starexecRoot}/secure/edit/spacePermissions.jsp">edit space permissions</a></li>
-				<li><a class="btnDown" id="downloadXML" >download space xml</a></li>				
-				<li><a class="btnUp" id="uploadXML" href="${starexecRoot}/secure/add/batchSpace.jsp">upload space xml</a></li>
-				<li><a class="btnUp" id="uploadJobXML" href="${starexecRoot}/secure/add/batchJob.jsp">upload job xml</a></li>
+				<li><a class="btnDown" id="downloadXML" >download space xml</a></li>
 				<li><a class="btnDown" id="downloadSpace">download space</a></li>
-				<li><a class="btnRun" id="processBenchmarks" href="${starexecRoot}/edit/processBenchmarks.jsp">process benchmarks</a></li>
 			</ul>
+			<p style="color:#008c03;clear:both">Some action buttons have moved.<br />They are now higher on this page, grouped with the primitives they act on.</p>
 		</fieldset>
-	</div>	
+
+	</div>
 	<br class=".clear" />
-	
+
 	<div id="dialog-confirm-copy" title="confirm copy" class="hiddenDialog">
         <p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-copy-txt"></span></p>
         <div id="hier-copy-options" class="copy-options-hidden">
@@ -217,8 +225,8 @@
 	</div>
 	<div id="dialog-warning" title="warning" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
-	</div>		
-	
-	
-	
+	</div>
+
+
+
 </star:template>

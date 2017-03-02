@@ -577,6 +577,7 @@ CREATE TABLE default_settings (
 	maximum_memory BIGINT DEFAULT 1073741824,
 	default_benchmark INT DEFAULT NULL,
 	default_solver INT DEFAULT NULL,
+	benchmarking_framework ENUM('RUNSOLVER', 'BENCHEXEC') NOT NULL DEFAULT 'RUNSOLVER',
 	bench_processor INT,
 	setting_type INT DEFAULT 1,
 	name VARCHAR(32) DEFAULT "settings",

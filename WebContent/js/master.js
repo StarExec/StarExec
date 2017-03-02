@@ -1,4 +1,10 @@
-var debugMode = false; //console.log statements are turned off by default
+var debugMode = true; //console.log statements are turned off by default
+
+/**
+ * StarExec namespace
+ * Let's try to put global vars here going forward
+ */
+var star = star || {};
 
 /**
  * Contains javascript relevant to all pages within starexec
@@ -86,6 +92,94 @@ $(document).ready(function(){
 	$(".hiddenDialog").hide();
 });
 
+/**
+ * Special configuration for DataTables
+ * https://datatables.net/reference/event/
+ */
+jQuery(function($) {
+	"use strict";
+	/* Everything in here depends on DataTables
+	 * If DataTables are not used on this page, we can just return
+	 *
+	 * It would be ideal if we could put this in a seperate file that was
+	 * only called when DataTables are used, but that would invlove some
+	 * refactoring.
+	 */
+	var extpager;
+	try {
+		extpager = $.fn.dataTable.ext.pager;
+	} catch (e) {
+		return;
+	}
+
+	/**
+	 * Custom pager for DataTables
+	 * Only displays page numbers when there is more than one page
+	 *   otherwise, hide pagination
+	 */
+	$.extend( extpager, {
+		"only_when_necessary": function (page, pages) {
+			if (pages <= 1)
+				return [];
+			else
+				return extpager["full_numbers"](page, pages);
+		}
+	});
+
+	/**
+	 * Event listener called each time a table is drawn/redrawn
+	 * We want to hide certain UI elements if they are unnecessary
+	 *
+	 * It would be better if we could bind this specifically to each DataTable,
+	 * but they haven't been created yet, so I guess we need an overly broad
+	 * event listener.
+	 *
+	 * DataTables Api is documented at https://datatables.net/reference/api/
+	 */
+	$(document).on("draw.dt", function(e, settings) {
+		var that = $(e.target);
+		var info = new $.fn.dataTable.Api( settings ).page.info();
+
+		/* This is a somewhat conservative approach to traversing the DOM
+		 * We might be able to get away with `.next()` instead, but this is
+		 *   more robust of the order of elements ever changes in the future
+		 */
+		var container = that.parentsUntil(".expdContainer");
+		var footer = container.find(".dataTables_length, .dataTables_filter");
+		var selectAll = container.find(".selectWrap");
+
+		// Hide "Show 10 items" and search box if there are fewer than 10 items
+		if (info.recordsTotal <= defaultPageSize)
+			footer.hide();
+		else
+			footer.show();
+
+		// Hide "Select all/none" if there are not multiple records
+		if (info.recordsTotal <= 1)
+			selectAll.hide();
+		else
+			selectAll.show();
+	});
+
+	/**
+	 * DataTables configuration
+	 * @constructor
+	 * @dict
+	 * @param {object} overrides to default configuration
+	 */
+	star.DataTableConfig = function( overrides ) {
+		var config = {
+			"sDom"            : 'rt<"bottom"flpi><"clear">',
+			"iDisplayStart"   : 0,
+			"iDisplayLength"  : defaultPageSize,
+			"pagingType"      : "only_when_necessary",
+			"sServerMethod"   : "POST",
+			"oLanguage"       : {"sProcessing": "processing request"},
+		};
+		$.extend(true, this, config, overrides);
+	};
+});
+
 function checkForHelpFile() {
 	reference=window.location.pathname;
 
@@ -117,15 +211,10 @@ function checkForHelpFile() {
 }
 
 /**
- * Prints a message to the Chrome javascript console if debugging is enabled
- *
- * @param message the message to print to Chrome's javascript console
+ * Enable logging if debugMode is enabled
+ * Otherwise, create a dummy function to silently drop log messages
  */
-function log(message){
-	if(true == debugMode){
-		console.log(message);
-	}
-}
+var log = debugMode ? console.log : function(){};
 
 /**
  * Function to display a message to the user. We can call this from other javascript

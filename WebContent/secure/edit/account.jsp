@@ -69,27 +69,7 @@
 %>
 <star:template title="edit account" css="common/table, common/pass_strength_meter, edit/account" js="common/defaultSettings,lib/jquery.validate.min, lib/jquery.validate.password, edit/account, lib/jquery.dataTables.min">
 	<c:forEach items="${settings}" var="setting">
-		<span class="defaultSettingsProfile" name="${setting.name}" value="${setting.getId()}">
-
-			<span class="cpuTimeout" value="${setting.cpuTimeout}" ></span>
-			<span class="clockTimeout" value="${setting.wallclockTimeout}"></span>
-			<span class="maxMemory" value="${setting.getRoundedMaxMemoryAsDouble()}"></span>
-			<span class="solverId" value="${setting.solverId}"></span>
-			<span class="solverName" value="${setting.getSolverName()}"></span>
-
-			<span class="preProcessorId" value="${setting.preProcessorId}"></span>
-			<span class="postProcessorId" value="${setting.postProcessorId}"></span>
-			<span class="benchProcessorId" value="${setting.benchProcessorId}"></span>
-
-			<c:forEach items="${settingIdToDefaultBenchmarks.get(setting.id)}" var="bench">
-				<span class="defaultBenchmark">
-					<span class="benchId" value="${bench.id}"></span>
-					<span class="benchName" value="${bench.name}"></span>
-				</span>
-			</c:forEach>
-
-			<span class="dependency" value="${setting.isDependenciesEnabled()}"></span>
-		</span>
+		<star:settings setting="${setting}" />
 	</c:forEach>
 	
 	
@@ -309,6 +289,7 @@
 						</select>
 					</td>
 				</tr>
+				<star:benchmarkingFrameworkRow />
 				<tr>
 					<td title="the wallclock timeout that will be selected by default for new jobs">wallclock timeout</td>
 					<td id="editClockTimeout"><input type="text" name="wallclockTimeout" id="wallclockTimeout"/></td>

@@ -1,5 +1,9 @@
 var leaderTable;
 
+var EDIT_COMMUNITY = {
+	benchmarkingFrameworkAttr: 'BENCHMARKING_FRAMEWORK'
+};
+
 
 $(document).ready(function(){
 	var id = $('#comId').val();
@@ -261,6 +265,12 @@ function initUI(){
 		saveChanges($(this).children('option:selected').attr('value'), true, 'DependenciesEnabled', 0);
 	});
 
+	$('#editBenchmarkingFramework').change(function() {
+		log('changing benchmarking framework');
+		'use strict';
+		saveChanges($(this).children('option:selected').attr('value'), true, EDIT_COMMUNITY.benchmarkingFrameworkAttr, 0);
+	});
+
 	$('.deleteBenchmark').click(function() {
 		'use strict';
 		var settingId = $('#settingId').attr('value');
@@ -451,7 +461,7 @@ function saveChanges(obj, save, attr, old) {
 				showMessage('error', $('#nameRow').attr('length')+ " characters maximum",5000);
 				return;
 			}
-		} else if (attr == "PostProcess" || attr == "PreProcess" || attr=="BenchProcess" || attr == "UpdateProcess"){
+		} else if (attr == "PostProcess" || attr == "PreProcess" || attr=="BenchProcess" || attr == "UpdateProcess" || attr === EDIT_COMMUNITY.benchmarkingFrameworkAttr){
 			newVal = obj;
 		} else if (attr == "CpuTimeout"){
 			newVal = $(obj).siblings('input:first').val();
@@ -491,6 +501,7 @@ function saveChanges(obj, save, attr, old) {
 			
 			//every other attribute is of the DefaultSettings profile the community has
 		} else {
+			log('making post to changing default settings for community');
 			$.post(  
 					starexecRoot+"services/edit/defaultSettings/" + attr + "/" + $("#settingId").attr("value"),
 					{val: newVal},

@@ -148,7 +148,7 @@ function initDraggable(table) {
 		window.location.href=starexecRoot+"secure/details/recycleBin.jsp";
 	});
 
-	log($(table).attr('id') + ' table initialized as draggable');
+	//log($(table).attr('id') + ' table initialized as draggable');
 }
 
 /**
@@ -423,14 +423,8 @@ function setupSpaceCopyDialog(ids, destSpace, destName) {
         spaceCopyDialogButtons['confirm'] = function() {
             var copyHierOption = $("input[type='radio'][name='copySpace']:checked").val();
 			log('copyHierOption: ' + copyHierOption);
-            if(copyHierOption) {
-                $('#dialog-confirm-copy').dialog('close');
-				log('Copying hierarchy');
-                doSpaceCopyPost(ids,destSpace,true,destName);
-            } else {
-				log('Copying single space');
-                singleSpaceCopy();
-            }
+			$('#dialog-confirm-copy').dialog('close');
+			doSpaceCopyPost(ids,destSpace,copyHierOption,destName);
             $('#hier-copy-options').addClass('copy-options-hidden');
         }
 	}
@@ -488,6 +482,7 @@ function setupUserCopyDialog(ids, destSpace, destName, ui, destIsLeafSpace) {
 function doSpaceCopyPost(ids,destSpace,copyHierarchy,destName) {
     var copyPrimitives = $("input[type='radio'][name='copyPrimitives']:checked").val();
 	log('copyPrimitives: ' + copyPrimitives);
+	log('copyHierarchy: ' + copyHierarchy);
     $('#copy-primitives-options').addClass('copy-options-hidden');
 	$.post(
 			starexecRoot+'services/spaces/' + destSpace + '/copySpace',
@@ -1127,7 +1122,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	}).always(function() {
 		// Reload the jobs table 10 seconds after receiving the response.
 		if (spaceId != 1 && typeof spaceId != 'undefined' && 'j' == tableName[0]) {
-			log('Setting new call to happen in 10 seconds.');
+			//log('Setting new call to happen in 10 seconds.');
 			setTimeout(function() {
 				var rows = $(jobTable).children('tbody').children('tr.row_selected');
 				if (rows.length == 0) {
@@ -1228,79 +1223,31 @@ function initDataTables(){
 	// Extend the DataTables api and add our custom features
 	extendDataTableFunctions();
 
+	var dataTableConfig = new window.star.DataTableConfig({
+		"bServerSide"  : true,
+		"sAjaxSource"  : starexecRoot + "services/space/",
+		"fnServerData" : fnPaginationHandler // included in this file
+	});
+
+	var dataTableConfigNoSort = new window.star.DataTableConfig({
+		"bServerSide"  : true,
+		"sAjaxSource"  : starexecRoot + "services/space/",
+		"fnServerData" : fnPaginationHandler, // included in this file
+		"aaSorting"    : [] // tells server to sort by 'created'
+	});
+
 	// Setup the DataTable objects
-	userTable = $('#users').dataTable( {
-		"sDom"			: getDataTablesDom(),
-		"iDisplayStart"	: 0,
-		"iDisplayLength": defaultPageSize,
-		"bServerSide"	: true,
-		"pagingType"    : "full_numbers",
-
-		"sAjaxSource"	: starexecRoot+"services/space/",
-		"sServerMethod" : 'POST',
-		"fnServerData"	: fnPaginationHandler
-	});
-	solverTable = $('#solvers').dataTable( {
-		"sDom"			: getDataTablesDom(),
-		"iDisplayStart"	: 0,
-		"iDisplayLength": defaultPageSize,
-		"bServerSide"	: true,
-		"pagingType"    : "full_numbers",
-
-		"sAjaxSource"	: starexecRoot+"services/space/",
-		"sServerMethod" : 'POST',
-		"fnServerData"	: fnPaginationHandler
-	});
-	benchTable = $('#benchmarks').dataTable( {
-		"sDom"			: getDataTablesDom(),
-		"iDisplayStart"	: 0,
-		"iDisplayLength": defaultPageSize,
-		"bServerSide"	: true,
-		"pagingType"    : "full_numbers",
-
-		"sAjaxSource"	: starexecRoot+"services/space/",
-		"sServerMethod" : "POST",
-		"fnServerData"	: fnPaginationHandler
-	});
+	userTable   = $('#users'     ).dataTable(dataTableConfig);
+	solverTable = $('#solvers'   ).dataTable(dataTableConfig);
+	benchTable  = $('#benchmarks').dataTable(dataTableConfig);
+	spaceTable  = $('#spaces'    ).dataTable(dataTableConfig);
+	jobTable    = $('#jobs'      ).dataTable(dataTableConfigNoSort);
 
 	setSortTable(benchTable);
 
 	$("#benchmarks thead").click(function(){
 		resetSortButtons();
 	});
-
-	jobTable = $('#jobs').dataTable( {
-		"sDom"			: getDataTablesDom(),
-		"iDisplayStart"	: 0,
-		"iDisplayLength": defaultPageSize,
-		"bServerSide"	: true,
-		"pagingType"    : "full_numbers",
-
-		"sAjaxSource"	: starexecRoot+"services/space/",
-		"bProcessing"	: false,
-		"oLanguage": {
-			"sProcessing": getProcessingMessage()
-		},
-		"sServerMethod" : "POST",
-		"aaSorting"		: [],	// On page load, don't sort by any column - tells server to sort by 'created'
-		"fnServerData"	: fnPaginationHandler
-	});
-
-	spaceTable = $('#spaces').dataTable( {
-		"sDom"			: getDataTablesDom(),
-		"iDisplayStart"	: 0,
-		"iDisplayLength": defaultPageSize,
-		"bServerSide"	: true,
-		"pagingType"    : "full_numbers",
-		"sAjaxSource"	: starexecRoot+"services/space/",
-		"sServerMethod" : "POST",
-		"bProcessing"	: false,
-		"oLanguage": {
-			"sProcessing": getProcessingMessage()
-		},
-		"fnServerData"	: fnPaginationHandler
-	});
-
 
 	var tables=["#users","#solvers","#benchmarks","#jobs","#spaces"];
 

@@ -9,14 +9,14 @@ $(document).ready(function(){
 	userId=$("#userId").attr("value");
 	// Hide loading images by default
 	$('legend img').hide();
-	
+
 	$("#explorer").hide();
 	$("#linkOrphanedButton").hide();
 
 	$("#detailPanel").css("width","100%");
 
-	$("fieldset:not(:first)").expandable(true);
-	
+	$(".expd").expandable(true);
+
 	$('.popoutLink').button({
 		icons: {
 			secondary: "ui-icon-newwin"
@@ -35,37 +35,37 @@ $(document).ready(function(){
 			primary: "ui-icon-trash"
 	}
 	});
-	
+
 	$(".recycleSelected").click(function() {
 		recycleSelected($(this).attr("prim"));
 	});
-	
+
 	$(".recycleOrphaned").click(function() {
 		recycleOrphaned($(this).attr("prim"));
 	});
 	$("#deleteJob").click(function() {
 		deleteSelectedJobs();
 	});
-	
+
 	$("#deleteOrphanedJob").click(function() {
 		deleteOrphanedJobs();
 	});
-	
+
 	$('#editButton').button({
 		icons: {
 			secondary: "ui-icon-pencil"
 	}});
-	
+
 	$("#recycleBinButton").button({
 		icons: {
 			secondary: "ui-icon-pencil"
 		}
 	});
-	
+
 	$('img').click(function(event){
 		PopUp($(this).attr('enlarge'));
 	});
-	
+
 	jsTree=makeSpaceTree("#exploreList");
 	// Initialize the jstree plugin for the explorer list
 	jsTree.bind("select_node.jstree", function (event, data) {
@@ -73,61 +73,18 @@ $(document).ready(function(){
 		spaceId = data.rslt.obj.attr("id");
 		spaceName=$('.jstree-clicked').text();
 	});
-	//Initiate job table
-	jTable=$('#jobs').dataTable( {
-        "sDom"			: getDataTablesDom(),
-        "iDisplayStart"	: 0,
-        "iDisplayLength": defaultPageSize,
-        "bServerSide"	: true,
-        "sAjaxSource"	: starexecRoot+"services/users/",
-		/*
-		"aoColumns"		: [
-			{ "mData"	: "jobLink" },
-			{ "mData"	: "status" },
-			{ "mData"	: "completion" },
-			{ "mData"	: "totalPairs" },
-			{ "mData"	: "errorPercentage" },
-			{ "mData"	: "createTime" },
-			{ "mData"	: "diskSize",
-			  	"mRender": function(data, type, full) {
-					console.log(data);
-					console.log('type: ' + type);
-					console.log(full);
-					if (type === 'sort') {
-						return data.bytes;
-					} else {
-						return data.display;
-					}
-				}	
-			}
-		],*/
-        "sServerMethod" : "POST",
-        "fnServerData"	: getFnPaginationHandler('')
-    });
-	
-	//Initiate solver table
-	solverTable=$('#solvers').dataTable( {
-        "sDom"			: getDataTablesDom(),
-        "iDisplayStart"	: 0,
-        "iDisplayLength": defaultPageSize,
-        "bServerSide"	: true,
-        "sAjaxSource"	: starexecRoot+"services/users/",
-        "sServerMethod" : "POST",
-        "fnServerData"	: getFnPaginationHandler('')
-    });
-	
-	//Initiate benchmark table
-	benchTable=$('#benchmarks').dataTable( {
-        "sDom"			: getDataTablesDom(),
-        "iDisplayStart"	: 0,
-        "iDisplayLength": defaultPageSize,
-        "bServerSide"	: true,
-        "sAjaxSource"	: starexecRoot+"services/users/",
-        "sServerMethod" : "POST",
-        "fnServerData"	: getFnPaginationHandler('')
-    });
 
-	
+	var dataTableConfig = new star.DataTableConfig({
+		"bServerSide"  : true,
+		"sAjaxSource"  : starexecRoot+"services/users/",
+		"fnServerData" : fnPaginationHandler
+	});
+
+	jTable      = $('#jobs'      ).dataTable(dataTableConfig);
+	solverTable = $('#solvers'   ).dataTable(dataTableConfig);
+	benchTable  = $('#benchmarks').dataTable(dataTableConfig);
+
+
 	$(".selectableTable").on("mousedown", "tr", function(){
 		$(this).toggleClass("row_selected");
 		handleSelectChange();
@@ -137,12 +94,10 @@ $(document).ready(function(){
 		icons: {
 			primary: "ui-icon-check"
 		}
-	});
-
-	$('#subscribeToErrorLogs').click(function() {
+	}).click(function() {
 		'use strict';
 		$.post(
-			starexecRoot +'services/subscribe/user/errorLogs/'+userId, 
+			starexecRoot +'services/subscribe/user/errorLogs/'+userId,
 			{},
 			function(returnCode) {
 				var success = parseReturnCode(returnCode);
@@ -158,11 +113,10 @@ $(document).ready(function(){
 		icons: {
 			primary: "ui-icon-check"
 		}
-	});
-	$('#unsubscribeFromErrorLogs').click(function() {
+	}).click(function() {
 		'use strict';
 		$.post(
-			starexecRoot +'services/unsubscribe/user/errorLogs/'+userId, 
+			starexecRoot +'services/unsubscribe/user/errorLogs/'+userId,
 			{},
 			function(returnCode) {
 				var success = parseReturnCode(returnCode);
@@ -173,14 +127,12 @@ $(document).ready(function(){
 			'json'
 		);
 	});
-	
+
 	$("#showSpaceExplorer").button({
 		icons: {
 			primary: "ui-icon-check"
 	}
-	});
-	
-	$("#showSpaceExplorer").click(function() {
+	}).click(function() {
 		if (!$("#explorer").is(":visible")) {
 			$("#detailPanel").css("width","65%");
 			$("#showSpaceExplorer .ui-button-text").html("hide space explorer");
@@ -194,13 +146,13 @@ $(document).ready(function(){
 			}
 		} );
 	});
-	
+
 });
 
 function PopUp(uri) {
 	imageDialog = $("#popDialog");
 	imageTag = $("#popImage");
-	
+
 	imageTag.attr('src', uri);
 
 	imageTag.load(function(){
@@ -212,44 +164,41 @@ function PopUp(uri) {
 			height: 'auto',
 			width: 'auto'
 		});
-	});  
+	});
 }
 
 
-function getFnPaginationHandler(urlSuffix) {
-	var fnPaginationHandler = function(sSource, aoData, fnCallback) {
-		var tableName = $(this).attr('id');
-		var usrId = $(this).attr("uid");
-		
-		$.post(  
-				sSource + usrId + "/" + tableName + "/pagination" + urlSuffix,
-				aoData,
-				function(nextDataTablePage){
-					s=parseReturnCode(nextDataTablePage);
-					if (s) {
-						updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
-							fnCallback(nextDataTablePage);
-							makeTableDraggable("#"+tableName,onDragStart,getDragClone);
+function fnPaginationHandler(sSource, aoData, fnCallback) {
+	var tableName = $(this).attr('id');
+	var usrId = $(this).attr("uid");
 
-							if('j' == tableName[0]){
-								colorizeJobStatistics();
-							} 
+	$.post(
+		sSource + usrId + "/" + tableName + "/pagination",
+		aoData,
+		function(nextDataTablePage){
+			s=parseReturnCode(nextDataTablePage);
+			if (s) {
+				updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
+					fnCallback(nextDataTablePage);
+					makeTableDraggable("#"+tableName,onDragStart,getDragClone);
 
+					if('j' == tableName[0]){
+						colorizeJobStatistics();
 					}
-				},  
-				"json"
-		).error(function(){
-			showMessage('error',"Internal error populating table",5000);
-		});
-	}
-	return fnPaginationHandler;
+
+			}
+		},
+		"json"
+	).error(function(){
+		showMessage('error',"Internal error populating table",5000);
+	});
 }
 
 /**
  * Helper function for fnPaginationHandler; since the proper fieldset to update
  * cannot be reliably found via jQuery DOM navigation from fnPaginationHandler,
  * this method provides manually updates the appropriate fieldset to the new value
- * 
+ *
  * @param tableName the name of the table whose fieldset we want to update (not in jQuery id format)
  * @param primCount the new value to update the fieldset with
  * @author Todd Elvers
@@ -269,7 +218,7 @@ function updateFieldsetCount(tableName, value){
 	case 'b':
 		$('#benchExpd').children('span:first-child').text(value);
 		break;
-		
+
 	}
 }
 
@@ -282,40 +231,40 @@ function colorizeJobStatistics(){
 			function() {
 				// Return the floating point value of the stat
 				var value = $(this).text();
-				return eval(value.slice(0, -1));				
+				return eval(value.slice(0, -1));
 			},
-			{ 
+			{
 				maxval: 100,
 				minval: 0,
 				colorStyle: 'greentored',
-				lightness: 0 
+				lightness: 0
 			}
 	);
 	//colorize the unchanging totals
 	$("#jobs p.static").heatcolor(
 			function() {
 				// Return the floating point value of the stat
-				return eval(1);				
+				return eval(1);
 			},
-			{ 
+			{
 				maxval: 1,
 				minval: 0,
 				colorStyle: 'greentored',
-				lightness: 0 
+				lightness: 0
 			}
 	);
 	// Colorize the statistics in the job table (for pending and error which use reverse color schemes)
 	$("#jobs p.desc").heatcolor(
 			function() {
 				var value = $(this).text();
-				return eval(value.slice(0, -1));	
+				return eval(value.slice(0, -1));
 			},
-			{ 
+			{
 				maxval: 100,
 				minval: 0,
 				colorStyle: 'greentored',
 				reverseOrder: true,
-				lightness: 0 
+				lightness: 0
 			}
 	);
 }
@@ -323,28 +272,28 @@ function colorizeJobStatistics(){
 function handleSelectChange() {
 	if ($("#benchmarks tr.row_selected").length>0) {
 			$("#recycleBenchmark").show();
-		
+
 	}   else {
 		$("#recycleBenchmark").hide();
 
 	}
 	if ($("#solvers tr.row_selected").length>0) {
-			$("#recycleSolver").show();	
+			$("#recycleSolver").show();
 	} else {
 		$("#recycleSolver").hide();
 	}
 	if ($("#jobs tr.row_selected").length>0) {
-		$("#deleteJob").show();	
+		$("#deleteJob").show();
 	} else {
 		$("#deleteJob").hide();
 	}
-	
+
 }
 
 /**
  * For a given dataTable, this extracts the id's of the rows that have been
  * selected by the user
- * 
+ *
  * @param dataTable the particular dataTable to extract the id's from
  * @returns {Array} list of id values for the selected rows
  * @author Todd Elvers
@@ -373,8 +322,8 @@ function recycleSelected(prim) {
 			'recycle': function() {
 				$("#dialog-confirm-recycle").dialog("close");
 				createDialog("Recycling the selected "+prim+"(s), please wait. This will take some time for large numbers of "+prim+"(s).");
-				$.post(  
-						starexecRoot +"services/recycle/"+prim, 
+				$.post(
+						starexecRoot +"services/recycle/"+prim,
 						{selectedIds : getSelectedRows(table)},
 						function(returnCode){
 							destroyDialog();
@@ -384,17 +333,17 @@ function recycleSelected(prim) {
 								benchTable.fnDraw(false);
 								handleSelectChange();
 							}
-							
-						},  
+
+						},
 						"json"
 				).error(function(){
 					showMessage('error',"Internal error recycling "+prim+"s",5000);
-				});	
+				});
 			},
 			"cancel": function() {
 				$(this).dialog("close");
 			}
-		}		
+		}
 	});
 }
 
@@ -409,8 +358,8 @@ function linkAllOrphaned() {
 			'link all': function() {
 				$("#dialog-confirm-copy").dialog("close");
 				createDialog("Linking the orphaned primitives, please wait. This will take some time for large numbers of primitives.");
-				$.post(  
-						starexecRoot +"services/linkAllOrphaned/"+userId+"/"+spaceId, 
+				$.post(
+						starexecRoot +"services/linkAllOrphaned/"+userId+"/"+spaceId,
 						{},
 						function(returnCode){
 							destroyDialog();
@@ -420,17 +369,17 @@ function linkAllOrphaned() {
 								benchTable.fnDraw(false);
 								handleSelectChange();
 							}
-							
-						},  
+
+						},
 						"json"
 				).error(function(){
 					showMessage('error',"Internal error linking primitives",5000);
-				});	
+				});
 			},
 			"cancel": function() {
 				$(this).dialog("close");
 			}
-		}		
+		}
 	});
 }
 
@@ -445,8 +394,8 @@ function recycleOrphaned(prim) {
 			'recycle': function() {
 				$("#dialog-confirm-recycle").dialog("close");
 				createDialog("Recycling the selected "+prim+"(s), please wait. This will take some time for large numbers of "+prim+"(s).");
-				$.post(  
-						starexecRoot +"services/recycleOrphaned/"+prim+"/"+userId, 
+				$.post(
+						starexecRoot +"services/recycleOrphaned/"+prim+"/"+userId,
 						{},
 						function(returnCode){
 							destroyDialog();
@@ -456,23 +405,23 @@ function recycleOrphaned(prim) {
 								benchTable.fnDraw(false);
 								handleSelectChange();
 							}
-							
-						},  
+
+						},
 						"json"
 				).error(function(){
 					showMessage('error',"Internal error recycling "+prim+"s",5000);
-				});	
+				});
 			},
 			"cancel": function() {
 				$(this).dialog("close");
 			}
-		}		
+		}
 	});
 }
 
 function deleteSelectedJobs() {
 	$('#dialog-confirm-delete-txt').text('Are you sure you want to delete all the selected job(s)? After deletion, they can not be recovered');
-	
+
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
@@ -481,8 +430,8 @@ function deleteSelectedJobs() {
 			'delete permanently': function() {
 				$("#dialog-confirm-delete").dialog("close");
 				createDialog("Deleting the selected job(s), please wait. This will take some time for large numbers of jobs(s).");
-				$.post(  
-						starexecRoot +"services/delete/job", 
+				$.post(
+						starexecRoot +"services/delete/job",
 						{selectedIds : getSelectedRows(jTable)},
 						function(nextDataTablePage){
 							destroyDialog();
@@ -491,16 +440,16 @@ function deleteSelectedJobs() {
 								jTable.fnDraw(false);
 								handleSelectChange();
 							}
-						},  
+						},
 						"json"
 				).error(function(){
 					showMessage('error',"Internal error deleting job(s)",5000);
-				});	
+				});
 			},
 			"cancel": function() {
 				$(this).dialog("close");
 			}
-		}		
+		}
 	});
 }
 
@@ -514,8 +463,8 @@ function deleteOrphanedJobs() {
 			'delete permanently': function() {
 				$("#dialog-confirm-delete").dialog("close");
 				createDialog("Deleting the selected job(s), please wait. This will take some time for large numbers of jobs(s).");
-				$.post(  
-						starexecRoot +"services/deleteOrphaned/job/"+userId, 
+				$.post(
+						starexecRoot +"services/deleteOrphaned/job/"+userId,
 						{},
 						function(nextDataTablePage){
 							destroyDialog();
@@ -524,16 +473,16 @@ function deleteOrphanedJobs() {
 								jTable.fnDraw(false);
 								handleSelectChange();
 							}
-						},  
+						},
 						"json"
 				).error(function(){
 					showMessage('error',"Internal error deleting job(s)",5000);
-				});	
+				});
 			},
 			"cancel": function() {
 				$(this).dialog("close");
 			}
-		}		
+		}
 	});
 }
 
@@ -542,12 +491,12 @@ function deleteOrphanedJobs() {
  */
 function onDragStart(event, ui) {
 	// Make each space in the explorer list be a droppable target; moving this from the initDraggable()
-	// fixed the bug where spaces that were expanded after initDraggable() was called would not be 
+	// fixed the bug where spaces that were expanded after initDraggable() was called would not be
 	// recognized as a viable drop target
 	$('#exploreList').find('a').droppable( {
 		drop		: onSpaceDrop,
 		tolerance	: 'pointer',	// Use the pointer to determine drop position instead of the middle of the drag clone element
-        
+
 		activeClass	: 'active'		// Class applied to the space element when something is being dragged
 	});
 }
@@ -556,7 +505,7 @@ function onDragStart(event, ui) {
  * Called when a draggable item (primitive) is dropped on a space
  */
 function onSpaceDrop(event, ui) {
-	
+
 
 	// Collect the selected elements from the table being dragged from
 	var ids = getSelectedRows($(ui.draggable).parents('table:first'));
@@ -565,7 +514,7 @@ function onSpaceDrop(event, ui) {
 	var destSpace = $(event.target).parent().attr('id');
 	var destName = $(event.target).text();
 
-	
+
 	if(ids.length < 2) {
 		// If 0 or 1 things are selected in the table, just use the element that is being dragged
 		ids = [ui.draggable.data('id')];
@@ -584,9 +533,9 @@ function onSpaceDrop(event, ui) {
 		}
 		//job or benchmark
 		else {
-			$('#dialog-confirm-copy-txt').text('do you want to link the ' + ids.length + ' selected ' + ui.draggable.data('type') + 's to' + destName + '?');		
+			$('#dialog-confirm-copy-txt').text('do you want to link the ' + ids.length + ' selected ' + ui.draggable.data('type') + 's to' + destName + '?');
 		}
-	}		
+	}
 
 	// If primitive being copied to another space is a solver...
 	if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] != 'p'){
@@ -595,11 +544,11 @@ function onSpaceDrop(event, ui) {
 			modal: true,
 			width: 500,
 			height: 200,
-			
-			//depending on what the user 
+
+			//depending on what the user
 			buttons: {
 				'link in space hierarchy': function() {
-					$('#dialog-confirm-copy').dialog('close'); 
+					$('#dialog-confirm-copy').dialog('close');
 					doSolverLinkPost(ids,destSpace,true);
 				},
 				'link in space': function(){
@@ -609,9 +558,9 @@ function onSpaceDrop(event, ui) {
 				"cancel": function() {
 					$(this).dialog("close");
 				}
-				
-			}		
-		});	
+
+			}
+		});
 	}
 	// Otherwise, if the primitive being copied to another space is a benchmark
 	else if(ui.draggable.data('type')[0] == 'b') {
@@ -621,22 +570,22 @@ function onSpaceDrop(event, ui) {
 			buttons: {
 				'link':function() {
 					$('#dialog-confirm-copy').dialog('close');
-					$.post(  	    		
+					$.post(
 							starexecRoot+'services/spaces/' + destSpace + '/add/benchmark', // We use the type to denote copying a benchmark/job
-							{selectedIds : ids, copy:false},	
+							{selectedIds : ids, copy:false},
 							function(returnCode) {
 								parseReturnCode(returnCode);
 							},
 							"json"
 					).error(function(){
 						showMessage('error',"Internal error copying benchmarks",5000);
-					});					
+					});
 				},
 				"cancel": function() {
 					$(this).dialog("close");
 				}
-			}		
-		});			   		    	    	
+			}
+		});
 
 	}
 
@@ -650,24 +599,24 @@ function onSpaceDrop(event, ui) {
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-copy').dialog('close');
 
-					// Make the request to the server				
-					$.post(  	    		
+					// Make the request to the server
+					$.post(
 							starexecRoot+'services/spaces/' + destSpace + '/add/job',
-							{selectedIds : ids},	
+							{selectedIds : ids},
 							function(returnCode) {
 								parseReturnCode(returnCode);
 							},
 							"json"
 					).error(function(){
 						showMessage('error',"Internal error copying jobs",5000);
-					});	 									
+					});
 				},
 				"cancel": function() {
 					log('user canceled copy action');
 					$(this).dialog("close");
 				}
-			}		
-		});			   		    	    	
+			}
+		});
 
 	}
 }
@@ -683,7 +632,7 @@ function onSpaceDrop(event, ui) {
 
 function doSolverLinkPost(ids,destSpace,hierarchy) {
 	// Make the request to the server
-	$.post(  	    		
+	$.post(
 			starexecRoot+'services/spaces/' + destSpace + '/add/solver',
 			{selectedIds : ids,copyToSubspaces: hierarchy, copy : false},
 			function(returnCode) {
@@ -692,5 +641,5 @@ function doSolverLinkPost(ids,destSpace,hierarchy) {
 			"json"
 	).error(function(){
 		showMessage('error',"Internal error copying solvers",5000);
-	});	
+	});
 }

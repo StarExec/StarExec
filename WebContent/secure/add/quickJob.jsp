@@ -201,7 +201,7 @@
 								No<input type="radio" id="radioNoPause" name="pause" value="no"/>	
 							</td>
 						</tr>
-					
+						<star:benchmarkingFrameworkRow />
 					</tbody>
 				</table>
 			

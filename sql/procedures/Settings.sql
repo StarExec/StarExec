@@ -96,9 +96,9 @@ CREATE PROCEDURE SetDefaultSettingsById(IN _id INT, IN _num INT, IN _setting INT
 -- Insert a default setting of a space given by id when it's initiated.
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS CreateDefaultSettings;
-CREATE PROCEDURE CreateDefaultSettings(IN _prim_id INT, IN _pp INT, IN _cto INT, IN _clto INT, IN _dp BOOLEAN, IN _dm BIGINT, IN _defaultSolver INT, IN _benchProc INT, IN _preProc INT, IN _type INT, IN _name VARCHAR(32), OUT _id INT)
+CREATE PROCEDURE CreateDefaultSettings(IN _prim_id INT, IN _pp INT, IN _cto INT, IN _clto INT, IN _dp BOOLEAN, IN _dm BIGINT, IN _defaultSolver INT, IN _benchProc INT, IN _preProc INT, IN _type INT, IN _name VARCHAR(32), IN _benchmarkingFramework ENUM("BENCHEXEC", "RUNSOLVER"), OUT _id INT)
 	BEGIN
-		INSERT INTO default_settings (prim_id, post_processor, cpu_timeout, clock_timeout, dependencies_enabled, maximum_memory, default_solver, bench_processor, pre_processor, setting_type,name) VALUES (_prim_id, _pp, _cto, _clto, _dp,_dm,_defaultSolver,_benchProc, _preProc, _type,_name);
+		INSERT INTO default_settings (prim_id, post_processor, cpu_timeout, clock_timeout, dependencies_enabled, maximum_memory, default_solver, bench_processor, pre_processor, setting_type,name, benchmarking_framework) VALUES (_prim_id, _pp, _cto, _clto, _dp,_dm,_defaultSolver,_benchProc, _preProc, _type,_name, _benchmarkingFramework);
 		SELECT LAST_INSERT_ID() INTO _id;
 
 	END //
@@ -109,7 +109,7 @@ CREATE PROCEDURE CreateDefaultSettings(IN _prim_id INT, IN _pp INT, IN _cto INT,
 -- Insert a default setting of a space given by id when it's initiated.
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS UpdateDefaultSettings;
-CREATE PROCEDURE UpdateDefaultSettings(IN _pp INT, IN _cto INT, IN _clto INT, IN _dp BOOLEAN, IN _dm BIGINT, IN _defaultSolver INT, IN _benchProc INT, IN _preProc INT, IN _id INT)
+CREATE PROCEDURE UpdateDefaultSettings(IN _pp INT, IN _cto INT, IN _clto INT, IN _dp BOOLEAN, IN _dm BIGINT, IN _defaultSolver INT, IN _benchProc INT, IN _preProc INT, IN _benchmarkingFramework ENUM("BENCHEXEC", "RUNSOLVER"), IN _id INT)
 	BEGIN
 		UPDATE default_settings SET
 		post_processor = _pp,
@@ -119,7 +119,8 @@ CREATE PROCEDURE UpdateDefaultSettings(IN _pp INT, IN _cto INT, IN _clto INT, IN
 		maximum_memory=_dm,
 		default_solver=_defaultSolver,
 		bench_processor=_benchProc,
-		pre_processor=_preProc
+		pre_processor=_preProc,
+		benchmarking_framework=_benchmarkingFramework
 		WHERE id=_id;
 
 	END //

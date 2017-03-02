@@ -19,9 +19,7 @@ $(document).ready(function(){
 	initButtonUI();
 	initTableHeaderUI();
 
-	statsTable = $('#statsTable').dataTable({
-		"sDom": getDataTablesDom()
-	    });
+	statsTable = $('#statsTable').dataTable(new star.DataTableConfig());
 
 
 	// Make leaders and members expandable

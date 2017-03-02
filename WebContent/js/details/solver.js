@@ -2,14 +2,14 @@ var solverId;
 $(document).ready(function(){
 	initUI();
 	attachButtonActions();
-	
+
 	$("#dialog-confirm-copy").css("display", "none");
 
 
 	$('img').click(function(event){
 		popUp($(this).attr('enlarge'));
 	});
-	
+
 	$('.confirmation').on('click', function () {
         return confirm('Are you sure?');
     });
@@ -31,27 +31,23 @@ function initUI(){
 
 	$('#fieldSites').expandable(true);
 	$('#actions').expandable(true);
-	
-	
+
+
 	// Setup datatable of configurations
-	$('#tblSolverConfig').dataTable( {
-        "sDom": getDataTablesDom(),        
-        "bPaginate": true,        
-        "bSort": true        
-    });
+	$('#tblSolverConfig').dataTable(new star.DataTableConfig());
 
 	$('#downBuildInfo').button({
 		icons: {
 			secondary: "ui-icon-newwin"
     }});
 	// Setup button icons
-	
+
 	$('#uploadConfig, #uploadConfigMargin').button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-n"
 		}
     });
-	
+
 	$('#uploadPicture').button({
 		icons: {
 			primary: "ui-icon-gear"
@@ -62,7 +58,7 @@ function initUI(){
 	var msg = getParameterByName("msg");
 	if (stringExists(msg)) {
 		$('#dialog-warning-txt').text(msg);
-		
+
 		$('#dialog-warning').dialog({
 			modal: true,
 			width: 700,
@@ -99,7 +95,7 @@ function attachButtonActions() {
         window.location.href = starexecRoot+"secure/download?token=" + token + "&type=solverSrc&id="+$("#solverId").attr("value");
         destroyOnReturn(token);})
 	$("#downLink3").click(function(){
-		$('#dialog-confirm-copy-txt').text('How would you like to download the solver?');		
+		$('#dialog-confirm-copy-txt').text('How would you like to download the solver?');
 		$('#dialog-confirm-copy').dialog({
 			modal: true,
 			width: 380,
@@ -143,7 +139,7 @@ function attachButtonActions() {
 function popUp(uri) {
 	imageDialog = $("#popDialog");
 	imageTag = $("#popImage");
-	
+
 	imageTag.attr('src', uri);
 
 	imageTag.load(function(){
@@ -155,7 +151,7 @@ function popUp(uri) {
 			height: 'auto',
 			width: 'auto'
 		});
-	});  
+	});
 }
 
 function registerAnonymousLinkButtonEventHandler() {
@@ -168,7 +164,7 @@ function registerAnonymousLinkButtonEventHandler() {
 			width: 600,
 			height: 200,
 			buttons: {
-				'yes': function() { 
+				'yes': function() {
 					$(this).dialog('close');
 					makeAnonymousLinkPost( 'solver', $('#solverId').attr('value'), 'all');
 				},
@@ -177,7 +173,7 @@ function registerAnonymousLinkButtonEventHandler() {
 					makeAnonymousLinkPost( 'solver', $('#solverId').attr('value'), 'none');
 				}
 			}
-		});	
+		});
 	});
 }
 
@@ -194,7 +190,7 @@ function makeAnonymousLinkPost( hidePrimitiveName ) {
 				$('#dialog-show-anonymous-link').dialog({
 					width: 750,
 					height: 200,
-				});	
+				});
 			} else {
 				parseReturnCode( returnCode );
 			}
