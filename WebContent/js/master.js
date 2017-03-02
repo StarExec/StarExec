@@ -211,15 +211,10 @@ function checkForHelpFile() {
 }
 
 /**
- * Prints a message to the Chrome javascript console if debugging is enabled
- *
- * @param message the message to print to Chrome's javascript console
+ * Enable logging if debugMode is enabled
+ * Otherwise, create a dummy function to silently drop log messages
  */
-function log(message){
-	if(true == debugMode){
-		console.log(message);
-	}
-}
+var log = debugMode ? console.log : function(){};
 
 /**
  * Function to display a message to the user. We can call this from other javascript
