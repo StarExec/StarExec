@@ -3,7 +3,6 @@ $(document).ready(function(){
     'use strict';
     var currentJobSpaceId=getParameterByName('id');
     var rootJobSpaceId=getParameterByName('id');
-    var jsTree=makeSpaceTree("#exploreList");
     // Initialize the jstree plugin for the explorer list
     var jobId = $('#data').data('jobid');
     var spaceExplorerJsonData = getSpaceExplorerJsonData(jobId);
