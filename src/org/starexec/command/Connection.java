@@ -21,6 +21,7 @@ import org.apache.http.message.AbstractHttpMessage;
 import org.apache.http.message.BasicNameValuePair;
 import org.starexec.constants.R;
 import org.starexec.data.to.Permission;
+import org.starexec.data.to.enums.CopyPrimitivesOption;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.Validator;
 import org.starexec.util.Util;
@@ -1383,7 +1384,10 @@ public class Connection {
 			
 			params.add(new BasicNameValuePair("copy",copy.toString()));
 			params.add(new BasicNameValuePair("copyHierarchy", String.valueOf(hierarchy.toString())));
-            params.add(new BasicNameValuePair("copyPrimitives", String.valueOf(copyPrimitives.toString())));
+
+			CopyPrimitivesOption copyPrimitivesOption = copyPrimitives ? CopyPrimitivesOption.COPY : CopyPrimitivesOption.LINK;
+
+            params.add(new BasicNameValuePair("copyPrimitives", String.valueOf(copyPrimitivesOption.toString())));
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 			
 			post=(HttpPost) setHeaders(post);

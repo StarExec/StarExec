@@ -1,3 +1,9 @@
+// Global object for explore/spaces. Future globals should go here.
+var EXP_SP = {
+	copySpaceDialog: '#dialog-confirm-space-copy',
+	copySpaceDialogText: '#dialog-confirm-space-copy-txt'
+}
+
 /** Global Variables */
 var userTable;
 var benchTable;
@@ -228,20 +234,22 @@ function onSpaceDrop(event, ui) {
 
 		// Customize the confirmation message for the copy operation to the primitives/spaces involved
 		log("ui.draggable.data('type')[0]="+ui.draggable.data('type')[0]+" , ui.draggable.data('type')[1]="+ui.draggable.data('type')[1]);
+		// If they're trying to copy a space.
 		if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p'){
 			allSpacesBeingCopiedAreLeaves = ids.every(function(idOfSpaceBeingCopied) {
 				return spaceIsLeaf(idOfSpaceBeingCopied);
 			});
             $('#copy-primitives-options').removeClass('copy-options-hidden');
 			if (allSpacesBeingCopiedAreLeaves) {
-				$('#dialog-confirm-copy-txt').text(
+				$(EXP_SP.copySpaceDialogText).text(
 						'about to copy ' + ui.draggable.data('name') + ' to' + destName +'.');
 			} else {
-				$('#dialog-confirm-copy-txt').text(
+				$(EXP_SP.copySpaceDialogText).text(
 						'would you like to copy ' + ui.draggable.data('name') + ' only or the hierarchy to' + destName +'?');
                 $('#hier-copy-options').removeClass('copy-options-hidden');
             }
 		}
+		// If they're trying to copy a solver.
 		else if(ui.draggable.data('type')[0] == 's'){
 			if (destIsLeafSpace) {
 				$('#dialog-confirm-copy-txt').text('do you want to copy or link ' + ui.draggable.data('name') + ' to' + destName+'?');
@@ -268,21 +276,25 @@ function onSpaceDrop(event, ui) {
 			$('#dialog-confirm-copy-txt').text('do you want to copy or link ' + ui.draggable.data('name') + ' to' + destName + '?');
 		}
 	} else {
+		// If they're trying to copy a space.
 		if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p'){
             $('#copy-primitives-options').removeClass('copy-options-hidden');
 			allSpacesBeingCopiedAreLeaves = ids.every(function(idOfSpaceBeingCopied) {
 				return spaceIsLeaf(idOfSpaceBeingCopied);
 			});
 			if (allSpacesBeingCopiedAreLeaves) {
-				$('#dialog-confirm-copy-txt').text('do you want to copy the '+ ids.length + ' selected spaces to' + destName + '?');
+				$(EXP_SP.copySpaceDialogText).text('do you want to copy the '+ ids.length + ' selected spaces to' + destName + '?');
 			} else {
                 $('#hier-copy-options').removeClass('copy-options-hidden');
-				$('#dialog-confirm-copy-txt').text(
+				$(EXP_SP.copySpaceDialogText).text(
 						'do you want to copy the ' + ids.length + ' selected spaces only or the hierarchy to' + destName +'?');
 			}
 		}
+		// If they're trying to copy a solver or a user.
 		else if(ui.draggable.data('type')[0] == 's' || ui.draggable.data('type')[0] == 'u'){
 			$('#dialog-confirm-copy-txt').text('do you want to copy the ' + ids.length + ' selected '+ ui.draggable.data('type') + 's to' + destName + ' and all of its subspaces or just to' + destName +'?');
+
+		// If they're trying to copy a job or a user.
 		} else if (ui.draggable.data('type')[0]=='j') {
 			$('#dialog-confirm-copy-txt').text('do you want to link the ' + ids.length + ' selected ' + ui.draggable.data('type') + 's in' + destName + '?');
 
@@ -397,8 +409,22 @@ function onSpaceDrop(event, ui) {
 	}
 }
 
+function displayOrHideSampleRate() {
+	var sampleBenchmarksValue = 'NO_JOBS_LINK_SOLVERS_SAMPLE_BENCHMARKS';
+	if ( $('#copyPrimitives').find(':selected').val() === sampleBenchmarksValue) {
+		$('#sampleRateDiv').show();	
+	} else {
+		$('#sampleRateDiv').hide();
+	}
+}
+
 function setupSpaceCopyDialog(ids, destSpace, destName) {
 	'use strict';
+
+	displayOrHideSampleRate();
+	$('#copyPrimitives').change( function() {
+		displayOrHideSampleRate();
+	});
 
 	// True if every space in ids is a leaf.
 	var allSpacesBeingCopiedAreLeaves = ids.every(function(idOfSpaceBeingCopied) {
@@ -407,7 +433,7 @@ function setupSpaceCopyDialog(ids, destSpace, destName) {
 
 	var singleSpaceCopy = function() {
 		// If the user actually confirms, close the dialog right away
-		$('#dialog-confirm-copy').dialog('close');
+		$(EXP_SP.copySpaceDialog).dialog('close');
 
 		// Making the request
 		doSpaceCopyPost(ids,destSpace,false,destName);
@@ -421,9 +447,9 @@ function setupSpaceCopyDialog(ids, destSpace, destName) {
 		spaceCopyDialogButtons['confirm'] = singleSpaceCopy;
 	} else {
         spaceCopyDialogButtons['confirm'] = function() {
-            var copyHierOption = $("input[type='radio'][name='copySpace']:checked").val();
+            var copyHierOption = $("#hier-copy-options").find(":selected").val();
 			log('copyHierOption: ' + copyHierOption);
-			$('#dialog-confirm-copy').dialog('close');
+			$(EXP_SP.copySpaceDialog).dialog('close');
 			doSpaceCopyPost(ids,destSpace,copyHierOption,destName);
             $('#hier-copy-options').addClass('copy-options-hidden');
         }
@@ -437,7 +463,7 @@ function setupSpaceCopyDialog(ids, destSpace, destName) {
 	};
 
 	// Display the confirmation dialog
-	$('#dialog-confirm-copy').dialog({
+	$(EXP_SP.copySpaceDialog).dialog({
 		modal: true,
 		width: 700,
 		height: 300,
@@ -480,13 +506,16 @@ function setupUserCopyDialog(ids, destSpace, destName, ui, destIsLeafSpace) {
 }
 
 function doSpaceCopyPost(ids,destSpace,copyHierarchy,destName) {
-    var copyPrimitives = $("input[type='radio'][name='copyPrimitives']:checked").val();
+    //var copyPrimitives = $("input[type='radio'][name='copyPrimitives']:checked").val();
+    var copyPrimitives = $("#copyPrimitives").find(":selected").val();
 	log('copyPrimitives: ' + copyPrimitives);
 	log('copyHierarchy: ' + copyHierarchy);
+	var sampleRate = $('#sampleRate').val();
+	log('Sample rate is: '+ sampleRate);
     $('#copy-primitives-options').addClass('copy-options-hidden');
 	$.post(
 			starexecRoot+'services/spaces/' + destSpace + '/copySpace',
-			{selectedIds : ids, copyHierarchy: copyHierarchy, copyPrimitives: copyPrimitives},
+			{selectedIds : ids, copyHierarchy: copyHierarchy, copyPrimitives: copyPrimitives, sampleRate: sampleRate},
 			function(returnCode) {
 				s=parseReturnCode(returnCode);
 				if (s) {

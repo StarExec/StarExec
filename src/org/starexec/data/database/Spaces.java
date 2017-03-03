@@ -895,7 +895,13 @@ public class Spaces {
 					boolean includeBenchInSample = true;
 					if (copyPrimitives.shouldLinkSampleOfBenchmarks()) {
 						includeBenchInSample = rand.nextDouble() < sampleRate;
+						if (includeBenchInSample) {
+							log.debug("Including benchmark "+benchmark.getId()+" in sample.");
+						} else {
+							log.debug("Not including benchmark "+benchmark.getId()+" in sample.");
+						}
 					}
+
                     if (Permissions.canUserSeeBench(benchId, usrId) && includeBenchInSample) {
                         benchmarkIds.add(benchId);
                     }
@@ -943,13 +949,6 @@ public class Spaces {
 		return newSpaceId;
 	}
 
-
-
-	public static void copyHierarchyWithSolversAndBenchmarkSample(int srcId, int desId, int usrId, double sampleRate) {
-		if (sampleRate < 0 || sampleRate > 1) {
-			throw new IllegalArgumentException("Sample rate must be from 0 to 1.");
-		}
-	}
 
 	/**
 	 * Copy a hierarchy of the space into another space helper method.

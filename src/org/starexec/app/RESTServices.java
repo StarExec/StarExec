@@ -4099,20 +4099,45 @@ public class RESTServices {
 		final String methodName = "copySubSpaceToSpace";
 		log.entry(methodName);
 		// Make sure we have a list of spaces to add, the id of the space it's coming from, and whether or not to apply this to all subspaces 
+		final String copyPrimitives = request.getParameter("copyPrimitives");
+		log.debug(methodName, "copyPrimitives = " + copyPrimitives);
+		// Make sure copyPrimitives corresponds to some CopyPrimitivesOption
+		 boolean copyPrimitivesIsValid = EnumSet.allOf(CopyPrimitivesOption.class).stream()
+		 		.anyMatch(option -> option.toString().equals(copyPrimitives));
+
 		if(null == request.getParameterValues("selectedIds[]") 
 				|| !Util.paramExists("copyHierarchy", request)
-				|| !Validator.isValidBool(request.getParameter("copyHierarchy"))){
+				|| !Validator.isValidBool(request.getParameter("copyHierarchy"))
+				|| !copyPrimitivesIsValid){
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
+
 		
 		// Get the id of the user who initiated the request
 		int requestUserId = SessionUtil.getUserId(request);
 		
-		boolean copyPrimitives = Boolean.parseBoolean(request.getParameter("copyPrimitives"));
-		CopyPrimitivesOption copyPrimitivesOption = copyPrimitives ? CopyPrimitivesOption.COPY : CopyPrimitivesOption.LINK;
-		log.debug(methodName, "copyPrimitives = " + copyPrimitives);
+
+		CopyPrimitivesOption copyPrimitivesOption = CopyPrimitivesOption.valueOf(copyPrimitives);
+		double sampleRate = 1.0;
+		if (copyPrimitivesOption == CopyPrimitivesOption.NO_JOBS_LINK_SOLVERS_SAMPLE_BENCHMARKS) {
+			 //Make sure a valid sample rate was given.
+			final String sampleRateParam = "sampleRate";
+			final String sampleRateValue = request.getParameter(sampleRateParam);
+			if (!Validator.isValidPosDouble(sampleRateValue)) {
+				return gson.toJson(ERROR_INVALID_PARAMS);
+			}
+			final double maxSampleRate = 1.0;
+			final double minSampleRate = 0.0;
+			sampleRate = Double.parseDouble(sampleRateValue);
+			if (sampleRate > maxSampleRate || sampleRate < minSampleRate) {
+				return gson.toJson(ERROR_INVALID_PARAMS);
+			}
+			log.debug("Sample rate was: " + sampleRate);
+		}
+
 		
-		boolean copyHierarchy = Boolean.parseBoolean(request.getParameter("copyHierarchy"));
+		final boolean copyHierarchy = Boolean.parseBoolean(request.getParameter("copyHierarchy"));
+
 		
 		// Convert the subSpaces to copy to an int list
 		List<Integer> selectedSubSpaces = Util.toIntegerList(request.getParameterValues("selectedIds[]"));
@@ -4122,28 +4147,17 @@ public class RESTServices {
 		}
 		List<Integer>newSpaceIds = new ArrayList<Integer>();
 		// Add the subSpaces to the destination space
-		if (!copyHierarchy) {
-			for (int id : selectedSubSpaces) {
+		for (int id : selectedSubSpaces) {
+			try {
 				int newSpaceId;
-				try {
-					newSpaceId = Spaces.copySpace(id, spaceId, requestUserId, copyPrimitivesOption, null);
-				} catch (StarExecException e) {
-					return gson.toJson(new ValidatorStatusCode(false, e.getMessage()));
-				}
-
-				newSpaceIds.add(newSpaceId);
-
-			}
-		} else {
-			for (int id : selectedSubSpaces) {
-				int newSpaceId;
-				try {
-					newSpaceId = Spaces.copyHierarchy(id, spaceId, requestUserId, copyPrimitivesOption, null);
-				} catch (StarExecException e) {
-					return gson.toJson(new ValidatorStatusCode(false, e.getMessage()));
+				if (copyHierarchy) {
+					newSpaceId = Spaces.copyHierarchy(id, spaceId, requestUserId, copyPrimitivesOption, sampleRate);
+				} else {
+					newSpaceId = Spaces.copySpace(id, spaceId, requestUserId, copyPrimitivesOption, sampleRate);
 				}
 				newSpaceIds.add(newSpaceId);
-
+			} catch (StarExecException e) {
+				return gson.toJson(new ValidatorStatusCode(false, e.getMessage()));
 			}
 		}
 		response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(newSpaceIds)));
