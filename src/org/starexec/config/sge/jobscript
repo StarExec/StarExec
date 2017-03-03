@@ -410,11 +410,14 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 		log "Setting up freezer cgroup..."
 		echo $$ > /sys/fs/cgroup/freezer/system.slice/benchexec-cgroup.service/tasks
 
+		log "checking contents of timestamper.bash"
+		cat "$SCRIPT_DIR/timestamper.bash"
+
 		log "Running runexec."
 		echo "runexec --no-container --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH $OUT_DIR/output_files $OTHER_INPUT_PATH $ARGUMENT_STRING"
 
 		# Run runexec, runexec will output the stdout of the solver to $OUT_DIR/stdout.txt and will output statistics to $OUT_DIR/var.out
-		sudo -u $SANDBOX_PARAM runexec --no-container --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH "$OUT_DIR/output_files" $OTHER_INPUT_PATH $ARGUMENT_STRING > $OUT_DIR/var.out
+		sudo -u $SANDBOX_PARAM runexec --no-container --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt "$SCRIPT_DIR/timestamper.bash" $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH "$OUT_DIR/output_files" $OTHER_INPUT_PATH $ARGUMENT_STRING > $OUT_DIR/var.out
 
 		# make a blank watchfile
 		touch "$OUT_DIR"/watcher.out
