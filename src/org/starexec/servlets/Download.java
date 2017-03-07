@@ -278,6 +278,7 @@ public class Download extends HttpServlet {
 					return;
 				}
 			} else if (request.getParameter(PARAM_TYPE).equals(R.JOB_OUTPUT)) {
+				log.debug("Got request to download job output.");
 				int jobId=Integer.parseInt(request.getParameter(PARAM_ID));
 
 				String lastSeen=request.getParameter("since");
@@ -306,10 +307,12 @@ public class Download extends HttpServlet {
 			}
 
 			if (success) {
+				log.debug(methodName, "Successfully processed file for download.");
 				response.getOutputStream().close();
 				log.exit(methodName);
 				return;
 			} else {
+				log.debug(methodName, "Failed to process file for download.");
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");
 				log.exit(methodName);
 				return;

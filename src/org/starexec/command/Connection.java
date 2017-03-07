@@ -1984,9 +1984,12 @@ public class Connection {
             }
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, false);
 			//First, put in the request for the server to generate the desired archive			
-			
-			HttpGet get=new HttpGet(HTMLParser.URLEncode(baseURL+C.URL_DOWNLOAD,urlParams));
-			
+
+			String getUrl = HTMLParser.URLEncode(baseURL+C.URL_DOWNLOAD,urlParams);
+			HttpGet get=new HttpGet(getUrl);
+
+			log.log("Making request to " + getUrl);
+
 			get=(HttpGet) setHeaders(get);
 			response=client.execute(get);
 			Boolean done=false;
