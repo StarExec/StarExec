@@ -124,7 +124,7 @@ public class Download extends HttpServlet {
 				}
 				shortName=shortName.replaceAll("\\s+",""); //get rid of all whitespace, which we cannot include in the header correctly
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				success = handleSolver(s, u.getId(), response, reupload);
+				success = handleSolver(s, response, reupload);
 			} else if (request.getParameter(PARAM_TYPE).equals("solverSrc")) {
                 Solver s = null;
                 String universallyUniqueId = request.getParameter( PARAM_ANON_ID );
@@ -168,7 +168,7 @@ public class Download extends HttpServlet {
 				shortName=b.getName();
 				shortName=shortName.replaceAll("\\s+","");
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				success = handleBenchmark(b, u.getId(), response);
+				success = handleBenchmark(b, response);
 			} else if (request.getParameter(PARAM_TYPE).equals(R.PAIR_OUTPUT)) {
                 Boolean longPath = Boolean.parseBoolean(request.getParameter("longpath"));
                 log.debug("Long path value = " + longPath);
@@ -293,7 +293,7 @@ public class Download extends HttpServlet {
 				}
 				shortName="Job"+jobId+"_output";
 				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				success= handleJobOutputs(jobId, u.getId(), response,since,lastModified);
+				success= handleJobOutputs(jobId, response,since,lastModified);
 
 			} else if (request.getParameter(PARAM_TYPE).equals(R.JOB_PAGE_DOWNLOAD_TYPE)) {
 				int jobId=Integer.parseInt(request.getParameter(PARAM_ID));
@@ -330,12 +330,10 @@ public class Download extends HttpServlet {
 	 * Processes a solver to be downloaded. The solver is archived in a format that is
 	 * specified by the user, given a random name, and placed in a secure folder on the server.
 	 * @param s the solver to be downloaded
-	 * @param userId the id of the user making the download request
-	 * @param format the user's preferred archive type
 	 * @return a file representing the archive to send back to the client
 	 * @author Skylar Stark & Wyatt Kaiser
 	 */
-	private static boolean handleSolver(Solver s, int userId,  HttpServletResponse response, boolean reupload) throws Exception {
+	private static boolean handleSolver(Solver s, HttpServletResponse response, boolean reupload) throws Exception {
 
 		String baseName = s.getName();
 		// If we can see this solver AND the solver is downloadable...
@@ -354,7 +352,6 @@ public class Download extends HttpServlet {
 	 * specified by the user, given a random name, and placed in a secure folder on the server.
 	 * @param s the solver to be downloaded
 	 * @param userId the id of the user making the download request
-	 * @param format the user's preferred archive type
 	 * @return a file representing the archive to send back to the client
 	 * @author Skylar Stark & Wyatt Kaiser & Andrew Lubinus
 	 */
@@ -400,12 +397,10 @@ public class Download extends HttpServlet {
 	 * Processes a benchmark to be downloaded. The benchmark is archived in a format that is
 	 * specified by the user, given a random name, and placed in a secure folder on the server.
 	 * @param b the benchmark to be downloaded
-	 * @param userId the id of the user making the download request
-	 * @param format the user's preferred archive type
 	 * @return a file representing the archive to send back to the client
 	 * @author Skylar Stark
 	 */
-	private static boolean handleBenchmark(Benchmark b, int userId,HttpServletResponse response) throws Exception {
+	private static boolean handleBenchmark(Benchmark b, HttpServletResponse response) throws Exception {
 		// If we can see this benchmark AND the benchmark is downloadable...
 
 			ArchiveUtil.createAndOutputZip(new File(b.getPath()),response.getOutputStream(),"",false);
@@ -417,7 +412,6 @@ public class Download extends HttpServlet {
 	 *Processes a job xml file to be downloaded.
 	 * @param job the job to be downloaded
 	 * @param userId the id of the user making the download request
-	 * @param format the user's preferred archive type
 	 * @return a file representing the archive to send back to the client
 	 * @author Julio Cervantes
 	 * @throws Exception
@@ -450,7 +444,6 @@ public class Download extends HttpServlet {
 	 * specified by the user, given a random name, and placed in a secure folder on the server.
 	 * @param space the space to be downloaded
 	 * @param userId the id of the user making the download request
-	 * @param format the user's preferred archive type
 	 * @return a file representing the archive to send back to the client
 	 * @author Benton McCune
 	 * @throws Exception
@@ -521,7 +514,7 @@ public class Download extends HttpServlet {
 
 	/**
 	 * Processes a job pair's output to be downloaded.
-	 * @param jp the job pair whose output is to be downloaded
+	 * @param pairId the job pair whose output is to be downloaded
 	 * @param userId the id of the user making the download request
 	 * @param response
      * @param longPath directory structure is long version
@@ -537,9 +530,8 @@ public class Download extends HttpServlet {
 	/**
 	 * Processes a job csv file to be downloaded. The file contains the information of all the job pairs within the specific job,
 	 * given a random name, and placed in a secure folder on the server.
-	 * @param job the job needed to be processed.
+	 * @param jobId the job needed to be processed.
 	 * @param userId the Id of the user who sends the request for the file.
-	 * @param format the user's preferred archive type.
 	 * @param response the servlet response sent back.
 	 * @return a file representing the archive to send back to the client
 	 * @throws IOException
@@ -816,16 +808,14 @@ public class Download extends HttpServlet {
 
 	/**
 	 * Get a zip file which contains the outputs of a job from all its job pairs.
-	 * @param j The job to be handled
-	 * @param userId The user the job belongs to
-	 * @param format The compress format for the user to download
+	 * @param jobId The job to be handled
 	 * @param response The servlet response sent back
 	 * @param lastModified The time to use as a cutoff for output for running job pairs
 	 * @return a file representing the archive to send back to the client
 	 * @throws IOException
 	 * @author Ruoyu Zhang
 	 */
-    private static boolean handleJobOutputs(int jobId, int userId, HttpServletResponse response, Integer since, Long lastModified) throws Exception {
+    private static boolean handleJobOutputs(int jobId, HttpServletResponse response, Integer since, Long lastModified) throws Exception {
 		log.debug("got request to download output for job = "+jobId);
 		// If the user can actually see the job the pair is apart of
 			log.debug("confirmed user can download job = "+jobId);
@@ -978,7 +968,6 @@ public class Download extends HttpServlet {
 	 * Handles download of a single space or a hierarchy, return the name of compressed file containing the space.
 	 * @param space The space needed to be downloaded
 	 * @param uid The id of the user making the request
-	 * @param format The file format of the generated compressed file
 	 * @param hierarchy True if downloading a hierarchy, false for a single space
 	 * @param response The servlet response sent back
 	 * @param includeBenchmarks Whether to include benchmarks in the directory
@@ -1017,9 +1006,6 @@ public class Download extends HttpServlet {
 	 * @param includeBenchmarks -- Whether to include benchmarks in the directory
 	 * @param  includeSolvers Whether to include solvers in the directory
 	 * @param recursive Whether to include subspaces or not
-	 * @param solverPath The path to the directory containing solvers, where they are stored in a folder
-	 *        with the name <solverName><solverId>. If null, the solvers are not stored anywhere. Used to create
-	 *        links to solvers and prevent downloading them repeatedly.
 	 * @param useIdDirectories set to true if we want every primitive to be contained in a directory that is named
 	 *        after the primitives id.
 	 * @throws IOException
