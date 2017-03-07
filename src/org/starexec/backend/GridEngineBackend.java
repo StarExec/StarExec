@@ -219,18 +219,20 @@ public class GridEngineBackend implements Backend{
      * @return returns a list of names of all active worker nodes
      */
     public String[] getWorkerNodes() {
+		final String methodName = "getWorkerNodes";
+		log.entry(methodName);
     	try {
     		// Execute the SGE command to get the node list
     		String nodeResults = Util.executeCommand(NODE_LIST_COMMAND);
-    		log.debug("getWorkerNodes got the following results");
-    		log.debug(nodeResults);
+    		log.trace("getWorkerNodes got the following results");
+    		log.trace(nodeResults);
     		return nodeResults.split(System.getProperty("line.separator"));
     	} catch (Exception e) {
     		log.error(e.getMessage(),e);
-    	}
+    	} finally {
+			log.exit(methodName);
+		}
     	return null;
-		
-
     }
 
 
@@ -297,11 +299,11 @@ public class GridEngineBackend implements Backend{
 			String getSlotsInQueueCommand = QUEUE_GET_SLOTS_PATTERN.replace(QUEUE_NAME_PATTERN, queueName);
 			log.debug(methodName, "Executing command: " + getSlotsInQueueCommand);
 			String results = Util.executeCommand(getSlotsInQueueCommand);
-			log.debug(methodName, "Got result: '" + results + "'");
+			log.trace(methodName, "Got result: '" + results + "'");
 
 			// Trim outer whitespace and replace all consecutive whitespace with a single space.
 			String condensedResults = results.trim().replaceAll("\\s+", " ");
-			log.debug(methodName, "Condensed results: "+condensedResults);
+			log.trace(methodName, "Condensed results: "+condensedResults);
 
 			List<String> resultsWords = Arrays.asList(condensedResults.split(" "));
 			int slotsIndex = resultsWords.indexOf("slots");

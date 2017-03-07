@@ -555,7 +555,7 @@ public class Download extends HttpServlet {
 				//so that they know what to ask for next time (mostly for StarexecCommand)
 				int maxCompletion=since;
 				for (JobPair x : job.getJobPairs()) {
-					log.debug("found pair id = "+x.getId() +" with completion id = "+x.getCompletionId());
+					log.trace("found pair id = "+x.getId() +" with completion id = "+x.getCompletionId());
 					if (x.getCompletionId()>maxCompletion) {
 						maxCompletion=x.getCompletionId();
 					}
@@ -836,7 +836,7 @@ public class Download extends HttpServlet {
                 int runningPairsFound = 0;
                 List<JobPair> pairsToRemove = new ArrayList<JobPair>();
 				for (JobPair x : pairs) {
-					log.debug("found pair id = "+x.getId() +" with completion id = "+x.getCompletionId());
+					log.trace("found pair id = "+x.getId() +" with completion id = "+x.getCompletionId());
 					if (x.getCompletionId()>maxCompletion) {
 						maxCompletion=x.getCompletionId();
 					}

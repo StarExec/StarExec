@@ -4319,7 +4319,7 @@ public class Jobs {
 
 					//entries in the stats table determined by stage/configuration pairs
 					key = getStageConfigHashKey(stage, stage.getConfiguration());
-					log.debug("Got solver stats key: " + key);
+					log.trace("Got solver stats key: " + key);
 					int configId = stage.getConfiguration().getId();
 					int stageNumber = stage.getStageNumber();
 					Integer conflicts = null;

@@ -520,7 +520,7 @@ public abstract class JobManager {
 							continue;
 						}
 						i++;
-						log.debug("About to submit pair " + pair.getId());
+						log.trace("About to submit pair " + pair.getId());
 
 						try {
 
@@ -712,12 +712,6 @@ public abstract class JobManager {
         replacements.put("$$BENCH_ID$$", ""+pair.getBench().getId());
 
         replacements.put("$$BENCHMARKING_FRAMEWORK$$",job.getBenchmarkingFramework().toString() );
-
-        if (job.getBenchmarkingFramework() == BenchmarkingFramework.BENCHEXEC) {
-			log.debug("Writing jobscript using BenchExec framework.");
-		} else {
-			log.debug("Writing jobscript using runsolver framework.");
-		}
 
         if(job.isBuildJob()) {
                 replacements.put("$$BUILD_JOB$$", "true");
