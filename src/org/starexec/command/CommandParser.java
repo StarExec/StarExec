@@ -568,6 +568,11 @@ class CommandParser {
 			return exit();
 		} else if (c.equals(C.COMMAND_DEBUG)) {
 			C.debugMode = !C.debugMode;
+			if (C.debugMode) {
+				System.out.println("Debug mode has been enabled.");
+			} else {
+				System.out.println("Debug mode has been disabled.");
+			}
 			return 0;
 		} else if (c.equals(C.COMMAND_HELP)) {
 			System.out.println(C.HELP_MESSAGE);
