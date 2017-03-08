@@ -548,24 +548,27 @@ class CommandParser {
 	 */
 	protected int parseCommand(String command) {
 		//means end of input has been reached
-		if (command==null) {
-			command="exit";
+		if (command == null) {
+			command = "exit";
 		}
-		command=command.trim();
-		
+		command = command.trim();
+
 		// Empty lines and comments are equivalent.
-		if (command.length()==0 || command.startsWith(C.COMMENT_SYMBOL)) {
+		if (command.length() == 0 || command.startsWith(C.COMMENT_SYMBOL)) {
 			return 0;
 		}
-		
-		String [] splitCommand=command.split(" ");
-		String c=splitCommand[0].toLowerCase().trim();
-		HashMap<String,String> commandParams=extractParams(command);
-		if (commandParams==null) {
+
+		String[] splitCommand = command.split(" ");
+		String c = splitCommand[0].toLowerCase().trim();
+		HashMap<String, String> commandParams = extractParams(command);
+		if (commandParams == null) {
 			return Status.ERROR_BAD_ARGS;
 		}
 		if (command.equalsIgnoreCase(C.COMMAND_EXIT)) {
 			return exit();
+		} else if (c.equals(C.COMMAND_DEBUG)) {
+			C.debugMode = !C.debugMode;
+			return 0;
 		} else if (c.equals(C.COMMAND_HELP)) {
 			System.out.println(C.HELP_MESSAGE);
 			return 0;
