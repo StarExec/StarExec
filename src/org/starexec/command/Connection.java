@@ -2004,14 +2004,14 @@ public class Connection {
 					fileFound=true;
 					break;
 				}
-			}
+			}	
 			
 			if (!fileFound) {
 				final String errorMessage = HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE);
 				log.log("Content-Disposition header was missing.");
 				log.log("Headers that were found: ");
 				for (Header x : response.getAllHeaders()) {
-					log.log("");
+					log.log("\t"+x.getName()+": "+x.getValue());
 				}
 				log.log("Server status message: " + errorMessage);
 				setLastError(errorMessage);
