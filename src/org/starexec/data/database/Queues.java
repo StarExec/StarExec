@@ -220,8 +220,9 @@ public class Queues {
 	 * @throws Exception 
 	 */
 	protected static Queue get(Connection con, int qid) throws Exception {	
-		log.debug("starting get");
-		log.debug("id = " + qid);
+		final String methodName= "get";
+		log.entry(methodName);
+		log.debug(methodName, "\tqid = " + qid);
 		ResultSet results=null;
 		CallableStatement procedure = null;
 		
@@ -238,6 +239,7 @@ public class Queues {
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
+			log.exit(methodName);
 		}
 		return null;
 	}	
