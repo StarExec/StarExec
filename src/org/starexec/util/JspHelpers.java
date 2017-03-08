@@ -99,7 +99,7 @@ public class JspHelpers {
 
 
 		Job j=null;
-		if(Permissions.canUserSeeJob( jobId, userId )) {
+		if(Permissions.canUserSeeJob( jobId, userId ).isSuccess()) {
 			List<Processor> ListOfPostProcessors = Processors.getByUser( userId, ProcessorType.POST );
 			j=Jobs.get(jobId);
 			

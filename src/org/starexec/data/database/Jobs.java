@@ -1022,6 +1022,7 @@ public class Jobs {
 	}
 	
 	private static Job get(int jobId, boolean includeDeleted, boolean getSimplePairs) {
+		final String methodName = "get";
 		Connection con = null;
 		ResultSet results=null;
 		CallableStatement procedure = null;
@@ -1051,6 +1052,7 @@ public class Jobs {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
+		log.debug(methodName, "Could not find job with id: "+jobId);
 		return null;
 	}
 

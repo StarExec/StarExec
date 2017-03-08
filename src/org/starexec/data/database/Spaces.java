@@ -932,7 +932,7 @@ public class Spaces {
 				int jobId = 0;
 				for (Job job : jobs) {
 					jobId = job.getId();
-					if (Permissions.canUserSeeJob(jobId, usrId)) {
+					if (Permissions.canUserSeeJob(jobId, usrId).isSuccess()) {
 						jobIds.add(jobId);
 					}
 				}

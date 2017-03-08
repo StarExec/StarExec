@@ -16,7 +16,7 @@ public class MatrixViewUtil {
 	public static Job getJobIfAvailableToUser(int jobId, int userId, HttpServletResponse response) throws IOException {
 		final String method = "getJobIfAvailableToUser";
 		log.entry(method);
-		if(Permissions.canUserSeeJob(jobId,userId)) {
+		if(Permissions.canUserSeeJob(jobId,userId).isSuccess()) {
 			Job job = Jobs.get(jobId);
 			log.debug(method, "Number of job pairs in job with id=" + jobId + " is " + job.getJobPairs().size() );
 			

@@ -18,7 +18,7 @@
 		
 		if(jp == null) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Job does not exist");	
-		} else if(Permissions.canUserSeeJob(jp.getJobId(), userId)) {
+		} else if(Permissions.canUserSeeJob(jp.getJobId(), userId).isSuccess()) {
 			Job j = Jobs.get(jp.getJobId());
 			for (JoblineStage stage : jp.getStages()) {
 				Optional<String> pairOutput = JobPairs.getStdOut(jp.getId(),stage.getStageNumber(),100);

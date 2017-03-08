@@ -352,8 +352,9 @@ public class SpaceSecurity {
 		if (!status.isSuccess()) {
 			return status;
 		}
-		if(!Permissions.canUserSeeJob(jobId, userIdDoingCopying)) {
-			return new ValidatorStatusCode(false, "You are not allowed to see the job you are trying to move");
+		ValidatorStatusCode canSeeJobStatus = Permissions.canUserSeeJob(jobId, userIdDoingCopying);
+		if(!canSeeJobStatus.isSuccess()) {
+			return canSeeJobStatus;
 		}
 		
 		if (Jobs.isJobDeleted(jobId)) {

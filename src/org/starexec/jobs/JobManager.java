@@ -314,11 +314,11 @@ public abstract class JobManager {
 
 	 */
 	public static void submitJobs(final List<Job> joblist, final Queue q, int queueSize, final int nodeCount) {
+        final String methodName = "submitJobs";
 		final Random random = new Random();
-		final String methodName = "submitJobs";
 		final LoadBalanceMonitor monitor = getMonitor(q.getId());
 		try {
-			log.debug("submitJobs() begins");
+			log.entry(methodName);
 
 			initMainTemplateIf();
 
@@ -354,21 +354,21 @@ public abstract class JobManager {
 				// for every job, retrieve no more than the number of pairs that would fill the queue. 
 				// retrieving more than this is wasteful.
 				int limit=Math.max(R.NUM_JOB_PAIRS_AT_A_TIME, (nodeCount*R.NODE_MULTIPLIER)-queueSize);
-				log.debug("calling Jobs.getPendingPairsDetailed for job "+job.getId() + " with limit="+limit+"and queueSize="+queueSize+" and nodeCount="+nodeCount);
+				log.trace("calling Jobs.getPendingPairsDetailed for job "+job.getId() + " with limit="+limit+"and queueSize="+queueSize+" and nodeCount="+nodeCount);
 				if ( job.isHighPriority() ) {
 					JobCount jobCount = userToJobCountMap.get( job.getUserId() );
 					// Assuming only high priority jobs will be scheduled this makes it so a user will have just as many pairs scheduled as if they had pairs scheduled from all jobs.
 					limit = (limit * jobCount.all) / jobCount.highPriority;
 				}
 				final List<JobPair> pairs = Jobs.getPendingPairsDetailed(job,limit);
-				log.debug("finished call to getPendingPairsDetailed");
+				log.trace("finished call to getPendingPairsDetailed");
 
 				if (pairs.size()>0) {
 					final Iterator<JobPair> pairIter = pairs.iterator();
 					final SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
 					schedule.add(s);
 				} else {
-					log.debug("not adding any pairs from job "+job.getId());
+					log.trace("not adding any pairs from job "+job.getId());
 				}
 
 			}
@@ -385,7 +385,6 @@ public abstract class JobManager {
 			final Map<Integer, List<SchedulingState>> userToHighPriorityStates = new HashMap<>();
 
 			Iterator<SchedulingState> it = schedule.iterator();
-			log.debug(methodName, "All States In Schedule: ");
 			while (it.hasNext()) {
 				final SchedulingState s = it.next();
 
@@ -465,7 +464,7 @@ public abstract class JobManager {
 						userToHighPriorityStates.put(currentStateUserId, highPriorityStates);
 
 						if (highPriorityStates.size() == 0) {
-							log.info(methodName, "No high priority states with pairs left.");
+							log.trace(methodName, "No high priority states with pairs left.");
 							// Remove the user from the map if they don't have any high priority jobs left to look at.
 							userToHighPriorityStates.remove(currentStateUserId);
 
@@ -493,7 +492,7 @@ public abstract class JobManager {
 						}
 					}
 
-					log.info("About to submit "+R.NUM_JOB_PAIRS_AT_A_TIME+" pairs "
+					log.trace("About to submit "+R.NUM_JOB_PAIRS_AT_A_TIME+" pairs "
 							+"for job " + s.job.getId() 
 							+ ", queue = "+q.getName() 
 							+ ", user = "+s.job.getUserId());
@@ -541,7 +540,7 @@ public abstract class JobManager {
 							file.getParentFile().mkdirs();
 			
 							if (file.exists()) {
-							    log.info("Deleting old log file for " + pair.getId());
+							    log.debug("Deleting old log file for " + pair.getId());
 							    file.delete();
 							}
 
@@ -565,7 +564,7 @@ public abstract class JobManager {
                             log.error("setting pair with following ID to benchmark fail "+pair.getId());
                             JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_BENCHMARK.getVal());
                         } catch(Exception e) {
-							log.error("submitJobs() received exception " + e.getMessage(), e);
+							log.error("submitJobs() received exception " +  e.getMessage(), e);
 							log.error("setting pair with following ID to submit_fail "+pair.getId());
 							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
 						}

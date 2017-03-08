@@ -22,6 +22,7 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
+import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -145,6 +146,11 @@ public class Util {
 			LineIterator.closeQuietly(lineItr);
 		}
 	}
+
+	public static String getTime() {
+		return new Timestamp(System.currentTimeMillis()).toString();
+	}
+
     /**
      * Determines whether we are currently running on production.
      * @return True if this is production and false if it is a test instance

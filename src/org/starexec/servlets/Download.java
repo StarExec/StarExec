@@ -82,6 +82,7 @@ public class Download extends HttpServlet {
 		log.entry( methodName );
 
 		User u = SessionUtil.getUser(request);
+		log.debug(methodName, "Got download request from user with id: "+u.getId());
 		boolean success;
 		String shortName=null;
 		try {
@@ -493,7 +494,7 @@ public class Download extends HttpServlet {
 			if (j==null) {
 				j=Jobs.get(jp.getJobId());
 				//make sure the user can see the job
-				if (!Permissions.canUserSeeJob(j.getId(), userId)) {
+				if (!Permissions.canUserSeeJob(j.getId(), userId).isSuccess()) {
 				    return false;
 				}
 			} else {
@@ -1137,11 +1138,17 @@ public class Download extends HttpServlet {
 	 * @author Skylar Stark
 	 */
 	public static ValidatorStatusCode validateRequest(HttpServletRequest request) {
+		final String methodName = "validateRequest";
+		log.entry(methodName);
+		log.debug(methodName, "Validating download request.");
 		try {
 			if (!Util.paramExists(PARAM_TYPE, request)) {
-				return new ValidatorStatusCode(false, "A download type was not specified");
+				final String message = "A download type was not specified";
+				log.debug(methodName, "Download request was invalid: " + message);
+				return new ValidatorStatusCode(false, message);
 			}
 			String type=request.getParameter(PARAM_TYPE);
+			log.debug(methodName, "Download request is of type: "+type);
 
 			if (!(type.equals(R.SOLVER) ||
 					type.equals(R.BENCHMARK) ||
@@ -1155,8 +1162,9 @@ public class Download extends HttpServlet {
 					type.equals(R.JOB_OUTPUTS) ||
                     type.equals(R.SOLVER_SOURCE) ||
 					type.equals(R.JOB_PAGE_DOWNLOAD_TYPE))) {
-
-				return new ValidatorStatusCode(false, "The supplied download type was not valid");
+				final String message = "The supplied download type was not valid";
+				log.debug(methodName, "Download request was invalid: " + message);
+				return new ValidatorStatusCode(false, message);
 			}
 
 
@@ -1164,8 +1172,10 @@ public class Download extends HttpServlet {
 				String universallyUniqueId = request.getParameter( PARAM_ANON_ID );
 				if ( universallyUniqueId == null ) {
 					int userId=SessionUtil.getUserId(request);
+					log.debug(methodName, "Validating download request for user: " + userId);
 					return validateForUser( userId, type, request );
 				} else {
+					log.debug(methodName, "Validating download request for anonymous link: " + universallyUniqueId);
 					return validateForAnonymousLink( universallyUniqueId, type, request );
 				}
 			} else {
@@ -1189,8 +1199,11 @@ public class Download extends HttpServlet {
 	}
 
 	private static ValidatorStatusCode validateForUser( int userId, String type, HttpServletRequest request ) {
+		final String methodName = "validateForUser";
 		if (!Validator.isValidPosInteger(request.getParameter(PARAM_ID))) {
-			new ValidatorStatusCode(false, "The given id was not a valid integer");
+			final String message = "The given id was not a valid integer";
+			log.debug(methodName, "Download request validation failed: "+message);
+			new ValidatorStatusCode(false, message);
 		}
 
 		int id=Integer.parseInt(request.getParameter(PARAM_ID));
@@ -1206,13 +1219,15 @@ public class Download extends HttpServlet {
 			}
 
 		} else if (type.equals(R.JOB) || type.equals(R.JOB_XML) || type.equals(R.JOB_OUTPUT)) {
-			if (!Permissions.canUserSeeJob(id, userId)) {
-				return new ValidatorStatusCode(false, "You do not have permission to see this job");
+			ValidatorStatusCode canSeeJobStatus = Permissions.canUserSeeJob(id, userId);
+			if (!canSeeJobStatus.isSuccess()) {
+				return canSeeJobStatus;
 			}
 		} else if (type.equals(R.PAIR_OUTPUT)) {
 			int jobId=JobPairs.getPair(id).getJobId();
-			if ( !Permissions.canUserSeeJob( jobId, userId )) {
-				return new ValidatorStatusCode( false, "You do not have permission to see this job" );
+			ValidatorStatusCode canSeeJobStatus = Permissions.canUserSeeJob(jobId, userId);
+			if ( !canSeeJobStatus.isSuccess()) {
+				return canSeeJobStatus;
 			}
 		} else if (type.equals(R.BENCHMARK)) {
 			status=BenchmarkSecurity.canUserDownloadBenchmark(id, userId);
