@@ -292,7 +292,7 @@ public class Connection {
 
 	public void logAddTextBody(MultipartEntityBuilder entity, String name, String text) {
 		log.log("Adding text body for multipart entity: name="+name+", text="+text);
-		logAddTextBody(entity, name, text);
+		entity.addTextBody(name, text);
 	}
 
 	// Logs and executes a GET/POST request.
