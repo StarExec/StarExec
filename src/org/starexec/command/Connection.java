@@ -11,8 +11,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.*;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
@@ -226,36 +225,37 @@ public class Connection {
 			Boolean dependency,Boolean linked, Integer depRoot) {
 		HttpResponse response = null;
 		try {
-			
-			HttpPost post = new HttpPost(baseURL+C.URL_UPLOADBENCHMARKS);
+
+			String postUrl = baseURL+C.URL_UPLOADBENCHMARKS;
+			HttpPost post = new HttpPost(postUrl);
 			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
-			entity.addTextBody(R.SPACE,spaceID.toString());
-			entity.addTextBody("localOrURL",upMethod);
+			logAddTextBody(entity, R.SPACE,spaceID.toString());
+			logAddTextBody(entity, "localOrURL",upMethod);
 			
 			//it is ok to set URL even if we don't need it
-			entity.addTextBody("url",url);
+			logAddTextBody(entity, "url",url);
 			
-			entity.addTextBody("download",downloadable.toString());
-			entity.addTextBody("benchType",type.toString());
-			entity.addTextBody("dependency",dependency.toString());
+			logAddTextBody(entity, "download",downloadable.toString());
+			logAddTextBody(entity, "benchType",type.toString());
+			logAddTextBody(entity, "dependency",dependency.toString());
 			
-			entity.addTextBody("linked",linked.toString());
+			logAddTextBody(entity, "linked",linked.toString());
 			if (depRoot==null) {
-				entity.addTextBody("depRoot","-1");
+				logAddTextBody(entity, "depRoot","-1");
 			} else {
-				entity.addTextBody("depRoot",depRoot.toString());
+				logAddTextBody(entity, "depRoot",depRoot.toString());
 			}
 			if (hierarchy) {
-				entity.addTextBody("upMethod", "convert");
+				logAddTextBody(entity, "upMethod", "convert");
 			} else {
-				entity.addTextBody("upMethod","dump");
+				logAddTextBody(entity, "upMethod","dump");
 			}
 			
 			for (String x : p.getOnPermissions()) {
-				entity.addTextBody(x,"true");
+				logAddTextBody(entity, x,"true");
 			}
 			for (String x : p.getOffPermissions()) {
-				entity.addTextBody(x,"false");
+				logAddTextBody(entity, x,"false");
 			}
 		
 			//only include the archive file if we need it
@@ -266,8 +266,8 @@ public class Connection {
 			
 			post.setEntity(entity.build());
 			post=(HttpPost) setHeaders(post);
-			
-			response=client.execute(post);
+
+			response=executeGetOrPost(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			int returnCode=response.getStatusLine().getStatusCode();
 			
@@ -289,6 +289,40 @@ public class Connection {
 			safeCloseResponse(response);
 		}
 	}
+
+	public void logAddTextBody(MultipartEntityBuilder entity, String name, String text) {
+		log.log("Adding text body for multipart entity: name="+name+", text="+text);
+		logAddTextBody(entity, name, text);
+	}
+
+	// Logs and executes a GET/POST request.
+	private HttpResponse executeGetOrPost(HttpRequestBase request) throws IOException {
+		log.log("Sending " + request.getMethod() + " request to URI: "+request.getURI());
+		List<Header> headers = Arrays.asList(request.getAllHeaders());
+		// Bypass the for loop if debug mode is off.
+		if (C.debugMode) {
+			log.log("Headers for request: ");
+			for (Header header : headers) {
+				log.log("\tName: " + header.getName());
+				log.log("\tValue: " + header.getValue());
+				log.log("");
+			}
+		}
+		HttpResponse response = client.execute(request);
+		if (C.debugMode) {
+			log.log("Got response from server.");
+			List<Header> responseHeaders = Arrays.asList(response.getAllHeaders());
+			log.log("Headers for response: ");
+			for (Header header : responseHeaders) {
+				log.log("\tName: " + header.getName());
+				log.log("\tValue: " + header.getValue());
+				log.log("");
+			}
+		}
+		return response;
+	}
+
+
 	/**
 	 * Uploads a new configuration to an existing solver
 	 * @param name The name of the new configuration
@@ -307,17 +341,18 @@ public class Connection {
 			}
 			
 			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
-			entity.addTextBody("solverId",solverID.toString());
-			entity.addTextBody("uploadConfigDesc",desc);
-			entity.addTextBody("uploadConfigName",name);
+			logAddTextBody(entity, "solverId",solverID.toString());
+			logAddTextBody(entity, "uploadConfigDesc",desc);
+			logAddTextBody(entity, "uploadConfigName",name);
 			
 			FileBody fileBody = new FileBody(new File(filePath));
+			log.log("Adding file part for multipart entity builder.");
 			entity.addPart("file", fileBody);
 			post=(HttpPost) setHeaders(post);
 			post.setEntity(entity.build());
-			
-			response=client.execute(post);
-			
+
+			executeGetOrPost(post);
+
 			setSessionIDIfExists(response.getAllHeaders());
 			int id=CommandValidator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			if (id<=0) {
@@ -350,19 +385,20 @@ public class Connection {
 		try {
 			HttpPost post = new HttpPost(baseURL+C.URL_UPLOADPROCESSOR);
 			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
-			entity.addTextBody("action","add");
-			entity.addTextBody("type",type);
-			entity.addTextBody("name", name);
-			entity.addTextBody("desc",desc);
-			entity.addTextBody("com",communityID.toString());
-			entity.addTextBody("uploadMethod", "local");
+			logAddTextBody(entity, "action","add");
+			logAddTextBody(entity, "type",type);
+			logAddTextBody(entity, "name", name);
+			logAddTextBody(entity, "desc",desc);
+			logAddTextBody(entity, "com",communityID.toString());
+			logAddTextBody(entity, "uploadMethod", "local");
 			FileBody fileBody = new FileBody(f);
 			entity.addPart("file", fileBody);
 			
 			post.setEntity(entity.build());
 			post=(HttpPost) setHeaders(post);
-			
-			response=client.execute(post);
+
+
+			response=executeGetOrPost(post);
 			
 			setSessionIDIfExists(response.getAllHeaders());
 						
@@ -443,14 +479,15 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 			
 			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
-			entity.addTextBody(R.SPACE,spaceID.toString());
+			logAddTextBody(entity, R.SPACE,spaceID.toString());
 			File f=new File(filePath);
 			FileBody fileBody = new FileBody(f);
 			entity.addPart("f", fileBody);
 			
 			post.setEntity(entity.build());
-			
-			response=client.execute(post);
+
+
+			response=executeGetOrPost(post);
 
 			setSessionIDIfExists(response.getAllHeaders());
 						
@@ -531,26 +568,27 @@ public class Connection {
 				FileBody descFileBody=new FileBody(new File(desc));
 				entity.addPart("d",descFileBody);
 			}
-			
-			entity.addTextBody("sn",name);
+
+			logAddTextBody(entity, "sn",name);
 			if (descMethod.equals("text")) {
-				entity.addTextBody("desc",desc);
+				logAddTextBody(entity, "desc",desc);
 			} else {
-				entity.addTextBody("desc","");
+				logAddTextBody(entity, "desc","");
 			}
-			entity.addTextBody(R.SPACE,spaceID.toString());
+			logAddTextBody(entity, R.SPACE,spaceID.toString());
 			
-			entity.addTextBody("descMethod", descMethod);
-			entity.addTextBody("dlable", downloadable.toString());
-			entity.addTextBody("runTestJob",runTestJob.toString());
-			entity.addTextBody("type", type.toString());
+			logAddTextBody(entity, "descMethod", descMethod);
+			logAddTextBody(entity, "dlable", downloadable.toString());
+			logAddTextBody(entity, "runTestJob",runTestJob.toString());
+			logAddTextBody(entity, "type", type.toString());
 			if (settingId!=null) {
-				entity.addTextBody("setting", settingId.toString());
+				logAddTextBody(entity, "setting", settingId.toString());
 	
 			}
 			post.setEntity(entity.build());
-			post=(HttpPost) setHeaders(post);		
-			response=client.execute(post);			
+			post=(HttpPost) setHeaders(post);
+
+			response=executeGetOrPost(post);
 			setSessionIDIfExists(response.getAllHeaders());			
 			int newID=CommandValidator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			//if the request was not successful
@@ -586,8 +624,8 @@ public class Connection {
 			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 			FileBody fileBody = new FileBody(new File(filePath));
 			entity.addPart("f", fileBody);
-			entity.addTextBody("url","");
-			entity.addTextBody("upMethod","local");
+			logAddTextBody(entity, "url","");
+			logAddTextBody(entity, "upMethod","local");
 
 			return uploadSolver(entity,post,name,desc,descMethod,spaceID,downloadable,runTestJob,settingId,type);
 		} catch (Exception e) {	
@@ -612,8 +650,8 @@ public class Connection {
 		try {
 			HttpPost post = new HttpPost(baseURL+C.URL_UPLOADSOLVER);
 			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
-			entity.addTextBody("url",url);
-			entity.addTextBody("upMethod","URL");
+			logAddTextBody(entity, "url",url);
+			logAddTextBody(entity, "upMethod","URL");
 
 			return uploadSolver(entity,post,name,desc,descMethod,spaceID,downloadable,runTestJob,settingId, type);
 		} catch (Exception e) {	
@@ -781,7 +819,8 @@ public class Connection {
 				params.add(new BasicNameValuePair("selectedIds[]",id.toString()));
 			}
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
-			response=client.execute(post);
+
+			response=executeGetOrPost(post);
 			JsonObject obj=JsonHandler.getJsonObject(response);
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
 			String message=JsonHandler.getMessageOfResponse(obj);
@@ -812,7 +851,8 @@ public class Connection {
 		try {
 			HttpGet get=new HttpGet(baseURL+relURL);
 			get=(HttpGet) setHeaders(get);
-			response=client.execute(get);
+
+			response=executeGetOrPost(get);
 			setSessionIDIfExists(get.getAllHeaders());
 			
 			//we should get 200, which is the code for ok
@@ -835,7 +875,8 @@ public class Connection {
 		try {
 			HttpGet get=new HttpGet(baseURL+C.URL_GETID);
 			get=(HttpGet) setHeaders(get);
-			response=client.execute(get);
+
+			response=executeGetOrPost(get);
 			setSessionIDIfExists(get.getAllHeaders());
 			JsonElement json=JsonHandler.getJsonString(response);
 			return json.getAsInt();
@@ -858,7 +899,7 @@ public class Connection {
 		try {
 			HttpPost post=new HttpPost(baseURL+C.URL_EDITSPACEVISIBILITY+"/"+spaceID.toString() +"/" +hierarchy.toString()+"/"+setPublic.toString());
 			post=(HttpPost) setHeaders(post);
-			response=client.execute(post);
+			response=executeGetOrPost(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			
 			//we should get back an HTTP OK if we're allowed to change the visibility
@@ -888,7 +929,7 @@ public class Connection {
 			url=url.replace(" ", "%20"); //encodes white space, which can't be used in a URL
 			HttpPost post=new HttpPost(url);
 			post=(HttpPost) setHeaders(post);
-			response=client.execute(post);
+			response=executeGetOrPost(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
@@ -941,7 +982,7 @@ public class Connection {
 			HttpPost post=new HttpPost(URL);
 			post=(HttpPost) setHeaders(post);
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
-			response=client.execute(post);
+			response=executeGetOrPost(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
@@ -976,7 +1017,7 @@ public class Connection {
 			HttpPost post=new HttpPost(URL);
 			post=(HttpPost) setHeaders(post);
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
-			response=client.execute(post);
+			response=executeGetOrPost(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
@@ -1016,7 +1057,7 @@ public class Connection {
 			HttpPost post=new HttpPost(URL);
 			post=(HttpPost) setHeaders(post);
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
-			response=client.execute(post);
+			response=executeGetOrPost(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
@@ -1119,8 +1160,8 @@ public class Connection {
 			
 			params.add(new BasicNameValuePair("recyclePrims",recyclePrims.toString()));
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
-			
-			response=client.execute(post);
+
+			response=executeGetOrPost(post);
 			
 			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
@@ -1150,7 +1191,7 @@ public class Connection {
 		try {
 			HttpPost post=new HttpPost(baseURL+C.URL_LOGOUT);
 			post=(HttpPost) setHeaders(post);
-			response=client.execute(post);
+			response=executeGetOrPost(post);
 			return true;
 		} catch (Exception e) {
 			return false;
@@ -1169,7 +1210,7 @@ public class Connection {
 		HttpResponse response = null;
 		try {
 			HttpGet get = new HttpGet(baseURL+C.URL_HOME);
-			response=client.execute(get);
+			response=executeGetOrPost(get);
 			sessionID=HTMLParser.extractCookie(response.getAllHeaders(),C.TYPE_SESSIONID);
 			response.getEntity().getContent().close();
 			if (!this.isValid()) {
@@ -1190,7 +1231,7 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 			
 			//Post login credentials to server
-			response=client.execute(post);	
+			response=executeGetOrPost(post);
 			response.getEntity().getContent().close();
 			
 			
@@ -1198,7 +1239,7 @@ public class Connection {
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, false);
 			get = new HttpGet(baseURL+C.URL_HOME);
 			get=(HttpGet) setHeaders(get);
-			response=client.execute(get);
+			response=executeGetOrPost(get);
 			
 			sessionID=HTMLParser.extractCookie(response.getAllHeaders(),C.TYPE_SESSIONID);
 			
@@ -1391,8 +1432,8 @@ public class Connection {
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 			
 			post=(HttpPost) setHeaders(post);
-			
-			response=client.execute(post);
+
+			response=executeGetOrPost(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
@@ -1452,8 +1493,8 @@ public class Connection {
 			HttpPost post = new HttpPost(baseURL+C.URL_ADDSPACE);
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 			post=(HttpPost) setHeaders(post);
-			
-			response=client.execute(post);
+
+			response=executeGetOrPost(post);
 			setSessionIDIfExists(response.getAllHeaders());			
 			if (response.getStatusLine().getStatusCode()!=302) {
 				return Status.ERROR_BAD_PARENT_SPACE;
@@ -1574,8 +1615,8 @@ public class Connection {
 		    urlParameters.add(new BasicNameValuePair("limit","-1"));
 		}
 		post.setEntity(new UrlEncodedFormEntity(urlParameters));
-	   
-	    HttpResponse response=client.execute(post);
+
+		HttpResponse response=executeGetOrPost(post);
 			
 	    setSessionIDIfExists(response.getAllHeaders());
 			
@@ -1674,8 +1715,8 @@ public class Connection {
 			params.add(new BasicNameValuePair("sSortDir_0","asc"));
 			
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
-			
-			response=client.execute(post);
+
+			response=executeGetOrPost(post);
 			setSessionIDIfExists(response.getAllHeaders());
 			
 			JsonElement jsonE=JsonHandler.getJsonString(response);
@@ -1770,7 +1811,7 @@ public class Connection {
 			HttpGet get=new HttpGet(HTMLParser.URLEncode(baseURL+C.URL_DOWNLOAD,urlParams));
 			
 			get=(HttpGet) setHeaders(get);
-			response=client.execute(get);
+			response=executeGetOrPost(get);
 			
 			setSessionIDIfExists(response.getAllHeaders());
 			
@@ -1991,7 +2032,7 @@ public class Connection {
 			log.log("Making request to " + getUrl);
 
 			get=(HttpGet) setHeaders(get);
-			response=client.execute(get);
+			response=executeGetOrPost(get);
 			Boolean done=false;
 			setSessionIDIfExists(response.getAllHeaders());
 			
@@ -2009,10 +2050,6 @@ public class Connection {
 			if (!fileFound) {
 				final String errorMessage = HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE);
 				log.log("Content-Disposition header was missing.");
-				log.log("Headers that were found: ");
-				for (Header x : response.getAllHeaders()) {
-					log.log("\t"+x.getName()+": "+x.getValue());
-				}
 				log.log("Server status message: " + errorMessage);
 				setLastError(errorMessage);
 				return Status.ERROR_ARCHIVE_NOT_FOUND;
@@ -2157,7 +2194,7 @@ public class Connection {
 			URL=URL.replace("{statusId}",statusId.toString());
 			HttpGet get=new HttpGet(URL);
 			get=(HttpGet) setHeaders(get);
-			response=client.execute(get);
+			response=executeGetOrPost(get);
 			setSessionIDIfExists(get.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
@@ -2245,8 +2282,8 @@ public class Connection {
 			}
 			
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
-			
-			response=client.execute(post);
+
+			response=executeGetOrPost(post);
 			setSessionIDIfExists(response.getAllHeaders());
 
 			String id=HTMLParser.extractCookie(response.getAllHeaders(),"New_ID");
@@ -2391,7 +2428,7 @@ public class Connection {
 		try {
 			HttpGet get=new HttpGet(baseURL+C.URL_GETPRIMJSON.replace("{type}", type).replace("{id}",String.valueOf(id)));
 			get=(HttpGet) setHeaders(get);
-			response=client.execute(get);
+			response=executeGetOrPost(get);
 			setSessionIDIfExists(get.getAllHeaders());
 			JsonElement json=JsonHandler.getJsonString(response);
 			String errorMessage=JsonHandler.getMessageOfResponse(json.getAsJsonObject());
