@@ -164,7 +164,7 @@ public class Permissions {
 	 * @return True if the user can somehow see the job, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static ValidatorStatusCode canUserSeeJob(int jobId, int userId){
+	public static ValidatorStatusCode canUserSeeJob(final int jobId, final int userId){
 		final String methodName = "canUserSeeJob";
 		log.entry(methodName);
 		log.debug(methodName, "\tjobId: "+jobId);

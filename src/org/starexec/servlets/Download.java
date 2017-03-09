@@ -1255,10 +1255,12 @@ public class Download extends HttpServlet {
 				}
 			} else {
 				//expecting a comma-separated list
-				String ids=request.getParameter("id[]");
+				final String idArrayParam = "id[]";
+				String ids=request.getParameter(idArrayParam);
+				log.debug(methodName, idArrayParam + " = " + ids);
 				if (!Validator.isValidIntegerList(ids)) {
+					log.debug(methodName, idArrayParam + " was not a valid integer list.");
 					return new ValidatorStatusCode(false, "The given list of ids contained one or more invalid integers");
-
 				}
 
 			}
@@ -1275,6 +1277,7 @@ public class Download extends HttpServlet {
 
 	private static ValidatorStatusCode validateForUser( int userId, String type, HttpServletRequest request ) {
 		final String methodName = "validateForUser";
+		log.entry(methodName);
 		if (!Validator.isValidPosInteger(request.getParameter(PARAM_ID))) {
 			final String message = "The given id was not a valid integer";
 			log.debug(methodName, "Download request validation failed: "+message);
@@ -1282,6 +1285,8 @@ public class Download extends HttpServlet {
 		}
 
 		int id=Integer.parseInt(request.getParameter(PARAM_ID));
+		log.debug(methodName, PARAM_ID + " = " + id);
+
 		ValidatorStatusCode status=null;
 		if (type.equals(R.SOLVER) || type.equals(R.SOLVER_SOURCE)) {
 			status=SolverSecurity.canUserDownloadSolver(id,userId);
@@ -1296,6 +1301,7 @@ public class Download extends HttpServlet {
 		} else if (type.equals(R.JOB) || type.equals(R.JOB_XML) || type.equals(R.JOB_OUTPUT)) {
 			ValidatorStatusCode canSeeJobStatus = Permissions.canUserSeeJob(id, userId);
 			if (!canSeeJobStatus.isSuccess()) {
+				log.debug(methodName, "User could not see job, returning failure status.");
 				return canSeeJobStatus;
 			}
 		} else if (type.equals(R.PAIR_OUTPUT)) {
