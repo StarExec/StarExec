@@ -1,14 +1,16 @@
+"use strict";
+
 var summaryTable;
 var pairTable;
 var curSpaceId; //stores the ID of the job space that is currently selected from the space viewer
 var jobId; //the ID of the job being viewed
 var lastValidSelectOption;
-var panelArray=null;
+var panelArray=[];
 var useWallclock=true;
 var syncResults=false;
 var DETAILS_JOB = {};
 var selectedJobSpaceId=null;
-
+var getPanelTableInitializer;
 // contains requests that have been sent to the server to update pairs, stats, or graphs that
 // have not yet returned. If the user clicks on a new job space, these requests will all
 // be aborted, as they will no longer be useful.
@@ -42,12 +44,8 @@ $(document).ready(function(){
 	}, 15000);
 	*/
 	initializeGlobalPageVariables();
-	//sets up buttons and so on
 	initUI();
-
-
 	initSpaceExplorer();
-
 	initDataTables();
 
 	if (!isLocalJobPage) {
@@ -56,16 +54,14 @@ $(document).ready(function(){
 			pairTable.fnDraw(false);
 			refreshPanels();
 		},30000);
-
-		//puts data into the data tables
-		reloadTables($("#spaceId").attr("value"));
 	}
+
+	//puts data into the data tables
+	reloadTables($("#spaceId").attr("value"));
 });
 
 // Initializes the fields of the global DETAILS_JOB object.
 function initializeGlobalPageVariables() {
-	'use strict';
-
 	// Set these first since get functions may depend no them
 	DETAILS_JOB.isAnonymousPage = $('#isAnonymousPage').attr('value') === 'true';
 	jobId=$('#jobId').attr('value');
@@ -73,56 +69,18 @@ function initializeGlobalPageVariables() {
 	DETAILS_JOB.rootJobSpaceId = $('#spaceId').attr('value');
 	DETAILS_JOB.primitivesToAnonymize = $('#primitivesToAnonymize').attr('value');
 	DETAILS_JOB.anonymousLinkUuid = getParameterByName('anonId');
-
-	DETAILS_JOB.solverTableInitializer = getSolverTableInitializer();
-	DETAILS_JOB.pairTableInitializer = getPairTableInitializer();
 	DETAILS_JOB.spaceExplorerJsonData = getSpaceExplorerJsonData();
 
 	log("starexecUrl: " + DETAILS_JOB.starexecUrl);
 	log("isLocalJobPage: " + isLocalJobPage);
 	log("starexecRoot: " + starexecRoot);
-	log( 'isAnonymousPage: ' + DETAILS_JOB.isAnonymousPage );
-	log( 'primitivesToAnonymize: ' + DETAILS_JOB.primitivesToAnonymize );
+	log("isAnonymousPage: " + DETAILS_JOB.isAnonymousPage );
+	log("primitivesToAnonymize: " + DETAILS_JOB.primitivesToAnonymize );
 }
-
-function getPanelTableInitializer(jobId, spaceId) {
-	'use strict';
-	var panelTableInitializer = null;
-
-	var paginationUrl = '';
-	if ( DETAILS_JOB.isAnonymousPage ) {
-		paginationUrl = starexecRoot+'services/jobs/solvers/anonymousLink/pagination/'+spaceId+'/'+DETAILS_JOB.anonymousLinkUuid+'/'+
-				DETAILS_JOB.primitivesToAnonymize+'/true/';
-	} else {
-		paginationUrl = starexecRoot+'services/jobs/solvers/pagination/'+spaceId+'/true/';
-	}
-
-	if (isLocalJobPage && useWallclock) {
-		// get the JSON directly from the page if this is a local page.
-		panelTableInitializer = $.parseJSON($('#jobSpaceWallclockTimeSolverStats'+spaceId).attr('value'));
-	} else if (isLocalJobPage && !useWallclock) {
-		// get the JSON directly from the page if this is a local page.
-		panelTableInitializer = $.parseJSON($('#jobSpaceCpuTimeSolverStats'+spaceId).attr('value'));
-	} else {
-		// otherwise get it from the server
-		panelTableInitializer = {
-			'sDom'			: 'rt<"clear">',
-			'iDisplayStart'	: 0,
-			'iDisplayLength': 1000, // make sure we show every entry
-			'sAjaxSource'	: paginationUrl,
-			'sServerMethod' : 'POST',
-			'fnServerData'  : fnShortStatsPaginationHandler
-		};
-	}
-
-	return panelTableInitializer;
-}
-
 
 // Gets the JSON representation of the space explorer from the hidden <span> containing it.
 function getSpaceExplorerJsonData() {
-	'use strict';
-	var spaceExplorerJsonData = {};
+	var spaceExplorerJsonData;
 	if (isLocalJobPage) {
 		var jobSpaceTreeJsonText = $('#jobSpaceTreeJson').attr('value');
 		try {
@@ -134,7 +92,7 @@ function getSpaceExplorerJsonData() {
 			return {};
 		}
 	} else {
-		var url = '';
+		var url;
 		if ( DETAILS_JOB.isAnonymousPage ) {
 			url = starexecRoot+"services/space/anonymousLink/" +DETAILS_JOB.anonymousLinkUuid+ "/jobspaces/true/"+DETAILS_JOB.primitivesToAnonymize;
 		} else {
@@ -159,20 +117,73 @@ function setSyncResultsText() {
 		$("#syncResults .ui-button-text").html("un-synchronize results");
 	} else {
 		$("#syncResults .ui-button-text").html("synchronize results");
-
 	}
 }
 
 function refreshPanels(){
-	for (i=0;i<panelArray.length;i++) {
+	for (var i=0;i<panelArray.length;i++) {
 		panelArray[i].api().ajax.reload(null,true);
 	}
 }
 
 function refreshStats(id){
-	summaryTable.api().ajax.reload(function() {
-		updateGraphs();
-	},true);
+	var updateGraphs = function() {
+		if (summaryTable.fnSettings().fnRecordsTotal()==0) {
+			$("#graphField").hide();
+		} else {
+			/* This is can be one of the most intense loops on this page,
+			 * so we are waving goodbye to jQuery and dropping down to
+			 * manipulating the DOM directly. I am sorry if this makes the
+			 * code more difficult to read.
+			 */
+			var $spaceOverviewSelections = $("#spaceOverviewSelections"),
+			    solverOptions = document.createDocumentFragment(),
+			    rows = summaryTable.fnGetData();
+			for (var i=0; i<rows.length; ++i) {
+				var row = rows[i],
+				    solverName = row[2],
+				    configName = row[3],
+				    configId   = row[1];
+
+				var option = document.createElement("option");
+				    option.value = configId;
+				    option.text = solverName + "/" + configName;
+
+				solverOptions.appendChild(option);
+			};
+
+			/* We need to make a deep clone of `solverOptions` if we want to add
+			 * this fragment to multiple places in our document. So, we will clone
+			 * when we append to `solverChoice`` and `solverChoice2`, and we will
+			 * just append the original to `$spaceOverviewSelections` since we will
+			 * not need it anymore
+			 */
+			document.getElementById("solverChoice1")
+			        .appendChild( solverOptions.cloneNode(true) );
+
+			document.getElementById("solverChoice2")
+			        .appendChild( solverOptions.cloneNode(true) );
+
+			$spaceOverviewSelections.empty().append(solverOptions);
+			$("#graphField").show();
+
+			//select first five solver/ configuration pairs
+			$spaceOverviewSelections.children("option:lt(5)").prop("selected",true);
+			lastValidSelectOption = $spaceOverviewSelections.val();
+			updateSpaceOverviewGraph();
+			if (summaryTable.fnSettings().fnRecordsTotal()>1) {
+				$("#solverComparison").show();
+				$("#solverComparisonOptionField").show();
+				$("#solverChoice1").children("option:first").prop("selected",true);
+				$("#solverChoice2").children("option:nth-child(2)").prop("selected",true);
+				updateSolverComparison(300, "white");
+			} else {
+				$("#solverComparison").hide();
+				$("#solverComparisonOptionField").hide();
+			}
+		}
+	}
+	summaryTable.api().ajax.reload(updateGraphs, true);
 }
 
 function createDownloadRequest(item,type,returnIds,getCompleted) {
@@ -240,7 +251,7 @@ function initSpaceExplorer() {
 				// Only reload if a different space was clicked.
 				selectedJobSpaceId = id;
 				name = data.rslt.obj.attr("name");
-				maxStages = data.rslt.obj.attr("maxStages");
+				var maxStages = data.rslt.obj.attr("maxStages");
 				setMaxStagesDropdown(parseInt(maxStages));
 				$(".spaceName").text($('.jstree-clicked').text());
 				$("#displayJobSpaceID").text("job space id  = "+id);
@@ -252,7 +263,6 @@ function initSpaceExplorer() {
 		event.preventDefault();  // This just disable's links in the node title
 	});
 	log("Initialized exploreList tree.");
-
 }
 
 function killAjaxRequests() {
@@ -264,15 +274,12 @@ function killAjaxRequests() {
 }
 
 function clearPanels() {
-	if (panelArray==null)  {
-		return;
-	}
-	for (i=0;i<panelArray.length;i++) {
+	for (var i=0;i<panelArray.length;i++) {
 		panelArray[i].fnDestroy();
 		$(panelArray[i]).remove();
 	}
 	$(".panelField").remove();
-	panelArray=null;
+	panelArray = [];
 }
 
 function reloadTables(id) {
@@ -281,7 +288,7 @@ function reloadTables(id) {
 		curSpaceId=id;
 		clearPanels();
 		if (!isLocalJobPage) {
-			summaryTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
+			// summaryTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
 			pairTable.fnClearTable();
 
 			//clear out the graphs
@@ -293,8 +300,8 @@ function reloadTables(id) {
 
 			//tell the tables to display a "loading" indicator
 			summaryTable.fnProcessingIndicator(true);
-
 			pairTable.fnProcessingIndicator(true);
+
 			refreshStats(id);
 
 		} else {
@@ -306,46 +313,6 @@ function reloadTables(id) {
 			log('showing id: '+id);
 		}
 		initializePanels();
-	}
-}
-
-function updateGraphs() {
-
-	summaryTable.fnProcessingIndicator(false);
-
-	rows = summaryTable.fnGetNodes();
-	if (summaryTable.fnSettings().fnRecordsTotal()==0) {
-		$("#graphField").hide();
-	} else {
-		$("#graphField").show();
-		$("#spaceOverviewSelections").empty();
-		$(rows).each(function() {
-			//alert(this.html());
-			var solverName=$(this).find("a:first").attr("title");
-			var configName=$(this).find("td:nth-child(2)").children("a:first").attr("title");
-			var configId=$(this).find("td:nth-child(2)").children("a:first").attr("id");
-			var htmlString='<option value="' +configId+ '">' +solverName+'/'+configName+ '</option>';
-			$("#spaceOverviewSelections").append(htmlString);
-			$("#solverChoice1").append(htmlString);
-			$("#solverChoice2").append(htmlString);
-		});
-		//select first five solver/ configuration pairs
-		$("#spaceOverviewSelections").children("option:lt(5)").prop("selected",true);
-		lastValidSelectOption = $("#spaceOverviewSelections").val();
-		updateSpaceOverviewGraph();
-		if (summaryTable.fnSettings().fnRecordsTotal()>1) {
-			$("#solverComparison").show();
-			$("#solverComparisonOptionField").show();
-
-			$("#solverChoice1").children("option:first").prop("selected",true);
-			$("#solverChoice1").children("option:nth-child(2)").prop("selected",true);
-			updateSolverComparison(300, "white");
-		} else {
-			$("#solverComparison").hide();
-			$("#solverComparisonOptionField").hide();
-
-		}
-
 	}
 }
 
@@ -368,78 +335,40 @@ function initUI(){
 	$("#statsErrorField").hide();
 	$(".cpuTime").hide();
 
-	if (!isLocalJobPage) {
-		setupJobNameAndDescriptionEditing('#jobNameText', '#editJobName', '#editJobNameButton', '#editJobNameWrapper', 'name');
-		setupJobNameAndDescriptionEditing('#jobDescriptionText', '#editJobDescription', '#editJobDescriptionButton', '#editJobDescriptionWrapper',
-				'description');
-		registerAnonymousLinkButtonEventHandler();
-	} else {
-		makeJobNameUneditable();
-		makeJobDescriptionUneditable();
-	}
-
-	if (isLocalJobPage) {
-		$('#actionField').hide();
-		$('#advancedActionField').hide();
-		$('#matrixViewButton').hide();
-        $('#jobPairAttributes').hide();
-		$('#downloadJobPageButton').hide();
-		$('#anonymousLink').hide();
-	}
-
 	//for aesthetics, make the heights of the two option fields identical
 	$("#solverComparisonOptionField").height($("#spaceOverviewOptionField").height());
 
-	$("#jobOutputDownload").button({
-		icons: {
-			primary: "ui-icon-arrowthick-1-s"
-		}
-    });
+	$("#addJobPairs")
+		.button({
+			icons: {
+				primary: "ui-icon-arrowthick-1-n"
+			}
+		});
 
+	$("#rerunPairs")
+		.button({
+			icons: {
+				primary: "ui-icon-arrowreturnthick-1-e"
+			}
+		});
 
-	$("#compareSolvers").button({
-		icons: {
-			primary: "ui-icon-arrowthick-1-s"
-		}
-    });
-	$("#compareSolvers").hide();
+	$("#compareSolvers")
+		.button({
+			icons: {
+				primary: "ui-icon-arrowthick-1-s"
+			}
+		}).hide().click(function(){
+			var c1=$(".first_selected").find(".configLink").attr("id");
+			var c2=$(".second_selected").find(".configLink").attr("id");
+			window.open(DETAILS_JOB.starexecUrl+"secure/details/solverComparison.jsp?sid="+curSpaceId+"&c1="+c1+"&c2="+c2);
+		});
 
-	$("#compareSolvers").click(function(){
-		'use strict';
-		var c1=$(".first_selected").find(".configLink").attr("id");
-		var c2=$(".second_selected").find(".configLink").attr("id");
-		window.open(DETAILS_JOB.starexecUrl+"secure/details/solverComparison.jsp?sid="+curSpaceId+"&c1="+c1+"&c2="+c2);
-	});
-
-	$("#addJobPairs").button({
-		icons: {
-			primary: "ui-icon-arrowthick-1-n"
-		}
-    });
-
-
-
-	attachSortButtonFunctions();
-
-	$("#rerunPairs").button({
-		icons: {
-			primary: "ui-icon-arrowreturnthick-1-e"
-		}
-	});
-
-	$("#jobXMLDownload").button({
-		icons: {
-			primary: "ui-icon-arrowthick-1-s"
-		}
-	});
-
-	$('#clearCache').button( {
-		icons: {
-			secondary: "ui-icon-arrowrefresh-1-e"
-		}
-	});
-	$("#clearCache").click(function(){
-
+	$('#clearCache')
+		.button( {
+			icons: {
+				secondary: "ui-icon-arrowrefresh-1-e"
+			}
+		}).click(function(){
 			$("#dialog-warning-txt").text('Are you sure you want to clear the cache for this primitive?');
 			$("#dialog-warning").dialog({
 				modal: true,
@@ -448,180 +377,144 @@ function initUI(){
 				buttons: {
 					'clear cache': function() {
 						$(this).dialog("close");
-							$.post(
-									starexecRoot+"services/cache/clear/stats/"+jobId+"/",
-									function(returnCode) {
-										s=parseReturnCode(returnCode);
-							});
-
+						$.post(
+							starexecRoot+"services/cache/clear/stats/"+jobId+"/",
+							parseReturnCode
+						);
 					},
 					"cancel": function() {
 						$(this).dialog("close");
 					}
 				}
 			});
-	});
-
-	$('#recompileSpaces').button( {
-		icons: {
-			secondary: "ui-icon-arrowrefresh-1-e"
-		}
-	});
-	$("#recompileSpaces").click(function() {
-		$.get(
-				starexecRoot+"services/recompile/"+jobId,
-				function(returnCode) {
-					s=parseReturnCode(returnCode);
 		});
-	});
 
+	$('#recompileSpaces')
+		.button( {
+			icons: {
+				secondary: "ui-icon-arrowrefresh-1-e"
+			}
+		}).click(function() {
+			$.get(
+					starexecRoot+"services/recompile/"+jobId,
+					parseReturnCode
+			);
+		});
 
-	$("#popoutPanels").button({
-		icons: {
-			primary: "ui-icon-extlink"
-		}
-	});
-	$("#collapsePanels").button( {
-		icons: {
-			primary: "ui-icon-folder-collapsed"
-		}
-	}) ;
-	$("#openPanels").button( {
-		icons: {
-			primary: "ui-icon-folder-open"
-		}
-	}) ;
-	$(".changeTime").button({
-		icons: {
-			primary: "ui-icon-refresh"
-		}
+	$("#downloadJobPageButton")
+		.button({
+			icons: {
+				primary: "ui-icon-arrowthick-1-s"
+			}
+		}).click(function() {
+			createDownloadRequest("#downloadJobPageButton", "job_page");
+		});
 
-	});
-
-	$("#matrixViewButton").button({
-		icons: {
-			primary: "ui-icon-newwin"
-		}
-	});
-
-    $("#jobPairAttributes").button({
-        icons: {
-            primary: "ui-icon-newwin"
-        }
-    });
-
-	$("#solverNameKeyButton").button({
-		icons: {
-			primary: "ui-icon-newwin"
-		}
-	});
-
-	$("#downloadJobPageButton").button({
-		icons: {
-			primary: "ui-icon-arrowthick-1-s"
-		}
-	});
-
-	$("#downloadJobPageButton").click(function() {
-		createDownloadRequest("#downloadJobPageButton", "job_page");
-	});
-
-
-	$("#syncResults").button({
-		icons: {
-			primary: "ui-icon-gear"
-		}
-	});
-
-	log('Setting up high priority button');
-	setupSetHighPriorityButton();
-	log('Setting up low priority button');
-	setupSetLowPriorityButton();
-
-	$('#setLowPriority').button({
-		icons: {
-			primary: "ui-icon-gear"
-		}
-	});
-
-	$("#matrixViewButton").click(function() {
-		var url = DETAILS_JOB.starexecUrl+'secure/details/jobMatrixView.jsp?stage=1&jobSpaceId='+curSpaceId;
-		if (isLocalJobPage) {
-			window.location.href = url;
-		} else {
-			popup(url);
-		}
-	});
-
-	$("#jobPairAttributes").click(function() {
-		var url = DETAILS_JOB.starexecUrl+'secure/details/jobAttributes.jsp?id='+curSpaceId;
-		if (isLocalJobPage) {
-			window.location.href = url;
-		} else {
-			popup(url);
-		}
-	});
-
-	$("#solverNameKeyButton").click(function() {
-		var url = DETAILS_JOB.starexecUrl+'secure/details/anonymousJobPageKey.jsp?anonId='+DETAILS_JOB.anonymousLinkUuid;
-		popup(url);
-	});
-
-
-	$("#syncResults").click(function() {
-		//just change the sync results boolean and update the button text.
-		syncResults=!syncResults;
-		setSyncResultsText();
-		pairTable.fnDraw(false);
-	});
-
-	$("#spaceOverviewUpdate").button({
-		icons: {
-			primary: "ui-icon-arrowrefresh-1-e"
-		}
-	});
-
-	$("#solverComparisonUpdate").button({
-		icons: {
-			primary: "ui-icon-arrowrefresh-1-e"
-		}
-	});
-	$("#jobDownload").button({
-		icons: {
-			primary: "ui-icon-arrowthick-1-s"
-		}
-    });
-
-
-	$("#popoutPanels").click(function() {
-		// default to primary stage
-		window.open(DETAILS_JOB.starexecUrl+"secure/details/jobPanelView.jsp?spaceid="+curSpaceId+"&stage=1");
-	});
-
-	$("#collapsePanels").click(function() {
-		$(".panelField").each(function() {
-			legend = $(this).children('legend:first');
-			isOpen = $(legend).data('open');
-			if (isOpen) {
-				$(legend).trigger("click");
+	// I think this code can be removed
+	$('#setLowPriority')
+		.button({
+			icons: {
+				primary: "ui-icon-gear"
 			}
 		});
-	});
 
-
-
-	$("#openPanels").click(function() {
-		$(".panelField").each(function() {
-			legend = $(this).children('legend:first');
-			isOpen = $(legend).data('open');
-
-			if (!isOpen) {
-				$(legend).trigger("click");
+	$("#matrixViewButton")
+		.button({
+			icons: {
+				primary: "ui-icon-newwin"
+			}
+		}).click(function() {
+			var url = DETAILS_JOB.starexecUrl+'secure/details/jobMatrixView.jsp?stage=1&jobSpaceId='+curSpaceId;
+			if (isLocalJobPage) {
+				window.location.href = url;
+			} else {
+				popup(url);
 			}
 		});
-	});
 
-		$(".changeTime").click(function() {
+	$("#jobPairAttributes")
+		.button({
+			icons: {
+				primary: "ui-icon-newwin"
+			}
+		}).click(function() {
+			var url = DETAILS_JOB.starexecUrl+'secure/details/jobAttributes.jsp?id='+curSpaceId;
+			if (isLocalJobPage) {
+				window.location.href = url;
+			} else {
+				popup(url);
+			}
+		});
+
+	$("#solverNameKeyButton")
+		.button({
+			icons: {
+				primary: "ui-icon-newwin"
+			}
+		}).click(function() {
+			var url = DETAILS_JOB.starexecUrl+'secure/details/anonymousJobPageKey.jsp?anonId='+DETAILS_JOB.anonymousLinkUuid;
+			popup(url);
+		});
+
+	$("#syncResults")
+		.button({
+			icons: {
+				primary: "ui-icon-gear"
+			}
+		}).click(function() {
+			//just change the sync results boolean and update the button text.
+			syncResults=!syncResults;
+			setSyncResultsText();
+			pairTable.fnDraw(false);
+		});
+
+	$("#popoutPanels")
+		.button({
+			icons: {
+				primary: "ui-icon-extlink"
+			}
+		}).click(function() {
+			// default to primary stage
+			window.open(DETAILS_JOB.starexecUrl+"secure/details/jobPanelView.jsp?spaceid="+curSpaceId+"&stage=1");
+		});
+
+	$("#collapsePanels")
+		.button( {
+			icons: {
+				primary: "ui-icon-folder-collapsed"
+			}
+		}).click(function() {
+			$(".panelField").each(function() {
+				legend = $(this).children('legend:first');
+				isOpen = $(legend).data('open');
+				if (isOpen) {
+					$(legend).trigger("click");
+				}
+			});
+		});
+
+	$("#openPanels")
+		.button( {
+			icons: {
+				primary: "ui-icon-folder-open"
+			}
+		}).click(function() {
+			$(".panelField").each(function() {
+				legend = $(this).children('legend:first');
+				isOpen = $(legend).data('open');
+
+				if (!isOpen) {
+					$(legend).trigger("click");
+				}
+			});
+		});
+
+	$(".changeTime")
+		.button({
+			icons: {
+				primary: "ui-icon-refresh"
+			}
+		}).click(function() {
 			useWallclock=!useWallclock;
 			if (useWallclock) {
 				$('.cpuTime').hide();
@@ -638,58 +531,101 @@ function initUI(){
 			}
 		});
 
-	if (!isLocalJobPage) {
-		$(".stageSelector").change(function() {
-			//set the value of all .stageSelectors to this one to sync them.
-			//this does not trigger the change event, which is good because it would loop forever
-			$(".stageSelector").val($(this).val());
-			pairTable.fnDraw(false);
-			refreshPanels();
-			refreshStats(curSpaceId);
+	$("#jobDownload")
+		.button({
+			icons: {
+				primary: "ui-icon-arrowthick-1-s"
+			}
+		}).unbind("click").click(function(e) {
+			e.preventDefault();
+			$('#dialog-return-ids-txt').text('do you want ids for job pairs, solvers, and benchmarks to be included in the CSV?');
+
+			$('#dialog-return-ids').dialog({
+				modal: true,
+				width: 380,
+				height: 200,
+				buttons: {
+					'download': function() {
+						$('#dialog-return-ids').dialog('close');
+						createDownloadRequest("#jobDownload","job",$("#includeids").prop("checked"),$("#getcompleted").prop("checked"));
+					},
+					"cancel": function() {
+						$(this).dialog("close");
+					}
+				}
+			});
 		});
+
+	$("#jobXMLDownload")
+		.button({
+			icons: {
+				primary: "ui-icon-arrowthick-1-s"
+			}
+		}).unbind("click").click(function(e) {
+			e.preventDefault();
+			createDownloadRequest("#jobXMLDownload","jobXML");
+		});
+
+	$("#jobOutputDownload")
+		.button({
+			icons: {
+				primary: "ui-icon-arrowthick-1-s"
+			}
+		}).unbind("click").click(function(e) {
+			e.preventDefault();
+			createDownloadRequest("#jobOutputDownload","j_outputs");
+		});
+
+	if (isLocalJobPage) {
+		$('#actionField').hide();
+		$('#advancedActionField').hide();
+		$('#matrixViewButton').hide();
+		$('#jobPairAttributes').hide();
+		$('#downloadJobPageButton').hide();
+		$('#anonymousLink').hide();
+		makeJobNameUneditable();
+		makeJobDescriptionUneditable();
+	} else {
+		setupJobNameAndDescriptionEditing('#jobNameText', '#editJobName', '#editJobNameButton', '#editJobNameWrapper', 'name');
+		setupJobNameAndDescriptionEditing('#jobDescriptionText', '#editJobDescription', '#editJobDescriptionButton', '#editJobDescriptionWrapper', 'description');
+		registerAnonymousLinkButtonEventHandler();
+		$(".stageSelector")
+			.change(function() {
+				//set the value of all .stageSelectors to this one to sync them.
+				//this does not trigger the change event, which is good because it would loop forever
+				$(".stageSelector").val($(this).val());
+				pairTable.fnDraw(false);
+				refreshPanels();
+				refreshStats(curSpaceId);
+			});
+		$("#spaceOverviewUpdate")
+			.button({
+				icons: {
+					primary: "ui-icon-arrowrefresh-1-e"
+				}
+			}).click(function() {
+				updateSpaceOverviewGraph();
+			});
+		$("#solverComparisonUpdate")
+			.button({
+				icons: {
+					primary: "ui-icon-arrowrefresh-1-e"
+				}
+			}).click(function() {
+				updateSolverComparison(300, "white");
+			});
 	}
 
+	setupSetHighPriorityButton();
+	setupSetLowPriorityButton();
 	setupDeleteJobButton();
 	setupPauseJobButton();
 	setupResumeJobButton();
 	setupChangeQueueButton();
 	setupPostProcessButton();
+	attachSortButtonFunctions();
 
-	$('#jobDownload').unbind("click");
-	$('#jobDownload').click(function(e) {
-		e.preventDefault();
-		$('#dialog-return-ids-txt').text('do you want ids for job pairs, solvers, and benchmarks to be included in the CSV?');
-
-		$('#dialog-return-ids').dialog({
-			modal: true,
-			width: 380,
-			height: 200,
-			buttons: {
-				'download': function() {
-					$('#dialog-return-ids').dialog('close');
-					createDownloadRequest("#jobDownload","job",$("#includeids").prop("checked"),$("#getcompleted").prop("checked"));
-				},
-				"cancel": function() {
-					$(this).dialog("close");
-				}
-			}
-		});
-
-	});
-
-	$('#jobXMLDownload').unbind("click");
-	$('#jobXMLDownload').click(function(e) {
-		e.preventDefault();
-		createDownloadRequest("#jobXMLDownload","jobXML");
-	});
-
-	$('#jobOutputDownload').unbind("click");
-	$('#jobOutputDownload').click(function(e) {
-		e.preventDefault();
-		createDownloadRequest("#jobOutputDownload","j_outputs");
-	});
-
-	//set teh two default solvers to compare
+	//set the two default solvers to compare
 	var defaultSolver1 = $('#solverChoice1').attr('default');
 	$('#solverChoice1 option[value=' + defaultSolver1 + ']').prop('selected', true);
 
@@ -711,30 +647,19 @@ function initUI(){
 		$.cookie('advancedJobActions', advancedJobActionsCollapsed, {expires: 10000, path: '/'});
 	});
 
-
 	$("#subspaceSummaryField").expandable(false);
 
 	lastValidSelectOption = $("#spaceOverviewSelections").val();
 
-	if (!isLocalJobPage) {
-		$("#spaceOverviewUpdate").click(function() {
-			updateSpaceOverviewGraph();
-		});
-		$("#solverComparisonUpdate").click(function() {
-			updateSolverComparison(300, "white");
-		});
-	}
-
 	$("#spaceOverviewSelections").change(function() {
-	        if ($(this).val().length > 5) {
-	          showMessage('error',"You may only choose a maximum of 5 solver / configuration pairs to display at one time",5000);
-	          $(this).val(lastValidSelectOption);
-	        } else {
-	        	lastValidSelectOption = $(this).val();
-
-	        }
-
+		if ($(this).val().length > 5) {
+			showMessage('error',"You may only choose a maximum of 5 solver / configuration pairs to display at one time",5000);
+			$(this).val(lastValidSelectOption);
+		} else {
+			lastValidSelectOption = $(this).val();
+		}
 	});
+
 	$("#solverComparison300").click(function() {
 		$('#dialog-solverComparison').dialog({
 			modal: true,
@@ -742,6 +667,7 @@ function initUI(){
 			height: 850
 		});
 	});
+
 	$("#spaceOverview").click(function() {
 		$('#dialog-spaceOverview').dialog({
 			modal: true,
@@ -754,13 +680,11 @@ function initUI(){
 }
 
 function setupDeleteJobButton() {
-	'use strict';
 	$('#deleteJob').button({
 		icons: {
 			secondary: "ui-icon-minus"
 		}
-	});
-	$("#deleteJob").click(function(){
+	}).click(function(){
 		$('#dialog-confirm-delete-txt').text('are you sure you want to delete this job?');
 
 		$('#dialog-confirm-delete').dialog({
@@ -773,17 +697,17 @@ function setupDeleteJobButton() {
 					$('#dialog-confirm-delete').dialog('close');
 
 					$.post(
-							starexecRoot+"services/delete/job",
-							{selectedIds: [getParameterByName("id")]},
-							function(returnCode) {
-								var s=parseReturnCode(returnCode);
-								if (s) {
-									window.location = starexecRoot+'secure/explore/spaces.jsp';
+						starexecRoot+"services/delete/job",
+						{selectedIds: [getParameterByName("id")]},
+						function(returnCode) {
+							var s=parseReturnCode(returnCode);
+							if (s) {
+								window.location = starexecRoot+'secure/explore/spaces.jsp';
 
-								}
+							}
 
-							},
-							"json"
+						},
+						"json"
 					);
 				},
 				"cancel": function() {
@@ -849,60 +773,49 @@ function setupSetLowPriorityButton() {
 }
 
 function setupPauseJobButton() {
-	'use strict';
 	$('#pauseJob').button({
 		icons: {
 			secondary: "ui-icon-pause"
 		}
-	});
-	$("#pauseJob").click(function(){
-
+	}).click(function() {
 		$.post(
-				starexecRoot+"services/pause/job/" + getParameterByName("id"),
-				function(returnCode) {
-					var s=parseReturnCode(returnCode);
-					if (s) {
-						document.location.reload(true);
-
-					}
-
-				},
-				"json"
+			starexecRoot+"services/pause/job/" + getParameterByName("id"),
+			function(returnCode) {
+				var s = parseReturnCode(returnCode);
+				if (s) {
+					document.location.reload(true);
+				}
+			},
+			"json"
 		);
 	});
 }
 
 function setupResumeJobButton() {
-	'use strict';
 	$('#resumeJob').button({
 		icons: {
 			secondary: "ui-icon-play"
 		}
-	});
-	$("#resumeJob").click(function(){
+	}).click(function(){
 		$.post(
-				starexecRoot+"services/resume/job/" + getParameterByName("id"),
-				function(returnCode) {
-					var s=parseReturnCode(returnCode);
-					if (s) {
-						document.location.reload(true);
-
-					}
-
-				},
-				"json"
+			starexecRoot+"services/resume/job/" + getParameterByName("id"),
+			function(returnCode) {
+				var s=parseReturnCode(returnCode);
+				if (s) {
+					document.location.reload(true);
+				}
+			},
+			"json"
 		);
 	});
 }
 
 function setupChangeQueueButton() {
-	'use strict';
 	$('#changeQueue').button({
 		icons: {
 			secondary: "ui-icon-transferthick-e-w"
 		}
-	});
-	$("#changeQueue").click(function(){
+	}).click(function(){
 		$('#dialog-changeQueue-txt').text('Please select a new queue to use for this job.');
 
 		$('#dialog-changeQueue').dialog({
@@ -933,13 +846,11 @@ function setupChangeQueueButton() {
 }
 
 function setupPostProcessButton() {
-	'use strict';
 	$("#postProcess").button({
 		icons: {
 			primary: "ui-icon-arrowthick-1-n"
 		}
-	});
-	$("#postProcess").click(function(){
+	}).click(function(){
 		$('#dialog-postProcess-txt').text('Please select a post-processor to use for this job.');
 
 		$('#dialog-postProcess').dialog({
@@ -951,12 +862,9 @@ function setupPostProcessButton() {
 					$('#dialog-postProcess').dialog('close');
 					showMessage("info","Beginning job pair processing. ",3000);
 					$.post(
-							starexecRoot+"services/postprocess/job/" + getParameterByName("id")+"/"+$("#postProcessorSelection").val()+"/"+getSelectedStage(),
-							function(returnCode) {
-								parseReturnCode(returnCode);
-
-							},
-							"json"
+						starexecRoot+"services/postprocess/job/" + getParameterByName("id")+"/"+$("#postProcessorSelection").val()+"/"+getSelectedStage(),
+						parseReturnCode,
+						"json"
 					);
 				},
 				"cancel": function() {
@@ -967,15 +875,14 @@ function setupPostProcessButton() {
 	});
 }
 
-
 function updateSpaceOverviewGraph() {
-	var configs = new Array();
+	var configs = [];
+	var logY = false;
 	$("#spaceOverviewSelections option:selected").each(function() {
 		configs.push($(this).attr("value"));
 	});
-	logY=false;
 	if ($("#logScale").prop("checked")) {
-		logY=true;
+		logY = true;
 	}
 
 	var postUrl = null;
@@ -987,37 +894,30 @@ function updateSpaceOverviewGraph() {
 	}
 	log('updateSpaceOverviewGraph postUrl: ' + postUrl);
 
-		$.post(
-			postUrl,
-			{logY : logY, selectedIds: configs},
-			function(returnCode) {
-				s=parseReturnCode(returnCode);
-				if (s) {
-					var currentConfigs=new Array();
-					$("#spaceOverviewSelections option:selected").each(function() {
-						currentConfigs.push($(this).attr("value"));
-					});
-					//we only want to update the graph if the request we made still matches what the user has put in
-					//it is possible the user changed their selections and sent out a new request which has returned already
-					//also, equality checking doesn't work on arrays, but less than and greater than do
-					if (!(currentConfigs>configs) && !(currentConfigs<configs)) {
-						$("#spaceOverview").attr("src",returnCode);
-						$("#bigSpaceOverview").attr("src",returnCode+"800");
-					}
-				} else {
-					$("#spaceOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
-
+	var xhr = $.post(
+		postUrl,
+		{logY : logY, selectedIds: configs},
+		function(returnCode) {
+			var s = parseReturnCode(returnCode);
+			if (s) {
+				var currentConfigs = [];
+				$("#spaceOverviewSelections option:selected").each(function() {
+					currentConfigs.push($(this).attr("value"));
+				});
+				//we only want to update the graph if the request we made still matches what the user has put in
+				//it is possible the user changed their selections and sent out a new request which has returned already
+				//also, equality checking doesn't work on arrays, but less than and greater than do
+				if (!(currentConfigs>configs) && !(currentConfigs<configs)) {
+					$("#spaceOverview").attr("src",returnCode);
+					$("#bigSpaceOverview").attr("src",returnCode+"800");
 				}
+			} else {
+				$("#spaceOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
+			}
 
-
-
-
-
-			},
-			"text"
+		},
+		"text"
 	);
-
-
 	openAjaxRequests.push(xhr);
 }
 
@@ -1038,11 +938,11 @@ function updateSolverComparison(size, color) {
 		postUrl,
 		{},
 		function(returnCode) {
-			s=parseReturnCode(returnCode);
+			var s = parseReturnCode(returnCode);
 			if (s) {
-				var jsonObject=$.parseJSON(returnCode);
-				var src=jsonObject.src;
-				var map=jsonObject.map;
+				var jsonObject = $.parseJSON(returnCode);
+				var src = jsonObject.src;
+				var map = jsonObject.map;
 				$("#solverComparison"+size).attr("src",src);
 				$("#solverComparisonMap"+size).remove();
 				if (size==800) {
@@ -1051,12 +951,9 @@ function updateSolverComparison(size, color) {
 					$("#graphField").append(map);
 					updateSolverComparison(800, "black");
 				}
-
 			} else {
 				$("#solverComparison300").attr("src",starexecRoot+"/images/noDisplayGraph.png");
-
 			}
-
 		},
 		"text"
 	);
@@ -1083,7 +980,7 @@ function setupJobNameAndDescriptionEditing(textSelector, inputSelector, buttonSe
 		// Make sure the name is a valid primitive name.
 		var primRegex = null;
 		if (nameOrDescription === 'name') {
-			primRegex =new RegExp(getPrimNameRegex());
+			primRegex = new RegExp(getPrimNameRegex());
 		} else {
 			primRegex = new RegExp(getPrimDescRegex());
 		}
@@ -1124,12 +1021,11 @@ function openSpace(childId) {
 	});
 }
 
-
 function getPanelTable(space) {
-	spaceName=space.attr("name");
-	spaceId=parseInt(space.attr("id"));
+	var spaceName=space.attr("name");
+	var spaceId=parseInt(space.attr("id"));
 
-	table="<fieldset class=\"panelField\">" +
+	var table="<fieldset class=\"panelField\">" +
 			"<legend class=\"panelHeader\">"+spaceName+"</legend>" +
 			"<table id=panel"+spaceId+" spaceId=\""+spaceId+"\" class=\"panel\"><thead>" +
 					"<tr class=\"viewSubspace\"><th colspan=\"4\" >Go To Subspace</th></tr>" +
@@ -1139,15 +1035,14 @@ function getPanelTable(space) {
 			"</thead>" +
 			"<tbody></tbody> </table></fieldset>";
 	return table;
-
 }
 
 function initializePanels() {
-	'use strict';
 	DETAILS_JOB.sentSpaceId=curSpaceId;
 	if (isLocalJobPage) {
 		var panelJson = $.parseJSON($("#subspacePanelJson"+DETAILS_JOB.sentSpaceId).attr("value"));
 		handleSpacesData(panelJson);
+		$("#subspacePanelJson"+DETAILS_JOB.sentSpaceId).remove();
 	} else if ( DETAILS_JOB.isAnonymousPage ) {
 		$.getJSON(starexecRoot+"services/space/anonymousLink/"+DETAILS_JOB.anonymousLinkUuid + "/jobspaces/false/"+DETAILS_JOB.primitivesToAnonymize+"?id="+DETAILS_JOB.sentSpaceId, handleSpacesData);
 	} else {
@@ -1157,22 +1052,19 @@ function initializePanels() {
 
 function handleSpacesData(spaces) {
 	log( "SPACES JSON: " + spaces );
-	panelArray=new Array();
+	panelArray = [];
 	var open=true;
 	if (spaces.length==0) {
 		$("#subspaceSummaryField").hide();
-	}else {
+	} else {
 		$("#subspaceSummaryField").show();
-
 	}
 
-	for (i=0;i<spaces.length;i++) {
+	for (var i=0; i<spaces.length; ++i) {
+		var space = $(spaces[i]),
+		    spaceId = parseInt(space.attr("id")),
+		    child = getPanelTable(space);
 
-		space=$(spaces[i]);
-		spaceName=space.attr("name");
-		spaceId=parseInt(space.attr("id"));
-
-		child=getPanelTable(space);
 		//if the user has changed spaces since this request was sent, we don't want to continue
 		//generating panels for the old space.
 		if (DETAILS_JOB.sentSpaceId!=curSpaceId) {
@@ -1186,12 +1078,9 @@ function handleSpacesData(spaces) {
 		$(".extLink").hide();
 	}
 
-	$(".viewSubspace").each(function() {
-		$(this).click(function() {
-			spaceId=$(this).parents("table.panel").attr("spaceId");
-			openSpace(spaceId);
-		});
-
+	$(".viewSubspace").click(function() {
+		spaceId=$(this).parents("table.panel").attr("spaceId");
+		openSpace(spaceId);
 	});
 	$(".panelField").expandable(true);
 }
@@ -1203,85 +1092,68 @@ function initDataTables(){
 	extendDataTableFunctions();
 	//summary table
 
+	var $pairTbl        = $('#pairTbl'),
+	    $solveTbl       = $("#solveTbl"),
+	    $compareSolvers = $("#compareSolvers");
+
 	if (isLocalJobPage) {
-		$('[id$=solveTbl]').dataTable(DETAILS_JOB.solverTableInitializer);
+		$('[id$=solveTbl]').dataTable(getSolverTableInitializer());
 	} else {
-		summaryTable=$("#solveTbl").dataTable(DETAILS_JOB.solverTableInitializer);
+		summaryTable=$solveTbl.dataTable(getSolverTableInitializer());
 	}
 
-	$("#solveTbl").on("mousedown", "tr", function(){
+	$solveTbl.on("mousedown", "tr", function(){
 		if (!$(this).hasClass("row_selected")) {
-			$("#solveTbl").find(".second_selected").each(function(){
-				$(this).removeClass("second_selected");
-				$(this).removeClass("row_selected");
-
-			});
-			$("#solveTbl").find(".first_selected").each(function(){
-				$(this).removeClass("first_selected");
-				$(this).addClass("second_selected");
-
-			});
-
-			$(this).addClass("first_selected");
-			$(this).addClass("row_selected");
+			$solveTbl.find(".second_selected").removeClass("second_selected row_selected");
+			$solveTbl.find(".first_selected" ).removeClass("first_selected second_selected");
+			$(this).addClass("first_selected row_selected");
 		} else {
-			$(this).removeClass("row_selected");
-			$(this).removeClass("first_selected");
-			$(this).removeClass("second_selected");
-
-			$("#solveTbl").find(".second_selected").each(function(){
-				$(this).removeClass("second_selected");
-				$(this).removeClass("first_selected");
-
-				$(this).addClass("first_selected");
-
-			});
+			$(this).removeClass("row_selected first_selected second_selected");
+			$solveTbl.find(".second_selected").removeClass("second_selected first_selected first_selected");
 		}
-		if ($("#solveTbl").find(".second_selected").size()>0) {
-			$("#compareSolvers").show();
 
+		if ($solveTbl.find(".second_selected").size()>0) {
+			$compareSolvers.show();
 		} else {
-			$("#compareSolvers").hide();
-
+			$compareSolvers.hide();
 		}
 	});
 
 	// Job pairs table
 	if (isLocalJobPage) {
-		$('[id$=pairTbl]').dataTable(DETAILS_JOB.pairTableInitializer);
+		$('[id$=pairTbl]').dataTable(getPairTableInitializer());
 	} else {
-		pairTable=$("#pairTbl").dataTable(DETAILS_JOB.pairTableInitializer);
+		pairTable=$("#pairTbl").dataTable(getPairTableInitializer());
 	}
 
 	setSortTable(pairTable);
 
-	$("#pairTbl thead").click(function(){
+	$pairTbl.find("thead").click(function(){
 		resetSortButtons();
 	});
 
 	$('#detailTbl').dataTable( {
-		"sDom": 'rt<"bottom"f><"clear">',
-		"aaSorting": [],
-		"bPaginate": false,
-		"bSort": true
+		"dom"       : 'rt<"bottom"f><"clear">',
+		"aaSorting" : [],
+		"paging"    : false,
+		"bSort"     : true
 	});
 
-	$('#pairTbl tbody').on( "click", "a", function(event) {
+	$pairTbl.find("tbody").on( "click", "a", function(event) {
 		event.stopPropogation();
 	});
 
 	//Set up row click to send to pair details page
 	if ( !DETAILS_JOB.isAnonymousPage ) {
-		$("#pairTbl tbody").on("click", "tr",  function(){
+		$pairTbl.find("tbody").on("click", "tr",  function(){
 			var pairId = $(this).find('input').val();
 			window.location.assign(DETAILS_JOB.starexecUrl+"secure/details/pair.jsp?id=" + pairId);
 		});
 	}
 
 	// Change the filter so that it only queries the server when the user stops typing
-	$('#pairTbl').dataTable().fnFilterOnDoneTyping();
+	$pairTbl.dataTable().fnFilterOnDoneTyping();
 }
-
 
 //
 //Adds fnProcessingIndicator and fnFilterOnDoneTyping to dataTables api
@@ -1294,38 +1166,196 @@ function extendDataTableFunctions(){
 }
 
 function getPairTableInitializer() {
-	'use strict';
-	var pairTableInitializer = {
-        "sDom"			: getDataTablesDom(),
-        "iDisplayStart"	: 0,
-        "iDisplayLength": defaultPageSize,
-		"pagingType"    : "full_numbers"
-    };
+	var pairTableInitializer = new window.star.DataTableConfig();
 
 	if (!isLocalJobPage) {
-		pairTableInitializer.sAjaxSource = starexecRoot+"services/jobs/";
-		pairTableInitializer.sServerMethod = "POST";
-		pairTableInitializer.bServerSide = true;
-		pairTableInitializer.fnServerData = fnPaginationHandler;
+		pairTableInitializer["sAjaxSource"]  = starexecRoot+"services/jobs/";
+		pairTableInitializer["bServerSide"]  = true;
+		pairTableInitializer["fnServerData"] = fnPaginationHandler;
 	}
 	return pairTableInitializer;
 }
 
 function getSolverTableInitializer() {
-	'use strict';
-	var solverTableInitializer = {
-        "sDom"			: getDataTablesDom(),
-        "iDisplayStart"	: 0,
-        "iDisplayLength": defaultPageSize,
-        "bSort"			: true,
-        "bPaginate"		: true,
-		"pagingType"    : "full_numbers"
-    };
+	var SOLVER_ID   =  0,
+	    CONFIG_ID   =  1,
+	    SOLVER_NAME =  2,
+	    CONFIG_NAME =  3,
+	    SOLVED      =  4,
+	    TIME        =  5,
+	    STAGE       =  6,
+	    WRONG       =  7,
+	    RESOURCED   =  8,
+	    FAILED      =  9,
+	    UNKNOWN     = 10,
+	    INCOMPLETE  = 11,
+	    CONFLICTS   = 12;
+
+	var linkTemplate = document.createElement("a");
+	linkTemplate.target = "_blank";
+
+	var link = function(url, text) {
+		linkTemplate.href = url;
+		linkTemplate.textContent = text;
+		return linkTemplate.outerHTML;
+	}
+
+	var pairsTemplate = ["pairsInSpace.jsp?type=",null,"&sid=",DETAILS_JOB.rootJobSpaceId,"&configid=",null,"&stagenum=",null];
+	var getPairsInSpaceLink = function(type, configId, stageNumber) {
+		pairsTemplate[1] = type;
+		pairsTemplate[5] = configId;
+		pairsTemplate[7] = stageNumber;
+		return pairsTemplate.join("");
+	}
+
+	var conflictsTemplate = ["conflictingBenchmarks.jsp?jobId=",null,"configId=",null,"&stageNumber=",null];
+	var getConflictingLink = function(configId, stageNumber) {
+		conflictsTemplate[1] = jobId;
+		conflictsTemplate[3] = configId;
+		conflictsTemplate[5] = stageNumber;
+		return conflictsTemplate.join("");
+	}
+
+	var solverTemplate = ["solver.jsp?id=",null]
+	var getSolverLink = function(solver) {
+		solverTemplate[1] = solver;
+		return solverTemplate.join("");
+	}
+
+	var configTemplate = ["configuration.jsp?id=",null]
+	var getConfigLink = function(config) {
+		configTemplate[1] = config;
+		return configTemplate.join("");
+	}
+
+	var hideLink = function(href, text){return text;};
+	var noOp = function(){}; // NOOP; no need to create URLs we won't use
+	if (DETAILS_JOB.primitivesToAnonymize === "all"
+	||  DETAILS_JOB.primitivesToAnonymize === "allButBench") {
+		link = hideLink;
+		getSolverLink = noOp;
+		getConfigLink = noOp;
+		getPairsInSpaceLink = noOp;
+		getConflictingLink = noOp;
+	}
+
+	var formatSolver     = function(row, type, val) {
+		var href = getSolverLink(val[SOLVER_ID]);
+		return link(href, val[SOLVER_NAME]);
+	};
+	var formatConfig     = function(row, type, val) {
+		var href = getConfigLink(val[CONFIG_ID]);
+		return link(href, val[CONFIG_NAME]);
+	};
+	var formatSolved     = function(row, type, val) {
+		var href = getPairsInSpaceLink("solved", val[CONFIG_ID], val[STAGE]);
+		return link(href, val[SOLVED]);
+	};
+	var formatWrong      = function(row, type, val) {
+		var href = getPairsInSpaceLink("wrong", val[CONFIG_ID], val[STAGE]);
+		return link(href, val[WRONG]);
+	};
+	var formatOut        = function(row, type, val) {
+		var href = getPairsInSpaceLink("resource", val[CONFIG_ID], val[STAGE]);
+		return link(href, val[RESOURCED]);
+	};
+	var formatFailed     = function(row, type, val) {
+		var href = getPairsInSpaceLink("failed", val[CONFIG_ID], val[STAGE]);
+		return link(href, val[FAILED]);
+	};
+	var formatUnknown    = function(row, type, val) {
+		var href = getPairsInSpaceLink("unknown", val[CONFIG_ID], val[STAGE]);
+		return link(href, val[UNKNOWN]);
+	};
+	var formatIncomplete = function(row, type, val) {
+		var href = getPairsInSpaceLink("incomplete", val[CONFIG_ID], val[STAGE]);
+		return link(href, val[INCOMPLETE]);
+	};
+	var formatTime       = function(row, type, val) {
+		return (val[TIME]/100).toFixed(1);
+	};
+	var formatConflicts  = function(row, type, val) {
+		var href = getConflictingLink(val[CONFIG_ID], val[STAGE]);
+		return link(href, val[CONFLICTS]);
+	};
+
+	var panelTableInitializer = new window.star.DataTableConfig({
+		"dom"           : 'rt<"clear">',
+		"pageLength"    : 1000, // make sure we show every entry
+		"aoColumns"     : [
+			{"mRender"  : formatSolver},
+			{"mRender"  : formatConfig},
+			{"mRender"  : formatSolved},
+			{"mRender"  : formatTime},
+		]
+	});
+
+	if (isLocalJobPage) {
+		window.getPanelTableInitializer = function(jobId, spaceId) {
+			if (useWallclock) {
+				// get the JSON directly from the page if this is a local page.
+				return $.extend({},
+					$.parseJSON($('#jobSpaceWallclockTimeSolverStats'+spaceId).attr('value')),
+					panelTableInitializer
+				);
+			} else {
+				// get the JSON directly from the page if this is a local page.
+				return $.extend({},
+					$.parseJSON($('#jobSpaceCpuTimeSolverStats'+spaceId).attr('value')),
+					panelTableInitializer
+				);
+			}
+		}
+	} else {
+		var paginationUrlTemplate;
+		if ( DETAILS_JOB.isAnonymousPage ) {
+			paginationUrlTemplate = [
+				starexecRoot+'services/jobs/solvers/anonymousLink/pagination/',
+				null,
+				'/'+DETAILS_JOB.anonymousLinkUuid+'/'+DETAILS_JOB.primitivesToAnonymize+'/true/'
+			];
+		} else {
+			paginationUrlTemplate = [
+				starexecRoot+'services/jobs/solvers/pagination/',
+				null,
+				'/true/'
+			];
+		}
+
+		var getPaginationUrl = function(spaceId) {
+			paginationUrlTemplate[1] = spaceId;
+			return paginationUrlTemplate.join("");
+		}
+
+		panelTableInitializer["fnServerData"] = fnShortStatsPaginationHandler;
+		window.getPanelTableInitializer = function(jobId, spaceId) {
+			panelTableInitializer["sAjaxSource"] = getPaginationUrl(spaceId);
+			return panelTableInitializer;
+		}
+	}
+
+	var solverTableInitializer = new window.star.DataTableConfig({
+		"bSort"         : true,
+		"bPaginate"     : true,
+		"aoColumns"     : [
+			{"mRender"  : formatSolver},
+			{"mRender"  : formatConfig},
+			{"mRender"  : formatSolved},
+			{"mRender"  : formatWrong},
+			{"mRender"  : formatOut},
+			{"mRender"  : formatFailed},
+			{"mRender"  : formatUnknown},
+			{"mRender"  : formatIncomplete},
+			{"mRender"  : formatTime},
+			{"mRender"  : formatConflicts},
+		]
+	});
 
 	if ( !isLocalJobPage ) {
-        solverTableInitializer.sAjaxSource = starexecRoot+"services/jobs/";
-        solverTableInitializer.sServerMethod = "POST";
-        solverTableInitializer.fnServerData = fnStatsPaginationHandler;
+		solverTableInitializer["sAjaxSource"] = starexecRoot+"services/jobs/";
+		solverTableInitializer["fnServerData"] = fnStatsPaginationHandler;
+	} else {
+		delete solverTableInitializer["aoColumns"];
 	}
 
 	return solverTableInitializer;
@@ -1337,12 +1367,10 @@ function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
 			aoData,
 			function(nextDataTablePage){
 				//if the user has clicked on a different space since this was called, we want those results, not these
-				s=parseReturnCode(nextDataTablePage);
+				var s = parseReturnCode(nextDataTablePage);
 				if (s) {
 					fnCallback(nextDataTablePage);
-
 				}
-
 			},
 			"json"
 	).fail(function(code,textStatus){
@@ -1355,7 +1383,7 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 		return;
 	}
 
-	var postUrl = '';
+	var postUrl;
 	if ( DETAILS_JOB.isAnonymousPage ) {
 		postUrl = sSource +"solvers/anonymousLink/pagination/"+curSpaceId+ "/" + getParameterByName("anonId") +
 				"/" + DETAILS_JOB.primitivesToAnonymize+"/false/"+useWallclock+"/" + getSelectedStage();
@@ -1367,20 +1395,18 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 		aoData,
 		function(nextDataTablePage){
 			//if the user has clicked on a different space since this was called, we want those results, not these
-			s=parseReturnCode(nextDataTablePage);
+			var s = parseReturnCode(nextDataTablePage);
 			if (s) {
 				$("#solverSummaryField").show();
 				$("#graphField").show();
 				$("#statsErrorField").hide();
 				fnCallback(nextDataTablePage);
 			}
-
 		},
 		"json"
 	).fail(function(code,textStatus){
 		handleAjaxError(textStatus);
 	});
-
 
 	openAjaxRequests.push(xhr);
 }
@@ -1393,7 +1419,6 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 //  @param fnCallback the function that actually maps the returned page to the DataTable object
 //
 function fnPaginationHandler(sSource, aoData, fnCallback) {
-	'use strict';
 	if (typeof curSpaceId=='undefined') {
 		return;
 	}
@@ -1416,7 +1441,6 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		function(nextDataTablePage){
 			var s=parseReturnCode(nextDataTablePage);
 			if (s) {
-
 				pairTable.fnProcessingIndicator(false);
 				fnCallback(nextDataTablePage);
 				$("#errorField").hide();
@@ -1443,7 +1467,6 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 }
 
 function popup(url) {
-	'use strict';
 	var win = window.open(url, '_blank');
 	if (win) {
 		// Browser allowed opening of popup.
@@ -1452,7 +1475,6 @@ function popup(url) {
 }
 
 function registerAnonymousLinkButtonEventHandler() {
-	'use strict';
 	$('#anonymousLink').unbind('click');
 	$('#anonymousLink').click( function() {
 		$('#dialog-confirm-anonymous-link').text(

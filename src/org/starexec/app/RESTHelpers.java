@@ -52,7 +52,7 @@ public class RESTHelpers {
 	private static final String SORT_COLUMN_OVERRIDE_DIR = "sort_dir";
 
 	private static final String STARTING_RECORD = "iDisplayStart";
-	
+
 	private static final String RECORDS_PER_PAGE = "iDisplayLength";
 	/**
 	 * Used to display the 'total entries' information at the bottom of
@@ -64,7 +64,7 @@ public class RESTHelpers {
 	/**
 	 * Takes in a list of spaces and converts it into a list of JSTreeItems
 	 * suitable for being displayed on the client side with the jsTree plugin.
-	 * 
+	 *
 	 * @param spaceList The list of spaces to convert
 	 * @param userID The ID of the user making this request, which is used to tell whether nodes are leaves or not
 	 * @return List of JSTreeItems to be serialized and sent to client
@@ -83,7 +83,7 @@ public class RESTHelpers {
 	/**
 	 * Takes in a list of spaces and converts it into a list of JSTreeItems
 	 * suitable for being displayed on the client side with the jsTree plugin.
-	 * 
+	 *
 	 * @param jobSpaceList
 	 * @return List of JSTreeItems to be serialized and sent to client
 	 * @author Tyler Jensen
@@ -92,7 +92,7 @@ public class RESTHelpers {
 		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
 
 		for (JobSpace space : jobSpaceList) {
-			String isOpen = Spaces.getCountInJobSpace(space.getId()) > 0 ? "closed" : "leaf";			
+			String isOpen = Spaces.getCountInJobSpace(space.getId()) > 0 ? "closed" : "leaf";
 			list.add(new JSTreeItem(space.getName(), space.getId(), isOpen,R.SPACE,space.getMaxStages()));
 		}
 
@@ -103,7 +103,7 @@ public class RESTHelpers {
 	 * Takes in a list of worker nodes and converts it into a list of
 	 * JSTreeItems suitable for being displayed on the client side with the
 	 * jsTree plugin.
-	 * 
+	 *
 	 * @param nodes The list of worker nodes to convert
 	 * @return List of JSTreeItems to be serialized and sent to client
 	 * @author Tyler Jensen
@@ -127,7 +127,7 @@ public class RESTHelpers {
 	/**
 	 * Takes in a list of queues and converts it into a list of JSTreeItems
 	 * suitable for being displayed on the client side with the jsTree plugin.
-	 * 
+	 *
 	 * @param queues
 	 *            The list of queues to convert
 	 * @return List of JSTreeItems to be serialized and sent to client
@@ -152,7 +152,7 @@ public class RESTHelpers {
 	 * Takes in a list of spaces (communities) and converts it into a list of
 	 * JSTreeItems suitable for being displayed on the client side with the
 	 * jsTree plugin.
-	 * 
+	 *
 	 * @param communities
 	 *            The list of communities to convert
 	 * @return List of JSTreeItems to be serialized and sent to client
@@ -172,7 +172,7 @@ public class RESTHelpers {
 	/**
 	 * Represents a node in jsTree tree with certain attributes used for
 	 * displaying the node and obtaining information about the node.
-	 * 
+	 *
 	 * @author Tyler Jensen
 	 */
 	@SuppressWarnings("unused")
@@ -185,7 +185,7 @@ public class RESTHelpers {
 		public JSTreeItem(String name, int id, String state, String type) {
 			this(name,id,state,type,0,null);
 		}
-		
+
 		public JSTreeItem(String name, int id, String state, String type, int maxStages) {
 			this(name,id,state,type,maxStages,null);
 		}
@@ -209,7 +209,7 @@ public class RESTHelpers {
 	/**
 	 * An attribute of a jsTree node which holds the node's id so that it can be
 	 * passed to other ajax methods.
-	 * 
+	 *
 	 * @author Tyler Jensen
 	 */
 	@SuppressWarnings("unused")
@@ -238,7 +238,7 @@ public class RESTHelpers {
 	 * Represents a space and a user's permission for that space. This is purely
 	 * a helper class so we can easily read the information via javascript on
 	 * the client.
-	 * 
+	 *
 	 * @author Tyler Jensen & Todd Elvers
 	 */
 	protected static class SpacePermPair {
@@ -258,7 +258,7 @@ public class RESTHelpers {
 	 * for the community aint with the community's leaders. Permissions are used
 	 * so the client side can determine what actions a user can take on the
 	 * community
-	 * 
+	 *
 	 * @author Tyler Jensen
 	 */
 	protected static class CommunityDetails {
@@ -270,7 +270,7 @@ public class RESTHelpers {
 		private List<User> leaders;
 		@Expose
 		private List<Website> websites;
-		
+
 		@Expose
 		private Boolean isMember;
 		public CommunityDetails(Space s, Permission p, List<User> leaders,
@@ -285,7 +285,7 @@ public class RESTHelpers {
 
 	/**
 	 * Represents permission details for a given space and user
-	 * 
+	 *
 	 * @author Wyatt Kaiser
 	 */
 	protected static class PermissionDetails {
@@ -310,10 +310,10 @@ public class RESTHelpers {
 	}
 
 
-	
+
 	/**
 	 * Validate the parameters of a request for a DataTable page
-	 * 
+	 *
 	 * @param type the primitive type being queried for
 	 * @param request the object containing the parameters to validate
 	 * @return an attribute map containing the valid parameters parsed from the request object,<br>
@@ -327,11 +327,11 @@ public class RESTHelpers {
 			String iDisplayStart = (String) request.getParameter(STARTING_RECORD);
 			String iDisplayLength = (String) request.getParameter(RECORDS_PER_PAGE);
 			String sEcho = (String) request.getParameter(SYNC_VALUE);
-			String iSortCol = (String) request.getParameter(SORT_COLUMN); 
+			String iSortCol = (String) request.getParameter(SORT_COLUMN);
 			String sDir = (String) request.getParameter(SORT_DIRECTION);
 			String sSearch = (String) request.getParameter(SEARCH_QUERY);
-			
-			
+
+
 			// Validates the starting record, the number of records per page,
 			// and the sync value
 			if (Util.isNullOrEmpty(iDisplayStart)
@@ -354,7 +354,7 @@ public class RESTHelpers {
 				int sortColumnIndex = Integer.parseInt(iSortCol);
 				query.setSortColumn(sortColumnIndex);
 			}
-			
+
 			//Validates that the sort direction is specified and valid
 			if (Util.isNullOrEmpty(sDir)) {
 				query.setSortASC(false);
@@ -365,21 +365,21 @@ public class RESTHelpers {
 					return null;
 				}
 			}
-			
+
 			// Depending on if the search/filter is empty or not, this will be 0 or 1
 			if (Util.isNullOrEmpty(sSearch)) {
 				sSearch=null;
 			}
 			query.setSearchQuery(sSearch);
-			
+
 			// The request is valid if it makes it this far;
 			// Finish the validation by adding the remaining attributes to the
 			// map
-			
+
 			query.setNumRecords(Integer.parseInt(iDisplayLength));
 			query.setStartingRecord(Integer.parseInt(iDisplayStart));
 			query.setSyncValue(Integer.parseInt(sEcho));
-			
+
 			return query;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -387,13 +387,13 @@ public class RESTHelpers {
 
 		return null;
 	}
-	
+
     /**
      * Add tag for the image representing a link that will popout.
      *
      * @param sb the StringBuilder to add the tag with.
-     * 
-     * @author Aaron Stump 
+     *
+     * @author Aaron Stump
      */
     public static void addImg(StringBuilder sb) {
     	sb.append("<img class=\"extLink\" src=\""+Util.docRoot("images/external.png\"/></a>"));
@@ -402,7 +402,7 @@ public class RESTHelpers {
 	/**
 
 	 * Returns the HTML representing a job pair's status
-	 * 
+	 *
 	 * @param statType 'asc' or 'desc'
 	 * @param value  a job pair's completePairs, pendingPairs, or errorPairs  variable
 	 * @param percentage  a job pair's totalPairs variable
@@ -427,14 +427,14 @@ public class RESTHelpers {
 	 * Gets a datatables JSON object for job pairs in a jobspace.
 	 * @param jobSpaceId The jobspace to get the pairs from
 	 * @param wallclock Whether to use wallclock (true) or CPU time (false)
-	 * @param syncResults 
+	 * @param syncResults
 	 * @param stageNumber The pipeline stage number to filter jobs by.
 	 * @param primitivesToAnonymize A PrimitivesToAnonymize enum describing which primitives to anonymize
 	 * @param request The HttpRequest asking to get the JSON object
 	 * @return a JSON object for the job pairs in a job space.
 	 * @author Albert Giegerich and Todd Elvers
 	 */
-	protected static String getJobPairsPaginatedJson( 
+	protected static String getJobPairsPaginatedJson(
 			int jobSpaceId,
 			boolean wallclock,
 			boolean syncResults,
@@ -458,9 +458,9 @@ public class RESTHelpers {
 		}
 
 		String nextDataTablesPageJson = gson.toJson(nextDataTablesPage);
-		return nextDataTablesPageJson; 
+		return nextDataTablesPageJson;
 	}
-	
+
 	/**
 	 * Gets the space overview graph for a given jobspace.
 	 * @param stageNumber which stage to filter solvers by.
@@ -468,10 +468,10 @@ public class RESTHelpers {
 	 * @param request the HTTP request that is requesting the graph.
 	 * @param primitivesToAnonymize a PrimitivesToAnonymize enum describing which primitives to anonymize for the graph.
 	 */
-	protected static String getSpaceOverviewGraphJson( 
-			int stageNumber, 
-			int jobSpaceId, 
-			HttpServletRequest request, 
+	protected static String getSpaceOverviewGraphJson(
+			int stageNumber,
+			int jobSpaceId,
+			HttpServletRequest request,
 			PrimitivesToAnonymize primitivesToAnonymize ) {
 		List<Integer> configIds=Util.toIntegerList(request.getParameterValues("selectedIds[]"));
 		boolean logX=false;
@@ -511,7 +511,7 @@ public class RESTHelpers {
 	 */
 	protected static String getNextDataTablePageForJobStats(
 			int stageNumber,
-			JobSpace jobSpace, 
+			JobSpace jobSpace,
 			PrimitivesToAnonymize primitivesToAnonymize,
 			boolean shortFormat,
 			boolean wallclock) {
@@ -524,8 +524,8 @@ public class RESTHelpers {
 
 
 		JsonObject nextDataTablesPage = RESTHelpers.convertSolverStatsToJsonObject(
-				solverStats, 
-				new DataTablesQuery( solverStats.size(), solverStats.size(), 1 ), 
+				solverStats,
+				new DataTablesQuery( solverStats.size(), solverStats.size(), 1 ),
 				jobSpace.getId(),
 				jobSpace.getJobId(),
 				shortFormat,
@@ -536,10 +536,10 @@ public class RESTHelpers {
 		return gson.toJson( nextDataTablesPage );
 	}
 
-	
+
 	/**
 	 * Gets the next page of job pairs as a JsonObject in the gien jobSpaceId, with info populated from the given stage.
-	 * 
+	 *
 	 * @param jobSpaceId The ID of the job space
 	 * @param request
 	 * @param wallclock True to use wallclock time, false to use CPU time
@@ -550,16 +550,16 @@ public class RESTHelpers {
 	 */
 	public static JsonObject getNextDataTablesPageOfPairsInJobSpace(
 			int jobSpaceId,
-			HttpServletRequest request, 
-			boolean wallclock, 
-			boolean syncResults, 
+			HttpServletRequest request,
+			boolean wallclock,
+			boolean syncResults,
 			int stageNumber,
 			PrimitivesToAnonymize primitivesToAnonymize ) {
 
 		final String methodName = "getNextDataTablesPageOfPairsInJobSpace";
 		log.entry( methodName );
 
-		
+
 		log.debug("beginningGetNextDataTablesPageOfPairsInJobSpace with stage = " +stageNumber);
 		DataTablesQuery query=RESTHelpers.getAttrMap(Primitive.JOB_PAIR,request);
 
@@ -567,20 +567,20 @@ public class RESTHelpers {
 			return null;
 		}
 		query.setTotalRecords(Jobs.getJobPairCountInJobSpaceByStage(jobSpaceId,stageNumber));
-		
+
 		if (query.getTotalRecords()>R.MAXIMUM_JOB_PAIRS) {
 			//there are too many job pairs to display quickly, so just don't query for them
 			JsonObject ob= new JsonObject();
 			ob.addProperty("maxpairs", true);
 			return ob;
 		}
-		
+
         String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
         if (sortOverride!=null) {
         	query.setSortColumn(Integer.parseInt(sortOverride));
         	query.setSortASC(Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR)));
         }
-        
+
 		List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
 		// Retrieves the relevant Job objects to use in constructing the JSON to
 		// send to the client
@@ -590,17 +590,17 @@ public class RESTHelpers {
 			jobPairsToDisplay = Jobs.getJobPairsForNextPageInJobSpace(query,jobSpaceId,stageNumber,wallclock, primitivesToAnonymize);
 			if(!query.hasSearchQuery()){
 				query.setTotalRecordsAfterQuery(query.getTotalRecords());
-	    	} 
+	    	}
 	    	else {
 	    		query.setTotalRecordsAfterQuery(Jobs.getJobPairCountInJobSpaceByStage(jobSpaceId, query.getSearchQuery(),stageNumber));
 	    	}
 		} else {
 			log.debug("returning synchronized results");
 			jobPairsToDisplay = Jobs.getSynchronizedJobPairsForNextPageInJobSpace(query,
-							jobSpaceId, 
+							jobSpaceId,
 							wallclock,
 							stageNumber,
-							totals, 
+							totals,
 							primitivesToAnonymize);
 			query.setTotalRecords(totals[0]);
 			query.setTotalRecordsAfterQuery(totals[1]);
@@ -609,7 +609,7 @@ public class RESTHelpers {
 	   return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,0, primitivesToAnonymize);
 	}
 
-	
+
 	/**
 	 * Gets the next page of Benchmarks that the given use can see. This includes Benchmarks the user owns,
 	 * Benchmarks in public spaces, and Benchmarks in spaces the user is also in.
@@ -629,18 +629,18 @@ public class RESTHelpers {
 			// send to the client
 			int[] totals = new int[2];
 			List<Benchmark> BenchmarksToDisplay = Benchmarks.getBenchmarksForNextPageByUser(query,userId, totals);
-			
+
 			query.setTotalRecords(totals[0]);
 
-		   query.setTotalRecordsAfterQuery(totals[1]);	    	
+		   query.setTotalRecordsAfterQuery(totals[1]);
 		   return convertBenchmarksToJsonObject(BenchmarksToDisplay,query);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Gets the next page of solvers that the given user can see. This includes solvers the user owns,
 	 * solvers in public spaces, and solvers in spaces the user is also in.
@@ -649,7 +649,7 @@ public class RESTHelpers {
 	 * @return JsonObject encapsulating next page of solvers to display
 	 */
 	public static JsonObject getNextDataTablesPageOfSolversByUser(int userId, HttpServletRequest request) {
-		
+
 		try {
 			DataTablesQuery query = RESTHelpers.getAttrMap(Primitive.SOLVER, request);
 			if (query==null) {
@@ -662,20 +662,20 @@ public class RESTHelpers {
 			// send to the client
 			int[] totals = new int[2];
 			solversToDisplay = Solvers.getSolversForNextPageByUser(query,userId, totals);
-			
+
 			query.setTotalRecords(totals[0]);
 
 	       query.setTotalRecordsAfterQuery(totals[1]);
-	    	
+
 		   return convertSolversToJsonObject(solversToDisplay,query);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
-		
+
 		return null;
 	}
-	
-	
+
+
 	/**
 	 * Returns the next page of SolverComparison objects needed for a DataTables page in a job space
 	 * @param jobSpaceId
@@ -683,12 +683,12 @@ public class RESTHelpers {
 	 * @param configId2
 	 * @param request
 	 * @param wallclock
-	 * @param stageNumber 
+	 * @param stageNumber
 	 * @return JsonObject encapsulating next page of solver comparisons to display
 	 */
 	public static JsonObject getNextDataTablesPageOfSolverComparisonsInSpaceHierarchy(
 			int jobSpaceId, int configId1,int configId2, HttpServletRequest request, boolean wallclock, int stageNumber) {
-		
+
 		try {
 			DataTablesQuery query = RESTHelpers.getAttrMap(Primitive.JOB_PAIR, request);
 			if (query==null) {
@@ -702,18 +702,18 @@ public class RESTHelpers {
 			int[] totals = new int[2];
 			solverComparisonsToDisplay = Jobs.getSolverComparisonsForNextPageByConfigInJobSpaceHierarchy(query,
 							jobSpaceId, configId1,configId2, totals,wallclock,stageNumber);
-			
+
 			query.setTotalRecords(totals[0]);
 
 			query.setTotalRecordsAfterQuery(totals[1]);
-	    	
+
 			return convertSolverComparisonsToJsonObject(solverComparisonsToDisplay,query,wallclock,stageNumber, jobSpaceId);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
-		
+
 		return null;
-		
+
 	}
 
 	public static JsonObject getNextDataTablesPageOfPairsByConfigInSpaceHierarchy(
@@ -729,23 +729,23 @@ public class RESTHelpers {
         	query.setSortColumn(Integer.parseInt(sortOverride));
         	query.setSortASC(Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR)));
         }
-        
+
 		// Retrieves the relevant Job objects to use in constructing the JSON to
 		// send to the client
 		jobPairsToDisplay = Jobs.getJobPairsForNextPageByConfigInJobSpaceHierarchy(query,
 						jobSpaceId, configId,type,stageNumber);
-		
+
 		query.setTotalRecords(Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,stageNumber));
 
         query.setTotalRecordsAfterQuery(Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,query.getSearchQuery(),stageNumber));
-    	
+
 	    return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,stageNumber, PrimitivesToAnonymize.NONE);
 	}
 
 	/**
 	 * Gets the next page of job_pair entries for a DataTable object on cluster
 	 * Status page
-	 * 
+	 *
 	 * @param type either queue or node
 	 * @param id the id of the queue/node to get job pairs for
 	 * @param request the object containing all the DataTable parameters
@@ -768,12 +768,12 @@ public class RESTHelpers {
 				// Retrieves the relevant Job objects to use in constructing the
 				// JSON to send to the client
 				jobPairsToDisplay = Queues.getJobPairsForNextClusterPage(query,id);
-				
-				
+
+
 				query.setTotalRecords(Queues.getCountOfEnqueuedPairsByQueue(id));
 				// there is no filter function on this table, so this is always equal to the above
 				query.setTotalRecordsAfterQuery(query.getTotalRecords());
-				
+
 				return convertJobPairsToJsonObjectCluster(jobPairsToDisplay,query, userId);
 
 			} else if (type.equals("node")) {
@@ -790,13 +790,13 @@ public class RESTHelpers {
 			log.error("getNextDataTablesPageCluster says "+e.getMessage(),e);
 		}
 		return null;
-		
+
 	}
 
 	/**
 	 * Gets the next page of entries for a DataTable Object (ALL regardless of
 	 * space)
-	 * 
+	 *
 	 * @param type
 	 *            the kind of primitives to query for
 	 * @param request
@@ -989,10 +989,10 @@ public class RESTHelpers {
 		return convertSpacesToJsonObject(spacesToDisplay,query,id);
 	}
 
-	
+
 	/**
 	 * Gets the next page of entries for a DataTable object
-	 * 
+	 *
 	 * @param type
 	 *            the kind of primitives to query for
 	 * @param id
@@ -1025,88 +1025,88 @@ public class RESTHelpers {
 				} else {
 					query.setTotalRecordsAfterQuery(Jobs.getCountInSpace(id,query.getSearchQuery()));
 				}
-			
+
 
 			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 
 			JsonObject answer = convertJobsToJsonObject(jobsToDisplay, query, false);
 			return answer;
-		    	
+
 		case USER:
     		List<User> usersToDisplay = new LinkedList<User>();
     		query.setTotalRecords(Users.getCountInSpace(id));
-    		
+
     		// Retrieves the relevant User objects to use in constructing the JSON to send to the client
     		usersToDisplay = Users.getUsersForNextPage(query,id);
-    		
+
 	    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 	    	if(!query.hasSearchQuery()){
 				query.setTotalRecordsAfterQuery(query.getTotalRecords());
-	    	} 
-	    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
+	    	}
+	    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
 	    	else {
 				query.setTotalRecordsAfterQuery(Users.getCountInSpace(id,query.getSearchQuery()));
 	    	}
-	    	
+
 	    	return convertUsersToJsonObject(usersToDisplay,query,SessionUtil.getUserId(request));
-	    	
-		    	
+
+
 	    case SOLVER:
     		List<Solver> solversToDisplay = new LinkedList<Solver>();
-    		
+
     		// Retrieves the relevant Solver objects to use in constructing the JSON to send to the client
     			solversToDisplay = Solvers.getSolversForNextPage(query,id);
     			query.setTotalRecords(Solvers.getCountInSpace(id));
     			if(!query.hasSearchQuery()){
     				query.setTotalRecordsAfterQuery(query.getTotalRecords());
-		    	} 
-		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
+		    	}
+		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
 		    	else {
     				query.setTotalRecordsAfterQuery(Solvers.getCountInSpace(id,query.getSearchQuery()));
 		    	}
 
 		    return convertSolversToJsonObject(solversToDisplay, query);
-	    	
-		    	
+
+
 	    case BENCHMARK:
-	    	
+
 	    	List<Benchmark> benchmarksToDisplay = new LinkedList<Benchmark>();
 	    	 String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
 	         if (sortOverride!=null) {
 	         	query.setSortColumn(Integer.parseInt(sortOverride));
 	         	query.setSortASC(Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR)));
-	         	
+
 	         }
 	    	// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
-	    		benchmarksToDisplay = Benchmarks.getBenchmarksForNextPage(query,id);	
+	    		benchmarksToDisplay = Benchmarks.getBenchmarksForNextPage(query,id);
 
 	    		query.setTotalRecords(Benchmarks.getCountInSpace(id));
 	    		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 		    	if(!query.hasSearchQuery()){
 		    		query.setTotalRecordsAfterQuery(query.getTotalRecords());
-		    	} 
+		    	}
 		    	else {
 		    		query.setTotalRecordsAfterQuery(Benchmarks.getCountInSpace(id,query.getSearchQuery()));
-		    		
+
 		    	}
 
-	    	
+
 		    return convertBenchmarksToJsonObject(benchmarksToDisplay,query);
-	    	
+
 	    case SPACE:
 	    	List<Space> spacesToDisplay = new LinkedList<Space>();
-	    	
+
     		int userId = SessionUtil.getUserId(request);
     		query.setTotalRecords(Spaces.getCountInSpace(id, userId,false));
-    		
+
 	    	// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
 	    	spacesToDisplay = Spaces.getSpacesForNextPage(query,id,userId);
-	    	
+
 	    	// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 	    	if(!query.hasSearchQuery()){
 	    		query.setTotalRecordsAfterQuery(query.getTotalRecords());
-	    	} 
-	    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
+	    	}
+	    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
 	    	else {
 	    		query.setTotalRecordsAfterQuery(Spaces.getCountInSpace(id, userId, query.getSearchQuery()));
 	    	}
@@ -1115,7 +1115,7 @@ public class RESTHelpers {
 			log.error("invalid type given ="+type);
 		}
 		return null;
-		
+
 	}*/
 
 
@@ -1131,7 +1131,7 @@ public class RESTHelpers {
 
 			// Retrieves the relevant Job objects to use in constructing the
 			// JSON to send to the client
-			
+
 				jobsToDisplay = Jobs.getJobsByUserForNextPage(query,id);
 				query.setTotalRecords(Jobs.getJobCountByUser(id));
 				if (!query.hasSearchQuery()) {
@@ -1139,15 +1139,15 @@ public class RESTHelpers {
 				} else {
 					query.setTotalRecordsAfterQuery(Jobs.getJobCountByUser(id,query.getSearchQuery()));
 				}
-			
+
 
 			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 
 			JsonObject answer = convertJobsToJsonObject(jobsToDisplay, query, dataAsObjects);
 			return answer;
-		    	
-		
-	    case SOLVER:    		
+
+
+	    case SOLVER:
     		// Retrieves the relevant Solver objects to use in constructing the JSON to send to the client
     		List<Solver> solversToDisplay=Solvers.getSolversByUserForNextPage(query,id,recycled);
     			if (!recycled) {
@@ -1155,12 +1155,12 @@ public class RESTHelpers {
     			} else {
     				query.setTotalRecords(Solvers.getRecycledSolverCountByUser(id));
     			}
-    			
+
     			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 		    	if(!query.hasSearchQuery()){
 		    		query.setTotalRecordsAfterQuery(query.getTotalRecords());
-		    	} 
-		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS 
+		    	}
+		    	// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
 		    	else {
 		    		if (!recycled) {
 			    		query.setTotalRecordsAfterQuery(Solvers.getSolverCountByUser(id,query.getSearchQuery()));
@@ -1169,26 +1169,26 @@ public class RESTHelpers {
 		    		}
 		    	}
 		    return convertSolversToJsonObject(solversToDisplay, query);
-	    	
-		    	
-	    case BENCHMARK:	    	
+
+
+	    case BENCHMARK:
 	    	 String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
 	         if (sortOverride!=null) {
 	         	query.setSortColumn(Integer.parseInt(sortOverride));
 	         	query.setSortASC(Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR)));
 	         }
-	    	
+
 	    	List<Benchmark> benchmarksToDisplay = Benchmarks.getBenchmarksByUserForNextPage(query,id,recycled);
 	    		if (!recycled) {
 	    			query.setTotalRecords(Benchmarks.getBenchmarkCountByUser(id));
 	    		} else {
 	    			query.setTotalRecords(Benchmarks.getRecycledBenchmarkCountByUser(id));
 	    		}
-	    		
+
 	    		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 		    	if(!query.hasSearchQuery()){
 		    		query.setTotalRecordsAfterQuery(query.getTotalRecords());
-		    	} 
+		    	}
 		    	else {
 		    		if (!recycled) {
 			    		query.setTotalRecordsAfterQuery(Benchmarks.getBenchmarkCountByUser(id,query.getSearchQuery()));
@@ -1196,14 +1196,14 @@ public class RESTHelpers {
 			    		query.setTotalRecordsAfterQuery(Benchmarks.getRecycledBenchmarkCountByUser(id,query.getSearchQuery()));
 		    		}
 		    	}
-	    	
+
 		    return convertBenchmarksToJsonObject(benchmarksToDisplay,query);
 	    default:
 	    	log.error("invalid type given = "+type);
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Generate the HTML for the next DataTable page of entries
 	 * @param pairs The job pairs to convert
@@ -1214,7 +1214,7 @@ public class RESTHelpers {
 	public static JsonObject convertJobPairsToJsonObjectCluster(List<JobPair> pairs, DataTablesQuery query, int userId) {
 		JsonArray dataTablePageEntries = new JsonArray();
 		for(JobPair j : pairs){
-			
+
 			// Create the job link
 			//Job job = Jobs.get(j.getJobId());
     		StringBuilder sb = new StringBuilder();
@@ -1225,22 +1225,22 @@ public class RESTHelpers {
     		RESTHelpers.addImg(sb);
     		sb.append(getHiddenJobPairLink(j.getId()));
 			String jobLink = sb.toString();
-			
+
 			User user=j.getOwningUser();
 
 			String userLink = getUserLink(user.getId(),user.getFullName(),userId);
-			
+
 			String benchLink = getBenchLinkWithHiddenPairId(j.getBench(),j.getId(), PrimitivesToAnonymize.NONE);
-			
+
 			// Create the solver link
 			String solverLink = getSolverLink(j.getPrimarySolver().getId(),j.getPrimarySolver().getName(), PrimitivesToAnonymize.NONE);
-			
+
 			// Create the configuration link
 			String configLink = getConfigLink(
-					j.getPrimarySolver().getConfigurations().get(0).getId(), 
-					j.getPrimarySolver().getConfigurations().get(0).getName(), 
+					j.getPrimarySolver().getConfigurations().get(0).getId(),
+					j.getPrimarySolver().getConfigurations().get(0).getName(),
 					PrimitivesToAnonymize.NONE);
-						
+
 			// Create an object, and inject the above HTML, to represent an entry in the DataTable
 			JsonArray entry = new JsonArray();
 			entry.add(new JsonPrimitive(j.getQueueSubmitTimeSafe().toString()));
@@ -1254,15 +1254,15 @@ public class RESTHelpers {
     	}
 		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
-	
+
 	public static JsonObject convertSolverComparisonsToJsonObject(List<SolverComparison> comparisons,DataTablesQuery query, boolean useWallclock, int stageNumber, int jobSpaceId) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
 		JsonArray dataTablePageEntries = new JsonArray();
 		for(SolverComparison c : comparisons){
-    		
-    		
+
+
     		// Create the benchmark link and append the hidden input element
 			String benchLink = getBenchLink(c.getBenchmark());
 
@@ -1270,21 +1270,21 @@ public class RESTHelpers {
 			// entry in the DataTable
 			JsonArray entry = new JsonArray();
     		entry.add(new JsonPrimitive(benchLink));
-    		
-    		
+
+
     		if (useWallclock) {
-    			double displayWC1 = Math.round(c.getFirstPair().getStageFromNumber(stageNumber).getWallclockTime()*100)/100.0;		
+    			double displayWC1 = Math.round(c.getFirstPair().getStageFromNumber(stageNumber).getWallclockTime()*100)/100.0;
     			double displayWC2 =  Math.round(c.getSecondPair().getStageFromNumber(stageNumber).getWallclockTime()*100)/100.0;
-    			double displayDiff =  Math.round(c.getWallclockDifference(stageNumber)*100)/100.0;		
+    			double displayDiff =  Math.round(c.getWallclockDifference(stageNumber)*100)/100.0;
 
         		entry.add(new JsonPrimitive(displayWC1 + " s"));
         		entry.add(new JsonPrimitive(displayWC2 + " s"));
         		entry.add(new JsonPrimitive(displayDiff + " s"));
 
     		} else {
-    			double display1 = Math.round(c.getFirstPair().getStageFromNumber(stageNumber).getCpuTime()*100)/100.0;		
+    			double display1 = Math.round(c.getFirstPair().getStageFromNumber(stageNumber).getCpuTime()*100)/100.0;
     			double display2 =  Math.round(c.getSecondPair().getStageFromNumber(stageNumber).getCpuTime()*100)/100.0;
-    			double displayDiff =  Math.round(c.getCpuDifference(stageNumber)*100)/100.0;		
+    			double displayDiff =  Math.round(c.getCpuDifference(stageNumber)*100)/100.0;
 
         		entry.add(new JsonPrimitive(display1 + " s"));
         		entry.add(new JsonPrimitive(display2 + " s"));
@@ -1308,9 +1308,9 @@ public class RESTHelpers {
     		entry.add(new JsonPrimitive(link1));
     		entry.add(new JsonPrimitive(link2));
     		if (c.doResultsMatch(stageNumber)) {
-        		entry.add(new JsonPrimitive(1));    		
+        		entry.add(new JsonPrimitive(1));
     		} else {
-        		entry.add(new JsonPrimitive(0));    		
+        		entry.add(new JsonPrimitive(0));
 
     		}
     		dataTablePageEntries.add(entry);
@@ -1338,26 +1338,26 @@ public class RESTHelpers {
 		}
 		return sb.toString();
 	}
-	
+
 	private static String getHiddenJobPairLink(int pairId) {
 		// Create the hidden input tag containing the jobpair id
 		StringBuilder sb=new StringBuilder();
 		sb.append("<input type=\"hidden\" value=\"");
 		sb.append(pairId);
 		sb.append("\" name=\"pid\"/>");
-		return sb.toString();		    		
+		return sb.toString();
 	}
-	
+
 	private static String getHiddenBenchLink(Benchmark bench) {
 		StringBuilder sb = new StringBuilder();
-		
+
 		// Create the hidden input tag containing the benchmark id
 		sb.append("<input name=\"bench\" type=\"hidden\" value=\"");
 		sb.append(bench.getId());
 		sb.append("\" prim=\"benchmark\" userId=\""+bench.getUserId()+"\"  deleted=\""+bench.isDeleted()+"\" recycled=\""+bench.isRecycled()+"\"/>");
 		return sb.toString();
 	}
-	
+
 	private static StringBuilder getBenchLinkPrefix(Benchmark bench, PrimitivesToAnonymize primitivesToAnonymize) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<a");
@@ -1372,26 +1372,26 @@ public class RESTHelpers {
 			sb.append("\" target=\"_blank\"");
 		}
 		sb.append(">");
-		
+
 		sb.append(bench.getName());
 		if ( !AnonymousLinks.areBenchmarksAnonymized( primitivesToAnonymize )) {
 			RESTHelpers.addImg(sb);
 		}
 		return sb;
 	}
-	
+
 	private static String getBenchLinkWithHiddenPairId(Benchmark bench, int pairId, PrimitivesToAnonymize primitivesToAnonymize) {
 		StringBuilder sb = getBenchLinkPrefix(bench, primitivesToAnonymize);
 		sb.append(getHiddenJobPairLink(pairId));
 		return sb.toString();
 	}
-	
+
 	private static String getBenchLink(Benchmark bench) {
 		StringBuilder sb = getBenchLinkPrefix(bench, PrimitivesToAnonymize.NONE);
 		sb.append(getHiddenBenchLink(bench));
 		return sb.toString();
 	}
-	
+
 	private static String getSpaceLink(Space space) {
 		StringBuilder sb = new StringBuilder();
 		sb = new StringBuilder();
@@ -1412,7 +1412,7 @@ public class RESTHelpers {
 		sb.append(hiddenSpaceId);
 		return sb.toString();
 	}
-	
+
 	private static String getSolverLink(int solverId, String solverName, PrimitivesToAnonymize primitivesToAnonymize) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<a title=\"");
@@ -1436,7 +1436,7 @@ public class RESTHelpers {
 		}
 		return sb.toString();
 	}
-	
+
 	private static String getUserLink(int userId,String name, int callerId) {
 		StringBuilder sb = new StringBuilder();
 		String hiddenUserId;
@@ -1462,7 +1462,7 @@ public class RESTHelpers {
 		sb.append(hiddenUserId);
 		return sb.toString();
 	}
-	
+
 	/**
 	 * Given a list of job pairs, creates a JsonObject that can be used to populate a datatable client-side
 	 * @param pairs The pairs that will be the rows of the table
@@ -1470,12 +1470,12 @@ public class RESTHelpers {
 	 * @param includeConfigAndSolver Whether to include columns for the config and solver of each pair
 	 * @param useWallclock Whether to use wallclock time (true) or cpu time (false)
 	 * @param stageNumber The number of the stage to use the data from for each pair
-	 * @param primitivesToAnonymize PrimitivesToAnonymize object representing whether benchmarks, solvers, or both 
+	 * @param primitivesToAnonymize PrimitivesToAnonymize object representing whether benchmarks, solvers, or both
 	 * should be anonymized.
 	 * @return A JsonObject that can be used to populate a datatable
 	 * @author Eric Burns
 	 */
-	public static JsonObject convertJobPairsToJsonObject(List<JobPair> pairs, DataTablesQuery query, 
+	public static JsonObject convertJobPairsToJsonObject(List<JobPair> pairs, DataTablesQuery query,
 			boolean includeConfigAndSolver, boolean useWallclock, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize ) {
 
 		/**
@@ -1495,7 +1495,7 @@ public class RESTHelpers {
 				// Create the configuration link
 				configLink = getConfigLink(
 						stage.getSolver().getConfigurations().get(0).getId(),
-						stage.getSolver().getConfigurations().get(0).getName(), 
+						stage.getSolver().getConfigurations().get(0).getName(),
 						primitivesToAnonymize);
 			}
 
@@ -1517,19 +1517,19 @@ public class RESTHelpers {
     			entry.add(new JsonPrimitive(solverLink));
         		entry.add(new JsonPrimitive(configLink));
     		}
-    		
+
     		entry.add(new JsonPrimitive(status));
     		if (useWallclock) {
-    			double displayWC = Math.round(stage.getWallclockTime()*100)/100.0;		    	
-        		
+    			double displayWC = Math.round(stage.getWallclockTime()*100)/100.0;
+
         		entry.add(new JsonPrimitive(displayWC + " s"));
     		} else {
-    			double displayCpu = Math.round(stage.getCpuTime()*100)/100.0;		    	
-        		
+    			double displayCpu = Math.round(stage.getCpuTime()*100)/100.0;
+
         		entry.add(new JsonPrimitive(displayCpu + " s"));
     		}
-    		
-    		entry.add(new JsonPrimitive(stage.getStarexecResult()));    		
+
+    		entry.add(new JsonPrimitive(stage.getStarexecResult()));
     		dataTablePageEntries.add(entry);
     	}
 		return createPageDataJsonObject(query, dataTablePageEntries);
@@ -1538,7 +1538,7 @@ public class RESTHelpers {
 	/**
 	 * Given a list of jobs, creates a JsonObject that can be used to populate a
 	 * datatable client-side
-	 * 
+	 *
 	 * @param jobs The jobs that will be the rows of the table
 	 * @param query A DataTablesQuery object
 	 * @return A JsonObject that can be used to populate a datatable
@@ -1552,7 +1552,7 @@ public class RESTHelpers {
 		for (Job job : jobs) {
 			StringBuilder sb = new StringBuilder();
 			String hiddenJobId;
-			
+
 			// Create the hidden input tag containing the job id
 			sb.append("<input type=\"hidden\" value=\"");
 			sb.append(job.getId());
@@ -1575,7 +1575,7 @@ public class RESTHelpers {
                 if(!Users.isDeveloper(userId) && !Users.isAdmin(userId)) {
                     status = "global pause";
                 }
-            }	
+            }
             if (Jobs.isJobPaused(job.getId())) {
 				status = "paused";
 			}
@@ -1591,7 +1591,7 @@ public class RESTHelpers {
 			}
 
 		}
-		
+
 		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 
@@ -1608,7 +1608,7 @@ public class RESTHelpers {
 				.getLiteJobPairStats().get("totalPairs"), false)));
 		entry.add(new JsonPrimitive(getPercentStatHtml("desc", job
 				.getLiteJobPairStats().get("errorPercentage"), true)));
-		
+
 		entry.add(new JsonPrimitive(job.getCreateTime().toString()));
 		JsonObject diskSize = new JsonObject();
 		entry.add(new JsonPrimitive(Util.byteCountToDisplaySize(job.getDiskSize())));
@@ -1630,7 +1630,7 @@ public class RESTHelpers {
 				.getLiteJobPairStats().get("totalPairs"), false)));
 		entry.add("errorPercentage", new JsonPrimitive(getPercentStatHtml("desc", job
 				.getLiteJobPairStats().get("errorPercentage"), true)));
-		
+
 		entry.add("createTime",new JsonPrimitive(job.getCreateTime().toString()));
 		JsonObject diskSize = new JsonObject();
 		diskSize.add("display", new JsonPrimitive(Util.byteCountToDisplaySize(job.getDiskSize())));
@@ -1644,7 +1644,7 @@ public class RESTHelpers {
 	 * Generate the HTML for the next DataTable page of entries
 	 * Given a list of users, creates a JsonObject that can be used to populate
 	 * a datatable client-side
-	 * 
+	 *
 	 * @param users The users that will be the rows of the table
 	 * @param query a DataTablesQuery object
 	 * @param currentUserId the ID of the user making the request for this datatable
@@ -1670,7 +1670,7 @@ public class RESTHelpers {
 			sb = new StringBuilder();
 			sb.append("<input type=\"button\" onclick=\"editPermissions(" + user.getId() + ")\" value=\"Edit\"/>");
 			String permissionButton = sb.toString();
-			
+
 			// Create an object, and inject the above HTML, to represent an
 			// entry in the DataTable
 			JsonArray entry = new JsonArray();
@@ -1678,7 +1678,7 @@ public class RESTHelpers {
 			entry.add(new JsonPrimitive(user.getInstitution()));
 			entry.add(new JsonPrimitive(emailLink));
 			entry.add(new JsonPrimitive(permissionButton));
-			
+
 			String suspendButton = "";
 			if (Users.isAdmin(user.getId()) || Users.isUnauthorized(user.getId())) {
 				suspendButton = "N/A";
@@ -1718,14 +1718,14 @@ public class RESTHelpers {
 		}
 		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
-	
-	
+
+
 	/**
 
 	 * Generate the HTML for the next DataTable page of entries
 	 * Given a list of TestSequences, creates a JsonObject that can be used to populate
 	 * a datatable client-side
-	 * 
+	 *
 	 * @param tests The tests that will be the rows of the table
 	 * @param query a DataTablesQuery object
 	 * @return A JsonObject that can be used to populate a datatable
@@ -1746,7 +1746,7 @@ public class RESTHelpers {
     		sb.append("\" target=\"_blank\">");
     		sb.append(test.getName());
     		RESTHelpers.addImg(sb);
-			
+
 			entry.add(new JsonPrimitive(sb.toString()));
 			entry.add(new JsonPrimitive(test.getTestCount()));
 			entry.add(new JsonPrimitive(test.getTestsPassed()));
@@ -1757,13 +1757,13 @@ public class RESTHelpers {
 		}
 		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
-	
+
 	/**
 
 	 * Generate the HTML for the next DataTable page of entries
 	 * Given a HashMap mapping the names of tests to messages, creates a JsonObject that can be used to populate
 	 * a datatable client-side
-	 * 
+	 *
 	 * @param tests A HashMap of tests, where each test will be a row of a table
 	 * @param query A DataTablesQuery object
 	 * @return A JsonObject that can be used to populate a datatable
@@ -1777,7 +1777,7 @@ public class RESTHelpers {
 		for (TestResult test : tests) {
 			// Create an object, and inject the above HTML, to represent an
 			// entry in the DataTable
-			
+
 			JsonArray entry = new JsonArray();
 			entry.add(new JsonPrimitive(test.getName()));
 			entry.add(new JsonPrimitive(test.getStatus().getStatus()));
@@ -1793,7 +1793,7 @@ public class RESTHelpers {
 	/**
 	 * Given a list of spaces, creates a JsonObject that can be used to populate
 	 * a datatable client-side
-	 * 
+	 *
 	 * @param spaces The spaces that will be the rows of the table
 	 * @param query a DataTablesQuery object
 	 * @return A JsonObject that can be used to populate a datatable
@@ -1821,7 +1821,7 @@ public class RESTHelpers {
 	/**
 	 * Given a list of solvers, creates a JsonObject that can be used to
 	 * populate a datatable client-side
-	 * 
+	 *
 	 * @param solvers The solvers that will be the rows of the table
 	 * @param query DataTablesQuery object
 	 * @return A JsonObject that can be used to populate a datatable
@@ -1862,7 +1862,7 @@ public class RESTHelpers {
 	/**
 	 * Given a list of benchmarks, creates a JsonObject that can be used to
 	 * populate a datatable client-side
-	 * 
+	 *
 	 * @param benchmarks The benchmarks that will be the rows of the table
 	 * @param query a DataTablesQuery object
 	 * @return A JsonObject that can be used to populate a datatable
@@ -1906,99 +1906,72 @@ public class RESTHelpers {
 		sb.append("\" target=\"_blank\" >");
 		return sb;
 	}
-	
+
 	/**
 	 * Given a list of SolverStats, creates a JsonObject that can be used to
-	 * populate a datatable client-side
-	 * 
+	 * populate a datatable client-side.
+	 * In any other case, this should produce objects with named fields.
+	 * However, this particular API can produce output with many thousands of
+	 * rows of output. Naming each field would more than tripple the size of the
+	 * file. In order to keep the size of the output managable, we are simply
+	 * returning an array. This makes this API particularly fragile, and the
+	 * server-side and client-side must be kept in sync!
+	 *
+	 * @author Eric Burns
+	 * @author Pat Hawks
+	 *
 	 * @param stats The SolverStats that will be the rows of the table
 	 * @param query a DataTablesQuery object
 	 * @param shortFormat Whether to include all fields (false) or only fields for the subspace overview (true)
 	 * @param wallTime Whether to use wallclock times (true) or cpu times (false).
 	 * @param primitivesToAnonymize a PrimitivesToAnonymize enum describing if the solver stats should be anonymized.
 	 * @return A JsonObject that can be used to populate a datatable
-	 * @author Eric Burns
 	 */
-
-	public static JsonObject convertSolverStatsToJsonObject(List<SolverStats> stats,DataTablesQuery query, 
+	public static JsonObject convertSolverStatsToJsonObject(List<SolverStats> stats,DataTablesQuery query,
 			int spaceId, int jobId, boolean shortFormat, boolean wallTime, PrimitivesToAnonymize primitivesToAnonymize) {
-		/**
-		 * Generate the HTML for the next DataTable page of entries
-		 */
 		JsonArray dataTablePageEntries = new JsonArray();
 		for (SolverStats js : stats) {
-			List<String> entries = new ArrayList<String>();
+			JsonArray entries = new JsonArray();
 
-			// Create the solver link
-			entries.add( getSolverLink( js.getSolver().getId(), js.getSolver().getName(), primitivesToAnonymize ));
-			
-			// create the configuration link
-			entries.add( getConfigLink(js.getConfiguration().getId(), js.getConfiguration().getName(), primitivesToAnonymize) );
+			entries.add( js.getSolver().getId()           );
+			entries.add( js.getConfiguration().getId()    );
+			entries.add( js.getSolver().getName()         );
+			entries.add( js.getConfiguration().getName()  );
+			entries.add( js.getCorrectOverCompleted()     );
+
+			if (wallTime) {
+				entries.add(Math.round(js.getWallTime() * 100));
+			} else {
+				entries.add(Math.round(js.getCpuTime()  * 100));
+			}
 
 			if (!shortFormat) {
-				
-				int configId = js.getConfiguration().getId();
-				int stageNumber = js.getStageNumber();
-				
-				entries.add( getPairsInSpaceHtml(
-							"solved", spaceId, configId, stageNumber, js.getCorrectOverCompleted(), primitivesToAnonymize ));
+				entries.add( js.getStageNumber()          );
+				entries.add( js.getIncorrectJobPairs()    );
+				entries.add( js.getResourceOutJobPairs()  );
+				entries.add( js.getFailedJobPairs()       );
+				entries.add( js.getUnknown()              );
+				entries.add( js.getIncompleteJobPairs()   );
 
-				entries.add( getPairsInSpaceHtml( 
-							"wrong", spaceId, configId, stageNumber, Integer.toString(js.getIncorrectJobPairs()), primitivesToAnonymize ));
-
-				entries.add( getPairsInSpaceHtml( 
-							"resource", spaceId, configId, stageNumber, Integer.toString(js.getResourceOutJobPairs()), primitivesToAnonymize ));
-
-				entries.add( getPairsInSpaceHtml( 
-							"failed", spaceId, configId, stageNumber, Integer.toString(js.getFailedJobPairs()), primitivesToAnonymize ));
-
-				entries.add( getPairsInSpaceHtml(
-							"unknown", spaceId, configId, stageNumber, Integer.toString(js.getUnknown()), primitivesToAnonymize ));
-
-				entries.add( getPairsInSpaceHtml(
-							"incomplete", spaceId, configId, stageNumber, Integer.toString(js.getIncompleteJobPairs()), primitivesToAnonymize ));
-				
-				if (wallTime) {
-					entries.add(String.valueOf(Math.round(js.getWallTime()*100)/100.0));
-				} else {
-					entries.add(String.valueOf(Math.round(js.getCpuTime()*100)/100.0));
-				}
 				if (AnonymousLinks.isNothingAnonymized(primitivesToAnonymize)) {
-					entries.add("<a href=\"" + Util.docRoot("secure/details/conflictingBenchmarks.jsp") + "?"
-							+ "jobId=" + jobId + "&"
-							+ "configId=" + configId + "&"
-							+ "stageNumber=" + stageNumber
-							+ "\" target=\"_blank\" >"
-							+ String.valueOf(js.getConflicts()) + "<img class=\"extLink\" src=\"" + Util.docRoot("images/external.png") + "\"/></a>");
+					entries.add( js.getConflicts() );
 				} else {
 					// Don't support conflicts for anonymized pages.
 					entries.add("N/A");
 				}
+			}
 
-			} else {
-				entries.add((js.getCorrectJobPairs()) +" / "+js.getCompleteJobPairs());
-				if (wallTime) {
-					entries.add(String.valueOf(js.getWallTime()));
-				} else {
-					entries.add(String.valueOf(js.getCpuTime()));
-				}
-			}
-			JsonArray entry = new JsonArray();
-			for (String s : entries) {
-				entry.add(new JsonPrimitive(s));
-			}
-			dataTablePageEntries.add(entry);
-			
+			dataTablePageEntries.add(entries);
 		}
 		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 
 	private static String getPairsInSpaceHtml(
-			String type, 
-			int spaceId, 
-			int configId, 
-			int stageNumber, 
-			String linkText, 
+			String type,
+			int spaceId,
+			int configId,
+			int stageNumber,
+			String linkText,
 			PrimitivesToAnonymize primitivesToAnonymize) {
 
 		StringBuilder sb = new StringBuilder();
@@ -2018,14 +1991,14 @@ public class RESTHelpers {
 
 	public static Map<Integer, String> getJobSpaceIdToSolverStatsJsonMap(List<JobSpace> jobSpaces, int stageNumber, boolean wallclock) {
 		Map<Integer, String> jobSpaceIdToSolverStatsJsonMap = new HashMap<>();
-		
+
 		for (JobSpace jobSpace : jobSpaces) {
 			List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(jobSpace, stageNumber, PrimitivesToAnonymize.NONE);
 			DataTablesQuery query = new DataTablesQuery();
 			query.setTotalRecords(stats.size());
 			query.setTotalRecordsAfterQuery(stats.size());
 			query.setSyncValue(1);
-			JsonObject solverStatsJson = RESTHelpers.convertSolverStatsToJsonObject(stats, query,jobSpace.getId(), jobSpace.getJobId(), true,wallclock, PrimitivesToAnonymize.NONE);
+			JsonObject solverStatsJson = RESTHelpers.convertSolverStatsToJsonObject(stats, query,jobSpace.getId(), jobSpace.getJobId(), true, wallclock, PrimitivesToAnonymize.NONE);
 			if (solverStatsJson != null) {
 				jobSpaceIdToSolverStatsJsonMap.put(jobSpace.getId(), gson.toJson(solverStatsJson));
 			}
@@ -2042,7 +2015,7 @@ public class RESTHelpers {
 		}
 		return jobSpaceIdToSubspaceJsonMap;
 	}
-	
+
 	/**
 	 * Gets a JSON representation of a job space tree
 	 * @param parentId
@@ -2104,7 +2077,7 @@ public class RESTHelpers {
 		}
 	}
 
-	public static String validateAndGetJobSpacesJson(int parentId, int jobId, boolean makeSpaceTree, int userId) {	
+	public static String validateAndGetJobSpacesJson(int parentId, int jobId, boolean makeSpaceTree, int userId) {
 		log.debug("got here with jobId= "+jobId+" and parent space id = "+parentId);
 		log.debug("getting job spaces for panels");
 		//don't populate the subspaces if the user can't see the job
@@ -2118,26 +2091,26 @@ public class RESTHelpers {
 		return getJobSpacesJson( parentId, jobId, makeSpaceTree );
 	}
 
-	protected static String getSolverComparisonGraphJson( 
-			int jobSpaceId, 
-			int config1, 
-			int config2, 
-			int edgeLengthInPixels, 
+	protected static String getSolverComparisonGraphJson(
+			int jobSpaceId,
+			int config1,
+			int config2,
+			int edgeLengthInPixels,
 			String axisColor,
 			int stageNumber,
 		   	PrimitivesToAnonymize primitivesToAnonymize	) {
 
 		List<String> chartPath = null;
-		
+
 		Color c = Util.getColorFromString(axisColor);
 		if (c==null) {
 			return gson.toJson(new ValidatorStatusCode(false,"The given color is not valid"));
 		}
 		if (edgeLengthInPixels<=0 || edgeLengthInPixels>2000) {
 			return gson.toJson(new ValidatorStatusCode(false, "The given size is not valid: please choose an integer from 1-2000"));
-					
+
 		}
-		
+
 		chartPath=Statistics.makeSolverComparisonChart(config1,config2,jobSpaceId,edgeLengthInPixels,c,stageNumber, primitivesToAnonymize);
 		if (chartPath==null) {
 			return gson.toJson(RESTServices.ERROR_DATABASE);
@@ -2148,16 +2121,16 @@ public class RESTHelpers {
 		JsonObject json=new JsonObject();
 		json.addProperty("src", chartPath.get(0));
 		json.addProperty("map",chartPath.get(1));
-		
+
 		return gson.toJson(json);
 	}
 
-	
-	protected static String getJobSpacesJson( int parentId, int jobId, boolean makeSpaceTree ) {	
+
+	protected static String getJobSpacesJson( int parentId, int jobId, boolean makeSpaceTree ) {
 		return getJobSpacesJson( parentId, jobId, makeSpaceTree, PrimitivesToAnonymize.NONE );
 	}
 
-	protected static String getJobSpacesJson( int parentId, int jobId, boolean makeSpaceTree, PrimitivesToAnonymize primitivesToAnonymize ) {	
+	protected static String getJobSpacesJson( int parentId, int jobId, boolean makeSpaceTree, PrimitivesToAnonymize primitivesToAnonymize ) {
 		List<JobSpace> subspaces=new ArrayList<JobSpace>();
 		log.debug("got a request for parent space = "+parentId);
 		if (parentId>0) {
@@ -2172,7 +2145,7 @@ public class RESTHelpers {
 		if ( AnonymousLinks.areJobsAnonymized( primitivesToAnonymize )) {
 			anonymizeJobSpaceNames( subspaces, jobId );
 		}
-		
+
 		log.debug("making next tree layer with "+subspaces.size()+" spaces");
 		if (makeSpaceTree) {
 			String output = gson.toJson(RESTHelpers.toJobSpaceTree(subspaces));
@@ -2193,7 +2166,7 @@ public class RESTHelpers {
 		for ( JobSpace space : jobSpaces ) {
 			space.setName( jobSpaceNames.get( space.getId() ));
 		}
-	}	
+	}
 
 	public static JsonObject convertCommunityRequestsToJsonObject(List<CommunityRequest> requests, DataTablesQuery query, int currentUserId) {
 		/**
@@ -2203,7 +2176,7 @@ public class RESTHelpers {
 		for (CommunityRequest req : requests) {
 			User user = Users.get(req.getUserId());
 			String userLink = getUserLink(user.getId(),user.getFullName(),currentUserId);
-			
+
 			//Community/space
 			String spaceLink = getSpaceLink(Spaces.get(req.getCommunityId()));
 
@@ -2224,13 +2197,13 @@ public class RESTHelpers {
 			entry.add(new JsonPrimitive(req.getMessage()));
 			entry.add(new JsonPrimitive(approveButton));
 			entry.add(new JsonPrimitive(declineButton));
-			
+
 			dataTablePageEntries.add(entry);
 
 		}
 		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
-	
+
 	private static JsonObject createPageDataJsonObject(DataTablesQuery query, JsonArray entries) {
 		JsonObject nextPage = new JsonObject();
 		// Build the actual JSON response object and populated it with the
@@ -2243,12 +2216,12 @@ public class RESTHelpers {
 		// Return the next DataTable page
 		return nextPage;
 	}
-	
-	
+
+
 	private static JsonObject convertNodesToJsonObject(List<WorkerNode> nodes, DataTablesQuery query) {
 		JsonArray dataTablePageEntries = new JsonArray();
 
-		for(WorkerNode n : nodes) {			
+		for(WorkerNode n : nodes) {
 			// Create an object, and inject the above HTML, to represent an
 			// entry in the DataTable
 			JsonArray entry = new JsonArray();
@@ -2290,7 +2263,7 @@ public class RESTHelpers {
 	}
 
 	/**
-	 * Gets all pending community requests. 
+	 * Gets all pending community requests.
 	 * @param httpRequest The http request.
 	 * @return a JsonObject representing the requests.
 	 * @author Albert Giegerich
