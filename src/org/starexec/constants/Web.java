@@ -21,10 +21,10 @@ public final class Web {
 	public static final String SENT_FROM_COMMUNITY_PAGE = "sentFromCommunityPage";
 	public static final String LOCAL_JOB_PAGE_PARAMETER = "localJobPage";
 
-	public static final String[] JOB_DETAILS_JS_FILES = {"util/sortButtons", "util/jobDetailsUtilityFunctions", "common/delaySpinner", "lib/jquery.jstree", "lib/jquery.dataTables.min", "details/shared", "details/job", "lib/jquery.ba-throttle-debounce.min", "lib/jquery.qtip.min", "lib/jquery.heatcolor.0.0.1.min"};
+	public static final String[] JOB_DETAILS_JS_FILES = {"util/sortButtons", "util/jobDetailsUtilityFunctions", "common/delaySpinner", "lib/jquery.jstree", "lib/jquery.dataTables.min", "details/shared", "details/job", "lib/jquery.ba-throttle-debounce.min", "lib/jquery.qtip.min", "lib/jquery.heatcolor.0.0.1.min", "util/datatablesUtility"};
 	public static final String[] GLOBAL_JS_FILES = {"lib/jquery.min", "lib/jquery-ui.min", "lib/jquery.cookie", "master"};
 
-	public static final String[] JOB_DETAILS_CSS_FILES = {"jobDetails"};
+	public static final String[] JOB_DETAILS_CSS_FILES = {"jobDetails", "common/table", "common/delaySpinner", "explore/common", "details/shared", "details/job"};
 	public static final String[] GLOBAL_CSS_FILES = {"jqueryui/jquery-ui", "global"};
 	public static final String[] GLOBAL_PNG_FILES = {"loadingGraph", "starlogo", "external"};
 	public static final String[] GLOBAL_GIF_FILES = {"ajaxloader", "loader"};
