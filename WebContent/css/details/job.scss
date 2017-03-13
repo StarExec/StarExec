@@ -170,6 +170,7 @@ p.accent {
 	}
 
 	table.panel {
+		@extend %external-links;
 		font-size: 70%;
 		width: 100% !important;
 		min-width: 100% !important;

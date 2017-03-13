@@ -1251,6 +1251,9 @@ function getSolverTableInitializer() {
 		var href = getPairsInSpaceLink("solved", val[CONFIG_ID], val[STAGE]);
 		return link(href, val[SOLVED]);
 	};
+	var formatSolvedText = function(row, type, val) {
+		return val[SOLVED];
+	}
 	var formatWrong      = function(row, type, val) {
 		var href = getPairsInSpaceLink("wrong", val[CONFIG_ID], val[STAGE]);
 		return link(href, val[WRONG]);
@@ -1285,7 +1288,7 @@ function getSolverTableInitializer() {
 		"aoColumns"     : [
 			{"mRender"  : formatSolver},
 			{"mRender"  : formatConfig},
-			{"mRender"  : formatSolved},
+			{"mRender"  : formatSolvedText},
 			{"mRender"  : formatTime},
 		]
 	});
