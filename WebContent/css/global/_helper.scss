@@ -26,5 +26,12 @@ $helper-first-include: true !default;
 		border-radius: 2px;
 	}
 
+	%external-links {
+		[target="_blank"]::after {
+			margin-left: .5em;
+			content: image-url("/external.png");
+		}
+	}
+
 	$helper-already-imported: false;
 }
