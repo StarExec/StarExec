@@ -92,12 +92,12 @@ public class PermissionsTests extends TestSequence {
 	
 	@StarexecTest
 	private void canSeeJobTest() {
-		Assert.assertTrue(Permissions.canUserSeeJob(job.getId(), owner.getId()));
-		Assert.assertTrue(Permissions.canUserSeeJob(job.getId(), spaceMember.getId()));
-		Assert.assertTrue(Permissions.canUserSeeJob(job.getId(), admin.getId()));
-		Assert.assertTrue(Permissions.canUserSeeJob(job.getId(), developer.getId()));
+		Assert.assertTrue(Permissions.canUserSeeJob(job.getId(), owner.getId()).isSuccess());
+		Assert.assertTrue(Permissions.canUserSeeJob(job.getId(), spaceMember.getId()).isSuccess());
+		Assert.assertTrue(Permissions.canUserSeeJob(job.getId(), admin.getId()).isSuccess());
+		Assert.assertTrue(Permissions.canUserSeeJob(job.getId(), developer.getId()).isSuccess());
 
-		Assert.assertFalse(Permissions.canUserSeeJob(job.getId(), noPerms.getId()));
+		Assert.assertFalse(Permissions.canUserSeeJob(job.getId(), noPerms.getId()).isSuccess());
 	}
 	
 	@StarexecTest

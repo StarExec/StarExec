@@ -122,10 +122,11 @@ class ArgumentParser {
 	 * @author Eric Burns
 	 */
 	protected int createJob(HashMap<String,String> commandParams) {
+		log.log("Creating job.");
 		try {
-			
 			int valid=CommandValidator.isValidCreateJobRequest(commandParams);
 			if (valid<0) {
+				log.log("Was not a valid create job request.");
 				return valid;
 			}			
 			Integer wallclock=null;

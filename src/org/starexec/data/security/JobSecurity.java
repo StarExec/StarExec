@@ -91,10 +91,7 @@ public class JobSecurity {
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
 	public static ValidatorStatusCode canUserSeeJob(int jobId, int userId) {
-		if (!Permissions.canUserSeeJob(jobId, userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to see this job");
-		}
-		return new ValidatorStatusCode(true);
+		return Permissions.canUserSeeJob(jobId, userId);
 	}
 	/**
 	 * Checks to see if the given user has permission to see the details of the job that owns the given pair
@@ -411,8 +408,9 @@ public class JobSecurity {
 	 * @return
 	 */
 	public static ValidatorStatusCode canGetJsonJob(int jobId, int userId) {
-		if (!Permissions.canUserSeeJob(jobId, userId)) {
-			return new ValidatorStatusCode(false, "You do not have permission to see the specified job");
+		ValidatorStatusCode canSeeJobStatus = Permissions.canUserSeeJob(jobId, userId);
+		if (!canSeeJobStatus.isSuccess()) {
+			return canSeeJobStatus;
 		}
 		Job s=Jobs.getIncludeDeleted(jobId);
 		if (s==null) {

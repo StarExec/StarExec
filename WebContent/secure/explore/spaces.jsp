@@ -173,22 +173,28 @@
 
 	</div>
 	<br class=".clear" />
-
-	<div id="dialog-confirm-copy" title="confirm copy" class="hiddenDialog">
-        <p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-copy-txt"></span></p>
-        <div id="hier-copy-options" class="copy-options-hidden">
-            <input type="radio" value="false" name="copySpace" checked />copy space
-            <input type="radio" value="true" name="copySpace" />copy hierarchy
-        </div>
+	<div id="dialog-confirm-space-copy" title="confirm copy" class="hiddenDialog">
+        <p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-space-copy-txt"></span></p>
+        <select id="hier-copy-options" class="copy-options-hidden" name="copySpace">
+			<option value="false">copy space</option>
+			<option value="true">copy hierarchy</option>
+        </select>
         <br class=".clear" />
         <div id="copy-primitives-options" class="copy-options-hidden">
             <span class="ui-icon ui-icon-info"></span>
-            <span>would you like to copy or link primitives to new space?<span>
-            <div>
-                <input type="radio" value="false" name="copyPrimitives" checked />link primitives
-                <input type="radio" value="true" name="copyPrimitives" />copy primitives
-            </div>
+            <span>would you like to copy or link primitives to the new space?<span>
+			<select name="copyPrimitives" id="copyPrimitives">	
+				<option value="LINK">link primitives</option>
+				<option value="COPY">copy primitives</option>
+				<option value="NO_JOBS_LINK_SOLVERS_SAMPLE_BENCHMARKS">link solvers, link sample of benchmarks</option>
+			</select>
+			<div id="sampleRateDiv">
+				Probability of sampling a benchmark in the hierarchy (0-1): <input id="sampleRate" type="number" step="0.01" min="0" max="1" value="0.50"/>
+			</div>
         </div>
+	</div>
+	<div id="dialog-confirm-copy" title="confirm copy" class="hiddenDialog">
+        <p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-copy-txt"></span></p>
 	</div>
 	<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>

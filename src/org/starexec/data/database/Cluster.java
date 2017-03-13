@@ -37,7 +37,7 @@ public class Cluster {
 			String[] lines = R.BACKEND.getWorkerNodes();
 			for (int i = 0; i < lines.length; i++) {
 				String name = lines[i];
-				log.debug("Updating info for node "+name);
+				log.trace("Updating info for node "+name);
 				// In the database, update the attributes for the node
 				Cluster.addNodeIfNotExists(name);				
 				// Set the node as active (because we just saw it!)

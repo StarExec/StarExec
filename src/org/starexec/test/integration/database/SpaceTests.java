@@ -21,6 +21,7 @@ import org.starexec.data.to.Identifiable;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.data.to.enums.CopyPrimitivesOption;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.logger.StarLogger;
 import org.starexec.test.TestUtil;
@@ -175,6 +176,32 @@ public class SpaceTests extends TestSequence {
 		Assert.assertTrue(Spaces.isLeaf(subspace.getId()));
 	}
 
+	@StarexecTest
+	private void copySpaceSampleAllBenchmarksTest() {
+		try {
+			int newSpaceId = Spaces.copySpace(subspace.getId(), subspace2.getId(), admin.getId(), CopyPrimitivesOption.NO_JOBS_LINK_SOLVERS_SAMPLE_BENCHMARKS, 1.0);
+			List<Benchmark> b = Benchmarks.getBySpace(newSpaceId);
+			Assert.assertEquals("New space contained a different number of benchmarks", b.size(), benchmarks.size());
+			List<Integer> originalBenchIds = benchmarks.stream().map(Benchmark::getId).collect(Collectors.toList());
+			Assert.assertTrue("New space did not contain the same benchmarks.", b.stream().allMatch(bench -> originalBenchIds.contains(bench.getId())));
+			Spaces.removeSubspace(newSpaceId);
+		} catch (Exception e) {
+			Assert.fail("Caught Exception: " + e.getMessage() + "\n" + Util.getStackTrace(e));
+		}
+	}
+
+	@StarexecTest
+	private void copySpaceSampleNoBenchmarksTest() {
+		try {
+			int newSpaceId = Spaces.copySpace(subspace.getId(), subspace2.getId(), admin.getId(), CopyPrimitivesOption.NO_JOBS_LINK_SOLVERS_SAMPLE_BENCHMARKS, 0.0);
+			List<Benchmark> b = Benchmarks.getBySpace(newSpaceId);
+			Assert.assertEquals("New space shouldn't contain any benchmarks", b.size(), 0);
+			Spaces.removeSubspace(newSpaceId);
+		} catch (Exception e) {
+			Assert.fail("Caught Exception: " + e.getMessage() + "\n" + Util.getStackTrace(e));
+		}
+	}
+		
 	@StarexecTest
 	private void CopyHierarchyTest() {
 		TreeNode<Space> spaceTree;

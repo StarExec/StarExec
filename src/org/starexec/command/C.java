@@ -13,8 +13,8 @@ public class C {
 
 	private C() {} // Make C uninstantiable
 
-	public static Boolean debugMode = true;
-	
+	public static Boolean debugMode = false;
+
 	public static String VERSION="February 06, 2016";
 	
 	public static String HELP_MESSAGE = "Welcome to StarexecCommand! This tool is intended to allow users to communicate with the " +
@@ -96,6 +96,7 @@ public class C {
 	public static String COMMAND_RESUMEJOB="resumejob";
 	public static String COMMAND_RERUNPAIR="rerunpair";
 	public static String COMMAND_RERUNJOB="rerunjob";
+	public static String COMMAND_DEBUG="debug";
 	
 		//Download commands
 	public static String COMMAND_GETJOBOUT="getjobout";
@@ -132,6 +133,7 @@ public class C {
 	public static String COMMAND_SETINSTITUTION="setinstitution";
 	public static String COMMAND_SETSPACEPUBLIC="setspacepublic";
 	public static String COMMAND_SETSPACEPRIVATE="setspaceprivate";
+
 	
 	//Uploading commands
 	public static String COMMAND_PUSHSOLVER="pushsolver";

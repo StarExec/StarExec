@@ -50,6 +50,25 @@
 	}
 }
 
+$select-dialog-separation: 7px;
+
+#hier-copy-options {
+	margin-top: $select-dialog-separation;
+}
+
+#copy-primitives-options {
+	margin-top: 15px;
+}
+
+#copyPrimitives {
+	margin-top: $select-dialog-separation;
+}
+
+#sampleRateDiv {
+	position: absolute;
+	bottom: 0px;
+}
+
 .leaderBtn {
 	width: 150px;
 	position: relative;

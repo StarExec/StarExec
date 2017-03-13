@@ -8,7 +8,7 @@
 		int jobId = Integer.parseInt(request.getParameter("id"));
 		
 		Job j = null;
-		if(Permissions.canUserSeeJob(jobId, userId)) {
+		if(Permissions.canUserSeeJob(jobId, userId).isSuccess()) {
 			j = Jobs.get(jobId);
 		}
 		

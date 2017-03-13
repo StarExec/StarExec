@@ -1022,6 +1022,7 @@ public class Jobs {
 	}
 	
 	private static Job get(int jobId, boolean includeDeleted, boolean getSimplePairs) {
+		final String methodName = "get";
 		Connection con = null;
 		ResultSet results=null;
 		CallableStatement procedure = null;
@@ -1051,6 +1052,7 @@ public class Jobs {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
+		log.debug(methodName, "Could not find job with id: "+jobId);
 		return null;
 	}
 
@@ -4319,7 +4321,7 @@ public class Jobs {
 
 					//entries in the stats table determined by stage/configuration pairs
 					key = getStageConfigHashKey(stage, stage.getConfiguration());
-					log.debug("Got solver stats key: " + key);
+					log.trace("Got solver stats key: " + key);
 					int configId = stage.getConfiguration().getId();
 					int stageNumber = stage.getStageNumber();
 					Integer conflicts = null;

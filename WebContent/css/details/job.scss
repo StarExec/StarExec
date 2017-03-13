@@ -1,3 +1,5 @@
+@import "../global/helper";
+
 fieldset {
 	width: 750px;
 }
@@ -54,6 +56,7 @@ thead {
 
 #solveTbl {
 	font-size: 82%;
+	@extend %popup-links;
 }
 
 .solvedHead, .resourceHead {
@@ -167,6 +170,7 @@ p.accent {
 	}
 
 	table.panel {
+		@extend %popup-links;
 		font-size: 70%;
 		width: 100% !important;
 		min-width: 100% !important;

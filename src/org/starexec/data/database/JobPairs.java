@@ -1070,7 +1070,7 @@ public class JobPairs {
 			File file=new File(Jobs.getLogDirectory(pair.getJobId()));
 			file = new File(file,String.valueOf(pair.getJobSpaceId()));
 			file = new File(file,pair.getId()+".txt");
-			log.debug("found this log path "+file.getAbsolutePath());
+			log.trace("found this log path "+file.getAbsolutePath());
 			return file.getAbsolutePath();
 		} catch(Exception e) {
 			log.error("getFilePath says "+e.getMessage(),e);

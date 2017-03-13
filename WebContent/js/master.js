@@ -53,7 +53,7 @@ $(document).ready(function(){
 	// Extend jquery functions here
 	$.fn.extend({
 		toHTMLString: function() {
-			return $("<div>").append(this.clone()).html();
+			return this.prop('outerHTML');
 		},
 		expandable: function(closed, callback) {
 			// Makes a fieldset expandable

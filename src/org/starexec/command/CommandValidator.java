@@ -18,6 +18,8 @@ import org.starexec.constants.R;
 import org.starexec.util.Validator;
 
 public class CommandValidator {
+
+	private static CommandLogger log = CommandLogger.getLogger(CommandValidator.class);
 	
 	/**which archives can we download from Starexec*/
 	public static String[] VALID_ARCHIVETYPES={"zip"};
@@ -450,18 +452,21 @@ public class CommandValidator {
 	public static int isValidCreateJobRequest(HashMap<String,String> commandParams) {
 		//Job creation must include a space ID, a processor ID, and a queue ID
 		if (! paramsExist(new String[]{C.PARAM_ID,C.PARAM_QUEUEID},commandParams)) {
+			log.log("A parameter did not exist, should have had parameters: " + C.PARAM_ID +", "+C.PARAM_QUEUEID);
 			return Status.ERROR_MISSING_PARAM;
 		}
 		
 		if (commandParams.containsKey(C.PARAM_TRAVERSAL)) {
 			String traversalMethod=commandParams.get(C.PARAM_TRAVERSAL);
 			if (!traversalMethod.equals(C.ARG_ROUNDROBIN) && !traversalMethod.equals(C.ARG_DEPTHFIRST)) {
+				log.log(traversalMethod + " is not a valid traversal type. Should be one of: "+C.ARG_ROUNDROBIN + ", " + C.ARG_DEPTHFIRST);
 				return Status.ERROR_BAD_TRAVERSAL_TYPE;
 			}
 		}
 		
 		if (commandParams.containsKey(C.PARAM_SEED)) {
 			if (!Validator.isValidLong(commandParams.get(C.PARAM_SEED))) {
+				log.log(commandParams.get(C.PARAM_SEED) + " was determined to not be a valid Long.");
 				return Status.ERROR_SEED;
 			}
 		}
@@ -469,15 +474,18 @@ public class CommandValidator {
 		//all IDs should be integers greater than 0
 		if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_ID)) ||
 				!Validator.isValidPosInteger(commandParams.get(C.PARAM_QUEUEID))) {
+			log.log(C.PARAM_QUEUEID + " or " + C.PARAM_ID + " was not a valid positive integer.");
 			return Status.ERROR_INVALID_ID;
 		}
 		if (commandParams.containsKey(C.PARAM_PROCID)) {
 			if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_PROCID))) {
+				log.log(C.PARAM_PROCID + " was not a valid positive integer.");
 				return Status.ERROR_INVALID_ID;
 			}
 		}
 		if (commandParams.containsKey(C.PARAM_PREPROCID)) {
 			if (!Validator.isValidPosInteger(commandParams.get(C.PARAM_PREPROCID))) {
+				log.log(C.PARAM_PREPROCID + " was not a valid positive integer.");
 				return Status.ERROR_INVALID_ID;
 			}
 		}

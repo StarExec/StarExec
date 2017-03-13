@@ -1,5 +1,7 @@
 package org.starexec.command;
 
+import org.starexec.util.Util;
+
 /**
  * Created by agieg on 9/24/2016.
  */
@@ -17,7 +19,7 @@ public class CommandLogger {
 
     void log(String message) {
         if (C.debugMode) {
-            System.out.println("[" + logClass.getSimpleName() + "] " + message);
+            System.out.println(Util.getTime() + " [" + logClass.getSimpleName() + "] " + message);
         }
     }
 }

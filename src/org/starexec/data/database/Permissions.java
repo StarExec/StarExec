@@ -1,15 +1,17 @@
 package org.starexec.data.database;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.ResultSet;
+import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.starexec.constants.R;
 import org.starexec.data.security.GeneralSecurity;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.*;
 import org.starexec.logger.StarLogger;
+import org.starexec.util.Util;
 
 /**
  * Handles all database interaction for permissions
@@ -162,7 +164,11 @@ public class Permissions {
 	 * @return True if the user can somehow see the job, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean canUserSeeJob(int jobId, int userId){		
+	public static ValidatorStatusCode canUserSeeJob(final int jobId, final int userId){
+		final String methodName = "canUserSeeJob";
+		log.entry(methodName);
+		log.debug(methodName, "\tjobId: "+jobId);
+		log.debug(methodName, "\tuserId: "+userId);
 		
 		Connection con = null;			
 		ResultSet results=null;
@@ -171,31 +177,47 @@ public class Permissions {
 			Job j = Jobs.get(jobId);
 			// job does not exist or has been deleted.
 			if (j==null) {
-				return false;
+				final String message = "Job does not exist or has been deleted.";
+				log.debug(methodName, "User can't see job: " + message);
+				return new ValidatorStatusCode(false, message);
 			}
-			if (Jobs.isPublic(jobId) || GeneralSecurity.hasAdminReadPrivileges(userId) ){
-				return true;
+			if (Jobs.isPublic(jobId) ) {
+				log.debug(methodName, "User can see job: Job is public.");
+			} else if ( GeneralSecurity.hasAdminReadPrivileges(userId) ){
+				log.debug(methodName, "User can see job: User has admin read privileges.");
+				return new ValidatorStatusCode(true);
 			}
 			
 			//if there was no special case, check to see if the user shares a space with the job or owns the job
 			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL CanViewJob(?, ?)}");
+			procedure = con.prepareCall("{CALL CanViewJob(?, ?)}");
 			procedure.setInt(1, jobId);					
 			procedure.setInt(2, userId);
 			results = procedure.executeQuery();
 
 			if(results.first()) {
-				return results.getBoolean(1);
+				boolean userCanSeeJob = results.getBoolean(1);
+				if (userCanSeeJob) {
+					log.debug(methodName, "User can see job.");
+					return new ValidatorStatusCode(true);
+				} else {
+					final String failureMessage = "You do not have permission to view this job.";
+					log.debug(methodName, "User can't see job: "+failureMessage);
+					return new ValidatorStatusCode(false, failureMessage);
+				}
+			} else {
+				log.warn(methodName, "Failed to retrieve results.");
+				return new ValidatorStatusCode(false, "Database error: Failed to retrieve results.");
 			}
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (SQLException e){
+			log.error(e.getMessage(), e);
+			return new ValidatorStatusCode(false, "Database error: Caught SQLException at " + Util.getTime());
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(con);
 			Common.safeClose(procedure);
+			log.exit(methodName);
 		}
-
-		return false;		
 	}
 	/**
 	 * Checks to see if the user has access to the solver in some way. More specifically,

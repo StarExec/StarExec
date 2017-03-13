@@ -2,7 +2,7 @@
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%		
+<%
 	try {
 		JspHelpers.handleJobPage( request, response );
 	} catch (NumberFormatException nfe) {
@@ -12,7 +12,7 @@
 	}
 %>
 
-<star:template title="${pageTitle}" js="util/sortButtons, util/jobDetailsUtilityFunctions, util/datatablesUtility, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, common/delaySpinner, explore/common, details/shared, details/job">		
+<star:template title="${pageTitle}" js="util/sortButtons, util/jobDetailsUtilityFunctions, util/datatablesUtility, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, common/delaySpinner, explore/common, details/shared, details/job">
 	<c:if test="${!isAnonymousPage}">
 		<p id="displayJobID" class="accent" >job id  = ${job.id}</p>
 		<span style="display:none" id="jobId" value="${job.id}" > </span>
@@ -34,7 +34,7 @@
 			<span style='display:none' id='jobSpaceWallclockTimeSolverStats${jsIdKey}' value='${jobSpaceIdToWallclockTimeSolverStatsJsonMap.get(jsIdKey)}'></span>
 		</c:forEach>
 	</c:if>
-	
+
 	<div id="explorer" class="jobDetails">
 		<h3>spaces</h3>
 		<ul id="exploreList">
@@ -47,16 +47,16 @@
 				<button id="matrixViewButton" type="button">matrix view</button>
 				<button id="jobPairAttributes" type="button">attributes summary</button>
 			</c:if>
-			<c:if test="${isAnonymousPage && (job.userId == userId || isAdmin) }"> 
+			<c:if test="${isAnonymousPage && (job.userId == userId || isAdmin) }">
 				<button id="solverNameKeyButton" type="button">solver name key</button>
 			</c:if>
-			
-			
+
+
 			<fieldset id="statsErrorField">
 			<legend>solver summary</legend>
 			<p> There are too many job pairs in this space hierarchy to efficiently compile them into stats and graphs. Please navigate to a subspace with fewer pairs</p>
 			</fieldset>
-					 
+
 			<fieldset id="subspaceSummaryField">
 				<legend class="expd" id="subspaceExpd">subspace summaries</legend>
 				<fieldset id="panelActions" class="tableActions">
@@ -72,10 +72,10 @@
 							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
 								<option value="${i}">${i}</option>
 							</c:forEach>
-						</select> 
+						</select>
 				</fieldset>
 			</fieldset>
-			
+
 			<fieldset id="solverSummaryField">
 				<legend>solver summary</legend>
 				<fieldset id="statActions" class="tableActions">
@@ -85,13 +85,13 @@
 						<option value="0">Primary</option>
 						<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
 							<option value="${i}">${i}</option>
-						</c:forEach>	
-					</select> 
+						</c:forEach>
+					</select>
 					<c:if test="${ !isAnonymousPage }">
 						<button id="compareSolvers">compare selected solvers</button>
 					</c:if>
 				</fieldset>
-				<c:choose>	
+				<c:choose>
 					<c:when test="${isLocalJobPage}">
 						<c:forEach var="jobspaceIdKey" items="${jobSpaceIdToSolverStatsMap.keySet()}">
 							<table id="${jobspaceIdKey}solveTbl" class="shaded">
@@ -101,9 +101,9 @@
 										<th class="configHead">config</th>
 										<th class="solvedHead"><span title="Number of job pairs for which the result matched the expected result, or those attributes are undefined, over the number of job pairs that completed without any system errors. If either the actual or the expected result is starexec-unknown, it is not counted">solved</span></th>
 										<th class="wrongHead"><span title="Number of job pairs that completed successfully and without resource errors, but for which the result did not match the expected result. If the actual or expected result is starexec-unknown, it is not counted.">wrong</span></th>
-										<th class="resourceHead"><span title="Number of job pairs for which there was a timeout or memout">resource out</span></th>							
+										<th class="resourceHead"><span title="Number of job pairs for which there was a timeout or memout">resource out</span></th>
 										<th class="failedHead"><span title="Number of job pairs that failed due to some sort of internal error, such as job script or benchmark errors">failed</span></th>
-										
+
 										<th class="unknownHead"><span title="Number of job pairs that had the result starexec-unknown">unknown</span></th>
 										<th class="incompleteHead"><span title="Number of job pairs that are still waiting to run or are running right now">incomplete</span></th>
 										<th class="timeHead"><span title="total wallclock or cpu time for all job pairs run that were solved correctly">time</span></th>
@@ -140,9 +140,9 @@
 									<th class="configHead">config</th>
 									<th class="solvedHead"><span title="Number of job pairs for which the result matched the expected result, or those attributes are undefined, over the number of job pairs that completed without any system errors. If either the actual or the expected result is starexec-unknown, it is not counted">solved</span></th>
 									<th class="wrongHead"><span title="Number of job pairs that completed successfully and without resource errors, but for which the result did not match the expected result. If the actual or expected result is starexec-unknown, it is not counted.">wrong</span></th>
-									<th class="resourceHead"><span title="Number of job pairs for which there was a timeout or memout">resource out</span></th>							
+									<th class="resourceHead"><span title="Number of job pairs for which there was a timeout or memout">resource out</span></th>
 									<th class="failedHead"><span title="Number of job pairs that failed due to some sort of internal error, such as job script or benchmark errors">failed</span></th>
-									
+
 									<th class="unknownHead"><span title="Number of job pairs that had the result starexec-unknown">unknown</span></th>
 									<th class="incompleteHead"><span title="Number of job pairs that are still waiting to run or are running right now">incomplete</span></th>
 									<th class="timeHead"><span title="total wallclock or cpu time for all job pairs run that were solved correctly">time</span></th>
@@ -156,30 +156,30 @@
 					</c:otherwise>
 				</c:choose>
 			</fieldset>
-			
+
 			<c:if test="${!isLocalJobPage}">
 				<fieldset id="graphField">
-					<legend>graphs</legend> 
+					<legend>graphs</legend>
 					<%--<img id="spaceOverview" src="" width="300" height="300" />--%>
-					<img id="spaceOverview" src="${starexecRoot}/images/loadingGraph.png" width="300" height="300" /> 
+					<img id="spaceOverview" src="${starexecRoot}/images/loadingGraph.png" width="300" height="300" />
 					<img id="solverComparison300" width="300" height="300" src="${starexecRoot}/images/loadingGraph.png" usemap="#solverComparisonMap300" />
 					<br>
 					<fieldset id="optionField">
-						<legend>options</legend> 
+						<legend>options</legend>
 						<fieldset id="spaceOverviewOptionField">
 							<legend>space overview options</legend>
-							
+
 							<input type="checkbox" id="logScale"/> <span>use log scale</span>
-							 
+
 							<select multiple size="5" id="spaceOverviewSelections">
-							
+
 							</select>
 							<button id="spaceOverviewUpdate" type="button">Update</button>
 						</fieldset>
 						<fieldset id="solverComparisonOptionField">
 							<legend>solver comparison options</legend>
 							<select id="solverChoice1">
-							
+
 							</select>
 							<select id="solverChoice2">
 							</select>
@@ -193,7 +193,7 @@
 				<p>There are too many job pairs in this space to display. Please navigate to a subspace with fewer pairs.</p>
 			</fieldset>
 			<fieldset id="pairTblField">
-				<legend>job pairs</legend>	
+				<legend>job pairs</legend>
 				<fieldset id="pairActions" class="tableActions">
 					<button class="changeTime">Use CPU Time</button>
 					<c:if test="${!isLocalJobPage}">
@@ -207,8 +207,8 @@
 						<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
 							<option value="${i}">${i}</option>
 						</c:forEach>
-						
-					</select> 
+
+					</select>
 					</fieldset>
 				<c:choose>
 					<c:when test="${isLocalJobPage}">
@@ -221,9 +221,9 @@
 										<th>config</th>
 										<th>status</th>
 										<th>time</th>
-										<th>result</th>	
-									</tr>		
-								</thead>	
+										<th>result</th>
+									</tr>
+								</thead>
 								<tbody>
 									<c:forEach var="pair" items="${jobSpaceIdToPairMap.get(jsId)}">
 										<tr>
@@ -253,9 +253,9 @@
 									<th>config</th>
 									<th>status</th>
 									<th>time</th>
-									<th>result</th>	
-								</tr>		
-							</thead>	
+									<th>result</th>
+								</tr>
+							</thead>
 							<tbody>
 								<!-- This will be populated by the job pair pagination feature -->
 							</tbody>
@@ -285,7 +285,7 @@
 								</td>
 							</tr>
 							<tr title="${isComplete ? 'this job has no pending pairs for execution' : 'this job has 1 or more pairs pending execution'}">
-								<td>status</td>		
+								<td>status</td>
 								<c:if test="${isPaused}">
 									<td>paused</td>
 								</c:if>
@@ -295,13 +295,13 @@
 								<c:if test="${isKilled}">
 									<td>killed</td>
 								</c:if>
-								<c:if test="${not isPaused && not isKilled && not isAdminPaused}">	
+								<c:if test="${not isPaused && not isKilled && not isAdminPaused}">
 									<td>${isComplete ? 'complete' : 'incomplete'}</td>
 								</c:if>
-			
+
 							</tr>
 							<tr title="the job creator's description for this job">
-								<td id="jobDescriptionTitle">description (click to edit)</td>			
+								<td id="jobDescriptionTitle">description (click to edit)</td>
 								<td>
 									<span id="jobDescriptionText">${job.description}</span>
 									<span id="editJobDescriptionWrapper">
@@ -311,61 +311,61 @@
 								</td>
 							</tr>
 							<tr title="the user who submitted this job">
-								<td>owner</td>			
+								<td>owner</td>
 								<td><star:user value="${usr}" /></td>
-							</tr>							
+							</tr>
 							<tr title="the benchmarking framework used to run the job">
 								<td>benchmarking framework</td>
 								<td>${job.benchmarkingFramework.toString().toLowerCase()}</td>
 							</tr>
 							<tr title="the date/time the job was created on StarExec">
-								<td>created</td>			
+								<td>created</td>
 								<td><fmt:formatDate pattern="MMM dd yyyy  hh:mm:ss a" value="${job.createTime}" /></td>
-							</tr>			
+							</tr>
 							<tr title="the date/time the job was completed">
-								<td>completed</td>			
+								<td>completed</td>
 								<td><fmt:formatDate pattern="MMM dd yyyy  hh:mm:ss a" value="${job.completeTime}" /></td>
-							</tr>			
+							</tr>
 							<tr title="the preprocessor that was used to process benchmarks for this job">
 								<td>preprocessor</td>
-								<c:if test="${not empty firstPreProc}">			
+								<c:if test="${not empty firstPreProc}">
 								<td title="${firstPreProc.description}">${firstPreProc.name}</td>
 								</c:if>
-								<c:if test="${empty firstPreProc}">			
+								<c:if test="${empty firstPreProc}">
 								<td>none</td>
 								</c:if>
 							</tr>
 							<tr title="the postprocessor that was used to process output for this job">
 								<td>postprocessor</td>
-								<c:if test="${not empty firstPostProc}">			
+								<c:if test="${not empty firstPostProc}">
 								<td title="${firstPostProc.description}">${firstPostProc.name}</td>
 								</c:if>
-								<c:if test="${empty firstPostProc}">			
+								<c:if test="${empty firstPostProc}">
 								<td>none</td>
 								</c:if>
 							</tr>
 							<tr title="the execution queue this job was submitted to">
-								<td>queue</td>	
+								<td>queue</td>
 								<c:if test="${not empty job.queue}">
 									<td>
 										<a href="${starexecRoot}/secure/explore/cluster.jsp">
-											${job.queue.name} 
+											${job.queue.name}
 											<%-- <img class="extLink" src="${starexecRoot}/images/external.png"/> --%>
 										</a>
 									</td>
 								</c:if>
 								<c:if test="${empty job.queue}">
 								<td>unknown</td>
-								</c:if>						
+								</c:if>
 							</tr>
 							<tr title="the wallclock timeout each pair in the job was subjected to">
 								<td>wallclock timeout</td>
 								<td>${wallclock}</td>
-							</tr>		
+							</tr>
 							<tr title="the cpu timeout each pair in the job was subjected to">
 								<td>cpu timeout</td>
 								<td>${cpu}</td>
-							</tr>		
+							</tr>
 							<tr title="the maximum memory each pair in the job was allowed to use, in gigabytes">
 								<td>max memory</td>
 								<td>${maxMemory}</td>
@@ -379,14 +379,14 @@
 								<td>${diskUsage}</td>
 							</tr>
 						</tbody>
-					</table>	
+					</table>
 				</fieldset>
 				<fieldset id="actionField">
 					<legend>actions</legend>
 					<ul id="actionList">
 						<li><a id="jobOutputDownload" href="${starexecRoot}/secure/download?type=j_outputs&id=${job.id}" >job output</a></li>
 						<li><a id="jobDownload" href="${starexecRoot}/secure/download?type=job&id=${job.id}">job information</a></li>
-						<c:if test="${job.userId == userId or isAdmin}"> 
+						<c:if test="${job.userId == userId or isAdmin}">
 							<li><button type="button" id="deleteJob">delete job</button></li>
 							<c:if test="${not buildJob}">
 								<li><a href="${starexecRoot}/secure/edit/resubmitPairs.jsp?id=${job.id}" id="rerunPairs">rerun pairs</a></li>
@@ -399,13 +399,13 @@
 							</c:if>
 						</c:if>
 					</ul>
-				</fieldset>		
+				</fieldset>
 				<fieldset id="advancedActionField">
 					<legend>advanced actions</legend>
 					<ul class='actionList'>
 						<li><a id="jobXMLDownload" href="${starexecRoot}/secure/download?type=jobXML&id=${job.id}" >job xml download</a></li>
 						<li><button id="downloadJobPageButton" type="button">download job page</button></li>
-						<c:if test="${job.userId == userId or isAdmin}"> 
+						<c:if test="${job.userId == userId or isAdmin}">
 							<c:if test="${(isPaused or isComplete) and (not buildJob)}">
 								<li><a id="addJobPairs" href="${starexecRoot}/secure/add/jobPairs.jsp?jobId=${job.id}" >add/delete job pairs</a></li>
 							</c:if>
@@ -415,13 +415,13 @@
 							<li><button type="button" id="clearCache">clear cache</button></li>
 							<li><button type="button" id="recompileSpaces">recompile spaces</button></li>
 						</c:if>
-						<c:if test="${job.userId == userId or isAdmin}"> 
+						<c:if test="${job.userId == userId or isAdmin}">
 							<c:if test="${isComplete}">
 								<li><button type="button" id="postProcess">run new postprocessor</button></li>
 							</c:if>
 						</c:if>
 						<c:if test="${isPaused or isAdminPaused}">
-							<li><button type="button" id="changeQueue">Change Queue</button></li>	
+							<li><button type="button" id="changeQueue">Change Queue</button></li>
 						</c:if>
 						<c:if test="${!isHighPriority}">
 							<li><button type="button" id="setHighPriority">set as high priority</button></li>
@@ -433,7 +433,7 @@
 				</fieldset>
 				<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 					<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
-				</div>	
+				</div>
 				<div id="dialog-return-ids" title="return ids" class="hiddenDialog">
 					<p><span id="dialog-return-ids-txt"></span></p>
 					<input type="checkbox" name="includeids" id="includeids" checked="checked"/>include ids<br>
@@ -445,10 +445,10 @@
 				</div>
 				<div id="dialog-warning" title="warning" class="hiddenDialog">
 					<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
-				</div>		
+				</div>
 				<div id="dialog-postProcess" title="run new postprocessor" class="hiddenDialog">
 					<p><span id="dialog-postProcess-txt"></span></p><br/>
-					
+
 					<p>
 					<label for="postProcessorSelection">Post Processor</label>
 					<select id="postProcessorSelection">
@@ -462,18 +462,18 @@
 							<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
 								<option value="${i}">${i}</option>
 							</c:forEach>
-						</select> 
+						</select>
 					</p>
 				</div>
 				<div id="dialog-changeQueue" title="change queue" class="hiddenDialog">
 					<p><span id="dialog-changeQueue-txt"></span></p><br/>
-					
+
 					<p><select id="changeQueueSelection">
 						<c:forEach var="q" items="${queues}">
 							<option value="${q.id}">${q.name} (${q.id})</option>
 						</c:forEach>
 					</select></p>
-					
+
 				</div>
 				<div id="dialog-spaceOverview" title="space overview chart" class="hiddenDialog">
 					<img src="" id="bigSpaceOverview"/>
