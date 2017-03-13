@@ -56,7 +56,7 @@ thead {
 
 #solveTbl {
 	font-size: 82%;
-	@extend %external-links;
+	@extend %popup-links;
 }
 
 .solvedHead, .resourceHead {
@@ -170,7 +170,7 @@ p.accent {
 	}
 
 	table.panel {
-		@extend %external-links;
+		@extend %popup-links;
 		font-size: 70%;
 		width: 100% !important;
 		min-width: 100% !important;
