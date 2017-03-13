@@ -351,7 +351,7 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 			post.setEntity(entity.build());
 
-			executeGetOrPost(post);
+			response = executeGetOrPost(post);
 
 			setSessionIDIfExists(response.getAllHeaders());
 			int id=CommandValidator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
@@ -1599,6 +1599,7 @@ public class Connection {
     protected HashMap<Integer,String> getSolverConfigs(Integer solverID, Integer limit){
 	HashMap<Integer,String> errorMap=new HashMap<Integer,String>();
 	HashMap<Integer,String> prims=new HashMap<Integer,String>();
+	HttpResponse response = null;
 	try{
 	    String serverURL = baseURL+C.URL_GETSOLVERCONFIGS;
 	    
@@ -1616,7 +1617,7 @@ public class Connection {
 		}
 		post.setEntity(new UrlEncodedFormEntity(urlParameters));
 
-		HttpResponse response=executeGetOrPost(post);
+		response=executeGetOrPost(post);
 			
 	    setSessionIDIfExists(response.getAllHeaders());
 			
@@ -1643,6 +1644,8 @@ public class Connection {
 		    errorMap.put(Status.ERROR_INTERNAL, e.getMessage());
 			
 			return errorMap;
+		} finally {
+			safeCloseResponse(response);
 		}
     }
 	/**
