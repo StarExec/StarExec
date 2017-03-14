@@ -399,7 +399,7 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 
 	if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
 
-		MEM_IN_BYTES=$(( CURRENT_STAGE_MEMORY*1000 ))
+		MEM_IN_BYTES=$(( CURRENT_STAGE_MEMORY*1000000 ))
 
 		log "Setting up cpuset cgroup..."
 		echo $$ > /sys/fs/cgroup/cpuset/system.slice/benchexec-cgroup.service/tasks
@@ -409,9 +409,6 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 		echo $$ > /sys/fs/cgroup/memory/system.slice/benchexec-cgroup.service/tasks
 		log "Setting up freezer cgroup..."
 		echo $$ > /sys/fs/cgroup/freezer/system.slice/benchexec-cgroup.service/tasks
-
-		log "checking contents of timestamper.bash"
-		cat "$SCRIPT_DIR/timestamper.bash"
 
 		log "Running runexec."
 		echo "runexec --no-container --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH $OUT_DIR/output_files $OTHER_INPUT_PATH $ARGUMENT_STRING"
@@ -495,16 +492,6 @@ if ! isOutputValid $STDOUT_FILE $CURRENT_STAGE_NUMBER $SUPPRESS_TIMESTAMP $BENCH
 	markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
 	exit 0
 fi
-
-#log "Watchfile: "
-#cat $WATCHFILE
-#printf "\n"
-#log "Varfile: "
-#cat $VARFILE
-#printf "\n"
-#log "Stdoutfile: "
-#cat $STDOUT_FILE
-#printf "\n"
 
 # check for which cores we are on
 log "epilog checking for information on cores, from runsolver's watch file:"
