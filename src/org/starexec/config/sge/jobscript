@@ -399,7 +399,7 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 
 	if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
 
-		MEM_IN_BYTES=$(( CURRENT_STAGE_MEMORY*1000 ))
+		MEM_IN_BYTES=$(( CURRENT_STAGE_MEMORY*1000000 ))
 
 		log "Setting up cpuset cgroup..."
 		echo $$ > /sys/fs/cgroup/cpuset/system.slice/benchexec-cgroup.service/tasks
