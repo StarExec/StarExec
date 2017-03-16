@@ -194,6 +194,21 @@ public class LoadBalanceMonitor {
 			u.inactivate();
 		}
 	}
+
+	/**
+	 * Checks if the monitor is only tracking one user.
+	 * @return true if the monitor is only tracking on user, else false.
+	 */
+	public boolean isMonitoringSingleUser() {
+		return loads.keySet().size() == 1;
+	}
+
+	/**
+	 * Completely resets the monitor.
+	 */
+	public void reset() {
+		loads = new HashMap<>();
+	}
 	
 	/**
 	 * Sets the list of users managed by this monitor to the given set

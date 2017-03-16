@@ -57,7 +57,7 @@ public abstract class JobManager {
 
 	private static String mainTemplate = null; // initialized below
 
-	private static HashMap<Integer, LoadBalanceMonitor> queueToMonitor = new HashMap<Integer, LoadBalanceMonitor>();
+	private static HashMap<Integer, LoadBalanceMonitor> queueToMonitor = new HashMap<>();
 	
 	/**
 	 * Returns the string representation of the LoadBalanceMonitor for the given queue.
@@ -433,7 +433,14 @@ public abstract class JobManager {
 					final SchedulingState s = it.next();
 					pendingUsers.put(s.job.getUserId(), userToCurrentQueueLoad.get(s.job.getUserId()));
 				}
-				
+
+
+				// Reset the monitor if it is only tracking one user.
+				// We don't need to track a single user because they're not competing with anyone for the queue.
+				if (monitor.isMonitoringSingleUser()) {
+					monitor.reset();
+				}
+
 				monitor.setUsers(pendingUsers);
 				monitor.setUserLoadDataFormattedString();
 				it = schedule.iterator();
