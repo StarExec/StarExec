@@ -2,11 +2,7 @@ package org.starexec.servlets;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -308,7 +304,7 @@ public class CreateJob extends HttpServlet {
 				} else if (benchMethod.equals("runAllBenchInHierarchy")) {
 					log.debug("got request to run all in bench hierarchy");
 
-					HashMap<Integer, List<JobPair>> spaceToPairs = JobManager.addBenchmarksFromHierarchy(Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), configIds, SP);
+					Map<Integer, List<JobPair>> spaceToPairs = JobManager.addBenchmarksFromHierarchy(Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), configIds, SP);
 
 					if (traversalMethod.equals("depth")) {
 						log.debug("User selected depth-first traversal");

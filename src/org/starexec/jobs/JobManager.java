@@ -9,10 +9,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.starexec.backend.Backend;
-import org.starexec.backend.GridEngineBackend;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Common;
@@ -57,7 +53,7 @@ public abstract class JobManager {
 
 	private static String mainTemplate = null; // initialized below
 
-	private static HashMap<Integer, LoadBalanceMonitor> queueToMonitor = new HashMap<>();
+	private static Map<Integer, LoadBalanceMonitor> queueToMonitor = new HashMap<>();
 	
 	/**
 	 * Returns the string representation of the LoadBalanceMonitor for the given queue.
@@ -81,7 +77,7 @@ public abstract class JobManager {
 	 */
 	public synchronized static void clearLoadBalanceMonitors() {
 		log.debug("Clearing out all load balancing data");
-		queueToMonitor = new HashMap<Integer, LoadBalanceMonitor>();
+		queueToMonitor = new HashMap<>();
 		JobPairs.getAndClearTimeDeltas(-1);
 	}
 	
@@ -127,7 +123,7 @@ public abstract class JobManager {
 				    	// This ensures users are set to inactive correctly
 				    	LoadBalanceMonitor m = queueToMonitor.get(q.getId());
 				    	if (m!=null) {
-				    		m.setUsers(new HashMap<Integer,Integer>());
+				    		m.setUsers(new HashMap<>());
 							m.setUserLoadDataFormattedString();
 				    	}
 				    }
@@ -328,7 +324,7 @@ public abstract class JobManager {
 			// add all the jobs in jobList to a SchedulingState in the schedule.
 			for (final Job job : joblist) {
 				// contains users that we have identified as exceeding their quota. These users will be skipped
-				final HashMap<Integer, Boolean> quotaExceededUsers = new HashMap<Integer,Boolean>();
+				final Map<Integer, Boolean> quotaExceededUsers = new HashMap<>();
 				
 				if (!quotaExceededUsers.containsKey(job.getUserId())) {
 					//TODO: Handle in a new thread if this looks slow on Starexec
@@ -379,7 +375,7 @@ public abstract class JobManager {
 			
 			// maps user IDs to the total 'load' that user is responsible for on the current queue,
 			// where load is the sum of wallclock timeouts of all active pairs on the queue
-			final HashMap<Integer, Integer> userToCurrentQueueLoad = new HashMap<Integer, Integer>();
+			final Map<Integer, Integer> userToCurrentQueueLoad = new HashMap<>();
 
 			// maps user IDs to the scheduling states containing high priority jobs that the user owns.
 			final Map<Integer, List<SchedulingState>> userToHighPriorityStates = new HashMap<>();
@@ -428,7 +424,7 @@ public abstract class JobManager {
 				it = schedule.iterator();
 				
 				//add all of the users that still have pending entries to the list of users
-				final HashMap<Integer, Integer> pendingUsers=new HashMap<Integer, Integer>();
+				final Map<Integer, Integer> pendingUsers=new HashMap<Integer, Integer>();
 				while (it.hasNext()) {
 					final SchedulingState s = it.next();
 					pendingUsers.put(s.job.getUserId(), userToCurrentQueueLoad.get(s.job.getUserId()));
@@ -692,7 +688,7 @@ public abstract class JobManager {
 		}
 		
 		// maps from strings in the jobscript to the strings that should be filled in
-		HashMap<String, String> replacements = new HashMap<String, String>();
+		Map<String, String> replacements = new HashMap<>();
 		//Dependencies
 		if (pair.getBench().getUsesDependencies())
 		{
@@ -1214,7 +1210,7 @@ public abstract class JobManager {
 	 * @param j The job object to add the job pairs to 
 	 * @param spaceToPairs A mapping from spaces to lists of job pairs in that space
 	 */
-	public static void addJobPairsDepthFirst(Job j, HashMap<Integer, List<JobPair>> spaceToPairs) {
+	public static void addJobPairsDepthFirst(Job j, Map<Integer, List<JobPair>> spaceToPairs) {
 		for (Integer spaceId : spaceToPairs.keySet()) {
 			log.debug("adding this many pairs from space id = "+spaceId+" "+spaceToPairs.get(spaceId).size());
 			j.addJobPairs(spaceToPairs.get(spaceId));
@@ -1227,7 +1223,7 @@ public abstract class JobManager {
 	 * @param j The job object to add the job pairs to
 	 * @param spaceToPairs A mapping from spaces to lists of job pairs in that space
 	 */
-	public static void addJobPairsRoundRobin(Job j, HashMap<Integer, List<JobPair>> spaceToPairs) {
+	public static void addJobPairsRoundRobin(Job j, Map<Integer, List<JobPair>> spaceToPairs) {
 		try {
 			int index=0;
 			while (spaceToPairs.size()>0) {
@@ -1266,13 +1262,13 @@ public abstract class JobManager {
 	 * @return A HashMap that maps space IDs to all the job pairs in that space. These can then be added to a job in any
 	 * desirable order
 	 */
-	public static HashMap<Integer,List<JobPair>> addBenchmarksFromHierarchy(int spaceId, int userId, List<Integer> configIds, HashMap<Integer, String> SP) {
+	public static Map<Integer,List<JobPair>> addBenchmarksFromHierarchy(int spaceId, int userId, List<Integer> configIds, HashMap<Integer, String> SP) {
 		try {
-			HashMap<Integer,List<JobPair>> spaceToPairs=new HashMap<Integer,List<JobPair>>();
+			Map<Integer,List<JobPair>> spaceToPairs=new HashMap<>();
 			
 			List<Solver> solvers = Solvers.getWithConfig(configIds);
 			
-			List<Benchmark> benchmarks =new ArrayList<Benchmark>();
+			List<Benchmark> benchmarks =new ArrayList<>();
 			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(spaceId, userId));
 			spaces.add(Spaces.get(spaceId));
 		

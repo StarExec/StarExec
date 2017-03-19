@@ -1,10 +1,6 @@
 package org.starexec.jobs;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import org.starexec.logger.StarLogger;
 import org.starexec.data.database.Users;
@@ -215,7 +211,7 @@ public class LoadBalanceMonitor {
 	 * of users.
 	 * @param userIdsToDefaults Mapping of user ids to values to add to their default load.
 	 */
-	public void setUsers(HashMap<Integer, Integer> userIdsToDefaults) {
+	public void setUsers(Map<Integer, Integer> userIdsToDefaults) {
 		for (Integer i : loads.keySet()) {
 			if (!userIdsToDefaults.containsKey(i)) {
 				removeUser(i);
