@@ -53,7 +53,9 @@ public class SessionFilter implements Filter {
 		if(httpRequest.getUserPrincipal() != null) {
 			String userEmail = httpRequest.getUserPrincipal().getName();
 			// Check if they have the necessary user SessionUtil stored in their session
-			if(SessionUtil.getUser(httpRequest).getId() == R.PUBLIC_USER_ID) {
+			int userId = SessionUtil.getUser(httpRequest).getId();
+			log.debug(method, "User Id of request was: " + userId);
+			if(userId == R.PUBLIC_USER_ID) {
 				// If not, retrieve the user's information from the database
 				User user = Users.get(userEmail);
 				
