@@ -211,7 +211,12 @@ public class LoadBalanceMonitor {
 	 * of users.
 	 * @param userIdsToDefaults Mapping of user ids to values to add to their default load.
 	 */
-	public void setUsers(Map<Integer, Integer> userIdsToDefaults) {
+	public void setUsers(Map<Integer, Long> userIdsToDefaults) {
+		/*boolean noneActive = loads.values().stream().noneMatch(UserLoadData::active);
+		if (noneActive) {
+			this.reset();
+		}*/
+
 		for (Integer i : loads.keySet()) {
 			if (!userIdsToDefaults.containsKey(i)) {
 				removeUser(i);
