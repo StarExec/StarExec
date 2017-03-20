@@ -222,7 +222,7 @@ public class LoadBalanceMonitor {
 		// new users from having an advantage over existing users.
 		Long m = getMin();
 		if (m==null) {
-			m=0l;
+			m=0L;
 		}
 		for (Integer i : userIdsToDefaults.keySet()) {
 			addUser(i, userIdsToDefaults.get(i) + m, m);
