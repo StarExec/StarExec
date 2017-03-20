@@ -194,4 +194,38 @@ public class LoadBalanceMonitorTests {
 		monitor.changeLoad(2, 10);
 		Assert.assertEquals(10, (long)monitor.getMin());
 	}
+	@Test
+	public void testAddUserWithInactiveUser() {
+		Map<Integer, Long> userOne = new HashMap<>();
+		final int userOneId = 1;
+		// 24 hours in seconds
+		final Long twentyFourHours = 86400L;
+		userOne.put(userOneId, twentyFourHours);
+		monitor.setUsers(userOne);
+
+		// Make user 1 inactive.
+		monitor.setUsers(new HashMap<>());
+
+		Map<Integer, Long> userTwo = new HashMap<>();
+		final int userTwoId = 2;
+		final Long noLoad = 0L;
+		userTwo.put(userTwoId, noLoad);
+		monitor.setUsers(userTwo);
+
+		Map<Integer, Long> userOneAndTwo = new HashMap<>();
+		userOneAndTwo.put(userOneId, noLoad);
+		userOneAndTwo.put(userTwoId, noLoad);
+
+		monitor.setUsers(userOneAndTwo);
+
+		Long userOneLoad = monitor.getLoad(userOneId);
+		userOneLoad = userOneLoad == null ? 0L : userOneLoad;
+
+		Long userTwoLoad = monitor.getLoad(userTwoId);
+		userTwoLoad = userTwoLoad == null ? 0L : userTwoLoad;
+
+		Assert.assertEquals(noLoad, monitor.getMin());
+		Assert.assertEquals(twentyFourHours, userOneLoad);
+		Assert.assertEquals(noLoad, userTwoLoad);
+	}
 }
