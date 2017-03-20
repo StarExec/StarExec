@@ -200,6 +200,16 @@ public class LoadBalanceMonitor {
 	}
 
 	/**
+	 * Resets the monitor if all the users are inactive.
+	 */
+	public void resetIfAllUsersInactive() {
+		boolean noneActive = loads.values().stream().noneMatch(UserLoadData::active);
+		if (noneActive) {
+			this.reset();
+		}
+	}
+
+	/**
 	 * Completely resets the monitor.
 	 */
 	public void reset() {
