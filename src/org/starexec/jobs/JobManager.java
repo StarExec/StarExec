@@ -424,7 +424,7 @@ public abstract class JobManager {
 				it = schedule.iterator();
 				
 				//add all of the users that still have pending entries to the list of users
-				final Map<Integer, Integer> pendingUsers=new HashMap<Integer, Integer>();
+				final Map<Integer, Integer> pendingUsers=new HashMap<>();
 				while (it.hasNext()) {
 					final SchedulingState s = it.next();
 					pendingUsers.put(s.job.getUserId(), userToCurrentQueueLoad.get(s.job.getUserId()));
