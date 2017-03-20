@@ -271,14 +271,14 @@ public class QueueTests extends TestSequence {
 	
 	@StarexecTest 
 	private void getUserLoadOnEmptyQueueTest() {
-		Assert.assertEquals((Integer)0, Queues.getUserLoadOnQueue(testQueue.getId(), owner.getId()));
+		Assert.assertEquals((long)0, (long)Queues.getUserLoadOnQueue(testQueue.getId(), owner.getId()));
 	}
 	
 	@StarexecTest
 	private void getUserLoadOnQueueTest() {
 		JobPair jp =job.getJobPairs().get(0);
 		JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_RUNNING.getVal());
-		Assert.assertEquals((Integer)job.getWallclockTimeout(), Queues.getUserLoadOnQueue(testQueue.getId(), owner.getId()));
+		Assert.assertEquals((long)job.getWallclockTimeout(), (long)Queues.getUserLoadOnQueue(testQueue.getId(), owner.getId()));
 		JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_COMPLETE.getVal());
 	}
 	
