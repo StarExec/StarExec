@@ -2,6 +2,7 @@ package org.starexec.test.junit.jobs;
 
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,8 +19,8 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void testAddSingleUser() {
-		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
-		users.put(1, 0);
+		Map<Integer, Long> users = new HashMap<>();
+		users.put(1, 0L);
 		monitor.setUsers(users);
 		Assert.assertEquals(0, (long)monitor.getLoad(1));
 		Assert.assertEquals(0, (long)monitor.getMin());
@@ -27,8 +28,8 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void addExistingUser() {
-		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
-		users.put(1, 0);
+		Map<Integer, Long> users = new HashMap<>();
+		users.put(1, 0L);
 		monitor.setUsers(users);
 		monitor.changeLoad(1, 1);
 		monitor.setUsers(users);
@@ -37,11 +38,11 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void testRemoveSingleUser() {
-		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
-		users.put(1, 0);
+		Map<Integer, Long> users = new HashMap<>();
+		users.put(1, 0L);
 		monitor.setUsers(users);
 		monitor.changeLoad(1, 12);
-		monitor.setUsers(new HashMap<Integer, Integer>());
+		monitor.setUsers(new HashMap<>());
 		
 		// user is still there, just inactive
 		Assert.assertEquals(12, (long)monitor.getLoad(1));
@@ -50,9 +51,9 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void testRemoveMinUser() {
-		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
-		users.put(1, 0);
-		users.put(2, 0);
+		Map<Integer, Long> users = new HashMap<>();
+		users.put(1, 0L);
+		users.put(2, 0L);
 		monitor.setUsers(users);
 		monitor.changeLoad(1, 3);
 		Assert.assertEquals(0, (long)monitor.getMin());
@@ -64,8 +65,8 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void testIncrementLoadSingleUser() {
-		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
-		users.put(1, 0);
+		Map<Integer, Long> users = new HashMap<>();
+		users.put(1, 0L);
 		monitor.setUsers(users);
 		monitor.changeLoad(1, 6);
 		Assert.assertEquals(6, (long)monitor.getLoad(1));
@@ -79,9 +80,9 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void testIncrementLoadTwoUsers() {
-		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
-		users.put(1, 0);
-		users.put(2, 0);
+		Map<Integer, Long> users = new HashMap<>();
+		users.put(1, 0L);
+		users.put(2, 0L);
 		monitor.setUsers(users);
 		monitor.changeLoad(1, 6);
 		Assert.assertEquals(6, (long)monitor.getLoad(1));
@@ -96,10 +97,10 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void testSetUsersEmptyMonitor() {
-		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
-		users.put(1, 3);
-		users.put(2, 3);
-		users.put(3, 3);
+		Map<Integer, Long> users = new HashMap<>();
+		users.put(1, 3L);
+		users.put(2, 3L);
+		users.put(3, 3L);
 
 		monitor.setUsers(users);
 
@@ -111,14 +112,14 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void testSetUsersNoOverlap() {
-		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
-		users.put(4, 0);
+		Map<Integer, Long> users = new HashMap<>();
+		users.put(4, 0L);
 		monitor.setUsers(users);
 		monitor.changeLoad(4, 5);
-		users = new HashMap<Integer, Integer>();
-		users.put(1, 6);
-		users.put(2, 6);
-		users.put(3, 6);
+		users = new HashMap<>();
+		users.put(1, 6L);
+		users.put(2, 6L);
+		users.put(3, 6L);
 		monitor.setUsers(users);
 		for (Integer i : users.keySet()) {
 			Assert.assertEquals(6, (long)monitor.getLoad(i));
@@ -129,15 +130,15 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void testSetUsersAllOverlap() {
-		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
-		users.put(1, 0);
-		users.put(2, 0);
+		Map<Integer, Long> users = new HashMap<>();
+		users.put(1, 0L);
+		users.put(2, 0L);
 		monitor.setUsers(users);
 		monitor.changeLoad(1, 2);
 		monitor.changeLoad(2, 2);
-		users = new HashMap<Integer, Integer>();
-		users.put(1, 3);
-		users.put(2, 3);
+		users = new HashMap<>();
+		users.put(1, 3L);
+		users.put(2, 3L);
 		monitor.setUsers(users);
 		for (Integer i : users.keySet()) {
 			Assert.assertEquals(2, (long)monitor.getLoad(i));
@@ -147,8 +148,8 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void skipUserTestSingleUser() {
-		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
-		users.put(1, 0);
+		Map<Integer, Long> users = new HashMap<>();
+		users.put(1, 0L);
 		monitor.setUsers(users);
 		Assert.assertFalse(monitor.skipUser(1));
 		monitor.changeLoad(1, 3000);
@@ -157,9 +158,9 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void skipUserTestTwoUsers() {
-		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
-		users.put(1, 0);
-		users.put(2, 0);
+		Map<Integer, Long> users = new HashMap<>();
+		users.put(1, 0L);
+		users.put(2, 0L);
 		monitor.setUsers(users);
 		monitor.changeLoad(1, 1);
 		Assert.assertFalse(monitor.skipUser(1));
@@ -171,11 +172,11 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void testAddUserAfterLoad() {
-		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
-		users.put(1, 0);
+		Map<Integer, Long> users = new HashMap<>();
+		users.put(1, 0L);
 		monitor.setUsers(users);
 		monitor.changeLoad(1, 5);
-		users.put(2, 0);
+		users.put(2, 0L);
 		monitor.setUsers(users);
 		Assert.assertEquals(5, (long)monitor.getLoad(1));
 		Assert.assertEquals(5, (long)monitor.getLoad(2));
@@ -184,10 +185,10 @@ public class LoadBalanceMonitorTests {
 	
 	@Test
 	public void testForMinWithInactiveUser() {
-		HashMap<Integer, Integer> users = new HashMap<Integer, Integer>();
-		users.put(1, 0);
+		Map<Integer, Long> users = new HashMap<>();
+		users.put(1, 0L);
 		monitor.setUsers(users);
-		users.put(2, 0);
+		users.put(2, 0L);
 		users.remove(1);
 		monitor.setUsers(users);
 		monitor.changeLoad(2, 10);

@@ -311,7 +311,6 @@ public abstract class JobManager {
 	 */
 	public static void submitJobs(final List<Job> joblist, final Queue q, int queueSize, final int nodeCount) {
         final String methodName = "submitJobs";
-		final Random random = new Random();
 		final LoadBalanceMonitor monitor = getMonitor(q.getId());
 
 		// Reset the monitor if it is only tracking one user.
@@ -382,7 +381,7 @@ public abstract class JobManager {
 			
 			// maps user IDs to the total 'load' that user is responsible for on the current queue,
 			// where load is the sum of wallclock timeouts of all active pairs on the queue
-			final Map<Integer, Integer> userToCurrentQueueLoad = new HashMap<>();
+			final Map<Integer, Long> userToCurrentQueueLoad = new HashMap<>();
 
 			// maps user IDs to the scheduling states containing high priority jobs that the user owns.
 			final Map<Integer, List<SchedulingState>> userToHighPriorityStates = new HashMap<>();
@@ -431,7 +430,7 @@ public abstract class JobManager {
 				it = schedule.iterator();
 				
 				//add all of the users that still have pending entries to the list of users
-				final Map<Integer, Integer> pendingUsers=new HashMap<>();
+				final Map<Integer, Long> pendingUsers=new HashMap<>();
 				while (it.hasNext()) {
 					final SchedulingState s = it.next();
 					pendingUsers.put(s.job.getUserId(), userToCurrentQueueLoad.get(s.job.getUserId()));

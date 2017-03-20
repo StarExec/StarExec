@@ -659,7 +659,7 @@ public class Queues {
 	 * @return The integer sum of wallclock timeouts, or null on failure
 	 */
 
-	public static Integer getUserLoadOnQueue(int queueId, int userId) {
+	public static Long getUserLoadOnQueue(int queueId, int userId) {
 		Connection con = null;	
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -671,7 +671,7 @@ public class Queues {
 			results = procedure.executeQuery();
 
 			while(results.next()){
-				return results.getInt("queue_load");	
+				return results.getLong("queue_load");
 			}							
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
