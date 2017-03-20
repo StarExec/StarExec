@@ -313,6 +313,13 @@ public abstract class JobManager {
         final String methodName = "submitJobs";
 		final Random random = new Random();
 		final LoadBalanceMonitor monitor = getMonitor(q.getId());
+
+		// Reset the monitor if it is only tracking one user.
+		// We don't need to track a single user because they're not competing with anyone for the queue.
+		if (monitor.isMonitoringSingleUser()) {
+			monitor.reset();
+		}
+
 		try {
 			log.entry(methodName);
 
@@ -428,13 +435,6 @@ public abstract class JobManager {
 				while (it.hasNext()) {
 					final SchedulingState s = it.next();
 					pendingUsers.put(s.job.getUserId(), userToCurrentQueueLoad.get(s.job.getUserId()));
-				}
-
-
-				// Reset the monitor if it is only tracking one user.
-				// We don't need to track a single user because they're not competing with anyone for the queue.
-				if (monitor.isMonitoringSingleUser()) {
-					monitor.reset();
 				}
 
 				monitor.setUsers(pendingUsers);
