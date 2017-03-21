@@ -226,7 +226,7 @@ class PeriodicTasks {
             try {
                 ImmutableSet<PairIdJobId> brokenPairs = JobPairs.getPairsEnqueuedLongerThan(R.PAIR_ENQUEUE_TIME_THRESHOLD);
                 for (PairIdJobId pairAndJob : brokenPairs) {
-                    log.warn("Detected pair that has been enqueued for "+R.PAIR_ENQUEUE_TIME_THRESHOLD+" hours "+
+                    log.debug("Detected pair that has been enqueued for "+R.PAIR_ENQUEUE_TIME_THRESHOLD+" hours "+
                             "without running. Pair has id "+pairAndJob.pairId+" and is in job with id "+pairAndJob.jobId);
 
                 }
