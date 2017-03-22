@@ -830,7 +830,7 @@ function setupChangeQueueButton() {
 							function(returnCode) {
 								var s=parseReturnCode(returnCode);
 								if (s) {
-									setTimeout(function(){document.location.reload(true);}, 1000);
+									setTimeout(function(){killAjaxRequests();document.location.reload(true);}, 1000);
 
 								}
 							},
@@ -1103,13 +1103,15 @@ function initDataTables(){
 	}
 
 	$solveTbl.on("mousedown", "tr", function(){
-		if (!$(this).hasClass("row_selected")) {
+		var $this = $(this);
+
+		if (!$this.hasClass("row_selected")) {
 			$solveTbl.find(".second_selected").removeClass("second_selected row_selected");
-			$solveTbl.find(".first_selected" ).removeClass("first_selected second_selected");
-			$(this).addClass("first_selected row_selected");
+			$solveTbl.find(".first_selected" ).removeClass("first_selected").addClass("second_selected");
+			$this.addClass("first_selected row_selected");
 		} else {
-			$(this).removeClass("row_selected first_selected second_selected");
-			$solveTbl.find(".second_selected").removeClass("second_selected first_selected first_selected");
+			$this.removeClass("row_selected first_selected second_selected");
+			$solveTbl.find(".second_selected").removeClass("second_selected").addClass("first_selected");
 		}
 
 		if ($solveTbl.find(".second_selected").size()>0) {
@@ -1222,11 +1224,13 @@ function getSolverTableInitializer() {
 		return solverTemplate.join("");
 	}
 
-	var configTemplate = ["configuration.jsp?id=",null]
-	var getConfigLink = function(config) {
-		configTemplate[1] = config;
+	var configTemplate = ["<a target='_blank' class='configLink' href='configuration.jsp?id=",null,"' id='",null,"'>",null,"</a>"];
+	var formatConfig     = function(row, type, val) {
+		configTemplate[1] = val[CONFIG_ID];
+		configTemplate[3] = val[CONFIG_ID];
+		configTemplate[5] = val[CONFIG_NAME];
 		return configTemplate.join("");
-	}
+	};
 
 	var hideLink = function(href, text){return text;};
 	var noOp = function(){}; // NOOP; no need to create URLs we won't use
@@ -1234,18 +1238,17 @@ function getSolverTableInitializer() {
 	||  DETAILS_JOB.primitivesToAnonymize === "allButBench") {
 		link = hideLink;
 		getSolverLink = noOp;
-		getConfigLink = noOp;
 		getPairsInSpaceLink = noOp;
 		getConflictingLink = noOp;
+
+		formatConfig = function(row, type, val) {
+			return val[CONFIG_NAME];
+		}
 	}
 
 	var formatSolver     = function(row, type, val) {
 		var href = getSolverLink(val[SOLVER_ID]);
 		return link(href, val[SOLVER_NAME]);
-	};
-	var formatConfig     = function(row, type, val) {
-		var href = getConfigLink(val[CONFIG_ID]);
-		return link(href, val[CONFIG_NAME]);
 	};
 	var formatSolved     = function(row, type, val) {
 		var href = getPairsInSpaceLink("solved", val[CONFIG_ID], val[STAGE]);
