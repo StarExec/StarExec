@@ -28,14 +28,19 @@ public class SessionUtil {
 	 * @return The user object representing the currently logged in user
 	 */
 	public static User getUser(HttpServletRequest request) {
+		final String methodName = "getUser";
 		Object user = request.getSession().getAttribute(SessionUtil.USER);
 		if (user==null) {
+			log.debug(methodName, "User was null.");
 			if (publicUser==null) {
+				log.debug(methodName, "public user was null.");
 				publicUser = Users.get(R.PUBLIC_USER_ID);
 			}
 			return publicUser;
 		}
-		return (User)user;
+		User castUser = (User)user;
+		log.debug("Returning user with id="+castUser.getId()+" email="+((User) user).getEmail());
+		return castUser;
 	}
 	
 	/**
