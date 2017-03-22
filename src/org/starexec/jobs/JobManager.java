@@ -122,7 +122,9 @@ public abstract class JobManager {
 						// so that it is no longer tracking users. This strategy ensures
 						// that it is always in the user's best interest to run job pairs.
 				    	LoadBalanceMonitor m = queueToMonitor.get(q.getId());
+						log.info("No jobs to submit, resetting monitor for queue with id: "+q.getId());
 				    	m.reset();
+						m.setUserLoadDataFormattedString();
 				    }
 				} else {
 				    log.info("Not adding more job pairs to queue " + qname + ", which has " + queueSize + " pairs enqueued.");
