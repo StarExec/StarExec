@@ -1210,7 +1210,7 @@ function getSolverTableInitializer() {
 		return pairsTemplate.join("");
 	}
 
-	var conflictsTemplate = ["conflictingBenchmarks.jsp?jobId=",null,"configId=",null,"&stageNumber=",null];
+	var conflictsTemplate = ["conflictingBenchmarks.jsp?jobId=",null,"&configId=",null,"&stageNumber=",null];
 	var getConflictingLink = function(configId, stageNumber) {
 		conflictsTemplate[1] = jobId;
 		conflictsTemplate[3] = configId;
