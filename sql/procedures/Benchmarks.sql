@@ -425,8 +425,8 @@ CREATE PROCEDURE GetBrokenBenchDependencies(IN _benchId INT)
         FROM benchmarks join bench_dependency 
             ON benchmarks.id=bench_dependency.secondary_bench_id 
         WHERE 
-            benchmarks.deleted = 1 
-            OR benchmarks.recycled = 1 
+            (benchmarks.deleted = 1 
+            OR benchmarks.recycled = 1)
             AND primary_bench_id = _benchId;
     END //
 
