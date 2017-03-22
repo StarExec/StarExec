@@ -118,14 +118,11 @@ public abstract class JobManager {
 				    if (joblist.size() > 0) {
 				    	submitJobs(joblist, q, queueSize,nodeCount);
 				    } else {
-				    	// if we have no jobs to submit, that means we should set
-				    	// the active users in the monitor to the empty set.
-				    	// This ensures users are set to inactive correctly
+				    	// If we have no jobs to submit, reset the queue monitor
+						// so that it is no longer tracking users. This strategy ensures
+						// that it is always in the user's best interest to run job pairs.
 				    	LoadBalanceMonitor m = queueToMonitor.get(q.getId());
-				    	if (m!=null) {
-				    		m.setUsers(new HashMap<>());
-							m.setUserLoadDataFormattedString();
-				    	}
+				    	m.reset();
 				    }
 				} else {
 				    log.info("Not adding more job pairs to queue " + qname + ", which has " + queueSize + " pairs enqueued.");
