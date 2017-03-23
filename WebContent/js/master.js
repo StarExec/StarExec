@@ -144,7 +144,7 @@ jQuery(function($) {
 		 * We might be able to get away with `.next()` instead, but this is
 		 *   more robust of the order of elements ever changes in the future
 		 */
-		var container = that.parentsUntil(".expdContainer");
+		var container = that.parents(".expdContainer");
 		var footer = container.find(".dataTables_length, .dataTables_filter");
 		var selectAll = container.find(".selectWrap");
 

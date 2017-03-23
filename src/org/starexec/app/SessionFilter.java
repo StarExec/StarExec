@@ -11,7 +11,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.starexec.constants.R;
 import org.starexec.data.database.Common;
 import org.starexec.data.database.Logins;
@@ -43,49 +42,62 @@ public class SessionFilter implements Filter {
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
-		final String method = "doFilter";
-		log.entry(method);
-		// Cast the servlet request to an httpRequest so we have access to the session
-		HttpServletRequest httpRequest = (HttpServletRequest) request; 		
-		
-		HttpServletResponse httpResponse = (HttpServletResponse) response;
-		// If the user is logged in...
-		if(httpRequest.getUserPrincipal() != null) {
-			String userEmail = httpRequest.getUserPrincipal().getName();
-			// Check if they have the necessary user SessionUtil stored in their session
-			if(SessionUtil.getUser(httpRequest).getId() == R.PUBLIC_USER_ID) {
-				// If not, retrieve the user's information from the database
-				User user = Users.get(userEmail);
-				
-				// And add it to their session to be used elsewhere
-				httpRequest.getSession().setAttribute(SessionUtil.USER, user);
-				
-				// Also add an empty permission's cache for the user
-				httpRequest.getSession().setAttribute(SessionUtil.PERMISSION_CACHE, new HashMap<Integer, Permission>());
-				
-				// Add the login to the database
-				this.logUserLogin(user, httpRequest);				
-			}
-			if (R.DEBUG_MODE_ACTIVE){
-				if (!GeneralSecurity.hasAdminReadPrivileges(Users.get(userEmail).getId())) {
-					httpRequest.getSession().invalidate();
-					httpResponse.sendRedirect(Util.docRoot(""));	
-					return;
+		try {
+			final String method = "doFilter";
+			// Cast the servlet request to an httpRequest so we have access to the session
+			HttpServletRequest httpRequest = (HttpServletRequest) request;
+
+			HttpServletResponse httpResponse = (HttpServletResponse) response;
+			// If the user is logged in...
+			if (httpRequest.getUserPrincipal() != null) {
+				String userEmail = httpRequest.getUserPrincipal().getName();
+				// Check if they have the necessary user SessionUtil stored in their session
+				int userId = SessionUtil.getUser(httpRequest).getId();
+				log.debug(method, "User Id of request was: " + userId);
+				log.debug(method, "User email of request was: " + userEmail);
+				if (userId == R.PUBLIC_USER_ID) {
+					log.debug(method, "User is currently set to public user... Logging user in.");
+					// If not, retrieve the user's information from the database
+					User user = Users.get(userEmail);
+
+					// And add it to their session to be used elsewhere
+					httpRequest.getSession().setAttribute(SessionUtil.USER, user);
+
+					// Also add an empty permission's cache for the user
+					httpRequest.getSession().setAttribute(SessionUtil.PERMISSION_CACHE, new HashMap<Integer, Permission>());
+
+					// Add the login to the database
+					this.logUserLogin(user, httpRequest);
 				}
-			}
-			User user = SessionUtil.getUser(httpRequest);
-			//suspended and unauthorized users cannot utilize the system: always place them back on the index page
-			//whenever they try to access anything secure.
-			if (user.getRole().equals(R.SUSPENDED_ROLE_NAME) || user.getRole().equals(R.UNAUTHORIZED_ROLE_NAME)) {
-				if (!httpRequest.getRequestURI().equals("/"+R.STAREXEC_APPNAME+"/")) {
-					httpResponse.sendRedirect(Util.docRoot(""));
+				if (R.DEBUG_MODE_ACTIVE) {
+					log.debug(method, "Debug mode is active.");
+					if (!GeneralSecurity.hasAdminReadPrivileges(Users.get(userEmail).getId())) {
+						log.debug(method, "User does not have admin read privileges, redirecting to index...");
+						httpRequest.getSession().invalidate();
+						httpResponse.sendRedirect(Util.docRoot(""));
+						return;
+					}
 				}
+				User user = SessionUtil.getUser(httpRequest);
+				log.debug(method, "User role was found to be "+user.getRole());
+				//suspended and unauthorized users cannot utilize the system: always place them back on the index page
+				//whenever they try to access anything secure.
+				if (user.getRole().equals(R.SUSPENDED_ROLE_NAME) || user.getRole().equals(R.UNAUTHORIZED_ROLE_NAME)) {
+					if (!httpRequest.getRequestURI().equals("/" + R.STAREXEC_APPNAME + "/")) {
+						log.debug(method, "Redirecting "+user.getRole()+" user to index.");
+						httpResponse.sendRedirect(Util.docRoot(""));
+					}
+				}
+			} else {
+				log.debug(method, "httpRequest.getUserPrincipal() returned null.");
 			}
+
+			// Be nice and pass on the request to the next filter
+			chain.doFilter(request, response);
+		} catch (Throwable t) {
+			log.debug("Caught throwable in doFilter. ", t);
+			throw t;
 		}
-		
-		// Be nice and pass on the request to the next filter
-		chain.doFilter(request, response);
-		log.exit(method);
 	}
 	
 	/**

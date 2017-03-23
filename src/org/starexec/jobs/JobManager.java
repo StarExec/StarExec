@@ -9,10 +9,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.tuple.MutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-import org.starexec.backend.Backend;
-import org.starexec.backend.GridEngineBackend;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Common;
@@ -57,7 +53,7 @@ public abstract class JobManager {
 
 	private static String mainTemplate = null; // initialized below
 
-	private static HashMap<Integer, LoadBalanceMonitor> queueToMonitor = new HashMap<Integer, LoadBalanceMonitor>();
+	private static Map<Integer, LoadBalanceMonitor> queueToMonitor = new HashMap<>();
 	
 	/**
 	 * Returns the string representation of the LoadBalanceMonitor for the given queue.
@@ -81,7 +77,7 @@ public abstract class JobManager {
 	 */
 	public synchronized static void clearLoadBalanceMonitors() {
 		log.debug("Clearing out all load balancing data");
-		queueToMonitor = new HashMap<Integer, LoadBalanceMonitor>();
+		queueToMonitor = new HashMap<>();
 		JobPairs.getAndClearTimeDeltas(-1);
 	}
 	
@@ -122,14 +118,13 @@ public abstract class JobManager {
 				    if (joblist.size() > 0) {
 				    	submitJobs(joblist, q, queueSize,nodeCount);
 				    } else {
-				    	// if we have no jobs to submit, that means we should set
-				    	// the active users in the monitor to the empty set.
-				    	// This ensures users are set to inactive correctly
+				    	// If we have no jobs to submit, reset the queue monitor
+						// so that it is no longer tracking users. This strategy ensures
+						// that it is always in the user's best interest to run job pairs.
 				    	LoadBalanceMonitor m = queueToMonitor.get(q.getId());
-				    	if (m!=null) {
-				    		m.setUsers(new HashMap<Integer,Integer>());
-							m.setUserLoadDataFormattedString();
-				    	}
+						log.info("No jobs to submit, resetting monitor for queue with id: "+q.getId());
+				    	m.reset();
+						m.setUserLoadDataFormattedString();
 				    }
 				} else {
 				    log.info("Not adding more job pairs to queue " + qname + ", which has " + queueSize + " pairs enqueued.");
@@ -315,96 +310,35 @@ public abstract class JobManager {
 	 */
 	public static void submitJobs(final List<Job> joblist, final Queue q, int queueSize, final int nodeCount) {
         final String methodName = "submitJobs";
-		final Random random = new Random();
 		final LoadBalanceMonitor monitor = getMonitor(q.getId());
+
 		try {
 			log.entry(methodName);
 
 			initMainTemplateIf();
 
-			Map<Integer, JobCount> userToJobCountMap = buildUserToJobCountMap(joblist); 
+			// updates user load values to take into account actual job pair runtimes.
+			monitor.subtractTimeDeltas(JobPairs.getAndClearTimeDeltas(q.getId()));
 
-			final LinkedList<SchedulingState> schedule = new LinkedList<SchedulingState>();
-			// add all the jobs in jobList to a SchedulingState in the schedule.
-			for (final Job job : joblist) {
-				// contains users that we have identified as exceeding their quota. These users will be skipped
-				final HashMap<Integer, Boolean> quotaExceededUsers = new HashMap<Integer,Boolean>();
-				
-				if (!quotaExceededUsers.containsKey(job.getUserId())) {
-					//TODO: Handle in a new thread if this looks slow on Starexec
-					quotaExceededUsers.put(job.getUserId(), Users.isDiskQuotaExceeded(job.getUserId()));
-					if (quotaExceededUsers.get(job.getUserId())) {
-						Jobs.pauseAllUserJobs(job.getUserId());
-					}
-				}
-				if (quotaExceededUsers.get(job.getUserId())) {
-					continue;
-				}
-				// By default we split the memory
-				final String queueSlots = Jobs.getSlotsInJobQueue(job);
-				// jobTemplate is a version of mainTemplate customized for this job
-				String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());
-
-				jobTemplate = jobTemplate.replace("$$NUM_SLOTS$$", queueSlots);
-
-				jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
-				jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
-				jobTemplate = jobTemplate.replace("$$DISK_QUOTA$$", ""+job.getUser().getDiskQuota());
-				jobTemplate = jobTemplate.replace("$$BENCH_SAVE_PATH$$", BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null).getAbsolutePath());
-				// for every job, retrieve no more than the number of pairs that would fill the queue. 
-				// retrieving more than this is wasteful.
-				int limit=Math.max(R.NUM_JOB_PAIRS_AT_A_TIME, (nodeCount*R.NODE_MULTIPLIER)-queueSize);
-				log.trace("calling Jobs.getPendingPairsDetailed for job "+job.getId() + " with limit="+limit+"and queueSize="+queueSize+" and nodeCount="+nodeCount);
-				if ( job.isHighPriority() ) {
-					JobCount jobCount = userToJobCountMap.get( job.getUserId() );
-					// Assuming only high priority jobs will be scheduled this makes it so a user will have just as many pairs scheduled as if they had pairs scheduled from all jobs.
-					limit = (limit * jobCount.all) / jobCount.highPriority;
-				}
-				final List<JobPair> pairs = Jobs.getPendingPairsDetailed(job,limit);
-				log.trace("finished call to getPendingPairsDetailed");
-
-				if (pairs.size()>0) {
-					final Iterator<JobPair> pairIter = pairs.iterator();
-					final SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
-					schedule.add(s);
-				} else {
-					log.trace("not adding any pairs from job "+job.getId());
-				}
-
-			}
+			final LinkedList<SchedulingState> schedule = buildSchedule(joblist, q, queueSize, nodeCount);
 
 			// Map from (user id) -> ( (high priority job id) -> (# of times job been selected) )
 			// Balances out the number of times a high priority job can be selected.
 			final Map<Integer, Map<Integer, Integer>> highPriorityJobBalance = new HashMap<>();
-			
+
 			// maps user IDs to the total 'load' that user is responsible for on the current queue,
 			// where load is the sum of wallclock timeouts of all active pairs on the queue
-			final HashMap<Integer, Integer> userToCurrentQueueLoad = new HashMap<Integer, Integer>();
+			final Map<Integer, Long> userToCurrentQueueLoad = new HashMap<>();
 
 			// maps user IDs to the scheduling states containing high priority jobs that the user owns.
 			final Map<Integer, List<SchedulingState>> userToHighPriorityStates = new HashMap<>();
 
-			Iterator<SchedulingState> it = schedule.iterator();
-			while (it.hasNext()) {
-				final SchedulingState s = it.next();
-
-				// Add all high priority states to the user to high priority states map.
-				if (s.job.isHighPriority()) {
-					addToHighPriorityStateMap(s, userToHighPriorityStates);
-					addToHighPriorityJobBalance(s, highPriorityJobBalance);
-				}
-
-				if (!userToCurrentQueueLoad.containsKey(s.job.getUserId())) {
-					userToCurrentQueueLoad.put(s.job.getUserId(), Queues.getUserLoadOnQueue(q.getId(), s.job.getUserId()));
-				}
-			}
-
-			// updates user load values to take into account actual job pair runtimes.
-			monitor.subtractTimeDeltas(JobPairs.getAndClearTimeDeltas(q.getId()));
+			// Build the highPriorityJobBlance, userToCurrentQueueLoad, and userToHighPriorityStates maps.
+			// We build them all in one loop for efficiency.
+			populateCurrentQueueLoadAndHighPriorityMaps(schedule, q, highPriorityJobBalance, userToCurrentQueueLoad, userToHighPriorityStates);
 
 			log.info("Beginning scheduling of "+schedule.size()+" jobs on queue "+q.getName());
 
-			
 			/*
 			 * we are going to loop through the schedule adding a few job
 			 * pairs at a time to SGE.
@@ -425,15 +359,15 @@ public abstract class JobManager {
 					break;
 				}
 
-				it = schedule.iterator();
+				Iterator<SchedulingState> it = schedule.iterator();
 				
 				//add all of the users that still have pending entries to the list of users
-				final HashMap<Integer, Integer> pendingUsers=new HashMap<Integer, Integer>();
+				final Map<Integer, Long> pendingUsers=new HashMap<>();
 				while (it.hasNext()) {
 					final SchedulingState s = it.next();
 					pendingUsers.put(s.job.getUserId(), userToCurrentQueueLoad.get(s.job.getUserId()));
 				}
-				
+
 				monitor.setUsers(pendingUsers);
 				monitor.setUserLoadDataFormattedString();
 				it = schedule.iterator();
@@ -595,6 +529,85 @@ public abstract class JobManager {
     	return StringUtils.replaceEach(jobScript, current, replace);
     }
 
+    // Helper method that populates the highPriorityJobBalance, userToCurrentQueueLoad, and userToHighPriorityStates
+	// maps.
+    private static void populateCurrentQueueLoadAndHighPriorityMaps(
+    		List<SchedulingState> schedule,
+			Queue q,
+			final Map<Integer, Map<Integer, Integer>> highPriorityJobBalance,
+			final Map<Integer, Long> userToCurrentQueueLoad,
+			final Map<Integer, List<SchedulingState>> userToHighPriorityStates) {
+		Iterator<SchedulingState> it = schedule.iterator();
+		while (it.hasNext()) {
+			final SchedulingState s = it.next();
+
+			// Add all high priority states to the user to high priority states map.
+			if (s.job.isHighPriority()) {
+				addToHighPriorityStateMap(s, userToHighPriorityStates);
+				addToHighPriorityJobBalance(s, highPriorityJobBalance);
+			}
+
+			if (!userToCurrentQueueLoad.containsKey(s.job.getUserId())) {
+				userToCurrentQueueLoad.put(s.job.getUserId(), Queues.getUserLoadOnQueue(q.getId(), s.job.getUserId()));
+			}
+		}
+
+	}
+
+	// Helper method that builds the schedule to be used for scheduling.
+    private static LinkedList<SchedulingState> buildSchedule(final List<Job> joblist, final Queue q, int queueSize, final int nodeCount) {
+		Map<Integer, JobCount> userToJobCountMap = buildUserToJobCountMap(joblist);
+		final LinkedList<SchedulingState> schedule = new LinkedList<>();
+		// add all the jobs in jobList to a SchedulingState in the schedule.
+		for (final Job job : joblist) {
+			// contains users that we have identified as exceeding their quota. These users will be skipped
+			final Map<Integer, Boolean> quotaExceededUsers = new HashMap<>();
+
+			if (!quotaExceededUsers.containsKey(job.getUserId())) {
+				//TODO: Handle in a new thread if this looks slow on Starexec
+				quotaExceededUsers.put(job.getUserId(), Users.isDiskQuotaExceeded(job.getUserId()));
+				if (quotaExceededUsers.get(job.getUserId())) {
+					Jobs.pauseAllUserJobs(job.getUserId());
+				}
+			}
+			if (quotaExceededUsers.get(job.getUserId())) {
+				continue;
+			}
+			// By default we split the memory
+			final String queueSlots = Jobs.getSlotsInJobQueue(job);
+			// jobTemplate is a version of mainTemplate customized for this job
+			String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());
+
+			jobTemplate = jobTemplate.replace("$$NUM_SLOTS$$", queueSlots);
+
+			jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
+			jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
+			jobTemplate = jobTemplate.replace("$$DISK_QUOTA$$", ""+job.getUser().getDiskQuota());
+			jobTemplate = jobTemplate.replace("$$BENCH_SAVE_PATH$$", BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null).getAbsolutePath());
+			// for every job, retrieve no more than the number of pairs that would fill the queue.
+			// retrieving more than this is wasteful.
+			int limit=Math.max(R.NUM_JOB_PAIRS_AT_A_TIME, (nodeCount*R.NODE_MULTIPLIER)-queueSize);
+			log.trace("calling Jobs.getPendingPairsDetailed for job "+job.getId() + " with limit="+limit+"and queueSize="+queueSize+" and nodeCount="+nodeCount);
+			if ( job.isHighPriority() ) {
+				JobCount jobCount = userToJobCountMap.get( job.getUserId() );
+				// Assuming only high priority jobs will be scheduled this makes it so a user will have just as many pairs scheduled as if they had pairs scheduled from all jobs.
+				limit = (limit * jobCount.all) / jobCount.highPriority;
+			}
+			final List<JobPair> pairs = Jobs.getPendingPairsDetailed(job,limit);
+			log.trace("finished call to getPendingPairsDetailed");
+
+			if (pairs.size()>0) {
+				final Iterator<JobPair> pairIter = pairs.iterator();
+				final SchedulingState s = new SchedulingState(job,jobTemplate,pairIter);
+				schedule.add(s);
+			} else {
+				log.trace("not adding any pairs from job "+job.getId());
+			}
+
+		}
+		return schedule;
+	}
+
 	/**
 	 * Creates a new job script file based on the given job and job pair.
 	 * @param template The template to base the new script off of
@@ -685,7 +698,7 @@ public abstract class JobManager {
 		}
 		
 		// maps from strings in the jobscript to the strings that should be filled in
-		HashMap<String, String> replacements = new HashMap<String, String>();
+		Map<String, String> replacements = new HashMap<>();
 		//Dependencies
 		if (pair.getBench().getUsesDependencies())
 		{
@@ -1207,7 +1220,7 @@ public abstract class JobManager {
 	 * @param j The job object to add the job pairs to 
 	 * @param spaceToPairs A mapping from spaces to lists of job pairs in that space
 	 */
-	public static void addJobPairsDepthFirst(Job j, HashMap<Integer, List<JobPair>> spaceToPairs) {
+	public static void addJobPairsDepthFirst(Job j, Map<Integer, List<JobPair>> spaceToPairs) {
 		for (Integer spaceId : spaceToPairs.keySet()) {
 			log.debug("adding this many pairs from space id = "+spaceId+" "+spaceToPairs.get(spaceId).size());
 			j.addJobPairs(spaceToPairs.get(spaceId));
@@ -1220,7 +1233,7 @@ public abstract class JobManager {
 	 * @param j The job object to add the job pairs to
 	 * @param spaceToPairs A mapping from spaces to lists of job pairs in that space
 	 */
-	public static void addJobPairsRoundRobin(Job j, HashMap<Integer, List<JobPair>> spaceToPairs) {
+	public static void addJobPairsRoundRobin(Job j, Map<Integer, List<JobPair>> spaceToPairs) {
 		try {
 			int index=0;
 			while (spaceToPairs.size()>0) {
@@ -1259,13 +1272,13 @@ public abstract class JobManager {
 	 * @return A HashMap that maps space IDs to all the job pairs in that space. These can then be added to a job in any
 	 * desirable order
 	 */
-	public static HashMap<Integer,List<JobPair>> addBenchmarksFromHierarchy(int spaceId, int userId, List<Integer> configIds, HashMap<Integer, String> SP) {
+	public static Map<Integer,List<JobPair>> addBenchmarksFromHierarchy(int spaceId, int userId, List<Integer> configIds, HashMap<Integer, String> SP) {
 		try {
-			HashMap<Integer,List<JobPair>> spaceToPairs=new HashMap<Integer,List<JobPair>>();
+			Map<Integer,List<JobPair>> spaceToPairs=new HashMap<>();
 			
 			List<Solver> solvers = Solvers.getWithConfig(configIds);
 			
-			List<Benchmark> benchmarks =new ArrayList<Benchmark>();
+			List<Benchmark> benchmarks =new ArrayList<>();
 			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(spaceId, userId));
 			spaces.add(Spaces.get(spaceId));
 		

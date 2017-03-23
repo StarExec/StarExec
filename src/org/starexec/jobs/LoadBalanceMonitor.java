@@ -1,10 +1,6 @@
 package org.starexec.jobs;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import org.starexec.logger.StarLogger;
 import org.starexec.data.database.Users;
@@ -194,13 +190,25 @@ public class LoadBalanceMonitor {
 			u.inactivate();
 		}
 	}
+
+	/**
+	 * Completely resets the monitor.
+	 */
+	public void reset() {
+		loads = new HashMap<>();
+	}
 	
 	/**
 	 * Sets the list of users managed by this monitor to the given set
 	 * of users.
 	 * @param userIdsToDefaults Mapping of user ids to values to add to their default load.
 	 */
-	public void setUsers(HashMap<Integer, Integer> userIdsToDefaults) {
+	public void setUsers(Map<Integer, Long> userIdsToDefaults) {
+		/*boolean noneActive = loads.values().stream().noneMatch(UserLoadData::active);
+		if (noneActive) {
+			this.reset();
+		}*/
+
 		for (Integer i : loads.keySet()) {
 			if (!userIdsToDefaults.containsKey(i)) {
 				removeUser(i);
@@ -211,7 +219,7 @@ public class LoadBalanceMonitor {
 		// new users from having an advantage over existing users.
 		Long m = getMin();
 		if (m==null) {
-			m=0l;
+			m=0L;
 		}
 		for (Integer i : userIdsToDefaults.keySet()) {
 			addUser(i, userIdsToDefaults.get(i) + m, m);

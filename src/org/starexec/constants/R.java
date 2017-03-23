@@ -296,7 +296,7 @@ public class R {
     public static int DEFAULT_MAX_TIMEOUT = 259200;
 
     // The number of minutes that is considered ok for a pair to be enqueued but not running.
-    public static int PAIR_ENQUEUE_TIME_THRESHOLD = 30;
+    public static int PAIR_ENQUEUE_TIME_THRESHOLD = 1440;
 
     public static final int TIME_BETWEEN_SENDING_ERROR_LOGS = 1; // in days
 

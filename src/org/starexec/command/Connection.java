@@ -1212,6 +1212,7 @@ public class Connection {
 			HttpGet get = new HttpGet(baseURL+C.URL_HOME);
 			response=executeGetOrPost(get);
 			sessionID=HTMLParser.extractCookie(response.getAllHeaders(),C.TYPE_SESSIONID);
+			log.log("Set Session ID to: "+sessionID);
 			response.getEntity().getContent().close();
 			if (!this.isValid()) {
 				//if the user specified their own URL, it is probably the problem.
@@ -1242,7 +1243,8 @@ public class Connection {
 			response=executeGetOrPost(get);
 			
 			sessionID=HTMLParser.extractCookie(response.getAllHeaders(),C.TYPE_SESSIONID);
-			
+			log.log("Set Session ID to: "+sessionID);
+
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 			
 			//this means that the server did not give us a new session for the login
