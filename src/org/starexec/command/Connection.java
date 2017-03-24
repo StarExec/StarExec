@@ -9,11 +9,15 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.params.ClientPNames;
+import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.AbstractHttpMessage;
@@ -43,7 +47,7 @@ public class Connection {
 	final private CommandLogger log = CommandLogger.getLogger(Connection.class);
 	private String baseURL;
 	private String sessionID=null;
-	HttpClient client=null;
+	DefaultHttpClient client=null;
 	private String username,password;
 	private String lastError;
 	private HashMap<Integer,Integer> job_info_indices; //these two map job ids to the max completion index
@@ -115,11 +119,13 @@ public class Connection {
 		lastError="";
 	}
 
-	private static HttpClient buildClient() {
-		HttpClientBuilder clientBuilder = HttpClientBuilder.create();
-		clientBuilder.disableCookieManagement();
+	private static DefaultHttpClient buildClient() {
+		return new DefaultHttpClient();
+		
+		//HttpClientBuilder clientBuilder = HttpClientBuilder.create();
+		//clientBuilder.disableCookieManagement();
 
-		return clientBuilder.build();
+		//return clientBuilder.build();
 	}
 
 	protected void setBaseURL(String baseURL1) {
@@ -314,6 +320,14 @@ public class Connection {
 				log.log("\tValue: " + header.getValue());
 				log.log("");
 			}
+			CookieStore store = client.getCookieStore();	
+			List<Cookie> cookies = store.getCookies();	
+			log.log("Cookies before request: ");
+			for (Cookie cookie : cookies) {
+				log.log("\tName : "+cookie.getName());
+				log.log("\tValue: "+cookie.getValue());
+				log.log("");
+			}
 		}
 		HttpResponse response = client.execute(request);
 		if (C.debugMode) {
@@ -323,6 +337,14 @@ public class Connection {
 			for (Header header : responseHeaders) {
 				log.log("\tName: " + header.getName());
 				log.log("\tValue: " + header.getValue());
+				log.log("");
+			}
+			CookieStore store = client.getCookieStore();	
+			List<Cookie> cookies = store.getCookies();	
+			log.log("Cookies after request: ");
+			for (Cookie cookie : cookies) {
+				log.log("\tName : "+cookie.getName());
+				log.log("\tValue: "+cookie.getValue());
 				log.log("");
 			}
 		}
