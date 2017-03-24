@@ -15,7 +15,6 @@ import org.apache.http.client.methods.*;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.AbstractHttpMessage;
 import org.apache.http.message.BasicNameValuePair;
@@ -62,7 +61,7 @@ public class Connection {
 		this.setBaseURL(con.getBaseURL());
 		setUsername(con.getUsername());
 		setPassword(con.getPassword());
-		client=new DefaultHttpClient();
+		client = buildClient();
 
 		client.getParams();
 		setInfoIndices(con.getInfoIndices());
@@ -109,13 +108,18 @@ public class Connection {
 		initializeComponents();
 	}
 	private void initializeComponents() {
-		HttpClientBuilder clientBuilder = HttpClientBuilder.create();
-		clientBuilder.disableCookieManagement();
-		client=clientBuilder.build();
+		client=buildClient();
 
 		setInfoIndices(new HashMap<Integer,Integer>());
 		setOutputIndices(new HashMap<Integer,PollJobData>());
 		lastError="";
+	}
+
+	private static HttpClient buildClient() {
+		HttpClientBuilder clientBuilder = HttpClientBuilder.create();
+		clientBuilder.disableCookieManagement();
+
+		return clientBuilder.build();
 	}
 
 	protected void setBaseURL(String baseURL1) {
