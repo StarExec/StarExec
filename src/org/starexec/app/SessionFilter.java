@@ -9,6 +9,7 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -50,6 +51,16 @@ public class SessionFilter implements Filter {
 			HttpServletRequest httpRequest = (HttpServletRequest) request;
 
 			HttpSession session = httpRequest.getSession();
+			log.debug(method, "isRequestedSessionIdFromURL: "+httpRequest.isRequestedSessionIdFromURL());
+			log.debug(method, "isRequestedSessionIdFromCookie: "+httpRequest.isRequestedSessionIdFromCookie());
+			log.debug(method, "isRequestedSessionIdValid: "+httpRequest.isRequestedSessionIdValid());
+			log.debug(method, "authType: "+httpRequest.getAuthType());
+			Cookie[] cookies = httpRequest.getCookies();
+			log.debug(method, "Cookies: ");
+			for (Cookie cookie : cookies) {
+				log.debug(method, "\tName : "+cookie.getName());
+				log.debug(method, "\tValue: "+cookie.getValue());
+			}
 			if (session != null) {
 				log.debug(method, "Session ID: "+session.getId());
 			} else {
