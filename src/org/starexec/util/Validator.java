@@ -27,7 +27,7 @@ public class Validator {
 	private static Pattern patternPassword;
 	private static Pattern patternRequestMsg;
 	private static Pattern patternDate;
-	private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
+	public static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
 
     public static void initialize() {
     	// Make sure some patterns were loaded first before we compile them
