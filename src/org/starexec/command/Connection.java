@@ -16,6 +16,7 @@ import org.apache.http.client.params.ClientPNames;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.AbstractHttpMessage;
 import org.apache.http.message.BasicNameValuePair;
 import org.starexec.constants.R;
@@ -108,7 +109,9 @@ public class Connection {
 		initializeComponents();
 	}
 	private void initializeComponents() {
-		client=new DefaultHttpClient();
+		HttpClientBuilder clientBuilder = HttpClientBuilder.create();
+		clientBuilder.disableCookieManagement();
+		client=clientBuilder.build();
 
 		setInfoIndices(new HashMap<Integer,Integer>());
 		setOutputIndices(new HashMap<Integer,PollJobData>());
