@@ -56,10 +56,12 @@ public class SessionFilter implements Filter {
 			log.debug(method, "isRequestedSessionIdValid: "+httpRequest.isRequestedSessionIdValid());
 			log.debug(method, "authType: "+httpRequest.getAuthType());
 			Cookie[] cookies = httpRequest.getCookies();
-			log.debug(method, "Cookies: ");
-			for (Cookie cookie : cookies) {
-				log.debug(method, "\tName : "+cookie.getName());
-				log.debug(method, "\tValue: "+cookie.getValue());
+			if ( cookies != null ) {
+				log.debug(method, "Cookies: ");
+				for (Cookie cookie : cookies) {
+					log.debug(method, "\tName : "+cookie.getName());
+					log.debug(method, "\tValue: "+cookie.getValue());
+				}
 			}
 			if (session != null) {
 				log.debug(method, "Session ID: "+session.getId());
