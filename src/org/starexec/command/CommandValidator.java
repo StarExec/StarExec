@@ -256,7 +256,7 @@ public class CommandValidator {
 			if (!test.exists()) {
 				return Status.ERROR_FILE_NOT_FOUND;
 			}
-			for (String suffix : VALID_ARCHIVETYPES) {
+			for (String suffix : Validator.extensions) {
 				if (filePath.endsWith(suffix)) {
 					archiveGood=true;
 					break;
