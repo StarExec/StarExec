@@ -11,6 +11,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import org.starexec.constants.R;
 import org.starexec.data.database.Common;
 import org.starexec.data.database.Logins;
@@ -46,6 +48,13 @@ public class SessionFilter implements Filter {
 			final String method = "doFilter";
 			// Cast the servlet request to an httpRequest so we have access to the session
 			HttpServletRequest httpRequest = (HttpServletRequest) request;
+
+			HttpSession session = httpRequest.getSession();
+			if (session != null) {
+				log.debug(method, "Session ID: "+session.getId());
+			} else {
+				log.debug(method, "Session was null.");
+			}
 
 			HttpServletResponse httpResponse = (HttpServletResponse) response;
 			// If the user is logged in...
