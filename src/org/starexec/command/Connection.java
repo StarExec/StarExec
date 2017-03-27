@@ -1230,6 +1230,10 @@ public class Connection {
 			safeCloseResponse(response);
 		}
 	}
+	private static String convertStreamToString(InputStream is) {
+		Scanner s = new Scanner(is).useDelimiter("\\A");
+		return s.hasNext() ? s.next() : "";
+	}
 	
 	/**
 	 * Log into StarExec with the username and password of this connection
@@ -1278,19 +1282,35 @@ public class Connection {
 			log.log("Set Session ID to: "+sessionID);
 
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
+
+			safeCloseResponse(response);
+
+			get = new HttpGet(baseURL+C.URL_LOGGED_IN);
+			get=(HttpGet) setHeaders(get);
+			response=executeGetOrPost(get);
+			boolean loggedIn = convertStreamToString(response.getEntity().getContent()).equals("true");
+
+			if (loggedIn) {
+				log.log("Service says we're logged in.");
+			} else {
+				log.log("Service says we're not logged in.");
+			}
+
 			
 			//this means that the server did not give us a new session for the login
-			if (sessionID==null || response.containsHeader("CommandBadCredentials")) {
+			if (sessionID==null || !loggedIn) {
 				log.log("Returning bad credentials message.");
 				return Status.ERROR_BAD_CREDENTIALS;
 			}
 			return 0;
 			
 		} catch (IllegalStateException e) {
+			log.log("Caught IllegalStateException: " + Util.getStackTrace(e));
 			
 			return Status.ERROR_BAD_URL;
 			
 		} catch (Exception e) {
+			log.log("Caught Exception: " + Util.getStackTrace(e));
 			setLastError(e.getMessage()+": "+Util.getStackTrace(e));
 			return Status.ERROR_INTERNAL_EXCEPTION;
 		} finally {
