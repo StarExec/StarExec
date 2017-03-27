@@ -184,7 +184,6 @@ public class Connection {
 	 * @return 0 if the ID was found and changed, -1 otherwise
 	 * @author Eric Burns
 	 */
-	
 	private int setSessionIDIfExists(Header [] headers) {
 		String id=HTMLParser.extractCookie(headers, C.TYPE_SESSIONID);
 		if (id==null) {
@@ -310,21 +309,6 @@ public class Connection {
 		entity.addTextBody(name, text);
 	}
 
-	private void updateSessionCookie() {
-		CookieStore store = client.getCookieStore();
-		List<Cookie> storedCookies = store.getCookies();
-		store.clear();
-		log.log("Cookie store size after clearing: "+client.getCookieStore().getCookies().size());
-		storedCookies.stream().filter(c -> !c.getName().equals(C.TYPE_SESSIONID));
-		log.log("Cookie store size before clearing: "+storedCookies.size());
-		for (Cookie c : storedCookies) {
-			store.addCookie(c);
-		}
-		store.addCookie(new BasicClientCookie(C.TYPE_SESSIONID, sessionID));
-		client.setCookieStore(store);
-		log.log("Cookie store size after adding Session cookie: "+client.getCookieStore().getCookies().size());
-	}
-
 	// Logs and executes a GET/POST request.
 	private HttpResponse executeGetOrPost(HttpRequestBase request) throws IOException {
 		log.log("Sending " + request.getMethod() + " request to URI: "+request.getURI());
@@ -347,8 +331,6 @@ public class Connection {
 			}
 		}
 		HttpResponse response = client.execute(request);
-		setSessionIDIfExists(response.getAllHeaders());
-		updateSessionCookie();
 
 		if (C.debugMode) {
 			log.log("Got response from server.");
@@ -746,7 +728,8 @@ public class Connection {
 	 */
 	
 	private AbstractHttpMessage setHeaders(AbstractHttpMessage msg, String[] cookies) {
-		StringBuilder cookieString=new StringBuilder();
+		/*
+//		StringBuilder cookieString=new StringBuilder();
 //		cookieString.append("killmenothing; JSESSIONID=");
 //		cookieString.append(sessionID);
 //		cookieString.append(";");
@@ -765,6 +748,8 @@ public class Connection {
 			cookieString.append(";");
 		}
 		msg.addHeader("Cookie",cookieString.toString());
+		*/
+		msg.addHeader("StarExecCommand", "StarExecCommand");
 		msg.addHeader("Connection", "keep-alive");
 		msg.addHeader("Accept-Language","en-US,en;q=0.5");
 
@@ -907,7 +892,6 @@ public class Connection {
 			get=(HttpGet) setHeaders(get);
 
 			response=executeGetOrPost(get);
-			setSessionIDIfExists(get.getAllHeaders());
 			
 			//we should get 200, which is the code for ok
 			return response.getStatusLine().getStatusCode()==200;
@@ -931,7 +915,6 @@ public class Connection {
 			get=(HttpGet) setHeaders(get);
 
 			response=executeGetOrPost(get);
-			setSessionIDIfExists(get.getAllHeaders());
 			JsonElement json=JsonHandler.getJsonString(response);
 			return json.getAsInt();
 			
@@ -1257,6 +1240,7 @@ public class Connection {
 	public int login() {
 		HttpResponse response = null;
 		try {
+			log.log("Logging in...");
 			HttpGet get = new HttpGet(baseURL+C.URL_HOME);
 			response=executeGetOrPost(get);
 			sessionID=HTMLParser.extractCookie(response.getAllHeaders(),C.TYPE_SESSIONID);
@@ -1296,7 +1280,8 @@ public class Connection {
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 			
 			//this means that the server did not give us a new session for the login
-			if (sessionID==null) {
+			if (sessionID==null || response.containsHeader("CommandBadCredentials")) {
+				log.log("Returning bad credentials message.");
 				return Status.ERROR_BAD_CREDENTIALS;
 			}
 			return 0;
@@ -2242,7 +2227,6 @@ public class Connection {
 			HttpGet get=new HttpGet(URL);
 			get=(HttpGet) setHeaders(get);
 			response=executeGetOrPost(get);
-			setSessionIDIfExists(get.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
@@ -2475,7 +2459,6 @@ public class Connection {
 			HttpGet get=new HttpGet(baseURL+C.URL_GETPRIMJSON.replace("{type}", type).replace("{id}",String.valueOf(id)));
 			get=(HttpGet) setHeaders(get);
 			response=executeGetOrPost(get);
-			setSessionIDIfExists(get.getAllHeaders());
 			JsonElement json=JsonHandler.getJsonString(response);
 			String errorMessage=JsonHandler.getMessageOfResponse(json.getAsJsonObject());
 			if (errorMessage!=null) {

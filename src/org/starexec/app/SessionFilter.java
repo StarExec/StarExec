@@ -49,6 +49,12 @@ public class SessionFilter implements Filter {
 			final String method = "doFilter";
 			// Cast the servlet request to an httpRequest so we have access to the session
 			HttpServletRequest httpRequest = (HttpServletRequest) request;
+			log.debug(method, "Request URI: "+httpRequest.getRequestURI());
+
+			boolean isCommandRequest = httpRequest.getHeader("StarExecCommand") != null;
+			if ( isCommandRequest ) {
+				log.debug(method, "Got request from StarExecCommand.");
+			}
 
 			HttpSession session = httpRequest.getSession();
 			log.debug(method, "isRequestedSessionIdFromURL: "+httpRequest.isRequestedSessionIdFromURL());
@@ -114,6 +120,10 @@ public class SessionFilter implements Filter {
 				}
 			} else {
 				log.debug(method, "httpRequest.getUserPrincipal() returned null.");
+				if (isCommandRequest) {
+					httpResponse.setHeader("CommandBadCredentials","CommandBadCredentials");
+				}
+				
 			}
 
 			// Be nice and pass on the request to the next filter

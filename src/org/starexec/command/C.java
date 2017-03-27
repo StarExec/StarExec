@@ -27,6 +27,7 @@ public class C {
 	 * They point to the various servlets and RESTServices on Starexec
 	 */
 	public static String URL_STAREXEC_BASE = "https://www.starexec.org/starexec/";
+	public static final String URL_SPACES = "secure/explore/spaces.jsp";
 	public static String URL_HOME= "secure/index.jsp";
 	public static String URL_LOGIN= "secure/j_security_check";
 	public static String URL_DOWNLOAD = "secure/download";
