@@ -281,7 +281,6 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());
 			int returnCode=response.getStatusLine().getStatusCode();
 			
 			if (returnCode==302) {
@@ -382,7 +381,6 @@ public class Connection {
 
 			response = executeGetOrPost(post);
 
-			setSessionIDIfExists(response.getAllHeaders());
 			int id=CommandValidator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			if (id<=0) {
 				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE));
@@ -429,8 +427,7 @@ public class Connection {
 
 			response=executeGetOrPost(post);
 			
-			setSessionIDIfExists(response.getAllHeaders());
-						
+
 			//we are expecting to be redirected to the page for the processor
 			if (response.getStatusLine().getStatusCode()!=302) {
 				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE));
@@ -518,8 +515,7 @@ public class Connection {
 
 			response=executeGetOrPost(post);
 
-			setSessionIDIfExists(response.getAllHeaders());
-						
+
 			int code = response.getStatusLine().getStatusCode();
 			//if space, gives 200 code.  if job, gives 302
 			if (code !=200 && code != 302 ) {
@@ -618,7 +614,6 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());			
 			int newID=CommandValidator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			//if the request was not successful
 			if (newID<=0) {
@@ -853,8 +848,7 @@ public class Connection {
 			JsonObject obj=JsonHandler.getJsonObject(response);
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
 			String message=JsonHandler.getMessageOfResponse(obj);
-			setSessionIDIfExists(response.getAllHeaders());
-			
+
 			if (success) {
 				return 0;
 			} else {
@@ -929,8 +923,7 @@ public class Connection {
 			HttpPost post=new HttpPost(baseURL+C.URL_EDITSPACEVISIBILITY+"/"+spaceID.toString() +"/" +hierarchy.toString()+"/"+setPublic.toString());
 			post=(HttpPost) setHeaders(post);
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());
-			
+
 			//we should get back an HTTP OK if we're allowed to change the visibility
 			if (response.getStatusLine().getStatusCode()!=200) {
 				return Status.ERROR_BAD_PARENT_SPACE;
@@ -959,7 +952,6 @@ public class Connection {
 			HttpPost post=new HttpPost(url);
 			post=(HttpPost) setHeaders(post);
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
@@ -1012,7 +1004,6 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
@@ -1047,7 +1038,6 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
@@ -1087,7 +1077,6 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
@@ -1192,7 +1181,6 @@ public class Connection {
 
 			response=executeGetOrPost(post);
 			
-			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
@@ -1465,7 +1453,6 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
@@ -1526,7 +1513,6 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());			
 			if (response.getStatusLine().getStatusCode()!=302) {
 				return Status.ERROR_BAD_PARENT_SPACE;
 			}
@@ -1650,8 +1636,7 @@ public class Connection {
 
 		response=executeGetOrPost(post);
 			
-	    setSessionIDIfExists(response.getAllHeaders());
-			
+
 	    
 	    final BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 	    
@@ -1751,8 +1736,7 @@ public class Connection {
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());
-			
+
 			JsonElement jsonE=JsonHandler.getJsonString(response);
 			JsonObject obj=jsonE.getAsJsonObject();
 			String message=JsonHandler.getMessageOfResponse(obj);
@@ -1847,8 +1831,7 @@ public class Connection {
 			get=(HttpGet) setHeaders(get);
 			response=executeGetOrPost(get);
 			
-			setSessionIDIfExists(response.getAllHeaders());
-			
+
 			
 			
 			boolean fileFound=false;
@@ -2068,8 +2051,7 @@ public class Connection {
 			get=(HttpGet) setHeaders(get);
 			response=executeGetOrPost(get);
 			Boolean done=false;
-			setSessionIDIfExists(response.getAllHeaders());
-			
+
 			
 			
 			boolean fileFound=false;
@@ -2318,7 +2300,6 @@ public class Connection {
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());
 
 			String id=HTMLParser.extractCookie(response.getAllHeaders(),"New_ID");
 			
