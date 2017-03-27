@@ -1683,7 +1683,14 @@ public class RESTServices {
 		log.info(String.format("User [%s] manually logged out", SessionUtil.getUser(request).getEmail()));
 		request.getSession().invalidate();
 		return gson.toJson(new ValidatorStatusCode(true));
-	}	
+	}
+
+	@GET
+	@Path("/session/logged-in")
+	@Produces("application/json")
+	public String isLoggedIn(@Context HttpServletRequest request) {
+		return gson.toJson(SessionUtil.getUserId(request) != R.PUBLIC_USER_ID);
+	}
 	
 	/**
 	 * Retrieves the associated websites of a given user, space, or solver.
