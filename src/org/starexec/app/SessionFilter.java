@@ -62,6 +62,8 @@ public class SessionFilter implements Filter {
 					log.debug(method, "\tName : "+cookie.getName());
 					log.debug(method, "\tValue: "+cookie.getValue());
 				}
+			} else {
+				log.debug(method, "Cookies was null");
 			}
 			if (session != null) {
 				log.debug(method, "Session ID: "+session.getId());
