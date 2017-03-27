@@ -20,7 +20,7 @@ public class C {
 	public static String HELP_MESSAGE = "Welcome to StarexecCommand! This tool is intended to allow users to communicate with the " +
 			"Starxec server. For assistance in using this tool, please consult the documentation present in the archive this tool was " +
 			"packaged with.";
-	public static String TYPE_SESSIONID="JSESSIONID=";
+	public static String TYPE_SESSIONID="JSESSIONID";
 
 	/**
 	 * All of the following URLs are relative to the web app root path.
