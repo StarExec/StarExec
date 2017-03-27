@@ -16,10 +16,12 @@ import org.apache.http.client.methods.*;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.AbstractHttpMessage;
 import org.apache.http.message.BasicNameValuePair;
 import org.starexec.constants.R;
@@ -281,6 +283,7 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 
 			response=executeGetOrPost(post);
+
 			int returnCode=response.getStatusLine().getStatusCode();
 			
 			if (returnCode==302) {
@@ -307,6 +310,21 @@ public class Connection {
 		entity.addTextBody(name, text);
 	}
 
+	private void updateSessionCookie() {
+		CookieStore store = client.getCookieStore();
+		List<Cookie> storedCookies = store.getCookies();
+		store.clear();
+		log.log("Cookie store size after clearing: "+client.getCookieStore().getCookies().size());
+		storedCookies.stream().filter(c -> !c.getName().equals(C.TYPE_SESSIONID));
+		log.log("Cookie store size before clearing: "+storedCookies.size());
+		for (Cookie c : storedCookies) {
+			store.addCookie(c);
+		}
+		store.addCookie(new BasicClientCookie(C.TYPE_SESSIONID, sessionID));
+		client.setCookieStore(store);
+		log.log("Cookie store size after adding Session cookie: "+client.getCookieStore().getCookies().size());
+	}
+
 	// Logs and executes a GET/POST request.
 	private HttpResponse executeGetOrPost(HttpRequestBase request) throws IOException {
 		log.log("Sending " + request.getMethod() + " request to URI: "+request.getURI());
@@ -329,6 +347,9 @@ public class Connection {
 			}
 		}
 		HttpResponse response = client.execute(request);
+		setSessionIDIfExists(response.getAllHeaders());
+		updateSessionCookie();
+
 		if (C.debugMode) {
 			log.log("Got response from server.");
 			List<Header> responseHeaders = Arrays.asList(response.getAllHeaders());
@@ -726,9 +747,19 @@ public class Connection {
 	
 	private AbstractHttpMessage setHeaders(AbstractHttpMessage msg, String[] cookies) {
 		StringBuilder cookieString=new StringBuilder();
-		cookieString.append("killmenothing; JSESSIONID=");
-		cookieString.append(sessionID);
-		cookieString.append(";");
+//		cookieString.append("killmenothing; JSESSIONID=");
+//		cookieString.append(sessionID);
+//		cookieString.append(";");
+
+		CookieStore store = client.getCookieStore();
+		List<Cookie> storedCookies = store.getCookies();
+		store.clear();
+		storedCookies.stream().filter(c -> !c.getName().equals(C.TYPE_SESSIONID));
+		for (Cookie c : storedCookies) {
+			store.addCookie(c);
+		}
+		client.setCookieStore(store);
+
 		for (String x : cookies) {
 			cookieString.append(x);
 			cookieString.append(";");
