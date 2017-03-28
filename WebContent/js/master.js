@@ -12,6 +12,7 @@ var star = star || {};
 
 // When the document is ready to be executed on
 $(document).ready(function(){
+	"use strict";
 
 	// If the JSP contains a single message to display to the user...
 	if ($(".message").length == 1){
@@ -36,19 +37,10 @@ $(document).ready(function(){
 		// Find their submenu and slide it down
 		$(this).find("ul.subnav").stop(true,true);
 		$(this).find("ul.subnav").slideDown('fast').show();
-
-
-
-		// Then attach a hover out event
-		$(this).hover(function() {},
-			function(){
-				// When I'm hovered out of, slide up my submenu
-
-				$(this).find("ul.subnav").slideUp('fast');
-
-
-	        });
-		}, function () {});
+	}, function(){
+		// When I'm hovered out of, slide up my submenu
+		$(this).find("ul.subnav").slideUp('fast');
+	});
 
 	// Extend jquery functions here
 	$.fn.extend({
