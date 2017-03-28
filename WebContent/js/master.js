@@ -55,36 +55,34 @@ $(document).ready(function(){
 		toHTMLString: function() {
 			return this.prop('outerHTML');
 		},
-		expandable: function(closed, callback) {
+		expandable: function(closed) {
 			// Makes a fieldset expandable
 			$(this).each(function() {
-				var legend = $(this).children('legend:first');
-				$(legend).css('cursor', 'pointer');
-				$(legend).siblings().wrapAll('<div class="expdContainer" />');
+				var isOpen = !closed;
+				var $this = $(this);
+				var $legend = $this.children('legend:first');
+
+				$legend.siblings().wrapAll('<div class="expdContainer" />');
+				$legend.css('cursor', 'pointer');
 
 				if(closed) {
-					$(legend).data('open', false);
-					$(legend).append('<span> (+)</span>');
-					$(legend).siblings().hide();
+					$legend.append('<span> (+)</span>');
+					$legend.siblings().hide();
 				} else {
-					$(legend).data('open', true);
-					$(legend).append('<span> (-)</span>');
+					$legend.append('<span> (-)</span>');
 				}
 
-				$(legend).click(function() {
-					var isOpen = $(this).data('open');
-					$(this).children('span:last-child').text(isOpen ? ' (+)' : ' (-)');
-					$(this).data('open', !isOpen);
-					$(this).siblings().slideToggle('fast');
-
-					if(!isOpen && $.isFunction(callback)) {
-						callback.call(this);
-					}
+				$legend.click(function() {
+					isOpen = !isOpen;
+					$this.trigger(isOpen ? 'open.expandable' : 'close.expandable')
+					$legend.children('span:last-child').text(isOpen ? ' (-)' : ' (+)');
+					$legend.siblings().slideToggle('fast');
 				});
-	       	});
-		    return $(this);
+			});
+			return $(this);
 		}
 	});
+
 	if (!isLocalJobPage) {
 		checkForHelpFile();
 	}
