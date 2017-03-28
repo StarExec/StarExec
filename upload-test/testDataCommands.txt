@@ -1,38 +1,38 @@
 returnids
 
 login addr=https://stardev.cs.uiowa.edu/appname/ u=admin@uiowa.edu p=Starexec4ever
-pushsolver f=fifteen-mb-output-solver.zip id=1 n=fifteen-mb-output-solver
-pushsolver f=one-gb-output-solver.zip id=1 n=one-gb-output-solver
+pushsolver f=solvers/fifteen-mb-output-solver.zip id=1 n=fifteen-mb-output-solver
+pushsolver f=solvers/one-gb-output-solver.zip id=1 n=one-gb-output-solver
 logout
 
 login addr=https://stardev.cs.uiowa.edu/appname/ u=test@uiowa.edu p=Starexec4ever
-pushbenchproc id=2 f=smt2-validator.zip n=smt2orig
-pushbenchproc id=2 f=smt2nonincremental.zip n=smt2nonincremental
-pushbenchproc id=2 f=smt2noninc2015.zip n=smt2noninc2015
-pushbenchproc id=2 f=count-lines.zip n=count-lines
-pushbenchproc id=2 f=count-chars.zip n=count-chars
-pushpostproc id=2 f=smt2postproc.zip n=smt2 post processor
-pushpostproc id=2 f=set-result-to-first-line-postproc.zip n=set-result-to-first-line-postproc
-pushsolver f=CVC4-SMT-COMP-2010.zip id=2 n=CVC4-SMT-COMP-2010
-pushsolver f=catsolver.zip id=2 n=catsolver
-pushsolver f=spinsolver.zip id=2 n=spinsolver
-pushsolver f=incremental-output-solver.zip id=2 n=incremental-output-solver
-pushsolver f=always-sat-solver.zip id=2 n=always-sat-solver
-pushsolver f=always-unsat-solver.zip id=2 n=always-unsat-solver
-pushsolver f=five-thousand-configs.tar.gz id=2 n=five-thousand-configs
-pushsolver f=output-nothing-solver.zip id=2 n=output-nothing-solver
-pushsolver f=random-sat-or-unsat-solver.zip id=2 n=random-sat-or-unsat-solver
-pushsolver f=output-random100-solver.zip id=2 n=output-random100-solver
-pushsolver f=sleep-10-solver.zip id=2 n=sleep-10-solver
-pushsolver f=cpu-runner.zip id=2 n=cpu-runner
-pushsolver f=chain-solver.zip id=2 n=chain-solver
-pushsolver f=multiconfig.zip id=2 n=multiconfig-solver
-pushsolver f=output-vars.zip id=2 n=output-vars
-pushsolver f=memalloc.zip id=2 n=memalloc
+pushbenchproc id=2 f=bench-procs/smt2-validator.zip n=smt2orig
+pushbenchproc id=2 f=bench-procs/smt2nonincremental.zip n=smt2nonincremental
+pushbenchproc id=2 f=bench-procs/smt2noninc2015.zip n=smt2noninc2015
+pushbenchproc id=2 f=bench-procs/count-lines.zip n=count-lines
+pushbenchproc id=2 f=bench-procs/count-chars.zip n=count-chars
+pushpostproc id=2 f=post-procs/smt2postproc.zip n=smt2 post processor
+pushpostproc id=2 f=post-procs/set-result-to-first-line-postproc.zip n=set-result-to-first-line-postproc
+pushsolver f=solvers/CVC4-SMT-COMP-2010.zip id=2 n=CVC4-SMT-COMP-2010
+pushsolver f=solvers/catsolver.zip id=2 n=catsolver
+pushsolver f=solvers/spinsolver.zip id=2 n=spinsolver
+pushsolver f=solvers/incremental-output-solver.zip id=2 n=incremental-output-solver
+pushsolver f=solvers/always-sat-solver.zip id=2 n=always-sat-solver
+pushsolver f=solvers/always-unsat-solver.zip id=2 n=always-unsat-solver
+pushsolver f=solvers/five-thousand-configs.tar.gz id=2 n=five-thousand-configs
+pushsolver f=solvers/output-nothing-solver.zip id=2 n=output-nothing-solver
+pushsolver f=solvers/random-sat-or-unsat-solver.zip id=2 n=random-sat-or-unsat-solver
+pushsolver f=solvers/output-random100-solver.zip id=2 n=output-random100-solver
+pushsolver f=solvers/sleep-10-solver.zip id=2 n=sleep-10-solver
+pushsolver f=solvers/cpu-runner.zip id=2 n=cpu-runner
+pushsolver f=solvers/chain-solver.zip id=2 n=chain-solver
+pushsolver f=solvers/multiconfig.zip id=2 n=multiconfig-solver
+pushsolver f=solvers/output-vars.zip id=2 n=output-vars
+pushsolver f=solvers/memalloc.zip id=2 n=memalloc
 logout
 
 login addr=https://stardev.cs.uiowa.edu/appname/ u=user@uiowa.edu p=Starexec4ever
-pushbenchmarks id=2 f=benchmarks.zip bt=2 hier=
+pushbenchmarks id=2 f=benchmarks/benchmarks.zip bt=2 hier=
 sleep t=4
 linkuser id=4 to=4 hier=
 logout
