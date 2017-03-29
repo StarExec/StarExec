@@ -6,6 +6,15 @@ pushsolver f=solvers/one-gb-output-solver.zip id=1 n=one-gb-output-solver
 logout
 
 login addr=https://stardev.cs.uiowa.edu/appname/ u=test@uiowa.edu p=Starexec4ever
+print m=The next command should return 4. If not you may need to modify upload-test/testdatacommands.txt
+createsubspace id=2 n=starexecusers
+print m=The next command should return 5. If not you may need to modify upload-test/testdatacommands.txt
+createsubspace id=4 n=martin_suda
+print m=The next command should return 6. If not you may need to modify upload-test/testdatacommands.txt
+createsubspace id=5 n=aalta
+print m=Uploading aalta (solver)
+pushsolver f=solvers/aalta.zip id=6 n=aalta
+
 pushbenchproc id=2 f=bench-procs/smt2-validator.zip n=smt2orig
 pushbenchproc id=2 f=bench-procs/smt2nonincremental.zip n=smt2nonincremental
 pushbenchproc id=2 f=bench-procs/smt2noninc2015.zip n=smt2noninc2015
@@ -13,27 +22,43 @@ pushbenchproc id=2 f=bench-procs/count-lines.zip n=count-lines
 pushbenchproc id=2 f=bench-procs/count-chars.zip n=count-chars
 pushpostproc id=2 f=post-procs/smt2postproc.zip n=smt2 post processor
 pushpostproc id=2 f=post-procs/set-result-to-first-line-postproc.zip n=set-result-to-first-line-postproc
+print m=Uploading CVC4-SMT-COMP-2010 (solver)
 pushsolver f=solvers/CVC4-SMT-COMP-2010.zip id=2 n=CVC4-SMT-COMP-2010
+print m=Uploading catsolver
 pushsolver f=solvers/catsolver.zip id=2 n=catsolver
+print m=Uploading spinsolver
 pushsolver f=solvers/spinsolver.zip id=2 n=spinsolver
+print m=Uploading incremental-output-solver
 pushsolver f=solvers/incremental-output-solver.zip id=2 n=incremental-output-solver
+print m=Uploading always-sat-solver
 pushsolver f=solvers/always-sat-solver.zip id=2 n=always-sat-solver
+print m=Uploading always-unsat-solver
 pushsolver f=solvers/always-unsat-solver.zip id=2 n=always-unsat-solver
-pushsolver f=solvers/five-thousand-configs.tar.gz id=2 n=five-thousand-configs
+#print m=Uploading five-thousand-configs (solver)
+#pushsolver f=solvers/five-thousand-configs.tar.gz id=2 n=five-thousand-configs
+print m=Uploading output-nothing-solver
 pushsolver f=solvers/output-nothing-solver.zip id=2 n=output-nothing-solver
+print m=Uploading random-sat-or-unsat-solver
 pushsolver f=solvers/random-sat-or-unsat-solver.zip id=2 n=random-sat-or-unsat-solver
+print m=Uploading output-random100-solver
 pushsolver f=solvers/output-random100-solver.zip id=2 n=output-random100-solver
+print m=Uploading sleep-10-solver
 pushsolver f=solvers/sleep-10-solver.zip id=2 n=sleep-10-solver
+print m=Uploading cpu-runner (solver)
 pushsolver f=solvers/cpu-runner.zip id=2 n=cpu-runner
+print m=Uploading chain-solver
 pushsolver f=solvers/chain-solver.zip id=2 n=chain-solver
+print m=Uploading multiconfig-solver
 pushsolver f=solvers/multiconfig.zip id=2 n=multiconfig-solver
+print m=Uploading output-vars (solver)
 pushsolver f=solvers/output-vars.zip id=2 n=output-vars
+print m=Uploading memalloc (solver)
 pushsolver f=solvers/memalloc.zip id=2 n=memalloc
 logout
 
 login addr=https://stardev.cs.uiowa.edu/appname/ u=user@uiowa.edu p=Starexec4ever
 pushbenchmarks id=2 f=benchmarks/benchmarks.zip bt=2 hier=
 sleep t=4
-linkuser id=4 to=4 hier=
+linkuser id=4 to=7 hier=
 logout
 exit
