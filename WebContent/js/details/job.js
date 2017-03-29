@@ -52,7 +52,6 @@ $(document).ready(function(){
 		//update the tables every 30 seconds
 		setInterval(function() {
 			pairTable.fnDraw(false);
-			refreshPanels();
 		},30000);
 	}
 
@@ -122,9 +121,7 @@ function setSyncResultsText() {
 
 function refreshPanels(){
 	for (var i=0;i<panelArray.length;i++) {
-		if (panelArray[i].parents(".panelField").children("legend").data("open") === true) {
-			panelArray[i].api().ajax.reload(null,true);
-		}
+		panelArray[i].api().ajax.reload(null,true);
 	}
 }
 
@@ -276,9 +273,13 @@ function killAjaxRequests() {
 }
 
 function clearPanels() {
-	for (var i=0;i<panelArray.length;i++) {
-		panelArray[i].fnDestroy();
-		$(panelArray[i]).remove();
+	for (var i=0; i<panelArray.length; ++i) {
+		var panel = panelArray[i];
+		if (panel.data("panelRefreshInterval") !== undefined) {
+			window.clearInterval(panel.data("panelRefreshInterval"));
+		}
+		panel.fnDestroy();
+		panel.remove();
 	}
 	$(".panelField").remove();
 	panelArray = [];
@@ -1078,8 +1079,30 @@ function handleSpacesData(spaces) {
 		$("#panelActions").after(child); //put the table after the panelActions fieldset
 
 		var panelTableInitializer = getPanelTableInitializer(jobId, spaceId);
+		var $panel = $("#panel"+spaceId);
 
-		panelArray[i]=$("#panel"+spaceId).dataTable(panelTableInitializer);
+		panelArray[i]=$panel.dataTable(panelTableInitializer);
+
+		/* We want each panel to reload its contents every 30 seconds while
+		 * it is open. If it is closed, it should not reload its contents. Upon
+		 * being opened, it should immediately refresh its contents because we
+		 * don't know how long it has been closed and we do not want to show
+		 * stale data for 30 seconds.
+		 * We can keep track of the interval handle internally as
+		 * `panelRefreshInterval`, but we must also expose it to `clearPanels`.
+		 * For this reason, we will let jQuery save the handle also so that we
+		 * can clear the interval if the panel is cleared.
+		 */
+		var panelRefreshInterval;
+		var reload = $panel.dataTable().api().ajax.reload.bind(null, null, true);
+		$panel.parents(".panelField").on("open.expandable", function() {
+			reload();
+			panelRefreshInterval = window.setInterval(reload, 30000);
+			$panel.data("panelRefreshInterval", panelRefreshInterval);
+		}).on("close.expandable", function() {
+			window.clearInterval(panelRefreshInterval);
+		});
+
 		$(".extLink").hide();
 	}
 
