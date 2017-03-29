@@ -56,6 +56,7 @@ $(document).ready(function(){
 
 				$legend.siblings().wrapAll('<div class="expdContainer" />');
 				$legend.css('cursor', 'pointer');
+				$legend.data('open', isOpen);
 
 				if(closed) {
 					$legend.append('<span> (+)</span>');
@@ -69,6 +70,7 @@ $(document).ready(function(){
 					$this.trigger(isOpen ? 'open.expandable' : 'close.expandable')
 					$legend.children('span:last-child').text(isOpen ? ' (-)' : ' (+)');
 					$legend.siblings().slideToggle('fast');
+					$legend.data('open', isOpen);
 				});
 			});
 			return $(this);

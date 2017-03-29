@@ -485,8 +485,8 @@ function initUI(){
 			}
 		}).click(function() {
 			$(".panelField").each(function() {
-				legend = $(this).children('legend:first');
-				isOpen = $(legend).data('open');
+				var legend = $(this).children('legend:first');
+				var isOpen = $(legend).data('open');
 				if (isOpen) {
 					$(legend).trigger("click");
 				}
@@ -500,8 +500,8 @@ function initUI(){
 			}
 		}).click(function() {
 			$(".panelField").each(function() {
-				legend = $(this).children('legend:first');
-				isOpen = $(legend).data('open');
+				var legend = $(this).children('legend:first');
+				var isOpen = $(legend).data('open');
 
 				if (!isOpen) {
 					$(legend).trigger("click");
