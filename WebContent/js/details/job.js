@@ -122,7 +122,9 @@ function setSyncResultsText() {
 
 function refreshPanels(){
 	for (var i=0;i<panelArray.length;i++) {
-		panelArray[i].api().ajax.reload(null,true);
+		if (panelArray[i].parents(".panelField").children("legend").data("open") === true) {
+			panelArray[i].api().ajax.reload(null,true);
+		}
 	}
 }
 
