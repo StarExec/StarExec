@@ -574,6 +574,13 @@ class CommandParser {
 				System.out.println("Debug mode has been disabled.");
 			}
 			return 0;
+		} else if (c.equals(C.COMMAND_PRINT)) {
+			int valid=CommandValidator.isValidPrintCommand(commandParams);
+			if (valid < 0) {
+				return valid;
+			}
+			System.out.println(commandParams.get(C.PARAM_MESSAGE));
+			return 0;
 		} else if (c.equals(C.COMMAND_HELP)) {
 			System.out.println(C.HELP_MESSAGE);
 			return 0;

@@ -50,6 +50,7 @@ public class CommandValidator {
 	private static String[] allowedPollJobParams=new String[]{C.PARAM_OUTPUT_FILE,C.PARAM_ID,C.PARAM_TIME,C.PARAM_OVERWRITE};
 	private static String[] allowedRunFileParams=new String[]{C.PARAM_FILE,C.PARAM_VERBOSE};
 	private static String[] allowedSleepParams=new String[]{C.PARAM_TIME};
+	private static String[] allowedPrintParams=new String[]{C.PARAM_MESSAGE};
 	private static String[] allowedPauseOrResumeParams=new String[]{C.PARAM_ID};
 	private static String[] allowedRerunParams=new String[]{C.PARAM_ID};
 
@@ -418,6 +419,15 @@ public class CommandValidator {
 		}
 
 		findUnnecessaryParams(allowedLSParams,commandParams);
+		return 0;
+	}
+
+	public static int isValidPrintCommand(HashMap<String, String> commandParams) {
+		if (!paramsExist(new String[] {C.PARAM_MESSAGE}, commandParams)) {
+			return Status.ERROR_MISSING_PARAM;
+		}
+
+		findUnnecessaryParams(allowedPrintParams, commandParams);
 		return 0;
 	}
 

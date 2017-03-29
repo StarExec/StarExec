@@ -146,7 +146,9 @@ public class C {
 	public static String COMMAND_PUSHSPACEXML="pushspacexml";
         public static String COMMAND_PUSHJOBXML="pushjobxml";
 	public static String COMMAND_PUSHCONFIGRUATION="pushconfig";
-	
+
+	public static final String COMMAND_PRINT="print";
+
 	//deleting commands
 	public static String COMMAND_DELETESOLVER="deletesolver";
 	public static String COMMAND_DELETEBENCH="deletebench";
@@ -217,6 +219,7 @@ public class C {
 	public static String PARAM_VERBOSE="verbose";
 	public static String[] PARAMS_PERMS={"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
 	public static String PARAM_TIME="t";
+	public static final String PARAM_MESSAGE="m";
 	public static String PARAM_GUEST="guest";
 	public static String PARAM_FROM="from";
 	public static String PARAM_TO="to";
