@@ -1102,8 +1102,6 @@ function handleSpacesData(spaces) {
 		}).on("close.expandable", function() {
 			window.clearInterval(panelRefreshInterval);
 		});
-
-		$(".extLink").hide();
 	}
 
 	$(".viewSubspace").click(function() {
