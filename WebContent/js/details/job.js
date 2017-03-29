@@ -1094,7 +1094,7 @@ function handleSpacesData(spaces) {
 		 * can clear the interval if the panel is cleared.
 		 */
 		var panelRefreshInterval;
-		var reload = $panel.dataTable().api().ajax.reload.bind(null, null, true);
+		var reload = $panel.dataTable().api().ajax.reload;
 		$panel.parents(".panelField").on("open.expandable", function() {
 			reload();
 			panelRefreshInterval = window.setInterval(reload, 30000);
