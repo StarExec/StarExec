@@ -2,7 +2,14 @@ package org.starexec.app;
 
 import com.google.gson.*;
 import com.google.gson.annotations.Expose;
+import com.opera.core.systems.scope.protos.UmsProtos;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.omg.CORBA.INTERNAL;
+import org.starexec.command.Connection;
 import org.starexec.constants.R;
 import org.starexec.constants.R.DefaultSettingAttribute;
 import org.starexec.data.database.*;
@@ -1724,6 +1731,58 @@ public class RESTServices {
 			return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.SOLVER));
 		}
 		return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
+	}
+
+	/**
+	 * Moves a primitive
+	 * @param instance
+	 * @param username
+	 * @param password
+	 * @param type
+	 * @param benchmarkId
+	 * @param spaceId
+	 * @param request
+	 * @return
+	 */
+	@GET
+	@Path("/move-to-stardev/{instance}/{username}/{password}/{type}/{benchmarkId}/{spaceId}")
+	@Produces("application/json")
+	public String uploadToDev(
+			@PathParam("instance") String instance,
+			@PathParam("username") String username,
+			@PathParam("password") String password,
+			@PathParam("type") String type,
+			@PathParam("benchmarkId") Integer benchmarkId,
+			@PathParam("spaceId") Integer spaceId,
+			@Context HttpServletRequest request) {
+
+		// Make sure user is dev or admin.
+		int userId = SessionUtil.getUserId(request);
+		if (!Users.isAdmin(userId) && !Users.isDeveloper(userId)) {
+			return gson.toJson(new ValidatorStatusCode(false, "You must be an admin or developer to do this."));
+		}
+
+		// TODO: support more primitive types.
+		if (Primitive.valueOf(type) != Primitive.BENCHMARK) {
+			return gson.toJson(new ValidatorStatusCode(false, "That type is not yet supported."));
+		}
+
+		// Login to StarDev
+		String url = "https://stardev.cs.uiowa.edu/"+instance+"/";
+		Connection commandConnection = new Connection(username, password, url);
+		int loginStatus = commandConnection.login();
+		if (loginStatus < 0) {
+			return gson.toJson(ERROR_INTERNAL_SERVER);
+		}
+
+		// Copy the benchmark.
+		Benchmark benchmarkToCopy = Benchmarks.get(benchmarkId);
+		// TODO: implement processor
+		int uploadStatus = commandConnection.uploadBenchmarksToSingleSpace(benchmarkToCopy.getPath(), null, spaceId, true);
+		if (uploadStatus < 0) {
+			return gson.toJson(ERROR_INTERNAL_SERVER);
+		}
+		return gson.toJson(new ValidatorStatusCode(true));
 	}
 	
 	/**
