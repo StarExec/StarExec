@@ -1745,9 +1745,9 @@ public class RESTServices {
 	 * @return
 	 */
 	@GET
-	@Path("/move-to-stardev/{instance}/{username}/{password}/{type}/{benchmarkId}/{spaceId}")
+	@Path("/copy-to-stardev/{instance}/{username}/{password}/{type}/{benchmarkId}/{spaceId}")
 	@Produces("application/json")
-	public String uploadToDev(
+	public String copyToStarDev(
 			@PathParam("instance") String instance,
 			@PathParam("username") String username,
 			@PathParam("password") String password,
