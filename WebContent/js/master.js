@@ -372,6 +372,10 @@ function parseReturnCode(code,printMessage) {
 
 	m = code.message;
 
+	if (code.devMessage) {
+		log(code.devMessage);
+	}
+
 	if (printMessage) {
 		if (s) {
 			if (stringExists(m)) {

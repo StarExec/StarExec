@@ -290,6 +290,7 @@ public class Connection {
 			if (id>0) {
 				return id;
 			} else {
+				lastError = "We did not get a New_ID header";
 				return Status.ERROR_INTERNAL; //we should have gotten an error from the server and no redirect if there was a catchable error
 			}
 			
@@ -298,6 +299,7 @@ public class Connection {
 				return Status.ERROR_SERVER;
 			}
 		} catch (Exception e) {
+			lastError = Util.getStackTrace(e);
 			return Status.ERROR_INTERNAL;
 		} finally {
 			safeCloseResponse(response);
@@ -392,6 +394,7 @@ public class Connection {
 			
 			return id;
 		} catch (Exception e) {
+			lastError = Util.getStackTrace(e);
 			return Status.ERROR_INTERNAL;
 		} finally {
 			safeCloseResponse(response);

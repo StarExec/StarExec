@@ -7,6 +7,14 @@ public class ValidatorStatusCode {
 	@Expose private boolean success;
 	@Expose private String message;
 	@Expose private int statusCode;
+	@Expose private String devMessage;
+
+	public ValidatorStatusCode(boolean success, String message, String devMessage, int statusCode) {
+		setSuccess(success);
+		setMessage(message);
+		setDevMessage(devMessage);
+		setStatusCode(statusCode);
+	}
 	
 	public ValidatorStatusCode(boolean s, String m, int sc) {
 		setSuccess(s);
@@ -24,6 +32,14 @@ public class ValidatorStatusCode {
 		success=s;
 		message="";
 		setStatusCode(0);
+	}
+
+	public void setDevMessage(String message) {
+		this.devMessage = message;
+	}
+
+	public String getDevMessage() {
+		return this.devMessage;
 	}
 	
 	/**
