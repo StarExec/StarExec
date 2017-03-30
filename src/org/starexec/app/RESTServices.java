@@ -1745,14 +1745,14 @@ public class RESTServices {
 	 * @return
 	 */
 	@GET
-	@Path("/copy-to-stardev/{instance}/{username}/{password}/{type}/{benchmarkId}/{spaceId}")
+	@Path("/copy-to-stardev/{instance}/{username}/{password}/{type}/{primitiveId}/{spaceId}")
 	@Produces("application/json")
 	public String copyToStarDev(
 			@PathParam("instance") String instance,
 			@PathParam("username") String username,
 			@PathParam("password") String password,
 			@PathParam("type") String type,
-			@PathParam("benchmarkId") Integer benchmarkId,
+			@PathParam("primitiveId") Integer primitiveId,
 			@PathParam("spaceId") Integer spaceId,
 			@Context HttpServletRequest request) {
 
@@ -1761,12 +1761,7 @@ public class RESTServices {
 		if (!Users.isAdmin(userId) && !Users.isDeveloper(userId)) {
 			return gson.toJson(new ValidatorStatusCode(false, "You must be an admin or developer to do this."));
 		}
-
-		// TODO: support more primitive types.
-		if (Primitive.valueOf(type) != Primitive.BENCHMARK) {
-			return gson.toJson(new ValidatorStatusCode(false, "That type is not yet supported."));
-		}
-
+		Primitive primType = Primitive.valueOf(type);
 		// Login to StarDev
 		String url = "https://stardev.cs.uiowa.edu/"+instance+"/";
 		Connection commandConnection = new Connection(username, password, url);
@@ -1774,15 +1769,14 @@ public class RESTServices {
 		if (loginStatus < 0) {
 			return gson.toJson(ERROR_INTERNAL_SERVER);
 		}
-
-		// Copy the benchmark.
-		Benchmark benchmarkToCopy = Benchmarks.get(benchmarkId);
-		// TODO: implement processor
-		int uploadStatus = commandConnection.uploadBenchmarksToSingleSpace(benchmarkToCopy.getPath(), null, spaceId, true);
-		if (uploadStatus < 0) {
-			return gson.toJson(ERROR_INTERNAL_SERVER);
+		// TODO: support more primitive types.
+		if (primType == Primitive.BENCHMARK) {
+			return gson.toJson(RESTHelpers.copyBenchmarkToStarDev(commandConnection, primitiveId, spaceId));
+		} else if (primType == Primitive.SOLVER) {
+			return gson.toJson(RESTHelpers.copySolverToStarDev(commandConnection, primitiveId, spaceId));
+		} else {
+			return gson.toJson(new ValidatorStatusCode(false, "That type is not yet supported."));
 		}
-		return gson.toJson(new ValidatorStatusCode(true));
 	}
 	
 	/**

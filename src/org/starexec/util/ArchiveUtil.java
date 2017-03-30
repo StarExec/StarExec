@@ -537,7 +537,7 @@ public class ArchiveUtil {
 	 * be IGNORED if this is true. It should be set to false if the desire is to simply rename the top level.
 	 * @throws Exception
 	 */
-	public static void createAndOutputZip(File path, OutputStream output, String baseName, boolean removeTopLevel) throws Exception {
+	public static void createAndOutputZip(File path, OutputStream output, String baseName, boolean removeTopLevel) throws IOException {
 		if (removeTopLevel) {
 			File[] files=path.listFiles();
 			List<File> f=new ArrayList<File>();

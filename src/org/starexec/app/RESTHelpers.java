@@ -1,5 +1,6 @@
 package org.starexec.app;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import com.google.gson.Gson;
@@ -7,6 +8,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.annotations.Expose;
+import org.starexec.command.*;
 import org.starexec.constants.R;
 import org.starexec.data.database.*;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
@@ -23,6 +25,7 @@ import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.logger.StarLogger;
 import org.starexec.test.integration.TestResult;
 import org.starexec.test.integration.TestSequence;
+import org.starexec.util.ArchiveUtil;
 import org.starexec.util.DataTablesQuery;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
@@ -31,6 +34,9 @@ import org.w3c.dom.Attr;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
@@ -641,13 +647,50 @@ public class RESTHelpers {
 		return null;
 	}
 
-	/**
-	 * Gets the next page of solvers that the given user can see. This includes solvers the user owns,
-	 * solvers in public spaces, and solvers in spaces the user is also in.
-	 * @param userId
-	 * @param request
-	 * @return JsonObject encapsulating next page of solvers to display
-	 */
+	protected static ValidatorStatusCode copyBenchmarkToStarDev(Connection commandConnection, int benchmarkId, int spaceId) {
+		Benchmark benchmarkToCopy = Benchmarks.get(benchmarkId);
+		File sandbox = Util.getRandomSandboxDirectory();
+		try {
+			FileUtils.copyFileToDirectory(new File(benchmarkToCopy.getPath()), sandbox);
+			String archiveName = "temp.zip";
+			File tempFile = new File(sandbox, archiveName);
+			log.debug("Files in sandbox when copying to StarDev: ");
+			for (String s : sandbox.list()) {
+				log.debug("\t"+s);
+			}
+			ArchiveUtil.createAndOutputZip(sandbox.listFiles()[0], new FileOutputStream(tempFile),archiveName, true);
+			// TODO: implement processor. Perhaps we could automatically upload the processor to stardev if it is not already
+			// there.
+			int uploadStatus = commandConnection.uploadBenchmarksToSingleSpace(tempFile.getAbsolutePath(), null, spaceId, true);
+			if (uploadStatus < 0) {
+				return new ValidatorStatusCode(false, org.starexec.command.Status.getStatusMessage(uploadStatus));
+			}
+			return new ValidatorStatusCode(true);
+		} catch (IOException e) {
+			log.warn("Could not copy solver to sandbox for copying to StarDev.", e);
+			return new ValidatorStatusCode(false, "Could not copy solver.");
+		} finally {
+			try {
+				FileUtils.deleteDirectory(sandbox);
+			} catch (IOException e) {
+				log.error("Caught IOException while deleting directory: " + sandbox.getAbsolutePath()
+						+"\nDirectory may not have been deleted", e);
+			}
+		}
+	}
+
+	protected static ValidatorStatusCode copySolverToStarDev(Connection commandConnection, int solverId, int spaceId) {
+		return new ValidatorStatusCode(true);
+	}
+
+
+		/**
+         * Gets the next page of solvers that the given user can see. This includes solvers the user owns,
+         * solvers in public spaces, and solvers in spaces the user is also in.
+         * @param userId
+         * @param request
+         * @return JsonObject encapsulating next page of solvers to display
+         */
 	public static JsonObject getNextDataTablesPageOfSolversByUser(int userId, HttpServletRequest request) {
 
 		try {
