@@ -1733,17 +1733,7 @@ public class RESTServices {
 		return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
 	}
 
-	/**
-	 * Moves a primitive
-	 * @param instance
-	 * @param username
-	 * @param password
-	 * @param type
-	 * @param benchmarkId
-	 * @param spaceId
-	 * @param request
-	 * @return
-	 */
+
 	@GET
 	@Path("/copy-to-stardev/{instance}/{username}/{password}/{type}/{primitiveId}/{spaceId}")
 	@Produces("application/json")
@@ -1755,27 +1745,31 @@ public class RESTServices {
 			@PathParam("primitiveId") Integer primitiveId,
 			@PathParam("spaceId") Integer spaceId,
 			@Context HttpServletRequest request) {
-
-		// Make sure user is dev or admin.
-		int userId = SessionUtil.getUserId(request);
-		if (!Users.isAdmin(userId) && !Users.isDeveloper(userId)) {
-			return gson.toJson(new ValidatorStatusCode(false, "You must be an admin or developer to do this."));
-		}
-		Primitive primType = Primitive.valueOf(type);
-		// Login to StarDev
-		String url = "https://stardev.cs.uiowa.edu/"+instance+"/";
-		Connection commandConnection = new Connection(username, password, url);
-		int loginStatus = commandConnection.login();
-		if (loginStatus < 0) {
+		try {
+			// Make sure user is dev or admin.
+			int userId = SessionUtil.getUserId(request);
+			if (!Users.isAdmin(userId) && !Users.isDeveloper(userId)) {
+				return gson.toJson(new ValidatorStatusCode(false, "You must be an admin or developer to do this."));
+			}
+			Primitive primType = Primitive.valueOf(type);
+			// Login to StarDev
+			String url = "https://stardev.cs.uiowa.edu/" + instance + "/";
+			Connection commandConnection = new Connection(username, password, url);
+			int loginStatus = commandConnection.login();
+			if (loginStatus < 0) {
+				return gson.toJson(org.starexec.command.Status.getStatusMessage(loginStatus));
+			}
+			// TODO: support more primitive types.
+			if (primType == Primitive.BENCHMARK) {
+				return gson.toJson(RESTHelpers.copyBenchmarkToStarDev(commandConnection, primitiveId, spaceId));
+			} else if (primType == Primitive.SOLVER) {
+				return gson.toJson(RESTHelpers.copySolverToStarDev(commandConnection, primitiveId, spaceId));
+			} else {
+				return gson.toJson(new ValidatorStatusCode(false, "That type is not yet supported."));
+			}
+		} catch (Throwable t) {
+			log.error("Caught throwable while attempting to copy primitive to StarDev.", t);
 			return gson.toJson(ERROR_INTERNAL_SERVER);
-		}
-		// TODO: support more primitive types.
-		if (primType == Primitive.BENCHMARK) {
-			return gson.toJson(RESTHelpers.copyBenchmarkToStarDev(commandConnection, primitiveId, spaceId));
-		} else if (primType == Primitive.SOLVER) {
-			return gson.toJson(RESTHelpers.copySolverToStarDev(commandConnection, primitiveId, spaceId));
-		} else {
-			return gson.toJson(new ValidatorStatusCode(false, "That type is not yet supported."));
 		}
 	}
 	
