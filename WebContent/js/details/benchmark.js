@@ -14,8 +14,42 @@ $(document).ready(function(){
 	registerDownloadLinkButtonEventHandler();
 	registerAnonymousLinkButtonEventHandler();
 
-	
-	
+	$('.copyToStarDev').button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-n"
+		}
+	}).click(function() {
+		$('.dialog-copy-to-stardev').dialog({
+			modal: true,
+			width: 600,
+			height: 400,
+			buttons: {
+				'submit': function() {
+					$(this).dialog('close');
+					var instance = $('.instanceName').val();
+					var username = $('.stardevUsername').val();
+					var password = $('.stardevPassword').val();
+					var spaceId = $('.stardevSpaceId').val();
+					var benchId = $('#benchId').attr('value');
+					var type = 'BENCHMARK';
+					var url = starexecRoot+'services/copy-to-stardev/'+instance+'/'+username+'/'+password+'/'+type+'/'+benchId+'/'+spaceId;
+					log('Url was: '+url);
+					$.get(
+						url,
+						{},
+						function(data) {
+							parseReturnCode(data, true);
+							log(data);
+						},
+						'json'
+					);
+				},
+				'cancel': function() {
+					$(this).dialog('close');
+				}
+			}
+		});
+	});
 });
 
 function registerDownloadLinkButtonEventHandler() {
