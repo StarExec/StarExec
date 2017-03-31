@@ -834,16 +834,17 @@ function setupChangeQueueButton() {
 			buttons: {
 				'OK': function() {
 					$('#dialog-changeQueue').dialog('close');
+					killAjaxRequests();
+					window.stop();
 					$.post(
 							starexecRoot+"services/changeQueue/job/" + getParameterByName("id")+"/"+$("#changeQueueSelection").val(),
 							function(returnCode) {
-								var s=parseReturnCode(returnCode);
+								var s = parseReturnCode(returnCode);
 								if (s) {
-									killAjaxRequests();
-									window.stop();
-									setTimeout(function() {
-										document.location.reload(true);
-									}, 1000);
+									setTimeout(
+										function() {document.location.reload(true)},
+										1000
+									);
 
 								}
 							},
