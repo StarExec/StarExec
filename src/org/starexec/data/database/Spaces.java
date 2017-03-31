@@ -2524,6 +2524,46 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 		
 		return false;
 	}
+
+	/**
+	 * Makes a single space public.
+	 * @param spaceId the space to make public.
+	 * @param userId the user making the request.
+	 * @return true on success, otherwise false.
+	 */
+	public static boolean makeSingleSpacePublic(int spaceId, int userId) {
+		return setPublicSpace(spaceId, userId, true, false);
+	}
+	
+	/**
+	 * Makes a space hierarchy public.
+	 * @param rootSpaceId the root of the hierarchy that is to be made public
+	 * @param userId the user making the request.
+	 * @return true on success, otherwise false.
+	 */
+	public static boolean makeHierarchyPublic(int rootSpaceId, int userId) {
+		return setPublicSpace(rootSpaceId, userId, true, true);
+	}
+
+	/**
+	 * Makes a single space private.
+	 * @param spaceId the space to make private.
+	 * @param userId the user making the request.
+	 * @return true on success, otherwise false.
+	 */
+	public static boolean makeSingleSpacePrivate(int spaceId, int userId) {
+		return setPublicSpace(spaceId, userId, false, false);
+	}
+	
+	/**
+	 * Makes a space hierarchy private.
+	 * @param rootSpaceId the root of the hierarchy that is to be made private
+	 * @param userId the user making the request.
+	 * @return true on success, otherwise false.
+	 */
+	public static boolean makeHierarchyPrivate(int rootSpaceId, int userId) {
+		return setPublicSpace(rootSpaceId, userId, false, true);
+	}
 	
 	/**
 	 * Set a space to be public or private
