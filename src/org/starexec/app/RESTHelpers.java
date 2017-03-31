@@ -650,15 +650,16 @@ public class RESTHelpers {
 	protected static ValidatorStatusCode copyBenchmarkToStarDev(Connection commandConnection, int benchmarkId, int spaceId) {
 		Benchmark benchmarkToCopy = Benchmarks.get(benchmarkId);
 		File sandbox = Util.getRandomSandboxDirectory();
+		File sandbox2 = Util.getRandomSandboxDirectory();
 		try {
 			FileUtils.copyFileToDirectory(new File(benchmarkToCopy.getPath()), sandbox);
 			String archiveName = "temp.zip";
-			File tempFile = new File(sandbox, archiveName);
+			File tempFile = new File(sandbox2, archiveName);
 			log.debug("Files in sandbox when copying to StarDev: ");
 			for (String s : sandbox.list()) {
 				log.debug("\t"+s);
 			}
-			ArchiveUtil.createAndOutputZip(sandbox.listFiles()[0], new FileOutputStream(tempFile),archiveName, true);
+			ArchiveUtil.createAndOutputZip(sandbox, new FileOutputStream(tempFile),archiveName, true);
 			// TODO: implement processor. Perhaps we could automatically upload the processor to stardev if it is not already
 			// there.
 			int noTypeProcessor = 1;
@@ -671,22 +672,23 @@ public class RESTHelpers {
 						org.starexec.command.Status.getStatusMessage(uploadStatus),
 						commandConnection.getLastError());
 			}
-			return new ValidatorStatusCode(true);
+			return new ValidatorStatusCode(true, "Successfully copied benchmark to StarDev");
 		} catch (IOException e) {
 			log.warn("Could not copy solver to sandbox for copying to StarDev.", e);
 			return new ValidatorStatusCode(false, "Could not copy solver.");
 		} finally {
 			try {
 				FileUtils.deleteDirectory(sandbox);
+				FileUtils.deleteDirectory(sandbox2);
 			} catch (IOException e) {
-				log.error("Caught IOException while deleting directory: " + sandbox.getAbsolutePath()
+				log.error("Caught IOException while deleting directory: " + sandbox.getAbsolutePath()+"\nor "+sandbox2.getAbsolutePath()
 						+"\nDirectory may not have been deleted", e);
 			}
 		}
 	}
 
 	protected static ValidatorStatusCode copySolverToStarDev(Connection commandConnection, int solverId, int spaceId) {
-		return new ValidatorStatusCode(true);
+		return new ValidatorStatusCode(true, "Successfully copied solver to StarDev");
 	}
 
 
