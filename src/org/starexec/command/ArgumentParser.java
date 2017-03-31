@@ -838,7 +838,7 @@ class ArgumentParser {
 		if (commandParams.containsKey(C.PARAM_SETTING)) {
 			settingId=Integer.parseInt(C.PARAM_SETTING);
 		}
-		Integer type=1;
+		Integer type=C.DEFAULT_SOLVER_TYPE;
 		if (commandParams.containsKey(C.PARAM_TYPE)) {
 			type=Integer.parseInt(commandParams.get(C.PARAM_TYPE));
 		}

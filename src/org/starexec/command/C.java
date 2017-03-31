@@ -249,6 +249,7 @@ public class C {
 	public static String FORMPARAM_TRAVERSAL="traversal";
 
 
+	public static final Integer DEFAULT_SOLVER_TYPE = 1;
 
 
 

@@ -20,6 +20,7 @@ import org.starexec.data.to.enums.Primitive;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.tuples.AttributesTableData;
 import org.starexec.data.to.tuples.AttributesTableRow;
+import org.starexec.data.to.tuples.Locatable;
 import org.starexec.data.to.tuples.SolverConfig;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.logger.StarLogger;
@@ -647,48 +648,112 @@ public class RESTHelpers {
 		return null;
 	}
 
+	/**
+	 * Copies a benchmark from StarExec to StarDev
+	 * @param commandConnection a logged in StarExecCommand connection.
+	 * @param benchmarkId the benchmark to be copied from StarExec.
+	 * @param spaceId the space to copy the benchmark to on StarDev.
+	 * @return a status code indicating success or failure.
+	 */
 	protected static ValidatorStatusCode copyBenchmarkToStarDev(Connection commandConnection, int benchmarkId, int spaceId) {
 		Benchmark benchmarkToCopy = Benchmarks.get(benchmarkId);
 		File sandbox = Util.getRandomSandboxDirectory();
-		File sandbox2 = Util.getRandomSandboxDirectory();
 		try {
-			FileUtils.copyFileToDirectory(new File(benchmarkToCopy.getPath()), sandbox);
-			String archiveName = "temp.zip";
-			File tempFile = new File(sandbox2, archiveName);
-			log.debug("Files in sandbox when copying to StarDev: ");
-			for (String s : sandbox.list()) {
-				log.debug("\t"+s);
-			}
-			ArchiveUtil.createAndOutputZip(sandbox, new FileOutputStream(tempFile),archiveName, true);
+			File tempFile = copyPrimitiveToSandbox(sandbox, benchmarkToCopy);
 			// TODO: implement processor. Perhaps we could automatically upload the processor to stardev if it is not already
 			// there.
 			int noTypeProcessor = 1;
 			int uploadStatus = commandConnection.uploadBenchmarksToSingleSpace(tempFile.getAbsolutePath(), noTypeProcessor, spaceId, true);
-			if (uploadStatus < 0) {
-				log.warn("Command failed to uploada benchmark: " + org.starexec.command.Status.getStatusMessage(uploadStatus)
-					+ "\n"+commandConnection.getLastError());
-				return new ValidatorStatusCode(
-						false,
-						org.starexec.command.Status.getStatusMessage(uploadStatus),
-						commandConnection.getLastError());
-			}
-			return new ValidatorStatusCode(true, "Successfully copied benchmark to StarDev");
+			return outputStatus(commandConnection.getLastError(), uploadStatus, "Successfully copied benchmark to StarDev");
+		} catch (IOException e) {
+			log.warn("Could not copy benchmark to sandbox for copying to StarDev.", e);
+			return new ValidatorStatusCode(false, "Could not copy benchmark.");
+		} finally {
+			deleteSandbox(sandbox);
+		}
+
+	}
+
+	/**
+	 * Copies a solver from StarExec to StarDev
+	 * @param commandConnection a logged-in connection to StarDev
+	 * @param solverId the ID of the solver to copy on StarExec.
+	 * @param spaceId the ID of the space to copy to on StarDev.
+	 * @return a ValidatorStatusCode indicating success or failure.
+	 */
+	protected static ValidatorStatusCode copySolverToStarDev(Connection commandConnection, int solverId, int spaceId) {
+		Solver solverToCopy = Solvers.get(solverId);
+		File sandbox = Util.getRandomSandboxDirectory();
+		try {
+			File tempFile = copyPrimitiveToSandbox(sandbox, solverToCopy);
+
+			int uploadStatus = commandConnection.uploadSolver(
+					solverToCopy.getName(),
+					solverToCopy.getDescription(),
+					spaceId,
+					tempFile.getAbsolutePath(),
+					true, // downloadable
+					false, // run test job
+					null, // default settings ID for test job
+					C.DEFAULT_SOLVER_TYPE);
+			return outputStatus(commandConnection.getLastError(), uploadStatus, "Successfully copied solver to StarDev");
 		} catch (IOException e) {
 			log.warn("Could not copy solver to sandbox for copying to StarDev.", e);
 			return new ValidatorStatusCode(false, "Could not copy solver.");
 		} finally {
-			try {
-				FileUtils.deleteDirectory(sandbox);
-				FileUtils.deleteDirectory(sandbox2);
-			} catch (IOException e) {
-				log.error("Caught IOException while deleting directory: " + sandbox.getAbsolutePath()+"\nor "+sandbox2.getAbsolutePath()
-						+"\nDirectory may not have been deleted", e);
-			}
+			deleteSandbox(sandbox);
 		}
 	}
 
-	protected static ValidatorStatusCode copySolverToStarDev(Connection commandConnection, int solverId, int spaceId) {
-		return new ValidatorStatusCode(true, "Successfully copied solver to StarDev");
+	/**
+	 * Outputs a ValidatorStatusCode based on a StarExecCOmmand status code.
+	 * @param lastError the last error returned by a StarExecCommand connection.
+	 * @param uploadStatus the Command status code to convert to a ValidatorStatusCode.
+	 * @param successMessage message to use in ValidatorStatusCode on success.
+	 * @return a ValidatorStatusCode based on the given Command status code.
+	 */
+	private static ValidatorStatusCode outputStatus(String lastError, int uploadStatus, String successMessage) {
+		if (uploadStatus < 0) {
+			log.warn("Command failed to upload primitive: " + org.starexec.command.Status.getStatusMessage(uploadStatus)
+					+ "\n"+lastError);
+			return new ValidatorStatusCode(
+					false,
+					org.starexec.command.Status.getStatusMessage(uploadStatus),
+					lastError);
+		}
+		return new ValidatorStatusCode(true, successMessage);
+	}
+
+	/**
+	 * Zips a primitive into the given Sandbox.
+	 * @param sandbox the sandbox to place the zip file in.
+	 * @param primitive the primitive to zip into the sandbox.
+	 * @return the zip file.
+	 * @throws IOException if something goes wrong with copying or zipping.
+	 */
+	private static File copyPrimitiveToSandbox(final File sandbox, final Locatable primitive) throws IOException {
+		// Use this sandbox to do the copying.
+		File tempSandbox = Util.getRandomSandboxDirectory();
+		try {
+			FileUtils.copyFileToDirectory(new File(primitive.getPath()), tempSandbox);
+			String archiveName = "temp.zip";
+			File outputFile = new File(sandbox, archiveName);
+			// Zip the file into the input sandbox.
+			ArchiveUtil.createAndOutputZip(tempSandbox, new FileOutputStream(outputFile), archiveName, true);
+			return outputFile;
+		} finally {
+			deleteSandbox(sandbox);
+		}
+	}
+
+	// Deletes a sandbox directory.
+	private static void deleteSandbox(File sandbox) {
+		try {
+			FileUtils.deleteDirectory(sandbox);
+		} catch (IOException e) {
+			log.error("Caught IOException while deleting directory: " + sandbox.getAbsolutePath()
+					+"\nDirectory may not have been deleted", e);
+		}
 	}
 
 
