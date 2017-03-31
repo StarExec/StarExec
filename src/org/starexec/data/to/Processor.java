@@ -3,6 +3,7 @@ package org.starexec.data.to;
 import java.io.File;
 
 import org.starexec.constants.R;
+import org.starexec.data.to.tuples.Locatable;
 import org.starexec.util.Util;
 
 import com.google.gson.annotations.Expose;
@@ -12,7 +13,7 @@ import com.google.gson.annotations.Expose;
  * input and produces output. This is used at various stages in the job pipeline
  * @author Tyler Jensen 
  */
-public class Processor extends Identifiable implements Nameable {
+public class Processor extends Identifiable implements Nameable, Locatable {
 	/**
 	 * Represents the type of the processor (along with it's SQL storage values)
 	 */
@@ -109,7 +110,15 @@ public class Processor extends Identifiable implements Nameable {
 	public String getFileName() {
 		return this.fileName;
 	}
-	
+
+	/**
+	 * Alias for getFilePath, needed for Locatable interface.
+	 * @return
+	 */
+	@Override
+	public String getPath() {
+		return this.getFilePath();
+	}
 	/**
 	 * @return The physical path to the directory containing this processor
 	 */
@@ -124,7 +133,15 @@ public class Processor extends Identifiable implements Nameable {
 	public String getExecutablePath() {
 		return new File(this.getFilePath(),R.PROCESSOR_RUN_SCRIPT).getAbsolutePath();
 	}
-	
+
+	/**
+	 * Alias for setFilePath, needed for Locatable interface.
+	 * @param processorPath The physical path to set for the processor
+	 */
+	@Override
+	public void setPath(String processorPath) {
+		setFilePath(processorPath);
+	}
 	/**
 	 * @param processorPath The physical path to set for the processor
 	 */
