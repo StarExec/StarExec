@@ -62,11 +62,12 @@ import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
  * This file contains functions for loading test objects into the database.
  * Test objects are created with random names to avoid getting repeat
  * names when running tests multiple times.
+ * Implements autocloseable so it can be used in a try-with-resources statement and automatically
+ * delete all its loaded primitives.
  * @author Eric Burns
  *
  */
-
-public class ResourceLoader {
+public class ResourceLoader implements AutoCloseable {
 	private final StarLogger log = StarLogger.getLogger(ResourceLoader.class);
 	
 	// this class keeps track of all the primitives it creates. Calling deleteAllPrimitives
@@ -80,6 +81,12 @@ public class ResourceLoader {
 	private List<Integer> createdSpaceIds = new ArrayList<Integer>();
 	private List<Integer> createdQueueIds = new ArrayList<Integer>();
 	private List<Integer> createdPipelineIds = new ArrayList<Integer>();
+
+	@Override
+	public void close() {
+		deleteAllPrimitives();
+	}
+
 	/**
 	 * Deletes all of the primitives that were created using any of the 'load' methods
 	 * of this class
