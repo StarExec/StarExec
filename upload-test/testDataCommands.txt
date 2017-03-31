@@ -14,6 +14,8 @@ print m=The next command should return 6. If not you may need to modify upload-t
 createsubspace id=5 n=aalta
 print m=Uploading aalta (solver)
 pushsolver f=solvers/aalta.zip id=6 n=aalta
+prin m=Uploading benchmarks for aalta, type is no-type.
+pushbenchmarks f=benchmarks/aalta-benchmarks.zip id=6 bt=1
 
 pushbenchproc id=2 f=bench-procs/smt2-validator.zip n=smt2orig
 pushbenchproc id=2 f=bench-procs/smt2nonincremental.zip n=smt2nonincremental
@@ -34,8 +36,8 @@ print m=Uploading always-sat-solver
 pushsolver f=solvers/always-sat-solver.zip id=2 n=always-sat-solver
 print m=Uploading always-unsat-solver
 pushsolver f=solvers/always-unsat-solver.zip id=2 n=always-unsat-solver
-#print m=Uploading five-thousand-configs (solver)
-#pushsolver f=solvers/five-thousand-configs.tar.gz id=2 n=five-thousand-configs
+print m=Uploading five-thousand-configs (solver)
+pushsolver f=solvers/five-thousand-configs.tar.gz id=2 n=five-thousand-configs
 print m=Uploading output-nothing-solver
 pushsolver f=solvers/output-nothing-solver.zip id=2 n=output-nothing-solver
 print m=Uploading random-sat-or-unsat-solver
