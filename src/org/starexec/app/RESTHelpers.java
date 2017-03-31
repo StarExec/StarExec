@@ -663,7 +663,12 @@ public class RESTHelpers {
 			// there.
 			int uploadStatus = commandConnection.uploadBenchmarksToSingleSpace(tempFile.getAbsolutePath(), null, spaceId, true);
 			if (uploadStatus < 0) {
-				return new ValidatorStatusCode(false, org.starexec.command.Status.getStatusMessage(uploadStatus));
+				log.warn("Command failed to uploada benchmark: " + org.starexec.command.Status.getStatusMessage(uploadStatus)
+					+ "\n"+commandConnection.getLastError());
+				return new ValidatorStatusCode(
+						false,
+						org.starexec.command.Status.getStatusMessage(uploadStatus),
+						commandConnection.getLastError());
 			}
 			return new ValidatorStatusCode(true);
 		} catch (IOException e) {

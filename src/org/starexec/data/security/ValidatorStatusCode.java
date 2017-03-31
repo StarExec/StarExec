@@ -9,11 +9,11 @@ public class ValidatorStatusCode {
 	@Expose private int statusCode;
 	@Expose private String devMessage;
 
-	public ValidatorStatusCode(boolean success, String message, String devMessage, int statusCode) {
+	public ValidatorStatusCode(boolean success, String message, String devMessage) {
 		setSuccess(success);
 		setMessage(message);
 		setDevMessage(devMessage);
-		setStatusCode(statusCode);
+		setStatusCode(0);
 	}
 	
 	public ValidatorStatusCode(boolean s, String m, int sc) {
