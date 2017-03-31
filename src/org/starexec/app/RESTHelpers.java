@@ -704,12 +704,11 @@ public class RESTHelpers {
 				return null;
 			}
 
-			List<Solver> solversToDisplay = new LinkedList<Solver>();
 
 			// Retrieves the relevant Job objects to use in constructing the JSON to
 			// send to the client
 			int[] totals = new int[2];
-			solversToDisplay = Solvers.getSolversForNextPageByUser(query,userId, totals);
+			List<Solver> solversToDisplay = Solvers.getSolversForNextPageByUser(query,userId, totals);
 
 			query.setTotalRecords(totals[0]);
 
