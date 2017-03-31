@@ -700,6 +700,7 @@ function setupDeleteJobButton() {
 					$('#dialog-confirm-delete').dialog('close');
 
 					killAjaxRequests();
+					window.stop();
 					$.post(
 						starexecRoot+"services/delete/job",
 						{selectedIds: [getParameterByName("id")]},
@@ -783,6 +784,7 @@ function setupPauseJobButton() {
 		}
 	}).click(function() {
 		killAjaxRequests(); // Since we are reloading the page anyway...
+		window.stop();
 		$.post(
 			starexecRoot+"services/pause/job/" + getParameterByName("id"),
 			function(returnCode) {
@@ -803,6 +805,7 @@ function setupResumeJobButton() {
 		}
 	}).click(function(){
 		killAjaxRequests(); // Since we are reloading the page anyway...
+		window.stop();
 		$.post(
 			starexecRoot+"services/resume/job/" + getParameterByName("id"),
 			function(returnCode) {
@@ -836,7 +839,11 @@ function setupChangeQueueButton() {
 							function(returnCode) {
 								var s=parseReturnCode(returnCode);
 								if (s) {
-									setTimeout(function(){killAjaxRequests();document.location.reload(true);}, 1000);
+									killAjaxRequests();
+									window.stop();
+									setTimeout(function() {
+										document.location.reload(true);
+									}, 1000);
 
 								}
 							},
