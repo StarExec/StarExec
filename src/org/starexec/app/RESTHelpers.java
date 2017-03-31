@@ -661,7 +661,8 @@ public class RESTHelpers {
 			ArchiveUtil.createAndOutputZip(sandbox.listFiles()[0], new FileOutputStream(tempFile),archiveName, true);
 			// TODO: implement processor. Perhaps we could automatically upload the processor to stardev if it is not already
 			// there.
-			int uploadStatus = commandConnection.uploadBenchmarksToSingleSpace(tempFile.getAbsolutePath(), null, spaceId, true);
+			int noTypeProcessor = 1;
+			int uploadStatus = commandConnection.uploadBenchmarksToSingleSpace(tempFile.getAbsolutePath(), noTypeProcessor, spaceId, true);
 			if (uploadStatus < 0) {
 				log.warn("Command failed to uploada benchmark: " + org.starexec.command.Status.getStatusMessage(uploadStatus)
 					+ "\n"+commandConnection.getLastError());
