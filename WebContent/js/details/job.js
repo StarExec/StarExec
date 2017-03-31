@@ -240,24 +240,24 @@ function initSpaceExplorer() {
 		"plugins" : [ "types", "themes", "json_data", "ui", "cookies"] ,
 		"core" : { animation : 200 }
 	}).bind("select_node.jstree", function (event, data) {
-			// When a node is clicked, get its ID and display the info in the details pane
-			id = data.rslt.obj.attr("id");
-			if (selectedJobSpaceId == null) {
-				selectedJobSpaceId = id;
-			}
-			if (selectedJobSpaceId != id) {
-				killAjaxRequests();
-				// Only reload if a different space was clicked.
-				selectedJobSpaceId = id;
-				name = data.rslt.obj.attr("name");
-				var maxStages = data.rslt.obj.attr("maxStages");
-				setMaxStagesDropdown(parseInt(maxStages));
-				$(".spaceName").text($('.jstree-clicked').text());
-				$("#displayJobSpaceID").text("job space id  = "+id);
-				//no solvers will be selected when a space changes, so hide this button
-				$("#compareSolvers").hide();
-				reloadTables(id);
-			}
+		// When a node is clicked, get its ID and display the info in the details pane
+		id = data.rslt.obj.attr("id");
+		if (selectedJobSpaceId == null) {
+			selectedJobSpaceId = id;
+		}
+		if (selectedJobSpaceId != id) {
+			killAjaxRequests();
+			// Only reload if a different space was clicked.
+			selectedJobSpaceId = id;
+			name = data.rslt.obj.attr("name");
+			var maxStages = data.rslt.obj.attr("maxStages");
+			setMaxStagesDropdown(parseInt(maxStages));
+			$(".spaceName").text($('.jstree-clicked').text());
+			$("#displayJobSpaceID").text("job space id  = "+id);
+			//no solvers will be selected when a space changes, so hide this button
+			$("#compareSolvers").hide();
+			reloadTables(id);
+		}
 	}).on( "click", "a", function (event, data) {
 		event.preventDefault();  // This just disable's links in the node title
 	});
