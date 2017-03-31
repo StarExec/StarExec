@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import org.starexec.data.to.tuples.Locatable;
 import org.starexec.util.Util;
 
 import com.google.gson.annotations.Expose;
@@ -18,7 +19,7 @@ import com.google.gson.annotations.Expose;
  * 
  * @author Tyler Jensen
  */
-public class Benchmark extends Identifiable implements Nameable{
+public class Benchmark extends Identifiable implements Nameable, Locatable {
 	private int userId = -1;	
 	@Expose private String name;	
 	@Expose private String description = "no description";	
@@ -100,13 +101,15 @@ public class Benchmark extends Identifiable implements Nameable{
 	/**
 	 * @return the absolute file path to the benchmark on disk
 	 */
+	@Override
 	public String getPath() {
 		return path;
 	}
-	
+
 	/**
 	 * @param path the absolute path to set for the benchmark
 	 */
+	@Override
 	public void setPath(String path) {
 		this.path = path;
 	}
