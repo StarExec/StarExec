@@ -10,6 +10,7 @@ import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.Job;
@@ -185,7 +186,9 @@ public class PermissionsTests extends TestSequence {
 			User tempUser = tempLoader.loadUserIntoDatabase();
 			Space publicSpace = tempLoader.loadSpaceIntoDatabase(spaceMember.getId(), space.getId());
 			Spaces.makeSingleSpacePublic(publicSpace.getId(), spaceMember.getId());
-			Job tempJob = tempLoader.loadJobIntoDatabase(space.getId(), spaceMember.getId(), solver.getId(), benchmarks);
+			assertTrue("Space was not public.", Spaces.isPublicSpace(publicSpace.getId()));
+			Job tempJob = tempLoader.loadJobIntoDatabase(publicSpace.getId(), spaceMember.getId(), solver.getId(), benchmarks);
+			assertTrue("Job was not public.", Jobs.isPublic(tempJob.getId()));
 			assertTrue("Job owner could not see public job.", Permissions.canUserSeeJob(tempJob.getId(), spaceMember.getId()).isSuccess());
 			assertTrue("Admin could not see public job.", Permissions.canUserSeeJob(tempJob.getId(), admin.getId()).isSuccess());
 			assertTrue("User could not see public job.", Permissions.canUserSeeJob(tempJob.getId(), tempUser.getId()).isSuccess());
