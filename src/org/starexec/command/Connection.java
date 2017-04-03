@@ -9,13 +9,19 @@ import org.apache.commons.compress.utils.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.params.ClientPNames;
+import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.entity.mime.content.FileBody;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.AbstractHttpMessage;
 import org.apache.http.message.BasicNameValuePair;
 import org.starexec.constants.R;
@@ -43,7 +49,7 @@ public class Connection {
 	final private CommandLogger log = CommandLogger.getLogger(Connection.class);
 	private String baseURL;
 	private String sessionID=null;
-	HttpClient client=null;
+	DefaultHttpClient client=null;
 	private String username,password;
 	private String lastError;
 	private HashMap<Integer,Integer> job_info_indices; //these two map job ids to the max completion index
@@ -61,7 +67,7 @@ public class Connection {
 		this.setBaseURL(con.getBaseURL());
 		setUsername(con.getUsername());
 		setPassword(con.getPassword());
-		client=new DefaultHttpClient();
+		client = buildClient();
 
 		client.getParams();
 		setInfoIndices(con.getInfoIndices());
@@ -108,11 +114,20 @@ public class Connection {
 		initializeComponents();
 	}
 	private void initializeComponents() {
-		client=new DefaultHttpClient();
+		client=buildClient();
 
 		setInfoIndices(new HashMap<Integer,Integer>());
 		setOutputIndices(new HashMap<Integer,PollJobData>());
 		lastError="";
+	}
+
+	private static DefaultHttpClient buildClient() {
+		return new DefaultHttpClient();
+		
+		//HttpClientBuilder clientBuilder = HttpClientBuilder.create();
+		//clientBuilder.disableCookieManagement();
+
+		//return clientBuilder.build();
 	}
 
 	protected void setBaseURL(String baseURL1) {
@@ -169,7 +184,6 @@ public class Connection {
 	 * @return 0 if the ID was found and changed, -1 otherwise
 	 * @author Eric Burns
 	 */
-	
 	private int setSessionIDIfExists(Header [] headers) {
 		String id=HTMLParser.extractCookie(headers, C.TYPE_SESSIONID);
 		if (id==null) {
@@ -268,7 +282,7 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());
+
 			int returnCode=response.getStatusLine().getStatusCode();
 			
 			if (returnCode==302) {
@@ -276,6 +290,7 @@ public class Connection {
 			if (id>0) {
 				return id;
 			} else {
+				lastError = "We did not get a New_ID header";
 				return Status.ERROR_INTERNAL; //we should have gotten an error from the server and no redirect if there was a catchable error
 			}
 			
@@ -284,6 +299,7 @@ public class Connection {
 				return Status.ERROR_SERVER;
 			}
 		} catch (Exception e) {
+			lastError = Util.getStackTrace(e);
 			return Status.ERROR_INTERNAL;
 		} finally {
 			safeCloseResponse(response);
@@ -307,8 +323,17 @@ public class Connection {
 				log.log("\tValue: " + header.getValue());
 				log.log("");
 			}
+			CookieStore store = client.getCookieStore();	
+			List<Cookie> cookies = store.getCookies();	
+			log.log("Cookies before request: ");
+			for (Cookie cookie : cookies) {
+				log.log("\tName : "+cookie.getName());
+				log.log("\tValue: "+cookie.getValue());
+				log.log("");
+			}
 		}
 		HttpResponse response = client.execute(request);
+
 		if (C.debugMode) {
 			log.log("Got response from server.");
 			List<Header> responseHeaders = Arrays.asList(response.getAllHeaders());
@@ -316,6 +341,14 @@ public class Connection {
 			for (Header header : responseHeaders) {
 				log.log("\tName: " + header.getName());
 				log.log("\tValue: " + header.getValue());
+				log.log("");
+			}
+			CookieStore store = client.getCookieStore();	
+			List<Cookie> cookies = store.getCookies();	
+			log.log("Cookies after request: ");
+			for (Cookie cookie : cookies) {
+				log.log("\tName : "+cookie.getName());
+				log.log("\tValue: "+cookie.getValue());
 				log.log("");
 			}
 		}
@@ -353,7 +386,6 @@ public class Connection {
 
 			response = executeGetOrPost(post);
 
-			setSessionIDIfExists(response.getAllHeaders());
 			int id=CommandValidator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			if (id<=0) {
 				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE));
@@ -362,6 +394,7 @@ public class Connection {
 			
 			return id;
 		} catch (Exception e) {
+			lastError = Util.getStackTrace(e);
 			return Status.ERROR_INTERNAL;
 		} finally {
 			safeCloseResponse(response);
@@ -400,8 +433,7 @@ public class Connection {
 
 			response=executeGetOrPost(post);
 			
-			setSessionIDIfExists(response.getAllHeaders());
-						
+
 			//we are expecting to be redirected to the page for the processor
 			if (response.getStatusLine().getStatusCode()!=302) {
 				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE));
@@ -489,8 +521,7 @@ public class Connection {
 
 			response=executeGetOrPost(post);
 
-			setSessionIDIfExists(response.getAllHeaders());
-						
+
 			int code = response.getStatusLine().getStatusCode();
 			//if space, gives 200 code.  if job, gives 302
 			if (code !=200 && code != 302 ) {
@@ -589,7 +620,6 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());			
 			int newID=CommandValidator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(),"New_ID"));
 			//if the request was not successful
 			if (newID<=0) {
@@ -701,15 +731,28 @@ public class Connection {
 	 */
 	
 	private AbstractHttpMessage setHeaders(AbstractHttpMessage msg, String[] cookies) {
-		StringBuilder cookieString=new StringBuilder();
-		cookieString.append("killmenothing; JSESSIONID=");
-		cookieString.append(sessionID);
-		cookieString.append(";");
+		/*
+//		StringBuilder cookieString=new StringBuilder();
+//		cookieString.append("killmenothing; JSESSIONID=");
+//		cookieString.append(sessionID);
+//		cookieString.append(";");
+
+		CookieStore store = client.getCookieStore();
+		List<Cookie> storedCookies = store.getCookies();
+		store.clear();
+		storedCookies.stream().filter(c -> !c.getName().equals(C.TYPE_SESSIONID));
+		for (Cookie c : storedCookies) {
+			store.addCookie(c);
+		}
+		client.setCookieStore(store);
+
 		for (String x : cookies) {
 			cookieString.append(x);
 			cookieString.append(";");
 		}
 		msg.addHeader("Cookie",cookieString.toString());
+		*/
+		msg.addHeader("StarExecCommand", "StarExecCommand");
 		msg.addHeader("Connection", "keep-alive");
 		msg.addHeader("Accept-Language","en-US,en;q=0.5");
 
@@ -824,8 +867,7 @@ public class Connection {
 			JsonObject obj=JsonHandler.getJsonObject(response);
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
 			String message=JsonHandler.getMessageOfResponse(obj);
-			setSessionIDIfExists(response.getAllHeaders());
-			
+
 			if (success) {
 				return 0;
 			} else {
@@ -853,7 +895,6 @@ public class Connection {
 			get=(HttpGet) setHeaders(get);
 
 			response=executeGetOrPost(get);
-			setSessionIDIfExists(get.getAllHeaders());
 			
 			//we should get 200, which is the code for ok
 			return response.getStatusLine().getStatusCode()==200;
@@ -877,7 +918,6 @@ public class Connection {
 			get=(HttpGet) setHeaders(get);
 
 			response=executeGetOrPost(get);
-			setSessionIDIfExists(get.getAllHeaders());
 			JsonElement json=JsonHandler.getJsonString(response);
 			return json.getAsInt();
 			
@@ -900,8 +940,7 @@ public class Connection {
 			HttpPost post=new HttpPost(baseURL+C.URL_EDITSPACEVISIBILITY+"/"+spaceID.toString() +"/" +hierarchy.toString()+"/"+setPublic.toString());
 			post=(HttpPost) setHeaders(post);
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());
-			
+
 			//we should get back an HTTP OK if we're allowed to change the visibility
 			if (response.getStatusLine().getStatusCode()!=200) {
 				return Status.ERROR_BAD_PARENT_SPACE;
@@ -930,7 +969,6 @@ public class Connection {
 			HttpPost post=new HttpPost(url);
 			post=(HttpPost) setHeaders(post);
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
@@ -983,7 +1021,6 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
@@ -1018,7 +1055,6 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
@@ -1058,7 +1094,6 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(),"UTF-8"));
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
@@ -1163,7 +1198,6 @@ public class Connection {
 
 			response=executeGetOrPost(post);
 			
-			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
@@ -1199,6 +1233,10 @@ public class Connection {
 			safeCloseResponse(response);
 		}
 	}
+	private static String convertStreamToString(InputStream is) {
+		Scanner s = new Scanner(is).useDelimiter("\\A");
+		return s.hasNext() ? s.next() : "";
+	}
 	
 	/**
 	 * Log into StarExec with the username and password of this connection
@@ -1209,6 +1247,7 @@ public class Connection {
 	public int login() {
 		HttpResponse response = null;
 		try {
+			log.log("Logging in...");
 			HttpGet get = new HttpGet(baseURL+C.URL_HOME);
 			response=executeGetOrPost(get);
 			sessionID=HTMLParser.extractCookie(response.getAllHeaders(),C.TYPE_SESSIONID);
@@ -1246,18 +1285,35 @@ public class Connection {
 			log.log("Set Session ID to: "+sessionID);
 
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
+
+			safeCloseResponse(response);
+
+			get = new HttpGet(baseURL+C.URL_LOGGED_IN);
+			get=(HttpGet) setHeaders(get);
+			response=executeGetOrPost(get);
+			boolean loggedIn = convertStreamToString(response.getEntity().getContent()).equals("true");
+
+			if (loggedIn) {
+				log.log("Service says we're logged in.");
+			} else {
+				log.log("Service says we're not logged in.");
+			}
+
 			
 			//this means that the server did not give us a new session for the login
-			if (sessionID==null) {
+			if (sessionID==null || !loggedIn) {
+				log.log("Returning bad credentials message.");
 				return Status.ERROR_BAD_CREDENTIALS;
 			}
 			return 0;
 			
 		} catch (IllegalStateException e) {
+			log.log("Caught IllegalStateException: " + Util.getStackTrace(e));
 			
 			return Status.ERROR_BAD_URL;
 			
 		} catch (Exception e) {
+			log.log("Caught Exception: " + Util.getStackTrace(e));
 			setLastError(e.getMessage()+": "+Util.getStackTrace(e));
 			return Status.ERROR_INTERNAL_EXCEPTION;
 		} finally {
@@ -1436,7 +1492,6 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
@@ -1497,7 +1552,6 @@ public class Connection {
 			post=(HttpPost) setHeaders(post);
 
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());			
 			if (response.getStatusLine().getStatusCode()!=302) {
 				return Status.ERROR_BAD_PARENT_SPACE;
 			}
@@ -1621,8 +1675,7 @@ public class Connection {
 
 		response=executeGetOrPost(post);
 			
-	    setSessionIDIfExists(response.getAllHeaders());
-			
+
 	    
 	    final BufferedReader br = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 	    
@@ -1722,8 +1775,7 @@ public class Connection {
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());
-			
+
 			JsonElement jsonE=JsonHandler.getJsonString(response);
 			JsonObject obj=jsonE.getAsJsonObject();
 			String message=JsonHandler.getMessageOfResponse(obj);
@@ -1818,8 +1870,7 @@ public class Connection {
 			get=(HttpGet) setHeaders(get);
 			response=executeGetOrPost(get);
 			
-			setSessionIDIfExists(response.getAllHeaders());
-			
+
 			
 			
 			boolean fileFound=false;
@@ -2039,8 +2090,7 @@ public class Connection {
 			get=(HttpGet) setHeaders(get);
 			response=executeGetOrPost(get);
 			Boolean done=false;
-			setSessionIDIfExists(response.getAllHeaders());
-			
+
 			
 			
 			boolean fileFound=false;
@@ -2200,7 +2250,6 @@ public class Connection {
 			HttpGet get=new HttpGet(URL);
 			get=(HttpGet) setHeaders(get);
 			response=executeGetOrPost(get);
-			setSessionIDIfExists(get.getAllHeaders());
 			JsonObject obj=JsonHandler.getJsonObject(response);
 
 			boolean success=JsonHandler.getSuccessOfResponse(obj);
@@ -2289,7 +2338,6 @@ public class Connection {
 			post.setEntity(new UrlEncodedFormEntity(params,"UTF-8"));
 
 			response=executeGetOrPost(post);
-			setSessionIDIfExists(response.getAllHeaders());
 
 			String id=HTMLParser.extractCookie(response.getAllHeaders(),"New_ID");
 			
@@ -2434,7 +2482,6 @@ public class Connection {
 			HttpGet get=new HttpGet(baseURL+C.URL_GETPRIMJSON.replace("{type}", type).replace("{id}",String.valueOf(id)));
 			get=(HttpGet) setHeaders(get);
 			response=executeGetOrPost(get);
-			setSessionIDIfExists(get.getAllHeaders());
 			JsonElement json=JsonHandler.getJsonString(response);
 			String errorMessage=JsonHandler.getMessageOfResponse(json.getAsJsonObject());
 			if (errorMessage!=null) {

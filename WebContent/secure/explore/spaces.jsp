@@ -168,7 +168,6 @@
 				<li><a class="btnDown" id="downloadXML" >download space xml</a></li>
 				<li><a class="btnDown" id="downloadSpace">download space</a></li>
 			</ul>
-			<p style="color:#008c03;clear:both">Some action buttons have moved.<br />They are now higher on this page, grouped with the primitives they act on.</p>
 		</fieldset>
 
 	</div>
@@ -183,7 +182,7 @@
         <div id="copy-primitives-options" class="copy-options-hidden">
             <span class="ui-icon ui-icon-info"></span>
             <span>would you like to copy or link primitives to the new space?<span>
-			<select name="copyPrimitives" id="copyPrimitives">	
+			<select name="copyPrimitives" id="copyPrimitives">
 				<option value="LINK">link primitives</option>
 				<option value="COPY">copy primitives</option>
 				<option value="NO_JOBS_LINK_SOLVERS_SAMPLE_BENCHMARKS">link solvers, link sample of benchmarks</option>

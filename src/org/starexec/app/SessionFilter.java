@@ -9,8 +9,11 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 import org.starexec.constants.R;
 import org.starexec.data.database.Common;
 import org.starexec.data.database.Logins;
@@ -46,6 +49,33 @@ public class SessionFilter implements Filter {
 			final String method = "doFilter";
 			// Cast the servlet request to an httpRequest so we have access to the session
 			HttpServletRequest httpRequest = (HttpServletRequest) request;
+			log.debug(method, "Request URI: "+httpRequest.getRequestURI());
+
+			boolean isCommandRequest = httpRequest.getHeader("StarExecCommand") != null;
+			if ( isCommandRequest ) {
+				log.debug(method, "Got request from StarExecCommand.");
+			}
+
+			HttpSession session = httpRequest.getSession();
+			log.debug(method, "isRequestedSessionIdFromURL: "+httpRequest.isRequestedSessionIdFromURL());
+			log.debug(method, "isRequestedSessionIdFromCookie: "+httpRequest.isRequestedSessionIdFromCookie());
+			log.debug(method, "isRequestedSessionIdValid: "+httpRequest.isRequestedSessionIdValid());
+			log.debug(method, "authType: "+httpRequest.getAuthType());
+			Cookie[] cookies = httpRequest.getCookies();
+			if ( cookies != null ) {
+				log.debug(method, "Cookies: ");
+				for (Cookie cookie : cookies) {
+					log.debug(method, "\tName : "+cookie.getName());
+					log.debug(method, "\tValue: "+cookie.getValue());
+				}
+			} else {
+				log.debug(method, "Cookies was null");
+			}
+			if (session != null) {
+				log.debug(method, "Session ID: "+session.getId());
+			} else {
+				log.debug(method, "Session was null.");
+			}
 
 			HttpServletResponse httpResponse = (HttpServletResponse) response;
 			// If the user is logged in...
@@ -90,6 +120,10 @@ public class SessionFilter implements Filter {
 				}
 			} else {
 				log.debug(method, "httpRequest.getUserPrincipal() returned null.");
+				if (isCommandRequest) {
+					httpResponse.setHeader("CommandBadCredentials","CommandBadCredentials");
+				}
+				
 			}
 
 			// Be nice and pass on the request to the next filter

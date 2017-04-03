@@ -20,13 +20,15 @@ public class C {
 	public static String HELP_MESSAGE = "Welcome to StarexecCommand! This tool is intended to allow users to communicate with the " +
 			"Starxec server. For assistance in using this tool, please consult the documentation present in the archive this tool was " +
 			"packaged with.";
-	public static String TYPE_SESSIONID="JSESSIONID=";
+	public static String TYPE_SESSIONID="JSESSIONID";
 
 	/**
 	 * All of the following URLs are relative to the web app root path.
 	 * They point to the various servlets and RESTServices on Starexec
 	 */
 	public static String URL_STAREXEC_BASE = "https://www.starexec.org/starexec/";
+	public static final String URL_SPACES = "secure/explore/spaces.jsp";
+	public static final String URL_LOGGED_IN = "services/session/logged-in";
 	public static String URL_HOME= "secure/index.jsp";
 	public static String URL_LOGIN= "secure/j_security_check";
 	public static String URL_DOWNLOAD = "secure/download";
@@ -144,7 +146,9 @@ public class C {
 	public static String COMMAND_PUSHSPACEXML="pushspacexml";
         public static String COMMAND_PUSHJOBXML="pushjobxml";
 	public static String COMMAND_PUSHCONFIGRUATION="pushconfig";
-	
+
+	public static final String COMMAND_PRINT="print";
+
 	//deleting commands
 	public static String COMMAND_DELETESOLVER="deletesolver";
 	public static String COMMAND_DELETEBENCH="deletebench";
@@ -215,6 +219,7 @@ public class C {
 	public static String PARAM_VERBOSE="verbose";
 	public static String[] PARAMS_PERMS={"addSolver","addUser","addSpace","addJob","addBench","removeSolver","removeUser","removeSpace","removeJob","removeBench"};
 	public static String PARAM_TIME="t";
+	public static final String PARAM_MESSAGE="m";
 	public static String PARAM_GUEST="guest";
 	public static String PARAM_FROM="from";
 	public static String PARAM_TO="to";
@@ -244,6 +249,7 @@ public class C {
 	public static String FORMPARAM_TRAVERSAL="traversal";
 
 
+	public static final Integer DEFAULT_SOLVER_TYPE = 1;
 
 
 

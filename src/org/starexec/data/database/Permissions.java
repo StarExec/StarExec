@@ -183,7 +183,9 @@ public class Permissions {
 			}
 			if (Jobs.isPublic(jobId) ) {
 				log.debug(methodName, "User can see job: Job is public.");
-			} else if ( GeneralSecurity.hasAdminReadPrivileges(userId) ){
+				return new ValidatorStatusCode(true);
+			}
+			if ( GeneralSecurity.hasAdminReadPrivileges(userId) ){
 				log.debug(methodName, "User can see job: User has admin read privileges.");
 				return new ValidatorStatusCode(true);
 			}

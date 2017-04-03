@@ -3,23 +3,20 @@ package org.starexec.test.integration.database;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.*;
 import org.junit.Assert;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
-import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Uploads;
+import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
-import org.starexec.data.to.SpaceXMLUploadStatus;
 import org.starexec.data.to.User;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
@@ -181,6 +178,22 @@ public class PermissionsTests extends TestSequence {
 		Assert.assertEquals(2, newPerms.getOffPermissions().size());
 		Assert.assertTrue(Permissions.set(spaceMember.getId(), space.getId(), oldPerms));
 	}
+
+	@StarexecTest
+	private void canUserSeePublicJobTest() {
+		// This try-with-resources will automatically call .close() on tempLoader at the end.
+		try (ResourceLoader tempLoader = new ResourceLoader()) {
+			User tempUser = tempLoader.loadUserIntoDatabase();
+			Space publicSpace = tempLoader.loadSpaceIntoDatabase(spaceMember.getId(), space.getId());
+			Spaces.makeSingleSpacePublic(publicSpace.getId(), spaceMember.getId());
+			assertTrue("Space was not public.", Spaces.isPublicSpace(publicSpace.getId()));
+			Job tempJob = tempLoader.loadJobIntoDatabase(publicSpace.getId(), spaceMember.getId(), solver.getId(), benchmarks);
+			assertTrue("Job was not public.", Jobs.isPublic(tempJob.getId()));
+			assertTrue("Job owner could not see public job.", Permissions.canUserSeeJob(tempJob.getId(), spaceMember.getId()).isSuccess());
+			assertTrue("Admin could not see public job.", Permissions.canUserSeeJob(tempJob.getId(), admin.getId()).isSuccess());
+			assertTrue("User could not see public job.", Permissions.canUserSeeJob(tempJob.getId(), tempUser.getId()).isSuccess());
+		}
+	}
 	
 	@Override
 	protected String getTestName() {
@@ -217,7 +230,6 @@ public class PermissionsTests extends TestSequence {
 	@Override
 	protected void teardown() throws Exception {
 		loader.deleteAllPrimitives();
-		
 	}
 
 }

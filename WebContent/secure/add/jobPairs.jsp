@@ -23,6 +23,11 @@
 		Set<Integer> spacesAssociatedWithJob = Spaces.getByJob(jobId);
 		List<Solver> solvers = Solvers.getSolversInSpacesAndJob(jobId, spacesAssociatedWithJob);
 		Set<Integer> configIdSet = Solvers.getConfigIdSetByJob( jobId );
+		List<Solver> solversInJob = Solvers.getByJobSimpleWithConfigs( jobId );
+		Set<Integer> solverIdsInJob = new HashSet<Integer>();
+		for ( Solver s : solversInJob ) {
+			solverIdsInJob.add(s.getId());
+		}
 
 		Solvers.sortConfigs(solvers);
 		Solvers.makeDefaultConfigsFirst( solvers );
@@ -32,6 +37,7 @@
 		request.setAttribute("configIdSet", new HashSet<Integer>());
 		request.setAttribute("jobId", jobId);
 		*/
+		request.setAttribute("solverIdsInJob", solverIdsInJob);
 		request.setAttribute("solvers", solvers);
 		request.setAttribute("configIdSet", configIdSet);
 		request.setAttribute("jobId", jobId);
@@ -70,8 +76,13 @@
 							<star:solver value='${s}'/>
 						</td>
 						<td>
-							<input class="addToAllCheckbox" type="checkbox" name="addToAll" value="${s.id}"/>all<br>
-							<input class="addToPairedCheckbox" type="checkbox" name="addToPaired" value="${s.id}" checked="checked"/>paired with solver
+							<c:if test="${solverIdsInJob.contains(s.id)}">
+								<input class="addToAllCheckbox" type="checkbox" name="addToAll" value="${s.id}"/>all<br>
+								<input class="addToPairedCheckbox" type="checkbox" name="addToPaired" value="${s.id}" checked="checked"/>paired with solver
+							</c:if>
+							<c:if test="${!solverIdsInJob.contains(s.id)}">
+								<input class="addToAllCheckbox" type="checkbox" name="addToAll" value="${s.id}" checked="checked"/>all<br>
+							</c:if>
 						</td>
 						<td>
 							 <div class="selectConfigs">

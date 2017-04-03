@@ -12,6 +12,7 @@ var star = star || {};
 
 // When the document is ready to be executed on
 $(document).ready(function(){
+	"use strict";
 
 	// If the JSP contains a single message to display to the user...
 	if ($(".message").length == 1){
@@ -36,55 +37,46 @@ $(document).ready(function(){
 		// Find their submenu and slide it down
 		$(this).find("ul.subnav").stop(true,true);
 		$(this).find("ul.subnav").slideDown('fast').show();
-
-
-
-		// Then attach a hover out event
-		$(this).hover(function() {},
-			function(){
-				// When I'm hovered out of, slide up my submenu
-
-				$(this).find("ul.subnav").slideUp('fast');
-
-
-	        });
-		}, function () {});
+	}, function(){
+		// When I'm hovered out of, slide up my submenu
+		$(this).find("ul.subnav").slideUp('fast');
+	});
 
 	// Extend jquery functions here
 	$.fn.extend({
 		toHTMLString: function() {
 			return this.prop('outerHTML');
 		},
-		expandable: function(closed, callback) {
+		expandable: function(closed) {
 			// Makes a fieldset expandable
 			$(this).each(function() {
-				var legend = $(this).children('legend:first');
-				$(legend).css('cursor', 'pointer');
-				$(legend).siblings().wrapAll('<div class="expdContainer" />');
+				var isOpen = !closed;
+				var $this = $(this);
+				var $legend = $this.children('legend:first');
+
+				$legend.siblings().wrapAll('<div class="expdContainer" />');
+				$legend.css('cursor', 'pointer');
+				$legend.data('open', isOpen);
 
 				if(closed) {
-					$(legend).data('open', false);
-					$(legend).append('<span> (+)</span>');
-					$(legend).siblings().hide();
+					$legend.append('<span> (+)</span>');
+					$legend.siblings().hide();
 				} else {
-					$(legend).data('open', true);
-					$(legend).append('<span> (-)</span>');
+					$legend.append('<span> (-)</span>');
 				}
 
-				$(legend).click(function() {
-					var isOpen = $(this).data('open');
-					$(this).children('span:last-child').text(isOpen ? ' (+)' : ' (-)');
-					$(this).data('open', !isOpen);
-					$(this).siblings().slideToggle('fast');
-
-					if(!isOpen && $.isFunction(callback)) {
-						callback.call(this);
-					}
+				$legend.click(function() {
+					isOpen = !isOpen;
+					$this.trigger(isOpen ? 'open.expandable' : 'close.expandable')
+					$legend.children('span:last-child').text(isOpen ? ' (-)' : ' (+)');
+					$legend.siblings().slideToggle('fast');
+					$legend.data('open', isOpen);
 				});
-	       	});
-		    return $(this);
+			});
+			return $(this);
 		}
 	});
+
 	if (!isLocalJobPage) {
 		checkForHelpFile();
 	}
@@ -379,6 +371,10 @@ function parseReturnCode(code,printMessage) {
 	}
 
 	m = code.message;
+
+	if (code.devMessage) {
+		log(code.devMessage);
+	}
 
 	if (printMessage) {
 		if (s) {

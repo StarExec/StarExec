@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
+import static org.junit.Assert.*;
 import org.starexec.command.Connection;
 import org.starexec.command.Status;
 import org.starexec.data.database.Benchmarks;
@@ -79,6 +80,13 @@ public class StarexecCommandTests extends TestSequence {
 		}
 		Assert.assertTrue(jobDeleted);
 		
+	}
+
+	@StarexecTest
+	private void LoginTest() {
+		Connection con=new Connection("bogusUsername@gmail.com","bogusPassword",Util.url(""));
+		int status = con.login();
+		assertTrue("User was able to login with bad username and password.", status < 0);
 	}
 	
 	@StarexecTest

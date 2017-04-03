@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.starexec.data.to.tuples.Locatable;
 import org.starexec.util.Util;
 import org.starexec.data.to.SolverBuildStatus;
 
@@ -15,12 +16,12 @@ import com.google.gson.annotations.Expose;
  * 
  * @author Tyler Jensen
  */
-public class Solver extends Identifiable implements Iterable<Configuration>, Nameable{
+public class Solver extends Identifiable implements Iterable<Configuration>, Nameable, Locatable{
 	
 	/**
 	 * Represents the type of the processor (along with it's SQL storage values)
 	 */
-	public static enum ExecutableType {
+	public enum ExecutableType {
 		
 		SOLVER(1), 
 		TRANSFORMER(2), 
@@ -29,7 +30,7 @@ public class Solver extends Identifiable implements Iterable<Configuration>, Nam
 		
 		private int val;
 		
-		private ExecutableType(int val) {
+		ExecutableType(int val) {
 			this.val = val;
 		}
 		
@@ -132,6 +133,7 @@ public class Solver extends Identifiable implements Iterable<Configuration>, Nam
 	/**
 	 * @return the absolute file path to the solver on disk
 	 */
+	@Override
 	public String getPath() {
 		return path;
 	}
@@ -139,6 +141,7 @@ public class Solver extends Identifiable implements Iterable<Configuration>, Nam
 	/**
 	 * @param path the absolute path to set for the solver
 	 */
+	@Override
 	public void setPath(String path) {
 		this.path = path;
 	}
@@ -206,7 +209,7 @@ public class Solver extends Identifiable implements Iterable<Configuration>, Nam
 	}
 	
 	/**
-	 * @param built sets the whether this solver has been built or not
+	 * @param buildStatus sets the whether this solver has been built or not
 	 */
 	public void setBuildStatus(SolverBuildStatus buildStatus) {
 		this.buildStatus = buildStatus;

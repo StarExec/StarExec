@@ -170,6 +170,9 @@
 		<c:if test="${downloadable || hasAdminReadPrivileges}">
 			<a id="downLink" href="${starexecRoot}/secure/download?type=bench&id=${bench.id}">download benchmark</a>
 		</c:if>
+		<c:if test="${hasAdminReadPrivileges}">
+			<button class="copyToStarDev" type="button">copy to stardev</button>
+		</c:if>
 		
 	</fieldset>
 	<div id="dialog-warning" title="warning" class="hiddenDialog">
@@ -183,5 +186,11 @@
 	</div>
 	<div id="dialog-confirm-anonymous-link" title="confirm anonymous link" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-anonymous-link-txt"></span></p>
+	</div>
+	<div class="dialog-copy-to-stardev hiddenDialog">
+		instance name <input class="instanceName" type="text"/><br>
+		stardev username <input class="stardevUsername" type="text"/><br>
+		stardev password <input class="stardevPassword" type="password"/><br>
+		stardev space id <input class="stardevSpaceId" type="number" min="0"/>
 	</div>
 </star:template>
