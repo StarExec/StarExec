@@ -1067,7 +1067,6 @@ function initializePanels() {
 function handleSpacesData(spaces) {
 	log( "SPACES JSON: " + spaces );
 	panelArray = [];
-	var open=true;
 	if (spaces.length==0) {
 		$("#subspaceSummaryField").hide();
 	} else {
