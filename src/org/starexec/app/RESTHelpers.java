@@ -1,6 +1,7 @@
 package org.starexec.app;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import com.google.gson.Gson;
@@ -522,8 +523,13 @@ public class RESTHelpers {
 			PrimitivesToAnonymize primitivesToAnonymize,
 			boolean shortFormat,
 			boolean wallclock) {
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start();
 
 		List<SolverStats> solverStats = Jobs.getAllJobStatsInJobSpaceHierarchy( jobSpace, stageNumber, primitivesToAnonymize );
+
+		stopWatch.stop();
+		log.debug("getNextDataTablePageForJobStats", "Time taken to get all jobs: "+stopWatch.toString());
 
 		if ( solverStats == null ) {
 			return gson.toJson( RESTServices.ERROR_DATABASE );
