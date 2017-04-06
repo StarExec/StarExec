@@ -1076,9 +1076,9 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 
-	public static List<SolverStats> getAllJobStatsInJobSpaceHierarchy(JobSpace space, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize ) {
+	public static Collection<SolverStats> getAllJobStatsInJobSpaceHierarchy(JobSpace space, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize ) {
 		final int spaceId = space.getId();
-		List<SolverStats> stats;
+		Collection<SolverStats> stats;
 
 		stats = Jobs.getCachedJobStatsInJobSpaceHierarchy(spaceId, stageNumber, primitivesToAnonymize);
 		//if the size is greater than 0, then this job is done and its stats have already been
@@ -1122,10 +1122,10 @@ public class Jobs {
 	 * @param stageNumber Stage number to get mapping for
 	 * @return Map from job space ID to solver stats objects
 	 */
-	public static Map<Integer, List<SolverStats>> buildJobSpaceIdToSolverStatsMapWallCpuTimesRounded(Job job, int stageNumber) {
-		Map<Integer, List<SolverStats>> outputMap = buildJobSpaceIdToSolverStatsMap(job, stageNumber);
+	public static Map<Integer, Collection<SolverStats>> buildJobSpaceIdToSolverStatsMapWallCpuTimesRounded(Job job, int stageNumber) {
+		Map<Integer, Collection<SolverStats>> outputMap = buildJobSpaceIdToSolverStatsMap(job, stageNumber);
 		for (Integer jobspaceId : outputMap.keySet()) {
-			List<SolverStats> statsList = outputMap.get(jobspaceId);
+			Collection<SolverStats> statsList = outputMap.get(jobspaceId);
 			for (SolverStats stats : statsList) {
 				stats.setWallTime(Math.round(stats.getWallTime()*100)/100.0);
 				stats.setCpuTime(Math.round(stats.getCpuTime()*100)/100.0);
@@ -1142,14 +1142,14 @@ public class Jobs {
 	 * @return a mapping of job space ID's to the stats for the solvers in that job space
 	 * @author Albert Giegerich
 	 */
-	public static Map<Integer, List<SolverStats>> buildJobSpaceIdToSolverStatsMap(Job job, int stageNumber ) {
+	public static Map<Integer, Collection<SolverStats>> buildJobSpaceIdToSolverStatsMap(Job job, int stageNumber ) {
 		int primaryJobSpaceId = job.getPrimarySpace();
-		Map<Integer, List<SolverStats>> jobSpaceIdToSolverStatsMap = new HashMap<>();
+		Map<Integer, Collection<SolverStats>> jobSpaceIdToSolverStatsMap = new HashMap<>();
 		List<JobSpace> jobSpaces = Spaces.getSubSpacesForJob(primaryJobSpaceId, true);
 		jobSpaces.add(Spaces.getJobSpace(primaryJobSpaceId));
 		for (JobSpace jobspace : jobSpaces) {
 			int jobspaceId = jobspace.getId();
-			List<SolverStats> stats = getAllJobStatsInJobSpaceHierarchy(jobspace, stageNumber, PrimitivesToAnonymize.NONE);
+			Collection<SolverStats> stats = getAllJobStatsInJobSpaceHierarchy(jobspace, stageNumber, PrimitivesToAnonymize.NONE);
 			jobSpaceIdToSolverStatsMap.put(jobspaceId, stats);
 		}
 		return jobSpaceIdToSolverStatsMap;
@@ -4300,7 +4300,7 @@ public class Jobs {
 	 * @return A list of SolverStats objects to use in a datatable
 	 * @author Eric Burns
 	 */
-	public static List<SolverStats> processPairsToSolverStats(int jobId, List<JobPair> pairs) {
+	public static Collection<SolverStats> processPairsToSolverStats(int jobId, List<JobPair> pairs) {
 		final String methodName = "processPairsToSolverStats";
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
@@ -4363,16 +4363,9 @@ public class Jobs {
 				}
 			}
 
-
-			List<SolverStats> returnValues = new LinkedList<SolverStats>();
-			for (SolverStats js : stats.values()) {
-				returnValues.add(js);
-			}
-
-
 			stopWatch.stop();
 			log.debug(methodName, "Time taken to process job pairs to stats for job with "+Jobs.getPairCount(jobId)+" pairs: "+stopWatch.toString());
-			return returnValues;
+			return stats.values();
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -4676,7 +4669,7 @@ public class Jobs {
 	 * @return True if the call was successful, false otherwise
 	 * @author Eric Burns
 	 */
-	public static boolean saveStats(int jobId,List<SolverStats> stats) {
+	public static boolean saveStats(int jobId, Collection<SolverStats> stats) {
 
 		if (!isJobComplete(jobId)) {
 			log.debug("stats for job with id = "+jobId+" were not saved because the job is incomplete");

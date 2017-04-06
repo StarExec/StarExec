@@ -526,7 +526,7 @@ public class RESTHelpers {
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
-		List<SolverStats> solverStats = Jobs.getAllJobStatsInJobSpaceHierarchy( jobSpace, stageNumber, primitivesToAnonymize );
+		Collection<SolverStats> solverStats = Jobs.getAllJobStatsInJobSpaceHierarchy( jobSpace, stageNumber, primitivesToAnonymize );
 
 		stopWatch.stop();
 		log.debug("getNextDataTablePageForJobStats", "Time taken to get all jobs: "+stopWatch.toString());
@@ -2048,7 +2048,7 @@ public class RESTHelpers {
 	 * @param primitivesToAnonymize a PrimitivesToAnonymize enum describing if the solver stats should be anonymized.
 	 * @return A JsonObject that can be used to populate a datatable
 	 */
-	public static JsonObject convertSolverStatsToJsonObject(List<SolverStats> stats,DataTablesQuery query,
+	public static JsonObject convertSolverStatsToJsonObject(Collection<SolverStats> stats, DataTablesQuery query,
 			int spaceId, int jobId, boolean shortFormat, boolean wallTime, PrimitivesToAnonymize primitivesToAnonymize) {
 		JsonArray dataTablePageEntries = new JsonArray();
 		for (SolverStats js : stats) {
@@ -2114,7 +2114,7 @@ public class RESTHelpers {
 		Map<Integer, String> jobSpaceIdToSolverStatsJsonMap = new HashMap<>();
 
 		for (JobSpace jobSpace : jobSpaces) {
-			List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(jobSpace, stageNumber, PrimitivesToAnonymize.NONE);
+			Collection<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(jobSpace, stageNumber, PrimitivesToAnonymize.NONE);
 			DataTablesQuery query = new DataTablesQuery();
 			query.setTotalRecords(stats.size());
 			query.setTotalRecordsAfterQuery(stats.size());

@@ -156,7 +156,7 @@ public class JspHelpers {
 					request.setAttribute("jobSpaceIdToWallclockTimeSolverStatsJsonMap", jobSpaceIdToWallclockTimeSolverStatsJsonMap);
 					Map<Integer, List<JobPair>> jobSpaceIdToPairMap = JobPairs.buildJobSpaceIdToJobPairMapWithWallCpuTimesRounded(j);
 					request.setAttribute("jobSpaceIdToPairMap", jobSpaceIdToPairMap);
-					Map<Integer, List<SolverStats>> jobSpaceIdToSolverStatsMap =
+					Map<Integer, Collection<SolverStats>> jobSpaceIdToSolverStatsMap =
 							Jobs.buildJobSpaceIdToSolverStatsMapWallCpuTimesRounded(j, 1);
 					request.setAttribute("jobSpaceIdToSolverStatsMap", jobSpaceIdToSolverStatsMap);
 
