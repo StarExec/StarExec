@@ -4308,7 +4308,7 @@ public class Jobs {
 		    //Map<String, Integer> solverIdToNumberOfConflicts = new HashMap<>();
 			//solverIdToNumberOfConflicts = buildSolverIdToNumberOfConflictsMap(jobId);
 
-			Hashtable<String, SolverStats> SolverStats = new Hashtable<String, SolverStats>();
+			Hashtable<String, SolverStats> stats = new Hashtable<String, SolverStats>();
 			String key;
 			for (JobPair jp : pairs) {
 
@@ -4325,7 +4325,7 @@ public class Jobs {
 					int configId = stage.getConfiguration().getId();
 					int stageNumber = stage.getStageNumber();
 					Integer conflicts = null;
-					if (!SolverStats.containsKey(key)) { // current stats entry does not yet exist
+					if (!stats.containsKey(key)) { // current stats entry does not yet exist
 						SolverStats newSolver = new SolverStats();
 						newSolver.setStageNumber(stage.getStageNumber());
 						newSolver.setSolver(stage.getSolver());
@@ -4333,17 +4333,17 @@ public class Jobs {
 						// Compute the number of conflicts and save them in variable in case we need to use them again.
 						conflicts =  Solvers.getConflictsForConfigInJobWithStage(jobId, configId, stageNumber);
 						newSolver.setConflicts(conflicts);
-						SolverStats.put(key, newSolver);
+						stats.put(key, newSolver);
 					}
 
 
 					//update stats info for entry that current job-pair belongs to
-					SolverStats curSolver = SolverStats.get(key);
+					SolverStats curSolver = stats.get(key);
 					addStageToSolverStats(curSolver, stage);
 					if (stage.getStageNumber().equals(jp.getPrimaryStageNumber())) {
 						//if we get here, we need to add this stage to the primary stats as well
 						key = 0 + ":" + String.valueOf(stage.getConfiguration().getId());
-						if (!SolverStats.containsKey(key)) { // current stats entry does not yet exist
+						if (!stats.containsKey(key)) { // current stats entry does not yet exist
 							SolverStats newSolver = new SolverStats();
 							newSolver.setStageNumber(0);
 							newSolver.setSolver(stage.getSolver());
@@ -4352,12 +4352,12 @@ public class Jobs {
 								conflicts = Solvers.getConflictsForConfigInJobWithStage(jobId, configId, stageNumber);
 							}
 							newSolver.setConflicts(conflicts);
-							SolverStats.put(key, newSolver);
+							stats.put(key, newSolver);
 						}
 
 
 						//update stats info for entry that current job-pair belongs to
-						curSolver = SolverStats.get(key);
+						curSolver = stats.get(key);
 
 					}
 				}
@@ -4365,7 +4365,7 @@ public class Jobs {
 
 
 			List<SolverStats> returnValues = new LinkedList<SolverStats>();
-			for (SolverStats js : SolverStats.values()) {
+			for (SolverStats js : stats.values()) {
 				returnValues.add(js);
 			}
 
