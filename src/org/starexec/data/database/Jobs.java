@@ -4350,10 +4350,8 @@ public class Jobs {
 							newSolver.setConfiguration(stage.getConfiguration());
 							if (conflicts == null) {
 								conflicts = Solvers.getConflictsForConfigInJobWithStage(jobId, configId, stageNumber);
-								newSolver.setConflicts(conflicts);
-							} else {
-								newSolver.setConflicts(conflicts);
 							}
+							newSolver.setConflicts(conflicts);
 							SolverStats.put(key, newSolver);
 						}
 
