@@ -1077,7 +1077,10 @@ public class Jobs {
 	 */
 
 	public static List<SolverStats> getAllJobStatsInJobSpaceHierarchy(JobSpace space, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize ) {
-		List<SolverStats> stats=Jobs.getCachedJobStatsInJobSpaceHierarchy(space.getId(),stageNumber, primitivesToAnonymize);
+		final int spaceId = space.getId();
+		List<SolverStats> stats;
+
+		stats = Jobs.getCachedJobStatsInJobSpaceHierarchy(spaceId, stageNumber, primitivesToAnonymize);
 		//if the size is greater than 0, then this job is done and its stats have already been
 		//computed and stored
 		if (stats!=null && stats.size()>0) {
@@ -1092,28 +1095,25 @@ public class Jobs {
 
 		//otherwise, we need to compile the stats
 		log.debug("stats not present in database -- compiling stats now");
-		List<JobPair> pairs=getJobPairsInJobSpaceHierarchy(space.getId(), primitivesToAnonymize);
-
+		List<JobPair> pairs=getJobPairsInJobSpaceHierarchy(spaceId, primitivesToAnonymize);
 
 		//compiles pairs into solver stats
-		List<SolverStats> newStats=processPairsToSolverStats(jobId, pairs);
-		for (SolverStats s : newStats) {
-			s.setJobSpaceId(space.getId());
+		stats = processPairsToSolverStats(jobId, pairs);
+		for (SolverStats s : stats) {
+			s.setJobSpaceId(spaceId);
 		}
+
 		//caches the job stats so we do not need to compute them again in the future
 		if (isJobComplete) {
-			saveStats(space.getJobId(),newStats);
+			saveStats(jobId, stats);
 		}
 
-		//next, we simply filter down the stats to the ones for the given stage.
-		List<SolverStats> finalStats=new ArrayList<SolverStats>();
-		for (SolverStats curStats : newStats) {
-			if (curStats.getStageNumber()==stageNumber) {
-				finalStats.add(curStats);
-			}
-		}
+		//next, we simply filter down the stats to the ones for the given stage
+		stats.removeIf(
+			(s) -> s.getStageNumber() != stageNumber
+		);
 
-		return finalStats;
+		return stats;
 	}
 
 	/**
