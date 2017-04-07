@@ -666,6 +666,7 @@ public class RESTHelpers {
 		File sandbox = Util.getRandomSandboxDirectory();
 		try {
 			File tempFile = copyPrimitiveToSandbox(sandbox, benchmarkToCopy);
+			log.debug("Temporary file exists: "+tempFile.exists());
 			// TODO: implement processor. Perhaps we could automatically upload the processor to stardev if it is not already
 			// there.
 			int noTypeProcessor = 1;
@@ -738,17 +739,19 @@ public class RESTHelpers {
 	 * @throws IOException if something goes wrong with copying or zipping.
 	 */
 	private static File copyPrimitiveToSandbox(final File sandbox, final Locatable primitive) throws IOException {
-		// Use this sandbox to do the copying.
+		// Use this sandbox as the directory that will be zipped and placed into the input sandbox directory.
 		File tempSandbox = Util.getRandomSandboxDirectory();
 		try {
+			// place the file in the temp sandbox.
 			FileUtils.copyFileToDirectory(new File(primitive.getPath()), tempSandbox);
+			// This name doesn't really matter since it's only used internally.
 			String archiveName = "temp.zip";
 			File outputFile = new File(sandbox, archiveName);
-			// Zip the file into the input sandbox.
+			// Zip the temp sandbox into the input sandbox.
 			ArchiveUtil.createAndOutputZip(tempSandbox, new FileOutputStream(outputFile), archiveName, true);
 			return outputFile;
 		} finally {
-			deleteSandbox(sandbox);
+			deleteSandbox(tempSandbox);
 		}
 	}
 
