@@ -125,7 +125,7 @@ public class Download extends HttpServlet {
 					// handleSolverAndSolverSrc already sent the response.
 					return;
 				}
-			} else if (request.getParameter(PARAM_TYPE).equals("solverSrc")) {
+			} else if (request.getParameter(PARAM_TYPE).equals(R.SOLVER_SOURCE)) {
 				log.debug(methodName, "Handling solverSrc");
 				Optional<Solver> os = handleSolverAndSolverSrc(request, response);
 				if (os.isPresent()) {
