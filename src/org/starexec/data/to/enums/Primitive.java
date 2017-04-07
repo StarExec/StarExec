@@ -1,8 +1,21 @@
 package org.starexec.data.to.enums;
 
-/**
- * Created by agieg on 9/18/2016.
- */
+
 public enum Primitive {
-    JOB, USER, SOLVER, BENCHMARK, SPACE, JOB_PAIR, JOB_STATS, NODE, QUEUE, CONFIGURATION
+    JOB("jobType"),
+    USER("userType"),
+    SOLVER("solverType"),
+    BENCHMARK("benchmarkType"),
+    SPACE("spaceType"),
+    JOB_PAIR("jobPairType"),
+    JOB_STATS("jobStatsType"),
+    NODE("nodeType"),
+    QUEUE("queueType"),
+    CONFIGURATION("configurationType");
+
+    // The name of the css class of the hidden span that contains the name of the type.
+    final String cssClass;
+    Primitive(String cssClass) {
+        this.cssClass = cssClass;
+    }
 }
