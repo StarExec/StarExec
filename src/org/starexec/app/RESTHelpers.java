@@ -743,7 +743,12 @@ public class RESTHelpers {
 		File tempSandbox = Util.getRandomSandboxDirectory();
 		try {
 			// place the file in the temp sandbox.
-			FileUtils.copyFileToDirectory(new File(primitive.getPath()), tempSandbox);
+			File primitiveFile = new File(primitive.getPath());
+			if (primitiveFile.isDirectory()) {
+				FileUtils.copyDirectory(primitiveFile, new File(tempSandbox, "temp-dir"));
+			} else {
+				FileUtils.copyFileToDirectory(primitiveFile, tempSandbox);
+			}
 			// This name doesn't really matter since it's only used internally.
 			String archiveName = "temp.zip";
 			File outputFile = new File(sandbox, archiveName);
