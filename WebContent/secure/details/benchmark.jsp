@@ -1,6 +1,6 @@
 <%@page import="java.util.ArrayList, java.util.List"%>
 <%@page import="java.util.TreeMap" %>
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.BenchmarkSecurity,org.starexec.data.security.GeneralSecurity,org.apache.commons.io.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.util.Util"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.R, org.starexec.data.security.BenchmarkSecurity,org.starexec.data.security.GeneralSecurity,org.apache.commons.io.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.util.Util, org.starexec.data.to.enums.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -9,23 +9,25 @@
 		String uniqueId = request.getParameter("anonId");
 		boolean isAnonymousPage = uniqueId != null;
 		request.setAttribute( "isAnonymousPage", isAnonymousPage );
-		
+		request.setAttribute("benchType", R.BENCHMARK);
 		if ( isAnonymousPage ) {
 			JspHelpers.handleAnonymousBenchPage( uniqueId, request, response );
 		} else {
 			JspHelpers.handleNonAnonymousBenchPage( request, response );
 		}
+		request.setAttribute("primitiveType", Primitive.BENCHMARK);
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given benchmark id was in an invalid format");		
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
-
-<star:template title="${benchPageTitle}" js="common/delaySpinner, details/shared, details/benchmark, lib/jquery.dataTables.min" css="common/delaySpinner, details/shared, common/table, details/benchmark">				
+<star:template title="${benchPageTitle}" js="common/delaySpinner, details/copyToStardev, details/shared, details/benchmark, lib/jquery.dataTables.min" css="common/delaySpinner, details/shared, common/table, details/benchmark">		
+	<star:primitiveTypes/>
 	<span style="display:none;" id="isAnonymousPage" value="${isAnonymousPage}"></span>
 	<c:if test="${!isAnonymousPage}">
 		<span style="display:none;" id="benchId" value="${bench.id}"></span>
+		<star:primitiveIdentifier primId="${bench.id}" primType="${primitiveType.toString()}"/>
 	</c:if>
 	<c:if test="${!isAnonymousPage}">
         <c:if test="${not empty brokenBenchDeps}">
@@ -171,7 +173,7 @@
 			<a id="downLink" href="${starexecRoot}/secure/download?type=bench&id=${bench.id}">download benchmark</a>
 		</c:if>
 		<c:if test="${hasAdminReadPrivileges}">
-			<button class="copyToStarDev" type="button">copy to stardev</button>
+			<star:copyToStardevButton/>
 		</c:if>
 		
 	</fieldset>
@@ -187,10 +189,5 @@
 	<div id="dialog-confirm-anonymous-link" title="confirm anonymous link" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-anonymous-link-txt"></span></p>
 	</div>
-	<div class="dialog-copy-to-stardev hiddenDialog">
-		instance name <input class="instanceName" type="text"/><br>
-		stardev username <input class="stardevUsername" type="text"/><br>
-		stardev password <input class="stardevPassword" type="password"/><br>
-		stardev space id <input class="stardevSpaceId" type="number" min="0"/>
-	</div>
+	<star:copyToStardevDialog/>
 </star:template>
