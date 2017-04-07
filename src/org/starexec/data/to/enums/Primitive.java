@@ -14,8 +14,12 @@ public enum Primitive {
     CONFIGURATION("configurationType");
 
     // The name of the css class of the hidden span that contains the name of the type.
-    final String cssClass;
+    public final String cssClass;
     Primitive(String cssClass) {
         this.cssClass = cssClass;
+    }
+
+    public String getCssClass() {
+        return cssClass;
     }
 }
