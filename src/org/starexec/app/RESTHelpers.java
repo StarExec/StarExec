@@ -745,7 +745,7 @@ public class RESTHelpers {
 			// place the file in the temp sandbox.
 			File primitiveFile = new File(primitive.getPath());
 			if (primitiveFile.isDirectory()) {
-				FileUtils.copyDirectory(primitiveFile, new File(tempSandbox, "temp-dir"));
+				FileUtils.copyDirectory(primitiveFile, tempSandbox);
 			} else {
 				FileUtils.copyFileToDirectory(primitiveFile, tempSandbox);
 			}
