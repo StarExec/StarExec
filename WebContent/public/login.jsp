@@ -26,7 +26,7 @@
 			<table cellspacing="10px">
 			<tr id="emailRow">
 				<td class="label">Email</td>
-				<td><input type="text" name="j_username" /></td>
+				<td><input type="text" name="j_username" autofocus /></td>
 			</tr>
 			<tr>
 				<td class="label">Password</td>
