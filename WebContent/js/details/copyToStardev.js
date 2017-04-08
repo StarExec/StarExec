@@ -1,3 +1,5 @@
+"use strict";
+
 $(document).ready(function() {
 	$('.copyToStarDev').button({
 		icons: {
