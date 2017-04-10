@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.ProcessorSecurity, java.util.List, org.starexec.constants.*, java.lang.StringBuilder, java.io.File, org.apache.commons.io.FileUtils, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.constants.R" session="true"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.ProcessorSecurity, java.util.List, org.starexec.constants.*, java.lang.StringBuilder, java.io.File, org.apache.commons.io.FileUtils, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.constants.R, org.starexec.data.security.*" session="true"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
@@ -14,8 +14,9 @@ try {
 	
 	try {
 		DefaultSettings settings=Communities.getDefaultSettings(proc.getCommunityId());
-		
 		request.setAttribute("defaultPPId",settings.getPostProcessorId());
+		request.setAttribute("primitiveType", Primitive.SOLVER);
+	request.setAttribute( "hasAdminReadPrivileges", GeneralSecurity.hasAdminReadPrivileges( userId ));
 	} catch (Exception e) {
 		//We couldn't find the default post processor ID, which is not a big deal
 	}
@@ -40,7 +41,8 @@ try {
 }
 %>
 
-<star:template title="edit ${proc.name}" css="edit/processor, edit/shared" js="lib/jquery.validate.min, edit/processor">
+<star:template title="edit ${proc.name}" css="details/shared, edit/processor, edit/shared, shared/copyToStardev" js="lib/jquery.validate.min, edit/processor, shared/copyToStardev">
+	<star:primitiveIdentifier primId="${proc.id}" primType="${primitiveType.toString()}"/>
 	<input type="hidden" id="cid" value="${proc.communityId}"/>
 	<input type="hidden" id="ppid" value="${defaultPPId}"/>
 	<p>id = ${proc.id}</p>
@@ -74,5 +76,9 @@ try {
 		<button type="button" id="delete">delete</button>
 		<button type="button" id="cancel">cancel</button>
 		<button type="button" id="update">update</button>
+		<c:if test="${hasAdminReadPrivileges}">
+			<star:copyToStardevButton/>
+		</c:if>
 	</fieldset>
+	<star:copyToStardevDialog/>
 </star:template>

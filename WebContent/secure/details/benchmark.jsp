@@ -22,7 +22,7 @@
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
-<star:template title="${benchPageTitle}" js="common/delaySpinner, details/copyToStardev, details/shared, details/benchmark, lib/jquery.dataTables.min" css="common/delaySpinner, details/shared, common/table, details/benchmark, details/copyToStardev">
+<star:template title="${benchPageTitle}" js="common/delaySpinner, shared/copyToStardev, details/shared, details/benchmark, lib/jquery.dataTables.min" css="common/delaySpinner, details/shared, common/table, details/benchmark, shared/copyToStardev">
 	<star:primitiveTypes/>
 	<span style="display:none;" id="isAnonymousPage" value="${isAnonymousPage}"></span>
 	<c:if test="${!isAnonymousPage}">
