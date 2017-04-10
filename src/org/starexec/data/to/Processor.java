@@ -17,7 +17,7 @@ public class Processor extends Identifiable implements Nameable, Locatable {
 	/**
 	 * Represents the type of the processor (along with it's SQL storage values)
 	 */
-	public static enum ProcessorType {
+	public enum ProcessorType {
 		DEFAULT(0), 
 		PRE(1), 
 		POST(2), 
@@ -26,7 +26,7 @@ public class Processor extends Identifiable implements Nameable, Locatable {
 		
 		private int val;
 		
-		private ProcessorType(int val) {
+		ProcessorType(int val) {
 			this.val = val;
 		}
 		
