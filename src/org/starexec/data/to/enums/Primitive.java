@@ -13,7 +13,8 @@ public enum Primitive {
     JOB_STATS("jobStatsType"),
     NODE("nodeType"),
     QUEUE("queueType"),
-    CONFIGURATION("configurationType");
+    CONFIGURATION("configurationType"),
+    PROCESSOR("processorType");
 
     // The name of the css class of the hidden span that contains the name of the type.
     public final String cssClass;
@@ -45,6 +46,8 @@ public enum Primitive {
                 return SPACE;
             case R.CONFIGURATION:
                 return CONFIGURATION;
+            case R.PROCESSOR:
+                return PROCESSOR;
             default:
                 return Primitive.valueOf(name);
         }
