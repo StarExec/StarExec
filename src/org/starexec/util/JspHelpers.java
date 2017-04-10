@@ -45,7 +45,6 @@ import org.starexec.data.to.JobSpace;
 import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.data.to.Processor;
-import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Solver;
@@ -55,6 +54,7 @@ import org.starexec.data.to.Website;
 import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.SolverBuildStatus;
+import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.logger.StarLogger;
 
 /**

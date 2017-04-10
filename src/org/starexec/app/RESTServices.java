@@ -20,6 +20,7 @@ import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.enums.CopyPrimitivesOption;
 import org.starexec.data.to.enums.Primitive;
+import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.exceptions.StarExecException;
@@ -1735,23 +1736,39 @@ public class RESTServices {
 
 
 	@GET
-	@Path("/copy-to-stardev/{instance}/{username}/{password}/{type}/{primitiveId}/{spaceId}")
+	@Path("/copy-to-stardev/{instance}/{type}/{primitiveId}/{spaceId}")
 	@Produces("application/json")
 	public String copyToStarDev(
 			@PathParam("instance") String instance,
-			@PathParam("username") String username,
-			@PathParam("password") String password,
 			@PathParam("type") String type,
 			@PathParam("primitiveId") Integer primitiveId,
 			@PathParam("spaceId") Integer spaceId,
 			@Context HttpServletRequest request) {
 		try {
+			final String usernameParam = "username";
+			final String passwordParam = "password";
+
+			Primitive primType;
+			ProcessorType processorType;
+			try {
+				processorType = ProcessorType.valueOf(type);
+				primType = Primitive.valueOf(type);
+			} catch (Exception e) {
+				return gson.toJson(ERROR_INVALID_PARAMS);
+			}
+			if (!Util.paramExists(usernameParam, request) || !Util.paramExists(passwordParam, request)) {
+				return gson.toJson(ERROR_INVALID_PARAMS);
+			}
+
 			// Make sure user is dev or admin.
 			int userId = SessionUtil.getUserId(request);
 			if (!Users.isAdmin(userId) && !Users.isDeveloper(userId)) {
 				return gson.toJson(new ValidatorStatusCode(false, "You must be an admin or developer to do this."));
 			}
-			Primitive primType = Primitive.valueOf(type);
+
+			final String username = request.getParameter(usernameParam);
+			final String password = request.getParameter(passwordParam);
+
 			// Login to StarDev
 			String url = "https://stardev.cs.uiowa.edu/" + instance + "/";
 			Connection commandConnection = new Connection(username, password, url);
@@ -1764,6 +1781,8 @@ public class RESTServices {
 				return gson.toJson(RESTHelpers.copyBenchmarkToStarDev(commandConnection, primitiveId, spaceId));
 			} else if (primType == Primitive.SOLVER) {
 				return gson.toJson(RESTHelpers.copySolverToStarDev(commandConnection, primitiveId, spaceId));
+			} else if (primType == Primitive.PROCESSOR) {
+				return gson.toJson(RESTHelpers.copyProcessorToStarDev(commandConnection, primitiveId, processorType, spaceId));
 			} else {
 				return gson.toJson(new ValidatorStatusCode(false, "That type is not yet supported."));
 			}

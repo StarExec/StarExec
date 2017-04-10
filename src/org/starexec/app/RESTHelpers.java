@@ -18,6 +18,7 @@ import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.*;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.enums.Primitive;
+import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.tuples.AttributesTableData;
 import org.starexec.data.to.tuples.AttributesTableRow;
@@ -710,6 +711,14 @@ public class RESTHelpers {
 		} finally {
 			deleteSandbox(sandbox);
 		}
+	}
+
+	protected static ValidatorStatusCode copyProcessorToStarDev(
+			Connection commandConnection,
+			int processorId,
+			ProcessorType procType,
+			int communityId) {
+		return new ValidatorStatusCode(true);
 	}
 
 	/**

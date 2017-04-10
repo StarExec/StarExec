@@ -10,7 +10,7 @@ import org.starexec.data.database.Users;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.Processor;
-import org.starexec.data.to.Processor.ProcessorType;
+import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.util.Validator;
 
 public class BenchmarkSecurity {
@@ -237,7 +237,7 @@ public class BenchmarkSecurity {
 		Processor p = Processors.get(typeId);
 		if (p==null) {
 			return new ValidatorStatusCode(false, "The given type could not be found");
-		} else if (p.getType()!=ProcessorType.BENCH) {
+		} else if (p.getType()!= ProcessorType.BENCH) {
 			return new ValidatorStatusCode(false, "The given type is not a benchmark processor type");
 		}
 		return ProcessorSecurity.canUserSeeProcessor(typeId, userId);

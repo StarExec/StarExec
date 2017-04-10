@@ -3,6 +3,7 @@ package org.starexec.data.to;
 import java.io.File;
 
 import org.starexec.constants.R;
+import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.data.to.tuples.Locatable;
 import org.starexec.util.Util;
 
@@ -14,46 +15,12 @@ import com.google.gson.annotations.Expose;
  * @author Tyler Jensen 
  */
 public class Processor extends Identifiable implements Nameable, Locatable {
-	/**
-	 * Represents the type of the processor (along with it's SQL storage values)
-	 */
-	public enum ProcessorType {
-		DEFAULT(0), 
-		PRE(1), 
-		POST(2), 
-		BENCH(3),
-		UPDATE(4);
-		
-		private int val;
-		
-		ProcessorType(int val) {
-			this.val = val;
-		}
-		
-		public int getVal() {
-			return this.val;
-		}
-		
-		public static ProcessorType valueOf(int val) {
-			switch(val) {			
-				case 1:
-					return PRE;
-				case 2:
-					return POST;
-				case 3:
-					return BENCH;
-			        case 4:
-				        return UPDATE;
-				default:
-					return DEFAULT;				
-			}
-		}
-	}
+
 	
 	@Expose private String name = "none";
 	@Expose private String description = "no description";
 	@Expose private String fileName;
-	@Expose private ProcessorType type = Processor.ProcessorType.DEFAULT;	
+	@Expose private ProcessorType type = ProcessorType.DEFAULT;
 	private String filePath;	
 	private long diskSize;
 	private int communityId;

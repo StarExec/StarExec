@@ -25,7 +25,7 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
 import org.starexec.data.to.WorkerNode;
-import org.starexec.data.to.Processor.ProcessorType;
+import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.jobs.JobManager;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;

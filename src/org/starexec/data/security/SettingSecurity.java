@@ -16,8 +16,8 @@ import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
-import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.enums.BenchmarkingFramework;
+import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.util.Validator;
 /**
  * Security functions for handling DefaultSettings objects
@@ -127,7 +127,7 @@ public class SettingSecurity {
 					return new ValidatorStatusCode(false, "You do not have permission to see the given processor, or the given solver does not exist");
 				}
 				Processor p=Processors.get(Integer.parseInt(newValue));
-				if (p.getType()!=ProcessorType.POST){
+				if (p.getType()!= ProcessorType.POST){
 					return new ValidatorStatusCode(false,"The given processor is not a preprocessor");
 				}
 			}

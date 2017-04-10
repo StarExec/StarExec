@@ -45,6 +45,7 @@ import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.ArchiveUtil;
@@ -286,73 +287,79 @@ public class Download extends HttpServlet {
 				success = handleSpace(space, u.getId(), response,hierarchy,includeBenchmarks,includeSolvers, useIdDirectories);
 
 
-			} else if (request.getParameter(PARAM_TYPE).equals(R.PROCESSOR)) {
-				log.debug(methodName, "Handling " + R.PROCESSOR);
-				List<Processor> proc=null;
-				shortName="Processor";
-				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				if (request.getParameter("procClass").equals("post")) {
-					log.debug(methodName, "download request is for post-processor.");
+			} else {
+				if (request.getParameter(PARAM_TYPE).equals(R.PROCESSOR)) {
+					log.debug(methodName, "Handling " + R.PROCESSOR);
+					List<Processor> proc = null;
+					shortName = "Processor";
+					response.addHeader("Content-Disposition", "attachment; filename=" + shortName + ".zip");
+					if (request.getParameter("procClass").equals("post")) {
+						log.debug(methodName, "download request is for post-processor.");
 
-					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter(PARAM_ID)), Processor.ProcessorType.POST);
-				} else if (request.getParameter("procClass").equals("pre")){
-					log.debug(methodName, "download request is for pre-processor");
-					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter(PARAM_ID)), Processor.ProcessorType.PRE);
-				} else if (request.getParameter("procClass").equals("update")) {
-					log.debug(methodName, "download request is for update-processor");
+						proc = Processors.getByCommunity(Integer.parseInt(request.getParameter(PARAM_ID)), ProcessorType.POST);
+					} else {
+						if (request.getParameter("procClass").equals("pre")) {
+							log.debug(methodName, "download request is for pre-processor");
+							proc = Processors.getByCommunity(Integer.parseInt(request.getParameter(PARAM_ID)), ProcessorType.PRE);
+						} else {
+							if (request.getParameter("procClass").equals("update")) {
+								log.debug(methodName, "download request is for update-processor");
 
-					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter(PARAM_ID)), Processor.ProcessorType.UPDATE);
+								proc = Processors.getByCommunity(Integer.parseInt(request.getParameter(PARAM_ID)), ProcessorType.UPDATE);
+							} else {
+								log.debug(methodName, "download request is for bench-processor");
+
+								proc = Processors.getByCommunity(Integer.parseInt(request.getParameter(PARAM_ID)), ProcessorType.BENCH);
+							}
+						}
+					}
+					if (proc.size() > 0) {
+						success = handleProc(proc, u.getId(), Integer.parseInt(request.getParameter(PARAM_ID)), response);
+					} else {
+						log.debug(methodName, "Could not find any processors to download.");
+						response.sendError(HttpServletResponse.SC_NO_CONTENT, "There are no processors to download");
+						return;
+					}
+				} else if (request.getParameter(PARAM_TYPE).equals(R.JOB_OUTPUT)) {
+					log.debug(methodName, "Handling " + R.JOB_OUTPUT);
+					int jobId = Integer.parseInt(request.getParameter(PARAM_ID));
+
+					final String sinceParam = "since";
+					String lastSeen = request.getParameter(sinceParam);
+					Integer since = null;
+					if (lastSeen != null) {
+						log.debug(methodName, sinceParam + " was present.");
+						since = Integer.parseInt(lastSeen);
+					}
+					log.debug(methodName, sinceParam + " = " + since);
+
+
+					final String lastTimestampParam = "lastTimestamp";
+					String lastMod = request.getParameter(lastTimestampParam);
+					Long lastModified = null;
+					if (lastMod != null) {
+						log.debug(methodName + lastTimestampParam + " was present.");
+						lastModified = Long.parseLong(lastMod);
+					}
+					log.debug(methodName, lastTimestampParam + " = " + lastModified);
+
+					shortName = "Job" + jobId + "_output";
+					response.addHeader("Content-Disposition", "attachment; filename=" + shortName + ".zip");
+					success = handleJobOutputs(jobId, response, since, lastModified);
+
+				} else if (request.getParameter(PARAM_TYPE).equals(R.JOB_PAGE_DOWNLOAD_TYPE)) {
+					log.debug(methodName, "Handling " + R.JOB_PAGE_DOWNLOAD_TYPE);
+					int jobId = Integer.parseInt(request.getParameter(PARAM_ID));
+					handleJobPage(jobId, request, response);
+					// Just set success to true, handleJobPage will throw an exception if it is unsuccessful.
+					success = true;
+
 				} else {
-					log.debug(methodName, "download request is for bench-processor");
-
-					proc=Processors.getByCommunity(Integer.parseInt(request.getParameter(PARAM_ID)), Processor.ProcessorType.BENCH);
-				}
-				if (proc.size()>0) {
-					success= handleProc(proc,u.getId(),Integer.parseInt(request.getParameter(PARAM_ID)) , response);
-				} else {
-					log.debug(methodName, "Could not find any processors to download.");
-					response.sendError(HttpServletResponse.SC_NO_CONTENT,"There are no processors to download");
+					final String message = "invalid download type specified: " + request.getParameter(PARAM_TYPE);
+					log.debug(methodName, message);
+					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, message);
 					return;
 				}
-			} else if (request.getParameter(PARAM_TYPE).equals(R.JOB_OUTPUT)) {
-				log.debug(methodName, "Handling " + R.JOB_OUTPUT);
-				int jobId=Integer.parseInt(request.getParameter(PARAM_ID));
-
-				final String sinceParam = "since";
-				String lastSeen=request.getParameter(sinceParam);
-				Integer since=null;
-				if (lastSeen!=null) {
-					log.debug(methodName, sinceParam + " was present.");
-					since=Integer.parseInt(lastSeen);
-				}
-				log.debug(methodName, sinceParam + " = " + since);
-
-
-				final String lastTimestampParam = "lastTimestamp";
-				String lastMod = request.getParameter(lastTimestampParam);
-				Long lastModified = null;
-				if (lastMod!=null) {
-					log.debug(methodName + lastTimestampParam + " was present.");
-					lastModified=Long.parseLong(lastMod);
-				}
-				log.debug(methodName, lastTimestampParam + " = " + lastModified);
-
-				shortName="Job"+jobId+"_output";
-				response.addHeader("Content-Disposition", "attachment; filename="+shortName+".zip");
-				success= handleJobOutputs(jobId, response,since,lastModified);
-
-			} else if (request.getParameter(PARAM_TYPE).equals(R.JOB_PAGE_DOWNLOAD_TYPE)) {
-				log.debug(methodName, "Handling " + R.JOB_PAGE_DOWNLOAD_TYPE);
-				int jobId=Integer.parseInt(request.getParameter(PARAM_ID));
-				handleJobPage(jobId, request, response);
-				// Just set success to true, handleJobPage will throw an exception if it is unsuccessful.
-				success = true;
-
-			}else {
-				final String message = "invalid download type specified: " + request.getParameter(PARAM_TYPE);
-				log.debug(methodName, message);
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, message);
-				return;
 			}
 
 			if (success) {

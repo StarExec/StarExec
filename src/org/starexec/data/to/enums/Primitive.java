@@ -4,17 +4,17 @@ package org.starexec.data.to.enums;
 import org.starexec.constants.R;
 
 public enum Primitive {
-    JOB("jobType"),
-    USER("userType"),
-    SOLVER("solverType"),
-    BENCHMARK("benchmarkType"),
-    SPACE("spaceType"),
-    JOB_PAIR("jobPairType"),
-    JOB_STATS("jobStatsType"),
-    NODE("nodeType"),
-    QUEUE("queueType"),
-    CONFIGURATION("configurationType"),
-    PROCESSOR("processorType");
+    JOB("jobPrimitiveType"),
+    USER("userPrimitiveType"),
+    SOLVER("solverPrimitiveType"),
+    BENCHMARK("benchmarkPrimitiveType"),
+    SPACE("spacePrimitiveType"),
+    JOB_PAIR("jobPairPrimitiveType"),
+    JOB_STATS("jobStatsPrimitiveType"),
+    NODE("nodePrimitiveType"),
+    QUEUE("queuePrimitiveType"),
+    CONFIGURATION("configurationPrimitiveType"),
+    PROCESSOR("processorPrimitiveType");
 
     // The name of the css class of the hidden span that contains the name of the type.
     // If the css class name changes then the name will need to be changed on the frontend too.
