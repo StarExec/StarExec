@@ -17,6 +17,7 @@ public enum Primitive {
     PROCESSOR("processorType");
 
     // The name of the css class of the hidden span that contains the name of the type.
+    // If the css class name changes then the name will need to be changed on the frontend too.
     public final String cssClass;
     Primitive(String cssClass) {
         this.cssClass = cssClass;
