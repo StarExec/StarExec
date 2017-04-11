@@ -713,12 +713,58 @@ public class RESTHelpers {
 		}
 	}
 
+	/**
+	 * Copies a processor to a StarDev instance.
+	 * @param commandConnection an open StarExecCommand connection.
+	 * @param processorId the processor to copy.
+	 * @param communityId the community to copy the processor to (on stardev).
+	 * @return
+	 */
 	protected static ValidatorStatusCode copyProcessorToStarDev(
 			Connection commandConnection,
 			int processorId,
-			ProcessorType procType,
 			int communityId) {
-		return new ValidatorStatusCode(true);
+		Processor processorToCopy = Processors.get(processorId);
+		ProcessorType procType = processorToCopy.getType();
+		File sandbox = Util.getRandomSandboxDirectory();
+		try {
+			// Copy and zip the processor to the sandbox.
+			File tempFile = copyPrimitiveToSandbox(sandbox, processorToCopy);
+
+			// Upload the processor using the connection.
+			int uploadStatus;
+			switch(procType) {
+				case POST:
+					uploadStatus = commandConnection.uploadPostProc(
+							processorToCopy.getName(),
+							processorToCopy.getDescription(),
+							tempFile.getAbsolutePath(),
+							communityId);
+					break;
+				case PRE:
+					uploadStatus = commandConnection.uploadPreProc(
+							processorToCopy.getName(),
+							processorToCopy.getDescription(),
+							tempFile.getAbsolutePath(),
+							communityId);
+					break;
+				case BENCH:
+					uploadStatus = commandConnection.uploadBenchProc(
+							processorToCopy.getName(),
+							processorToCopy.getDescription(),
+							tempFile.getAbsolutePath(),
+							communityId);
+					break;
+				default:
+					return new ValidatorStatusCode(false, "This processor type is not yet supported.");
+			}
+			return outputStatus(commandConnection.getLastError(), uploadStatus, "Successfully copied processor to StarDev");
+		} catch (IOException e) {
+			log.warn("Could not copy solver to sandbox for copying to StarDev.", e);
+			return new ValidatorStatusCode(false, "Could not copy processor.", Util.getStackTrace(e));
+		} finally {
+			deleteSandbox(sandbox);
+		}
 	}
 
 	/**
@@ -741,17 +787,6 @@ public class RESTHelpers {
 		if (!validPrimitive) {
 			return new ValidatorStatusCode(false, "The given primitive type is not valid.");
 		}
-
-		Primitive primitiveType = Primitive.valueOf(primType);
-		if (primitiveType == Primitive.PROCESSOR) {
-			if (!Util.paramExists(R.COPY_TO_STARDEV_PROCTYPE_PARAM, request)) {
-				return new ValidatorStatusCode(false, "The processor type parameter was not found.");
-			}
-			if (!Util.isLegalEnumValue(request.getParameter(R.COPY_TO_STARDEV_PROCTYPE_PARAM), ProcessorType.class)) {
-				return new ValidatorStatusCode(false, "The processor type was not valid.");
-			}
-		}
-
 		return new ValidatorStatusCode(true);
 	}
 
