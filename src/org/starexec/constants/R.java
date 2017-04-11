@@ -356,6 +356,10 @@ public class R {
 
 	public static final String XML_BENCH_FRAMEWORK_ELE_NAME = "bench-framework";
 
+    public static final String COPY_TO_STARDEV_USERNAME_PARAM = "username";
+    public static final String COPY_TO_STARDEV_PASSWORD_PARAM = "password";
+    public static final String COPY_TO_STARDEV_PROCTYPE_PARAM = "procType";
+
 
 
     public static Timestamp earliestDateToRerunFailedPairs(){

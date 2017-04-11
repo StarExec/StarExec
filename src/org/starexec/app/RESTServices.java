@@ -4,6 +4,7 @@ import com.google.gson.*;
 import com.google.gson.annotations.Expose;
 import com.opera.core.systems.scope.protos.UmsProtos;
 import org.apache.commons.io.FileUtils;
+import org.apache.coyote.*;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -16,6 +17,7 @@ import org.starexec.data.database.*;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.security.*;
 import org.starexec.data.to.*;
+import org.starexec.data.to.Processor;
 import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.enums.CopyPrimitivesOption;
@@ -1745,29 +1747,15 @@ public class RESTServices {
 			@PathParam("spaceId") Integer spaceId,
 			@Context HttpServletRequest request) {
 		try {
-			final String usernameParam = "username";
-			final String passwordParam = "password";
 
-			Primitive primType;
-			ProcessorType processorType;
-			try {
-				processorType = ProcessorType.valueOf(type);
-				primType = Primitive.valueOf(type);
-			} catch (Exception e) {
-				return gson.toJson(new ValidatorStatusCode(false, "The given processor type is not valid."));
-			}
-			if (!Util.paramExists(usernameParam, request) || !Util.paramExists(passwordParam, request)) {
-				return gson.toJson(new ValidatorStatusCode(false, "The username or password parameter was not found."));
+			ValidatorStatusCode isValid = RESTHelpers.validateCopyToStardev(request, type);
+
+			if (!isValid.isSuccess()) {
+				return gson.toJson(isValid);
 			}
 
-			// Make sure user is dev or admin.
-			int userId = SessionUtil.getUserId(request);
-			if (!Users.isAdmin(userId) && !Users.isDeveloper(userId)) {
-				return gson.toJson(new ValidatorStatusCode(false, "You must be an admin or developer to do this."));
-			}
-
-			final String username = request.getParameter(usernameParam);
-			final String password = request.getParameter(passwordParam);
+			final String username = request.getParameter(R.COPY_TO_STARDEV_USERNAME_PARAM);
+			final String password = request.getParameter(R.COPY_TO_STARDEV_PASSWORD_PARAM);
 
 			// Login to StarDev
 			String url = "https://stardev.cs.uiowa.edu/" + instance + "/";
@@ -1776,16 +1764,19 @@ public class RESTServices {
 			if (loginStatus < 0) {
 				return gson.toJson(org.starexec.command.Status.getStatusMessage(loginStatus));
 			}
-			// TODO: support more primitive types.
-			if (primType == Primitive.BENCHMARK) {
-				return gson.toJson(RESTHelpers.copyBenchmarkToStarDev(commandConnection, primitiveId, spaceId));
-			} else if (primType == Primitive.SOLVER) {
-				return gson.toJson(RESTHelpers.copySolverToStarDev(commandConnection, primitiveId, spaceId));
-			} else if (primType == Primitive.PROCESSOR) {
-				return gson.toJson(RESTHelpers.copyProcessorToStarDev(commandConnection, primitiveId, processorType, spaceId));
-			} else {
-				return gson.toJson(new ValidatorStatusCode(false, "That type is not yet supported."));
+			final Primitive primType = Primitive.valueOf(type);
+			final ProcessorType processorType = ProcessorType.valueOf(request.getParameter(R.COPY_TO_STARDEV_PROCTYPE_PARAM));
+			switch (primType) {
+				case BENCHMARK:
+					return gson.toJson(RESTHelpers.copyBenchmarkToStarDev(commandConnection, primitiveId, spaceId));
+				case SOLVER:
+					return gson.toJson(RESTHelpers.copySolverToStarDev(commandConnection, primitiveId, spaceId));
+				case PROCESSOR:
+					return gson.toJson(RESTHelpers.copyProcessorToStarDev(commandConnection, primitiveId, processorType, spaceId));
+				default:
+					return gson.toJson(new ValidatorStatusCode(false, "That type is not yet supported."));
 			}
+
 		} catch (Throwable t) {
 			log.error("Caught throwable while attempting to copy primitive to StarDev.", t);
 			return gson.toJson(ERROR_INTERNAL_SERVER);

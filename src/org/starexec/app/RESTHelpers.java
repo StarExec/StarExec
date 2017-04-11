@@ -722,6 +722,40 @@ public class RESTHelpers {
 	}
 
 	/**
+	 * Validates a copy to stardev request
+	 * @param request the copy to stardev request.
+	 * @param primType the primitive type
+	 * @return
+	 */
+	protected static ValidatorStatusCode validateCopyToStardev(HttpServletRequest request, final String primType) {
+		int userId = SessionUtil.getUserId(request);
+		if (!Users.isAdmin(userId) && !Users.isDeveloper(userId)) {
+			return new ValidatorStatusCode(false, "You must be an admin or developer to do this.");
+		}
+
+		if (!Util.paramExists(R.COPY_TO_STARDEV_USERNAME_PARAM, request) || !Util.paramExists(R.COPY_TO_STARDEV_PASSWORD_PARAM, request)) {
+			return new ValidatorStatusCode(false, "The username or password parameter was not found.");
+		}
+
+		boolean validPrimitive = Util.isLegalEnumValue(primType, Primitive.class);
+		if (!validPrimitive) {
+			return new ValidatorStatusCode(false, "The given primitive type is not valid.");
+		}
+
+		Primitive primitiveType = Primitive.valueOf(primType);
+		if (primitiveType == Primitive.PROCESSOR) {
+			if (!Util.paramExists(R.COPY_TO_STARDEV_PROCTYPE_PARAM, request)) {
+				return new ValidatorStatusCode(false, "The processor type parameter was not found.");
+			}
+			if (!Util.isLegalEnumValue(request.getParameter(R.COPY_TO_STARDEV_PROCTYPE_PARAM), ProcessorType.class)) {
+				return new ValidatorStatusCode(false, "The processor type was not valid.");
+			}
+		}
+
+		return new ValidatorStatusCode(true);
+	}
+
+	/**
 	 * Outputs a ValidatorStatusCode based on a StarExecCOmmand status code.
 	 * @param lastError the last error returned by a StarExecCommand connection.
 	 * @param uploadStatus the Command status code to convert to a ValidatorStatusCode.

@@ -91,6 +91,10 @@ public class Util {
     	return color;
     }
 
+    public static <T extends Enum<T>> boolean isLegalEnumValue(String value, Class<T> clazz) {
+		return EnumSet.allOf(clazz).stream().anyMatch(x -> x.toString().equals(value));
+	}
+
 
 
     /**
