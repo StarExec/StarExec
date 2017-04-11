@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.io.*, java.util.List,org.starexec.data.to.Website.WebsiteType, org.starexec.data.database.*, org.starexec.data.to.*,org.starexec.data.security.*, org.starexec.constants.*, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType" session="true"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.apache.commons.io.*, java.util.List,org.starexec.data.to.Website.WebsiteType, org.starexec.data.database.*, org.starexec.data.to.*,org.starexec.data.security.*, org.starexec.constants.*, org.starexec.util.*, org.starexec.data.to.enums.ProcessorType" session="true"%>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.HashMap" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
