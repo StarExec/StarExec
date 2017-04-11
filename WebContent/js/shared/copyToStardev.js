@@ -25,7 +25,6 @@ $(document).ready(function() {
 					var password = $('.stardevPassword').val();
 					var spaceId = $('.stardevSpaceId').val();
 					var primId = $('.thisPrimitivesId').attr('value');
-					var procType = $('.procType').attr('value');
 					log('Id was: '+primId);
 					var url = starexecRoot+'services/copy-to-stardev/'+instance+'/'+type+'/'+primId+'/'+spaceId;
 					log('Url was: '+url);
@@ -34,7 +33,6 @@ $(document).ready(function() {
 						{
 							username: username,
 							password: password,
-							procType: procType
 						},
 						function(data) {
 							parseReturnCode(data, true);
