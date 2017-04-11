@@ -226,7 +226,12 @@ public class GetPageTests extends TestSequence {
 	private void getJobAddTest(){
 		Assert.assertTrue(con.canGetPage("secure/add/job.jsp?sid="+space1.getId()));
 	}
-	
+
+	@StarexecTest
+	private void getJobPairsAddTest(){
+		Assert.assertTrue(con.canGetPage("secure/add/jobPairs.jsp?jobId="+job.getId()));
+	}
+
 	@StarexecTest
 	private void getQuickJobAddTest(){
 		Assert.assertTrue(con.canGetPage("secure/add/quickJob.jsp?sid="+space1.getId()));
