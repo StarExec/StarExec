@@ -4031,6 +4031,11 @@ public class Jobs {
 		log.info("Pausing job "+jobId);
 		CallableStatement procedure = null;
 		try {
+			int numPairs = 0;
+			final int paused = StatusCode.STATUS_PAUSED.getVal();
+			final StopWatch timer = new StopWatch();
+			timer.start();
+
 			procedure = con.prepareCall("{CALL PauseJob(?)}");
 			procedure.setInt(1, jobId);
 			procedure.executeUpdate();
@@ -4038,21 +4043,30 @@ public class Jobs {
 			log.debug("Pausing of job with id = " + jobId + " was successful");
 
 			//Get the enqueued job pairs and remove them
-			List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(jobId);
-			for (JobPair jp : jobPairsEnqueued)  {
+			List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(con, jobId);
+			for (JobPair jp : jobPairsEnqueued) {
 				int execId = jp.getBackendExecId();
+				int pairId = jp.getId();
 				R.BACKEND.killPair(execId);
-		    	JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_PAUSED.getVal());
+				JobPairs.setStatusForPairAndStages(pairId, paused);
 			}
+			numPairs += jobPairsEnqueued.size();
+
 			//Get the running job pairs and remove them
-			List<JobPair> jobPairsRunning = Jobs.getRunningPairs(jobId);
+			List<JobPair> jobPairsRunning = Jobs.getRunningPairs(con, jobId);
 			if (jobPairsRunning != null) {
-				for (JobPair jp: jobPairsRunning) {
+				for (JobPair jp : jobPairsRunning) {
 					int execId = jp.getBackendExecId();
+					int pairId = jp.getId();
 					R.BACKEND.killPair(execId);
-					JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_PAUSED.getVal());
+					JobPairs.setStatusForPairAndStages(pairId, paused);
 				}
+				numPairs += jobPairsRunning.size();
 			}
+
+			timer.stop();
+			log.info("Pause job with " + numPairs + " pairs took " + timer.getTime() + " milliseconds");
+
 			log.debug("Deletion of paused job pairs from queue was succesful");
 			return true;
 		} catch (Exception e) {
