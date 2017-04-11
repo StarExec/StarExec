@@ -1737,7 +1737,7 @@ public class RESTServices {
 	}
 
 
-	@GET
+	@POST
 	@Path("/copy-to-stardev/{instance}/{type}/{primitiveId}/{spaceId}")
 	@Produces("application/json")
 	public String copyToStarDev(
@@ -1765,13 +1765,13 @@ public class RESTServices {
 				return gson.toJson(org.starexec.command.Status.getStatusMessage(loginStatus));
 			}
 			final Primitive primType = Primitive.valueOf(type);
-			final ProcessorType processorType = ProcessorType.valueOf(request.getParameter(R.COPY_TO_STARDEV_PROCTYPE_PARAM));
 			switch (primType) {
 				case BENCHMARK:
 					return gson.toJson(RESTHelpers.copyBenchmarkToStarDev(commandConnection, primitiveId, spaceId));
 				case SOLVER:
 					return gson.toJson(RESTHelpers.copySolverToStarDev(commandConnection, primitiveId, spaceId));
 				case PROCESSOR:
+					final ProcessorType processorType = ProcessorType.valueOf(request.getParameter(R.COPY_TO_STARDEV_PROCTYPE_PARAM));
 					return gson.toJson(RESTHelpers.copyProcessorToStarDev(commandConnection, primitiveId, processorType, spaceId));
 				default:
 					return gson.toJson(new ValidatorStatusCode(false, "That type is not yet supported."));
