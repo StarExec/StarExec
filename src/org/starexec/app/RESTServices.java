@@ -1754,10 +1754,10 @@ public class RESTServices {
 				processorType = ProcessorType.valueOf(type);
 				primType = Primitive.valueOf(type);
 			} catch (Exception e) {
-				return gson.toJson(ERROR_INVALID_PARAMS);
+				return gson.toJson(new ValidatorStatusCode(false, "The given processor type is not valid."));
 			}
 			if (!Util.paramExists(usernameParam, request) || !Util.paramExists(passwordParam, request)) {
-				return gson.toJson(ERROR_INVALID_PARAMS);
+				return gson.toJson(new ValidatorStatusCode(false, "The username or password parameter was not found."));
 			}
 
 			// Make sure user is dev or admin.
