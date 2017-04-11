@@ -4027,41 +4027,41 @@ public class Jobs {
 	 * @author Wyatt Kaiser
 	 */
 
-    protected static boolean pause(int jobId, Connection con) {
-	log.info("Pausing job "+jobId);
-	CallableStatement procedure = null;
-	try {
-	    procedure = con.prepareCall("{CALL PauseJob(?)}");
-	    procedure.setInt(1, jobId);
-	    procedure.executeUpdate();
+	protected static boolean pause(int jobId, Connection con) {
+		log.info("Pausing job "+jobId);
+		CallableStatement procedure = null;
+		try {
+			procedure = con.prepareCall("{CALL PauseJob(?)}");
+			procedure.setInt(1, jobId);
+			procedure.executeUpdate();
 
-	    log.debug("Pausing of job with id = " + jobId + " was successful");
+			log.debug("Pausing of job with id = " + jobId + " was successful");
 
-	    //Get the enqueued job pairs and remove them
-	    List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(jobId);
-	    for (JobPair jp : jobPairsEnqueued)  {
-			int execId = jp.getBackendExecId();
-			R.BACKEND.killPair(execId);
-		    JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_PAUSED.getVal());
-	    }
-	    //Get the running job pairs and remove them
-	    List<JobPair> jobPairsRunning = Jobs.getRunningPairs(jobId);
-	    if (jobPairsRunning != null) {
-		for (JobPair jp: jobPairsRunning) {
-		    int execId = jp.getBackendExecId();
-		    R.BACKEND.killPair(execId);
-		    JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_PAUSED.getVal());
+			//Get the enqueued job pairs and remove them
+			List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(jobId);
+			for (JobPair jp : jobPairsEnqueued)  {
+				int execId = jp.getBackendExecId();
+				R.BACKEND.killPair(execId);
+		    	JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_PAUSED.getVal());
+			}
+			//Get the running job pairs and remove them
+			List<JobPair> jobPairsRunning = Jobs.getRunningPairs(jobId);
+			if (jobPairsRunning != null) {
+				for (JobPair jp: jobPairsRunning) {
+					int execId = jp.getBackendExecId();
+					R.BACKEND.killPair(execId);
+					JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_PAUSED.getVal());
+				}
+			}
+			log.debug("Deletion of paused job pairs from queue was succesful");
+			return true;
+		} catch (Exception e) {
+			log.error("Pause Job says "+e.getMessage(),e);
+		} finally {
+			Common.safeClose(procedure);
 		}
-	    }
-	    log.debug("Deletion of paused job pairs from queue was succesful");
-	    return true;
-	} catch (Exception e) {
-	    log.error("Pause Job says "+e.getMessage(),e);
-	} finally {
-	    Common.safeClose(procedure);
+		return false;
 	}
-	return false;
-    }
 
     /**
      * Pauses all jobs owned by the given user
