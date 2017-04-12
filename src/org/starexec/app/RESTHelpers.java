@@ -732,6 +732,7 @@ public class RESTHelpers {
 			File tempFile = copyPrimitiveToSandbox(sandbox, processorToCopy);
 
 			// Upload the processor using the connection.
+			// The upload status will be a status code on failure or the id of the new processor on success.
 			int uploadStatus;
 			switch(procType) {
 				case POST:
@@ -806,7 +807,8 @@ public class RESTHelpers {
 					org.starexec.command.Status.getStatusMessage(uploadStatus),
 					lastError);
 		}
-		return new ValidatorStatusCode(true, successMessage);
+		// on success the upload status will be the id of the new processor
+		return new ValidatorStatusCode(true, successMessage, uploadStatus);
 	}
 
 	/**
