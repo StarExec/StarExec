@@ -1738,13 +1738,12 @@ public class RESTServices {
 
 
 	@POST
-	@Path("/copy-to-stardev/{instance}/{type}/{primitiveId}/{spaceId}")
+	@Path("/copy-to-stardev/{instance}/{type}/{primitiveId}")
 	@Produces("application/json")
 	public String copyToStarDev(
 			@PathParam("instance") String instance,
 			@PathParam("type") String type,
 			@PathParam("primitiveId") Integer primitiveId,
-			@PathParam("spaceId") Integer spaceId,
 			@Context HttpServletRequest request) {
 		try {
 
@@ -1764,6 +1763,7 @@ public class RESTServices {
 			if (loginStatus < 0) {
 				return gson.toJson(org.starexec.command.Status.getStatusMessage(loginStatus));
 			}
+			final int spaceId = Integer.parseInt(request.getParameter(R.COPY_TO_STARDEV_SPACE_ID_PARAM));
 			final Primitive primType = Primitive.valueOf(type);
 			switch (primType) {
 				case BENCHMARK:

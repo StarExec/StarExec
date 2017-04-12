@@ -358,7 +358,8 @@ public class R {
 
     public static final String COPY_TO_STARDEV_USERNAME_PARAM = "username";
     public static final String COPY_TO_STARDEV_PASSWORD_PARAM = "password";
-    public static final String COPY_TO_STARDEV_PROCTYPE_PARAM = "procType";
+    public static final String COPY_TO_STARDEV_SPACE_ID_PARAM = "spaceId";
+    public static final String COPY_TO_STARDEV_COPY_WITH_PROC_PARAM = "copyWithProcessor";
 
 
 

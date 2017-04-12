@@ -28,10 +28,7 @@ import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.logger.StarLogger;
 import org.starexec.test.integration.TestResult;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.util.ArchiveUtil;
-import org.starexec.util.DataTablesQuery;
-import org.starexec.util.SessionUtil;
-import org.starexec.util.Util;
+import org.starexec.util.*;
 import org.w3c.dom.Attr;
 
 import javax.servlet.http.HttpServletRequest;
@@ -788,6 +785,22 @@ public class RESTHelpers {
 		if (!validPrimitive) {
 			return new ValidatorStatusCode(false, "The given primitive type is not valid.");
 		}
+
+		boolean isSpaceIdParamPresent = Util.paramExists(R.COPY_TO_STARDEV_SPACE_ID_PARAM, request);
+		Primitive primitive = Primitive.valueOf(primType);
+		if (primitive == Primitive.BENCHMARK) {
+			if (!Util.paramExists(R.COPY_TO_STARDEV_COPY_WITH_PROC_PARAM, request) && !isSpaceIdParamPresent) {
+				return new ValidatorStatusCode(false, "A space id parameter, or the upload with processor parameter was not included in the request.");
+			}
+		} else {
+			if (!isSpaceIdParamPresent) {
+				return new ValidatorStatusCode(false, "A space ID parameter was not present in request.");
+			}
+		}
+		if (isSpaceIdParamPresent && !Validator.isValidInteger(request.getParameter(R.COPY_TO_STARDEV_SPACE_ID_PARAM))) {
+			return new ValidatorStatusCode(false, "The space ID parameter was not in integer format.");
+		}
+
 		return new ValidatorStatusCode(true);
 	}
 
