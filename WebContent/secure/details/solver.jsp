@@ -195,7 +195,7 @@
         <c:if test="${!isAnonymousPage && sourceDownloadable && downloadable}">
             <a id="srcLink">source</a> 
         </c:if>
-		<c:if test="${hasAdminReadPrivileges}">
+		<c:if test="${hasAdminReadPrivileges && !isAnonymousPage}">
 			<star:copyToStardevButton/>
 		</c:if>
 

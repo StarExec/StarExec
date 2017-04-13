@@ -28,6 +28,7 @@
 	<c:if test="${!isAnonymousPage}">
 		<span style="display:none;" id="benchId" value="${bench.id}"></span>
 		<star:primitiveIdentifier primId="${bench.id}" primType="${primitiveType.toString()}"/>
+		<span style="hidden" class="benchProcessorId" value="${bench.type.id}"></span>
 	</c:if>
 	<c:if test="${!isAnonymousPage}">
         <c:if test="${not empty brokenBenchDeps}">
@@ -172,7 +173,7 @@
 		<c:if test="${downloadable || hasAdminReadPrivileges}">
 			<a id="downLink" href="${starexecRoot}/secure/download?type=bench&id=${bench.id}">download benchmark</a>
 		</c:if>
-		<c:if test="${hasAdminReadPrivileges}">
+		<c:if test="${hasAdminReadPrivileges && !isAnonymousPage}">
 			<star:copyToStardevButton/>
 		</c:if>
 		
