@@ -792,8 +792,8 @@ public class RESTHelpers {
 			if (!Util.paramExists(R.COPY_TO_STARDEV_PROC_ID_PARAM, request)) {
 				return new ValidatorStatusCode(false, "The processor ID parameter was not present in the request.");
 			}
-			if ( Validator.isValidInteger(request.getParameter(R.COPY_TO_STARDEV_PROC_ID_PARAM)) ) {
-				return new ValidatorStatusCode(false, "The processor ID was not a valid integer.");
+			if ( !Validator.isValidInteger(request.getParameter(R.COPY_TO_STARDEV_PROC_ID_PARAM)) ) {
+				return new ValidatorStatusCode(false, "The processor ID was not a valid integer: " + request.getParameter(R.COPY_TO_STARDEV_PROC_ID_PARAM));
 			}
 			if (!Util.paramExists(R.COPY_TO_STARDEV_COPY_WITH_PROC_PARAM, request) && !isSpaceIdParamPresent) {
 				return new ValidatorStatusCode(false, "A space id parameter, or the upload with processor parameter was not included in the request.");
