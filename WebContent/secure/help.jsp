@@ -26,6 +26,8 @@
 	} catch (Exception e) {
 		//if we can't find the referrer, that's fine. Just load up the main help page
 	}
+
+	Analytics.PAGEVIEW_HELP.record();
 %>
 <star:template title="Help Pages" js="lib/jquery.dataTables.min, lib/jquery.jstree, help/help, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/table, help/help">
 
