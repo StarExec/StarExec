@@ -1,28 +1,52 @@
-.instanceNameText {
-	margin-right: 35px;
-}
 
 input.instanceName[type="text"] {
 	width: auto;
 }
 
+
 .copyToStardevInputDiv {
 	margin-bottom: 5px;
 }
 
-.stardevUsernameText {
-	margin-right: 8px;
-}
 
 input.stardevUsername[type="text"] {
 	width: auto;
 }
 
+.stardevUsernameTextProcessor {
+	margin-right: 44.5px;
+}
+.stardevUsernameText {
+	margin-right: 27px;
+}
+.stardevInstanceNameTextProcessor {
+	margin-right: 71px;
+}
+.stardevInstanceNameText {
+	margin-right: 53.5px;
+}
+.stardevPasswordTextProcessor {
+	margin-right: 47.5px;
+}
 .stardevPasswordText {
-	margin-right: 10px;
+	margin-right: 30px;
+}
+.stardevSpaceIdTextBenchmark {
+	margin-right: 40px;
+}
+
+.stardevSpaceIdTextSolver {
+	margin-right: 39px;
 }
 
 .stardevSpaceIdText {
-	margin-right: 19px;
+	margin-right: 19.5px;
 }
+.stardevProcIdText {
+	margin-right: 10px;
+}
+.uploadProcessorWithBenchmarkDiv {
+	margin-top: 10px;
+}
+
 

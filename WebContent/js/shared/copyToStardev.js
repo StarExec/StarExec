@@ -35,18 +35,31 @@ $(document).ready(function() {
 		log('Type was: '+type);
 		var processorType = $('.processorPrimitiveType').attr('value');
 		var benchmarkType = $('.benchmarkPrimitiveType').attr('value');
+		var solverType = $('.solverPrimitiveType').attr('value');
 		if ( type ===  processorType) {
 			$('.stardevSpaceIdText').text('stardev community id');
+			$('.instanceNameText').removeClass('stardevInstanceNameText');
+			$('.instanceNameText').addClass('stardevInstanceNameTextProcessor');
+			$('.passwordText').removeClass('stardevPasswordText');
+			$('.passwordText').addClass('stardevPasswordTextProcessor');
+			$('.usernameText').removeClass('stardevUsernameText');
+			$('.usernameText').addClass('stardevUsernameTextProcessor');
 		} else {
 			$('.stardevSpaceIdText').text('stardev space id');
 		}
 		if ( type === benchmarkType ) {
+			$('.spaceIdText').removeClass('stardevSpaceIdText');
+			$('.spaceIdText').addClass('stardevSpaceIdTextBenchmark');
 			$('.uploadProcessorWithBenchmarkDiv').show();
+		}
+		if ( type === solverType ) {
+			$('.spaceIdText').removeClass('stardevSpaceIdText');
+			$('.spaceIdText').addClass('stardevSpaceIdTextSolver');
 		}
 		$('.dialog-copy-to-stardev').dialog({
 			modal: true,
-			width: 600,
-			height: 400,
+			width: 480,
+			height: 330,
 			buttons: {
 				'submit': function() {
 					$(this).dialog('close');
