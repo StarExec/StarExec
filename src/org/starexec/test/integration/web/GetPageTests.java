@@ -1,12 +1,14 @@
 package org.starexec.test.integration.web;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
 import org.starexec.command.Connection;
 import org.starexec.constants.R;
+import org.starexec.constants.Web;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
@@ -138,10 +140,26 @@ public class GetPageTests extends TestSequence {
 		Assert.assertTrue(con.canGetPage("secure/add/to_community.jsp?cid="+newCommunity.getId()));
 
 	}
+
+	private String benchmarkDetailsPage() {
+		return "secure/details/benchmark.jsp?id="+benchmarkIds.get(0);
+	}
 	
 	@StarexecTest
 	private void getBenchmarkDetailsTest(){
-		Assert.assertTrue(con.canGetPage("secure/details/benchmark.jsp?id="+benchmarkIds.get(0)));
+		Assert.assertTrue(con.canGetPage(benchmarkDetailsPage()));
+	}
+
+	@StarexecTest
+	private void benchmarkPageContainsCopyToStardevButton() {
+		try {
+			Assert.assertTrue("Admin benchmark page did not conatin copy to stardev button.",
+					adminCon.getPageHtml(benchmarkDetailsPage()).contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+			Assert.assertFalse("Regular user benchmark page contained copy to stardev button.",
+					con.getPageHtml(benchmarkDetailsPage()).contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+		} catch (IOException e) {
+			Assert.fail();
+		}
 	}
 	
 	@StarexecTest
@@ -392,6 +410,8 @@ public class GetPageTests extends TestSequence {
 		Assert.assertFalse(adminCon.canGetPage("secure/details/fakewebpage.jsp"));
 		Assert.assertFalse(con.canGetPage("secure/details/fakewebpage.jsp"));
 	}
+
+
 	
 	@Override
 	protected void setup() throws Exception {

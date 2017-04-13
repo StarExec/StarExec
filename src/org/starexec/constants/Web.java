@@ -30,4 +30,6 @@ public final class Web {
 	public static final String[] GLOBAL_GIF_FILES = {"ajaxloader", "loader"};
 	public static final String[] GLOBAL_ICO_FILES = {"favicon"};
 
+	public static final String COPY_TO_STARDEV_BUTTON_TEXT = "copy to stardev";
+
 }
