@@ -104,10 +104,26 @@ public class GetPageTests extends TestSequence {
 	private void getReportsTest() {
 		Assert.assertTrue(con.canGetPage("secure/explore/reports.jsp"));
 	}
-	
+
+	private String solverDetailsPage() {
+		return "secure/details/solver.jsp?id="+solver.getId();
+	}
+
 	@StarexecTest
 	private void getSolverDetailsTest(){
-		Assert.assertTrue(con.canGetPage("secure/details/solver.jsp?id="+solver.getId()));
+		Assert.assertTrue(con.canGetPage(solverDetailsPage()));
+	}
+
+	@StarexecTest
+	private void solverPageContainsCopyToStardevButton() {
+		try {
+			Assert.assertTrue("Admin solver page did not conatin copy to stardev button.",
+					adminCon.getPageHtml(solverDetailsPage()).contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+			Assert.assertFalse("Regular user solver page contained copy to stardev button.",
+					con.getPageHtml(solverDetailsPage()).contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+		} catch (IOException e) {
+			Assert.fail();
+		}
 	}
 	
 	@StarexecTest
@@ -161,6 +177,7 @@ public class GetPageTests extends TestSequence {
 			Assert.fail();
 		}
 	}
+
 	
 	@StarexecTest
 	private void getBenchmarkEditTest(){
@@ -373,10 +390,25 @@ public class GetPageTests extends TestSequence {
 		Assert.assertFalse(con.canGetPage("secure/admin/user.jsp"));
 
 	}
+
+	private String editProcessorPage() {
+		return "secure/edit/processor.jsp?id="+proc.getId();
+	}
 	
 	@StarexecTest
 	private void editProcessorTest() {
-		Assert.assertTrue(adminCon.canGetPage("secure/edit/processor.jsp?id="+proc.getId()));
+		Assert.assertTrue(adminCon.canGetPage(editProcessorPage()));
+	}
+	@StarexecTest
+	private void editProcessorPageContainsCopyToStardevButton() {
+		try {
+			Assert.assertTrue("Admin processor page did not conatin copy to stardev button.",
+					adminCon.getPageHtml(editProcessorPage()).contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+			Assert.assertFalse("Regular user processor page contained copy to stardev button.",
+					con.getPageHtml(editProcessorPage()).contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+		} catch (IOException e) {
+			Assert.fail();
+		}
 	}
 	
 	@StarexecTest
