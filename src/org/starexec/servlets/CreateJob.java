@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.starexec.constants.R;
+import org.starexec.data.database.Analytics;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
@@ -258,6 +259,7 @@ public class CreateJob extends HttpServlet {
 			//Depending on our run selection, handle each case differently
 			//if the user created a quickJob, they uploaded a single text benchmark and a solver to run
 			if (selection.equals("quickJob")) {
+				Analytics.JOB_CREATE_QUICKJOB.record();
 				int solverId = Integer.parseInt(request.getParameter(R.SOLVER));
 				String benchText = request.getParameter(R.BENCHMARK);
 				String bName = request.getParameter(benchName);

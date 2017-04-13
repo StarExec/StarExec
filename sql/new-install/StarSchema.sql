@@ -785,6 +785,7 @@ CREATE TABLE analytics_events (
 
 -- A list of all events
 INSERT INTO analytics_events (name) VALUES
+	('JOB_CREATE_QUICKJOB'),
 	('JOB_PAUSE'),
 	('JOB_RESUME'),
 	('PAGEVIEW_HELP');
