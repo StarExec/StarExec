@@ -659,16 +659,16 @@ public class RESTHelpers {
 	 * @param spaceId the space to copy the benchmark to on StarDev.
 	 * @return a status code indicating success or failure.
 	 */
-	protected static ValidatorStatusCode copyBenchmarkToStarDev(Connection commandConnection, int benchmarkId, int spaceId) {
+	protected static ValidatorStatusCode copyBenchmarkToStarDev(
+			Connection commandConnection,
+			int benchmarkId,
+			int spaceId,
+			int benchProcessorId) {
 		Benchmark benchmarkToCopy = Benchmarks.get(benchmarkId);
 		File sandbox = Util.getRandomSandboxDirectory();
 		try {
 			File tempFile = copyPrimitiveToSandbox(sandbox, benchmarkToCopy);
-			log.debug("Temporary file exists: "+tempFile.exists());
-			// TODO: implement processor. Perhaps we could automatically upload the processor to stardev if it is not already
-			// there.
-			int noTypeProcessor = 1;
-			int uploadStatus = commandConnection.uploadBenchmarksToSingleSpace(tempFile.getAbsolutePath(), noTypeProcessor, spaceId, true);
+			int uploadStatus = commandConnection.uploadBenchmarksToSingleSpace(tempFile.getAbsolutePath(), benchProcessorId, spaceId, true);
 			return outputStatus(commandConnection.getLastError(), uploadStatus, "Successfully copied benchmark to StarDev");
 		} catch (IOException e) {
 			log.warn("Could not copy benchmark to sandbox for copying to StarDev.", e);
@@ -789,6 +789,12 @@ public class RESTHelpers {
 		boolean isSpaceIdParamPresent = Util.paramExists(R.COPY_TO_STARDEV_SPACE_ID_PARAM, request);
 		Primitive primitive = Primitive.valueOf(primType);
 		if (primitive == Primitive.BENCHMARK) {
+			if (!Util.paramExists(R.COPY_TO_STARDEV_PROC_ID_PARAM, request)) {
+				return new ValidatorStatusCode(false, "The processor ID parameter was not present in the request.");
+			}
+			if ( Validator.isValidInteger(request.getParameter(R.COPY_TO_STARDEV_PROC_ID_PARAM)) ) {
+				return new ValidatorStatusCode(false, "The processor ID was not a valid integer.");
+			}
 			if (!Util.paramExists(R.COPY_TO_STARDEV_COPY_WITH_PROC_PARAM, request) && !isSpaceIdParamPresent) {
 				return new ValidatorStatusCode(false, "A space id parameter, or the upload with processor parameter was not included in the request.");
 			}

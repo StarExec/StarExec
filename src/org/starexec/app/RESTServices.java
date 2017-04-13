@@ -1767,7 +1767,8 @@ public class RESTServices {
 			final Primitive primType = Primitive.valueOf(type);
 			switch (primType) {
 				case BENCHMARK:
-					return gson.toJson(RESTHelpers.copyBenchmarkToStarDev(commandConnection, primitiveId, spaceId));
+					final int benchProcessorId = Integer.parseInt(request.getParameter(R.COPY_TO_STARDEV_PROC_ID_PARAM));
+					return gson.toJson(RESTHelpers.copyBenchmarkToStarDev(commandConnection, primitiveId, spaceId, benchProcessorId));
 				case SOLVER:
 					return gson.toJson(RESTHelpers.copySolverToStarDev(commandConnection, primitiveId, spaceId));
 				case PROCESSOR:

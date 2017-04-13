@@ -360,6 +360,7 @@ public class R {
     public static final String COPY_TO_STARDEV_PASSWORD_PARAM = "password";
     public static final String COPY_TO_STARDEV_SPACE_ID_PARAM = "spaceId";
     public static final String COPY_TO_STARDEV_COPY_WITH_PROC_PARAM = "copyWithProcessor";
+    public static final String COPY_TO_STARDEV_PROC_ID_PARAM = "procId";
 
 
 
