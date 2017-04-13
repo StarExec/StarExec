@@ -783,6 +783,7 @@ function setupPauseJobButton() {
 			secondary: "ui-icon-pause"
 		}
 	}).click(function() {
+		createDialog("Pausing Job");
 		killAjaxRequests(); // Since we are reloading the page anyway...
 		window.stop();
 		$.post(
@@ -804,6 +805,7 @@ function setupResumeJobButton() {
 			secondary: "ui-icon-play"
 		}
 	}).click(function(){
+		createDialog("Resuming Job");
 		killAjaxRequests(); // Since we are reloading the page anyway...
 		window.stop();
 		$.post(
