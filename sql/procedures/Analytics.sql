@@ -1,11 +1,16 @@
 DELIMITER //
 
+-- Retrieve the `id` of a given Event
 DROP PROCEDURE IF EXISTS GetEventId;
 CREATE PROCEDURE GetEventId( IN _name CHAR(32) )
 	BEGIN
 		SELECT event_id FROM analytics_actions WHERE name=_name;
 	END //
 
+-- If there is not yet a record of this event happening today
+--   create a record and set its count to `1`
+-- otherwise
+--   increment the count of the existing record
 DROP PROCEDURE IF EXISTS RecordEvent;
 CREATE PROCEDURE RecordEvent(
 		IN _event_id INT,

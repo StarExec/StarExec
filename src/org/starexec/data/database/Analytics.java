@@ -3,11 +3,22 @@ package org.starexec.data.database;
 import org.starexec.logger.StarLogger;
 import java.sql.SQLException;
 
+/**
+ * Analytics keeps a record of how often actions happen.
+ * A count is kept of how many times an actions occured per day.
+ * Actions must be added both here and in the `analytics_actions` table.
+ */
 public enum Analytics {
 	JOB_PAUSE;
 
 	private final int id;
 
+	/**
+	 * Constructor.
+	 * Retrieves this actions `id` from the `analytics_actions` table.
+	 * If this action is not found in the table, set the `id` to `-1` and move
+	 * on with life. It is not worth throwing an exception.
+	 */
 	Analytics() {
 		int _id = -1;
 		try {
@@ -34,6 +45,9 @@ public enum Analytics {
 
 	protected static final StarLogger log = StarLogger.getLogger(Analytics.class);
 
+	/**
+	 * Record an occurance of this action.
+	 */
 	public void record() {
 		if (id == -1) return;
 
