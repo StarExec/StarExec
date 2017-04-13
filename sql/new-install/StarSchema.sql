@@ -775,16 +775,16 @@ INSERT INTO report_data (event_name, queue_name, occurrences) VALUES ('unique lo
 INSERT INTO processors (id,name,description,path,community,processor_type,disk_size)
 VALUES (1,"no_type", "this is the default benchmark type for rejected benchmarks and benchmarks that are not associated with a type n=no_type","no path",1,3,0);
 
--- Contains all actions that can be logged as analytics
-CREATE TABLE analytics_actions (
+-- Contains all events that can be logged as analytics
+CREATE TABLE analytics_events (
 	event_id INT NOT NULL AUTO_INCREMENT,
 	name CHAR(32) NOT NULL,
 	PRIMARY KEY (event_id),
 	UNIQUE KEY (name)
 );
 
--- A list of all actions
-INSERT INTO analytics_actions (name)
+-- A list of all events
+INSERT INTO analytics_events (name)
 VALUES (
 	'JOB_PAUSE'
 );
@@ -796,5 +796,5 @@ CREATE TABLE analytics_historical (
 	date_recorded DATE NOT NULL,
 	count INT NOT NULL DEFAULT 0,
 	PRIMARY KEY (event_id, date_recorded),
-	CONSTRAINT id_assoc FOREIGN KEY (event_id) REFERENCES analytics_actions(event_id)
+	CONSTRAINT id_assoc FOREIGN KEY (event_id) REFERENCES analytics_events(event_id)
 );

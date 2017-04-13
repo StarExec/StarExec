@@ -4,7 +4,7 @@ DELIMITER //
 DROP PROCEDURE IF EXISTS GetEventId;
 CREATE PROCEDURE GetEventId( IN _name CHAR(32) )
 	BEGIN
-		SELECT event_id FROM analytics_actions WHERE name=_name;
+		SELECT event_id FROM analytics_events WHERE name=_name;
 	END //
 
 -- If there is not yet a record of this event happening today
