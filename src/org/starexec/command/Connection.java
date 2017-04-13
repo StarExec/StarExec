@@ -30,6 +30,7 @@ import org.apache.http.util.EntityUtils;
 import org.starexec.constants.R;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.enums.CopyPrimitivesOption;
+import org.starexec.data.to.tuples.HtmlStatusCodePair;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.Validator;
 import org.starexec.util.Util;
@@ -916,14 +917,17 @@ public class Connection {
 	 * @return the HTML as a String
 	 * @throws IOException if the request fails.
 	 */
-	public String getPageHtml(String relUrl) throws IOException {
+	public HtmlStatusCodePair getPageHtml(String relUrl) throws IOException {
 		HttpResponse response=null;
 		try {
 			HttpGet get=new HttpGet(baseURL+relUrl);
 			get=(HttpGet) setHeaders(get);
 
+
 			response=executeGetOrPost(get);
-			return EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+			final String html = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+			final int code = response.getStatusLine().getStatusCode();
+			return new HtmlStatusCodePair(html,code);
 		} finally {
 			safeCloseResponse(response);
 		}

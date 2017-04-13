@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gargoylesoftware.htmlunit.html.HtmlS;
 import org.junit.Assert;
 import org.starexec.command.Connection;
 import org.starexec.constants.R;
@@ -18,6 +19,7 @@ import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.to.enums.ProcessorType;
+import org.starexec.data.to.tuples.HtmlStatusCodePair;
 import org.starexec.logger.StarLogger;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
@@ -117,10 +119,14 @@ public class GetPageTests extends TestSequence {
 	@StarexecTest
 	private void solverPageContainsCopyToStardevButton() {
 		try {
+			HtmlStatusCodePair adminHtml = adminCon.getPageHtml(solverDetailsPage());
+			Assert.assertEquals(adminHtml.statusCode, 200);
 			Assert.assertTrue("Admin solver page did not conatin copy to stardev button.",
-					adminCon.getPageHtml(solverDetailsPage()).contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+					adminHtml.html.contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+			HtmlStatusCodePair userHtml = con.getPageHtml(solverDetailsPage());
+			Assert.assertEquals(adminHtml.statusCode, 200);
 			Assert.assertFalse("Regular user solver page contained copy to stardev button.",
-					con.getPageHtml(solverDetailsPage()).contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+					userHtml.html.contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
 		} catch (IOException e) {
 			Assert.fail();
 		}
@@ -169,10 +175,14 @@ public class GetPageTests extends TestSequence {
 	@StarexecTest
 	private void benchmarkPageContainsCopyToStardevButton() {
 		try {
+			HtmlStatusCodePair adminHtml = adminCon.getPageHtml(benchmarkDetailsPage());
+			Assert.assertEquals(adminHtml.statusCode, 200);
 			Assert.assertTrue("Admin benchmark page did not conatin copy to stardev button.",
-					adminCon.getPageHtml(benchmarkDetailsPage()).contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+					adminHtml.html.contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+			HtmlStatusCodePair userHtml = con.getPageHtml(benchmarkDetailsPage());
+			Assert.assertEquals(userHtml.statusCode, 200);
 			Assert.assertFalse("Regular user benchmark page contained copy to stardev button.",
-					con.getPageHtml(benchmarkDetailsPage()).contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+					userHtml.html.contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
 		} catch (IOException e) {
 			Assert.fail();
 		}
@@ -402,10 +412,14 @@ public class GetPageTests extends TestSequence {
 	@StarexecTest
 	private void editProcessorPageContainsCopyToStardevButton() {
 		try {
+			HtmlStatusCodePair adminHtml = adminCon.getPageHtml(editProcessorPage());
+			Assert.assertEquals(adminHtml.statusCode, 200);
 			Assert.assertTrue("Admin processor page did not conatin copy to stardev button.",
-					adminCon.getPageHtml(editProcessorPage()).contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+					adminHtml.html.contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+			HtmlStatusCodePair userHtml = con.getPageHtml(editProcessorPage());
+			Assert.assertEquals(userHtml.statusCode, 200);
 			Assert.assertFalse("Regular user processor page contained copy to stardev button.",
-					con.getPageHtml(editProcessorPage()).contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+					userHtml.html.contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
 		} catch (IOException e) {
 			Assert.fail();
 		}
