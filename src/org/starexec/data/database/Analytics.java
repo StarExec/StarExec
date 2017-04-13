@@ -22,9 +22,9 @@ public enum Analytics {
 	 * on with life. It is not worth throwing an exception.
 	 */
 	Analytics() {
-		int _id = -1;
+		int id = -1;
 		try {
-			_id = Common.query(
+			id = Common.query(
 					"{CALL GetEventId(?)}",
 					procedure -> procedure.setString(1, this.name()),
 					results -> {
@@ -39,9 +39,9 @@ public enum Analytics {
 			final StarLogger log = StarLogger.getLogger(Analytics.class);
 			log.error("Event not found in database: " + this.name());
 
-			_id = -1;
+			id = -1;
 		} finally {
-			id = _id;
+			this.id = id;
 		}
 	}
 
