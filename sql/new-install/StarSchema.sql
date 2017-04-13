@@ -784,13 +784,13 @@ CREATE TABLE analytics_events (
 );
 
 -- A list of all events
-INSERT INTO analytics_events (name)
-VALUES (
-	'JOB_PAUSE'
-);
+INSERT INTO analytics_events (name) VALUES
+	('JOB_PAUSE'),
+	('JOB_RESUME'),
+	('PAGEVIEW_HELP');
 
 -- Contains historical analytics data:
---  * number of times an action was recorded on a particular date
+--  * number of times an event was recorded on a particular date
 CREATE TABLE analytics_historical (
 	event_id INT NOT NULL,
 	date_recorded DATE NOT NULL,

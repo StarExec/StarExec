@@ -2,7 +2,7 @@
 
 USE starexec;
 
--- Contains all actions that can be logged as analytics
+-- Contains all events that can be logged as analytics
 CREATE TABLE analytics_events (
 	event_id INT NOT NULL AUTO_INCREMENT,
 	name CHAR(32) NOT NULL,
@@ -10,14 +10,14 @@ CREATE TABLE analytics_events (
 	UNIQUE KEY (name)
 );
 
--- A list of all actions
-INSERT INTO analytics_events (name)
-VALUES (
-	'JOB_PAUSE'
-);
+-- A list of all events
+INSERT INTO analytics_events (name) VALUES
+	('JOB_PAUSE'),
+	('JOB_RESUME'),
+	('PAGEVIEW_HELP');
 
 -- Contains historical analytics data:
---  * number of times an action was recorded on a particular date
+--  * number of times an event was recorded on a particular date
 CREATE TABLE analytics_historical (
 	event_id INT NOT NULL,
 	date_recorded DATE NOT NULL,
