@@ -24,4 +24,18 @@ CREATE PROCEDURE RecordEvent(
 		END IF;
 	END //
 
+DROP PROCEDURE IF EXISTS GetAnalyticsForDateRange;
+CREATE PROCEDURE GetAnalyticsForDateRange(
+		IN _start DATE,
+		IN _end DATE)
+	BEGIN
+		SELECT
+			event_id as "id",
+			SUM(count) as count,
+			_start as "date"
+		FROM analytics_historical
+		WHERE date_recorded >= _start AND date_recorded <= _end
+		GROUP BY event_id;
+	END //
+
 DELIMITER ;
