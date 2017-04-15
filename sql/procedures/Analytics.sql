@@ -30,12 +30,13 @@ CREATE PROCEDURE GetAnalyticsForDateRange(
 		IN _end DATE)
 	BEGIN
 		SELECT
-			event_id as "id",
+			name as "event",
 			SUM(count) as count,
 			_start as "date"
 		FROM analytics_historical
+		LEFT JOIN analytics_events ON analytics_historical.event_id = analytics_events.event_id
 		WHERE date_recorded >= _start AND date_recorded <= _end
-		GROUP BY event_id;
+		GROUP BY analytics_historical.event_id;
 	END //
 
 DELIMITER ;
