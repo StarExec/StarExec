@@ -190,5 +190,7 @@
 	<div id="dialog-confirm-anonymous-link" title="confirm anonymous link" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-anonymous-link-txt"></span></p>
 	</div>
-	<star:copyToStardevDialog/>
+	<c:if test="${hasAdminReadPrivileges}">
+		<star:copyToStardevDialog/>
+	</c:if>
 </star:template>

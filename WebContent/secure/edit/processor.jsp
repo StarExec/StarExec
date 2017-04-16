@@ -81,5 +81,7 @@ try {
 			<star:copyToStardevButton/>
 		</c:if>
 	</fieldset>
-	<star:copyToStardevDialog/>
+	<c:if test="${hasAdminReadPrivileges}">
+		<star:copyToStardevDialog/>
+	</c:if>
 </star:template>
