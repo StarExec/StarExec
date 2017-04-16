@@ -1761,7 +1761,7 @@ public class RESTServices {
 			Connection commandConnection = new Connection(username, password, url);
 			int loginStatus = commandConnection.login();
 			if (loginStatus < 0) {
-				return gson.toJson(org.starexec.command.Status.getStatusMessage(loginStatus));
+				return gson.toJson(new ValidatorStatusCode(false, org.starexec.command.Status.getStatusMessage(loginStatus)));
 			}
 			final int spaceId = Integer.parseInt(request.getParameter(R.COPY_TO_STARDEV_SPACE_ID_PARAM));
 			final Primitive primType = Primitive.valueOf(type);

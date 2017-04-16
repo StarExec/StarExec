@@ -15,7 +15,13 @@ $(document).ready(function() {
 			},
 			callback,
 			'json'
-		);
+		).fail(function() {
+			var sc = {
+				success: false,
+				message: 'Failed to contact server, app name is likely invalid.'
+			};
+			parseReturnCode(sc);
+		});
 	}
 	$('.uploadProcessorWithBenchmarkCheckbox').click(function() {
 		var boxChecked = $('.uploadProcessorWithBenchmarkCheckbox').is(':checked');
