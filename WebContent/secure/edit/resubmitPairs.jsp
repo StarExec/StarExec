@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.JobSecurity,org.starexec.data.to.*,java.util.HashMap, java.util.ArrayList, java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.data.to.JobStatus.JobStatusCode, org.starexec.util.*, org.starexec.data.to.Processor.ProcessorType"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.security.JobSecurity,org.starexec.data.to.*,java.util.HashMap, java.util.ArrayList, java.util.List, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.data.to.JobStatus.JobStatusCode, org.starexec.util.*, org.starexec.data.to.enums.ProcessorType"%>
 <%@ page import="org.starexec.data.security.ValidatorStatusCode" %>
 <%@ page import="org.starexec.data.security.GeneralSecurity" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>

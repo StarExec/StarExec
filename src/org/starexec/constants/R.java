@@ -324,18 +324,18 @@ public class R {
     public static boolean DEBUG_MODE_ACTIVE = false;
 
     //names of primitive types
-	public static String SOLVER="solver";
-	public static String BENCHMARK="bench";
-	public static String CONFIGURATION="config";
-	public static String SPACE_XML = "spaceXML";
-	public static String JOB_XML = "jobXML";
-	public static String PAIR_OUTPUT = "jp_output";
-	public static String JOB = "job";
-	public static String JOB_OUTPUT = "j_outputs";
-	public static String SPACE = "space";
-	public static String PROCESSOR = "proc";
-	public static String JOB_OUTPUTS = "jp_outputs";
-	public static String USER = "user";
+	public static final String SOLVER="solver";
+	public static final String BENCHMARK="bench";
+	public static final String CONFIGURATION="config";
+	public static final String SPACE_XML = "spaceXML";
+	public static final String JOB_XML = "jobXML";
+	public static final String PAIR_OUTPUT = "jp_output";
+	public static final String JOB = "job";
+	public static final String JOB_OUTPUT = "j_outputs";
+	public static final String SPACE = "space";
+	public static final String PROCESSOR = "proc";
+	public static final String JOB_OUTPUTS = "jp_outputs";
+	public static final String USER = "user";
     public static final String SOLVER_SOURCE = "solverSrc";
 
     //
@@ -355,6 +355,12 @@ public class R {
     public static final String BENCHMARKING_FRAMEWORK_OPTION = "benchmarkingFramework";
 
 	public static final String XML_BENCH_FRAMEWORK_ELE_NAME = "bench-framework";
+
+    public static final String COPY_TO_STARDEV_USERNAME_PARAM = "username";
+    public static final String COPY_TO_STARDEV_PASSWORD_PARAM = "password";
+    public static final String COPY_TO_STARDEV_SPACE_ID_PARAM = "spaceId";
+    public static final String COPY_TO_STARDEV_COPY_WITH_PROC_PARAM = "copyWithProcessor";
+    public static final String COPY_TO_STARDEV_PROC_ID_PARAM = "procId";
 
 
 

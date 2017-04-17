@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.List, org.starexec.constants.*,org.starexec.data.security.*, java.lang.StringBuilder, java.io.File, org.apache.commons.io.FileUtils, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.constants.R" session="true"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.to.enums.ProcessorType, java.util.List, org.starexec.constants.*,org.starexec.data.security.*, java.lang.StringBuilder, java.io.File, org.apache.commons.io.FileUtils, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.constants.R" session="true"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
@@ -10,7 +10,7 @@ try {
 	// Grab relevant user id & processor info
 	if (Users.isMemberOfSpace(userId,spaceId) || GeneralSecurity.hasAdminReadPrivileges(userId)) {
 		request.setAttribute("sid",spaceId);
-		List<Processor> procs=Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),Processor.ProcessorType.BENCH);
+		List<Processor> procs=Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId),ProcessorType.BENCH);
 		request.setAttribute("procs",procs);
 	} else {
 		response.sendError(HttpServletResponse.SC_FORBIDDEN, "You must be a member of the space in which you want to process benchmarks");

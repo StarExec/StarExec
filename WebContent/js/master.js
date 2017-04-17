@@ -206,7 +206,7 @@ function checkForHelpFile() {
  * Enable logging if debugMode is enabled
  * Otherwise, create a dummy function to silently drop log messages
  */
-var log = debugMode ? console.log : function(){};
+var log = debugMode ? console.log.bind(console) : function(){};
 
 /**
  * Function to display a message to the user. We can call this from other javascript

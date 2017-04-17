@@ -45,7 +45,6 @@ import org.starexec.data.to.JobSpace;
 import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.data.to.Processor;
-import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.Solver;
@@ -55,6 +54,7 @@ import org.starexec.data.to.Website;
 import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.data.to.WorkerNode;
 import org.starexec.data.to.SolverBuildStatus;
+import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.logger.StarLogger;
 
 /**
@@ -64,7 +64,7 @@ public class JspHelpers {
     private static final StarLogger log = StarLogger.getLogger( JspHelpers.class );
 
 	private JspHelpers() {
-		throw new UnsupportedOperationException("You may not create an instance of JspHelpers."); 
+		throw new UnsupportedOperationException("You may not create an instance of JspHelpers.");
 	}
 
 	public static void handleJobPage( HttpServletRequest request, HttpServletResponse response ) throws IOException, SQLException {
@@ -102,7 +102,7 @@ public class JspHelpers {
 		if(Permissions.canUserSeeJob( jobId, userId ).isSuccess()) {
 			List<Processor> ListOfPostProcessors = Processors.getByUser( userId, ProcessorType.POST );
 			j=Jobs.get(jobId);
-			
+
 			boolean queueExists = true;
 			boolean queueIsEmpty = false;
 
@@ -117,10 +117,10 @@ public class JspHelpers {
 
 			}
 
-			
-			
+
+
 			int jobSpaceId=j.getPrimarySpace();
-			
+
 			if (jobSpaceId>0) {
 				j=Jobs.get(jobId);
 				JobStatus status=Jobs.getJobStatusCode(jobId);
@@ -141,27 +141,27 @@ public class JspHelpers {
 				List<JobSpace> jobSpaces = Spaces.getSubSpacesForJob(jobSpaceId, true);
 				jobSpaces.add(jobSpace);
 				request.setAttribute("jobSpaces", jobSpaces);
-				
+
 				//TODO: This code isn't going to work for pipelines. It just always does stage 1.
 				if (isLocalJobPage) {
 					Map<Integer, String> jobSpaceIdToSubspaceJsonMap = RESTHelpers.getJobSpaceIdToSubspaceJsonMap(j.getId(), jobSpaces);
 					request.setAttribute("jobSpaceIdToSubspaceJsonMap", jobSpaceIdToSubspaceJsonMap);
-					
-					Map<Integer, String> jobSpaceIdToCpuTimeSolverStatsJsonMap = 
+
+					Map<Integer, String> jobSpaceIdToCpuTimeSolverStatsJsonMap =
 							RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, false);
 					request.setAttribute("jobSpaceIdToCpuTimeSolverStatsJsonMap", jobSpaceIdToCpuTimeSolverStatsJsonMap);
-					
-					Map<Integer, String> jobSpaceIdToWallclockTimeSolverStatsJsonMap = 
+
+					Map<Integer, String> jobSpaceIdToWallclockTimeSolverStatsJsonMap =
 							RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, true);
 					request.setAttribute("jobSpaceIdToWallclockTimeSolverStatsJsonMap", jobSpaceIdToWallclockTimeSolverStatsJsonMap);
 					Map<Integer, List<JobPair>> jobSpaceIdToPairMap = JobPairs.buildJobSpaceIdToJobPairMapWithWallCpuTimesRounded(j);
 					request.setAttribute("jobSpaceIdToPairMap", jobSpaceIdToPairMap);
-					Map<Integer, List<SolverStats>> jobSpaceIdToSolverStatsMap = 
+					Map<Integer, Collection<SolverStats>> jobSpaceIdToSolverStatsMap =
 							Jobs.buildJobSpaceIdToSolverStatsMapWallCpuTimesRounded(j, 1);
 					request.setAttribute("jobSpaceIdToSolverStatsMap", jobSpaceIdToSolverStatsMap);
 
 				}
-				
+
 				String primitivesToAnonymizeName = AnonymousLinks.getPrimitivesToAnonymizeName( primitivesToAnonymize );
 				request.setAttribute( "primitivesToAnonymize", primitivesToAnonymizeName );
 				request.setAttribute( "isAnonymousPage", isAnonymousPage );
@@ -188,7 +188,7 @@ public class JspHelpers {
 				Processor stage1PreProc=j.getStageAttributesByStageNumber(1).getPreProcessor();
 				request.setAttribute("firstPostProc",stage1PostProc);
 				request.setAttribute("firstPreProc",stage1PreProc);
-				
+
 				request.setAttribute("queues", Queues.getUserQueues(userId));
 				request.setAttribute("queueExists", queueExists);
 				request.setAttribute("userId",userId);
@@ -199,12 +199,12 @@ public class JspHelpers {
 				request.setAttribute("diskUsage", Util.byteCountToDisplaySize(j.getDiskSize()));
 				request.setAttribute("buildJob", j.isBuildJob());
 				request.setAttribute("isHighPriority", j.isHighPriority());
-				
+
 				request.setAttribute("starexecUrl", R.STAREXEC_URL_PREFIX+"://"+R.STAREXEC_SERVERNAME+"/"+R.STAREXEC_APPNAME+"/");
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
 			}
-			
+
 		} else {
 			if (Jobs.isJobDeleted(jobId)) {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "This job has been deleted. You likely want to remove it from your spaces");
@@ -219,12 +219,12 @@ public class JspHelpers {
 	 * @param uniqueId The UUID of the anonymous solver link.
 	 * @author Albert Giegerich
 	 */
-	public static void handleAnonymousSolverPage( String uniqueId, HttpServletRequest request, HttpServletResponse response) 
+	public static void handleAnonymousSolverPage( String uniqueId, HttpServletRequest request, HttpServletResponse response)
 			throws IOException, SQLException {
 		final String methodName = "handleAnonymousSolverPage";
 		log.entry( methodName );
 		try {
-			Optional<Integer> solverId = AnonymousLinks.getIdOfSolverAssociatedWithLink( uniqueId );	
+			Optional<Integer> solverId = AnonymousLinks.getIdOfSolverAssociatedWithLink( uniqueId );
 			Optional<PrimitivesToAnonymize> primitivesToAnonymize = AnonymousLinks.getPrimitivesToAnonymizeForSolver( uniqueId );
 
 			if ( primitivesToAnonymize.isPresent() && solverId.isPresent() ) {
@@ -233,9 +233,9 @@ public class JspHelpers {
 					handleNullSolver( solverId.get(), response );
 					return;
 				}
-				setSolverPageRequestAttributes( true, AnonymousLinks.areSolversAnonymized( primitivesToAnonymize.get() ), solver, request, response ); 
+				setSolverPageRequestAttributes( true, AnonymousLinks.areSolversAnonymized( primitivesToAnonymize.get() ), solver, request, response );
 			} else {
-				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Page not found.");	
+				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Page not found.");
 				return;
 			}
 		} catch ( IOException e ) {
@@ -277,7 +277,7 @@ public class JspHelpers {
 		} catch ( IOException e ) {
 			log.error( methodName, "Caught an IOException while handling non-anonymous solver page: " + e.getMessage() );
 			throw e;
-		} 	
+		}
 	}
 
 	/**
@@ -285,10 +285,10 @@ public class JspHelpers {
 	 * @author Albert Giegerich
 	 */
 	private static void setSolverPageRequestAttributes(
-			boolean isAnonymousPage, 
+			boolean isAnonymousPage,
 			boolean hideSolverName,
-			Solver s, 
-			HttpServletRequest request, 
+			Solver s,
+			HttpServletRequest request,
 			HttpServletResponse response ) throws IOException {
 
 		if ( s == null ) {
@@ -325,7 +325,7 @@ public class JspHelpers {
 		if ( !isAnonymousPage ) {
 			request.setAttribute( "usr", Users.get( s.getUserId() ));
 		}
-		
+
 
 	}
 
@@ -347,16 +347,16 @@ public class JspHelpers {
 	 * Handles request/response logic for details/benchmark
 	 * @author Albert Giegerich
 	 */
-	public static void handleAnonymousBenchPage( String uniqueId, HttpServletRequest request, HttpServletResponse response ) 
+	public static void handleAnonymousBenchPage( String uniqueId, HttpServletRequest request, HttpServletResponse response )
 			throws IOException, SQLException {
-		Optional<Integer> benchmarkId = AnonymousLinks.getIdOfBenchmarkAssociatedWithLink( uniqueId );	
+		Optional<Integer> benchmarkId = AnonymousLinks.getIdOfBenchmarkAssociatedWithLink( uniqueId );
 		Optional<PrimitivesToAnonymize> primitivesToAnonymize = AnonymousLinks.getPrimitivesToAnonymizeForBenchmark( uniqueId );
 
 		if ( benchmarkId.isPresent() && primitivesToAnonymize.isPresent() ) {
 			boolean hideBenchmark = AnonymousLinks.areBenchmarksAnonymized( primitivesToAnonymize.get() );
 			setBenchmarkPageRequestAttributes( true, hideBenchmark, benchmarkId.get(), request, response );
 		} else {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Page not found.");	
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Page not found.");
 		}
 	}
 
@@ -384,7 +384,7 @@ public class JspHelpers {
 		}
 
 		Job job = Jobs.get(jobId);
-		List<Triple<String, String, Integer>> anonymousSolverNamesKey = AnonymousLinks.getAnonymousSolverNamesKey( jobId ); 
+		List<Triple<String, String, Integer>> anonymousSolverNamesKey = AnonymousLinks.getAnonymousSolverNamesKey( jobId );
 		request.setAttribute( "job", job );
 		request.setAttribute( "solverTripleList", anonymousSolverNamesKey );
 	}
@@ -394,12 +394,12 @@ public class JspHelpers {
 	 * @author Albert Giegerich and Unknown
 	 */
 	private static void setBenchmarkPageRequestAttributes(
-			boolean isAnonymousPage, 
+			boolean isAnonymousPage,
 			boolean hideBenchmarkName,
-			Integer benchId, 
-			HttpServletRequest request, 
+			Integer benchId,
+			HttpServletRequest request,
 			HttpServletResponse response ) throws IOException {
-		
+
 		final String methodName = "setBenchmarkPageRequestAttributes";
 		log.entry( methodName );
 
@@ -422,7 +422,7 @@ public class JspHelpers {
 		if ( !userCanSeeBench ) {
 			response.sendError( HttpServletResponse.SC_NOT_FOUND, "You do not have permission to view this benchmark." );
 			return;
-		} 	
+		}
 
 		// Get the benchmark, if it can't be gotten send an error message telling the user why.
 		Benchmark b = Benchmarks.get( benchId, true, false );
@@ -443,7 +443,7 @@ public class JspHelpers {
 		List<BenchmarkDependency> deps = Benchmarks.getBenchDependencies(benchId);
 		request.setAttribute( "usr", Users.get( b.getUserId() ));
 		request.setAttribute( "bench", b );
-		request.setAttribute( "diskSize", Util.byteCountToDisplaySize( b.getDiskSize() ));		
+		request.setAttribute( "diskSize", Util.byteCountToDisplaySize( b.getDiskSize() ));
 
 		Space s = Communities.getDetails( b.getType().getCommunityId() );
 		if ( s == null ) {
@@ -471,12 +471,12 @@ public class JspHelpers {
 
 	private static void sendErrorMessage( int benchId, HttpServletResponse response ) throws IOException {
 		if (Benchmarks.isBenchmarkDeleted(benchId)) {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, 
+			response.sendError(HttpServletResponse.SC_NOT_FOUND,
 				"This benchmark has been deleted. You likely want to remove it from your spaces");
 		} else if (Benchmarks.isBenchmarkRecycled(benchId))  {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "This benchmark has been moved to the recycle bin by its owner.");
 		} else {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");	
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");
 		}
 	}
 }

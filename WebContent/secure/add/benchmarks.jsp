@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-	import="org.starexec.data.database.*,org.starexec.data.to.*,org.starexec.util.*,org.starexec.data.security.*,org.starexec.data.to.Processor.ProcessorType"%>
+	import="org.starexec.data.database.*,org.starexec.data.to.*,org.starexec.util.*,org.starexec.data.security.*,org.starexec.data.to.enums.ProcessorType"%>
 <%@page import="java.util.ArrayList, java.util.List"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>

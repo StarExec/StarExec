@@ -8,7 +8,7 @@ import org.starexec.data.database.Communities;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.to.*;
-import org.starexec.data.to.Processor.ProcessorType;
+import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PairStageProcessorTriple;

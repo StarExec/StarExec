@@ -1,25 +1,25 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>	
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<star:template title="Quick Reference Guide" css="explore/quickRef">	
+<star:template title="Quick Reference Guide" css="explore/quickRef">
 
 <div id="support">
-<p>This a quick reference to help you accomplish basic tasks in StarExec.  
-For a more extensive guide, see the <a href="http://wiki.uiowa.edu/display/stardev/User+Guide">User Guide</a>. 
+<p>This a quick reference to help you accomplish basic tasks in StarExec.
+For a more extensive guide, see the <a href="http://wiki.uiowa.edu/display/stardev/User+Guide">User Guide</a>.
 This guide is organized by the method one uses to accomplish tasks.
 </p>
 
-<p>The main page on StarExec is the Space Explorer.  This page is accessed 
-by selecting the Spaces tab in the upper right and selecting Explore in the 
-dropdown menu. The left hand side of the Space Explorer is a representation 
+<p>The main page on StarExec is the Space Explorer.  This page is accessed
+by selecting the Spaces tab in the upper right and selecting Explore in the
+dropdown menu. The left hand side of the Space Explorer is a representation
 of the space hierarchy that you have access to.
-When you click on a space on the space tree, you can see information about it 
+When you click on a space on the space tree, you can see information about it
 on the right hand side.
 </p>
-	
+
 <p><strong>Space Information</strong>
-All of the following are represented in tables with rows that can be clicked 
+All of the following are represented in tables with rows that can be clicked
 on for additional information:
 </p>
 	<ul id="support">
@@ -28,7 +28,7 @@ on for additional information:
 		<li>Benchmarks</li>
 		<li>Users</li>
 		<li>Subspaces</li>
-	</ul>	
+	</ul>
 
 <p><strong>Dragging and Dropping</strong>
 All drags are from the right hand side of the Space Explorer page to the left
@@ -40,7 +40,7 @@ All drags are from the right hand side of the Space Explorer page to the left
 		<li>Delete a space, benchmark or user by dragging to a trash can icon that appears near the top of the screen</li>
 	</ul>
 
-<p><strong>Action buttons</strong> 
+<p><strong>Action buttons</strong>
 At the bottom of the right hand side</p>
 	<ul id="support">
 		<li>create job - this will take you to a sequence of pages where you enter job parameters, select benchmarks and solvers, and submit the job</li>
@@ -63,5 +63,5 @@ At the bottom of the right hand side</p>
 		</li>
 	</ul>
 </div>
-	
+
 </star:template>

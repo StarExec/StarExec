@@ -21,10 +21,10 @@ import org.starexec.data.to.Configuration;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.Solver;
-import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.User;
 import org.starexec.data.to.Status;
+import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.util.SessionUtil;
 public class TestUtil {

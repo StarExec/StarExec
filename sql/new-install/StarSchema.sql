@@ -4,10 +4,10 @@
 
 -- The table of all users in the system
 CREATE TABLE users (
-	id INT NOT NULL AUTO_INCREMENT,	
+	id INT NOT NULL AUTO_INCREMENT,
 	email VARCHAR(64) NOT NULL,
 	first_name VARCHAR(32) NOT NULL,
-	last_name VARCHAR(32) NOT NULL,	
+	last_name VARCHAR(32) NOT NULL,
 	institution VARCHAR(64) NOT NULL,
 	created TIMESTAMP NOT NULL,
 	password VARCHAR(128) NOT NULL,
@@ -49,7 +49,7 @@ CREATE TABLE logins (
 -- the default of a space so when a new user is ed, they take on
 -- these permissions)
 CREATE TABLE permissions (
-	id INT NOT NULL AUTO_INCREMENT, 
+	id INT NOT NULL AUTO_INCREMENT,
 	add_solver BOOLEAN DEFAULT 0,
 	add_bench BOOLEAN DEFAULT 0,
 	add_user BOOLEAN DEFAULT 0,
@@ -70,7 +70,7 @@ INSERT INTO permissions VALUES (1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 -- All of the spaces in starexec. A space is simply a set where
 -- solvers, benchmarks, users and jobs exist (think of it as a folder)
 CREATE TABLE spaces (
-	id INT NOT NULL AUTO_INCREMENT, 
+	id INT NOT NULL AUTO_INCREMENT,
 	name VARCHAR(255) NOT NULL,
 	created TIMESTAMP DEFAULT 0,
 	description TEXT,
@@ -93,7 +93,7 @@ CREATE TABLE closure (
 );
 
 -- The root space
-INSERT INTO spaces (name, created, description, locked, default_permission, public_access) VALUES 
+INSERT INTO spaces (name, created, description, locked, default_permission, public_access) VALUES
 ('root', SYSDATE(), 'this is the starexec container space which holds all communities.', 1, 1, 1);
 INSERT INTO closure VALUES(1,1);
 
@@ -162,9 +162,9 @@ CREATE TABLE solvers (
 	recycled BOOLEAN DEFAULT FALSE,
 	executable_type INT DEFAULT 1,
 	build_status INT DEFAULT 1,
-	PRIMARY KEY (id),	
+	PRIMARY KEY (id),
 	CONSTRAINT solvers_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-	CONSTRAINT solvers_executable_type FOREIGN KEY (executable_type) REFERENCES executable_types(type_id) ON DELETE SET NULL 
+	CONSTRAINT solvers_executable_type FOREIGN KEY (executable_type) REFERENCES executable_types(type_id) ON DELETE SET NULL
 );
 
 -- All the configurations that belong to a solver. A solver
@@ -183,7 +183,7 @@ CREATE TABLE configurations (
 
 -- All the SGE node queues on the system
 CREATE TABLE queues (
-	id INT NOT NULL AUTO_INCREMENT, 	
+	id INT NOT NULL AUTO_INCREMENT,
 	name VARCHAR(64) NOT NULL,
 	status VARCHAR(32),
 	global_access BOOLEAN DEFAULT FALSE,
@@ -196,7 +196,7 @@ CREATE TABLE queues (
 -- All the SGE worker nodes that jobs can be executed on in the cluster.
 -- This just maintains hardware information manually to be viewed by
 CREATE TABLE nodes (
-	id INT NOT NULL AUTO_INCREMENT, 	
+	id INT NOT NULL AUTO_INCREMENT,
 	name VARCHAR(128) NOT NULL,
 	status VARCHAR(32),
 	PRIMARY KEY (id),
@@ -205,8 +205,8 @@ CREATE TABLE nodes (
 
 -- All the SGE node queues on the system
 CREATE TABLE queue_assoc (
-	queue_id INT NOT NULL, 	
-	node_id INT NOT NULL,	
+	queue_id INT NOT NULL,
+	node_id INT NOT NULL,
 	PRIMARY KEY (queue_id, node_id),
 	CONSTRAINT queue_assoc_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE CASCADE,
 	CONSTRAINT queue_assoc_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE CASCADE
@@ -214,7 +214,7 @@ CREATE TABLE queue_assoc (
 
 -- Association between exclusive queues and spaces (initially only communities)
 CREATE TABLE comm_queue (
-	space_id INT NOT NULL REFERENCES spaces(id) ON DELETE CASCADE, 	
+	space_id INT NOT NULL REFERENCES spaces(id) ON DELETE CASCADE,
 	queue_id INT NOT NULL REFERENCES queues(id) ON DELETE CASCADE,
 	PRIMARY KEY (space_id, queue_id)
 );
@@ -229,14 +229,14 @@ CREATE TABLE solver_pipelines (
 	name VARCHAR(128),
 	user_id INT NOT NULL,
 	uploaded TIMESTAMP NOT NULL,
-	primary_stage_id INT, 
+	primary_stage_id INT,
 	PRIMARY KEY(id)
 );
 -- Stages for solver pipelines. Stages are ordered by their stage_id primary key
 CREATE TABLE pipeline_stages (
 	stage_id INT NOT NULL AUTO_INCREMENT, -- orders the stages of this pipeline
 	pipeline_id INT NOT NULL,
-	config_id INT, 
+	config_id INT,
 	is_noop BOOLEAN NOT NULL DEFAULT FALSE, -- note that we cannot say that this is a noop if config_id is null, because the config
 								   -- could have just been deleted. We really do need to store this explicitly
 	PRIMARY KEY (stage_id), -- pipelines can have many stages
@@ -248,7 +248,7 @@ CREATE TABLE pipeline_stages (
 -- Stores any dependencies that a particular stage has.
 CREATE TABLE pipeline_dependencies (
 	stage_id INT NOT NULL, -- ID of the stage that must recieve output from a previous stage
-	
+
 	input_type TINYINT NOT NULL, -- ID of the stage that produces the output
 	input_id SMALLINT NOT NULL, -- if the type is an artifact, this is the the 1-indexed number of the stage that is needed
 						   -- if the type is a benchmark, this is the the 1-indexed number of the benchmark that is needed
@@ -261,7 +261,7 @@ CREATE TABLE pipeline_dependencies (
 -- that contains individual job pairs (solver/config -> benchmark)
 CREATE TABLE jobs (
 	id INT NOT NULL AUTO_INCREMENT,
-	user_id INT NOT NULL,	
+	user_id INT NOT NULL,
 	name VARCHAR(64),
 	queue_id INT,
 	created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -271,8 +271,8 @@ CREATE TABLE jobs (
 	paused BOOLEAN DEFAULT FALSE,
 	killed BOOLEAN DEFAULT FALSE,
 	seed BIGINT DEFAULT 0,
-	cpuTimeout INT, 
-	clockTimeout INT, 
+	cpuTimeout INT,
+	clockTimeout INT,
 	maximum_memory BIGINT DEFAULT 1073741824,
 	primary_space INT, -- This is a JOB_SPACE, not simply a "space"
 	using_dependencies BOOLEAN NOT NULL DEFAULT FALSE, -- whether jobline dependencies are used by any pair
@@ -286,12 +286,12 @@ CREATE TABLE jobs (
 	CONSTRAINT jobs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	CONSTRAINT jobs_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL
 );
--- This table stores timeouts for individual pipeline stages for this job. 
+-- This table stores timeouts for individual pipeline stages for this job.
 -- These are essentially overrides for the columns in the jobs table
 CREATE TABLE job_stage_params (
 	job_id INT,
 	stage_number INT,
-	cpuTimeout INT, 
+	cpuTimeout INT,
 	clockTimeout INT,
 	maximum_memory BIGINT DEFAULT 1073741824,
 	space_id INT, -- if we're keeping benchmarks from this stage, where should we be putting them? null if not keeping them
@@ -313,10 +313,10 @@ CREATE TABLE job_stage_params (
 
 -- Table which contains specific information about a job pair
 -- When changing to using runsolver, wallclock changed from bigint to double
--- note: while some data is redundant in this table (solver_name, config_name, and so on), 
+-- note: while some data is redundant in this table (solver_name, config_name, and so on),
 -- it is essential for speeding up queries.
 CREATE TABLE job_pairs (
-	id INT NOT NULL AUTO_INCREMENT,	
+	id INT NOT NULL AUTO_INCREMENT,
 	job_id INT NOT NULL,
 	sge_id INT,
 	bench_id INT,
@@ -410,7 +410,7 @@ CREATE TABLE job_attributes (
 	attr_key VARCHAR(128) NOT NULL,
 	attr_value VARCHAR(128) NOT NULL,
 	job_id INT NOT NULL,
-	stage_number INT NOT NULL, 
+	stage_number INT NOT NULL,
     PRIMARY KEY (pair_id,stage_number, attr_key),
     KEY (job_id),
 	CONSTRAINT job_attributes_pair_id FOREIGN KEY (pair_id) REFERENCES job_pairs(id) ON DELETE CASCADE
@@ -421,7 +421,7 @@ CREATE TABLE job_attributes (
 CREATE TABLE verify (
 	user_id INT NOT NULL,
 	code VARCHAR(36) NOT NULL,
-	created TIMESTAMP NOT NULL,	
+	created TIMESTAMP NOT NULL,
 	PRIMARY KEY (user_id, code),
 	UNIQUE KEY (user_id),
 	UNIQUE KEY (code),
@@ -433,8 +433,8 @@ CREATE TABLE verify (
 -- they're all included for convienience though so we don't have to
 -- have 3 redundant tables
 CREATE TABLE website (
-	id INT NOT NULL AUTO_INCREMENT, 
-	space_id INT, 
+	id INT NOT NULL AUTO_INCREMENT,
+	space_id INT,
 	user_id INT,
 	solver_id INT,
 	url TEXT NOT NULL,
@@ -442,13 +442,13 @@ CREATE TABLE website (
 	PRIMARY KEY (id),
 	CONSTRAINT website_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	CONSTRAINT website_solver_id FOREIGN KEY (solver_id) REFERENCES solvers(id) ON DELETE CASCADE,
-	CONSTRAINT website_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE	
+	CONSTRAINT website_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Which user belongs to which space.
 CREATE TABLE user_assoc (
 	user_id INT NOT NULL,
-	space_id INT NOT NULL,	
+	space_id INT NOT NULL,
 	permission INT,
 	PRIMARY KEY (user_id, space_id),
 	CONSTRAINT user_assoc_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
@@ -458,7 +458,7 @@ CREATE TABLE user_assoc (
 
 -- Which spaces exists within another space
 CREATE TABLE set_assoc (
-	space_id INT NOT NULL, 
+	space_id INT NOT NULL,
 	child_id INT NOT NULL,
 	PRIMARY KEY (space_id, child_id),
 	CONSTRAINT set_assoc_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
@@ -467,7 +467,7 @@ CREATE TABLE set_assoc (
 
 -- Which benchmarks belong to which spaces
 CREATE TABLE bench_assoc (
-	space_id INT NOT NULL, 
+	space_id INT NOT NULL,
 	bench_id INT NOT NULL,
 	order_id INT NOT NULL AUTO_INCREMENT UNIQUE KEY,
 	PRIMARY KEY (space_id, bench_id),
@@ -477,7 +477,7 @@ CREATE TABLE bench_assoc (
 
 -- Which jobs belong to which spaces
 CREATE TABLE job_assoc (
-	space_id INT NOT NULL, 
+	space_id INT NOT NULL,
 	job_id INT NOT NULL,
 	PRIMARY KEY (space_id, job_id),
 	CONSTRAINT job_assoc_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
@@ -500,7 +500,7 @@ CREATE TABLE community_requests (
 	community INT NOT NULL,
 	code VARCHAR(36) NOT NULL,
 	message TEXT NOT NULL,
-	created TIMESTAMP NOT NULL,	
+	created TIMESTAMP NOT NULL,
 	PRIMARY KEY (user_id, community),
 	UNIQUE KEY (code),
 	CONSTRAINT community_requests_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -542,7 +542,7 @@ CREATE TABLE change_email_requests (
 CREATE TABLE pass_reset_request (
 	user_id INT NOT NULL,
 	code VARCHAR(36) NOT NULL,
-	created TIMESTAMP NOT NULL,	
+	created TIMESTAMP NOT NULL,
 	PRIMARY KEY (user_id, code),
 	UNIQUE KEY (user_id),
 	UNIQUE KEY (code),
@@ -602,7 +602,7 @@ CREATE TABLE default_bench_assoc(
 -- For Status Updates on a space XML upload
 -- Author: Eric Burns
 CREATE TABLE space_xml_uploads (
-	id INT NOT NULL AUTO_INCREMENT, 
+	id INT NOT NULL AUTO_INCREMENT,
     user_id INT NOT NULL,
     upload_time TIMESTAMP NOT NULL,
     file_upload_complete BOOLEAN DEFAULT 0,
@@ -624,7 +624,7 @@ CREATE TABLE space_xml_uploads (
 -- For Status Updates on a Benchmark upload
 -- Author: Benton McCune
 CREATE TABLE benchmark_uploads (
-	id INT NOT NULL AUTO_INCREMENT, 
+	id INT NOT NULL AUTO_INCREMENT,
     space_id INT NOT NULL,
     user_id INT NOT NULL,
     upload_time TIMESTAMP NOT NULL,
@@ -647,7 +647,7 @@ CREATE TABLE benchmark_uploads (
 -- For benchmarks that fail validation
 -- Author: Benton McCune
 CREATE TABLE unvalidated_benchmarks (
-	id INT NOT NULL AUTO_INCREMENT, 
+	id INT NOT NULL AUTO_INCREMENT,
     status_id INT REFERENCES benchmark_uploads(id) ON DELETE CASCADE,
     bench_name VARCHAR(256) NOT NULL,
     error_message TEXT,
@@ -721,7 +721,7 @@ CREATE TABLE system_flags (
 CREATE TABLE report_data (
 	id INT NOT NULL AUTO_INCREMENT,
 	event_name VARCHAR(64),
-	queue_name VARCHAR(64), -- NULL if data is not associated with a queue 
+	queue_name VARCHAR(64), -- NULL if data is not associated with a queue
 	occurrences INT NOT NULL,
 
 	PRIMARY KEY(id),
@@ -757,9 +757,9 @@ CREATE TABLE error_logs(
 
 
 -- Creates a view of the closure table that includes only communities as ancestors
-CREATE VIEW community_assoc AS 
-SELECT ancestor AS comm_id, descendant AS space_id FROM closure 
-JOIN set_assoc ON set_assoc.child_id=closure.ancestor 
+CREATE VIEW community_assoc AS
+SELECT ancestor AS comm_id, descendant AS space_id FROM closure
+JOIN set_assoc ON set_assoc.child_id=closure.ancestor
 WHERE set_assoc.space_id=1;
 
 ALTER TABLE solver_pipelines ADD CONSTRAINT primary_stage_id FOREIGN KEY (primary_stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL;
@@ -768,9 +768,34 @@ ALTER TABLE users ADD CONSTRAINT users_default_settings_profile FOREIGN KEY (def
 
 
 INSERT INTO report_data (event_name, queue_name, occurrences) VALUES ('unique logins', NULL, 0), ('jobs initiated', NULL, 0),
-	('job pairs run', NULL, 0), ('solvers uploaded', NULL, 0), ('benchmarks uploaded', NULL, 0), ('benchmark archives uploaded', NULL, 0); 
+	('job pairs run', NULL, 0), ('solvers uploaded', NULL, 0), ('benchmarks uploaded', NULL, 0), ('benchmark archives uploaded', NULL, 0);
 
 -- insert no_type processor, which the system does not expect actually exists on disk. This is mandatory for
 -- the system to function.
-INSERT INTO processors (id,name,description,path,community,processor_type,disk_size) 
+INSERT INTO processors (id,name,description,path,community,processor_type,disk_size)
 VALUES (1,"no_type", "this is the default benchmark type for rejected benchmarks and benchmarks that are not associated with a type n=no_type","no path",1,3,0);
+
+-- Contains all events that can be logged as analytics
+CREATE TABLE analytics_events (
+	event_id INT NOT NULL AUTO_INCREMENT,
+	name CHAR(32) NOT NULL,
+	PRIMARY KEY (event_id),
+	UNIQUE KEY (name)
+);
+
+-- A list of all events
+INSERT INTO analytics_events (name) VALUES
+	('JOB_CREATE_QUICKJOB'),
+	('JOB_PAUSE'),
+	('JOB_RESUME'),
+	('PAGEVIEW_HELP');
+
+-- Contains historical analytics data:
+--  * number of times an event was recorded on a particular date
+CREATE TABLE analytics_historical (
+	event_id INT NOT NULL,
+	date_recorded DATE NOT NULL,
+	count INT NOT NULL DEFAULT 0,
+	PRIMARY KEY (event_id, date_recorded),
+	CONSTRAINT id_assoc FOREIGN KEY (event_id) REFERENCES analytics_events(event_id)
+);

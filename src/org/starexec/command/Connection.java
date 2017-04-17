@@ -2,11 +2,13 @@ package org.starexec.command;
 
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.CookieStore;
@@ -24,9 +26,11 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.message.AbstractHttpMessage;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.starexec.constants.R;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.enums.CopyPrimitivesOption;
+import org.starexec.data.to.tuples.HtmlStatusCodePair;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.Validator;
 import org.starexec.util.Util;
@@ -898,13 +902,35 @@ public class Connection {
 			
 			//we should get 200, which is the code for ok
 			return response.getStatusLine().getStatusCode()==200;
-			
+
 		} catch (Exception e) {
-			
+
 		} finally {
 			safeCloseResponse(response);
 		}
 		return false;
+	}
+
+	/**
+	 * Gets the HTML of a page using the open connection.
+	 * @param relUrl The URL following starexecRoot
+	 * @return the HTML as a String
+	 * @throws IOException if the request fails.
+	 */
+	public HtmlStatusCodePair getPageHtml(String relUrl) throws IOException {
+		HttpResponse response=null;
+		try {
+			HttpGet get=new HttpGet(baseURL+relUrl);
+			get=(HttpGet) setHeaders(get);
+
+
+			response=executeGetOrPost(get);
+			final String html = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+			final int code = response.getStatusLine().getStatusCode();
+			return new HtmlStatusCodePair(html,code);
+		} finally {
+			safeCloseResponse(response);
+		}
 	}
 	
 	/**

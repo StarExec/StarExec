@@ -1,12 +1,15 @@
 package org.starexec.test.integration.web;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gargoylesoftware.htmlunit.html.HtmlS;
 import org.junit.Assert;
 import org.starexec.command.Connection;
 import org.starexec.constants.R;
+import org.starexec.constants.Web;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
@@ -15,6 +18,8 @@ import org.starexec.data.database.Queues;
 import org.starexec.data.database.Settings;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
+import org.starexec.data.to.enums.ProcessorType;
+import org.starexec.data.to.tuples.HtmlStatusCodePair;
 import org.starexec.logger.StarLogger;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
@@ -23,7 +28,6 @@ import org.starexec.data.to.Configuration;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Processor;
-import org.starexec.data.to.Processor.ProcessorType;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
@@ -102,10 +106,30 @@ public class GetPageTests extends TestSequence {
 	private void getReportsTest() {
 		Assert.assertTrue(con.canGetPage("secure/explore/reports.jsp"));
 	}
-	
+
+	private String solverDetailsPage() {
+		return "secure/details/solver.jsp?id="+solver.getId();
+	}
+
 	@StarexecTest
 	private void getSolverDetailsTest(){
-		Assert.assertTrue(con.canGetPage("secure/details/solver.jsp?id="+solver.getId()));
+		Assert.assertTrue(con.canGetPage(solverDetailsPage()));
+	}
+
+	@StarexecTest
+	private void solverPageContainsCopyToStardevButton() {
+		try {
+			HtmlStatusCodePair adminHtml = adminCon.getPageHtml(solverDetailsPage());
+			Assert.assertEquals(adminHtml.statusCode, 200);
+			Assert.assertTrue("Admin solver page did not conatin copy to stardev button.",
+					adminHtml.html.contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+			HtmlStatusCodePair userHtml = con.getPageHtml(solverDetailsPage());
+			Assert.assertEquals(adminHtml.statusCode, 200);
+			Assert.assertFalse("Regular user solver page contained copy to stardev button.",
+					userHtml.html.contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+		} catch (IOException e) {
+			Assert.fail();
+		}
 	}
 	
 	@StarexecTest
@@ -138,11 +162,32 @@ public class GetPageTests extends TestSequence {
 		Assert.assertTrue(con.canGetPage("secure/add/to_community.jsp?cid="+newCommunity.getId()));
 
 	}
+
+	private String benchmarkDetailsPage() {
+		return "secure/details/benchmark.jsp?id="+benchmarkIds.get(0);
+	}
 	
 	@StarexecTest
 	private void getBenchmarkDetailsTest(){
-		Assert.assertTrue(con.canGetPage("secure/details/benchmark.jsp?id="+benchmarkIds.get(0)));
+		Assert.assertTrue(con.canGetPage(benchmarkDetailsPage()));
 	}
+
+	@StarexecTest
+	private void benchmarkPageContainsCopyToStardevButton() {
+		try {
+			HtmlStatusCodePair adminHtml = adminCon.getPageHtml(benchmarkDetailsPage());
+			Assert.assertEquals(adminHtml.statusCode, 200);
+			Assert.assertTrue("Admin benchmark page did not conatin copy to stardev button.",
+					adminHtml.html.contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+			HtmlStatusCodePair userHtml = con.getPageHtml(benchmarkDetailsPage());
+			Assert.assertEquals(userHtml.statusCode, 200);
+			Assert.assertFalse("Regular user benchmark page contained copy to stardev button.",
+					userHtml.html.contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+		} catch (IOException e) {
+			Assert.fail();
+		}
+	}
+
 	
 	@StarexecTest
 	private void getBenchmarkEditTest(){
@@ -226,7 +271,12 @@ public class GetPageTests extends TestSequence {
 	private void getJobAddTest(){
 		Assert.assertTrue(con.canGetPage("secure/add/job.jsp?sid="+space1.getId()));
 	}
-	
+
+	@StarexecTest
+	private void getJobPairsAddTest(){
+		Assert.assertTrue(con.canGetPage("secure/add/jobPairs.jsp?jobId="+job.getId()));
+	}
+
 	@StarexecTest
 	private void getQuickJobAddTest(){
 		Assert.assertTrue(con.canGetPage("secure/add/quickJob.jsp?sid="+space1.getId()));
@@ -350,10 +400,27 @@ public class GetPageTests extends TestSequence {
 		Assert.assertFalse(con.canGetPage("secure/admin/user.jsp"));
 
 	}
+
+	private String editProcessorPage() {
+		return "secure/edit/processor.jsp?id="+proc.getId();
+	}
 	
 	@StarexecTest
 	private void editProcessorTest() {
-		Assert.assertTrue(adminCon.canGetPage("secure/edit/processor.jsp?id="+proc.getId()));
+		Assert.assertTrue(adminCon.canGetPage(editProcessorPage()));
+	}
+	@StarexecTest
+	private void editProcessorPageContainsCopyToStardevButton() {
+		try {
+			HtmlStatusCodePair adminHtml = adminCon.getPageHtml(editProcessorPage());
+			Assert.assertEquals(adminHtml.statusCode, 200);
+			Assert.assertTrue("Admin processor page did not conatin copy to stardev button.",
+					adminHtml.html.contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+			HtmlStatusCodePair userHtml = con.getPageHtml(editProcessorPage());
+			Assert.assertEquals(userHtml.statusCode, 404);
+		} catch (IOException e) {
+			Assert.fail();
+		}
 	}
 	
 	@StarexecTest
@@ -387,6 +454,8 @@ public class GetPageTests extends TestSequence {
 		Assert.assertFalse(adminCon.canGetPage("secure/details/fakewebpage.jsp"));
 		Assert.assertFalse(con.canGetPage("secure/details/fakewebpage.jsp"));
 	}
+
+
 	
 	@Override
 	protected void setup() throws Exception {

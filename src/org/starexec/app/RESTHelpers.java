@@ -1,6 +1,7 @@
 package org.starexec.app;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import com.google.gson.Gson;
@@ -17,6 +18,7 @@ import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.*;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.enums.Primitive;
+import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.tuples.AttributesTableData;
 import org.starexec.data.to.tuples.AttributesTableRow;
@@ -26,10 +28,7 @@ import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.logger.StarLogger;
 import org.starexec.test.integration.TestResult;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.util.ArchiveUtil;
-import org.starexec.util.DataTablesQuery;
-import org.starexec.util.SessionUtil;
-import org.starexec.util.Util;
+import org.starexec.util.*;
 import org.w3c.dom.Attr;
 
 import javax.servlet.http.HttpServletRequest;
@@ -522,8 +521,13 @@ public class RESTHelpers {
 			PrimitivesToAnonymize primitivesToAnonymize,
 			boolean shortFormat,
 			boolean wallclock) {
+		StopWatch stopWatch = new StopWatch();
+		stopWatch.start();
 
-		List<SolverStats> solverStats = Jobs.getAllJobStatsInJobSpaceHierarchy( jobSpace, stageNumber, primitivesToAnonymize );
+		Collection<SolverStats> solverStats = Jobs.getAllJobStatsInJobSpaceHierarchy( jobSpace, stageNumber, primitivesToAnonymize );
+
+		stopWatch.stop();
+		log.debug("getNextDataTablePageForJobStats", "Time taken to get all jobs: "+stopWatch.toString());
 
 		if ( solverStats == null ) {
 			return gson.toJson( RESTServices.ERROR_DATABASE );
@@ -655,15 +659,16 @@ public class RESTHelpers {
 	 * @param spaceId the space to copy the benchmark to on StarDev.
 	 * @return a status code indicating success or failure.
 	 */
-	protected static ValidatorStatusCode copyBenchmarkToStarDev(Connection commandConnection, int benchmarkId, int spaceId) {
+	protected static ValidatorStatusCode copyBenchmarkToStarDev(
+			Connection commandConnection,
+			int benchmarkId,
+			int spaceId,
+			int benchProcessorId) {
 		Benchmark benchmarkToCopy = Benchmarks.get(benchmarkId);
 		File sandbox = Util.getRandomSandboxDirectory();
 		try {
 			File tempFile = copyPrimitiveToSandbox(sandbox, benchmarkToCopy);
-			// TODO: implement processor. Perhaps we could automatically upload the processor to stardev if it is not already
-			// there.
-			int noTypeProcessor = 1;
-			int uploadStatus = commandConnection.uploadBenchmarksToSingleSpace(tempFile.getAbsolutePath(), noTypeProcessor, spaceId, true);
+			int uploadStatus = commandConnection.uploadBenchmarksToSingleSpace(tempFile.getAbsolutePath(), benchProcessorId, spaceId, true);
 			return outputStatus(commandConnection.getLastError(), uploadStatus, "Successfully copied benchmark to StarDev");
 		} catch (IOException e) {
 			log.warn("Could not copy benchmark to sandbox for copying to StarDev.", e);
@@ -706,6 +711,106 @@ public class RESTHelpers {
 	}
 
 	/**
+	 * Copies a processor to a StarDev instance.
+	 * @param commandConnection an open StarExecCommand connection.
+	 * @param processorId the processor to copy.
+	 * @param communityId the community to copy the processor to (on stardev).
+	 * @return
+	 */
+	protected static ValidatorStatusCode copyProcessorToStarDev(
+			Connection commandConnection,
+			int processorId,
+			int communityId) {
+		Processor processorToCopy = Processors.get(processorId);
+		ProcessorType procType = processorToCopy.getType();
+		File sandbox = Util.getRandomSandboxDirectory();
+		try {
+			// Copy and zip the processor to the sandbox.
+			File tempFile = copyPrimitiveToSandbox(sandbox, processorToCopy);
+
+			// Upload the processor using the connection.
+			// The upload status will be a status code on failure or the id of the new processor on success.
+			int uploadStatus;
+			switch(procType) {
+				case POST:
+					uploadStatus = commandConnection.uploadPostProc(
+							processorToCopy.getName(),
+							processorToCopy.getDescription(),
+							tempFile.getAbsolutePath(),
+							communityId);
+					break;
+				case PRE:
+					uploadStatus = commandConnection.uploadPreProc(
+							processorToCopy.getName(),
+							processorToCopy.getDescription(),
+							tempFile.getAbsolutePath(),
+							communityId);
+					break;
+				case BENCH:
+					uploadStatus = commandConnection.uploadBenchProc(
+							processorToCopy.getName(),
+							processorToCopy.getDescription(),
+							tempFile.getAbsolutePath(),
+							communityId);
+					break;
+				default:
+					return new ValidatorStatusCode(false, "This processor type is not yet supported.");
+			}
+			return outputStatus(commandConnection.getLastError(), uploadStatus, "Successfully copied processor to StarDev");
+		} catch (IOException e) {
+			log.warn("Could not copy solver to sandbox for copying to StarDev.", e);
+			return new ValidatorStatusCode(false, "Could not copy processor.", Util.getStackTrace(e));
+		} finally {
+			deleteSandbox(sandbox);
+		}
+	}
+
+	/**
+	 * Validates a copy to stardev request
+	 * @param request the copy to stardev request.
+	 * @param primType the primitive type
+	 * @return
+	 */
+	protected static ValidatorStatusCode validateCopyToStardev(HttpServletRequest request, final String primType) {
+		int userId = SessionUtil.getUserId(request);
+		if (!Users.isAdmin(userId) && !Users.isDeveloper(userId)) {
+			return new ValidatorStatusCode(false, "You must be an admin or developer to do this.");
+		}
+
+		if (!Util.paramExists(R.COPY_TO_STARDEV_USERNAME_PARAM, request) || !Util.paramExists(R.COPY_TO_STARDEV_PASSWORD_PARAM, request)) {
+			return new ValidatorStatusCode(false, "The username or password parameter was not found.");
+		}
+
+		boolean validPrimitive = Util.isLegalEnumValue(primType, Primitive.class);
+		if (!validPrimitive) {
+			return new ValidatorStatusCode(false, "The given primitive type is not valid.");
+		}
+
+		boolean isSpaceIdParamPresent = Util.paramExists(R.COPY_TO_STARDEV_SPACE_ID_PARAM, request);
+		Primitive primitive = Primitive.valueOf(primType);
+		if (primitive == Primitive.BENCHMARK) {
+			if (!Util.paramExists(R.COPY_TO_STARDEV_PROC_ID_PARAM, request)) {
+				return new ValidatorStatusCode(false, "The processor ID parameter was not present in the request.");
+			}
+			if ( !Validator.isValidInteger(request.getParameter(R.COPY_TO_STARDEV_PROC_ID_PARAM)) ) {
+				return new ValidatorStatusCode(false, "The processor ID was not a valid integer: " + request.getParameter(R.COPY_TO_STARDEV_PROC_ID_PARAM));
+			}
+			if (!Util.paramExists(R.COPY_TO_STARDEV_COPY_WITH_PROC_PARAM, request) && !isSpaceIdParamPresent) {
+				return new ValidatorStatusCode(false, "A space id parameter, or the upload with processor parameter was not included in the request.");
+			}
+		} else {
+			if (!isSpaceIdParamPresent) {
+				return new ValidatorStatusCode(false, "A space ID parameter was not present in request.");
+			}
+		}
+		if (isSpaceIdParamPresent && !Validator.isValidInteger(request.getParameter(R.COPY_TO_STARDEV_SPACE_ID_PARAM))) {
+			return new ValidatorStatusCode(false, "The space ID parameter was not in integer format.");
+		}
+
+		return new ValidatorStatusCode(true);
+	}
+
+	/**
 	 * Outputs a ValidatorStatusCode based on a StarExecCOmmand status code.
 	 * @param lastError the last error returned by a StarExecCommand connection.
 	 * @param uploadStatus the Command status code to convert to a ValidatorStatusCode.
@@ -721,7 +826,8 @@ public class RESTHelpers {
 					org.starexec.command.Status.getStatusMessage(uploadStatus),
 					lastError);
 		}
-		return new ValidatorStatusCode(true, successMessage);
+		// on success the upload status will be the id of the new processor
+		return new ValidatorStatusCode(true, successMessage, uploadStatus);
 	}
 
 	/**
@@ -732,17 +838,24 @@ public class RESTHelpers {
 	 * @throws IOException if something goes wrong with copying or zipping.
 	 */
 	private static File copyPrimitiveToSandbox(final File sandbox, final Locatable primitive) throws IOException {
-		// Use this sandbox to do the copying.
+		// Use this sandbox as the directory that will be zipped and placed into the input sandbox directory.
 		File tempSandbox = Util.getRandomSandboxDirectory();
 		try {
-			FileUtils.copyFileToDirectory(new File(primitive.getPath()), tempSandbox);
+			// place the file in the temp sandbox.
+			File primitiveFile = new File(primitive.getPath());
+			if (primitiveFile.isDirectory()) {
+				FileUtils.copyDirectory(primitiveFile, tempSandbox);
+			} else {
+				FileUtils.copyFileToDirectory(primitiveFile, tempSandbox);
+			}
+			// This name doesn't really matter since it's only used internally.
 			String archiveName = "temp.zip";
 			File outputFile = new File(sandbox, archiveName);
-			// Zip the file into the input sandbox.
+			// Zip the temp sandbox into the input sandbox.
 			ArchiveUtil.createAndOutputZip(tempSandbox, new FileOutputStream(outputFile), archiveName, true);
 			return outputFile;
 		} finally {
-			deleteSandbox(sandbox);
+			deleteSandbox(tempSandbox);
 		}
 	}
 
@@ -2042,7 +2155,7 @@ public class RESTHelpers {
 	 * @param primitivesToAnonymize a PrimitivesToAnonymize enum describing if the solver stats should be anonymized.
 	 * @return A JsonObject that can be used to populate a datatable
 	 */
-	public static JsonObject convertSolverStatsToJsonObject(List<SolverStats> stats,DataTablesQuery query,
+	public static JsonObject convertSolverStatsToJsonObject(Collection<SolverStats> stats, DataTablesQuery query,
 			int spaceId, int jobId, boolean shortFormat, boolean wallTime, PrimitivesToAnonymize primitivesToAnonymize) {
 		JsonArray dataTablePageEntries = new JsonArray();
 		for (SolverStats js : stats) {
@@ -2108,7 +2221,7 @@ public class RESTHelpers {
 		Map<Integer, String> jobSpaceIdToSolverStatsJsonMap = new HashMap<>();
 
 		for (JobSpace jobSpace : jobSpaces) {
-			List<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(jobSpace, stageNumber, PrimitivesToAnonymize.NONE);
+			Collection<SolverStats> stats=Jobs.getAllJobStatsInJobSpaceHierarchy(jobSpace, stageNumber, PrimitivesToAnonymize.NONE);
 			DataTablesQuery query = new DataTablesQuery();
 			query.setTotalRecords(stats.size());
 			query.setTotalRecordsAfterQuery(stats.size());

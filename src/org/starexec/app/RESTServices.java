@@ -4,6 +4,7 @@ import com.google.gson.*;
 import com.google.gson.annotations.Expose;
 import com.opera.core.systems.scope.protos.UmsProtos;
 import org.apache.commons.io.FileUtils;
+import org.apache.coyote.*;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -16,10 +17,12 @@ import org.starexec.data.database.*;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.security.*;
 import org.starexec.data.to.*;
+import org.starexec.data.to.Processor;
 import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.enums.CopyPrimitivesOption;
 import org.starexec.data.to.enums.Primitive;
+import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.exceptions.StarExecException;
@@ -1734,39 +1737,46 @@ public class RESTServices {
 	}
 
 
-	@GET
-	@Path("/copy-to-stardev/{instance}/{username}/{password}/{type}/{primitiveId}/{spaceId}")
+	@POST
+	@Path("/copy-to-stardev/{instance}/{type}/{primitiveId}")
 	@Produces("application/json")
 	public String copyToStarDev(
 			@PathParam("instance") String instance,
-			@PathParam("username") String username,
-			@PathParam("password") String password,
 			@PathParam("type") String type,
 			@PathParam("primitiveId") Integer primitiveId,
-			@PathParam("spaceId") Integer spaceId,
 			@Context HttpServletRequest request) {
 		try {
-			// Make sure user is dev or admin.
-			int userId = SessionUtil.getUserId(request);
-			if (!Users.isAdmin(userId) && !Users.isDeveloper(userId)) {
-				return gson.toJson(new ValidatorStatusCode(false, "You must be an admin or developer to do this."));
+
+			ValidatorStatusCode isValid = RESTHelpers.validateCopyToStardev(request, type);
+
+			if (!isValid.isSuccess()) {
+				return gson.toJson(isValid);
 			}
-			Primitive primType = Primitive.valueOf(type);
+
+			final String username = request.getParameter(R.COPY_TO_STARDEV_USERNAME_PARAM);
+			final String password = request.getParameter(R.COPY_TO_STARDEV_PASSWORD_PARAM);
+
 			// Login to StarDev
 			String url = "https://stardev.cs.uiowa.edu/" + instance + "/";
 			Connection commandConnection = new Connection(username, password, url);
 			int loginStatus = commandConnection.login();
 			if (loginStatus < 0) {
-				return gson.toJson(org.starexec.command.Status.getStatusMessage(loginStatus));
+				return gson.toJson(new ValidatorStatusCode(false, org.starexec.command.Status.getStatusMessage(loginStatus)));
 			}
-			// TODO: support more primitive types.
-			if (primType == Primitive.BENCHMARK) {
-				return gson.toJson(RESTHelpers.copyBenchmarkToStarDev(commandConnection, primitiveId, spaceId));
-			} else if (primType == Primitive.SOLVER) {
-				return gson.toJson(RESTHelpers.copySolverToStarDev(commandConnection, primitiveId, spaceId));
-			} else {
-				return gson.toJson(new ValidatorStatusCode(false, "That type is not yet supported."));
+			final int spaceId = Integer.parseInt(request.getParameter(R.COPY_TO_STARDEV_SPACE_ID_PARAM));
+			final Primitive primType = Primitive.valueOf(type);
+			switch (primType) {
+				case BENCHMARK:
+					final int benchProcessorId = Integer.parseInt(request.getParameter(R.COPY_TO_STARDEV_PROC_ID_PARAM));
+					return gson.toJson(RESTHelpers.copyBenchmarkToStarDev(commandConnection, primitiveId, spaceId, benchProcessorId));
+				case SOLVER:
+					return gson.toJson(RESTHelpers.copySolverToStarDev(commandConnection, primitiveId, spaceId));
+				case PROCESSOR:
+					return gson.toJson(RESTHelpers.copyProcessorToStarDev(commandConnection, primitiveId, spaceId));
+				default:
+					return gson.toJson(new ValidatorStatusCode(false, "That type is not yet supported."));
 			}
+
 		} catch (Throwable t) {
 			log.error("Caught throwable while attempting to copy primitive to StarDev.", t);
 			return gson.toJson(ERROR_INTERNAL_SERVER);

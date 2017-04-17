@@ -6,6 +6,7 @@ import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.PairsRerun;
 import org.starexec.data.to.*;
+import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.util.Util;
@@ -56,7 +57,7 @@ public class PairsRerunTests extends TestSequence {
         User user=loader.loadUserIntoDatabase();
         Space space=loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
         Solver solver=loader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
-        Processor postProc=loader.loadProcessorIntoDatabase("postproc.zip", Processor.ProcessorType.POST, Communities.getTestCommunity().getId());
+        Processor postProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
         List<Integer> benchmarkIds=loader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
 
         int wallclockTimeout=100;

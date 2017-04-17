@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.starexec.constants.R;
+import org.starexec.data.database.Analytics;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Permissions;
@@ -44,10 +45,10 @@ import org.starexec.util.Validator;
  * @author Tyler Jensen
  */
 @SuppressWarnings("serial")
-public class CreateJob extends HttpServlet {		
+public class CreateJob extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(CreateJob.class);
 
-	// Request attributes	
+	// Request attributes
 	private static final String name = "name";
 	private static final String description = "desc";
 	private static final String postProcessor = "postProcess";
@@ -79,16 +80,16 @@ public class CreateJob extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 	}
-	
-	
+
+
 	/**
 	 * Creates a job which is a flat job with only a single solver and benchmark. Every configuration is run
 	 * on the benchmark, so the number of job pairs is equal to the number of configurations in the solver
-	 * @param j A job object for the job, which must have the following attributes set: userId, pre processor, post processor, 
+	 * @param j A job object for the job, which must have the following attributes set: userId, pre processor, post processor,
 	 * queue, name, description, seed
 	 * @param solverId The ID of the solver that will be run
 	 * @param benchId The ID of the benchmark that will be run
-	 * @param sId The ID of the space to put the job in 
+	 * @param sId The ID of the space to put the job in
 	 */
 	public static void buildQuickJob(Job j, int solverId, int benchId, Integer sId) {
 		List<Integer> benchIds = new ArrayList<>();
@@ -133,10 +134,10 @@ public class CreateJob extends HttpServlet {
         int postProcessorId = ((settings.getPostProcessorId() == null) ? -1 : settings.getPreProcessorId());
 		Job j = JobManager.setupJob(
 				userId,
-				s.getName(), 
+				s.getName(),
 				"test job for new solver "+s.getName()+" "+"("+s.getId()+")",
 				preProcessorId,
-				postProcessorId, 
+				postProcessorId,
 				Queues.getTestQueue(),
 				0,settings.getCpuTimeout(),
 				settings.getWallclockTimeout(),
@@ -157,7 +158,7 @@ public class CreateJob extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {	
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {
 			final String method = "doPost";
 			// Make sure the request is valid
@@ -258,6 +259,7 @@ public class CreateJob extends HttpServlet {
 			//Depending on our run selection, handle each case differently
 			//if the user created a quickJob, they uploaded a single text benchmark and a solver to run
 			if (selection.equals("quickJob")) {
+				Analytics.JOB_CREATE_QUICKJOB.record();
 				int solverId = Integer.parseInt(request.getParameter(R.SOLVER));
 				String benchText = request.getParameter(R.BENCHMARK);
 				String bName = request.getParameter(benchName);
@@ -379,20 +381,20 @@ public class CreateJob extends HttpServlet {
 			throw e;
 		}
 	}
-	
+
 	/**
 	 * Validates that the given parameters are allowable for the given queue and user.
 	 * @param userId The ID of the user trying to create a job. Invalid if this user does not have permission
 	 * to use the given queue.
 	 * @param queueId The queue being used.
-	 * @param cpuLimit The CPU timeout for the job. Invalid if it exceeds the queue limit. Not checked if null. 
+	 * @param cpuLimit The CPU timeout for the job. Invalid if it exceeds the queue limit. Not checked if null.
 	 * @param wallclockLimit The wallclock timeout for the job. Invalid if it exceeds the queue limit. Not checked if null.
 	 * @param preProcId The ID of the pre processor being used. Invalid if the given user cannot use it.
 	 * @param postProcId The ID of the post processor being used. Invalid if the given user cannot use it.
 	 * @return A ValidatorStatusCode with a human readable error message if invalid.
 	 */
 	public static ValidatorStatusCode isValid(int userId, int queueId, Integer cpuLimit, Integer wallclockLimit, Integer preProcId, Integer postProcId) {
-		List<Queue> userQueues = Queues.getUserQueues(userId); 
+		List<Queue> userQueues = Queues.getUserQueues(userId);
 		Boolean queueFound=false;
 		for (Queue queue:userQueues){
 			if (queue.getId() == queueId){
@@ -405,30 +407,30 @@ public class CreateJob extends HttpServlet {
 		if (!queueFound){
 			return new ValidatorStatusCode(false, "The given queue does not exist or you do not have access to it");
 		}
-		
+
 		Queue q=Queues.get(queueId);
 		if (wallclockLimit!=null && wallclockLimit > q.getWallTimeout()) {
 			return new ValidatorStatusCode(false, "The given wallclock timeout exceeds the maximum allowed for this queue, which is "+q.getWallTimeout());
 		}
-		
+
 		if (cpuLimit != null && cpuLimit>q.getCpuTimeout()) {
 			return new ValidatorStatusCode(false, "The given cpu timeout exceeds the maximum allowed for this queue, which is "+q.getCpuTimeout());
 		}
-		
+
 		 if (preProcId != null) {
 		    if (!ProcessorSecurity.canUserSeeProcessor(preProcId, userId).isSuccess()) {
 		    	return new ValidatorStatusCode(false, "You do not have permission to use the given preprocessor, or it does not exist");
-			} 
+			}
 		 }
 		 if (postProcId != null) {
 			if (!ProcessorSecurity.canUserSeeProcessor(postProcId, userId).isSuccess()) {
 			    return new ValidatorStatusCode(false, "You do not have permission to use the given postprocessor, or it does not exist");
-			} 
+			}
 		 }
 
 		return new ValidatorStatusCode(true);
 	}
-	
+
 	/**
 	 * Uses the Validate util to ensure the incoming request is valid. This checks for illegal characters
 	 * and content length requirements to ensure it is not malicious.
@@ -468,7 +470,7 @@ public class CreateJob extends HttpServlet {
 			if(Util.paramExists(cpuTimeout, request) && !Validator.isValidPosInteger(request.getParameter(cpuTimeout))) {
 				return new ValidatorStatusCode(false, "The given cpu timeout needs to be a valid integer");
 			}
-			
+
 			if(Util.paramExists(maxMemory, request) && !Validator.isValidPosDouble(request.getParameter(maxMemory))) {
 				return new ValidatorStatusCode(false, "The given maximum memory needs to be a positive number (decimals are permitted)");
 			}
@@ -479,7 +481,7 @@ public class CreateJob extends HttpServlet {
 							+ "so time and memory limits must be specified");
 				}
 			}
-			
+
 			if (!Validator.isValidLong(request.getParameter(randSeed))) {
 				return new ValidatorStatusCode(false, "The random seed needs to be a valid long integer");
 			}
@@ -496,7 +498,7 @@ public class CreateJob extends HttpServlet {
 			Integer postProc=null;
 			// If processors are specified, make sure they're valid ints
 			if(Util.paramExists(postProcessor, request)) {
-				
+
 				if(!Validator.isValidInteger(request.getParameter(postProcessor))) {
 					return new ValidatorStatusCode(false, "The given post processor ID needs to be a valid integer");
 				}
@@ -506,7 +508,7 @@ public class CreateJob extends HttpServlet {
 					postProc=null;
 				}
 			}
-			
+
 			if(Util.paramExists(preProcessor, request)) {
 				if(!Validator.isValidInteger(request.getParameter(preProcessor))) {
 					return new ValidatorStatusCode(false, "The given pre processor ID needs to be a valid integer");
@@ -526,7 +528,7 @@ public class CreateJob extends HttpServlet {
 			// Ensure the job description is valid
 			if(!Validator.isValidPrimDescription((String)request.getParameter(description))) {
 				return new ValidatorStatusCode(false, "The given description is invalid, please see the help files to see the valid format");
-			}		
+			}
 			if (!Util.paramExists(run, request)) {
 				return new ValidatorStatusCode(false, "You need to select a run choice for this job");
 			}
@@ -541,7 +543,7 @@ public class CreateJob extends HttpServlet {
 				if (!Util.paramExists(R.BENCHMARK, request)) {
 					return new ValidatorStatusCode(false, "You need to select a benchmark to run a quick job");
 				}
-				
+
 				if (!Validator.isValidPosInteger(request.getParameter(R.SOLVER))) {
 					return new ValidatorStatusCode(false, "The given solver ID is not a valid integer");
 				}
@@ -549,14 +551,14 @@ public class CreateJob extends HttpServlet {
 				if (!Permissions.canUserSeeSolver(solverId, userId)) {
 					return new ValidatorStatusCode(false, "You do not have permission to see the given solver ID");
 				}
-				
+
 				if (Solvers.getConfigsForSolver(solverId).size()==0) {
 					return new ValidatorStatusCode(false, "The given solver does not have any configurations");
 				}
-				
+
 			}
-				
-				
+
+
 			// Only need these checks if we're choosing which solvers and benchmarks to run.
 			// In any other case, we automatically get them so we don't have to pass them
 			// as part of the request.
@@ -581,7 +583,7 @@ public class CreateJob extends HttpServlet {
 				if(!Validator.isValidIntegerList(request.getParameterValues(configs))) {
 					return new ValidatorStatusCode(false, "All selected configuration IDs need to be valid integers");
 				}
-				
+
 				Set<Integer> solverIds=new HashSet<Integer>();
 				for (Integer cid : Util.toIntegerList(request.getParameterValues(configs))) {
 					solverIds.add(Solvers.getSolverByConfig(cid, false).getId());
@@ -594,8 +596,8 @@ public class CreateJob extends HttpServlet {
 					return new ValidatorStatusCode(false, "You do not have permission to use all of the selected solvers");
 				}
 			}
-			
-			
+
+
 
 			//make sure both timeouts are <= the queue settings
 			Integer cpuLimit = null;
@@ -606,8 +608,8 @@ public class CreateJob extends HttpServlet {
 			if (Util.paramExists(clockTimeout, request)) {
 				runLimit = Integer.parseInt(request.getParameter(clockTimeout));
 			}
-			
-			// Passed all type checks-- next we check permissions 
+
+			// Passed all type checks-- next we check permissions
 			return CreateJob.isValid(userId,queueId,cpuLimit,runLimit,preProc,postProc);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);

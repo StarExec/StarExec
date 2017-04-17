@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.*,org.starexec.util.Util,org.starexec.data.to.Website.WebsiteType, org.apache.commons.io.*, org.starexec.data.database.*, org.starexec.data.security.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.util.Util"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.*,org.starexec.util.Util,org.starexec.data.to.Website.WebsiteType, org.apache.commons.io.*, org.starexec.data.database.*, org.starexec.data.security.*, org.starexec.data.to.*, org.starexec.data.to.enums.*, org.starexec.util.*, org.starexec.util.Util"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -14,6 +14,8 @@
 			JspHelpers.handleNonAnonymousSolverPage( request, response );
 		}
 
+		request.setAttribute("primitiveType", Primitive.SOLVER);
+
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given solver id was in an invalid format");
 	} catch (Exception e) {
@@ -21,13 +23,15 @@
 	}
 %>
 
-<star:template title="${solverPageTitle}" js="common/delaySpinner, details/shared, details/solver, lib/jquery.dataTables.min" css="common/delaySpinner, common/table, details/shared, details/solver">				
+<star:template title="${solverPageTitle}" js="common/delaySpinner, details/shared, details/solver, shared/copyToStardev, lib/jquery.dataTables.min" css="common/delaySpinner, common/table, shared/copyToStardev, details/shared, details/solver">			
+	<star:primitiveTypes/>
 	<div id="popDialog">
   		<img id="popImage" src=""/>
 	</div>
 	<span style="display:none;" id="isAnonymousPage" value="${ isAnonymousPage }"></span>
 	<c:if test="${ !isAnonymousPage }">
 		<span style="display:none;" id="solverId" value="${solver.id}"> </span>
+		<star:primitiveIdentifier primId="${solver.id}" primType="${primitiveType.toString()}"/>
 	</c:if>
 	<fieldset>
 		<legend>details</legend>
@@ -161,6 +165,9 @@
 	<div id="dialog-confirm-anonymous-link" title="confirm anonymous link" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-anonymous-link-txt"></span></p>
 	</div>
+	<c:if test="${hasAdminReadPrivileges}">
+		<star:copyToStardevDialog/>
+	</c:if>
 	<div id="dialog-show-anonymous-link" title="anonymous link" class="hiddenDialog">
 		<p>
 			<span class="ui-icon ui-icon-info"></span>
@@ -190,6 +197,9 @@
         <c:if test="${!isAnonymousPage && sourceDownloadable && downloadable}">
             <a id="srcLink">source</a> 
         </c:if>
+		<c:if test="${hasAdminReadPrivileges && !isAnonymousPage}">
+			<star:copyToStardevButton/>
+		</c:if>
 
 	</fieldset>
 	
