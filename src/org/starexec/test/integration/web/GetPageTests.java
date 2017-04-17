@@ -417,9 +417,7 @@ public class GetPageTests extends TestSequence {
 			Assert.assertTrue("Admin processor page did not conatin copy to stardev button.",
 					adminHtml.html.contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
 			HtmlStatusCodePair userHtml = con.getPageHtml(editProcessorPage());
-			Assert.assertEquals(userHtml.statusCode, 200);
-			Assert.assertFalse("Regular user processor page contained copy to stardev button.",
-					userHtml.html.contains(Web.COPY_TO_STARDEV_BUTTON_TEXT));
+			Assert.assertEquals(userHtml.statusCode, 404);
 		} catch (IOException e) {
 			Assert.fail();
 		}
