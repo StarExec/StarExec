@@ -839,9 +839,11 @@ public class Download extends HttpServlet {
 						zipFileName.append(File.separator);
 					}
 
-					zipFileName.append(p.getPrimarySolver().getName());
+					zipFileName.append(p.getPrimarySolver().getName() + "___" + p.getPrimaryConfiguration().getName());
+					//zipFileName.append(File.separator);
+					//zipFileName.append(p.getPrimaryConfiguration().getName());
 					zipFileName.append(File.separator);
-					zipFileName.append(p.getPrimaryConfiguration().getName());
+					zipFileName.append(p.getBench().getName());
 					zipFileName.append(File.separator);
 					zipFileName.append(p.getId());
 				}
@@ -863,8 +865,8 @@ public class Download extends HttpServlet {
 								ArchiveUtil.addDirToArchive(stream, file, singleFileName.toString(), lastModified);
 							}
 						} else {
-							singleFileName.append(File.separator);
-							singleFileName.append(p.getBench().getName());
+							//singleFileName.append(File.separator);
+							//singleFileName.append(p.getBench().getName());
 							if (!running || lastModified==null) {
 								ArchiveUtil.addFileToArchive(stream, file, singleFileName.toString());
 
