@@ -3,6 +3,7 @@
 
 
 $(document).ready(function() {
+	log('root: '+starexecRoot);
 	function makeCopyPost(instance, type, primId, username, password, spaceId, procId, callback) {
 		var url = starexecRoot+'services/copy-to-stardev/'+instance+'/'+type+'/'+primId;
 		$.post(
@@ -80,8 +81,9 @@ $(document).ready(function() {
 						log('uploading benchmark with processor')
 						var benchProcessorId = $('.benchProcessorId').attr('value');
 						// Get the community ID of the space we'll be uploading the benchmark to
+						var stardevUrl= "https://stardev.cs.uiowa.edu/"+instance+"/"
 						$.get(
-							starexecRoot+'services/space/community/'+spaceId,
+							stardevUrl+'services/space/community/'+spaceId,
 							{},
 							function(communityId) {
 								log('Community id was: '+communityId);
