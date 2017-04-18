@@ -4068,6 +4068,7 @@ public class Jobs {
 			log.info("Pause job with " + numPairs + " pairs took " + timer.getTime() + " milliseconds");
 
 			log.debug("Deletion of paused job pairs from queue was succesful");
+			Analytics.JOB_PAUSE.record();
 			return true;
 		} catch (Exception e) {
 			log.error("Pause Job says "+e.getMessage(),e);
@@ -4599,6 +4600,7 @@ public class Jobs {
 			procedure.executeUpdate();
 
 			log.debug("Resume of job id = " + jobId + " was successful");
+			Analytics.JOB_RESUME.record();
 			return true;
 		} catch (Exception e) {
 			log.error("Resume Job says "+e.getMessage(),e);
