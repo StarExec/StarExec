@@ -772,15 +772,17 @@ public class RESTHelpers {
 	 * @return
 	 */
 	protected static ValidatorStatusCode validateCopyToStardev(HttpServletRequest request, final String primType) {
+		// Only developers and admins can do a copy to stardev request.
 		int userId = SessionUtil.getUserId(request);
 		if (!Users.isAdmin(userId) && !Users.isDeveloper(userId)) {
 			return new ValidatorStatusCode(false, "You must be an admin or developer to do this.");
 		}
 
+		// There must be a username and password parameter.
 		if (!Util.paramExists(R.COPY_TO_STARDEV_USERNAME_PARAM, request) || !Util.paramExists(R.COPY_TO_STARDEV_PASSWORD_PARAM, request)) {
 			return new ValidatorStatusCode(false, "The username or password parameter was not found.");
 		}
-
+		// The primitive type must correspond to one of the Primitve enums.
 		boolean validPrimitive = Util.isLegalEnumValue(primType, Primitive.class);
 		if (!validPrimitive) {
 			return new ValidatorStatusCode(false, "The given primitive type is not valid.");
@@ -789,9 +791,11 @@ public class RESTHelpers {
 		boolean isSpaceIdParamPresent = Util.paramExists(R.COPY_TO_STARDEV_SPACE_ID_PARAM, request);
 		Primitive primitive = Primitive.valueOf(primType);
 		if (primitive == Primitive.BENCHMARK) {
+			// For benchmark copies a processor must be specified.
 			if (!Util.paramExists(R.COPY_TO_STARDEV_PROC_ID_PARAM, request)) {
 				return new ValidatorStatusCode(false, "The processor ID parameter was not present in the request.");
 			}
+			// The processor ID must be an integer
 			if ( !Validator.isValidInteger(request.getParameter(R.COPY_TO_STARDEV_PROC_ID_PARAM)) ) {
 				return new ValidatorStatusCode(false, "The processor ID was not a valid integer: " + request.getParameter(R.COPY_TO_STARDEV_PROC_ID_PARAM));
 			}
@@ -799,10 +803,12 @@ public class RESTHelpers {
 				return new ValidatorStatusCode(false, "A space id parameter, or the upload with processor parameter was not included in the request.");
 			}
 		} else {
+			// Space/community ID must be present for non-benchmark copies.
 			if (!isSpaceIdParamPresent) {
 				return new ValidatorStatusCode(false, "A space ID parameter was not present in request.");
 			}
 		}
+		// The space ID parameter must be an integer if it exists.
 		if (isSpaceIdParamPresent && !Validator.isValidInteger(request.getParameter(R.COPY_TO_STARDEV_SPACE_ID_PARAM))) {
 			return new ValidatorStatusCode(false, "The space ID parameter was not in integer format.");
 		}
