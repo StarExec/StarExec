@@ -479,6 +479,14 @@ public abstract class JobManager {
 							    file.delete();
 							}
 
+							// Check if the benchmark for this pair has any broken dependencies.
+							int benchId = pair.getBench().getId();
+							log.debug("Bench id for pair about to be submitted is: "+benchId);
+							List<Benchmark> brokenDependencies = Benchmarks.getBrokenBenchDependencies(benchId);
+							if (brokenDependencies != null && brokenDependencies.size() > 0) {
+								JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_BENCH_DEPENDENCY_MISSING.getVal());
+								continue;
+							}
 
 
 							// do this first, before we submit to grid engine, to avoid race conditions
