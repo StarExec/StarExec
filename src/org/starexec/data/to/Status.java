@@ -135,7 +135,12 @@ public class Status {
 		public final String status;
 
 		
-		StatusCode(int val, String description, String status) {
+		StatusCode(final int val, final String description, final String status) {
+			// Old codes that have been deleted should not be reused.
+			if (val == 3 || val == 5 || val == 6) {
+				throw new IllegalArgumentException("This code has been deleted and should not be reused.");
+			}
+
 			this.val = val;
 			this.description = description;
 			this.status = status;
