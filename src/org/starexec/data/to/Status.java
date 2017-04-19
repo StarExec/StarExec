@@ -17,34 +17,104 @@ import com.google.gson.annotations.Expose;
 // for new statuses and never reuse deleted codes.
 public class Status {
 	public enum StatusCode {
-		STATUS_UNKNOWN(0),
-		STATUS_PENDING_SUBMIT(1),
-		STATUS_ENQUEUED(2),
-		STATUS_RUNNING(4),
-		STATUS_COMPLETE(7),
-		ERROR_SGE_REJECT(8),
-		ERROR_SUBMIT_FAIL(9),
-		ERROR_RESULTS(10),
-		ERROR_RUNSCRIPT(11),
-		ERROR_BENCHMARK(12),
-		ERROR_DISK_QUOTA_EXCEEDED(13),
-		EXCEED_RUNTIME(14),
-		EXCEED_CPU(15),
-		EXCEED_FILE_WRITE(16),
-		EXCEED_MEM(17),
-		ERROR_GENERAL(18),
-		STATUS_PROCESSING_RESULTS(19),
-		STATUS_PAUSED(20),
-		STATUS_KILLED(21),
-		STATUS_PROCESSING(22),
-		STATUS_NOT_REACHED(23),
-		ERROR_BENCH_DEPENDENCY_MISSING(24);
+		STATUS_UNKNOWN(0,
+				"the job status is not known or has not been set"
+		),
+		STATUS_PENDING_SUBMIT(
+				1,
+				"the job has been added to the starexec database but has not been submitted to the grid engine"
+		),
+		STATUS_ENQUEUED(
+				2,
+				"the job has been submitted to the grid engine and is waiting for an available execution host"
+		),
+		STATUS_RUNNING(
+				4,
+				"the job is currently being ran on an execution host"
+		),
+		STATUS_COMPLETE(
+				7,
+				"the job has successfully completed execution and its statistics have been received from the grid engine"
+		),
+		ERROR_SGE_REJECT(
+				8,
+				"the job was sent to the grid engine for execution but was rejected. "
+						+ "this can indicate that there were no available queues or the grid engine is in an unclean state"
+		),
+		ERROR_SUBMIT_FAIL(
+				9,
+				"there was an issue submitting your job to the grid engine. "
+						+"this can be caused be unexpected errors raised by the grid engine"
+		),
+		ERROR_RESULTS(
+				10,
+				"the job completed execution but there was a problem acquiring its statistics or attributes from the grid engine"
+		),
+		ERROR_RUNSCRIPT(
+				11,
+				"the job could not be executed because a valid run script was not present"
+		),
+		ERROR_BENCHMARK(
+				12,
+				"the job could not be executed because the benchmark could not be found"
+		),
+		ERROR_DISK_QUOTA_EXCEEDED(
+				13,
+				"the job could not be executed because its execution environment could not be properly set up"
+		),
+		EXCEED_RUNTIME(
+				14,
+				"the job was terminated because it exceeded its run time limit"
+		),
+		EXCEED_CPU(
+				15,
+				"the job was terminated because it exceeded its cpu time limit"
+		),
+		EXCEED_FILE_WRITE(
+				16,
+				"the job was terminated because it exceeded its file write limit"
+		),
+		EXCEED_MEM(
+				17,
+				"the job was terminated because it exceeded its virtual memory limit"
+		),
+		ERROR_GENERAL(
+				18,
+				"an unknown error occurred which indicates a problem at any point in the job execution pipeline"
+		),
+		STATUS_PROCESSING_RESULTS(
+				19,
+				"the job results are currently being processed"
+		),
+		STATUS_PAUSED(
+				20,
+				"the job is paused so all job_pairs that were not complete were sent to this status"
+		),
+		STATUS_KILLED(
+				21,
+				"the job was killed, so all job_pairs that were not complete were sent to this status"
+		),
+		STATUS_PROCESSING(
+				22,
+				"this job is being processed by a new post-processor, and this pair is awaiting processing"
+		),
+		STATUS_NOT_REACHED(
+				23,
+				"this stage was not reached because a previous stage had some sort of error"
+		),
+		ERROR_BENCH_DEPENDENCY_MISSING(
+				24,
+				"this job pair has a missing benchmark dependency."
+		);
 		
-		private int val;
+		public final int val;
 		private int count;
+		public final String description;
 		
-		StatusCode(int val) {
-			this.val = val;			
+		
+		StatusCode(int val, String description) {
+			this.val = val;
+			this.description = description;
 		}		
 		
 		public int getVal() {
@@ -99,49 +169,7 @@ public class Status {
 
 
 	private static String getDescription(int code) {
-		switch (code) {
-		    case 1:
-			return "the job has been added to the starexec database but has not been submitted to the grid engine";
-		    case 2:
-			return "the job has been submitted to the grid engine and is waiting for an available execution host";
-		    case 4:
-			return "the job is currently being ran on an execution host";
-		    case 7:
-			return "the job has successfully completed execution and its statistics have been received from the grid engine";
-		    case 8:
-			return "the job was sent to the grid engine for execution but was rejected. this can indicate that there were no available queues or the grid engine is in an unclean state";
-		    case 9:
-			return "there was an issue submitting your job to the grid engine. this can be caused be unexpected errors raised by the grid engine";
-		    case 10:
-			return "the job completed execution but there was a problem accuiring its statistics or attributes from the grid engine";
-		    case 11:
-			return "the job could not be executed because a valid run script was not present";
-		    case 12:
-			return "the job could not be executed because the benchmark could not be found";
-		    case 13:
-			return "the job could not be executed because its execution environment could not be properly set up";
-		    case 14:
-			return "the job was terminated because it exceeded its run time limit";
-		    case 15:
-			return "the job was terminated because it exceeded its cpu time limit";
-		    case 16:
-			return "the job was terminated because it exceeded its file write limit";
-		    case 17:
-			return "the job was terminated because it exceeded its virtual memory limit";
-		    case 18:
-			return "an unknown error occurred which indicates a problem at any point in the job execution pipeline";
-		    case 19:
-			return "the job results are currently being processed";
-		    case 20:
-		    return "the job is paused so all job_pairs that were not complete were sent to this status";
-		    case 21:
-		    return "the job was killed, so all job_pairs that were not complete were sent to this status";
-		    case 22:
-		    return "this job is being processed by a new post-processor, and this pair is awaiting processing";
-		    case 23:
-		    return "this stage was not reached because a previous stage had some sort of error";
-	    }
-		return "the job status is not known or has not been set";
+		return StatusCode.toStatusCode(code).description;
 	}
 	private static String getStatus(int code) {
 		switch (code) {
