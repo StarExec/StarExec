@@ -1737,7 +1737,7 @@ public class RESTServices {
 	}
 
 	@POST
-	@Path("/copy-bench-with-proc-to-stardev/{instance}/{benchId}/{processorId}")
+	@Path("/copy-bench-with-proc-to-stardev/{instance}/{benchId}")
 	@Produces("application/json")
 	public String copyBenchmarkWithProcessorToStarDev(
 			@PathParam("instance") String instance,
