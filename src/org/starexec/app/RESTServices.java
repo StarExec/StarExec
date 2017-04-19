@@ -1736,6 +1736,12 @@ public class RESTServices {
 		return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
 	}
 
+	@POST
+	@Path("/copy-bench-with-proc-to-stardev/{instance}/{benchId}/{processorId}")
+	@Produces("application/json")
+	public String copyBenchmarkWithProcessorToStarDev() {
+		return null;
+	}
 
 	@POST
 	@Path("/copy-to-stardev/{instance}/{type}/{primitiveId}")
