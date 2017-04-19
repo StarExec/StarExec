@@ -1739,7 +1739,12 @@ public class RESTServices {
 	@POST
 	@Path("/copy-bench-with-proc-to-stardev/{instance}/{benchId}/{processorId}")
 	@Produces("application/json")
-	public String copyBenchmarkWithProcessorToStarDev() {
+	public String copyBenchmarkWithProcessorToStarDev(
+			@PathParam("instance") String instance,
+			@PathParam("benchId") Integer benchmarkId,
+			@PathParam("processorId") Integer processorId,
+			@Context HttpServletRequest request) {
+		ValidatorStatusCode isValid = RESTHelpers.validateCopyBenchWithProcessorToStardev(request);
 		return null;
 	}
 
