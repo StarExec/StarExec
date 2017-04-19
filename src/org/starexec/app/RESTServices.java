@@ -1759,33 +1759,43 @@ public class RESTServices {
 				return gson.toJson(isValid);
 			}
 
-			final String username = request.getParameter(R.COPY_TO_STARDEV_USERNAME_PARAM);
-			final String password = request.getParameter(R.COPY_TO_STARDEV_PASSWORD_PARAM);
+			return gson.toJson(copyPrimitiveToStarDev(instance, type, primitiveId, request));
 
-			// Login to StarDev
-			String url = "https://stardev.cs.uiowa.edu/" + instance + "/";
-			Connection commandConnection = new Connection(username, password, url);
-			int loginStatus = commandConnection.login();
-			if (loginStatus < 0) {
-				return gson.toJson(new ValidatorStatusCode(false, org.starexec.command.Status.getStatusMessage(loginStatus)));
-			}
-			final int spaceId = Integer.parseInt(request.getParameter(R.COPY_TO_STARDEV_SPACE_ID_PARAM));
-			final Primitive primType = Primitive.valueOf(type);
-			switch (primType) {
-				case BENCHMARK:
-					final int benchProcessorId = Integer.parseInt(request.getParameter(R.COPY_TO_STARDEV_PROC_ID_PARAM));
-					return gson.toJson(RESTHelpers.copyBenchmarkToStarDev(commandConnection, primitiveId, spaceId, benchProcessorId));
-				case SOLVER:
-					return gson.toJson(RESTHelpers.copySolverToStarDev(commandConnection, primitiveId, spaceId));
-				case PROCESSOR:
-					return gson.toJson(RESTHelpers.copyProcessorToStarDev(commandConnection, primitiveId, spaceId));
-				default:
-					return gson.toJson(new ValidatorStatusCode(false, "That type is not yet supported."));
-			}
 
 		} catch (Throwable t) {
 			log.error("Caught throwable while attempting to copy primitive to StarDev.", t);
 			return gson.toJson(ERROR_INTERNAL_SERVER);
+		}
+	}
+
+	private ValidatorStatusCode copyPrimitiveToStarDev(
+			String instance,
+			String type,
+			Integer primitiveId,
+			HttpServletRequest request) {
+
+		final String username = request.getParameter(R.COPY_TO_STARDEV_USERNAME_PARAM);
+		final String password = request.getParameter(R.COPY_TO_STARDEV_PASSWORD_PARAM);
+
+		// Login to StarDev
+		String url = "https://stardev.cs.uiowa.edu/" + instance + "/";
+		Connection commandConnection = new Connection(username, password, url);
+		int loginStatus = commandConnection.login();
+		if (loginStatus < 0) {
+			new ValidatorStatusCode(false, org.starexec.command.Status.getStatusMessage(loginStatus));
+		}
+		final int spaceId = Integer.parseInt(request.getParameter(R.COPY_TO_STARDEV_SPACE_ID_PARAM));
+		final Primitive primType = Primitive.valueOf(type);
+		switch (primType) {
+			case BENCHMARK:
+				final int benchProcessorId = Integer.parseInt(request.getParameter(R.COPY_TO_STARDEV_PROC_ID_PARAM));
+				return RESTHelpers.copyBenchmarkToStarDev(commandConnection, primitiveId, spaceId, benchProcessorId);
+			case SOLVER:
+				return RESTHelpers.copySolverToStarDev(commandConnection, primitiveId, spaceId);
+			case PROCESSOR:
+				return RESTHelpers.copyProcessorToStarDev(commandConnection, primitiveId, spaceId);
+			default:
+				return new ValidatorStatusCode(false, "That type is not yet supported.");
 		}
 	}
 
