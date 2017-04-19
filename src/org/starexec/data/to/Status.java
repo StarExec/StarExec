@@ -1,7 +1,9 @@
 package org.starexec.data.to;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 
 import com.google.gson.annotations.Expose;
@@ -35,7 +37,8 @@ public class Status {
 		STATUS_PAUSED(20),
 		STATUS_KILLED(21),
 		STATUS_PROCESSING(22),
-		STATUS_NOT_REACHED(23); 
+		STATUS_NOT_REACHED(23),
+		ERROR_BENCH_DEPENDENCY_MISSING(24);
 		
 		private int val;
 		private int count;
@@ -81,50 +84,16 @@ public class Status {
 		public boolean finishedRunning() {
 			return val>=7;
 		}
+
+		// Get a StatusCode from an integer representation of a StatusCode
 		static public StatusCode toStatusCode(int code) {
-		    switch (code) {
-			    case 1:
-				return STATUS_PENDING_SUBMIT;
-			    case 2:
-				return STATUS_ENQUEUED;
-			    case 4:
-				return STATUS_RUNNING;
-			    case 7:
-				return STATUS_COMPLETE;
-			    case 8:
-				return ERROR_SGE_REJECT;
-			    case 9:
-				return ERROR_SUBMIT_FAIL;
-			    case 10:
-				return ERROR_RESULTS;
-			    case 11:
-				return ERROR_RUNSCRIPT;
-			    case 12:
-				return ERROR_BENCHMARK;
-			    case 13:
-				return ERROR_DISK_QUOTA_EXCEEDED;
-			    case 14:
-				return EXCEED_RUNTIME;
-			    case 15:
-				return EXCEED_CPU;
-			    case 16:
-				return EXCEED_FILE_WRITE;
-			    case 17:
-				return EXCEED_MEM;
-			    case 18:
-				return ERROR_GENERAL;
-			    case 19:
-				return STATUS_PROCESSING_RESULTS;
-			    case 20:
-			    return STATUS_PAUSED;
-			    case 21:
-			    return STATUS_KILLED;
-			    case 22:
-			    return STATUS_PROCESSING;
-			    case 23:
-			    return STATUS_NOT_REACHED;
-		    }
-		    return STATUS_UNKNOWN;
+			Set<StatusCode> statusCodes = EnumSet.allOf(StatusCode.class);
+			for (StatusCode sc: statusCodes) {
+				if (sc.getVal() == code) {
+					return sc;
+				}
+			}
+			return STATUS_UNKNOWN;
 		}
 	}
 
