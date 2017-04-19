@@ -18,103 +18,127 @@ import com.google.gson.annotations.Expose;
 public class Status {
 	public enum StatusCode {
 		STATUS_UNKNOWN(0,
-				"the job status is not known or has not been set"
+				"the job status is not known or has not been set",
+				"unknown"
 		),
 		STATUS_PENDING_SUBMIT(
 				1,
-				"the job has been added to the starexec database but has not been submitted to the grid engine"
+				"the job has been added to the starexec database but has not been submitted to the grid engine",
+				"pending submission"
 		),
 		STATUS_ENQUEUED(
 				2,
-				"the job has been submitted to the grid engine and is waiting for an available execution host"
+				"the job has been submitted to the grid engine and is waiting for an available execution host",
+				"enqueued"
 		),
 		STATUS_RUNNING(
 				4,
-				"the job is currently being ran on an execution host"
+				"the job is currently being ran on an execution host",
+				"running"
 		),
 		STATUS_COMPLETE(
 				7,
-				"the job has successfully completed execution and its statistics have been received from the grid engine"
+				"the job has successfully completed execution and its statistics have been received from the grid engine",
+				"complete"
 		),
 		ERROR_SGE_REJECT(
 				8,
 				"the job was sent to the grid engine for execution but was rejected. "
-						+ "this can indicate that there were no available queues or the grid engine is in an unclean state"
+						+ "this can indicate that there were no available queues or the grid engine is in an unclean state",
+				"rejected"
 		),
 		ERROR_SUBMIT_FAIL(
 				9,
 				"there was an issue submitting your job to the grid engine. "
-						+"this can be caused be unexpected errors raised by the grid engine"
+						+"this can be caused be unexpected errors raised by the grid engine",
+				"submit failed"
 		),
 		ERROR_RESULTS(
 				10,
-				"the job completed execution but there was a problem acquiring its statistics or attributes from the grid engine"
+				"the job completed execution but there was a problem acquiring its statistics or attributes from the grid engine",
+				"results error"
 		),
 		ERROR_RUNSCRIPT(
 				11,
-				"the job could not be executed because a valid run script was not present"
+				"the job could not be executed because a valid run script was not present",
+				"run script error"
 		),
 		ERROR_BENCHMARK(
 				12,
-				"the job could not be executed because the benchmark could not be found"
+				"the job could not be executed because the benchmark could not be found",
+				"benchmark error"
 		),
 		ERROR_DISK_QUOTA_EXCEEDED(
 				13,
-				"the job could not be executed because its execution environment could not be properly set up"
+				"the job could not be executed because its execution environment could not be properly set up",
+				"environment error"
 		),
 		EXCEED_RUNTIME(
 				14,
-				"the job was terminated because it exceeded its run time limit"
+				"the job was terminated because it exceeded its run time limit",
+				"timeout (wallclock)"
 		),
 		EXCEED_CPU(
 				15,
-				"the job was terminated because it exceeded its cpu time limit"
+				"the job was terminated because it exceeded its cpu time limit",
+				"timeout (cpu)"
 		),
 		EXCEED_FILE_WRITE(
 				16,
-				"the job was terminated because it exceeded its file write limit"
+				"the job was terminated because it exceeded its file write limit",
+				"file write exceeded"
 		),
 		EXCEED_MEM(
 				17,
-				"the job was terminated because it exceeded its virtual memory limit"
+				"the job was terminated because it exceeded its virtual memory limit",
+				"memout"
 		),
 		ERROR_GENERAL(
 				18,
-				"an unknown error occurred which indicates a problem at any point in the job execution pipeline"
+				"an unknown error occurred which indicates a problem at any point in the job execution pipeline",
+				"error"
 		),
 		STATUS_PROCESSING_RESULTS(
 				19,
-				"the job results are currently being processed"
+				"the job results are currently being processed",
+				"processing results"
 		),
 		STATUS_PAUSED(
 				20,
-				"the job is paused so all job_pairs that were not complete were sent to this status"
+				"the job is paused so all job_pairs that were not complete were sent to this status",
+				"paused"
 		),
 		STATUS_KILLED(
 				21,
-				"the job was killed, so all job_pairs that were not complete were sent to this status"
+				"the job was killed, so all job_pairs that were not complete were sent to this status",
+				"killed"
 		),
 		STATUS_PROCESSING(
 				22,
-				"this job is being processed by a new post-processor, and this pair is awaiting processing"
+				"this job is being processed by a new post-processor, and this pair is awaiting processing",
+				"awaiting processing"
 		),
 		STATUS_NOT_REACHED(
 				23,
-				"this stage was not reached because a previous stage had some sort of error"
+				"this stage was not reached because a previous stage had some sort of error",
+				"stage not reached"
 		),
 		ERROR_BENCH_DEPENDENCY_MISSING(
 				24,
-				"this job pair has a missing benchmark dependency."
+				"this job pair has a missing benchmark dependency.",
+				"benchmark dependency missing"
 		);
 		
 		public final int val;
 		private int count;
 		public final String description;
+		public final String status;
+
 		
-		
-		StatusCode(int val, String description) {
+		StatusCode(int val, String description, String status) {
 			this.val = val;
 			this.description = description;
+			this.status = status;
 		}		
 		
 		public int getVal() {
@@ -132,7 +156,6 @@ public class Status {
 		public boolean incomplete() {
 		    return (val<=6 || val>=19);
 		}
-		
 		public boolean running() {
 		    return val == 4;
 		}
@@ -172,58 +195,11 @@ public class Status {
 		return StatusCode.toStatusCode(code).description;
 	}
 	private static String getStatus(int code) {
-		switch (code) {
-		    case 1:
-			return "pending submission";
-		    case 2:
-			return "enqueued";
-		    case 4:
-			return "running";
-		    case 7:
-			return "complete";
-		    case 8:
-			return "rejected";
-		    case 9:
-			return "submit failed";
-		    case 10:
-			return "results error";
-		    case 11:
-			return "run script error";
-		    case 12:
-			return "benchmark error";
-		    case 13:
-			return "environment error";
-		    case 14:
-			return "timeout (wallclock)";
-		    case 15:
-			return "timeout (cpu)";
-		    case 16:
-			return "file write exceeded";
-		    case 17:
-			return "memout";
-		    case 18:
-			return "error";
-		    case 19:
-			return "processing results";
-		    case 20:
-		    return "paused";
-		    case 21:
-		    return "killed";
-		    case 22:
-		    return "awaiting processing";
-		    case 23:
-		    return "stage not reached";
-	    }
-		return "unknown";
+		return StatusCode.toStatusCode(code).status;
 	}
-	
-	
-	
-
 
 	@Expose private StatusCode code = StatusCode.STATUS_UNKNOWN;
 
-	
 	/**
 	 * @return the status code for this status
 	 */
