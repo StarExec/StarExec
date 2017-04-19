@@ -3,6 +3,7 @@ package org.starexec.jobs;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -482,10 +483,16 @@ public abstract class JobManager {
 							// Check if the benchmark for this pair has any broken dependencies.
 							int benchId = pair.getBench().getId();
 							log.debug("Bench id for pair about to be submitted is: "+benchId);
-							List<Benchmark> brokenDependencies = Benchmarks.getBrokenBenchDependencies(benchId);
-							if (brokenDependencies != null && brokenDependencies.size() > 0) {
-								JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_BENCH_DEPENDENCY_MISSING.getVal());
-								continue;
+							try {
+								List<Benchmark> brokenDependencies = Benchmarks.getBrokenBenchDependencies(benchId);
+								if (brokenDependencies.size() > 0) {
+									JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_BENCH_DEPENDENCY_MISSING.getVal());
+									continue;
+								}
+							} catch (SQLException e) {
+								log.error("Database error while trying to get broken bench dependencies.", e );
+								// submit the pair anyway, if there are broken bench dependencies then we will get a
+								// submit_failed status.
 							}
 
 
