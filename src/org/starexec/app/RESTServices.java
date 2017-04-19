@@ -1745,7 +1745,14 @@ public class RESTServices {
 			@PathParam("processorId") Integer processorId,
 			@Context HttpServletRequest request) {
 		ValidatorStatusCode isValid = RESTHelpers.validateCopyBenchWithProcessorToStardev(request);
-		return null;
+		if (!isValid.isSuccess()) {
+			return gson.toJson(isValid);
+		}
+
+
+		return gson.toJson(new ValidatorStatusCode(true));
+		//copyPrimitiveToStarDev(instance, Primitive.)
+
 	}
 
 	@POST

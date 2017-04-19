@@ -1892,7 +1892,6 @@ public class Connection {
 			//First, put in the request for the server to generate the desired archive			
 			
 			HttpGet get=new HttpGet(HTMLParser.URLEncode(baseURL+C.URL_DOWNLOAD,urlParams));
-			
 			get=(HttpGet) setHeaders(get);
 			response=executeGetOrPost(get);
 			
@@ -2044,6 +2043,28 @@ public class Connection {
 	 */
 	public int downloadNewJobOutput(Integer jobId, String filePath, int since, long lastModified) throws IOException {
 		return downloadArchive(jobId,R.JOB_OUTPUT,since,lastModified,filePath,false,false,false,false,null,false,false,null,false);
+	}
+
+	/**
+	 * Returns the community id that a space is in.
+	 * @param spaceId the space id to get the community of
+	 * @return the id of the community the space is in.
+	 * @throws IOException
+	 */
+	public int getCommunityIdOfSpace(int spaceId) throws IOException {
+		final String url = baseURL
+				+C.URL_COMMUNITY_FROM_SPACE.replace(C.URL_COMMUNITY_FROM_SPACE_SPACE_ID_PARAM, String.valueOf(spaceId));
+
+		HttpGet get=new HttpGet(url);
+		get=(HttpGet) setHeaders(get);
+		HttpResponse response = null;
+
+		try {
+			response = executeGetOrPost(get);
+			return JsonHandler.getJsonString(response).getAsInt();
+		} finally {
+			safeCloseResponse(response);
+		}
 	}
 	
 	/**

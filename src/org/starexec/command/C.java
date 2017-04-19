@@ -32,6 +32,7 @@ public class C {
 	public static String URL_HOME= "secure/index.jsp";
 	public static String URL_LOGIN= "secure/j_security_check";
 	public static String URL_DOWNLOAD = "secure/download";
+
 	public static String URL_LOGOUT="services/session/logout";
 	public static String URL_USERSETTING="services/edit/user/";
 	public static String URL_UPLOADSOLVER="secure/upload/solvers";
@@ -54,6 +55,10 @@ public class C {
 	public static String URL_COPYSOLVER="services/spaces/{spaceID}/add/solver";
 	public static String URL_COPYSPACE="services/spaces/{spaceID}/copySpace";
 	public static String URL_COPYJOB="services/spaces/{spaceID}/add/job";
+
+	public static final String URL_COMMUNITY_FROM_SPACE_SPACE_ID_PARAM = "{spaceID}";
+	public static final String URL_COMMUNITY_FROM_SPACE = "services/space/community/"+URL_COMMUNITY_FROM_SPACE_SPACE_ID_PARAM;
+
 	public static String URL_COPYUSER="services/spaces/{spaceID}/add/user";
 	public static String URL_REMOVEPRIMITIVE="services/remove";
 	public static String URL_PAUSEORRESUME="services/{method}/job/{id}";
