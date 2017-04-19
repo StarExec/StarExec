@@ -447,13 +447,13 @@ public abstract class JobManager {
 
 						final JobPair pair = s.pairIter.next();
 
-						monitor.changeLoad(s.job.getUserId(), s.job.getWallclockTimeout());
 						if (pair.getPrimarySolver()==null || pair.getBench()==null) {
 							// if the solver or benchmark is null, they were deleted. Indicate that the pair's
 							//submission failed and move on
 							JobPairs.UpdateStatus(pair.getId(), Status.StatusCode.ERROR_SUBMIT_FAIL.getVal());
 							continue;
 						}
+						monitor.changeLoad(s.job.getUserId(), s.job.getWallclockTimeout());
 						i++;
 						log.trace("About to submit pair " + pair.getId());
 
