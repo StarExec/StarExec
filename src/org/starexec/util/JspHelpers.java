@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -414,7 +415,12 @@ public class JspHelpers {
 			userCanSeeBench = Permissions.canUserSeeBench( benchId, userId );
 			request.setAttribute( "hasAdminReadPrivileges", GeneralSecurity.hasAdminReadPrivileges( userId ));
 			downloadable = BenchmarkSecurity.canUserDownloadBenchmark( benchId,userId ).isSuccess();
-            request.setAttribute("brokenBenchDeps", Benchmarks.getBrokenBenchDependencies(benchId));
+			try {
+				request.setAttribute("brokenBenchDeps", Benchmarks.getBrokenBenchDependencies(benchId));
+			} catch (SQLException e) {
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error occurred while checking for broken benchmark dependencies.");
+				return;
+			}
 		}
 		request.setAttribute( "downloadable", downloadable );
 
