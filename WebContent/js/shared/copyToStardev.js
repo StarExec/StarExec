@@ -4,8 +4,7 @@
 
 $(document).ready(function() {
 	log('root: '+starexecRoot);
-	function makeCopyPost(instance, type, primId, username, password, spaceId, procId, callback) {
-		var url = starexecRoot+'services/copy-to-stardev/'+instance+'/'+type+'/'+primId;
+	function makeCopyPost(url, username, password, spaceId, procId) {
 		$.post(
 			url,
 			{
@@ -14,7 +13,13 @@ $(document).ready(function() {
 				spaceId: spaceId,
 				procId: procId
 			},
-			callback,
+			function(statusCode) {
+				if (statusCode) {
+					parseReturnCode(statusCode);
+				} else {
+					log('statusCode was undefined');
+				}
+			},
 			'json'
 		).fail(function() {
 			var sc = {
@@ -79,43 +84,14 @@ $(document).ready(function() {
 					log('Id was: '+primId);
 					if (copyWithProcessor && type === benchmarkType) {
 						log('uploading benchmark with processor')
-						var benchProcessorId = $('.benchProcessorId').attr('value');
-						// Get the community ID of the space we'll be uploading the benchmark to
-						var stardevUrl= "https://stardev.cs.uiowa.edu/"+instance+"/"
-						$.get(
-							stardevUrl+'services/space/community/'+spaceId,
-							{},
-							function(communityId) {
-								log('Community id was: '+communityId);
-								// Make sure it was a success.
-								if (communityId > -1) {
-									// Upload the processor to the community that contains the space the benchmark will be uploaded to
-									makeCopyPost(instance, processorType, benchProcessorId, username, password, communityId, 1, function(procSc) {
-										if (procSc && procSc.success) {
-											var newProcId = procSc.statusCode;
-											log('New proc ID was: '+newProcId);
-											makeCopyPost(instance, benchmarkType, primId, username, password, spaceId, newProcId, function (benchSc) {
-												parseReturnCode(benchSc);
-											});
-										} else {
-											log('Failed to upload processor.');
-										}
-									});
-								}
-							},
-							'json'
-						);
+						var url = starexecRoot+'services/copy-bench-with-proc-to-stardev/'+instance+'/'+primId;
+						makeCopyPost(url, username, password, spaceId, 1);
 					} else {
 						log('copying to stardev')
 						// by default use the no type proc ID, this won't matter for anything other than benchmark uploads.
-						var noTypeProcId = 1;
-						makeCopyPost(instance, type, primId, username, password, spaceId, noTypeProcId, function(statusCode) {
-							if (statusCode) {
-								parseReturnCode(statusCode);
-							} else {
-								log('statusCode was undefined');
-							}
-						});
+						var benchProcessorId = $('.benchProcessorId').attr('value');
+						var url = starexecRoot+'services/copy-to-stardev/'+instance+'/'+type+'/'+primId;
+						makeCopyPost(url, username, password, spaceId, benchProcessorId);
 					}
 				},
 				'cancel': function() {
