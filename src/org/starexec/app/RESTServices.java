@@ -1742,17 +1742,44 @@ public class RESTServices {
 	public String copyBenchmarkWithProcessorToStarDev(
 			@PathParam("instance") String instance,
 			@PathParam("benchId") Integer benchmarkId,
-			@PathParam("processorId") Integer processorId,
 			@Context HttpServletRequest request) {
 		ValidatorStatusCode isValid = RESTHelpers.validateCopyBenchWithProcessorToStardev(request);
 		if (!isValid.isSuccess()) {
 			return gson.toJson(isValid);
 		}
 
+		Connection commandConnection = instantiateConnectionForCopyToStardev(instance, request);
+		int loginStatus = commandConnection.login();
+		if (loginStatus < 0) {
+			new ValidatorStatusCode(false, org.starexec.command.Status.getStatusMessage(loginStatus));
+		}
+		int spaceId = Integer.parseInt(request.getParameter(R.COPY_TO_STARDEV_SPACE_ID_PARAM));
+		try {
+			// Get the id of the community we are going to copy the space to and add the processor to that community.
+			int communityId = commandConnection.getCommunityIdOfSpace(spaceId);
+			int procId = Benchmarks.get(benchmarkId).getType().getId();
+			ValidatorStatusCode procStatus = RESTHelpers.copyProcessorToStarDev(commandConnection, procId, communityId);
+			if (!procStatus.isSuccess()) {
+				return gson.toJson(procStatus);
+			}
 
-		return gson.toJson(new ValidatorStatusCode(true));
-		//copyPrimitiveToStarDev(instance, Primitive.)
+			// On success, the processor status code should be the id of the new processor.
+			ValidatorStatusCode benchmarkStatus =
+					RESTHelpers.copyBenchmarkToStarDev(commandConnection, benchmarkId, spaceId, procStatus.getStatusCode());
 
+			return gson.toJson(benchmarkStatus);
+		} catch (IOException e) {
+			log.error("Caught IOException while trying to get community ID.");
+			return gson.toJson(new ValidatorStatusCode(false, "Failed to upload benchmark.", Util.getStackTrace(e)));
+		}
+	}
+
+	private static Connection instantiateConnectionForCopyToStardev(String instance, HttpServletRequest request) {
+		final String username = request.getParameter(R.COPY_TO_STARDEV_USERNAME_PARAM);
+		final String password = request.getParameter(R.COPY_TO_STARDEV_PASSWORD_PARAM);
+		// Login to StarDev
+		String url = "https://stardev.cs.uiowa.edu/" + instance + "/";
+		return new Connection(username, password, url);
 	}
 
 	@POST
@@ -1764,16 +1791,19 @@ public class RESTServices {
 			@PathParam("primitiveId") Integer primitiveId,
 			@Context HttpServletRequest request) {
 		try {
-
 			ValidatorStatusCode isValid = RESTHelpers.validateCopyToStardev(request, type);
-
 			if (!isValid.isSuccess()) {
 				return gson.toJson(isValid);
 			}
 
-			return gson.toJson(copyPrimitiveToStarDev(instance, type, primitiveId, request));
+			Connection commandConnection = instantiateConnectionForCopyToStardev(instance, request);
+			int loginStatus = commandConnection.login();
+			if (loginStatus < 0) {
+				new ValidatorStatusCode(false, org.starexec.command.Status.getStatusMessage(loginStatus));
+			}
 
-
+			final Primitive primType = Primitive.valueOf(type);
+			return gson.toJson(copyPrimitiveToStarDev(commandConnection, primType, primitiveId, request));
 		} catch (Throwable t) {
 			log.error("Caught throwable while attempting to copy primitive to StarDev.", t);
 			return gson.toJson(ERROR_INTERNAL_SERVER);
@@ -1781,23 +1811,11 @@ public class RESTServices {
 	}
 
 	private ValidatorStatusCode copyPrimitiveToStarDev(
-			String instance,
-			String type,
+			Connection commandConnection,
+			Primitive primType,
 			Integer primitiveId,
 			HttpServletRequest request) {
-
-		final String username = request.getParameter(R.COPY_TO_STARDEV_USERNAME_PARAM);
-		final String password = request.getParameter(R.COPY_TO_STARDEV_PASSWORD_PARAM);
-
-		// Login to StarDev
-		String url = "https://stardev.cs.uiowa.edu/" + instance + "/";
-		Connection commandConnection = new Connection(username, password, url);
-		int loginStatus = commandConnection.login();
-		if (loginStatus < 0) {
-			new ValidatorStatusCode(false, org.starexec.command.Status.getStatusMessage(loginStatus));
-		}
 		final int spaceId = Integer.parseInt(request.getParameter(R.COPY_TO_STARDEV_SPACE_ID_PARAM));
-		final Primitive primType = Primitive.valueOf(type);
 		switch (primType) {
 			case BENCHMARK:
 				final int benchProcessorId = Integer.parseInt(request.getParameter(R.COPY_TO_STARDEV_PROC_ID_PARAM));
