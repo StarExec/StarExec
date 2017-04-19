@@ -14,14 +14,17 @@ print m=The next command should return 6. If not you may need to modify upload-t
 createsubspace id=5 n=aalta
 print m=Uploading aalta (solver)
 pushsolver f=solvers/aalta.zip id=6 n=aalta
-prin m=Uploading benchmarks for aalta, type is no-type.
+print m=Uploading benchmarks for aalta, type is no-type.
 pushbenchmarks f=benchmarks/aalta-benchmarks.zip id=6 bt=1
 
 pushbenchproc id=2 f=bench-procs/smt2-validator.zip n=smt2orig
+
+pushbenchproc id=2 f=bench-procs/count-chars.zip n=count-chars
+pushbenchmarks f=benchmarks/dependency-benchmarks.zip id=2 bt=3
+
 pushbenchproc id=2 f=bench-procs/smt2nonincremental.zip n=smt2nonincremental
 pushbenchproc id=2 f=bench-procs/smt2noninc2015.zip n=smt2noninc2015
 pushbenchproc id=2 f=bench-procs/count-lines.zip n=count-lines
-pushbenchproc id=2 f=bench-procs/count-chars.zip n=count-chars
 pushpostproc id=2 f=post-procs/smt2postproc.zip n=smt2 post processor
 pushpostproc id=2 f=post-procs/set-result-to-first-line-postproc.zip n=set-result-to-first-line-postproc
 print m=Uploading CVC4-SMT-COMP-2010 (solver)
@@ -56,10 +59,18 @@ print m=Uploading output-vars (solver)
 pushsolver f=solvers/output-vars.zip id=2 n=output-vars
 print m=Uploading memalloc (solver)
 pushsolver f=solvers/memalloc.zip id=2 n=memalloc
+
+print m=The next command should return 9.
+pushbenchproc id=2 f=bench-procs/bench-dependency-test.zip n=bench-dependency-test
+# This relies on the above command returning 9
+pushbenchmarks f=benchmarks/dependent-benchmarks.zip id=2 bt=9 dep=2
+
 logout
 
 login addr=https://stardev.cs.uiowa.edu/appname/ u=user@uiowa.edu p=Starexec4ever
 pushbenchmarks id=2 f=benchmarks/benchmarks.zip bt=2 hier=
+
+
 sleep t=4
 linkuser id=4 to=7 hier=
 logout
