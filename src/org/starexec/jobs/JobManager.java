@@ -460,7 +460,6 @@ public abstract class JobManager {
 						try {
 
 							// Check to make sure the pair is still pending submit to prevent pairs being submitted twice.
-							// Double submission may be causing job
 							StatusCode statusOfPair = JobPairs.getPair(pair.getId()).getStatus().getCode();
 							if (statusOfPair != StatusCode.STATUS_PENDING_SUBMIT) {
 								log.warn("Pair with id="+pair.getId()+" was caught attempting to be submitted again.");
