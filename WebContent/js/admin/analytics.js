@@ -1,7 +1,9 @@
 "use strict";
 
 jQuery(function($) {
-	var resultsTableConfig = new window.star.DataTableConfig();
+	var resultsTableConfig = new window.star.DataTableConfig({
+		"paging": false
+	});
 	var resultsTable = $("#analytics_results").DataTable(resultsTableConfig);
 
 	var $startField = $("#dateselector [name='start']");
@@ -16,7 +18,7 @@ jQuery(function($) {
 				data[row]["count"],
 			]);
 		}
-		resultsTable.page.len(data.length).draw();
+		resultsTable.draw();
 	};
 
 	$("#dateselector").on("submit", function(event) {
