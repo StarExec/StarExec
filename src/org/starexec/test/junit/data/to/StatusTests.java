@@ -34,23 +34,17 @@ public class StatusTests {
 			}
 		}
 	}
-
-	/*
 	@Test
-	public void completeTest() {
+	public void resourceTest() {
 		for (StatusCode status : EnumSet.allOf(StatusCode.class)) {
-			switch(status) {
-				case STATUS_COMPLETE:
-				case EXCEED_RUNTIME:
-				case EXCEED_CPU:
-				case EXCEED_FILE_WRITE:
-				case EXCEED_MEM:
-					assertTrue("The "+status.toString()+" status should be complete.", status.complete());
-					break;
-				default:
-					assertFalse("The "+status.toString()+" status should not be complete.", status.complete());
+			if (status == StatusCode.EXCEED_RUNTIME
+					|| status == StatusCode.EXCEED_CPU
+					|| status == StatusCode.EXCEED_FILE_WRITE
+					|| status == StatusCode.EXCEED_MEM) {
+				assertTrue("The "+status.toString()+" status should be a \"resource out\" status.", status.resource());
+			} else {
+				assertFalse("The " + status.toString() + " status should not be a \"resource out\" status.", status.resource());
 			}
 		}
 	}
-	*/
 }
