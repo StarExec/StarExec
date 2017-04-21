@@ -486,6 +486,7 @@ public abstract class JobManager {
 							try {
 								List<Benchmark> brokenDependencies = Benchmarks.getBrokenBenchDependencies(benchId);
 								if (brokenDependencies.size() > 0) {
+									log.debug("Skipping pair with broken bench dependency...");
 									JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_BENCH_DEPENDENCY_MISSING.getVal());
 									continue;
 								}
