@@ -11,12 +11,9 @@ import java.sql.SQLException;
 import java.sql.ResultSet;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.starexec.backend.Backend;
 import org.starexec.backend.GridEngineBackend;
 import org.starexec.constants.PaginationQueries;
@@ -4291,7 +4288,7 @@ public class Jobs {
 		if (statusCode.incomplete()) {
 		    stats.incrementIncompleteJobPairs();
 		}
-		if (statusCode.complete()) {
+		if (statusCode.statComplete()) {
 		    stats.incrementCompleteJobPairs();
 		}
 

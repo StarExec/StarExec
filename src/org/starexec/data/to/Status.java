@@ -165,7 +165,7 @@ public class Status {
 		public boolean statIncomplete(){
 			return (val!=7 && !(val>=14 &&val<=17));
 		}
-		public boolean complete() {
+		public boolean statComplete() {
 		    return val==7 || (val>=14 &&val<=17);
 		}
 		public boolean finishedRunning() {

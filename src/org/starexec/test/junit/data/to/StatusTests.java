@@ -4,7 +4,6 @@ import java.util.EnumSet;
 
 import static org.junit.Assert.*;
 import org.junit.Test;
-import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 
 public class StatusTests {
@@ -28,9 +27,9 @@ public class StatusTests {
 					|| status == StatusCode.EXCEED_CPU
 					|| status == StatusCode.EXCEED_FILE_WRITE 
 					|| status == StatusCode.EXCEED_MEM) {
-				assertTrue("The "+status.toString()+" status should be complete.", status.complete());
+				assertTrue("The "+status.toString()+" status should be complete.", status.statComplete());
 			} else {
-				assertFalse("The " + status.toString() + " status should not be complete.", status.complete());
+				assertFalse("The " + status.toString() + " status should not be complete.", status.statComplete());
 			}
 		}
 	}
