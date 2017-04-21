@@ -26,7 +26,7 @@ jQuery(function($) {
 			starexecRoot+"services/analytics",
 			{
 				"start": $startField.val(),
-				"end": $startField.val()
+				"end": $endField.val()
 			},
 			resultsTableRefresh
 		);
