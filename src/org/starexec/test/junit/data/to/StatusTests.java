@@ -20,7 +20,7 @@ public class StatusTests {
 	}
 
 	@Test
-	public void completeTest() {
+	public void statCompleteTest() {
 		for (StatusCode status : EnumSet.allOf(StatusCode.class)) {
 			if (status == StatusCode.STATUS_COMPLETE 
 					|| status == StatusCode.EXCEED_RUNTIME 
@@ -33,6 +33,22 @@ public class StatusTests {
 			}
 		}
 	}
+
+	@Test
+	public void statIncompleteTest() {
+		for (StatusCode status : EnumSet.allOf(StatusCode.class)) {
+			if (status == StatusCode.STATUS_COMPLETE
+					|| status == StatusCode.EXCEED_RUNTIME
+					|| status == StatusCode.EXCEED_CPU
+					|| status == StatusCode.EXCEED_FILE_WRITE
+					|| status == StatusCode.EXCEED_MEM) {
+				assertFalse("The "+status.toString()+" status should be complete.", status.statIncomplete());
+			} else {
+				assertTrue("The " + status.toString() + " status should not be complete.", status.statIncomplete());
+			}
+		}
+	}
+
 	@Test
 	public void resourceTest() {
 		for (StatusCode status : EnumSet.allOf(StatusCode.class)) {
