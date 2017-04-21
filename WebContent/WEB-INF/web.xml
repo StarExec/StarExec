@@ -293,6 +293,15 @@
     <url-pattern>/secure/add/stressTest</url-pattern>
   </servlet-mapping>
 
+  <servlet>
+    <servlet-name>Analytics</servlet-name>
+    <servlet-class>org.starexec.servlets.Analytics</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Analytics</servlet-name>
+    <url-pattern>/services/analytics</url-pattern>
+  </servlet-mapping>
+
   <!-- RESTEasy webservice framework configuration -->
   <servlet>
     <servlet-name>Resteasy</servlet-name>
@@ -392,6 +401,18 @@
 	  <role-name>developer</role-name>
 	  <role-name>unauthorized</role-name>
 	  <role-name>suspended</role-name>
+    </auth-constraint>
+  </security-constraint>
+
+  <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>Developers Only</web-resource-name>
+      <url-pattern>/services/analytics</url-pattern>
+      <url-pattern>/secure/admin/analytics.jsp</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>admin</role-name>
+      <role-name>developer</role-name>
     </auth-constraint>
   </security-constraint>
 
