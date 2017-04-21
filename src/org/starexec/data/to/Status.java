@@ -152,18 +152,7 @@ public class Status {
 		public String getStatus() {
 			return Status.getStatus(this.val);
 		}
-		public boolean resource() {
-		    return (val >= 14 && val <= 17);
-		}
-		public boolean failed(){
-			return ((val>=8 && val<=13) || val==18 || val == 24);
-		}
-		public boolean incomplete() {
-		    return (val<=6 || val>=19);
-		}
-		public boolean running() {
-		    return val == 4;
-		}
+
 
 		public void setCount(int c) {
 			this.count=c;
@@ -181,6 +170,18 @@ public class Status {
 		}
 		public boolean finishedRunning() {
 			return val>=7;
+		}
+		public boolean resource() {
+			return (val >= 14 && val <= 17);
+		}
+		public boolean failed(){
+			return ((val>=8 && val<=13) || val==18 || val == 24);
+		}
+		public boolean incomplete() {
+			return (val<=6 || val>=19);
+		}
+		public boolean running() {
+			return val == 4;
 		}
 
 		// Get a StatusCode from an integer representation of a StatusCode
