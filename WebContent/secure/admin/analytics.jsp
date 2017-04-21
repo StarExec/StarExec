@@ -5,8 +5,8 @@
 <fieldset>
 	<legend>Analytics</legend>
 	<form id="dateselector">
-		<label>Start <input type="date" name="start" /></label>
-		<label>End   <input type="date" name="end" /></label>
+		<label>Start <input type="date" placeholder="yyyy-mm-dd" pattern="\d{4}\-\d{1,2}\-\d{1,2}" name="start" /></label>
+		<label>End   <input type="date" placeholder="yyyy-mm-dd" pattern="\d{4}\-\d{1,2}\-\d{1,2}" name="end" /></label>
 		<input type="submit" value="Update" />
 	</form>
 	<table id="analytics_results">
