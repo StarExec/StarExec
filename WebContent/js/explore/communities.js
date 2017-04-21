@@ -251,7 +251,7 @@ function checkPermissions(perms,isMember) {
 		$('#downloadBenchProcessors').fadeIn('fast');
 		$('#downloadPreProcessors').fadeIn('fast');
 		$('#downloadUpdateProcessors').fadeIn('fast');
-		if(perms.isLeader) {
+		if(perms.isLeader || $('#hasAdminReadPrivileges').attr('value') === 'true') {
 			log('User is leader for this community');
 			$('#editComm').fadeIn('fast');
 			$('#communityField').fadeIn('fast');

@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.util.*, org.starexec.constants.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.util.*, org.starexec.constants.*, org.starexec.data.security.GeneralSecurity"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
@@ -7,6 +7,7 @@
 	try {
 		int userId=SessionUtil.getUserId(request);
 		request.setAttribute("userId", userId);
+		request.setAttribute("hasAdminReadPrivileges", GeneralSecurity.hasAdminReadPrivileges(userId));
 	} catch (Exception e) {
 		// If we can't get the userId, assume the isn't leader.
 		hideCommunityRequests = true;
@@ -21,6 +22,7 @@
 
 <star:template title="Communities" js="shared/sharedFunctions, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, explore/communities" css="common/delaySpinner, common/table, explore/common, explore/communities">
 	<span id="leaderResponse" value="${leaderResponseParameterName}" hidden></span>
+	<span id="hasAdminReadPrivileges" value="${hasAdminReadPrivileges}" hidden></span>
 	<span id="emailCode" value="${emailCodeParameterName}" hidden></span>
 	<span id="approveRequest" value="${approveCommunityRequestName}" hidden></span>
 	<span id="declineRequest" value="${declineCommunityRequestName}" hidden></span>
