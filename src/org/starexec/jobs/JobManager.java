@@ -437,7 +437,7 @@ public abstract class JobManager {
 					while (i < R.NUM_JOB_PAIRS_AT_A_TIME && s.pairIter.hasNext()) {
 						//skip if this user has many more pairs than some other user
 						if (monitor.skipUser(s.job.getUserId())) {
-							log.info("excluding user with the following id from submitting more pairs "+s.job.getUserId());
+							log.debug("excluding user with the following id from submitting more pairs "+s.job.getUserId());
 							Long min = monitor.getMin();
 							if (min==null) {
 								min = -1l;
