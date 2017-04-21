@@ -457,6 +457,23 @@ public abstract class JobManager {
 						monitor.changeLoad(s.job.getUserId(), s.job.getWallclockTimeout());
 						i++;
 						log.trace("About to submit pair " + pair.getId());
+						// Check if the benchmark for this pair has any broken dependencies.
+						int benchId = pair.getBench().getId();
+						log.debug("Bench id for pair about to be submitted is: "+benchId);
+						try {
+							log.debug("Checking bench dependencies for bench with id: "+benchId);
+							List<Benchmark> brokenDependencies = Benchmarks.getBrokenBenchDependencies(benchId);
+							log.debug("Found "+brokenDependencies.size()+" missing dependencies.");
+							if (brokenDependencies.size() > 0) {
+								log.debug("Skipping pair with broken bench dependency...");
+								JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_BENCH_DEPENDENCY_MISSING.getVal());
+								continue;
+							}
+						} catch (SQLException e) {
+							log.error("Database error while trying to get broken bench dependencies.", e );
+							// submit the pair anyway, if there are broken bench dependencies then we will get a
+							// submit_failed status.
+						}
 
 						try {
 
@@ -480,21 +497,6 @@ public abstract class JobManager {
 							    file.delete();
 							}
 
-							// Check if the benchmark for this pair has any broken dependencies.
-							int benchId = pair.getBench().getId();
-							log.debug("Bench id for pair about to be submitted is: "+benchId);
-							try {
-								List<Benchmark> brokenDependencies = Benchmarks.getBrokenBenchDependencies(benchId);
-								if (brokenDependencies.size() > 0) {
-									log.debug("Skipping pair with broken bench dependency...");
-									JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_BENCH_DEPENDENCY_MISSING.getVal());
-									continue;
-								}
-							} catch (SQLException e) {
-								log.error("Database error while trying to get broken bench dependencies.", e );
-								// submit the pair anyway, if there are broken bench dependencies then we will get a
-								// submit_failed status.
-							}
 
 
 							// do this first, before we submit to grid engine, to avoid race conditions

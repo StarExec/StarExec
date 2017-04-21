@@ -156,7 +156,7 @@ public class Status {
 		    return (val >= 14 && val <= 17);
 		}
 		public boolean failed(){
-			return ((val>=8 && val<=13) ||val==18);
+			return ((val>=8 && val<=13) || val==18 || val == 24);
 		}
 		public boolean incomplete() {
 		    return (val<=6 || val>=19);
