@@ -31,13 +31,13 @@ import org.starexec.util.Util;
  * and checking if the user has the appropriate session variables set to continue
  * using the website. As a side-effect, this is where newly logged in users
  * are detected and logged.
- * 
+ *
  * @author Tyler Jensen
  */
 public class SessionFilter implements Filter {
 	private static final StarLogger log = StarLogger.getLogger(SessionFilter.class);
-	
-	
+
+
 	@Override
 	public void destroy() {
 		// Do nothing
@@ -123,7 +123,7 @@ public class SessionFilter implements Filter {
 				if (isCommandRequest) {
 					httpResponse.setHeader("CommandBadCredentials","CommandBadCredentials");
 				}
-				
+
 			}
 
 			// Be nice and pass on the request to the next filter
@@ -133,7 +133,7 @@ public class SessionFilter implements Filter {
 			throw t;
 		}
 	}
-	
+
 	/**
 	 * Adds a record to the database that represents the login
 	 * @param user The user that just logged in
@@ -142,10 +142,10 @@ public class SessionFilter implements Filter {
 	private void logUserLogin(User user, HttpServletRequest request) {
 		// Log the regular application log
 		log.info(String.format("%s [%s] logged in.", user.getFullName(), user.getEmail()));
-			
+
 		String ip = request.getRemoteAddr();
 		String rawBrowser = request.getHeader("user-agent");
-		
+
 		// Also save in the database to maintain a historical record
 		Common.addLoginRecord(user.getId(), ip, rawBrowser);
 		// Get the number of unique logins that have occurred since the last report was sent and
@@ -161,6 +161,6 @@ public class SessionFilter implements Filter {
 
 	@Override
 	public void init(FilterConfig args) throws ServletException {
-		// Do nothing		
+		// Do nothing
 	}
 }
