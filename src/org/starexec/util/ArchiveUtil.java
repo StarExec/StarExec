@@ -203,9 +203,9 @@ public class ArchiveUtil {
 		try {
 			// Check for the appropriate file extension and hand off to the appropriate method
 			if(fileName.endsWith(".zip")) {
-				ArchiveUtil.extractZIP(fileName, destination);
+				ArchiveUtil.extractArchiveOfType(fileName, destination, ArchiveType.ZIP);
 			} else if(fileName.endsWith(".tar")) {
-				ArchiveUtil.extractTAR(fileName, destination);
+				ArchiveUtil.extractArchiveOfType(fileName, destination, ArchiveType.TAR);
 			} else if (fileName.endsWith(".tar.gz") || fileName.endsWith(".tgz")) {
 				// First rename it if it's a .tgz
 
@@ -281,49 +281,15 @@ public class ArchiveUtil {
 
 		return true;
 	}
-	
-	/**
-	 * Unzips a zip file and removes the original if the unzip was successful.
-	 * @param fileName The full path to the file
-	 * @param destination Where to unzip the contents to
-	 * 
-	 * @author Tyler Jensen
-	 */
-	private static void extractZIP(String fileName, String destination) throws ArchiveException, IOException {
-		// Use the Apache commons compression library to open up the tar file...
-		InputStream is = new FileInputStream(fileName);
-		
-		BufferedInputStream bis = new BufferedInputStream(is);
-		ArchiveInputStream ais = new ArchiveStreamFactory().createArchiveInputStream("zip", bis); 
-		ZipArchiveEntry entry = null;
 
-		// For each 'file' in the tar file...
-		while((entry = (ZipArchiveEntry)ais.getNextEntry()) != null) {
-			if(!entry.isDirectory()) {
-				// If it's not a directory...
-				File fileToCreate = new File(destination, entry.getName());
+	private enum ArchiveType {
+		ZIP("zip"), TAR("tar");
 
-				// Get the dir the file b eints to
-				File dir = new File(fileToCreate.getParent());
-				if(!dir.exists()) {
-					// And create it if it doesn't exist so we can write a file inside it
-					dir.mkdirs();
-				}
-
-				// Finally, extract the file
-				OutputStream out = new FileOutputStream(fileToCreate); 
-				IOUtils.copy(ais, out);
-				out.close();
-			}			
+		final String type;
+		ArchiveType(String type) {
+			this.type = type;
 		}
-		
-		is.close();
-		bis.close();
-		ais.close();
-		
-		ArchiveUtil.removeArchive(fileName);
-	}	
-
+	}
 
 	/**
 	 * Unpacks a tar file and removes the original if the unpack was successful.
@@ -332,32 +298,35 @@ public class ArchiveUtil {
 	 * 
 	 * @author Tyler Jensen
 	 */
-	private static void extractTAR(String fileName, String destination) throws Exception {
+	private static void extractArchiveOfType(String fileName, String destination, ArchiveType archiveType) throws Exception {
 		// Use the Apache commons compression library to open up the tar file...
-		log.debug("extracting tar");
+		log.debug("extracting "+archiveType);
 		InputStream is = new FileInputStream(fileName);
 		BufferedInputStream bis = new BufferedInputStream(is);
-		ArchiveInputStream ais = new ArchiveStreamFactory().createArchiveInputStream("tar", bis); 
-		TarArchiveEntry entry = null;
+		ArchiveInputStream ais = new ArchiveStreamFactory().createArchiveInputStream(archiveType.type, bis);
+		ArchiveEntry entry = null;
 
 		// For each 'file' in the tar file...
-		while((entry = (TarArchiveEntry)ais.getNextEntry()) != null) {
+		while((entry = ais.getNextEntry()) != null) {
 			if(!entry.isDirectory()) {
 				// If it's not a directory...
-				//String mode = Integer.toOctalString(entry.getMode());
-				//log.info("The mode for " + entry.getName() + " is " + mode);
 				File fileToCreate = new File(destination, entry.getName());
 
 				File dir = new File(fileToCreate.getParent());
+				boolean success = true;
 				if(!dir.exists()) {
 					// And create it if it doesn't exist so we can write a file inside it
-					dir.mkdirs();
+					success = dir.mkdirs();
+					if (!success) {
+						log.warn("Could not create directory: "+destination+"\n"+Util.getCurrentStackTrace());
+					}
 				}
-
-				// Finally, extract the file
-				OutputStream out = new FileOutputStream(fileToCreate); 
-				IOUtils.copy(ais, out);
-				out.close();
+				if (success) {
+					// Finally, extract the file
+					OutputStream out = new FileOutputStream(fileToCreate);
+					IOUtils.copy(ais, out);
+					out.close();
+				}
 
 			}			
 		}
