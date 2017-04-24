@@ -442,7 +442,7 @@ public abstract class JobManager {
 							if (min==null) {
 								min = -1l;
 							}
-							log.info("user had already submitted "+i+" pairs in this iteration. Load = "+monitor.getLoad(s.job.getUserId())+ " Min = " + min);
+							log.debug("user had already submitted "+i+" pairs in this iteration. Load = "+monitor.getLoad(s.job.getUserId())+ " Min = " + min);
 							break;
 						}
 
