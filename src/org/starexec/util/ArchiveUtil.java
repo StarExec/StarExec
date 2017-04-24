@@ -15,6 +15,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -288,7 +289,7 @@ public class ArchiveUtil {
 	 * 
 	 * @author Tyler Jensen
 	 */
-	private static void extractZIP(String fileName, String destination) throws Exception {
+	private static void extractZIP(String fileName, String destination) throws ArchiveException, IOException {
 		// Use the Apache commons compression library to open up the tar file...
 		InputStream is = new FileInputStream(fileName);
 		
