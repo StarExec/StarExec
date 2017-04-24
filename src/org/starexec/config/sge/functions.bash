@@ -147,8 +147,6 @@ function initWorkspaceVariables {
 	    LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/bin/runsolver"
     fi
 
-	# The path to the xml file to run benchexec on.
-	LOCAL_BENCHEXEC_XML_PATH="$WORKING_DIR/benchexec.xml"
 	
 	OUT_DIR="$WORKING_DIR/output"
 	

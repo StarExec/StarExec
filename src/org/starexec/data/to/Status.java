@@ -1,7 +1,9 @@
 package org.starexec.data.to;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 
 import com.google.gson.annotations.Expose;
@@ -14,34 +16,164 @@ import com.google.gson.annotations.Expose;
 // Do NOT reuse codes 3, 5, and 6! We should always use completely new codes
 // for new statuses and never reuse deleted codes.
 public class Status {
+	private enum StatCompleteness {
+		COMPLETE, INCOMPLETE
+	}
 	public enum StatusCode {
-		STATUS_UNKNOWN(0),
-		STATUS_PENDING_SUBMIT(1),
-		STATUS_ENQUEUED(2),
-		STATUS_RUNNING(4),
-		STATUS_COMPLETE(7),
-		ERROR_SGE_REJECT(8),
-		ERROR_SUBMIT_FAIL(9),
-		ERROR_RESULTS(10),
-		ERROR_RUNSCRIPT(11),
-		ERROR_BENCHMARK(12),
-		ERROR_DISK_QUOTA_EXCEEDED(13),
-		EXCEED_RUNTIME(14),
-		EXCEED_CPU(15),
-		EXCEED_FILE_WRITE(16),
-		EXCEED_MEM(17),
-		ERROR_GENERAL(18),
-		STATUS_PROCESSING_RESULTS(19),
-		STATUS_PAUSED(20),
-		STATUS_KILLED(21),
-		STATUS_PROCESSING(22),
-		STATUS_NOT_REACHED(23); 
+		STATUS_UNKNOWN(0,
+				"the job status is not known or has not been set",
+				"unknown",
+				StatCompleteness.INCOMPLETE
+		),
+		STATUS_PENDING_SUBMIT(
+				1,
+				"the job has been added to the starexec database but has not been submitted to the grid engine",
+				"pending submission",
+				StatCompleteness.INCOMPLETE
+		),
+		STATUS_ENQUEUED(
+				2,
+				"the job has been submitted to the grid engine and is waiting for an available execution host",
+				"enqueued",
+				StatCompleteness.INCOMPLETE
+		),
+		STATUS_RUNNING(
+				4,
+				"the job is currently being ran on an execution host",
+				"running",
+				StatCompleteness.INCOMPLETE
+		),
+		STATUS_COMPLETE(
+				7,
+				"the job has successfully completed execution and its statistics have been received from the grid engine",
+				"complete",
+				StatCompleteness.COMPLETE
+		),
+		ERROR_SGE_REJECT(
+				8,
+				"the job was sent to the grid engine for execution but was rejected. "
+						+ "this can indicate that there were no available queues or the grid engine is in an unclean state",
+				"rejected",
+				StatCompleteness.INCOMPLETE
+		),
+		ERROR_SUBMIT_FAIL(
+				9,
+				"there was an issue submitting your job to the grid engine. "
+						+"this can be caused be unexpected errors raised by the grid engine",
+				"submit failed",
+				StatCompleteness.INCOMPLETE
+		),
+		ERROR_RESULTS(
+				10,
+				"the job completed execution but there was a problem acquiring its statistics or attributes from the grid engine",
+				"results error",
+				StatCompleteness.INCOMPLETE
+		),
+		ERROR_RUNSCRIPT(
+				11,
+				"the job could not be executed because a valid run script was not present",
+				"run script error",
+				StatCompleteness.INCOMPLETE
+		),
+		ERROR_BENCHMARK(
+				12,
+				"the job could not be executed because the benchmark could not be found",
+				"benchmark error",
+				StatCompleteness.INCOMPLETE
+		),
+		ERROR_DISK_QUOTA_EXCEEDED(
+				13,
+				"the job could not be executed because its execution environment could not be properly set up",
+				"environment error",
+				StatCompleteness.INCOMPLETE
+		),
+		EXCEED_RUNTIME(
+				14,
+				"the job was terminated because it exceeded its run time limit",
+				"timeout (wallclock)",
+				StatCompleteness.COMPLETE
+		),
+		EXCEED_CPU(
+				15,
+				"the job was terminated because it exceeded its cpu time limit",
+				"timeout (cpu)",
+				StatCompleteness.COMPLETE
+		),
+		EXCEED_FILE_WRITE(
+				16,
+				"the job was terminated because it exceeded its file write limit",
+				"file write exceeded",
+				StatCompleteness.COMPLETE
+		),
+		EXCEED_MEM(
+				17,
+				"the job was terminated because it exceeded its virtual memory limit",
+				"memout",
+				StatCompleteness.COMPLETE
+		),
+		ERROR_GENERAL(
+				18,
+				"an unknown error occurred which indicates a problem at any point in the job execution pipeline",
+				"error",
+				StatCompleteness.INCOMPLETE
+		),
+		STATUS_PROCESSING_RESULTS(
+				19,
+				"the job results are currently being processed",
+				"processing results",
+				StatCompleteness.INCOMPLETE
+		),
+		STATUS_PAUSED(
+				20,
+				"the job is paused so all job_pairs that were not complete were sent to this status",
+				"paused",
+				StatCompleteness.INCOMPLETE
+		),
+		STATUS_KILLED(
+				21,
+				"the job was killed, so all job_pairs that were not complete were sent to this status",
+				"killed",
+				StatCompleteness.INCOMPLETE
+		),
+		STATUS_PROCESSING(
+				22,
+				"this job is being processed by a new post-processor, and this pair is awaiting processing",
+				"awaiting processing",
+				StatCompleteness.INCOMPLETE
+		),
+		STATUS_NOT_REACHED(
+				23,
+				"this stage was not reached because a previous stage had some sort of error",
+				"stage not reached",
+				StatCompleteness.INCOMPLETE
+		),
+		ERROR_BENCH_DEPENDENCY_MISSING(
+				24,
+				"this job pair has a missing benchmark dependency.",
+				"benchmark dependency missing",
+				StatCompleteness.INCOMPLETE
+		);
 		
-		private int val;
+		public final int val;
 		private int count;
+		public final String description;
+		public final String status;
+		private final StatCompleteness statComplete;
 		
-		StatusCode(int val) {
-			this.val = val;			
+		StatusCode(
+				final int val,
+				final String description,
+				final String status,
+				final StatCompleteness statComplete) {
+			// Old codes that have been deleted should not be reused.
+			if (val == 3 || val == 5 || val == 6) {
+				throw new IllegalArgumentException("This code has been deleted and should not be reused.");
+			}
+
+			this.val = val;
+			this.description = description;
+			this.status = status;
+			this.statComplete = statComplete;
 		}		
 		
 		public int getVal() {
@@ -50,19 +182,7 @@ public class Status {
 		public String getStatus() {
 			return Status.getStatus(this.val);
 		}
-		public boolean resource() {
-		    return (val >= 14 && val <= 17);
-		}
-		public boolean failed(){
-			return ((val>=8 && val<=13) ||val==18);
-		}
-		public boolean incomplete() {
-		    return (val<=6 || val>=19);
-		}
-		
-		public boolean running() {
-		    return val == 4;
-		}
+
 
 		public void setCount(int c) {
 			this.count=c;
@@ -73,160 +193,51 @@ public class Status {
 		}
 		//incomplete as it is defined for stats
 		public boolean statIncomplete(){
-			return (val!=7 && !(val>=14 &&val<=17));
+			//return (val!=7 && !(val>=14 &&val<=17));
+			return this.statComplete == StatCompleteness.INCOMPLETE;
 		}
-		public boolean complete() {
-		    return val==7 || (val>=14 &&val<=17);
+		public boolean statComplete() {
+		    //return val==7 || (val>=14 &&val<=17);
+			return this.statComplete == StatCompleteness.COMPLETE;
 		}
 		public boolean finishedRunning() {
 			return val>=7;
 		}
+		public boolean resource() {
+			return (val >= 14 && val <= 17);
+		}
+		public boolean failed(){
+			return ((val>=8 && val<=13) || val==18 || val == 24);
+		}
+		public boolean incomplete() {
+			return (val<=6 || val>=19);
+		}
+		public boolean running() {
+			return val == 4;
+		}
+
+		// Get a StatusCode from an integer representation of a StatusCode
 		static public StatusCode toStatusCode(int code) {
-		    switch (code) {
-			    case 1:
-				return STATUS_PENDING_SUBMIT;
-			    case 2:
-				return STATUS_ENQUEUED;
-			    case 4:
-				return STATUS_RUNNING;
-			    case 7:
-				return STATUS_COMPLETE;
-			    case 8:
-				return ERROR_SGE_REJECT;
-			    case 9:
-				return ERROR_SUBMIT_FAIL;
-			    case 10:
-				return ERROR_RESULTS;
-			    case 11:
-				return ERROR_RUNSCRIPT;
-			    case 12:
-				return ERROR_BENCHMARK;
-			    case 13:
-				return ERROR_DISK_QUOTA_EXCEEDED;
-			    case 14:
-				return EXCEED_RUNTIME;
-			    case 15:
-				return EXCEED_CPU;
-			    case 16:
-				return EXCEED_FILE_WRITE;
-			    case 17:
-				return EXCEED_MEM;
-			    case 18:
-				return ERROR_GENERAL;
-			    case 19:
-				return STATUS_PROCESSING_RESULTS;
-			    case 20:
-			    return STATUS_PAUSED;
-			    case 21:
-			    return STATUS_KILLED;
-			    case 22:
-			    return STATUS_PROCESSING;
-			    case 23:
-			    return STATUS_NOT_REACHED;
-		    }
-		    return STATUS_UNKNOWN;
+			Set<StatusCode> statusCodes = EnumSet.allOf(StatusCode.class);
+			for (StatusCode sc: statusCodes) {
+				if (sc.getVal() == code) {
+					return sc;
+				}
+			}
+			return STATUS_UNKNOWN;
 		}
 	}
 
 
 	private static String getDescription(int code) {
-		switch (code) {
-		    case 1:
-			return "the job has been added to the starexec database but has not been submitted to the grid engine";
-		    case 2:
-			return "the job has been submitted to the grid engine and is waiting for an available execution host";
-		    case 4:
-			return "the job is currently being ran on an execution host";
-		    case 7:
-			return "the job has successfully completed execution and its statistics have been received from the grid engine";
-		    case 8:
-			return "the job was sent to the grid engine for execution but was rejected. this can indicate that there were no available queues or the grid engine is in an unclean state";
-		    case 9:
-			return "there was an issue submitting your job to the grid engine. this can be caused be unexpected errors raised by the grid engine";
-		    case 10:
-			return "the job completed execution but there was a problem accuiring its statistics or attributes from the grid engine";
-		    case 11:
-			return "the job could not be executed because a valid run script was not present";
-		    case 12:
-			return "the job could not be executed because the benchmark could not be found";
-		    case 13:
-			return "the job could not be executed because its execution environment could not be properly set up";
-		    case 14:
-			return "the job was terminated because it exceeded its run time limit";
-		    case 15:
-			return "the job was terminated because it exceeded its cpu time limit";
-		    case 16:
-			return "the job was terminated because it exceeded its file write limit";
-		    case 17:
-			return "the job was terminated because it exceeded its virtual memory limit";
-		    case 18:
-			return "an unknown error occurred which indicates a problem at any point in the job execution pipeline";
-		    case 19:
-			return "the job results are currently being processed";
-		    case 20:
-		    return "the job is paused so all job_pairs that were not complete were sent to this status";
-		    case 21:
-		    return "the job was killed, so all job_pairs that were not complete were sent to this status";
-		    case 22:
-		    return "this job is being processed by a new post-processor, and this pair is awaiting processing";
-		    case 23:
-		    return "this stage was not reached because a previous stage had some sort of error";
-	    }
-		return "the job status is not known or has not been set";
+		return StatusCode.toStatusCode(code).description;
 	}
 	private static String getStatus(int code) {
-		switch (code) {
-		    case 1:
-			return "pending submission";
-		    case 2:
-			return "enqueued";
-		    case 4:
-			return "running";
-		    case 7:
-			return "complete";
-		    case 8:
-			return "rejected";
-		    case 9:
-			return "submit failed";
-		    case 10:
-			return "results error";
-		    case 11:
-			return "run script error";
-		    case 12:
-			return "benchmark error";
-		    case 13:
-			return "environment error";
-		    case 14:
-			return "timeout (wallclock)";
-		    case 15:
-			return "timeout (cpu)";
-		    case 16:
-			return "file write exceeded";
-		    case 17:
-			return "memout";
-		    case 18:
-			return "error";
-		    case 19:
-			return "processing results";
-		    case 20:
-		    return "paused";
-		    case 21:
-		    return "killed";
-		    case 22:
-		    return "awaiting processing";
-		    case 23:
-		    return "stage not reached";
-	    }
-		return "unknown";
+		return StatusCode.toStatusCode(code).status;
 	}
-	
-	
-	
-
 
 	@Expose private StatusCode code = StatusCode.STATUS_UNKNOWN;
 
-	
 	/**
 	 * @return the status code for this status
 	 */

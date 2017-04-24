@@ -5,7 +5,7 @@ StarExecCommand is a program that can be used to communicate with the StarExec s
 command line. StarExecCommand can be used on any system with Java installed, and can be run by 
 using the following command at a command prompt.
 
-Java -jar StarexecCommand.jar 
+java -jar StarexecCommand.jar
 
 After starting the program, a shell accepting commands will start up. Typically, the command "login"
 will be the first you will want to run-- the login command will take in credentials and start a connection

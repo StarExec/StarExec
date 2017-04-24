@@ -2554,7 +2554,7 @@ public class Benchmarks {
 
 	}
 
-    public static List<Benchmark> getBrokenBenchDependencies(int benchId) {
+    public static List<Benchmark> getBrokenBenchDependencies(int benchId) throws SQLException {
         Connection con = null;  
         CallableStatement procedure = null;
         ResultSet results = null;
@@ -2570,14 +2570,14 @@ public class Benchmarks {
                 Benchmarks.add(s);
             }                                   
             return Benchmarks;
-        } catch (Exception e){          
-            log.error(e.getMessage(), e);       
+        } catch (SQLException e){
+            log.error(e.getMessage(), e);
+			throw e;
         } finally {
             Common.safeClose(con);
             Common.safeClose(procedure);
             Common.safeClose(results);
         }
-        return null;
     }
 
     public static Boolean benchHasBrokenDependencies(int benchId) {

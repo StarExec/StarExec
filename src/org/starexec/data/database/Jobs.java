@@ -11,12 +11,9 @@ import java.sql.SQLException;
 import java.sql.ResultSet;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.StopWatch;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.starexec.backend.Backend;
 import org.starexec.backend.GridEngineBackend;
 import org.starexec.constants.PaginationQueries;
@@ -4068,6 +4065,7 @@ public class Jobs {
 			log.info("Pause job with " + numPairs + " pairs took " + timer.getTime() + " milliseconds");
 
 			log.debug("Deletion of paused job pairs from queue was succesful");
+			Analytics.JOB_PAUSE.record();
 			return true;
 		} catch (Exception e) {
 			log.error("Pause Job says "+e.getMessage(),e);
@@ -4290,7 +4288,7 @@ public class Jobs {
 		if (statusCode.incomplete()) {
 		    stats.incrementIncompleteJobPairs();
 		}
-		if (statusCode.complete()) {
+		if (statusCode.statComplete()) {
 		    stats.incrementCompleteJobPairs();
 		}
 
@@ -4599,6 +4597,7 @@ public class Jobs {
 			procedure.executeUpdate();
 
 			log.debug("Resume of job id = " + jobId + " was successful");
+			Analytics.JOB_RESUME.record();
 			return true;
 		} catch (Exception e) {
 			log.error("Resume Job says "+e.getMessage(),e);

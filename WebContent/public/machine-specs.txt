@@ -1,18 +1,13 @@
-# Starexec stats nodes 0 - 32:
+# Starexec stats nodes 001 - 192:
 Intel(R) Xeon(R) CPU E5-2609 0 @ 2.40GHz (2393 MHZ)
     10240  KB Cache
     129022 MB main memory
 
-# Starexec stats nodes 33 - 192:
-Intel(R) Xeon(R) CPU E5-2609 0 @ 2.40GHz (2393 MHZ)
-    10240  KB Cache
-    258294 MB main memory
-
 # Software:
 OS:    Red Hat Enterprise Linux Server release 7.2 (Maipo)
-kernel:    3.10.0-327.10.1.el7.x86_64
+kernel:    3.10.0-514.16.1.el7.x86_64
 glibc:    gcc-4.8.5-4.el7.x86_64
-        glibc-2.17-106.el7_2.4.i686
+          glibc-2.17-157.el7_3.1.i686
 
 ------------------------------------------------------------------------------------
 Stats gathered from these commands on the nodes:
@@ -20,16 +15,16 @@ cat /etc/redhat-release
 Red Hat Enterprise Linux Server release 7.2 (Maipo)
 
 [root@n060 ~]# uname -r
-3.10.0-327.10.1.el7.x86_64
+3.10.0-514.16.1.el7.x86_64
 
 [root@n075 ~]# cat /proc/cpuinfo  | egrep "^model name|^cache size" | head -2
 model name    : Intel(R) Xeon(R) CPU E5-2609 0 @ 2.40GHz
 cache size    : 10240 KB
 
 [root@n075 ~]# cat /proc/meminfo  | grep MemTotal
-MemTotal:       264493492 kB
+MemTotal:       263935644 kB
 
 [root@n060 ~]# rpm -qa | egrep "^glibc-[0-9]|^gcc-[0-9]"
-glibc-2.17-106.el7_2.4.x86_64
-glibc-2.17-106.el7_2.4.i686
+glibc-2.17-157.el7_3.1.i686
+glibc-2.17-157.el7_3.1.x86_64
 gcc-4.8.5-4.el7.x86_64

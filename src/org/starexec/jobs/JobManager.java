@@ -3,6 +3,7 @@ package org.starexec.jobs;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -436,7 +437,7 @@ public abstract class JobManager {
 					while (i < R.NUM_JOB_PAIRS_AT_A_TIME && s.pairIter.hasNext()) {
 						//skip if this user has many more pairs than some other user
 						if (monitor.skipUser(s.job.getUserId())) {
-							log.info("excluding user with the following id from submitting more pairs "+s.job.getUserId());
+							log.debug("excluding user with the following id from submitting more pairs "+s.job.getUserId());
 							Long min = monitor.getMin();
 							if (min==null) {
 								min = -1l;
@@ -447,20 +448,36 @@ public abstract class JobManager {
 
 						final JobPair pair = s.pairIter.next();
 
-						monitor.changeLoad(s.job.getUserId(), s.job.getWallclockTimeout());
 						if (pair.getPrimarySolver()==null || pair.getBench()==null) {
 							// if the solver or benchmark is null, they were deleted. Indicate that the pair's
 							//submission failed and move on
 							JobPairs.UpdateStatus(pair.getId(), Status.StatusCode.ERROR_SUBMIT_FAIL.getVal());
 							continue;
 						}
+						monitor.changeLoad(s.job.getUserId(), s.job.getWallclockTimeout());
 						i++;
 						log.trace("About to submit pair " + pair.getId());
+						// Check if the benchmark for this pair has any broken dependencies.
+						int benchId = pair.getBench().getId();
+						log.debug("Bench id for pair about to be submitted is: "+benchId);
+						try {
+							log.debug("Checking bench dependencies for bench with id: "+benchId);
+							List<Benchmark> brokenDependencies = Benchmarks.getBrokenBenchDependencies(benchId);
+							log.debug("Found "+brokenDependencies.size()+" missing dependencies.");
+							if (brokenDependencies.size() > 0) {
+								log.debug("Skipping pair with broken bench dependency...");
+								JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_BENCH_DEPENDENCY_MISSING.getVal());
+								continue;
+							}
+						} catch (SQLException e) {
+							log.error("Database error while trying to get broken bench dependencies.", e );
+							// submit the pair anyway, if there are broken bench dependencies then we will get a
+							// submit_failed status.
+						}
 
 						try {
 
 							// Check to make sure the pair is still pending submit to prevent pairs being submitted twice.
-							// Double submission may be causing job
 							StatusCode statusOfPair = JobPairs.getPair(pair.getId()).getStatus().getCode();
 							if (statusOfPair != StatusCode.STATUS_PENDING_SUBMIT) {
 								log.warn("Pair with id="+pair.getId()+" was caught attempting to be submitted again.");

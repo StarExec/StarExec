@@ -712,7 +712,7 @@ public class JobPairs {
 			}
 		} else if (type.equals("complete")) {
 			for (JobPair jp : pairs) {
-				if (jp.getStageFromNumber(stageNumber).getStatus().getCode().complete()) {
+				if (jp.getStageFromNumber(stageNumber).getStatus().getCode().statComplete()) {
 					filteredPairs.add(jp);
 				}
 			}

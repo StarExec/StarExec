@@ -16,7 +16,7 @@ public class C {
 	public static Boolean debugMode = false;
 
 	public static String VERSION="February 06, 2016";
-	
+
 	public static String HELP_MESSAGE = "Welcome to StarexecCommand! This tool is intended to allow users to communicate with the " +
 			"Starxec server. For assistance in using this tool, please consult the documentation present in the archive this tool was " +
 			"packaged with.";
@@ -32,19 +32,20 @@ public class C {
 	public static String URL_HOME= "secure/index.jsp";
 	public static String URL_LOGIN= "secure/j_security_check";
 	public static String URL_DOWNLOAD = "secure/download";
+
 	public static String URL_LOGOUT="services/session/logout";
 	public static String URL_USERSETTING="services/edit/user/";
 	public static String URL_UPLOADSOLVER="secure/upload/solvers";
 	public static String URL_UPLOADBENCHMARKS="/secure/upload/benchmarks";
 	public static String URL_UPLOADPROCESSOR="secure/processors/manager";
 	public static String URL_UPLOADSPACE="secure/upload/space";
-    public static String URL_UPLOADJOBXML="secure/upload/jobXML";
+	public static String URL_UPLOADJOBXML="secure/upload/jobXML";
 	public static String URL_DELETEPRIMITIVE="services/delete";
 	public static String URL_ADDSPACE="secure/add/space";
 	public static String URL_EDITSPACEVISIBILITY="services/space/changePublic";
 	public static String URL_UPLOADCONFIG="secure/upload/configurations";
 	public static String URL_POSTJOB="secure/add/job";
-    public static String URL_GETSOLVERCONFIGS="secure/details/solverconfigs.jsp";
+	public static String URL_GETSOLVERCONFIGS="secure/details/solverconfigs.jsp";
 	public static String URL_GETPRIM="services/space/{id}/{type}/pagination";
 	public static String URL_GETPRIMJSON="services/details/{type}/{id}/";
 	public static String URL_GETUSERPRIM="services/users/{id}/{type}/pagination";
@@ -54,6 +55,10 @@ public class C {
 	public static String URL_COPYSOLVER="services/spaces/{spaceID}/add/solver";
 	public static String URL_COPYSPACE="services/spaces/{spaceID}/copySpace";
 	public static String URL_COPYJOB="services/spaces/{spaceID}/add/job";
+
+	public static final String URL_COMMUNITY_FROM_SPACE_SPACE_ID_PARAM = "{spaceID}";
+	public static final String URL_COMMUNITY_FROM_SPACE = "services/space/community/"+URL_COMMUNITY_FROM_SPACE_SPACE_ID_PARAM;
+
 	public static String URL_COPYUSER="services/spaces/{spaceID}/add/user";
 	public static String URL_REMOVEPRIMITIVE="services/remove";
 	public static String URL_PAUSEORRESUME="services/{method}/job/{id}";
@@ -67,9 +72,9 @@ public class C {
 	public static int SUCCESS_JOBDONE=3;
 	public static int SUCCESS_LOGOUT=4;
 	public static int SUCCESS_LOGIN=5;
-	
+
 	public static HashMap<Integer,String> successMessages=new HashMap<Integer,String>();
-	
+
 	static {
 		successMessages.put(SUCCESS_EXIT, "Goodbye");
 		successMessages.put(SUCCESS_NOFILE, "No new job results");
@@ -78,28 +83,28 @@ public class C {
 		successMessages.put(SUCCESS_LOGIN, "Login successful");
 	}
 	// Comment
-	
+
 	public static final String COMMENT_SYMBOL = "#";
-	
+
 	//Commands the user may use
-	
+
 	//General commands
-    public static String COMMAND_SLEEP="sleep";
-    public static String COMMAND_HELP="help";
+	public static String COMMAND_SLEEP="sleep";
+	public static String COMMAND_HELP="help";
 	public static String COMMAND_EXIT="exit";
 	public static String COMMAND_LOGIN="login";
 	public static String COMMAND_LOGOUT="logout";
 	public static String COMMAND_RUNFILE="runfile";
 	public static String COMMAND_RETURNIDS="returnids";
 	public static String COMMAND_IGNOREIDS="ignoreids";
-	public static String COMMAND_VIEWALL ="viewall";
+	public static String COMMAND_VIEWALL="viewall";
 	public static String COMMAND_VIEWLIMITED="viewlimit";
 	public static String COMMAND_PAUSEJOB="pausejob";
 	public static String COMMAND_RESUMEJOB="resumejob";
 	public static String COMMAND_RERUNPAIR="rerunpair";
 	public static String COMMAND_RERUNJOB="rerunjob";
 	public static String COMMAND_DEBUG="debug";
-	
+
 		//Download commands
 	public static String COMMAND_GETJOBOUT="getjobout";
 	public static String COMMAND_GETJOBINFO="getjobinfo";
@@ -136,7 +141,6 @@ public class C {
 	public static String COMMAND_SETSPACEPUBLIC="setspacepublic";
 	public static String COMMAND_SETSPACEPRIVATE="setspaceprivate";
 
-	
 	//Uploading commands
 	public static String COMMAND_PUSHSOLVER="pushsolver";
 	public static String COMMAND_PUSHBENCHMARKS="pushbenchmarks";
@@ -144,7 +148,7 @@ public class C {
 	public static String COMMAND_PUSHPOSTPROC="pushpostproc";
 	public static String COMMAND_PUSHBENCHPROC="pushbenchproc";
 	public static String COMMAND_PUSHSPACEXML="pushspacexml";
-        public static String COMMAND_PUSHJOBXML="pushjobxml";
+	public static String COMMAND_PUSHJOBXML="pushjobxml";
 	public static String COMMAND_PUSHCONFIGRUATION="pushconfig";
 
 	public static final String COMMAND_PRINT="print";
@@ -156,18 +160,18 @@ public class C {
 	public static String COMMAND_DELETEBENCHPROC="deletebenchproc";
 	public static String COMMAND_DELETEJOB="deletejob";
 	public static String COMMAND_DELETECONFIG="deleteconfig";
-	
+
 	//remove commands
 	public static String COMMAND_REMOVEUSER="removeuser";
 	public static String COMMAND_REMOVEBENCHMARK="removebench";
 	public static String COMMAND_REMOVESOLVER="removesolver";
 	public static String COMMAND_REMOVEJOB="removejob";
 	public static String COMMAND_REMOVESUBSPACE="removesubspace";
-	
+
 	//creating commands
 	public static String COMMAND_CREATEJOB="createjob";
 	public static String COMMAND_CREATESUBSPACE="createsubspace";
-	
+
 	//copy and mirror commands
 	public static String COMMAND_COPYBENCH="copybench";
 	public static String COMMAND_COPYSOLVER="copysolver";
@@ -176,18 +180,16 @@ public class C {
 	public static String COMMAND_COPYSPACE="copyspace";
 	public static String COMMAND_LINKJOB="linkjob";
 	public static String COMMAND_LINKUSER="linkuser";
-	
-	
+
 	//listing commands
 	public static String COMMAND_LISTSOLVERS="lssolvers";
-        public static String COMMAND_LISTSOLVERCONFIGS="lsconfigs";
+	public static String COMMAND_LISTSOLVERCONFIGS="lsconfigs";
 	public static String COMMAND_LISTPRIMITIVES="ls";
 	public static String COMMAND_LISTBENCHMARKS="lsbenchmarks";
 	public static String COMMAND_LISTJOBS="lsjobs";
 	public static String COMMAND_LISTUSERS="lsusers";
 	public static String COMMAND_LISTSUBSPACES="lssubspaces";
-	
-	
+
 	//Param names expected at the command line
 	public static String PARAM_NAME="n";
 	public static String PARAM_DESC="d";
@@ -237,23 +239,18 @@ public class C {
 	public static String PARAM_TYPE="type";
 	public static String PARAM_SUPPRESS_TIMESTAMPS = "suppresstime";
 	public static String PARAM_RESULTS_INTERVAL = "interval";
-    public static String PARAM_LONG_PATH = "longpath";
-    public static String PARAM_COPY_PRIMITIVES = "copyprimitives";
+	public static String PARAM_LONG_PATH = "longpath";
+	public static String PARAM_COPY_PRIMITIVES = "copyprimitives";
 	public static String ARG_ROUNDROBIN="r";
 	public static String ARG_DEPTHFIRST="d";
-	
+
 	//parameters expected by the StarExec server
 	public static String FORMPARAM_TYPE="type";
 	public static String FORMPARAM_SINCE="since";
 	public static String FORMPARAM_ID="id";
 	public static String FORMPARAM_TRAVERSAL="traversal";
 
-
 	public static final Integer DEFAULT_SOLVER_TYPE = 1;
 
-
-
 	public static String STATUS_MESSAGE_COOKIE="STATUS_MESSAGE_STRING";
-
-    
 }

@@ -75,6 +75,8 @@ The following people were involved in the development
 of the software infrastructure at various stages of the project:
 Eric Burns,
 Todd Elvers,
+Albert Giegerich,
+Pat Hawks,
 Tyler Jensen,
 Wyatt Kaiser,
 Ben McCune,

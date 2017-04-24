@@ -9,7 +9,9 @@ import java.sql.SQLException;
  * Actions must be added both here and in the `analytics_events` table.
  */
 public enum Analytics {
+	JOB_ATTRIBUTES,
 	JOB_CREATE_QUICKJOB,
+	JOB_DETAILS,
 	JOB_PAUSE,
 	JOB_RESUME,
 	PAGEVIEW_HELP;

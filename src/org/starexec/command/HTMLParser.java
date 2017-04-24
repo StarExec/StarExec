@@ -1,6 +1,7 @@
 package org.starexec.command;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.http.Header;
 import org.starexec.util.Validator;
@@ -21,7 +22,7 @@ public class HTMLParser {
 	 * @author Eric Burns
 	 */
 	
-	public static String URLEncode(String u, HashMap<String,String> params) {
+	public static String URLEncode(String u, Map<String,String> params) {
 		StringBuilder answer=new StringBuilder();
 		answer.append(u);
 		answer.append("?");
