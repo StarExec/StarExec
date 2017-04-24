@@ -39,6 +39,7 @@ import org.apache.commons.io.LineIterator;
 import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.starexec.app.RESTHelpers;
 import org.starexec.constants.R;
 import org.starexec.data.database.Jobs;
@@ -74,6 +75,15 @@ public class Util {
     	}
 
     }
+
+	/**
+	 * Gets the current stack trace in the program.
+	 * @return the current stack trace as a String.
+	 */
+	public static String getCurrentStackTrace() {
+		return ExceptionUtils.getStackTrace(new Throwable());
+	}
+
     /**
      *
      * @param c The string color
