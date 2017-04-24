@@ -53,7 +53,7 @@ public class ArchiveUtil {
 	}
 	/**
 	 * Gets the uncompressed size of a zip archive
-	 * @param filePath The path to the file to get the size of 
+	 * @param fileName The path to the file to get the size of
 	 * @return The size of the uncompressed zip archive, in bytes
 	 * @author Eric Burns
 	 */
@@ -74,7 +74,7 @@ public class ArchiveUtil {
 	}
 	/**
 	 * Gets the uncompressed size of a tar archive
-	 * @param filePath The path to the file to get the size of 
+	 * @param fileName The path to the file to get the size of
 	 * @return The size of the uncompressed tar archive, in bytes
 	 * @author Eric Burns
 	 */
@@ -103,7 +103,7 @@ public class ArchiveUtil {
 	 * Gets the APPROXIMATE uncompressed size of a tarGz archive. The actual value returned
 	 * is the size of the TAR file, which will be slightly larger than the size of the completely 
 	 * unarchived file.
-	 * @param filePath The path to the file to get the size of 
+	 * @param fileName The path to the file to get the size of
 	 * @return The size of the uncompressed TAR file, in bytes
 	 * @author Eric Burns
 	 */
