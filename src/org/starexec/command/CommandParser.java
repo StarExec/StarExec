@@ -38,7 +38,7 @@ class CommandParser {
 	 *
 	 * @param attrs Key value pairs of strings to be printed out
 	 * @param verbose If false, only looks for the "id" "name" and "description"
-	 *            attributes. Otherwise, prints all attributes
+	 *        attributes. Otherwise, prints all attributes
 	 */
 	private void printAttributes(Map<String, String> attrs, boolean verbose) {
 		// currently prints id, name, description
