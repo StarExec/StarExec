@@ -129,7 +129,7 @@ public class BenchmarkUploader extends HttpServlet {
 		if (name!=null) {
 			uniqueDir = new File(uniqueDir, name);
 		}
-
+		log.debug(methodName, "Creating directory  "+uniqueDir + " as " + System.getProperty("user.name"));
 		boolean dirMade = uniqueDir.mkdirs();
 		if (!dirMade) {
 			log.warn(methodName, "Directory was not made." + uniqueDir.getAbsolutePath());
