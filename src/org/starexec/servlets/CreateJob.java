@@ -366,10 +366,10 @@ public class CreateJob extends HttpServlet {
 				// If the submission was successful, send back to space explorer
 
 				response.addCookie(new Cookie("New_ID", String.valueOf(j.getId())));
-				if (!selection.equals("quickJob")) {
-					response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
-				} else {
+				if (selection.equals("quickJob")) {
 					response.sendRedirect(Util.docRoot("secure/details/job.jsp?id=" + j.getId()));
+				} else {
+					response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
 				}
 			} else {
 				// Or else send an error
