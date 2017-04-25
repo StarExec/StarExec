@@ -599,7 +599,7 @@ class CommandParser {
 			}
 			try {
 				Thread.sleep((long) Double.parseDouble(commandParams.get(C.PARAM_TIME)) * 1000);
-			} catch (Exception e) {
+			} catch (InterruptedException e) {
 				// do nothing-- we shouldn't ever get here
 			}
 
@@ -814,7 +814,10 @@ class CommandParser {
 					System.out.println("Job done");
 					return 0;
 				}
-				Thread.sleep((long) interval);
+				try {
+					Thread.sleep((long) interval);
+				} catch(InterruptedException e) {
+				}
 			}
 
 		} catch (Exception e) {
