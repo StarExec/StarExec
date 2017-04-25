@@ -37,6 +37,14 @@ import org.starexec.util.Util;
 public class SessionFilter implements Filter {
 	private static final StarLogger log = StarLogger.getLogger(SessionFilter.class);
 
+	/**
+	 * Detects requests originating from StarExecCommand
+	 * @param request
+	 * @return true if request is from StarExecCommand, false otherwise
+	 */
+	private static final boolean isFromCommand(HttpServletRequest request) {
+		return request.getHeader("StarExecCommand") != null;
+	}
 
 	@Override
 	public void destroy() {
@@ -51,8 +59,7 @@ public class SessionFilter implements Filter {
 			HttpServletRequest httpRequest = (HttpServletRequest) request;
 			log.debug(method, "Request URI: "+httpRequest.getRequestURI());
 
-			boolean isCommandRequest = httpRequest.getHeader("StarExecCommand") != null;
-			if ( isCommandRequest ) {
+			if ( isFromCommand(httpRequest) ) {
 				log.debug(method, "Got request from StarExecCommand.");
 			}
 
