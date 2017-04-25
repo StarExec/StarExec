@@ -123,12 +123,20 @@ public class BenchmarkUploader extends HttpServlet {
 	 * @return File object representing the new directory
 	 */
 	public static File getDirectoryForBenchmarkUpload(int userId, String name) {
+		final String methodName = "getDirectoryForBenchmarkUpload";
 		File uniqueDir = new File(R.getBenchmarkPath(), "" + userId);
 		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
 		if (name!=null) {
 			uniqueDir = new File(uniqueDir, name);
 		}
-		uniqueDir.mkdirs();
+
+		boolean dirMade = uniqueDir.mkdirs();
+		if (!dirMade) {
+			log.warn(methodName, "Directory was not made." + uniqueDir.getAbsolutePath());
+			log.warn(methodName, "Did file already exist?" + uniqueDir.exists());
+			log.warn(methodName, "User was: " + System.getProperty("user.name"));
+			log.warn(methodName, "canWrite for file: "+uniqueDir.canWrite());
+		}
 		return uniqueDir;
 	}
 	
@@ -206,7 +214,7 @@ public class BenchmarkUploader extends HttpServlet {
 		
 		ArrayList<Integer> benchmarkIds=new ArrayList<Integer>();
 		// Create a unique path the zip file will be extracted to
-		File uniqueDir = getDirectoryForBenchmarkUpload(userId,null);
+		final File uniqueDir = getDirectoryForBenchmarkUpload(userId,null);
 		
 		// Create the zip file object-to-be
 		long fileSize=ArchiveUtil.getArchiveSize(archiveFile.getAbsolutePath());
