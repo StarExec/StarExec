@@ -10,6 +10,7 @@ import java.sql.SQLException;
  */
 public enum Analytics {
 	JOB_ATTRIBUTES,
+	JOB_CREATE,
 	JOB_CREATE_QUICKJOB,
 	JOB_DETAILS,
 	JOB_PAUSE,

@@ -259,7 +259,6 @@ public class CreateJob extends HttpServlet {
 			//Depending on our run selection, handle each case differently
 			//if the user created a quickJob, they uploaded a single text benchmark and a solver to run
 			if (selection.equals("quickJob")) {
-				Analytics.JOB_CREATE_QUICKJOB.record();
 				int solverId = Integer.parseInt(request.getParameter(R.SOLVER));
 				String benchText = request.getParameter(R.BENCHMARK);
 				String bName = request.getParameter(benchName);
@@ -364,15 +363,16 @@ public class CreateJob extends HttpServlet {
 
 			if (submitSuccess) {
 				// If the submission was successful, send back to space explorer
-
 				response.addCookie(new Cookie("New_ID", String.valueOf(j.getId())));
+
+				Analytics.JOB_CREATE.record();
 				if (selection.equals("quickJob")) {
+					Analytics.JOB_CREATE_QUICKJOB.record();
 					response.sendRedirect(Util.docRoot("secure/details/job.jsp?id=" + j.getId()));
 				} else {
 					response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
 				}
-			} else {
-				// Or else send an error
+			} else { // if not submitSuccess
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
 						"Your job failed to submit for an unknown reason. Please try again.");
 			}
