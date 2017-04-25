@@ -791,7 +791,8 @@ INSERT INTO analytics_events (name) VALUES
 	('JOB_DETAILS'),
 	('JOB_PAUSE'),
 	('JOB_RESUME'),
-	('PAGEVIEW_HELP');
+	('PAGEVIEW_HELP'),
+	('STAREXECCOMMAND_LOGIN');
 
 -- Contains historical analytics data:
 --  * number of times an event was recorded on a particular date

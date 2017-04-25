@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.starexec.constants.R;
+import org.starexec.data.database.Analytics;
 import org.starexec.data.database.Common;
 import org.starexec.data.database.Logins;
 import org.starexec.data.database.Reports;
@@ -59,7 +60,8 @@ public class SessionFilter implements Filter {
 			HttpServletRequest httpRequest = (HttpServletRequest) request;
 			log.debug(method, "Request URI: "+httpRequest.getRequestURI());
 
-			if ( isFromCommand(httpRequest) ) {
+			boolean isCommandRequest = isFromCommand(httpRequest);
+			if (isCommandRequest) {
 				log.debug(method, "Got request from StarExecCommand.");
 			}
 
@@ -149,6 +151,10 @@ public class SessionFilter implements Filter {
 	private void logUserLogin(User user, HttpServletRequest request) {
 		// Log the regular application log
 		log.info(String.format("%s [%s] logged in.", user.getFullName(), user.getEmail()));
+
+		if (isFromCommand(request)) {
+			Analytics.STAREXECCOMMAND_LOGIN.record();
+		}
 
 		String ip = request.getRemoteAddr();
 		String rawBrowser = request.getHeader("user-agent");

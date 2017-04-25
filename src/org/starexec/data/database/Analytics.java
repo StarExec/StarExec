@@ -15,7 +15,8 @@ public enum Analytics {
 	JOB_DETAILS,
 	JOB_PAUSE,
 	JOB_RESUME,
-	PAGEVIEW_HELP;
+	PAGEVIEW_HELP,
+	STAREXECCOMMAND_LOGIN;
 
 	private final int id;
 
