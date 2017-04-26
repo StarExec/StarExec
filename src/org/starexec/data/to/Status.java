@@ -193,11 +193,9 @@ public class Status {
 		}
 		//incomplete as it is defined for stats
 		public boolean statIncomplete(){
-			//return (val!=7 && !(val>=14 &&val<=17));
 			return this.statComplete == StatCompleteness.INCOMPLETE;
 		}
 		public boolean statComplete() {
-		    //return val==7 || (val>=14 &&val<=17);
 			return this.statComplete == StatCompleteness.COMPLETE;
 		}
 		public boolean finishedRunning() {
