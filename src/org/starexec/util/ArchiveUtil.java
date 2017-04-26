@@ -299,6 +299,7 @@ public class ArchiveUtil {
 	 * @author Tyler Jensen
 	 */
 	private static void extractArchiveOfType(String fileName, String destination, ArchiveType archiveType) throws Exception {
+		final String methodName = "extractArchiveOfType";
 		// Use the Apache commons compression library to open up the tar file...
 		log.debug("extracting "+archiveType);
 		InputStream is = new FileInputStream(fileName);
@@ -311,14 +312,16 @@ public class ArchiveUtil {
 			if(!entry.isDirectory()) {
 				// If it's not a directory...
 				File fileToCreate = new File(destination, entry.getName());
-
 				File dir = new File(fileToCreate.getParent());
 				boolean success = true;
 				if(!dir.exists()) {
 					// And create it if it doesn't exist so we can write a file inside it
 					success = dir.mkdirs();
 					if (!success) {
-						log.warn("Could not create directory: "+destination+"\n"+Util.getCurrentStackTrace());
+						log.warn("Could not create directory: "+dir.getAbsolutePath()+"\n"+Util.getCurrentStackTrace());
+						log.warn(methodName, "Did file already exist: " + dir.exists());
+						log.warn(methodName, "User was: " + System.getProperty("user.name"));
+						log.warn(methodName, "canWrite for file: "+dir.canWrite());
 					}
 				}
 				if (success) {
