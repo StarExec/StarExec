@@ -863,7 +863,13 @@ public class Benchmarks {
 	 * @author Wyatt Kaiser
 	 * @throws Exception Any exception with the description file, with an error message contained
 	 */
-	public static Space extractSpacesAndBenchmarks(File directory, int typeId, int userId, boolean downloadable, Permission perm, Integer statusId) throws Exception {
+	public static Space extractSpacesAndBenchmarks(
+			File directory,
+			int typeId,
+			int userId,
+			boolean downloadable,
+			Permission perm,
+			Integer statusId) throws IOException, StarExecException{
 		// Create a space for the current directory and set it's name		
 		log.info("Extracting Spaces and Benchmarks for " + userId);
 		Space space = new Space();
@@ -907,7 +913,7 @@ public class Benchmarks {
 				} else {
 				    String msg = "\""+f.getName() + "\" is not accepted as a legal benchmark name.";
 				    Uploads.setBenchmarkErrorMessage(statusId, msg);
-				    throw new Exception(msg);
+				    throw new StarExecException(msg);
 				}
 
 			}

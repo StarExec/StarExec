@@ -1,6 +1,7 @@
 package org.starexec.servlets;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.text.DateFormat;
@@ -122,7 +123,7 @@ public class BenchmarkUploader extends HttpServlet {
 	 * If null, benchmarks will be directly under the /date/ directory
 	 * @return File object representing the new directory
 	 */
-	public static File getDirectoryForBenchmarkUpload(int userId, String name) {
+	public static File getDirectoryForBenchmarkUpload(int userId, String name) throws FileNotFoundException {
 		final String methodName = "getDirectoryForBenchmarkUpload";
 		File uniqueDir = new File(R.getBenchmarkPath(), "" + userId);
 		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
@@ -133,9 +134,12 @@ public class BenchmarkUploader extends HttpServlet {
 		boolean dirMade = uniqueDir.mkdirs();
 		if (!dirMade) {
 			log.warn(methodName, "Directory was not made." + uniqueDir.getAbsolutePath());
-			log.warn(methodName, "Did file already exist?" + uniqueDir.exists());
+			log.warn(methodName, "Did file already exist: " + uniqueDir.exists());
 			log.warn(methodName, "User was: " + System.getProperty("user.name"));
 			log.warn(methodName, "canWrite for file: "+uniqueDir.canWrite());
+			if (!uniqueDir.exists()) {
+				throw new FileNotFoundException("The unique directory could not be made for some reason.");
+			}
 		}
 		return uniqueDir;
 	}
@@ -210,7 +214,7 @@ public class BenchmarkUploader extends HttpServlet {
 	 */
 	public static List<Integer> addBenchmarksFromArchive(File archiveFile, int userId, int spaceId, int typeId,
 			boolean downloadable, Permission perm, String uploadMethod, int statusId,
-			boolean hasDependencies, boolean linked, Integer depRootSpaceId) throws Exception {
+			boolean hasDependencies, boolean linked, Integer depRootSpaceId) throws IOException, StarExecException {
 		
 		ArrayList<Integer> benchmarkIds=new ArrayList<Integer>();
 		// Create a unique path the zip file will be extracted to

@@ -1,6 +1,7 @@
 package org.starexec.jobs;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -574,11 +575,24 @@ public abstract class JobManager {
 	}
 
 	// Helper method that builds the schedule to be used for scheduling.
-    private static LinkedList<SchedulingState> buildSchedule(final List<Job> joblist, final Queue q, int queueSize, final int nodeCount) {
+    private static LinkedList<SchedulingState> buildSchedule(
+    		final List<Job> joblist,
+			final Queue q,
+			int queueSize,
+			final int nodeCount) {
+
 		Map<Integer, JobCount> userToJobCountMap = buildUserToJobCountMap(joblist);
 		final LinkedList<SchedulingState> schedule = new LinkedList<>();
 		// add all the jobs in jobList to a SchedulingState in the schedule.
 		for (final Job job : joblist) {
+			File uniqueBenchDir = null;
+			try {
+				uniqueBenchDir = BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null);
+			} catch (FileNotFoundException e) {
+				// Log the error and skip this job
+				log.error("Could not get unique benchmark directory.", e);
+				continue;
+			}
 			// contains users that we have identified as exceeding their quota. These users will be skipped
 			final Map<Integer, Boolean> quotaExceededUsers = new HashMap<>();
 
@@ -602,7 +616,7 @@ public abstract class JobManager {
 			jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
 			jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
 			jobTemplate = jobTemplate.replace("$$DISK_QUOTA$$", ""+job.getUser().getDiskQuota());
-			jobTemplate = jobTemplate.replace("$$BENCH_SAVE_PATH$$", BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null).getAbsolutePath());
+			jobTemplate = jobTemplate.replace("$$BENCH_SAVE_PATH$$", uniqueBenchDir.getAbsolutePath());
 			// for every job, retrieve no more than the number of pairs that would fill the queue.
 			// retrieving more than this is wasteful.
 			int limit=Math.max(R.NUM_JOB_PAIRS_AT_A_TIME, (nodeCount*R.NODE_MULTIPLIER)-queueSize);
