@@ -1932,9 +1932,7 @@ public class Jobs {
 			procedure.setInt("stageNumber",stageNumber);
 			procedure.setInt("jobSpaceId",jobSpaceId);
 			results = procedure.executeQuery();
-			List<JobPair> jobPairs = getJobPairsForDataTable(jobId,results,false,false, primitivesToAnonymize);
-
-			return jobPairs;
+			return getJobPairsForDataTable(jobId,results,false,false, primitivesToAnonymize);
 		} catch (Exception e){
 			log.error("get JobPairs for Next Page of Job space " + jobSpaceId + " says " + e.getMessage(), e);
 		} finally {
