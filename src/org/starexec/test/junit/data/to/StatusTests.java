@@ -62,4 +62,22 @@ public class StatusTests {
 			}
 		}
 	}
+
+	@Test
+	public void failedTest() {
+		for (StatusCode status : EnumSet.allOf(StatusCode.class)) {
+			if (status == StatusCode.ERROR_BENCH_DEPENDENCY_MISSING
+					|| status == StatusCode.ERROR_GENERAL
+					|| status == StatusCode.ERROR_SGE_REJECT
+					|| status == StatusCode.ERROR_SUBMIT_FAIL
+					|| status == StatusCode.ERROR_RESULTS
+					|| status == StatusCode.ERROR_RUNSCRIPT
+					|| status == StatusCode.ERROR_BENCHMARK
+					|| status == StatusCode.ERROR_DISK_QUOTA_EXCEEDED) {
+				assertTrue("The "+status.toString()+" status should be a \"failed\" status.", status.failed());
+			} else {
+				assertFalse("The "+status.toString()+" status should not be a \"failed\" status.", status.failed());
+			}
+		}
+	}
 }
