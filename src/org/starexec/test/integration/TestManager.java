@@ -20,6 +20,7 @@ import org.starexec.test.integration.app.RESTServicesSecurityTests;
 import org.starexec.test.integration.app.RESTServicesTests;
 import org.starexec.test.integration.database.*;
 import org.starexec.test.integration.security.*;
+import org.starexec.test.integration.servlets.BenchmarkUploaderTests;
 import org.starexec.test.integration.util.JobUtilTests;
 import org.starexec.test.integration.util.dataStructures.TreeNodeTests;
 import org.starexec.test.integration.web.*;
@@ -82,6 +83,7 @@ public class TestManager {
 		tests.add(new JobUtilTests());
 		tests.add(new ReportsTests());
 		tests.add(new ErrorLogsTests());
+		tests.add(new BenchmarkUploaderTests());
 		//tests.add(new RESTServicesTests());
 	}
 	/**
