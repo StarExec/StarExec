@@ -80,4 +80,23 @@ public class StatusTests {
 			}
 		}
 	}
+	@Test
+	public void incompleteTest() {
+		for (StatusCode status : EnumSet.allOf(StatusCode.class)) {
+			if (status == StatusCode.STATUS_UNKNOWN
+					|| status == StatusCode.STATUS_PENDING_SUBMIT
+					|| status == StatusCode.STATUS_ENQUEUED
+					|| status == StatusCode.STATUS_RUNNING
+					|| status == StatusCode.STATUS_PROCESSING_RESULTS
+					|| status == StatusCode.STATUS_PAUSED
+					|| status == StatusCode.STATUS_KILLED
+					|| status == StatusCode.STATUS_PROCESSING
+					|| status == StatusCode.STATUS_NOT_REACHED
+					|| status == StatusCode.ERROR_BENCH_DEPENDENCY_MISSING) {
+				assertTrue("The "+status.toString()+" status should be an \"incomplete\" status.", status.incomplete());
+			} else {
+				assertFalse("The "+status.toString()+" status should not be a \"incomplete\" status.", status.incomplete());
+			}
+		}
+	}
 }
