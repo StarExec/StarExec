@@ -37,6 +37,12 @@ public class HTMLParser {
 		return answer.substring(0, answer.length() - 1);
 	}
 
+	private static final Pattern extractSpaceName =
+		Pattern.compile("onclick=\"openSpace[^>]+>([^<]*)<");
+
+	private static final Pattern extractPrimName =
+		Pattern.compile("_blank\">([^<]*)<");
+
 	/**
 	 * Given a Json string formatted as StarExec does its first line in a table
 	 * extract the name of a primitive
@@ -46,46 +52,23 @@ public class HTMLParser {
 	 * @return The name if it exists or null if it does not
 	 */
 	public static String extractNameFromJson(String jsonString, String type) {
-
-		// spaces are formatted differently from any other primitive
-		if (type.equals("spaces")) {
-			// space names are flanked on the left by the following
-			int startIndex = jsonString.indexOf("onclick=\"openSpace");
-			if (startIndex < 0) {
-				return null;
-			}
-			while (startIndex < jsonString.length() && jsonString.charAt(startIndex) != '>') {
-				startIndex += 1;
-			}
-			if (startIndex >= jsonString.length() - 1) {
-				return null;
-			}
-			startIndex += 1;
-			int endIndex = startIndex + 1;
-			while (endIndex < jsonString.length() && jsonString.charAt(endIndex) != '<') {
-				endIndex += 1;
-			}
-
-			return jsonString.substring(startIndex, endIndex);
-
-		}
-		// Names are flanked on the left by a link that ends with
-		// target="_blank"\>
-		int startIndex = jsonString.indexOf("_blank\">");
-
-		if (startIndex < 0) {
+		if (jsonString == null) {
 			return null;
 		}
+		Pattern p = null;
 
-		// move across "_blank"\>
-		startIndex += 8;
-		int endIndex = startIndex + 1;
-
-		// names are flanked on the right by the start of another tag
-		while (endIndex < jsonString.length() && jsonString.charAt(endIndex) != '<') {
-			endIndex += 1;
+		// spaces are formatted differently from any other primitive
+		if ("spaces".equals(type)) {
+			p = extractSpaceName;
+		} else {
+			p = extractPrimName;
 		}
-		return (jsonString.substring(startIndex, endIndex));
+
+		Matcher m = p.matcher(jsonString);
+		if ( m.find() ) {
+			return m.group(1);
+		}
+		return null;
 	}
 
 	private static final Pattern extractHiddenValue =
