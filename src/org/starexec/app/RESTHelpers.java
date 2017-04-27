@@ -1543,20 +1543,14 @@ public class RESTHelpers {
         		entry.add(new JsonPrimitive(displayDiff + " s"));
     		}
     		String link1 = getPairsInSpaceHtml(
-                            "all",
                             jobSpaceId,
                             c.getFirstPair().getPrimaryConfiguration().getId(),
-                            1,
-                            c.getFirstPair().getStageFromNumber(stageNumber).getStarexecResult(),
-                            PrimitivesToAnonymize.NONE);
+                            c.getFirstPair().getStageFromNumber(stageNumber).getStarexecResult());
 
     		String link2 = getPairsInSpaceHtml(
-                            "all",
                             jobSpaceId,
                             c.getSecondPair().getPrimaryConfiguration().getId(),
-                            1,
-                            c.getSecondPair().getStageFromNumber(stageNumber).getStarexecResult(),
-                            PrimitivesToAnonymize.NONE);
+                            c.getSecondPair().getStageFromNumber(stageNumber).getStarexecResult());
     		entry.add(new JsonPrimitive(link1));
     		entry.add(new JsonPrimitive(link2));
     		if (c.doResultsMatch(stageNumber)) {
@@ -2220,25 +2214,12 @@ public class RESTHelpers {
 	}
 
 	private static String getPairsInSpaceHtml(
-			String type,
 			int spaceId,
 			int configId,
-			int stageNumber,
-			String linkText,
-			PrimitivesToAnonymize primitivesToAnonymize) {
-
-		StringBuilder sb = new StringBuilder();
-
-		if ( AnonymousLinks.isNothingAnonymized( primitivesToAnonymize )) {
-			sb = getPairsInSpaceLink( type, spaceId, configId, stageNumber );
-		}
-
+			String linkText) {
+		StringBuilder sb = getPairsInSpaceLink( "all", spaceId, configId, 1 );
 		sb.append( linkText );
-
-		if ( AnonymousLinks.isNothingAnonymized( primitivesToAnonymize )) {
-			RESTHelpers.addImg(sb);
-		}
-
+		RESTHelpers.addImg(sb);
 		return sb.toString();
 	}
 
