@@ -1,17 +1,15 @@
 package org.starexec.test.integration.database;
 
-import java.sql.SQLException;
-
-import java.util.List;
-
 import org.starexec.data.database.Queues;
 import org.starexec.data.database.Reports;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Report;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.util.Util;
 import org.testng.Assert;
+
+import java.sql.SQLException;
+import java.util.List;
 
 public class ReportsTests extends TestSequence {
 	private static String loginsEvent = "unique logins"; // will be set to 0 at the start of the test sequence and reset after

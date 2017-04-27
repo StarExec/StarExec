@@ -1,17 +1,13 @@
 package org.starexec.data.security;
 
-import java.util.List;
-
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Processors;
-import org.starexec.data.database.Uploads;
-import org.starexec.data.database.Users;
+import org.starexec.data.database.*;
 import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.Processor;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.util.Validator;
+
+import java.util.List;
 
 public class BenchmarkSecurity {
 	

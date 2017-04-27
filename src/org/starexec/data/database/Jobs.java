@@ -1,19 +1,9 @@
 package org.starexec.data.database;
 
-import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.apache.commons.lang3.tuple.Triple;
-import java.io.File;
-import java.io.IOException;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.ResultSet;
-
-import java.util.*;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.StopWatch;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
 import org.starexec.backend.Backend;
 import org.starexec.backend.GridEngineBackend;
 import org.starexec.constants.PaginationQueries;
@@ -21,8 +11,8 @@ import org.starexec.constants.R;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.to.*;
 import org.starexec.data.to.JobStatus.JobStatusCode;
-import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.SolverBuildStatus.SolverBuildStatusCode;
+import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.compare.JobPairComparator;
 import org.starexec.data.to.compare.SolverComparisonComparator;
 import org.starexec.data.to.enums.BenchmarkingFramework;
@@ -40,6 +30,11 @@ import org.starexec.util.DataTablesQuery;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
 import org.starexec.util.Util;
+
+import java.io.File;
+import java.io.IOException;
+import java.sql.*;
+import java.util.*;
 
 /**
  * Handles all database interaction for jobs (NOT grid engine job execution, see JobManager for that)

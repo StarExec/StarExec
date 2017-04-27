@@ -1,7 +1,10 @@
 package org.starexec.util;
 
-import java.io.File;
-import java.io.IOException;
+import org.starexec.constants.R;
+import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.logger.StarLogger;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -16,12 +19,8 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
-
-import org.starexec.constants.R;
-import org.starexec.data.security.ValidatorStatusCode;
-import org.starexec.logger.StarLogger;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Contains functionality shared between JobUtil, BatchUtil, and JobToXMLer

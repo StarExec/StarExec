@@ -1,16 +1,16 @@
 package org.starexec.test.integration;
 
 
+import org.starexec.logger.StarLevel;
+import org.starexec.logger.StarLogger;
+import org.starexec.test.TestUtil;
+import org.starexec.test.resources.ResourceLoader;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import org.starexec.logger.StarLevel;
-import org.starexec.logger.StarLogger;
-import org.starexec.test.TestUtil;
-import org.starexec.test.resources.ResourceLoader;
 
 public abstract class TestSequence {
 	protected static final StarLogger log = StarLogger.getLogger(TestSequence.class);

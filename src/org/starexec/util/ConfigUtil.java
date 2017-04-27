@@ -1,22 +1,18 @@
 package org.starexec.util;
 
+import org.starexec.constants.R;
+import org.starexec.logger.StarLogger;
+import org.w3c.dom.CharacterData;
+import org.w3c.dom.*;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.starexec.constants.R;
-import org.starexec.logger.StarLogger;
-import org.w3c.dom.CharacterData;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * Contains methods used to parse the starexec config file and load properties into specified classes.

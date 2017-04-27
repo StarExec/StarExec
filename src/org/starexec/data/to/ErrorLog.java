@@ -2,7 +2,6 @@ package org.starexec.data.to;
 
 import org.starexec.logger.StarLevel;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 
 /**

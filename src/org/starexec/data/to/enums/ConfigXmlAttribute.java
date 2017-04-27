@@ -1,7 +1,5 @@
 package org.starexec.data.to.enums;
 
-import org.yaml.snakeyaml.events.Event;
-
 /**
  * Created by agieg on 11/17/2016.
  */

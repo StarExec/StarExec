@@ -1,5 +1,16 @@
 package org.starexec.data.database;
 
+import org.apache.commons.io.FileUtils;
+import org.starexec.constants.PaginationQueries;
+import org.starexec.constants.R;
+import org.starexec.data.to.*;
+import org.starexec.data.to.compare.BenchmarkComparator;
+import org.starexec.exceptions.StarExecException;
+import org.starexec.logger.StarLogger;
+import org.starexec.servlets.BenchmarkUploader;
+import org.starexec.util.*;
+import org.starexec.util.Timer;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
@@ -8,25 +19,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-
-import org.apache.commons.io.FileUtils;
-import org.starexec.constants.PaginationQueries;
-import org.starexec.constants.R;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.BenchmarkDependency;
-import org.starexec.data.to.Permission;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.compare.BenchmarkComparator;
-import org.starexec.exceptions.StarExecException;
-import org.starexec.logger.StarLogger;
-import org.starexec.servlets.BenchmarkUploader;
-import org.starexec.util.DataTablesQuery;
-import org.starexec.util.NamedParameterStatement;
-import org.starexec.util.PaginationQueryBuilder;
-import org.starexec.util.Timer;
-import org.starexec.util.Util;
-import org.starexec.util.Validator;
 
 /**
  * Handles all database interaction for benchmarks.

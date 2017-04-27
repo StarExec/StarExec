@@ -1,13 +1,6 @@
 package org.starexec.test.integration.servlets;
 
 
-
-
-
-import static org.mockito.Mockito.*;
-import static org.junit.Assert.*;
-
-import org.junit.Assert;
 import org.starexec.data.to.User;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.test.integration.StarexecTest;
@@ -17,7 +10,9 @@ import org.starexec.util.Util;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
+
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class BenchmarkUploaderTests extends TestSequence {
 

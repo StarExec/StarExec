@@ -1,17 +1,15 @@
 package org.starexec.servlets;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.UUID;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.starexec.constants.R;
+import org.starexec.data.database.*;
+import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.data.to.*;
+import org.starexec.exceptions.StarExecException;
+import org.starexec.logger.StarLogger;
+import org.starexec.test.TestUtil;
+import org.starexec.util.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -19,29 +17,13 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Reports;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Uploads;
-import org.starexec.data.database.Users;
-import org.starexec.data.security.ValidatorStatusCode;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.BenchmarkUploadStatus;
-import org.starexec.data.to.Permission;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
-import org.starexec.exceptions.StarExecException;
-import org.starexec.logger.StarLogger;
-import org.starexec.test.TestUtil;
-import org.starexec.util.ArchiveUtil;
-import org.starexec.util.SessionUtil;
-import org.starexec.util.PartWrapper;
-import org.starexec.util.Util;
-import org.starexec.util.Validator;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 

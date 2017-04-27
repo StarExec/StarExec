@@ -1,9 +1,5 @@
 package org.starexec.util;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-
 import org.starexec.constants.R;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Pipelines;
@@ -17,6 +13,10 @@ import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.logger.StarLogger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
 
 
 /**

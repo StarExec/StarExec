@@ -1,28 +1,18 @@
 package org.starexec.test.integration.security;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Assert;
 import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Processors;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
 import org.starexec.data.security.JobSecurity;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
+import org.starexec.data.to.*;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class JobSecurityTests extends TestSequence {
 	private Space space=null; //space to put the test job

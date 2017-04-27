@@ -1,12 +1,12 @@
 package org.starexec.util;
 
 
+import org.starexec.constants.R;
+import org.starexec.logger.StarLogger;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-
-import org.starexec.constants.R;
-import org.starexec.logger.StarLogger;
 
 /**
  * Contains methods for validating strings from user input to be stored in the database.

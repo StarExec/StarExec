@@ -1,12 +1,10 @@
 package org.starexec.test.junit.data.to;
 
-import java.util.List;
-
-
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.starexec.data.to.Permission;
+
+import java.util.List;
 
 public class PermissionTests {
 

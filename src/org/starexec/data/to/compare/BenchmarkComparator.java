@@ -1,8 +1,8 @@
 package org.starexec.data.to.compare;
 
-import java.util.Comparator;
-
 import org.starexec.data.to.Benchmark;
+
+import java.util.Comparator;
 
 public class BenchmarkComparator implements Comparator<Benchmark> {
 	private int column;

@@ -1,9 +1,9 @@
 package org.starexec.test.integration;
 
+import org.starexec.test.TestUtil;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.starexec.test.TestUtil;
 
 public class TestResult {
 	private String name="no name";

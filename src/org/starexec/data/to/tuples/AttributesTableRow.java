@@ -1,9 +1,6 @@
 package org.starexec.data.to.tuples;
 
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Solver;
 import org.apache.commons.lang3.tuple.Triple;
-
 
 import java.util.ArrayList;
 import java.util.List;

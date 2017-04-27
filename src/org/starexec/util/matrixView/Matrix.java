@@ -1,29 +1,18 @@
 package org.starexec.util.matrixView;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-
 import org.starexec.constants.R;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Spaces;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Solver;
+import org.starexec.data.to.*;
 import org.starexec.data.to.compare.NameableComparators;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.logger.StarLogger;
+
+import java.util.*;
 
 
 /**

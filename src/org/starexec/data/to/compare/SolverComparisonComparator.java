@@ -1,9 +1,10 @@
 package org.starexec.data.to.compare;
-import java.util.Comparator;
 
 import org.starexec.constants.R;
-import org.starexec.data.to.*;
+import org.starexec.data.to.SolverComparison;
 import org.starexec.data.to.pipelines.JoblineStage;
+
+import java.util.Comparator;
 public class SolverComparisonComparator implements Comparator<SolverComparison> {
 	private int column; //will specify which field we are using to sort the job pairs
 	private boolean asc;

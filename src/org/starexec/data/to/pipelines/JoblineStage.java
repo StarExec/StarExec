@@ -1,12 +1,12 @@
 package org.starexec.data.to.pipelines;
 
-import java.util.List;
-import java.util.Properties;
-
 import org.starexec.constants.R;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Status;
+
+import java.util.List;
+import java.util.Properties;
 
 /**
  * This class represents the set of results for a single stage of a jobline

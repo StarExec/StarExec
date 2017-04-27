@@ -1,11 +1,11 @@
 package org.starexec.data.to;
 
+import com.google.gson.annotations.Expose;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.google.gson.annotations.Expose;
 
 /**
  * Represents a permission between a user and a space, or a default permission

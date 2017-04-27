@@ -1,12 +1,6 @@
 package org.starexec.servlets;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.gson.Gson;
 import org.apache.commons.lang3.tuple.Pair;
 import org.starexec.constants.R;
 import org.starexec.constants.Web;
@@ -24,7 +18,11 @@ import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 
-import com.google.gson.Gson;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * Servlet that handles email verification for new users, emailing leaders

@@ -1,40 +1,27 @@
 package org.starexec.app;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.log4j.PropertyConfigurator;
+import org.starexec.constants.PaginationQueries;
+import org.starexec.constants.R;
+import org.starexec.data.database.Common;
+import org.starexec.data.database.Users;
+import org.starexec.exceptions.StarExecException;
+import org.starexec.logger.StarLogger;
+import org.starexec.test.integration.TestManager;
+import org.starexec.util.ConfigUtil;
+import org.starexec.util.Util;
+import org.starexec.util.Validator;
+
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
 import java.io.File;
 import java.io.IOException;
-import java.lang.SecurityException;
-import java.util.Calendar;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-
-import java.sql.SQLException;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.time.StopWatch;
-import org.apache.log4j.PropertyConfigurator;
-import org.starexec.backend.*;
-import org.starexec.constants.PaginationQueries;
-import org.starexec.constants.R;
-import org.starexec.data.database.*;
-import org.starexec.data.to.Status;
-import org.starexec.data.to.User;
-import org.starexec.exceptions.StarExecException;
-import org.starexec.jobs.JobManager;
-import org.starexec.jobs.ProcessingManager;
-import org.starexec.logger.StarLogger;
-import org.starexec.test.integration.TestManager;
-import org.starexec.util.ConfigUtil;
-import org.starexec.util.Mail;
-import org.starexec.util.RobustRunnable;
-import org.starexec.util.Util;
-import org.starexec.util.Validator;
 
 /**
  * Class which listens for application events (mainly startup/shutdown)

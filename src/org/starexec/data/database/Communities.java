@@ -1,17 +1,17 @@
 package org.starexec.data.database;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.util.LinkedList;
-import java.util.HashMap;
-import java.util.List;
-
 import org.starexec.constants.R;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Space;
 import org.starexec.logger.StarLogger;
+
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Handles all database interaction for communities (closely tied with the Spaces class)

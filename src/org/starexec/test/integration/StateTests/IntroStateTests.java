@@ -1,18 +1,17 @@
 package org.starexec.test.integration.StateTests;
 
-import java.util.List;
-import java.util.HashSet;
-
 import org.junit.Assert;
-import org.starexec.test.TestUtil;
-import org.starexec.test.integration.StarexecTest;
-import org.starexec.test.integration.TestSequence;
 import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.test.TestUtil;
+import org.starexec.test.integration.StarexecTest;
+import org.starexec.test.integration.TestSequence;
+
+import java.util.HashSet;
+import java.util.List;
 public class IntroStateTests extends TestSequence {
 	User admin=null;
 	@Override

@@ -1,10 +1,5 @@
 package org.starexec.test.junit.backend;
 
-import java.io.IOException;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,10 +12,9 @@ import org.starexec.backend.OARBackend;
 import org.starexec.util.Util;
 import org.testng.Assert;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({Util.class})

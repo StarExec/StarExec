@@ -3,7 +3,6 @@ package org.starexec.test.integration.security;
 import org.junit.Assert;
 import org.starexec.constants.R;
 import org.starexec.data.database.Processors;
-import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.ProcessorSecurity;
 import org.starexec.data.to.Processor;
@@ -13,7 +12,6 @@ import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
 
 public class ProcessorSecurityTests extends TestSequence {
 	User admin = null;

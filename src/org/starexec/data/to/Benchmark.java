@@ -1,18 +1,14 @@
 package org.starexec.data.to;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-
+import com.google.gson.annotations.Expose;
 import org.starexec.data.to.tuples.Locatable;
 import org.starexec.util.Util;
 
-import com.google.gson.annotations.Expose;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a benchmark in the database

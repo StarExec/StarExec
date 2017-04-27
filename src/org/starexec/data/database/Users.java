@@ -1,14 +1,5 @@
 package org.starexec.data.database;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-
 import org.apache.commons.io.FileUtils;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
@@ -19,11 +10,15 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.logger.StarLogger;
-import org.starexec.util.DataTablesQuery;
-import org.starexec.util.Hash;
-import org.starexec.util.NamedParameterStatement;
-import org.starexec.util.PaginationQueryBuilder;
-import org.starexec.util.Util;
+import org.starexec.util.*;
+
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Handles all database interaction for users

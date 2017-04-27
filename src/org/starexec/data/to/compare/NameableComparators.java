@@ -1,7 +1,8 @@
 package org.starexec.data.to.compare;
 
-import java.util.Comparator;
 import org.starexec.data.to.Nameable;
+
+import java.util.Comparator;
 
 /**
  * Class that builds comparators for Nameable objects.

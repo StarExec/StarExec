@@ -1,10 +1,10 @@
 package org.starexec.util;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-
 import org.starexec.constants.R;
 import org.starexec.logger.StarLogger;
+
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 
 /**

@@ -1,17 +1,17 @@
 package org.starexec.data.database;
 
+import org.starexec.constants.R;
+import org.starexec.data.to.Job;
+import org.starexec.data.to.Queue;
+import org.starexec.data.to.WorkerNode;
+import org.starexec.logger.StarLogger;
+
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import org.starexec.constants.R;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.Queue;
-import org.starexec.data.to.WorkerNode;
-import org.starexec.logger.StarLogger;
 
 
 /**

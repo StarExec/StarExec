@@ -1,8 +1,5 @@
 package org.starexec.test.integration.database;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Assert;
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
@@ -12,6 +9,9 @@ import org.starexec.data.to.WorkerNode;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Tests for org.starexec.data.database.Cluster.java

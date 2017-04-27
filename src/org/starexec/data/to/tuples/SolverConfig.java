@@ -1,7 +1,6 @@
 package org.starexec.data.to.tuples;
 
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Created by agieg on 9/15/2016.

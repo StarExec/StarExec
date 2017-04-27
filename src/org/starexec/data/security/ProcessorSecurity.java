@@ -1,7 +1,5 @@
 package org.starexec.data.security;
 
-import java.util.List;
-
 import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
@@ -9,6 +7,8 @@ import org.starexec.data.database.Users;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Processor;
 import org.starexec.util.Validator;
+
+import java.util.List;
 
 public class ProcessorSecurity {
 	

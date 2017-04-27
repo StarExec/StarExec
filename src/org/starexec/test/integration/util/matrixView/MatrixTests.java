@@ -1,39 +1,22 @@
 package org.starexec.test.integration.util.matrixView;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-
 import org.apache.commons.lang3.tuple.Pair;
-
 import org.junit.Assert;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Processors;
-import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
+import org.starexec.data.to.*;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.exceptions.StarExecException;
-import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.logger.StarLogger;
-import org.starexec.util.matrixView.Matrix;
-import org.starexec.test.resources.ResourceLoader;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
+import org.starexec.util.matrixView.Matrix;
+
+import java.util.*;
 
 public class MatrixTests extends TestSequence {
 	private static final StarLogger log = StarLogger.getLogger(MatrixTests.class);

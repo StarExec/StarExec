@@ -1,25 +1,18 @@
 package org.starexec.test.integration.database;
 
-import java.awt.Color;
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-
 import org.starexec.constants.R;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Statistics;
-import org.starexec.data.database.Users;
-import org.starexec.data.to.JobPair;
 import org.starexec.data.to.*;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
 import org.testng.Assert;
+
+import java.awt.*;
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Tests for Statistics.java

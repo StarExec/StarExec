@@ -5,16 +5,16 @@ package org.starexec.command;
  * These arguments ultimately come from user input at the command line or through a file
  */
 
+import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.starexec.constants.R;
+import org.starexec.util.Validator;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-
-import org.apache.commons.compress.archivers.zip.ZipFile;
-import org.starexec.constants.R;
-import org.starexec.util.Validator;
 
 public class CommandValidator {
 

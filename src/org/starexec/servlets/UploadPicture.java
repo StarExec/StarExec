@@ -1,11 +1,14 @@
 package org.starexec.servlets;
 
-import java.awt.Graphics2D;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
+import org.starexec.constants.R;
+import org.starexec.data.database.Users;
+import org.starexec.data.security.GeneralSecurity;
+import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.logger.StarLogger;
+import org.starexec.util.PartWrapper;
+import org.starexec.util.SessionUtil;
+import org.starexec.util.Util;
+import org.starexec.util.Validator;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletException;
@@ -14,16 +17,12 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.starexec.constants.R;
-import org.starexec.data.database.Users;
-import org.starexec.data.security.GeneralSecurity;
-import org.starexec.data.security.ValidatorStatusCode;
-import org.starexec.logger.StarLogger;
-import org.starexec.util.SessionUtil;
-import org.starexec.util.Util;
-import org.starexec.util.Validator;
-import org.starexec.util.PartWrapper;
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
 
 
 /**

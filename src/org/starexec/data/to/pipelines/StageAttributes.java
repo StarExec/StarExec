@@ -1,7 +1,6 @@
 package org.starexec.data.to.pipelines;
 
 import org.starexec.data.to.Processor;
-import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 
 /**
  * This class wraps the data we store in the job_stage_params SQL table

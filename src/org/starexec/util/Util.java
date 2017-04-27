@@ -1,22 +1,22 @@
 package org.starexec.util;
 
-import java.awt.Color;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.LineIterator;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.starexec.constants.R;
+import org.starexec.data.database.Jobs;
+import org.starexec.data.to.enums.Primitive;
+import org.starexec.logger.StarLogger;
+import org.starexec.test.TestUtil;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.Throwable;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
+import java.awt.*;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -25,27 +25,10 @@ import java.net.URLConnection;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.Part;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.LineIterator;
-import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
-
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.starexec.app.RESTHelpers;
-import org.starexec.constants.R;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.to.enums.Primitive;
-import org.starexec.logger.StarLogger;
-import org.starexec.test.TestUtil;
 
 /**
  * This class contains utility functions used throughout Starexec, including many

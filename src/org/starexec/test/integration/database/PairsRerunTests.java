@@ -1,7 +1,6 @@
 package org.starexec.test.integration.database;
 
 import org.junit.Assert;
-import org.junit.Test;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.PairsRerun;

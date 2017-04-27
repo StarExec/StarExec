@@ -1,11 +1,11 @@
 package org.starexec.test.junit;
 
-import java.awt.Color;
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.starexec.util.Util;
+
+import java.awt.*;
+import java.util.List;
 
 public class UtilTests {
 

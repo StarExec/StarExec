@@ -1,9 +1,5 @@
 package org.starexec.util.dataStructures;
 
-import java.lang.IndexOutOfBoundsException;
-import java.lang.NullPointerException;
-import java.lang.Iterable;
-import java.lang.UnsupportedOperationException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;

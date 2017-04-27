@@ -1,11 +1,11 @@
 package org.starexec.data.to.compare;
 
-import java.util.Comparator;
-
 import org.starexec.constants.R;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.logger.StarLogger;
+
+import java.util.Comparator;
 
 public class JobPairComparator implements Comparator<JobPair> {
 	protected static final StarLogger log = StarLogger.getLogger(JobPairComparator.class);

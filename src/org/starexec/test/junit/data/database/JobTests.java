@@ -17,9 +17,6 @@ import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.Queue;
 import org.starexec.util.Util;
 
-import java.io.IOException;
-import java.util.Optional;
-
 import static org.mockito.Matchers.any;
 
 

@@ -1,12 +1,10 @@
 package org.starexec.data.security;
 
-import java.util.List;
-
 import org.starexec.data.database.Queues;
-import org.starexec.data.database.Users;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.WorkerNode;
-import org.starexec.util.Validator;
+
+import java.util.List;
 
 public class QueueSecurity {
 	

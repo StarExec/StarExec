@@ -1,15 +1,5 @@
 package org.starexec.test.resources;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -17,34 +7,17 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Cluster;
-import org.starexec.data.database.JobPairs;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Pipelines;
-import org.starexec.data.database.Processors;
-import org.starexec.data.database.Queues;
-import org.starexec.data.database.Requests;
-import org.starexec.data.database.Settings;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Uploads;
-import org.starexec.data.database.Users;
-import org.starexec.data.to.CommunityRequest;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.DefaultSettings;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Permission;
-import org.starexec.data.to.Processor;
+import org.starexec.data.database.*;
+import org.starexec.data.to.*;
 import org.starexec.data.to.Queue;
-import org.starexec.data.to.Solver;
 import org.starexec.data.to.Solver.ExecutableType;
-import org.starexec.data.to.SolverBuildStatus;
-import org.starexec.data.to.Space;
 import org.starexec.data.to.Status.StatusCode;
-import org.starexec.data.to.User;
 import org.starexec.data.to.enums.ProcessorType;
+import org.starexec.data.to.pipelines.PipelineDependency;
+import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
+import org.starexec.data.to.pipelines.PipelineStage;
+import org.starexec.data.to.pipelines.SolverPipeline;
+import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.jobs.JobManager;
 import org.starexec.logger.StarLogger;
 import org.starexec.servlets.BenchmarkUploader;
@@ -52,11 +25,12 @@ import org.starexec.servlets.ProcessorManager;
 import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.Util;
-import org.starexec.data.to.pipelines.PipelineDependency;
-import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
-import org.starexec.data.to.pipelines.PipelineStage;
-import org.starexec.data.to.pipelines.SolverPipeline;
-import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
+
+import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This file contains functions for loading test objects into the database.

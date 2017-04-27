@@ -1,11 +1,10 @@
 package org.starexec.data.to;
 
+import com.google.gson.annotations.Expose;
+
 import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.List;
-
-
-import com.google.gson.annotations.Expose;
 
 /**
  * Represents a user in the database

@@ -1,30 +1,26 @@
 package org.starexec.test.integration;
 
+import org.apache.commons.io.FileUtils;
+import org.starexec.constants.R;
+import org.starexec.logger.StarLogger;
+import org.starexec.test.integration.StateTests.IntroStateTests;
+import org.starexec.test.integration.app.RESTHelpersTests;
+import org.starexec.test.integration.app.RESTServicesSecurityTests;
+import org.starexec.test.integration.database.*;
+import org.starexec.test.integration.security.*;
+import org.starexec.test.integration.servlets.BenchmarkUploaderTests;
+import org.starexec.test.integration.util.JobUtilTests;
+import org.starexec.test.integration.util.dataStructures.TreeNodeTests;
+import org.starexec.test.integration.web.GetPageTests;
+import org.starexec.test.integration.web.StarexecCommandTests;
+import org.starexec.util.Util;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.commons.io.FileUtils;
-
-
-import org.starexec.constants.R;
-
-
-import org.starexec.logger.StarLogger;
-import org.starexec.test.integration.StateTests.IntroStateTests;
-import org.starexec.test.integration.app.RESTHelpersTests;
-import org.starexec.test.integration.app.RESTServicesSecurityTests;
-import org.starexec.test.integration.app.RESTServicesTests;
-import org.starexec.test.integration.database.*;
-import org.starexec.test.integration.security.*;
-import org.starexec.test.integration.servlets.BenchmarkUploaderTests;
-import org.starexec.test.integration.util.JobUtilTests;
-import org.starexec.test.integration.util.dataStructures.TreeNodeTests;
-import org.starexec.test.integration.web.*;
-import org.starexec.util.Util;
 
 /**
  * This class maintains a list of all TestSequences and handles requests

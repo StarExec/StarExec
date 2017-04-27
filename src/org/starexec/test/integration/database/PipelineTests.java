@@ -3,14 +3,14 @@ package org.starexec.test.integration.database;
 import org.junit.Assert;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Pipelines;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
-import org.starexec.data.to.*;
-import org.starexec.data.to.pipelines.*;
+import org.starexec.data.to.Solver;
+import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
+import org.starexec.data.to.pipelines.PipelineDependency;
+import org.starexec.data.to.pipelines.PipelineStage;
+import org.starexec.data.to.pipelines.SolverPipeline;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
 
 /**
  * This class contains tests of the Pipelines.java database class

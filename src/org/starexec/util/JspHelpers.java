@@ -1,62 +1,27 @@
 package org.starexec.util;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-
 import org.apache.commons.lang3.tuple.Triple;
-
 import org.starexec.app.RESTHelpers;
 import org.starexec.constants.R;
 import org.starexec.constants.Web;
-import org.starexec.data.database.AnonymousLinks;
+import org.starexec.data.database.*;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Cluster;
-import org.starexec.data.database.Communities;
-import org.starexec.data.database.JobPairs;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Processors;
-import org.starexec.data.database.Queues;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Users;
-import org.starexec.data.database.Websites;
-
 import org.starexec.data.security.BenchmarkSecurity;
-import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.GeneralSecurity;
+import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.SolverSecurity;
-import org.starexec.data.security.ValidatorStatusCode;
-
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.BenchmarkDependency;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.JobSpace;
-import org.starexec.data.to.JobStatus;
+import org.starexec.data.to.*;
 import org.starexec.data.to.JobStatus.JobStatusCode;
-import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.SolverStats;
-import org.starexec.data.to.User;
-import org.starexec.data.to.Website;
 import org.starexec.data.to.Website.WebsiteType;
-import org.starexec.data.to.WorkerNode;
-import org.starexec.data.to.SolverBuildStatus;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.logger.StarLogger;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * Contains helper methods for JSP pages.

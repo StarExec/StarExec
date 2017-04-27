@@ -1,26 +1,10 @@
-package org.starexec.test.integration.database; 
-import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
+package org.starexec.test.integration.database;
 
 import com.google.common.base.Joiner;
 import org.junit.Assert;
 import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Communities;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Settings;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
-import org.starexec.exceptions.StarExecSecurityException;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobSpace;
-import org.starexec.data.to.Identifiable;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
+import org.starexec.data.database.*;
+import org.starexec.data.to.*;
 import org.starexec.data.to.enums.CopyPrimitivesOption;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.logger.StarLogger;
@@ -30,6 +14,10 @@ import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
 import org.starexec.util.dataStructures.TreeNode;
+
+import java.sql.SQLException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Tests for org.starexec.data.database.Spaces.java

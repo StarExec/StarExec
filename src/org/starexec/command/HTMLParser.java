@@ -1,10 +1,9 @@
 package org.starexec.command;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.http.Header;
 import org.starexec.util.Validator;
+
+import java.util.Map;
 
 /**
  * This class reads HTML strings from StarExec and parses out necessary

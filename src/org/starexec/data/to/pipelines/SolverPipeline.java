@@ -1,11 +1,12 @@
 package org.starexec.data.to.pipelines;
 
+import org.starexec.data.to.Identifiable;
+import org.starexec.data.to.Nameable;
+import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.starexec.data.to.*;
-import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 
 /**
  * Class represents the top level of a solver pipeline

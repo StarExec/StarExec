@@ -1,15 +1,13 @@
 package org.starexec.data.to;
 
-import java.util.LinkedList;
-import java.lang.Iterable;
+import org.starexec.data.database.Analytics;
+import org.starexec.data.database.Common;
+import org.starexec.logger.StarLogger;
 
 import java.sql.Date;
-import java.sql.SQLException;
 import java.sql.ResultSet;
-
-import org.starexec.data.database.Common;
-import org.starexec.data.database.Analytics;
-import org.starexec.logger.StarLogger;
+import java.sql.SQLException;
+import java.util.LinkedList;
 
 /**
  * Analytics keeps a record of how often events happen.

@@ -2,8 +2,6 @@ package org.starexec.data.to.tuples;
 
 import com.google.common.collect.ImmutableSet;
 
-import java.util.Set;
-
 
 public class PairsAndNodes {
 

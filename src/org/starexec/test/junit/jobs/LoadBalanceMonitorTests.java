@@ -1,13 +1,13 @@
 package org.starexec.test.junit.jobs;
 
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.starexec.jobs.LoadBalanceMonitor;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class LoadBalanceMonitorTests {
 	

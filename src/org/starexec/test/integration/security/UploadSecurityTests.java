@@ -2,9 +2,7 @@ package org.starexec.test.integration.security;
 
 import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
-import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
-import org.starexec.data.database.Users;
 import org.starexec.data.security.UploadSecurity;
 import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.Space;
@@ -12,7 +10,6 @@ import org.starexec.data.to.User;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
 import org.testng.Assert;
 
 /**

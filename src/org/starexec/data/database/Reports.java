@@ -1,19 +1,13 @@
 package org.starexec.data.database;
 
+import org.starexec.data.to.Report;
+import org.starexec.logger.StarLogger;
+
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-
-import org.starexec.data.to.Report;
-import org.starexec.logger.StarLevel;
-import org.starexec.logger.StarLogger;
+import java.util.*;
 
 
 /**

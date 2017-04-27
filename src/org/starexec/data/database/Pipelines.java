@@ -1,15 +1,17 @@
 package org.starexec.data.database;
 
+import org.starexec.data.to.pipelines.PipelineDependency;
+import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
+import org.starexec.data.to.pipelines.PipelineStage;
+import org.starexec.data.to.pipelines.SolverPipeline;
+import org.starexec.logger.StarLogger;
+
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import org.starexec.data.to.pipelines.*;
-import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
-import org.starexec.logger.StarLogger;
 
 /**
  * Class responsible for inserting and removing pipelines from the database

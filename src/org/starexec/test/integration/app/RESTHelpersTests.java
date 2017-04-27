@@ -1,38 +1,28 @@
 package org.starexec.test.integration.app;
 
-import java.util.EnumSet;
-import java.util.List;
-
-import org.starexec.test.TestUtil;
-import org.starexec.test.integration.StarexecTest;
-import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
-import org.starexec.util.DataTablesQuery;
-import org.starexec.util.Util;
-
 import com.google.gson.JsonObject;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import org.junit.Assert;
-import org.junit.runner.RunWith;
-import org.mockito.BDDMockito;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.starexec.app.RESTHelpers;
 import org.starexec.constants.R;
-import org.starexec.data.to.enums.Primitive;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Queues;
-import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.*;
-import static org.mockito.Mockito.*;
+import org.starexec.data.to.enums.Primitive;
+import org.starexec.test.TestUtil;
+import org.starexec.test.integration.StarexecTest;
+import org.starexec.test.integration.TestSequence;
+import org.starexec.util.DataTablesQuery;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.util.EnumSet;
+import java.util.List;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 public class RESTHelpersTests extends TestSequence {

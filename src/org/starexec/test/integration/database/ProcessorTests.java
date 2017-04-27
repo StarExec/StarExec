@@ -1,7 +1,5 @@
 package org.starexec.test.integration.database;
 
-import java.util.List;
-
 import org.junit.Assert;
 import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
@@ -14,7 +12,8 @@ import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
+
+import java.util.List;
 
 /**
  * Tests for org.starexec.data.database.Processors.java

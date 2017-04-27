@@ -1,10 +1,10 @@
 package org.starexec.jobs;
 
-import java.util.*;
-
-import org.starexec.logger.StarLogger;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.User;
+import org.starexec.logger.StarLogger;
+
+import java.util.*;
 
 public class LoadBalanceMonitor {
 	private static final StarLogger log = StarLogger.getLogger(LoadBalanceMonitor.class);

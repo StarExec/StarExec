@@ -1,8 +1,9 @@
 package util;
-import java.io.IOException;
-import java.util.regex.Pattern;
 
 import org.starexec.util.Util;
+
+import java.io.IOException;
+import java.util.regex.Pattern;
 
 /**
  * RunQstat.java, based on org.starexec.util.GridEngineUtil.setQueueAssociationsInDb()

@@ -1,14 +1,5 @@
 package org.starexec.data.database;
 
-import java.io.IOException;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.security.GeneralSecurity;
@@ -21,6 +12,11 @@ import org.starexec.util.DataTablesQuery;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
 import org.starexec.util.dataStructures.TreeNode;
+
+import java.io.IOException;
+import java.sql.*;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Handles all database interaction for spaces

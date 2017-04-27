@@ -1,8 +1,8 @@
 package org.starexec.data.to;
 
-import java.util.HashMap;
-
 import com.google.gson.annotations.Expose;
+
+import java.util.HashMap;
 
 /**
  * Represents a worker node in the database

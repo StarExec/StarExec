@@ -1,17 +1,13 @@
 package org.starexec.backend;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.starexec.constants.R;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.RobustRunnable;
 import org.starexec.util.Util;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * This backend implementation does not rely on any external system outside of basic Unix

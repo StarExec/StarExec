@@ -1,13 +1,12 @@
 package org.starexec.data.to;
 
-import java.io.File;
-
+import com.google.gson.annotations.Expose;
 import org.starexec.constants.R;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.data.to.tuples.Locatable;
 import org.starexec.util.Util;
 
-import com.google.gson.annotations.Expose;
+import java.io.File;
 
 /**
  * Represents a processor, which is an arbitrary user specified filed that takes

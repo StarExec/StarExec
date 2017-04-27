@@ -1,13 +1,14 @@
 package org.starexec.test.junit.command;
 
-import java.util.HashMap;
-
 import org.apache.http.Header;
 import org.junit.Assert;
 import org.junit.Test;
 import org.starexec.command.HTMLParser;
 
-import static org.mockito.Mockito.*;
+import java.util.HashMap;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 public class HTMLParserTest {
 
 	private Header getMockHeader(String name, String value) {

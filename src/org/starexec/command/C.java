@@ -1,7 +1,5 @@
 package org.starexec.command;
 
-import org.starexec.data.to.enums.BenchmarkingFramework;
-
 import java.util.HashMap;
 
 /**

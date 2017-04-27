@@ -1,31 +1,21 @@
 package org.starexec.app;
 
-import java.io.IOException;
-import java.util.HashMap;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
 import org.starexec.constants.R;
-import org.starexec.data.database.Analytics;
-import org.starexec.data.database.Common;
-import org.starexec.data.database.Logins;
-import org.starexec.data.database.Reports;
-import org.starexec.data.database.Users;
+import org.starexec.data.database.*;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.User;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
+
+import javax.servlet.*;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.util.HashMap;
 
 /**
  * This class is responsible for intercepting all requests to protected resources

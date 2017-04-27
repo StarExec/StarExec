@@ -1,20 +1,16 @@
 package org.starexec.test.junit;
 
-import java.util.Random;
-
 import org.junit.Assert;
 import org.junit.Test;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Solver;
+import org.starexec.data.to.*;
 import org.starexec.data.to.compare.BenchmarkComparator;
 import org.starexec.data.to.compare.JobPairComparator;
 import org.starexec.data.to.compare.SolverComparator;
 import org.starexec.data.to.compare.SolverComparisonComparator;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.test.TestUtil;
+
+import java.util.Random;
 
 //this class ensures that all of the comparators in org/starexec/data/to/compare are working properly
 // by checking to see if they sort correctly on all their relevant columns

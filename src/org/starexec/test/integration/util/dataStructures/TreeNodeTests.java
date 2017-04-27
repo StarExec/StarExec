@@ -1,7 +1,4 @@
-package org.starexec.test.integration.util.dataStructures;	
-
-import java.lang.IndexOutOfBoundsException;
-import java.lang.NullPointerException;
+package org.starexec.test.integration.util.dataStructures;
 
 import org.junit.Assert;
 import org.starexec.logger.StarLogger;

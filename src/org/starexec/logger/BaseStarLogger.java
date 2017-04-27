@@ -3,10 +3,6 @@ package org.starexec.logger;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-
 /**
  * Created by agieg on 2/10/2017.
  */

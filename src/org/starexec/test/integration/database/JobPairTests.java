@@ -8,8 +8,8 @@ import org.starexec.data.database.Communities;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.to.*;
-import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.PairStageProcessorTriple;
 import org.starexec.test.TestUtil;
@@ -20,7 +20,6 @@ import org.starexec.util.Util;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Tests for org.starexec.data.database.JobPairs.java

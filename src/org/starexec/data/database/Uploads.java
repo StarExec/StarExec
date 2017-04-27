@@ -1,16 +1,16 @@
 package org.starexec.data.database;
 
+import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.BenchmarkUploadStatus;
+import org.starexec.data.to.SpaceXMLUploadStatus;
+import org.starexec.logger.StarLogger;
+
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.BenchmarkUploadStatus;
-import org.starexec.data.to.SpaceXMLUploadStatus;
-import org.starexec.logger.StarLogger;
 
 /**
  * Handles database interaction for the uploading Benchmarks Status Page.

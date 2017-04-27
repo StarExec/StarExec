@@ -1,7 +1,6 @@
 package org.starexec.test.integration.database;
 
 import org.junit.Assert;
-import org.starexec.data.database.Common;
 import org.starexec.data.database.ErrorLogs;
 import org.starexec.data.to.ErrorLog;
 import org.starexec.logger.StarLevel;

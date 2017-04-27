@@ -1,27 +1,19 @@
 package org.starexec.test.integration;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
-import org.apache.commons.io.FileUtils;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
+import org.starexec.data.to.*;
 import org.starexec.data.to.Status.StatusCode;
-import org.starexec.data.to.User;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.logger.StarLogger;
-import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class StressTest {
 	private static final StarLogger log = StarLogger.getLogger(StressTest.class);

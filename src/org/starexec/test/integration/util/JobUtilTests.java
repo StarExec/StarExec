@@ -1,17 +1,10 @@
 package org.starexec.test.integration.util;
 
-import java.io.File;
-import java.util.List;
-
 import org.junit.Assert;
-import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.database.Communities;
-import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Users;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.JobPair;
 import org.starexec.data.to.Solver;
@@ -23,9 +16,11 @@ import org.starexec.data.to.tuples.ConfigAttrMapPair;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.JobUtil;
 import org.starexec.util.Util;
+
+import java.io.File;
+import java.util.List;
 
 public class JobUtilTests extends TestSequence {
 	User admin = null;

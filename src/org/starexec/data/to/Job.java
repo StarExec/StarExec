@@ -1,26 +1,16 @@
 package org.starexec.data.to;
 
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.gson.annotations.Expose;
 import org.jfree.util.Log;
 import org.starexec.constants.R;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.StageAttributes;
-import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.util.Util;
 
-import com.google.gson.annotations.Expose;
+import java.sql.Timestamp;
+import java.util.*;
 
 /**
  * Represents a job in the database

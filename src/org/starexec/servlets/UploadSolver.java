@@ -1,27 +1,5 @@
 package org.starexec.servlets;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URL;
-import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
-
-import org.starexec.data.to.enums.ConfigXmlAttribute;
-import org.starexec.data.to.enums.JobXmlType;
-import org.starexec.data.to.tuples.ConfigAttrMapPair;
-import org.starexec.data.to.tuples.UploadSolverResult.UploadSolverStatus;
-
-import javax.servlet.ServletException;
-import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
@@ -32,17 +10,35 @@ import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Permission;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.SolverBuildStatus;
-import org.starexec.data.to.User;
+import org.starexec.data.to.*;
 import org.starexec.data.to.Solver.ExecutableType;
+import org.starexec.data.to.enums.ConfigXmlAttribute;
+import org.starexec.data.to.enums.JobXmlType;
+import org.starexec.data.to.tuples.ConfigAttrMapPair;
 import org.starexec.data.to.tuples.UploadSolverResult;
+import org.starexec.data.to.tuples.UploadSolverResult.UploadSolverStatus;
+import org.starexec.jobs.JobManager;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.*;
-import org.starexec.jobs.JobManager;
 import org.xml.sax.SAXException;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Allows for the uploading and handling of Solvers. Solvers can come in .zip,

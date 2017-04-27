@@ -1,8 +1,8 @@
 package org.starexec.data.to.compare;
 
-import java.util.Comparator;
-
 import org.starexec.data.to.Solver;
+
+import java.util.Comparator;
 
 public class SolverComparator implements Comparator<Solver> {
 	private int column;

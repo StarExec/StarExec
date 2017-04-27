@@ -1,25 +1,9 @@
 package org.starexec.data.database;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
-import java.sql.*;
-import java.util.*;
-import java.util.Map.Entry;
-
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.io.FileUtils;
-
 import org.starexec.constants.R;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.JobSpace;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.SolverComparison;
-import org.starexec.data.to.Status;
+import org.starexec.data.to.*;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.enums.ConfigXmlAttribute;
 import org.starexec.data.to.pipelines.JoblineStage;
@@ -31,6 +15,13 @@ import org.starexec.util.Util;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.sql.*;
+import java.util.*;
+import java.util.Map.Entry;
 
 
 /**

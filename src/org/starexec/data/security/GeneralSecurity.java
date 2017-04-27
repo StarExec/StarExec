@@ -2,7 +2,6 @@ package org.starexec.data.security;
 
 
 import org.owasp.esapi.ESAPI;
-
 import org.starexec.constants.R;
 import org.starexec.data.database.Users;
 import org.starexec.logger.StarLogger;

@@ -1,16 +1,16 @@
 package org.starexec.data.database;
 
+import org.starexec.data.security.GeneralSecurity;
+import org.starexec.data.to.Website;
+import org.starexec.data.to.Website.WebsiteType;
+import org.starexec.logger.StarLogger;
+
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.starexec.data.security.GeneralSecurity;
-import org.starexec.data.to.Website;
-import org.starexec.data.to.Website.WebsiteType;
-import org.starexec.logger.StarLogger;
 
 /**
  * Handles all database interaction for user-defined websites

@@ -1,11 +1,10 @@
 package org.starexec.exceptions;
 
-import java.sql.SQLException;
-import java.util.List;
-
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.to.Benchmark;
-import org.starexec.exceptions.StarExecException;
+
+import java.sql.SQLException;
+import java.util.List;
 
 public class BenchmarkDependencyMissingException extends StarExecException {
     public BenchmarkDependencyMissingException(String message, Throwable cause) {

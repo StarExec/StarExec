@@ -1,14 +1,13 @@
 package org.starexec.data.to;
 
+import com.google.gson.annotations.Expose;
+import org.starexec.util.Util;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.starexec.util.Util;
-
-import com.google.gson.annotations.Expose;
 
 /**
  * Represents a space in the database.

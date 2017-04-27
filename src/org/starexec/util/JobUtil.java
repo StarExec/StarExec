@@ -1,23 +1,11 @@
 package org.starexec.util;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import org.starexec.constants.R;
 import org.starexec.data.database.*;
-import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.enums.BenchmarkingFramework;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Permission;
+import org.starexec.data.to.*;
 import org.starexec.data.to.Queue;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.User;
+import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.enums.ConfigXmlAttribute;
 import org.starexec.data.to.enums.JobXmlType;
 import org.starexec.data.to.pipelines.*;
@@ -31,6 +19,13 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 public class JobUtil {
 	private static final StarLogger log = StarLogger.getLogger(JobUtil.class);

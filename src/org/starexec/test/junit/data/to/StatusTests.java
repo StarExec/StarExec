@@ -1,10 +1,12 @@
 package org.starexec.test.junit.data.to;
 
-import java.util.EnumSet;
-
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.starexec.data.to.Status.StatusCode;
+
+import java.util.EnumSet;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class StatusTests {
 

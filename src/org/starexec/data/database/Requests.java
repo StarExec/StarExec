@@ -1,20 +1,19 @@
 package org.starexec.data.database;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.starexec.data.to.CommunityRequest;
+import org.starexec.data.to.User;
+import org.starexec.exceptions.StarExecDatabaseException;
+import org.starexec.logger.StarLogger;
+import org.starexec.util.DataTablesQuery;
+
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-
-import org.starexec.data.to.CommunityRequest;
-import org.starexec.data.to.User;
-import org.starexec.exceptions.StarExecDatabaseException;
-import org.starexec.logger.StarLogger;
-import org.starexec.util.DataTablesQuery;
 
 /**
  * Handles all database interaction for the various requests throughout the system. This includes

@@ -6,17 +6,13 @@ package org.starexec.command;
  * in the ArgumentParser class.
  */
 
+import org.starexec.constants.R;
+import org.starexec.util.Util;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.starexec.constants.R;
-
-import org.starexec.util.Util;
+import java.util.*;
 
 class CommandParser {
 	final private CommandLogger log = CommandLogger.getLogger(CommandParser.class);

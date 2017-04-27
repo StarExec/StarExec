@@ -1,5 +1,17 @@
 package org.starexec.test.integration.web;
 
+import org.junit.Assert;
+import org.starexec.command.Connection;
+import org.starexec.command.Status;
+import org.starexec.data.database.*;
+import org.starexec.data.to.*;
+import org.starexec.data.to.enums.ProcessorType;
+import org.starexec.logger.StarLogger;
+import org.starexec.test.TestUtil;
+import org.starexec.test.integration.StarexecTest;
+import org.starexec.test.integration.TestSequence;
+import org.starexec.util.Util;
+
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -8,36 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assert;
-import static org.junit.Assert.*;
-import org.starexec.command.Connection;
-import org.starexec.command.Status;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Communities;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Processors;
-import org.starexec.data.database.Queues;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Uploads;
-import org.starexec.data.database.Users;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.Permission;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.BenchmarkUploadStatus;
-import org.starexec.data.to.User;
-import org.starexec.data.to.enums.ProcessorType;
-import org.starexec.logger.StarLogger;
-import org.starexec.test.TestUtil;
-import org.starexec.test.integration.StarexecTest;
-import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
-import org.starexec.util.Util;
+import static org.junit.Assert.assertTrue;
 
 public class StarexecCommandTests extends TestSequence {
 	private static final StarLogger log = StarLogger.getLogger(StarexecCommandTests.class);
