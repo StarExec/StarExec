@@ -1,5 +1,5 @@
 <%@tag description="Standard html header info for all starexec pages"%>
-<%@tag import="java.util.List, org.starexec.util.Validator, org.starexec.util.Util, org.starexec.command.HTMLParser, org.starexec.util.SessionUtil,org.starexec.data.database.Users, org.starexec.data.to.*, org.starexec.constants.*"%>
+<%@tag import="java.util.List, org.starexec.util.Validator, org.starexec.util.Util, org.starexec.util.SessionUtil,org.starexec.data.database.Users, org.starexec.data.to.*, org.starexec.constants.*"%>
 <%@tag trimDirectiveWhitespaces="true" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
