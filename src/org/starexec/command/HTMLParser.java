@@ -141,18 +141,12 @@ public class HTMLParser {
 				if (value.contains(cookieName)) {
 					int begin = value.indexOf(cookieName);
 
-					if (begin < 0) {
+					if (begin < 0) { // Doesn't the outer `if` guard against this?
 						return null;
 					}
 					begin += cookieName.length() + 1;
 
-					int end = -1;
-					for (int character = begin; character < value.length(); character++) {
-						if (value.substring(character, character + 1).equals(";")) {
-							end = character;
-							break;
-						}
-					}
+					int end = value.indexOf(';', begin);
 
 					// no semicolon means the cookie is at the end, so use the
 					// entire tail of the string
