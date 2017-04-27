@@ -16,7 +16,7 @@ public class HTMLParser {
 	/**
 	 * This method encodes a given set of parameters into the given URL to be
 	 * used in HTTP Get requests
-	 * 
+	 *
 	 * @param u The initial URL to be built upon
 	 * @param params a list of name/value pairs to be encoded into the URL
 	 * @return A new URL with the base u and the parameters in params encoded
@@ -24,15 +24,14 @@ public class HTMLParser {
 	 */
 
 	public static String URLEncode(String u, Map<String, String> params) {
-		StringBuilder answer = new StringBuilder();
-		answer.append(u);
+		StringBuilder answer = new StringBuilder(u);
 		answer.append("?");
-		for (String key : params.keySet()) {
+		params.forEach ( (key, value) -> {
 			answer.append(key);
 			answer.append("=");
-			answer.append(params.get(key));
+			answer.append(value);
 			answer.append("&");
-		}
+		} );
 
 		return answer.substring(0, answer.length() - 1);
 	}
@@ -41,7 +40,7 @@ public class HTMLParser {
 	 * Extracts the substring between a pair of quotes, where startIndex is the
 	 * index of the first quote. If there is no closing quote, the rest of the
 	 * string from startindex+1 to the end is returned
-	 * 
+	 *
 	 * @param str The string upon which to do the extraction
 	 * @param startIndex The index of the first quote
 	 * @return The contents of the string between the start quote and the end
@@ -63,7 +62,7 @@ public class HTMLParser {
 	/**
 	 * Given a Json string formatted as StarExec does its first line in a table
 	 * extract the name of a primitive
-	 * 
+	 *
 	 * @param jsonString The Json string to test for an name
 	 * @param type The type of primitive that could be present
 	 * @return The name if it exists or null if it does not
@@ -114,7 +113,7 @@ public class HTMLParser {
 	/**
 	 * Given a Json string formatted as StarExec does its first line in a table
 	 * extract the ID of a primitive
-	 * 
+	 *
 	 * @param jsonString The Json string to test for an ID
 	 * @return The ID if it exists or null if it does not
 	 */
@@ -147,7 +146,7 @@ public class HTMLParser {
 
 	/**
 	 * Extracts all the values of a comma-separated cookie as a list of strings.
-	 * 
+	 *
 	 * @param headers Array of headers to check for cookies in
 	 * @param cookieName The name of the cookie to look for
 	 * @return A string array, where each value in the array is one value of the
@@ -165,7 +164,7 @@ public class HTMLParser {
 	/**
 	 * Given the headers of an HttpResponse and the name of a cookie, check to
 	 * see if that cookie was set and return its value if so
-	 * 
+	 *
 	 * @param headers An array of HTTP headers
 	 * @param cookieName the name of a cookie
 	 * @return The value of the given cookie, or null if it was not present
