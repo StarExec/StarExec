@@ -380,7 +380,6 @@ public class BatchUtil {
 	 * Verifies that a user can look at all of the benchmarks.
 	 * @author Ryan McCleeary
 	 * @param listOfBenchmarks node list that contains all of the benchmarks in question. 
-	 * @param parentId id of parent space
 	 * @param userId id of user making request
 	 * 
 	 */

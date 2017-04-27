@@ -247,7 +247,7 @@ public class ProcessorManager extends HttpServlet {
 	/**
 	 * Creates a unique file path for the given file to write in the benchmark type directory
 	 * @param communityId The id of the community (used in the path)
-	 * @param fileName The name of the file to create in the unique directory
+	 * @param procName the name of processor (and the directory for the processor)
 	 * @return The file object associated with the new file path (all necessary directories are created as needed)
 	 */
 	public static File getProcessorDirectory(int communityId, String procName) {

@@ -86,13 +86,9 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 	
 	/**
 	 * Compares the solver names of jp1 and jp2 
-	 * @param jp1 The first job pair
-	 * @param jp2 The second job pair
-	 * @param sortIndex the value to sort on
 	 * 0 = bench name
 	 * 4 = result 1
 	 * 5 = result 2
-	 * @param ASC Whether sorting is to be done ASC or DESC
 	 * @return 0 if jp1 should come first in a sorted list, 1 otherwise
 	 * @author Eric Burns
 	 */ 

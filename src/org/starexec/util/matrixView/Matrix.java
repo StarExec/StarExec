@@ -34,8 +34,9 @@ public class Matrix {
 
 	/**
 	 * Builds a Matrix for the job matrix display page given a Job and a stageNumber.
-	 * @param job the job to build a matrix display of.
+	 * @param jobPairs the job pairs to build the matrix display with.
 	 * @param stageNumber filter the job pairs to view by this stage.
+	 * @param jobSpaceId the job space to filter the pairs by
 	 * @author Albert Giegerich
 	 */
 	private Matrix(List<JobPair> jobPairs, final Integer jobSpaceId, final int stageNumber) {
