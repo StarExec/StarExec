@@ -4,6 +4,7 @@ import org.apache.http.Header;
 import org.starexec.util.Validator;
 
 import java.util.Map;
+import java.util.regex.*;
 
 /**
  * This class reads HTML strings from StarExec and parses out necessary
@@ -34,27 +35,6 @@ public class HTMLParser {
 		} );
 
 		return answer.substring(0, answer.length() - 1);
-	}
-
-	/**
-	 * Extracts the substring between a pair of quotes, where startIndex is the
-	 * index of the first quote. If there is no closing quote, the rest of the
-	 * string from startindex+1 to the end is returned
-	 *
-	 * @param str The string upon which to do the extraction
-	 * @param startIndex The index of the first quote
-	 * @return The contents of the string between the start quote and the end
-	 *         quote
-	 * @author Eric Burns
-	 */
-
-	private static String extractQuotedString(String str, int startIndex) {
-		int endIndex;
-		endIndex = str.indexOf('"', startIndex);
-		if (endIndex == -1) {
-			endIndex = str.length();
-		}
-		return str.substring(startIndex + 1, endIndex);
 	}
 
 	/**
@@ -108,6 +88,8 @@ public class HTMLParser {
 		return (jsonString.substring(startIndex, endIndex));
 	}
 
+	private static final Pattern extractHiddenValue = Pattern.compile("\"(\\d+)\"[^>]*type=\"hidden\"");
+
 	/**
 	 * Given a Json string formatted as StarExec does its first line in a table
 	 * extract the ID of a primitive
@@ -119,25 +101,13 @@ public class HTMLParser {
 		if (jsonString == null) {
 			return null;
 		}
-		// IDs are stored as the 'value' of a hidden input
-		// This chunk of code finds the hidden attribute and moves backwards
-		// to the start of the tag, which is opened by <
-		int startIndex = jsonString.indexOf("type=\"hidden\"");
-		while (startIndex >= 0 && jsonString.charAt(startIndex) != '<') {
-			startIndex -= 1;
-		}
-		if (startIndex < 0) {
-			return null;
-		}
-		// next, we identify the value of the value attribute inside of the
-		// hidden tag
-		startIndex = jsonString.indexOf("value", startIndex);
-		if (startIndex < 0) {
-			return null;
-		}
-		String id = extractQuotedString(jsonString, startIndex + 6);
-		if (Validator.isValidPosInteger(id)) {
-			return Integer.valueOf(id);
+
+		Matcher m = extractHiddenValue.matcher(jsonString);
+		if ( m.find() ) {
+			String id = m.group(1);
+			if (Validator.isValidPosInteger(id)) {
+				return Integer.valueOf(id);
+			}
 		}
 		return null;
 	}
