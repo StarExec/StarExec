@@ -16,12 +16,14 @@ import java.util.*;
 
 class CommandParser {
 	final private CommandLogger log = CommandLogger.getLogger(CommandParser.class);
+	final private HashMap<String, String> variables;
 	private ArgumentParser parser = null;
 
 	private boolean returnIDsOnUpload = false;
 	private boolean printVerbosePrimDetails = false;
 
 	protected CommandParser() {
+		variables = new HashMap<String, String>();
 		parser = null;
 	}
 
@@ -199,7 +201,7 @@ class CommandParser {
 				if (returnIDsOnUpload) {
 					printID(serverStatus);
 				}
-				return 0;
+				return serverStatus;
 			}
 			if (ids != null && serverStatus == 0 && returnIDsOnUpload) {
 				for (Integer id : ids) {
@@ -266,7 +268,6 @@ class CommandParser {
 				if (returnIDsOnUpload && !isPollJob) {
 					System.out.println("id=" + serverStatus);
 				}
-				return 0;
 			}
 
 			return serverStatus;
@@ -560,6 +561,21 @@ class CommandParser {
 		// Empty lines and comments are equivalent.
 		if (command.length() == 0 || command.startsWith(C.COMMENT_SYMBOL)) {
 			return 0;
+		}
+
+		if (command.charAt(0) == '$') {
+			int split = command.indexOf('=');
+			if (split == -1) {
+				String key = command.substring(1);
+				String value = variables.get(key);
+				System.out.println("$" + key + " = " + value);
+				return Status.STATUS_SUCCESS;
+			}
+			String key = command.substring(1,split - 1).trim();
+			String rest = command.substring(split + 1);
+			Integer value = parseCommand(rest);
+			variables.put(key, value.toString());
+			return value;
 		}
 
 		String[] splitCommand = command.split(" ");
@@ -977,7 +993,15 @@ class CommandParser {
 				}
 			}
 
-			answer.put(key, value.toString());
+			String v = value.toString();
+			if (v.charAt(0) == '$') {
+				String variableName = v.substring(1);
+				if (variables.containsKey(variableName)) {
+					v = variables.get(variableName);
+				}
+			}
+
+			answer.put(key, v);
 		}
 		return answer;
 	}
