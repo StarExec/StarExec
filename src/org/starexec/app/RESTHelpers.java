@@ -615,7 +615,7 @@ public class RESTHelpers {
 			query.setTotalRecordsAfterQuery(totals[1]);
 		}
 
-	   return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,0, primitivesToAnonymize);
+	   return convertJobPairsToJsonObject(jobPairsToDisplay,query,wallclock,0, primitivesToAnonymize);
 	}
 
 
@@ -993,7 +993,7 @@ public class RESTHelpers {
 
         query.setTotalRecordsAfterQuery(Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,query.getSearchQuery(),stageNumber));
 
-	    return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,stageNumber, PrimitivesToAnonymize.NONE);
+	    return convertJobPairsToJsonObject(jobPairsToDisplay,query,wallclock,stageNumber, PrimitivesToAnonymize.NONE);
 	}
 
 	/**
@@ -1719,7 +1719,6 @@ public class RESTHelpers {
 	 * Given a list of job pairs, creates a JsonObject that can be used to populate a datatable client-side
 	 * @param pairs The pairs that will be the rows of the table
 	 * @param query a DataTables query object
-	 * @param includeConfigAndSolver Whether to include columns for the config and solver of each pair
 	 * @param useWallclock Whether to use wallclock time (true) or cpu time (false)
 	 * @param stageNumber The number of the stage to use the data from for each pair
 	 * @param primitivesToAnonymize PrimitivesToAnonymize object representing whether benchmarks, solvers, or both
@@ -1727,8 +1726,12 @@ public class RESTHelpers {
 	 * @return A JsonObject that can be used to populate a datatable
 	 * @author Eric Burns
 	 */
-	public static JsonObject convertJobPairsToJsonObject(List<JobPair> pairs, DataTablesQuery query,
-			boolean includeConfigAndSolver, boolean useWallclock, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize ) {
+	public static JsonObject convertJobPairsToJsonObject(
+			List<JobPair> pairs,
+			DataTablesQuery query,
+			boolean useWallclock,
+			int stageNumber,
+			PrimitivesToAnonymize primitivesToAnonymize ) {
 
 		/**
 		 * Generate the HTML for the next DataTable page of entries
@@ -1741,15 +1744,14 @@ public class RESTHelpers {
 
 			String benchLink = getBenchLinkWithHiddenPairId(jp.getBench(), jp.getId(), primitivesToAnonymize);
 
-			if (includeConfigAndSolver) {
-				// Create the solver link
-				solverLink = getSolverLink(stage.getSolver().getId(),stage.getSolver().getName(), primitivesToAnonymize);
-				// Create the configuration link
-				configLink = getConfigLink(
-						stage.getSolver().getConfigurations().get(0).getId(),
-						stage.getSolver().getConfigurations().get(0).getName(),
-						primitivesToAnonymize);
-			}
+			// Create the solver link
+			solverLink = getSolverLink(stage.getSolver().getId(),stage.getSolver().getName(), primitivesToAnonymize);
+			// Create the configuration link
+			configLink = getConfigLink(
+					stage.getSolver().getConfigurations().get(0).getId(),
+					stage.getSolver().getConfigurations().get(0).getName(),
+					primitivesToAnonymize);
+
 
 
 			// Create the status field
@@ -1765,10 +1767,9 @@ public class RESTHelpers {
 			// entry in the DataTable
 			JsonArray entry = new JsonArray();
     		entry.add(new JsonPrimitive(benchLink));
-    		if (includeConfigAndSolver) {
-    			entry.add(new JsonPrimitive(solverLink));
-        		entry.add(new JsonPrimitive(configLink));
-    		}
+			entry.add(new JsonPrimitive(solverLink));
+			entry.add(new JsonPrimitive(configLink));
+
 
     		entry.add(new JsonPrimitive(status));
     		if (useWallclock) {
