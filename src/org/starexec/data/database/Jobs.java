@@ -1361,6 +1361,23 @@ public class Jobs {
 		return file.getAbsolutePath();
 	}
 
+	private static List<JobPair> getPairsHelper(Connection con, String sqlMethod, int jobId) throws SQLException {
+		return Common.queryUsingConnection(
+				con,
+				sqlMethod,
+				procedure -> procedure.setInt(1, jobId),
+				results -> {
+					List<JobPair> returnList = new LinkedList<JobPair>();
+					while(results.next()){
+						JobPair jp = new JobPair();
+						jp.setId(results.getInt("id"));
+						jp.setBackendExecId(results.getInt("sge_id"));
+						returnList.add(jp);
+					}
+					return returnList;
+				});
+	}
+
 	/**
 	 * Gets all enqueued job pairs. Only populates the pair ID and the sge ID!
 
@@ -1371,31 +1388,7 @@ public class Jobs {
 	 */
 	protected static List<JobPair> getEnqueuedPairs(Connection con, int jobId) throws SQLException {
 		log.debug("getEnqueuePairs2 beginning...");
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		 try {
-			procedure = con.prepareCall("{CALL GetEnqueuedJobPairsByJob(?)}");
-			procedure.setInt(1, jobId);
-			results = procedure.executeQuery();
-			List<JobPair> returnList = new LinkedList<JobPair>();
-			//we map ID's to  primitives so we don't need to query the database repeatedly for them
-
-			while(results.next()){
-				JobPair jp = new JobPair();
-				jp.setId(results.getInt("id"));
-				jp.setBackendExecId(results.getInt("sge_id"));
-
-				returnList.add(jp);
-			}
-			log.debug("returnList = " + returnList);
-			return returnList;
-		} catch (SQLException e) {
-			log.error("getEnqueuedPairs says "+e.getMessage(),e);
-             throw e;
-		} finally {
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
+		return getPairsHelper(con, "{CALL GetEnqueuedJobPairsByJob(?)}", jobId);
 	}
 
 
@@ -3487,33 +3480,7 @@ public class Jobs {
 	 * @author Wyatt Kaiser
 	 */
 	protected static List<JobPair> getRunningPairs(Connection con, int jobId) throws Exception {
-
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		 try {
-			procedure = con.prepareCall("{CALL GetRunningJobPairsByJob(?)}");
-			procedure.setInt(1, jobId);
-			results = procedure.executeQuery();
-			List<JobPair> returnList = new LinkedList<JobPair>();
-
-
-			while(results.next()){
-				JobPair jp = new JobPair();
-				jp.setId(results.getInt("id"));
-				jp.setBackendExecId(results.getInt("sge_id"));
-
-				returnList.add(jp);
-			}
-
-			Common.safeClose(results);
-			return returnList;
-		} catch (Exception e) {
-			log.error("getRunningPairs says " + e.getMessage(),e);
-		} finally {
-			Common.safeClose(results);
-			Common.safeClose(procedure);
-		}
-		return null;
+		return getPairsHelper(con, "{CALL GetRunningJobPairsByJob(?)}", jobId);
 	}
 
 
