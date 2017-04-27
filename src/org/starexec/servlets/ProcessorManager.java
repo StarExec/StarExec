@@ -65,7 +65,7 @@ public class ProcessorManager extends HttpServlet {
 	
 	
 	@Path("/update")
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) {
+	public void doPost(HttpServletRequest request, HttpServletResponse response) {
 		try {			
 			
 			if(ServletFileUpload.isMultipartContent(request)) {								
