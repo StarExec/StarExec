@@ -133,7 +133,7 @@ public class ProcessorManager extends HttpServlet {
 	
 	/**
 	 * Given a directory, recursively sets all files in the directory as executable
-	 * @param directory The directory in quesiton
+	 * @param directory The directory in question
 	 */
 	private static void setAllFilesExecutable(File directory) {
 		for (File f : directory.listFiles()) {
@@ -156,7 +156,7 @@ public class ProcessorManager extends HttpServlet {
 	 * @param form The form fields for the request
 	 * @return The Processor that was added to the database if it was successful
 	 */
-	private Processor addNewProcessor(HashMap<String, Object> form) throws StarExecException {		
+	private Processor addNewProcessor(HashMap<String, Object> form) {
 		final String method = "addNewProcessor";
 		try {						
 			Processor newProc = new Processor();
@@ -172,9 +172,9 @@ public class ProcessorManager extends HttpServlet {
 			
 			File uniqueDir = getProcessorDirectory(newProc.getCommunityId(),newProc.getName());
 			
-			File archiveFile=null;
+			File archiveFile;
 
-			URL processorUrl = null;
+			URL processorUrl;
 
 			if (uploadMethod.equals(LOCAL_UPLOAD_METHOD)) {
 				// Save the uploaded file to disk
@@ -183,7 +183,7 @@ public class ProcessorManager extends HttpServlet {
 				processorFile.write(archiveFile);
 			} else {
 				processorUrl=new URL((String)form.get(PROCESSOR_URL));
-				String name = null;
+				String name;
 				try {
 					name=processorUrl.toString().substring(processorUrl.toString().lastIndexOf('/'));
 				} catch (Exception e) {
@@ -278,7 +278,7 @@ public class ProcessorManager extends HttpServlet {
 			String uploadMethod = (String)form.get(UPLOAD_METHOD);
 
 			boolean goodExtension=false;
-			String fileName = null;
+			String fileName;
 			
 			if (uploadMethod.equals(LOCAL_UPLOAD_METHOD)) {
 				fileName = ((PartWrapper)form.get(PROCESSOR_FILE)).getName();
