@@ -462,8 +462,7 @@ public class RESTHelpers {
 			return gson.toJson(RESTServices.ERROR_TOO_MANY_JOB_PAIRS);
 		}
 
-		String nextDataTablesPageJson = gson.toJson(nextDataTablesPage);
-		return nextDataTablesPageJson;
+		return gson.toJson(nextDataTablesPage);
 	}
 
 	/**
@@ -1168,8 +1167,7 @@ public class RESTHelpers {
 
 		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 
-		JsonObject answer = convertJobsToJsonObject(jobsToDisplay, query, false);
-		return answer;
+		return convertJobsToJsonObject(jobsToDisplay, query, false);
 	}
 
 	public static JsonObject getNextUserPageForSpaceExplorer(int id, HttpServletRequest request) {
@@ -1398,8 +1396,7 @@ public class RESTHelpers {
 
 			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 
-			JsonObject answer = convertJobsToJsonObject(jobsToDisplay, query, dataAsObjects);
-			return answer;
+			return convertJobsToJsonObject(jobsToDisplay, query, dataAsObjects);
 
 
 	    case SOLVER:
