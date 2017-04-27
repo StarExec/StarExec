@@ -2421,14 +2421,7 @@ public class Benchmarks {
 			procedure.setInt(1,userId);
 			
 			results=procedure.executeQuery();
-			List<Benchmark> Benchmarks=new ArrayList<Benchmark>();
-			while (results.next()) {
-				Benchmark b=resultToBenchmark(results);
-				Processor t = Processors.resultSetToProcessor(results, "types");
-				b.setType(t);
-				Benchmarks.add(b);
-			}
-			return Benchmarks;
+			return resultsToBenchmarkWithType(results);
 		}catch (Exception e) {
 			log.error(e.getMessage(),e);
 		} finally {
@@ -2451,15 +2444,9 @@ public class Benchmarks {
 			con = Common.getConnection();
 			 procedure = con.prepareCall("{CALL GetPublicBenchmarks()}");				
 			 results = procedure.executeQuery();
-			List<Benchmark> Benchmarks = new LinkedList<Benchmark>();
-			
-			while(results.next()){
-				Benchmark s=resultToBenchmark(results);
-				Processor t = Processors.resultSetToProcessor(results, "types");
-				s.setType(t);
-				Benchmarks.add(s);
-			}									
-			return Benchmarks;
+
+
+			return resultsToBenchmarkWithType(results);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -2468,6 +2455,17 @@ public class Benchmarks {
 			Common.safeClose(results);
 		}
 		return null;
+	}
+
+	private static List<Benchmark> resultsToBenchmarkWithType(ResultSet results) throws SQLException {
+		List<Benchmark> benchmarks = new ArrayList<>();
+		while(results.next()){
+			Benchmark s=resultToBenchmark(results);
+			Processor t = Processors.resultSetToProcessor(results, "types");
+			s.setType(t);
+			benchmarks.add(s);
+		}
+		return benchmarks;
 	}
 	
 	/**
