@@ -162,7 +162,6 @@ class CommandParser {
 
 	private void printID(int id) {
 		System.out.println("id=" + id);
-
 	}
 
 	/**
@@ -256,7 +255,7 @@ class CommandParser {
 						return id;
 					}
 					if (returnIDsOnUpload) {
-						System.out.println("id=" + id);
+						printID(id);
 					}
 					pollParams.put(C.PARAM_ID, String.valueOf(id));
 					System.out.println("Job created, polling has begun");
@@ -273,7 +272,7 @@ class CommandParser {
 
 			if (serverStatus > 0) {
 				if (returnIDsOnUpload && !isPollJob) {
-					System.out.println("id=" + serverStatus);
+					printID(serverStatus);
 				}
 			}
 
