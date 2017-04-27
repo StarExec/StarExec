@@ -32,6 +32,24 @@ class CommandParser {
 	}
 
 	/**
+	 * Prints a given (key, value) pair
+	 * @param key
+	 * @param value
+	 */
+	private void formatKeyValuePair(StringBuilder sb, String key, String value) {
+		sb.append(key);
+		sb.append("= \"");
+		sb.append(value);
+		sb.append("\"");
+	}
+
+	/**
+	 * Attributes that should be printed even when `verbose = false`
+	 * (aside from "id" which is always printed)
+	 */
+	final private static String[] defaultAttrs = {"name", "description"};
+
+	/**
 	 * Prints out the given attributes
 	 *
 	 * @param attrs Key value pairs of strings to be printed out
@@ -42,37 +60,26 @@ class CommandParser {
 		// currently prints id, name, description
 		StringBuilder sb = new StringBuilder();
 
-		sb.append("id= \"");
-		sb.append(attrs.get("id"));
-		sb.append("\"");
+		// We always want to print the id *first*
+		formatKeyValuePair(sb, "id", attrs.get("id"));
 
-		if (!verbose) {
-			if (attrs.containsKey("name")) {
-				sb.append(" : name= \"");
-				sb.append(attrs.get("name"));
-				sb.append("\"");
-			}
-			if (attrs.containsKey("description")) {
-				sb.append(" : description= \"");
-				sb.append(attrs.get("description"));
-				sb.append("\"");
-			}
-
-		} else {
-			for (String key : attrs.keySet()) {
-				if (key.equals("id")) {
-					continue;
+		if (verbose) {                        // if verbose is on
+			attrs.forEach( (key, value) -> {  // print all attrs
+				if (!key.equals("id")) {      // except the id
+					sb.append(" : ");         // delimited by a colon
+					formatKeyValuePair(sb, key, value);
 				}
-				sb.append(" : ");
-				sb.append(key);
-				sb.append("= \"");
-				sb.append(attrs.get(key));
-				sb.append("\"");
+			} );
+		} else {                              // if verbose is not on
+			for (String key : defaultAttrs) { // only print the default Attrs
+				if (attrs.containsKey(key)) { // if present
+					sb.append(" : ");         // delimited by a colon
+					formatKeyValuePair(sb, key, attrs.get(key));
+				}
 			}
 		}
 
 		System.out.println(sb.toString());
-
 	}
 
 	/**
