@@ -88,7 +88,8 @@ public class HTMLParser {
 		return (jsonString.substring(startIndex, endIndex));
 	}
 
-	private static final Pattern extractHiddenValue = Pattern.compile("\"(\\d+)\"[^>]*type=\"hidden\"");
+	private static final Pattern extractHiddenValue =
+		Pattern.compile("value=\"(\\d+)\"[^>]*type=\"hidden\"|type=\"hidden\"[^>]*value=\"(\\d+)\"");
 
 	/**
 	 * Given a Json string formatted as StarExec does its first line in a table
@@ -104,7 +105,10 @@ public class HTMLParser {
 
 		Matcher m = extractHiddenValue.matcher(jsonString);
 		if ( m.find() ) {
-			String id = m.group(1);
+			String id = m.group(2);
+			if (id == null) {
+				id = m.group(1);
+			}
 			if (Validator.isValidPosInteger(id)) {
 				return Integer.valueOf(id);
 			}
