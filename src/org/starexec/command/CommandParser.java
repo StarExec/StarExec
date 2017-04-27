@@ -36,7 +36,7 @@ class CommandParser {
 	 * @param key
 	 * @param value
 	 */
-	private void formatKeyValuePair(StringBuilder sb, String key, String value) {
+	private static void formatKeyValuePair(StringBuilder sb, String key, String value) {
 		sb.append(key);
 		sb.append("= \"");
 		sb.append(value);
@@ -56,7 +56,7 @@ class CommandParser {
 	 * @param verbose If false, only looks for the "id" "name" and "description"
 	 *        attributes. Otherwise, prints all attributes
 	 */
-	private void printAttributes(Map<String, String> attrs, boolean verbose) {
+	private static void printAttributes(Map<String, String> attrs, boolean verbose) {
 		// currently prints id, name, description
 		StringBuilder sb = new StringBuilder();
 
@@ -160,7 +160,7 @@ class CommandParser {
 		}
 	}
 
-	private void printID(int id) {
+	private static void printID(int id) {
 		System.out.println("id=" + id);
 	}
 
