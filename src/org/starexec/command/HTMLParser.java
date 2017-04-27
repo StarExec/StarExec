@@ -49,12 +49,10 @@ public class HTMLParser {
 	 */
 
 	private static String extractQuotedString(String str, int startIndex) {
-		int endIndex = startIndex + 1;
-		while (endIndex < str.length()) {
-			if (str.charAt(endIndex) == '"') {
-				break;
-			}
-			endIndex += 1;
+		int endIndex;
+		endIndex = str.indexOf('"', startIndex);
+		if (endIndex == -1) {
+			endIndex = str.length();
 		}
 		return str.substring(startIndex + 1, endIndex);
 	}
