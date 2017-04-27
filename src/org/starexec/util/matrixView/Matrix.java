@@ -428,23 +428,20 @@ public class Matrix {
 		}
 
 		List<Pair<String, Integer>> orderedSpaces = new ArrayList<Pair<String,Integer>>(uniqueSpaces);
-		Collections.sort(orderedSpaces, new Comparator<Pair<String, Integer>>() {
-			@Override
-			public int compare(Pair<String,Integer> jobSpaceA, Pair<String,Integer> jobSpaceB) {
-				// Try sorting alphabetically insensitive to case.
-				String jobSpaceNameA = jobSpaceA.getLeft();
-				String jobSpaceNameB = jobSpaceB.getLeft();
-				int alphabeticalComparison = jobSpaceNameA.compareToIgnoreCase(jobSpaceNameB);
+		Collections.sort(orderedSpaces, (jobSpaceA, jobSpaceB) -> {
+			// Try sorting alphabetically insensitive to case.
+			String jobSpaceNameA = jobSpaceA.getLeft();
+			String jobSpaceNameB = jobSpaceB.getLeft();
+			int alphabeticalComparison = jobSpaceNameA.compareToIgnoreCase(jobSpaceNameB);
 
-				if (alphabeticalComparison != 0) {
-					return alphabeticalComparison;
-				} 
-
-				// If two elements are equal sort them by the value of their ID.
-				Integer jobSpaceIdA = jobSpaceA.getRight();
-				Integer jobSpaceIdB = jobSpaceB.getRight();
-				return jobSpaceIdA.compareTo(jobSpaceIdB);
+			if (alphabeticalComparison != 0) {
+				return alphabeticalComparison;
 			}
+
+			// If two elements are equal sort them by the value of their ID.
+			Integer jobSpaceIdA = jobSpaceA.getRight();
+			Integer jobSpaceIdB = jobSpaceB.getRight();
+			return jobSpaceIdA.compareTo(jobSpaceIdB);
 		});
 
 		log.debug("(getSpacesInJobOrderedAlphabetically) Number of spaces in job = "+orderedSpaces.size());
