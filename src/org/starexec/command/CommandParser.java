@@ -560,7 +560,7 @@ class CommandParser {
 	protected int parseCommand(String command) {
 		// means end of input has been reached
 		if (command == null) {
-			command = "exit";
+			command = C.COMMAND_EXIT;
 		}
 		command = command.trim();
 
