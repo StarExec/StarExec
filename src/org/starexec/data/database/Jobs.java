@@ -4001,23 +4001,13 @@ public class Jobs {
 
 			//Get the enqueued job pairs and remove them
 			List<JobPair> jobPairsEnqueued = Jobs.getEnqueuedPairs(con, jobId);
-			for (JobPair jp : jobPairsEnqueued) {
-				int execId = jp.getBackendExecId();
-				int pairId = jp.getId();
-				R.BACKEND.killPair(execId);
-				JobPairs.setStatusForPairAndStages(pairId, paused);
-			}
+			killPairs(jobPairsEnqueued);
 			numPairs += jobPairsEnqueued.size();
 
 			//Get the running job pairs and remove them
 			List<JobPair> jobPairsRunning = Jobs.getRunningPairs(con, jobId);
 			if (jobPairsRunning != null) {
-				for (JobPair jp : jobPairsRunning) {
-					int execId = jp.getBackendExecId();
-					int pairId = jp.getId();
-					R.BACKEND.killPair(execId);
-					JobPairs.setStatusForPairAndStages(pairId, paused);
-				}
+				killPairs(jobPairsRunning);
 				numPairs += jobPairsRunning.size();
 			}
 
@@ -4033,6 +4023,15 @@ public class Jobs {
 			Common.safeClose(procedure);
 		}
 		return false;
+	}
+
+	private static void killPairs(List<JobPair> pairs) {
+		for (JobPair jp : pairs) {
+			int execId = jp.getBackendExecId();
+			int pairId = jp.getId();
+			R.BACKEND.killPair(execId);
+			JobPairs.setStatusForPairAndStages(pairId, StatusCode.STATUS_PAUSED.getVal());
+		}
 	}
 
     /**
