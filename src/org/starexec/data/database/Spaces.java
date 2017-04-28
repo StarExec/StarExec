@@ -559,17 +559,7 @@ public class Spaces {
 			con = Common.getConnection();		
 			procedure = con.prepareCall("{CALL GetAllSpaces()}");
 			results = procedure.executeQuery();
-			List<Space> spaces = new LinkedList<Space>();
-			
-			while(results.next()){
-				Space s = new Space();
-				s.setName(results.getString("name"));
-				s.setId(results.getInt("id"));
-				s.setDescription(results.getString("description"));
-				s.setLocked(results.getBoolean("locked"));				
-				spaces.add(s);
-			}					
-			return spaces;
+			return resultsToSpaces(results);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -579,6 +569,20 @@ public class Spaces {
 		}
 		
 		return null;
+	}
+
+	protected static List<Space> resultsToSpaces(ResultSet results) throws SQLException {
+		List<Space> spaces = new ArrayList<>();
+
+		while(results.next()){
+			Space s = new Space();
+			s.setName(results.getString("name"));
+			s.setId(results.getInt("id"));
+			s.setDescription(results.getString("description"));
+			s.setLocked(results.getBoolean("locked"));
+			spaces.add(s);
+		}
+		return spaces;
 	}
 	
 	/**

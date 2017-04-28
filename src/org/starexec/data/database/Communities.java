@@ -43,18 +43,7 @@ public class Communities {
 		try {
 			procedure = con.prepareCall("{CALL GetSubSpacesOfRoot}");
 			results = procedure.executeQuery();
-			List<Space> commSpaces = new LinkedList<Space>();
-
-			while(results.next()){
-				Space s = new Space();
-				s.setName(results.getString("name"));
-				s.setId(results.getInt("id"));
-				s.setDescription(results.getString("description"));
-				s.setLocked(results.getBoolean("locked"));
-				commSpaces.add(s);
-			}
-
-			return commSpaces;
+			return Spaces.resultsToSpaces(results);
 		} catch (Exception e){
 			log.error(e.getMessage(), e);
 		} finally {
