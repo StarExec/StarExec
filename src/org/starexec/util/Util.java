@@ -347,9 +347,8 @@ public class Util {
      * @throws IOException
      */
     public static String executeCommand(String command) throws IOException {
-		String[] cmd = new String[1];
-		cmd[0] = command;
-		return executeCommand(cmd);
+		final String[] cmd = { command };
+		return executeCommand(cmd, null, null);
     }
     /**
      * Calls executecommand with a size 1 String[] and a null working directory
@@ -359,9 +358,8 @@ public class Util {
      * @throws IOException
      */
     public static String executeCommand(String command, String[] env) throws IOException {
-		String[] cmd = new String[1];
-		cmd[0] = command;
-		return executeCommand(cmd,env,null);
+		final String[] cmd = { command };
+		return executeCommand(cmd, env, null);
     }
 
     /**
