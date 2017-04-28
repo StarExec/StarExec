@@ -725,6 +725,7 @@ public abstract class JobManager {
 		// Create a new bench directory and add it to the template if this job has the stdOutOption or extraSaveOption
 		// enabled.
 		if (stdOutSaveOrExtraSaveEnabled) {
+			log.debug("Pair with id="+pair.getId()+" had stdout save option or extra save option enabled. Creating benchmark directory.");
 			try {
 				File uniqueBenchDir = BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null);
 				replacements.put("$$BENCH_SAVE_PATH$$", uniqueBenchDir.getAbsolutePath());
@@ -732,6 +733,8 @@ public abstract class JobManager {
 				// Log the error and skip this job
 				log.error("Could not get unique benchmark directory.", e);
 			}
+		} else {
+			log.debug("Pair with id="+pair.getId()+" did not had stdout save option or extra save option enabled.");
 		}
 
 		//Dependencies
