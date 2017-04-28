@@ -379,8 +379,7 @@ public class Requests {
 	
 	/**
 	 * Gets all pending request to join communities
-	 * @param startingRecord The 0-indexed record to start on.
-	 * @param recordsPerPage The number of requests to return
+	 * @param results SQL results to convert to a CommunityRequest
 	 * @return A list of requests to display, or null on error
 	 */
 	private static List<CommunityRequest> processGetCommunityRequestResults(ResultSet results) throws SQLException
