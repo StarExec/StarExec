@@ -8,7 +8,6 @@ import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.DataTablesQuery;
 
-import java.io.IOException;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -219,7 +218,7 @@ public class Requests {
 			procedure.setInt(1, userId);					
 			 results = procedure.executeQuery();
 			
-			return resultsToCommunitRequest(results);
+			return resultsToCommunityRequest(results);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -231,18 +230,7 @@ public class Requests {
 		return null;
 	}
 
-	private static CommunityRequest resultsToCommunitRequest(ResultSet results) throws SQLException {
-		if(results.next()){
-			CommunityRequest req = new CommunityRequest();
-			req.setUserId(results.getInt("user_id"));
-			req.setCommunityId(results.getInt("community"));
-			req.setCode(results.getString("code"));
-			req.setMessage(results.getString("message"));
-			req.setCreateDate(results.getTimestamp("created"));
-			return req;
-		}
-		return null;
-	}
+
 	
 	/**
 	 * Retrieves a community request from the database given a code
@@ -260,7 +248,7 @@ public class Requests {
 			procedure.setString(1, code);					
 			 results = procedure.executeQuery();
 			
-			return resultsToCommunitRequest(results);
+			return resultsToCommunityRequest(results);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -410,6 +398,11 @@ public class Requests {
 			requests.add(req);	
 		}	
 		return requests;
+	}
+
+	private static CommunityRequest resultsToCommunityRequest(ResultSet results) throws SQLException {
+		List<CommunityRequest> requests = processGetCommunityRequestResults(results);
+		return requests.size() > 0 ? requests.get(0) : null;
 	}
 	
 	/**
