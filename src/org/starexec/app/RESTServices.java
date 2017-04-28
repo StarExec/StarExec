@@ -3546,27 +3546,24 @@ public class RESTServices {
 
 		// Next, we actually delete the jobs on disk and remove job_pairs. This takes much longer,
 		// so we spin off a new thread so the user does not have to wait.
-		Util.threadPoolExecute(new Runnable() {
-			@Override
-			public void run(){
-				try {
-					for (int id : selectedJobs) {
-						boolean success_delete = Jobs.delete(id);
-						if (!success_delete) {
-							log.error("there were one or more errors in deleting the list of jobs!");
-						}
-					}
-				} catch (Exception e) {
-					log.error(e.getMessage(),e);
-				}
-			}
-		});
-
-
-
-
+		deleteJobsOnSeparateThread(selectedJobs);
 
 		return gson.toJson(new ValidatorStatusCode(true,"Job(s) deleted successfully and removed from spaces"));
+	}
+
+	private static void deleteJobsOnSeparateThread(List<Integer> selectedJobs) {
+		Util.threadPoolExecute(() -> {
+			try {
+				for (int id : selectedJobs) {
+					boolean success_delete = Jobs.delete(id);
+					if (!success_delete) {
+						log.error("there were one or more errors in deleting the list of jobs!");
+					}
+				}
+			} catch (Exception e) {
+				log.error(e.getMessage(),e);
+			}
+		});
 	}
 
 	/**
@@ -3580,7 +3577,7 @@ public class RESTServices {
 	@POST
 	@Path("/delete/job")
 	@Produces("application/json")
-	public String deleteJobs(@Context HttpServletRequest request) {
+	public String deleteJobsOnSeparateThread(@Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
@@ -3607,22 +3604,7 @@ public class RESTServices {
 
 		// Next, we actually delete the jobs on disk and remove job_pairs. This takes much longer,
 		// so we spin off a new thread so the user does not have to wait.
-		Util.threadPoolExecute(new Runnable() {
-			@Override
-			public void run(){
-				try {
-					for (int id : selectedJobs) {
-						boolean success_delete = Jobs.delete(id);
-						if (!success_delete) {
-							log.error("there were one or more errors in deleting the list of jobs!");
-						}
-					}
-				} catch (Exception e) {
-					log.error(e.getMessage(),e);
-				}
-
-			}
-		});
+		deleteJobsOnSeparateThread(selectedJobs);
 
 
 		return gson.toJson(new ValidatorStatusCode(true,"Job(s) deleted successfully"));
