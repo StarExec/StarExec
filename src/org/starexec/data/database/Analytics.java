@@ -70,7 +70,7 @@ public enum Analytics {
 					}
 			);
 		} catch (SQLException e) {
-			log.error("Cannot record event: " + this.name());
+			log.error("Cannot record event: " + this.name(), e);
 		}
 	}
 }
