@@ -496,24 +496,26 @@ public class Util {
 		   them in parallel.  Otherwise, draining one can block
 		   and prevent the other from making progress as well (since
 		   the process cannot advance in that case). */
-		final StringBuffer b = new StringBuffer();
+		final StringBuffer message = new StringBuffer();
 		threadPool.execute(new Runnable() {
 			@Override
 				public void run() {
 				try {
-					if (drainInputStream(b, p.getErrorStream())) {
-						log.error("The process produced stderr output.");
-						log.error(b.toString());
+					if (drainInputStream(message, p.getErrorStream())) {
+						message.insert(0, "The process produced stderr output:\n");
+						log.error("drainStreams", message.toString());
 					}
-
 				}
 				catch(Exception e) {
-					log.error("Error draining stderr from process: "+e.toString());
+					log.error(
+						"drainStreams",
+						"Error draining stderr from process: " + e.toString()
+					);
 				}
 			}
 		});
-		drainInputStream(b, p.getInputStream());
-		return b.toString();
+		drainInputStream(message, p.getInputStream());
+		return message.toString();
 	}
 
     /**
