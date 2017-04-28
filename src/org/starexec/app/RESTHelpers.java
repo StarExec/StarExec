@@ -2282,11 +2282,7 @@ public class RESTHelpers {
 		buildFullJsTreeHelper(0, jobId, root, true);
 	}
 
-	/**
-	 * Helper method for buildFullJsTree
-	 * @see org.starexec.app.RESTHelpers#buildFullJsTree
-	 */
-	private static void buildFullJsTreeHelper(int parentId, int jobId, List<JSTreeItem> root, boolean firstRecursion) {
+	private static List<JobSpace> getSubspacesOrRootSpace(int parentId, int jobId) {
 		List<JobSpace> subspaces = new ArrayList<>();
 		if (parentId>0) {
 			subspaces = Spaces.getSubSpacesForJob(parentId,false);
@@ -2296,6 +2292,14 @@ public class RESTHelpers {
 			JobSpace s=Spaces.getJobSpace(j.getPrimarySpace());
 			subspaces.add(s);
 		}
+		return subspaces;
+	}
+	/**
+	 * Helper method for buildFullJsTree
+	 * @see org.starexec.app.RESTHelpers#buildFullJsTree
+	 */
+	private static void buildFullJsTreeHelper(int parentId, int jobId, List<JSTreeItem> root, boolean firstRecursion) {
+		List<JobSpace> subspaces = getSubspacesOrRootSpace(parentId, jobId);
 
 		String className = (firstRecursion ? "rootNode" : null);
 
@@ -2365,16 +2369,8 @@ public class RESTHelpers {
 	}
 
 	protected static String getJobSpacesJson( int parentId, int jobId, boolean makeSpaceTree, PrimitivesToAnonymize primitivesToAnonymize ) {
-		List<JobSpace> subspaces=new ArrayList<JobSpace>();
 		log.debug("got a request for parent space = "+parentId);
-		if (parentId>0) {
-			subspaces=Spaces.getSubSpacesForJob(parentId,false);
-		} else {
-			//if the id given is 0, we want to get the root space
-			Job j=Jobs.get(jobId);
-			JobSpace s=Spaces.getJobSpace(j.getPrimarySpace());
-			subspaces.add(s);
-		}
+		List<JobSpace> subspaces = getSubspacesOrRootSpace(parentId, jobId);
 
 		if ( AnonymousLinks.areJobsAnonymized( primitivesToAnonymize )) {
 			anonymizeJobSpaceNames( subspaces, jobId );
