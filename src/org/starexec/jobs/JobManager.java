@@ -569,14 +569,10 @@ public abstract class JobManager {
 		final LinkedList<SchedulingState> schedule = new LinkedList<>();
 		// add all the jobs in jobList to a SchedulingState in the schedule.
 		for (final Job job : joblist) {
-			File uniqueBenchDir = null;
-			try {
-				uniqueBenchDir = BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null);
-			} catch (FileNotFoundException e) {
-				// Log the error and skip this job
-				log.error("Could not get unique benchmark directory.", e);
-				continue;
-			}
+
+			String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());
+
+
 			// contains users that we have identified as exceeding their quota. These users will be skipped
 			final Map<Integer, Boolean> quotaExceededUsers = new HashMap<>();
 
@@ -593,14 +589,12 @@ public abstract class JobManager {
 			// By default we split the memory
 			final String queueSlots = Jobs.getSlotsInJobQueue(job);
 			// jobTemplate is a version of mainTemplate customized for this job
-			String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());
 
 			jobTemplate = jobTemplate.replace("$$NUM_SLOTS$$", queueSlots);
 
 			jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
 			jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
 			jobTemplate = jobTemplate.replace("$$DISK_QUOTA$$", ""+job.getUser().getDiskQuota());
-			jobTemplate = jobTemplate.replace("$$BENCH_SAVE_PATH$$", uniqueBenchDir.getAbsolutePath());
 			// for every job, retrieve no more than the number of pairs that would fill the queue.
 			// retrieving more than this is wasteful.
 			int limit=Math.max(R.NUM_JOB_PAIRS_AT_A_TIME, (nodeCount*R.NODE_MULTIPLIER)-queueSize);
@@ -661,6 +655,7 @@ public abstract class JobManager {
 		}
 		benchInputPaths.add(""); // just terminating this array with a blank string so the Bash array will always have some element
 		String primaryPreprocessorPath="";
+		boolean stdOutSaveOrExtraSaveEnabled = false;
 		for (JoblineStage stage : pair.getStages()) {
 			int stageNumber=stage.getStageNumber();
 			stageNumbers.add(stageNumber);
@@ -676,8 +671,17 @@ public abstract class JobManager {
 			solverPaths.add(stage.getSolver().getPath());
 			argStrings.add(JobManager.pipelineDependenciesToArgumentString(stage.getDependencies()));
 			resultsIntervals.add(attrs.getResultsInterval());
-			stdoutSaveOptions.add(attrs.getStdoutSaveOption().getVal());
-			extraSaveOptions.add(attrs.getExtraOutputSaveOption().getVal());
+
+			// Check if we're going to need to create a benchmark directory.
+			SaveResultsOption stdoutSave = attrs.getStdoutSaveOption();
+			SaveResultsOption extraSave = attrs.getExtraOutputSaveOption();
+			stdOutSaveOrExtraSaveEnabled = stdoutSave == SaveResultsOption.CREATE_BENCH
+					|| extraSave == SaveResultsOption.CREATE_BENCH
+					|| stdOutSaveOrExtraSaveEnabled;
+
+			stdoutSaveOptions.add(stdoutSave.getVal());
+			extraSaveOptions.add(extraSave.getVal());
+
 			if (attrs.getSpaceId()==null) {
 				spaceIds.add(null);
 			} else {
@@ -707,6 +711,7 @@ public abstract class JobManager {
 				}
 			}
 		}
+
 		File outputFile=new File(JobPairs.getPairStdout(pair));
 		
 		//if there is exactly 1 stage, we use the old output format
@@ -716,6 +721,19 @@ public abstract class JobManager {
 		
 		// maps from strings in the jobscript to the strings that should be filled in
 		Map<String, String> replacements = new HashMap<>();
+
+		// Create a new bench directory and add it to the template if this job has the stdOutOption or extraSaveOption
+		// enabled.
+		if (stdOutSaveOrExtraSaveEnabled) {
+			try {
+				File uniqueBenchDir = BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null);
+				replacements.put("$$BENCH_SAVE_PATH$$", uniqueBenchDir.getAbsolutePath());
+			} catch (FileNotFoundException e) {
+				// Log the error and skip this job
+				log.error("Could not get unique benchmark directory.", e);
+			}
+		}
+
 		//Dependencies
 		if (pair.getBench().getUsesDependencies())
 		{
@@ -768,6 +786,7 @@ public abstract class JobManager {
 		replacements.put("$$RESULTS_INTERVAL_ARRAY$$", numsToBashArray("RESULTS_INTERVALS", resultsIntervals));
 		replacements.put("$$STDOUT_SAVE_OPTION_ARRAY$$", numsToBashArray("STDOUT_SAVE_OPTIONS", stdoutSaveOptions));
 		replacements.put("$$EXTRA_SAVE_OPTION_ARRAY$$", numsToBashArray("EXTRA_SAVE_OPTIONS", extraSaveOptions));
+
 
 		String scriptPath = String.format("%s/%s", R.getJobInboxDir(), String.format(R.JOBFILE_FORMAT, pair.getId()));
 		replacements.put("$$SCRIPT_PATH$$",scriptPath);
