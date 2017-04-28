@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 /**
  * This class holds constants specific to StarexecCommand
- * 
+ *
  * @author Eric
  */
 @SuppressWarnings("javadoc")
@@ -67,11 +67,11 @@ public class C {
 	public static String URL_RERUNJOB = "services/jobs/rerunallpairs/{id}";
 
 	// Success codes for command parsing
-	public static int SUCCESS_EXIT = 1;
-	public static int SUCCESS_NOFILE = 2;
-	public static int SUCCESS_JOBDONE = 3;
-	public static int SUCCESS_LOGOUT = 4;
-	public static int SUCCESS_LOGIN = 5;
+	public static int SUCCESS_EXIT    = Integer.MAX_VALUE - 0;
+	public static int SUCCESS_NOFILE  = Integer.MAX_VALUE - 1;
+	public static int SUCCESS_JOBDONE = Integer.MAX_VALUE - 2;
+	public static int SUCCESS_LOGOUT  = Integer.MAX_VALUE - 3;
+	public static int SUCCESS_LOGIN   = Integer.MAX_VALUE - 4;
 
 	public static HashMap<Integer, String> successMessages = new HashMap<Integer, String>();
 
