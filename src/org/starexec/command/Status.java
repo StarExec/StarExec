@@ -54,9 +54,9 @@ public class Status {
 	public static int ERROR_INTERNAL_EXCEPTION = -38;
 
 	// error messages
-	private static HashMap<Integer, String> messages = new HashMap<Integer, String>();
+	private static HashMap<Integer, String> messages = new HashMap<>();
 	static {
-		messages = new HashMap<Integer, String>();
+		messages = new HashMap<>();
 		messages.put(STATUS_SUCCESS, "Execution was successful");
 		messages.put(ERROR_BAD_COMMAND, "Unrecognized command");
 		messages.put(ERROR_BAD_ARGS, "Parameters must be in the form {key}={value} and there may be no duplicates");

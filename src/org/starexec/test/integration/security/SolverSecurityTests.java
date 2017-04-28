@@ -42,7 +42,7 @@ public class SolverSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void canDeleteSolversTest() {
-		List<Integer> ids=new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 		ids.add(solver.getId());
 		ids.add(solver2.getId());
 		
@@ -67,7 +67,7 @@ public class SolverSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void canDeleteConfigurationsTest() {
-		List<Integer> ids=new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 		ids.add(c.getId());
 		ids.add(c2.getId());
 		
@@ -85,7 +85,7 @@ public class SolverSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void canRecycleSolversTest() {
-		List<Integer> ids=new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 		ids.add(solver.getId());
 		ids.add(solver2.getId());
 		
@@ -102,7 +102,7 @@ public class SolverSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void canRestoreSolversTest() {
-		List<Integer> ids=new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 		ids.add(solver.getId());
 		ids.add(solver2.getId());
 		

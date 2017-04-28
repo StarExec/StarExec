@@ -200,7 +200,7 @@ public class Processors {
 			 procedure = con.prepareCall("{CALL GetAllProcessors(?)}");
 			procedure.setInt(1, type.getVal());
 			 results = procedure.executeQuery();
-			List<Processor> processors = new LinkedList<Processor>();
+			List<Processor> processors = new LinkedList<>();
 			
 			while(results.next()){
 				Processor bt = Processors.resultSetToProcessor(results, "");
@@ -244,7 +244,7 @@ public class Processors {
 			procedure.setInt(1, communityId);
 			procedure.setInt(2, type.getVal());
 			 results = procedure.executeQuery();
-			List<Processor> processors = new LinkedList<Processor>();
+			List<Processor> processors = new LinkedList<>();
 			
 			while(results.next()){							
 				Processor t = Processors.resultSetToProcessor(results, "");
@@ -281,7 +281,7 @@ public class Processors {
 			procedure.setInt(1, userId);
 			procedure.setInt(2, type.getVal());
 			 results = procedure.executeQuery();
-			List<Processor> processors = new LinkedList<Processor>();
+			List<Processor> processors = new LinkedList<>();
 			
 			while(results.next()){							
 				Processor t = new Processor();

@@ -34,7 +34,7 @@ public class TestManager {
 	private final static AtomicBoolean isRunning=new AtomicBoolean(false);
 	private final static AtomicBoolean isRunningStress=new AtomicBoolean(false);
 	//this should never be modified outside of the initializeTests method
-	private final static List<TestSequence> tests=new ArrayList<TestSequence>();
+	private final static List<TestSequence> tests= new ArrayList<>();
 	/**
 	 * all test sequences need to be initialized here. Simply add new TestSequences to the 
 	 * list of all tests. This is called once on Starexec startup.
@@ -235,7 +235,7 @@ public class TestManager {
 	 * @return the names of all TestSequences known to the manager
 	 */
 	public static List<String> getTestNames() {
-		List<String> names=new ArrayList<String>();
+		List<String> names= new ArrayList<>();
 		for (TestSequence t : tests) {
 			names.add(t.getName());
 		}

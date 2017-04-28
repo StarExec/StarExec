@@ -48,13 +48,13 @@ public class Matrix {
 			initializeMatrixFields(jobSpaceName, jobSpaceId);
 
 
-			Set<Benchmark> uniqueBenchmarks = new HashSet<Benchmark>();
-			Set<Pair<Solver,Configuration>> uniqueSolverConfigs = new HashSet<Pair<Solver,Configuration>>();
+			Set<Benchmark> uniqueBenchmarks = new HashSet<>();
+			Set<Pair<Solver,Configuration>> uniqueSolverConfigs = new HashSet<>();
 
 			// Maps benchmark and solver-configuration vectors to the data that should appear in the cell where the two
 			// vectors intersect.
 			HashMap<Pair<Benchmark,Pair<Solver,Configuration>>,MatrixElement> vectorIntersectionToCellDataMap =
-					new HashMap<Pair<Benchmark,Pair<Solver,Configuration>>,MatrixElement>();
+                    new HashMap<>();
 
 			// Build the sets and the map that were just defined.
 			for (JobPair pair : jobPairs) {
@@ -67,11 +67,11 @@ public class Matrix {
 
 			log.debug(method,"Sorting benchmarks and solver-config pairs.");
 			// Sort the benchmarks alphabetically by name ignoring case.
-			ArrayList<Benchmark> uniqueBenchmarkList = new ArrayList<Benchmark>(uniqueBenchmarks);
+			ArrayList<Benchmark> uniqueBenchmarkList = new ArrayList<>(uniqueBenchmarks);
 			Collections.sort(uniqueBenchmarkList, NameableComparators.getCaseInsensitiveAlphabeticalComparator());
 			
-			ArrayList<Pair<Solver,Configuration>> uniqueSolverConfigList = 
-					new ArrayList<Pair<Solver,Configuration>>(uniqueSolverConfigs);
+			ArrayList<Pair<Solver,Configuration>> uniqueSolverConfigList =
+                    new ArrayList<>(uniqueSolverConfigs);
 			// Names of solver config will be "solver (config)", sort the solverConfigs
 			// alphabetically by name, ignore case.
 			Collections.sort(uniqueSolverConfigList, new Comparator<Pair<Solver,Configuration>>() {
@@ -132,7 +132,7 @@ public class Matrix {
 	private static List<JobPair> getJobPairsForJobSpace(Job job, int jobSpaceId) {
 		final String method = "getJobPairsForJobSpace";
 		List<JobPair> jobPairs = job.getJobPairs();
-		List<JobPair> jobPairsInJobSpace = new ArrayList<JobPair>();
+		List<JobPair> jobPairsInJobSpace = new ArrayList<>();
 		for (JobPair pair : jobPairs) {
 			Integer pairJobSpaceId = pair.getJobSpaceId();
 			log.debug(method, "job space id="+pairJobSpaceId);
@@ -228,7 +228,7 @@ public class Matrix {
 	public void set(int row, int column, MatrixElement element) {
 		// Make sure there are enough rows to accommodate the new row.
 		while (matrix.size() <= row) {
-			matrix.add(new ArrayList<MatrixElement>());
+			matrix.add(new ArrayList<>());
 		}
 		// Make sure there are enough columns to accommodate the new column.
 		// Fill in all ragged edges as well.
@@ -320,11 +320,11 @@ public class Matrix {
 			// Keep a list of the benchmarks and solver-configs pairs that have been found.
 			uniqueBenchmarks.add(bench);
 
-			Pair<Solver,Configuration> solverConfig = new ImmutablePair<Solver,Configuration>(solver,config);
+			Pair<Solver,Configuration> solverConfig = new ImmutablePair<>(solver, config);
 			uniqueSolverConfigs.add(solverConfig);
 
 			Pair<Benchmark,Pair<Solver,Configuration>> vectorIntersectionPoint =
-			   new ImmutablePair<Benchmark,Pair<Solver,Configuration>>(bench, solverConfig);	
+                    new ImmutablePair<>(bench, solverConfig);
 
 			MatrixElement jobPairCellData = getCellDataFromStageAndJobPairId(bench, stage, pair.getId());
 
@@ -368,9 +368,9 @@ public class Matrix {
 		// Initialize the Matrices' fields
 		this.jobSpaceName = jobSpaceName;
 		this.jobSpaceId = jobSpaceId;
-		matrix = new ArrayList<ArrayList<MatrixElement>>();
-		benchmarksByRow = new ArrayList<Benchmark>();
-		solverConfigsByColumn = new ArrayList<Pair<Solver,Configuration>>();
+		matrix = new ArrayList<>();
+		benchmarksByRow = new ArrayList<>();
+		solverConfigsByColumn = new ArrayList<>();
 		hasMultipleStages = false;
 	}
 
@@ -400,7 +400,7 @@ public class Matrix {
 			for (int j = 0; j < uniqueSolverConfigList.size(); j++) {
 				Pair<Solver,Configuration> solverConfig = uniqueSolverConfigList.get(j);
 				Pair<Benchmark,Pair<Solver,Configuration>> vectorIntersectionPoint =
-					new ImmutablePair<Benchmark,Pair<Solver,Configuration>>(bench, solverConfig);	
+                        new ImmutablePair<>(bench, solverConfig);
 				MatrixElement cellData = vectorIntersectionToCellDataMap.get(vectorIntersectionPoint);
 				this.set(i, j, cellData);
 			}
@@ -417,17 +417,17 @@ public class Matrix {
 		log.debug("Entering method "+method);
 		List<JobPair> jobPairs = job.getJobPairs();
 
-		Set<Pair<String,Integer>> uniqueSpaces = new HashSet<Pair<String,Integer>>();
+		Set<Pair<String,Integer>> uniqueSpaces = new HashSet<>();
 
 		// Build a set of all the spaces that exist for this job.
 		for (JobPair pair : jobPairs) {
 			String jobSpaceName = pair.getJobSpaceName();
 			Integer jobSpaceId = pair.getJobSpaceId();
-			Pair<String,Integer> jobSpaceNameAndId = new ImmutablePair<String,Integer>(jobSpaceName, jobSpaceId);
+			Pair<String,Integer> jobSpaceNameAndId = new ImmutablePair<>(jobSpaceName, jobSpaceId);
 			uniqueSpaces.add(jobSpaceNameAndId);	
 		}
 
-		List<Pair<String, Integer>> orderedSpaces = new ArrayList<Pair<String,Integer>>(uniqueSpaces);
+		List<Pair<String, Integer>> orderedSpaces = new ArrayList<>(uniqueSpaces);
 		Collections.sort(orderedSpaces, (jobSpaceA, jobSpaceB) -> {
 			// Try sorting alphabetically insensitive to case.
 			String jobSpaceNameA = jobSpaceA.getLeft();

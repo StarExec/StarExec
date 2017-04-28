@@ -45,7 +45,7 @@ public class HTMLParserTest {
 
 	@Test
 	public void testURLEncode() {
-		HashMap<String, String> params = new HashMap<String,String>();
+		HashMap<String, String> params = new HashMap<>();
 		String baseURL = "http://www.test.com/";
 
 		Assert.assertEquals(baseURL, HTMLParser.URLEncode(baseURL, params));

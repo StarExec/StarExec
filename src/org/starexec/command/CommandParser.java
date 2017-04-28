@@ -23,7 +23,7 @@ class CommandParser {
 	private boolean printVerbosePrimDetails = false;
 
 	protected CommandParser() {
-		variables = new HashMap<String, String>();
+		variables = new HashMap<>();
 		parser = null;
 	}
 
@@ -237,7 +237,7 @@ class CommandParser {
 			boolean isPollJob = false;
 			if (c.equals(C.COMMAND_CREATEJOB)) {
 				if (commandParams.containsKey(C.PARAM_TIME) || commandParams.containsKey(C.PARAM_OUTPUT_FILE)) {
-					HashMap<String, String> pollParams = new HashMap<String, String>();
+					HashMap<String, String> pollParams = new HashMap<>();
 					isPollJob = true;
 					pollParams.put(C.PARAM_TIME, commandParams.remove(C.PARAM_TIME));
 					pollParams.put(C.PARAM_OUTPUT_FILE, commandParams.remove(C.PARAM_OUTPUT_FILE));
@@ -426,7 +426,7 @@ class CommandParser {
 
 	protected int handleLSCommand(String c, HashMap<String, String> commandParams) {
 		try {
-			HashMap<Integer, String> answer = new HashMap<Integer, String>();
+			HashMap<Integer, String> answer = new HashMap<>();
 			String type = "";
 			if (c.equals(C.COMMAND_LISTSOLVERS)) {
 				type = "solvers";
@@ -736,7 +736,7 @@ class CommandParser {
 
 	protected static List<Integer> convertToIntList(String str) {
 		String[] ids = str.split(",");
-		List<Integer> answer = new ArrayList<Integer>();
+		List<Integer> answer = new ArrayList<>();
 		for (String s : ids) {
 			answer.add(Integer.parseInt(s));
 		}
@@ -958,7 +958,7 @@ class CommandParser {
 
 		// the first element is the command, which we don't want
 		args = args.subList(1, args.size());
-		HashMap<String, String> answer = new HashMap<String, String>();
+		HashMap<String, String> answer = new HashMap<>();
 		int index = 0;
 		String x;
 		StringBuilder value;

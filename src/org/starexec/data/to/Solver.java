@@ -67,7 +67,7 @@ public class Solver extends Identifiable implements Iterable<Configuration>, Nam
 	private ExecutableType type;
 	private SolverBuildStatus buildStatus;
 	public Solver() {
-		this.configurations = new LinkedList<Configuration>();
+		this.configurations = new LinkedList<>();
 	}
 	
 	/**

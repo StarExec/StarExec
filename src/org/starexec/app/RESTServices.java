@@ -710,7 +710,7 @@ public class RESTServices {
 		log.debug(method, "Inputs: jobId="+jobId+" jobSpaceId="+jobSpaceId+" stageId="+stageNumber);
 
 
-		Map<String, SimpleMatrixElement> benchSolverConfigElementMap = new HashMap<String, SimpleMatrixElement>();
+		Map<String, SimpleMatrixElement> benchSolverConfigElementMap = new HashMap<>();
 		// Get all the latest new completed job pairs.
 		List<JobPair> completedJobPairs = Jobs.getNewCompletedPairsDetailed(jobId, 0);
 		for (JobPair pair : completedJobPairs) {
@@ -2416,7 +2416,7 @@ public class RESTServices {
 		}
 
 		// Extract the String solver id's and convert them to Integer
-		ArrayList<Integer> selectedProcessors = new ArrayList<Integer>();
+		ArrayList<Integer> selectedProcessors = new ArrayList<>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedProcessors.add(Integer.parseInt(id));
 			log.debug("got a request to delete processor id = "+id);
@@ -2614,7 +2614,7 @@ public class RESTServices {
 		}
 
 		// Extract the String bench id's and convert them to Integer
-		ArrayList<Integer> selectedBenches = new ArrayList<Integer>();
+		ArrayList<Integer> selectedBenches = new ArrayList<>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedBenches.add(Integer.parseInt(id));
 		}
@@ -2643,7 +2643,7 @@ public class RESTServices {
 		}
 
 		// Extract the String bench id's and convert them to Integer
-		ArrayList<Integer> selectedBenches = new ArrayList<Integer>();
+		ArrayList<Integer> selectedBenches = new ArrayList<>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedBenches.add(Integer.parseInt(id));
 		}
@@ -2681,7 +2681,7 @@ public class RESTServices {
 		}
 
 		// Extract the String bench id's and convert them to Integer
-		ArrayList<Integer> selectedBenches = new ArrayList<Integer>();
+		ArrayList<Integer> selectedBenches = new ArrayList<>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedBenches.add(Integer.parseInt(id));
 		}
@@ -2724,7 +2724,7 @@ public class RESTServices {
 
 
 			// Extract the String bench id's and convert them to Integer
-			ArrayList<Integer> selectedBenches = new ArrayList<Integer>();
+			ArrayList<Integer> selectedBenches = new ArrayList<>();
 			for(String id : request.getParameterValues("selectedIds[]")){
 				selectedBenches.add(Integer.parseInt(id));
 			}
@@ -2761,7 +2761,7 @@ public class RESTServices {
 				return gson.toJson(ERROR_IDS_NOT_GIVEN);
 			}
 			// Extract the String bench id's and convert them to Integer
-			ArrayList<Integer> selectedBenches = new ArrayList<Integer>();
+			ArrayList<Integer> selectedBenches = new ArrayList<>();
 			for(String id : request.getParameterValues("selectedIds[]")){
 				selectedBenches.add(Integer.parseInt(id));
 			}
@@ -2886,7 +2886,7 @@ public class RESTServices {
 			}
 			if (copy) {
 				List<Solver> oldSolvers=Solvers.get(selectedSolvers);
-				List<Integer>newSolverIds=new ArrayList<Integer>();
+				List<Integer>newSolverIds= new ArrayList<>();
 				newSolverIds=Solvers.copySolvers(oldSolvers, requestUserId, spaceId);
 				selectedSolvers=newSolverIds;
 				response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(selectedSolvers)));
@@ -3045,7 +3045,7 @@ public class RESTServices {
 		// If we are "cascade removing" the user(s)...
 		if (hierarchy) {
 			List<Space> subspaces = Spaces.trimSubSpaces(userIdOfRemover, Spaces.getSubSpaceHierarchy(spaceId, userIdOfRemover));
-			List<Integer> subspaceIds = new LinkedList<Integer>();
+			List<Integer> subspaceIds = new LinkedList<>();
 
 			// Add the destination space to the list of spaces remove the user from
 			subspaceIds.add(spaceId);
@@ -3085,7 +3085,7 @@ public class RESTServices {
 		}
 
 		// Extract the String solver id's and convert them to Integer
-		ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
+		ArrayList<Integer> selectedSolvers = new ArrayList<>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedSolvers.add(Integer.parseInt(id));
 		}
@@ -3133,7 +3133,7 @@ public class RESTServices {
 		}
 
 		// Extract the String solver id's and convert them to Integer
-		ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
+		ArrayList<Integer> selectedSolvers = new ArrayList<>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedSolvers.add(Integer.parseInt(id));
 		}
@@ -3174,7 +3174,7 @@ public class RESTServices {
 			}
 
 			// Extract the String solver id's and convert them to Integer
-			ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
+			ArrayList<Integer> selectedSolvers = new ArrayList<>();
 			for(String id : request.getParameterValues("selectedIds[]")){
 				selectedSolvers.add(Integer.parseInt(id));
 			}
@@ -3250,7 +3250,7 @@ public class RESTServices {
 		}
 
 		// Extract the String solver id's and convert them to Integer
-		ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
+		ArrayList<Integer> selectedSolvers = new ArrayList<>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedSolvers.add(Integer.parseInt(id));
 		}
@@ -3401,7 +3401,7 @@ public class RESTServices {
 		}
 
 		// Extract the String solver id's and convert them to Integer
-		ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
+		ArrayList<Integer> selectedSolvers = new ArrayList<>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedSolvers.add(Integer.parseInt(id));
 		}
@@ -3438,7 +3438,7 @@ public class RESTServices {
 		}
 		int userId=SessionUtil.getUserId(request);
 		// Extract the String solver id's and convert them to Integer
-		ArrayList<Integer> selectedConfigs = new ArrayList<Integer>();
+		ArrayList<Integer> selectedConfigs = new ArrayList<>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedConfigs.add(Integer.parseInt(id));
 		}
@@ -3484,7 +3484,7 @@ public class RESTServices {
 		}
 
 		// Extract the String job id's and convert them to Integer
-		ArrayList<Integer> selectedJobs = new ArrayList<Integer>();
+		ArrayList<Integer> selectedJobs = new ArrayList<>();
 		for (String id : request.getParameterValues("selectedIds[]")) {
 			selectedJobs.add(Integer.parseInt(id));
 		}
@@ -3520,7 +3520,7 @@ public class RESTServices {
 
 
 		// Extract the String job id's and convert them to Integer
-		ArrayList<Integer> selectedJobs = new ArrayList<Integer>();
+		ArrayList<Integer> selectedJobs = new ArrayList<>();
 		for (String id : request.getParameterValues("selectedIds[]")) {
 			selectedJobs.add(Integer.parseInt(id));
 			log.debug("adding id = "+id+" to selectedJobs");
@@ -3584,7 +3584,7 @@ public class RESTServices {
 		}
 
 		// Extract the String job id's and convert them to Integer
-		ArrayList<Integer> selectedJobs = new ArrayList<Integer>();
+		ArrayList<Integer> selectedJobs = new ArrayList<>();
 		for (String id : request.getParameterValues("selectedIds[]")) {
 			selectedJobs.add(Integer.parseInt(id));
 		}
@@ -3629,7 +3629,7 @@ public class RESTServices {
 	public String removeSubspacesFromSpace(@Context HttpServletRequest request) {
 
 		final int userId=SessionUtil.getUserId(request);
-		final ArrayList<Integer> selectedSubspaces = new ArrayList<Integer>();
+		final ArrayList<Integer> selectedSubspaces = new ArrayList<>();
 
 		try{
 			// Extract the String subspace id's and convert them to Integers
@@ -3661,8 +3661,8 @@ public class RESTServices {
 							recycleAllAllowed=true;
 						}
 					}
-					Set<Solver> solvers=new HashSet<Solver>();
-					Set<Benchmark> benchmarks=new HashSet<Benchmark>();
+					Set<Solver> solvers= new HashSet<>();
+					Set<Benchmark> benchmarks= new HashSet<>();
 					if (recycleAllAllowed) {
 						for (int sid : selectedSubspaces) {
 							solvers.addAll(Solvers.getBySpace(sid));
@@ -3881,7 +3881,7 @@ public class RESTServices {
 		// means we need to reprocess this benchmark
 		if (b.getType().getId()!=type) {
 			log.debug("executing new processor on benchmark");
-			List<Benchmark> bench = new ArrayList<Benchmark>();
+			List<Benchmark> bench = new ArrayList<>();
 			bench.add(Benchmarks.get(benchId));
 			Util.threadPoolExecute(new Runnable() {
 				@Override
@@ -4225,7 +4225,7 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		List<Integer>newSpaceIds = new ArrayList<Integer>();
+		List<Integer>newSpaceIds = new ArrayList<>();
 		// Add the subSpaces to the destination space
 		for (int id : selectedSubSpaces) {
 			try {

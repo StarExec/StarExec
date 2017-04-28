@@ -62,8 +62,8 @@ public class CreateQueue extends HttpServlet {
 			List<Integer> nodeIds = Util.toIntegerList(request.getParameterValues(nodes));
 
 			log.debug("nodeIds = " + nodeIds);
-			LinkedList<String> nodeNames = new LinkedList<String>();
-			LinkedList<String> queueNames = new LinkedList<String>();
+			LinkedList<String> nodeNames = new LinkedList<>();
+			LinkedList<String> queueNames = new LinkedList<>();
 			if (nodeIds != null) {
 				for (int id : nodeIds) {
 					log.debug("id = " + id);

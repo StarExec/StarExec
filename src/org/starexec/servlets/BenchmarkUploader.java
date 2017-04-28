@@ -198,7 +198,7 @@ public class BenchmarkUploader extends HttpServlet {
 			boolean downloadable, Permission perm, String uploadMethod, int statusId,
 			boolean hasDependencies, boolean linked, Integer depRootSpaceId) throws IOException, StarExecException {
 		
-		ArrayList<Integer> benchmarkIds=new ArrayList<Integer>();
+		ArrayList<Integer> benchmarkIds= new ArrayList<>();
 		// Create a unique path the zip file will be extracted to
 		final File uniqueDir = getDirectoryForBenchmarkUpload(userId,null);
 		
@@ -466,7 +466,7 @@ public class BenchmarkUploader extends HttpServlet {
 	private static ValidatorStatusCode doSpaceNamesConflict(File uniqueDir, int parentSpaceId) {
 		try {
 			List<Space> subspaces=Spaces.getSubSpaces(parentSpaceId);
-			HashSet<String> subspaceNames=new HashSet<String>();
+			HashSet<String> subspaceNames= new HashSet<>();
 			for (Space s : subspaces) {
 				subspaceNames.add(s.getName());
 			}

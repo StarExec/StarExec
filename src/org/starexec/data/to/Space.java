@@ -37,11 +37,11 @@ public class Space extends Identifiable implements Iterable<Space>, Nameable {
 	}
 	
 	public Space() {
-		this.solvers = new LinkedList<Solver>();
-		this.benchmarks = new LinkedList<Benchmark>();
-		this.jobs = new LinkedList<Job>();
-		this.users = new LinkedList<User>();
-		this.subspaces = new LinkedList<Space>();
+		this.solvers = new LinkedList<>();
+		this.benchmarks = new LinkedList<>();
+		this.jobs = new LinkedList<>();
+		this.users = new LinkedList<>();
+		this.subspaces = new LinkedList<>();
 		this.defaultPermission = new Permission();
 		
 	}
@@ -142,7 +142,7 @@ public class Space extends Identifiable implements Iterable<Space>, Nameable {
 	 * @return all benchmarks in this space and all subspaces recursively
 	 */
 	public List<Benchmark> getBenchmarksRecursively() {
-		List<Benchmark> benchs = new ArrayList<Benchmark>();
+		List<Benchmark> benchs = new ArrayList<>();
 		benchs.addAll(this.benchmarks);
 		for (Space s : this.getSubspaces()) {
 			benchs.addAll(s.getBenchmarksRecursively());

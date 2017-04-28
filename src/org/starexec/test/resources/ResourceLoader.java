@@ -46,15 +46,15 @@ public class ResourceLoader implements AutoCloseable {
 	
 	// this class keeps track of all the primitives it creates. Calling deleteAllPrimitives
 	// will delete all of these objects
-	private List<Integer> createdUserIds = new ArrayList<Integer>();
-	private List<Integer> createdJobIds = new ArrayList<Integer>();
-	private List<Integer> createdBenchmarkIds = new ArrayList<Integer>();
-	private List<Integer> createdSolverIds = new ArrayList<Integer>();
-	private List<Integer> createdProcessorIds = new ArrayList<Integer>();
-	private List<Integer> createdSettingsIds = new ArrayList<Integer>();
-	private List<Integer> createdSpaceIds = new ArrayList<Integer>();
-	private List<Integer> createdQueueIds = new ArrayList<Integer>();
-	private List<Integer> createdPipelineIds = new ArrayList<Integer>();
+	private List<Integer> createdUserIds = new ArrayList<>();
+	private List<Integer> createdJobIds = new ArrayList<>();
+	private List<Integer> createdBenchmarkIds = new ArrayList<>();
+	private List<Integer> createdSolverIds = new ArrayList<>();
+	private List<Integer> createdProcessorIds = new ArrayList<>();
+	private List<Integer> createdSettingsIds = new ArrayList<>();
+	private List<Integer> createdSpaceIds = new ArrayList<>();
+	private List<Integer> createdQueueIds = new ArrayList<>();
+	private List<Integer> createdPipelineIds = new ArrayList<>();
 
 	@Override
 	public void close() {
@@ -178,14 +178,14 @@ public class ResourceLoader implements AutoCloseable {
 	}
 	
 	public Job loadJobIntoDatabase(int spaceId, int userId, int solverId, List<Integer> benchmarkIds) {
-		List<Integer> solvers=new ArrayList<Integer>();
+		List<Integer> solvers= new ArrayList<>();
 		solvers.add(solverId);
 		return loadJobIntoDatabase(spaceId,userId, -1,-1, solvers,benchmarkIds,10,10,1);
 	}
 	
 	public Job loadJobIntoDatabase(int spaceId, int userId, int preProcessorId, int postProcessorId, int solverId, List<Integer> benchmarkIds,
 			int cpuTimeout, int wallclockTimeout, int memory) {
-		List<Integer> solvers=new ArrayList<Integer>();
+		List<Integer> solvers= new ArrayList<>();
 		solvers.add(solverId);
 		return loadJobIntoDatabase(spaceId,userId,preProcessorId,postProcessorId,solvers,benchmarkIds,cpuTimeout,wallclockTimeout,memory);
 	}
@@ -233,11 +233,11 @@ public class ResourceLoader implements AutoCloseable {
 				R.DEFAULT_BENCHMARKING_FRAMEWORK);
 		
 		
-		List<Integer> configIds=new ArrayList<Integer>();
+		List<Integer> configIds= new ArrayList<>();
 		for (Integer i : solverIds) {
 			configIds.add(Solvers.getConfigsForSolver(i).get(0).getId());
 		}
-		List<Space> spaces=new ArrayList<Space>();
+		List<Space> spaces= new ArrayList<>();
 		spaces.add(Spaces.get(spaceId));
 
 		JobManager.buildJob(job, benchmarkIds, configIds, spaceId);
@@ -282,7 +282,7 @@ public class ResourceLoader implements AutoCloseable {
 				R.DEFAULT_BENCHMARKING_FRAMEWORK);
 		job.setPrimarySpace(rootSpaceId);
 		HashMap<Integer, String> SP = Spaces.spacePathCreate(userId, spaces, rootSpaceId);
-		HashMap<Integer,List<JobPair>> spaceToPairs=new HashMap<Integer,List<JobPair>>();
+		HashMap<Integer,List<JobPair>> spaceToPairs= new HashMap<>();
 		for (Space s : spaces) {
 			List<JobPair> pairs=JobManager.addJobPairsFromSpace(userId, s.getId(), SP.get(s.getId()));
 			spaceToPairs.put(s.getId(), pairs);
@@ -732,7 +732,7 @@ public class ResourceLoader implements AutoCloseable {
 	 * @throws IOException 
 	 */
 	public List<String> getTestConfigDirectory() throws IOException {
-		List<String> strs = new ArrayList<String>();
+		List<String> strs = new ArrayList<>();
 		File f = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), TestUtil.getRandomAlphaString(50));
 		File bin = new File(f, R.SOLVER_BIN_DIR);
 		bin.mkdirs();

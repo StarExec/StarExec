@@ -55,10 +55,10 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	private int totalPairs; // number of pairs this job owns
 	private long diskSize; // in bytes
 	public Job() {
-		jobPairs = new LinkedList<JobPair>();
+		jobPairs = new LinkedList<>();
 		
 		queue = new Queue();		
-		setStageAttributes(new ArrayList<StageAttributes>());
+		setStageAttributes(new ArrayList<>());
 		setSuppressTimestamp(false); // false is default
 		setBuildJob(false); //false is default
 	}
@@ -179,7 +179,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	    if (jobPairs == null || jobPairs.size()==0) {
 	    	return null;
 	    }
-		Set<String> attrs=new HashSet<String>();
+		Set<String> attrs= new HashSet<>();
 	    Iterator<JobPair> itr = jobPairs.iterator();
 	    while(itr.hasNext()) {
 	    	JobPair pair = itr.next();

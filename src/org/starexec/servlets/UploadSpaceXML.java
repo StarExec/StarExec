@@ -131,7 +131,7 @@ public class UploadSpaceXML extends HttpServlet {
 						//Typically there will just be 1 file, but might as well allow more
 						for (File file:archiveLocation.listFiles())
 						{
-							List<Integer> current=new ArrayList<Integer>();
+							List<Integer> current= new ArrayList<>();
 							if (!file.isFile()) {
 								Uploads.setXMLErrorMessage(statusId, "The file "+file.getName()+" is not a regular file.  Only regular files containing space XML are allowed in the uploaded archive.");    
 							}

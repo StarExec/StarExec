@@ -18,7 +18,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
 	public TreeNode(T nodeData) {
 		data = nodeData;
 		parent = null;
-		children = new ArrayList<TreeNode<T>>();
+		children = new ArrayList<>();
 	}
 
 	/**

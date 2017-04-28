@@ -249,7 +249,7 @@ class ArgumentParser {
 	 *         number is an error.
 	 */
 	protected List<Integer> copyPrimitives(HashMap<String, String> commandParams, String type) {
-		List<Integer> fail = new ArrayList<Integer>();
+		List<Integer> fail = new ArrayList<>();
 		try {
 			int valid = CommandValidator.isValidCopyRequest(commandParams, type);
 			if (valid < 0) {
@@ -493,11 +493,11 @@ class ArgumentParser {
 	 * @author Eric Burns
 	 */
 	protected HashMap<Integer, String> listPrimsBySpaceOrUser(String type, HashMap<String, String> commandParams) {
-		HashMap<Integer, String> errorMap = new HashMap<Integer, String>();
+		HashMap<Integer, String> errorMap = new HashMap<>();
 
 		try {
 
-			HashMap<String, String> urlParams = new HashMap<String, String>();
+			HashMap<String, String> urlParams = new HashMap<>();
 			urlParams.put("id", commandParams.get(C.PARAM_ID));
 			urlParams.put(C.FORMPARAM_TYPE, type);
 			int valid = CommandValidator.isValidGetPrimRequest(urlParams, commandParams);
@@ -765,7 +765,7 @@ class ArgumentParser {
 	 */
 
 	protected List<Integer> uploadXML(HashMap<String, String> commandParams, boolean isJobXML) {
-		List<Integer> fail = new ArrayList<Integer>();
+		List<Integer> fail = new ArrayList<>();
 
 		try {
 			int valid = CommandValidator.isValidUploadXMLRequest(commandParams);
@@ -804,7 +804,7 @@ class ArgumentParser {
 	}
 
 	protected Map<String, String> getPrimitiveAttributes(HashMap<String, String> commandParams, String type) {
-		HashMap<String, String> failMap = new HashMap<String, String>();
+		HashMap<String, String> failMap = new HashMap<>();
 		try {
 			int valid = CommandValidator.isValidGetPrimitiveAttributesRequest(commandParams);
 			if (valid < 0) {

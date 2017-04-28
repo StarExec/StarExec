@@ -405,7 +405,7 @@ public class Uploads {
 			procedure = con.prepareCall("{CALL GetUnvalidatedBenchmarks(?)}");
 			procedure.setInt(1, statusId);					
 			results = procedure.executeQuery();		
-			List<Benchmark> badBenches = new LinkedList<Benchmark>();
+			List<Benchmark> badBenches = new LinkedList<>();
 			while(results.next()){
 				Benchmark b = new Benchmark();
 				b.setName(results.getString("bench_name"));

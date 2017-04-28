@@ -133,7 +133,7 @@ public class BenchmarkTests extends TestSequence {
 			found = found || b.getId()==benchmarks.get(0).getId();
 		}
 		Assert.assertTrue(found);
-		List<Integer> temp = new ArrayList<Integer>();
+		List<Integer> temp = new ArrayList<>();
 		temp.add(benchmarks.get(0).getId());
 		Assert.assertTrue(Spaces.removeBenches(temp, space2.getId()));
 	}
@@ -141,7 +141,7 @@ public class BenchmarkTests extends TestSequence {
 	@StarexecTest
 	private void AssociateBenchmarksTest() {
 		Space subspace=loader.loadSpaceIntoDatabase(user.getId(), space.getId());
-		List<Integer> ids= new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 		for (Benchmark b : benchmarks) {
 			ids.add(b.getId());
 		}
@@ -322,7 +322,7 @@ public class BenchmarkTests extends TestSequence {
 	}
 	
 	private void assertPageResultsEqualsBenchmarksArray(List<Benchmark> page) {
-		List<Integer> pageIds = new ArrayList<Integer>();
+		List<Integer> pageIds = new ArrayList<>();
 		for (Benchmark b : page) {
 			pageIds.add(b.getId());
 		}
@@ -535,7 +535,7 @@ public class BenchmarkTests extends TestSequence {
 	
 	@StarexecTest
 	private void getOrphansTest() {
-		List<Integer> benchIds = new ArrayList<Integer>();
+		List<Integer> benchIds = new ArrayList<>();
 		for (Benchmark b : benchmarks) {
 			benchIds.add(b.getId());
 		}
@@ -570,11 +570,11 @@ public class BenchmarkTests extends TestSequence {
 		space2=loader.loadSpaceIntoDatabase(user2.getId(), Communities.getTestCommunity().getId());
 		scratchSpace = loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
 
-		List<Integer> ids=new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 		ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
 		benchmarks=Benchmarks.get(ids,true);
 		benchProcessor = loader.loadBenchProcessorIntoDatabase(Communities.getTestCommunity().getId());
-		List<Integer> solverIds=new ArrayList<Integer>();
+		List<Integer> solverIds= new ArrayList<>();
 		solver = loader.loadSolverIntoDatabase(space.getId(), user.getId());
 		solverIds.add(solver.getId());
 		int wallclockTimeout=100;

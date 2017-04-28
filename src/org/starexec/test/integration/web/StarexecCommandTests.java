@@ -144,7 +144,7 @@ public class StarexecCommandTests extends TestSequence {
 		Configuration testConfig=loader.loadConfigurationFileIntoDatabase("CVC4Config.txt", solver.getId());
 		Assert.assertNotNull(testConfig);
 		Assert.assertNotNull(Solvers.getConfiguration(testConfig.getId()));
-		List<Integer> configs=new ArrayList<Integer>();
+		List<Integer> configs= new ArrayList<>();
 		configs.add(testConfig.getId());
 		Assert.assertEquals(0,con.deleteConfigurations(configs));
 		Assert.assertNull(Solvers.getConfiguration(testConfig.getId()));
@@ -155,7 +155,7 @@ public class StarexecCommandTests extends TestSequence {
 		Processor testProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, testCommunity.getId());
 		Assert.assertNotNull(testProc);
 		Assert.assertNotNull(Processors.get(testProc.getId()));
-		List<Integer> procs=new ArrayList<Integer>();
+		List<Integer> procs= new ArrayList<>();
 		procs.add(testProc.getId());
 		
 		Assert.assertEquals(0,con.deleteProcessors(procs));
@@ -360,7 +360,7 @@ public class StarexecCommandTests extends TestSequence {
 		
 		Assert.assertTrue(u.containsKey(user2.getId()));
 		
-		List<Integer> ids = new ArrayList<Integer>();
+		List<Integer> ids = new ArrayList<>();
 		ids.add(user2.getId());
 		Assert.assertTrue(Spaces.removeUsers(ids, space2.getId()));
 		
@@ -376,7 +376,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertTrue(solvers.containsKey(solver.getId()));
 		
 		//remove all the solvers from space2 to ensure they don't interfere with upcoming tests
-		List<Integer> solverIds =new ArrayList<Integer>();
+		List<Integer> solverIds = new ArrayList<>();
 		solverIds.addAll(solvers.keySet());
 		Assert.assertTrue(Spaces.removeSolvers(solverIds, space2.getId()));	
 		
@@ -397,7 +397,7 @@ public class StarexecCommandTests extends TestSequence {
 		
 		
 		//remove all the solvers from space2 to ensure they don't interfere with upcoming tests
-		List<Integer> solverIds =new ArrayList<Integer>();
+		List<Integer> solverIds = new ArrayList<>();
 		solverIds.addAll(solvers.keySet());
 		
 		//delete all the newly created solvers and remove them from space2
@@ -430,7 +430,7 @@ public class StarexecCommandTests extends TestSequence {
 		}
 		
 		//remove all the solvers from space2 to ensure they don't interfere with upcoming tests
-		List<Integer> benchIds =new ArrayList<Integer>();
+		List<Integer> benchIds = new ArrayList<>();
 		benchIds.addAll(benches.keySet());
 		
 		Assert.assertTrue(Spaces.removeBenches(benchIds, toCopy.getId()));
@@ -467,7 +467,7 @@ public class StarexecCommandTests extends TestSequence {
 		
 		
 		//remove all the solvers from space2 to ensure they don't interfere with upcoming tests
-		List<Integer> benchIds =new ArrayList<Integer>();
+		List<Integer> benchIds = new ArrayList<>();
 		benchIds.addAll(benches.keySet());
 		
 		Assert.assertTrue(Spaces.removeBenches(benchIds, toCopy.getId()));
@@ -496,7 +496,7 @@ public class StarexecCommandTests extends TestSequence {
 	private void deleteSolversTest() {
 		Solver tempSolver=loader.loadSolverIntoDatabase("CVC4.zip", testCommunity.getId(), user.getId());
 		Assert.assertNotNull(Solvers.get(tempSolver.getId()));
-		List<Integer> ids=new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 		ids.add(tempSolver.getId());
 		Assert.assertEquals(0,con.deleteSolvers(ids));
 		Assert.assertNull(Solvers.get(tempSolver.getId()));
@@ -506,10 +506,10 @@ public class StarexecCommandTests extends TestSequence {
 	
 	@StarexecTest
 	private void deleteJobsTest() {
-		List<Integer> solverIds=new ArrayList<Integer>();
+		List<Integer> solverIds= new ArrayList<>();
 		solverIds.add(solver.getId());
 		Job tempJob=loader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds,100,100,1);
-		List<Integer> ids= new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 		ids.add(tempJob.getId());
 		Assert.assertNotNull(Jobs.get(tempJob.getId()));
 		Assert.assertEquals(0,con.deleteJobs(ids));
@@ -629,7 +629,7 @@ public class StarexecCommandTests extends TestSequence {
 		Solver temp=loader.loadSolverIntoDatabase("CVC4.zip",testCommunity.getId(),user.getId());
 		Assert.assertTrue(Solvers.getAssociatedSpaceIds(temp.getId()).contains(testCommunity.getId()));
 		
-		List<Integer> id=new ArrayList<Integer>();
+		List<Integer> id= new ArrayList<>();
 		id.add(temp.getId());
 		Assert.assertEquals(0,con.removeSolvers(id, testCommunity.getId()));
 		
@@ -645,7 +645,7 @@ public class StarexecCommandTests extends TestSequence {
 		Space tempSpace=loader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
 		List<Integer> ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", tempSpace.getId(), user.getId());
 		Assert.assertTrue(Benchmarks.getAssociatedSpaceIds(ids.get(0)).contains(tempSpace.getId()));
-		List<Integer> id=new ArrayList<Integer>();
+		List<Integer> id= new ArrayList<>();
 		id.add(ids.get(0));
 		
 		Assert.assertEquals(0, con.removeBenchmarks(id, tempSpace.getId()));
@@ -663,7 +663,7 @@ public class StarexecCommandTests extends TestSequence {
 	private void removeJobsTest() {
 		Space tempSpace=loader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
 		Assert.assertNotNull(job);
-		List<Integer> jobIds=new ArrayList<Integer>();
+		List<Integer> jobIds= new ArrayList<>();
 		jobIds.add(job.getId());
 		Assert.assertEquals(0,con.removeJobs(jobIds, tempSpace.getId()));
 		Assert.assertNotNull(Jobs.getDirectory(job.getId())); //we do not want to have deleted the job
@@ -674,7 +674,7 @@ public class StarexecCommandTests extends TestSequence {
 	@StarexecTest
 	private void removeSpacesTest() {
 		Space tempSpace=loader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
-		List<Integer> id=new ArrayList<Integer>();
+		List<Integer> id= new ArrayList<>();
 		id.add(tempSpace.getId());
 		Assert.assertNotNull(Spaces.getName(tempSpace.getId()));
 		Assert.assertEquals(0,con.removeSubspace(id, false));
@@ -763,7 +763,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertNotNull(solver);
 
 		benchmarkIds=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space1.getId(), user.getId());
-		List<Integer> solverIds=new ArrayList<Integer>();
+		List<Integer> solverIds= new ArrayList<>();
 		solverIds.add(solver.getId());
 		job=loader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds,100,100,1);
 

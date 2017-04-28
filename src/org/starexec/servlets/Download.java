@@ -428,7 +428,7 @@ public class Download extends HttpServlet {
 			final String methodName = "handleProc";
 			log.entry(methodName);
 
-			List<File> files=new LinkedList<File>();
+			List<File> files= new LinkedList<>();
 			for (Processor x : procs) {
 				File newProc=new File(x.getFilePath());
 				if (newProc.exists()) {
@@ -474,7 +474,7 @@ public class Download extends HttpServlet {
 	private static boolean handleJobXML(Job job, int userId, HttpServletResponse response) throws Exception {
 
 		// If we can see this
-			List<File> files=new ArrayList<File>();
+			List<File> files= new ArrayList<>();
 			log.debug("Permission to download XML granted");
 
 			JobToXMLer handler = new JobToXMLer();
@@ -508,7 +508,7 @@ public class Download extends HttpServlet {
 					  boolean includeAttributes, boolean updates, int upid) throws Exception {
 
 		// If we can see this Space
-			List<File> files=new ArrayList<File>();
+			List<File> files= new ArrayList<>();
 			log.debug("Permission to download XML granted, includeAttributes = "+new Boolean(includeAttributes));
 			BatchUtil butil = new BatchUtil();
 			File file = butil.generateXMLfile(Spaces.getDetails(space.getId(), userId), userId, includeAttributes, updates, upid);
@@ -534,7 +534,7 @@ public class Download extends HttpServlet {
      * @throws Exception
      */
     private static boolean handlePairOutputs(List<Integer> pairIds, int userId, HttpServletResponse response, Boolean longPath) throws Exception {
-		List<JobPair> pairs=new ArrayList<JobPair>();
+		List<JobPair> pairs= new ArrayList<>();
 		Job j=null;
 		final String methodName = "handlePairOutputs";
 		log.entry(methodName);
@@ -891,7 +891,7 @@ public class Download extends HttpServlet {
 				// it does NOT include running pairs
 				int pairsFound = 0;
                 int runningPairsFound = 0;
-                List<JobPair> pairsToRemove = new ArrayList<JobPair>();
+                List<JobPair> pairsToRemove = new ArrayList<>();
 				for (JobPair x : pairs) {
 					log.trace("found pair id = "+x.getId() +" with completion id = "+x.getCompletionId());
 					if (x.getCompletionId()>maxCompletion) {
@@ -985,7 +985,7 @@ public class Download extends HttpServlet {
 				+"/secure/details/job.jsp?id="+jobId+"&"+Web.LOCAL_JOB_PAGE_PARAMETER+"=true";
 		log.debug("Getting job page from "+urlToGetJobPageFrom);
 		List<Cookie> requestCookies = Arrays.asList(request.getCookies());
-		Map<String, String> queryParameters = new HashMap<String, String>();
+		Map<String, String> queryParameters = new HashMap<>();
 		String htmlText = Util.getWebPage(urlToGetJobPageFrom, requestCookies);
 		FileUtils.writeStringToFile(htmlFile, htmlText, StandardCharsets.UTF_8);
 	}
@@ -1004,7 +1004,7 @@ public class Download extends HttpServlet {
 		File filetypeDirectory = new File(containingDirectory, filetypeDirectoryName);
 
 		for (String filePath : allFilePaths) {
-			List<String> filesInHierarchy = new ArrayList<String>(Arrays.asList(filePath.split("/")));
+			List<String> filesInHierarchy = new ArrayList<>(Arrays.asList(filePath.split("/")));
 
 			// The last filename is the source file.
 			String sourceFile = filesInHierarchy.remove(filesInHierarchy.size() - 1);
@@ -1077,7 +1077,7 @@ public class Download extends HttpServlet {
 				List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
 
 				// Get a list of the names of the benchmarks in benchList
-				List<String> benchNameList = new LinkedList<String>();
+				List<String> benchNameList = new LinkedList<>();
 				for (Benchmark bench : benchList) {
 					benchNameList.add(bench.getName());
 				}
@@ -1116,7 +1116,7 @@ public class Download extends HttpServlet {
 
 
 				// Create a list of the names of the solvers in solverList
-				List<String> solverNames = new LinkedList<String>();
+				List<String> solverNames = new LinkedList<>();
 				for (Solver solver: solverList) {
 					solverNames.add(solver.getName());
 				}
@@ -1174,7 +1174,7 @@ public class Download extends HttpServlet {
 	 * @author Albert Giegerich
 	 */
 	private static HashMap<String,Boolean> createNameDuplicateMap(List<String> names) {
-		HashMap<String,Boolean> nameDuplicateMap = new HashMap<String,Boolean>();
+		HashMap<String,Boolean> nameDuplicateMap = new HashMap<>();
 		for (String name : names) {
 			if (nameDuplicateMap.containsKey(name)) {
 				// If the name already exists in the map there is a duplication so map this name to true.

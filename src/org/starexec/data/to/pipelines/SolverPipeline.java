@@ -21,7 +21,7 @@ public class SolverPipeline extends Identifiable implements Nameable {
 	private Timestamp uploadDate;	
 	private int primaryStageId; //what is the id of the primary stage? Before addition to the database, stores primary stage NUMBER
 	public SolverPipeline() {
-		stages=new ArrayList<PipelineStage>();
+		stages= new ArrayList<>();
 	}
 	
 	public int getUserId() {

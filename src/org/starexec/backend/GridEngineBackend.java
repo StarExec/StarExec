@@ -269,7 +269,7 @@ public class GridEngineBackend implements Backend{
     		// Parse the output from the SGE call to get the key/value pairs for the node
     		java.util.regex.Matcher matcher = GridEngineBackend.queueAssocPattern.matcher(results);
     		
-    		Map<String,String> nodesToQueuesMap = new HashMap<String, String>();
+    		Map<String,String> nodesToQueuesMap = new HashMap<>();
     		
     		// For each match...
     		while(matcher.find()) {
@@ -592,7 +592,7 @@ public class GridEngineBackend implements Backend{
 	@Override
 	public Set<Integer> getActiveExecutionIds() throws IOException {
 		String output = Util.executeCommand("qstat -s a");
-		Set<Integer> answer = new HashSet<Integer>();
+		Set<Integer> answer = new HashSet<>();
 		for (String s : output.split(System.getProperty("line.separator"))) {
 			for (String e : s.split("\\s+")) {
 				if (!e.isEmpty()) {

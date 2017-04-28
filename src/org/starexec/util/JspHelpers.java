@@ -265,7 +265,7 @@ public class JspHelpers {
 		//we need two versions of every website URL-- one for insertion into an attribute and
 		//one for insertion into the HTML body. This data structure represents every site with 3 strings
 		//first the name, then the attribute URL, then the body URL
-		List<String[]> formattedSites=new ArrayList<String[]>();
+		List<String[]> formattedSites= new ArrayList<>();
 		for (Website site : sites) {
 			String[] formattedSite=new String[3];
 			formattedSite[0]=GeneralSecurity.getHTMLSafeString(site.getName());

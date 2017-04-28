@@ -229,7 +229,7 @@ public class RESTServicesSecurityTests extends TestSequence {
 	}
 	
 	private Map<String,String> getNameAndUrlParams() {
-		Map<String,String> params = new HashMap<String,String>();
+		Map<String,String> params = new HashMap<>();
 		params.put("name", "testname");
 		params.put("url", "http://www.testsite.edu");
 		return params;
@@ -256,18 +256,18 @@ public class RESTServicesSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void addUsersToSpaceTest() {
-		HashMap<String, String> params = new HashMap<String, String>();
+		HashMap<String, String> params = new HashMap<>();
 		params.put("copyToSubspaces", "true");
 		assertResultIsInvalid(services.addUsersToSpace(space.getId(),TestUtil.getMockHttpRequest(user.getId(), params, getSelectedIdParams(user.getId()))));
 		assertResultIsInvalid(services.addUsersToSpace(-1,TestUtil.getMockHttpRequest(admin.getId(), params, getSelectedIdParams(user.getId()))));
-		assertResultIsInvalid(services.addUsersToSpace(space.getId(),TestUtil.getMockHttpRequest(admin.getId(), new HashMap<String,String>(), getSelectedIdParams(user.getId()))));
+		assertResultIsInvalid(services.addUsersToSpace(space.getId(),TestUtil.getMockHttpRequest(admin.getId(), new HashMap<>(), getSelectedIdParams(user.getId()))));
 		assertResultIsInvalid(services.addUsersToSpace(space.getId(),TestUtil.getMockHttpRequest(admin.getId(),params)));
 	}
 	
 	@StarexecTest
 	private void copySolversToSpaceTest() {
 		HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
-		HashMap<String, String> params = new HashMap<String, String>();
+		HashMap<String, String> params = new HashMap<>();
 		params.put("copyToSubspaces", "true");
 		params.put("copy", "true");
 		assertResultIsInvalid(services.copySolversToSpace(space.getId(),
@@ -279,13 +279,13 @@ public class RESTServicesSecurityTests extends TestSequence {
 		assertResultIsInvalid(services.copySolversToSpace(space.getId(),
 				TestUtil.getMockHttpRequest(admin.getId(), params, getSelectedIdParams(-1)), response));
 		assertResultIsInvalid(services.copySolversToSpace(space.getId(),
-				TestUtil.getMockHttpRequest(admin.getId(), new HashMap<String,String>(), getSelectedIdParams(solver.getId())), response));
+				TestUtil.getMockHttpRequest(admin.getId(), new HashMap<>(), getSelectedIdParams(solver.getId())), response));
 	}
 	
 	@StarexecTest
 	private void copyBenchmarksToSpaceTest() {
 		HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
-		HashMap<String, String> params = new HashMap<String, String>();
+		HashMap<String, String> params = new HashMap<>();
 		params.put("copy", "true");
 		assertResultIsInvalid(services.copyBenchToSpace(space.getId(),
 				TestUtil.getMockHttpRequest(user.getId(), params, getSelectedIdParams(benchmarkIds.get(0))), response));
@@ -296,7 +296,7 @@ public class RESTServicesSecurityTests extends TestSequence {
 		assertResultIsInvalid(services.copyBenchToSpace(space.getId(),
 				TestUtil.getMockHttpRequest(admin.getId(), params, getSelectedIdParams(-1)), response));
 		assertResultIsInvalid(services.copyBenchToSpace(space.getId(),
-				TestUtil.getMockHttpRequest(admin.getId(), new HashMap<String,String>(), getSelectedIdParams(benchmarkIds.get(0))), response));
+				TestUtil.getMockHttpRequest(admin.getId(), new HashMap<>(), getSelectedIdParams(benchmarkIds.get(0))), response));
 	}
 	
 	@StarexecTest
@@ -362,7 +362,7 @@ public class RESTServicesSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void editCommunityDefaultSettingsTest() {
-		Map<String,String> params = new HashMap<String,String>();
+		Map<String,String> params = new HashMap<>();
 		params.put("val", solver.getId()+"");
 		assertResultIsInvalid(services.editCommunityDefaultSettings("defaultsolver",Communities.getDefaultSettings(space.getId()).getId(),TestUtil.getMockHttpRequest(user.getId(), params)));
 		assertResultIsInvalid(services.editCommunityDefaultSettings("fakeattr",Communities.getDefaultSettings(space.getId()).getId(),TestUtil.getMockHttpRequest(admin.getId(), params)));
@@ -370,7 +370,7 @@ public class RESTServicesSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void editCommunityTest() {
-		Map<String,String> params = new HashMap<String,String>();
+		Map<String,String> params = new HashMap<>();
 		params.put("val", solver.getId()+"");
 		assertResultIsInvalid(services.editCommunityDetails("name",Communities.getDefaultSettings(space.getId()).getId(),TestUtil.getMockHttpRequest(user.getId(), params)));
 		assertResultIsInvalid(services.editCommunityDetails("fakeattr",Communities.getDefaultSettings(space.getId()).getId(),TestUtil.getMockHttpRequest(admin.getId(), params)));
@@ -378,17 +378,17 @@ public class RESTServicesSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void editSpaceTest() {
-		Map<String,String> params = new HashMap<String,String>();
+		Map<String,String> params = new HashMap<>();
 		params.put("name", "name");
 		params.put("description","desc");
 		params.put("locked","false");
 		assertResultIsInvalid(services.editSpace(Communities.getDefaultSettings(space.getId()).getId(),TestUtil.getMockHttpRequest(user.getId(), params)));
-		assertResultIsInvalid(services.editSpace(Communities.getDefaultSettings(space.getId()).getId(),TestUtil.getMockHttpRequest(admin.getId(), new HashMap<String,String>())));
+		assertResultIsInvalid(services.editSpace(Communities.getDefaultSettings(space.getId()).getId(),TestUtil.getMockHttpRequest(admin.getId(), new HashMap<>())));
 	}
 	
 	@StarexecTest
 	private void editQueueInfoTest() {
-		HashMap<String,String> params = new HashMap<String,String>();
+		HashMap<String,String> params = new HashMap<>();
 		params.put("cpuTimeout", "10");
 		params.put("wallTimeout", "10");
 		assertResultIsInvalid(services.editQueueInfo(Queues.getAllQ().getId(),TestUtil.getMockHttpRequest(user.getId(), params)));
@@ -396,7 +396,7 @@ public class RESTServicesSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void editQueueInfoInvalidParamsTest() {
-		HashMap<String,String> params = new HashMap<String,String>();
+		HashMap<String,String> params = new HashMap<>();
 		params.put("cpuTimeout", "test");
 		params.put("wallTimeout", "10");
 		assertResultIsInvalid(services.editQueueInfo(Queues.getAllQ().getId(),TestUtil.getMockHttpRequest(admin.getId(), params)));
@@ -423,8 +423,8 @@ public class RESTServicesSecurityTests extends TestSequence {
 	}
 	
 	private static HashMap<String,List<String>> getSelectedIdParams(Object...objects) {
-		HashMap<String,List<String>> map = new HashMap<String,List<String>>();
-		List<String> strs = new ArrayList<String>();
+		HashMap<String,List<String>> map = new HashMap<>();
+		List<String> strs = new ArrayList<>();
 		for (Object o : objects) {
 			strs.add(o.toString());
 		}
@@ -434,7 +434,7 @@ public class RESTServicesSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void editProcessorTest() {
-		HashMap<String,String> params = new HashMap<String,String>();
+		HashMap<String,String> params = new HashMap<>();
 		params.put("name", "newname");
 		params.put("desc", "newdesc");
 		assertResultIsInvalid(services.editProcessor(postProcessor.getId(),TestUtil.getMockHttpRequest(
@@ -453,28 +453,28 @@ public class RESTServicesSecurityTests extends TestSequence {
 	@StarexecTest
 	private void deleteProcessorsTest() {
 		assertResultIsInvalid(services.deleteProcessors(TestUtil.getMockHttpRequest(
-				user.getId(), new HashMap<String,String>(), getSelectedIdParams(postProcessor.getId()))));
+				user.getId(), new HashMap<>(), getSelectedIdParams(postProcessor.getId()))));
 		assertResultIsInvalid(services.deleteProcessors(TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>())));
+				admin.getId(), new HashMap<>())));
 	}
 	
 	
 	@StarexecTest
 	private void removeBenchmarksTest() {
 		assertResultIsInvalid(services.removeBenchmarksFromSpace(space.getId(),TestUtil.getMockHttpRequest(
-				user.getId(), new HashMap<String,String>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
+				user.getId(), new HashMap<>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
 		assertResultIsInvalid(services.removeBenchmarksFromSpace(space.getId(),TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>())));
+				admin.getId(), new HashMap<>())));
 		assertResultIsInvalid(services.removeBenchmarksFromSpace(-1,TestUtil.getMockHttpRequest(
-				admin.getId(),new HashMap<String,String>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
+				admin.getId(), new HashMap<>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
 	}
 	
 	@StarexecTest
 	private void recycleBenchmarksTest() {
 		assertResultIsInvalid(services.recycleBenchmarks(TestUtil.getMockHttpRequest(
-				user.getId(), new HashMap<String,String>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
+				user.getId(), new HashMap<>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
 		assertResultIsInvalid(services.recycleBenchmarks(TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>())));
+				admin.getId(), new HashMap<>())));
 	}
 	
 	@StarexecTest
@@ -486,22 +486,22 @@ public class RESTServicesSecurityTests extends TestSequence {
 	@StarexecTest
 	private void restoreBenchmarksTest() {
 		assertResultIsInvalid(services.restoreBenchmarks(TestUtil.getMockHttpRequest(
-				user.getId(), new HashMap<String,String>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
+				user.getId(), new HashMap<>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
 		assertResultIsInvalid(services.restoreBenchmarks(TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>())));
+				admin.getId(), new HashMap<>())));
 	}
 	
 	@StarexecTest
 	private void deleteBenchmarksTest() {
 		assertResultIsInvalid(services.deleteBenchmarks(TestUtil.getMockHttpRequest(
-				user.getId(), new HashMap<String,String>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
+				user.getId(), new HashMap<>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
 		assertResultIsInvalid(services.deleteBenchmarks(TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>())));
+				admin.getId(), new HashMap<>())));
 	}
 	
 	@StarexecTest
 	private void editBenchmarkTest() {
-		HashMap<String,String> params = new HashMap<String,String>();
+		HashMap<String,String> params = new HashMap<>();
 		params.put("name", "test");
 		params.put("downloadable","false");
 		params.put("type", ""+Benchmarks.get(benchmarkIds.get(0)).getType().getId());
@@ -513,21 +513,21 @@ public class RESTServicesSecurityTests extends TestSequence {
 	@StarexecTest
 	private void recycleAndRemoveBenchmarksTest() {
 		assertResultIsInvalid(services.recycleAndRemoveBenchmarks(space.getId(),TestUtil.getMockHttpRequest(
-				user.getId(), new HashMap<String,String>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
+				user.getId(), new HashMap<>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
 		assertResultIsInvalid(services.recycleAndRemoveBenchmarks(space.getId(),TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>())));
+				admin.getId(), new HashMap<>())));
 		assertResultIsInvalid(services.recycleAndRemoveBenchmarks(-1,TestUtil.getMockHttpRequest(
-				admin.getId(),new HashMap<String,String>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
+				admin.getId(), new HashMap<>(), getSelectedIdParams(benchmarkIds.get(0), benchmarkIds.get(1)))));
 	}
 	
 	@StarexecTest
 	private void removeUsersTest() {
 		assertResultIsInvalid(services.removeUsersFromSpace(space.getId(),TestUtil.getMockHttpRequest(
-				user.getId(), new HashMap<String,String>(), getSelectedIdParams(admin.getId()))));
+				user.getId(), new HashMap<>(), getSelectedIdParams(admin.getId()))));
 		assertResultIsInvalid(services.removeUsersFromSpace(space.getId(),TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>())));
+				admin.getId(), new HashMap<>())));
 		assertResultIsInvalid(services.removeUsersFromSpace(-1,TestUtil.getMockHttpRequest(
-				admin.getId(),new HashMap<String,String>(), getSelectedIdParams(admin.getId()))));
+				admin.getId(), new HashMap<>(), getSelectedIdParams(admin.getId()))));
 	}
 	
 	@StarexecTest
@@ -540,10 +540,10 @@ public class RESTServicesSecurityTests extends TestSequence {
 	@StarexecTest
 	private void makeLeaderTest() {
 		assertResultIsInvalid(services.makeLeader(space.getId(),TestUtil.getMockHttpRequest(
-				user.getId(), new HashMap<String,String>(), getSelectedIdParams(user.getId()))));
+				user.getId(), new HashMap<>(), getSelectedIdParams(user.getId()))));
 		
 		assertResultIsInvalid(services.makeLeader(-1,TestUtil.getMockHttpRequest(
-				user.getId(), new HashMap<String,String>(), getSelectedIdParams(admin.getId()))));
+				user.getId(), new HashMap<>(), getSelectedIdParams(admin.getId()))));
 		
 		assertResultIsInvalid(services.makeLeader(space.getId(),TestUtil.getMockHttpRequest(admin.getId())));
 	}
@@ -558,7 +558,7 @@ public class RESTServicesSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void editUserPasswordTest() {
-		HashMap<String,String> params = new HashMap<String,String>();
+		HashMap<String,String> params = new HashMap<>();
 		params.put("current", admin.getPassword());
 		params.put("newpass", "fe90j$#T!Dvioew");
 		params.put("confirm", "fe90j$#T!Dvioew");
@@ -580,21 +580,21 @@ public class RESTServicesSecurityTests extends TestSequence {
 	@StarexecTest
 	private void removeSolversTest() {
 		assertResultIsInvalid(services.removeSolversFromSpace(space.getId(),TestUtil.getMockHttpRequest(
-				user.getId(), new HashMap<String,String>(), getSelectedIdParams(solver.getId()))));
+				user.getId(), new HashMap<>(), getSelectedIdParams(solver.getId()))));
 		assertResultIsInvalid(services.removeSolversFromSpace(space.getId(),TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>())));
+				admin.getId(), new HashMap<>())));
 		assertResultIsInvalid(services.removeSolversFromSpace(-1,TestUtil.getMockHttpRequest(
-				admin.getId(),new HashMap<String,String>(), getSelectedIdParams(solver.getId()))));
+				admin.getId(), new HashMap<>(), getSelectedIdParams(solver.getId()))));
 	}
 	
 	@StarexecTest
 	private void deleteSolversTest() {
 		assertResultIsInvalid(services.deleteSolvers(TestUtil.getMockHttpRequest(
-				user.getId(), new HashMap<String,String>(), getSelectedIdParams(solver.getId()))));
+				user.getId(), new HashMap<>(), getSelectedIdParams(solver.getId()))));
 		assertResultIsInvalid(services.deleteSolvers(TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>(), getSelectedIdParams(-1))));
+				admin.getId(), new HashMap<>(), getSelectedIdParams(-1))));
 		assertResultIsInvalid(services.deleteSolvers(TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>())));
+				admin.getId(), new HashMap<>())));
 	}
 	
 	@StarexecTest
@@ -607,31 +607,31 @@ public class RESTServicesSecurityTests extends TestSequence {
 	@StarexecTest
 	private void recycleAndRemoveSolversTest() {
 		assertResultIsInvalid(services.recycleAndRemoveSolvers(space.getId(),TestUtil.getMockHttpRequest(
-				user.getId(), new HashMap<String,String>(), getSelectedIdParams(solver.getId()))));
+				user.getId(), new HashMap<>(), getSelectedIdParams(solver.getId()))));
 		assertResultIsInvalid(services.recycleAndRemoveSolvers(space.getId(),TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>(), getSelectedIdParams(-1))));
+				admin.getId(), new HashMap<>(), getSelectedIdParams(-1))));
 		assertResultIsInvalid(services.recycleAndRemoveSolvers(space.getId(),TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>())));
+				admin.getId(), new HashMap<>())));
 		assertResultIsInvalid(services.recycleAndRemoveSolvers(-1,TestUtil.getMockHttpRequest(
-				admin.getId(),new HashMap<String,String>(), getSelectedIdParams(solver.getId()))));
+				admin.getId(), new HashMap<>(), getSelectedIdParams(solver.getId()))));
 	}
 	
 	@StarexecTest
 	private void restoreSolversTest() {
 		assertResultIsInvalid(services.restoreSolvers(TestUtil.getMockHttpRequest(
-				user.getId(), new HashMap<String,String>(), getSelectedIdParams(solver.getId()))));
+				user.getId(), new HashMap<>(), getSelectedIdParams(solver.getId()))));
 		assertResultIsInvalid(services.restoreSolvers(TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>())));
+				admin.getId(), new HashMap<>())));
 	}
 	
 	@StarexecTest
 	private void recycleSolversTest() {
 		assertResultIsInvalid(services.recycleSolvers(TestUtil.getMockHttpRequest(
-				user.getId(), new HashMap<String,String>(), getSelectedIdParams(solver.getId()))));
+				user.getId(), new HashMap<>(), getSelectedIdParams(solver.getId()))));
 		assertResultIsInvalid(services.recycleSolvers(TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>(), getSelectedIdParams(-1))));
+				admin.getId(), new HashMap<>(), getSelectedIdParams(-1))));
 		assertResultIsInvalid(services.recycleSolvers(TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>())));
+				admin.getId(), new HashMap<>())));
 	}
 	
 	@StarexecTest
@@ -642,17 +642,17 @@ public class RESTServicesSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void deleteConfigurationTest() {
-		assertResultIsInvalid(services.deleteConfigurations(TestUtil.getMockHttpRequest(user.getId(), 
-				new HashMap<String,String>(), getSelectedIdParams(solver.getConfigurations().get(0).getId()))));
-		assertResultIsInvalid(services.deleteConfigurations(TestUtil.getMockHttpRequest(admin.getId(), 
-				new HashMap<String,String>(), getSelectedIdParams(-1))));
-		assertResultIsInvalid(services.deleteConfigurations(TestUtil.getMockHttpRequest(admin.getId(), 
-				new HashMap<String,String>())));
+		assertResultIsInvalid(services.deleteConfigurations(TestUtil.getMockHttpRequest(user.getId(),
+				new HashMap<>(), getSelectedIdParams(solver.getConfigurations().get(0).getId()))));
+		assertResultIsInvalid(services.deleteConfigurations(TestUtil.getMockHttpRequest(admin.getId(),
+				new HashMap<>(), getSelectedIdParams(-1))));
+		assertResultIsInvalid(services.deleteConfigurations(TestUtil.getMockHttpRequest(admin.getId(),
+				new HashMap<>())));
 	}
 	
 	@StarexecTest
 	private void editConfigurationTest() {
-		HashMap<String,String> params = new HashMap<String,String>();
+		HashMap<String,String> params = new HashMap<>();
 		params.put("name", "test");
 		int configId = solver.getConfigurations().get(0).getId();
 		assertResultIsInvalid(services.editConfigurationDetails(configId,TestUtil.getMockHttpRequest(user.getId(), params)));
@@ -662,7 +662,7 @@ public class RESTServicesSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void editSolverTest() {
-		HashMap<String,String> params = new HashMap<String,String>();
+		HashMap<String,String> params = new HashMap<>();
 		params.put("name", "test");
 		params.put("downloadable","false");
 		assertResultIsInvalid(services.editSolverDetails(solver.getId(),TestUtil.getMockHttpRequest(user.getId(),params)));
@@ -674,25 +674,25 @@ public class RESTServicesSecurityTests extends TestSequence {
 	@StarexecTest
 	private void associateJobWithSpaceTest() {
 		assertResultIsInvalid(services.associateJobWithSpace(space.getId(), 
-			TestUtil.getMockHttpRequest(user.getId(), new HashMap<String,String>(), getSelectedIdParams(job.getId()))));
+			TestUtil.getMockHttpRequest(user.getId(), new HashMap<>(), getSelectedIdParams(job.getId()))));
 		assertResultIsInvalid(services.associateJobWithSpace(-1, 
-				TestUtil.getMockHttpRequest(admin.getId(), new HashMap<String,String>(), getSelectedIdParams(job.getId()))));
+				TestUtil.getMockHttpRequest(admin.getId(), new HashMap<>(), getSelectedIdParams(job.getId()))));
 		
 		assertResultIsInvalid(services.associateJobWithSpace(space.getId(), 
-				TestUtil.getMockHttpRequest(admin.getId(), new HashMap<String,String>(), getSelectedIdParams(-1))));
+				TestUtil.getMockHttpRequest(admin.getId(), new HashMap<>(), getSelectedIdParams(-1))));
 		
 		assertResultIsInvalid(services.associateJobWithSpace(space.getId(), 
-				TestUtil.getMockHttpRequest(admin.getId(), new HashMap<String,String>())));
+				TestUtil.getMockHttpRequest(admin.getId(), new HashMap<>())));
 	}
 	
 	@StarexecTest
 	private void removeJobsTest() {
 		assertResultIsInvalid(services.removeJobsFromSpace(space.getId(),TestUtil.getMockHttpRequest(
-				user.getId(), new HashMap<String,String>(), getSelectedIdParams(job.getId()))));
+				user.getId(), new HashMap<>(), getSelectedIdParams(job.getId()))));
 		assertResultIsInvalid(services.removeJobsFromSpace(space.getId(),TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>())));
+				admin.getId(), new HashMap<>())));
 		assertResultIsInvalid(services.removeJobsFromSpace(-1,TestUtil.getMockHttpRequest(
-				admin.getId(),new HashMap<String,String>(), getSelectedIdParams(job.getId()))));
+				admin.getId(), new HashMap<>(), getSelectedIdParams(job.getId()))));
 	}
 	
 	@StarexecTest
@@ -718,34 +718,34 @@ public class RESTServicesSecurityTests extends TestSequence {
 	@StarexecTest
 	private void deleteAndRemoveJobsTest() {
 		assertResultIsInvalid(services.deleteAndRemoveJobs(space.getId(),TestUtil.getMockHttpRequest(
-				user.getId(), new HashMap<String,String>(), getSelectedIdParams(job.getId()))));
+				user.getId(), new HashMap<>(), getSelectedIdParams(job.getId()))));
 		assertResultIsInvalid(services.deleteAndRemoveJobs(space.getId(),TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>())));
+				admin.getId(), new HashMap<>())));
 		assertResultIsInvalid(services.deleteAndRemoveJobs(-1,TestUtil.getMockHttpRequest(
-				admin.getId(),new HashMap<String,String>(), getSelectedIdParams(job.getId()))));
+				admin.getId(), new HashMap<>(), getSelectedIdParams(job.getId()))));
 		
 		assertResultIsInvalid(services.deleteAndRemoveJobs(space.getId(),TestUtil.getMockHttpRequest(
-				admin.getId(),new HashMap<String,String>(), getSelectedIdParams(-1))));
+				admin.getId(), new HashMap<>(), getSelectedIdParams(-1))));
 	}
 	
 	@StarexecTest
 	private void deleteJobsTest() {
 		assertResultIsInvalid(services.deleteJobs(TestUtil.getMockHttpRequest(
-				user.getId(), new HashMap<String,String>(), getSelectedIdParams(job.getId()))));
+				user.getId(), new HashMap<>(), getSelectedIdParams(job.getId()))));
 		assertResultIsInvalid(services.deleteJobs(TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>())));
+				admin.getId(), new HashMap<>())));
 		assertResultIsInvalid(services.deleteJobs(TestUtil.getMockHttpRequest(
-				admin.getId(),new HashMap<String,String>(), getSelectedIdParams(-1))));
+				admin.getId(), new HashMap<>(), getSelectedIdParams(-1))));
 	}
 	
 	@StarexecTest
 	private void removeSubspacesTest() {
 		assertResultIsInvalid(services.removeSubspacesFromSpace(TestUtil.getMockHttpRequest(
-				user.getId(), new HashMap<String,String>(), getSelectedIdParams(space.getId()))));
+				user.getId(), new HashMap<>(), getSelectedIdParams(space.getId()))));
 		assertResultIsInvalid(services.removeSubspacesFromSpace(TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>())));
+				admin.getId(), new HashMap<>())));
 		assertResultIsInvalid(services.removeSubspacesFromSpace(TestUtil.getMockHttpRequest(
-				admin.getId(),new HashMap<String,String>(), getSelectedIdParams(-1))));
+				admin.getId(), new HashMap<>(), getSelectedIdParams(-1))));
 	}
 	
 	@StarexecTest
@@ -753,13 +753,13 @@ public class RESTServicesSecurityTests extends TestSequence {
 		HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
 
 		int destSpace = Communities.getTestCommunity().getId();
-		HashMap<String,String> params = new HashMap<String,String>();
+		HashMap<String,String> params = new HashMap<>();
 		params.put("copyHierarchy", "false");
 		assertResultIsInvalid(services.copySubSpaceToSpace(destSpace,TestUtil.getMockHttpRequest(
-				user.getId(), new HashMap<String,String>(), getSelectedIdParams(space.getId())), response));
+				user.getId(), new HashMap<>(), getSelectedIdParams(space.getId())), response));
 		
 		assertResultIsInvalid(services.copySubSpaceToSpace(-1,TestUtil.getMockHttpRequest(
-				admin.getId(), new HashMap<String,String>(), getSelectedIdParams(space.getId())), response));
+				admin.getId(), new HashMap<>(), getSelectedIdParams(space.getId())), response));
 		
 		assertResultIsInvalid(services.copySubSpaceToSpace(destSpace,TestUtil.getMockHttpRequest(
 				admin.getId()), response));

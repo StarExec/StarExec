@@ -180,7 +180,7 @@ public class JobPairTests extends TestSequence {
 	@StarexecTest
 	private void setBrokenPairsToErrorStatusNoChange() throws IOException {
 		JobPair jp=JobPairs.getPair(job.getJobPairs().get(0).getId());
-		HashSet<Integer> set = new HashSet<Integer>();
+		HashSet<Integer> set = new HashSet<>();
 		set.add(jp.getBackendExecId());
 		JobPairs.setPairStatus(jp.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 		GridEngineBackend backend = Mockito.mock(GridEngineBackend.class);
@@ -311,7 +311,7 @@ public class JobPairTests extends TestSequence {
 		postProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
 		benchmarkIds=loader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
 		
-		List<Integer> solverIds=new ArrayList<Integer>();
+		List<Integer> solverIds= new ArrayList<>();
 		solverIds.add(solver.getId());
 		job=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
 		job2=loader.loadJobIntoDatabase(space.getId(), user2.getId(), -1, postProc.getId(), solverIds, benchmarkIds, cpuTimeout, wallclockTimeout, gbMemory);

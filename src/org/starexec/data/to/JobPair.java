@@ -61,8 +61,8 @@ public class JobPair extends Identifiable {
 		this.bench = new Benchmark();
 		this.status = new Status();		
 		this.space=new Space();
-		setStages(new ArrayList<JoblineStage>());
-		setBenchInputs(new ArrayList<Integer>());
+		setStages(new ArrayList<>());
+		setBenchInputs(new ArrayList<>());
 	}
 	
 	/**

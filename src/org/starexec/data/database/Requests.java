@@ -384,7 +384,7 @@ public class Requests {
 	 */
 	private static List<CommunityRequest> processGetCommunityRequestResults(ResultSet results) throws SQLException
 	{
-		List<CommunityRequest> requests = new LinkedList<CommunityRequest>();
+		List<CommunityRequest> requests = new LinkedList<>();
 		
 		while(results.next()){
 			CommunityRequest req = new CommunityRequest();
@@ -527,7 +527,7 @@ public class Requests {
 			Common.safeClose(results);
 		}
 
-		Pair<String, String> emailAndCode = new ImmutablePair<String, String>(newEmail, emailChangeCodeAssociatedWithUser);
+		Pair<String, String> emailAndCode = new ImmutablePair<>(newEmail, emailChangeCodeAssociatedWithUser);
 		return emailAndCode;
 	}
 

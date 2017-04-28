@@ -265,7 +265,7 @@ public class BatchUtil {
 	 * @throws IOException
 	 */
 	public List<Integer> createSpacesFromFile(File file, int userId, int parentSpaceId,Integer statusId) throws SAXException, ParserConfigurationException, IOException{
-		List<Integer> spaceIds=new ArrayList<Integer>();
+		List<Integer> spaceIds= new ArrayList<>();
 		if (!validateAgainstSchema(file)){
 			log.warn("File from User " + userId + " is not Schema valid.");
 			return null;
@@ -575,11 +575,11 @@ public class BatchUtil {
 
 		
 		// Space elements that are children of spaceElement
-		List<Element> childSpaces = new LinkedList<Element>();
+		List<Element> childSpaces = new LinkedList<>();
 
-		List<Integer> benchmarks = new ArrayList<Integer>();
-		List<Integer> solvers = new ArrayList<Integer>();
-		List<Update> updates = new ArrayList<Update>();
+		List<Integer> benchmarks = new ArrayList<>();
+		List<Integer> solvers = new ArrayList<>();
+		List<Update> updates = new ArrayList<>();
 		List<Integer> updateIds;
 		NodeList childList = spaceElement.getChildNodes();
 		int id=0;
@@ -753,13 +753,13 @@ public class BatchUtil {
     private List<Integer> addUpdates(List<Update> updates)
 	{
 		//For each update.
-		List<Integer> updateIds = new ArrayList<Integer>();
+		List<Integer> updateIds = new ArrayList<>();
 		for(Update update : updates) {
 			log.debug("Got here adding update ID = " + update.id + " PID = " + update.pid + " BID = " + update.bid + " Text = " + update.text);
 			//Get the information out of the update.
 			
 			//Get the files.
-			List<File> files = new ArrayList<File>();
+			List<File> files = new ArrayList<>();
 			log.debug("Update name = " + update.name);
 			log.debug("Update name = empty " + (update.name == ""));
 			String name = "";

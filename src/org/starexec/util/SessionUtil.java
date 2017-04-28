@@ -76,7 +76,7 @@ public class SessionUtil {
 	@SuppressWarnings("unchecked")
 	public static HashMap<Integer, Permission> getPermissionCache(HttpSession session) {
 		if (session.getAttribute(SessionUtil.PERMISSION_CACHE)==null) {
-			return new HashMap<Integer,Permission>();
+			return new HashMap<>();
 		}
 		return (HashMap<Integer, Permission>)session.getAttribute(SessionUtil.PERMISSION_CACHE);
 	}

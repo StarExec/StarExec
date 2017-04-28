@@ -8,7 +8,7 @@ import java.util.List;
 public class TestResult {
 	private String name="no name";
 	private TestStatus status=new TestStatus();
-	private List<String> messages=new ArrayList<String>();
+	private List<String> messages= new ArrayList<>();
 	private Throwable error=null;
 	private double time=0.0;
 	public TestResult() {
@@ -32,7 +32,7 @@ public class TestResult {
 		
 	}
 	public void clearMessages() {
-		this.messages=new ArrayList<String>();
+		this.messages= new ArrayList<>();
 	}
 	public String getMostRecentMessage() {
 		if (messages.size()>0) {

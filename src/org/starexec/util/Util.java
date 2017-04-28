@@ -297,7 +297,7 @@ public class Util {
         StringBuffer sb = new StringBuffer();
 
         // Hash to store which character sets have been used
-        HashSet<Integer> setsUsed = new HashSet<Integer>();
+        HashSet<Integer> setsUsed = new HashSet<>();
 
         while (sb.length() != newPassLength) {
 	    // Choose a random character set to use & get a random character from it
@@ -323,7 +323,7 @@ public class Util {
      */
     public static HashMap<String, Object> parseMultipartRequest(HttpServletRequest request) throws Exception {
 		// Use Tomcat's multipart form utilities
-		HashMap<String, Object> form = new HashMap<String, Object>();
+		HashMap<String, Object> form = new HashMap<>();
 		for (Part p : request.getParts()) {
 			PartWrapper wrapper = new PartWrapper(p);
 		    // If we're dealing with a regular form field...
@@ -523,7 +523,7 @@ public class Util {
      */
     public static List<Integer> toIntegerList(String[] stringList) {
 	if (stringList != null) {
-	    ArrayList<Integer> retList = new ArrayList<Integer>(stringList.length);
+	    ArrayList<Integer> retList = new ArrayList<>(stringList.length);
 
 	    for(String s : stringList){
 		retList.add(Integer.parseInt(s));
@@ -532,7 +532,7 @@ public class Util {
 	    return retList;
 	}
 
-	return new ArrayList<Integer>();
+	return new ArrayList<>();
     }
 
     /**
@@ -630,7 +630,7 @@ public class Util {
 
 	    } else {
 	    	File[] files=dir.listFiles((FileFilter)dateFilter);
-	    	outdatedFiles=new ArrayList<File>();
+	    	outdatedFiles= new ArrayList<>();
 	    	for (File f : files) {
 	    		outdatedFiles.add(f);
 	    	}
@@ -677,7 +677,7 @@ public class Util {
     	log.info("calling clearOrphanedJobDirectories");
     	File outputDirectory = new File(R.getJobOutputDirectory());
     	// we are going to consider removing all files / directories under the job output directory
-    	HashSet<String> filesToConsider = new HashSet<String>();
+    	HashSet<String> filesToConsider = new HashSet<>();
     	for (File f : outputDirectory.listFiles()) {
     		filesToConsider.add(f.getAbsolutePath());
     	}
@@ -911,7 +911,7 @@ public class Util {
 
     public static <T> List<T> handlePagination(List<T> arr, Comparator<T> compare,int start, int records) {
     	Collections.sort(arr,compare);
-		List<T> returnList=new ArrayList<T>();
+		List<T> returnList= new ArrayList<>();
 		if (start>=arr.size()) {
 			//we'll just return nothing
 		} else if (start+records>arr.size()) {

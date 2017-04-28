@@ -57,7 +57,7 @@ public class JobUtil {
 
 		final String methodName = "createJobsFromFile";
 		final String method = "createJobsFromFile";
-		List<Integer> jobIds=new ArrayList<Integer>();
+		List<Integer> jobIds= new ArrayList<>();
 		if (!validateAgainstSchema(file, xmlType)){
 			log.warn(method, "File from User " + userId + " is not Schema valid.");
 			errorMessage = "File from User " + userId + " is not Schema valid.";
@@ -115,7 +115,7 @@ public class JobUtil {
 		//validate all solver pipelines
 		
 		//data structure to ensure all pipeline names in this upload are unique
-		HashMap<String,SolverPipeline> pipelineNames=new HashMap<String,SolverPipeline>();
+		HashMap<String,SolverPipeline> pipelineNames= new HashMap<>();
 		log.info(method, "Creating pipelines from elements.");
 		for (int i=0; i< listOfPipelines.getLength(); i++) {
 			Node pipeline = listOfPipelines.item(i);
@@ -216,11 +216,11 @@ public class JobUtil {
 		//We need to validate the following rule-- if there are n unique benchmark inputs,
 		//then the numbers on those inputs must go exactly from 1 to n.
 		
-		HashSet<Integer> benchmarkInputs=new HashSet<Integer>();
+		HashSet<Integer> benchmarkInputs= new HashSet<>();
 		
 		//XML files have a stage tag for each stage
 		int currentStage=0;
-		List<PipelineStage> stageList=new ArrayList<PipelineStage>();
+		List<PipelineStage> stageList= new ArrayList<>();
 		for (int i=0;i<stages.getLength();i++) {
 			
 			if (stages.item(i).getNodeName().equals("PipelineStage")) {
@@ -461,7 +461,7 @@ public class JobUtil {
 			final String methodName = "createJobFromElement";
 
 			Element jobAttributes = DOMHelper.getElementByName(jobElement,"JobAttributes");
-			HashMap<Integer,Solver> configIdsToSolvers=new HashMap<Integer,Solver>();
+			HashMap<Integer,Solver> configIdsToSolvers= new HashMap<>();
 	
 			Job job = new Job();
 			job.setName(jobElement.getAttribute("name"));
@@ -577,7 +577,7 @@ public class JobUtil {
 			// so if there is
             // more than one then we will need to prepend the rootName onto every pair path to condense it
 			// to a single root space
-			HashSet<String> jobRootPaths=new HashSet<String>();
+			HashSet<String> jobRootPaths= new HashSet<>();
 			Map<Integer, Benchmark> accessibleCachedBenchmarks = new HashMap<>();
 			// IMPORTANT: For efficieny reasons this function has the side-effect of populating configIdsToSolvers
 			//			  as well as accessibleCachedBenchmarks

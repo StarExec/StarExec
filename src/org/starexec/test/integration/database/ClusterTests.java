@@ -42,7 +42,7 @@ public class ClusterTests extends TestSequence {
 	private void getAllNodesTest() {
 		List<WorkerNode> nodes=Cluster.getAllNodes();
 		Assert.assertNotNull(nodes);
-		List<Integer> nodeIds = new ArrayList<Integer>();
+		List<Integer> nodeIds = new ArrayList<>();
 		for (WorkerNode node : nodes){
 			nodeIds.add(node.getId());
 		}

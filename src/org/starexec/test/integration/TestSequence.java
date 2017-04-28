@@ -22,7 +22,7 @@ public abstract class TestSequence {
 	protected Throwable error = null;
 	protected ResourceLoader loader = null; 
 	//maps the names of tests to some data about them. Every test gets an entry when the TestSequence object is created
-	HashMap<String,TestResult> testResults=new HashMap<String,TestResult>();
+	HashMap<String,TestResult> testResults= new HashMap<>();
 	
 	
 	public TestSequence() {
@@ -261,7 +261,7 @@ public abstract class TestSequence {
 	 * @return
 	 */
 	public final List<TestResult> getTestResults() {
-		List<TestResult> tr=new ArrayList<TestResult>();
+		List<TestResult> tr= new ArrayList<>();
 		for (TestResult r : testResults.values()) {
 			tr.add(r);
 		}
@@ -303,7 +303,7 @@ public abstract class TestSequence {
 	private List<Method> getMethodsWithAnnotation(Class annotationClass) {
 		Method[] methods=this.getClass().getDeclaredMethods();
 		
-		List<Method> tests=new ArrayList<Method>();
+		List<Method> tests= new ArrayList<>();
 		for (Method m : methods) {
 			if (hasAnnotation(m, annotationClass)) {
 				tests.add(m);

@@ -62,7 +62,7 @@ public class PairsRerunTests extends TestSequence {
         int wallclockTimeout=100;
         int cpuTimeout=100;
         int gbMemory=1;
-        List<Integer> solverIds=new ArrayList<Integer>();
+        List<Integer> solverIds= new ArrayList<>();
         solverIds.add(solver.getId());
 
         job=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);

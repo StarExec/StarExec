@@ -62,7 +62,7 @@ public class Communities {
 	 */
 	public static List<Space> getAllCommunitiesUserIsIn(int userId) {
 		List<Space> allCommunities = Communities.getAll();
-		List<Space> communitiesUserIsIn = new LinkedList<Space>();
+		List<Space> communitiesUserIsIn = new LinkedList<>();
 		for (Space community : allCommunities) {
 			int communityId = community.getId();
 			if (Users.isMemberOfCommunity(userId, communityId)) {
@@ -75,7 +75,7 @@ public class Communities {
 
 	public static List<Space> getAllCommunitiesUserIsIn(Connection con, int userId) {
 		List<Space> allCommunities = Communities.getAll(con);
-		List<Space> communitiesUserIsIn = new LinkedList<Space>();
+		List<Space> communitiesUserIsIn = new LinkedList<>();
 		for (Space community : allCommunities) {
 			int communityId = community.getId();
 			if (Users.isMemberOfCommunity(con, userId, communityId)) {
@@ -117,7 +117,7 @@ public class Communities {
      *
      **/
     public static HashMap<String,Long> initializeCommInfo(){
-		HashMap<String,Long> stats = new HashMap<String, Long>();
+		HashMap<String,Long> stats = new HashMap<>();
 	
 		stats.put("users",0l);
 		stats.put("jobs",0l);
@@ -139,7 +139,7 @@ public class Communities {
 				List<Space> communities = Communities.getAll();
 		    
 	
-				HashMap<Integer,HashMap<String,Long>> commInfo = new HashMap<Integer,HashMap<String,Long>>();
+				HashMap<Integer,HashMap<String,Long>> commInfo = new HashMap<>();
 
 				for(Space c : communities){
 				    commInfo.put(c.getId(),initializeCommInfo());

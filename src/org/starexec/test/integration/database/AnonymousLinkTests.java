@@ -372,7 +372,7 @@ public class AnonymousLinkTests extends TestSequence {
 
 		// Setup test benchmarks
 		List<Integer> benchmarkIds = loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
-		benchmarks = new ArrayList<Benchmark>();
+		benchmarks = new ArrayList<>();
 		for ( Integer id : benchmarkIds ) {
 			benchmarks.add( Benchmarks.get( id ) );
 		}		

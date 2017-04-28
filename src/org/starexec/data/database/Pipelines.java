@@ -35,7 +35,7 @@ public class Pipelines {
 			procedure=con.prepareCall("{CALL GetDependenciesForPipelineStage(?)}");
 			procedure.setInt(1,stageId);
 			results=procedure.executeQuery();
-			List<PipelineDependency> answers=new ArrayList<PipelineDependency>();
+			List<PipelineDependency> answers= new ArrayList<>();
 			while (results.next()) {
 				PipelineDependency dep=new PipelineDependency();
 				dep.setStageId(stageId);
@@ -69,7 +69,7 @@ public class Pipelines {
 			procedure=con.prepareCall("{CALL GetDependenciesForJobPair(?)}");
 			procedure.setInt(1,pairId);
 			results=procedure.executeQuery();
-			HashMap<Integer,List<PipelineDependency>> answers=new HashMap<Integer,List<PipelineDependency>>();
+			HashMap<Integer,List<PipelineDependency>> answers= new HashMap<>();
 			while (results.next()) {
 				PipelineDependency dep=new PipelineDependency();
 				dep.setStageId(results.getInt("stage_id"));
@@ -78,7 +78,7 @@ public class Pipelines {
 				dep.setInputNumber(results.getInt("input_number"));
 				
 				if (!answers.containsKey(dep.getStageId())) {
-					answers.put(dep.getStageId(), new ArrayList<PipelineDependency>());
+					answers.put(dep.getStageId(), new ArrayList<>());
 				}
 
 				answers.get(dep.getStageId()).add(dep);
@@ -106,7 +106,7 @@ public class Pipelines {
 			procedure=con.prepareCall("{CALL GetStagesByPipelineId(?)}");
 			procedure.setInt(1,pipeId);
 			results=procedure.executeQuery();
-			List<PipelineStage> stages=new ArrayList<PipelineStage>();
+			List<PipelineStage> stages= new ArrayList<>();
 			while (results.next()) {
 				PipelineStage stage=new PipelineStage();
 				stage.setPipelineId(pipeId);
@@ -282,8 +282,8 @@ public class Pipelines {
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
-		List<Integer> pipeIds=new ArrayList<Integer>();
-		List<SolverPipeline> pipes=new ArrayList<SolverPipeline>();
+		List<Integer> pipeIds= new ArrayList<>();
+		List<SolverPipeline> pipes= new ArrayList<>();
 		try {
 			con=Common.getConnection();
 			procedure=con.prepareCall("CALL GetPipelineIdsByJob(?)");

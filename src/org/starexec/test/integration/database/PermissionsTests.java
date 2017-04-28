@@ -67,7 +67,7 @@ public class PermissionsTests extends TestSequence {
 	
 	@StarexecTest 
 	private void CanSeeSolversTest() {
-		List<Integer> solvers=new ArrayList<Integer>();
+		List<Integer> solvers= new ArrayList<>();
 		solvers.add(solver.getId());
 		solvers.add(solver2.getId());
 		Assert.assertTrue(Permissions.canUserSeeSolvers(solvers, owner.getId()));

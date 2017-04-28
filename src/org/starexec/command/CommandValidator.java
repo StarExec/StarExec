@@ -24,7 +24,7 @@ public class CommandValidator {
 	public static String[] VALID_ARCHIVETYPES = { "zip" };
 
 	private static String missingParam = null;
-	private static List<String> unnecessaryParams = new ArrayList<String>();
+	private static List<String> unnecessaryParams = new ArrayList<>();
 
 	// the following lists specify the parameters, either required or optional,
 	// that are accepted by a certain
@@ -808,7 +808,7 @@ public class CommandValidator {
 	 */
 	private static void findUnnecessaryParams(String[] allowedParams, HashMap<String, String> commandParams) {
 		List<String> a = Arrays.asList(allowedParams);
-		unnecessaryParams = new ArrayList<String>();
+		unnecessaryParams = new ArrayList<>();
 		for (String x : commandParams.keySet()) {
 
 			if (!a.contains(x)) {

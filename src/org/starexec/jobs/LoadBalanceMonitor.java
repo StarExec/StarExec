@@ -115,7 +115,7 @@ public class LoadBalanceMonitor {
 	// substantial, and so for now this is a very simple and fast option. If we want
 	// to support very large numbers of simultaneous users, we likely want another structure
 	// such as a combination HashMap / PriorityQueue structure.
-	private HashMap<Integer, UserLoadData> loads = new HashMap<Integer, UserLoadData>();
+	private HashMap<Integer, UserLoadData> loads = new HashMap<>();
 
 	
 	// thirty minutes in seconds
@@ -127,7 +127,7 @@ public class LoadBalanceMonitor {
 	 * @return Minimum value among all active users. Returns null if there are no active users
 	 */
 	public Long getMin() {
-		List<UserLoadData> activeUsers = new ArrayList<UserLoadData>();
+		List<UserLoadData> activeUsers = new ArrayList<>();
 		for (UserLoadData d : loads.values()) {
 			if (d.active()) {
 				activeUsers.add(d);
@@ -311,7 +311,7 @@ public class LoadBalanceMonitor {
 	}
 	
 	private List<UserLoadData> getSortedDataList() {
-		List<UserLoadData> data = new ArrayList<UserLoadData>();
+		List<UserLoadData> data = new ArrayList<>();
 		for (UserLoadData d : loads.values()) {
 			data.add(d);
 		}

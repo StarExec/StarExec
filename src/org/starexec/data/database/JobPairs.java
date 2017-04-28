@@ -218,7 +218,7 @@ public class JobPairs {
 			procedure=con.prepareCall("CALL GetJobPairInputPaths(?)");
 			procedure.setInt(1,pairId);
 			results=procedure.executeQuery();
-			List<String> benchmarkPaths=new ArrayList<String>();
+			List<String> benchmarkPaths= new ArrayList<>();
 			while (results.next()) {
 				benchmarkPaths.add(results.getString("path"));
 			}
@@ -410,7 +410,7 @@ public class JobPairs {
 			procedure=con.prepareCall("{CALL GetPairsToBeProcessed(?)}");
 			procedure.setInt(1,StatusCode.STATUS_PROCESSING.getVal());
 			results=procedure.executeQuery();
-			List<PairStageProcessorTriple> list=new ArrayList<PairStageProcessorTriple>();
+			List<PairStageProcessorTriple> list= new ArrayList<>();
 			while (results.next()) {
 				PairStageProcessorTriple next= new PairStageProcessorTriple();
 				next.setPairId(results.getInt("job_pairs.id"));
@@ -541,7 +541,7 @@ public class JobPairs {
 			File output=new File(JobPairs.getFilePath(pair,stageNumber));
 			Processor p=Processors.get(processorId);
 			// Run the processor on the benchmark file
-			List<File> files=new ArrayList<File>();
+			List<File> files= new ArrayList<>();
 			files.add(new File(p.getFilePath()));
 			files.add(new File(pair.getBench().getPath()));
 			files.add(output);
@@ -657,7 +657,7 @@ public class JobPairs {
 	protected static List<JobPair> filterPairsByType(List<JobPair> pairs, String type, int stageNumber) {
 
 		log.debug("filtering pairs by type with type = "+type);
-		List<JobPair> filteredPairs=new ArrayList<JobPair>();
+		List<JobPair> filteredPairs= new ArrayList<>();
 		
 		if (type.equals("incomplete")) {
 			for (JobPair jp : pairs) {
@@ -764,7 +764,7 @@ public class JobPairs {
 		}
 		
 		searchQuery=searchQuery.toLowerCase();
-		List<SolverComparison> filteredComparisons=new ArrayList<SolverComparison>();
+		List<SolverComparison> filteredComparisons= new ArrayList<>();
 		for (SolverComparison c : comparisons) {
 			try {
 				if (c.getBenchmark().getName().toLowerCase().contains(searchQuery)) {
@@ -795,7 +795,7 @@ public class JobPairs {
 		}
 		
 		searchQuery=searchQuery.toLowerCase();
-		List<JobPair> filteredPairs=new ArrayList<JobPair>();
+		List<JobPair> filteredPairs= new ArrayList<>();
 		for (JobPair jp : pairs) {
 			JoblineStage stage=jp.getStageFromNumber(stageNumber);
 			try {
@@ -825,7 +825,7 @@ public class JobPairs {
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
-			HashMap<Integer,Properties> props= new HashMap<Integer,Properties>();
+			HashMap<Integer,Properties> props= new HashMap<>();
 			 procedure = con.prepareCall("{CALL GetPairAttrs(?)}");
 			procedure.setInt(1, pairId);					
 			 results = procedure.executeQuery();
@@ -950,7 +950,7 @@ public class JobPairs {
 	 * @return
 	 */
 	private static List<File> getOutputPathsFromStdout(int pairId, File stdout) {
-		List<File> files = new ArrayList<File>();
+		List<File> files = new ArrayList<>();
 		files.add(stdout);
 		// if we need the other directory
 		if (!stdout.isDirectory()) {
@@ -1671,7 +1671,7 @@ public class JobPairs {
 			procedure = con.prepareCall("CALL GetJobpairTimeDeltaData(?)");
 			procedure.setInt(1, queueID);
 			results = procedure.executeQuery();
-			HashMap<Integer, Integer> data = new HashMap<Integer, Integer>();
+			HashMap<Integer, Integer> data = new HashMap<>();
 			while (results.next()) {
 				data.put(results.getInt("user_id"), results.getInt("time_delta"));
 			}
@@ -1877,7 +1877,7 @@ public class JobPairs {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			List<JobPair> pairs = new ArrayList<JobPair>();
+			List<JobPair> pairs = new ArrayList<>();
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetJobPairsWithStatus(?)}");
 			procedure.setInt(1, statusCode);
@@ -1959,7 +1959,7 @@ public class JobPairs {
 	 * @return The list of job pairs. Stages will not be populated
 	 */
 	public static List<JobPair> getPairsInBackend() {
-		List<JobPair> pairs = new ArrayList<JobPair>();
+		List<JobPair> pairs = new ArrayList<>();
 		pairs.addAll(getPairsByStatus(Status.StatusCode.STATUS_ENQUEUED.getVal()));
 		pairs.addAll(getPairsByStatus(Status.StatusCode.STATUS_RUNNING.getVal()));
 		return pairs;

@@ -93,7 +93,7 @@ public class JsonHandler {
 
 	protected static HashMap<String, String> getJsonAttributes(JsonObject obj) {
 		Iterator<Entry<String, JsonElement>> iterator = obj.entrySet().iterator();
-		HashMap<String, String> attrs = new HashMap<String, String>();
+		HashMap<String, String> attrs = new HashMap<>();
 		while (iterator.hasNext()) {
 			Entry<String, JsonElement> e = iterator.next();
 			String key = e.getKey();

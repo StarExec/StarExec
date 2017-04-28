@@ -16,8 +16,8 @@ public class WorkerNode extends Identifiable implements Nameable{
 	@Expose private Queue queue;
 	public WorkerNode() {
 		// Default constructor
-		attributes = new HashMap<String, String>();
-		jobPairs = new HashMap<Integer, String[]>();
+		attributes = new HashMap<>();
+		jobPairs = new HashMap<>();
 		setQueue(new Queue());
 	}
 	
@@ -26,8 +26,8 @@ public class WorkerNode extends Identifiable implements Nameable{
 	 */
 	public WorkerNode(String name) {
 		this.name = name;
-		attributes = new HashMap<String, String>();
-		jobPairs = new HashMap<Integer, String[]>();
+		attributes = new HashMap<>();
+		jobPairs = new HashMap<>();
 	}
 	
 	/**

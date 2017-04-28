@@ -40,7 +40,7 @@ public class QueueTests extends TestSequence {
 
 	@StarexecTest
 	private void dontPauseJobsIfRemainingNodesTest() {
-		HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
+		HashMap<Integer, Integer> map = new HashMap<>();
 		map.put(testQueue.getId(), -1);
 		Queues.pauseJobsIfNoRemainingNodes(map);
 		Assert.assertFalse(Jobs.isJobPaused(job.getId()));
@@ -62,7 +62,7 @@ public class QueueTests extends TestSequence {
 		for (JobPair pair : job.getJobPairs()) {
 			JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 		}
-		HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
+		HashMap<Integer, Integer> map = new HashMap<>();
 		map.put(testQueue.getId(), Cluster.getNodesForQueue(testQueue.getId()).size());
 		Queues.pauseJobsIfNoRemainingNodes(map);
 		Assert.assertTrue(Jobs.isJobPaused(job.getId()));
@@ -297,7 +297,7 @@ public class QueueTests extends TestSequence {
 	
 	@StarexecTest
 	private void setQueueCommunityAccessTest() {
-		List<Integer> ids = new ArrayList<Integer>();
+		List<Integer> ids = new ArrayList<>();
 		ids.add(Communities.getTestCommunity().getId());
 		Assert.assertTrue(Queues.setQueueCommunityAccess(ids, testQueue.getId()));
 	}

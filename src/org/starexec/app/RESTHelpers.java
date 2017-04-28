@@ -76,7 +76,7 @@ public class RESTHelpers {
 	 * @author Tyler Jensen
 	 */
 	protected static List<JSTreeItem> toSpaceTree(List<Space> spaceList,int userID) {
-		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
+		List<JSTreeItem> list = new LinkedList<>();
 		for (Space space : spaceList) {
 			String isOpen = Spaces.getCountInSpace(space.getId(), userID, true) > 0 ? "closed" : "leaf";
 			list.add(new JSTreeItem(space.getName(), space.getId(), isOpen,R.SPACE));
@@ -94,7 +94,7 @@ public class RESTHelpers {
 	 * @author Tyler Jensen
 	 */
 	protected static List<JSTreeItem> toJobSpaceTree(List<JobSpace> jobSpaceList) {
-		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
+		List<JSTreeItem> list = new LinkedList<>();
 
 		for (JobSpace space : jobSpaceList) {
 			String isOpen = Spaces.getCountInJobSpace(space.getId()) > 0 ? "closed" : "leaf";
@@ -114,7 +114,7 @@ public class RESTHelpers {
 	 * @author Tyler Jensen
 	 */
 	protected static List<JSTreeItem> toNodeList(List<WorkerNode> nodes) {
-		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
+		List<JSTreeItem> list = new LinkedList<>();
 
 		for (WorkerNode n : nodes) {
 			// Only take the first part of the host name, the full one is too
@@ -139,7 +139,7 @@ public class RESTHelpers {
 	 * @author Tyler Jensen
 	 */
 	protected static List<JSTreeItem> toQueueList(List<Queue> queues) {
-		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
+		List<JSTreeItem> list = new LinkedList<>();
 		for (Queue q : queues) {
 			//status might be null, so we don't want a null pointer in that case
 			String status=q.getStatus();
@@ -164,7 +164,7 @@ public class RESTHelpers {
 	 * @author Tyler Jensen
 	 */
 	protected static List<JSTreeItem> toCommunityList(List<Space> communities) {
-		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
+		List<JSTreeItem> list = new LinkedList<>();
 
 		for (Space space : communities) {
 			JSTreeItem t = new JSTreeItem(space.getName(), space.getId(), "leaf", R.SPACE);
@@ -199,7 +199,7 @@ public class RESTHelpers {
 			this.data = name;
 			this.attr = new JSTreeAttribute(id, type,maxStages, cLass);
 			this.state = state;
-			this.children = new LinkedList<JSTreeItem>();
+			this.children = new LinkedList<>();
 		}
 
 		public List<JSTreeItem> getChildren() {
@@ -590,7 +590,7 @@ public class RESTHelpers {
         	query.setSortASC(Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR)));
         }
 
-		List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
+		List<JobPair> jobPairsToDisplay = new LinkedList<>();
 		// Retrieves the relevant Job objects to use in constructing the JSON to
 		// send to the client
 		int[] totals = new int[2];
@@ -949,7 +949,7 @@ public class RESTHelpers {
 				return null;
 			}
 
-			List<SolverComparison> solverComparisonsToDisplay = new LinkedList<SolverComparison>();
+			List<SolverComparison> solverComparisonsToDisplay = new LinkedList<>();
 
 			// Retrieves the relevant Job objects to use in constructing the JSON to
 			// send to the client
@@ -977,7 +977,7 @@ public class RESTHelpers {
 			return null;
 		}
 
-		List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
+		List<JobPair> jobPairsToDisplay = new LinkedList<>();
         String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
         if (sortOverride!=null) {
         	query.setSortColumn(Integer.parseInt(sortOverride));
@@ -1016,7 +1016,7 @@ public class RESTHelpers {
 				return null;
 			}
 
-			List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
+			List<JobPair> jobPairsToDisplay = new LinkedList<>();
 
 			if (type.equals("queue")) {
 				// Retrieves the relevant Job objects to use in constructing the
@@ -1071,7 +1071,7 @@ public class RESTHelpers {
 
 		switch (type) {
 		case JOB:
-			List<Job> jobsToDisplay = new LinkedList<Job>();
+			List<Job> jobsToDisplay = new LinkedList<>();
 
 			query.setTotalRecords(Jobs.getRunningJobCount() + Jobs.getPausedJobCount());
 			// Retrieves the relevant Job objects to use in constructing the
@@ -1091,7 +1091,7 @@ public class RESTHelpers {
 			return convertJobsToJsonObject(jobsToDisplay,query, false);
 
 		case USER:
-			List<User> usersToDisplay = new LinkedList<User>();
+			List<User> usersToDisplay = new LinkedList<>();
 			query.setTotalRecords(Users.getCount());
 			// Retrieves the relevant User objects to use in constructing the
 			// JSON to send to the client
@@ -1121,7 +1121,7 @@ public class RESTHelpers {
 			return null;
 		}
 
-		List<Benchmark> benchmarksToDisplay = new LinkedList<Benchmark>();
+		List<Benchmark> benchmarksToDisplay = new LinkedList<>();
 		String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
 		if (sortOverride!=null) {
 			query.setSortColumn(Integer.parseInt(sortOverride));
@@ -1152,7 +1152,7 @@ public class RESTHelpers {
 			return null;
 		}
 
-		List<Job> jobsToDisplay = new LinkedList<Job>();
+		List<Job> jobsToDisplay = new LinkedList<>();
 
 		// Retrieves the relevant Job objects to use in constructing the
 		// JSON to send to the client
@@ -1176,7 +1176,7 @@ public class RESTHelpers {
 		if(query==null){
 			return null;
 		}
-		List<User> usersToDisplay = new LinkedList<User>();
+		List<User> usersToDisplay = new LinkedList<>();
 		query.setTotalRecords(Users.getCountInSpace(id));
 
 		// Retrieves the relevant User objects to use in constructing the JSON to send to the client
@@ -1201,7 +1201,7 @@ public class RESTHelpers {
 		if (query == null) {
 			return null;
 		}
-		List<Solver> solversToDisplay = new LinkedList<Solver>();
+		List<Solver> solversToDisplay = new LinkedList<>();
 
 		// Retrieves the relevant Solver objects to use in constructing the JSON to send to the client
 		solversToDisplay = Solvers.getSolversForNextPage(query,id);
@@ -1223,7 +1223,7 @@ public class RESTHelpers {
 		if (query == null) {
 			return null;
 		}
-		List<Space> spacesToDisplay = new LinkedList<Space>();
+		List<Space> spacesToDisplay = new LinkedList<>();
 
 		int userId = SessionUtil.getUserId(request);
 		query.setTotalRecords(Spaces.getCountInSpace(id, userId,false));
@@ -1380,7 +1380,7 @@ public class RESTHelpers {
 	    }
 		switch (type) {
 		case JOB:
-			List<Job> jobsToDisplay = new LinkedList<Job>();
+			List<Job> jobsToDisplay = new LinkedList<>();
 
 			// Retrieves the relevant Job objects to use in constructing the
 			// JSON to send to the client
@@ -2265,7 +2265,7 @@ public class RESTHelpers {
 			return output;
 		}
 
-		List<JSTreeItem> subspaces = new ArrayList<JSTreeItem>();
+		List<JSTreeItem> subspaces = new ArrayList<>();
 		buildFullJsTree(jobId, subspaces);
 
 		return gson.toJson(subspaces);
@@ -2541,7 +2541,7 @@ public class RESTHelpers {
 	private static Map<String, Triple<Integer, Double, Double>> initializeAttrCounts(List<String> headers) {
 		Map<String, Triple<Integer, Double, Double>> attrCounts = new HashMap<>();
 		for (String header : headers) {
-			attrCounts.put(header, new ImmutableTriple<Integer, Double, Double>(0, 0.0, 0.0));
+			attrCounts.put(header, new ImmutableTriple<>(0, 0.0, 0.0));
 		}
 		return attrCounts;
 	}

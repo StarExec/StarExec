@@ -73,7 +73,7 @@ public class C {
 	public static int SUCCESS_LOGOUT  = Integer.MAX_VALUE - 3;
 	public static int SUCCESS_LOGIN   = Integer.MAX_VALUE - 4;
 
-	public static HashMap<Integer, String> successMessages = new HashMap<Integer, String>();
+	public static HashMap<Integer, String> successMessages = new HashMap<>();
 
 	static {
 		successMessages.put(SUCCESS_EXIT, "Goodbye");

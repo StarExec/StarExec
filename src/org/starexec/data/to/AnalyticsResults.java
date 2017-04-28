@@ -31,7 +31,7 @@ public class AnalyticsResults {
 	 * @return list of AnalyticsResults
 	 */
 	private static LinkedList<AnalyticsResults> listFromResults(ResultSet results) throws SQLException {
-		LinkedList<AnalyticsResults> list = new LinkedList<AnalyticsResults>();
+		LinkedList<AnalyticsResults> list = new LinkedList<>();
 		while (results.next()) {
 			list.add(
 				new AnalyticsResults(
@@ -61,7 +61,7 @@ public class AnalyticsResults {
 			);
 		} catch (SQLException e) {
 			log.error("GetAnalyticsForDateRange");
-			return new LinkedList<AnalyticsResults>();
+			return new LinkedList<>();
 		}
 	}
 }

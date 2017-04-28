@@ -114,7 +114,7 @@ public class Statistics {
 			con = Common.getConnection();
 			
 			// Create the return map
-			HashMap<Integer, HashMap<String, String>> map = new HashMap<Integer, HashMap<String,String>>();
+			HashMap<Integer, HashMap<String, String>> map = new HashMap<>();
 			
 			// For each job...
 			for(Job j : jobs) {
@@ -147,7 +147,7 @@ public class Statistics {
 		// Get resultset's metadata
 		ResultSetMetaData meta = (ResultSetMetaData) result.getMetaData();
 		// Create the map to return
-		HashMap<String, String> map = new HashMap<String, String>();
+		HashMap<String, String> map = new HashMap<>();
 		// For each column in the record...
 		for(int i = 1; i <= meta.getColumnCount(); i++) {
 			// Add key=column name, value=column value to the map
@@ -165,7 +165,7 @@ public class Statistics {
 
 	Double total = new Double(0);
 
-	HashMap<String,Long> commMap = new HashMap<String,Long>();
+	HashMap<String,Long> commMap = new HashMap<>();
 
 	for(Space c : communities){
 	    id = c.getId();
@@ -209,7 +209,7 @@ public class Statistics {
 			PiePlot plot;
 			File output;
 			String filename;
-			List<String> filenames = new ArrayList<String>();
+			List<String> filenames = new ArrayList<>();
 
 			Color backgroundColor =new Color(0,0,0,0); //makes the background clear
 			Color titleColor = new Color(255,255,255);
@@ -286,7 +286,7 @@ public class Statistics {
 		log.entry(methodName);
 
 		try {
-			List<Integer> configIds = new ArrayList<Integer>();
+			List<Integer> configIds = new ArrayList<>();
 			configIds.add(configId1);
 			configIds.add(configId2);
 			List<List<JobPair>> pairs=Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configIds,stageNumber, primitivesToAnonymize);
@@ -295,7 +295,7 @@ public class Statistics {
 			List<JobPair> pairs2=pairs.get(1);
 
 			if ((pairs1.size())>R.MAXIMUM_DATA_POINTS || pairs2.size()>R.MAXIMUM_DATA_POINTS) {
-				List<String> answer=new ArrayList<String>();
+				List<String> answer= new ArrayList<>();
 				answer.add(Statistics.OVERSIZED_GRAPH_ERROR);
 				return answer;
 			}
@@ -332,7 +332,7 @@ public class Statistics {
 				log.debug("An input list has no jobpairs, returning null" );
 				return null;
 			}
-			HashMap<Integer, JobPair> pairs2Map=new HashMap<Integer,JobPair>();
+			HashMap<Integer, JobPair> pairs2Map= new HashMap<>();
 			for (JobPair jp : pairs2) {
 				pairs2Map.put(jp.getBench().getId(), jp);
 			}
@@ -357,8 +357,8 @@ public class Statistics {
 				yAxisName=stage2.getSolver().getName()+"/"+stage2.getConfiguration().getName()+" time(s)";
 			//}
 			//data in these hashmaps is needed to create the image map
-			HashMap<String,Integer> urls=new HashMap<String,Integer>();
-			HashMap<String,String> names=new HashMap<String,String>();
+			HashMap<String,Integer> urls= new HashMap<>();
+			HashMap<String,String> names= new HashMap<>();
 			int series=0;
 			int item=0;
 			XYSeries d=new XYSeries("points",false);
@@ -463,7 +463,7 @@ public class Statistics {
 			
 			
 			log.debug("solver comparison chart created succesfully, returning filepath ");
-			List<String> answer=new ArrayList<String>();
+			List<String> answer= new ArrayList<>();
 			answer.add(Util.docRoot(R.JOBGRAPH_FILE_DIR + "/"+ filename));
 			answer.add(map);
 			return answer;
@@ -500,7 +500,7 @@ public class Statistics {
 			}
 			
 			List<List<JobPair>> pairLists = Jobs.getJobPairsForSolverComparisonGraph( jobSpaceId, configIds, stageNumber, primitivesToAnonymize );
-			List<JobPair> pairs = new ArrayList<JobPair>();
+			List<JobPair> pairs = new ArrayList<>();
 			for (int x=0;x<pairLists.size();x++) {
 				pairs.addAll(pairLists.get(x));
 			}
@@ -625,9 +625,9 @@ public class Statistics {
 	private static HashMap<Solver,HashMap<Configuration,List<Double>>> processJobPairData(List<JobPair> pairs, int stageNumber) {
 		//we need to store solvers and configs by ID and only put items into answer from these two HashMaps.
 		//We can't compare to solvers to see if they are equal directly, so we have to compare IDs
-		HashMap <Integer, Solver> solvers=new HashMap<Integer, Solver> ();
-		HashMap <Integer,Configuration> configs=new HashMap<Integer,Configuration>();
-		HashMap<Solver,HashMap<Configuration,List<Double>>> answer=new HashMap<Solver,HashMap<Configuration,List<Double>>>();
+		HashMap <Integer, Solver> solvers= new HashMap<>();
+		HashMap <Integer,Configuration> configs= new HashMap<>();
+		HashMap<Solver,HashMap<Configuration,List<Double>>> answer= new HashMap<>();
 		for (JobPair jp : pairs) {
 			if (jp.getStatus().getCode()!=Status.StatusCode.STATUS_COMPLETE) {
 				// we don't want to consider incomplete pairs
@@ -639,13 +639,13 @@ public class Statistics {
 			Solver s=stage.getSolver();
 			if (!solvers.containsKey(s.getId())) {
 				solvers.put(s.getId(), s);
-				answer.put(solvers.get(s.getId()), new HashMap<Configuration,List<Double>>());
+				answer.put(solvers.get(s.getId()), new HashMap<>());
 			}
 			HashMap<Configuration,List<Double>>configMap=answer.get(solvers.get(s.getId()));
 			Configuration c=stage.getConfiguration();
 			if (!configs.containsKey(c.getId())) {
 				configs.put(c.getId(), c);
-				configMap.put(configs.get(c.getId()), new ArrayList<Double>());
+				configMap.put(configs.get(c.getId()), new ArrayList<>());
 			}
 			configMap.get(configs.get(c.getId())).add(stage.getWallclockTime());
 			

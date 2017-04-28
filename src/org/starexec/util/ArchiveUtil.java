@@ -504,7 +504,7 @@ public class ArchiveUtil {
 	public static void createAndOutputZip(File path, OutputStream output, String baseName, boolean removeTopLevel) throws IOException {
 		if (removeTopLevel) {
 			File[] files=path.listFiles();
-			List<File> f=new ArrayList<File>();
+			List<File> f= new ArrayList<>();
 			for (File temp : files) {
 				f.add(temp);
 			}

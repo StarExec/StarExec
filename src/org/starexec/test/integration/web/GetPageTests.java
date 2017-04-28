@@ -467,7 +467,7 @@ public class GetPageTests extends TestSequence {
 		proc=loader.loadProcessorIntoDatabase(ProcessorType.POST, testCommunity.getId());
 
 		benchmarkIds=loader.loadBenchmarksIntoDatabase(space1.getId(), user.getId());
-		List<Integer> solverIds=new ArrayList<Integer>();
+		List<Integer> solverIds= new ArrayList<>();
 		solverIds.add(solver.getId());
 		solverIds.add(solver2.getId());
 		job=loader.loadJobIntoDatabase(space1.getId(), user.getId(), -1, proc.getId(), solverIds, benchmarkIds,100,100,1);

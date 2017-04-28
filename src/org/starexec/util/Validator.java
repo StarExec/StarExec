@@ -358,7 +358,7 @@ public class Validator {
 
     public static List<Integer> convertToIntList(String str) {
 		String[] ids=str.split(",");
-		List<Integer> answer=new ArrayList<Integer>();
+		List<Integer> answer= new ArrayList<>();
 		for (String s : ids) {
 			answer.add(Integer.parseInt(s));
 		}

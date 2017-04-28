@@ -31,8 +31,8 @@ public class Benchmark extends Identifiable implements Nameable, Locatable {
 	private List<BenchmarkDependency> dependencies = null;
 	public Benchmark() {
 		description = "";
-		attributes=new HashMap<String,String>();
-		setDependencies(new ArrayList<BenchmarkDependency>());
+		attributes= new HashMap<>();
+		setDependencies(new ArrayList<>());
 	}
 	
 	/**

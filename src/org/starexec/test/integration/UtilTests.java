@@ -32,7 +32,7 @@ public class UtilTests extends TestSequence{
 	
 	@StarexecTest 
 	private void copyToSandboxTest() throws IOException {
-		List<File> files=new ArrayList<File>();
+		List<File> files= new ArrayList<>();
 		files.add(new File(s1.getPath()));
 		files.add(new File(s2.getPath()));
 		

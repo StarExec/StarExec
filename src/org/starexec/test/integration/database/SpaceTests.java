@@ -54,7 +54,7 @@ public class SpaceTests extends TestSequence {
 	private void removeSolversFromHierarchyTest() {
 		Assert.assertTrue(Solvers.associate(solver.getId(), subspace2.getId()));
 		Assert.assertTrue(Solvers.associate(solver.getId(), subspace3.getId()));
-		List<Integer> si=new ArrayList<Integer>();
+		List<Integer> si= new ArrayList<>();
 		si.add(solver.getId());
 		Assert.assertTrue(Spaces.removeSolversFromHierarchy(si, subspace2.getId(), leader.getId()));
 		boolean found = false;
@@ -114,7 +114,7 @@ public class SpaceTests extends TestSequence {
 	
 	@StarexecTest
 	private void removeSolverTest() {
-		List<Integer> solverId=new ArrayList<Integer>();
+		List<Integer> solverId= new ArrayList<>();
 		solverId.add(solver.getId());
 		Assert.assertTrue(Spaces.removeSolvers(solverId, subspace.getId()));
 		
@@ -132,7 +132,7 @@ public class SpaceTests extends TestSequence {
 	
 	@StarexecTest
 	private void removeBenchmarkTest() {
-		List<Integer> benchId=new ArrayList<Integer>();
+		List<Integer> benchId= new ArrayList<>();
 		benchId.add(benchmarks.get(0).getId());
 		Assert.assertTrue(Spaces.removeBenches(benchId, subspace.getId()));
 		
@@ -249,8 +249,8 @@ public class SpaceTests extends TestSequence {
 
 	private static void assertUnorderedIdentifiableListsAreEqual(List<? extends Identifiable> identifiableList, 
 																 List<? extends Identifiable> otherIdentifiableList) {
-		List<Identifiable> identifiableListCopy = new ArrayList<Identifiable>(identifiableList);	
-		List<Identifiable> otherIdentifiableListCopy = new ArrayList<Identifiable>(otherIdentifiableList);
+		List<Identifiable> identifiableListCopy = new ArrayList<>(identifiableList);
+		List<Identifiable> otherIdentifiableListCopy = new ArrayList<>(otherIdentifiableList);
 		// Compares the id of two identifiables.
 		Comparator<Identifiable> idComparator = new Comparator<Identifiable>() {
 			@Override
@@ -283,7 +283,7 @@ public class SpaceTests extends TestSequence {
 		Space space2=loader.loadSpaceIntoDatabase(leader.getId(), space1.getId());
 		String space2Path=space1Path+R.JOB_PAIR_PATH_DELIMITER+space2.getName();
 		
-		List<Space> spaceList=new ArrayList<Space>();
+		List<Space> spaceList= new ArrayList<>();
 		spaceList.add(space1);
 		spaceList.add(space2);
 		HashMap<Integer,String> SP =Spaces.spacePathCreate(leader.getId(), spaceList, community.getId());
@@ -291,7 +291,7 @@ public class SpaceTests extends TestSequence {
 		Assert.assertEquals(space2Path, SP.get(space2.getId()));
 
 		//same test as above, but making the list in the opposite order
-		spaceList=new ArrayList<Space>();
+		spaceList= new ArrayList<>();
 		spaceList.add(space2);
 		spaceList.add(space1);
 		SP=Spaces.spacePathCreate(leader.getId(), spaceList, community.getId());
@@ -421,7 +421,7 @@ public class SpaceTests extends TestSequence {
 		solver=loader.loadSolverIntoDatabase("CVC4.zip", subspace.getId(), leader.getId());
 
 		ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", subspace.getId(), leader.getId());
-		benchmarks=new ArrayList<Benchmark>();
+		benchmarks= new ArrayList<>();
 		for (Integer id : ids) {
 			benchmarks.add(Benchmarks.get(id));
 		}

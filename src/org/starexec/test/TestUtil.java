@@ -136,9 +136,9 @@ public class TestUtil {
 	 * @return A list of 'number' job pairs
 	 */
 	public static List<JobPair> getFakeJobPairs(int number) {
-		List<JobPair> pairs = new ArrayList<JobPair>();
+		List<JobPair> pairs = new ArrayList<>();
 		int jobId = rnd.nextInt();
-		List<Solver> solvers = new ArrayList<Solver>();
+		List<Solver> solvers = new ArrayList<>();
 		for (int solver=0;solver<5;solver++) {
 			solvers.add(getFakeSolver());
 		}
@@ -170,7 +170,7 @@ public class TestUtil {
 	 * @return The mock session
 	 */
 	public static HttpServletRequest getMockHttpRequest(int userId) {
-		return getMockHttpRequest(userId, new HashMap<String,String>());
+		return getMockHttpRequest(userId, new HashMap<>());
 	}
 	/**
 	 * Creates a mock HttpServletRequest object that SessionUtil will believe is from
@@ -180,7 +180,7 @@ public class TestUtil {
 	 * @return The mock session
 	 */
 	public static HttpServletRequest getMockHttpRequest(int userId, Map<String,String> parameters) {
-		return getMockHttpRequest(userId, parameters, new HashMap<String, List<String>>());
+		return getMockHttpRequest(userId, parameters, new HashMap<>());
 	}
 	
 	/**

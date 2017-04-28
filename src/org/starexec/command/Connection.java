@@ -122,8 +122,8 @@ public class Connection {
 	private void initializeComponents() {
 		client = buildClient();
 
-		setInfoIndices(new HashMap<Integer, Integer>());
-		setOutputIndices(new HashMap<Integer, PollJobData>());
+		setInfoIndices(new HashMap<>());
+		setOutputIndices(new HashMap<>());
 		lastError = "";
 	}
 
@@ -531,7 +531,7 @@ public class Connection {
 	 * @param isJobXML True if this is a job XML and false if it is a space XML
 	 */
 	public List<Integer> uploadXML(String filePath, Integer spaceID, boolean isJobXML) {
-		List<Integer> ids = new ArrayList<Integer>();
+		List<Integer> ids = new ArrayList<>();
 		HttpResponse response = null;
 		try {
 			String ext = C.URL_UPLOADSPACE;
@@ -934,7 +934,7 @@ public class Connection {
 		try {
 			HttpPost post = new HttpPost(baseURL + C.URL_DELETEPRIMITIVE + "/" + type);
 			post = (HttpPost) setHeaders(post);
-			List<NameValuePair> params = new ArrayList<NameValuePair>();
+			List<NameValuePair> params = new ArrayList<>();
 			for (Integer id : ids) {
 				params.add(new BasicNameValuePair("selectedIds[]", id.toString()));
 			}
@@ -1133,7 +1133,7 @@ public class Connection {
 			URL = URL.replace("{id}", jobID.toString());
 			HttpPost post = new HttpPost(URL);
 			post = (HttpPost) setHeaders(post);
-			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(), "UTF-8"));
+			post.setEntity(new UrlEncodedFormEntity(new ArrayList<>(), "UTF-8"));
 			response = executeGetOrPost(post);
 			JsonObject obj = JsonHandler.getJsonObject(response);
 
@@ -1168,7 +1168,7 @@ public class Connection {
 			URL = URL.replace("{id}", pairID.toString());
 			HttpPost post = new HttpPost(URL);
 			post = (HttpPost) setHeaders(post);
-			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(), "UTF-8"));
+			post.setEntity(new UrlEncodedFormEntity(new ArrayList<>(), "UTF-8"));
 			response = executeGetOrPost(post);
 			JsonObject obj = JsonHandler.getJsonObject(response);
 
@@ -1208,7 +1208,7 @@ public class Connection {
 			URL = URL.replace("{id}", jobID.toString());
 			HttpPost post = new HttpPost(URL);
 			post = (HttpPost) setHeaders(post);
-			post.setEntity(new UrlEncodedFormEntity(new ArrayList<NameValuePair>(), "UTF-8"));
+			post.setEntity(new UrlEncodedFormEntity(new ArrayList<>(), "UTF-8"));
 			response = executeGetOrPost(post);
 			JsonObject obj = JsonHandler.getJsonObject(response);
 
@@ -1311,7 +1311,7 @@ public class Connection {
 
 			}
 			// first sets username and password data into HTTP POST request
-			List<NameValuePair> params = new ArrayList<NameValuePair>();
+			List<NameValuePair> params = new ArrayList<>();
 			String key = "selectedIds[]";
 			for (Integer id : primIDs) {
 				params.add(new BasicNameValuePair(key, id.toString()));
@@ -1391,7 +1391,7 @@ public class Connection {
 			}
 
 			// first sets username and password data into HTTP POST request
-			List<NameValuePair> params = new ArrayList<NameValuePair>(3);
+			List<NameValuePair> params = new ArrayList<>(3);
 			params.add(new BasicNameValuePair("j_username", username));
 			params.add(new BasicNameValuePair("j_password", password));
 			params.add(new BasicNameValuePair("cookieexists", "false"));
@@ -1604,7 +1604,7 @@ public class Connection {
 	 */
 	private List<Integer> copyOrLinkPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean copy,
 			Boolean hierarchy, Boolean copyPrimitives, String type) {
-		List<Integer> fail = new ArrayList<Integer>();
+		List<Integer> fail = new ArrayList<>();
 		HttpResponse response = null;
 		try {
 			String urlExtension;
@@ -1624,7 +1624,7 @@ public class Connection {
 
 			HttpPost post = new HttpPost(baseURL + urlExtension);
 
-			List<NameValuePair> params = new ArrayList<NameValuePair>(3);
+			List<NameValuePair> params = new ArrayList<>(3);
 
 			// not all of the following are needed for every copy request, but
 			// including them does no harm
@@ -1654,7 +1654,7 @@ public class Connection {
 			boolean success = JsonHandler.getSuccessOfResponse(obj);
 			String message = JsonHandler.getMessageOfResponse(obj);
 			if (success) {
-				List<Integer> newPrimIds = new ArrayList<Integer>();
+				List<Integer> newPrimIds = new ArrayList<>();
 				String[] newIds = HTMLParser.extractMultipartCookie(response.getAllHeaders(), "New_ID");
 				if (newIds != null) {
 					for (String s : newIds) {
@@ -1695,7 +1695,7 @@ public class Connection {
 		HttpResponse response = null;
 		try {
 			// first sets username and password data into HTTP POST request
-			List<NameValuePair> params = new ArrayList<NameValuePair>(3);
+			List<NameValuePair> params = new ArrayList<>(3);
 			params.add(new BasicNameValuePair("parent", parentSpaceID.toString()));
 			params.add(new BasicNameValuePair("name", name));
 			params.add(new BasicNameValuePair("desc", desc));
@@ -1839,8 +1839,8 @@ public class Connection {
 	 *         IDs must be positive.
 	 */
 	protected HashMap<Integer, String> getSolverConfigs(Integer solverID, Integer limit) {
-		HashMap<Integer, String> errorMap = new HashMap<Integer, String>();
-		HashMap<Integer, String> prims = new HashMap<Integer, String>();
+		HashMap<Integer, String> errorMap = new HashMap<>();
+		HashMap<Integer, String> prims = new HashMap<>();
 		HttpResponse response = null;
 		try {
 			String serverURL = baseURL + C.URL_GETSOLVERCONFIGS;
@@ -1848,7 +1848,7 @@ public class Connection {
 			HttpPost post = new HttpPost(serverURL);
 			post = (HttpPost) setHeaders(post);
 
-			List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+			List<NameValuePair> urlParameters = new ArrayList<>();
 			urlParameters.add(new BasicNameValuePair("solverid", solverID.toString()));
 			if (limit != null) {
 				urlParameters.add(new BasicNameValuePair("limit", limit.toString()));
@@ -1892,12 +1892,12 @@ public class Connection {
 	 * @author Eric Burns
 	 */
 	protected HashMap<Integer, String> listPrims(Integer spaceID, Integer limit, boolean forUser, String type) {
-		HashMap<Integer, String> errorMap = new HashMap<Integer, String>();
-		HashMap<Integer, String> prims = new HashMap<Integer, String>();
+		HashMap<Integer, String> errorMap = new HashMap<>();
+		HashMap<Integer, String> prims = new HashMap<>();
 		HttpResponse response = null;
 		try {
 
-			HashMap<String, String> urlParams = new HashMap<String, String>();
+			HashMap<String, String> urlParams = new HashMap<>();
 
 			urlParams.put(C.FORMPARAM_TYPE, type);
 
@@ -1942,7 +1942,7 @@ public class Connection {
 			HttpPost post = new HttpPost(URL);
 			post = (HttpPost) setHeaders(post);
 
-			List<NameValuePair> params = new ArrayList<NameValuePair>();
+			List<NameValuePair> params = new ArrayList<>();
 
 			params.add(new BasicNameValuePair("sEcho", "1"));
 			params.add(new BasicNameValuePair("iColumns", columns));
@@ -2044,7 +2044,7 @@ public class Connection {
 	public int downloadJobPairs(List<Integer> pairIds, String filePath) {
 		HttpResponse response = null;
 		try {
-			HashMap<String, String> urlParams = new HashMap<String, String>();
+			HashMap<String, String> urlParams = new HashMap<>();
 			urlParams.put(C.FORMPARAM_TYPE, R.JOB_OUTPUTS);
 			StringBuilder sb = new StringBuilder();
 			for (Integer id : pairIds) {
@@ -2303,7 +2303,7 @@ public class Connection {
 		HttpResponse response = null;
 
 		try {
-			HashMap<String, String> urlParams = new HashMap<String, String>();
+			HashMap<String, String> urlParams = new HashMap<>();
 			log.log("Downloading archive of type: " + type);
 			urlParams.put(C.FORMPARAM_TYPE, type);
 			urlParams.put(C.FORMPARAM_ID, id.toString());
@@ -2578,7 +2578,7 @@ public class Connection {
 			boolean startPaused, Long seed, Boolean suppressTimestamps, Integer resultsInterval) {
 		HttpResponse response = null;
 		try {
-			List<NameValuePair> params = new ArrayList<NameValuePair>();
+			List<NameValuePair> params = new ArrayList<>();
 
 			String traversalMethod = "depth";
 			if (!useDepthFirst) {
@@ -2781,7 +2781,7 @@ public class Connection {
 	 * @return The Map, or null on error
 	 */
 	protected Map<String, String> getPrimitiveAttributes(int id, String type) {
-		HashMap<String, String> failMap = new HashMap<String, String>();
+		HashMap<String, String> failMap = new HashMap<>();
 		HttpResponse response = null;
 		try {
 			HttpGet get = new HttpGet(

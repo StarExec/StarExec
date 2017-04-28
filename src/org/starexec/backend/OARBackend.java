@@ -111,7 +111,7 @@ public class OARBackend implements Backend {
 		try {	
 			String queues = Util.executeCommand("oarnotify -l");
 			String[] lines = queues.split(System.getProperty("line.separator"));
-			List<String> names = new ArrayList<String>();
+			List<String> names = new ArrayList<>();
 			for (int i=0;i<lines.length;i+=4) {
 				if (lines[i+3].contains("= Active")) {
 					names.add(lines[i].trim());
@@ -129,7 +129,7 @@ public class OARBackend implements Backend {
 		try {
 			String json = Util.executeCommand("oarnodes -J");
 			JsonObject object = new JsonParser().parse(json).getAsJsonObject();
-			HashMap<String, String> nodesToQueues = new HashMap<String, String>();
+			HashMap<String, String> nodesToQueues = new HashMap<>();
 			for (Entry<String, JsonElement> s : object.entrySet()) {
 				nodesToQueues.put(s.getValue().getAsJsonObject().get("network_address").getAsString(),
 						s.getValue().getAsJsonObject().get("queue").getAsString());
@@ -208,7 +208,7 @@ public class OARBackend implements Backend {
 		try {
 			String json = Util.executeCommand("oarstat -J");
 			JsonObject object = new JsonParser().parse(json).getAsJsonObject();
-			Set<Integer> ids = new HashSet<Integer>();
+			Set<Integer> ids = new HashSet<>();
 			for (Entry<String, JsonElement> s : object.entrySet()) {
 				ids.add(s.getValue().getAsJsonObject().get("Job_Id").getAsInt());
 			}
@@ -216,7 +216,7 @@ public class OARBackend implements Backend {
 		} catch (com.google.gson.stream.MalformedJsonException e) {
 			// this exception will get thrown whenever there is nothing running and oarstat -J
 			// is executed, so we can return the empty set
-			return new HashSet<Integer>();
+			return new HashSet<>();
 		}
 		catch (Exception e) {
 			log.error(e.getMessage(), e);

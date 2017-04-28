@@ -89,7 +89,7 @@ public class Jobs {
 		Space parent=null;
 		parent=Spaces.get(parentSpaceId,con);
 		parent.setPermission(Permissions.getSpaceDefault(parentSpaceId));
-			HashMap<String, Integer> pathsToIds=new HashMap<String,Integer>(); // maps a job space path to a job space id
+			HashMap<String, Integer> pathsToIds= new HashMap<>(); // maps a job space path to a job space id
 			for (JobPair pair : pairs) {
 				//log.debug("finding spaces for a new pair with path = " +pair.getPath());
 				String[] spaces=getSpaceNames(pair.getPath());
@@ -139,8 +139,8 @@ public class Jobs {
 
 		//this hashmap maps every job space ID to the maximal number of stages
 		// of any pair that is in the hierarchy rooted at the job space
-		HashMap<Integer,Integer> idsToMaxStages=new HashMap<Integer,Integer>();
-		HashMap<String, Integer> pathsToIds=new HashMap<String,Integer>(); // maps a job space path to a job space id
+		HashMap<Integer,Integer> idsToMaxStages= new HashMap<>();
+		HashMap<String, Integer> pathsToIds= new HashMap<>(); // maps a job space path to a job space id
 		int topLevelSpaceId = -1; // -1 indicates that it is not set
 		for (JobPair pair : pairs) {
 			//log.debug("finding spaces for a new pair with path = " +pair.getPath());
@@ -461,7 +461,7 @@ public class Jobs {
 			//start a transaction that encapsulates making new spaces for mirrored hierarchies
 			Common.beginTransaction(con);
 			//get all the different space IDs for the places we need to created mirrors of the job space heirarchy
-			HashSet<Integer> uniqueSpaceIds=new HashSet<Integer>();
+			HashSet<Integer> uniqueSpaceIds= new HashSet<>();
 			for (StageAttributes attrs: job.getStageAttributes()) {
 				if (attrs.getSpaceId()!=null) {
 					//make sure that there are no name conflicts when creating the mirrored space hierarchies.
@@ -651,7 +651,7 @@ public class Jobs {
 		try {
 			con=Common.getConnection();
 			//will contain the id of every job that is associated with a space
-			HashSet<Integer> parentedJobs = new HashSet<Integer>();
+			HashSet<Integer> parentedJobs = new HashSet<>();
 			procedure=con.prepareCall("{CALL GetJobsAssociatedWithSpaces()}");
 			results=procedure.executeQuery();
 			while (results.next()) {
@@ -1162,7 +1162,7 @@ public class Jobs {
 			 procedure = con.prepareCall("{CALL GetSpaceJobsById(?)}");
 			procedure.setInt(1, spaceId);
 			 results = procedure.executeQuery();
-			List<Job> jobs = new LinkedList<Job>();
+			List<Job> jobs = new LinkedList<>();
 
 			while(results.next()){
 				jobs.add(resultsToJob(results));
@@ -1193,7 +1193,7 @@ public class Jobs {
 			 procedure = con.prepareCall("{CALL GetUserJobsById(?)}");
 			procedure.setInt(1, userId);
 			 results = procedure.executeQuery();
-			List<Job> jobs = new LinkedList<Job>();
+			List<Job> jobs = new LinkedList<>();
 
 			while(results.next()){
 				jobs.add(resultsToJob(results));
@@ -1362,7 +1362,7 @@ public class Jobs {
 				sqlMethod,
 				procedure -> procedure.setInt(1, jobId),
 				results -> {
-					List<JobPair> returnList = new LinkedList<JobPair>();
+					List<JobPair> returnList = new LinkedList<>();
 					while(results.next()){
 						JobPair jp = new JobPair();
 						jp.setId(results.getInt("id"));
@@ -1648,8 +1648,8 @@ public class Jobs {
 	public static List<SolverComparison> getSolverComparisonsForNextPageByConfigInJobSpaceHierarchy(DataTablesQuery query,
 			int jobSpaceId, int configId1, int configId2, int[] totals, boolean wallclock, int stageNumber) {
 		List<JobPair> pairs=Jobs.getJobPairsInJobSpaceHierarchy(jobSpaceId, PrimitivesToAnonymize.NONE);
-		List<JobPair> pairs1=new ArrayList<JobPair>();
-		List<JobPair> pairs2=new ArrayList<JobPair>();
+		List<JobPair> pairs1= new ArrayList<>();
+		List<JobPair> pairs2= new ArrayList<>();
 		for (JobPair jp : pairs) {
 			JoblineStage stage=jp.getStageFromNumber(stageNumber);
 			if (stage==null || stage.isNoOp()) {
@@ -1663,8 +1663,8 @@ public class Jobs {
 		}
 		pairs1=JobPairs.filterPairsByType(pairs1, "complete",stageNumber);
 		pairs2=JobPairs.filterPairsByType(pairs2, "complete",stageNumber);
-		List<SolverComparison> comparisons=new ArrayList<SolverComparison>();
-		HashMap<Integer,JobPair> benchesToPairs=new HashMap<Integer,JobPair>();
+		List<SolverComparison> comparisons= new ArrayList<>();
+		HashMap<Integer,JobPair> benchesToPairs= new HashMap<>();
 		for (JobPair jp : pairs1) {
 			benchesToPairs.put(jp.getBench().getId(), jp);
 		}
@@ -1803,9 +1803,9 @@ public class Jobs {
 	 */
 	public static List<JobPair> getSynchronizedPairsInJobSpace(int jobSpaceId,int stageNumber, PrimitivesToAnonymize primitivesToAnonymize) {
 
-		HashSet<String> solverConfigPairs=new HashSet<String>(); // will store all the solver/configuration pairs so we know how many there are
-		HashMap<Integer, Integer> benchmarksCount=new HashMap<Integer,Integer>(); //will store the number of pairs every benchmark has
-		List<JobPair> pairs=new ArrayList<JobPair>();
+		HashSet<String> solverConfigPairs= new HashSet<>(); // will store all the solver/configuration pairs so we know how many there are
+		HashMap<Integer, Integer> benchmarksCount= new HashMap<>(); //will store the number of pairs every benchmark has
+		List<JobPair> pairs= new ArrayList<>();
 		try {
 			//first, get all the completed pairs in the space
 			pairs=Jobs.getJobPairsInJobSpace(jobSpaceId,stageNumber, primitivesToAnonymize);
@@ -1823,7 +1823,7 @@ public class Jobs {
 
 			//now, we exclude pairs that have benchmarks where the benchmark count is not equal to the solver/config count
 
-			List<JobPair> returnList=new ArrayList<JobPair>();
+			List<JobPair> returnList= new ArrayList<>();
 			int solverCount=solverConfigPairs.size();
 			for (JobPair p : pairs) {
 				if (benchmarksCount.get(p.getBench().getId())== solverCount) {
@@ -1949,7 +1949,7 @@ public class Jobs {
 			procedure.setInt(1, jobId);
 			procedure.setString(2, attrKey);
 			results=procedure.executeQuery();
-			HashMap<Integer,String> idsToValues=new HashMap<Integer,String>();
+			HashMap<Integer,String> idsToValues= new HashMap<>();
 
 			while (results.next()) {
 				idsToValues.put(results.getInt("job_pairs.bench_id"), results.getString("attr_value"));
@@ -1985,12 +1985,12 @@ public class Jobs {
 			boolean getExpectedResult,
 			PrimitivesToAnonymize primitivesToAnonymize) {
 
-		HashMap<Integer,Solver> solvers=new HashMap<Integer,Solver>();
-		HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
+		HashMap<Integer,Solver> solvers= new HashMap<>();
+		HashMap<Integer,Configuration> configs= new HashMap<>();
 		Integer id;
 		Solver solve=null;
 		Configuration config=null;
-		HashMap<Integer,JobPair> idsToPairs = new HashMap<Integer,JobPair>();
+		HashMap<Integer,JobPair> idsToPairs = new HashMap<>();
 		try {
 			for(JobPair pair : pairs) {
 				idsToPairs.put(pair.getId(), pair);
@@ -2213,7 +2213,7 @@ public class Jobs {
 			boolean includeExpected,
 			boolean includeCompletion,
 			PrimitivesToAnonymize primitivesToAnonymize ) {
-		List<JobPair> pairs = new ArrayList<JobPair>();
+		List<JobPair> pairs = new ArrayList<>();
 		try{
 			while (results.next()) {
 				JobPair jp = new JobPair();
@@ -2363,13 +2363,13 @@ public class Jobs {
 			PrimitivesToAnonymize primitivesToAnonymize) {
 		try {
 			List<JobPair> pairs = Jobs.getJobPairsInJobSpaceHierarchy(jobSpaceId, primitivesToAnonymize);
-			List<List<JobPair>> pairLists = new ArrayList<List<JobPair>>();
+			List<List<JobPair>> pairLists = new ArrayList<>();
 
 
-			Map<Integer,Integer> configToPosition=new HashMap<Integer,Integer>();
+			Map<Integer,Integer> configToPosition= new HashMap<>();
 
 			for (int i=0;i<configIds.size();i++) {
-				pairLists.add(new ArrayList<JobPair>());
+				pairLists.add(new ArrayList<>());
 				configToPosition.put(configIds.get(i), i);
 			}
 			for (JobPair jp : pairs) {
@@ -2520,13 +2520,13 @@ public class Jobs {
 
 		try {
 
-			List<Job> jobs = new LinkedList<Job>();
+			List<Job> jobs = new LinkedList<>();
 
 			while(results.next()){
 
 				// Grab the relevant job pair statistics; this prevents a secondary set of queries
 				// to the database in RESTHelpers.java
-				HashMap<String, Integer> liteJobPairStats = new HashMap<String, Integer>();
+				HashMap<String, Integer> liteJobPairStats = new HashMap<>();
 				liteJobPairStats.put("totalPairs", results.getInt("totalPairs"));
 				liteJobPairStats.put("completePairs", results.getInt("completePairs"));
 				liteJobPairStats.put("pendingPairs", results.getInt("pendingPairs"));
@@ -2619,7 +2619,7 @@ public class Jobs {
 			procedure.setInt(2, jobId);
 			procedure.setInt(3,stageNumber);
 			results=procedure.executeQuery();
-			List<SolverStats> stats=new ArrayList<SolverStats>();
+			List<SolverStats> stats= new ArrayList<>();
 			while (results.next()) {
 				SolverStats s=new SolverStats();
 				s.setCompleteJobPairs(results.getInt("complete"));
@@ -2772,7 +2772,7 @@ public class Jobs {
 			procedure.setInt(1, jobId);
 			procedure.setInt(2,since);
 			results = procedure.executeQuery();
-			List<JobPair> pairs=new ArrayList<JobPair>();
+			List<JobPair> pairs= new ArrayList<>();
 			while (results.next()) {
 				JobPair pair=new JobPair();
 				JoblineStage stage=new JoblineStage();
@@ -2867,7 +2867,7 @@ public class Jobs {
 			procedure = con.prepareCall("{CALL GetJobPairsByJobSimple(?)}");
 			procedure.setInt(1, jobId);
 			 results = procedure.executeQuery();
-			List<JobPair> returnList = new LinkedList<JobPair>();
+			List<JobPair> returnList = new LinkedList<>();
 
 			while(results.next()){
 			    JobPair jp = new JobPair();
@@ -2994,14 +2994,14 @@ public class Jobs {
 	private static List<JobPair> getPairsDetailed(int jobId, Connection con,ResultSet results, boolean getCompletionId) {
 		log.debug("starting the getPairsDetailed function");
 		try {
-			List<JobPair> returnList = new ArrayList<JobPair>();
+			List<JobPair> returnList = new ArrayList<>();
 
 			//instead of setting up the solvers, configs, etc. every time, we just set them
 			//up once and then save them
-			Hashtable<Integer,Solver> discoveredSolvers=new Hashtable<Integer,Solver>();
-			Hashtable<Integer,Configuration> discoveredConfigs=new Hashtable<Integer,Configuration>();
-			Hashtable<Integer,Benchmark> discoveredBenchmarks=new Hashtable<Integer,Benchmark>();
-			Hashtable <Integer, WorkerNode> discoveredNodes = new Hashtable<Integer, WorkerNode>();
+			Hashtable<Integer,Solver> discoveredSolvers= new Hashtable<>();
+			Hashtable<Integer,Configuration> discoveredConfigs= new Hashtable<>();
+			Hashtable<Integer,Benchmark> discoveredBenchmarks= new Hashtable<>();
+			Hashtable <Integer, WorkerNode> discoveredNodes = new Hashtable<>();
 			int curNode,curBench,curConfig, curSolver;
 			while(results.next()){
 				JobPair jp = JobPairs.resultToPair(results);
@@ -3100,7 +3100,7 @@ public class Jobs {
 		try {
 			boolean success=true;
 			//only continue if we could actually clear the job stats
-			Set<Integer> ids=new HashSet<Integer>();
+			Set<Integer> ids= new HashSet<>();
 			ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.STATUS_COMPLETE.getVal()));
 			ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_CPU.getVal()));
 			ids.addAll(Jobs.getTimelessPairsByStatus(jobId,StatusCode.EXCEED_FILE_WRITE.getVal()));
@@ -3199,7 +3199,7 @@ public class Jobs {
 			procedure.setInt(1, jobId);
 			procedure.setInt(2, statusCode);
 			results=procedure.executeQuery();
-			List<Integer> ids=new ArrayList<Integer>();
+			List<Integer> ids= new ArrayList<>();
 			while (results.next()) {
 				ids.add(results.getInt("id"));
 			}
@@ -3233,7 +3233,7 @@ public class Jobs {
 			procedure.setInt(1, jobId);
 			procedure.setInt(2, statusCode);
 			results=procedure.executeQuery();
-			List<Integer> ids=new ArrayList<Integer>();
+			List<Integer> ids= new ArrayList<>();
 			while (results.next()) {
 				ids.add(results.getInt("id"));
 			}
@@ -3291,8 +3291,8 @@ public class Jobs {
 	    procedure.setInt(2,limit);
 	    results = procedure.executeQuery();
 	    //we map ID's to  primitives so we don't need to query the database repeatedly for them
-	    HashMap<Integer,JobPair> pairs= new HashMap<Integer,JobPair>();
-	    HashMap<Integer, String> solverIdsToTimestamps = new HashMap<Integer, String>();
+	    HashMap<Integer,JobPair> pairs= new HashMap<>();
+	    HashMap<Integer, String> solverIdsToTimestamps = new HashMap<>();
 	    while(results.next()){
 
 			try {
@@ -3315,7 +3315,7 @@ public class Jobs {
 				    if (j.isUsingDependencies()) {
 					    jp.setBenchInputPaths(JobPairs.getJobPairInputPaths(jp.getId(),con));
 				    } else{
-				    	jp.setBenchInputPaths(new ArrayList<String>());
+				    	jp.setBenchInputPaths(new ArrayList<>());
 				    }
 			    	pairs.put(currentJobPairId, jp);
 			    }
@@ -3366,7 +3366,7 @@ public class Jobs {
 
 	    	jp.sortStages();
 	    }
-	    List<JobPair> returnList=new ArrayList<JobPair>();
+	    List<JobPair> returnList= new ArrayList<>();
 	    returnList.addAll(pairs.values());
 	    return returnList;
 	} catch (Exception e) {
@@ -3396,12 +3396,12 @@ public class Jobs {
 			procedure=con.prepareCall("{CALL GetAllJobPairBenchmarkInputsByJob(?)}");
 			procedure.setInt(1,jobId);
 			results=procedure.executeQuery();
-			HashMap<Integer,List<Integer>> inputs=new HashMap<Integer,List<Integer>>();
+			HashMap<Integer,List<Integer>> inputs= new HashMap<>();
 			while (results.next()) {
 				int pairId=results.getInt("jobpair_id");
 				int benchId=results.getInt("bench_id");
 				if (!inputs.containsKey(pairId)) {
-					inputs.put(pairId, new ArrayList<Integer>());
+					inputs.put(pairId, new ArrayList<>());
 				}
 				inputs.get(pairId).add(benchId);
 			}
@@ -3818,7 +3818,7 @@ public class Jobs {
 			con=Common.getConnection();
 			procedure = con.prepareCall("{CALL GetAllJobIds()}");
 			results = procedure.executeQuery();
-			List<Integer> ids = new ArrayList<Integer>();
+			List<Integer> ids = new ArrayList<>();
 			while (results.next()) {
 				ids.add(results.getInt("id"));
 			}
@@ -4062,7 +4062,7 @@ public class Jobs {
 			procedure.executeUpdate();
 			log.debug("Pausation of system was successful");
 			R.BACKEND.killAll();
-			List<Integer> jobs = new LinkedList<Integer>();
+			List<Integer> jobs = new LinkedList<>();
 			jobs = Jobs.getRunningJobs();
 			if (jobs != null) {
 				for (Integer jobId : jobs) {
@@ -4208,14 +4208,14 @@ public class Jobs {
 	private static HashMap<Integer,HashMap<Integer,Properties>> processAttrResults(ResultSet results)
 	{
 		try {
-			HashMap<Integer,HashMap<Integer,Properties>> props=new HashMap<Integer,HashMap<Integer,Properties>>();
+			HashMap<Integer,HashMap<Integer,Properties>> props= new HashMap<>();
 			int id;
 			int stageNumber;
 			while(results.next()){
 				id=results.getInt("pair.id");
 				stageNumber=results.getInt("attr.stage_number");
 				if (!props.containsKey(id)) {
-					props.put(id,new HashMap<Integer,Properties>());
+					props.put(id, new HashMap<>());
 				}
 				HashMap<Integer,Properties> pairMap=props.get(id);
 				if (!pairMap.containsKey(stageNumber)) {
@@ -4279,7 +4279,7 @@ public class Jobs {
 		    //Map<String, Integer> solverIdToNumberOfConflicts = new HashMap<>();
 			//solverIdToNumberOfConflicts = buildSolverIdToNumberOfConflictsMap(jobId);
 
-			Hashtable<String, SolverStats> stats = new Hashtable<String, SolverStats>();
+			Hashtable<String, SolverStats> stats = new Hashtable<>();
 			String key;
 			for (JobPair jp : pairs) {
 
@@ -4414,10 +4414,10 @@ public class Jobs {
 			PrimitivesToAnonymize primitivesToAnonymize) throws Exception {
 
 		try {
-			List<JobPair> returnList = new ArrayList<JobPair>();
+			List<JobPair> returnList = new ArrayList<>();
 
-			HashMap<Integer,Solver> solvers=new HashMap<Integer,Solver>();
-			HashMap<Integer,Configuration> configs=new HashMap<Integer,Configuration>();
+			HashMap<Integer,Solver> solvers= new HashMap<>();
+			HashMap<Integer,Configuration> configs= new HashMap<>();
 			Integer id;
 
 
@@ -4938,7 +4938,7 @@ public class Jobs {
 			procedure.setInt(1, userId);
 			results = procedure.executeQuery();
 
-			List<Integer> jobs = new LinkedList<Integer>();
+			List<Integer> jobs = new LinkedList<>();
 			while (results.next()) {
 				jobs.add(results.getInt("id"));
 			}
@@ -4968,7 +4968,7 @@ public class Jobs {
 			procedure = con.prepareCall("{CALL GetRunningJobs()}");
 			results = procedure.executeQuery();
 
-			List<Integer> jobs = new LinkedList<Integer>();
+			List<Integer> jobs = new LinkedList<>();
 			while (results.next()) {
 				jobs.add(results.getInt("id"));
 			}
@@ -5020,7 +5020,7 @@ public class Jobs {
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
-		List<Integer> ids=new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 		try {
 			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL GetOrphanedJobIds(?)}");
@@ -5108,7 +5108,7 @@ public class Jobs {
 			procedure=con.prepareCall("{CALL getStageParamsByJob(?)}");
 			procedure.setInt(1, jobId);
 			results=procedure.executeQuery();
-			List<StageAttributes> attrs=new ArrayList<StageAttributes>();
+			List<StageAttributes> attrs= new ArrayList<>();
 
 			while (results.next()) {
 				StageAttributes a = resultsToStageAttributes(results);
@@ -5209,7 +5209,7 @@ public class Jobs {
 		return Common.query("{CALL GetJobAttributesTableHeaders(?)}", procedure -> {
 			procedure.setInt(1, jobSpaceId);
 		}, results -> {
-			List<String> headers=new ArrayList<String>();
+			List<String> headers= new ArrayList<>();
 			while (results.next()) {
 				headers.add(results.getString("attr_value"));
 			}

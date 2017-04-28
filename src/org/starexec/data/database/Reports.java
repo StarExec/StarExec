@@ -59,7 +59,7 @@ public class Reports {
 	 * @author Albert Giegerich
 	 */
 	public static List<Report> getAllReportsNotRelatedToQueues() {
-		List<Report> reports = new LinkedList<Report>();
+		List<Report> reports = new LinkedList<>();
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -92,7 +92,7 @@ public class Reports {
 	 * @author Albert Giegerich
 	 */
 	public static List<List<Report>> getAllReportsForAllQueues() throws SQLException {
-		LinkedList<Report> reportsForAllQueues = new LinkedList<Report>();
+		LinkedList<Report> reportsForAllQueues = new LinkedList<>();
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -220,20 +220,20 @@ public class Reports {
 	 */
 	private static List<List<Report>> separateReportsByQueue(List<Report> reports) {
 		// Build a map that seperates all the reports into lists based on which queue they're related to.
-		Map<String,List<Report>> reportMap = new HashMap<String,List<Report>>();
+		Map<String,List<Report>> reportMap = new HashMap<>();
 		for (Report report : reports) {
 			String queueName = report.getQueueName();
 			if (reportMap.containsKey(queueName)) {
 				reportMap.get(queueName).add(report);	
 			} else {
-				List<Report> reportsRelatedToQueue = new LinkedList<Report>(); 
+				List<Report> reportsRelatedToQueue = new LinkedList<>();
 				reportsRelatedToQueue.add(report);
 				reportMap.put(queueName, reportsRelatedToQueue);
 			}
 		}
 
 		// Use the map to build a list of lists where each inner list contains all the reports related to a single queue.
-		List<List<Report>> reportsSeperatedByQueue = new LinkedList<List<Report>>();
+		List<List<Report>> reportsSeperatedByQueue = new LinkedList<>();
 		Set<String> keys = reportMap.keySet();
 		for (String key : keys) {
 			reportsSeperatedByQueue.add(reportMap.get(key));

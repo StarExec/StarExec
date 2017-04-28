@@ -94,7 +94,7 @@ public class CreateJob extends HttpServlet {
 		//Setup the job's attributes
 
 		List<Configuration> config = Solvers.getConfigsForSolver(solverId);
-		List<Integer> configIds = new ArrayList<Integer>();
+		List<Integer> configIds = new ArrayList<>();
 		for (Configuration c :config) {
 			if(!c.getName().equals("starexec_build")){
 				configIds.add(c.getId());
@@ -258,7 +258,7 @@ public class CreateJob extends HttpServlet {
 				log.debug("got all the subspaces for the job");
 				spaces.add(0, Spaces.get(space));
 
-				HashMap<Integer, List<JobPair>> spaceToPairs = new HashMap<Integer, List<JobPair>>();
+				HashMap<Integer, List<JobPair>> spaceToPairs = new HashMap<>();
 				for (Space s : spaces) {
 					List<JobPair> pairs = JobManager.addJobPairsFromSpace(userId, s.getId(), SP.get(s.getId()));
 
@@ -568,7 +568,7 @@ public class CreateJob extends HttpServlet {
 					return new ValidatorStatusCode(false, "All selected configuration IDs need to be valid integers");
 				}
 
-				Set<Integer> solverIds=new HashSet<Integer>();
+				Set<Integer> solverIds= new HashSet<>();
 				for (Integer cid : Util.toIntegerList(request.getParameterValues(configs))) {
 					solverIds.add(Solvers.getSolverByConfig(cid, false).getId());
 				}

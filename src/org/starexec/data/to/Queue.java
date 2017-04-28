@@ -22,9 +22,9 @@ public class Queue extends Identifiable implements Iterable<WorkerNode>, Nameabl
 	@Expose private int wallTimeout;
 	
 	public Queue() {
-		this.nodes = new LinkedList<WorkerNode>();
-		this.attributes = new HashMap<String, String>();
-		this.jobPairs = new HashMap<Integer, String[]>();
+		this.nodes = new LinkedList<>();
+		this.attributes = new HashMap<>();
+		this.jobPairs = new HashMap<>();
 	}
 	
 	/**

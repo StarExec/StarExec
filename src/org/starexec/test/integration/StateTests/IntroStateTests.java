@@ -33,7 +33,7 @@ public class IntroStateTests extends TestSequence {
 		List<Space> spaces=Spaces.GetAllSpaces();
 		for (Space s : spaces) {
 			List<Space> subspaces=Spaces.getSubSpaces(s.getId());
-			HashSet<String> names=new HashSet<String>();
+			HashSet<String> names= new HashSet<>();
 			for (Space sub : subspaces) {
 				if (names.contains(sub.getName())) {
 					addMessage("ERROR: space id = "+sub.getId() +" has a duplicate name in space "+s.getId());

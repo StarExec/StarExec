@@ -28,7 +28,7 @@ prepareStatement}.
      */
     public NamedParameterStatement(Connection connection, String query) throws 
 SQLException {
-        indexMap=new HashMap<String,List<Integer>>();
+        indexMap= new HashMap<>();
         String parsedQuery=parse(query, indexMap);
         statement=connection.prepareStatement(parsedQuery);
     }
@@ -65,7 +65,7 @@ method is non-private so JUnit code can
 
                     List<Integer> indexList=paramMap.get(name);
                     if(indexList==null) {
-                        indexList=new LinkedList<Integer>();
+                        indexList= new LinkedList<>();
                         paramMap.put(name, indexList);
                     }
                     indexList.add(new Integer(index));

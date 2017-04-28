@@ -166,7 +166,7 @@ public class JobTests extends TestSequence {
 	
 	@StarexecTest 
 	private void DeleteJobTest() {
-		List<Integer> solverIds=new ArrayList<Integer>();
+		List<Integer> solverIds= new ArrayList<>();
 		solverIds.add(solver.getId());
 		Job temp=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
 		Assert.assertFalse(Jobs.isJobDeleted(temp.getId()));
@@ -195,11 +195,11 @@ public class JobTests extends TestSequence {
 	}
 	
 	private HashMap<Integer, List<JobPair>> getPairSetup() {
-		HashMap<Integer,List<JobPair>> spacesToPairs=new HashMap<Integer,List<JobPair>>();
+		HashMap<Integer,List<JobPair>> spacesToPairs= new HashMap<>();
 		Random rand=new Random();
 		int index=0;
 		for (int curSpace=1;curSpace<rand.nextInt(60)+50; curSpace++) {
-			List<JobPair> pairs=new ArrayList<JobPair>();
+			List<JobPair> pairs= new ArrayList<>();
 			for (int curJobPair=0;curJobPair<rand.nextInt(7);curJobPair++) {
 				index++;
 				JobPair jp=new JobPair();
@@ -252,7 +252,7 @@ public class JobTests extends TestSequence {
 		int size=getTotalSize(spacesToPairs);
 		JobManager.addJobPairsRoundRobin(j, spacesToPairs);
 		Assert.assertEquals(size, j.getJobPairs().size()); //every job pair should be present
-		HashMap<Integer,Integer> spacesToCounts=new HashMap<Integer,Integer>();
+		HashMap<Integer,Integer> spacesToCounts= new HashMap<>();
 		int max=0;
 		for (JobPair jp : j) {
 			int space=jp.getJobSpaceId();
@@ -287,7 +287,7 @@ public class JobTests extends TestSequence {
 	@StarexecTest
 	private void cleanOrphanedDeletedJobTest() {
 		Job tempJob = loader.loadJobIntoDatabase(space.getId(), user.getId(), solver.getId(), benchmarkIds);
-		List<Integer> job = new ArrayList<Integer>();
+		List<Integer> job = new ArrayList<>();
 		job.add(tempJob.getId());
 		try {
 			Jobs.delete(tempJob.getId());
@@ -319,7 +319,7 @@ public class JobTests extends TestSequence {
 	
 	@StarexecTest
 	private void associateJobsTest() {
-		List<Integer> jobIds = new ArrayList<Integer>();
+		List<Integer> jobIds = new ArrayList<>();
 		jobIds.add(job.getId());
 		jobIds.add(job2.getId());
 		Space newSpace = loader.loadSpaceIntoDatabase(user.getId(), space.getId());
@@ -352,7 +352,7 @@ public class JobTests extends TestSequence {
 		postProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
 		benchmarkIds=loader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
 		
-		List<Integer> solverIds=new ArrayList<Integer>();
+		List<Integer> solverIds= new ArrayList<>();
 		solverIds.add(solver.getId());
 		job=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
 		job2=loader.loadJobIntoDatabase(space.getId(), user2.getId(), -1, postProc.getId(), solverIds, benchmarkIds, cpuTimeout, wallclockTimeout, gbMemory);

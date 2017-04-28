@@ -15,7 +15,7 @@ public class PipelineStage extends Identifiable {
 	private List<PipelineDependency> dependencies;
 	
 	public PipelineStage() {
-		setDependencies(new ArrayList<PipelineDependency>());
+		setDependencies(new ArrayList<>());
 	}
 	
 	public int getPipelineId() {

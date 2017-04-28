@@ -573,7 +573,7 @@ public class SpaceSecurity {
 			}
 		}
 		
-		List<Integer> spaceIds=new ArrayList<Integer>(); //all the spaceIds of spaces being copied to
+		List<Integer> spaceIds= new ArrayList<>(); //all the spaceIds of spaces being copied to
 		spaceIds.add(toSpaceId);
 		
 		//if we are checking the hierarchy, we must first get every space in it
@@ -624,7 +624,7 @@ public class SpaceSecurity {
 	 * @return new ValidatorStatusCode(true) if the operation is allowed, and a status code from ValidatorStatusCodes otherwise
 	 */
 	public static ValidatorStatusCode canCopyUserBetweenSpaces(int toSpaceId, int userIdDoingCopying, List<Integer> userIdsBeingCopied, boolean hierarchy) {
-		List<Integer> spaceIds=new ArrayList<Integer>(); //all the spaceIds of spaces being copied to
+		List<Integer> spaceIds= new ArrayList<>(); //all the spaceIds of spaces being copied to
 		spaceIds.add(toSpaceId);
 		if (hierarchy) {
 			List<Space> subspaces = Spaces.trimSubSpaces(userIdDoingCopying, Spaces.getSubSpaceHierarchy(toSpaceId, userIdDoingCopying));
@@ -838,7 +838,7 @@ public class SpaceSecurity {
 		//TODO :  make more efficient? (right now querying database for every space in hierarchy to check permissions)
 		
 		
-		List<Integer> spaceIds=new ArrayList<Integer>(); //all the spaceIds of spaces being copied to
+		List<Integer> spaceIds= new ArrayList<>(); //all the spaceIds of spaces being copied to
 		spaceIds.add(spaceId);
 		
 		
@@ -848,7 +848,7 @@ public class SpaceSecurity {
 		    spaceIds.add(s.getId());
 		}
 		    
-		List<Integer> permittedSpaceIds = new ArrayList<Integer>();
+		List<Integer> permittedSpaceIds = new ArrayList<>();
 		for (Integer sid : spaceIds) {
 		    ValidatorStatusCode status=canUpdatePermissions(sid,userIdBeingUpdated,requestUserId);
 		    if (status.isSuccess()) {

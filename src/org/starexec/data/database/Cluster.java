@@ -164,7 +164,7 @@ public class Cluster {
 			procedure = con.prepareCall("{CALL GetNodesForQueue(?)}");
 			procedure.setInt(1, id);
 			results = procedure.executeQuery();
-			List<WorkerNode> nodes = new LinkedList<WorkerNode>();
+			List<WorkerNode> nodes = new LinkedList<>();
 			
 			while(results.next()){
 				WorkerNode n = new WorkerNode();
@@ -305,7 +305,7 @@ public class Cluster {
 			procedure.setInt(1, queueId);
 			
 			results = procedure.executeQuery();
-			List<Job> jobs = new LinkedList<Job>();
+			List<Job> jobs = new LinkedList<>();
 			
 			while(results.next()){
 				Job j = new Job();
@@ -344,7 +344,7 @@ public class Cluster {
 			
 			procedure = con.prepareCall("{CALL GetAllNodes()}");
 			results = procedure.executeQuery();
-			List<WorkerNode> nodes = new LinkedList<WorkerNode>();
+			List<WorkerNode> nodes = new LinkedList<>();
 			while (results.next()){
 				WorkerNode n = new WorkerNode();
 				n.setId(results.getInt("id"));
@@ -379,7 +379,7 @@ public class Cluster {
 			procedure = con.prepareCall("{CALL GetNonAttachedNodes(?)}");
 			procedure.setInt(1, queueId);
 			results = procedure.executeQuery();
-			List<WorkerNode> nodes = new LinkedList<WorkerNode>();
+			List<WorkerNode> nodes = new LinkedList<>();
 			while (results.next()){
 				WorkerNode n = new WorkerNode();
 				n.setId(results.getInt("nodes.id"));

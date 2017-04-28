@@ -59,10 +59,10 @@ public class MoveNodes extends HttpServlet {
 				
 	    log.debug("nodeIds = " + nodeIds);
 	    
-	    LinkedList<String> nodeNames = new LinkedList<String>();
-	    LinkedList<String> queueNames = new LinkedList<String>();
+	    LinkedList<String> nodeNames = new LinkedList<>();
+	    LinkedList<String> queueNames = new LinkedList<>();
 	    // map for counting how many nodes will be removed from each queue
-	    HashMap<Integer, Integer> queueIdToNodesRemoved = new HashMap<Integer, Integer>();
+	    HashMap<Integer, Integer> queueIdToNodesRemoved = new HashMap<>();
 	    if (nodeIds != null) {
 			for (int id : nodeIds) {
 			    Queue q = Cluster.getQueueForNode(id);

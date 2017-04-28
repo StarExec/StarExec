@@ -258,7 +258,7 @@ public abstract class JobManager {
 
 
 		// Check if all the high priority jobs have been selected an equal number of times.
-		HashSet<Integer> valueSet = new HashSet<Integer>(usersHighPriorityJobBalance.values());
+		HashSet<Integer> valueSet = new HashSet<>(usersHighPriorityJobBalance.values());
 		boolean allEquals = valueSet.size() == 1;
 
 		if (allEquals) {
@@ -636,24 +636,24 @@ public abstract class JobManager {
 		String jobScript = template;		
 		
 		// all of these arrays are for containing individual attributes ordered by state number for all the stages in the pair.
-		List<Integer> stageCpuTimeouts=new ArrayList<Integer>();
-		List<Integer> stageWallclockTimeouts=new ArrayList<Integer>();
-		List<Integer> stageNumbers=new ArrayList<Integer>();
-		List<Long> stageMemLimits=new ArrayList<Long>();
-		List<Integer> solverIds=new ArrayList<Integer>();
-		List<String> solverNames=new ArrayList<String>();
-		List<String> configNames=new ArrayList<String>();
-		List<String> solverTimestamps=new ArrayList<String>();
-		List<String> solverPaths=new ArrayList<String>();
-		List<String> postProcessorPaths=new ArrayList<String>();
-		List<String> preProcessorPaths=new ArrayList<String>();
-		List<Integer> spaceIds = new ArrayList<Integer>();
-		List<String> benchInputPaths=new ArrayList<String>();
-		List<String> argStrings=new ArrayList<String>();
-		List<String> benchSuffixes=new ArrayList<String>();
-		List<Integer> resultsIntervals = new ArrayList<Integer>();
-		List<Integer> stdoutSaveOptions = new ArrayList<Integer>();
-		List<Integer> extraSaveOptions = new ArrayList<Integer>();
+		List<Integer> stageCpuTimeouts= new ArrayList<>();
+		List<Integer> stageWallclockTimeouts= new ArrayList<>();
+		List<Integer> stageNumbers= new ArrayList<>();
+		List<Long> stageMemLimits= new ArrayList<>();
+		List<Integer> solverIds= new ArrayList<>();
+		List<String> solverNames= new ArrayList<>();
+		List<String> configNames= new ArrayList<>();
+		List<String> solverTimestamps= new ArrayList<>();
+		List<String> solverPaths= new ArrayList<>();
+		List<String> postProcessorPaths= new ArrayList<>();
+		List<String> preProcessorPaths= new ArrayList<>();
+		List<Integer> spaceIds = new ArrayList<>();
+		List<String> benchInputPaths= new ArrayList<>();
+		List<String> argStrings= new ArrayList<>();
+		List<String> benchSuffixes= new ArrayList<>();
+		List<Integer> resultsIntervals = new ArrayList<>();
+		List<Integer> stdoutSaveOptions = new ArrayList<>();
+		List<Integer> extraSaveOptions = new ArrayList<>();
 		for (String path : pair.getBenchInputPaths()) {
 			log.debug("adding the following path to benchInputPaths ");
 			log.debug(path);
@@ -867,7 +867,7 @@ public abstract class JobManager {
 	 * @return The string to insert
 	 */
 	public static <T extends Number> String numsToBashArray(String arrayName, List<T> nums){
-		List<String> strs=new ArrayList<String>();
+		List<String> strs= new ArrayList<>();
 		for (T num : nums) {
 			if (num!=null) {
 				strs.add(num.toString());
@@ -1070,7 +1070,7 @@ public abstract class JobManager {
 		//log.debug("calling addJobPairsFrom space on space ID = "+spaceId);
 		//log.debug("the path for the pairs will be ");
 		//log.debug(path);
-		List<JobPair> pairs=new ArrayList<JobPair>();
+		List<JobPair> pairs= new ArrayList<>();
 		// Get the benchmarks and solvers from this space
 		List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
 		//log.debug("found this many benchmarks in the space = "+benchmarks.size());
@@ -1195,13 +1195,13 @@ public abstract class JobManager {
 		try {			
 			List<Solver> solvers = Solvers.getWithConfig(configIds);
 			
-			List<Benchmark> benchmarks =new ArrayList<Benchmark>();
+			List<Benchmark> benchmarks = new ArrayList<>();
 		
 			
 			// Pair up the solvers and benchmarks
 
 				benchmarks = Benchmarks.getBySpace(spaceId);
-				List<JobPair> curPairs=new ArrayList<JobPair>();
+				List<JobPair> curPairs= new ArrayList<>();
 				for(Benchmark bench : benchmarks){
 					for(Solver solver : solvers) {
 						JobPair pair = new JobPair();
@@ -1255,7 +1255,7 @@ public abstract class JobManager {
 			int index=0;
 			while (spaceToPairs.size()>0) {
 				Set<Integer> keys=spaceToPairs.keySet();
-				Set<Integer> keysToRemove=new HashSet<Integer>();
+				Set<Integer> keysToRemove= new HashSet<>();
 				for (Integer spaceId : keys) {
 					//if there is at least one pair left in this space
 					if (spaceToPairs.get(spaceId).size()>index) {
@@ -1305,7 +1305,7 @@ public abstract class JobManager {
 			for (Space s : spaces) {
 				benchmarks = Benchmarks.getBySpace(s.getId());
 				log.debug("found this many benchmarks for space id = "+s.getId()+" "+benchmarks.size());
-				List<JobPair> curPairs=new ArrayList<JobPair>();
+				List<JobPair> curPairs= new ArrayList<>();
 				for(Benchmark bench : benchmarks){
 					for(Solver solver : solvers) {
 						JobPair pair = new JobPair();

@@ -385,7 +385,7 @@ public class Queues {
 	 * @throws SQLException 
 	 */
 	private static List<JobPair> resultSetToClusterPagePairs(ResultSet results) throws SQLException {
-		List<JobPair> returnList = new LinkedList<JobPair>();
+		List<JobPair> returnList = new LinkedList<>();
 		
 		while(results.next()){
 			JobPair jp=new JobPair();
@@ -549,7 +549,7 @@ public class Queues {
             }
 			procedure.setInt(1, queueId);					
 			 results = procedure.executeQuery();
-			List<Job> jobs = new LinkedList<Job>();
+			List<Job> jobs = new LinkedList<>();
 
 			while(results.next()){
 				Job j = Jobs.resultsToJob(results);
@@ -634,7 +634,7 @@ public class Queues {
 			}
 
 			 results = procedure.executeQuery();
-			List<Queue> queues = new LinkedList<Queue>();
+			List<Queue> queues = new LinkedList<>();
 			
 			while(results.next()){
 				queues.add(Queues.resultSetToQueue(results));
