@@ -405,19 +405,7 @@ public class Permissions {
 			 results = procedure.executeQuery();
 
 			if(results.first()) {				
-				Permission p = new Permission();
-				p.setAddBenchmark(results.getBoolean("add_bench"));
-				p.setAddSolver(results.getBoolean("add_solver"));
-				p.setAddSpace(results.getBoolean("add_space"));
-				p.setAddUser(results.getBoolean("add_user"));
-				p.setAddJob(results.getBoolean("add_job"));
-				p.setRemoveBench(results.getBoolean("remove_bench"));
-				p.setRemoveSolver(results.getBoolean("remove_solver"));
-				p.setRemoveSpace(results.getBoolean("remove_space"));
-				p.setRemoveUser(results.getBoolean("remove_user"));
-				p.setRemoveJob(results.getBoolean("remove_job"));
-				p.setLeader(results.getBoolean("is_leader"));
-				p.setId(userId);
+				Permission p = resultsToPermissionWithId(userId, results);
 				if(results.wasNull()) {
 					/* If the permission doesn't exist we always get a result
 					but all of it's values are null, so here we check for a 
@@ -506,22 +494,8 @@ public class Permissions {
 			procedure.setInt(1, spaceId);
 			 results = procedure.executeQuery();
 
-			if(results.first()) {				
-				Permission p = new Permission();
-				p.setId(results.getInt("id"));
-				p.setAddBenchmark(results.getBoolean("add_bench"));
-				p.setAddSolver(results.getBoolean("add_solver"));
-				p.setAddSpace(results.getBoolean("add_space"));
-				p.setAddUser(results.getBoolean("add_user"));
-				p.setAddJob(results.getBoolean("add_job"));
-				p.setRemoveBench(results.getBoolean("remove_bench"));
-				p.setRemoveSolver(results.getBoolean("remove_solver"));
-				p.setRemoveSpace(results.getBoolean("remove_space"));
-				p.setRemoveUser(results.getBoolean("remove_user"));
-				p.setRemoveJob(results.getBoolean("remove_job"));
-				p.setLeader(results.getBoolean("is_leader"));
-
-				return p;
+			if(results.first()) {
+				return resultsToPermissionWithId(results.getInt("id"), results);
 			}
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -532,6 +506,23 @@ public class Permissions {
 		}
 
 		return null;		
+	}
+
+	private static Permission resultsToPermissionWithId(int id, ResultSet results) throws SQLException {
+		Permission p = new Permission();
+		p.setId(id);
+		p.setAddBenchmark(results.getBoolean("add_bench"));
+		p.setAddSolver(results.getBoolean("add_solver"));
+		p.setAddSpace(results.getBoolean("add_space"));
+		p.setAddUser(results.getBoolean("add_user"));
+		p.setAddJob(results.getBoolean("add_job"));
+		p.setRemoveBench(results.getBoolean("remove_bench"));
+		p.setRemoveSolver(results.getBoolean("remove_solver"));
+		p.setRemoveSpace(results.getBoolean("remove_space"));
+		p.setRemoveUser(results.getBoolean("remove_user"));
+		p.setRemoveJob(results.getBoolean("remove_job"));
+		p.setLeader(results.getBoolean("is_leader"));
+		return p;
 	}
 
 	/**
