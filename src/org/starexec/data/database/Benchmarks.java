@@ -1109,20 +1109,7 @@ public class Benchmarks {
 			 procedure = con.prepareCall("{CALL GetBenchmarksByOwner(?)}");
 			procedure.setInt(1, userId);					
 			 results = procedure.executeQuery();
-			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
-			
-			
-			while(results.next()){
-				Benchmark b = resultToBenchmark(results);
-				Processor t = Processors.resultSetToProcessor(results, "types");
-				b.setType(t);
-				// Add benchmark object to list
-				benchmarks.add(b);
-			}			
-			
-			log.debug(String.format("%d benchmarks were returned as being owned by user %d.", benchmarks.size(), userId));
-			
-			return benchmarks;
+			return resultsToBenchmarkWithType(results);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
