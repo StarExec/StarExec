@@ -484,12 +484,12 @@ public class Util {
 		return readsomething;
     }
 
-    /**
-     * Drains both the stdout and stderr streams of a process and returns
-     * @param p
-     * @return The combined stdout and stderr from the process
-     */
-    public static String drainStreams(final Process p) {
+	/**
+	 * Drains both the stdout and stderr streams of a process and returns
+	 * @param p
+	 * @return The combined stdout and stderr from the process
+	 */
+	public static String drainStreams(final Process p) {
 
 		/* to handle the separate streams of regular output and
 		   error output correctly, it is necessary to try draining
@@ -499,22 +499,22 @@ public class Util {
 		final StringBuffer b = new StringBuffer();
 		threadPool.execute(new Runnable() {
 			@Override
-			    public void run() {
-			    try {
-					if (drainInputStream(b,p.getErrorStream())) {
+				public void run() {
+				try {
+					if (drainInputStream(b, p.getErrorStream())) {
 						log.error("The process produced stderr output.");
 						log.error(b.toString());
 					}
 
-				    }
-			    catch(Exception e) {
-			    	log.error("Error draining stderr from process: "+e.toString());
-			    }
+				}
+				catch(Exception e) {
+					log.error("Error draining stderr from process: "+e.toString());
+				}
 			}
-		    });
-		drainInputStream(b,p.getInputStream());
+		});
+		drainInputStream(b, p.getInputStream());
 		return b.toString();
-    }
+	}
 
     /**
      * Converts a list of strings into a list of ints
