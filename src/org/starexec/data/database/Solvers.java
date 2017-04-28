@@ -2139,7 +2139,7 @@ public class Solvers {
 			
 			// If the old config and new config names are NOT the same, ensure the file pointed to by
 			// the new config does not already exist on disk
-			if(false == oldConfig.getName().equals(newConfig.getName())){
+			if(!oldConfig.getName().equals(newConfig.getName())){
 				isConfigNameUnchanged = false;
 				if(newConfig.exists()){
 					return false;

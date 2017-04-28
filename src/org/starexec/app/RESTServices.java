@@ -3091,7 +3091,7 @@ public class RESTServices {
 		}
 
 		// If we are "cascade removing" the solver(s)...
-		if (true == Boolean.parseBoolean(request.getParameter("hierarchy"))) {
+		if (Boolean.parseBoolean(request.getParameter("hierarchy"))) {
 
 			ValidatorStatusCode status=SolverSecurity.canUserRemoveSolverFromHierarchy(spaceId,userId);
 			if (!status.isSuccess()) {
@@ -3849,7 +3849,7 @@ public class RESTServices {
 		} catch (NumberFormatException nfe){
 			isValidRequest = false;
 		}
-		if(false == isValidRequest){
+		if(!isValidRequest){
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 

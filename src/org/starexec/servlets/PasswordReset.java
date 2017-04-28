@@ -82,7 +82,7 @@ public class PasswordReset extends HttpServlet {
 				String code = UUID.randomUUID().toString();
 
 				// Add the reset request to the database
-				if (false == Requests.addPassResetRequest(user.getId(), code)) {
+				if (!Requests.addPassResetRequest(user.getId(), code)) {
 					log.info(String.format("Failed to add password reset request for user [%s]", user.getFullName()));
 					return;
 				}

@@ -99,7 +99,7 @@ public class SaveConfiguration extends HttpServlet {
 				int intSuffix = 0;
 				while(fileAlreadyExists){
 					File temp = new File(newConfigFile.getAbsolutePath() + (++intSuffix));
-					if(temp.exists() == false){
+					if(!temp.exists()){
 						newConfigFile = temp;
 						newConfig.setName(request.getParameter(CONFIG_NAME) + intSuffix);
 						fileAlreadyExists = false;

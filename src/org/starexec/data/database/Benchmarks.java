@@ -1041,7 +1041,7 @@ public class Benchmarks {
 				return null;
 			}
 
-			if(true == includeAttrs){
+			if(includeAttrs){
 				b.setAttributes(Benchmarks.getAttributes(con, benchId));
 			}
 

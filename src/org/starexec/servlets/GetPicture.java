@@ -122,7 +122,7 @@ public class GetPicture extends HttpServlet{
 			File file = new File(sb.toString());
 
 			// If the desired file exists, then the file will return it, or else return the default file Pic0.jpg
-			if (file.exists() == false) {
+			if (!file.exists()) {
 				sb.delete(0, sb.length());
 				sb.append(pictureDir);
 				sb.append(File.separator);
