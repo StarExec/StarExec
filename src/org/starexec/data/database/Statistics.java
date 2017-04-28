@@ -403,8 +403,14 @@ public class Statistics {
 
 			dataset.addSeries(d);
 
-			String key=debugSeries+":"+debugItem;
-			log.debug(urls.get(key).toString());
+			{ // I don't know what this is trying to debug
+				final String key = debugSeries+":"+debugItem;
+				final Integer value = urls.get(key);
+				if (value != null) {
+					log.debug(value.toString());
+				}
+			}
+
 			JFreeChart chart=ChartFactory.createScatterPlot("Solver Comparison Plot",xAxisName, yAxisName, dataset, PlotOrientation.VERTICAL, true, true,false);
 			Color color=new Color(0,0,0,0); //makes the background clear
 			chart.setBackgroundPaint(color);
