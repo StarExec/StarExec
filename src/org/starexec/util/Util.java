@@ -399,39 +399,30 @@ public class Util {
     	return executeCommand(newCommand,envp,workingDirectory);
     }
 
-    /**
-     * Runs a command on the system command line (bash for unix, command line for windows)
-     * and returns the process representing the command
-     * @param command An array holding the command and then its arguments
-     * @param envp The environment
-     * @param workingDirectory the working directory to use
-     * @return A String containing both stderr and stdout from the command
-     * @throws IOException We do not want to catch exceptions at this level, because this code is generic and
-     * has no useful way to handle them! Throwing an exception to higher levels is the desired behavior.
-     */
-    public static Process executeCommandAndReturnProcess(String[] command, String[] envp, File workingDirectory) throws IOException {
-    	Runtime r = Runtime.getRuntime();
-	    Process p;
-	    if (command.length == 1) {
-			log.debug("Executing the following command: " + command[0]);
+	/**
+	 * Runs a command on the system command line (bash for unix, command line for windows)
+	 * and returns the process representing the command
+	 * @param command An array holding the command and then its arguments
+	 * @param envp The environment
+	 * @param workingDirectory the working directory to use
+	 * @return A String containing both stderr and stdout from the command
+	 * @throws IOException We do not want to catch exceptions at this level, because this code is generic and
+	 * has no useful way to handle them! Throwing an exception to higher levels is the desired behavior.
+	 */
+	public static Process executeCommandAndReturnProcess(String[] command, String[] envp, File workingDirectory) throws IOException {
+		final String methodName = "executeCommandAndReturnProcess";
+		Runtime r = Runtime.getRuntime();
 
-			p = r.exec(command[0], envp, workingDirectory);
-	    }
-	    else {
-			StringBuilder b = new StringBuilder();
-			b.append("Executing the following command:\n");
-			for (int i = 0; i < command.length; i++) {
-			    b.append("  ");
-			    b.append(command[i]);
-			}
+		StringBuilder b = new StringBuilder();
+		b.append("Executing the following commands:");
+		for (String cmd : command) {
+			b.append("\n\t");
+			b.append(cmd);
+		}
+		log.info(methodName, b.toString());
 
-			log.info(b.toString());
-
-			p = r.exec(command, envp, workingDirectory);
-	    }
-	    return p;
-
-    }
+		return r.exec(command, envp, workingDirectory);
+	}
 
     /**
      * Runs a command on the system command line (bash for unix, command line for windows)
