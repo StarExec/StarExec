@@ -115,21 +115,18 @@ public class TestManager {
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
 		
 		//we want to return here, not wait until all the tests finish, which is why we spin off a new threads
-		threadPool.execute(new Runnable() {
-			@Override
-			public void run(){
-				
-				//we want to clear all the results first, so it's obvious to the user what is left to be run
-				for (TestSequence t : tests) {
-					t.clearResults();
-				}
-				
-				for (TestSequence t : tests) {
-					t.execute();
-				}
-				isRunning.set(false);
-			}
-		});	
+		threadPool.execute(() -> {
+
+            //we want to clear all the results first, so it's obvious to the user what is left to be run
+            for (TestSequence t : tests) {
+                t.clearResults();
+            }
+
+            for (TestSequence t : tests) {
+                t.execute();
+            }
+            isRunning.set(false);
+        });
 		return true;
 	}
 	/**
@@ -166,22 +163,19 @@ public class TestManager {
 		final String[] t=testNames;
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
 		//we want to return here, not wait until all the tests finish, which is why we spin off a new thread
-		threadPool.execute(new Runnable() {
-			@Override
-			public void run(){
-				
-				for (String s : t) {
-					TestSequence test = getTestSequence(s);
-					if (test!=null) {
-						test.clearResults();
-						
-						executeTest(test);
-					}
-					
-				}
-				isRunning.set(false);
-			}
-		});	
+		threadPool.execute(() -> {
+
+            for (String s : t) {
+                TestSequence test = getTestSequence(s);
+                if (test!=null) {
+                    test.clearResults();
+
+                    executeTest(test);
+                }
+
+            }
+            isRunning.set(false);
+        });
 		
 		return true;
 	}
@@ -211,14 +205,11 @@ public class TestManager {
 		
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
 		//we want to return here, not wait until all the tests finish, which is why we spin off a new thread
-		threadPool.execute(new Runnable() {
-			@Override
-			public void run(){
-				StressTest.execute(userCount,spaceCount,minUsersPerSpace,maxUsersPerSpace,minSolversPerSpace,maxSolversPerSpace,
-						minBenchmarksPerSpace, maxBenchmarksPerSpace,jobCount,spacesPerJobCount);
-				isRunningStress.set(false);
-			}
-		});	
+		threadPool.execute(() -> {
+            StressTest.execute(userCount,spaceCount,minUsersPerSpace,maxUsersPerSpace,minSolversPerSpace,maxSolversPerSpace,
+                    minBenchmarksPerSpace, maxBenchmarksPerSpace,jobCount,spacesPerJobCount);
+            isRunningStress.set(false);
+        });
 		
 		return true;
 	}
@@ -290,19 +281,16 @@ public class TestManager {
 		}
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
 		log.debug("trying to empty the job output directory");
-		threadPool.execute(new Runnable() {
-			@Override
-			public void run(){
-				File file=new File(R.getJobOutputDirectory());
-				log.debug("calling deleteQuietly on job output");
+		threadPool.execute(() -> {
+            File file=new File(R.getJobOutputDirectory());
+            log.debug("calling deleteQuietly on job output");
 
-				FileUtils.deleteQuietly(file);
-				log.debug("finished calling deleteQuietly on job output");
+            FileUtils.deleteQuietly(file);
+            log.debug("finished calling deleteQuietly on job output");
 
-				
-				file.mkdir();
-			}
-		});
+
+            file.mkdir();
+        });
 	}
 	
 }

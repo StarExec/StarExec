@@ -74,18 +74,15 @@ public class Matrix {
                     new ArrayList<>(uniqueSolverConfigs);
 			// Names of solver config will be "solver (config)", sort the solverConfigs
 			// alphabetically by name, ignore case.
-			Collections.sort(uniqueSolverConfigList, new Comparator<Pair<Solver,Configuration>>() {
-				@Override
-				public int compare(Pair<Solver,Configuration> sc1, Pair<Solver,Configuration> sc2) {
-					String solverName1 = sc1.getLeft().getName();
-					String solverName2 = sc2.getLeft().getName();
-					String configName1 = sc1.getRight().getName();
-					String configName2 = sc2.getRight().getName();
-					String sc1Name = String.format("%s (%s)", solverName1, configName1);
-					String sc2Name = String.format("%s (%s)", solverName2, configName2);
-					return sc1Name.compareToIgnoreCase(sc2Name);
-				}
-			});
+			Collections.sort(uniqueSolverConfigList, (sc1, sc2) -> {
+                String solverName1 = sc1.getLeft().getName();
+                String solverName2 = sc2.getLeft().getName();
+                String configName1 = sc1.getRight().getName();
+                String configName2 = sc2.getRight().getName();
+                String sc1Name = String.format("%s (%s)", solverName1, configName1);
+                String sc2Name = String.format("%s (%s)", solverName2, configName2);
+                return sc1Name.compareToIgnoreCase(sc2Name);
+            });
 
 			// Populate the matrix.
 			populateRowAndColumnHeaders(uniqueBenchmarkList, uniqueSolverConfigList); 

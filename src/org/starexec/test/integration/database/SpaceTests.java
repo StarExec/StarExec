@@ -252,15 +252,12 @@ public class SpaceTests extends TestSequence {
 		List<Identifiable> identifiableListCopy = new ArrayList<>(identifiableList);
 		List<Identifiable> otherIdentifiableListCopy = new ArrayList<>(otherIdentifiableList);
 		// Compares the id of two identifiables.
-		Comparator<Identifiable> idComparator = new Comparator<Identifiable>() {
-			@Override
-			public int compare(Identifiable identifiable, Identifiable otherIdentifiable) {
-				// Wrap the ids in the Integer object so we can use compareTo method.
-				Integer boxedId = identifiable.getId();
-				Integer otherBoxedId = otherIdentifiable.getId();
-				return boxedId.compareTo(otherBoxedId);
-			}
-		};
+		Comparator<Identifiable> idComparator = (identifiable, otherIdentifiable) -> {
+            // Wrap the ids in the Integer object so we can use compareTo method.
+            Integer boxedId = identifiable.getId();
+            Integer otherBoxedId = otherIdentifiable.getId();
+            return boxedId.compareTo(otherBoxedId);
+        };
 		// Sort both list copies by id
 		Collections.sort(identifiableListCopy, idComparator);
 		Collections.sort(otherIdentifiableListCopy, idComparator);

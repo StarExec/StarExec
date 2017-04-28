@@ -2443,12 +2443,7 @@ public class Solvers {
 	 */
     public static void sortConfigs(List<Solver> solvers) {
         for(Solver s : solvers) {
-            Collections.sort(s.getConfigurations(), new Comparator<Configuration>() {
-                @Override
-                public int compare(Configuration c1, Configuration c2) {
-                    return c1.getName().compareTo(c2.getName());
-                }
-            });
+            Collections.sort(s.getConfigurations(), (c1, c2) -> c1.getName().compareTo(c2.getName()));
         }
     }
 

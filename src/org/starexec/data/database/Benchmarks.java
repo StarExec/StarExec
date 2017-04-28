@@ -2240,16 +2240,12 @@ public class Benchmarks {
 		
 		final boolean l=perm!=null && perm.isLeader();
 		//It will delay the redirect until this method is finished which is why a new thread is used
-		Util.threadPoolExecute(new Runnable() {
-			@Override
-			public void run(){
-				try {
-				    process(s,proc,h,u,c,st,l);
-				    Uploads.benchmarkEverythingComplete(st);
-				} catch (Exception e) {
-					log.error(e.getMessage(),e);
-				}
-				
+		Util.threadPoolExecute(() -> {
+			try {
+				process(s,proc,h,u,c,st,l);
+				Uploads.benchmarkEverythingComplete(st);
+			} catch (Exception e) {
+				log.error(e.getMessage(),e);
 			}
 		});	
 		

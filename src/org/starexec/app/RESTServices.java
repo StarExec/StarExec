@@ -3317,18 +3317,15 @@ public class RESTServices {
 		for (Integer i : jobIds) {
 			success = success && Jobs.setDeletedColumn(i);
 		}
-		Util.threadPoolExecute(new Runnable() {
-			@Override
-			public void run(){
-				try {
-						if (!Jobs.deleteOrphanedJobs(userId)) {
-							log.error("there were one or more errors in deleting the orphaned jobs!");
-						}
-				} catch (Exception e) {
-					log.error(e.getMessage(),e);
-				}
-			}
-		});
+		Util.threadPoolExecute(() -> {
+            try {
+                if (!Jobs.deleteOrphanedJobs(userId)) {
+                    log.error("there were one or more errors in deleting the orphaned jobs!");
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(),e);
+            }
+        });
 		return success ?  gson.toJson(new ValidatorStatusCode(true,"Job(s) deleted successfully")) :
 			gson.toJson(new ValidatorStatusCode(false, "Internal database error deleting jobs"));
 	}
@@ -3650,47 +3647,44 @@ public class RESTServices {
 		}
 
 		// Fork a new thread to delete the subspaces so the user's browser doesn't hang.
-		Runnable removeSubspacesProcess = new Runnable() {
-			@Override
-			public void run() {
-				try {
-					boolean recycleAllAllowed=false;
-					if (Util.paramExists("recyclePrims", request)) {
-						if (Boolean.parseBoolean(request.getParameter("recyclePrims"))) {
-							log.debug("Request to delete all solvers and benchmarks in a hierarchy received");
-							recycleAllAllowed=true;
-						}
-					}
-					Set<Solver> solvers= new HashSet<>();
-					Set<Benchmark> benchmarks= new HashSet<>();
-					if (recycleAllAllowed) {
-						for (int sid : selectedSubspaces) {
-							solvers.addAll(Solvers.getBySpace(sid));
-							benchmarks.addAll(Benchmarks.getBySpace(sid));
-							for (Space s : Spaces.getSubSpaceHierarchy(sid)) {
-								solvers.addAll(Solvers.getBySpace(s.getId()));
-								benchmarks.addAll(Benchmarks.getBySpace(s.getId()));
-							}
-						}
-					}
-					log.debug("found the following benchmarks");
-					for (Benchmark b : benchmarks) {
-						log.debug(String.valueOf(b.getId()));
-					}
-					// Remove the subspaces from the space
-					boolean success=true;
-					if (Spaces.removeSubspaces(selectedSubspaces)) {
-						if (recycleAllAllowed) {
-							log.debug("Space removed successfully, recycling primitives");
-							success=success && Solvers.recycleSolversOwnedByUser(solvers, userId);
-							success= success && Benchmarks.recycleAllOwnedByUser(benchmarks, userId);
-						}
-					}
-				} catch (Exception e) {
-					log.warn("Error occurred while removing subspaces.", e);
-				}
-			}
-		};
+		Runnable removeSubspacesProcess = () -> {
+            try {
+                boolean recycleAllAllowed=false;
+                if (Util.paramExists("recyclePrims", request)) {
+                    if (Boolean.parseBoolean(request.getParameter("recyclePrims"))) {
+                        log.debug("Request to delete all solvers and benchmarks in a hierarchy received");
+                        recycleAllAllowed=true;
+                    }
+                }
+                Set<Solver> solvers= new HashSet<>();
+                Set<Benchmark> benchmarks= new HashSet<>();
+                if (recycleAllAllowed) {
+                    for (int sid : selectedSubspaces) {
+                        solvers.addAll(Solvers.getBySpace(sid));
+                        benchmarks.addAll(Benchmarks.getBySpace(sid));
+                        for (Space s : Spaces.getSubSpaceHierarchy(sid)) {
+                            solvers.addAll(Solvers.getBySpace(s.getId()));
+                            benchmarks.addAll(Benchmarks.getBySpace(s.getId()));
+                        }
+                    }
+                }
+                log.debug("found the following benchmarks");
+                for (Benchmark b : benchmarks) {
+                    log.debug(String.valueOf(b.getId()));
+                }
+                // Remove the subspaces from the space
+                boolean success=true;
+                if (Spaces.removeSubspaces(selectedSubspaces)) {
+                    if (recycleAllAllowed) {
+                        log.debug("Space removed successfully, recycling primitives");
+                        success=success && Solvers.recycleSolversOwnedByUser(solvers, userId);
+                        success= success && Benchmarks.recycleAllOwnedByUser(benchmarks, userId);
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Error occurred while removing subspaces.", e);
+            }
+        };
 		Util.threadPoolExecute(removeSubspacesProcess);
 		return gson.toJson(new ValidatorStatusCode(true, "Subspaces are being deleted."));
 	}
@@ -3883,18 +3877,15 @@ public class RESTServices {
 			log.debug("executing new processor on benchmark");
 			List<Benchmark> bench = new ArrayList<>();
 			bench.add(Benchmarks.get(benchId));
-			Util.threadPoolExecute(new Runnable() {
-				@Override
-				public void run(){
-					try {
-						Benchmarks.attachBenchAttrs(bench, Processors.get(benchType), null);
-						Benchmarks.addAttributeSetToDbIfValid(bench.get(0).getAttributes(), bench.get(0), null);
-					} catch (Exception e) {
-						log.error(e.getMessage(),e);
-					}
+			Util.threadPoolExecute(() -> {
+                try {
+                    Benchmarks.attachBenchAttrs(bench, Processors.get(benchType), null);
+                    Benchmarks.addAttributeSetToDbIfValid(bench.get(0).getAttributes(), bench.get(0), null);
+                } catch (Exception e) {
+                    log.error(e.getMessage(),e);
+                }
 
-				}
-			});
+            });
 
 
 			processorString=". Benchmark is being processed with the new processor";

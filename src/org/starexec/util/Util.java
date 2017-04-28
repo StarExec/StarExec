@@ -495,23 +495,20 @@ public class Util {
 		   and prevent the other from making progress as well (since
 		   the process cannot advance in that case). */
 		final StringBuffer message = new StringBuffer();
-		threadPool.execute(new Runnable() {
-			@Override
-				public void run() {
-				try {
-					if (drainInputStream(message, p.getErrorStream())) {
-						message.insert(0, "The process produced stderr output:\n");
-						log.error("drainStreams", message.toString());
-					}
-				}
-				catch(Exception e) {
-					log.error(
-						"drainStreams",
-						"Error draining stderr from process: " + e.toString()
-					);
-				}
-			}
-		});
+		threadPool.execute(() -> {
+            try {
+                if (drainInputStream(message, p.getErrorStream())) {
+                    message.insert(0, "The process produced stderr output:\n");
+                    log.error("drainStreams", message.toString());
+                }
+            }
+            catch(Exception e) {
+                log.error(
+                    "drainStreams",
+                    "Error draining stderr from process: " + e.toString()
+                );
+            }
+        });
 		drainInputStream(message, p.getInputStream());
 		return message.toString();
 	}
