@@ -1000,11 +1000,14 @@ class CommandParser {
 			}
 
 			String v = value.toString();
-			if (v.charAt(0) == '$') {
-				String variableName = v.substring(1);
-				if (variables.containsKey(variableName)) {
-					v = variables.get(variableName);
+			try {
+				if (v.charAt(0) == '$') {
+					String variableName = v.substring(1);
+					if (variables.containsKey(variableName)) {
+						v = variables.get(variableName);
+					}
 				}
+			} catch (StringIndexOutOfBoundsException e) {
 			}
 
 			answer.put(key, v);
