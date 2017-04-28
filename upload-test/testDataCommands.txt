@@ -39,8 +39,8 @@ print m=Uploading always-sat-solver
 pushsolver f=solvers/always-sat-solver.zip id=2 n=always-sat-solver
 print m=Uploading always-unsat-solver
 pushsolver f=solvers/always-unsat-solver.zip id=2 n=always-unsat-solver
-print m=Uploading five-thousand-configs (solver)
-pushsolver f=solvers/five-thousand-configs.tar.gz id=2 n=five-thousand-configs
+# print m=Uploading five-thousand-configs (solver)
+# pushsolver f=solvers/five-thousand-configs.tar.gz id=2 n=five-thousand-configs
 print m=Uploading output-nothing-solver
 pushsolver f=solvers/output-nothing-solver.zip id=2 n=output-nothing-solver
 print m=Uploading random-sat-or-unsat-solver
