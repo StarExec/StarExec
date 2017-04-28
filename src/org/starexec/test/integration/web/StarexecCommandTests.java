@@ -50,7 +50,7 @@ public class StarexecCommandTests extends TestSequence {
 		String jobName=TestUtil.getRandomJobName();
 		int qid=Queues.getAllQ().getId();
 		int jobId=con.createJob(space1.getId(), jobName, "", proc.getId(), -1, qid, 1, 1, true,1.0,false,0L, false,0);
-		Assert.assertTrue(jobId>0);
+		Assert.assertTrue("createJob returned " + jobId, jobId>0);
 		Job job=Jobs.get(jobId);
 		Assert.assertNotNull(job);
 		Assert.assertEquals(jobName,job.getName());
