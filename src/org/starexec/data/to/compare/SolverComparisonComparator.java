@@ -31,7 +31,7 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 	}
 	
 	
-	private  int compareSolverComparisonNums(SolverComparison c1, SolverComparison c2) {
+	private int compareSolverComparisonNums(SolverComparison c1, SolverComparison c2) {
 		try {
 			double db1=0;
 			double db2=0;
@@ -43,21 +43,11 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 			JoblineStage stage22=c2.getSecondPair().getStageFromNumber(stageNumber);
 			
 			if (column==1) {
-				if (isWallclock) {
-					db1=stage11.getWallclockTime();
-					db2=stage12.getWallclockTime();
-				} else {
-					db1=stage11.getCpuTime();
-					db2=stage12.getCpuTime();
-				}
+				db1 = getTimeFromStage(isWallclock, stage11);
+				db2 = getTimeFromStage(isWallclock, stage12);
 			} else if (column==2) {
-				if (isWallclock) {
-					db1=stage21.getWallclockTime();
-					db2=stage22.getWallclockTime();
-				} else {
-					db1=stage21.getCpuTime();
-					db2=stage22.getCpuTime();
-				}
+				db1 = getTimeFromStage(isWallclock, stage21);
+				db2 = getTimeFromStage(isWallclock, stage22);
 			} else if (column==3) {
 				if (isWallclock) {
 					db1=c1.getWallclockDifference(stageNumber);
@@ -74,14 +64,20 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 					db2=1;
 				}
 			}
-			
 			return Double.compare(db1, db2);
-			
 		} catch (Exception e) {
 			//either solver name was null, so we can just return jp1 as being first
 		}
 		
 		return 0;
+	}
+
+	private static double getTimeFromStage(boolean isWallclock, JoblineStage stage) {
+		if (isWallclock) {
+			return stage.getWallclockTime();
+		} else {
+			return stage.getCpuTime();
+		}
 	}
 	
 	/**
