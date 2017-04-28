@@ -1127,31 +1127,7 @@ public class Connection {
 	 */
 
 	public int rerunJob(Integer jobID) {
-		HttpResponse response = null;
-		try {
-			String URL = baseURL + C.URL_RERUNJOB;
-			URL = URL.replace("{id}", jobID.toString());
-			HttpPost post = new HttpPost(URL);
-			post = (HttpPost) setHeaders(post);
-			post.setEntity(new UrlEncodedFormEntity(new ArrayList<>(), "UTF-8"));
-			response = executeGetOrPost(post);
-			JsonObject obj = JsonHandler.getJsonObject(response);
-
-			boolean success = JsonHandler.getSuccessOfResponse(obj);
-			String message = JsonHandler.getMessageOfResponse(obj);
-
-			if (success) {
-				return 0;
-			} else {
-				setLastError(message);
-				return Status.ERROR_SERVER;
-			}
-
-		} catch (Exception e) {
-			return Status.ERROR_INTERNAL;
-		} finally {
-			safeCloseResponse(response);
-		}
+		return rerunPairOrJobHelper(baseURL + C.URL_RERUNJOB, jobID);
 	}
 
 	/**
@@ -1162,10 +1138,14 @@ public class Connection {
 	 */
 
 	public int rerunPair(Integer pairID) {
+		return rerunPairOrJobHelper(baseURL + C.URL_RERUNPAIR, pairID);
+	}
+
+	private int rerunPairOrJobHelper(final String url, final Integer id) {
 		HttpResponse response = null;
 		try {
-			String URL = baseURL + C.URL_RERUNPAIR;
-			URL = URL.replace("{id}", pairID.toString());
+			String URL = url;
+			URL = URL.replace("{id}", id.toString());
 			HttpPost post = new HttpPost(URL);
 			post = (HttpPost) setHeaders(post);
 			post.setEntity(new UrlEncodedFormEntity(new ArrayList<>(), "UTF-8"));
