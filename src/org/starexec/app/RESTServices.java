@@ -3577,7 +3577,7 @@ public class RESTServices {
 	@POST
 	@Path("/delete/job")
 	@Produces("application/json")
-	public String deleteJobsOnSeparateThread(@Context HttpServletRequest request) {
+	public String deleteJobs(@Context HttpServletRequest request) {
 		// Prevent users from selecting 'empty', when the table is empty, and trying to delete it
 		if(null == request.getParameterValues("selectedIds[]")){
 			return gson.toJson(ERROR_IDS_NOT_GIVEN);
