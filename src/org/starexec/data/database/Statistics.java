@@ -163,7 +163,7 @@ public class Statistics {
 	int id;
 	Long data;
 
-	Double total = new Double(0);
+	Double total = 0d;
 
 	HashMap<String,Long> commMap = new HashMap<>();
 

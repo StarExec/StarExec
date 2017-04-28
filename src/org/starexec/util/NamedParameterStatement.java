@@ -68,7 +68,7 @@ method is non-private so JUnit code can
                         indexList= new LinkedList<>();
                         paramMap.put(name, indexList);
                     }
-                    indexList.add(new Integer(index));
+                    indexList.add(index);
 
                     index++;
                 }

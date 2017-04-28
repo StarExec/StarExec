@@ -509,7 +509,7 @@ public class Download extends HttpServlet {
 
 		// If we can see this Space
 			List<File> files= new ArrayList<>();
-			log.debug("Permission to download XML granted, includeAttributes = "+new Boolean(includeAttributes));
+			log.debug("Permission to download XML granted, includeAttributes = "+includeAttributes);
 			BatchUtil butil = new BatchUtil();
 			File file = butil.generateXMLfile(Spaces.getDetails(space.getId(), userId), userId, includeAttributes, updates, upid);
 

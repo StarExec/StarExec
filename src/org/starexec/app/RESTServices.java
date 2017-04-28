@@ -325,7 +325,7 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		ValidatorStatusCode status=JobSecurity.canUserSeeJobWithPair(id, userId);
 		if (!status.isSuccess()) {
-		    return ("user "+ new Integer(userId) + " does not have access to see job " + new Integer(id));
+		    return ("user "+ userId + " does not have access to see job " + id);
 		}
 
 			String log = JobPairs.getJobLog(id);

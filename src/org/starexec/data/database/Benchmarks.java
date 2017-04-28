@@ -2275,9 +2275,9 @@ public class Benchmarks {
 				    boolean isCommunityLeader) {
 	    Connection con=null;
 		
-	    log.info("Processing benchmarks in space "+new Integer(spaceId));
+	    log.info("Processing benchmarks in space "+spaceId);
 	    if (isCommunityLeader) {
-			log.debug("User "+new Integer(userId)+" is a community leader, so they can process any benchmarks");
+			log.debug("User "+userId+" is a community leader, so they can process any benchmarks");
 	    }
 
 	    try {

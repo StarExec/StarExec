@@ -256,8 +256,8 @@ public class SpaceTests extends TestSequence {
 			@Override
 			public int compare(Identifiable identifiable, Identifiable otherIdentifiable) {
 				// Wrap the ids in the Integer object so we can use compareTo method.
-				Integer boxedId = Integer.valueOf(identifiable.getId());
-				Integer otherBoxedId = Integer.valueOf(otherIdentifiable.getId());
+				Integer boxedId = identifiable.getId();
+				Integer otherBoxedId = otherIdentifiable.getId();
 				return boxedId.compareTo(otherBoxedId);
 			}
 		};
