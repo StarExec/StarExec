@@ -302,7 +302,7 @@ public class Statistics {
 			return makeSolverComparisonChart(pairs1, pairs2, jobSpaceId, edgeLengthInPixels,
 					axisColor, stageNumber, primitivesToAnonymize );
 		} catch (Exception e) {
-			log.error("makeJobPairComparisonChart says "+e.getMessage(),e);
+			log.error("makeSolverComparisonChart says "+e.getMessage(),e);
 		}
 		return null;
 	}
@@ -474,7 +474,7 @@ public class Statistics {
 			answer.add(map);
 			return answer;
 		} catch (Exception e) {
-			log.error("makeJobPairComparisonChart says "+e.getMessage(),e);
+			log.error("deprecated makeSolverComparisonChart says "+e.getMessage(),e);
 		}
 		return null;
 	}
