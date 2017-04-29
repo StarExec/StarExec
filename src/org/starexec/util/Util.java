@@ -410,18 +410,22 @@ public class Util {
 	 * has no useful way to handle them! Throwing an exception to higher levels is the desired behavior.
 	 */
 	public static Process executeCommandAndReturnProcess(String[] command, String[] envp, File workingDirectory) throws IOException {
-		final String methodName = "executeCommandAndReturnProcess";
 		Runtime r = Runtime.getRuntime();
 
-		StringBuilder b = new StringBuilder();
-		b.append("Executing the following commands:");
+		final String methodName = "executeCommandAndReturnProcess";
+		final StringBuilder b = new StringBuilder();
+		b.append("Executing the following command:");
 		for (String cmd : command) {
-			b.append("\n\t");
+			b.append("  ");
 			b.append(cmd);
 		}
 		log.info(methodName, b.toString());
 
-		return r.exec(command, envp, workingDirectory);
+		if (command.length == 1) {
+			return r.exec(command[0], envp, workingDirectory);
+		} else {
+			return r.exec(command, envp, workingDirectory);
+		}
 	}
 
     /**
