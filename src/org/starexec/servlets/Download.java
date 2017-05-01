@@ -799,6 +799,7 @@ public class Download extends HttpServlet {
 		try {
 			ZipOutputStream stream=new ZipOutputStream(response.getOutputStream());
 			for (JobPair p : pairs ) {
+				String zipFileNameParent = null;
 				StringBuilder zipFileName=new StringBuilder(baseName);
 				zipFileName.append(File.separator);
 				if (useSpacePath) {
@@ -816,15 +817,21 @@ public class Download extends HttpServlet {
 					//zipFileName.append(p.getPrimaryConfiguration().getName());
 					zipFileName.append(File.separator);
 					zipFileName.append(p.getBench().getName());
+					zipFileNameParent = zipFileName.toString();
 					zipFileName.append(File.separator);
 					zipFileName.append(p.getId());
 				}
 				List<File> files = JobPairs.getOutputPaths(p);
 				boolean running = p.getStatus().getCode().running();
 				for (File file : files) {
-					StringBuilder singleFileName = new StringBuilder(zipFileName);
 					if (file.exists()) {
 						if (file.isDirectory()) {
+							StringBuilder singleFileName = null;
+							if (useSpacePath) {
+								singleFileName = new StringBuilder(zipFileNameParent);
+							} else {
+								singleFileName = new StringBuilder(zipFileName);
+							}
 							//means this is adjacent to a stdout file
 							if (files.size()>1) {
 								singleFileName.append(File.separator);
@@ -837,6 +844,7 @@ public class Download extends HttpServlet {
 								ArchiveUtil.addDirToArchive(stream, file, singleFileName.toString(), lastModified);
 							}
 						} else {
+							StringBuilder singleFileName = new StringBuilder(zipFileName);
 							//singleFileName.append(File.separator);
 							//singleFileName.append(p.getBench().getName());
 							if (!running || lastModified==null) {
@@ -850,7 +858,7 @@ public class Download extends HttpServlet {
 
 					} else {
 						//if we can't find output for the pair, just put an empty file there
-						ArchiveUtil.addStringToArchive(stream, " ", singleFileName.toString());
+						ArchiveUtil.addStringToArchive(stream, " ", zipFileName.toString());
 					}
 				}
 
@@ -924,7 +932,7 @@ public class Download extends HttpServlet {
 				response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
 				response.addCookie(new Cookie("Running-Pairs",String.valueOf(runningPairsFound)));
 				log.debug("added the max-completion cookie, starting to write output for job id = "+jobId);
-				String baseName="Job"+String.valueOf(jobId)+"_output_new";
+				String baseName="Job"+String.valueOf(jobId)+"_output";
 
 				// get all files in between
 				Download.addJobPairsToZipOutput(pairs,response,baseName,true, lastModified);
