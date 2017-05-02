@@ -84,7 +84,7 @@ public class JobPairs {
 			final int spaceId,
 			final HashSet<String> jobRootPaths,
 			final ConfigAttrMapPair configAttrMapPair,
-			final NodeList jobPairs) throws SQLException {
+			final NodeList jobPairs) {
 
 		final String methodName = "populateJobPairsForJobXMLUpload";
 		Connection con = null;
@@ -179,9 +179,6 @@ public class JobPairs {
 				}
 			}
 			return Optional.empty();
-		} catch (SQLException e) {
-			log.error(methodName,"Caught SQLException.", e);
-			throw e;
 		} finally {
 			Common.safeClose(con);
 		}
@@ -297,7 +294,7 @@ public class JobPairs {
 		
 	}
 
-	public static boolean addJobPairs( int jobId, List<JobPair> pairs ) throws SQLException {
+	public static boolean addJobPairs( int jobId, List<JobPair> pairs ) {
 		final String methodName = "addJobPairs( int, List<JobPair> )";
 
 		Connection con = null;
@@ -313,10 +310,6 @@ public class JobPairs {
 			success = addJobPairs( con, jobId, pairs );
 			log.debug("addJobPairs three");
 			return success;
-		} catch ( SQLException e ) {
-			log.error( methodName, "SQLException thrown: " + e.getMessage(), e);
-			Common.doRollback( con );
-			throw e;
 		} finally  {
 			Common.endTransaction( con );
 			Common.safeClose( con );

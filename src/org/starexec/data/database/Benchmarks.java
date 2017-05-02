@@ -319,7 +319,7 @@ public class Benchmarks {
 	 * @author Tyler Jensen
 	 * @throws Exception Any database error that gets thrown
 	 */
-    public static int addAndAssociate(Benchmark benchmark, Integer spaceId, Integer statusId) throws Exception{
+    public static int addAndAssociate(Benchmark benchmark, Integer spaceId, Integer statusId) {
 	    if (Benchmarks.isBenchValid(benchmark.getAttributes())){
 		    Connection con = null;		
 		    try {

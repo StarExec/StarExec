@@ -866,34 +866,34 @@ public class RESTServicesSecurityTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void clearCacheTest() throws Exception {
+	private void clearCacheTest() {
 		assertResultIsInvalid(services.clearCache(job.getId(),TestUtil.getMockHttpRequest(user.getId())));
 		assertResultIsInvalid(services.clearCache(-1,TestUtil.getMockHttpRequest(admin.getId())));
 	}
 	
 	@StarexecTest
-	private void clearStatsCacheTest() throws Exception {
+	private void clearStatsCacheTest() {
 		assertResultIsInvalid(services.clearStatsCache(TestUtil.getMockHttpRequest(user.getId())));
 	}
 	
 	@StarexecTest
-	private void pauseAllTest() throws Exception {
+	private void pauseAllTest() {
 		assertResultIsInvalid(services.pauseAll(TestUtil.getMockHttpRequest(user.getId())));
 	}
 	
 	@StarexecTest
-	private void resumeAllTest() throws Exception {
+	private void resumeAllTest() {
 		assertResultIsInvalid(services.resumeAll(TestUtil.getMockHttpRequest(user.getId())));
 	}
 	
 	@StarexecTest
-	private void makeQueueGlobalTest() throws Exception {
+	private void makeQueueGlobalTest() {
 		assertResultIsInvalid(services.makeQueueGlobal(allQ.getId(),TestUtil.getMockHttpRequest(user.getId())));
 		assertResultIsInvalid(services.makeQueueGlobal(-1,TestUtil.getMockHttpRequest(admin.getId())));
 	}
 	
 	@StarexecTest
-	private void removeQueueGlobalTest() throws Exception {
+	private void removeQueueGlobalTest(){
 		assertResultIsInvalid(services.removeQueueGlobal(allQ.getId(),TestUtil.getMockHttpRequest(user.getId())));
 		assertResultIsInvalid(services.removeQueueGlobal(-1,TestUtil.getMockHttpRequest(admin.getId())));
 	}
@@ -935,22 +935,22 @@ public class RESTServicesSecurityTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void clearLoadBalanceDataTest() throws Exception {
+	private void clearLoadBalanceDataTest() {
 		assertResultIsInvalid(services.clearLoadBalanceData(TestUtil.getMockHttpRequest(user.getId())));
 	}
 	
 	@StarexecTest
-	private void clearSolverCacheTest() throws Exception {
+	private void clearSolverCacheTest(){
 		assertResultIsInvalid(services.clearSolverCache(TestUtil.getMockHttpRequest(user.getId())));
 	}
 	
 	@StarexecTest
-	private void updateDebugModeTest() throws Exception {
+	private void updateDebugModeTest()  {
 		assertResultIsInvalid(services.updateDebugMode(false,TestUtil.getMockHttpRequest(user.getId())));
 	}
 	
 	@StarexecTest
-	private void setTestQueueTest() throws Exception {
+	private void setTestQueueTest(){
 		assertResultIsInvalid(services.setTestQueue(allQ.getId(),TestUtil.getMockHttpRequest(user.getId())));
 		assertResultIsInvalid(services.setTestQueue(-1,TestUtil.getMockHttpRequest(admin.getId())));
 	}

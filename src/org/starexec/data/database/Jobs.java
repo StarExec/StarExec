@@ -294,7 +294,7 @@ public class Jobs {
 	 * @param configIds  the configurations to add to the job.
 	 * @author Albert Giegerich
 	 */
-	public static void addJobPairsFromConfigIdsForAllBenchmarks( int jobId, Set<Integer> configIds ) throws SQLException {
+	public static void addJobPairsFromConfigIdsForAllBenchmarks( int jobId, Set<Integer> configIds ) {
 		List<JobPair> jobPairsToAdd = new ArrayList<>();
 		// Maintain this hashmap that keeps track of which benchmark-solver-config triples we've seen.
 		Map<Integer, Map<Integer, Set<Integer>>> jobMap = Jobs.getJobMapForPrimaryStage( jobId );
@@ -407,7 +407,7 @@ public class Jobs {
 	 * @param configIds  the configurations to add to the job.
 	 * @author Albert Giegerich
 	 */
-	public static void addJobPairsFromConfigIdsForPairedBenchmarks( int jobId, Set<Integer> configIds ) throws SQLException {
+	public static void addJobPairsFromConfigIdsForPairedBenchmarks( int jobId, Set<Integer> configIds ) {
 
 		List<JobPair> jobPairsToAdd = new ArrayList<>();
 
