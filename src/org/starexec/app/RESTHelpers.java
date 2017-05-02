@@ -1239,7 +1239,7 @@ public class RESTHelpers {
 		else {
 			query.setTotalRecordsAfterQuery(Spaces.getCountInSpace(id, userId, query.getSearchQuery()));
 		}
-		return convertSpacesToJsonObject(spacesToDisplay,query,id);
+		return convertSpacesToJsonObject(spacesToDisplay,query);
 	}
 
 
@@ -2046,7 +2046,7 @@ public class RESTHelpers {
 	 * @return A JsonObject that can be used to populate a datatable
 	 * @author Eric Burns
 	 */
-	public static JsonObject convertSpacesToJsonObject(List<Space> spaces,DataTablesQuery query, int id) {
+	public static JsonObject convertSpacesToJsonObject(List<Space> spaces,DataTablesQuery query) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -2252,12 +2252,11 @@ public class RESTHelpers {
 
 	/**
 	 * Gets a JSON representation of a job space tree
-	 * @param parentId
 	 * @param jobId
 	 * @param userId
 	 * @return
 	 */
-	public static String getJobSpacesTreeJson(int parentId, int jobId, int userId) {
+	public static String getJobSpacesTreeJson(int jobId, int userId) {
 		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId,userId);
 		if (!status.isSuccess()) {
 			String output = gson.toJson(status);

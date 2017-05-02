@@ -103,7 +103,7 @@ public class Download extends HttpServlet {
 				Optional<Solver> os = handleSolverAndSolverSrc(request, response);
 				if (os.isPresent()) {
 					Solver s = os.get();
-					success = handleSolverSource(s, u.getId(), response);
+					success = handleSolverSource(s, response);
 				} else {
 					// handleSolverAndSolverSrc already sent the response.
 					return;
@@ -286,7 +286,7 @@ public class Download extends HttpServlet {
 						}
 					}
 					if (proc.size() > 0) {
-						success = handleProc(proc, u.getId(), Integer.parseInt(request.getParameter(PARAM_ID)), response);
+						success = handleProc(proc, response);
 					} else {
 						log.debug(methodName, "Could not find any processors to download.");
 						response.sendError(HttpServletResponse.SC_NO_CONTENT, "There are no processors to download");
@@ -406,11 +406,10 @@ public class Download extends HttpServlet {
 	 * Processes a solver source code request to be downloaded. The solver source is archived in a format that is
 	 * specified by the user, given a random name, and placed in a secure folder on the server.
 	 * @param s the solver to be downloaded
-	 * @param userId the id of the user making the download request
 	 * @return a file representing the archive to send back to the client
 	 * @author Skylar Stark & Wyatt Kaiser & Andrew Lubinus
 	 */
-	private static boolean handleSolverSource(Solver s, int userId,  HttpServletResponse response) throws Exception {
+	private static boolean handleSolverSource(Solver s, HttpServletResponse response) throws Exception {
 
 		String baseName = s.getName();
 		// If we can see this solver AND the solver is downloadable...
@@ -424,7 +423,7 @@ public class Download extends HttpServlet {
 	 * @author Eric Burns
 	 */
 
-	private static boolean handleProc(List<Processor> procs, int userId, int spaceId, HttpServletResponse response) throws Exception {
+	private static boolean handleProc(List<Processor> procs, HttpServletResponse response) throws Exception {
 			final String methodName = "handleProc";
 			log.entry(methodName);
 

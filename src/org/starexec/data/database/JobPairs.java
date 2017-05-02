@@ -75,7 +75,6 @@ public class JobPairs {
 	}
 
 	public static Optional<String> populateConfigIdsToSolversMapAndJobPairsForJobXMLUpload(
-			final Element jobElement,
 			final String rootName,
 			final int userId,
 			final Map<Integer, Benchmark> accessibleCachedBenchmarks,

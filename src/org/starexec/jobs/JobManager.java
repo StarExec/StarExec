@@ -1082,12 +1082,11 @@ public abstract class JobManager {
 	 * resulting job pairs to a given job object. Accessed from running the space / keep hierarchy
 	 * structure in job creation.
 	 * 
-	 * @param userId the id of the user adding the job pairs
 	 * @param spaceId the id of the space to build the job pairs from
 	 * @param path The space path to give to every job pair created by this function
 	 * @return an error message if there was a problem, and null otherwise.
 	 */
-	public static List<JobPair> addJobPairsFromSpace(int userId, int spaceId, String path) {
+	public static List<JobPair> addJobPairsFromSpace(int spaceId, String path) {
 		Space space = Spaces.get(spaceId);
 		//log.debug("calling addJobPairsFrom space on space ID = "+spaceId);
 		//log.debug("the path for the pairs will be ");
@@ -1207,13 +1206,12 @@ public abstract class JobManager {
 	 * and create job pairs from the result. Will then return those job pairs
 	 * 
 	 * @param spaceId the id of the space we start in
-	 * @param userId the id of the user creating the job
 	 * @param configIds a list of configurations to use
 	 * @param path The path to use for each job pair created.
 	 * @return A HashMap that maps space IDs to all the job pairs in that space. These can then be added to a job in any
 	 * desirable order
 	 */
-	public static List<JobPair> addJobPairsFromSpace( int userId, int spaceId, String path, List<Integer> configIds) {
+	public static List<JobPair> addJobPairsFromSpace(int spaceId, String path, List<Integer> configIds) {
 		try {			
 			List<Solver> solvers = Solvers.getWithConfig(configIds);
 			

@@ -260,7 +260,7 @@ public class CreateJob extends HttpServlet {
 
 				HashMap<Integer, List<JobPair>> spaceToPairs = new HashMap<>();
 				for (Space s : spaces) {
-					List<JobPair> pairs = JobManager.addJobPairsFromSpace(userId, s.getId(), SP.get(s.getId()));
+					List<JobPair> pairs = JobManager.addJobPairsFromSpace(s.getId(), SP.get(s.getId()));
 
 					spaceToPairs.put(s.getId(), pairs);
 				}
@@ -281,7 +281,7 @@ public class CreateJob extends HttpServlet {
 				List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
 
 				if (benchMethod.equals("runAllBenchInSpace")) {
-					List<JobPair> pairs = JobManager.addJobPairsFromSpace(userId, space, Spaces.getName(space), configIds);
+					List<JobPair> pairs = JobManager.addJobPairsFromSpace(space, Spaces.getName(space), configIds);
 					if (pairs != null) {
 						j.addJobPairs(pairs);
 					}

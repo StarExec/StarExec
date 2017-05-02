@@ -103,7 +103,7 @@ public class JspHelpers {
 
 				User u=Users.get(j.getUserId());
 
-				String jobSpaceTreeJson = RESTHelpers.getJobSpacesTreeJson(jobSpaceId, j.getId(), userId);
+				String jobSpaceTreeJson = RESTHelpers.getJobSpacesTreeJson( j.getId(), userId);
 				List<JobSpace> jobSpaces = Spaces.getSubSpacesForJob(jobSpaceId, true);
 				jobSpaces.add(jobSpace);
 				request.setAttribute("jobSpaces", jobSpaces);
@@ -199,7 +199,7 @@ public class JspHelpers {
 					handleNullSolver( solverId.get(), response );
 					return;
 				}
-				setSolverPageRequestAttributes( true, AnonymousLinks.areSolversAnonymized( primitivesToAnonymize.get() ), solver, request, response );
+				setSolverPageRequestAttributes( true, AnonymousLinks.areSolversAnonymized( primitivesToAnonymize.get() ), solver, request);
 			} else {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Page not found.");
 				return;
@@ -236,7 +236,7 @@ public class JspHelpers {
 				request.setAttribute( "downloadable", downloadable );
 				request.setAttribute( "hasAdminReadPrivileges", GeneralSecurity.hasAdminReadPrivileges( userId ));
 
-				setSolverPageRequestAttributes( false, false, s, request, response );
+				setSolverPageRequestAttributes( false, false, s, request);
 			} else {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Solver does not exist or is restricted");
 			}
@@ -254,8 +254,7 @@ public class JspHelpers {
 			boolean isAnonymousPage,
 			boolean hideSolverName,
 			Solver s,
-			HttpServletRequest request,
-			HttpServletResponse response ) {
+			HttpServletRequest request) {
 
 		if ( s == null ) {
 			return;

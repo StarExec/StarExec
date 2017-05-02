@@ -179,7 +179,7 @@ public class JobToXMLer {
 	for (SolverPipeline pipe : neededPipes) {
 		jobsElement.appendChild(getPipelineElement(pipe));
 	}
-	Element rootJobElement = generateJobXML(job, userId, neededPipes.size()!=0);
+	Element rootJobElement = generateJobXML(job,neededPipes.size()!=0);
 	jobsElement.appendChild(rootJobElement);
 		
 	
@@ -191,13 +191,12 @@ public class JobToXMLer {
 	 *  Generates the XML for an individual job.
 	 *  @author Julio Cervantes
 	 *  @param job The job for which we want an xml representation.
-	 *  @param userId the id of the user making the request
 	 *  @param containsPipelines True if this job has pipelines and false otherwise
 	 *  @return jobElement for xml file to represent job pair info  of input job 
 	 */	
     
     
-    public Element generateJobXML(Job job, int userId, boolean containsPipelines){		
+    public Element generateJobXML(Job job, boolean containsPipelines){
 	log.info("Generating Job XML for job " + job.getId());
 		
 		Element jobElement = doc.createElement("Job");

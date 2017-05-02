@@ -50,7 +50,7 @@ public class Registration extends HttpServlet {
 			log.entry(method);
 
 			// Begin registration for a new user
-			ValidatorStatusCode result = register(request, response);
+			ValidatorStatusCode result = register(request);
 			if (result.isSuccess()) {
 				response.sendRedirect(Util.docRoot("public/registrationConfirmation.jsp"));
 			} else {
@@ -75,7 +75,7 @@ public class Registration extends HttpServlet {
 	 * 2 if parameter validation fails
 	 * @author Todd Elvers
 	 */
-	public static ValidatorStatusCode register(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public static ValidatorStatusCode register(HttpServletRequest request) throws IOException {
 		
 		// Validate parameters of the new user request
 		ValidatorStatusCode status=validateRequest(request);

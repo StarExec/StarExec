@@ -2681,7 +2681,7 @@ public class Jobs {
 			procedure = con.prepareCall("{CALL GetAllJobPairsByJob(?)}");
 			procedure.setInt(1, jobId);
 			results = procedure.executeQuery();
-			List<JobPair> jobPairs= getPairsDetailed(jobId,con,results,false);
+			List<JobPair> jobPairs= getPairsDetailed(jobId,results,false);
 
 			return jobPairs;
 		} catch (Exception e) {
@@ -2716,7 +2716,7 @@ public class Jobs {
 			procedure.setInt(1, jobId);
 			procedure.setInt(2,since);
 			results = procedure.executeQuery();
-			List<JobPair> pairs= getPairsDetailed(jobId,con,results,true);
+			List<JobPair> pairs= getPairsDetailed(jobId,results,true);
 			HashMap<Integer,HashMap<Integer,Properties>> props=Jobs.getNewJobAttributes(con,jobId,since);
 
 			for (Integer i =0; i < pairs.size(); i++){
@@ -2959,7 +2959,7 @@ public class Jobs {
 			procedure = con.prepareCall("{CALL GetJobPairsPrimaryStageByJob(?)}");
 			procedure.setInt(1, jobId);
 			results = procedure.executeQuery();
-			List<JobPair> pairs= getPairsDetailed(jobId,con,results,false);
+			List<JobPair> pairs= getPairsDetailed(jobId,results,false);
 			HashMap<Integer,HashMap<Integer,Properties>> props=Jobs.getJobAttributes(con,jobId);
 			for (Integer i =0; i < pairs.size(); i++){
 				JobPair jp = pairs.get(i);
@@ -2991,7 +2991,7 @@ public class Jobs {
 	 * @author Tyler Jensen, Benton Mccune, Eric Burns
 	 */
 
-	private static List<JobPair> getPairsDetailed(int jobId, Connection con,ResultSet results, boolean getCompletionId) {
+	private static List<JobPair> getPairsDetailed(int jobId, ResultSet results, boolean getCompletionId) {
 		log.debug("starting the getPairsDetailed function");
 		try {
 			List<JobPair> returnList = new ArrayList<>();
@@ -4291,7 +4291,7 @@ public class Jobs {
 					}
 
 					//entries in the stats table determined by stage/configuration pairs
-					key = getStageConfigHashKey(stage, stage.getConfiguration());
+					key = getStageConfigHashKey(stage);
 					log.trace("Got solver stats key: " + key);
 					int configId = stage.getConfiguration().getId();
 					int stageNumber = stage.getStageNumber();
@@ -4393,7 +4393,7 @@ public class Jobs {
 //		return stage.isNoOp() || stage.getStarexecResult().equals(R.STAREXEC_UNKNOWN);
 //	}
 
-	private static String getStageConfigHashKey(JoblineStage stage, Configuration config) {
+	private static String getStageConfigHashKey(JoblineStage stage) {
 	    return stage.getStageNumber() + ":" + String.valueOf(stage.getConfiguration().getId());
 
     }

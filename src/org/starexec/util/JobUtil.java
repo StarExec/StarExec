@@ -584,7 +584,6 @@ public class JobUtil {
 
 			final NodeList jobPairs = jobElement.getElementsByTagName("JobPair");
 			Optional<String> potentialError = JobPairs.populateConfigIdsToSolversMapAndJobPairsForJobXMLUpload(
-					jobElement,
 					rootName,
 					userId,
 					accessibleCachedBenchmarks,
@@ -600,7 +599,6 @@ public class JobUtil {
 			}
 			final NodeList uploadedSolverJobPairs = jobElement.getElementsByTagName("UploadedSolverJobPair");
 			potentialError = JobPairs.populateConfigIdsToSolversMapAndJobPairsForJobXMLUpload(
-					jobElement,
 					rootName,
 					userId,
 					accessibleCachedBenchmarks,
