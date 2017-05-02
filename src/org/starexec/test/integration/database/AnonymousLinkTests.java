@@ -79,7 +79,7 @@ public class AnonymousLinkTests extends TestSequence {
 					Assert.assertTrue( getUuid.isPresent() );
 
 					Assert.assertEquals( 
-							getAnonymousLinkCodeTestMessage(uuid, getUuid.get(), R.BENCHMARK, bench.getId(), primitivesToAnonymize ),
+							getAnonymousLinkCodeTestMessage(uuid, getUuid.get(), primitivesToAnonymize ),
 							uuid,
 							getUuid.get());
 
@@ -94,7 +94,7 @@ public class AnonymousLinkTests extends TestSequence {
 				Assert.assertTrue( getUuid.isPresent() );
 
 				Assert.assertEquals( 
-						getAnonymousLinkCodeTestMessage(uuid, getUuid.get(), R.SOLVER, solver.getId(), primitivesToAnonymize ),
+						getAnonymousLinkCodeTestMessage(uuid, getUuid.get(), primitivesToAnonymize ),
 						uuid,
 						getUuid.get());
 
@@ -108,7 +108,7 @@ public class AnonymousLinkTests extends TestSequence {
 				Assert.assertTrue( getUuid.isPresent() );
 
 				Assert.assertEquals( 
-						getAnonymousLinkCodeTestMessage(uuid, getUuid.get(), R.JOB, job.getId(), primitivesToAnonymize ),
+						getAnonymousLinkCodeTestMessage(uuid, getUuid.get(), primitivesToAnonymize ),
 						uuid,
 						getUuid.get());
 
@@ -125,9 +125,7 @@ public class AnonymousLinkTests extends TestSequence {
 
 	private String getAnonymousLinkCodeTestMessage( 
 			String uuid, 
-			String getUuid, 
-			String primitiveType, 
-			int primitiveId, 
+			String getUuid,
 			PrimitivesToAnonymize primitivesToAnonymize) {
 			return uuid + " != " + getUuid + " for primType=" + R.JOB +",  primId="+job.getId()+", primitivesToAnonymize=" +
 					AnonymousLinks.getPrimitivesToAnonymizeName(primitivesToAnonymize);
