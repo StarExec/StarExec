@@ -432,7 +432,7 @@ public class AnonymousLinks {
 	 * @param uuid the identifier for the anonymous link.
 	 * @author Albert Giegerich
 	 */
-	public static void delete( String uuid ) throws SQLException {
+	public static void delete( String uuid ) {
 		final String methodName = "delete(String)";
 		Connection con = null;
 		try {

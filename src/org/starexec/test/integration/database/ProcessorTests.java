@@ -29,7 +29,7 @@ public class ProcessorTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void getProcTest() throws Exception {
+	private void getProcTest() {
 		Processor p=Processors.get(postProc.getId());
 		Assert.assertNotNull(p);
 		Assert.assertEquals(postProc.getName(),p.getName());

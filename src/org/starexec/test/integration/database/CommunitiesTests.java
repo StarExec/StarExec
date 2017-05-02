@@ -97,7 +97,7 @@ public class CommunitiesTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void inListOfCommunities() throws Exception {
+	private void inListOfCommunities() {
 		List<Space> comms=Communities.getAll();
 		for (Space s : comms) {
 			if (s.getName().equals(community.getName())) {

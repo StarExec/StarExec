@@ -97,7 +97,7 @@ public class UploadPicture extends HttpServlet {
      * @throws Exception
      * @author Ruoyu Zhang
      */
-	private String handleUploadRequest(int userId, HashMap<String, Object> form) throws Exception {
+	private String handleUploadRequest(int userId, HashMap<String, Object> form) {
 		try {
 			PartWrapper item = (PartWrapper)form.get(UploadPicture.PICTURE_FILE);
 			String fileName = "";

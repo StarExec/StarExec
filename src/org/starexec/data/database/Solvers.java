@@ -1178,7 +1178,7 @@ public class Solvers {
 	 * @return The configuration with the given id
 	 * @author Tyler Jensen
 	 */
-	protected static Configuration getConfiguration(Connection con, int configId) throws SQLException {
+	protected static Configuration getConfiguration(Connection con, int configId) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		 
@@ -1405,7 +1405,7 @@ public class Solvers {
 	 * if the solver does not exist
 	 * @author Tyler Jensen
 	 */
-	protected static Solver getSolverByConfig(Connection con, int configId, boolean includeDeleted) throws SQLException {
+	protected static Solver getSolverByConfig(Connection con, int configId, boolean includeDeleted) {
 		Configuration c = Solvers.getConfiguration(con, configId);
 		if (c==null) {
 			log.debug("getSolverByConfig called with configId = "+configId+" but config was null");
@@ -1741,7 +1741,7 @@ public class Solvers {
 	 * 
 	 */
 	
-	protected static boolean isSolverDeleted(Connection con, int solverId) throws Exception {
+	protected static boolean isSolverDeleted(Connection con, int solverId) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
@@ -2202,7 +2202,7 @@ public class Solvers {
 	 * @return true iff the solver's size was successfully updated, false otherwise
 	 * @author Todd Elvers
 	 */
-	private static boolean updateSolverDiskSize(Connection con, Solver s) throws Exception {
+	private static boolean updateSolverDiskSize(Connection con, Solver s) {
 		CallableStatement procedure = null;
 		try {
 			// Get the size of the solver's directory

@@ -110,7 +110,7 @@ public class Queues {
 	 * @author Tyler Jensen
 	 * @throws Exception 
 	 */
-	protected static int add(Connection con, String queueName, int cpuTimeout, int wallTimeout) throws Exception {			
+	protected static int add(Connection con, String queueName, int cpuTimeout, int wallTimeout) {
 		log.debug("preparing to call sql procedures to add queue with name = "+queueName);
 		CallableStatement procedure = null;
 		try {
@@ -219,7 +219,7 @@ public class Queues {
 	 * @return a queue object representing the queue to retrieve
 	 * @throws Exception 
 	 */
-	protected static Queue get(Connection con, int qid) throws Exception {	
+	protected static Queue get(Connection con, int qid) {
 		final String methodName= "get";
 		log.entry(methodName);
 		log.debug(methodName, "\tqid = " + qid);
@@ -283,7 +283,7 @@ public class Queues {
 	}
 
 
-	protected static int getCountOfEnqueuedPairsByQueue(Connection con, int qId) throws Exception {	
+	protected static int getCountOfEnqueuedPairsByQueue(Connection con, int qId) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		

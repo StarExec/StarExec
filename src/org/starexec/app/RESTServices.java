@@ -4706,7 +4706,7 @@ public class RESTServices {
 	@POST
 	@Path("/jobs/clearloadbalance")
 	@Produces("application/json")
-	public String clearLoadBalanceData(@Context HttpServletRequest request) throws Exception {
+	public String clearLoadBalanceData(@Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
@@ -4724,7 +4724,7 @@ public class RESTServices {
 	@POST
 	@Path("/jobs/clearsolvercache")
 	@Produces("application/json")
-	public String clearSolverCache(@Context HttpServletRequest request) throws Exception {
+	public String clearSolverCache(@Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
@@ -4748,7 +4748,7 @@ public class RESTServices {
 	@POST
 	@Path("/starexec/debugmode/{value}")
 	@Produces("application/json")
-	public String updateDebugMode(@PathParam("value") boolean value, @Context HttpServletRequest request) throws Exception {
+	public String updateDebugMode(@PathParam("value") boolean value, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);

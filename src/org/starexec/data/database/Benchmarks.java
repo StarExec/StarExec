@@ -266,7 +266,7 @@ public class Benchmarks {
 	 * @throws Exception
 	 * @author Benton McCune
 	 */
-    protected static Benchmark add(Benchmark benchmark, Integer statusId, Connection con) throws Exception {				
+    protected static Benchmark add(Benchmark benchmark, Integer statusId, Connection con) {
 		CallableStatement procedure=null;
 
 		try{
@@ -966,7 +966,7 @@ public class Benchmarks {
 	 * 
 	 * @throws Exception 
 	 */
-	protected static Benchmark get(Connection con, int benchId,boolean includeDeleted) throws SQLException {
+	protected static Benchmark get(Connection con, int benchId,boolean includeDeleted) {
 		CallableStatement procedure=null;
 		ResultSet results=null;
 	
@@ -1184,7 +1184,7 @@ public class Benchmarks {
 	 * @author Tyler Jensen
 	 * @throws Exception 
 	 */
-	protected static Map<String,String> getAttributes(Connection con, int benchId) throws Exception {
+	protected static Map<String,String> getAttributes(Connection con, int benchId) {
 		CallableStatement procedure=null;
 		ResultSet results=null;
 
@@ -1668,7 +1668,7 @@ public class Benchmarks {
 	 * @author Wyatt Kaiser
 	 * @throws Exception 
 	 */
-	protected static TreeMap<String,String> getSortedAttributes (Connection con, int benchId) throws Exception {
+	protected static TreeMap<String,String> getSortedAttributes (Connection con, int benchId) {
 		CallableStatement procedure=null;
 		ResultSet results=null;
 

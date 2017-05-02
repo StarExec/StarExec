@@ -135,7 +135,7 @@ public class Jobs {
 	 * @return The ID of the root job space for this list of pairs, or null on error.
 	 * @throws Exception
 	 */
-	public static Integer createJobSpacesForPairs(int jobId,List<JobPair> pairs,Connection con) throws Exception {
+	public static Integer createJobSpacesForPairs(int jobId,List<JobPair> pairs,Connection con) {
 
 		//this hashmap maps every job space ID to the maximal number of stages
 		// of any pair that is in the hierarchy rooted at the job space
@@ -543,7 +543,7 @@ public class Jobs {
 	 * @param con The connection the update will take place on
 	 * @param job The job to add
 	 */
-	private static void addJob(Connection con, Job job) throws Exception {
+	private static void addJob(Connection con, Job job) {
 		CallableStatement procedure = null;
 
 		if (job.getBenchmarkingFramework() == null) {
@@ -589,7 +589,7 @@ public class Jobs {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	protected static boolean associate(Connection con, int jobId, int spaceId) throws Exception {
+	protected static boolean associate(Connection con, int jobId, int spaceId) {
 
 		CallableStatement procedure = null;
 		try {
@@ -1426,7 +1426,7 @@ public class Jobs {
 	 * @return A HashMap mapping pair IDs to properties. Some values may be null
 	 * @author Eric Burns
 	 */
-	protected static HashMap<Integer,HashMap<Integer,Properties>> getJobAttributes(Connection con, int jobId) throws Exception {
+	protected static HashMap<Integer,HashMap<Integer,Properties>> getJobAttributes(Connection con, int jobId) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		log.debug("Getting all attributes for job with ID = "+jobId);
@@ -2859,7 +2859,7 @@ public class Jobs {
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author Julio Cervantes
 	 */
-	protected static List<JobPair> getPairsSimple(Connection con, int jobId) throws Exception {
+	protected static List<JobPair> getPairsSimple(Connection con, int jobId) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 
@@ -3281,7 +3281,7 @@ public class Jobs {
 	 * @return A list of job pair objects that belong to the given job.
 	 * @author TBebnton
 	 */
-    protected static List<JobPair> getPendingPairsDetailed(Connection con, Job j,int limit) throws Exception {
+    protected static List<JobPair> getPendingPairsDetailed(Connection con, Job j,int limit) {
 
 	CallableStatement procedure = null;
 	ResultSet results = null;
@@ -4411,7 +4411,7 @@ public class Jobs {
 	private static List<JobPair> processStatResults(
 			ResultSet results,
 			boolean includeSingleStage,
-			PrimitivesToAnonymize primitivesToAnonymize) throws Exception {
+			PrimitivesToAnonymize primitivesToAnonymize) {
 
 		try {
 			List<JobPair> returnList = new ArrayList<>();

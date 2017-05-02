@@ -102,7 +102,7 @@ public class UploadSpaceXML extends HttpServlet {
 	 * @param batchUtil a BatchUtil object we can use for setting an error message if a problem is encountered.
 	 * @throws Exception 
 	 */
-    public void handleXMLFile(final int userId, final int spaceId, final HashMap<String, Object> form, final BatchUtil batchUtil, final int statusId) throws Exception {
+    public void handleXMLFile(final int userId, final int spaceId, final HashMap<String, Object> form, final BatchUtil batchUtil, final int statusId) {
 		try {
             log.debug("Handling Upload of XML File from User " + userId);
             PartWrapper item = (PartWrapper)form.get(UploadSpaceXML.UPLOAD_FILE);		

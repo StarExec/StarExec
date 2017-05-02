@@ -533,7 +533,7 @@ public class Download extends HttpServlet {
      * @return
      * @throws Exception
      */
-    private static boolean handlePairOutputs(List<Integer> pairIds, int userId, HttpServletResponse response, Boolean longPath) throws Exception {
+    private static boolean handlePairOutputs(List<Integer> pairIds, int userId, HttpServletResponse response, Boolean longPath) {
 		List<JobPair> pairs= new ArrayList<>();
 		Job j=null;
 		final String methodName = "handlePairOutputs";
@@ -576,7 +576,7 @@ public class Download extends HttpServlet {
 	 * @return a boolean for whether or not this succeeded
 	 */
 
-	private static boolean handlePairOutput(int pairId, int userId,HttpServletResponse response, Boolean longPath) throws Exception {
+	private static boolean handlePairOutput(int pairId, int userId,HttpServletResponse response, Boolean longPath) {
 	    //ArchiveUtil.createAndOutputZip(JobPairs.getOutputPaths(pairId), response.getOutputStream(), "");
 	    //return true;
 	    return handlePairOutputs(Arrays.asList(pairId), userId, response,longPath);
@@ -1043,7 +1043,7 @@ public class Download extends HttpServlet {
 	 */
 
 	private boolean handleSpace(Space space, int uid, HttpServletResponse response,boolean hierarchy, boolean includeBenchmarks,
-								boolean includeSolvers, boolean useIdDirectories) throws Exception {
+								boolean includeSolvers, boolean useIdDirectories) {
 		// If we can see this space AND the space is downloadable...
 		try {
 				//String baseFileName=space.getName();

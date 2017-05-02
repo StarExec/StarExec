@@ -255,7 +255,7 @@ public class JspHelpers {
 			boolean hideSolverName,
 			Solver s,
 			HttpServletRequest request,
-			HttpServletResponse response ) throws IOException {
+			HttpServletResponse response ) {
 
 		if ( s == null ) {
 			return;

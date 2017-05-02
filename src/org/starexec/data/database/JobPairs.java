@@ -330,7 +330,7 @@ public class JobPairs {
 	 * @param con The connection the update will take place on
 	 * @return True if the operation was successful
 	 */
-	protected static boolean addJobPairs(Connection con, int jobId, List<JobPair> pairs) throws SQLException {
+	protected static boolean addJobPairs(Connection con, int jobId, List<JobPair> pairs) {
 		final String methodName = "addJobPairs";
 		log.entry( methodName );
 		CallableStatement procedure = null;
@@ -581,7 +581,7 @@ public class JobPairs {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	protected static boolean addJobPairAttr(Connection con, int pairId,int stageId, String key, String val) throws Exception {
+	protected static boolean addJobPairAttr(Connection con, int pairId,int stageId, String key, String val) {
 		CallableStatement procedure = null;
 		 try {
 			procedure = con.prepareCall("{CALL AddJobAttr(?, ?, ?,?)}");
@@ -821,7 +821,7 @@ public class JobPairs {
 	 * @return The properties object which holds all the pair's attributes
 	 * @author Tyler Jensen
 	 */
-	protected static HashMap<Integer,Properties> getAttributes(Connection con, int pairId) throws Exception {
+	protected static HashMap<Integer,Properties> getAttributes(Connection con, int pairId) {
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
@@ -1204,7 +1204,7 @@ public class JobPairs {
 	 * @return The job pair object with the given id.
 	 * @author Tyler Jensen
 	 */
-	protected static JobPair getPairDetailed(Connection con, int pairId) throws Exception {
+	protected static JobPair getPairDetailed(Connection con, int pairId) {
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
@@ -1731,7 +1731,7 @@ public class JobPairs {
 	 * @author Eric Burns
 	 */
 	
-	public static void UpdateJobSpaces(int jobPairId, int jobSpaceId, Connection con) throws Exception {
+	public static void UpdateJobSpaces(int jobPairId, int jobSpaceId, Connection con) {
 		CallableStatement procedure= null;
 		try {
 			procedure = con.prepareCall("{CALL UpdateJobSpaceId(?, ?)}");

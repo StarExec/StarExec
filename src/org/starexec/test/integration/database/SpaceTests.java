@@ -341,7 +341,7 @@ public class SpaceTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void nameUpdateTest() throws Exception {
+	private void nameUpdateTest() {
 		String currentName=community.getName();
 		Assert.assertEquals(currentName,Spaces.getName(community.getId()));
 		addMessage("Space name consistent before update");
@@ -352,7 +352,7 @@ public class SpaceTests extends TestSequence {
 		community.setName(newName);
 	}
 	@StarexecTest
-	private void descriptionUpdateTest() throws Exception {
+	private void descriptionUpdateTest() {
 		String currentDesc=community.getDescription();
 		Assert.assertEquals(currentDesc,Spaces.get(community.getId()).getDescription());
 		String newDesc=TestUtil.getRandomSpaceName(); //any somewhat long, random string will work

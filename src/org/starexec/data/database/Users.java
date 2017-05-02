@@ -34,7 +34,7 @@ public class Users {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	private static boolean associate(Connection con, int userId, int spaceId) throws Exception {
+	private static boolean associate(Connection con, int userId, int spaceId) {
 		CallableStatement procedure= null;
 		try {
 			procedure = con.prepareCall("{CALL AddUserToSpace(?, ?)}");			
@@ -135,7 +135,7 @@ public class Users {
 	 * @throws Exception
 	 * @author Todd Elvers
 	 */
-	private static boolean associate(Connection con, List<Integer> userIds, int spaceId) throws Exception {
+	private static boolean associate(Connection con, List<Integer> userIds, int spaceId) {
 		for(int uid : userIds) {
 			Users.associate(con, uid, spaceId);
 		}

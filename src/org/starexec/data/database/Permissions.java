@@ -28,7 +28,7 @@ public class Permissions {
 	 * @author Tyler Jensen
 	 * @throws Exception 
 	 */
-	protected static int add(Permission p, Connection con) throws Exception {
+	protected static int add(Permission p, Connection con) {
 		CallableStatement procDefaultPerm = null;
 		try {
 			 procDefaultPerm = con.prepareCall("{CALL AddPermissions(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
@@ -562,7 +562,7 @@ public class Permissions {
 	 * 
 	 * @throws Exception 
 	 */
-	protected static boolean set(int userId, int spaceId, Permission newPerm, Connection con) throws Exception {				
+	protected static boolean set(int userId, int spaceId, Permission newPerm, Connection con) {
 		CallableStatement procedure = null;
 		int permissionId = add(newPerm, con);
 		
@@ -593,7 +593,7 @@ public class Permissions {
 	 * @author Skylar Stark
 	 * @throws Exception 
 	 */
-	protected static boolean updatePermission(int permId, Permission perm, Connection con) throws Exception {
+	protected static boolean updatePermission(int permId, Permission perm, Connection con) {
 		CallableStatement procedure = null;
 		
 		 try {

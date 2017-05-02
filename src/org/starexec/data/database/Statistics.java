@@ -59,7 +59,7 @@ public class Statistics {
 	 * @return A hashmap that contains the statistic's name to value mapping
 	 * (this method includes completePairs, pendingPairs, errorPairs, totalPairs and runtime)
 	 */
-	protected static HashMap<String, String> getJobPairOverview(Connection con, int jobId) throws Exception {
+	protected static HashMap<String, String> getJobPairOverview(Connection con, int jobId) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {

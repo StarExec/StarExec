@@ -141,7 +141,7 @@ public class Processors {
 	 * @return The corresponding processor
 	 * @author Tyler Jensen
 	 */
-	protected static Processor get(Connection con, int processorId) throws Exception {						
+	protected static Processor get(Connection con, int processorId) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 					

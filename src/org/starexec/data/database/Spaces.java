@@ -1270,7 +1270,7 @@ public class Spaces {
 	 * @author Wyatt Kaiser
 	 */
 		
-		protected static int getParentSpace(int spaceId, Connection con) throws Exception{
+		protected static int getParentSpace(int spaceId, Connection con) {
 			CallableStatement procedure = null;
 			ResultSet results = null;
 			try {
@@ -1568,7 +1568,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @author Eric Burns
 	 */
 	
-	public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws Exception {
+	public static List<Integer> getSubSpaceIds(int spaceId, Connection con) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
@@ -1662,7 +1662,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @author Eric Burns
 	 */
 	
-	private static List<Space> getSubSpaceHierarchy(int spaceId, int userId, Connection con) throws Exception{
+	private static List<Space> getSubSpaceHierarchy(int spaceId, int userId, Connection con) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
@@ -1783,7 +1783,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @author Todd Elvers & Skylar Stark & Benton McCune & Wyatt Kaiser
 	 */
 
-	protected static List<Space> getSubSpaces(int spaceId, int userId,Connection con) throws Exception{
+	protected static List<Space> getSubSpaces(int spaceId, int userId,Connection con) {
 		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return getSubSpaces(spaceId,con);
 		}
@@ -1866,7 +1866,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @throws Exception
 	 * @author Eric Burns
 	 */
-	protected static List<JobSpace> getSubSpacesForJob(int jobSpaceId, Connection con) throws Exception{
+	protected static List<JobSpace> getSubSpacesForJob(int jobSpaceId, Connection con) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
@@ -2115,7 +2115,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @throws SQLException if an error occurs while removing benchmarks from the database
 	 * @author Todd Elvers
 	 */
-	protected static boolean removeBenches(List<Integer> benchIds, int spaceId, Connection con) throws SQLException {
+	protected static boolean removeBenches(List<Integer> benchIds, int spaceId, Connection con) {
 		CallableStatement procedure = null;
 		try {
 			 procedure = con.prepareCall("{CALL RemoveBenchFromSpace(?, ?)}");
@@ -2200,7 +2200,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @throws SQLException if an error occurs while removing jobs from the database
 	 * @author Todd Elvers
 	 */
-	protected static boolean removeJobs(List<Integer> jobIds, int spaceId, Connection con) throws SQLException {
+	protected static boolean removeJobs(List<Integer> jobIds, int spaceId, Connection con) {
 		CallableStatement procedure = null;
 		try {
 			 procedure = con.prepareCall("{CALL RemoveJobFromSpace(?, ?)}");
@@ -2269,7 +2269,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @throws IOException if an error occurs while removing solvers from disk 
 	 * @author Todd Elvers
 	 */
-	protected static boolean removeSolvers(List<Integer> solverIds, int spaceId, Connection con) throws SQLException, IOException {
+	protected static boolean removeSolvers(List<Integer> solverIds, int spaceId, Connection con) {
 		CallableStatement procedure = null;
 		try {
 			 procedure = con.prepareCall("{CALL RemoveSolverFromSpace(?, ?)}");
@@ -2440,7 +2440,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * 
 	 * @author Skylar Stark
 	 */
-	private static void removeUsers(Connection con, List<Integer> userIds, int spaceId) throws SQLException {
+	private static void removeUsers(Connection con, List<Integer> userIds, int spaceId){
 		CallableStatement procedure = null;
 		try {
 			 procedure = con.prepareCall("{CALL LeaveSpace(?, ?)}");
@@ -2664,7 +2664,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @param userId The user id of the owner of the new space and its benchmarks
 	 * @author Benton McCune
 	 */
-	protected static List<Integer> traverse(Space space, int userId, Integer depRootSpaceId, Boolean linked, Integer statusId) throws Exception {
+	protected static List<Integer> traverse(Space space, int userId, Integer depRootSpaceId, Boolean linked, Integer statusId) {
 		ArrayList<Integer> ids= new ArrayList<>();
 		try{
 			// Add the new space to the database and get it's ID	
@@ -2780,7 +2780,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @return true iff the space update is successful
 	 * @author Skylar Stark
 	 */
-	protected static boolean updateDetails(Space s, Connection con) throws Exception {
+	protected static boolean updateDetails(Space s, Connection con) {
 		CallableStatement procedure = null;
 		try {
 			 procedure = con.prepareCall("{CALL UpdateSpaceDetails(?,?,?,?,?,?)}");	

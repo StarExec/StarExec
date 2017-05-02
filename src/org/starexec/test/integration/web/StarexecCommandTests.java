@@ -246,7 +246,7 @@ public class StarexecCommandTests extends TestSequence {
 	}
 
 	@StarexecTest
-	private void uploadBenchmarks() throws Exception {
+	private void uploadBenchmarks() {
 
 		Space tempSpace=loader.loadSpaceIntoDatabase(user.getId(), testCommunity.getId());
 		int result=con.uploadBenchmarksToSingleSpace(benchmarkFile.getAbsolutePath(), Processors.getNoTypeProcessor().getId(), tempSpace.getId(), false);

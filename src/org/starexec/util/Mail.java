@@ -256,7 +256,7 @@ public class Mail {
 	 * @param email the reports email
 	 * @author Albert Giegerich
 	 */
-	public static void sendReports(List<User> recipients, String email) throws IOException {
+	public static void sendReports(List<User> recipients, String email) {
 		for (User user : recipients) {
 			String finalEmail = email.replace("$$USER$$", user.getFullName());	
 			Mail.mail(finalEmail, "STAREXEC - REPORT", new String[] { user.getEmail() });
