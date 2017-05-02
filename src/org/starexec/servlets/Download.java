@@ -835,11 +835,10 @@ public class Download extends HttpServlet {
 							//means this is adjacent to a stdout file
 							if (files.size()>1) {
 								singleFileName.append(File.separator);
-								singleFileName.append("additional_output");
+								singleFileName.append(p.getId()+"_output");
 							}
 							if (!running || lastModified==null){
 								ArchiveUtil.addDirToArchive(stream, file, singleFileName.toString());
-
 							} else {
 								ArchiveUtil.addDirToArchive(stream, file, singleFileName.toString(), lastModified);
 							}
