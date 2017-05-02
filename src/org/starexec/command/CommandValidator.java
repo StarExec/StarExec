@@ -718,11 +718,10 @@ public class CommandValidator {
 	/**
 	 * Validates a request to change a user setting
 	 * 
-	 * @param setting The setting that is going to be changed
 	 * @param commandParams The parameters given by the user
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 */
-	public static int isValidSetUserSettingRequest(String setting, HashMap<String, String> commandParams) {
+	public static int isValidSetUserSettingRequest(HashMap<String, String> commandParams) {
 		if (!paramsExist(new String[] { C.PARAM_VAL }, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}

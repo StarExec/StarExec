@@ -797,42 +797,16 @@ public class Connection {
 	 * Sets HTTP headers required to communicate with the StarExec server
 	 * 
 	 * @param msg --The outgoing HTTP request, likely an HttpGet or HttpPost
-	 * @param cookies A list of additional cookies that may need to be added to
-	 *        messages
 	 * @return msg with required headers added
 	 * @author Eric Burns
 	 */
 
-	private AbstractHttpMessage setHeaders(AbstractHttpMessage msg, String[] cookies) {
-		/*
-		 * // StringBuilder cookieString=new StringBuilder(); //
-		 * cookieString.append("killmenothing; JSESSIONID="); //
-		 * cookieString.append(sessionID); // cookieString.append(";");
-		 * CookieStore store = client.getCookieStore(); List<Cookie>
-		 * storedCookies = store.getCookies(); store.clear();
-		 * storedCookies.stream().filter(c ->
-		 * !c.getName().equals(C.TYPE_SESSIONID)); for (Cookie c :
-		 * storedCookies) { store.addCookie(c); } client.setCookieStore(store);
-		 * for (String x : cookies) { cookieString.append(x);
-		 * cookieString.append(";"); }
-		 * msg.addHeader("Cookie",cookieString.toString());
-		 */
+	private AbstractHttpMessage setHeaders(AbstractHttpMessage msg) {
 		msg.addHeader("StarExecCommand", "StarExecCommand");
 		msg.addHeader("Connection", "keep-alive");
 		msg.addHeader("Accept-Language", "en-US,en;q=0.5");
 
 		return msg;
-	}
-
-	/**
-	 * Sets all the default headers StarExec needs to an HttpMessage without any
-	 * cookies
-	 * 
-	 * @param msg
-	 * @return
-	 */
-	private AbstractHttpMessage setHeaders(AbstractHttpMessage msg) {
-		return setHeaders(msg, new String[0]);
 	}
 
 	/**

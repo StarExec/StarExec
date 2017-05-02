@@ -566,7 +566,7 @@ class ArgumentParser {
 	 */
 	protected int setUserSetting(String setting, HashMap<String, String> commandParams) {
 
-		int valid = CommandValidator.isValidSetUserSettingRequest(setting, commandParams);
+		int valid = CommandValidator.isValidSetUserSettingRequest(commandParams);
 		if (valid < 0) {
 			return valid;
 		}
