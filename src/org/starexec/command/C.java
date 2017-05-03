@@ -15,7 +15,7 @@ public class C {
 
 	public static Boolean debugMode = false;
 
-	public static String VERSION = "February 06, 2016";
+	public static String VERSION = "May 03, 2017";
 
 	public static String HELP_MESSAGE = "Welcome to StarexecCommand! This tool is intended to allow users to communicate with the "
 			+ "Starxec server. For assistance in using this tool, please consult the documentation present in the archive this tool was "
