@@ -593,6 +593,14 @@ class CommandParser {
 
 		String[] splitCommand = command.split(" ");
 		String c = splitCommand[0].toLowerCase().trim();
+
+		// If the command itself contains an equal sign chances are the user was
+		// trying to set a variable and forgot to include the '$'.
+		// Warn the user about this.
+		if (c.contains("=")) {
+			System.out.println("Variable names must start with '$'");
+		}
+
 		HashMap<String, String> commandParams = extractParams(command);
 		if (commandParams == null) {
 			return Status.ERROR_BAD_ARGS;
