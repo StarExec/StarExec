@@ -1,8 +1,8 @@
 StarExecCommand User Guide
 --------------------------
 
-StarExecCommand is a program that can be used to communicate with the StarExec server from the 
-command line. StarExecCommand can be used on any system with Java installed, and can be run by 
+StarExecCommand is a program that can be used to communicate with the StarExec server from the
+command line. StarExecCommand can be used on any system with Java installed, and can be run by
 using the following command at a command prompt.
 
 java -jar StarexecCommand.jar
@@ -14,16 +14,16 @@ to StarExec. See the documentation on commands for more information.
 Syntax
 ------
 
-StarexecCommand runs user commands one by one. All commands have a 
+StarexecCommand runs user commands one by one. All commands have a
 command followed by a set of parameters, using the following syntax
 
 {command} {parameters}
 
-Where {command} specifies a particular action and where parameters are space-separated key/value 
-pairs of the form {key}={value}. There should be no spaces between {key} and "="--there may be any 
-number of spaces in {value}. Some parameters may not have values, in which case {value} can be the 
-empty string. Neither commands nor parameter keys are case sensitive--parameter values ARE case 
-sensitive.  Parameters can be specified in any order. The parameters accepted by StarExecCommand are 
+Where {command} specifies a particular action and where parameters are space-separated key/value
+pairs of the form {key}={value}. There should be no spaces between {key} and "="--there may be any
+number of spaces in {value}. Some parameters may not have values, in which case {value} can be the
+empty string. Neither commands nor parameter keys are case sensitive--parameter values ARE case
+sensitive.  Parameters can be specified in any order. The parameters accepted by StarExecCommand are
 described below. An example command using this syntax is...
 
 'getjobinfo id=472 out=somefilelocation.zip'
@@ -34,18 +34,18 @@ they should NOT be included in commands.
 Parameters
 ----------
 
-The following parameters are used in various commands. Quotation marks here are used for emphasis-- they should not 
+The following parameters are used in various commands. Quotation marks here are used for emphasis-- they should not
 be included when specifying parameters. Parameters are NOT case sensitive.
 
 "addr"--Specifies the base URL at which to log into Starexec. The URL should be absolute and should end with a '/'.
 
 "attr" -- Include benchmark attributes in the XML. Used for space XML downloads.
 
-"allPerm"--Indicated that all permissions should be enabled for an upload. All permissions are disabled 
+"allPerm"--Indicated that all permissions should be enabled for an upload. All permissions are disabled
 by default. allPerm has no value.
 
-{"addSolver", "addUser", "addSpace", "addJob", "addBench", "removeSolver" ,"removeUser", 
-"removeSpace", "removeJob", "removeBench"} - These are ten separate parameters specify that the 
+{"addSolver", "addUser", "addSpace", "addJob", "addBench", "removeSolver" ,"removeUser",
+"removeSpace", "removeJob", "removeBench"} - These are ten separate parameters specify that the
 corresponding permission should be set to true. None requires a value.
 
 "bt" -Specifies the ID of the benchmark type that should be used for a benchmark upload.
@@ -66,13 +66,13 @@ corresponding permission should be set to true. None requires a value.
 
 "df" -Specifies a path to a local file that will contain a description.
 
-"downloadable" -Specifies that a benchmark upload should be downloadable. 
+"downloadable" -Specifies that a benchmark upload should be downloadable.
 
 "f" -Specifies a path to a  local file.
 
 "from" -When copying a primitive, specifies the ID of the source space.
 
-"hier" -On a benchmark upload, means that the archive structure should be converted to a space 
+"hier" -On a benchmark upload, means that the archive structure should be converted to a space
 structure. By default, all benchmarks are placed in the space being uploaded to.
 
 "id" -Specifies the ID of a primitive, whether that be a space, job, benchmark, etc.
@@ -84,7 +84,7 @@ structure. By default, all benchmarks are placed in the space being uploaded to.
 
 "limit" -When printing primitives to the command line, specifies the maximum number to retrieve and print.
 
-"link" -When uploading benchmarks with dependencies, indicates that the first directory in the path 
+"link" -When uploading benchmarks with dependencies, indicates that the first directory in the path
 corresponds to a dependent bench space.
 
 "lock" -Sets a newly created subspace as locked.
@@ -125,7 +125,7 @@ corresponds to a dependent bench space.
 
 "t" -When using 'sleep,' specifies the amount of time in seconds. Decimal values are permitted.
 
-"to" -When copying a primitive, specifies the ID of the destination space, or the root of the 
+"to" -When copying a primitive, specifies the ID of the destination space, or the root of the
 	  destination hierarchy.
 
 "trav" -When creating a job, specifies the type of traversal that shold be used. The value "d" is
@@ -134,7 +134,7 @@ corresponds to a dependent bench space.
 "type" -When uploading a solver, specifies the type of executable being uploaded. 1=solver,
 		2= preprocessor, 3=result checker, 4=other. Defaults to 1 if not specified.
 
-"u" -When logging in, specifies the username to log in with. When listing primitives, causes a user's own 
+"u" -When logging in, specifies the username to log in with. When listing primitives, causes a user's own
 	 primitives to be retrieved instead of the primitives of a space.
 
 "url" -Specifies the URL of a remote file.
@@ -212,12 +212,12 @@ REQUIRED: "t"
 OPTIONAL: None
 
 --returnids -Instructs StarexecCommand to print the IDs of newly uploaded solvers and processors and newly
-			 created jobs and spaces in the form "id={newId}\n" The default behavior at the start of a session 
+			 created jobs and spaces in the form "id={newId}\n" The default behavior at the start of a session
 			 is not to do this. This command does nothing if this behavior is already enabled.
 REQUIRED: None
 OPTIONAL: None
 
---viewuploadstatus -Instructs StarexecCommand to print the status of the benchmark upload request 
+--viewuploadstatus -Instructs StarexecCommand to print the status of the benchmark upload request
 					specified by the given ID. "id" refers to a benchmark upload ID, which is returned
 					whenever you upload benchmarks with the "returnids" option enabled
 REQUIRED: "id"
@@ -227,9 +227,9 @@ OPTIONAL: None
 Download Commands
 -----------------
 
-Every download command retrieves an archive from the server and saves it in a specified location. 
+Every download command retrieves an archive from the server and saves it in a specified location.
 Downloaded archives will be in the .zip format.
-Most of them expect two parameters. "id", and "out", a If a file already exists at the path specified 
+Most of them expect two parameters. "id", and "out", a If a file already exists at the path specified
 by "out," the parameter "ow" should be included. "ow" requires no value. An example download command is...
 
 'getspacexml id=1 out=xmlfile.zip'
@@ -240,7 +240,7 @@ Another example, which will cause the output file to be overwritten, is...
 
 The following commands can be used for downloading
 
---getbench -Downloads the benchmark associated with the given benchmark id. 
+--getbench -Downloads the benchmark associated with the given benchmark id.
 REQUIRED: "id" "out"
 OPTIONAL: "ow"
 
@@ -261,19 +261,19 @@ OPTIONAL: "ow"
 REQUIRED: "id" "out"
 OPTIONAL: "ow", "longpath"
 
---getjobpairs -Downloads the output from every pair in the given list. Every pair must belong to the same job. 
+--getjobpairs -Downloads the output from every pair in the given list. Every pair must belong to the same job.
 The value of the "id" parameter should be a comma-separated list of job pair ids.
 REQUIRED: "id" "out"
 OPTIONAL: "ow"
 EXAMPLE: "getjobpairs id=5,20,30 out=outputs.zip"
 
 --getnewjobinfo -Get the CSV pertaining to the job associated with the given id containing only
-info related to job pairs that have been completed since the last time the command was used. 
+info related to job pairs that have been completed since the last time the command was used.
 in the current session. When used with "since," info for every pair completed after "since" will be downloaded.
 REQUIRED: "id" "out"
 OPTIONAL: "ow" "since"
 
---getnewjobout -Get the output for the job pairs associated with the given job that have been 
+--getnewjobout -Get the output for the job pairs associated with the given job that have been
 completed since the last time the command was used in the current session. When used with "since,"
 retrieve all pairs completed after "since."
 REQUIRED: "id" "out"
@@ -308,17 +308,17 @@ OPTIONAL: "ow" "attr" "pid"
 REQUIRED: "id" "out"
 OPTIONAL: "ow"
 
---polljob -Downloads both job output and job info at the specified interval until the job is complete. Saved 
+--polljob -Downloads both job output and job info at the specified interval until the job is complete. Saved
 archives will have name given plus "-info" or "-output" and an integer. Time is in seconds.
-REQUIRED: "id", "out", "t" 
+REQUIRED: "id", "out", "t"
 OPTIONAL: "ow"
 
 Set Commands
 ------------
 
-These commands are used to change user settings for the current user. The first four of the following 
-commands expect one parameter of the form "val={newval}", where "newval" will be the new value of 
-the selected setting. The last two commands expect the parameter "id," where "id" is a space ID, and 
+These commands are used to change user settings for the current user. The first four of the following
+commands expect one parameter of the form "val={newval}", where "newval" will be the new value of
+the selected setting. The last two commands expect the parameter "id," where "id" is a space ID, and
 also accept the optional parameter "hier".
 
 --setfirstname -Sets the user's first name
@@ -338,7 +338,7 @@ OPTIONAL: None
 --setspaceprivate -Sets the space with the given id as private--with "hier," sets entire hierarchy private
 REQUIRED: "id"
 OPTIONAL: "hier"
-EXAMPLE: 'setspaceprivate id=1 hier=' 
+EXAMPLE: 'setspaceprivate id=1 hier='
 
 --setspacepublic -Sets the space with the given id as public--with "hier," sets entire hierarchy public.
 REQUIRED: "id" "hier"
@@ -347,8 +347,8 @@ OPTIONAL: None
 Push Commands
 -------------
 
-These commands allow users to push benchmarks, solvers, and processors to the server. They are more 
-individually unique than previous commands, and many accept a large number of optional parameters. 
+These commands allow users to push benchmarks, solvers, and processors to the server. They are more
+individually unique than previous commands, and many accept a large number of optional parameters.
 
 --pushsolver -This command is used for uploading a solver. The parameter "id" refers to a space ID.
 			  The ID of the newly uploaded solver will be printed if "returnids" has been called.
@@ -367,35 +367,35 @@ REQUIRED: ("f" OR "url") "id" "bt"
 OPTIONAL: ("d" OR "df") "dep" "downloadable" "hier" "link" "allPerm" (also all other permission parameters)
 EXAMPLE: 'pushbenchmarks id=231 url=http://www.benchmarksite.com/benchmarks.zip df=descriptionfile.tar bt=1 '
 
---pushbenchproc -This command uploads a benchmark processor to a community. The parameter "id" 
+--pushbenchproc -This command uploads a benchmark processor to a community. The parameter "id"
 				 refers to a community id. The ID of the newly uploaded processor will be printed if "returnids" has been called.
 REQUIRED: "f" "id"
 OPTIONAL: "n" "d"
 EXAMPLE: 'pushbenchproc id=142 f=procdirectory.tgz d=Processor Description n=newproc'
 
---pushconfig -This command is used for uploading a configuration for an existing solver. The parameter 
+--pushconfig -This command is used for uploading a configuration for an existing solver. The parameter
 			  "id" refers to a solver ID. The ID of the newly uploaded configuration will be printed if "returnids" has been called.
 REQUIRED: "f" "id"
 OPTIONAL: "n" "d"
 EXAMPLE: 'pushbenchproc id=4 f=configdirectory.tgz d=New Configuration n=config'
 
---pushpostproc -This command uploads a post processor to a community. The parameter "id" refers to a 
+--pushpostproc -This command uploads a post processor to a community. The parameter "id" refers to a
 				community id. The ID of the newly uploaded processor will be printed if "returnids" has been called.
 REQUIRED: "f" "id"
 OPTIONAL: "n" "d"
 
---pushpreproc -This command uploads a pre processor to a community. The parameter "id" refers to a 
+--pushpreproc -This command uploads a pre processor to a community. The parameter "id" refers to a
 				community id. The ID of the newly uploaded processor will be printed if "returnids" has been called.
 REQUIRED: "f" "id"
 OPTIONAL: "n" "d"
 
---pushspacexml -This command is used for uploading  a space XML. The parameter "id" refers to a space 
+--pushspacexml -This command is used for uploading  a space XML. The parameter "id" refers to a space
 				ID and is required. The ID of the newly created spaces will NOT be printed, even if "returnids" has been called.
 REQUIRED: "f" "id"
 OPTIONAL: None
 
---pushjobxml -This command is used for uploading  a job XML. The parameter "id" refers to a space 
-				
+--pushjobxml -This command is used for uploading  a job XML. The parameter "id" refers to a space
+
 REQUIRED: "f" "id"
 OPTIONAL: None
 
@@ -403,7 +403,7 @@ OPTIONAL: None
 Delete Commands
 ---------------
 
-These commands are all used to delete primitives from Starexec. All of them accept a single parameter, 
+These commands are all used to delete primitives from Starexec. All of them accept a single parameter,
 "id." You may delete multiple primitives at once by putting all the ids in a comma-seperated list. Delete commands all look like the following example.
 
 'deleteconfig id=5,47,23'
@@ -436,7 +436,7 @@ Remove Commands
 ---------------
 
 This set of commands can be used to remove the associations between primitives
-and spaces. You may remove multiple primitives at the same time by putting ids in a comma-seperated list, as illustrated 
+and spaces. You may remove multiple primitives at the same time by putting ids in a comma-seperated list, as illustrated
 in the examples below.
 
 -- removebench -Removes a benchmark from a given space. "id" is the benchmark ID.
@@ -453,10 +453,10 @@ REQUIRED: "id" "from"
 OPTIONAL: None
 
 -- removesubspace -Removes a subspace from a given space. "id" is the subspace ID. If "recycleprims" is present,
-				   all solvers and benchmarks present in the space hierarchy rooted at the given space that 
+				   all solvers and benchmarks present in the space hierarchy rooted at the given space that
 				   you have permission to recycle will be recycled.
 REQUIRED: "id"
-OPTIONAL: "recycleprims" 
+OPTIONAL: "recycleprims"
 EXAMPLE: 'removesubspace id=10 recycleprims='
 
 -- removeuser -Removes a user from a given space. "id" is the user ID.
@@ -466,7 +466,7 @@ OPTIONAL: None
 Create Commands
 ---------------
 
-These commands create some new information on StarExec. Like push commands, they also accept a 
+These commands create some new information on StarExec. Like push commands, they also accept a
 varied set of parameters.
 
 --createjob -This command is used for creating a new job in a given space. "id" refers to the id of
@@ -475,7 +475,7 @@ varied set of parameters.
 			 the optional parameter "trav" can be used to alter this behavior. To immediately start polling this job
 			 for results, simply include the polljob parameters "t" and "out" and optionally "ow".
 			 The ID of the newly created job will be printed if "returnids" has been called.
-REQUIRED: "id"  "qid" 
+REQUIRED: "id"  "qid"
 OPTIONAL: "n" "d" "w" "cpu" "trav" ("t" AND "out") "ow" "pid" "preid" "mem" "pause" "seed" "suppresstime" "interval"
 EXAMPLE: 'createjob id=5 pid=2 qid=3 n=commandjob w=200 cpu=100 trav=r pause='
 
@@ -497,14 +497,14 @@ multiple primitives at the same time by putting ids in a comma-seperated list, a
 below.
 
 --copybench -Copies a benchmark from one space to another. If "from" is not given, you must own the benchmarks you want to copy.
-If "from" is given, the benchmarks will be copied from the specified space, and you may copy benchmarks you do not own given you have permission to copy from the 
+If "from" is given, the benchmarks will be copied from the specified space, and you may copy benchmarks you do not own given you have permission to copy from the
 given space. "id" is a benchmark id, and "from" and "to" are space ids.
 REQUIRED: "id" "to"
 OPTIONAL: "from"
 EXAMPLE: 'copybench id=42,10,1 from=643 to=56"
 
 --linkbench -links an existing benchmark and associates it with a space. If "from" is not given, you must own the benchmarks you want to link.
-If "from" is given, the benchmarks will be linked from the specified space, and you may link benchmarks you do not own given you have permission to link from the 
+If "from" is given, the benchmarks will be linked from the specified space, and you may link benchmarks you do not own given you have permission to link from the
 given space. "id" is a benchmark id, and "from" and "to" are
 space ids.
 REQUIRED: "id" "to"
@@ -512,20 +512,20 @@ OPTIONAL: "from"
 EXAMPLE: 'linkbench id=6 from=63 to=124
 
 --copysolver -Copies a solver and places it into a new space or hierarchy. If "from" is not given, you must own the solvers you want to copy.
-If "from" is given, the solvers will be copied from the specified space, and you may copy solvers you do not own given you have permission to copy from the 
+If "from" is given, the solvers will be copied from the specified space, and you may copy solvers you do not own given you have permission to copy from the
 given space. "id" is a solver id, and "from" and "to" are space ids
 REQUIRED: "id" "to"
 OPTIONAL: "hier" "from"
 
 --linksolver -links an existing solver and associates it with a new space or hierarchy. If "from" is not given, you must own the solvers you want to link.
-If "from" is given, the solvers will be linked from the specified space, and you may copy solvers you do not own given you have permission to link from the 
+If "from" is given, the solvers will be linked from the specified space, and you may copy solvers you do not own given you have permission to link from the
 given space. "id" is a solver id, and "from"
 and "to" are space ids
 REQUIRED: "id" "to"
 OPTIONAL: "hier" "from"
 
 --linkjob -Links an existing job in a new space space. If "from" is not given, you must own the jobs you want to link.
-If "from" is given, the jobs will be linked from the specified space, and you may link jobs you do not own given you have permission to link from the 
+If "from" is given, the jobs will be linked from the specified space, and you may link jobs you do not own given you have permission to link from the
 given space. "id" is a job id, and "from" and "to" are space ids.
 REQUIRED: "id" "to"
 OPTIONAL: "from"
@@ -584,12 +584,12 @@ View Commands
 -------------
 
 The following commands will print out information about Starexec primitives to the console.
-For each command, the following format is used to display information. The order of the printed attributes 
-is not guaranteed.  
+For each command, the following format is used to display information. The order of the printed attributes
+is not guaranteed.
 
 id= "1" : name= "example name" : description= "example description"
 
-View commands can print out either every attribute or a limited set of attributes. By default, only 
+View commands can print out either every attribute or a limited set of attributes. By default, only
 the id, name, and description (if applicable) is printed out for each primitive. The first two commands
 listed below can be used to change this setting.
 
@@ -635,17 +635,17 @@ OPTIONAL: None
 Shell Mode
 ----------
 
-In shell mode, commands are issued one at a time to an interactive prompt. StarExecCommand will start 
+In shell mode, commands are issued one at a time to an interactive prompt. StarExecCommand will start
 in shell mode by default during every session.
 
 
 Batch Mode
 ----------
 
-In batch mode, which is initiated by the runfile command StarExecCommand will read commands from a text file 
-and execute them in succession. Commands have the same syntax as they do in shell mode, and should be placed one per line. By 
-default, StarExecCommand will execute silently in batch mode--to see information regarding the 
-progress of the execution, add the additional argument "verbose" after the filepath when starting 
+In batch mode, which is initiated by the runfile command StarExecCommand will read commands from a text file
+and execute them in succession. Commands have the same syntax as they do in shell mode, and should be placed one per line. By
+default, StarExecCommand will execute silently in batch mode--to see information regarding the
+progress of the execution, add the additional argument "verbose" after the filepath when starting
 StarExecCommand. An example of a shell startup would be...
 
 runfile f=fileofcommands.txt verbose=
