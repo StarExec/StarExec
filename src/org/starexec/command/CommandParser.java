@@ -569,15 +569,22 @@ class CommandParser {
 			return 0;
 		}
 
+		// If the line starts with a '$', this is trying to set a variable
 		if (command.charAt(0) == '$') {
 			int split = command.indexOf('=');
+			// If there is no '=', print the variable contents. Used for debugging
 			if (split == -1) {
 				String key = command.substring(1);
 				String value = variables.get(key);
 				System.out.println("$" + key + " = " + value);
 				return Status.STATUS_SUCCESS;
 			}
+
+			// The variable name will be everything between '$' and '=' (exclusive)
 			String key = command.substring(1,split - 1).trim();
+
+			// The variable value will be the result of parsing everything
+			// following the '=' as a command
 			String rest = command.substring(split + 1);
 			Integer value = parseCommand(rest);
 			variables.put(key, value.toString());
