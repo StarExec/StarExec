@@ -1006,15 +1006,22 @@ class CommandParser {
 				}
 			}
 
+			// If the parameter value starts with a '$', it might be a variable
 			String v = value.toString();
 			try {
 				if (v.charAt(0) == '$') {
 					String variableName = v.substring(1);
+					// If our variables table contains an entry for this name
+					// use that instead
 					if (variables.containsKey(variableName)) {
 						v = variables.get(variableName);
 					}
+					// If our variables table DOES NOT contain an entry for this
+					// name, do nothing and just let the parameter pass through
 				}
 			} catch (StringIndexOutOfBoundsException e) {
+				// Some parameters take no value, so `v.charAt(0)` will throw
+				// (`verbose`)
 			}
 
 			answer.put(key, v);
