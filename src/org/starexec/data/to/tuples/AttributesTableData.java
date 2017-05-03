@@ -2,11 +2,8 @@ package org.starexec.data.to.tuples;
 
 import java.util.Objects;
 
-/**
- * Created by agieg on 9/15/2016.
- */
+// Tuple that contains an entry of the job attributes table.
 public class AttributesTableData {
-
     public final Integer solverId;
     public final String solverName;
     public final Integer configId;

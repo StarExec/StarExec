@@ -3,6 +3,7 @@ package org.starexec.data.to.tuples;
 import java.util.Objects;
 
 
+// Simple tuple that contains a pair Id and a job ID
 public class PairIdJobId {
 
     public final int pairId;

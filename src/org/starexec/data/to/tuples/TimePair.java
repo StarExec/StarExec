@@ -1,8 +1,6 @@
 package org.starexec.data.to.tuples;
 
-/**
- * Created by agieg on 9/19/2016.
- */
+// Simple tuple that contains a wallclock time and a cpu time.
 public class TimePair {
     private final String wallclock;
     private final String cpu;
