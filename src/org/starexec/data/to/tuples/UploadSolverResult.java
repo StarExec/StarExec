@@ -2,17 +2,13 @@ package org.starexec.data.to.tuples;
 
 import java.util.Optional;
 
-/**
- * Created by agieg on 11/13/2016.
- */
+// Describes the result of a solver upload.
 public class UploadSolverResult {
     public final UploadSolverStatus status;
     public final int solverId;
     public final boolean hadConfigs;
     public final boolean isBuildJob;
     public Optional<String> optionalMessage;
-
-
 
     public UploadSolverResult(
             UploadSolverStatus status,

@@ -101,6 +101,7 @@ public class UploadSolver extends HttpServlet {
 				// Redirect based on success/failure
 				if(result.status == UploadSolverStatus.SUCCESS) {
 					if(result.isBuildJob) {
+						log.debug("Submitting job to build solver.");
 						int job_return = JobManager.addBuildJob(result.solverId, spaceId);
 						if (job_return >= 0) {
 							log.info("Job created successfully. JobId: " + job_return);
