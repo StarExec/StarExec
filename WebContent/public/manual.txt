@@ -652,3 +652,23 @@ runfile f=fileofcommands.txt verbose=
 
 This would run StarExecCommand on the file 'fileofcommands.txt,' and it would also
 instruct the program to print out status to standard output.
+
+Scripting
+---------
+
+StarExecCommand supports variables to enable basic scripting capabilities. This
+way, the "id" returned from a Create command can be passed as a parameter to a
+later command.
+
+Variable names start with a dollar sign ($) followed by letters (a to z or A to Z), numbers
+(0 to 9) or the underscore character (_). Variable names are case sensitive.
+
+Variables are set by prefixing a Create command with a variable name and an
+equal sign (=):
+
+EXAMPLE: '$NewSpace=createsubspace id=5'
+
+Variables can later be accessed by passing a variable name as a parameter to
+another function.
+
+EXAMPLE: 'linkbench id=6 from=63 to=$NewSpace'
