@@ -236,6 +236,14 @@ CREATE PROCEDURE SetHighPriority(IN _jobId INT, IN _isHighPriority BOOLEAN)
 		SET is_high_priority=_isHighPriority
 		WHERE id=_jobId;
 	END //
+
+DROP PROCEDURE IF EXISTS SetOutputBenchmarksPath;
+CREATE PROCEDURE SetOutputBenchmarksPath(IN _jobId INT, IN _path TEXT)
+	BEGIN
+		UPDATE jobs
+		SET output_benchmarks_directory_path=_path
+		WHERE id=_jobId;
+	END //
 	
 -- Retrieves basic info about a job from the jobs table
 -- Author: Tyler Jensen

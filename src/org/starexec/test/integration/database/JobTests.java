@@ -1,6 +1,7 @@
 package org.starexec.test.integration.database;
 
 import org.junit.Assert;
+import static org.junit.Assert.*;
 import org.starexec.data.database.*;
 import org.starexec.data.to.*;
 import org.starexec.data.to.Status.StatusCode;
@@ -9,6 +10,7 @@ import org.starexec.jobs.JobManager;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
+import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
 
 import java.sql.SQLException;
@@ -41,6 +43,20 @@ public class JobTests extends TestSequence {
 		Assert.assertNotNull(testJob);
 		Assert.assertEquals(testJob.getName(),job.getName());
 		
+	}
+
+	@StarexecTest
+	private void setOutputBenchmarksDirectoryPath() {
+		try  {
+			final String testPath = "test1";
+			Jobs.setOutputBenchmarksPath(job.getId(), testPath);
+			assertEquals("The test path was not updated.", Jobs.get(job.getId()).getOutputBenchmarksPath(), testPath);
+			final String testPath2 = "test2";
+			Jobs.setOutputBenchmarksPath(job.getId(), testPath2);
+			assertEquals("The 2nd test path was not updated.", Jobs.get(job.getId()).getOutputBenchmarksPath(), testPath);
+		} catch (SQLException e) {
+			fail("An SQLException was thrown: "+Util.getStackTrace(e));
+		}
 	}
 
 	@StarexecTest

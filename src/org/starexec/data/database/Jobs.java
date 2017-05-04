@@ -945,6 +945,21 @@ public class Jobs {
 	}
 
 	/**
+	 * Sets the output benchmarks directory path for a job.
+	 * @param jobId the ID of the job to update the path for.
+	 * @param outputBenchmarksDirectory the path to the output benchmarks directory.
+	 * @throws SQLException
+	 */
+	public static void setOutputBenchmarksPath(final int jobId, final String outputBenchmarksDirectory) throws SQLException {
+		Common.update(
+				"{CALL SetOutputBenchmarksPath(?, ?)}",
+				procedure -> {
+					procedure.setInt(1, jobId);
+					procedure.setString(2, outputBenchmarksDirectory);
+				});
+	}
+
+	/**
 	 * @param jobId The id of the job to be gotten
 	 * @author Albert Giegerich
 	 * @return a job that has job pairs with the simple information included.
