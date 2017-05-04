@@ -282,6 +282,7 @@ CREATE TABLE jobs (
 	disk_size BIGINT NOT NULL,
 	is_high_priority BOOLEAN NOT NULL DEFAULT FALSE,
 	benchmarking_framework ENUM('RUNSOLVER', 'BENCHEXEC') NOT NULL DEFAULT 'RUNSOLVER',
+	output_benchmarks_directory_path TEXT DEFAULT NULL, -- directory for benchmarks created by this job
 	PRIMARY KEY (id),
 	CONSTRAINT jobs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	CONSTRAINT jobs_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL
