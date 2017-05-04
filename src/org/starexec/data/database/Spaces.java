@@ -1670,18 +1670,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, userId);
 			results = procedure.executeQuery();
-			List<Space> subSpaces = new LinkedList<>();
-			
-			while(results.next()){
-				Space s = new Space();
-				s.setName(results.getString("name"));
-				s.setId(results.getInt("id"));
-				s.setDescription(results.getString("description"));
-				s.setLocked(results.getBoolean("locked"));
-				subSpaces.add(s);
-			}
-			log.debug("now returning this many subspaces = "+subSpaces.size());
-			return subSpaces;
+			return resultsToSpaces(results);
 		} catch (Exception e) {
 			log.error("getSubSpaces says "+e.getMessage(),e);
 		} finally {
@@ -1795,19 +1784,8 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, userId);
 			results = procedure.executeQuery();
-			List<Space> subSpaces = new LinkedList<>();
-			
-			while(results.next()){
-				Space s = new Space();
-				s.setName(results.getString("name"));
-				s.setId(results.getInt("id"));
-				s.setDescription(results.getString("description"));
-				s.setLocked(results.getBoolean("locked"));
-				subSpaces.add(s);
-			}
-			
-			
-			return subSpaces;
+
+			return resultsToSpaces(results);
 		} catch (Exception e) {
 			log.error("getSubSpaces says "+e.getMessage(),e);
 		} finally {
