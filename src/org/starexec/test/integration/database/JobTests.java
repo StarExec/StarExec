@@ -53,7 +53,7 @@ public class JobTests extends TestSequence {
 			assertEquals("The test path was not updated.", Jobs.get(job.getId()).getOutputBenchmarksPath(), testPath);
 			final String testPath2 = "test2";
 			Jobs.setOutputBenchmarksPath(job.getId(), testPath2);
-			assertEquals("The 2nd test path was not updated.", Jobs.get(job.getId()).getOutputBenchmarksPath(), testPath);
+			assertEquals("The 2nd test path was not updated.", Jobs.get(job.getId()).getOutputBenchmarksPath(), testPath2);
 		} catch (SQLException e) {
 			fail("An SQLException was thrown: "+Util.getStackTrace(e));
 		}
