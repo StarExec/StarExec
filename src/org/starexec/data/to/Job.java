@@ -54,6 +54,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 
 	private int totalPairs; // number of pairs this job owns
 	private long diskSize; // in bytes
+	private String outputBenchmarksPath;
 	public Job() {
 		jobPairs = new LinkedList<>();
 		
@@ -103,6 +104,14 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 
 	public void setBenchmarkingFramework(BenchmarkingFramework benchmarkingFramework) {
 		this.benchmarkingFramework = benchmarkingFramework;
+	}
+
+	public String getOutputBenchmarksPath() {
+		return outputBenchmarksPath;
+	}
+
+	public void setOutputBenchmarksPath(String path) {
+		outputBenchmarksPath = path;
 	}
 	
 	/**

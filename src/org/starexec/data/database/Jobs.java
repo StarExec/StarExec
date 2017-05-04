@@ -972,8 +972,7 @@ public class Jobs {
 		j.setSuppressTimestamp(results.getBoolean("suppress_timestamp"));
 		j.setUsingDependencies(results.getBoolean("using_dependencies"));
 		j.setBenchmarkingFramework(BenchmarkingFramework.valueOf(results.getString("benchmarking_framework")));
-
-
+		j.setOutputBenchmarksPath(results.getString("output_benchmarks_directory_path"));
 
 		final boolean isHighPriority = results.getBoolean("is_high_priority");
         if (isHighPriority) {
