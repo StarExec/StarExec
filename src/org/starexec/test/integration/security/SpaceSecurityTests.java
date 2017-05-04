@@ -2,22 +2,15 @@ package org.starexec.test.integration.security;
 
 import org.junit.Assert;
 import org.starexec.constants.R;
-import org.starexec.data.database.Communities;
-import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Uploads;
-import org.starexec.data.database.Users;
-import org.starexec.data.database.Websites;
+import org.starexec.data.database.*;
 import org.starexec.data.security.SpaceSecurity;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.SpaceXMLUploadStatus;
 import org.starexec.data.to.User;
-import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
 
 public class SpaceSecurityTests extends TestSequence {
 	

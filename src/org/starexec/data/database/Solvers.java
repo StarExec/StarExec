@@ -1,27 +1,5 @@
 package org.starexec.data.database;
 
-import java.io.File;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.Comparator;
-
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
@@ -35,6 +13,15 @@ import org.starexec.util.DataTablesQuery;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
 import org.starexec.util.Util;
+
+import java.io.File;
+import java.sql.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Date;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Handles all database interaction for solvers
@@ -200,7 +187,7 @@ public class Solvers {
 	 * @author Eric Burns
 	 */
 	public static boolean associate(int solverId, int spaceId) {
-		List<Integer> solverIds=new ArrayList<Integer>();
+		List<Integer> solverIds= new ArrayList<>();
 		solverIds.add(solverId);
 		return associate(solverIds,spaceId);
 	}
@@ -252,7 +239,7 @@ public class Solvers {
 			log.debug("got a request to link in subspaces");
 			List<Space> subspaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(rootSpaceId, userId));
 			log.debug("found a total subspaces = "+subspaces.size());
-			List<Integer> subspaceIds = new LinkedList<Integer>();
+			List<Integer> subspaceIds = new LinkedList<>();
 			
 			// Add the destination space to the list of spaces to associate the solvers with only
 			//if we aren't copying. If we're copying, we did this already
@@ -342,7 +329,7 @@ public class Solvers {
 		ResultSet results=null;
 		
 		//will contain the id of every solver that is associated with either a space or a pair
-		HashSet<Integer> parentedSolvers=new HashSet<Integer>();
+		HashSet<Integer> parentedSolvers= new HashSet<>();
 		try {
 			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL GetSolversAssociatedWithSpaces()}");
@@ -398,7 +385,7 @@ public class Solvers {
 	 * errors associated with the corresponding solvers
 	 */
 	public static List<Integer> copySolvers(List<Solver> solvers, int userId, int spaceId) {
-		List<Integer> ids= new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 		for (Solver s : solvers) {
 			ids.add(copySolver(s,userId,spaceId));
 			
@@ -612,7 +599,7 @@ public class Solvers {
 			return Collections.emptyList();
 		}
 		
-		List<Configuration> returnList = new ArrayList<Configuration>();
+		List<Configuration> returnList = new ArrayList<>();
 		
 		for(File f : binDir.listFiles()){	
 			if(f.isFile() && f.getName().startsWith(CONFIG_PREFIX)){
@@ -709,7 +696,7 @@ public class Solvers {
 		
 		try {			
 			con = Common.getConnection();		
-			List<Solver> solvers = new LinkedList<Solver>();
+			List<Solver> solvers = new LinkedList<>();
 			
 			for(int id : solverIds) {
 				solvers.add(Solvers.get(con, id,false));
@@ -741,7 +728,7 @@ public class Solvers {
 			procedure=con.prepareCall("{CALL GetAssociatedSpaceIdsBySolver(?)}");
 			procedure.setInt(1,solverId);
 			results = procedure.executeQuery();
-			List<Integer> ids=new ArrayList<Integer>();
+			List<Integer> ids= new ArrayList<>();
 			while (results.next()) {
 				ids.add(results.getInt("space_id"));
 			}
@@ -811,7 +798,7 @@ public class Solvers {
 			procedure.setInt(1,userId);
 			
 			results=procedure.executeQuery();
-			List<Solver> solvers=new ArrayList<Solver>();
+			List<Solver> solvers= new ArrayList<>();
 			while (results.next()) {
 				solvers.add(resultSetToSolver(results));
 			}
@@ -851,7 +838,7 @@ public class Solvers {
 	public static List<Solver> getByUser(int userId) {
 		try {
 			//will stores solvers according to their IDs, used to remove duplicates
-			HashMap<Integer,Solver> uniqueSolvers=new HashMap<Integer,Solver>();
+			HashMap<Integer,Solver> uniqueSolvers= new HashMap<>();
 			for (Solver s : getByOwner(userId)) {
 				uniqueSolvers.put(s.getId(), s);
 			}
@@ -863,7 +850,7 @@ public class Solvers {
 				uniqueSolvers.put(s.getId(), s);
 			}
 			
-			List<Solver> solvers=new ArrayList<Solver>();
+			List<Solver> solvers= new ArrayList<>();
 			for (Solver s : uniqueSolvers.values()) {
 				solvers.add(s);
 			}
@@ -890,7 +877,7 @@ public class Solvers {
 			 procedure = con.prepareCall("{CALL GetSolversByOwner(?)}");
 			procedure.setInt(1, userId);					
 			 results = procedure.executeQuery();
-			List<Solver> solvers = new LinkedList<Solver>();
+			List<Solver> solvers = new LinkedList<>();
 			
 			
 			while(results.next()){
@@ -930,7 +917,7 @@ public class Solvers {
 			 procedure = con.prepareCall("{CALL GetSpaceSolversById(?)}");
 			procedure.setInt(1, spaceId);					
 			results = procedure.executeQuery();
-			List<Solver> solvers = new LinkedList<Solver>();
+			List<Solver> solvers = new LinkedList<>();
 			
 			while(results.next()){
 				Solver s = resultSetToSolver(results);
@@ -1118,14 +1105,14 @@ public class Solvers {
 	 * @author Eric Burns
 	 */
 	public static List<Solver> getBySpaceHierarchy(int spaceId, int userId) {
-		List<Solver> solvers=new ArrayList<Solver>();
+		List<Solver> solvers= new ArrayList<>();
 		solvers.addAll(Solvers.getBySpace(spaceId));
 		List<Space> spaceIds=Spaces.getSubSpaceHierarchy(spaceId, userId);
 		for (Space s: spaceIds) {
 			solvers.addAll(Solvers.getBySpace(s.getId()));
 		}
-		List<Solver> filteredSolvers=new ArrayList<Solver>();
-		HashSet<Integer> ids=new HashSet<Integer>();
+		List<Solver> filteredSolvers= new ArrayList<>();
+		HashSet<Integer> ids= new HashSet<>();
 		for (Solver solve : solvers) {
 			if (!ids.contains(solve.getId())) {
 				ids.add(solve.getId());
@@ -1161,7 +1148,7 @@ public class Solvers {
 			 procedure = con.prepareCall("{CALL GetConfigsForSolver(?)}");
 			procedure.setInt(1, solverId);					
 			 results = procedure.executeQuery();
-			List<Configuration> configs = new LinkedList<Configuration>();
+			List<Configuration> configs = new LinkedList<>();
 			
 			while(results.next()){
 				Configuration c = new Configuration();
@@ -1191,7 +1178,7 @@ public class Solvers {
 	 * @return The configuration with the given id
 	 * @author Tyler Jensen
 	 */
-	protected static Configuration getConfiguration(Connection con, int configId) throws SQLException {
+	protected static Configuration getConfiguration(Connection con, int configId) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		 
@@ -1355,7 +1342,7 @@ public class Solvers {
 			con = Common.getConnection();
 			 procedure = con.prepareCall("{CALL GetPublicSolvers()}");				
 			 results = procedure.executeQuery();
-			List<Solver> solvers = new LinkedList<Solver>();
+			List<Solver> solvers = new LinkedList<>();
 			
 			while(results.next()){
 				Solver s=resultSetToSolver(results);
@@ -1418,7 +1405,7 @@ public class Solvers {
 	 * if the solver does not exist
 	 * @author Tyler Jensen
 	 */
-	protected static Solver getSolverByConfig(Connection con, int configId, boolean includeDeleted) throws SQLException {
+	protected static Solver getSolverByConfig(Connection con, int configId, boolean includeDeleted) {
 		Configuration c = Solvers.getConfiguration(con, configId);
 		if (c==null) {
 			log.debug("getSolverByConfig called with configId = "+configId+" but config was null");
@@ -1544,7 +1531,7 @@ public class Solvers {
 			procedure.setBoolean("recycled", recycled);
 				
 			results = procedure.executeQuery();
-			List<Solver> solvers = new LinkedList<Solver>();
+			List<Solver> solvers = new LinkedList<>();
 			
 			// Only get the necessary information to display this solver
 			// in a row in a DataTable object, nothing more.
@@ -1607,7 +1594,7 @@ public class Solvers {
 			procedure.setString("query", query.getSearchQuery());
 				
 			 results = procedure.executeQuery();
-			List<Solver> solvers = new LinkedList<Solver>();
+			List<Solver> solvers = new LinkedList<>();
 			
 			// Only get the necessary information to display this solver
 			// in a row in a DataTable object, nothing more.
@@ -1671,7 +1658,7 @@ public class Solvers {
 	public static List<Solver> getWithConfig(List<Integer> configIds) {
 				
 		try {	
-			List<Solver> solvers = new LinkedList<Solver>();
+			List<Solver> solvers = new LinkedList<>();
 			for (int cid : configIds) {
 				Solver s = Solvers.getByConfigId(cid);
 				if (s != null) {
@@ -1754,7 +1741,7 @@ public class Solvers {
 	 * 
 	 */
 	
-	protected static boolean isSolverDeleted(Connection con, int solverId) throws Exception {
+	protected static boolean isSolverDeleted(Connection con, int solverId) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
@@ -2152,7 +2139,7 @@ public class Solvers {
 			
 			// If the old config and new config names are NOT the same, ensure the file pointed to by
 			// the new config does not already exist on disk
-			if(false == oldConfig.getName().equals(newConfig.getName())){
+			if(!oldConfig.getName().equals(newConfig.getName())){
 				isConfigNameUnchanged = false;
 				if(newConfig.exists()){
 					return false;
@@ -2215,7 +2202,7 @@ public class Solvers {
 	 * @return true iff the solver's size was successfully updated, false otherwise
 	 * @author Todd Elvers
 	 */
-	private static boolean updateSolverDiskSize(Connection con, Solver s) throws Exception {
+	private static boolean updateSolverDiskSize(Connection con, Solver s) {
 		CallableStatement procedure = null;
 		try {
 			// Get the size of the solver's directory
@@ -2333,7 +2320,7 @@ public class Solvers {
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
-		List<Integer> ids=new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 		try {
 			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL GetOrphanedSolverIds(?)}");
@@ -2389,7 +2376,7 @@ public class Solvers {
 			return solvers;
 		}
 		searchQuery=searchQuery.toLowerCase();
-		List<Solver> filteredSolvers=new ArrayList<Solver>();
+		List<Solver> filteredSolvers= new ArrayList<>();
 		for (Solver s : solvers) {
 			try {
 				if (s.getName().toLowerCase().contains(searchQuery) || s.getDescription().toLowerCase().contains(searchQuery)) {
@@ -2456,12 +2443,7 @@ public class Solvers {
 	 */
     public static void sortConfigs(List<Solver> solvers) {
         for(Solver s : solvers) {
-            Collections.sort(s.getConfigurations(), new Comparator<Configuration>() {
-                @Override
-                public int compare(Configuration c1, Configuration c2) {
-                    return c1.getName().compareTo(c2.getName());
-                }
-            });
+            Collections.sort(s.getConfigurations(), (c1, c2) -> c1.getName().compareTo(c2.getName()));
         }
     }
 

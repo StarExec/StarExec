@@ -2,15 +2,12 @@ package org.starexec.test.integration.security;
 
 import org.junit.Assert;
 import org.starexec.constants.R;
-import org.starexec.data.database.Settings;
-import org.starexec.data.database.Users;
 import org.starexec.data.security.SettingSecurity;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.User;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
 
 import java.sql.SQLException;

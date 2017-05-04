@@ -146,8 +146,8 @@ public class UploadJobXML extends HttpServlet {
 			
 			//Typically there will just be 1 file, but might as well allow more
 			
-			List<Integer> jobIds=new ArrayList<Integer>();
-			List<Integer> current=new ArrayList<Integer>();
+			List<Integer> jobIds= new ArrayList<>();
+			List<Integer> current= new ArrayList<>();
 
 			// Makes sure there are no directories in archive file.
 			checkForIllegalDirectoriesInXMLArchive(uniqueDir);

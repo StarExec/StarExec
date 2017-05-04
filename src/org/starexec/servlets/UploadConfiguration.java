@@ -1,8 +1,17 @@
 package org.starexec.servlets;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
+import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
+import org.starexec.constants.R;
+import org.starexec.data.database.Solvers;
+import org.starexec.data.security.SolverSecurity;
+import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.data.to.Configuration;
+import org.starexec.data.to.Solver;
+import org.starexec.logger.StarLogger;
+import org.starexec.util.PartWrapper;
+import org.starexec.util.SessionUtil;
+import org.starexec.util.Util;
+import org.starexec.util.Validator;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -10,19 +19,9 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
-import org.starexec.constants.R;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.security.ValidatorStatusCode;
-import org.starexec.data.security.SolverSecurity;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Solver;
-import org.starexec.logger.StarLogger;
-import org.starexec.util.SessionUtil;
-import org.starexec.util.Util;
-import org.starexec.util.Validator;
-import org.starexec.util.PartWrapper;
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
 
 
 /**

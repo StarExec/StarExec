@@ -1,15 +1,5 @@
 package org.starexec.test.resources;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -17,34 +7,17 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
 import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Cluster;
-import org.starexec.data.database.JobPairs;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Pipelines;
-import org.starexec.data.database.Processors;
-import org.starexec.data.database.Queues;
-import org.starexec.data.database.Requests;
-import org.starexec.data.database.Settings;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Uploads;
-import org.starexec.data.database.Users;
-import org.starexec.data.to.CommunityRequest;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.DefaultSettings;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Permission;
-import org.starexec.data.to.Processor;
+import org.starexec.data.database.*;
+import org.starexec.data.to.*;
 import org.starexec.data.to.Queue;
-import org.starexec.data.to.Solver;
 import org.starexec.data.to.Solver.ExecutableType;
-import org.starexec.data.to.SolverBuildStatus;
-import org.starexec.data.to.Space;
 import org.starexec.data.to.Status.StatusCode;
-import org.starexec.data.to.User;
 import org.starexec.data.to.enums.ProcessorType;
+import org.starexec.data.to.pipelines.PipelineDependency;
+import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
+import org.starexec.data.to.pipelines.PipelineStage;
+import org.starexec.data.to.pipelines.SolverPipeline;
+import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.jobs.JobManager;
 import org.starexec.logger.StarLogger;
 import org.starexec.servlets.BenchmarkUploader;
@@ -52,11 +25,12 @@ import org.starexec.servlets.ProcessorManager;
 import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
 import org.starexec.util.Util;
-import org.starexec.data.to.pipelines.PipelineDependency;
-import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
-import org.starexec.data.to.pipelines.PipelineStage;
-import org.starexec.data.to.pipelines.SolverPipeline;
-import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
+
+import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This file contains functions for loading test objects into the database.
@@ -72,15 +46,15 @@ public class ResourceLoader implements AutoCloseable {
 	
 	// this class keeps track of all the primitives it creates. Calling deleteAllPrimitives
 	// will delete all of these objects
-	private List<Integer> createdUserIds = new ArrayList<Integer>();
-	private List<Integer> createdJobIds = new ArrayList<Integer>();
-	private List<Integer> createdBenchmarkIds = new ArrayList<Integer>();
-	private List<Integer> createdSolverIds = new ArrayList<Integer>();
-	private List<Integer> createdProcessorIds = new ArrayList<Integer>();
-	private List<Integer> createdSettingsIds = new ArrayList<Integer>();
-	private List<Integer> createdSpaceIds = new ArrayList<Integer>();
-	private List<Integer> createdQueueIds = new ArrayList<Integer>();
-	private List<Integer> createdPipelineIds = new ArrayList<Integer>();
+	private List<Integer> createdUserIds = new ArrayList<>();
+	private List<Integer> createdJobIds = new ArrayList<>();
+	private List<Integer> createdBenchmarkIds = new ArrayList<>();
+	private List<Integer> createdSolverIds = new ArrayList<>();
+	private List<Integer> createdProcessorIds = new ArrayList<>();
+	private List<Integer> createdSettingsIds = new ArrayList<>();
+	private List<Integer> createdSpaceIds = new ArrayList<>();
+	private List<Integer> createdQueueIds = new ArrayList<>();
+	private List<Integer> createdPipelineIds = new ArrayList<>();
 
 	@Override
 	public void close() {
@@ -204,14 +178,14 @@ public class ResourceLoader implements AutoCloseable {
 	}
 	
 	public Job loadJobIntoDatabase(int spaceId, int userId, int solverId, List<Integer> benchmarkIds) {
-		List<Integer> solvers=new ArrayList<Integer>();
+		List<Integer> solvers= new ArrayList<>();
 		solvers.add(solverId);
 		return loadJobIntoDatabase(spaceId,userId, -1,-1, solvers,benchmarkIds,10,10,1);
 	}
 	
 	public Job loadJobIntoDatabase(int spaceId, int userId, int preProcessorId, int postProcessorId, int solverId, List<Integer> benchmarkIds,
 			int cpuTimeout, int wallclockTimeout, int memory) {
-		List<Integer> solvers=new ArrayList<Integer>();
+		List<Integer> solvers= new ArrayList<>();
 		solvers.add(solverId);
 		return loadJobIntoDatabase(spaceId,userId,preProcessorId,postProcessorId,solvers,benchmarkIds,cpuTimeout,wallclockTimeout,memory);
 	}
@@ -259,11 +233,11 @@ public class ResourceLoader implements AutoCloseable {
 				R.DEFAULT_BENCHMARKING_FRAMEWORK);
 		
 		
-		List<Integer> configIds=new ArrayList<Integer>();
+		List<Integer> configIds= new ArrayList<>();
 		for (Integer i : solverIds) {
 			configIds.add(Solvers.getConfigsForSolver(i).get(0).getId());
 		}
-		List<Space> spaces=new ArrayList<Space>();
+		List<Space> spaces= new ArrayList<>();
 		spaces.add(Spaces.get(spaceId));
 
 		JobManager.buildJob(job, benchmarkIds, configIds, spaceId);
@@ -308,9 +282,9 @@ public class ResourceLoader implements AutoCloseable {
 				R.DEFAULT_BENCHMARKING_FRAMEWORK);
 		job.setPrimarySpace(rootSpaceId);
 		HashMap<Integer, String> SP = Spaces.spacePathCreate(userId, spaces, rootSpaceId);
-		HashMap<Integer,List<JobPair>> spaceToPairs=new HashMap<Integer,List<JobPair>>();
+		HashMap<Integer,List<JobPair>> spaceToPairs= new HashMap<>();
 		for (Space s : spaces) {
-			List<JobPair> pairs=JobManager.addJobPairsFromSpace(userId, s.getId(), SP.get(s.getId()));
+			List<JobPair> pairs=JobManager.addJobPairsFromSpace(s.getId(), SP.get(s.getId()));
 			spaceToPairs.put(s.getId(), pairs);
 		}
 		JobManager.addJobPairsDepthFirst(job, spaceToPairs);
@@ -758,7 +732,7 @@ public class ResourceLoader implements AutoCloseable {
 	 * @throws IOException 
 	 */
 	public List<String> getTestConfigDirectory() throws IOException {
-		List<String> strs = new ArrayList<String>();
+		List<String> strs = new ArrayList<>();
 		File f = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), TestUtil.getRandomAlphaString(50));
 		File bin = new File(f, R.SOLVER_BIN_DIR);
 		bin.mkdirs();

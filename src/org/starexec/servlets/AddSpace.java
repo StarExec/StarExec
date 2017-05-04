@@ -1,32 +1,23 @@
 package org.starexec.servlets;
 
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Set;
+import org.starexec.constants.R;
+import org.starexec.data.database.*;
+import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.data.to.*;
+import org.starexec.logger.StarLogger;
+import org.starexec.util.SessionUtil;
+import org.starexec.util.Util;
+import org.starexec.util.Validator;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.starexec.constants.R;
-import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
-import org.starexec.data.security.ValidatorStatusCode;
-import org.starexec.data.to.Permission;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
-import org.starexec.logger.StarLogger;
-import org.starexec.util.SessionUtil;
-import org.starexec.util.Util;
-import org.starexec.util.Validator;
+import java.io.IOException;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Servlet which handles incoming requests adding new spaces

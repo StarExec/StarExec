@@ -2,14 +2,7 @@ package org.starexec.app;
 
 import com.google.gson.*;
 import com.google.gson.annotations.Expose;
-import com.opera.core.systems.scope.protos.UmsProtos;
 import org.apache.commons.io.FileUtils;
-import org.apache.coyote.*;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.omg.CORBA.INTERNAL;
 import org.starexec.command.Connection;
 import org.starexec.constants.R;
 import org.starexec.constants.R.DefaultSettingAttribute;
@@ -17,12 +10,10 @@ import org.starexec.data.database.*;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.security.*;
 import org.starexec.data.to.*;
-import org.starexec.data.to.Processor;
 import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.enums.CopyPrimitivesOption;
 import org.starexec.data.to.enums.Primitive;
-import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.exceptions.StarExecException;
@@ -334,7 +325,7 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		ValidatorStatusCode status=JobSecurity.canUserSeeJobWithPair(id, userId);
 		if (!status.isSuccess()) {
-		    return ("user "+ new Integer(userId) + " does not have access to see job " + new Integer(id));
+		    return ("user "+ userId + " does not have access to see job " + id);
 		}
 
 			String log = JobPairs.getJobLog(id);
@@ -719,7 +710,7 @@ public class RESTServices {
 		log.debug(method, "Inputs: jobId="+jobId+" jobSpaceId="+jobSpaceId+" stageId="+stageNumber);
 
 
-		Map<String, SimpleMatrixElement> benchSolverConfigElementMap = new HashMap<String, SimpleMatrixElement>();
+		Map<String, SimpleMatrixElement> benchSolverConfigElementMap = new HashMap<>();
 		// Get all the latest new completed job pairs.
 		List<JobPair> completedJobPairs = Jobs.getNewCompletedPairsDetailed(jobId, 0);
 		for (JobPair pair : completedJobPairs) {
@@ -2425,7 +2416,7 @@ public class RESTServices {
 		}
 
 		// Extract the String solver id's and convert them to Integer
-		ArrayList<Integer> selectedProcessors = new ArrayList<Integer>();
+		ArrayList<Integer> selectedProcessors = new ArrayList<>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedProcessors.add(Integer.parseInt(id));
 			log.debug("got a request to delete processor id = "+id);
@@ -2623,7 +2614,7 @@ public class RESTServices {
 		}
 
 		// Extract the String bench id's and convert them to Integer
-		ArrayList<Integer> selectedBenches = new ArrayList<Integer>();
+		ArrayList<Integer> selectedBenches = new ArrayList<>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedBenches.add(Integer.parseInt(id));
 		}
@@ -2652,7 +2643,7 @@ public class RESTServices {
 		}
 
 		// Extract the String bench id's and convert them to Integer
-		ArrayList<Integer> selectedBenches = new ArrayList<Integer>();
+		ArrayList<Integer> selectedBenches = new ArrayList<>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedBenches.add(Integer.parseInt(id));
 		}
@@ -2690,7 +2681,7 @@ public class RESTServices {
 		}
 
 		// Extract the String bench id's and convert them to Integer
-		ArrayList<Integer> selectedBenches = new ArrayList<Integer>();
+		ArrayList<Integer> selectedBenches = new ArrayList<>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedBenches.add(Integer.parseInt(id));
 		}
@@ -2733,7 +2724,7 @@ public class RESTServices {
 
 
 			// Extract the String bench id's and convert them to Integer
-			ArrayList<Integer> selectedBenches = new ArrayList<Integer>();
+			ArrayList<Integer> selectedBenches = new ArrayList<>();
 			for(String id : request.getParameterValues("selectedIds[]")){
 				selectedBenches.add(Integer.parseInt(id));
 			}
@@ -2770,7 +2761,7 @@ public class RESTServices {
 				return gson.toJson(ERROR_IDS_NOT_GIVEN);
 			}
 			// Extract the String bench id's and convert them to Integer
-			ArrayList<Integer> selectedBenches = new ArrayList<Integer>();
+			ArrayList<Integer> selectedBenches = new ArrayList<>();
 			for(String id : request.getParameterValues("selectedIds[]")){
 				selectedBenches.add(Integer.parseInt(id));
 			}
@@ -2895,7 +2886,7 @@ public class RESTServices {
 			}
 			if (copy) {
 				List<Solver> oldSolvers=Solvers.get(selectedSolvers);
-				List<Integer>newSolverIds=new ArrayList<Integer>();
+				List<Integer>newSolverIds= new ArrayList<>();
 				newSolverIds=Solvers.copySolvers(oldSolvers, requestUserId, spaceId);
 				selectedSolvers=newSolverIds;
 				response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(selectedSolvers)));
@@ -3054,7 +3045,7 @@ public class RESTServices {
 		// If we are "cascade removing" the user(s)...
 		if (hierarchy) {
 			List<Space> subspaces = Spaces.trimSubSpaces(userIdOfRemover, Spaces.getSubSpaceHierarchy(spaceId, userIdOfRemover));
-			List<Integer> subspaceIds = new LinkedList<Integer>();
+			List<Integer> subspaceIds = new LinkedList<>();
 
 			// Add the destination space to the list of spaces remove the user from
 			subspaceIds.add(spaceId);
@@ -3094,13 +3085,13 @@ public class RESTServices {
 		}
 
 		// Extract the String solver id's and convert them to Integer
-		ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
+		ArrayList<Integer> selectedSolvers = new ArrayList<>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedSolvers.add(Integer.parseInt(id));
 		}
 
 		// If we are "cascade removing" the solver(s)...
-		if (true == Boolean.parseBoolean(request.getParameter("hierarchy"))) {
+		if (Boolean.parseBoolean(request.getParameter("hierarchy"))) {
 
 			ValidatorStatusCode status=SolverSecurity.canUserRemoveSolverFromHierarchy(spaceId,userId);
 			if (!status.isSuccess()) {
@@ -3142,7 +3133,7 @@ public class RESTServices {
 		}
 
 		// Extract the String solver id's and convert them to Integer
-		ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
+		ArrayList<Integer> selectedSolvers = new ArrayList<>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedSolvers.add(Integer.parseInt(id));
 		}
@@ -3183,7 +3174,7 @@ public class RESTServices {
 			}
 
 			// Extract the String solver id's and convert them to Integer
-			ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
+			ArrayList<Integer> selectedSolvers = new ArrayList<>();
 			for(String id : request.getParameterValues("selectedIds[]")){
 				selectedSolvers.add(Integer.parseInt(id));
 			}
@@ -3259,7 +3250,7 @@ public class RESTServices {
 		}
 
 		// Extract the String solver id's and convert them to Integer
-		ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
+		ArrayList<Integer> selectedSolvers = new ArrayList<>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedSolvers.add(Integer.parseInt(id));
 		}
@@ -3326,18 +3317,15 @@ public class RESTServices {
 		for (Integer i : jobIds) {
 			success = success && Jobs.setDeletedColumn(i);
 		}
-		Util.threadPoolExecute(new Runnable() {
-			@Override
-			public void run(){
-				try {
-						if (!Jobs.deleteOrphanedJobs(userId)) {
-							log.error("there were one or more errors in deleting the orphaned jobs!");
-						}
-				} catch (Exception e) {
-					log.error(e.getMessage(),e);
-				}
-			}
-		});
+		Util.threadPoolExecute(() -> {
+            try {
+                if (!Jobs.deleteOrphanedJobs(userId)) {
+                    log.error("there were one or more errors in deleting the orphaned jobs!");
+                }
+            } catch (Exception e) {
+                log.error(e.getMessage(),e);
+            }
+        });
 		return success ?  gson.toJson(new ValidatorStatusCode(true,"Job(s) deleted successfully")) :
 			gson.toJson(new ValidatorStatusCode(false, "Internal database error deleting jobs"));
 	}
@@ -3410,7 +3398,7 @@ public class RESTServices {
 		}
 
 		// Extract the String solver id's and convert them to Integer
-		ArrayList<Integer> selectedSolvers = new ArrayList<Integer>();
+		ArrayList<Integer> selectedSolvers = new ArrayList<>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedSolvers.add(Integer.parseInt(id));
 		}
@@ -3447,7 +3435,7 @@ public class RESTServices {
 		}
 		int userId=SessionUtil.getUserId(request);
 		// Extract the String solver id's and convert them to Integer
-		ArrayList<Integer> selectedConfigs = new ArrayList<Integer>();
+		ArrayList<Integer> selectedConfigs = new ArrayList<>();
 		for(String id : request.getParameterValues("selectedIds[]")){
 			selectedConfigs.add(Integer.parseInt(id));
 		}
@@ -3493,7 +3481,7 @@ public class RESTServices {
 		}
 
 		// Extract the String job id's and convert them to Integer
-		ArrayList<Integer> selectedJobs = new ArrayList<Integer>();
+		ArrayList<Integer> selectedJobs = new ArrayList<>();
 		for (String id : request.getParameterValues("selectedIds[]")) {
 			selectedJobs.add(Integer.parseInt(id));
 		}
@@ -3529,7 +3517,7 @@ public class RESTServices {
 
 
 		// Extract the String job id's and convert them to Integer
-		ArrayList<Integer> selectedJobs = new ArrayList<Integer>();
+		ArrayList<Integer> selectedJobs = new ArrayList<>();
 		for (String id : request.getParameterValues("selectedIds[]")) {
 			selectedJobs.add(Integer.parseInt(id));
 			log.debug("adding id = "+id+" to selectedJobs");
@@ -3555,27 +3543,24 @@ public class RESTServices {
 
 		// Next, we actually delete the jobs on disk and remove job_pairs. This takes much longer,
 		// so we spin off a new thread so the user does not have to wait.
-		Util.threadPoolExecute(new Runnable() {
-			@Override
-			public void run(){
-				try {
-					for (int id : selectedJobs) {
-						boolean success_delete = Jobs.delete(id);
-						if (!success_delete) {
-							log.error("there were one or more errors in deleting the list of jobs!");
-						}
-					}
-				} catch (Exception e) {
-					log.error(e.getMessage(),e);
-				}
-			}
-		});
-
-
-
-
+		deleteJobsOnSeparateThread(selectedJobs);
 
 		return gson.toJson(new ValidatorStatusCode(true,"Job(s) deleted successfully and removed from spaces"));
+	}
+
+	private static void deleteJobsOnSeparateThread(List<Integer> selectedJobs) {
+		Util.threadPoolExecute(() -> {
+			try {
+				for (int id : selectedJobs) {
+					boolean success_delete = Jobs.delete(id);
+					if (!success_delete) {
+						log.error("there were one or more errors in deleting the list of jobs!");
+					}
+				}
+			} catch (Exception e) {
+				log.error(e.getMessage(),e);
+			}
+		});
 	}
 
 	/**
@@ -3596,7 +3581,7 @@ public class RESTServices {
 		}
 
 		// Extract the String job id's and convert them to Integer
-		ArrayList<Integer> selectedJobs = new ArrayList<Integer>();
+		ArrayList<Integer> selectedJobs = new ArrayList<>();
 		for (String id : request.getParameterValues("selectedIds[]")) {
 			selectedJobs.add(Integer.parseInt(id));
 		}
@@ -3616,22 +3601,7 @@ public class RESTServices {
 
 		// Next, we actually delete the jobs on disk and remove job_pairs. This takes much longer,
 		// so we spin off a new thread so the user does not have to wait.
-		Util.threadPoolExecute(new Runnable() {
-			@Override
-			public void run(){
-				try {
-					for (int id : selectedJobs) {
-						boolean success_delete = Jobs.delete(id);
-						if (!success_delete) {
-							log.error("there were one or more errors in deleting the list of jobs!");
-						}
-					}
-				} catch (Exception e) {
-					log.error(e.getMessage(),e);
-				}
-
-			}
-		});
+		deleteJobsOnSeparateThread(selectedJobs);
 
 
 		return gson.toJson(new ValidatorStatusCode(true,"Job(s) deleted successfully"));
@@ -3656,7 +3626,7 @@ public class RESTServices {
 	public String removeSubspacesFromSpace(@Context HttpServletRequest request) {
 
 		final int userId=SessionUtil.getUserId(request);
-		final ArrayList<Integer> selectedSubspaces = new ArrayList<Integer>();
+		final ArrayList<Integer> selectedSubspaces = new ArrayList<>();
 
 		try{
 			// Extract the String subspace id's and convert them to Integers
@@ -3677,47 +3647,44 @@ public class RESTServices {
 		}
 
 		// Fork a new thread to delete the subspaces so the user's browser doesn't hang.
-		Runnable removeSubspacesProcess = new Runnable() {
-			@Override
-			public void run() {
-				try {
-					boolean recycleAllAllowed=false;
-					if (Util.paramExists("recyclePrims", request)) {
-						if (Boolean.parseBoolean(request.getParameter("recyclePrims"))) {
-							log.debug("Request to delete all solvers and benchmarks in a hierarchy received");
-							recycleAllAllowed=true;
-						}
-					}
-					Set<Solver> solvers=new HashSet<Solver>();
-					Set<Benchmark> benchmarks=new HashSet<Benchmark>();
-					if (recycleAllAllowed) {
-						for (int sid : selectedSubspaces) {
-							solvers.addAll(Solvers.getBySpace(sid));
-							benchmarks.addAll(Benchmarks.getBySpace(sid));
-							for (Space s : Spaces.getSubSpaceHierarchy(sid)) {
-								solvers.addAll(Solvers.getBySpace(s.getId()));
-								benchmarks.addAll(Benchmarks.getBySpace(s.getId()));
-							}
-						}
-					}
-					log.debug("found the following benchmarks");
-					for (Benchmark b : benchmarks) {
-						log.debug(String.valueOf(b.getId()));
-					}
-					// Remove the subspaces from the space
-					boolean success=true;
-					if (Spaces.removeSubspaces(selectedSubspaces)) {
-						if (recycleAllAllowed) {
-							log.debug("Space removed successfully, recycling primitives");
-							success=success && Solvers.recycleSolversOwnedByUser(solvers, userId);
-							success= success && Benchmarks.recycleAllOwnedByUser(benchmarks, userId);
-						}
-					}
-				} catch (Exception e) {
-					log.warn("Error occurred while removing subspaces.", e);
-				}
-			}
-		};
+		Runnable removeSubspacesProcess = () -> {
+            try {
+                boolean recycleAllAllowed=false;
+                if (Util.paramExists("recyclePrims", request)) {
+                    if (Boolean.parseBoolean(request.getParameter("recyclePrims"))) {
+                        log.debug("Request to delete all solvers and benchmarks in a hierarchy received");
+                        recycleAllAllowed=true;
+                    }
+                }
+                Set<Solver> solvers= new HashSet<>();
+                Set<Benchmark> benchmarks= new HashSet<>();
+                if (recycleAllAllowed) {
+                    for (int sid : selectedSubspaces) {
+                        solvers.addAll(Solvers.getBySpace(sid));
+                        benchmarks.addAll(Benchmarks.getBySpace(sid));
+                        for (Space s : Spaces.getSubSpaceHierarchy(sid)) {
+                            solvers.addAll(Solvers.getBySpace(s.getId()));
+                            benchmarks.addAll(Benchmarks.getBySpace(s.getId()));
+                        }
+                    }
+                }
+                log.debug("found the following benchmarks");
+                for (Benchmark b : benchmarks) {
+                    log.debug(String.valueOf(b.getId()));
+                }
+                // Remove the subspaces from the space
+                boolean success=true;
+                if (Spaces.removeSubspaces(selectedSubspaces)) {
+                    if (recycleAllAllowed) {
+                        log.debug("Space removed successfully, recycling primitives");
+                        success=success && Solvers.recycleSolversOwnedByUser(solvers, userId);
+                        success= success && Benchmarks.recycleAllOwnedByUser(benchmarks, userId);
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Error occurred while removing subspaces.", e);
+            }
+        };
 		Util.threadPoolExecute(removeSubspacesProcess);
 		return gson.toJson(new ValidatorStatusCode(true, "Subspaces are being deleted."));
 	}
@@ -3876,7 +3843,7 @@ public class RESTServices {
 		} catch (NumberFormatException nfe){
 			isValidRequest = false;
 		}
-		if(false == isValidRequest){
+		if(!isValidRequest){
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
 
@@ -3908,20 +3875,17 @@ public class RESTServices {
 		// means we need to reprocess this benchmark
 		if (b.getType().getId()!=type) {
 			log.debug("executing new processor on benchmark");
-			List<Benchmark> bench = new ArrayList<Benchmark>();
+			List<Benchmark> bench = new ArrayList<>();
 			bench.add(Benchmarks.get(benchId));
-			Util.threadPoolExecute(new Runnable() {
-				@Override
-				public void run(){
-					try {
-						Benchmarks.attachBenchAttrs(bench, Processors.get(benchType), null);
-						Benchmarks.addAttributeSetToDbIfValid(bench.get(0).getAttributes(), bench.get(0), null);
-					} catch (Exception e) {
-						log.error(e.getMessage(),e);
-					}
+			Util.threadPoolExecute(() -> {
+                try {
+                    Benchmarks.attachBenchAttrs(bench, Processors.get(benchType), null);
+                    Benchmarks.addAttributeSetToDbIfValid(bench.get(0).getAttributes(), bench.get(0), null);
+                } catch (Exception e) {
+                    log.error(e.getMessage(),e);
+                }
 
-				}
-			});
+            });
 
 
 			processorString=". Benchmark is being processed with the new processor";
@@ -4252,7 +4216,7 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		List<Integer>newSpaceIds = new ArrayList<Integer>();
+		List<Integer>newSpaceIds = new ArrayList<>();
 		// Add the subSpaces to the destination space
 		for (int id : selectedSubSpaces) {
 			try {
@@ -4742,7 +4706,7 @@ public class RESTServices {
 	@POST
 	@Path("/jobs/clearloadbalance")
 	@Produces("application/json")
-	public String clearLoadBalanceData(@Context HttpServletRequest request) throws Exception {
+	public String clearLoadBalanceData(@Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
@@ -4760,7 +4724,7 @@ public class RESTServices {
 	@POST
 	@Path("/jobs/clearsolvercache")
 	@Produces("application/json")
-	public String clearSolverCache(@Context HttpServletRequest request) throws Exception {
+	public String clearSolverCache(@Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
@@ -4784,7 +4748,7 @@ public class RESTServices {
 	@POST
 	@Path("/starexec/debugmode/{value}")
 	@Produces("application/json")
-	public String updateDebugMode(@PathParam("value") boolean value, @Context HttpServletRequest request) throws Exception {
+	public String updateDebugMode(@PathParam("value") boolean value, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);

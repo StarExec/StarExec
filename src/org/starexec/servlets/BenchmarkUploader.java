@@ -1,16 +1,15 @@
 package org.starexec.servlets;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.UUID;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.starexec.constants.R;
+import org.starexec.data.database.*;
+import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.data.to.*;
+import org.starexec.exceptions.StarExecException;
+import org.starexec.logger.StarLogger;
+import org.starexec.test.TestUtil;
+import org.starexec.util.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -18,29 +17,13 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Reports;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Uploads;
-import org.starexec.data.database.Users;
-import org.starexec.data.security.ValidatorStatusCode;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.BenchmarkUploadStatus;
-import org.starexec.data.to.Permission;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
-import org.starexec.exceptions.StarExecException;
-import org.starexec.logger.StarLogger;
-import org.starexec.test.TestUtil;
-import org.starexec.util.ArchiveUtil;
-import org.starexec.util.SessionUtil;
-import org.starexec.util.PartWrapper;
-import org.starexec.util.Util;
-import org.starexec.util.Validator;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 
@@ -122,13 +105,24 @@ public class BenchmarkUploader extends HttpServlet {
 	 * If null, benchmarks will be directly under the /date/ directory
 	 * @return File object representing the new directory
 	 */
-	public static File getDirectoryForBenchmarkUpload(int userId, String name) {
+	public static File getDirectoryForBenchmarkUpload(int userId, String name) throws FileNotFoundException {
+		final String methodName = "getDirectoryForBenchmarkUpload";
 		File uniqueDir = new File(R.getBenchmarkPath(), "" + userId);
 		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
 		if (name!=null) {
 			uniqueDir = new File(uniqueDir, name);
 		}
-		uniqueDir.mkdirs();
+		log.debug(methodName, "Creating directory  "+uniqueDir + " as " + System.getProperty("user.name"));
+		boolean dirMade = uniqueDir.mkdirs();
+		if (!dirMade) {
+			log.warn(methodName, "Directory was not made." + uniqueDir.getAbsolutePath());
+			log.warn(methodName, "Did file already exist: " + uniqueDir.exists());
+			log.warn(methodName, "User was: " + System.getProperty("user.name"));
+			log.warn(methodName, "canWrite for file: "+uniqueDir.canWrite());
+			if (!uniqueDir.exists()) {
+				throw new FileNotFoundException("The unique directory could not be made for some reason.");
+			}
+		}
 		return uniqueDir;
 	}
 	
@@ -202,11 +196,11 @@ public class BenchmarkUploader extends HttpServlet {
 	 */
 	public static List<Integer> addBenchmarksFromArchive(File archiveFile, int userId, int spaceId, int typeId,
 			boolean downloadable, Permission perm, String uploadMethod, int statusId,
-			boolean hasDependencies, boolean linked, Integer depRootSpaceId) throws Exception {
+			boolean hasDependencies, boolean linked, Integer depRootSpaceId) throws IOException, StarExecException {
 		
-		ArrayList<Integer> benchmarkIds=new ArrayList<Integer>();
+		ArrayList<Integer> benchmarkIds= new ArrayList<>();
 		// Create a unique path the zip file will be extracted to
-		File uniqueDir = getDirectoryForBenchmarkUpload(userId,null);
+		final File uniqueDir = getDirectoryForBenchmarkUpload(userId,null);
 		
 		// Create the zip file object-to-be
 		long fileSize=ArchiveUtil.getArchiveSize(archiveFile.getAbsolutePath());
@@ -472,7 +466,7 @@ public class BenchmarkUploader extends HttpServlet {
 	private static ValidatorStatusCode doSpaceNamesConflict(File uniqueDir, int parentSpaceId) {
 		try {
 			List<Space> subspaces=Spaces.getSubSpaces(parentSpaceId);
-			HashSet<String> subspaceNames=new HashSet<String>();
+			HashSet<String> subspaceNames= new HashSet<>();
 			for (Space s : subspaces) {
 				subspaceNames.add(s.getName());
 			}

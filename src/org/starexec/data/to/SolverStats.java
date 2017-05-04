@@ -2,9 +2,6 @@ package org.starexec.data.to;
 
 import com.google.gson.annotations.Expose;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * This class stores the statistics for a single solver/configuration pair for a job
  * @author Eric

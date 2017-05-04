@@ -1,15 +1,13 @@
 package org.starexec.data.to;
 
-import java.util.LinkedList;
-import java.lang.Iterable;
+import org.starexec.data.database.Analytics;
+import org.starexec.data.database.Common;
+import org.starexec.logger.StarLogger;
 
 import java.sql.Date;
-import java.sql.SQLException;
 import java.sql.ResultSet;
-
-import org.starexec.data.database.Common;
-import org.starexec.data.database.Analytics;
-import org.starexec.logger.StarLogger;
+import java.sql.SQLException;
+import java.util.LinkedList;
 
 /**
  * Analytics keeps a record of how often events happen.
@@ -33,7 +31,7 @@ public class AnalyticsResults {
 	 * @return list of AnalyticsResults
 	 */
 	private static LinkedList<AnalyticsResults> listFromResults(ResultSet results) throws SQLException {
-		LinkedList<AnalyticsResults> list = new LinkedList<AnalyticsResults>();
+		LinkedList<AnalyticsResults> list = new LinkedList<>();
 		while (results.next()) {
 			list.add(
 				new AnalyticsResults(
@@ -63,7 +61,7 @@ public class AnalyticsResults {
 			);
 		} catch (SQLException e) {
 			log.error("GetAnalyticsForDateRange");
-			return new LinkedList<AnalyticsResults>();
+			return new LinkedList<>();
 		}
 	}
 }

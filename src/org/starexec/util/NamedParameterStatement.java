@@ -1,10 +1,6 @@
 package org.starexec.util;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,7 +28,7 @@ prepareStatement}.
      */
     public NamedParameterStatement(Connection connection, String query) throws 
 SQLException {
-        indexMap=new HashMap<String,List<Integer>>();
+        indexMap= new HashMap<>();
         String parsedQuery=parse(query, indexMap);
         statement=connection.prepareStatement(parsedQuery);
     }
@@ -69,10 +65,10 @@ method is non-private so JUnit code can
 
                     List<Integer> indexList=paramMap.get(name);
                     if(indexList==null) {
-                        indexList=new LinkedList<Integer>();
+                        indexList= new LinkedList<>();
                         paramMap.put(name, indexList);
                     }
-                    indexList.add(new Integer(index));
+                    indexList.add(index);
 
                     index++;
                 }

@@ -1,41 +1,19 @@
 package org.starexec.data.database;
 
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.Date;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.UUID;
-
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
-
-import org.starexec.logger.StarLogger;
 import org.starexec.constants.R;
-import org.starexec.constants.Web;
-
-import org.starexec.data.database.Jobs;
-
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.JobSpace;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.SolverStats;
+import org.starexec.data.to.*;
 import org.starexec.data.to.pipelines.JoblineStage;
-
+import org.starexec.logger.StarLogger;
 import org.starexec.util.Util;
+
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.*;
 
 
 public class AnonymousLinks {
@@ -454,7 +432,7 @@ public class AnonymousLinks {
 	 * @param uuid the identifier for the anonymous link.
 	 * @author Albert Giegerich
 	 */
-	public static void delete( String uuid ) throws SQLException {
+	public static void delete( String uuid ) {
 		final String methodName = "delete(String)";
 		Connection con = null;
 		try {

@@ -1,11 +1,11 @@
 package org.starexec.data.to;
 
+import com.google.gson.annotations.Expose;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import com.google.gson.annotations.Expose;
 
 /**
  * Represents a permission between a user and a space, or a default permission
@@ -221,7 +221,7 @@ public class Permission extends Identifiable {
 	}
 	
 	private Map<String, Boolean> getPermissionMap() {
-		Map<String, Boolean> permMap = new HashMap<String, Boolean>();
+		Map<String, Boolean> permMap = new HashMap<>();
 		permMap.put("addSolver", addSolver);
 		permMap.put("addBench", addBenchmark);
 		permMap.put("addSpace", addSpace);
@@ -238,7 +238,7 @@ public class Permission extends Identifiable {
 	}
 	
 	private List<String> getPermissionsWithValue(boolean value) {
-		List<String> perms=new ArrayList<String>();
+		List<String> perms= new ArrayList<>();
 		Map<String, Boolean> permMap = getPermissionMap();
 		for (String s : permMap.keySet()) {
 			if (permMap.get(s)==value) {

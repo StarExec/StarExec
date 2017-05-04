@@ -1,11 +1,10 @@
 package org.starexec.data.to;
 
+import com.google.gson.annotations.Expose;
+
 import java.sql.Timestamp;
 import java.util.LinkedList;
 import java.util.List;
-
-
-import com.google.gson.annotations.Expose;
 
 /**
  * Represents a user in the database
@@ -154,7 +153,7 @@ public class User extends Identifiable {
 	 */
 	public List<Website> getWebsites() {
 		if(websites == null) {
-			this.websites = new LinkedList<Website>();
+			this.websites = new LinkedList<>();
 		}
 		
 		return websites;
@@ -165,7 +164,7 @@ public class User extends Identifiable {
 	 */
 	public void addWebsite(Website website) {
 		if(this.websites == null) {
-			websites = new LinkedList<Website>();
+			websites = new LinkedList<>();
 		}
 		
 		this.websites.add(website);

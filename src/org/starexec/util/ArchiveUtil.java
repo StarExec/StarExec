@@ -1,29 +1,20 @@
 package org.starexec.util;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.nio.file.attribute.FileTime;
-import java.util.*;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
 import org.apache.commons.compress.archivers.ArchiveEntry;
-import org.apache.commons.compress.archivers.ArchiveException;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.IOUtils;
 import org.starexec.constants.R;
 import org.starexec.logger.StarLogger;
+
+import java.io.*;
+import java.nio.file.attribute.FileTime;
+import java.util.*;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Contains helper methods for dealing with .zip files
@@ -299,6 +290,7 @@ public class ArchiveUtil {
 	 * @author Tyler Jensen
 	 */
 	private static void extractArchiveOfType(String fileName, String destination, ArchiveType archiveType) throws Exception {
+		final String methodName = "extractArchiveOfType";
 		// Use the Apache commons compression library to open up the tar file...
 		log.debug("extracting "+archiveType);
 		InputStream is = new FileInputStream(fileName);
@@ -311,14 +303,16 @@ public class ArchiveUtil {
 			if(!entry.isDirectory()) {
 				// If it's not a directory...
 				File fileToCreate = new File(destination, entry.getName());
-
 				File dir = new File(fileToCreate.getParent());
 				boolean success = true;
 				if(!dir.exists()) {
 					// And create it if it doesn't exist so we can write a file inside it
 					success = dir.mkdirs();
 					if (!success) {
-						log.warn("Could not create directory: "+destination+"\n"+Util.getCurrentStackTrace());
+						log.warn("Could not create directory: "+dir.getAbsolutePath()+"\n"+Util.getCurrentStackTrace());
+						log.warn(methodName, "Did file already exist: " + dir.exists());
+						log.warn(methodName, "User was: " + System.getProperty("user.name"));
+						log.warn(methodName, "canWrite for file: "+dir.canWrite());
 					}
 				}
 				if (success) {
@@ -510,7 +504,7 @@ public class ArchiveUtil {
 	public static void createAndOutputZip(File path, OutputStream output, String baseName, boolean removeTopLevel) throws IOException {
 		if (removeTopLevel) {
 			File[] files=path.listFiles();
-			List<File> f=new ArrayList<File>();
+			List<File> f= new ArrayList<>();
 			for (File temp : files) {
 				f.add(temp);
 			}

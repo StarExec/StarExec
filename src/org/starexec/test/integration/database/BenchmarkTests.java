@@ -1,20 +1,9 @@
 package org.starexec.test.integration.database;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Communities;
-import org.starexec.data.database.Processors;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Uploads;
-import org.starexec.data.database.Users;
+import org.starexec.data.database.*;
 import org.starexec.data.to.*;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.logger.StarLogger;
@@ -22,9 +11,14 @@ import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.DataTablesQuery;
 import org.starexec.util.Util;
+
+import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Tests for org.starexec.data.database.Benchmarks.java
@@ -139,7 +133,7 @@ public class BenchmarkTests extends TestSequence {
 			found = found || b.getId()==benchmarks.get(0).getId();
 		}
 		Assert.assertTrue(found);
-		List<Integer> temp = new ArrayList<Integer>();
+		List<Integer> temp = new ArrayList<>();
 		temp.add(benchmarks.get(0).getId());
 		Assert.assertTrue(Spaces.removeBenches(temp, space2.getId()));
 	}
@@ -147,7 +141,7 @@ public class BenchmarkTests extends TestSequence {
 	@StarexecTest
 	private void AssociateBenchmarksTest() {
 		Space subspace=loader.loadSpaceIntoDatabase(user.getId(), space.getId());
-		List<Integer> ids= new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 		for (Benchmark b : benchmarks) {
 			ids.add(b.getId());
 		}
@@ -328,7 +322,7 @@ public class BenchmarkTests extends TestSequence {
 	}
 	
 	private void assertPageResultsEqualsBenchmarksArray(List<Benchmark> page) {
-		List<Integer> pageIds = new ArrayList<Integer>();
+		List<Integer> pageIds = new ArrayList<>();
 		for (Benchmark b : page) {
 			pageIds.add(b.getId());
 		}
@@ -541,7 +535,7 @@ public class BenchmarkTests extends TestSequence {
 	
 	@StarexecTest
 	private void getOrphansTest() {
-		List<Integer> benchIds = new ArrayList<Integer>();
+		List<Integer> benchIds = new ArrayList<>();
 		for (Benchmark b : benchmarks) {
 			benchIds.add(b.getId());
 		}
@@ -576,11 +570,11 @@ public class BenchmarkTests extends TestSequence {
 		space2=loader.loadSpaceIntoDatabase(user2.getId(), Communities.getTestCommunity().getId());
 		scratchSpace = loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
 
-		List<Integer> ids=new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 		ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
 		benchmarks=Benchmarks.get(ids,true);
 		benchProcessor = loader.loadBenchProcessorIntoDatabase(Communities.getTestCommunity().getId());
-		List<Integer> solverIds=new ArrayList<Integer>();
+		List<Integer> solverIds= new ArrayList<>();
 		solver = loader.loadSolverIntoDatabase(space.getId(), user.getId());
 		solverIds.add(solver.getId());
 		int wallclockTimeout=100;

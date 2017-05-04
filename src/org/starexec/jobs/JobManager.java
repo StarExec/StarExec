@@ -1,36 +1,13 @@
 package org.starexec.jobs;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
-
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.codec.binary.Base64;
 import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Common;
-import org.starexec.data.database.JobPairs;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Processors;
-import org.starexec.data.database.Queues;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.BenchmarkDependency;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Processor;
+import org.starexec.data.database.*;
+import org.starexec.data.to.*;
 import org.starexec.data.to.Queue;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
 import org.starexec.data.to.SolverBuildStatus.SolverBuildStatusCode;
-import org.starexec.data.to.Status;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.pipelines.JoblineStage;
@@ -44,6 +21,14 @@ import org.starexec.exceptions.StarExecException;
 import org.starexec.logger.StarLogger;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.Util;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Handles all SGE interactions for job submission and maintenance
@@ -273,7 +258,7 @@ public abstract class JobManager {
 
 
 		// Check if all the high priority jobs have been selected an equal number of times.
-		HashSet<Integer> valueSet = new HashSet<Integer>(usersHighPriorityJobBalance.values());
+		HashSet<Integer> valueSet = new HashSet<>(usersHighPriorityJobBalance.values());
 		boolean allEquals = valueSet.size() == 1;
 
 		if (allEquals) {
@@ -442,7 +427,7 @@ public abstract class JobManager {
 							if (min==null) {
 								min = -1l;
 							}
-							log.info("user had already submitted "+i+" pairs in this iteration. Load = "+monitor.getLoad(s.job.getUserId())+ " Min = " + min);
+							log.debug("user had already submitted "+i+" pairs in this iteration. Load = "+monitor.getLoad(s.job.getUserId())+ " Min = " + min);
 							break;
 						}
 
@@ -574,11 +559,20 @@ public abstract class JobManager {
 	}
 
 	// Helper method that builds the schedule to be used for scheduling.
-    private static LinkedList<SchedulingState> buildSchedule(final List<Job> joblist, final Queue q, int queueSize, final int nodeCount) {
+    private static LinkedList<SchedulingState> buildSchedule(
+    		final List<Job> joblist,
+			final Queue q,
+			int queueSize,
+			final int nodeCount) {
+
 		Map<Integer, JobCount> userToJobCountMap = buildUserToJobCountMap(joblist);
 		final LinkedList<SchedulingState> schedule = new LinkedList<>();
 		// add all the jobs in jobList to a SchedulingState in the schedule.
 		for (final Job job : joblist) {
+
+			String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());
+
+
 			// contains users that we have identified as exceeding their quota. These users will be skipped
 			final Map<Integer, Boolean> quotaExceededUsers = new HashMap<>();
 
@@ -595,14 +589,12 @@ public abstract class JobManager {
 			// By default we split the memory
 			final String queueSlots = Jobs.getSlotsInJobQueue(job);
 			// jobTemplate is a version of mainTemplate customized for this job
-			String jobTemplate = mainTemplate.replace("$$QUEUE$$", q.getName());
 
 			jobTemplate = jobTemplate.replace("$$NUM_SLOTS$$", queueSlots);
 
 			jobTemplate = jobTemplate.replace("$$RANDSEED$$",""+job.getSeed());
 			jobTemplate = jobTemplate.replace("$$USERID$$", "" + job.getUserId());
 			jobTemplate = jobTemplate.replace("$$DISK_QUOTA$$", ""+job.getUser().getDiskQuota());
-			jobTemplate = jobTemplate.replace("$$BENCH_SAVE_PATH$$", BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null).getAbsolutePath());
 			// for every job, retrieve no more than the number of pairs that would fill the queue.
 			// retrieving more than this is wasteful.
 			int limit=Math.max(R.NUM_JOB_PAIRS_AT_A_TIME, (nodeCount*R.NODE_MULTIPLIER)-queueSize);
@@ -638,24 +630,24 @@ public abstract class JobManager {
 		String jobScript = template;		
 		
 		// all of these arrays are for containing individual attributes ordered by state number for all the stages in the pair.
-		List<Integer> stageCpuTimeouts=new ArrayList<Integer>();
-		List<Integer> stageWallclockTimeouts=new ArrayList<Integer>();
-		List<Integer> stageNumbers=new ArrayList<Integer>();
-		List<Long> stageMemLimits=new ArrayList<Long>();
-		List<Integer> solverIds=new ArrayList<Integer>();
-		List<String> solverNames=new ArrayList<String>();
-		List<String> configNames=new ArrayList<String>();
-		List<String> solverTimestamps=new ArrayList<String>();
-		List<String> solverPaths=new ArrayList<String>();
-		List<String> postProcessorPaths=new ArrayList<String>();
-		List<String> preProcessorPaths=new ArrayList<String>();
-		List<Integer> spaceIds = new ArrayList<Integer>();
-		List<String> benchInputPaths=new ArrayList<String>();
-		List<String> argStrings=new ArrayList<String>();
-		List<String> benchSuffixes=new ArrayList<String>();
-		List<Integer> resultsIntervals = new ArrayList<Integer>();
-		List<Integer> stdoutSaveOptions = new ArrayList<Integer>();
-		List<Integer> extraSaveOptions = new ArrayList<Integer>();
+		List<Integer> stageCpuTimeouts= new ArrayList<>();
+		List<Integer> stageWallclockTimeouts= new ArrayList<>();
+		List<Integer> stageNumbers= new ArrayList<>();
+		List<Long> stageMemLimits= new ArrayList<>();
+		List<Integer> solverIds= new ArrayList<>();
+		List<String> solverNames= new ArrayList<>();
+		List<String> configNames= new ArrayList<>();
+		List<String> solverTimestamps= new ArrayList<>();
+		List<String> solverPaths= new ArrayList<>();
+		List<String> postProcessorPaths= new ArrayList<>();
+		List<String> preProcessorPaths= new ArrayList<>();
+		List<Integer> spaceIds = new ArrayList<>();
+		List<String> benchInputPaths= new ArrayList<>();
+		List<String> argStrings= new ArrayList<>();
+		List<String> benchSuffixes= new ArrayList<>();
+		List<Integer> resultsIntervals = new ArrayList<>();
+		List<Integer> stdoutSaveOptions = new ArrayList<>();
+		List<Integer> extraSaveOptions = new ArrayList<>();
 		for (String path : pair.getBenchInputPaths()) {
 			log.debug("adding the following path to benchInputPaths ");
 			log.debug(path);
@@ -663,6 +655,7 @@ public abstract class JobManager {
 		}
 		benchInputPaths.add(""); // just terminating this array with a blank string so the Bash array will always have some element
 		String primaryPreprocessorPath="";
+		boolean stdOutSaveOrExtraSaveEnabled = false;
 		for (JoblineStage stage : pair.getStages()) {
 			int stageNumber=stage.getStageNumber();
 			stageNumbers.add(stageNumber);
@@ -678,8 +671,17 @@ public abstract class JobManager {
 			solverPaths.add(stage.getSolver().getPath());
 			argStrings.add(JobManager.pipelineDependenciesToArgumentString(stage.getDependencies()));
 			resultsIntervals.add(attrs.getResultsInterval());
-			stdoutSaveOptions.add(attrs.getStdoutSaveOption().getVal());
-			extraSaveOptions.add(attrs.getExtraOutputSaveOption().getVal());
+
+			// Check if we're going to need to create a benchmark directory.
+			SaveResultsOption stdoutSave = attrs.getStdoutSaveOption();
+			SaveResultsOption extraSave = attrs.getExtraOutputSaveOption();
+			stdOutSaveOrExtraSaveEnabled = stdoutSave == SaveResultsOption.CREATE_BENCH
+					|| extraSave == SaveResultsOption.CREATE_BENCH
+					|| stdOutSaveOrExtraSaveEnabled;
+
+			stdoutSaveOptions.add(stdoutSave.getVal());
+			extraSaveOptions.add(extraSave.getVal());
+
 			if (attrs.getSpaceId()==null) {
 				spaceIds.add(null);
 			} else {
@@ -709,6 +711,7 @@ public abstract class JobManager {
 				}
 			}
 		}
+
 		File outputFile=new File(JobPairs.getPairStdout(pair));
 		
 		//if there is exactly 1 stage, we use the old output format
@@ -718,6 +721,22 @@ public abstract class JobManager {
 		
 		// maps from strings in the jobscript to the strings that should be filled in
 		Map<String, String> replacements = new HashMap<>();
+
+		// Create a new bench directory and add it to the template if this job has the stdOutOption or extraSaveOption
+		// enabled.
+		if (stdOutSaveOrExtraSaveEnabled) {
+			log.debug("Pair with id="+pair.getId()+" had stdout save option or extra save option enabled. Creating benchmark directory.");
+			try {
+				File uniqueBenchDir = BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null);
+				replacements.put("$$BENCH_SAVE_PATH$$", uniqueBenchDir.getAbsolutePath());
+			} catch (FileNotFoundException e) {
+				// Log the error and skip this job
+				log.error("Could not get unique benchmark directory.", e);
+			}
+		} else {
+			log.debug("Pair with id="+pair.getId()+" did not had stdout save option or extra save option enabled.");
+		}
+
 		//Dependencies
 		if (pair.getBench().getUsesDependencies())
 		{
@@ -770,6 +789,7 @@ public abstract class JobManager {
 		replacements.put("$$RESULTS_INTERVAL_ARRAY$$", numsToBashArray("RESULTS_INTERVALS", resultsIntervals));
 		replacements.put("$$STDOUT_SAVE_OPTION_ARRAY$$", numsToBashArray("STDOUT_SAVE_OPTIONS", stdoutSaveOptions));
 		replacements.put("$$EXTRA_SAVE_OPTION_ARRAY$$", numsToBashArray("EXTRA_SAVE_OPTIONS", extraSaveOptions));
+
 
 		String scriptPath = String.format("%s/%s", R.getJobInboxDir(), String.format(R.JOBFILE_FORMAT, pair.getId()));
 		replacements.put("$$SCRIPT_PATH$$",scriptPath);
@@ -869,7 +889,7 @@ public abstract class JobManager {
 	 * @return The string to insert
 	 */
 	public static <T extends Number> String numsToBashArray(String arrayName, List<T> nums){
-		List<String> strs=new ArrayList<String>();
+		List<String> strs= new ArrayList<>();
 		for (T num : nums) {
 			if (num!=null) {
 				strs.add(num.toString());
@@ -1062,17 +1082,16 @@ public abstract class JobManager {
 	 * resulting job pairs to a given job object. Accessed from running the space / keep hierarchy
 	 * structure in job creation.
 	 * 
-	 * @param userId the id of the user adding the job pairs
 	 * @param spaceId the id of the space to build the job pairs from
 	 * @param path The space path to give to every job pair created by this function
 	 * @return an error message if there was a problem, and null otherwise.
 	 */
-	public static List<JobPair> addJobPairsFromSpace(int userId, int spaceId, String path) {
+	public static List<JobPair> addJobPairsFromSpace(int spaceId, String path) {
 		Space space = Spaces.get(spaceId);
 		//log.debug("calling addJobPairsFrom space on space ID = "+spaceId);
 		//log.debug("the path for the pairs will be ");
 		//log.debug(path);
-		List<JobPair> pairs=new ArrayList<JobPair>();
+		List<JobPair> pairs= new ArrayList<>();
 		// Get the benchmarks and solvers from this space
 		List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
 		//log.debug("found this many benchmarks in the space = "+benchmarks.size());
@@ -1187,23 +1206,22 @@ public abstract class JobManager {
 	 * and create job pairs from the result. Will then return those job pairs
 	 * 
 	 * @param spaceId the id of the space we start in
-	 * @param userId the id of the user creating the job
 	 * @param configIds a list of configurations to use
 	 * @param path The path to use for each job pair created.
 	 * @return A HashMap that maps space IDs to all the job pairs in that space. These can then be added to a job in any
 	 * desirable order
 	 */
-	public static List<JobPair> addJobPairsFromSpace( int userId, int spaceId, String path, List<Integer> configIds) {
+	public static List<JobPair> addJobPairsFromSpace(int spaceId, String path, List<Integer> configIds) {
 		try {			
 			List<Solver> solvers = Solvers.getWithConfig(configIds);
 			
-			List<Benchmark> benchmarks =new ArrayList<Benchmark>();
+			List<Benchmark> benchmarks = new ArrayList<>();
 		
 			
 			// Pair up the solvers and benchmarks
 
 				benchmarks = Benchmarks.getBySpace(spaceId);
-				List<JobPair> curPairs=new ArrayList<JobPair>();
+				List<JobPair> curPairs= new ArrayList<>();
 				for(Benchmark bench : benchmarks){
 					for(Solver solver : solvers) {
 						JobPair pair = new JobPair();
@@ -1257,7 +1275,7 @@ public abstract class JobManager {
 			int index=0;
 			while (spaceToPairs.size()>0) {
 				Set<Integer> keys=spaceToPairs.keySet();
-				Set<Integer> keysToRemove=new HashSet<Integer>();
+				Set<Integer> keysToRemove= new HashSet<>();
 				for (Integer spaceId : keys) {
 					//if there is at least one pair left in this space
 					if (spaceToPairs.get(spaceId).size()>index) {
@@ -1307,7 +1325,7 @@ public abstract class JobManager {
 			for (Space s : spaces) {
 				benchmarks = Benchmarks.getBySpace(s.getId());
 				log.debug("found this many benchmarks for space id = "+s.getId()+" "+benchmarks.size());
-				List<JobPair> curPairs=new ArrayList<JobPair>();
+				List<JobPair> curPairs= new ArrayList<>();
 				for(Benchmark bench : benchmarks){
 					for(Solver solver : solvers) {
 						JobPair pair = new JobPair();

@@ -1,16 +1,16 @@
 package org.starexec.data.database;
 
+import org.starexec.data.security.GeneralSecurity;
+import org.starexec.data.to.Website;
+import org.starexec.data.to.Website.WebsiteType;
+import org.starexec.logger.StarLogger;
+
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.starexec.data.security.GeneralSecurity;
-import org.starexec.data.to.Website;
-import org.starexec.data.to.Website.WebsiteType;
-import org.starexec.logger.StarLogger;
 
 /**
  * Handles all database interaction for user-defined websites
@@ -134,7 +134,7 @@ public class Websites {
 	 */
 	public static List<Website> getAllForHTML(int id, WebsiteType webType) {
 		List<Website> sites=getAll(id,webType);
-		List<Website> answer=new ArrayList<Website>();
+		List<Website> answer= new ArrayList<>();
 		
 		for (Website s : sites) {
 			answer.add(processWebsiteForHTML(s));
@@ -153,7 +153,7 @@ public class Websites {
 	
 	public static List<Website> getAllForJavascript(int id, WebsiteType webType) {
 		List<Website> sites=getAll(id,webType);
-		List<Website> answer=new ArrayList<Website>();
+		List<Website> answer= new ArrayList<>();
 		
 		for (Website s : sites) {
 			answer.add(processWebsiteForJavaScript(s));
@@ -246,7 +246,7 @@ public class Websites {
 			procedure.setInt(1, id);
 			
 			 results = procedure.executeQuery();
-			List<Website> websites = new LinkedList<Website>();
+			List<Website> websites = new LinkedList<>();
 			
 			while (results.next()) {
 				Website w = resultToWebsite(results);

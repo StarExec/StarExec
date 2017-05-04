@@ -1,15 +1,13 @@
 package org.starexec.data.to;
 
+import com.google.gson.annotations.Expose;
+import org.starexec.data.to.tuples.Locatable;
+import org.starexec.util.Util;
+
 import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.starexec.data.to.tuples.Locatable;
-import org.starexec.util.Util;
-import org.starexec.data.to.SolverBuildStatus;
-
-import com.google.gson.annotations.Expose;
 
 /**
  * Represents a solver in the database
@@ -69,7 +67,7 @@ public class Solver extends Identifiable implements Iterable<Configuration>, Nam
 	private ExecutableType type;
 	private SolverBuildStatus buildStatus;
 	public Solver() {
-		this.configurations = new LinkedList<Configuration>();
+		this.configurations = new LinkedList<>();
 	}
 	
 	/**

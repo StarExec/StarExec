@@ -1,16 +1,16 @@
 package org.starexec.test.integration;
 
 
+import org.starexec.logger.StarLevel;
+import org.starexec.logger.StarLogger;
+import org.starexec.test.TestUtil;
+import org.starexec.test.resources.ResourceLoader;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
-import org.starexec.logger.StarLevel;
-import org.starexec.logger.StarLogger;
-import org.starexec.test.TestUtil;
-import org.starexec.test.resources.ResourceLoader;
 
 public abstract class TestSequence {
 	protected static final StarLogger log = StarLogger.getLogger(TestSequence.class);
@@ -22,7 +22,7 @@ public abstract class TestSequence {
 	protected Throwable error = null;
 	protected ResourceLoader loader = null; 
 	//maps the names of tests to some data about them. Every test gets an entry when the TestSequence object is created
-	HashMap<String,TestResult> testResults=new HashMap<String,TestResult>();
+	HashMap<String,TestResult> testResults= new HashMap<>();
 	
 	
 	public TestSequence() {
@@ -261,7 +261,7 @@ public abstract class TestSequence {
 	 * @return
 	 */
 	public final List<TestResult> getTestResults() {
-		List<TestResult> tr=new ArrayList<TestResult>();
+		List<TestResult> tr= new ArrayList<>();
 		for (TestResult r : testResults.values()) {
 			tr.add(r);
 		}
@@ -303,7 +303,7 @@ public abstract class TestSequence {
 	private List<Method> getMethodsWithAnnotation(Class annotationClass) {
 		Method[] methods=this.getClass().getDeclaredMethods();
 		
-		List<Method> tests=new ArrayList<Method>();
+		List<Method> tests= new ArrayList<>();
 		for (Method m : methods) {
 			if (hasAnnotation(m, annotationClass)) {
 				tests.add(m);

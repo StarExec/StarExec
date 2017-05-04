@@ -1,9 +1,9 @@
 package org.starexec.util;
 
-import java.util.List;
-
 import org.starexec.logger.StarLevel;
 import org.starexec.logger.StarLogger;
+
+import java.util.List;
 
 public class LoggingManager {
 	private static final StarLogger log = StarLogger.getLogger(LoggingManager.class);

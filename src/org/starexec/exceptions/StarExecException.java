@@ -1,7 +1,5 @@
 package org.starexec.exceptions;
 
-import java.lang.Exception;
-
 /**
  * The base class for all of our custom exceptions.
  */

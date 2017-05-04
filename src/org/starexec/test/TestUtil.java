@@ -1,32 +1,18 @@
 package org.starexec.test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
 import org.mockito.Mockito;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.starexec.constants.R;
-import org.starexec.data.database.Processors;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Solver;
+import org.starexec.data.to.*;
 import org.starexec.data.to.Status.StatusCode;
-import org.starexec.data.to.User;
-import org.starexec.data.to.Status;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.util.SessionUtil;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.util.*;
 public class TestUtil {
 	private static String[] letters={"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"};
 	private static Random rnd=new Random();
@@ -150,9 +136,9 @@ public class TestUtil {
 	 * @return A list of 'number' job pairs
 	 */
 	public static List<JobPair> getFakeJobPairs(int number) {
-		List<JobPair> pairs = new ArrayList<JobPair>();
+		List<JobPair> pairs = new ArrayList<>();
 		int jobId = rnd.nextInt();
-		List<Solver> solvers = new ArrayList<Solver>();
+		List<Solver> solvers = new ArrayList<>();
 		for (int solver=0;solver<5;solver++) {
 			solvers.add(getFakeSolver());
 		}
@@ -184,7 +170,7 @@ public class TestUtil {
 	 * @return The mock session
 	 */
 	public static HttpServletRequest getMockHttpRequest(int userId) {
-		return getMockHttpRequest(userId, new HashMap<String,String>());
+		return getMockHttpRequest(userId, new HashMap<>());
 	}
 	/**
 	 * Creates a mock HttpServletRequest object that SessionUtil will believe is from
@@ -194,7 +180,7 @@ public class TestUtil {
 	 * @return The mock session
 	 */
 	public static HttpServletRequest getMockHttpRequest(int userId, Map<String,String> parameters) {
-		return getMockHttpRequest(userId, parameters, new HashMap<String, List<String>>());
+		return getMockHttpRequest(userId, parameters, new HashMap<>());
 	}
 	
 	/**

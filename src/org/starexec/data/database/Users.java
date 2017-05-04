@@ -1,14 +1,5 @@
 package org.starexec.data.database;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
-
 import org.apache.commons.io.FileUtils;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
@@ -19,11 +10,15 @@ import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
 import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.logger.StarLogger;
-import org.starexec.util.DataTablesQuery;
-import org.starexec.util.Hash;
-import org.starexec.util.NamedParameterStatement;
-import org.starexec.util.PaginationQueryBuilder;
-import org.starexec.util.Util;
+import org.starexec.util.*;
+
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Handles all database interaction for users
@@ -39,7 +34,7 @@ public class Users {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	private static boolean associate(Connection con, int userId, int spaceId) throws Exception {
+	private static boolean associate(Connection con, int userId, int spaceId) {
 		CallableStatement procedure= null;
 		try {
 			procedure = con.prepareCall("{CALL AddUserToSpace(?, ?)}");			
@@ -140,7 +135,7 @@ public class Users {
 	 * @throws Exception
 	 * @author Todd Elvers
 	 */
-	private static boolean associate(Connection con, List<Integer> userIds, int spaceId) throws Exception {
+	private static boolean associate(Connection con, List<Integer> userIds, int spaceId) {
 		for(int uid : userIds) {
 			Users.associate(con, uid, spaceId);
 		}
@@ -186,7 +181,7 @@ public class Users {
 			return associate(userIds, spaceId);
 		} else {
 			List<Space> subspaces = Spaces.trimSubSpaces(requestUserId, Spaces.getSubSpaceHierarchy(spaceId, requestUserId));
-			List<Integer> subspaceIds = new LinkedList<Integer>();
+			List<Integer> subspaceIds = new LinkedList<>();
 			
 			// Add the destination space to the list of spaces to associate the user(s) with
 			subspaceIds.add(spaceId);
@@ -207,7 +202,7 @@ public class Users {
 	 * @author Tyler Jensen
 	 */
 	public static boolean associate(List<Integer> userIds, int spaceId) {
-		List<Integer> space=new ArrayList<Integer>();
+		List<Integer> space= new ArrayList<>();
 		space.add(spaceId);
 		return associate(userIds,space);
 	}
@@ -694,7 +689,7 @@ public class Users {
 			procedure.setInt("spaceId", spaceId);
 			procedure.setString("query", query.getSearchQuery());
 			results = procedure.executeQuery();
-			List<User> users = new LinkedList<User>();
+			List<User> users = new LinkedList<>();
 			
 			while(results.next()){
 				User u = new User();
@@ -740,7 +735,7 @@ public class Users {
 			procedure = new NamedParameterStatement(con,builder.getSQL());
         	procedure.setString("query", query.getSearchQuery());		
 			results = procedure.executeQuery();
-			List<User> users = new LinkedList<User>();
+			List<User> users = new LinkedList<>();
 			
 			while(results.next()){
 				User u = new User();
@@ -1427,7 +1422,7 @@ public class Users {
 	public static List<Integer> getCommunities(int userId) {
 		
 		try {
-			List<Integer> comms=new ArrayList<Integer>();
+			List<Integer> comms= new ArrayList<>();
 			for (Space s : Communities.getAll()) {
 				if (Users.isMemberOfCommunity(userId, s.getId())) {
 					comms.add(s.getId());

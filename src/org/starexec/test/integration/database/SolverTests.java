@@ -1,28 +1,23 @@
 package org.starexec.test.integration.database;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.*;
-
 import org.junit.Assert;
-import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
-import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
-import org.starexec.data.to.Job;
+import org.starexec.data.to.*;
 import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
+
+import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Tests for org.starexec.data.database.Solvers.java
@@ -44,7 +39,7 @@ public class SolverTests extends TestSequence {
 	}
 	@StarexecTest
 	private void GetSolverListTest() {
-		List<Integer> list=new ArrayList<Integer>();
+		List<Integer> list= new ArrayList<>();
 		list.add(solver.getId());
 		List<Solver> cs=Solvers.get(list);
 		Assert.assertEquals(1,cs.size());
@@ -178,14 +173,14 @@ public class SolverTests extends TestSequence {
 			found = found || sol.getId()==solver.getId();
 		}
 		Assert.assertTrue(found);
-		List<Integer> ids = new ArrayList<Integer>();
+		List<Integer> ids = new ArrayList<>();
 		ids.add(solver.getId());
 		Spaces.removeSolvers(ids, space2.getId());
 	}
 	
 	@StarexecTest
 	private void associateInHierarchyTest() {
-		List<Integer> ids = new ArrayList<Integer>();
+		List<Integer> ids = new ArrayList<>();
 		ids.add(solver.getId());
 		
 		Assert.assertTrue(Solvers.associate(ids,space1.getId(),true,testUser.getId(),false));
@@ -211,7 +206,7 @@ public class SolverTests extends TestSequence {
 	
 	@StarexecTest
 	private void copySolversTest() {
-		List<Solver> sols = new ArrayList<Solver>();
+		List<Solver> sols = new ArrayList<>();
 		sols.add(Solvers.get(solver.getId()));
 		List<Integer> ids = Solvers.copySolvers(sols, testUser.getId(), space2.getId());
 		Assert.assertEquals(1, ids.size());
@@ -230,7 +225,7 @@ public class SolverTests extends TestSequence {
 		Solvers.delete(s.getId());
 		Assert.assertTrue(Solvers.cleanOrphanedDeletedSolvers());
 		Assert.assertNotNull(Solvers.getIncludeDeleted(s.getId()));
-		List<Integer> ids = new ArrayList<Integer>();
+		List<Integer> ids = new ArrayList<>();
 		ids.add(s.getId());
 		Spaces.removeSolvers(ids, space1.getId());
 		Assert.assertTrue(Solvers.cleanOrphanedDeletedSolvers());

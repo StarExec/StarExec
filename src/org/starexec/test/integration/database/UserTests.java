@@ -1,37 +1,22 @@
 package org.starexec.test.integration.database;
 
+import org.junit.Assert;
+import org.starexec.constants.R;
+import org.starexec.data.database.*;
+import org.starexec.data.to.*;
+import org.starexec.data.to.enums.ProcessorType;
+import org.starexec.test.TestUtil;
+import org.starexec.test.integration.StarexecTest;
+import org.starexec.test.integration.TestSequence;
+import org.starexec.util.Hash;
+import org.starexec.util.Util;
+
 import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-
-import org.junit.Assert;
-import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Communities;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.JobPairs;
-import org.starexec.data.database.Requests;
-import org.starexec.data.database.Settings;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
-import org.starexec.data.to.DefaultSettings;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
-import org.starexec.data.to.enums.ProcessorType;
-import org.starexec.test.TestUtil;
-import org.starexec.test.integration.StarexecTest;
-import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
-import org.starexec.util.Hash;
-import org.starexec.util.Util;
 
 
 /**
@@ -54,7 +39,7 @@ public class UserTests extends TestSequence {
 	private final String BENCH_ARCHIVE = "benchmarks.zip";
 	
 	private boolean removeUserFromSpace(User user, Space space) {
-		List<Integer> userId=new ArrayList<Integer>();
+		List<Integer> userId= new ArrayList<>();
 		userId.add(user.getId());
 		
 		return Spaces.removeUsers(userId, space.getId());
@@ -163,7 +148,7 @@ public class UserTests extends TestSequence {
 		Assert.assertFalse(Users.isMemberOfSpace(user2.getId(), space.getId()));
 		Assert.assertFalse(Users.isMemberOfSpace(user3.getId(), space.getId()));
 		
-		List<Integer> ids=new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 		ids.add(user1.getId());
 		ids.add(user2.getId());
 		ids.add(user3.getId());
@@ -184,7 +169,7 @@ public class UserTests extends TestSequence {
 		Assert.assertFalse(Users.isMemberOfSpace(user2.getId(), space.getId()));
 		Assert.assertFalse(Users.isMemberOfSpace(user2.getId(), subspace.getId()));
 
-		List<Integer> ids=new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 		ids.add(user1.getId());
 		ids.add(user2.getId());
 		Assert.assertTrue(Users.associate(ids, space.getId(),true, testUser.getId()));
@@ -206,8 +191,8 @@ public class UserTests extends TestSequence {
 		Assert.assertFalse(Users.isMemberOfSpace(user2.getId(), space.getId()));
 		Assert.assertFalse(Users.isMemberOfSpace(user2.getId(), subspace.getId()));
 
-		List<Integer> ids=new ArrayList<Integer>();
-		List<Integer> spaceIds=new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
+		List<Integer> spaceIds= new ArrayList<>();
 		ids.add(user1.getId());
 		ids.add(user2.getId());
 		
@@ -482,7 +467,7 @@ public class UserTests extends TestSequence {
 		Assert.assertFalse(Users.isAdmin(user2.getId()));
 		Assert.assertFalse(Users.isAdmin(user3.getId()));
 		Assert.assertFalse(Users.isAdmin(testUser.getId()));
-		List<Integer> admins=new ArrayList<Integer>();
+		List<Integer> admins= new ArrayList<>();
 		for (Integer i : admins) {
 			Assert.assertTrue(Users.isAdmin(i));
 		}

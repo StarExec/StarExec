@@ -115,7 +115,7 @@ public class Common {
 	 * @return a new connection to the database from the connection pool
 	 * @author Tyler Jensen
 	 */
-	protected synchronized static Connection getConnection() throws SQLException {
+	protected synchronized static Connection getConnection() {
 		try {
 			connectionsOpened++;
 			/*log.info("Connection Opened, Net Connections Opened = " + (connectionsOpened-connectionsClosed));

@@ -1,9 +1,6 @@
 package org.starexec.logger;
 
 import org.apache.log4j.Level;
-import org.apache.log4j.Priority;
-
-import java.io.Serializable;
 
 /**
  * Wrapper class for logging levels.

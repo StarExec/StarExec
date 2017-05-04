@@ -1,9 +1,10 @@
 package org.starexec.data.to.compare;
-import java.util.Comparator;
 
 import org.starexec.constants.R;
-import org.starexec.data.to.*;
+import org.starexec.data.to.SolverComparison;
 import org.starexec.data.to.pipelines.JoblineStage;
+
+import java.util.Comparator;
 public class SolverComparisonComparator implements Comparator<SolverComparison> {
 	private int column; //will specify which field we are using to sort the job pairs
 	private boolean asc;
@@ -30,7 +31,7 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 	}
 	
 	
-	private  int compareSolverComparisonNums(SolverComparison c1, SolverComparison c2) {
+	private int compareSolverComparisonNums(SolverComparison c1, SolverComparison c2) {
 		try {
 			double db1=0;
 			double db2=0;
@@ -42,21 +43,11 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 			JoblineStage stage22=c2.getSecondPair().getStageFromNumber(stageNumber);
 			
 			if (column==1) {
-				if (isWallclock) {
-					db1=stage11.getWallclockTime();
-					db2=stage12.getWallclockTime();
-				} else {
-					db1=stage11.getCpuTime();
-					db2=stage12.getCpuTime();
-				}
+				db1 = getTimeFromStage(isWallclock, stage11);
+				db2 = getTimeFromStage(isWallclock, stage12);
 			} else if (column==2) {
-				if (isWallclock) {
-					db1=stage21.getWallclockTime();
-					db2=stage22.getWallclockTime();
-				} else {
-					db1=stage21.getCpuTime();
-					db2=stage22.getCpuTime();
-				}
+				db1 = getTimeFromStage(isWallclock, stage21);
+				db2 = getTimeFromStage(isWallclock, stage22);
 			} else if (column==3) {
 				if (isWallclock) {
 					db1=c1.getWallclockDifference(stageNumber);
@@ -73,25 +64,27 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 					db2=1;
 				}
 			}
-			
 			return Double.compare(db1, db2);
-			
 		} catch (Exception e) {
 			//either solver name was null, so we can just return jp1 as being first
 		}
 		
 		return 0;
 	}
+
+	private static double getTimeFromStage(boolean isWallclock, JoblineStage stage) {
+		if (isWallclock) {
+			return stage.getWallclockTime();
+		} else {
+			return stage.getCpuTime();
+		}
+	}
 	
 	/**
 	 * Compares the solver names of jp1 and jp2 
-	 * @param jp1 The first job pair
-	 * @param jp2 The second job pair
-	 * @param sortIndex the value to sort on
 	 * 0 = bench name
 	 * 4 = result 1
 	 * 5 = result 2
-	 * @param ASC Whether sorting is to be done ASC or DESC
 	 * @return 0 if jp1 should come first in a sorted list, 1 otherwise
 	 * @author Eric Burns
 	 */ 

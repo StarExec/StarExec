@@ -1,16 +1,15 @@
 package org.starexec.test.junit.command;
 
-import static org.junit.Assert.*;
-
-import java.io.ByteArrayInputStream;
-
+import com.google.gson.JsonElement;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.starexec.command.JsonHandler;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 
-import com.google.gson.JsonElement;
+import java.io.ByteArrayInputStream;
+
+import static org.junit.Assert.assertEquals;
 
 public class JsonHandlerTest {
 

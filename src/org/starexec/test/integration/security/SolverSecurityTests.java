@@ -1,26 +1,21 @@
 package org.starexec.test.integration.security;
 
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Assert;
 import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
-import org.starexec.data.database.Websites;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
-import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SolverSecurityTests extends TestSequence {
 	User admin=null;
@@ -47,7 +42,7 @@ public class SolverSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void canDeleteSolversTest() {
-		List<Integer> ids=new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 		ids.add(solver.getId());
 		ids.add(solver2.getId());
 		
@@ -72,7 +67,7 @@ public class SolverSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void canDeleteConfigurationsTest() {
-		List<Integer> ids=new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 		ids.add(c.getId());
 		ids.add(c2.getId());
 		
@@ -90,7 +85,7 @@ public class SolverSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void canRecycleSolversTest() {
-		List<Integer> ids=new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 		ids.add(solver.getId());
 		ids.add(solver2.getId());
 		
@@ -107,7 +102,7 @@ public class SolverSecurityTests extends TestSequence {
 	
 	@StarexecTest
 	private void canRestoreSolversTest() {
-		List<Integer> ids=new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 		ids.add(solver.getId());
 		ids.add(solver2.getId());
 		

@@ -1,8 +1,6 @@
 package org.starexec.data.to.tuples;
 
-/**
- * Created by agieg on 4/12/2017.
- */
+// Simple tuple to hold the HTML from a page along with an HTTP status code.
 public class HtmlStatusCodePair {
     public final String html;
     public final int statusCode;

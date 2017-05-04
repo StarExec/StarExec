@@ -1,12 +1,15 @@
 package org.starexec.servlets;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
+import org.starexec.constants.R;
+import org.starexec.data.database.Processors;
+import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.data.to.Processor;
+import org.starexec.data.to.enums.ProcessorType;
+import org.starexec.exceptions.StarExecException;
+import org.starexec.logger.StarLogger;
+import org.starexec.util.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.MultipartConfig;
@@ -15,21 +18,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Path;
-
-import org.apache.commons.io.FilenameUtils;
-import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
-import org.starexec.constants.R;
-import org.starexec.data.database.Processors;
-import org.starexec.data.to.enums.ProcessorType;
-import org.starexec.exceptions.StarExecException;
-import org.starexec.data.security.ValidatorStatusCode;
-import org.starexec.data.to.Processor;
-import org.starexec.logger.StarLogger;
-import org.starexec.util.ArchiveUtil;
-import org.starexec.util.SessionUtil;
-import org.starexec.util.Util;
-import org.starexec.util.Validator;
-import org.starexec.util.PartWrapper;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
 
 
 /**
@@ -70,7 +65,7 @@ public class ProcessorManager extends HttpServlet {
 	
 	
 	@Path("/update")
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) {
+	public void doPost(HttpServletRequest request, HttpServletResponse response) {
 		try {			
 			
 			if(ServletFileUpload.isMultipartContent(request)) {								
@@ -138,7 +133,7 @@ public class ProcessorManager extends HttpServlet {
 	
 	/**
 	 * Given a directory, recursively sets all files in the directory as executable
-	 * @param directory The directory in quesiton
+	 * @param directory The directory in question
 	 */
 	private static void setAllFilesExecutable(File directory) {
 		for (File f : directory.listFiles()) {
@@ -161,7 +156,7 @@ public class ProcessorManager extends HttpServlet {
 	 * @param form The form fields for the request
 	 * @return The Processor that was added to the database if it was successful
 	 */
-	private Processor addNewProcessor(HashMap<String, Object> form) throws StarExecException {		
+	private Processor addNewProcessor(HashMap<String, Object> form) {
 		final String method = "addNewProcessor";
 		try {						
 			Processor newProc = new Processor();
@@ -177,9 +172,9 @@ public class ProcessorManager extends HttpServlet {
 			
 			File uniqueDir = getProcessorDirectory(newProc.getCommunityId(),newProc.getName());
 			
-			File archiveFile=null;
+			File archiveFile;
 
-			URL processorUrl = null;
+			URL processorUrl;
 
 			if (uploadMethod.equals(LOCAL_UPLOAD_METHOD)) {
 				// Save the uploaded file to disk
@@ -188,7 +183,7 @@ public class ProcessorManager extends HttpServlet {
 				processorFile.write(archiveFile);
 			} else {
 				processorUrl=new URL((String)form.get(PROCESSOR_URL));
-				String name = null;
+				String name;
 				try {
 					name=processorUrl.toString().substring(processorUrl.toString().lastIndexOf('/'));
 				} catch (Exception e) {
@@ -252,7 +247,7 @@ public class ProcessorManager extends HttpServlet {
 	/**
 	 * Creates a unique file path for the given file to write in the benchmark type directory
 	 * @param communityId The id of the community (used in the path)
-	 * @param fileName The name of the file to create in the unique directory
+	 * @param procName the name of processor (and the directory for the processor)
 	 * @return The file object associated with the new file path (all necessary directories are created as needed)
 	 */
 	public static File getProcessorDirectory(int communityId, String procName) {
@@ -283,7 +278,7 @@ public class ProcessorManager extends HttpServlet {
 			String uploadMethod = (String)form.get(UPLOAD_METHOD);
 
 			boolean goodExtension=false;
-			String fileName = null;
+			String fileName;
 			
 			if (uploadMethod.equals(LOCAL_UPLOAD_METHOD)) {
 				fileName = ((PartWrapper)form.get(PROCESSOR_FILE)).getName();

@@ -1,8 +1,6 @@
 package org.starexec.data.to.tuples;
 
-/**
- * Created by agieg on 10/19/2016.
- */
+// Simple tuple to count number of high priority jobs and all jobs.
 public class JobCount {
     public int all;
     public int highPriority;

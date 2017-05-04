@@ -1,9 +1,9 @@
 package org.starexec.util;
 
-import java.util.HashMap;
-
 import org.jfree.chart.urls.XYURLGenerator;
 import org.jfree.data.xy.XYDataset;
+
+import java.util.HashMap;
 
 public class BenchmarkURLGenerator implements XYURLGenerator {
 

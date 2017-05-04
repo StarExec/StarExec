@@ -1,8 +1,8 @@
 package org.starexec.data.to.compare;
 
-import java.util.Comparator;
-
 import org.starexec.data.to.pipelines.JoblineStage;
+
+import java.util.Comparator;
 
 /**
  * A comparator for jobline stages that will arrange stages by increasing stage number

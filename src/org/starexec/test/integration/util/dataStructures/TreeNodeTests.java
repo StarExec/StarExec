@@ -1,7 +1,4 @@
-package org.starexec.test.integration.util.dataStructures;	
-
-import java.lang.IndexOutOfBoundsException;
-import java.lang.NullPointerException;
+package org.starexec.test.integration.util.dataStructures;
 
 import org.junit.Assert;
 import org.starexec.logger.StarLogger;
@@ -29,8 +26,8 @@ public class TreeNodeTests extends TestSequence {
 
 	@StarexecTest
 	private void AddAndRemoveChildTest() {
-		TreeNode<Integer> tree = new TreeNode<Integer>(1);
-		TreeNode<Integer> child = new TreeNode<Integer>(2);
+		TreeNode<Integer> tree = new TreeNode<>(1);
+		TreeNode<Integer> child = new TreeNode<>(2);
 		Assert.assertEquals(tree.getNumberOfChildren(), 0);
 		tree.addChild(child);
 		Assert.assertEquals(tree.getNumberOfChildren(), 1);
@@ -44,9 +41,9 @@ public class TreeNodeTests extends TestSequence {
 
 	@StarexecTest
 	private void IteratorTest() {
-		TreeNode<Integer> tree = new TreeNode<Integer>(null);
+		TreeNode<Integer> tree = new TreeNode<>(null);
 		for (int i = 0; i < 50; i++) {
-			tree.addChild(new TreeNode<Integer>(i));
+			tree.addChild(new TreeNode<>(i));
 		}
 		int i = 0;
 		for (TreeNode<Integer> child : tree) {
@@ -57,7 +54,7 @@ public class TreeNodeTests extends TestSequence {
 
 	@StarexecTest
 	private void NullChildTest() {
-		TreeNode<Integer> tree = new TreeNode<Integer>(null);
+		TreeNode<Integer> tree = new TreeNode<>(null);
 		try {
 			tree.addChild(null);
 			Assert.fail("addChild should have thrown a NullPointerException.");
@@ -68,15 +65,15 @@ public class TreeNodeTests extends TestSequence {
 
 	@StarexecTest
 	private void GetIndexFromReferenceTest() {
-		final TreeNode<Integer> tree = new TreeNode<Integer>(null);
+		final TreeNode<Integer> tree = new TreeNode<>(null);
 		TreeNode<Integer> child = null;
 		final int childWithReferenceIndex = 4;
 		for (int i = 0; i < 10; i++) {
 			if (i == childWithReferenceIndex) {
-				child = new TreeNode<Integer>(i);
+				child = new TreeNode<>(i);
 				tree.addChild(child);
 			} else {
-				tree.addChild(new TreeNode<Integer>(i));
+				tree.addChild(new TreeNode<>(i));
 			}
 		}
 
@@ -88,9 +85,9 @@ public class TreeNodeTests extends TestSequence {
 
 	@StarexecTest
 	private void OutOfBoundsTest() {
-		TreeNode<Integer> tree = new TreeNode<Integer>(null);
+		TreeNode<Integer> tree = new TreeNode<>(null);
 		assertIndexOutOfBoundsForTree(0, tree);
-		tree.addChild(new TreeNode<Integer>(0));
+		tree.addChild(new TreeNode<>(0));
 		assertIndexOutOfBoundsForTree(1, tree);
 		assertValueOfDataAtIndexForTreeEquals(0, tree, 0);
 	}

@@ -1,39 +1,22 @@
 
 package org.starexec.test.integration.database;
 
-import java.sql.SQLException;
-
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Assert;
-
 import org.starexec.constants.R;
 import org.starexec.data.database.AnonymousLinks;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
+import org.starexec.data.to.*;
 import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.logger.StarLogger;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.util.Util;
+
+import java.sql.SQLException;
+import java.util.*;
 
 public class AnonymousLinkTests extends TestSequence {
 	private static final StarLogger log = StarLogger.getLogger(AnonymousLinkTests.class);	
@@ -96,7 +79,7 @@ public class AnonymousLinkTests extends TestSequence {
 					Assert.assertTrue( getUuid.isPresent() );
 
 					Assert.assertEquals( 
-							getAnonymousLinkCodeTestMessage(uuid, getUuid.get(), R.BENCHMARK, bench.getId(), primitivesToAnonymize ),
+							getAnonymousLinkCodeTestMessage(uuid, getUuid.get(), primitivesToAnonymize ),
 							uuid,
 							getUuid.get());
 
@@ -111,7 +94,7 @@ public class AnonymousLinkTests extends TestSequence {
 				Assert.assertTrue( getUuid.isPresent() );
 
 				Assert.assertEquals( 
-						getAnonymousLinkCodeTestMessage(uuid, getUuid.get(), R.SOLVER, solver.getId(), primitivesToAnonymize ),
+						getAnonymousLinkCodeTestMessage(uuid, getUuid.get(), primitivesToAnonymize ),
 						uuid,
 						getUuid.get());
 
@@ -125,7 +108,7 @@ public class AnonymousLinkTests extends TestSequence {
 				Assert.assertTrue( getUuid.isPresent() );
 
 				Assert.assertEquals( 
-						getAnonymousLinkCodeTestMessage(uuid, getUuid.get(), R.JOB, job.getId(), primitivesToAnonymize ),
+						getAnonymousLinkCodeTestMessage(uuid, getUuid.get(), primitivesToAnonymize ),
 						uuid,
 						getUuid.get());
 
@@ -142,9 +125,7 @@ public class AnonymousLinkTests extends TestSequence {
 
 	private String getAnonymousLinkCodeTestMessage( 
 			String uuid, 
-			String getUuid, 
-			String primitiveType, 
-			int primitiveId, 
+			String getUuid,
 			PrimitivesToAnonymize primitivesToAnonymize) {
 			return uuid + " != " + getUuid + " for primType=" + R.JOB +",  primId="+job.getId()+", primitivesToAnonymize=" +
 					AnonymousLinks.getPrimitivesToAnonymizeName(primitivesToAnonymize);
@@ -389,7 +370,7 @@ public class AnonymousLinkTests extends TestSequence {
 
 		// Setup test benchmarks
 		List<Integer> benchmarkIds = loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
-		benchmarks = new ArrayList<Benchmark>();
+		benchmarks = new ArrayList<>();
 		for ( Integer id : benchmarkIds ) {
 			benchmarks.add( Benchmarks.get( id ) );
 		}		

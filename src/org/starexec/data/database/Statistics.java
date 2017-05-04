@@ -1,19 +1,7 @@
 package org.starexec.data.database;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.io.File;
-import java.io.IOException;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-
+import com.google.gson.JsonObject;
+import com.mysql.jdbc.ResultSetMetaData;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.ChartUtilities;
@@ -23,6 +11,7 @@ import org.jfree.chart.entity.StandardEntityCollection;
 import org.jfree.chart.imagemap.StandardToolTipTagFragmentGenerator;
 import org.jfree.chart.imagemap.StandardURLTagFragmentGenerator;
 import org.jfree.chart.labels.XYToolTipGenerator;
+import org.jfree.chart.plot.PiePlot;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.SamplingXYLineRenderer;
@@ -30,28 +19,27 @@ import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.chart.title.LegendTitle;
 import org.jfree.chart.urls.XYURLGenerator;
 import org.jfree.data.Range;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
-import org.jfree.chart.plot.PiePlot;
 import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.general.PieDataset;
-
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 import org.starexec.constants.R;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
+import org.starexec.data.to.*;
 import org.starexec.data.to.pipelines.JoblineStage;
-import org.starexec.data.to.Status;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.BenchmarkTooltipGenerator;
 import org.starexec.util.BenchmarkURLGenerator;
 import org.starexec.util.Util;
 
-import com.google.gson.JsonObject;
-import com.mysql.jdbc.ResultSetMetaData;
+import java.awt.*;
+import java.io.File;
+import java.io.IOException;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.util.*;
+import java.util.List;
 
 /**
  * Handles all statistics related database interaction
@@ -64,25 +52,25 @@ public class Statistics {
 	 * are too many pairs to render a graph.
 	 */
 	public static final String OVERSIZED_GRAPH_ERROR = "big";
-	
+
 	/**
 	 * @param con The connection to make the query on
 	 * @param jobId The job to get the pair overview for
-	 * @return A hashmap that contains the statistic's name to value mapping 
+	 * @return A hashmap that contains the statistic's name to value mapping
 	 * (this method includes completePairs, pendingPairs, errorPairs, totalPairs and runtime)
 	 */
-	protected static HashMap<String, String> getJobPairOverview(Connection con, int jobId) throws Exception {
+	protected static HashMap<String, String> getJobPairOverview(Connection con, int jobId) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			 procedure = con.prepareCall("{CALL GetJobPairOverview(?)}");				
-			procedure.setInt(1, jobId);		
-			 results = procedure.executeQuery();		
-			
+			 procedure = con.prepareCall("{CALL GetJobPairOverview(?)}");
+			procedure.setInt(1, jobId);
+			 results = procedure.executeQuery();
+
 			if(results.first()) {
 				return Statistics.getMapFromResult(results);
 			}
-			
+
 			return null;
 		} catch (Exception e) {
 			log.error("getJobPairOverview says "+e.getMessage(),e);
@@ -92,15 +80,15 @@ public class Statistics {
 		}
 		return null;
 	}
-	
-	/**	 
+
+	/**
 	 * @param jobId The job to get the pair overview for
-	 * @return A hashmap that contains the statistic's name to value mapping 
+	 * @return A hashmap that contains the statistic's name to value mapping
 	 * (this method includes completePairs, pendingPairs, errorPairs, totalPairs and runtime)
 	 */
 	public static HashMap<String, String> getJobPairOverview(int jobId) {
 		Connection con = null;
-		
+
 		try {
 			con = Common.getConnection();
 			return Statistics.getJobPairOverview(con, jobId);
@@ -109,25 +97,25 @@ public class Statistics {
 		} finally {
 			Common.safeClose(con);
 		}
-		
-		return null;						
+
+		return null;
 	}
-	
+
 	/**
 	 * @param jobs The list of jobs to get overviews for (id required for each job)
-	 * @return A hashmap where each key is the job ID and each value is a hashmap 
-	 * that contains the statistic's name to value mapping 
+	 * @return A hashmap where each key is the job ID and each value is a hashmap
+	 * that contains the statistic's name to value mapping
 	 * (includes completePairs, pendingPairs, errorPairs, totalPairs and runtime)
 	 */
 	public static HashMap<Integer, HashMap<String, String>> getJobPairOverviews(List<Job> jobs) {
 		Connection con = null;
-		
+
 		try {
 			con = Common.getConnection();
-			
+
 			// Create the return map
-			HashMap<Integer, HashMap<String, String>> map = new HashMap<Integer, HashMap<String,String>>();
-			
+			HashMap<Integer, HashMap<String, String>> map = new HashMap<>();
+
 			// For each job...
 			for(Job j : jobs) {
 				// If it has an actual id...
@@ -136,17 +124,17 @@ public class Statistics {
 					map.put(j.getId(), Statistics.getJobPairOverview(con, j.getId()));
 				}
 			}
-			
+
 			return map;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Takes in a ResultSet with the cursor on the desired row to convert, and
 	 * returns a hashmap where each key/value pair is the column name and the column
@@ -159,7 +147,7 @@ public class Statistics {
 		// Get resultset's metadata
 		ResultSetMetaData meta = (ResultSetMetaData) result.getMetaData();
 		// Create the map to return
-		HashMap<String, String> map = new HashMap<String, String>();
+		HashMap<String, String> map = new HashMap<>();
 		// For each column in the record...
 		for(int i = 1; i <= meta.getColumnCount(); i++) {
 			// Add key=column name, value=column value to the map
@@ -175,9 +163,9 @@ public class Statistics {
 	int id;
 	Long data;
 
-	Double total = new Double(0);
+	Double total = 0d;
 
-	HashMap<String,Long> commMap = new HashMap<String,Long>();
+	HashMap<String,Long> commMap = new HashMap<>();
 
 	for(Space c : communities){
 	    id = c.getId();
@@ -186,7 +174,7 @@ public class Statistics {
 	    commMap.put(name,data);
 
 	    total = total + data;
-	    
+
 	}
 
 	if(total.equals(0)){
@@ -198,7 +186,7 @@ public class Statistics {
 	    }
 	    return dataset;
 	}
-       
+
     }
 
     /**
@@ -212,7 +200,7 @@ public class Statistics {
 		final String methodName = "makeCommunityGraphs";
 		try {
 			log.entry(methodName);
-				
+
 
 			String[] infoTypes = {"users","solvers","benchmarks","jobs","job_pairs","disk_usage"};
 
@@ -221,7 +209,7 @@ public class Statistics {
 			PiePlot plot;
 			File output;
 			String filename;
-			List<String> filenames = new ArrayList<String>();
+			List<String> filenames = new ArrayList<>();
 
 			Color backgroundColor =new Color(0,0,0,0); //makes the background clear
 			Color titleColor = new Color(255,255,255);
@@ -249,7 +237,7 @@ public class Statistics {
 
 			    filename="community" + infoTypes[i] + "Comparison.png";
 			    output = new File(new File(R.STAREXEC_ROOT, R.JOBGRAPH_FILE_DIR), filename);
-			 
+
 				log.debug(methodName, "\tsaving chart as PNG");
 			    ChartUtilities.saveChartAsPNG(output, chart, 400, 400);
 				log.debug(methodName, "\tsaved chart as PNG");
@@ -257,21 +245,21 @@ public class Statistics {
 			    filenames.add(filename);
 			}
 			log.debug(methodName, "Finished generating graphs.");
-			
+
 			JsonObject graphs = new JsonObject();
 			for(int i = 0 ; i < infoTypes.length ; i++){
 			    graphs.addProperty(infoTypes[i],Util.docRoot(R.JOBGRAPH_FILE_DIR+"/"+filenames.get(i)));
 			}
 
 			 return graphs;
-			
+
 
 		} catch (Exception e) {
 			log.error("makeTestChart says "+e.getMessage(),e);
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Creates a chart that compares the running times of two solver/configuration pairs
 	 * on benchmarks that they both completed for a given job in a given space
@@ -285,20 +273,20 @@ public class Statistics {
 	 * and the second string is an HTML image map. Returns null on failure.
 	 * @author Eric Burns
 	 */
-	
+
 	public static List<String> makeSolverComparisonChart(
-			int configId1, 
-			int configId2, 
-			int jobSpaceId, 
-			int edgeLengthInPixels, 
-			Color axisColor, 
-			int stageNumber, 
+			int configId1,
+			int configId2,
+			int jobSpaceId,
+			int edgeLengthInPixels,
+			Color axisColor,
+			int stageNumber,
 			PrimitivesToAnonymize primitivesToAnonymize) {
 		final String methodName = "makeSolverComparisonChart( int, int, int, int, boolean, int )";
 		log.entry(methodName);
 
 		try {
-			List<Integer> configIds = new ArrayList<Integer>();
+			List<Integer> configIds = new ArrayList<>();
 			configIds.add(configId1);
 			configIds.add(configId2);
 			List<List<JobPair>> pairs=Jobs.getJobPairsForSolverComparisonGraph(jobSpaceId, configIds,stageNumber, primitivesToAnonymize);
@@ -307,18 +295,18 @@ public class Statistics {
 			List<JobPair> pairs2=pairs.get(1);
 
 			if ((pairs1.size())>R.MAXIMUM_DATA_POINTS || pairs2.size()>R.MAXIMUM_DATA_POINTS) {
-				List<String> answer=new ArrayList<String>();
+				List<String> answer= new ArrayList<>();
 				answer.add(Statistics.OVERSIZED_GRAPH_ERROR);
 				return answer;
 			}
-			return makeSolverComparisonChart(pairs1, pairs2, jobSpaceId, edgeLengthInPixels, 
+			return makeSolverComparisonChart(pairs1, pairs2, jobSpaceId, edgeLengthInPixels,
 					axisColor, stageNumber, primitivesToAnonymize );
 		} catch (Exception e) {
-			log.error("makeJobPairComparisonChart says "+e.getMessage(),e);
+			log.error("makeSolverComparisonChart says "+e.getMessage(),e);
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Given two lists of job pairs, each list representing a single solver/configuration pair,
 	 * creates a .png image file comparing the running times of the two pairs on all benchmarks
@@ -333,26 +321,26 @@ public class Statistics {
 	 * Returns null on error
 	 * @author Eric Burns
 	 */
-	
+
 	@SuppressWarnings("deprecation")
 	public static List<String> makeSolverComparisonChart(List<JobPair> pairs1, List<JobPair> pairs2, int jobSpaceId,
 			int edgeLengthInPixels, Color axisColor, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize) {
 		try {
-			
+
 			//there are no points if either list of pairs is empty
 			if (pairs1.size()==0 || pairs2.size()==0) {
 				log.debug("An input list has no jobpairs, returning null" );
 				return null;
 			}
-			HashMap<Integer, JobPair> pairs2Map=new HashMap<Integer,JobPair>();
+			HashMap<Integer, JobPair> pairs2Map= new HashMap<>();
 			for (JobPair jp : pairs2) {
 				pairs2Map.put(jp.getBench().getId(), jp);
 			}
 			JoblineStage stage1=pairs1.get(0).getStageFromNumber(stageNumber);
 			JoblineStage stage2=pairs2.get(0).getStageFromNumber(stageNumber);
-			
+
 			log.debug("making solver comparison chart");
-			
+
 			String xAxisName = null;
 			String yAxisName = null;
 
@@ -369,8 +357,8 @@ public class Statistics {
 				yAxisName=stage2.getSolver().getName()+"/"+stage2.getConfiguration().getName()+" time(s)";
 			//}
 			//data in these hashmaps is needed to create the image map
-			HashMap<String,Integer> urls=new HashMap<String,Integer>();
-			HashMap<String,String> names=new HashMap<String,String>();
+			HashMap<String,Integer> urls= new HashMap<>();
+			HashMap<String,String> names= new HashMap<>();
 			int series=0;
 			int item=0;
 			XYSeries d=new XYSeries("points",false);
@@ -383,15 +371,15 @@ public class Statistics {
 			for (JobPair jp : pairs1) {
 				if (jp.getStatus().getCode()==Status.StatusCode.STATUS_COMPLETE) {
 					JobPair jp2=pairs2Map.get(jp.getBench().getId());
-					
+
 					//if we can find a second pair with this benchmark
 					if (jp2!=null && jp2.getStatus().getCode()==Status.StatusCode.STATUS_COMPLETE) {
 						//points are identified by their series and item number
 						String key=series+":"+item;
-						
+
 						//put the id in urls so we can link to the benchmark details page
 						urls.put(key, jp.getBench().getId());
-						
+
 						//put the name in names so we can create a tooltip of the name
 						//when hovering over the point in the image map
 						/* TODO
@@ -402,59 +390,65 @@ public class Statistics {
 							names.put(key, jp.getBench().getName());
 						//}
 						item+=1;
-							
+
 						stage1=jp.getStageFromNumber(stageNumber);
 						stage2=jp2.getStageFromNumber(stageNumber);
-						
-						
+
+
 						d.add(stage1.getWallclockTime(),stage2.getWallclockTime());
-						
+
 					}
 				}
 			}
-			
+
 			dataset.addSeries(d);
 
-			String key=debugSeries+":"+debugItem;
-			log.debug(urls.get(key).toString());
+			{ // I don't know what this is trying to debug
+				final String key = debugSeries+":"+debugItem;
+				final Integer value = urls.get(key);
+				if (value != null) {
+					log.debug(value.toString());
+				}
+			}
+
 			JFreeChart chart=ChartFactory.createScatterPlot("Solver Comparison Plot",xAxisName, yAxisName, dataset, PlotOrientation.VERTICAL, true, true,false);
 			Color color=new Color(0,0,0,0); //makes the background clear
 			chart.setBackgroundPaint(color);
 			chart.getTitle().setPaint(new Color(255,255,255)); //makes the title white
 			XYPlot plot = (XYPlot) chart.getPlot();
-			
+
 			//make both axes identical, and make them span from 0
 			//to 110% of the maximum value
 			double maxX=dataset.getDomainUpperBound(false)*1.1;
 			double maxY=dataset.getRangeUpperBound(false)*1.1;
 			Range range=new Range(0,Math.max(0.1, Math.max(maxX, maxY)));
-			
-			
+
+
 			XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
-			
+
 			XYURLGenerator customURLGenerator = new BenchmarkURLGenerator(urls);
 			if ( !AnonymousLinks.areBenchmarksAnonymized( primitivesToAnonymize )) {
 				renderer.setURLGenerator(customURLGenerator);
 			}
-	        
+
 	        XYToolTipGenerator tooltips=new BenchmarkTooltipGenerator(names);
 	        renderer.setToolTipGenerator(tooltips);
-	        
+
 			LegendTitle legend=chart.getLegend();
 			legend.setVisible(false);
-			
-			
+
+
 			plot.getDomainAxis().setAutoRange(false);
 			plot.getDomainAxis().setRange(range);
 			plot.getRangeAxis().setAutoRange(false);
 			plot.getRangeAxis().setRange(range);
-			
-			
+
+
 			String filename=UUID.randomUUID().toString()+".png";
 			log.debug("The filename for the graph is: " +  filename );
 			File output = new File(new File(R.STAREXEC_ROOT, R.JOBGRAPH_FILE_DIR), filename);
-			
-			
+
+
 			ChartRenderingInfo info = new ChartRenderingInfo(new StandardEntityCollection());
 			//we're displaying the small graph on black, so we want white axes
 			plot.getDomainAxis().setTickLabelPaint(axisColor);
@@ -465,26 +459,26 @@ public class Statistics {
 			StandardURLTagFragmentGenerator url=new StandardURLTagFragmentGenerator();
 			StandardToolTipTagFragmentGenerator tag=new StandardToolTipTagFragmentGenerator();
 			String map;
-			
+
 			// Don't include the links to the benchmark pages if we're sending this to an anonymous page.
 			if ( AnonymousLinks.areBenchmarksAnonymized( primitivesToAnonymize )) {
 				map=ChartUtilities.getImageMap("solverComparisonMap"+edgeLengthInPixels, info);
 			} else {
 				map=ChartUtilities.getImageMap("solverComparisonMap"+edgeLengthInPixels, info,tag,url);
 			}
-			
-			
+
+
 			log.debug("solver comparison chart created succesfully, returning filepath ");
-			List<String> answer=new ArrayList<String>();
+			List<String> answer= new ArrayList<>();
 			answer.add(Util.docRoot(R.JOBGRAPH_FILE_DIR + "/"+ filename));
 			answer.add(map);
 			return answer;
 		} catch (Exception e) {
-			log.error("makeJobPairComparisonChart says "+e.getMessage(),e);
+			log.error("deprecated makeSolverComparisonChart says "+e.getMessage(),e);
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Draws a graph comparing solvers operating in a single job in a single space, saves
 	 * the chart as a png file, and returns a string containing the absolute filepath of the chart
@@ -497,22 +491,22 @@ public class Statistics {
 	 * Statistics.OVERSIZED_GRAPH_ERROR if there are too many job pairs to display
 	 * @author Eric Burns
 	 */
-	
+
 	public static String makeSpaceOverviewChart(
-			int jobSpaceId, 
-			boolean logX, 
-			boolean logY, 
-			List<Integer> configIds, 
-			int stageNumber, 
+			int jobSpaceId,
+			boolean logX,
+			boolean logY,
+			List<Integer> configIds,
+			int stageNumber,
 			PrimitivesToAnonymize primitivesToAnonymize ) {
 
 		try {
 			if (configIds.size()==0) {
 				return null;
 			}
-			
+
 			List<List<JobPair>> pairLists = Jobs.getJobPairsForSolverComparisonGraph( jobSpaceId, configIds, stageNumber, primitivesToAnonymize );
-			List<JobPair> pairs = new ArrayList<JobPair>();
+			List<JobPair> pairs = new ArrayList<>();
 			for (int x=0;x<pairLists.size();x++) {
 				pairs.addAll(pairLists.get(x));
 			}
@@ -526,10 +520,10 @@ public class Statistics {
 		} catch (Exception e) {
 			log.error("makeSpaceOverviewChart says "+e.getMessage(),e);
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Creates a graph for plotting the peformance of solvers against a set of job pairs
 	 * @param pairs The pairs to plot results of
@@ -540,10 +534,10 @@ public class Statistics {
 	 * @return The absolute filepath to the chart that was created
 	 */
 	public static String makeSpaceOverviewChart(
-			List<JobPair> pairs, 
-			boolean logX, 
-			boolean logY, 
-			int stageNumber, 
+			List<JobPair> pairs,
+			boolean logX,
+			boolean logY,
+			int stageNumber,
 			PrimitivesToAnonymize primitivesToAnonymize) {
 		try {
 			log.debug("Making space overview chart with logX = "+logX +" and logY = "+logY +" and pair # = "+pairs.size());
@@ -565,7 +559,7 @@ public class Statistics {
 						counter++;
 					}
 					dataset.addSeries(d);
-					
+
 				}
 			}
 
@@ -584,14 +578,14 @@ public class Statistics {
 			if (logY) {
 				LogAxis yAxis=new LogAxis("time (s)");
 				plot.setRangeAxis(yAxis);
-				
+
 			} else {
 				plot.getRangeAxis().setAutoRange(false);
 				plot.getRangeAxis().setRange(new Range(0,Math.max(0.1, dataset.getRangeUpperBound(false)*1.1)));
 			}
-			
+
 			plot.getDomainAxis().setTickLabelPaint(new Color(255,255,255));
-			
+
 			plot.getRangeAxis().setTickLabelPaint(new Color(255,255,255));
 			plot.getDomainAxis().setLabelPaint(new Color(255,255,255));
 			plot.getRangeAxis().setLabelPaint(new Color(255,255,255));
@@ -604,7 +598,7 @@ public class Statistics {
 				plot.setRenderer(renderer);
 
 			}
-				
+
 			String filename=UUID.randomUUID().toString()+".png";
 			File output = new File(new File(R.STAREXEC_ROOT, R.JOBGRAPH_FILE_DIR), filename);
 			log.debug("saving smaller space overview chart");
@@ -633,13 +627,13 @@ public class Statistics {
 	 * representing the CPU usage of every completed, correct job pair produced by that solver/configuration pair
 	 * @author Eric Burns
 	 */
-	
+
 	private static HashMap<Solver,HashMap<Configuration,List<Double>>> processJobPairData(List<JobPair> pairs, int stageNumber) {
 		//we need to store solvers and configs by ID and only put items into answer from these two HashMaps.
 		//We can't compare to solvers to see if they are equal directly, so we have to compare IDs
-		HashMap <Integer, Solver> solvers=new HashMap<Integer, Solver> ();
-		HashMap <Integer,Configuration> configs=new HashMap<Integer,Configuration>();
-		HashMap<Solver,HashMap<Configuration,List<Double>>> answer=new HashMap<Solver,HashMap<Configuration,List<Double>>>();
+		HashMap <Integer, Solver> solvers= new HashMap<>();
+		HashMap <Integer,Configuration> configs= new HashMap<>();
+		HashMap<Solver,HashMap<Configuration,List<Double>>> answer= new HashMap<>();
 		for (JobPair jp : pairs) {
 			if (jp.getStatus().getCode()!=Status.StatusCode.STATUS_COMPLETE) {
 				// we don't want to consider incomplete pairs
@@ -647,27 +641,27 @@ public class Statistics {
 			}
 			//variable that will contain the single relevant stage for this pair, corresponding to stageNumber
 			JoblineStage stage=jp.getStageFromNumber(stageNumber);
-			
+
 			Solver s=stage.getSolver();
 			if (!solvers.containsKey(s.getId())) {
 				solvers.put(s.getId(), s);
-				answer.put(solvers.get(s.getId()), new HashMap<Configuration,List<Double>>());
+				answer.put(solvers.get(s.getId()), new HashMap<>());
 			}
 			HashMap<Configuration,List<Double>>configMap=answer.get(solvers.get(s.getId()));
 			Configuration c=stage.getConfiguration();
 			if (!configs.containsKey(c.getId())) {
 				configs.put(c.getId(), c);
-				configMap.put(configs.get(c.getId()), new ArrayList<Double>());
+				configMap.put(configs.get(c.getId()), new ArrayList<>());
 			}
 			configMap.get(configs.get(c.getId())).add(stage.getWallclockTime());
-			
+
 		}
 		for (HashMap<Configuration,List<Double>> h : answer.values()) {
 			for (List<Double> l : h.values()) {
 				Collections.sort(l);
 			}
 		}
-		
+
 		return answer;
-	}			
+	}
 }

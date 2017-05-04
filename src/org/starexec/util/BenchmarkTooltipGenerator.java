@@ -1,9 +1,9 @@
 package org.starexec.util;
 
-import java.util.HashMap;
-
 import org.jfree.chart.labels.XYToolTipGenerator;
 import org.jfree.data.xy.XYDataset;
+
+import java.util.HashMap;
 
 /**
  * Class used when generating a solver comparison graph for Statistics.java

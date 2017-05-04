@@ -1,37 +1,12 @@
 package org.starexec.servlets;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.*;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.starexec.constants.R;
 import org.starexec.data.database.Analytics;
-import org.starexec.data.database.Communities;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Queues;
-import org.starexec.data.database.Settings;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
-import org.starexec.data.security.JobSecurity;
+import org.starexec.data.database.*;
 import org.starexec.data.security.ProcessorSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.DefaultSettings;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Permission;
+import org.starexec.data.to.*;
 import org.starexec.data.to.Queue;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
 import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.jobs.JobManager;
@@ -39,6 +14,15 @@ import org.starexec.logger.StarLogger;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * Servlet which handles incoming requests to create new jobs
@@ -110,7 +94,7 @@ public class CreateJob extends HttpServlet {
 		//Setup the job's attributes
 
 		List<Configuration> config = Solvers.getConfigsForSolver(solverId);
-		List<Integer> configIds = new ArrayList<Integer>();
+		List<Integer> configIds = new ArrayList<>();
 		for (Configuration c :config) {
 			if(!c.getName().equals("starexec_build")){
 				configIds.add(c.getId());
@@ -259,7 +243,6 @@ public class CreateJob extends HttpServlet {
 			//Depending on our run selection, handle each case differently
 			//if the user created a quickJob, they uploaded a single text benchmark and a solver to run
 			if (selection.equals("quickJob")) {
-				Analytics.JOB_CREATE_QUICKJOB.record();
 				int solverId = Integer.parseInt(request.getParameter(R.SOLVER));
 				String benchText = request.getParameter(R.BENCHMARK);
 				String bName = request.getParameter(benchName);
@@ -275,9 +258,9 @@ public class CreateJob extends HttpServlet {
 				log.debug("got all the subspaces for the job");
 				spaces.add(0, Spaces.get(space));
 
-				HashMap<Integer, List<JobPair>> spaceToPairs = new HashMap<Integer, List<JobPair>>();
+				HashMap<Integer, List<JobPair>> spaceToPairs = new HashMap<>();
 				for (Space s : spaces) {
-					List<JobPair> pairs = JobManager.addJobPairsFromSpace(userId, s.getId(), SP.get(s.getId()));
+					List<JobPair> pairs = JobManager.addJobPairsFromSpace(s.getId(), SP.get(s.getId()));
 
 					spaceToPairs.put(s.getId(), pairs);
 				}
@@ -298,7 +281,7 @@ public class CreateJob extends HttpServlet {
 				List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
 
 				if (benchMethod.equals("runAllBenchInSpace")) {
-					List<JobPair> pairs = JobManager.addJobPairsFromSpace(userId, space, Spaces.getName(space), configIds);
+					List<JobPair> pairs = JobManager.addJobPairsFromSpace(space, Spaces.getName(space), configIds);
 					if (pairs != null) {
 						j.addJobPairs(pairs);
 					}
@@ -364,15 +347,16 @@ public class CreateJob extends HttpServlet {
 
 			if (submitSuccess) {
 				// If the submission was successful, send back to space explorer
-
 				response.addCookie(new Cookie("New_ID", String.valueOf(j.getId())));
-				if (!selection.equals("quickJob")) {
-					response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
-				} else {
+
+				Analytics.JOB_CREATE.record();
+				if (selection.equals("quickJob")) {
+					Analytics.JOB_CREATE_QUICKJOB.record();
 					response.sendRedirect(Util.docRoot("secure/details/job.jsp?id=" + j.getId()));
+				} else {
+					response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
 				}
-			} else {
-				// Or else send an error
+			} else { // if not submitSuccess
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
 						"Your job failed to submit for an unknown reason. Please try again.");
 			}
@@ -584,7 +568,7 @@ public class CreateJob extends HttpServlet {
 					return new ValidatorStatusCode(false, "All selected configuration IDs need to be valid integers");
 				}
 
-				Set<Integer> solverIds=new HashSet<Integer>();
+				Set<Integer> solverIds= new HashSet<>();
 				for (Integer cid : Util.toIntegerList(request.getParameterValues(configs))) {
 					solverIds.add(Solvers.getSolverByConfig(cid, false).getId());
 				}

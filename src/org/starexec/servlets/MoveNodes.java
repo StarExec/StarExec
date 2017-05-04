@@ -1,28 +1,23 @@
 package org.starexec.servlets;
 
 
-import java.io.IOException;
-import java.util.List;
-import java.util.HashMap;
-import java.util.LinkedList;
+import org.starexec.constants.R;
+import org.starexec.data.database.Cluster;
+import org.starexec.data.security.GeneralSecurity;
+import org.starexec.data.to.Queue;
+import org.starexec.logger.StarLogger;
+import org.starexec.util.SessionUtil;
+import org.starexec.util.Util;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.starexec.constants.R;
-import org.starexec.data.database.Cluster;
-import org.starexec.data.database.Users;
-import org.starexec.data.security.GeneralSecurity;
-import org.starexec.data.database.Queues;
-
-
-import org.starexec.data.to.Queue;
-import org.starexec.logger.StarLogger;
-import org.starexec.util.SessionUtil;
-import org.starexec.util.Util;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Servlet which handles incoming requests to move nodes from queue to queue
@@ -64,10 +59,10 @@ public class MoveNodes extends HttpServlet {
 				
 	    log.debug("nodeIds = " + nodeIds);
 	    
-	    LinkedList<String> nodeNames = new LinkedList<String>();
-	    LinkedList<String> queueNames = new LinkedList<String>();
+	    LinkedList<String> nodeNames = new LinkedList<>();
+	    LinkedList<String> queueNames = new LinkedList<>();
 	    // map for counting how many nodes will be removed from each queue
-	    HashMap<Integer, Integer> queueIdToNodesRemoved = new HashMap<Integer, Integer>();
+	    HashMap<Integer, Integer> queueIdToNodesRemoved = new HashMap<>();
 	    if (nodeIds != null) {
 			for (int id : nodeIds) {
 			    Queue q = Cluster.getQueueForNode(id);

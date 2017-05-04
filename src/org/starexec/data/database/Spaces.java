@@ -1,14 +1,5 @@
 package org.starexec.data.database;
 
-import java.io.IOException;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.security.GeneralSecurity;
@@ -21,6 +12,11 @@ import org.starexec.util.DataTablesQuery;
 import org.starexec.util.NamedParameterStatement;
 import org.starexec.util.PaginationQueryBuilder;
 import org.starexec.util.dataStructures.TreeNode;
+
+import java.io.IOException;
+import java.sql.*;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Handles all database interaction for spaces
@@ -100,13 +96,13 @@ public class Spaces {
 	 * @author Eric Burns
 	 */
 	public static List<Integer> getChainToRoot(int spaceId) {
-		List<Integer> idChain=new ArrayList<Integer>();
+		List<Integer> idChain= new ArrayList<>();
 		if (spaceId<=1) {
 			idChain.add(1);
 			return idChain;
 		}
 		idChain.add(spaceId);
-		HashSet<Integer> alreadySeen=new HashSet<Integer>();
+		HashSet<Integer> alreadySeen= new HashSet<>();
 		while (spaceId>1) {
 			if (alreadySeen.contains(spaceId)) {
 				log.error("there was a cycle in the space heirarchy!");
@@ -417,7 +413,7 @@ public class Spaces {
 	 * @author Benton McCune
 	 */
 	public static List<Integer> addWithBenchmarks(Space parent, int userId, Integer depRootSpaceId, boolean linked, Integer statusId, Boolean usesDeps) {
-		ArrayList<Integer> ids=new ArrayList<Integer>();
+		ArrayList<Integer> ids= new ArrayList<>();
 		log.info("addWithBenchmarksAndDeps called on space " + parent.getName());
 		try {
 			
@@ -563,17 +559,7 @@ public class Spaces {
 			con = Common.getConnection();		
 			procedure = con.prepareCall("{CALL GetAllSpaces()}");
 			results = procedure.executeQuery();
-			List<Space> spaces = new LinkedList<Space>();
-			
-			while(results.next()){
-				Space s = new Space();
-				s.setName(results.getString("name"));
-				s.setId(results.getInt("id"));
-				s.setDescription(results.getString("description"));
-				s.setLocked(results.getBoolean("locked"));				
-				spaces.add(s);
-			}					
-			return spaces;
+			return resultsToSpaces(results);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -583,6 +569,20 @@ public class Spaces {
 		}
 		
 		return null;
+	}
+
+	protected static List<Space> resultsToSpaces(ResultSet results) throws SQLException {
+		List<Space> spaces = new ArrayList<>();
+
+		while(results.next()){
+			Space s = new Space();
+			s.setName(results.getString("name"));
+			s.setId(results.getInt("id"));
+			s.setDescription(results.getString("description"));
+			s.setLocked(results.getBoolean("locked"));
+			spaces.add(s);
+		}
+		return spaces;
 	}
 	
 	/**
@@ -884,7 +884,7 @@ public class Spaces {
 		if (Permissions.canUserSeeSpace(srcId, usrId)) {
 			// Copying the references of benchmarks
 			List<Benchmark> benchmarks = sourceSpace.getBenchmarks();
-			List<Integer> benchmarkIds = new LinkedList<Integer>();
+			List<Integer> benchmarkIds = new LinkedList<>();
 			Random rand = new Random();
             if(copyPrimitives.shouldCopyBenchmarks()){
                 Benchmarks.copyBenchmarks(benchmarks, usrId, newSpaceId);
@@ -911,7 +911,7 @@ public class Spaces {
 
 			// Copying the references of solvers
 			List<Solver> solvers = sourceSpace.getSolvers();
-			List<Integer> solverIds = new LinkedList<Integer>();
+			List<Integer> solverIds = new LinkedList<>();
 
             if(copyPrimitives.shouldCopySolvers()){
                 Solvers.copySolvers(solvers,usrId, newSpaceId);
@@ -928,7 +928,7 @@ public class Spaces {
             if (copyPrimitives.shouldLinkJobs()) {
 				// Copying the references of jobs
 				List<Job> jobs = sourceSpace.getJobs();
-				List<Integer> jobIds = new LinkedList<Integer>();
+				List<Integer> jobIds = new LinkedList<>();
 				int jobId = 0;
 				for (Job job : jobs) {
 					jobId = job.getId();
@@ -1086,7 +1086,7 @@ public class Spaces {
 		if (getDetails) {
 			rootSpace = Spaces.getDetails(rootSpace.getId(), usrId);
 		}
-		TreeNode<Space> spaceTree = new TreeNode<Space>(rootSpace);
+		TreeNode<Space> spaceTree = new TreeNode<>(rootSpace);
 		for (Space space : subSpaces) {
 			TreeNode<Space> child = buildSpaceTree(space, usrId);
 			if (child != null) {
@@ -1179,7 +1179,7 @@ public class Spaces {
 			 procedure = con.prepareCall("{CALL GetLeadersBySpaceId(?)}");
 			procedure.setInt(1, spaceId);					
 			 results = procedure.executeQuery();
-			List<User> leaders = new LinkedList<User>();
+			List<User> leaders = new LinkedList<>();
 			
 			while(results.next()){
 				User u = new User();
@@ -1270,7 +1270,7 @@ public class Spaces {
 	 * @author Wyatt Kaiser
 	 */
 		
-		protected static int getParentSpace(int spaceId, Connection con) throws Exception{
+		protected static int getParentSpace(int spaceId, Connection con) {
 			CallableStatement procedure = null;
 			ResultSet results = null;
 			try {
@@ -1305,7 +1305,7 @@ public class Spaces {
 			 procedure = con.prepareCall("{CALL GetSpacesByUser(?)}");
 			procedure.setInt(1, userId);
 			 results = procedure.executeQuery();
-			List<Space> spaces = new LinkedList<Space>();
+			List<Space> spaces = new LinkedList<>();
 			
 			while(results.next()){
 				Space s = new Space();
@@ -1361,7 +1361,7 @@ public class Spaces {
 			procedure.setInt("userId", userId);
 			procedure.setString("query", query.getSearchQuery());			
 			 results = procedure.executeQuery();
-			List<Space> spaces = new LinkedList<Space>();
+			List<Space> spaces = new LinkedList<>();
 			
 			while(results.next()){
 				Space s = new Space();
@@ -1568,14 +1568,14 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @author Eric Burns
 	 */
 	
-	public static List<Integer> getSubSpaceIds(int spaceId, Connection con) throws Exception {
+	public static List<Integer> getSubSpaceIds(int spaceId, Connection con) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
 			 procedure=con.prepareCall("{CALL GetSubspaceIds(?)}");
 			procedure.setInt(1, spaceId);
 			 results=procedure.executeQuery();
-			List<Integer> ids=new ArrayList<Integer>();
+			List<Integer> ids= new ArrayList<>();
 			while (results.next()) {
 				ids.add(results.getInt("id"));
 			}
@@ -1628,7 +1628,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 			procedure = con.prepareCall("{CALL GetSubSpaceHierarchyAdmin(?)}");
 			procedure.setInt(1, spaceId);
 			results=procedure.executeQuery();
-			List<Space> subSpaces = new LinkedList<Space>();
+			List<Space> subSpaces = new LinkedList<>();
 			
 			while(results.next()){
 				Space s = new Space();
@@ -1662,7 +1662,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @author Eric Burns
 	 */
 	
-	private static List<Space> getSubSpaceHierarchy(int spaceId, int userId, Connection con) throws Exception{
+	private static List<Space> getSubSpaceHierarchy(int spaceId, int userId, Connection con) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
@@ -1670,18 +1670,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, userId);
 			results = procedure.executeQuery();
-			List<Space> subSpaces = new LinkedList<Space>();
-			
-			while(results.next()){
-				Space s = new Space();
-				s.setName(results.getString("name"));
-				s.setId(results.getInt("id"));
-				s.setDescription(results.getString("description"));
-				s.setLocked(results.getBoolean("locked"));
-				subSpaces.add(s);
-			}
-			log.debug("now returning this many subspaces = "+subSpaces.size());
-			return subSpaces;
+			return resultsToSpaces(results);
 		} catch (Exception e) {
 			log.error("getSubSpaces says "+e.getMessage(),e);
 		} finally {
@@ -1749,7 +1738,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 			results = procedure.executeQuery();
 			
 			results = procedure.executeQuery();
-			List<Space> subSpaces = new LinkedList<Space>();
+			List<Space> subSpaces = new LinkedList<>();
 			
 			while(results.next()){
 				Space s = new Space();
@@ -1783,7 +1772,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @author Todd Elvers & Skylar Stark & Benton McCune & Wyatt Kaiser
 	 */
 
-	protected static List<Space> getSubSpaces(int spaceId, int userId,Connection con) throws Exception{
+	protected static List<Space> getSubSpaces(int spaceId, int userId,Connection con) {
 		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return getSubSpaces(spaceId,con);
 		}
@@ -1795,19 +1784,8 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, userId);
 			results = procedure.executeQuery();
-			List<Space> subSpaces = new LinkedList<Space>();
-			
-			while(results.next()){
-				Space s = new Space();
-				s.setName(results.getString("name"));
-				s.setId(results.getInt("id"));
-				s.setDescription(results.getString("description"));
-				s.setLocked(results.getBoolean("locked"));
-				subSpaces.add(s);
-			}
-			
-			
-			return subSpaces;
+
+			return resultsToSpaces(results);
 		} catch (Exception e) {
 			log.error("getSubSpaces says "+e.getMessage(),e);
 		} finally {
@@ -1828,7 +1806,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 */
 	public static List<JobSpace> getSubSpacesForJob(int jobSpaceId, boolean recursive) {
 		Connection con = null;			
-		HashSet<Integer>seenSpaces=new HashSet<Integer>(); //will store everything we've already seen to prevent looping
+		HashSet<Integer>seenSpaces= new HashSet<>(); //will store everything we've already seen to prevent looping
 		try {
 			con = Common.getConnection();
 			List<JobSpace> subspaces=Spaces.getSubSpacesForJob(jobSpaceId, con);
@@ -1866,7 +1844,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @throws Exception
 	 * @author Eric Burns
 	 */
-	protected static List<JobSpace> getSubSpacesForJob(int jobSpaceId, Connection con) throws Exception{
+	protected static List<JobSpace> getSubSpacesForJob(int jobSpaceId, Connection con) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
@@ -1874,7 +1852,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 			procedure.setInt(1, jobSpaceId);
 			
 			 results = procedure.executeQuery();
-			List<JobSpace> subSpaces = new LinkedList<JobSpace>();
+			List<JobSpace> subSpaces = new LinkedList<>();
 			
 			while(results.next()){
 				JobSpace s = new JobSpace();
@@ -1909,7 +1887,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 			 procedure = con.prepareCall("{CALL GetSpaceUsersById(?)}");
 			procedure.setInt(1, spaceId);					
 			 results = procedure.executeQuery();
-			List<User> users= new LinkedList<User>();
+			List<User> users= new LinkedList<>();
 			
 			while(results.next()){
 				User u = new User();
@@ -2115,7 +2093,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @throws SQLException if an error occurs while removing benchmarks from the database
 	 * @author Todd Elvers
 	 */
-	protected static boolean removeBenches(List<Integer> benchIds, int spaceId, Connection con) throws SQLException {
+	protected static boolean removeBenches(List<Integer> benchIds, int spaceId, Connection con) {
 		CallableStatement procedure = null;
 		try {
 			 procedure = con.prepareCall("{CALL RemoveBenchFromSpace(?, ?)}");
@@ -2200,7 +2178,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @throws SQLException if an error occurs while removing jobs from the database
 	 * @author Todd Elvers
 	 */
-	protected static boolean removeJobs(List<Integer> jobIds, int spaceId, Connection con) throws SQLException {
+	protected static boolean removeJobs(List<Integer> jobIds, int spaceId, Connection con) {
 		CallableStatement procedure = null;
 		try {
 			 procedure = con.prepareCall("{CALL RemoveJobFromSpace(?, ?)}");
@@ -2269,7 +2247,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @throws IOException if an error occurs while removing solvers from disk 
 	 * @author Todd Elvers
 	 */
-	protected static boolean removeSolvers(List<Integer> solverIds, int spaceId, Connection con) throws SQLException, IOException {
+	protected static boolean removeSolvers(List<Integer> solverIds, int spaceId, Connection con) {
 		CallableStatement procedure = null;
 		try {
 			 procedure = con.prepareCall("{CALL RemoveSolverFromSpace(?, ?)}");
@@ -2303,7 +2281,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	public static boolean removeSolversFromHierarchy(List<Integer> solverIds,int rootSpaceId, int userId) {
 		List<Space> subspaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(rootSpaceId, userId));
 		subspaces.add(Spaces.get(rootSpaceId));
-		List<Space> allowedSpaces=new ArrayList<Space>();
+		List<Space> allowedSpaces= new ArrayList<>();
 		for (Space s : subspaces) {
 			if (SolverSecurity.canUserRemoveSolver(s.getId(), userId).isSuccess()) {
 				allowedSpaces.add(s);
@@ -2376,7 +2354,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @return True on success and false otherwise
 	 */
 	public static boolean removeSubspace(int subspaceId) {
-		List<Integer> spaceId=new ArrayList<Integer>();
+		List<Integer> spaceId= new ArrayList<>();
 		spaceId.add(subspaceId);
 		return removeSubspaces(spaceId);
 	}
@@ -2440,7 +2418,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * 
 	 * @author Skylar Stark
 	 */
-	private static void removeUsers(Connection con, List<Integer> userIds, int spaceId) throws SQLException {
+	private static void removeUsers(Connection con, List<Integer> userIds, int spaceId){
 		CallableStatement procedure = null;
 		try {
 			 procedure = con.prepareCall("{CALL LeaveSpace(?, ?)}");
@@ -2621,7 +2599,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	public static HashMap<Integer,String> spacePathCreate(int userId, List<Space> spaces, int rootSpaceId) {
 		
 		Space space=Spaces.get(rootSpaceId);
-		HashMap<Integer,String> paths=new HashMap<Integer,String>();
+		HashMap<Integer,String> paths= new HashMap<>();
 		paths.put(space.getId(), space.getName());
 		for (Space s : spaces) {
 			
@@ -2631,7 +2609,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 				log.debug("added the following space to the space paths ="+ +s.getId());
 			} else {
 				//we'll keep searching until we get to something in the paths
-				Stack<String> names=new Stack<String>();
+				Stack<String> names= new Stack<>();
 				names.push(s.getName());
 				names.push(Spaces.getName(parentId));
 				while (parentId>=1) {
@@ -2664,8 +2642,8 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @param userId The user id of the owner of the new space and its benchmarks
 	 * @author Benton McCune
 	 */
-	protected static List<Integer> traverse(Space space, int userId, Integer depRootSpaceId, Boolean linked, Integer statusId) throws Exception {
-		ArrayList<Integer> ids=new ArrayList<Integer>();
+	protected static List<Integer> traverse(Space space, int userId, Integer depRootSpaceId, Boolean linked, Integer statusId) {
+		ArrayList<Integer> ids= new ArrayList<>();
 		try{
 			// Add the new space to the database and get it's ID	
 			int spaceId = Spaces.add(space, userId);
@@ -2780,7 +2758,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @return true iff the space update is successful
 	 * @author Skylar Stark
 	 */
-	protected static boolean updateDetails(Space s, Connection con) throws Exception {
+	protected static boolean updateDetails(Space s, Connection con) {
 		CallableStatement procedure = null;
 		try {
 			 procedure = con.prepareCall("{CALL UpdateSpaceDetails(?,?,?,?,?,?)}");	
@@ -2852,7 +2830,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 			procedure.setInt(1, queue_id);					
 			results = procedure.executeQuery();			
 			
-			List<Space> spaces = new LinkedList<Space>();
+			List<Space> spaces = new LinkedList<>();
 			
 			while (results.next()) {
 				Space s = new Space();
@@ -2884,7 +2862,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	public static Set<Integer> getStickyLeaders(int spaceId) {
 		//root space has no sticky leaders
 		if (spaceId==1) {
-			return new HashSet<Integer>();
+			return new HashSet<>();
 		}
 		return recGetStickyLeaders(Spaces.getParentSpace(spaceId));
 	}
@@ -2895,7 +2873,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 	 * @return
 	 */
 	private static Set<Integer> recGetStickyLeaders(int spaceId) {
-		HashSet<Integer> ids=new HashSet<Integer>();
+		HashSet<Integer> ids= new HashSet<>();
 		//communities are not allowed to have the sticky leaders feature enabled, so if we've reached
 		//a community or the root, we can quit
 		if (Communities.isCommunity(spaceId) || spaceId==1) {

@@ -1,8 +1,7 @@
 package org.starexec.data.to;
 
-import org.starexec.util.Util;
-
 import com.google.gson.annotations.Expose;
+import org.starexec.util.Util;
 
 /**
  * Represents a configuration, which is a run script to execute a solver with specific parameters

@@ -1,20 +1,19 @@
 package org.starexec.data.database;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+import org.starexec.data.to.CommunityRequest;
+import org.starexec.data.to.User;
+import org.starexec.exceptions.StarExecDatabaseException;
+import org.starexec.logger.StarLogger;
+import org.starexec.util.DataTablesQuery;
+
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
-
-import org.starexec.data.to.CommunityRequest;
-import org.starexec.data.to.User;
-import org.starexec.exceptions.StarExecDatabaseException;
-import org.starexec.logger.StarLogger;
-import org.starexec.util.DataTablesQuery;
 
 /**
  * Handles all database interaction for the various requests throughout the system. This includes
@@ -219,15 +218,7 @@ public class Requests {
 			procedure.setInt(1, userId);					
 			 results = procedure.executeQuery();
 			
-			if(results.next()){
-				CommunityRequest req = new CommunityRequest();
-				req.setUserId(results.getInt("user_id"));
-				req.setCommunityId(results.getInt("community"));
-				req.setCode(results.getString("code"));
-				req.setMessage(results.getString("message"));
-				req.setCreateDate(results.getTimestamp("created"));
-				return req;
-			}						
+			return resultsToCommunityRequest(results);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -238,6 +229,8 @@ public class Requests {
 		
 		return null;
 	}
+
+
 	
 	/**
 	 * Retrieves a community request from the database given a code
@@ -255,16 +248,7 @@ public class Requests {
 			procedure.setString(1, code);					
 			 results = procedure.executeQuery();
 			
-			if(results.next()){
-				CommunityRequest req = new CommunityRequest();
-				req.setUserId(results.getInt("user_id"));
-				req.setCommunityId(results.getInt("community"));
-				req.setCode(results.getString("code"));
-				req.setMessage(results.getString("message"));
-				req.setCreateDate(results.getTimestamp("created"));
-				return req;
-			}			
-			
+			return resultsToCommunityRequest(results);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -395,13 +379,12 @@ public class Requests {
 	
 	/**
 	 * Gets all pending request to join communities
-	 * @param startingRecord The 0-indexed record to start on.
-	 * @param recordsPerPage The number of requests to return
+	 * @param results SQL results to convert to a CommunityRequest
 	 * @return A list of requests to display, or null on error
 	 */
 	private static List<CommunityRequest> processGetCommunityRequestResults(ResultSet results) throws SQLException
 	{
-		List<CommunityRequest> requests = new LinkedList<CommunityRequest>();
+		List<CommunityRequest> requests = new LinkedList<>();
 		
 		while(results.next()){
 			CommunityRequest req = new CommunityRequest();
@@ -414,6 +397,11 @@ public class Requests {
 			requests.add(req);	
 		}	
 		return requests;
+	}
+
+	private static CommunityRequest resultsToCommunityRequest(ResultSet results) throws SQLException {
+		List<CommunityRequest> requests = processGetCommunityRequestResults(results);
+		return requests.size() > 0 ? requests.get(0) : null;
 	}
 	
 	/**
@@ -539,7 +527,7 @@ public class Requests {
 			Common.safeClose(results);
 		}
 
-		Pair<String, String> emailAndCode = new ImmutablePair<String, String>(newEmail, emailChangeCodeAssociatedWithUser);
+		Pair<String, String> emailAndCode = new ImmutablePair<>(newEmail, emailChangeCodeAssociatedWithUser);
 		return emailAndCode;
 	}
 

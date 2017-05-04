@@ -1,25 +1,9 @@
 package org.starexec.data.database;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringReader;
-import java.sql.*;
-import java.util.*;
-import java.util.Map.Entry;
-
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.io.FileUtils;
-
 import org.starexec.constants.R;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.JobSpace;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.SolverComparison;
-import org.starexec.data.to.Status;
+import org.starexec.data.to.*;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.enums.ConfigXmlAttribute;
 import org.starexec.data.to.pipelines.JoblineStage;
@@ -31,6 +15,13 @@ import org.starexec.util.Util;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
+import java.sql.*;
+import java.util.*;
+import java.util.Map.Entry;
 
 
 /**
@@ -84,7 +75,6 @@ public class JobPairs {
 	}
 
 	public static Optional<String> populateConfigIdsToSolversMapAndJobPairsForJobXMLUpload(
-			final Element jobElement,
 			final String rootName,
 			final int userId,
 			final Map<Integer, Benchmark> accessibleCachedBenchmarks,
@@ -93,7 +83,7 @@ public class JobPairs {
 			final int spaceId,
 			final HashSet<String> jobRootPaths,
 			final ConfigAttrMapPair configAttrMapPair,
-			final NodeList jobPairs) throws SQLException {
+			final NodeList jobPairs) {
 
 		final String methodName = "populateJobPairsForJobXMLUpload";
 		Connection con = null;
@@ -188,9 +178,6 @@ public class JobPairs {
 				}
 			}
 			return Optional.empty();
-		} catch (SQLException e) {
-			log.error(methodName,"Caught SQLException.", e);
-			throw e;
 		} finally {
 			Common.safeClose(con);
 		}
@@ -227,7 +214,7 @@ public class JobPairs {
 			procedure=con.prepareCall("CALL GetJobPairInputPaths(?)");
 			procedure.setInt(1,pairId);
 			results=procedure.executeQuery();
-			List<String> benchmarkPaths=new ArrayList<String>();
+			List<String> benchmarkPaths= new ArrayList<>();
 			while (results.next()) {
 				benchmarkPaths.add(results.getString("path"));
 			}
@@ -306,7 +293,7 @@ public class JobPairs {
 		
 	}
 
-	public static boolean addJobPairs( int jobId, List<JobPair> pairs ) throws SQLException {
+	public static boolean addJobPairs( int jobId, List<JobPair> pairs ) {
 		final String methodName = "addJobPairs( int, List<JobPair> )";
 
 		Connection con = null;
@@ -322,10 +309,6 @@ public class JobPairs {
 			success = addJobPairs( con, jobId, pairs );
 			log.debug("addJobPairs three");
 			return success;
-		} catch ( SQLException e ) {
-			log.error( methodName, "SQLException thrown: " + e.getMessage(), e);
-			Common.doRollback( con );
-			throw e;
 		} finally  {
 			Common.endTransaction( con );
 			Common.safeClose( con );
@@ -339,7 +322,7 @@ public class JobPairs {
 	 * @param con The connection the update will take place on
 	 * @return True if the operation was successful
 	 */
-	protected static boolean addJobPairs(Connection con, int jobId, List<JobPair> pairs) throws SQLException {
+	protected static boolean addJobPairs(Connection con, int jobId, List<JobPair> pairs) {
 		final String methodName = "addJobPairs";
 		log.entry( methodName );
 		CallableStatement procedure = null;
@@ -419,7 +402,7 @@ public class JobPairs {
 			procedure=con.prepareCall("{CALL GetPairsToBeProcessed(?)}");
 			procedure.setInt(1,StatusCode.STATUS_PROCESSING.getVal());
 			results=procedure.executeQuery();
-			List<PairStageProcessorTriple> list=new ArrayList<PairStageProcessorTriple>();
+			List<PairStageProcessorTriple> list= new ArrayList<>();
 			while (results.next()) {
 				PairStageProcessorTriple next= new PairStageProcessorTriple();
 				next.setPairId(results.getInt("job_pairs.id"));
@@ -550,7 +533,7 @@ public class JobPairs {
 			File output=new File(JobPairs.getFilePath(pair,stageNumber));
 			Processor p=Processors.get(processorId);
 			// Run the processor on the benchmark file
-			List<File> files=new ArrayList<File>();
+			List<File> files= new ArrayList<>();
 			files.add(new File(p.getFilePath()));
 			files.add(new File(pair.getBench().getPath()));
 			files.add(output);
@@ -590,7 +573,7 @@ public class JobPairs {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	protected static boolean addJobPairAttr(Connection con, int pairId,int stageId, String key, String val) throws Exception {
+	protected static boolean addJobPairAttr(Connection con, int pairId,int stageId, String key, String val) {
 		CallableStatement procedure = null;
 		 try {
 			procedure = con.prepareCall("{CALL AddJobAttr(?, ?, ?,?)}");
@@ -666,7 +649,7 @@ public class JobPairs {
 	protected static List<JobPair> filterPairsByType(List<JobPair> pairs, String type, int stageNumber) {
 
 		log.debug("filtering pairs by type with type = "+type);
-		List<JobPair> filteredPairs=new ArrayList<JobPair>();
+		List<JobPair> filteredPairs= new ArrayList<>();
 		
 		if (type.equals("incomplete")) {
 			for (JobPair jp : pairs) {
@@ -773,7 +756,7 @@ public class JobPairs {
 		}
 		
 		searchQuery=searchQuery.toLowerCase();
-		List<SolverComparison> filteredComparisons=new ArrayList<SolverComparison>();
+		List<SolverComparison> filteredComparisons= new ArrayList<>();
 		for (SolverComparison c : comparisons) {
 			try {
 				if (c.getBenchmark().getName().toLowerCase().contains(searchQuery)) {
@@ -804,7 +787,7 @@ public class JobPairs {
 		}
 		
 		searchQuery=searchQuery.toLowerCase();
-		List<JobPair> filteredPairs=new ArrayList<JobPair>();
+		List<JobPair> filteredPairs= new ArrayList<>();
 		for (JobPair jp : pairs) {
 			JoblineStage stage=jp.getStageFromNumber(stageNumber);
 			try {
@@ -830,11 +813,11 @@ public class JobPairs {
 	 * @return The properties object which holds all the pair's attributes
 	 * @author Tyler Jensen
 	 */
-	protected static HashMap<Integer,Properties> getAttributes(Connection con, int pairId) throws Exception {
+	protected static HashMap<Integer,Properties> getAttributes(Connection con, int pairId) {
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
-			HashMap<Integer,Properties> props= new HashMap<Integer,Properties>();
+			HashMap<Integer,Properties> props= new HashMap<>();
 			 procedure = con.prepareCall("{CALL GetPairAttrs(?)}");
 			procedure.setInt(1, pairId);					
 			 results = procedure.executeQuery();
@@ -959,7 +942,7 @@ public class JobPairs {
 	 * @return
 	 */
 	private static List<File> getOutputPathsFromStdout(int pairId, File stdout) {
-		List<File> files = new ArrayList<File>();
+		List<File> files = new ArrayList<>();
 		files.add(stdout);
 		// if we need the other directory
 		if (!stdout.isDirectory()) {
@@ -1213,7 +1196,7 @@ public class JobPairs {
 	 * @return The job pair object with the given id.
 	 * @author Tyler Jensen
 	 */
-	protected static JobPair getPairDetailed(Connection con, int pairId) throws Exception {
+	protected static JobPair getPairDetailed(Connection con, int pairId) {
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
@@ -1680,7 +1663,7 @@ public class JobPairs {
 			procedure = con.prepareCall("CALL GetJobpairTimeDeltaData(?)");
 			procedure.setInt(1, queueID);
 			results = procedure.executeQuery();
-			HashMap<Integer, Integer> data = new HashMap<Integer, Integer>();
+			HashMap<Integer, Integer> data = new HashMap<>();
 			while (results.next()) {
 				data.put(results.getInt("user_id"), results.getInt("time_delta"));
 			}
@@ -1740,7 +1723,7 @@ public class JobPairs {
 	 * @author Eric Burns
 	 */
 	
-	public static void UpdateJobSpaces(int jobPairId, int jobSpaceId, Connection con) throws Exception {
+	public static void UpdateJobSpaces(int jobPairId, int jobSpaceId, Connection con) {
 		CallableStatement procedure= null;
 		try {
 			procedure = con.prepareCall("{CALL UpdateJobSpaceId(?, ?)}");
@@ -1886,7 +1869,7 @@ public class JobPairs {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			List<JobPair> pairs = new ArrayList<JobPair>();
+			List<JobPair> pairs = new ArrayList<>();
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetJobPairsWithStatus(?)}");
 			procedure.setInt(1, statusCode);
@@ -1968,7 +1951,7 @@ public class JobPairs {
 	 * @return The list of job pairs. Stages will not be populated
 	 */
 	public static List<JobPair> getPairsInBackend() {
-		List<JobPair> pairs = new ArrayList<JobPair>();
+		List<JobPair> pairs = new ArrayList<>();
 		pairs.addAll(getPairsByStatus(Status.StatusCode.STATUS_ENQUEUED.getVal()));
 		pairs.addAll(getPairsByStatus(Status.StatusCode.STATUS_RUNNING.getVal()));
 		return pairs;

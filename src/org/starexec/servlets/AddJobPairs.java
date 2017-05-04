@@ -45,7 +45,7 @@ public class AddJobPairs extends HttpServlet {
 		try {
 			// Validate the request.
 			log.debug( methodName, "Validating the request.");
-			ValidatorStatusCode validationStatus = validateRequest( request, response );
+			ValidatorStatusCode validationStatus = validateRequest( request );
 			if ( !validationStatus.isSuccess() ) {
 				response.sendError( HttpServletResponse.SC_BAD_REQUEST, validationStatus.getMessage() );
 				return;
@@ -145,7 +145,7 @@ public class AddJobPairs extends HttpServlet {
 		}
 	}
 
-	private ValidatorStatusCode validateRequest( HttpServletRequest request, HttpServletResponse response ) {
+	private ValidatorStatusCode validateRequest( HttpServletRequest request ) {
 		if ( !Util.paramExists( jobIdParam, request ) ) {
 			return new ValidatorStatusCode( false, "Could not find a job ID parameter in request." );
 		} else {

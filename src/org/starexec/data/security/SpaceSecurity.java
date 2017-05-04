@@ -1,28 +1,13 @@
 package org.starexec.data.security;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Communities;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Uploads;
-import org.starexec.data.database.Users;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.Permission;
-import org.starexec.data.to.Solver;
+import org.starexec.data.database.*;
+import org.starexec.data.to.*;
 import org.starexec.data.to.SolverBuildStatus.SolverBuildStatusCode;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.SpaceXMLUploadStatus;
-import org.starexec.data.to.User;
-import org.starexec.data.to.Website;
-import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.Validator;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SpaceSecurity {
 	private static final StarLogger log = StarLogger.getLogger(SpaceSecurity.class);
@@ -588,7 +573,7 @@ public class SpaceSecurity {
 			}
 		}
 		
-		List<Integer> spaceIds=new ArrayList<Integer>(); //all the spaceIds of spaces being copied to
+		List<Integer> spaceIds= new ArrayList<>(); //all the spaceIds of spaces being copied to
 		spaceIds.add(toSpaceId);
 		
 		//if we are checking the hierarchy, we must first get every space in it
@@ -639,7 +624,7 @@ public class SpaceSecurity {
 	 * @return new ValidatorStatusCode(true) if the operation is allowed, and a status code from ValidatorStatusCodes otherwise
 	 */
 	public static ValidatorStatusCode canCopyUserBetweenSpaces(int toSpaceId, int userIdDoingCopying, List<Integer> userIdsBeingCopied, boolean hierarchy) {
-		List<Integer> spaceIds=new ArrayList<Integer>(); //all the spaceIds of spaces being copied to
+		List<Integer> spaceIds= new ArrayList<>(); //all the spaceIds of spaces being copied to
 		spaceIds.add(toSpaceId);
 		if (hierarchy) {
 			List<Space> subspaces = Spaces.trimSubSpaces(userIdDoingCopying, Spaces.getSubSpaceHierarchy(toSpaceId, userIdDoingCopying));
@@ -853,7 +838,7 @@ public class SpaceSecurity {
 		//TODO :  make more efficient? (right now querying database for every space in hierarchy to check permissions)
 		
 		
-		List<Integer> spaceIds=new ArrayList<Integer>(); //all the spaceIds of spaces being copied to
+		List<Integer> spaceIds= new ArrayList<>(); //all the spaceIds of spaces being copied to
 		spaceIds.add(spaceId);
 		
 		
@@ -863,7 +848,7 @@ public class SpaceSecurity {
 		    spaceIds.add(s.getId());
 		}
 		    
-		List<Integer> permittedSpaceIds = new ArrayList<Integer>();
+		List<Integer> permittedSpaceIds = new ArrayList<>();
 		for (Integer sid : spaceIds) {
 		    ValidatorStatusCode status=canUpdatePermissions(sid,userIdBeingUpdated,requestUserId);
 		    if (status.isSuccess()) {

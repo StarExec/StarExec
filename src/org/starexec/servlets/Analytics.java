@@ -1,20 +1,15 @@
 package org.starexec.servlets;
 
-import java.io.IOException;
-
-import java.sql.Date;
+import com.google.gson.Gson;
+import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.logger.StarLogger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.starexec.data.security.ValidatorStatusCode;
-import org.starexec.logger.StarLogger;
-import org.starexec.util.Util;
-import org.starexec.util.Validator;
-
-import com.google.gson.*;
+import java.io.IOException;
+import java.sql.Date;
 
 /**
  * Returns Analytics information

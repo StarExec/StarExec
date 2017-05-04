@@ -1,7 +1,8 @@
 package org.starexec.data.to.compare;
 
-import java.util.Comparator;
 import org.starexec.data.to.Nameable;
+
+import java.util.Comparator;
 
 /**
  * Class that builds comparators for Nameable objects.
@@ -16,13 +17,11 @@ public class NameableComparators {
 	 * @author Albert Giegerich
 	 */
 	public static Comparator<Nameable> getCaseInsensitiveAlphabeticalComparator() {
-		return new Comparator<Nameable>() {
-			public int compare(Nameable a, Nameable b) {
-				String aName = a.getName();
-				String bName = b.getName();
-				return aName.compareToIgnoreCase(bName);
-			}
-		};
+		return (a, b) -> {
+            String aName = a.getName();
+            String bName = b.getName();
+            return aName.compareToIgnoreCase(bName);
+        };
 	}
 
 }

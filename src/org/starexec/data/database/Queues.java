@@ -110,7 +110,7 @@ public class Queues {
 	 * @author Tyler Jensen
 	 * @throws Exception 
 	 */
-	protected static int add(Connection con, String queueName, int cpuTimeout, int wallTimeout) throws Exception {			
+	protected static int add(Connection con, String queueName, int cpuTimeout, int wallTimeout) {
 		log.debug("preparing to call sql procedures to add queue with name = "+queueName);
 		CallableStatement procedure = null;
 		try {
@@ -219,7 +219,7 @@ public class Queues {
 	 * @return a queue object representing the queue to retrieve
 	 * @throws Exception 
 	 */
-	protected static Queue get(Connection con, int qid) throws Exception {	
+	protected static Queue get(Connection con, int qid) {
 		final String methodName= "get";
 		log.entry(methodName);
 		log.debug(methodName, "\tqid = " + qid);
@@ -283,7 +283,7 @@ public class Queues {
 	}
 
 
-	protected static int getCountOfEnqueuedPairsByQueue(Connection con, int qId) throws Exception {	
+	protected static int getCountOfEnqueuedPairsByQueue(Connection con, int qId) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		
@@ -385,7 +385,7 @@ public class Queues {
 	 * @throws SQLException 
 	 */
 	private static List<JobPair> resultSetToClusterPagePairs(ResultSet results) throws SQLException {
-		List<JobPair> returnList = new LinkedList<JobPair>();
+		List<JobPair> returnList = new LinkedList<>();
 		
 		while(results.next()){
 			JobPair jp=new JobPair();
@@ -549,7 +549,7 @@ public class Queues {
             }
 			procedure.setInt(1, queueId);					
 			 results = procedure.executeQuery();
-			List<Job> jobs = new LinkedList<Job>();
+			List<Job> jobs = new LinkedList<>();
 
 			while(results.next()){
 				Job j = Jobs.resultsToJob(results);
@@ -634,7 +634,7 @@ public class Queues {
 			}
 
 			 results = procedure.executeQuery();
-			List<Queue> queues = new LinkedList<Queue>();
+			List<Queue> queues = new LinkedList<>();
 			
 			while(results.next()){
 				queues.add(Queues.resultSetToQueue(results));

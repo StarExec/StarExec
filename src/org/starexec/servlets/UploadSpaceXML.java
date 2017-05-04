@@ -1,21 +1,5 @@
 package org.starexec.servlets;
 
-import java.io.File;
-import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-
-import javax.servlet.ServletException;
-import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
@@ -24,12 +8,22 @@ import org.starexec.data.database.Uploads;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Permission;
 import org.starexec.logger.StarLogger;
-import org.starexec.util.ArchiveUtil;
-import org.starexec.util.BatchUtil;
-import org.starexec.util.PartWrapper;
-import org.starexec.util.SessionUtil;
-import org.starexec.util.Util;
-import org.starexec.util.Validator;
+import org.starexec.util.*;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Allows for the uploading of space hierarchies represented in xml. Files can come in .zip,
@@ -108,7 +102,7 @@ public class UploadSpaceXML extends HttpServlet {
 	 * @param batchUtil a BatchUtil object we can use for setting an error message if a problem is encountered.
 	 * @throws Exception 
 	 */
-    public void handleXMLFile(final int userId, final int spaceId, final HashMap<String, Object> form, final BatchUtil batchUtil, final int statusId) throws Exception {
+    public void handleXMLFile(final int userId, final int spaceId, final HashMap<String, Object> form, final BatchUtil batchUtil, final int statusId) {
 		try {
             log.debug("Handling Upload of XML File from User " + userId);
             PartWrapper item = (PartWrapper)form.get(UploadSpaceXML.UPLOAD_FILE);		
@@ -125,36 +119,33 @@ public class UploadSpaceXML extends HttpServlet {
             new File(archiveFile.getParent()).mkdir();
             item.write(archiveFile);
             final String archivePath = uniqueDir.getCanonicalPath();
-			Util.threadPoolExecute(new Runnable() {
-				@Override
-				public void run(){
-					try{ 
-						ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
-						archiveFile.delete();
-						Uploads.XMLFileUploadComplete(statusId);
-                        //create new file reference for inside the scope of the Runnable, same as uniqueDir:
-						File archiveLocation = new File(archivePath);
-						//Typically there will just be 1 file, but might as well allow more
-						for (File file:archiveLocation.listFiles())
-						{
-							List<Integer> current=new ArrayList<Integer>();
-							if (!file.isFile()) {
-								Uploads.setXMLErrorMessage(statusId, "The file "+file.getName()+" is not a regular file.  Only regular files containing space XML are allowed in the uploaded archive.");    
-							}
-							current = batchUtil.createSpacesFromFile(file, userId, spaceId,statusId);
-							if (current==null) {
-								Uploads.setXMLErrorMessage(statusId, batchUtil.getErrorMessage());
-							}
-						}
-						
-					} catch (Exception e){
-						log.error(Util.getStackTrace(e));
-						Uploads.setBenchmarkErrorMessage(statusId, e.getMessage());
-					}
-					Uploads.XMLEverythingComplete(statusId);
+			Util.threadPoolExecute(() -> {
+                try{
+                    ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
+                    archiveFile.delete();
+                    Uploads.XMLFileUploadComplete(statusId);
+//create new file reference for inside the scope of the Runnable, same as uniqueDir:
+                    File archiveLocation = new File(archivePath);
+                    //Typically there will just be 1 file, but might as well allow more
+                    for (File file:archiveLocation.listFiles())
+                    {
+                        List<Integer> current= new ArrayList<>();
+                        if (!file.isFile()) {
+                            Uploads.setXMLErrorMessage(statusId, "The file "+file.getName()+" is not a regular file.  Only regular files containing space XML are allowed in the uploaded archive.");
+                        }
+                        current = batchUtil.createSpacesFromFile(file, userId, spaceId,statusId);
+                        if (current==null) {
+                            Uploads.setXMLErrorMessage(statusId, batchUtil.getErrorMessage());
+                        }
+                    }
 
-				}
-			});
+                } catch (Exception e){
+                    log.error(Util.getStackTrace(e));
+                    Uploads.setBenchmarkErrorMessage(statusId, e.getMessage());
+                }
+                Uploads.XMLEverythingComplete(statusId);
+
+            });
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}		

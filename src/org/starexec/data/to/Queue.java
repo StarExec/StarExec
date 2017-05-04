@@ -1,11 +1,11 @@
 package org.starexec.data.to;
 
+import com.google.gson.annotations.Expose;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-
-import com.google.gson.annotations.Expose;
 
 /**
  * Represents an SGE queue which has a collection of worker nodes that belong to it
@@ -22,9 +22,9 @@ public class Queue extends Identifiable implements Iterable<WorkerNode>, Nameabl
 	@Expose private int wallTimeout;
 	
 	public Queue() {
-		this.nodes = new LinkedList<WorkerNode>();
-		this.attributes = new HashMap<String, String>();
-		this.jobPairs = new HashMap<Integer, String[]>();
+		this.nodes = new LinkedList<>();
+		this.attributes = new HashMap<>();
+		this.jobPairs = new HashMap<>();
 	}
 	
 	/**

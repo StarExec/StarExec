@@ -2,6 +2,7 @@ package org.starexec.data.to;
 
 
 import com.google.gson.annotations.Expose;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class Identifiable {
 	}	
 
 	public static List<Identifiable> upcastList(List<? extends Identifiable> subclassIdentifiables) {
-		List<Identifiable> upcastedList = new ArrayList<Identifiable>();
+		List<Identifiable> upcastedList = new ArrayList<>();
 		for (Identifiable identifiable: subclassIdentifiables) {
 			upcastedList.add(identifiable);
 		}

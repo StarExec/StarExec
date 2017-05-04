@@ -4,7 +4,6 @@ import org.apache.log4j.Logger;
 import org.starexec.data.database.ErrorLogs;
 import org.starexec.util.Util;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;

@@ -1,13 +1,14 @@
 package org.starexec.test.junit.command;
 
-import java.util.HashMap;
-
 import org.apache.http.Header;
 import org.junit.Assert;
 import org.junit.Test;
 import org.starexec.command.HTMLParser;
 
-import static org.mockito.Mockito.*;
+import java.util.HashMap;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 public class HTMLParserTest {
 
 	private Header getMockHeader(String name, String value) {
@@ -28,7 +29,7 @@ public class HTMLParserTest {
 		Assert.assertEquals(null, HTMLParser.extractCookie(headers, "third"));
 		Assert.assertEquals(null, HTMLParser.extractCookie(null, "first"));
 	}
-	
+
 	@Test
 	public void testExtractMultipartCookie() {
 		Header h = getMockHeader("Set-Cookie", "first=a,b,c;second=d");
@@ -41,12 +42,12 @@ public class HTMLParserTest {
 		Assert.assertArrayEquals(null, HTMLParser.extractMultipartCookie(headers, "third"));
 		Assert.assertArrayEquals(null, HTMLParser.extractMultipartCookie(null, "first"));
 	}
-	
+
 	@Test
 	public void testURLEncode() {
-		HashMap<String, String> params = new HashMap<String,String>();
+		HashMap<String, String> params = new HashMap<>();
 		String baseURL = "http://www.test.com/";
-		
+
 		Assert.assertEquals(baseURL, HTMLParser.URLEncode(baseURL, params));
 		params.put("name", "value");
 		Assert.assertEquals(baseURL+"?name=value", HTMLParser.URLEncode(baseURL, params));
@@ -55,14 +56,23 @@ public class HTMLParserTest {
 		Assert.assertTrue(url.contains("name=value") && url.contains("next=param"));
 		Assert.assertTrue(url.contains("&name") ^ url.contains("&next"));
 	}
-	
+
+	@Test
+	public void testExtractNameFromJson() {
+		Assert.assertEquals(null, HTMLParser.extractNameFromJson("",   "spaces"));
+		Assert.assertEquals(null, HTMLParser.extractNameFromJson("",   "solvers"));
+
+		Assert.assertEquals("SPACE", HTMLParser.extractNameFromJson("<a onclick=\"openSpace()\">SPACE</a>", "spaces"));
+		Assert.assertEquals("SOLVER", HTMLParser.extractNameFromJson("<a target=\"_blank\">SOLVER</a>", "solvers"));
+	}
+
 	@Test
 	public void testExtractIDFromJson() {
 		Assert.assertEquals(null, HTMLParser.extractIDFromJson(""));
 		Assert.assertEquals(null, HTMLParser.extractIDFromJson(null));
 		Assert.assertEquals(null, HTMLParser.extractIDFromJson("< name=one >"));
 		Assert.assertEquals(null, HTMLParser.extractIDFromJson("<value=\"1\">< type=\"hidden\" >"));
-		
+
 		Assert.assertEquals(3, (int)HTMLParser.extractIDFromJson("<input value=\"1\"><input value=\"3\"type=\"hidden\" >"));
 
 	}

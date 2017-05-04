@@ -1,19 +1,16 @@
 package org.starexec.test.integration.database;
 
-import java.util.List;
-import java.util.Random;
-
 import org.junit.Assert;
 import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
-import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
-import org.starexec.data.database.Users;
 import org.starexec.data.to.*;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
+
+import java.util.List;
+import java.util.Random;
 
 /**
  * Tests for org.starexec.data.database.Uploads.java

@@ -1,13 +1,11 @@
 package org.starexec.data.to.tuples;
 
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Solver;
 import org.apache.commons.lang3.tuple.Triple;
-
 
 import java.util.ArrayList;
 import java.util.List;
 
+// Represents a single row of the job attributes table for jobAttributes.jsp
 public class AttributesTableRow {
     public int solverId;
     public String solverName;

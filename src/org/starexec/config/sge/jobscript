@@ -225,6 +225,13 @@ fi
 
 fillDependArrays
 
+checkIfBenchmarkDependenciesExists
+dependenciesExist=$?
+log "dependenciesExist was $dependenciesExist"
+if [ "$dependenciesExist" -eq "0" ]; then
+	sendStatus $ERROR_BENCH_DEPENDENCY_MISSING
+    exit 0
+fi
 #todo: alter the way we copy runsolver over so it only happens once
 copyBenchmarkDependencies
 

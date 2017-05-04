@@ -1,14 +1,12 @@
 package org.starexec.jobs;
 
+import org.apache.commons.io.FileUtils;
+import org.starexec.constants.R;
+import org.starexec.logger.StarLogger;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-
-import org.apache.commons.io.FileUtils;
-import org.starexec.constants.R;
-import org.starexec.data.database.Cluster;
-import org.starexec.data.to.Queue;
-import org.starexec.logger.StarLogger;
 
 public class ClearCacheManager {
 	private static final StarLogger log = StarLogger.getLogger(ClearCacheManager.class);

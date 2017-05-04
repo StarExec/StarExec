@@ -1,11 +1,6 @@
 package org.starexec.data.security;
 
-import java.util.List;
-
 import org.starexec.data.database.Users;
-import org.starexec.data.database.Websites;
-import org.starexec.data.to.Website;
-import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.util.Validator;
 public class UserSecurity {
 	

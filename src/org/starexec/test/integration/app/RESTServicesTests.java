@@ -2,11 +2,11 @@ package org.starexec.test.integration.app;
 
 import com.google.gson.Gson;
 import org.junit.Assert;
+import org.junit.runner.RunWith;
 import org.mockito.BDDMockito;
 import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.junit.runner.RunWith;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.starexec.app.RESTServices;
 import org.starexec.data.security.ValidatorStatusCode;
@@ -15,6 +15,7 @@ import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.SessionUtil;
+
 import javax.servlet.http.HttpServletRequest;
 
 @RunWith(PowerMockRunner.class)

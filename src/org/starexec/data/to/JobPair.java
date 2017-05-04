@@ -1,15 +1,15 @@
 package org.starexec.data.to;
 
+import org.starexec.constants.R;
+import org.starexec.data.to.compare.JoblineStageComparator;
+import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.data.to.pipelines.SolverPipeline;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-
-import org.starexec.constants.R;
-import org.starexec.data.to.compare.JoblineStageComparator;
-import org.starexec.data.to.pipelines.JoblineStage;
-import org.starexec.data.to.pipelines.SolverPipeline;
 
 /**
  * Represents a job pair which is a single unit of execution consisting of a solver(config)/benchmark pair
@@ -61,8 +61,8 @@ public class JobPair extends Identifiable {
 		this.bench = new Benchmark();
 		this.status = new Status();		
 		this.space=new Space();
-		setStages(new ArrayList<JoblineStage>());
-		setBenchInputs(new ArrayList<Integer>());
+		setStages(new ArrayList<>());
+		setBenchInputs(new ArrayList<>());
 	}
 	
 	/**

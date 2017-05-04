@@ -797,11 +797,19 @@ function setupBenchexecCgroups {
 	echo $$ > /sys/fs/cgroup/memory/system.slice/benchexec-cgroup.service/tasks
 	echo $$ > /sys/fs/cgroup/freezer/system.slice/benchexec-cgroup.service/tasks
 }
+function checkIfBenchmarkDependenciesExists {
+	for (( i = 0 ; i < ${#BENCH_DEPENDS_ARRAY[@]} ; i++ ))
+	do
+		log "Checking if axiom at location exists: '${BENCH_DEPENDS_ARRAY[$i]}'"
+		if [ ! -f "${BENCH_DEPENDS_ARRAY[$i]}" ]; then
+			log "${BENCH_DEPENDS_ARRAY[$i]} did not exists, returning 0."
+			return 0
+		fi
+	done
+	return 1
+}
 
 function copyBenchmarkDependencies {
-
-	
-	
 	if [ "$PRIMARY_PREPROCESSOR_PATH" != "" ]; then
 		mkdir $OUT_DIR/preProcessor
 		safeCpAll "copying pre processor" "$PRIMARY_PREPROCESSOR_PATH" "$OUT_DIR/preProcessor"

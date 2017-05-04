@@ -1,20 +1,18 @@
 package org.starexec.test.junit.backend;
 
-import java.io.IOException;
-import java.util.Optional;
-import java.util.Set;
-
-import org.mockito.Mock;
-import org.powermock.modules.junit4.PowerMockRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.BDDMockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
 import org.starexec.backend.GridEngineBackend;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.util.Util;
 import org.testng.Assert;
+
+import java.io.IOException;
+import java.util.Set;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({Util.class})

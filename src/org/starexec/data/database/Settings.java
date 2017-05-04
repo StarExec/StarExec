@@ -290,7 +290,7 @@ public class Settings {
 		Connection con=null;
 
 		try {
-			List<DefaultSettings> settings=new ArrayList<DefaultSettings>();
+			List<DefaultSettings> settings= new ArrayList<>();
 			con=Common.getConnection();
             return getDefaultSettingsByPrimIdAndType(con, id, type);
 		} catch (Exception e) {
@@ -306,7 +306,7 @@ public class Settings {
         ResultSet results=null;
 
         try {
-            List<DefaultSettings> settings=new ArrayList<DefaultSettings>();
+            List<DefaultSettings> settings= new ArrayList<>();
             procedure = con.prepareCall("{CALL GetDefaultSettingsByIdAndType(?,?)}");
             procedure.setInt(1, id);
             procedure.setInt(2, type.getValue());
@@ -332,7 +332,7 @@ public class Settings {
 	 * @return
 	 */
 	public static List<DefaultSettings>getDefaultSettingsVisibleByUser(int userId) {
-		List<DefaultSettings> listOfDefaultSettings=new ArrayList<DefaultSettings>();
+		List<DefaultSettings> listOfDefaultSettings= new ArrayList<>();
 		List<Space> comms=Communities.getAllCommunitiesUserIsIn(userId);
 		if (comms.size()>0) {
 			for (int i=0;i<comms.size();i++) {
@@ -349,7 +349,7 @@ public class Settings {
 	}
 
 	public static List<DefaultSettings>getDefaultSettingsVisibleByUser(Connection con, int userId) {
-		List<DefaultSettings> listOfDefaultSettings=new ArrayList<DefaultSettings>();
+		List<DefaultSettings> listOfDefaultSettings= new ArrayList<>();
 		List<Space> comms=Communities.getAllCommunitiesUserIsIn(con, userId);
 		if (comms.size()>0) {
 			for (int i=0;i<comms.size();i++) {

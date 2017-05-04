@@ -1,10 +1,5 @@
 package org.starexec.util;
 
-import java.util.HashMap;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Spaces;
@@ -12,6 +7,10 @@ import org.starexec.data.database.Users;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.User;
 import org.starexec.logger.StarLogger;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import java.util.HashMap;
 
 /**
  * Contains handy methods for accessing data within a user's session
@@ -77,7 +76,7 @@ public class SessionUtil {
 	@SuppressWarnings("unchecked")
 	public static HashMap<Integer, Permission> getPermissionCache(HttpSession session) {
 		if (session.getAttribute(SessionUtil.PERMISSION_CACHE)==null) {
-			return new HashMap<Integer,Permission>();
+			return new HashMap<>();
 		}
 		return (HashMap<Integer, Permission>)session.getAttribute(SessionUtil.PERMISSION_CACHE);
 	}

@@ -1,13 +1,12 @@
 package org.starexec.util;
 
+import org.apache.commons.io.IOUtils;
+
+import javax.servlet.http.Part;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Paths;
-
-import javax.servlet.http.Part;
-
-import org.apache.commons.io.IOUtils;
 
 
 public class PartWrapper {

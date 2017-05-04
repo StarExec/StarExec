@@ -1,47 +1,26 @@
 package org.starexec.util;
 
 
-import java.io.File;
-import java.io.IOException;
-import java.io.FileWriter;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Enumeration;
-import java.util.Properties;
-import java.util.Random;
-import java.text.SimpleDateFormat;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.apache.commons.io.FileUtils;
 import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Uploads;
-import org.starexec.data.database.Users;
+import org.starexec.data.database.*;
 import org.starexec.data.security.ValidatorStatusCode;
-import org.starexec.data.database.Processors;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Permission;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
+import org.starexec.data.to.*;
 import org.starexec.logger.StarLogger;
-import org.starexec.util.DOMHelper;
-import org.starexec.util.Util;
 import org.starexec.servlets.BenchmarkUploader;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 
 
@@ -286,7 +265,7 @@ public class BatchUtil {
 	 * @throws IOException
 	 */
 	public List<Integer> createSpacesFromFile(File file, int userId, int parentSpaceId,Integer statusId) throws SAXException, ParserConfigurationException, IOException{
-		List<Integer> spaceIds=new ArrayList<Integer>();
+		List<Integer> spaceIds= new ArrayList<>();
 		if (!validateAgainstSchema(file)){
 			log.warn("File from User " + userId + " is not Schema valid.");
 			return null;
@@ -401,7 +380,6 @@ public class BatchUtil {
 	 * Verifies that a user can look at all of the benchmarks.
 	 * @author Ryan McCleeary
 	 * @param listOfBenchmarks node list that contains all of the benchmarks in question. 
-	 * @param parentId id of parent space
 	 * @param userId id of user making request
 	 * 
 	 */
@@ -597,11 +575,11 @@ public class BatchUtil {
 
 		
 		// Space elements that are children of spaceElement
-		List<Element> childSpaces = new LinkedList<Element>();
+		List<Element> childSpaces = new LinkedList<>();
 
-		List<Integer> benchmarks = new ArrayList<Integer>();
-		List<Integer> solvers = new ArrayList<Integer>();
-		List<Update> updates = new ArrayList<Update>();
+		List<Integer> benchmarks = new ArrayList<>();
+		List<Integer> solvers = new ArrayList<>();
+		List<Update> updates = new ArrayList<>();
 		List<Integer> updateIds;
 		NodeList childList = spaceElement.getChildNodes();
 		int id=0;
@@ -775,13 +753,13 @@ public class BatchUtil {
     private List<Integer> addUpdates(List<Update> updates)
 	{
 		//For each update.
-		List<Integer> updateIds = new ArrayList<Integer>();
+		List<Integer> updateIds = new ArrayList<>();
 		for(Update update : updates) {
 			log.debug("Got here adding update ID = " + update.id + " PID = " + update.pid + " BID = " + update.bid + " Text = " + update.text);
 			//Get the information out of the update.
 			
 			//Get the files.
-			List<File> files = new ArrayList<File>();
+			List<File> files = new ArrayList<>();
 			log.debug("Update name = " + update.name);
 			log.debug("Update name = empty " + (update.name == ""));
 			String name = "";

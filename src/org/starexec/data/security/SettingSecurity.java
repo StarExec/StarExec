@@ -1,13 +1,7 @@
 package org.starexec.data.security;
 
-import java.sql.SQLException;
-import java.util.EnumSet;
-import java.util.List;
-import org.starexec.constants.R.DefaultSettingAttribute;
-
-
-
 import org.starexec.constants.R;
+import org.starexec.constants.R.DefaultSettingAttribute;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Processors;
 import org.starexec.data.database.Settings;
@@ -19,6 +13,10 @@ import org.starexec.data.to.Processor;
 import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.util.Validator;
+
+import java.sql.SQLException;
+import java.util.EnumSet;
+import java.util.List;
 /**
  * Security functions for handling DefaultSettings objects
  * @author Eric

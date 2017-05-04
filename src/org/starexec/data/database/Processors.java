@@ -1,5 +1,11 @@
 package org.starexec.data.database;
 
+import org.apache.commons.io.FileUtils;
+import org.starexec.constants.R;
+import org.starexec.data.to.Processor;
+import org.starexec.data.to.enums.ProcessorType;
+import org.starexec.logger.StarLogger;
+
 import java.io.File;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -7,12 +13,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.apache.commons.io.FileUtils;
-import org.starexec.constants.R;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.enums.ProcessorType;
-import org.starexec.logger.StarLogger;
 
 /**
  * Handles all database interaction for bench, pre and post processors
@@ -141,7 +141,7 @@ public class Processors {
 	 * @return The corresponding processor
 	 * @author Tyler Jensen
 	 */
-	protected static Processor get(Connection con, int processorId) throws Exception {						
+	protected static Processor get(Connection con, int processorId) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 					
@@ -200,7 +200,7 @@ public class Processors {
 			 procedure = con.prepareCall("{CALL GetAllProcessors(?)}");
 			procedure.setInt(1, type.getVal());
 			 results = procedure.executeQuery();
-			List<Processor> processors = new LinkedList<Processor>();
+			List<Processor> processors = new LinkedList<>();
 			
 			while(results.next()){
 				Processor bt = Processors.resultSetToProcessor(results, "");
@@ -244,7 +244,7 @@ public class Processors {
 			procedure.setInt(1, communityId);
 			procedure.setInt(2, type.getVal());
 			 results = procedure.executeQuery();
-			List<Processor> processors = new LinkedList<Processor>();
+			List<Processor> processors = new LinkedList<>();
 			
 			while(results.next()){							
 				Processor t = Processors.resultSetToProcessor(results, "");
@@ -281,7 +281,7 @@ public class Processors {
 			procedure.setInt(1, userId);
 			procedure.setInt(2, type.getVal());
 			 results = procedure.executeQuery();
-			List<Processor> processors = new LinkedList<Processor>();
+			List<Processor> processors = new LinkedList<>();
 			
 			while(results.next()){							
 				Processor t = new Processor();

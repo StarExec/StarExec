@@ -1,22 +1,22 @@
 package org.starexec.util;
 
-import java.awt.Color;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.LineIterator;
+import org.apache.commons.io.filefilter.FileFilterUtils;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.starexec.constants.R;
+import org.starexec.data.database.Jobs;
+import org.starexec.data.to.enums.Primitive;
+import org.starexec.logger.StarLogger;
+import org.starexec.test.TestUtil;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.Throwable;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.Part;
+import java.awt.*;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
@@ -25,27 +25,10 @@ import java.net.URLConnection;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.Part;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.LineIterator;
-import org.apache.commons.io.filefilter.FileFilterUtils;
-import org.apache.commons.io.filefilter.IOFileFilter;
-
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.starexec.app.RESTHelpers;
-import org.starexec.constants.R;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.to.enums.Primitive;
-import org.starexec.logger.StarLogger;
-import org.starexec.test.TestUtil;
 
 /**
  * This class contains utility functions used throughout Starexec, including many
@@ -314,7 +297,7 @@ public class Util {
         StringBuffer sb = new StringBuffer();
 
         // Hash to store which character sets have been used
-        HashSet<Integer> setsUsed = new HashSet<Integer>();
+        HashSet<Integer> setsUsed = new HashSet<>();
 
         while (sb.length() != newPassLength) {
 	    // Choose a random character set to use & get a random character from it
@@ -340,7 +323,7 @@ public class Util {
      */
     public static HashMap<String, Object> parseMultipartRequest(HttpServletRequest request) throws Exception {
 		// Use Tomcat's multipart form utilities
-		HashMap<String, Object> form = new HashMap<String, Object>();
+		HashMap<String, Object> form = new HashMap<>();
 		for (Part p : request.getParts()) {
 			PartWrapper wrapper = new PartWrapper(p);
 		    // If we're dealing with a regular form field...
@@ -364,9 +347,8 @@ public class Util {
      * @throws IOException
      */
     public static String executeCommand(String command) throws IOException {
-		String[] cmd = new String[1];
-		cmd[0] = command;
-		return executeCommand(cmd);
+		final String[] cmd = { command };
+		return executeCommand(cmd, null, null);
     }
     /**
      * Calls executecommand with a size 1 String[] and a null working directory
@@ -376,9 +358,8 @@ public class Util {
      * @throws IOException
      */
     public static String executeCommand(String command, String[] env) throws IOException {
-		String[] cmd = new String[1];
-		cmd[0] = command;
-		return executeCommand(cmd,env,null);
+		final String[] cmd = { command };
+		return executeCommand(cmd, env, null);
     }
 
     /**
@@ -418,39 +399,34 @@ public class Util {
     	return executeCommand(newCommand,envp,workingDirectory);
     }
 
-    /**
-     * Runs a command on the system command line (bash for unix, command line for windows)
-     * and returns the process representing the command
-     * @param command An array holding the command and then its arguments
-     * @param envp The environment
-     * @param workingDirectory the working directory to use
-     * @return A String containing both stderr and stdout from the command
-     * @throws IOException We do not want to catch exceptions at this level, because this code is generic and
-     * has no useful way to handle them! Throwing an exception to higher levels is the desired behavior.
-     */
-    public static Process executeCommandAndReturnProcess(String[] command, String[] envp, File workingDirectory) throws IOException {
-    	Runtime r = Runtime.getRuntime();
-	    Process p;
-	    if (command.length == 1) {
-			log.debug("Executing the following command: " + command[0]);
+	/**
+	 * Runs a command on the system command line (bash for unix, command line for windows)
+	 * and returns the process representing the command
+	 * @param command An array holding the command and then its arguments
+	 * @param envp The environment
+	 * @param workingDirectory the working directory to use
+	 * @return A String containing both stderr and stdout from the command
+	 * @throws IOException We do not want to catch exceptions at this level, because this code is generic and
+	 * has no useful way to handle them! Throwing an exception to higher levels is the desired behavior.
+	 */
+	public static Process executeCommandAndReturnProcess(String[] command, String[] envp, File workingDirectory) throws IOException {
+		Runtime r = Runtime.getRuntime();
 
-			p = r.exec(command[0], envp, workingDirectory);
-	    }
-	    else {
-			StringBuilder b = new StringBuilder();
-			b.append("Executing the following command:\n");
-			for (int i = 0; i < command.length; i++) {
-			    b.append("  ");
-			    b.append(command[i]);
-			}
+		final String methodName = "executeCommandAndReturnProcess";
+		final StringBuilder b = new StringBuilder();
+		b.append("Executing the following command:");
+		for (String cmd : command) {
+			b.append("  ");
+			b.append(cmd);
+		}
+		log.info(methodName, b.toString());
 
-			log.info(b.toString());
-
-			p = r.exec(command, envp, workingDirectory);
-	    }
-	    return p;
-
-    }
+		if (command.length == 1) {
+			return r.exec(command[0], envp, workingDirectory);
+		} else {
+			return r.exec(command, envp, workingDirectory);
+		}
+	}
 
     /**
      * Runs a command on the system command line (bash for unix, command line for windows)
@@ -501,37 +477,36 @@ public class Util {
 		return readsomething;
     }
 
-    /**
-     * Drains both the stdout and stderr streams of a process and returns
-     * @param p
-     * @return The combined stdout and stderr from the process
-     */
-    public static String drainStreams(final Process p) {
+	/**
+	 * Drains both the stdout and stderr streams of a process and returns
+	 * @param p
+	 * @return The combined stdout and stderr from the process
+	 */
+	public static String drainStreams(final Process p) {
 
 		/* to handle the separate streams of regular output and
 		   error output correctly, it is necessary to try draining
 		   them in parallel.  Otherwise, draining one can block
 		   and prevent the other from making progress as well (since
 		   the process cannot advance in that case). */
-		final StringBuffer b = new StringBuffer();
-		threadPool.execute(new Runnable() {
-			@Override
-			    public void run() {
-			    try {
-					if (drainInputStream(b,p.getErrorStream())) {
-						log.error("The process produced stderr output.");
-						log.error(b.toString());
-					}
-
-				    }
-			    catch(Exception e) {
-			    	log.error("Error draining stderr from process: "+e.toString());
-			    }
-			}
-		    });
-		drainInputStream(b,p.getInputStream());
-		return b.toString();
-    }
+		final StringBuffer message = new StringBuffer();
+		threadPool.execute(() -> {
+            try {
+                if (drainInputStream(message, p.getErrorStream())) {
+                    message.insert(0, "The process produced stderr output:\n");
+                    log.error("drainStreams", message.toString());
+                }
+            }
+            catch(Exception e) {
+                log.error(
+                    "drainStreams",
+                    "Error draining stderr from process: " + e.toString()
+                );
+            }
+        });
+		drainInputStream(message, p.getInputStream());
+		return message.toString();
+	}
 
     /**
      * Converts a list of strings into a list of ints
@@ -540,7 +515,7 @@ public class Util {
      */
     public static List<Integer> toIntegerList(String[] stringList) {
 	if (stringList != null) {
-	    ArrayList<Integer> retList = new ArrayList<Integer>(stringList.length);
+	    ArrayList<Integer> retList = new ArrayList<>(stringList.length);
 
 	    for(String s : stringList){
 		retList.add(Integer.parseInt(s));
@@ -549,7 +524,7 @@ public class Util {
 	    return retList;
 	}
 
-	return new ArrayList<Integer>();
+	return new ArrayList<>();
     }
 
     /**
@@ -647,7 +622,7 @@ public class Util {
 
 	    } else {
 	    	File[] files=dir.listFiles((FileFilter)dateFilter);
-	    	outdatedFiles=new ArrayList<File>();
+	    	outdatedFiles= new ArrayList<>();
 	    	for (File f : files) {
 	    		outdatedFiles.add(f);
 	    	}
@@ -694,7 +669,7 @@ public class Util {
     	log.info("calling clearOrphanedJobDirectories");
     	File outputDirectory = new File(R.getJobOutputDirectory());
     	// we are going to consider removing all files / directories under the job output directory
-    	HashSet<String> filesToConsider = new HashSet<String>();
+    	HashSet<String> filesToConsider = new HashSet<>();
     	for (File f : outputDirectory.listFiles()) {
     		filesToConsider.add(f.getAbsolutePath());
     	}
@@ -763,7 +738,7 @@ public class Util {
 	sb.append(R.SOLVER_BIN_DIR);	// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin
 	sb.append(File.separator);		// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin/
 	// Append 'run_' prefix to the configuration's filename if it isn't already there
-	if(false == configName.startsWith(R.CONFIGURATION_PREFIX)){
+	if(!configName.startsWith(R.CONFIGURATION_PREFIX)){
 	    sb.append(R.CONFIGURATION_PREFIX);
 	}
 	sb.append(configName);			// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin/{starexec_run_configName}
@@ -928,7 +903,7 @@ public class Util {
 
     public static <T> List<T> handlePagination(List<T> arr, Comparator<T> compare,int start, int records) {
     	Collections.sort(arr,compare);
-		List<T> returnList=new ArrayList<T>();
+		List<T> returnList= new ArrayList<>();
 		if (start>=arr.size()) {
 			//we'll just return nothing
 		} else if (start+records>arr.size()) {

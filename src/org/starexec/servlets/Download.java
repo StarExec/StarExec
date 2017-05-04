@@ -1,59 +1,31 @@
 package org.starexec.servlets;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.util.zip.ZipOutputStream;
+import org.apache.commons.io.FileUtils;
+import org.starexec.constants.R;
+import org.starexec.constants.Web;
+import org.starexec.data.database.*;
+import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
+import org.starexec.data.security.BenchmarkSecurity;
+import org.starexec.data.security.JobSecurity;
+import org.starexec.data.security.SolverSecurity;
+import org.starexec.data.security.ValidatorStatusCode;
+import org.starexec.data.to.*;
+import org.starexec.data.to.enums.ProcessorType;
+import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.logger.StarLogger;
+import org.starexec.util.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.io.FileUtils;
-import org.starexec.constants.R;
-import org.starexec.constants.Web;
-import org.starexec.data.database.AnonymousLinks;
-import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.JobPairs;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Processors;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.security.BenchmarkSecurity;
-import org.starexec.data.security.JobSecurity;
-import org.starexec.data.security.SolverSecurity;
-import org.starexec.data.security.ValidatorStatusCode;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
-import org.starexec.data.to.enums.ProcessorType;
-import org.starexec.data.to.pipelines.JoblineStage;
-import org.starexec.logger.StarLogger;
-import org.starexec.util.ArchiveUtil;
-import org.starexec.util.BatchUtil;
-import org.starexec.util.SessionUtil;
-import org.starexec.util.Util;
-import org.starexec.util.Validator;
-import org.starexec.util.JobToXMLer;
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
+import java.util.*;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Handles requests to download files from starexec
@@ -131,7 +103,7 @@ public class Download extends HttpServlet {
 				Optional<Solver> os = handleSolverAndSolverSrc(request, response);
 				if (os.isPresent()) {
 					Solver s = os.get();
-					success = handleSolverSource(s, u.getId(), response);
+					success = handleSolverSource(s, response);
 				} else {
 					// handleSolverAndSolverSrc already sent the response.
 					return;
@@ -314,7 +286,7 @@ public class Download extends HttpServlet {
 						}
 					}
 					if (proc.size() > 0) {
-						success = handleProc(proc, u.getId(), Integer.parseInt(request.getParameter(PARAM_ID)), response);
+						success = handleProc(proc, response);
 					} else {
 						log.debug(methodName, "Could not find any processors to download.");
 						response.sendError(HttpServletResponse.SC_NO_CONTENT, "There are no processors to download");
@@ -434,11 +406,10 @@ public class Download extends HttpServlet {
 	 * Processes a solver source code request to be downloaded. The solver source is archived in a format that is
 	 * specified by the user, given a random name, and placed in a secure folder on the server.
 	 * @param s the solver to be downloaded
-	 * @param userId the id of the user making the download request
 	 * @return a file representing the archive to send back to the client
 	 * @author Skylar Stark & Wyatt Kaiser & Andrew Lubinus
 	 */
-	private static boolean handleSolverSource(Solver s, int userId,  HttpServletResponse response) throws Exception {
+	private static boolean handleSolverSource(Solver s, HttpServletResponse response) throws Exception {
 
 		String baseName = s.getName();
 		// If we can see this solver AND the solver is downloadable...
@@ -452,11 +423,11 @@ public class Download extends HttpServlet {
 	 * @author Eric Burns
 	 */
 
-	private static boolean handleProc(List<Processor> procs, int userId, int spaceId, HttpServletResponse response) throws Exception {
+	private static boolean handleProc(List<Processor> procs, HttpServletResponse response) throws Exception {
 			final String methodName = "handleProc";
 			log.entry(methodName);
 
-			List<File> files=new LinkedList<File>();
+			List<File> files= new LinkedList<>();
 			for (Processor x : procs) {
 				File newProc=new File(x.getFilePath());
 				if (newProc.exists()) {
@@ -502,7 +473,7 @@ public class Download extends HttpServlet {
 	private static boolean handleJobXML(Job job, int userId, HttpServletResponse response) throws Exception {
 
 		// If we can see this
-			List<File> files=new ArrayList<File>();
+			List<File> files= new ArrayList<>();
 			log.debug("Permission to download XML granted");
 
 			JobToXMLer handler = new JobToXMLer();
@@ -536,8 +507,8 @@ public class Download extends HttpServlet {
 					  boolean includeAttributes, boolean updates, int upid) throws Exception {
 
 		// If we can see this Space
-			List<File> files=new ArrayList<File>();
-			log.debug("Permission to download XML granted, includeAttributes = "+new Boolean(includeAttributes));
+			List<File> files= new ArrayList<>();
+			log.debug("Permission to download XML granted, includeAttributes = "+includeAttributes);
 			BatchUtil butil = new BatchUtil();
 			File file = butil.generateXMLfile(Spaces.getDetails(space.getId(), userId), userId, includeAttributes, updates, upid);
 
@@ -561,8 +532,8 @@ public class Download extends HttpServlet {
      * @return
      * @throws Exception
      */
-    private static boolean handlePairOutputs(List<Integer> pairIds, int userId, HttpServletResponse response, Boolean longPath) throws Exception {
-		List<JobPair> pairs=new ArrayList<JobPair>();
+    private static boolean handlePairOutputs(List<Integer> pairIds, int userId, HttpServletResponse response, Boolean longPath) {
+		List<JobPair> pairs= new ArrayList<>();
 		Job j=null;
 		final String methodName = "handlePairOutputs";
 		log.entry(methodName);
@@ -604,7 +575,7 @@ public class Download extends HttpServlet {
 	 * @return a boolean for whether or not this succeeded
 	 */
 
-	private static boolean handlePairOutput(int pairId, int userId,HttpServletResponse response, Boolean longPath) throws Exception {
+	private static boolean handlePairOutput(int pairId, int userId,HttpServletResponse response, Boolean longPath) {
 	    //ArchiveUtil.createAndOutputZip(JobPairs.getOutputPaths(pairId), response.getOutputStream(), "");
 	    //return true;
 	    return handlePairOutputs(Arrays.asList(pairId), userId, response,longPath);
@@ -827,6 +798,7 @@ public class Download extends HttpServlet {
 		try {
 			ZipOutputStream stream=new ZipOutputStream(response.getOutputStream());
 			for (JobPair p : pairs ) {
+				String zipFileNameParent = null;
 				StringBuilder zipFileName=new StringBuilder(baseName);
 				zipFileName.append(File.separator);
 				if (useSpacePath) {
@@ -844,27 +816,33 @@ public class Download extends HttpServlet {
 					//zipFileName.append(p.getPrimaryConfiguration().getName());
 					zipFileName.append(File.separator);
 					zipFileName.append(p.getBench().getName());
+					zipFileNameParent = zipFileName.toString();
 					zipFileName.append(File.separator);
 					zipFileName.append(p.getId());
 				}
 				List<File> files = JobPairs.getOutputPaths(p);
 				boolean running = p.getStatus().getCode().running();
 				for (File file : files) {
-					StringBuilder singleFileName = new StringBuilder(zipFileName);
 					if (file.exists()) {
 						if (file.isDirectory()) {
+							StringBuilder singleFileName = null;
+							if (useSpacePath) {
+								singleFileName = new StringBuilder(zipFileNameParent);
+							} else {
+								singleFileName = new StringBuilder(zipFileName);
+							}
 							//means this is adjacent to a stdout file
 							if (files.size()>1) {
 								singleFileName.append(File.separator);
-								singleFileName.append("additional_output");
+								singleFileName.append(p.getId()+"_output");
 							}
 							if (!running || lastModified==null){
 								ArchiveUtil.addDirToArchive(stream, file, singleFileName.toString());
-
 							} else {
 								ArchiveUtil.addDirToArchive(stream, file, singleFileName.toString(), lastModified);
 							}
 						} else {
+							StringBuilder singleFileName = new StringBuilder(zipFileName);
 							//singleFileName.append(File.separator);
 							//singleFileName.append(p.getBench().getName());
 							if (!running || lastModified==null) {
@@ -878,7 +856,7 @@ public class Download extends HttpServlet {
 
 					} else {
 						//if we can't find output for the pair, just put an empty file there
-						ArchiveUtil.addStringToArchive(stream, " ", singleFileName.toString());
+						ArchiveUtil.addStringToArchive(stream, " ", zipFileName.toString());
 					}
 				}
 
@@ -919,7 +897,7 @@ public class Download extends HttpServlet {
 				// it does NOT include running pairs
 				int pairsFound = 0;
                 int runningPairsFound = 0;
-                List<JobPair> pairsToRemove = new ArrayList<JobPair>();
+                List<JobPair> pairsToRemove = new ArrayList<>();
 				for (JobPair x : pairs) {
 					log.trace("found pair id = "+x.getId() +" with completion id = "+x.getCompletionId());
 					if (x.getCompletionId()>maxCompletion) {
@@ -952,7 +930,7 @@ public class Download extends HttpServlet {
 				response.addCookie(new Cookie("Max-Completion",String.valueOf(maxCompletion)));
 				response.addCookie(new Cookie("Running-Pairs",String.valueOf(runningPairsFound)));
 				log.debug("added the max-completion cookie, starting to write output for job id = "+jobId);
-				String baseName="Job"+String.valueOf(jobId)+"_output_new";
+				String baseName="Job"+String.valueOf(jobId)+"_output";
 
 				// get all files in between
 				Download.addJobPairsToZipOutput(pairs,response,baseName,true, lastModified);
@@ -1013,7 +991,7 @@ public class Download extends HttpServlet {
 				+"/secure/details/job.jsp?id="+jobId+"&"+Web.LOCAL_JOB_PAGE_PARAMETER+"=true";
 		log.debug("Getting job page from "+urlToGetJobPageFrom);
 		List<Cookie> requestCookies = Arrays.asList(request.getCookies());
-		Map<String, String> queryParameters = new HashMap<String, String>();
+		Map<String, String> queryParameters = new HashMap<>();
 		String htmlText = Util.getWebPage(urlToGetJobPageFrom, requestCookies);
 		FileUtils.writeStringToFile(htmlFile, htmlText, StandardCharsets.UTF_8);
 	}
@@ -1032,7 +1010,7 @@ public class Download extends HttpServlet {
 		File filetypeDirectory = new File(containingDirectory, filetypeDirectoryName);
 
 		for (String filePath : allFilePaths) {
-			List<String> filesInHierarchy = new ArrayList<String>(Arrays.asList(filePath.split("/")));
+			List<String> filesInHierarchy = new ArrayList<>(Arrays.asList(filePath.split("/")));
 
 			// The last filename is the source file.
 			String sourceFile = filesInHierarchy.remove(filesInHierarchy.size() - 1);
@@ -1064,7 +1042,7 @@ public class Download extends HttpServlet {
 	 */
 
 	private boolean handleSpace(Space space, int uid, HttpServletResponse response,boolean hierarchy, boolean includeBenchmarks,
-								boolean includeSolvers, boolean useIdDirectories) throws Exception {
+								boolean includeSolvers, boolean useIdDirectories) {
 		// If we can see this space AND the space is downloadable...
 		try {
 				//String baseFileName=space.getName();
@@ -1105,7 +1083,7 @@ public class Download extends HttpServlet {
 				List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
 
 				// Get a list of the names of the benchmarks in benchList
-				List<String> benchNameList = new LinkedList<String>();
+				List<String> benchNameList = new LinkedList<>();
 				for (Benchmark bench : benchList) {
 					benchNameList.add(bench.getName());
 				}
@@ -1144,7 +1122,7 @@ public class Download extends HttpServlet {
 
 
 				// Create a list of the names of the solvers in solverList
-				List<String> solverNames = new LinkedList<String>();
+				List<String> solverNames = new LinkedList<>();
 				for (Solver solver: solverList) {
 					solverNames.add(solver.getName());
 				}
@@ -1202,7 +1180,7 @@ public class Download extends HttpServlet {
 	 * @author Albert Giegerich
 	 */
 	private static HashMap<String,Boolean> createNameDuplicateMap(List<String> names) {
-		HashMap<String,Boolean> nameDuplicateMap = new HashMap<String,Boolean>();
+		HashMap<String,Boolean> nameDuplicateMap = new HashMap<>();
 		for (String name : names) {
 			if (nameDuplicateMap.containsKey(name)) {
 				// If the name already exists in the map there is a duplication so map this name to true.

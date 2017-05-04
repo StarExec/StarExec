@@ -1,27 +1,19 @@
 package org.starexec.test.integration;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
-import org.apache.commons.io.FileUtils;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
+import org.starexec.data.to.*;
 import org.starexec.data.to.Status.StatusCode;
-import org.starexec.data.to.User;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.logger.StarLogger;
-import org.starexec.test.TestUtil;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 public class StressTest {
 	private static final StarLogger log = StarLogger.getLogger(StressTest.class);
@@ -36,7 +28,7 @@ public class StressTest {
 			int minSolversPerSpace, int maxSolversPerSpace, int minBenchmarksPerSpace, int maxBenchmarksPerSpace) {
 		
 		Users.setDiskQuota(ownerId, Util.gigabytesToBytes(1000)); //make sure we have the quota
-		List<User> owner=new ArrayList<User>();
+		List<User> owner= new ArrayList<>();
 		owner.add(Users.get(ownerId));
 		List<Space> spaces=loadSpaces(owner,parentSpaceId,spaceCount);
 		
@@ -65,7 +57,7 @@ public class StressTest {
 	 * @return The list of new test users
 	 */
 	private static List<User> loadUsers(int count) {
-		List<User> users=new ArrayList<User>();
+		List<User> users= new ArrayList<>();
 		for (int i=0;i<count;i++) {
 			users.add(loader.loadUserIntoDatabase());
 		}
@@ -81,7 +73,7 @@ public class StressTest {
 	 * @return
 	 */
 	private static List<Space> loadSpaces(List<User> owners, int rootSpaceId, int count) {
-		List<Space> spaces=new ArrayList<Space> ();
+		List<Space> spaces= new ArrayList<>();
 		spaces.add(Spaces.get(rootSpaceId));
 		int parentSpaceIndex=0;
 		while (count>0) {
@@ -129,7 +121,7 @@ public class StressTest {
 	 * @param max Maximum number of solvers added to each space
 	 */
 	private static List<Solver> addSolvers(List<Space> spaces, List<User> users, int min, int max, String solverName) {
-		List<Solver> solvers=new ArrayList<Solver>();
+		List<Solver> solvers= new ArrayList<>();
 		for (Space s : spaces) {
 			int solverCount=rand.nextInt(max-min+1)+min;
 			while (solverCount>0) {
@@ -149,7 +141,7 @@ public class StressTest {
 	 * @param max Maximum number of solvers added to each space
 	 */
 	private static List<Integer> addBenchmarks(List<Space> spaces, List<User> users, int min, int max, String benchName) {
-		List<Integer> benchmarks= new ArrayList<Integer>();
+		List<Integer> benchmarks= new ArrayList<>();
 		for (Space s : spaces) {
 			int benchCount=rand.nextInt(max-min+1)+min;
 			while (benchCount>0) {

@@ -1,9 +1,9 @@
 package org.starexec.data.to.pipelines;
 
+import org.starexec.data.to.Identifiable;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import org.starexec.data.to.*;
 
 public class PipelineStage extends Identifiable {
 
@@ -15,7 +15,7 @@ public class PipelineStage extends Identifiable {
 	private List<PipelineDependency> dependencies;
 	
 	public PipelineStage() {
-		setDependencies(new ArrayList<PipelineDependency>());
+		setDependencies(new ArrayList<>());
 	}
 	
 	public int getPipelineId() {

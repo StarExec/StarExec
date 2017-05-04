@@ -1,17 +1,17 @@
 package org.starexec.data.database;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.util.LinkedList;
-import java.util.HashMap;
-import java.util.List;
-
 import org.starexec.constants.R;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Space;
 import org.starexec.logger.StarLogger;
+
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Handles all database interaction for communities (closely tied with the Spaces class)
@@ -43,18 +43,7 @@ public class Communities {
 		try {
 			procedure = con.prepareCall("{CALL GetSubSpacesOfRoot}");
 			results = procedure.executeQuery();
-			List<Space> commSpaces = new LinkedList<Space>();
-
-			while(results.next()){
-				Space s = new Space();
-				s.setName(results.getString("name"));
-				s.setId(results.getInt("id"));
-				s.setDescription(results.getString("description"));
-				s.setLocked(results.getBoolean("locked"));
-				commSpaces.add(s);
-			}
-
-			return commSpaces;
+			return Spaces.resultsToSpaces(results);
 		} catch (Exception e){
 			log.error(e.getMessage(), e);
 		} finally {
@@ -73,7 +62,7 @@ public class Communities {
 	 */
 	public static List<Space> getAllCommunitiesUserIsIn(int userId) {
 		List<Space> allCommunities = Communities.getAll();
-		List<Space> communitiesUserIsIn = new LinkedList<Space>();
+		List<Space> communitiesUserIsIn = new LinkedList<>();
 		for (Space community : allCommunities) {
 			int communityId = community.getId();
 			if (Users.isMemberOfCommunity(userId, communityId)) {
@@ -86,7 +75,7 @@ public class Communities {
 
 	public static List<Space> getAllCommunitiesUserIsIn(Connection con, int userId) {
 		List<Space> allCommunities = Communities.getAll(con);
-		List<Space> communitiesUserIsIn = new LinkedList<Space>();
+		List<Space> communitiesUserIsIn = new LinkedList<>();
 		for (Space community : allCommunities) {
 			int communityId = community.getId();
 			if (Users.isMemberOfCommunity(con, userId, communityId)) {
@@ -128,7 +117,7 @@ public class Communities {
      *
      **/
     public static HashMap<String,Long> initializeCommInfo(){
-		HashMap<String,Long> stats = new HashMap<String, Long>();
+		HashMap<String,Long> stats = new HashMap<>();
 	
 		stats.put("users",0l);
 		stats.put("jobs",0l);
@@ -150,7 +139,7 @@ public class Communities {
 				List<Space> communities = Communities.getAll();
 		    
 	
-				HashMap<Integer,HashMap<String,Long>> commInfo = new HashMap<Integer,HashMap<String,Long>>();
+				HashMap<Integer,HashMap<String,Long>> commInfo = new HashMap<>();
 
 				for(Space c : communities){
 				    commInfo.put(c.getId(),initializeCommInfo());

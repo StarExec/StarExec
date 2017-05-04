@@ -1,13 +1,8 @@
 package org.starexec.test.integration.database;
 
-import java.util.List;
-
 import org.junit.Assert;
 import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Space;
@@ -17,7 +12,8 @@ import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
+
+import java.util.List;
 /**
  * Tests for org.starexec.data.database.Websites.java
  * @author Eric

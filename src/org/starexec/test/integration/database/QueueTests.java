@@ -1,33 +1,18 @@
 package org.starexec.test.integration.database;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import org.junit.Assert;
 import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Cluster;
-import org.starexec.data.database.Communities;
-import org.starexec.data.database.JobPairs;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Queues;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Queue;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
+import org.starexec.data.database.*;
+import org.starexec.data.to.*;
 import org.starexec.data.to.Status.StatusCode;
-import org.starexec.data.to.User;
-import org.starexec.data.to.WorkerNode;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.DataTablesQuery;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Tests for org.starexec.data.database.Queues.java
@@ -55,7 +40,7 @@ public class QueueTests extends TestSequence {
 
 	@StarexecTest
 	private void dontPauseJobsIfRemainingNodesTest() {
-		HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
+		HashMap<Integer, Integer> map = new HashMap<>();
 		map.put(testQueue.getId(), -1);
 		Queues.pauseJobsIfNoRemainingNodes(map);
 		Assert.assertFalse(Jobs.isJobPaused(job.getId()));
@@ -77,7 +62,7 @@ public class QueueTests extends TestSequence {
 		for (JobPair pair : job.getJobPairs()) {
 			JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 		}
-		HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
+		HashMap<Integer, Integer> map = new HashMap<>();
 		map.put(testQueue.getId(), Cluster.getNodesForQueue(testQueue.getId()).size());
 		Queues.pauseJobsIfNoRemainingNodes(map);
 		Assert.assertTrue(Jobs.isJobPaused(job.getId()));
@@ -312,7 +297,7 @@ public class QueueTests extends TestSequence {
 	
 	@StarexecTest
 	private void setQueueCommunityAccessTest() {
-		List<Integer> ids = new ArrayList<Integer>();
+		List<Integer> ids = new ArrayList<>();
 		ids.add(Communities.getTestCommunity().getId());
 		Assert.assertTrue(Queues.setQueueCommunityAccess(ids, testQueue.getId()));
 	}

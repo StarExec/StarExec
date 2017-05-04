@@ -1,20 +1,5 @@
 package org.starexec.servlets;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
-import java.lang.StringBuilder;
-import java.io.BufferedReader;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.owasp.esapi.waf.internal.InterceptingHTTPServletResponse;
 import org.starexec.constants.R;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Settings;
@@ -29,6 +14,17 @@ import org.starexec.logger.StarLogger;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.List;
 
 
 /**
@@ -241,31 +237,13 @@ public class AddSettingProfile extends HttpServlet {
 		List<String> benchIds = getBenchIds(request);
 
 
+		ValidatorStatusCode statusCode = checkIfUserCanSeeProcessor(postId, userId);
+		if (!statusCode.isSuccess()) return statusCode;
+		statusCode= checkIfUserCanSeeProcessor(preId, userId);
+		if (!statusCode.isSuccess()) return statusCode;
+		statusCode= checkIfUserCanSeeProcessor(benchProcId, userId);
+		if (!statusCode.isSuccess()) return statusCode;
 		
-		//-1 is not an error-- it indicates that nothing was selected for all the following cases
-		if (Validator.isValidPosInteger(postId)) {
-			int p=Integer.parseInt(postId);
-
-			ValidatorStatusCode status=ProcessorSecurity.canUserSeeProcessor(p, userId);
-			if (!status.isSuccess() && p>0) {
-				return status;
-			}
-		}
-		if (Validator.isValidPosInteger(preId)) {
-			int p=Integer.parseInt(preId);
-
-			ValidatorStatusCode status=ProcessorSecurity.canUserSeeProcessor(p, userId);
-			if (!status.isSuccess() && p>0) {
-				return status;
-			}
-		}
-		if (Validator.isValidPosInteger(benchProcId)) {
-			int p=Integer.parseInt(benchProcId);
-			ValidatorStatusCode status=ProcessorSecurity.canUserSeeProcessor(p, userId);
-			if (!status.isSuccess() && p>0) {
-				return status;
-			}
-		}
 		if (Validator.isValidPosInteger(solver)) {
 			int s=Integer.parseInt(solver);
 			if (s>0) {
@@ -285,7 +263,6 @@ public class AddSettingProfile extends HttpServlet {
 				}
 			}
 		}
-		
 		//if a setting ID exists, this is an update. Otherwise, it is a new profile
 		if (Util.paramExists(SETTING_ID, request)) {
 			if (!Validator.isValidPosInteger(request.getParameter(SETTING_ID))) {
@@ -304,6 +281,19 @@ public class AddSettingProfile extends HttpServlet {
 		}
 		
 		
+		return new ValidatorStatusCode(true);
+	}
+	
+	private static ValidatorStatusCode checkIfUserCanSeeProcessor(String param, int userId) {
+		//-1 is not an error-- it indicates that nothing was selected for all the following cases
+		if (Validator.isValidPosInteger(param)) {
+			int p=Integer.parseInt(param);
+
+			ValidatorStatusCode status=ProcessorSecurity.canUserSeeProcessor(p, userId);
+			if (!status.isSuccess() && p>0) {
+				return status;
+			}
+		}
 		return new ValidatorStatusCode(true);
 	}
 	        

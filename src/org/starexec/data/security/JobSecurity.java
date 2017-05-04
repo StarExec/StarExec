@@ -1,26 +1,16 @@
 package org.starexec.data.security;
 
 
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Optional;
-
-
 import org.starexec.app.RESTServices;
-import org.starexec.data.database.AnonymousLinks;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.JobPairs;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Processors;
-import org.starexec.data.database.Queues;
-import org.starexec.data.database.Settings;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
+import org.starexec.data.database.*;
 import org.starexec.data.to.*;
 import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.logger.StarLogger;
+
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Optional;
 
 
 public class JobSecurity {

@@ -1,7 +1,6 @@
 package org.starexec.data.security;
 
 import org.starexec.data.database.Uploads;
-import org.starexec.data.database.Users;
 import org.starexec.data.to.BenchmarkUploadStatus;
 /**
  * Determines whether users have authorization to view BenchmarkUploadStatus data

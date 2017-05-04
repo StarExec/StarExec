@@ -1,7 +1,6 @@
 package org.starexec.test.integration.database;
 
 import org.junit.Assert;
-import org.junit.Test;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.PairsRerun;
@@ -63,7 +62,7 @@ public class PairsRerunTests extends TestSequence {
         int wallclockTimeout=100;
         int cpuTimeout=100;
         int gbMemory=1;
-        List<Integer> solverIds=new ArrayList<Integer>();
+        List<Integer> solverIds= new ArrayList<>();
         solverIds.add(solver.getId());
 
         job=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);

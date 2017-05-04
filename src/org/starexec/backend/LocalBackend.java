@@ -1,17 +1,13 @@
 package org.starexec.backend;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayDeque;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import org.starexec.constants.R;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.RobustRunnable;
 import org.starexec.util.Util;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
 
 /**
  * This backend implementation does not rely on any external system outside of basic Unix
@@ -41,7 +37,7 @@ public class LocalBackend implements Backend {
 			return sb.toString();
 		}
 	}	
-	private Map<Integer, LocalJob> activeIds = new HashMap<Integer, LocalJob>();
+	private Map<Integer, LocalJob> activeIds = new HashMap<>();
 	
 	private String NODE_NAME = "n001";
 	/**
@@ -49,7 +45,7 @@ public class LocalBackend implements Backend {
 	 * completed. Jobs are kept in this queue until they are finished executing, meaning
 	 * that the running job will be the head of the queue
 	 */
-	java.util.Queue<LocalJob> jobsToRun = new ArrayDeque<LocalJob>();
+	java.util.Queue<LocalJob> jobsToRun = new ArrayDeque<>();
 	
 	private int curID = 1;
 	/**
@@ -192,7 +188,7 @@ public class LocalBackend implements Backend {
 		// we don't want to return the keyset of activeIds, since
 		// changes to that set are reflected in the map, meaning returning it
 		// makes activeIds externally mutable
-		Set<Integer> newSet = new HashSet<Integer>();
+		Set<Integer> newSet = new HashSet<>();
 		newSet.addAll(activeIds.keySet());
 		return newSet;
 	}
@@ -209,7 +205,7 @@ public class LocalBackend implements Backend {
 
 	@Override
 	public Map<String, String> getNodeQueueAssociations() {
-		HashMap<String, String> mapping = new HashMap<String, String>();
+		HashMap<String, String> mapping = new HashMap<>();
 		mapping.put(NODE_NAME, R.DEFAULT_QUEUE_NAME);
 		return mapping;
 	}

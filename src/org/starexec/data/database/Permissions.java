@@ -1,17 +1,18 @@
 package org.starexec.data.database;
 
-import java.sql.*;
-import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-
 import org.starexec.constants.R;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.*;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.Util;
+
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Handles all database interaction for permissions
@@ -27,7 +28,7 @@ public class Permissions {
 	 * @author Tyler Jensen
 	 * @throws Exception 
 	 */
-	protected static int add(Permission p, Connection con) throws Exception {
+	protected static int add(Permission p, Connection con) {
 		CallableStatement procDefaultPerm = null;
 		try {
 			 procDefaultPerm = con.prepareCall("{CALL AddPermissions(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
@@ -404,19 +405,7 @@ public class Permissions {
 			 results = procedure.executeQuery();
 
 			if(results.first()) {				
-				Permission p = new Permission();
-				p.setAddBenchmark(results.getBoolean("add_bench"));
-				p.setAddSolver(results.getBoolean("add_solver"));
-				p.setAddSpace(results.getBoolean("add_space"));
-				p.setAddUser(results.getBoolean("add_user"));
-				p.setAddJob(results.getBoolean("add_job"));
-				p.setRemoveBench(results.getBoolean("remove_bench"));
-				p.setRemoveSolver(results.getBoolean("remove_solver"));
-				p.setRemoveSpace(results.getBoolean("remove_space"));
-				p.setRemoveUser(results.getBoolean("remove_user"));
-				p.setRemoveJob(results.getBoolean("remove_job"));
-				p.setLeader(results.getBoolean("is_leader"));
-				p.setId(userId);
+				Permission p = resultsToPermissionWithId(userId, results);
 				if(results.wasNull()) {
 					/* If the permission doesn't exist we always get a result
 					but all of it's values are null, so here we check for a 
@@ -505,22 +494,8 @@ public class Permissions {
 			procedure.setInt(1, spaceId);
 			 results = procedure.executeQuery();
 
-			if(results.first()) {				
-				Permission p = new Permission();
-				p.setId(results.getInt("id"));
-				p.setAddBenchmark(results.getBoolean("add_bench"));
-				p.setAddSolver(results.getBoolean("add_solver"));
-				p.setAddSpace(results.getBoolean("add_space"));
-				p.setAddUser(results.getBoolean("add_user"));
-				p.setAddJob(results.getBoolean("add_job"));
-				p.setRemoveBench(results.getBoolean("remove_bench"));
-				p.setRemoveSolver(results.getBoolean("remove_solver"));
-				p.setRemoveSpace(results.getBoolean("remove_space"));
-				p.setRemoveUser(results.getBoolean("remove_user"));
-				p.setRemoveJob(results.getBoolean("remove_job"));
-				p.setLeader(results.getBoolean("is_leader"));
-
-				return p;
+			if(results.first()) {
+				return resultsToPermissionWithId(results.getInt("id"), results);
 			}
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
@@ -531,6 +506,23 @@ public class Permissions {
 		}
 
 		return null;		
+	}
+
+	private static Permission resultsToPermissionWithId(int id, ResultSet results) throws SQLException {
+		Permission p = new Permission();
+		p.setId(id);
+		p.setAddBenchmark(results.getBoolean("add_bench"));
+		p.setAddSolver(results.getBoolean("add_solver"));
+		p.setAddSpace(results.getBoolean("add_space"));
+		p.setAddUser(results.getBoolean("add_user"));
+		p.setAddJob(results.getBoolean("add_job"));
+		p.setRemoveBench(results.getBoolean("remove_bench"));
+		p.setRemoveSolver(results.getBoolean("remove_solver"));
+		p.setRemoveSpace(results.getBoolean("remove_space"));
+		p.setRemoveUser(results.getBoolean("remove_user"));
+		p.setRemoveJob(results.getBoolean("remove_job"));
+		p.setLeader(results.getBoolean("is_leader"));
+		return p;
 	}
 
 	/**
@@ -570,7 +562,7 @@ public class Permissions {
 	 * 
 	 * @throws Exception 
 	 */
-	protected static boolean set(int userId, int spaceId, Permission newPerm, Connection con) throws Exception {				
+	protected static boolean set(int userId, int spaceId, Permission newPerm, Connection con) {
 		CallableStatement procedure = null;
 		int permissionId = add(newPerm, con);
 		
@@ -601,7 +593,7 @@ public class Permissions {
 	 * @author Skylar Stark
 	 * @throws Exception 
 	 */
-	protected static boolean updatePermission(int permId, Permission perm, Connection con) throws Exception {
+	protected static boolean updatePermission(int permId, Permission perm, Connection con) {
 		CallableStatement procedure = null;
 		
 		 try {

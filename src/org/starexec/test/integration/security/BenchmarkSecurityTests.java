@@ -1,13 +1,9 @@
 package org.starexec.test.integration.security;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.junit.Assert;
 import org.starexec.constants.R;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Communities;
-import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.BenchmarkSecurity;
@@ -19,7 +15,9 @@ import org.starexec.data.to.User;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BenchmarkSecurityTests extends TestSequence {
 	User user1=null;
@@ -69,7 +67,7 @@ public class BenchmarkSecurityTests extends TestSequence {
 		Assert.assertEquals(true,BenchmarkSecurity.canUserDeleteBenchmarks(benchmarkIds, user1.getId()).isSuccess());
 		Assert.assertEquals(true,BenchmarkSecurity.canUserDeleteBenchmarks(benchmarkIds, admin.getId()).isSuccess());
 		Assert.assertNotEquals(true,BenchmarkSecurity.canUserDeleteBenchmarks(benchmarkIds, user2.getId()).isSuccess());
-		List<Integer> temp=new ArrayList<Integer>();
+		List<Integer> temp= new ArrayList<>();
 		temp.addAll(benchmarkIds);
 		temp.addAll(benchmarkIds2);
 		Assert.assertNotEquals(true,BenchmarkSecurity.canUserDeleteBenchmarks(temp, user1.getId()).isSuccess());
@@ -82,7 +80,7 @@ public class BenchmarkSecurityTests extends TestSequence {
 		Assert.assertEquals(true,BenchmarkSecurity.canUserRecycleBenchmarks(benchmarkIds, user1.getId()).isSuccess());
 		Assert.assertEquals(true,BenchmarkSecurity.canUserRecycleBenchmarks(benchmarkIds, admin.getId()).isSuccess());
 		Assert.assertNotEquals(true,BenchmarkSecurity.canUserRecycleBenchmarks(benchmarkIds, user2.getId()).isSuccess());
-		List<Integer> temp=new ArrayList<Integer>();
+		List<Integer> temp= new ArrayList<>();
 		temp.addAll(benchmarkIds);
 		temp.addAll(benchmarkIds2);
 		Assert.assertNotEquals(true,BenchmarkSecurity.canUserRecycleBenchmarks(temp, user1.getId()).isSuccess());
@@ -109,7 +107,7 @@ public class BenchmarkSecurityTests extends TestSequence {
 		Assert.assertNotEquals(true,BenchmarkSecurity.canUserRestoreBenchmarks(benchmarkIds, user2.getId()).isSuccess());
 		
 		
-		List<Integer> temp=new ArrayList<Integer>();
+		List<Integer> temp= new ArrayList<>();
 		temp.addAll(benchmarkIds);
 		temp.addAll(benchmarkIds2);
 		//because there are benchmarks by both owners in temp, neither owner should be able to restore them.

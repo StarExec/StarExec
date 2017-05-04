@@ -1,20 +1,17 @@
 package org.starexec.data.security;
 
-import java.io.File;
-import java.util.List;
-
-import org.starexec.util.Util;
-import org.starexec.util.Validator;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
-import org.starexec.data.database.Websites;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Solver;
-import org.starexec.data.to.Website;
-import org.starexec.data.to.Website.WebsiteType;
+import org.starexec.util.Util;
+import org.starexec.util.Validator;
+
+import java.io.File;
+import java.util.List;
 
 public class SolverSecurity {
 

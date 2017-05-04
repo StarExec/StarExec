@@ -1,6 +1,7 @@
 package org.starexec.data.database;
 
 import org.starexec.logger.StarLogger;
+
 import java.sql.SQLException;
 
 /**
@@ -10,11 +11,13 @@ import java.sql.SQLException;
  */
 public enum Analytics {
 	JOB_ATTRIBUTES,
+	JOB_CREATE,
 	JOB_CREATE_QUICKJOB,
 	JOB_DETAILS,
 	JOB_PAUSE,
 	JOB_RESUME,
-	PAGEVIEW_HELP;
+	PAGEVIEW_HELP,
+	STAREXECCOMMAND_LOGIN;
 
 	private final int id;
 
@@ -67,7 +70,7 @@ public enum Analytics {
 					}
 			);
 		} catch (SQLException e) {
-			log.error("Cannot record event: " + this.name());
+			log.error("Cannot record event: " + this.name(), e);
 		}
 	}
 }

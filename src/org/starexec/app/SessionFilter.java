@@ -1,30 +1,21 @@
 package org.starexec.app;
 
-import java.io.IOException;
-import java.util.HashMap;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-
 import org.starexec.constants.R;
-import org.starexec.data.database.Common;
-import org.starexec.data.database.Logins;
-import org.starexec.data.database.Reports;
-import org.starexec.data.database.Users;
+import org.starexec.data.database.*;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.User;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
+
+import javax.servlet.*;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import java.io.IOException;
+import java.util.HashMap;
 
 /**
  * This class is responsible for intercepting all requests to protected resources
@@ -37,6 +28,14 @@ import org.starexec.util.Util;
 public class SessionFilter implements Filter {
 	private static final StarLogger log = StarLogger.getLogger(SessionFilter.class);
 
+	/**
+	 * Detects requests originating from StarExecCommand
+	 * @param request
+	 * @return true if request is from StarExecCommand, false otherwise
+	 */
+	private static final boolean isFromCommand(HttpServletRequest request) {
+		return request.getHeader("StarExecCommand") != null;
+	}
 
 	@Override
 	public void destroy() {
@@ -51,8 +50,8 @@ public class SessionFilter implements Filter {
 			HttpServletRequest httpRequest = (HttpServletRequest) request;
 			log.debug(method, "Request URI: "+httpRequest.getRequestURI());
 
-			boolean isCommandRequest = httpRequest.getHeader("StarExecCommand") != null;
-			if ( isCommandRequest ) {
+			boolean isCommandRequest = isFromCommand(httpRequest);
+			if (isCommandRequest) {
 				log.debug(method, "Got request from StarExecCommand.");
 			}
 
@@ -142,6 +141,10 @@ public class SessionFilter implements Filter {
 	private void logUserLogin(User user, HttpServletRequest request) {
 		// Log the regular application log
 		log.info(String.format("%s [%s] logged in.", user.getFullName(), user.getEmail()));
+
+		if (isFromCommand(request)) {
+			Analytics.STAREXECCOMMAND_LOGIN.record();
+		}
 
 		String ip = request.getRemoteAddr();
 		String rawBrowser = request.getHeader("user-agent");

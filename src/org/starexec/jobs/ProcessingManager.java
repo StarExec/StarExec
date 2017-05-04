@@ -1,10 +1,10 @@
 package org.starexec.jobs;
 
-import java.util.List;
-
 import org.starexec.constants.R;
 import org.starexec.data.database.JobPairs;
 import org.starexec.data.to.pipelines.PairStageProcessorTriple;
+
+import java.util.List;
 
 public class ProcessingManager {
 	/**

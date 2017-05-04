@@ -1,29 +1,18 @@
 package org.starexec.util.matrixView;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-
 import org.starexec.constants.R;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.database.Spaces;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.Solver;
+import org.starexec.data.to.*;
 import org.starexec.data.to.compare.NameableComparators;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.logger.StarLogger;
+
+import java.util.*;
 
 
 /**
@@ -45,8 +34,9 @@ public class Matrix {
 
 	/**
 	 * Builds a Matrix for the job matrix display page given a Job and a stageNumber.
-	 * @param job the job to build a matrix display of.
+	 * @param jobPairs the job pairs to build the matrix display with.
 	 * @param stageNumber filter the job pairs to view by this stage.
+	 * @param jobSpaceId the job space to filter the pairs by
 	 * @author Albert Giegerich
 	 */
 	private Matrix(List<JobPair> jobPairs, final Integer jobSpaceId, final int stageNumber) {
@@ -58,13 +48,13 @@ public class Matrix {
 			initializeMatrixFields(jobSpaceName, jobSpaceId);
 
 
-			Set<Benchmark> uniqueBenchmarks = new HashSet<Benchmark>();
-			Set<Pair<Solver,Configuration>> uniqueSolverConfigs = new HashSet<Pair<Solver,Configuration>>();
+			Set<Benchmark> uniqueBenchmarks = new HashSet<>();
+			Set<Pair<Solver,Configuration>> uniqueSolverConfigs = new HashSet<>();
 
 			// Maps benchmark and solver-configuration vectors to the data that should appear in the cell where the two
 			// vectors intersect.
 			HashMap<Pair<Benchmark,Pair<Solver,Configuration>>,MatrixElement> vectorIntersectionToCellDataMap =
-					new HashMap<Pair<Benchmark,Pair<Solver,Configuration>>,MatrixElement>();
+                    new HashMap<>();
 
 			// Build the sets and the map that were just defined.
 			for (JobPair pair : jobPairs) {
@@ -77,25 +67,22 @@ public class Matrix {
 
 			log.debug(method,"Sorting benchmarks and solver-config pairs.");
 			// Sort the benchmarks alphabetically by name ignoring case.
-			ArrayList<Benchmark> uniqueBenchmarkList = new ArrayList<Benchmark>(uniqueBenchmarks);
+			ArrayList<Benchmark> uniqueBenchmarkList = new ArrayList<>(uniqueBenchmarks);
 			Collections.sort(uniqueBenchmarkList, NameableComparators.getCaseInsensitiveAlphabeticalComparator());
 			
-			ArrayList<Pair<Solver,Configuration>> uniqueSolverConfigList = 
-					new ArrayList<Pair<Solver,Configuration>>(uniqueSolverConfigs);
+			ArrayList<Pair<Solver,Configuration>> uniqueSolverConfigList =
+                    new ArrayList<>(uniqueSolverConfigs);
 			// Names of solver config will be "solver (config)", sort the solverConfigs
 			// alphabetically by name, ignore case.
-			Collections.sort(uniqueSolverConfigList, new Comparator<Pair<Solver,Configuration>>() {
-				@Override
-				public int compare(Pair<Solver,Configuration> sc1, Pair<Solver,Configuration> sc2) {
-					String solverName1 = sc1.getLeft().getName();
-					String solverName2 = sc2.getLeft().getName();
-					String configName1 = sc1.getRight().getName();
-					String configName2 = sc2.getRight().getName();
-					String sc1Name = String.format("%s (%s)", solverName1, configName1);
-					String sc2Name = String.format("%s (%s)", solverName2, configName2);
-					return sc1Name.compareToIgnoreCase(sc2Name);
-				}
-			});
+			Collections.sort(uniqueSolverConfigList, (sc1, sc2) -> {
+                String solverName1 = sc1.getLeft().getName();
+                String solverName2 = sc2.getLeft().getName();
+                String configName1 = sc1.getRight().getName();
+                String configName2 = sc2.getRight().getName();
+                String sc1Name = String.format("%s (%s)", solverName1, configName1);
+                String sc2Name = String.format("%s (%s)", solverName2, configName2);
+                return sc1Name.compareToIgnoreCase(sc2Name);
+            });
 
 			// Populate the matrix.
 			populateRowAndColumnHeaders(uniqueBenchmarkList, uniqueSolverConfigList); 
@@ -142,7 +129,7 @@ public class Matrix {
 	private static List<JobPair> getJobPairsForJobSpace(Job job, int jobSpaceId) {
 		final String method = "getJobPairsForJobSpace";
 		List<JobPair> jobPairs = job.getJobPairs();
-		List<JobPair> jobPairsInJobSpace = new ArrayList<JobPair>();
+		List<JobPair> jobPairsInJobSpace = new ArrayList<>();
 		for (JobPair pair : jobPairs) {
 			Integer pairJobSpaceId = pair.getJobSpaceId();
 			log.debug(method, "job space id="+pairJobSpaceId);
@@ -238,7 +225,7 @@ public class Matrix {
 	public void set(int row, int column, MatrixElement element) {
 		// Make sure there are enough rows to accommodate the new row.
 		while (matrix.size() <= row) {
-			matrix.add(new ArrayList<MatrixElement>());
+			matrix.add(new ArrayList<>());
 		}
 		// Make sure there are enough columns to accommodate the new column.
 		// Fill in all ragged edges as well.
@@ -330,11 +317,11 @@ public class Matrix {
 			// Keep a list of the benchmarks and solver-configs pairs that have been found.
 			uniqueBenchmarks.add(bench);
 
-			Pair<Solver,Configuration> solverConfig = new ImmutablePair<Solver,Configuration>(solver,config);
+			Pair<Solver,Configuration> solverConfig = new ImmutablePair<>(solver, config);
 			uniqueSolverConfigs.add(solverConfig);
 
 			Pair<Benchmark,Pair<Solver,Configuration>> vectorIntersectionPoint =
-			   new ImmutablePair<Benchmark,Pair<Solver,Configuration>>(bench, solverConfig);	
+                    new ImmutablePair<>(bench, solverConfig);
 
 			MatrixElement jobPairCellData = getCellDataFromStageAndJobPairId(bench, stage, pair.getId());
 
@@ -378,9 +365,9 @@ public class Matrix {
 		// Initialize the Matrices' fields
 		this.jobSpaceName = jobSpaceName;
 		this.jobSpaceId = jobSpaceId;
-		matrix = new ArrayList<ArrayList<MatrixElement>>();
-		benchmarksByRow = new ArrayList<Benchmark>();
-		solverConfigsByColumn = new ArrayList<Pair<Solver,Configuration>>();
+		matrix = new ArrayList<>();
+		benchmarksByRow = new ArrayList<>();
+		solverConfigsByColumn = new ArrayList<>();
 		hasMultipleStages = false;
 	}
 
@@ -410,7 +397,7 @@ public class Matrix {
 			for (int j = 0; j < uniqueSolverConfigList.size(); j++) {
 				Pair<Solver,Configuration> solverConfig = uniqueSolverConfigList.get(j);
 				Pair<Benchmark,Pair<Solver,Configuration>> vectorIntersectionPoint =
-					new ImmutablePair<Benchmark,Pair<Solver,Configuration>>(bench, solverConfig);	
+                        new ImmutablePair<>(bench, solverConfig);
 				MatrixElement cellData = vectorIntersectionToCellDataMap.get(vectorIntersectionPoint);
 				this.set(i, j, cellData);
 			}
@@ -427,34 +414,31 @@ public class Matrix {
 		log.debug("Entering method "+method);
 		List<JobPair> jobPairs = job.getJobPairs();
 
-		Set<Pair<String,Integer>> uniqueSpaces = new HashSet<Pair<String,Integer>>();
+		Set<Pair<String,Integer>> uniqueSpaces = new HashSet<>();
 
 		// Build a set of all the spaces that exist for this job.
 		for (JobPair pair : jobPairs) {
 			String jobSpaceName = pair.getJobSpaceName();
 			Integer jobSpaceId = pair.getJobSpaceId();
-			Pair<String,Integer> jobSpaceNameAndId = new ImmutablePair<String,Integer>(jobSpaceName, jobSpaceId);
+			Pair<String,Integer> jobSpaceNameAndId = new ImmutablePair<>(jobSpaceName, jobSpaceId);
 			uniqueSpaces.add(jobSpaceNameAndId);	
 		}
 
-		List<Pair<String, Integer>> orderedSpaces = new ArrayList<Pair<String,Integer>>(uniqueSpaces);
-		Collections.sort(orderedSpaces, new Comparator<Pair<String, Integer>>() {
-			@Override
-			public int compare(Pair<String,Integer> jobSpaceA, Pair<String,Integer> jobSpaceB) {
-				// Try sorting alphabetically insensitive to case.
-				String jobSpaceNameA = jobSpaceA.getLeft();
-				String jobSpaceNameB = jobSpaceB.getLeft();
-				int alphabeticalComparison = jobSpaceNameA.compareToIgnoreCase(jobSpaceNameB);
+		List<Pair<String, Integer>> orderedSpaces = new ArrayList<>(uniqueSpaces);
+		Collections.sort(orderedSpaces, (jobSpaceA, jobSpaceB) -> {
+			// Try sorting alphabetically insensitive to case.
+			String jobSpaceNameA = jobSpaceA.getLeft();
+			String jobSpaceNameB = jobSpaceB.getLeft();
+			int alphabeticalComparison = jobSpaceNameA.compareToIgnoreCase(jobSpaceNameB);
 
-				if (alphabeticalComparison != 0) {
-					return alphabeticalComparison;
-				} 
-
-				// If two elements are equal sort them by the value of their ID.
-				Integer jobSpaceIdA = jobSpaceA.getRight();
-				Integer jobSpaceIdB = jobSpaceB.getRight();
-				return jobSpaceIdA.compareTo(jobSpaceIdB);
+			if (alphabeticalComparison != 0) {
+				return alphabeticalComparison;
 			}
+
+			// If two elements are equal sort them by the value of their ID.
+			Integer jobSpaceIdA = jobSpaceA.getRight();
+			Integer jobSpaceIdB = jobSpaceB.getRight();
+			return jobSpaceIdA.compareTo(jobSpaceIdB);
 		});
 
 		log.debug("(getSpacesInJobOrderedAlphabetically) Number of spaces in job = "+orderedSpaces.size());

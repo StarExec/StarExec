@@ -1,12 +1,11 @@
 package org.starexec.data.to;
 
+import com.google.gson.annotations.Expose;
+
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-
-
-import com.google.gson.annotations.Expose;
 
 /**
  * Represents a status for a job pair
@@ -193,11 +192,9 @@ public class Status {
 		}
 		//incomplete as it is defined for stats
 		public boolean statIncomplete(){
-			//return (val!=7 && !(val>=14 &&val<=17));
 			return this.statComplete == StatCompleteness.INCOMPLETE;
 		}
 		public boolean statComplete() {
-		    //return val==7 || (val>=14 &&val<=17);
 			return this.statComplete == StatCompleteness.COMPLETE;
 		}
 		public boolean finishedRunning() {

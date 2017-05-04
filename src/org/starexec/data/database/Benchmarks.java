@@ -1,5 +1,16 @@
 package org.starexec.data.database;
 
+import org.apache.commons.io.FileUtils;
+import org.starexec.constants.PaginationQueries;
+import org.starexec.constants.R;
+import org.starexec.data.to.*;
+import org.starexec.data.to.compare.BenchmarkComparator;
+import org.starexec.exceptions.StarExecException;
+import org.starexec.logger.StarLogger;
+import org.starexec.servlets.BenchmarkUploader;
+import org.starexec.util.*;
+import org.starexec.util.Timer;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
@@ -8,25 +19,6 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-
-import org.apache.commons.io.FileUtils;
-import org.starexec.constants.PaginationQueries;
-import org.starexec.constants.R;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.BenchmarkDependency;
-import org.starexec.data.to.Permission;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.compare.BenchmarkComparator;
-import org.starexec.exceptions.StarExecException;
-import org.starexec.logger.StarLogger;
-import org.starexec.servlets.BenchmarkUploader;
-import org.starexec.util.DataTablesQuery;
-import org.starexec.util.NamedParameterStatement;
-import org.starexec.util.PaginationQueryBuilder;
-import org.starexec.util.Timer;
-import org.starexec.util.Util;
-import org.starexec.util.Validator;
 
 /**
  * Handles all database interaction for benchmarks.
@@ -274,7 +266,7 @@ public class Benchmarks {
 	 * @throws Exception
 	 * @author Benton McCune
 	 */
-    protected static Benchmark add(Benchmark benchmark, Integer statusId, Connection con) throws Exception {				
+    protected static Benchmark add(Benchmark benchmark, Integer statusId, Connection con) {
 		CallableStatement procedure=null;
 
 		try{
@@ -327,7 +319,7 @@ public class Benchmarks {
 	 * @author Tyler Jensen
 	 * @throws Exception Any database error that gets thrown
 	 */
-    public static int addAndAssociate(Benchmark benchmark, Integer spaceId, Integer statusId) throws Exception{
+    public static int addAndAssociate(Benchmark benchmark, Integer spaceId, Integer statusId) {
 	    if (Benchmarks.isBenchValid(benchmark.getAttributes())){
 		    Connection con = null;		
 		    try {
@@ -366,7 +358,7 @@ public class Benchmarks {
 	 * @throws Exception
 	 */
 	protected static List<Integer> addAndAssociate(List<Benchmark> benchmarks, Integer spaceId, Integer statusId) throws Exception {		
-		ArrayList<Integer> benchmarkIds=new ArrayList<Integer>();
+		ArrayList<Integer> benchmarkIds= new ArrayList<>();
 		log.info("in add (list) method (no con paramter )- adding " + benchmarks.size()  + " benchmarks to space " + spaceId);
 		int incrementCounter=0;
 		Timer timer=new Timer();
@@ -455,7 +447,7 @@ public class Benchmarks {
 		}
 		else {
 			log.info("No benches to add with this call to addWithDeps from space " + spaceId);
-			return new ArrayList<Integer>();
+			return new ArrayList<>();
 		}
 		return null;
 	}
@@ -553,7 +545,7 @@ public class Benchmarks {
 		// benchmark.
 		if (p.getId()==Processors.getNoTypeProcessor().getId()) {
 			for (Benchmark b : benchmarks) {
-				Map<String,String> prop = new HashMap<String,String>();
+				Map<String,String> prop = new HashMap<>();
 				prop.put(R.VALID_BENCHMARK_ATTRIBUTE, "true");
 				b.setAttributes(prop);
 			}
@@ -569,7 +561,7 @@ public class Benchmarks {
 		int failedCounter=0; //stores the TOTAL number of benchmarks that failed 
 		Timer timer=new Timer();
 		for(Benchmark b : benchmarks) {
-			List<File> files=new ArrayList<File>();
+			List<File> files= new ArrayList<>();
 			files.add(new File(p.getFilePath()));
 			files.add(new File(b.getPath()));
 			File sandbox=Util.copyFilesToNewSandbox(files);
@@ -596,7 +588,7 @@ public class Benchmarks {
 			log.debug("read "+prop.size()+" properties");
 
 			// Attach the attributes to the benchmark
-			Map<String,String> attrs = new HashMap<String,String>();
+			Map<String,String> attrs = new HashMap<>();
 			
 			for (Object o : prop.keySet()) {
 				attrs.put((String)o, (String)prop.get(o));
@@ -685,7 +677,7 @@ public class Benchmarks {
 		ResultSet results=null;
 		
 		//will contain the id of every benchmark that is associated with either a space or a pair
-		HashSet<Integer> parentedBenchmarks=new HashSet<Integer>();
+		HashSet<Integer> parentedBenchmarks= new HashSet<>();
 		try {
 			con=Common.getConnection();
 			procedure=con.prepareCall("{CALL GetBenchmarksAssociatedWithSpaces()}");
@@ -741,7 +733,7 @@ public class Benchmarks {
 	 * as their copies in the input list of benchmarks.
 	 */
 	public static List<Integer> copyBenchmarks(List<Benchmark> benchmarks,int userId, int spaceId) {
-		List<Integer> ids=new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 		for (Benchmark b : benchmarks) {
 			ids.add(copyBenchmark(b,userId,spaceId));
 		}
@@ -773,7 +765,7 @@ public class Benchmarks {
 			newBenchmark.setDownloadable(b.isDownloadable());
 
 			if (newBenchmark.getAttributes()==null) {
-				newBenchmark.setAttributes(new HashMap<String,String>());
+				newBenchmark.setAttributes(new HashMap<>());
 			}
 
 			//this benchmark must be valid, since it is just a copy of 
@@ -863,7 +855,13 @@ public class Benchmarks {
 	 * @author Wyatt Kaiser
 	 * @throws Exception Any exception with the description file, with an error message contained
 	 */
-	public static Space extractSpacesAndBenchmarks(File directory, int typeId, int userId, boolean downloadable, Permission perm, Integer statusId) throws Exception {
+	public static Space extractSpacesAndBenchmarks(
+			File directory,
+			int typeId,
+			int userId,
+			boolean downloadable,
+			Permission perm,
+			Integer statusId) throws IOException, StarExecException{
 		// Create a space for the current directory and set it's name		
 		log.info("Extracting Spaces and Benchmarks for " + userId);
 		Space space = new Space();
@@ -907,7 +905,7 @@ public class Benchmarks {
 				} else {
 				    String msg = "\""+f.getName() + "\" is not accepted as a legal benchmark name.";
 				    Uploads.setBenchmarkErrorMessage(statusId, msg);
-				    throw new Exception(msg);
+				    throw new StarExecException(msg);
 				}
 
 			}
@@ -968,7 +966,7 @@ public class Benchmarks {
 	 * 
 	 * @throws Exception 
 	 */
-	protected static Benchmark get(Connection con, int benchId,boolean includeDeleted) throws SQLException {
+	protected static Benchmark get(Connection con, int benchId,boolean includeDeleted) {
 		CallableStatement procedure=null;
 		ResultSet results=null;
 	
@@ -1043,7 +1041,7 @@ public class Benchmarks {
 				return null;
 			}
 
-			if(true == includeAttrs){
+			if(includeAttrs){
 				b.setAttributes(Benchmarks.getAttributes(con, benchId));
 			}
 
@@ -1076,7 +1074,7 @@ public class Benchmarks {
 
 		try {
 			con = Common.getConnection();					
-			List<Benchmark> benchList = new ArrayList<Benchmark>();
+			List<Benchmark> benchList = new ArrayList<>();
 
 			for(int id : benchIds) {				
 				benchList.add(Benchmarks.get(con, id,false));
@@ -1111,20 +1109,7 @@ public class Benchmarks {
 			 procedure = con.prepareCall("{CALL GetBenchmarksByOwner(?)}");
 			procedure.setInt(1, userId);					
 			 results = procedure.executeQuery();
-			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
-			
-			
-			while(results.next()){
-				Benchmark b = resultToBenchmark(results);
-				Processor t = Processors.resultSetToProcessor(results, "types");
-				b.setType(t);
-				// Add benchmark object to list
-				benchmarks.add(b);
-			}			
-			
-			log.debug(String.format("%d benchmarks were returned as being owned by user %d.", benchmarks.size(), userId));
-			
-			return benchmarks;
+			return resultsToBenchmarkWithType(results);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -1176,7 +1161,7 @@ public class Benchmarks {
 			procedure=con.prepareCall("{CALL GetAssociatedSpaceIdsByBenchmark(?)}");
 			procedure.setInt(1,benchId);
 			results = procedure.executeQuery();
-			List<Integer> ids=new ArrayList<Integer>();
+			List<Integer> ids= new ArrayList<>();
 			while (results.next()) {
 				ids.add(results.getInt("space_id"));
 			}
@@ -1199,7 +1184,7 @@ public class Benchmarks {
 	 * @author Tyler Jensen
 	 * @throws Exception 
 	 */
-	protected static Map<String,String> getAttributes(Connection con, int benchId) throws Exception {
+	protected static Map<String,String> getAttributes(Connection con, int benchId) {
 		CallableStatement procedure=null;
 		ResultSet results=null;
 
@@ -1208,7 +1193,7 @@ public class Benchmarks {
 			procedure.setInt(1, benchId);					
 			results = procedure.executeQuery();
 
-			Map<String, String> prop = new HashMap<String,String>();
+			Map<String, String> prop = new HashMap<>();
 			while(results.next()){
 				prop.put(results.getString("attr_key"), results.getString("attr_value"));
 			}
@@ -1259,7 +1244,7 @@ public class Benchmarks {
 			procedure = con.prepareCall("{CALL getBenchmarkDependencies(?)}");
 			procedure.setInt(1, benchmarkId);					
 			results = procedure.executeQuery();
-			List<BenchmarkDependency> dependencies = new LinkedList<BenchmarkDependency>();
+			List<BenchmarkDependency> dependencies = new LinkedList<>();
 
 			while(results.next()){
 				// Build benchmark dependency object
@@ -1414,7 +1399,7 @@ public class Benchmarks {
 			procedure.setBoolean("recycled", recycled); 
 			
 			results = procedure.executeQuery();
-			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
+			List<Benchmark> benchmarks = new LinkedList<>();
 			
 			while(results.next()){
 				//don't include deleted benchmarks in the results if getDeleted is false
@@ -1482,7 +1467,7 @@ public class Benchmarks {
 			procedure.setString("query", query.getSearchQuery());
 
 			results = procedure.executeQuery();
-			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
+			List<Benchmark> benchmarks = new LinkedList<>();
 			
 			while(results.next()){
 				Benchmark b = new Benchmark();
@@ -1533,7 +1518,7 @@ public class Benchmarks {
 			procedure = con.prepareCall("{CALL GetSpaceBenchmarksById(?)}");
 			procedure.setInt(1, spaceId);					
 			results = procedure.executeQuery();
-			List<Benchmark> benchmarks = new LinkedList<Benchmark>();
+			List<Benchmark> benchmarks = new LinkedList<>();
 
 			while(results.next()){
 				Benchmark b = resultToBenchmarkWithPrefix(results,"bench");
@@ -1683,7 +1668,7 @@ public class Benchmarks {
 	 * @author Wyatt Kaiser
 	 * @throws Exception 
 	 */
-	protected static TreeMap<String,String> getSortedAttributes (Connection con, int benchId) throws Exception {
+	protected static TreeMap<String,String> getSortedAttributes (Connection con, int benchId) {
 		CallableStatement procedure=null;
 		ResultSet results=null;
 
@@ -1692,7 +1677,7 @@ public class Benchmarks {
 			procedure.setInt(1, benchId);					
 			results = procedure.executeQuery();
 
-			TreeMap<String,String> sortedMap = new TreeMap<String,String>();
+			TreeMap<String,String> sortedMap = new TreeMap<>();
 			while (results.next()){
 				sortedMap.put(results.getString("attr_key"), results.getString("attr_value"));
 			}
@@ -2122,7 +2107,7 @@ public class Benchmarks {
 	 * @author Eric Burns
 	 */
 	private static boolean validateDependencies(List<Benchmark> benchmarks, Integer spaceId, Boolean linked) {
-		HashMap<String, BenchmarkDependency> foundDependencies = new HashMap<String, BenchmarkDependency>();
+		HashMap<String, BenchmarkDependency> foundDependencies = new HashMap<>();
 		Benchmark benchmark = new Benchmark();
 		for (int i = 0; i< benchmarks.size(); i++){
 			benchmark = benchmarks.get(i);
@@ -2255,16 +2240,12 @@ public class Benchmarks {
 		
 		final boolean l=perm!=null && perm.isLeader();
 		//It will delay the redirect until this method is finished which is why a new thread is used
-		Util.threadPoolExecute(new Runnable() {
-			@Override
-			public void run(){
-				try {
-				    process(s,proc,h,u,c,st,l);
-				    Uploads.benchmarkEverythingComplete(st);
-				} catch (Exception e) {
-					log.error(e.getMessage(),e);
-				}
-				
+		Util.threadPoolExecute(() -> {
+			try {
+				process(s,proc,h,u,c,st,l);
+				Uploads.benchmarkEverythingComplete(st);
+			} catch (Exception e) {
+				log.error(e.getMessage(),e);
 			}
 		});	
 		
@@ -2290,9 +2271,9 @@ public class Benchmarks {
 				    boolean isCommunityLeader) {
 	    Connection con=null;
 		
-	    log.info("Processing benchmarks in space "+new Integer(spaceId));
+	    log.info("Processing benchmarks in space "+spaceId);
 	    if (isCommunityLeader) {
-			log.debug("User "+new Integer(userId)+" is a community leader, so they can process any benchmarks");
+			log.debug("User "+userId+" is a community leader, so they can process any benchmarks");
 	    }
 
 	    try {
@@ -2360,7 +2341,7 @@ public class Benchmarks {
 		Connection con=null;
 		CallableStatement procedure=null;
 		ResultSet results=null;
-		List<Integer> ids=new ArrayList<Integer>();
+		List<Integer> ids= new ArrayList<>();
 
 		try {
 			con=Common.getConnection();
@@ -2423,14 +2404,7 @@ public class Benchmarks {
 			procedure.setInt(1,userId);
 			
 			results=procedure.executeQuery();
-			List<Benchmark> Benchmarks=new ArrayList<Benchmark>();
-			while (results.next()) {
-				Benchmark b=resultToBenchmark(results);
-				Processor t = Processors.resultSetToProcessor(results, "types");
-				b.setType(t);
-				Benchmarks.add(b);
-			}
-			return Benchmarks;
+			return resultsToBenchmarkWithType(results);
 		}catch (Exception e) {
 			log.error(e.getMessage(),e);
 		} finally {
@@ -2453,15 +2427,9 @@ public class Benchmarks {
 			con = Common.getConnection();
 			 procedure = con.prepareCall("{CALL GetPublicBenchmarks()}");				
 			 results = procedure.executeQuery();
-			List<Benchmark> Benchmarks = new LinkedList<Benchmark>();
-			
-			while(results.next()){
-				Benchmark s=resultToBenchmark(results);
-				Processor t = Processors.resultSetToProcessor(results, "types");
-				s.setType(t);
-				Benchmarks.add(s);
-			}									
-			return Benchmarks;
+
+
+			return resultsToBenchmarkWithType(results);
 		} catch (Exception e){			
 			log.error(e.getMessage(), e);		
 		} finally {
@@ -2470,6 +2438,17 @@ public class Benchmarks {
 			Common.safeClose(results);
 		}
 		return null;
+	}
+
+	private static List<Benchmark> resultsToBenchmarkWithType(ResultSet results) throws SQLException {
+		List<Benchmark> benchmarks = new ArrayList<>();
+		while(results.next()){
+			Benchmark s=resultToBenchmark(results);
+			Processor t = Processors.resultSetToProcessor(results, "types");
+			s.setType(t);
+			benchmarks.add(s);
+		}
+		return benchmarks;
 	}
 	
 	/**
@@ -2482,7 +2461,7 @@ public class Benchmarks {
 	public static List<Benchmark> getByUser(int userId) {
 		try {
 			//will stores Benchmarks according to their IDs, used to remove duplicates
-			HashMap<Integer,Benchmark> uniqueBenchmarks=new HashMap<Integer,Benchmark>();
+			HashMap<Integer,Benchmark> uniqueBenchmarks= new HashMap<>();
 			for (Benchmark s : getByOwner(userId)) {
 				uniqueBenchmarks.put(s.getId(), s);
 			}
@@ -2494,7 +2473,7 @@ public class Benchmarks {
 				uniqueBenchmarks.put(s.getId(), s);
 			}
 			
-			List<Benchmark> benchmarks=new ArrayList<Benchmark>();
+			List<Benchmark> benchmarks= new ArrayList<>();
 			for (Benchmark s : uniqueBenchmarks.values()) {
 				benchmarks.add(s);
 			}
@@ -2519,7 +2498,7 @@ public class Benchmarks {
 		}
 
 		searchQuery=searchQuery.toLowerCase();
-		List<Benchmark> filteredBenchmarks=new ArrayList<Benchmark>();
+		List<Benchmark> filteredBenchmarks= new ArrayList<>();
 		for (Benchmark b : benchmarks) {
 			log.debug("benchmark name "+b.getName());
 			try {
@@ -2563,7 +2542,7 @@ public class Benchmarks {
              procedure = con.prepareCall("{CALL GetBrokenBenchDependencies(?)}");
              procedure.setInt(1, benchId);
              results = procedure.executeQuery();
-            List<Benchmark> Benchmarks = new LinkedList<Benchmark>();
+            List<Benchmark> Benchmarks = new LinkedList<>();
             
             while(results.next()){
                 Benchmark s=get(results.getInt("id"), true, true);
@@ -2589,7 +2568,7 @@ public class Benchmarks {
              procedure = con.prepareCall("{CALL GetBrokenBenchDependencies(?)}");
              procedure.setInt(1, benchId);
              results = procedure.executeQuery();
-            List<Benchmark> Benchmarks = new LinkedList<Benchmark>();
+            List<Benchmark> Benchmarks = new LinkedList<>();
             return results.isBeforeFirst();
         } catch (Exception e){          
             log.error(e.getMessage(), e);       

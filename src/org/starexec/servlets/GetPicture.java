@@ -1,20 +1,19 @@
 package org.starexec.servlets;
 
-import java.io.File;
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.FileUtils;
 import org.starexec.constants.R;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Handles the request to get the picture from the file system. If there
@@ -123,7 +122,7 @@ public class GetPicture extends HttpServlet{
 			File file = new File(sb.toString());
 
 			// If the desired file exists, then the file will return it, or else return the default file Pic0.jpg
-			if (file.exists() == false) {
+			if (!file.exists()) {
 				sb.delete(0, sb.length());
 				sb.append(pictureDir);
 				sb.append(File.separator);

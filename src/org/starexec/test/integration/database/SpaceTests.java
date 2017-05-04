@@ -1,26 +1,10 @@
-package org.starexec.test.integration.database; 
-import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
+package org.starexec.test.integration.database;
 
 import com.google.common.base.Joiner;
 import org.junit.Assert;
 import org.starexec.constants.R;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Communities;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Settings;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Users;
-import org.starexec.exceptions.StarExecSecurityException;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobSpace;
-import org.starexec.data.to.Identifiable;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
+import org.starexec.data.database.*;
+import org.starexec.data.to.*;
 import org.starexec.data.to.enums.CopyPrimitivesOption;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.logger.StarLogger;
@@ -30,6 +14,10 @@ import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
 import org.starexec.util.dataStructures.TreeNode;
+
+import java.sql.SQLException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Tests for org.starexec.data.database.Spaces.java
@@ -66,7 +54,7 @@ public class SpaceTests extends TestSequence {
 	private void removeSolversFromHierarchyTest() {
 		Assert.assertTrue(Solvers.associate(solver.getId(), subspace2.getId()));
 		Assert.assertTrue(Solvers.associate(solver.getId(), subspace3.getId()));
-		List<Integer> si=new ArrayList<Integer>();
+		List<Integer> si= new ArrayList<>();
 		si.add(solver.getId());
 		Assert.assertTrue(Spaces.removeSolversFromHierarchy(si, subspace2.getId(), leader.getId()));
 		boolean found = false;
@@ -126,7 +114,7 @@ public class SpaceTests extends TestSequence {
 	
 	@StarexecTest
 	private void removeSolverTest() {
-		List<Integer> solverId=new ArrayList<Integer>();
+		List<Integer> solverId= new ArrayList<>();
 		solverId.add(solver.getId());
 		Assert.assertTrue(Spaces.removeSolvers(solverId, subspace.getId()));
 		
@@ -144,7 +132,7 @@ public class SpaceTests extends TestSequence {
 	
 	@StarexecTest
 	private void removeBenchmarkTest() {
-		List<Integer> benchId=new ArrayList<Integer>();
+		List<Integer> benchId= new ArrayList<>();
 		benchId.add(benchmarks.get(0).getId());
 		Assert.assertTrue(Spaces.removeBenches(benchId, subspace.getId()));
 		
@@ -261,18 +249,15 @@ public class SpaceTests extends TestSequence {
 
 	private static void assertUnorderedIdentifiableListsAreEqual(List<? extends Identifiable> identifiableList, 
 																 List<? extends Identifiable> otherIdentifiableList) {
-		List<Identifiable> identifiableListCopy = new ArrayList<Identifiable>(identifiableList);	
-		List<Identifiable> otherIdentifiableListCopy = new ArrayList<Identifiable>(otherIdentifiableList);
+		List<Identifiable> identifiableListCopy = new ArrayList<>(identifiableList);
+		List<Identifiable> otherIdentifiableListCopy = new ArrayList<>(otherIdentifiableList);
 		// Compares the id of two identifiables.
-		Comparator<Identifiable> idComparator = new Comparator<Identifiable>() {
-			@Override
-			public int compare(Identifiable identifiable, Identifiable otherIdentifiable) {
-				// Wrap the ids in the Integer object so we can use compareTo method.
-				Integer boxedId = Integer.valueOf(identifiable.getId());
-				Integer otherBoxedId = Integer.valueOf(otherIdentifiable.getId());
-				return boxedId.compareTo(otherBoxedId);
-			}
-		};
+		Comparator<Identifiable> idComparator = (identifiable, otherIdentifiable) -> {
+            // Wrap the ids in the Integer object so we can use compareTo method.
+            Integer boxedId = identifiable.getId();
+            Integer otherBoxedId = otherIdentifiable.getId();
+            return boxedId.compareTo(otherBoxedId);
+        };
 		// Sort both list copies by id
 		Collections.sort(identifiableListCopy, idComparator);
 		Collections.sort(otherIdentifiableListCopy, idComparator);
@@ -295,7 +280,7 @@ public class SpaceTests extends TestSequence {
 		Space space2=loader.loadSpaceIntoDatabase(leader.getId(), space1.getId());
 		String space2Path=space1Path+R.JOB_PAIR_PATH_DELIMITER+space2.getName();
 		
-		List<Space> spaceList=new ArrayList<Space>();
+		List<Space> spaceList= new ArrayList<>();
 		spaceList.add(space1);
 		spaceList.add(space2);
 		HashMap<Integer,String> SP =Spaces.spacePathCreate(leader.getId(), spaceList, community.getId());
@@ -303,7 +288,7 @@ public class SpaceTests extends TestSequence {
 		Assert.assertEquals(space2Path, SP.get(space2.getId()));
 
 		//same test as above, but making the list in the opposite order
-		spaceList=new ArrayList<Space>();
+		spaceList= new ArrayList<>();
 		spaceList.add(space2);
 		spaceList.add(space1);
 		SP=Spaces.spacePathCreate(leader.getId(), spaceList, community.getId());
@@ -356,7 +341,7 @@ public class SpaceTests extends TestSequence {
 	}
 	
 	@StarexecTest
-	private void nameUpdateTest() throws Exception {
+	private void nameUpdateTest() {
 		String currentName=community.getName();
 		Assert.assertEquals(currentName,Spaces.getName(community.getId()));
 		addMessage("Space name consistent before update");
@@ -367,7 +352,7 @@ public class SpaceTests extends TestSequence {
 		community.setName(newName);
 	}
 	@StarexecTest
-	private void descriptionUpdateTest() throws Exception {
+	private void descriptionUpdateTest() {
 		String currentDesc=community.getDescription();
 		Assert.assertEquals(currentDesc,Spaces.get(community.getId()).getDescription());
 		String newDesc=TestUtil.getRandomSpaceName(); //any somewhat long, random string will work
@@ -433,7 +418,7 @@ public class SpaceTests extends TestSequence {
 		solver=loader.loadSolverIntoDatabase("CVC4.zip", subspace.getId(), leader.getId());
 
 		ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", subspace.getId(), leader.getId());
-		benchmarks=new ArrayList<Benchmark>();
+		benchmarks= new ArrayList<>();
 		for (Integer id : ids) {
 			benchmarks.add(Benchmarks.get(id));
 		}

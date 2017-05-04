@@ -1,62 +1,27 @@
 package org.starexec.util;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-
 import org.apache.commons.lang3.tuple.Triple;
-
 import org.starexec.app.RESTHelpers;
 import org.starexec.constants.R;
 import org.starexec.constants.Web;
-import org.starexec.data.database.AnonymousLinks;
+import org.starexec.data.database.*;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
-import org.starexec.data.database.Benchmarks;
-import org.starexec.data.database.Cluster;
-import org.starexec.data.database.Communities;
-import org.starexec.data.database.JobPairs;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.database.Permissions;
-import org.starexec.data.database.Processors;
-import org.starexec.data.database.Queues;
-import org.starexec.data.database.Spaces;
-import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Users;
-import org.starexec.data.database.Websites;
-
 import org.starexec.data.security.BenchmarkSecurity;
-import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.GeneralSecurity;
+import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.SolverSecurity;
-import org.starexec.data.security.ValidatorStatusCode;
-
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.BenchmarkDependency;
-import org.starexec.data.to.Configuration;
-import org.starexec.data.to.Job;
-import org.starexec.data.to.JobPair;
-import org.starexec.data.to.JobSpace;
-import org.starexec.data.to.JobStatus;
+import org.starexec.data.to.*;
 import org.starexec.data.to.JobStatus.JobStatusCode;
-import org.starexec.data.to.Processor;
 import org.starexec.data.to.Queue;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.SolverStats;
-import org.starexec.data.to.User;
-import org.starexec.data.to.Website;
 import org.starexec.data.to.Website.WebsiteType;
-import org.starexec.data.to.WorkerNode;
-import org.starexec.data.to.SolverBuildStatus;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.logger.StarLogger;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  * Contains helper methods for JSP pages.
@@ -138,7 +103,7 @@ public class JspHelpers {
 
 				User u=Users.get(j.getUserId());
 
-				String jobSpaceTreeJson = RESTHelpers.getJobSpacesTreeJson(jobSpaceId, j.getId(), userId);
+				String jobSpaceTreeJson = RESTHelpers.getJobSpacesTreeJson( j.getId(), userId);
 				List<JobSpace> jobSpaces = Spaces.getSubSpacesForJob(jobSpaceId, true);
 				jobSpaces.add(jobSpace);
 				request.setAttribute("jobSpaces", jobSpaces);
@@ -234,7 +199,7 @@ public class JspHelpers {
 					handleNullSolver( solverId.get(), response );
 					return;
 				}
-				setSolverPageRequestAttributes( true, AnonymousLinks.areSolversAnonymized( primitivesToAnonymize.get() ), solver, request, response );
+				setSolverPageRequestAttributes( true, AnonymousLinks.areSolversAnonymized( primitivesToAnonymize.get() ), solver, request);
 			} else {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Page not found.");
 				return;
@@ -271,7 +236,7 @@ public class JspHelpers {
 				request.setAttribute( "downloadable", downloadable );
 				request.setAttribute( "hasAdminReadPrivileges", GeneralSecurity.hasAdminReadPrivileges( userId ));
 
-				setSolverPageRequestAttributes( false, false, s, request, response );
+				setSolverPageRequestAttributes( false, false, s, request);
 			} else {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Solver does not exist or is restricted");
 			}
@@ -289,8 +254,7 @@ public class JspHelpers {
 			boolean isAnonymousPage,
 			boolean hideSolverName,
 			Solver s,
-			HttpServletRequest request,
-			HttpServletResponse response ) throws IOException {
+			HttpServletRequest request) {
 
 		if ( s == null ) {
 			return;
@@ -300,7 +264,7 @@ public class JspHelpers {
 		//we need two versions of every website URL-- one for insertion into an attribute and
 		//one for insertion into the HTML body. This data structure represents every site with 3 strings
 		//first the name, then the attribute URL, then the body URL
-		List<String[]> formattedSites=new ArrayList<String[]>();
+		List<String[]> formattedSites= new ArrayList<>();
 		for (Website site : sites) {
 			String[] formattedSite=new String[3];
 			formattedSite[0]=GeneralSecurity.getHTMLSafeString(site.getName());

@@ -1,14 +1,5 @@
 package org.starexec.servlets;
 
-import java.io.IOException;
-import java.util.UUID;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.starexec.constants.R;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.GeneralSecurity;
@@ -19,6 +10,14 @@ import org.starexec.util.Mail;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.UUID;
 
 
 /**
@@ -51,7 +50,7 @@ public class Registration extends HttpServlet {
 			log.entry(method);
 
 			// Begin registration for a new user
-			ValidatorStatusCode result = register(request, response);
+			ValidatorStatusCode result = register(request);
 			if (result.isSuccess()) {
 				response.sendRedirect(Util.docRoot("public/registrationConfirmation.jsp"));
 			} else {
@@ -76,7 +75,7 @@ public class Registration extends HttpServlet {
 	 * 2 if parameter validation fails
 	 * @author Todd Elvers
 	 */
-	public static ValidatorStatusCode register(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public static ValidatorStatusCode register(HttpServletRequest request) throws IOException {
 		
 		// Validate parameters of the new user request
 		ValidatorStatusCode status=validateRequest(request);

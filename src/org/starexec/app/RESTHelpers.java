@@ -1,15 +1,16 @@
 package org.starexec.app;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.time.StopWatch;
-import org.apache.commons.lang3.tuple.ImmutableTriple;
-import org.apache.commons.lang3.tuple.Triple;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.annotations.Expose;
-import org.starexec.command.*;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.time.StopWatch;
+import org.apache.commons.lang3.tuple.ImmutableTriple;
+import org.apache.commons.lang3.tuple.Triple;
+import org.starexec.command.C;
+import org.starexec.command.Connection;
 import org.starexec.constants.R;
 import org.starexec.data.database.*;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
@@ -29,10 +30,8 @@ import org.starexec.logger.StarLogger;
 import org.starexec.test.integration.TestResult;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.util.*;
-import org.w3c.dom.Attr;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -77,7 +76,7 @@ public class RESTHelpers {
 	 * @author Tyler Jensen
 	 */
 	protected static List<JSTreeItem> toSpaceTree(List<Space> spaceList,int userID) {
-		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
+		List<JSTreeItem> list = new LinkedList<>();
 		for (Space space : spaceList) {
 			String isOpen = Spaces.getCountInSpace(space.getId(), userID, true) > 0 ? "closed" : "leaf";
 			list.add(new JSTreeItem(space.getName(), space.getId(), isOpen,R.SPACE));
@@ -95,7 +94,7 @@ public class RESTHelpers {
 	 * @author Tyler Jensen
 	 */
 	protected static List<JSTreeItem> toJobSpaceTree(List<JobSpace> jobSpaceList) {
-		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
+		List<JSTreeItem> list = new LinkedList<>();
 
 		for (JobSpace space : jobSpaceList) {
 			String isOpen = Spaces.getCountInJobSpace(space.getId()) > 0 ? "closed" : "leaf";
@@ -115,7 +114,7 @@ public class RESTHelpers {
 	 * @author Tyler Jensen
 	 */
 	protected static List<JSTreeItem> toNodeList(List<WorkerNode> nodes) {
-		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
+		List<JSTreeItem> list = new LinkedList<>();
 
 		for (WorkerNode n : nodes) {
 			// Only take the first part of the host name, the full one is too
@@ -140,7 +139,7 @@ public class RESTHelpers {
 	 * @author Tyler Jensen
 	 */
 	protected static List<JSTreeItem> toQueueList(List<Queue> queues) {
-		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
+		List<JSTreeItem> list = new LinkedList<>();
 		for (Queue q : queues) {
 			//status might be null, so we don't want a null pointer in that case
 			String status=q.getStatus();
@@ -165,7 +164,7 @@ public class RESTHelpers {
 	 * @author Tyler Jensen
 	 */
 	protected static List<JSTreeItem> toCommunityList(List<Space> communities) {
-		List<JSTreeItem> list = new LinkedList<JSTreeItem>();
+		List<JSTreeItem> list = new LinkedList<>();
 
 		for (Space space : communities) {
 			JSTreeItem t = new JSTreeItem(space.getName(), space.getId(), "leaf", R.SPACE);
@@ -200,7 +199,7 @@ public class RESTHelpers {
 			this.data = name;
 			this.attr = new JSTreeAttribute(id, type,maxStages, cLass);
 			this.state = state;
-			this.children = new LinkedList<JSTreeItem>();
+			this.children = new LinkedList<>();
 		}
 
 		public List<JSTreeItem> getChildren() {
@@ -463,8 +462,7 @@ public class RESTHelpers {
 			return gson.toJson(RESTServices.ERROR_TOO_MANY_JOB_PAIRS);
 		}
 
-		String nextDataTablesPageJson = gson.toJson(nextDataTablesPage);
-		return nextDataTablesPageJson;
+		return gson.toJson(nextDataTablesPage);
 	}
 
 	/**
@@ -592,7 +590,7 @@ public class RESTHelpers {
         	query.setSortASC(Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR)));
         }
 
-		List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
+		List<JobPair> jobPairsToDisplay = new LinkedList<>();
 		// Retrieves the relevant Job objects to use in constructing the JSON to
 		// send to the client
 		int[] totals = new int[2];
@@ -617,7 +615,7 @@ public class RESTHelpers {
 			query.setTotalRecordsAfterQuery(totals[1]);
 		}
 
-	   return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,0, primitivesToAnonymize);
+	   return convertJobPairsToJsonObject(jobPairsToDisplay,query,wallclock,0, primitivesToAnonymize);
 	}
 
 
@@ -951,7 +949,7 @@ public class RESTHelpers {
 				return null;
 			}
 
-			List<SolverComparison> solverComparisonsToDisplay = new LinkedList<SolverComparison>();
+			List<SolverComparison> solverComparisonsToDisplay = new LinkedList<>();
 
 			// Retrieves the relevant Job objects to use in constructing the JSON to
 			// send to the client
@@ -979,7 +977,7 @@ public class RESTHelpers {
 			return null;
 		}
 
-		List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
+		List<JobPair> jobPairsToDisplay = new LinkedList<>();
         String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
         if (sortOverride!=null) {
         	query.setSortColumn(Integer.parseInt(sortOverride));
@@ -995,7 +993,7 @@ public class RESTHelpers {
 
         query.setTotalRecordsAfterQuery(Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId,configId, type,query.getSearchQuery(),stageNumber));
 
-	    return convertJobPairsToJsonObject(jobPairsToDisplay,query,true,wallclock,stageNumber, PrimitivesToAnonymize.NONE);
+	    return convertJobPairsToJsonObject(jobPairsToDisplay,query,wallclock,stageNumber, PrimitivesToAnonymize.NONE);
 	}
 
 	/**
@@ -1018,7 +1016,7 @@ public class RESTHelpers {
 				return null;
 			}
 
-			List<JobPair> jobPairsToDisplay = new LinkedList<JobPair>();
+			List<JobPair> jobPairsToDisplay = new LinkedList<>();
 
 			if (type.equals("queue")) {
 				// Retrieves the relevant Job objects to use in constructing the
@@ -1073,7 +1071,7 @@ public class RESTHelpers {
 
 		switch (type) {
 		case JOB:
-			List<Job> jobsToDisplay = new LinkedList<Job>();
+			List<Job> jobsToDisplay = new LinkedList<>();
 
 			query.setTotalRecords(Jobs.getRunningJobCount() + Jobs.getPausedJobCount());
 			// Retrieves the relevant Job objects to use in constructing the
@@ -1093,7 +1091,7 @@ public class RESTHelpers {
 			return convertJobsToJsonObject(jobsToDisplay,query, false);
 
 		case USER:
-			List<User> usersToDisplay = new LinkedList<User>();
+			List<User> usersToDisplay = new LinkedList<>();
 			query.setTotalRecords(Users.getCount());
 			// Retrieves the relevant User objects to use in constructing the
 			// JSON to send to the client
@@ -1123,7 +1121,7 @@ public class RESTHelpers {
 			return null;
 		}
 
-		List<Benchmark> benchmarksToDisplay = new LinkedList<Benchmark>();
+		List<Benchmark> benchmarksToDisplay = new LinkedList<>();
 		String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
 		if (sortOverride!=null) {
 			query.setSortColumn(Integer.parseInt(sortOverride));
@@ -1154,7 +1152,7 @@ public class RESTHelpers {
 			return null;
 		}
 
-		List<Job> jobsToDisplay = new LinkedList<Job>();
+		List<Job> jobsToDisplay = new LinkedList<>();
 
 		// Retrieves the relevant Job objects to use in constructing the
 		// JSON to send to the client
@@ -1169,8 +1167,7 @@ public class RESTHelpers {
 
 		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 
-		JsonObject answer = convertJobsToJsonObject(jobsToDisplay, query, false);
-		return answer;
+		return convertJobsToJsonObject(jobsToDisplay, query, false);
 	}
 
 	public static JsonObject getNextUserPageForSpaceExplorer(int id, HttpServletRequest request) {
@@ -1179,7 +1176,7 @@ public class RESTHelpers {
 		if(query==null){
 			return null;
 		}
-		List<User> usersToDisplay = new LinkedList<User>();
+		List<User> usersToDisplay = new LinkedList<>();
 		query.setTotalRecords(Users.getCountInSpace(id));
 
 		// Retrieves the relevant User objects to use in constructing the JSON to send to the client
@@ -1204,7 +1201,7 @@ public class RESTHelpers {
 		if (query == null) {
 			return null;
 		}
-		List<Solver> solversToDisplay = new LinkedList<Solver>();
+		List<Solver> solversToDisplay = new LinkedList<>();
 
 		// Retrieves the relevant Solver objects to use in constructing the JSON to send to the client
 		solversToDisplay = Solvers.getSolversForNextPage(query,id);
@@ -1226,7 +1223,7 @@ public class RESTHelpers {
 		if (query == null) {
 			return null;
 		}
-		List<Space> spacesToDisplay = new LinkedList<Space>();
+		List<Space> spacesToDisplay = new LinkedList<>();
 
 		int userId = SessionUtil.getUserId(request);
 		query.setTotalRecords(Spaces.getCountInSpace(id, userId,false));
@@ -1242,7 +1239,7 @@ public class RESTHelpers {
 		else {
 			query.setTotalRecordsAfterQuery(Spaces.getCountInSpace(id, userId, query.getSearchQuery()));
 		}
-		return convertSpacesToJsonObject(spacesToDisplay,query,id);
+		return convertSpacesToJsonObject(spacesToDisplay,query);
 	}
 
 
@@ -1383,7 +1380,7 @@ public class RESTHelpers {
 	    }
 		switch (type) {
 		case JOB:
-			List<Job> jobsToDisplay = new LinkedList<Job>();
+			List<Job> jobsToDisplay = new LinkedList<>();
 
 			// Retrieves the relevant Job objects to use in constructing the
 			// JSON to send to the client
@@ -1399,8 +1396,7 @@ public class RESTHelpers {
 
 			// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 
-			JsonObject answer = convertJobsToJsonObject(jobsToDisplay, query, dataAsObjects);
-			return answer;
+			return convertJobsToJsonObject(jobsToDisplay, query, dataAsObjects);
 
 
 	    case SOLVER:
@@ -1547,20 +1543,14 @@ public class RESTHelpers {
         		entry.add(new JsonPrimitive(displayDiff + " s"));
     		}
     		String link1 = getPairsInSpaceHtml(
-                            "all",
                             jobSpaceId,
                             c.getFirstPair().getPrimaryConfiguration().getId(),
-                            1,
-                            c.getFirstPair().getStageFromNumber(stageNumber).getStarexecResult(),
-                            PrimitivesToAnonymize.NONE);
+                            c.getFirstPair().getStageFromNumber(stageNumber).getStarexecResult());
 
     		String link2 = getPairsInSpaceHtml(
-                            "all",
                             jobSpaceId,
                             c.getSecondPair().getPrimaryConfiguration().getId(),
-                            1,
-                            c.getSecondPair().getStageFromNumber(stageNumber).getStarexecResult(),
-                            PrimitivesToAnonymize.NONE);
+                            c.getSecondPair().getStageFromNumber(stageNumber).getStarexecResult());
     		entry.add(new JsonPrimitive(link1));
     		entry.add(new JsonPrimitive(link2));
     		if (c.doResultsMatch(stageNumber)) {
@@ -1723,7 +1713,6 @@ public class RESTHelpers {
 	 * Given a list of job pairs, creates a JsonObject that can be used to populate a datatable client-side
 	 * @param pairs The pairs that will be the rows of the table
 	 * @param query a DataTables query object
-	 * @param includeConfigAndSolver Whether to include columns for the config and solver of each pair
 	 * @param useWallclock Whether to use wallclock time (true) or cpu time (false)
 	 * @param stageNumber The number of the stage to use the data from for each pair
 	 * @param primitivesToAnonymize PrimitivesToAnonymize object representing whether benchmarks, solvers, or both
@@ -1731,8 +1720,12 @@ public class RESTHelpers {
 	 * @return A JsonObject that can be used to populate a datatable
 	 * @author Eric Burns
 	 */
-	public static JsonObject convertJobPairsToJsonObject(List<JobPair> pairs, DataTablesQuery query,
-			boolean includeConfigAndSolver, boolean useWallclock, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize ) {
+	public static JsonObject convertJobPairsToJsonObject(
+			List<JobPair> pairs,
+			DataTablesQuery query,
+			boolean useWallclock,
+			int stageNumber,
+			PrimitivesToAnonymize primitivesToAnonymize ) {
 
 		/**
 		 * Generate the HTML for the next DataTable page of entries
@@ -1745,15 +1738,14 @@ public class RESTHelpers {
 
 			String benchLink = getBenchLinkWithHiddenPairId(jp.getBench(), jp.getId(), primitivesToAnonymize);
 
-			if (includeConfigAndSolver) {
-				// Create the solver link
-				solverLink = getSolverLink(stage.getSolver().getId(),stage.getSolver().getName(), primitivesToAnonymize);
-				// Create the configuration link
-				configLink = getConfigLink(
-						stage.getSolver().getConfigurations().get(0).getId(),
-						stage.getSolver().getConfigurations().get(0).getName(),
-						primitivesToAnonymize);
-			}
+			// Create the solver link
+			solverLink = getSolverLink(stage.getSolver().getId(),stage.getSolver().getName(), primitivesToAnonymize);
+			// Create the configuration link
+			configLink = getConfigLink(
+					stage.getSolver().getConfigurations().get(0).getId(),
+					stage.getSolver().getConfigurations().get(0).getName(),
+					primitivesToAnonymize);
+
 
 
 			// Create the status field
@@ -1769,10 +1761,9 @@ public class RESTHelpers {
 			// entry in the DataTable
 			JsonArray entry = new JsonArray();
     		entry.add(new JsonPrimitive(benchLink));
-    		if (includeConfigAndSolver) {
-    			entry.add(new JsonPrimitive(solverLink));
-        		entry.add(new JsonPrimitive(configLink));
-    		}
+			entry.add(new JsonPrimitive(solverLink));
+			entry.add(new JsonPrimitive(configLink));
+
 
     		entry.add(new JsonPrimitive(status));
     		if (useWallclock) {
@@ -2055,7 +2046,7 @@ public class RESTHelpers {
 	 * @return A JsonObject that can be used to populate a datatable
 	 * @author Eric Burns
 	 */
-	public static JsonObject convertSpacesToJsonObject(List<Space> spaces,DataTablesQuery query, int id) {
+	public static JsonObject convertSpacesToJsonObject(List<Space> spaces,DataTablesQuery query) {
 		/**
 		 * Generate the HTML for the next DataTable page of entries
 		 */
@@ -2223,25 +2214,12 @@ public class RESTHelpers {
 	}
 
 	private static String getPairsInSpaceHtml(
-			String type,
 			int spaceId,
 			int configId,
-			int stageNumber,
-			String linkText,
-			PrimitivesToAnonymize primitivesToAnonymize) {
-
-		StringBuilder sb = new StringBuilder();
-
-		if ( AnonymousLinks.isNothingAnonymized( primitivesToAnonymize )) {
-			sb = getPairsInSpaceLink( type, spaceId, configId, stageNumber );
-		}
-
+			String linkText) {
+		StringBuilder sb = getPairsInSpaceLink( "all", spaceId, configId, 1 );
 		sb.append( linkText );
-
-		if ( AnonymousLinks.isNothingAnonymized( primitivesToAnonymize )) {
-			RESTHelpers.addImg(sb);
-		}
-
+		RESTHelpers.addImg(sb);
 		return sb.toString();
 	}
 
@@ -2274,12 +2252,11 @@ public class RESTHelpers {
 
 	/**
 	 * Gets a JSON representation of a job space tree
-	 * @param parentId
 	 * @param jobId
 	 * @param userId
 	 * @return
 	 */
-	public static String getJobSpacesTreeJson(int parentId, int jobId, int userId) {
+	public static String getJobSpacesTreeJson(int jobId, int userId) {
 		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jobId,userId);
 		if (!status.isSuccess()) {
 			String output = gson.toJson(status);
@@ -2287,7 +2264,7 @@ public class RESTHelpers {
 			return output;
 		}
 
-		List<JSTreeItem> subspaces = new ArrayList<JSTreeItem>();
+		List<JSTreeItem> subspaces = new ArrayList<>();
 		buildFullJsTree(jobId, subspaces);
 
 		return gson.toJson(subspaces);
@@ -2304,11 +2281,7 @@ public class RESTHelpers {
 		buildFullJsTreeHelper(0, jobId, root, true);
 	}
 
-	/**
-	 * Helper method for buildFullJsTree
-	 * @see org.starexec.app.RESTHelpers#buildFullJsTree
-	 */
-	private static void buildFullJsTreeHelper(int parentId, int jobId, List<JSTreeItem> root, boolean firstRecursion) {
+	private static List<JobSpace> getSubspacesOrRootSpace(int parentId, int jobId) {
 		List<JobSpace> subspaces = new ArrayList<>();
 		if (parentId>0) {
 			subspaces = Spaces.getSubSpacesForJob(parentId,false);
@@ -2318,6 +2291,14 @@ public class RESTHelpers {
 			JobSpace s=Spaces.getJobSpace(j.getPrimarySpace());
 			subspaces.add(s);
 		}
+		return subspaces;
+	}
+	/**
+	 * Helper method for buildFullJsTree
+	 * @see org.starexec.app.RESTHelpers#buildFullJsTree
+	 */
+	private static void buildFullJsTreeHelper(int parentId, int jobId, List<JSTreeItem> root, boolean firstRecursion) {
+		List<JobSpace> subspaces = getSubspacesOrRootSpace(parentId, jobId);
 
 		String className = (firstRecursion ? "rootNode" : null);
 
@@ -2387,16 +2368,8 @@ public class RESTHelpers {
 	}
 
 	protected static String getJobSpacesJson( int parentId, int jobId, boolean makeSpaceTree, PrimitivesToAnonymize primitivesToAnonymize ) {
-		List<JobSpace> subspaces=new ArrayList<JobSpace>();
 		log.debug("got a request for parent space = "+parentId);
-		if (parentId>0) {
-			subspaces=Spaces.getSubSpacesForJob(parentId,false);
-		} else {
-			//if the id given is 0, we want to get the root space
-			Job j=Jobs.get(jobId);
-			JobSpace s=Spaces.getJobSpace(j.getPrimarySpace());
-			subspaces.add(s);
-		}
+		List<JobSpace> subspaces = getSubspacesOrRootSpace(parentId, jobId);
 
 		if ( AnonymousLinks.areJobsAnonymized( primitivesToAnonymize )) {
 			anonymizeJobSpaceNames( subspaces, jobId );
@@ -2567,7 +2540,7 @@ public class RESTHelpers {
 	private static Map<String, Triple<Integer, Double, Double>> initializeAttrCounts(List<String> headers) {
 		Map<String, Triple<Integer, Double, Double>> attrCounts = new HashMap<>();
 		for (String header : headers) {
-			attrCounts.put(header, new ImmutableTriple<Integer, Double, Double>(0, 0.0, 0.0));
+			attrCounts.put(header, new ImmutableTriple<>(0, 0.0, 0.0));
 		}
 		return attrCounts;
 	}

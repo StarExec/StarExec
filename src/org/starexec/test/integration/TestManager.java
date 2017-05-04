@@ -1,29 +1,26 @@
 package org.starexec.test.integration;
 
+import org.apache.commons.io.FileUtils;
+import org.starexec.constants.R;
+import org.starexec.logger.StarLogger;
+import org.starexec.test.integration.StateTests.IntroStateTests;
+import org.starexec.test.integration.app.RESTHelpersTests;
+import org.starexec.test.integration.app.RESTServicesSecurityTests;
+import org.starexec.test.integration.database.*;
+import org.starexec.test.integration.security.*;
+import org.starexec.test.integration.servlets.BenchmarkUploaderTests;
+import org.starexec.test.integration.util.JobUtilTests;
+import org.starexec.test.integration.util.dataStructures.TreeNodeTests;
+import org.starexec.test.integration.web.GetPageTests;
+import org.starexec.test.integration.web.StarexecCommandTests;
+import org.starexec.util.Util;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import org.apache.commons.io.FileUtils;
-
-
-import org.starexec.constants.R;
-
-
-import org.starexec.logger.StarLogger;
-import org.starexec.test.integration.StateTests.IntroStateTests;
-import org.starexec.test.integration.app.RESTHelpersTests;
-import org.starexec.test.integration.app.RESTServicesSecurityTests;
-import org.starexec.test.integration.app.RESTServicesTests;
-import org.starexec.test.integration.database.*;
-import org.starexec.test.integration.security.*;
-import org.starexec.test.integration.util.JobUtilTests;
-import org.starexec.test.integration.util.dataStructures.TreeNodeTests;
-import org.starexec.test.integration.web.*;
-import org.starexec.util.Util;
 
 /**
  * This class maintains a list of all TestSequences and handles requests
@@ -37,7 +34,7 @@ public class TestManager {
 	private final static AtomicBoolean isRunning=new AtomicBoolean(false);
 	private final static AtomicBoolean isRunningStress=new AtomicBoolean(false);
 	//this should never be modified outside of the initializeTests method
-	private final static List<TestSequence> tests=new ArrayList<TestSequence>();
+	private final static List<TestSequence> tests= new ArrayList<>();
 	/**
 	 * all test sequences need to be initialized here. Simply add new TestSequences to the 
 	 * list of all tests. This is called once on Starexec startup.
@@ -82,6 +79,7 @@ public class TestManager {
 		tests.add(new JobUtilTests());
 		tests.add(new ReportsTests());
 		tests.add(new ErrorLogsTests());
+		tests.add(new BenchmarkUploaderTests());
 		//tests.add(new RESTServicesTests());
 	}
 	/**
@@ -117,21 +115,18 @@ public class TestManager {
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
 		
 		//we want to return here, not wait until all the tests finish, which is why we spin off a new threads
-		threadPool.execute(new Runnable() {
-			@Override
-			public void run(){
-				
-				//we want to clear all the results first, so it's obvious to the user what is left to be run
-				for (TestSequence t : tests) {
-					t.clearResults();
-				}
-				
-				for (TestSequence t : tests) {
-					t.execute();
-				}
-				isRunning.set(false);
-			}
-		});	
+		threadPool.execute(() -> {
+
+            //we want to clear all the results first, so it's obvious to the user what is left to be run
+            for (TestSequence t : tests) {
+                t.clearResults();
+            }
+
+            for (TestSequence t : tests) {
+                t.execute();
+            }
+            isRunning.set(false);
+        });
 		return true;
 	}
 	/**
@@ -168,22 +163,19 @@ public class TestManager {
 		final String[] t=testNames;
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
 		//we want to return here, not wait until all the tests finish, which is why we spin off a new thread
-		threadPool.execute(new Runnable() {
-			@Override
-			public void run(){
-				
-				for (String s : t) {
-					TestSequence test = getTestSequence(s);
-					if (test!=null) {
-						test.clearResults();
-						
-						executeTest(test);
-					}
-					
-				}
-				isRunning.set(false);
-			}
-		});	
+		threadPool.execute(() -> {
+
+            for (String s : t) {
+                TestSequence test = getTestSequence(s);
+                if (test!=null) {
+                    test.clearResults();
+
+                    executeTest(test);
+                }
+
+            }
+            isRunning.set(false);
+        });
 		
 		return true;
 	}
@@ -213,14 +205,11 @@ public class TestManager {
 		
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
 		//we want to return here, not wait until all the tests finish, which is why we spin off a new thread
-		threadPool.execute(new Runnable() {
-			@Override
-			public void run(){
-				StressTest.execute(userCount,spaceCount,minUsersPerSpace,maxUsersPerSpace,minSolversPerSpace,maxSolversPerSpace,
-						minBenchmarksPerSpace, maxBenchmarksPerSpace,jobCount,spacesPerJobCount);
-				isRunningStress.set(false);
-			}
-		});	
+		threadPool.execute(() -> {
+            StressTest.execute(userCount,spaceCount,minUsersPerSpace,maxUsersPerSpace,minSolversPerSpace,maxSolversPerSpace,
+                    minBenchmarksPerSpace, maxBenchmarksPerSpace,jobCount,spacesPerJobCount);
+            isRunningStress.set(false);
+        });
 		
 		return true;
 	}
@@ -237,7 +226,7 @@ public class TestManager {
 	 * @return the names of all TestSequences known to the manager
 	 */
 	public static List<String> getTestNames() {
-		List<String> names=new ArrayList<String>();
+		List<String> names= new ArrayList<>();
 		for (TestSequence t : tests) {
 			names.add(t.getName());
 		}
@@ -292,19 +281,16 @@ public class TestManager {
 		}
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
 		log.debug("trying to empty the job output directory");
-		threadPool.execute(new Runnable() {
-			@Override
-			public void run(){
-				File file=new File(R.getJobOutputDirectory());
-				log.debug("calling deleteQuietly on job output");
+		threadPool.execute(() -> {
+            File file=new File(R.getJobOutputDirectory());
+            log.debug("calling deleteQuietly on job output");
 
-				FileUtils.deleteQuietly(file);
-				log.debug("finished calling deleteQuietly on job output");
+            FileUtils.deleteQuietly(file);
+            log.debug("finished calling deleteQuietly on job output");
 
-				
-				file.mkdir();
-			}
-		});
+
+            file.mkdir();
+        });
 	}
 	
 }

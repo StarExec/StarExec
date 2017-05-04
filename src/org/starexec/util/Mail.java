@@ -1,17 +1,5 @@
 package org.starexec.util;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.NullPointerException;
-import java.sql.SQLException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.mail.DefaultAuthenticator;
 import org.apache.commons.mail.Email;
@@ -25,6 +13,16 @@ import org.starexec.data.to.Report;
 import org.starexec.data.to.User;
 import org.starexec.logger.StarLogger;
 import org.starexec.servlets.PasswordReset;
+
+import java.io.File;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Contains utilities for sending mail from the local SMTP server
@@ -258,7 +256,7 @@ public class Mail {
 	 * @param email the reports email
 	 * @author Albert Giegerich
 	 */
-	public static void sendReports(List<User> recipients, String email) throws IOException {
+	public static void sendReports(List<User> recipients, String email) {
 		for (User user : recipients) {
 			String finalEmail = email.replace("$$USER$$", user.getFullName());	
 			Mail.mail(finalEmail, "STAREXEC - REPORT", new String[] { user.getEmail() });

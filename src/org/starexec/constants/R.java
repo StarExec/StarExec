@@ -1,14 +1,4 @@
 package org.starexec.constants;
-import java.io.File;
-import java.lang.UnsupportedOperationException;
-import java.sql.Date;
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.function.BiFunction;
 
 import org.starexec.backend.Backend;
 import org.starexec.backend.GridEngineBackend;
@@ -16,7 +6,13 @@ import org.starexec.backend.LocalBackend;
 import org.starexec.backend.OARBackend;
 import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.exceptions.StarExecException;
-import org.w3c.dom.Element;
+
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.HashMap;
 
 /**
  * Class which holds static resources (R) available for use

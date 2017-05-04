@@ -4,7 +4,9 @@ import org.starexec.data.to.ErrorLog;
 import org.starexec.logger.NonSavingStarLogger;
 import org.starexec.logger.StarLevel;
 
-import java.sql.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
