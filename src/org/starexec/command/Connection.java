@@ -1101,7 +1101,7 @@ public class Connection {
 	 */
 
 	public int rerunJob(Integer jobID) {
-		return rerunPairOrJobHelper(baseURL + C.URL_RERUNJOB, jobID);
+		return makePostWithId(baseURL + C.URL_RERUNJOB, jobID);
 	}
 
 	/**
@@ -1112,10 +1112,10 @@ public class Connection {
 	 */
 
 	public int rerunPair(Integer pairID) {
-		return rerunPairOrJobHelper(baseURL + C.URL_RERUNPAIR, pairID);
+		return makePostWithId(baseURL + C.URL_RERUNPAIR, pairID);
 	}
 
-	private int rerunPairOrJobHelper(final String url, final Integer id) {
+	private int makePostWithId(final String url, final Integer id) {
 		HttpResponse response = null;
 		try {
 			String URL = url;
@@ -1159,23 +1159,7 @@ public class Connection {
 			} else {
 				URL = URL.replace("{method}", "resume");
 			}
-			URL = URL.replace("{id}", jobID.toString());
-			HttpPost post = new HttpPost(URL);
-			post = (HttpPost) setHeaders(post);
-			post.setEntity(new UrlEncodedFormEntity(new ArrayList<>(), "UTF-8"));
-			response = executeGetOrPost(post);
-			JsonObject obj = JsonHandler.getJsonObject(response);
-
-			boolean success = JsonHandler.getSuccessOfResponse(obj);
-			String message = JsonHandler.getMessageOfResponse(obj);
-
-			if (success) {
-				return 0;
-			} else {
-				setLastError(message);
-				return Status.ERROR_SERVER;
-			}
-
+			return makePostWithId(URL, jobID);
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
 		} finally {
