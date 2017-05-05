@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schema xmlns="http://www.w3.org/2001/XMLSchema" 
-		xmlns:tns="https://stardev.cs.uiowa.edu/starexec_agiegerich/public/runSolverOnUploadBatchJobSchema.xsd" 
-		targetNamespace="https://stardev.cs.uiowa.edu/starexec_agiegerich/public/runSolverOnUploadBatchJobSchema.xsd"
-		xmlns:jst="https://stardev.cs.uiowa.edu/starexec_agiegerich/public/jobSchemaTypes.xsd">
+		xmlns:tns="https://www.starexec.org/starexec/public/runSolverOnUploadBatchJobSchema.xsd" 
+		targetNamespace="https://www.starexec.org/starexec/public/runSolverOnUploadBatchJobSchema.xsd"
+		xmlns:jst="https://www.starexec.org/starexec/public/jobSchemaTypes.xsd">
 
-	<import namespace="https://stardev.cs.uiowa.edu/starexec_agiegerich/public/jobSchemaTypes.xsd" schemaLocation="https://stardev.cs.uiowa.edu/starexec_agiegerich/public/jobSchemaTypes.xsd" />
+	<import namespace="https://www.starexec.org/starexec/public/jobSchemaTypes.xsd" schemaLocation="https://www.starexec.org/starexec/public/jobSchemaTypes.xsd" />
 		
     
     <annotation>
