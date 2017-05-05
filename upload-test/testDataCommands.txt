@@ -37,6 +37,7 @@ print m=Uploading incremental-output-solver
 pushsolver f=solvers/incremental-output-solver.zip id=2 n=incremental-output-solver
 print m=Uploading always-sat-solver
 pushsolver f=solvers/always-sat-solver.zip id=2 n=always-sat-solver
+pushsolver f=solvers/always-sat-with-additional-output.zip id=2 n=always-sat-with-additional-output
 print m=Uploading always-unsat-solver
 pushsolver f=solvers/always-unsat-solver.zip id=2 n=always-unsat-solver
 # print m=Uploading five-thousand-configs (solver)
