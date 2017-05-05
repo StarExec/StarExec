@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schema xmlns="http://www.w3.org/2001/XMLSchema" 
-		xmlns:jst="https://stardev.cs.uiowa.edu/starexec_agiegerich/public/jobSchemaTypes.xsd"
-		targetNamespace="https://stardev.cs.uiowa.edu/starexec_agiegerich/public/jobSchemaTypes.xsd">
+		xmlns:jst="https://www.starexec.org/starexec/public/jobSchemaTypes.xsd"
+		targetNamespace="https://www.starexec.org/starexec/public/jobSchemaTypes.xsd">
 
     <simpleType name="Description">
     	<restriction base="string">
