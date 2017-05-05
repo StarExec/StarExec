@@ -727,10 +727,17 @@ public abstract class JobManager {
 		if (stdOutSaveOrExtraSaveEnabled) {
 			log.debug("Pair with id="+pair.getId()+" had stdout save option or extra save option enabled. Creating benchmark directory.");
 			try {
-				File uniqueBenchDir = BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null);
-				replacements.put("$$BENCH_SAVE_PATH$$", uniqueBenchDir.getAbsolutePath());
+				String benchDirPath;
+				if (job.getOutputBenchmarksPath() != null) {
+					// Get the directory that has already been created for this job if it exists.
+					benchDirPath = job.getOutputBenchmarksPath();
+				} else {
+					// Make a new directory for this job.
+					benchDirPath = BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null).getCanonicalPath();
+					Jobs.setOutputBenchmarksPath(job.getId(), benchDirPath);
+				}
+				replacements.put("$$BENCH_SAVE_PATH$$", benchDirPath);
 			} catch (FileNotFoundException e) {
-				// Log the error and skip this job
 				log.error("Could not get unique benchmark directory.", e);
 			}
 		} else {
