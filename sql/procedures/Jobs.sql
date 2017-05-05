@@ -237,6 +237,15 @@ CREATE PROCEDURE SetHighPriority(IN _jobId INT, IN _isHighPriority BOOLEAN)
 		WHERE id=_jobId;
 	END //
 
+
+DROP PROCEDURE IF EXISTS GetOutputBenchmarksPath;
+CREATE PROCEDURE GetOutputBenchmarksPath(IN _jobId INT)
+	BEGIN
+		SELECT output_benchmarks_directory_path
+		FROM jobs
+		WHERE id=_jobId;
+	END //
+
 DROP PROCEDURE IF EXISTS SetOutputBenchmarksPath;
 CREATE PROCEDURE SetOutputBenchmarksPath(IN _jobId INT, IN _path TEXT)
 	BEGIN

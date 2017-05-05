@@ -732,9 +732,14 @@ public abstract class JobManager {
 					// Get the directory that has already been created for this job if it exists.
 					benchDirPath = job.getOutputBenchmarksPath();
 				} else {
-					// Make a new directory for this job.
-					benchDirPath = BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null).getCanonicalPath();
-					Jobs.setOutputBenchmarksPath(job.getId(), benchDirPath);
+					// If the bench directory was only updated this job scheduling cycle it won't in the Job object
+					// so we check the DB directly.
+					benchDirPath = Jobs.getOutputBenchmarksPath(job.getId());
+					if (benchDirPath == null) {
+						// Make a new directory for this job if it hasn't been done yet.
+						benchDirPath = BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null).getCanonicalPath();
+						Jobs.setOutputBenchmarksPath(job.getId(), benchDirPath);
+					}
 				}
 				replacements.put("$$BENCH_SAVE_PATH$$", benchDirPath);
 			} catch (FileNotFoundException e) {

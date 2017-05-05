@@ -948,7 +948,7 @@ public class Jobs {
 	 * Sets the output benchmarks directory path for a job.
 	 * @param jobId the ID of the job to update the path for.
 	 * @param outputBenchmarksDirectory the path to the output benchmarks directory.
-	 * @throws SQLException
+	 * @throws SQLException on database error.
 	 */
 	public static void setOutputBenchmarksPath(final int jobId, final String outputBenchmarksDirectory) throws SQLException {
 		Common.update(
@@ -957,6 +957,20 @@ public class Jobs {
 					procedure.setInt(1, jobId);
 					procedure.setString(2, outputBenchmarksDirectory);
 				});
+	}
+
+	/**
+	 * Gets the output benchmarks directory path for a job.
+	 * @param jobId the ID of the job.
+	 * @return the output benchmarks directory path.
+	 * @throws SQLException on database error.
+	 */
+	public static String getOutputBenchmarksPath(int jobId) throws SQLException {
+		return Common.query(
+				"{CALL GetOutputBenchmarksPath(?)}",
+				procedure -> procedure.setInt(1, jobId),
+				results -> results.getString("output_benchmarks_directory_path")
+		);
 	}
 
 	/**
@@ -1420,6 +1434,8 @@ public class Jobs {
 			Common.safeClose(con);
 		}
 	}
+
+
 
 	/**
 	 * Retrieves the given job, even if it has been marked as "deleted" in the database.

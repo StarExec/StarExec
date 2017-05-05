@@ -60,6 +60,20 @@ public class JobTests extends TestSequence {
 	}
 
 	@StarexecTest
+	private void getOutputBenchmarksDirectoryPath() {
+		try {
+			final String testPath = "test1";
+			Jobs.setOutputBenchmarksPath(job.getId(), testPath);
+			assertEquals("The test path could not be retrieved.", Jobs.getOutputBenchmarksPath(job.getId()), testPath);
+			final String testPath2 = "test2";
+			Jobs.setOutputBenchmarksPath(job.getId(), testPath2);
+			assertEquals("The 2nd test path could not be retrieved.", Jobs.getOutputBenchmarksPath(job.getId()), testPath2);
+		} catch (SQLException e) {
+			fail("An SQLException was thrown: "+Util.getStackTrace(e));
+		}
+	}
+
+	@StarexecTest
 	private void IsHighPriorityTest() {
 		try {
 			Jobs.setAsHighPriority(job.getId());
