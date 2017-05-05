@@ -64,12 +64,12 @@ public class JobTests extends TestSequence {
 		try {
 			final String testPath = "test1";
 			Jobs.setOutputBenchmarksPath(job.getId(), testPath);
-			assertEquals("The test path could not be retrieved.", Jobs.getOutputBenchmarksPath(job.getId()), testPath);
+			assertEquals("The test path could not be retrieved.", Jobs.getOutputBenchmarksPath(job.getId()).get(), testPath);
 			final String testPath2 = "test2";
 			Jobs.setOutputBenchmarksPath(job.getId(), testPath2);
-			assertEquals("The 2nd test path could not be retrieved.", Jobs.getOutputBenchmarksPath(job.getId()), testPath2);
-		} catch (SQLException e) {
-			fail("An SQLException was thrown: "+Util.getStackTrace(e));
+			assertEquals("The 2nd test path could not be retrieved.", Jobs.getOutputBenchmarksPath(job.getId()).get(), testPath2);
+		} catch (Exception e) {
+			fail("An Exception was thrown: "+Util.getStackTrace(e));
 		}
 	}
 

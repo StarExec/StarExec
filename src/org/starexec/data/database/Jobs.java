@@ -962,14 +962,24 @@ public class Jobs {
 	/**
 	 * Gets the output benchmarks directory path for a job.
 	 * @param jobId the ID of the job.
-	 * @return the output benchmarks directory path.
+	 * @return the output benchmarks directory path
 	 * @throws SQLException on database error.
 	 */
-	public static String getOutputBenchmarksPath(int jobId) throws SQLException {
+	public static Optional<String> getOutputBenchmarksPath(int jobId) throws SQLException {
 		return Common.query(
 				"{CALL GetOutputBenchmarksPath(?)}",
 				procedure -> procedure.setInt(1, jobId),
-				results -> results.getString("output_benchmarks_directory_path")
+				results -> {
+					if (!results.next()) {
+						return Optional.empty();
+					}
+					String path = results.getString("output_benchmarks_directory_path");
+					if (path == null) {
+						return Optional.empty();
+					} else {
+						return Optional.of(path);
+					}
+				}
 		);
 	}
 

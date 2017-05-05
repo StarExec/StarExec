@@ -734,8 +734,10 @@ public abstract class JobManager {
 				} else {
 					// If the bench directory was only updated this job scheduling cycle it won't in the Job object
 					// so we check the DB directly.
-					benchDirPath = Jobs.getOutputBenchmarksPath(job.getId());
-					if (benchDirPath == null) {
+					Optional<String> benchDir = Jobs.getOutputBenchmarksPath(job.getId());
+					if (benchDir.isPresent()) {
+						benchDirPath = benchDir.get();
+					} else {
 						// Make a new directory for this job if it hasn't been done yet.
 						benchDirPath = BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null).getCanonicalPath();
 						Jobs.setOutputBenchmarksPath(job.getId(), benchDirPath);
@@ -746,7 +748,7 @@ public abstract class JobManager {
 				log.error("Could not get unique benchmark directory.", e);
 			}
 		} else {
-			log.debug("Pair with id="+pair.getId()+" did not had stdout save option or extra save option enabled.");
+			log.debug("Pair with id="+pair.getId()+" did not have stdout save option or extra save option enabled.");
 		}
 
 		//Dependencies
