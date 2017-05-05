@@ -739,7 +739,7 @@ public abstract class JobManager {
 						benchDirPath = benchDir.get();
 					} else {
 						// Make a new directory for this job if it hasn't been done yet.
-						benchDirPath = BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null).getCanonicalPath();
+						benchDirPath = BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null).getAbsolutePath();
 						Jobs.setOutputBenchmarksPath(job.getId(), benchDirPath);
 					}
 				}
