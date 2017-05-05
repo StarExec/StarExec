@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tns:Jobs xmlns:tns="https://stardev.cs.uiowa.edu/starexec_agiegerich/public/batchJobSchema.xsd">
+	<Job name="test xml job2">
+		<JobAttributes>
+			<queue-id value="1"/>
+			<cpu-timeout value="10"/>
+			<wallclock-timeout value="10"/>
+			<mem-limit value="2.0"/>
+		</JobAttributes>
+		<JobPair bench-id="$$BENCH_ONE$$" config-id="$$CONFIG_ONE$$"/>
+	</Job>
+</tns:Jobs>
