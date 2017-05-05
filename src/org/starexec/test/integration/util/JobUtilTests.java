@@ -32,7 +32,7 @@ public class JobUtilTests extends TestSequence {
 	@StarexecTest
 	private void testJobXMLUpload() throws Exception {
 		int cId = solver.getConfigurations().get(0).getId();
-		File xml = loader.getTestXMLFile(cId, cId, benchmarkIds.get(0), benchmarkIds.get(1));
+		File xml = loader.getJoblineTestXMLFile(cId, cId, benchmarkIds.get(0), benchmarkIds.get(1));
 		JobUtil util = new JobUtil();
 		List<Integer> jobIds = util.createJobsFromFile(
 				xml,

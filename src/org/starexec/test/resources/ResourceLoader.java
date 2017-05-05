@@ -710,7 +710,7 @@ public class ResourceLoader implements AutoCloseable {
 	 * @return File containing the XML
 	 * @throws IOException
 	 */
-	public File getTestXMLFile(int configId1, int configId2, int benchId1, int benchId2) throws IOException {
+	public File getJoblineTestXMLFile(int configId1, int configId2, int benchId1, int benchId2) throws IOException {
 		File templateFile = getResource("jobXML.xml");
 		String XMLString = FileUtils.readFileToString(templateFile);
 		String schemaLoc = Util.url("public/batchJobSchema.xsd");
