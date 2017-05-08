@@ -735,7 +735,7 @@ public class ResourceLoader implements AutoCloseable {
 		return getTestXMLFile(TestXML.JOBLINE, templateReplacements);
 	}
 
-	private enum TestXML {
+	public enum TestXML {
 		JOBLINE("jobXML.xml", JobXmlType.STANDARD),
 		BASIC("basicJobXML.xml", JobXmlType.STANDARD);
 

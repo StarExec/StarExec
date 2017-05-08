@@ -24,9 +24,7 @@ import java.util.List;
 
 public class JobUtilTests extends TestSequence {
 	User admin = null;
-	
 	Solver solver = null;
-	
 	List<Integer> benchmarkIds = null;
 	
 	@StarexecTest
