@@ -2324,6 +2324,12 @@ public class Connection {
 
 				totalPairs = Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(), "Total-Pairs"));
 				pairsFound = Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(), "Pairs-Found"));
+
+				if (isNewOutputRequest && pairsFound == 0) {
+					// There are no new pairs so the zip will be empty.
+					return C.SUCCESS_NOFILE;
+				}
+
 				oldPairs = Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(), "Older-Pairs"));
 				// runningPairsFound=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Running-Pairs"));
 
@@ -2342,6 +2348,7 @@ public class Connection {
 				}
 			}
 
+
 			// copy file from the HTTPResponse to an output stream
 			File out = new File(filePath);
 			File parent = new File(
@@ -2352,17 +2359,13 @@ public class Connection {
 			outs.close();
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 
-			if (pairsFound == 0 && isNewOutputRequest) {
-				// There are no new pairs so the zip will be empty.
-				out.delete();
-				return C.SUCCESS_NOFILE;
-			}
+
 
 			// If it's not a valid zipfile we need to return SUCCESS_NOFILE if
 			// the request was a
 			// new output request, otherwise throw the exception. Don't return
 			// anything if it is a valid zipfile.
-			Optional<Integer> statusCode = checkIfValidZipFile(out, isNewOutputRequest);
+			Optional<Integer> statusCode = checkIfValidZipFile(out);
 			if (statusCode.isPresent()) {
 				return statusCode.get();
 			}
@@ -2404,7 +2407,7 @@ public class Connection {
 		}
 	}
 
-	private static Optional<Integer> checkIfValidZipFile(File out, boolean isNewOutputRequest) throws IOException {
+	private static Optional<Integer> checkIfValidZipFile(File out) throws IOException {
 		ZipFile zipfile = null;
 		try {
 			// Make sure the file is a valid zipfile.
