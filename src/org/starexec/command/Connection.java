@@ -2352,6 +2352,12 @@ public class Connection {
 			outs.close();
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 
+			if (pairsFound == 0 && isNewOutputRequest) {
+				// There are no new pairs so the zip will be empty.
+				out.delete();
+				return C.SUCCESS_NOFILE;
+			}
+
 			// If it's not a valid zipfile we need to return SUCCESS_NOFILE if
 			// the request was a
 			// new output request, otherwise throw the exception. Don't return
@@ -2360,6 +2366,8 @@ public class Connection {
 			if (statusCode.isPresent()) {
 				return statusCode.get();
 			}
+
+
 
 			long lastModified = ArchiveUtil.getMostRecentlyModifiedFileInZip(out);
 
@@ -2406,6 +2414,7 @@ public class Connection {
 			return Optional.empty();
 		} catch (IOException e) {
 			out.delete();
+			// TODO: delete this if statement after refactoring handling for isNewOutputRequest.
 			if (isNewOutputRequest) {
 				// The file shouldn't be a valid zipfile if it was a new output
 				// request.
