@@ -2367,8 +2367,6 @@ public class Connection {
 				return statusCode.get();
 			}
 
-
-
 			long lastModified = ArchiveUtil.getMostRecentlyModifiedFileInZip(out);
 
 			// only after we've successfully saved the file should we update the
@@ -2414,12 +2412,6 @@ public class Connection {
 			return Optional.empty();
 		} catch (IOException e) {
 			out.delete();
-			// TODO: delete this if statement after refactoring handling for isNewOutputRequest.
-			if (isNewOutputRequest) {
-				// The file shouldn't be a valid zipfile if it was a new output
-				// request.
-				return Optional.of(C.SUCCESS_NOFILE);
-			}
 			throw e; // we got back an invalid archive for some reason
 		} finally {
 			try {
