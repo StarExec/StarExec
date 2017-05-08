@@ -12,12 +12,14 @@ import org.starexec.data.to.*;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Solver.ExecutableType;
 import org.starexec.data.to.Status.StatusCode;
+import org.starexec.data.to.enums.JobXmlType;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.data.to.pipelines.PipelineDependency;
 import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.PipelineStage;
 import org.starexec.data.to.pipelines.SolverPipeline;
 import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.jobs.JobManager;
 import org.starexec.logger.StarLogger;
 import org.starexec.servlets.BenchmarkUploader;
@@ -700,6 +702,20 @@ public class ResourceLoader implements AutoCloseable {
 			log.error(e.getMessage(),e);
 		}
 	}
+
+	/**
+	 * Creates a test XML file that uses the basic template.
+	 * @param configId id of the config to user.
+	 * @param benchId id of the bench to user.
+	 * @return the new file.
+	 * @throws IOException
+	 */
+	public File getBasicTestXMLFile(int configId, int benchId) throws IOException {
+		Map<String, String> templateReplacements = new HashMap<>();
+		templateReplacements.put("$$CONFIG_ONE$$", configId+"");
+		templateReplacements.put("$$BENCH_ONE$$", benchId+"");
+		return getTestXMLFile(TestXML.BASIC, templateReplacements);
+	}
 	
 	/**
 	 * Creates a test XML file that uses a solver pipeline and returns the file
@@ -711,19 +727,41 @@ public class ResourceLoader implements AutoCloseable {
 	 * @throws IOException
 	 */
 	public File getJoblineTestXMLFile(int configId1, int configId2, int benchId1, int benchId2) throws IOException {
-		File templateFile = getResource("jobXML.xml");
-		String XMLString = FileUtils.readFileToString(templateFile);
-		String schemaLoc = Util.url("public/batchJobSchema.xsd");
-		log.debug("the schema loc is " +schemaLoc);
-		XMLString = XMLString.replace("$$SCHEMA_LOC$$", schemaLoc);
-		XMLString = XMLString.replace("$$CONFIG_ONE$$", configId1+"");
-		XMLString = XMLString.replace("$$CONFIG_TWO$$", configId2+"");
-		
-		XMLString = XMLString.replace("$$BENCH_ONE$$", benchId1+"");
-		XMLString = XMLString.replace("$$BENCH_TWO$$", benchId2+"");
-		log.debug(XMLString);
+		Map<String, String> templateReplacements = new HashMap<>();
+		templateReplacements.put("$$CONFIG_ONE$$", configId1+"");
+		templateReplacements.put("$$CONFIG_TWO$$", configId2+"");
+		templateReplacements.put("$$BENCH_ONE$$", benchId1+"");
+		templateReplacements.put("$$BENCH_TWO$$", benchId2+"");
+		return getTestXMLFile(TestXML.JOBLINE, templateReplacements);
+	}
+
+	private enum TestXML {
+		JOBLINE("jobXML.xml", JobXmlType.STANDARD),
+		BASIC("basicJobXML.xml", JobXmlType.STANDARD);
+
+		public final String filename;
+		public final JobXmlType type;
+		TestXML(String filename, JobXmlType type) {
+			this.filename = filename;
+			this.type = type;
+		}
+	}
+
+	private File getTestXMLFile(TestXML testXml, Map<String, String> templateReplacements) throws IOException {
+		File templateFile = getResource(testXml.filename);
+		String xmlString = FileUtils.readFileToString(templateFile);
+		final String schemaLocParam = "$$SCHEMA_LOC$$";
+		if (!xmlString.contains(schemaLocParam)) {
+			throw new IllegalStateException("Test XML files must contain the "+schemaLocParam+" template parameter.");
+		}
+		templateReplacements.put(schemaLocParam, testXml.type.schemaPath);
+		// Replace the key in templateReplacements with the corresponding value in the XML string.
+		templateReplacements.forEach(xmlString::replace);
+
+		log.debug(xmlString);
+
 		File f = new File(new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR), TestUtil.getRandomAlphaString(50)+".xml");
-		FileUtils.writeStringToFile(f, XMLString);
+		FileUtils.writeStringToFile(f, xmlString);
 		return f;
 	}
 	/**
