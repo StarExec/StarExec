@@ -756,7 +756,9 @@ public class ResourceLoader implements AutoCloseable {
 		}
 		templateReplacements.put(schemaLocParam, testXml.type.schemaPath);
 		// Replace the key in templateReplacements with the corresponding value in the XML string.
-		templateReplacements.forEach(xmlString::replace);
+		for (Map.Entry<String, String> entry : templateReplacements.entrySet()) {
+			xmlString = xmlString.replace(entry.getKey(), entry.getValue());
+		}
 
 		log.debug(xmlString);
 
