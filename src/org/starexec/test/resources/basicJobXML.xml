@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tns:Jobs xmlns:tns="https://stardev.cs.uiowa.edu/starexec_agiegerich/public/batchJobSchema.xsd">
+<tns:Jobs xmlns:tns="$$SCHEMA_LOC$$">
 	<Job name="test xml job2">
 		<JobAttributes>
 			<queue-id value="1"/>
