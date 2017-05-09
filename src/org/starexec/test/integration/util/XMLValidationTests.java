@@ -8,6 +8,7 @@ import org.starexec.data.to.Solver;
 import org.starexec.data.to.User;
 import org.starexec.data.to.enums.JobXmlType;
 import org.starexec.test.TestUtil;
+import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
 import org.starexec.util.Util;
@@ -16,15 +17,13 @@ import org.starexec.util.XMLUtil;
 import java.io.File;
 import java.util.List;
 
-/**
- * Created by agieg on 5/5/2017.
- */
 public class XMLValidationTests extends TestSequence {
     private User admin = null;
     private Solver solver = null;
     private List<Integer> benchmarkIds = null;
     private ResourceLoader loader = new ResourceLoader();
 
+    @StarexecTest
     public void basicJobXmlValidationTest() {
         try {
             int configId = solver.getConfigurations().get(0).getId();
