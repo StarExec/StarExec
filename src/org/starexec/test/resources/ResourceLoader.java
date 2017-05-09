@@ -736,8 +736,8 @@ public class ResourceLoader implements AutoCloseable {
 	}
 
 	public enum TestXML {
-		JOBLINE("jobXML.xml", JobXmlType.STANDARD),
-		BASIC("basicJobXML.xml", JobXmlType.STANDARD);
+		JOBLINE("jobXmls/jobXML.xml", JobXmlType.STANDARD),
+		BASIC("jobXmls/basicJobXML.xml", JobXmlType.STANDARD);
 
 		public final String filename;
 		public final JobXmlType type;
