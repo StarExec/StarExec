@@ -27,6 +27,18 @@ public class XMLValidationTests extends TestSequence {
     public void basicJobXmlValidationTest() {
         try {
             int configId = solver.getConfigurations().get(0).getId();
+            File xml = loader.getBasicTestXMLFile(configId, benchmarkIds.get(0));
+            ValidatorStatusCode status = XMLUtil.validateAgainstSchema(xml, JobXmlType.STANDARD.schemaPath);
+            assertTrue(status.getMessage(), status.isSuccess());
+        } catch (Exception e) {
+            fail("Caught Exception: "+ Util.getStackTrace(e));
+        }
+    }
+
+    @StarexecTest
+    public void joblineXmlValidationTest() {
+        try {
+            int configId = solver.getConfigurations().get(0).getId();
             File xml = loader.getJoblineTestXMLFile(configId, configId, benchmarkIds.get(0), benchmarkIds.get(1));
             ValidatorStatusCode status = XMLUtil.validateAgainstSchema(xml, JobXmlType.STANDARD.schemaPath);
             assertTrue(status.getMessage(), status.isSuccess());
