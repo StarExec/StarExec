@@ -215,7 +215,7 @@ public class RESTServices {
 
 	/**
 	 * Clears the error state E (which is generally caused by runscript errors) off of every node in the cluster
-	 * @param request
+	 * @param request the HTTP request.
 	 * @return  json ValidatorStatusCode
 	 */
 	@POST
@@ -236,7 +236,7 @@ public class RESTServices {
 
 	/**
 	 * @param id The ID of the queue to get nodes for. If <=0, gets a list of all queues.
-	 * @param request
+	 * @param request the HTTP request.
 	 * @return a json string representing all queues in the starexec cluster OR all nodes in a queue
 	 * @author Tyler Jensen
 	 */
@@ -255,7 +255,8 @@ public class RESTServices {
 	}
 
 	/**
-	 * @param request
+	 * Gets the status of running jobs in plain/text format.
+	 * @param request the HTTP request.
 	 * @return a text string that holds the result of running qstat -f
 	 * @author Tyler Jensen
 	 */
