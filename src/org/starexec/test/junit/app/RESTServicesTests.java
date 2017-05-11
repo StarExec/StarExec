@@ -11,6 +11,9 @@ import org.starexec.app.RESTServices;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.enums.Primitive;
 import org.starexec.util.Util;
+import org.starexec.command.Connection;
+import org.starexec.command.Status;
+
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -25,6 +28,7 @@ public class RESTServicesTests {
 	private final Gson gson = new Gson();
     private final String instance = "test_instance";
     private final String benchType = Primitive.BENCHMARK.toString();
+	private final RESTServices services = new RESTServices();
 
 
     @Before
@@ -38,15 +42,23 @@ public class RESTServicesTests {
 		HttpServletRequest request = mock(HttpServletRequest.class);
 		ValidatorStatusCode failedValidation = new ValidatorStatusCode(false);
 		given(RESTHelpers.validateCopyToStardev(request, benchType)).willReturn(failedValidation);
-        RESTServices services = new RESTServices();
 		assertEquals("Should fail validation.", services.copyToStarDev(instance, benchType, 10, request), gson.toJson(failedValidation));
     }
 
     @Test
     public void copyToStarDevFailLoginTest() {
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        ValidatorStatusCode successValidation = new ValidatorStatusCode(true);
-        given(RESTHelpers.validateCopyToStardev(request, benchType)).willReturn(successValidation);
+		HttpServletRequest request = mock(HttpServletRequest.class);
+
+		ValidatorStatusCode successValidation = new ValidatorStatusCode(true);
+		given(RESTHelpers.validateCopyToStardev(request, benchType)).willReturn(successValidation);
+
+		Connection commandConnection = mock(Connection.class);
+		int loginStatus = Status.ERROR_BAD_CREDENTIALS;
+		given(commandConnection.login()).willReturn(loginStatus);
+		given(RESTHelpers.instantiateConnectionForCopyToStardev(instance, request)).willReturn(commandConnection);
+
+		ValidatorStatusCode loginFail = new ValidatorStatusCode(false, org.starexec.command.Status.getStatusMessage(loginStatus));
+		assertEquals("Should fail to login.", services.copyToStarDev(instance, benchType, 10, request), gson.toJson(loginFail));
     }
 
 }
