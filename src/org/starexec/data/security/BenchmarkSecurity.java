@@ -246,7 +246,7 @@ public class BenchmarkSecurity {
 	 * @return True of the user is the owner of the benchmark or an admin
 	 */
 	
-	private static boolean userOwnsBenchOrIsAdmin(Benchmark bench,int userId) {
+	public static boolean userOwnsBenchOrIsAdmin(Benchmark bench,int userId) {
 		return (bench!=null && (bench.getUserId()==userId || GeneralSecurity.hasAdminWritePrivileges(userId)));
 	}
 	
