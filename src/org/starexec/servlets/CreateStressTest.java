@@ -84,7 +84,7 @@ public class CreateStressTest extends HttpServlet {
 	/**
 	 * Uses the Validate util to ensure the incoming request is valid. This checks for illegal characters
 	 * and content length requirements to ensure it is not malicious.
-	 * @param spaceRequest The request to validate
+	 * @param request The request to validate
 	 * @return True if the request is ok to act on, false otherwise
 	 */
 	private ValidatorStatusCode isValid(HttpServletRequest request) {

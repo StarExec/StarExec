@@ -44,7 +44,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
 	}
 
 	/**
-	 * @param indexOfchildToGet the index of the child in this TreeNode's list to get
+	 * @param indexOfChildToGet the index of the child in this TreeNode's list to get
 	 * @return the child at indexOfChildToGet
 	 * @author Albert Giegerich
 	 */

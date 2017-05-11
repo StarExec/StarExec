@@ -81,7 +81,7 @@ public class BenchmarkProcessor extends HttpServlet {
 	/**
 	 * Uses the Validate util to ensure the incoming type upload request is valid. This checks for illegal characters
 	 * and content length requirements.
-	 * @param form The form to validate
+	 * @param request the HTTP request to validate.
 	 * @return True if the request is ok to act on, false otherwise
 	 */
 	private ValidatorStatusCode isValidProcessRequest(HttpServletRequest request) {

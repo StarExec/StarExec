@@ -640,7 +640,7 @@ public class AnonymousLinks {
 
 	/**
 	 * Gets a mapping of solver ID's to unique anonymized names.
-	 * @param jobId The id of the job to get a mapping for.
+	 * @param solvers a list of Solvers to map to anonymized name.
 	 * @author Albert Giegerich
 	*/
 	private static Map<Integer, String> buildAnonymizedSolverNamesMap( final List<Solver> solvers ) {
