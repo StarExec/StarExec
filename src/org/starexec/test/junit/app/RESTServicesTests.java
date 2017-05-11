@@ -22,8 +22,12 @@ import static org.mockito.Mockito.mock;
 @PrepareForTest({RESTHelpers.class, Util.class})
 public class RESTServicesTests {
 
-	Gson gson = new Gson();
-	@Before
+	private final Gson gson = new Gson();
+    private final String instance = "test_instance";
+    private final String benchType = Primitive.BENCHMARK.toString();
+
+
+    @Before
 	public void initialize() {
 		PowerMockito.mockStatic(RESTHelpers.class);
 		PowerMockito.mockStatic(Util.class);
@@ -32,12 +36,10 @@ public class RESTServicesTests {
     @Test
     public void copyToStarDevFailValidationTest() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
-		final String type = Primitive.BENCHMARK.toString();
 		ValidatorStatusCode failedValidation = new ValidatorStatusCode(false);
-		given(RESTHelpers.validateCopyToStardev(request, type)).willReturn(failedValidation);
-
-		RESTServices services = new RESTServices();
-		final String instance = "test_instance";
-		assertEquals("Should fail validation.", services.copyToStarDev(instance, type, 10, request), gson.toJson(failedValidation));
+		given(RESTHelpers.validateCopyToStardev(request, benchType)).willReturn(failedValidation);
+        RESTServices services = new RESTServices();
+		assertEquals("Should fail validation.", services.copyToStarDev(instance, benchType, 10, request), gson.toJson(failedValidation));
     }
+
 }
