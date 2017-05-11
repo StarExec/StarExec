@@ -776,6 +776,15 @@ public class RESTHelpers {
 		return new ValidatorStatusCode(true);
 	}
 
+
+	public static Connection instantiateConnectionForCopyToStardev(String instance, HttpServletRequest request) {
+		final String username = request.getParameter(R.COPY_TO_STARDEV_USERNAME_PARAM);
+		final String password = request.getParameter(R.COPY_TO_STARDEV_PASSWORD_PARAM);
+		// Login to StarDev
+		String url = "https://stardev.cs.uiowa.edu/" + instance + "/";
+		return new Connection(username, password, url);
+	}
+
 	/**
 	 * Validates a copy to stardev request
 	 * @param request the copy to stardev request.

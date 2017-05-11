@@ -1739,7 +1739,7 @@ public class RESTServices {
 			return gson.toJson(isValid);
 		}
 
-		Connection commandConnection = instantiateConnectionForCopyToStardev(instance, request);
+		Connection commandConnection = RESTHelpers.instantiateConnectionForCopyToStardev(instance, request);
 		int loginStatus = commandConnection.login();
 		if (loginStatus < 0) {
 			new ValidatorStatusCode(false, org.starexec.command.Status.getStatusMessage(loginStatus));
@@ -1765,13 +1765,7 @@ public class RESTServices {
 		}
 	}
 
-	private static Connection instantiateConnectionForCopyToStardev(String instance, HttpServletRequest request) {
-		final String username = request.getParameter(R.COPY_TO_STARDEV_USERNAME_PARAM);
-		final String password = request.getParameter(R.COPY_TO_STARDEV_PASSWORD_PARAM);
-		// Login to StarDev
-		String url = "https://stardev.cs.uiowa.edu/" + instance + "/";
-		return new Connection(username, password, url);
-	}
+
 
 	@POST
 	@Path("/copy-to-stardev/{instance}/{type}/{primitiveId}")
@@ -1787,7 +1781,7 @@ public class RESTServices {
 				return gson.toJson(isValid);
 			}
 
-			Connection commandConnection = instantiateConnectionForCopyToStardev(instance, request);
+			Connection commandConnection = RESTHelpers.instantiateConnectionForCopyToStardev(instance, request);
 			int loginStatus = commandConnection.login();
 			if (loginStatus < 0) {
 				return gson.toJson(new ValidatorStatusCode(false, org.starexec.command.Status.getStatusMessage(loginStatus)));
