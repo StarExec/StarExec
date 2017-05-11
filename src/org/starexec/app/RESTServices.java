@@ -1727,6 +1727,13 @@ public class RESTServices {
 		return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
 	}
 
+	/**
+	 * Copies a benchmark and the processor for that benchmark to StarDev.
+	 * @param instance the StarDev instance to copy to.
+	 * @param benchmarkId the ID of the benchmark to copy.
+	 * @param request the HTTP request object.
+	 * @return a status indicating success or failure.
+	 */
 	@POST
 	@Path("/copy-bench-with-proc-to-stardev/{instance}/{benchId}")
 	@Produces("application/json")
@@ -1766,7 +1773,13 @@ public class RESTServices {
 	}
 
 
-
+	/**
+	 * Copies a primitive to StarDev.
+	 * @param instance the StarDev instance to copy to.
+	 * @param primitiveId the ID of the primitive to copy.
+	 * @param request the HTTP request object.
+	 * @return a status indicating success or failure.
+	 */
 	@POST
 	@Path("/copy-to-stardev/{instance}/{type}/{primitiveId}")
 	@Produces("application/json")
@@ -1795,6 +1808,7 @@ public class RESTServices {
 		}
 	}
 
+	// Helper method for copying primitive to StarDev.
 	private ValidatorStatusCode copyPrimitiveToStarDev(
 			Connection commandConnection,
 			Primitive primType,
