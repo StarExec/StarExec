@@ -1790,7 +1790,7 @@ public class RESTServices {
 			Connection commandConnection = instantiateConnectionForCopyToStardev(instance, request);
 			int loginStatus = commandConnection.login();
 			if (loginStatus < 0) {
-				new ValidatorStatusCode(false, org.starexec.command.Status.getStatusMessage(loginStatus));
+				return gson.toJson(new ValidatorStatusCode(false, org.starexec.command.Status.getStatusMessage(loginStatus)));
 			}
 
 			final Primitive primType = Primitive.valueOf(type);
