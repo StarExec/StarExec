@@ -44,11 +44,11 @@ public class BenchmarkProcessor extends HttpServlet {
 	
 	@GET
 	@Path("/process/benchmarks")
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		try {
 			// If we're dealing with an upload request...
 				
-			// Make sure the request is valid
+			// Make sure the reque st is valid
 			ValidatorStatusCode status=isValidProcessRequest(request);
 			if(!status.isSuccess()) {
 				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
