@@ -60,5 +60,19 @@ public class RESTServicesTests {
 		ValidatorStatusCode loginFail = new ValidatorStatusCode(false, org.starexec.command.Status.getStatusMessage(loginStatus));
 		assertEquals("Should fail to login.", services.copyToStarDev(instance, benchType, 10, request), gson.toJson(loginFail));
     }
+	@Test
+	public void copyToStarDevSuccessTest() {
+		HttpServletRequest request = mock(HttpServletRequest.class);
 
+		ValidatorStatusCode successValidation = new ValidatorStatusCode(true);
+		given(RESTHelpers.validateCopyToStardev(request, benchType)).willReturn(successValidation);
+
+		Connection commandConnection = mock(Connection.class);
+		given(commandConnection.login()).willReturn(0);
+		given(RESTHelpers.instantiateConnectionForCopyToStardev(instance, request)).willReturn(commandConnection);
+
+		given(RESTHelpers.copyPrimitiveToStarDev(commandConnection, Primitive.BENCHMARK, 10, request)).willReturn(new ValidatorStatusCode(true));
+
+		assertEquals("Should copy successfully.", services.copyToStarDev(instance, benchType, 10, request), gson.toJson(new ValidatorStatusCode(true)));
+	}
 }
