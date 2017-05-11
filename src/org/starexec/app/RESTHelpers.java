@@ -782,7 +782,7 @@ public class RESTHelpers {
 	 * @param primType the primitive type
 	 * @return
 	 */
-	protected static ValidatorStatusCode validateCopyToStardev(HttpServletRequest request, final String primType) {
+	public static ValidatorStatusCode validateCopyToStardev(HttpServletRequest request, final String primType) {
 
 		ValidatorStatusCode isValid = validateAllCopyToStardev(request);
 		if (!isValid.isSuccess()) {
