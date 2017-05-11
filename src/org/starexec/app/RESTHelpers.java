@@ -865,6 +865,26 @@ public class RESTHelpers {
 		return new ValidatorStatusCode(true, successMessage, uploadStatus);
 	}
 
+	// Helper method for copying primitive to StarDev.
+	public static ValidatorStatusCode copyPrimitiveToStarDev(
+			Connection commandConnection,
+			Primitive primType,
+			Integer primitiveId,
+			HttpServletRequest request) {
+		final int spaceId = Integer.parseInt(request.getParameter(R.COPY_TO_STARDEV_SPACE_ID_PARAM));
+		switch (primType) {
+			case BENCHMARK:
+				final int benchProcessorId = Integer.parseInt(request.getParameter(R.COPY_TO_STARDEV_PROC_ID_PARAM));
+				return RESTHelpers.copyBenchmarkToStarDev(commandConnection, primitiveId, spaceId, benchProcessorId);
+			case SOLVER:
+				return RESTHelpers.copySolverToStarDev(commandConnection, primitiveId, spaceId);
+			case PROCESSOR:
+				return RESTHelpers.copyProcessorToStarDev(commandConnection, primitiveId, spaceId);
+			default:
+				return new ValidatorStatusCode(false, "That type is not yet supported.");
+		}
+	}
+
 	/**
 	 * Zips a primitive into the given Sandbox.
 	 * @param sandbox the sandbox to place the zip file in.
