@@ -12,16 +12,16 @@ import org.starexec.data.security.BenchmarkSecurity;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
+import org.starexec.util.Validator;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.anyBoolean;
-import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({Benchmarks.class, Permissions.class, GeneralSecurity.class})
+@PrepareForTest({Benchmarks.class, Permissions.class, GeneralSecurity.class, Validator.class})
 public class BenchmarkSecurityTests {
 
     @Before
@@ -29,6 +29,7 @@ public class BenchmarkSecurityTests {
         PowerMockito.mockStatic(Benchmarks.class);
         PowerMockito.mockStatic(Permissions.class);
         PowerMockito.mockStatic(GeneralSecurity.class);
+        PowerMockito.mockStatic(Validator.class);
     }
 
     @Test
@@ -358,6 +359,7 @@ public class BenchmarkSecurityTests {
         assertFalse("User cant restore benchmark if user does not own benchmark and is not admin.", status.isSuccess());
     }
 
+    @Test
     public void userCanRestoreBenchmarkIfUserOwnsBenchmarkOrIsAdmin() {
         // given
         int userId = 2;
@@ -372,13 +374,84 @@ public class BenchmarkSecurityTests {
         // then
         assertTrue("User can restore benchmark if user owns benchmark or is admin.", status.isSuccess());
     }
-    
+
+    @Test
+    public void userCantEditBenchmarkIfNewNameIsNotValid() {
+        // given
+        given(Validator.isValidBenchName(anyString())).willReturn(false);
+
+        // when
+        ValidatorStatusCode status = BenchmarkSecurity.canUserEditBenchmark(1, "name", "description", 2, 3);
+
+        // then
+        assertFalse("Should not be able to edit benchmark if new name is invalid.", status.isSuccess());
+    }
+
+    @Test
+    public void userCantEditBenchmarkIfDescriptionIsNotValid() {
+        // given
+        given(Validator.isValidBenchName(anyString())).willReturn(true);
+        given(Validator.isValidPrimDescription(anyString())).willReturn(false);
+
+        // when
+        ValidatorStatusCode status = BenchmarkSecurity.canUserEditBenchmark(1, "name", "description", 2, 3);
+
+        // then
+        assertFalse("Should not be able to edit benchmark if description is invalid.", status.isSuccess());
+    }
+
+    @Test
+    public void userCantEditBenchmarkIfBenchmarkCantBeFound() {
+        // given
+        given(Validator.isValidBenchName(anyString())).willReturn(true);
+        given(Validator.isValidPrimDescription(anyString())).willReturn(true);
+        given(Benchmarks.getIncludeDeletedAndRecycled(anyInt(), anyBoolean())).willReturn(null);
+
+        // when
+        ValidatorStatusCode status = BenchmarkSecurity.canUserEditBenchmark(1, "name", "description", 2, 3);
+
+        // then
+        assertFalse("Should not be able to edit benchmark if benchmark cannot be found.", status.isSuccess());
+    }
+
+    @Test
+    public void userCantEditBenchmarkIfUserIsNotOwnerOrAdmin() {
+        // given
+        final int userId = 3;
+        Benchmark bench = mock(Benchmark.class);
+        given(Validator.isValidBenchName(anyString())).willReturn(true);
+        given(Validator.isValidPrimDescription(anyString())).willReturn(true);
+        given(Benchmarks.getIncludeDeletedAndRecycled(anyInt(), anyBoolean())).willReturn(bench);
+        given(BenchmarkSecurity.userOwnsBenchOrIsAdmin(bench, userId)).willReturn(false);
+
+        // when
+        ValidatorStatusCode status = BenchmarkSecurity.canUserEditBenchmark(1, "name", "description", 2, userId);
+
+        // then
+        assertFalse("Should not be able to edit benchmark if user is not owner or admin.", status.isSuccess());
+    }
+
+    @Test
+    public void userCantEditBenchmarkIfBenchmarkIsDeleted() {
+        // given
+        final int userId = 3;
+        Benchmark bench = mock(Benchmark.class);
+        given(Validator.isValidBenchName(anyString())).willReturn(true);
+        given(Validator.isValidPrimDescription(anyString())).willReturn(true);
+        given(Benchmarks.getIncludeDeletedAndRecycled(anyInt(), anyBoolean())).willReturn(bench);
+        given(BenchmarkSecurity.userOwnsBenchOrIsAdmin(bench, userId)).willReturn(true);
+        given(Benchmarks.isBenchmarkDeleted(anyInt())).willReturn(true);
+
+        // when
+        ValidatorStatusCode status = BenchmarkSecurity.canUserEditBenchmark(1, "name", "description", 2, userId);
+
+        // then
+        assertFalse("Should not be able to edit benchmark if it is deleted.", status.isSuccess());
+    }
 
     // TODO: still needs tests for:
-    // canUserEditBenchmark
     // userOwnsBenchOrIsAdmin
     // canUserRecycleOrphanedBenchmarks
     // canGetJsonBenchmark
     // canUserSeeBenchmarkStatus
 }
-
