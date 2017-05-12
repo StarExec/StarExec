@@ -15,7 +15,6 @@ import org.starexec.data.to.Benchmark;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 
 @RunWith(PowerMockRunner.class)
@@ -237,8 +236,29 @@ public class BenchmarkSecurityTests {
         int benchId = 1;
         int userId = 2;
         given(Benchmarks.getIncludeDeletedAndRecycled(benchId,false)).willReturn(null);
-        assertFalse("Benchmark cannot be found so should not be deleteable.",
+        assertFalse("Benchmark cannot be found so should not be deletable.",
+                BenchmarkSecurity.canUserDeleteBench(benchId, userId).isSuccess());
+    }
+
+    @Test
+    public void userCannotDeleteBenchIfTheyDoNotOwnBenchOrAreAdmin() {
+        int benchId = 1;
+        int userId = 2;
+        Benchmark bench = mock(Benchmark.class);
+        given(Benchmarks.getIncludeDeletedAndRecycled(benchId,false)).willReturn(bench);
+        given(BenchmarkSecurity.userOwnsBenchOrIsAdmin(bench, userId)).willReturn(false);
+        assertFalse("User does not own bench and is not admin so should not be deletable.",
+                BenchmarkSecurity.canUserDeleteBench(benchId, userId).isSuccess());
+    }
+
+    @Test
+    public void userCanDeleteBenchIfTheyOwnBenchOrAreAdmin() {
+        int benchId = 1;
+        int userId = 2;
+        Benchmark bench = mock(Benchmark.class);
+        given(Benchmarks.getIncludeDeletedAndRecycled(benchId,false)).willReturn(bench);
+        given(BenchmarkSecurity.userOwnsBenchOrIsAdmin(bench, userId)).willReturn(true);
+        assertTrue("User owns bench or is admin so should be deletable.",
                 BenchmarkSecurity.canUserDeleteBench(benchId, userId).isSuccess());
     }
 }
-
