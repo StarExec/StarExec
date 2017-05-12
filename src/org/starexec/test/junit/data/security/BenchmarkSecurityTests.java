@@ -232,16 +232,18 @@ public class BenchmarkSecurityTests {
     }
 
     @Test
-    public void userCannotDeleteBenchIfBenchCannotBeFound() {
+    public void userCannotDeleteOrRecycleBenchIfBenchCannotBeFound() {
         int benchId = 1;
         int userId = 2;
         given(Benchmarks.getIncludeDeletedAndRecycled(benchId,false)).willReturn(null);
         assertFalse("Benchmark cannot be found so should not be deletable.",
                 BenchmarkSecurity.canUserDeleteBench(benchId, userId).isSuccess());
+        assertFalse("Benchmark cannot be found so should not be recyclable.",
+                BenchmarkSecurity.canUserRecycleBench(benchId, userId).isSuccess());
     }
 
     @Test
-    public void userCannotDeleteBenchIfTheyDoNotOwnBenchOrAreAdmin() {
+    public void userCannotDeleteOrRecycleBenchIfTheyDoNotOwnBenchOrAreAdmin() {
         int benchId = 1;
         int userId = 2;
         Benchmark bench = mock(Benchmark.class);
@@ -249,16 +251,21 @@ public class BenchmarkSecurityTests {
         given(BenchmarkSecurity.userOwnsBenchOrIsAdmin(bench, userId)).willReturn(false);
         assertFalse("User does not own bench and is not admin so should not be deletable.",
                 BenchmarkSecurity.canUserDeleteBench(benchId, userId).isSuccess());
+        assertFalse("User does not own bench and is not admin so should not be recyclable.",
+                BenchmarkSecurity.canUserRecycleBench(benchId, userId).isSuccess());
     }
 
     @Test
-    public void userCanDeleteBenchIfTheyOwnBenchOrAreAdmin() {
+    public void userCanDeleteOrRecycleBenchIfTheyOwnBenchOrAreAdmin() {
         int benchId = 1;
         int userId = 2;
         Benchmark bench = mock(Benchmark.class);
         given(Benchmarks.getIncludeDeletedAndRecycled(benchId,false)).willReturn(bench);
+        given(Benchmarks.get(benchId)).willReturn(bench);
         given(BenchmarkSecurity.userOwnsBenchOrIsAdmin(bench, userId)).willReturn(true);
         assertTrue("User owns bench or is admin so should be deletable.",
                 BenchmarkSecurity.canUserDeleteBench(benchId, userId).isSuccess());
+        assertTrue("User owns bench or is admin so should be recyclable.",
+                BenchmarkSecurity.canUserRecycleBench(benchId, userId).isSuccess());
     }
 }
