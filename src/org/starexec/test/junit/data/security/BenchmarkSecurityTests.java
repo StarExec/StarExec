@@ -540,9 +540,68 @@ public class BenchmarkSecurityTests {
         assertTrue("Should not be able to edit benchmark if processor is not bench type.", status.isSuccess());
     }
 
+    @Test
+    public void userOwnsBenchOrIsAdminFalseIfBenchIsNull() {
+        // given
+        Benchmark bench = null;
+
+        // when
+        boolean success = BenchmarkSecurity.userOwnsBenchOrIsAdmin(bench, 1);
+
+        // then
+        assertFalse("Bench is null so nobobody should own it.", success);
+    }
+
+    @Test
+    public void userOwnsBenchOrIsAdminFalseIfUserDoesNotOwnBenchAndIsNotAdmin() {
+        // given
+        int userId = 1;
+        int otherUserId = 2;
+        Benchmark bench = mock(Benchmark.class);
+        given(bench.getUserId()).willReturn(otherUserId);
+        given(GeneralSecurity.hasAdminWritePrivileges(anyInt())).willReturn(false);
+
+        // when
+        boolean success = BenchmarkSecurity.userOwnsBenchOrIsAdmin(bench, userId);
+
+        // then
+        assertFalse("User does not own benchmark and is not admin so should be false.", success);
+    }
+
+    @Test
+    public void userOwnsBenchOrIsAdminTrueIfUserOwnsBench() {
+        // given
+        int userId = 1;
+        Benchmark bench = mock(Benchmark.class);
+        given(bench.getUserId()).willReturn(userId);
+        given(GeneralSecurity.hasAdminWritePrivileges(anyInt())).willReturn(false);
+
+        // when
+        boolean success = BenchmarkSecurity.userOwnsBenchOrIsAdmin(bench, userId);
+
+        // then
+        assertTrue("User owns benchmark so should be true.", success);
+    }
+
+    @Test
+    public void userOwnsBenchOrIsAdminTrueIfUserIsAdmin() {
+        // given
+        int userId = 1;
+        int otherUserId = 2;
+        Benchmark bench = mock(Benchmark.class);
+        given(bench.getUserId()).willReturn(otherUserId);
+        given(GeneralSecurity.hasAdminWritePrivileges(anyInt())).willReturn(true);
+
+        // when
+        boolean success = BenchmarkSecurity.userOwnsBenchOrIsAdmin(bench, userId);
+
+        // then
+        assertTrue("User has admin privileges so should be true.", success);
+    }
+
     // TODO: still needs tests for:
-    // userOwnsBenchOrIsAdmin
     // canUserRecycleOrphanedBenchmarks
     // canGetJsonBenchmark
     // canUserSeeBenchmarkStatus
 }
+
