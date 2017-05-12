@@ -210,8 +210,8 @@ public class BenchmarkSecurity {
 	
 	public static ValidatorStatusCode canUserEditBenchmark(int benchId, String name,String desc,int typeId, int userId) {
 		// Ensure the parameters are valid
-		if(!Validator.isValidBenchName(name)) { 
-			
+		if(!Validator.isValidBenchName(name)) {
+
 			return new ValidatorStatusCode(false, "The new name is not valid. Please refer to the help pages to find format for benchmark names");
 		}
 		
@@ -269,9 +269,9 @@ public class BenchmarkSecurity {
 	
 	/**
 	 * Checks to see whether the user is allowed to download the Json object representing the benchmark
-	 * @param benchmarkId
-	 * @param userId
-	 * @return
+	 * @param benchmarkId the ID of the benchmark to get JSON from.
+	 * @param userId the user for which we want to see whether or not they can get the JSON.
+	 * @return a status determining whether or not the user can get the JSON for the benchmark.
 	 */
 	public static ValidatorStatusCode canGetJsonBenchmark(int benchmarkId, int userId) {
 		if (!Permissions.canUserSeeBench(benchmarkId, userId)) {
