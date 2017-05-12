@@ -10,11 +10,14 @@ import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.security.BenchmarkSecurity;
 import org.starexec.data.security.GeneralSecurity;
+import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
 
 @RunWith(PowerMockRunner.class)
@@ -267,5 +270,17 @@ public class BenchmarkSecurityTests {
                 BenchmarkSecurity.canUserDeleteBench(benchId, userId).isSuccess());
         assertTrue("User owns bench or is admin so should be recyclable.",
                 BenchmarkSecurity.canUserRecycleBench(benchId, userId).isSuccess());
+    }
+
+    @Test
+    public void userCantRestoreBenchmarkIfBenchmarkCantBeFound() {
+        // given
+        given(Benchmarks.getIncludeDeletedAndRecycled(anyInt(), anyBoolean())).willReturn(null);
+
+        // when
+        ValidatorStatusCode status = BenchmarkSecurity.canUserRestoreBenchmark(1, 2);
+
+        // then
+        assertFalse("User cant restore benchmark if benchmark was not found.", status.isSuccess());
     }
 }
