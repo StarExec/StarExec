@@ -127,4 +127,17 @@ public class BenchmarkSecurityTests {
         assertTrue("Admins and owners should be able to get the anon link.",
                 BenchmarkSecurity.canUserGetAnonymousLink(benchId, userId).isSuccess());
     }
+
+    @Test
+    public void canUserGetAnonymousLinkIfUserDoesNotOwnBenchmarkOrIsAdmin() {
+        int benchId = 1;
+        int userId = 2;
+        Benchmark bench = mock(Benchmark.class);
+        given(Benchmarks.get(benchId)).willReturn(bench);
+        given(BenchmarkSecurity.userOwnsBenchOrIsAdmin(bench, userId)).willReturn(false);
+
+        assertFalse("Only admins and owners should be able to get the anon link.",
+                BenchmarkSecurity.canUserGetAnonymousLink(benchId, userId).isSuccess());
+    }
 }
+
