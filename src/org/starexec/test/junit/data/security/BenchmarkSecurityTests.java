@@ -6,16 +6,12 @@ import org.junit.runner.RunWith;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
-import org.starexec.data.database.*;
+import org.starexec.data.database.Benchmarks;
+import org.starexec.data.database.Permissions;
 import org.starexec.data.security.BenchmarkSecurity;
 import org.starexec.data.security.GeneralSecurity;
-import org.starexec.data.security.ProcessorSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.BenchmarkUploadStatus;
-import org.starexec.data.to.Processor;
-import org.starexec.data.to.enums.ProcessorType;
-import org.starexec.util.Validator;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -332,6 +328,50 @@ public class BenchmarkSecurityTests {
         // then
         assertFalse("User cant restore benchmark if benchmark was not found.", status.isSuccess());
     }
+
+    @Test
+    public void userCantRestoreBenchmarkIfBenchmarkNotRecycled() {
+        // given
+        given(Benchmarks.getIncludeDeletedAndRecycled(anyInt(), anyBoolean())).willReturn(mock(Benchmark.class));
+        given(Benchmarks.isBenchmarkRecycled(anyInt())).willReturn(false);
+
+        // when
+        ValidatorStatusCode status = BenchmarkSecurity.canUserRestoreBenchmark(1, 2);
+
+        // then
+        assertFalse("User cant restore benchmark if benchmark has not been recycled.", status.isSuccess());
+    }
+
+    @Test
+    public void userCantRestoreBenchmarkIfUserDoesNotOwnBenchmarkAndIsNotAdmin() {
+        // given
+        int userId = 2;
+        Benchmark b = mock(Benchmark.class);
+        given(Benchmarks.getIncludeDeletedAndRecycled(anyInt(), anyBoolean())).willReturn(b);
+        given(Benchmarks.isBenchmarkRecycled(anyInt())).willReturn(true);
+        given(BenchmarkSecurity.userOwnsBenchOrIsAdmin(b, userId)).willReturn(false);
+
+        // when
+        ValidatorStatusCode status = BenchmarkSecurity.canUserRestoreBenchmark(1, userId);
+
+        // then
+        assertFalse("User cant restore benchmark if user does not own benchmark and is not admin.", status.isSuccess());
+    }
+
+    public void userCanRestoreBenchmarkIfUserOwnsBenchmarkOrIsAdmin() {
+        // given
+        int userId = 2;
+        Benchmark b = mock(Benchmark.class);
+        given(Benchmarks.getIncludeDeletedAndRecycled(anyInt(), anyBoolean())).willReturn(b);
+        given(Benchmarks.isBenchmarkRecycled(anyInt())).willReturn(true);
+        given(BenchmarkSecurity.userOwnsBenchOrIsAdmin(b, userId)).willReturn(true);
+
+        // when
+        ValidatorStatusCode status = BenchmarkSecurity.canUserRestoreBenchmark(1, userId);
+
+        // then
+        assertTrue("User can restore benchmark if user owns benchmark or is admin.", status.isSuccess());
+    }
     
 
     // TODO: still needs tests for:
@@ -341,3 +381,4 @@ public class BenchmarkSecurityTests {
     // canGetJsonBenchmark
     // canUserSeeBenchmarkStatus
 }
+
