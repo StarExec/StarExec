@@ -15,6 +15,7 @@ import org.starexec.data.to.Benchmark;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 
 @RunWith(PowerMockRunner.class)
@@ -230,4 +231,14 @@ public class BenchmarkSecurityTests {
         assertFalse("Should be true false since user cant see bench.",
                 BenchmarkSecurity.canUserSeeBenchmarkContents(benchId, userId).isSuccess());
     }
+
+    @Test
+    public void userCannotDeleteBenchIfBenchCannotBeFound() {
+        int benchId = 1;
+        int userId = 2;
+        given(Benchmarks.getIncludeDeletedAndRecycled(benchId,false)).willReturn(null);
+        assertFalse("Benchmark cannot be found so should not be deleteable.",
+                BenchmarkSecurity.canUserDeleteBench(benchId, userId).isSuccess());
+    }
 }
+
