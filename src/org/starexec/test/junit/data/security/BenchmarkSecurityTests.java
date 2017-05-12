@@ -8,10 +8,14 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Permissions;
+import org.starexec.data.database.Processors;
 import org.starexec.data.security.BenchmarkSecurity;
 import org.starexec.data.security.GeneralSecurity;
+import org.starexec.data.security.ProcessorSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.Processor;
+import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.util.Validator;
 
 import static org.junit.Assert.assertFalse;
@@ -21,7 +25,7 @@ import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.mock;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({Benchmarks.class, Permissions.class, GeneralSecurity.class, Validator.class})
+@PrepareForTest({Benchmarks.class, Permissions.class, GeneralSecurity.class, Validator.class, Processors.class, ProcessorSecurity.class})
 public class BenchmarkSecurityTests {
 
     @Before
@@ -30,6 +34,8 @@ public class BenchmarkSecurityTests {
         PowerMockito.mockStatic(Permissions.class);
         PowerMockito.mockStatic(GeneralSecurity.class);
         PowerMockito.mockStatic(Validator.class);
+        PowerMockito.mockStatic(Processors.class);
+        PowerMockito.mockStatic(ProcessorSecurity.class);
     }
 
     @Test
@@ -447,6 +453,91 @@ public class BenchmarkSecurityTests {
 
         // then
         assertFalse("Should not be able to edit benchmark if it is deleted.", status.isSuccess());
+    }
+
+    @Test
+    public void userCantEditBenchmarkIfBenchTypeCannotBeFound() {
+        // given
+        final int userId = 3;
+        Benchmark bench = mock(Benchmark.class);
+        given(Validator.isValidBenchName(anyString())).willReturn(true);
+        given(Validator.isValidPrimDescription(anyString())).willReturn(true);
+        given(Benchmarks.getIncludeDeletedAndRecycled(anyInt(), anyBoolean())).willReturn(bench);
+        given(BenchmarkSecurity.userOwnsBenchOrIsAdmin(bench, userId)).willReturn(true);
+        given(Benchmarks.isBenchmarkDeleted(anyInt())).willReturn(false);
+        given(Processors.get(anyInt())).willReturn(null);
+
+        // when
+        ValidatorStatusCode status = BenchmarkSecurity.canUserEditBenchmark(1, "name", "description", 2, userId);
+
+        // then
+        assertFalse("Should not be able to edit benchmark if processor cannot be found.", status.isSuccess());
+    }
+
+    @Test
+    public void userCantEditBenchmarkIfProcessorIsNotBenchType() {
+        // given
+        final int userId = 3;
+        Benchmark bench = mock(Benchmark.class);
+        Processor proc = mock(Processor.class);
+        // Processor is not BENCH type so test should fail.
+        given(proc.getType()).willReturn(ProcessorType.POST);
+        given(Validator.isValidBenchName(anyString())).willReturn(true);
+        given(Validator.isValidPrimDescription(anyString())).willReturn(true);
+        given(Benchmarks.getIncludeDeletedAndRecycled(anyInt(), anyBoolean())).willReturn(bench);
+        given(BenchmarkSecurity.userOwnsBenchOrIsAdmin(bench, userId)).willReturn(true);
+        given(Benchmarks.isBenchmarkDeleted(anyInt())).willReturn(false);
+        given(Processors.get(anyInt())).willReturn(proc);
+
+        // when
+        ValidatorStatusCode status = BenchmarkSecurity.canUserEditBenchmark(1, "name", "description", 2, userId);
+
+        // then
+        assertFalse("Should not be able to edit benchmark if processor is not bench type.", status.isSuccess());
+    }
+
+    @Test
+    public void userCantEditBenchmarkIfUserCantSeeProcessor() {
+        // given
+        final int userId = 3;
+        Benchmark bench = mock(Benchmark.class);
+        Processor proc = mock(Processor.class);
+        given(proc.getType()).willReturn(ProcessorType.BENCH);
+        given(Validator.isValidBenchName(anyString())).willReturn(true);
+        given(Validator.isValidPrimDescription(anyString())).willReturn(true);
+        given(Benchmarks.getIncludeDeletedAndRecycled(anyInt(), anyBoolean())).willReturn(bench);
+        given(BenchmarkSecurity.userOwnsBenchOrIsAdmin(bench, userId)).willReturn(true);
+        given(Benchmarks.isBenchmarkDeleted(anyInt())).willReturn(false);
+        given(Processors.get(anyInt())).willReturn(proc);
+        given(ProcessorSecurity.canUserSeeProcessor(anyInt(), anyInt())).willReturn(new ValidatorStatusCode(false));
+
+        // when
+        ValidatorStatusCode status = BenchmarkSecurity.canUserEditBenchmark(1, "name", "description", 2, userId);
+
+        // then
+        assertFalse("Should not be able to edit benchmark if processor is not bench type.", status.isSuccess());
+    }
+
+    @Test
+    public void userCanEditBenchmarkIfUserCanSeeProcessor() {
+        // given
+        final int userId = 3;
+        Benchmark bench = mock(Benchmark.class);
+        Processor proc = mock(Processor.class);
+        given(proc.getType()).willReturn(ProcessorType.BENCH);
+        given(Validator.isValidBenchName(anyString())).willReturn(true);
+        given(Validator.isValidPrimDescription(anyString())).willReturn(true);
+        given(Benchmarks.getIncludeDeletedAndRecycled(anyInt(), anyBoolean())).willReturn(bench);
+        given(BenchmarkSecurity.userOwnsBenchOrIsAdmin(bench, userId)).willReturn(true);
+        given(Benchmarks.isBenchmarkDeleted(anyInt())).willReturn(false);
+        given(Processors.get(anyInt())).willReturn(proc);
+        given(ProcessorSecurity.canUserSeeProcessor(anyInt(), anyInt())).willReturn(new ValidatorStatusCode(true));
+
+        // when
+        ValidatorStatusCode status = BenchmarkSecurity.canUserEditBenchmark(1, "name", "description", 2, userId);
+
+        // then
+        assertTrue("Should not be able to edit benchmark if processor is not bench type.", status.isSuccess());
     }
 
     // TODO: still needs tests for:
