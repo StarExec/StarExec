@@ -20,7 +20,7 @@ CREATE PROCEDURE RecordEvent(
 			INSERT INTO analytics_historical (event_id, date_recorded, count)
 				VALUES (_event_id, _date_recorded, 1);
 		ELSE
-			UPDATE analytics_historical TOP 1
+			UPDATE analytics_historical
 				SET count = count + 1
 				WHERE event_id=_event_id AND date_recorded=_date_recorded;
 		END IF;
