@@ -16,14 +16,10 @@ CREATE PROCEDURE RecordEvent(
 		IN _event_id INT,
 		IN _date_recorded DATE)
 	BEGIN
-		IF NOT EXISTS (SELECT 1 FROM analytics_historical WHERE event_id=_event_id AND date_recorded=_date_recorded) THEN
-			INSERT INTO analytics_historical (event_id, date_recorded, count)
-				VALUES (_event_id, _date_recorded, 1);
-		ELSE
-			UPDATE analytics_historical
-				SET count = count + 1
-				WHERE event_id=_event_id AND date_recorded=_date_recorded;
-		END IF;
+		INSERT INTO analytics_historical (event_id, date_recorded, count)
+			VALUES (_event_id, _date_recorded, 1)
+		ON DUPLICATE KEY
+			UPDATE count = count + 1;
 	END //
 
 DROP PROCEDURE IF EXISTS GetAnalyticsForDateRange;
