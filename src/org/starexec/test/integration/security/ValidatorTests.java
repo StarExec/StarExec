@@ -16,6 +16,7 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertTrue(Validator.isValidPrimDescription("This is a sentence, and it has some punctuation."));
 		Assert.assertTrue(Validator.isValidPrimDescription("293md03 32idiu"));
 		Assert.assertTrue(Validator.isValidPrimDescription(TestUtil.getRandomAlphaString(R.BENCH_DESC_LEN)));
+		Assert.assertFalse(Validator.isValidPrimDescription("2017-05-22"));
 		Assert.assertFalse(Validator.isValidPrimDescription(TestUtil.getRandomAlphaString(R.BENCH_DESC_LEN+1)));
 		Assert.assertFalse(Validator.isValidPrimDescription(null));
 		Assert.assertFalse(Validator.isValidPrimDescription("\"\""));
