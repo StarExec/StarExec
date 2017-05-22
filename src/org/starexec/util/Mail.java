@@ -169,7 +169,7 @@ public class Mail {
 
     		if(wasDeleted) {
     			email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/declined_deleted_email.txt"));
-    			email = email.replace("$$LINK$$", Util.url("registration.jsp"));
+    			email = email.replace("$$LINK$$", Util.url("public/registration.jsp"));
     		} else {
     			email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "declined_email.txt"));
     			email = email.replace("$$LINK$$", Util.url("pages/make_invite.jsp"));
