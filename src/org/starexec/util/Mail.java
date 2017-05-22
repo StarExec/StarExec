@@ -31,7 +31,7 @@ public class Mail {
 	private static final StarLogger log = StarLogger.getLogger(Mail.class);
 	public static final String EMAIL_CODE = "conf";			// Param string for email verification codes
 	public static final String CHANGE_EMAIL_CODE = "changeEmail";
-	public static final String LEADER_RESPONSE = "lead";	// Param string for leader response decisions	
+	public static final String LEADER_RESPONSE = "lead";	// Param string for leader response decisions
 
 
 	public static void mail(String message, String subject, List<String> to) {
@@ -49,53 +49,53 @@ public class Mail {
 		try {
 			if(to == null || to.length < 1) {
 				return;
-			}					
-			
+			}
+
 			Email email = new SimpleEmail();
 			email.setHostName(R.EMAIL_SMTP);
 			email.setSmtpPort(R.EMAIL_SMTP_PORT);
 			email.setSubject(subject);
 			email.setMsg(message);
-			
+
 			if(R.EMAIL_USER != null && R.EMAIL_PWD != null) {
 				email.setAuthenticator(new DefaultAuthenticator(R.EMAIL_USER, R.EMAIL_PWD));
 				email.setTLS(true);
 			}
-			
+
 			if(R.EMAIL_USER != null) {
 				email.setFrom(R.EMAIL_USER);
 			}
-			
+
 			for(String s : to) {
 				email.addTo(s);
 			}
-			
+
 			email.send();
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
-	}	    
-    
+	}
+
     /**
      * Sends an acceptance email to the leaders of a given community s
-     * they can approve/decline a new user's request to join 
-     * 
+     * they can approve/decline a new user's request to join
+     *
      * @param user the user trying to join the community
      * @param comReq The community request containing the information to construct the e-mail
      * @throws IOException if acceptance_email cannot be found
      * @author Todd Elvers
      */
-    public static void sendCommunityRequest(User user, CommunityRequest comReq) throws IOException{    	
+    public static void sendCommunityRequest(User user, CommunityRequest comReq) throws IOException{
     	String communityName = Spaces.getName(comReq.getCommunityId());
-    	
+
     	// Figure out the email addresses of the leaders of the space
     	List<User> leaders = Spaces.getLeaders(comReq.getCommunityId());
     	String[] leaderEmails = new String[leaders.size()];
-    	
+
     	for(int i = 0; i < leaders.size(); i++) {
     		leaderEmails[i] = leaders.get(i).getEmail();
     	}
-    	
+
     	// Configure pre-built message
 		String email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/acceptance_email.txt"));
 		email = email.replace("$$COMMUNITY$$", communityName);
@@ -105,31 +105,31 @@ public class Mail {
 		email = email.replace("$$MESSAGE$$", comReq.getMessage());
 		email = email.replace("$$APPROVE$$", Util.url(String.format("public/verification/email?%s=%s&%s=%s", Mail.EMAIL_CODE, comReq.getCode(), Mail.LEADER_RESPONSE, "approve")));
 		email = email.replace("$$DECLINE$$", Util.url(String.format("public/verification/email?%s=%s&%s=%s", Mail.EMAIL_CODE, comReq.getCode(), Mail.LEADER_RESPONSE, "decline")));
-		
+
 		// Send email
 		Mail.mail(email, "STAREXEC - Request to join " + communityName, leaderEmails);
 
 		log.info(String.format("Acceptance email sent to leaders of [%s] to approve/decline %s's request", communityName, user.getFullName()));
     }
-    
+
 	/**
 	 * Sends an email to a given user with a hyperlink to
 	 * activate their account
-	 * 
+	 *
 	 * @param user the user to send the email to
 	 * @param code the activation code to send
 	 * @throws IOException if verification_email cannot be found
 	 * @author Todd Elvers
 	 */
-	public static void sendActivationCode(User user, String code) throws IOException {		
+	public static void sendActivationCode(User user, String code) throws IOException {
 		// Configure pre-built message
 		String email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/activation_email.txt"));
 		email = email.replace("$$USER$$", user.getFullName());
 		email = email.replace("$$LINK$$", Util.url(String.format("public/verification/email?%s=%s", Mail.EMAIL_CODE, code )));
-		
+
 		// Send email
 		Mail.mail(email, "STAREXEC - Verify your account", new String[] { user.getEmail() });
-		
+
 		log.info(String.format("Sent activation email to user [%s] at [%s]", user.getFullName(), user.getEmail()));
 	}
 
@@ -139,11 +139,11 @@ public class Mail {
 		Mail.mail(email, "STAREXEC - Change Email", new String[] { newEmail });
 	}
 
-	
+
    /**
      * Sends an email to a user to notify them about the result of their request
      * to join a community
-     * 
+     *
      * @param user the user that requested to join the community
      * @param wasApproved the result of their request to join a community
      * @param wasDeleted whether or not the user was removed from the system as a result of a decline
@@ -151,73 +151,73 @@ public class Mail {
      * @throws IOException if approved_email or declined_email cannot be found
      * @author Todd Elvers
      */
-    public static void sendRequestResults(User user, String communityName, boolean wasApproved, boolean wasDeleted) throws IOException{    	
+    public static void sendRequestResults(User user, String communityName, boolean wasApproved, boolean wasDeleted) throws IOException{
     	if(wasApproved){
     		// Configure pre-built message
     		String email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/approved_email.txt"));
     		email = email.replace("$$USER$$", user.getFullName());
     		email = email.replace("$$COMMUNITY$$", communityName);
     		email = email.replace("$$LINK$$", Util.url("secure/index.jsp"));
-    		
+
     		// Send email
     		Mail.mail(email, "STAREXEC - Approved to join " + communityName, new String[] { user.getEmail() });
-    		
+
     		log.info(String.format("Notification email sent to user [%s] - their request to join the %s community was approved", user.getFullName(), communityName));
     	} else {
     		// Configure pre-built message
     		String email;
-    		
+
     		if(wasDeleted) {
     			email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/declined_deleted_email.txt"));
-    			email = email.replace("$$LINK$$", Util.url("registration.jsp"));    			
+    			email = email.replace("$$LINK$$", Util.url("registration.jsp"));
     		} else {
-    			email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "declined_email.txt"));    			
+    			email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "declined_email.txt"));
     			email = email.replace("$$LINK$$", Util.url("pages/make_invite.jsp"));
     		}
-    		
+
     		email = email.replace("$$USER$$", user.getFullName());
     		email = email.replace("$$COMMUNITY$$", communityName);
-    		
+
     		// Send email
     		Mail.mail(email, "STAREXEC - Declined to join " + communityName, new String[] { user.getEmail() });
-    		
+
     		log.info(String.format("Notification email sent to user [%s] - their request to join to the %s community was declined", user.getFullName(), communityName));
     	}
     }
 
-	
+
     /**
      * Sends an email to a user who has requested to reset their password containing
      * a hyperlink to a page where a temporary password is generated
-     * 
+     *
      * @param newUser the user requesting to reset their password
      * @param code the UUID code used to create a safe hyperlink to email to the user
      * @throws IOException if password_reset_email cannot be found
      * @author Todd Elvers
      */
     public static void sendPasswordReset(User newUser, String code) throws IOException {
-    	
+
 		// Configure pre-built message
 		String email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/password_reset_email.txt"));
 		email = email.replace("$$USER$$", newUser.getFullName());
 		email = email.replace("$$LINK$$", Util.url(String.format("public/reset_password?%s=%s", PasswordReset.PASS_RESET, code)));
-		
+
 		// Send email
 		Mail.mail(email, "STAREXEC - Password reset", new String[] { newUser.getEmail() });
-		
+
 		log.info(String.format("Password reset email sent to user [%s].", newUser.getFullName()));
     }
-	
+
 	public static void sendPassword(User user, String password) throws IOException {
-    	
+
 		// Configure pre-built message
 		String email = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/new_user_password.txt"));
 		email = email.replace("$$USER$$", user.getFullName());
 		email = email.replace("$$PASS$$", password);
-		
+
 		// Send email
 		Mail.mail(email, "STAREXEC - new user password", new String[] { user.getEmail() });
-		
+
 		log.info(String.format("Password reset email sent to user [%s].", user.getFullName()));
 	}
 
@@ -231,9 +231,9 @@ public class Mail {
 		SimpleDateFormat yearMonthDay = new SimpleDateFormat("yyyy-MM-dd");
 		java.util.Date today = new java.util.Date();
 		String todaysDate = yearMonthDay.format(today);
-		
+
 		File reportsEmailsDirectory = new File(R.STAREXEC_DATA_DIR, "/reports/");
-		
+
 		Iterator<File> reportsIter = FileUtils.iterateFiles(reportsEmailsDirectory, new String[] {"txt"}, false);
 
 		while (reportsIter.hasNext()) {
@@ -249,7 +249,7 @@ public class Mail {
 		log.debug("A report was not already emailed today.");
 		return false;
 	}
-	
+
 	/**
 	 * Emails reports to subscribed users.
 	 * @param recipients the subscribed users to send reports to.
@@ -258,7 +258,7 @@ public class Mail {
 	 */
 	public static void sendReports(List<User> recipients, String email) {
 		for (User user : recipients) {
-			String finalEmail = email.replace("$$USER$$", user.getFullName());	
+			String finalEmail = email.replace("$$USER$$", user.getFullName());
 			Mail.mail(finalEmail, "STAREXEC - REPORT", new String[] { user.getEmail() });
 			try {
 				// wait a while before sending the next email
@@ -289,8 +289,8 @@ public class Mail {
 		calendar.add(Calendar.DAY_OF_MONTH, -7);
 
 		java.util.Date lastWeek = calendar.getTime();
-		
-		String todaysDate = yearMonthDay.format(today); 
+
+		String todaysDate = yearMonthDay.format(today);
 		String lastWeeksDate = yearMonthDay.format(lastWeek);
 
 		email = email.replace("$$DATE$$", lastWeeksDate + " to " + todaysDate);
@@ -312,7 +312,7 @@ public class Mail {
 		email = email.replace("$$MAIN_REPORTS$$", reportBuilder.toString());
 
 		// clear the report builder
-		reportBuilder = reportBuilder.delete(0, reportBuilder.length()); 
+		reportBuilder = reportBuilder.delete(0, reportBuilder.length());
 
 		// build the queue reports string
 		for (List<Report> reportsForOneQueue : reportsByQueue) {
@@ -366,14 +366,14 @@ public class Mail {
 
 		SimpleDateFormat yearMonthDay = new SimpleDateFormat("yyyy-MM-dd");
 		java.util.Date currentTime = new java.util.Date();
-		
+
 		// save the reports as todays date yyyy-MM-dd.txt
-		String todaysDate = yearMonthDay.format(currentTime); 
+		String todaysDate = yearMonthDay.format(currentTime);
 		String filename = todaysDate + ".txt";
 		File todaysReport = new File(R.STAREXEC_DATA_DIR + "/reports/", filename);
 
 		log.debug("Storing reports email as " + R.STAREXEC_DATA_DIR + "/reports/" +  filename);
 		todaysReport.createNewFile();
-		FileUtils.writeStringToFile(todaysReport, email, "UTF8", false); 
+		FileUtils.writeStringToFile(todaysReport, email, "UTF8", false);
 	}
 }
