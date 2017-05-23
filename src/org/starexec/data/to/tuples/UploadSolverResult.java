@@ -24,7 +24,7 @@ public class UploadSolverResult {
 
     public enum UploadSolverStatus {
         SUCCESS("Success"),
-        DESCRIPTION_MALFORMED("The archive description file is malformed. Make sure it does not exceed 1024 characters."),
+        DESCRIPTION_MALFORMED("The archive description file is malformed. Make sure it does not exceed 1024 characters or contain any illegal characters."),
         CANNOT_ACCESS_FILE("File could not be accessed at URL"),
         EXCEED_QUOTA("File is too large to fit in user's disk quota"),
         EXTRACTING_ERROR("Internal error when extracting solver");
