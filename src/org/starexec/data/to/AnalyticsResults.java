@@ -17,12 +17,14 @@ import java.util.LinkedList;
 public class AnalyticsResults {
 	public final Analytics event;
 	public final int count;
+	public final int users;
 
 	protected static final StarLogger log = StarLogger.getLogger(AnalyticsResults.class);
 
-	public AnalyticsResults(String event, int count) {
+	public AnalyticsResults(String event, int count, int users) {
 		this.event = Analytics.valueOf(event);
 		this.count = count;
+		this.users = users;
 	}
 
 	/**
@@ -36,7 +38,8 @@ public class AnalyticsResults {
 			list.add(
 				new AnalyticsResults(
 					results.getString("event"),
-					results.getInt("count")
+					results.getInt("count"),
+					results.getInt("users")
 				)
 			);
 		}

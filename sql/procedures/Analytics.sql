@@ -14,12 +14,17 @@ CREATE PROCEDURE GetEventId( IN _name CHAR(32) )
 DROP PROCEDURE IF EXISTS RecordEvent;
 CREATE PROCEDURE RecordEvent(
 		IN _event_id INT,
-		IN _date_recorded DATE)
+		IN _date_recorded DATE,
+		IN _count INT,
+		IN _users INT
+	)
 	BEGIN
-		INSERT INTO analytics_historical (event_id, date_recorded, count)
-			VALUES (_event_id, _date_recorded, 1)
+		INSERT INTO analytics_historical (event_id, date_recorded, count, users)
+			VALUES (_event_id, _date_recorded, _count, _users)
 		ON DUPLICATE KEY
-			UPDATE count = count + 1;
+			UPDATE
+				count = count + _count,
+				users = GREATEST(users, _users);
 	END //
 
 DROP PROCEDURE IF EXISTS GetAnalyticsForDateRange;
@@ -29,7 +34,8 @@ CREATE PROCEDURE GetAnalyticsForDateRange(
 	BEGIN
 		SELECT
 			name as "event",
-			SUM(count) as count
+			SUM(count) as count,
+			SUM(users) as users
 		FROM analytics_historical
 		LEFT JOIN analytics_events ON analytics_historical.event_id = analytics_events.event_id
 		WHERE date_recorded >= _start AND date_recorded <= _end

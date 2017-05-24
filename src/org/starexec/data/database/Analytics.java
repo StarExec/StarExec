@@ -5,9 +5,13 @@ import org.starexec.logger.StarLogger;
 import java.sql.Date;
 import java.sql.SQLException;
 
+import java.util.HashMap;
+import java.util.HashSet;
+
 /**
  * Analytics keeps a record of how often events happen.
  * A count is kept of how many times an events occured per day.
+ * A list is kept of unique users that have triggered an event per day.
  * Events must be added both here and in the `analytics_events` table.
  */
 public enum Analytics {
@@ -20,7 +24,30 @@ public enum Analytics {
 	PAGEVIEW_HELP,
 	STAREXECCOMMAND_LOGIN;
 
+	protected static final StarLogger log = StarLogger.getLogger(Analytics.class);
+
 	private final int id;
+	private final HashMap<Date, Data> events;
+
+	private final class Data {
+		private final HashSet<Integer> users;
+		public int count = 0;
+
+		Data() {
+			users = new HashSet<>();
+		}
+
+		void record(Integer user) {
+			++count;
+			if (user != null) {
+				users.add(user);
+			}
+		}
+
+		int userCount() {
+			return users.size();
+		}
+	}
 
 	/**
 	 * Constructor.
@@ -29,6 +56,7 @@ public enum Analytics {
 	 * on with life. It is not worth throwing an exception.
 	 */
 	Analytics() {
+		events = new HashMap<>();
 		id = id();
 	}
 
@@ -59,25 +87,66 @@ public enum Analytics {
 		}
 	}
 
-	protected static final StarLogger log = StarLogger.getLogger(Analytics.class);
+	/**
+	 * Record an occurance of this event initiated by a particular user
+	 * @param userId the user who initiated this event
+	 */
+	public void record(Integer userId) {
+		todaysData().record(userId);
+	}
 
 	/**
-	 * Record an occurance of this event.
+	 * Record an occurance of this event
+	 * that was not initiated by a particular user
 	 */
 	public void record() {
-		if (id == -1) return;
+		record(null);
+	}
 
-		try {
-			Common.update(
-					"{CALL RecordEvent(?,?)}",
-					procedure -> {
-						procedure.setInt(1, id);
-						procedure.setDate(2, now());
+	public final static void saveToDB() {
+		Date now = now();
+		for (Analytics event : Analytics.values()) {
+			if (event.id != -1) {
+				event.events.forEach( (k, v) -> {
+					try {
+						event.saveToDB(k, v.count, v.userCount());
+						if (k != now) {
+							event.events.remove(k);
+						} else {
+							v.count = 0;
+						}
+					} catch (SQLException e) {
+						log.error("Cannot record event: " + event.name(), e);
 					}
-			);
-		} catch (SQLException e) {
-			log.error("Cannot record event: " + this.name(), e);
+				} );
+			}
 		}
+	}
+
+	private final void saveToDB(Date date, int i, int users) throws SQLException {
+		Common.update(
+			"{CALL RecordEvent(?,?,?,?)}",
+			procedure -> {
+				procedure.setInt(1, id);
+				procedure.setDate(2, date);
+				procedure.setInt(3, i);
+				procedure.setInt(4, users);
+			}
+		);
+	}
+
+	/**
+	 * Get the Data for this event today
+	 * If Data does not already exist for today, create it
+	 * @return Data
+	 */
+	private Data todaysData() {
+		Data today = events.get(now());
+		if (today == null) {
+			today = new Data();
+			events.put(now(), today);
+		}
+		return today;
 	}
 
 	/**
