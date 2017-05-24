@@ -83,7 +83,7 @@ public enum Analytics {
 	/**
 	 * @return SQL Date that represents the current date
 	 */
-	private final Date now() {
+	private static final Date now() {
 		final java.util.Date now = new java.util.Date();
 		return new java.sql.Date(now.getTime());
 	}
