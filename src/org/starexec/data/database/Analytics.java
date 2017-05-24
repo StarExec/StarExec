@@ -2,6 +2,7 @@ package org.starexec.data.database;
 
 import org.starexec.logger.StarLogger;
 
+import java.sql.Date;
 import java.sql.SQLException;
 
 /**
