@@ -29,12 +29,12 @@ public class GridEngineBackend implements Backend{
 	public static String QUEUE_GET_SLOTS_PATTERN = "qconf -sq " + QUEUE_NAME_PATTERN;// + " | grep 'slots' | grep -o '[0-9]\\{1,\\}'";
 
     private static String GRID_ENGINE_PATH = "/cluster/gridengine-8.1.8/bin/lx-amd64/";
-	
-	
+
+
     private Session session = null;
     private StarLogger log;
     private String BACKEND_ROOT = null;
-    
+
     // The regex patterns used to parse SGE output
  	private static Pattern queueAssocPattern;
 
@@ -42,7 +42,7 @@ public class GridEngineBackend implements Backend{
  		// Compile the SGE output parsing patterns when this class is loaded
  		queueAssocPattern = Pattern.compile(QUEUE_ASSOC_PATTERN, Pattern.CASE_INSENSITIVE);
  	}
-    
+
     /**
      * This constructor only initializes logging-- initialze must be called
      * after construction.
@@ -59,8 +59,8 @@ public class GridEngineBackend implements Backend{
 	    this.BACKEND_ROOT = BACKEND_ROOT;
 
     	try {
-			log.debug("createSession() loading class."); 	
-			// Try to load the class, if it does not exist this will cause an exception instead of an error			
+			log.debug("createSession() loading class.");
+			// Try to load the class, if it does not exist this will cause an exception instead of an error
 			Class.forName("com.sun.grid.drmaa.SessionImpl");
 			session = SessionFactory.getFactory().getSession();
 			try {
@@ -103,12 +103,12 @@ public class GridEngineBackend implements Backend{
      *
      **/
     public boolean isError(int execCode){
-		if(execCode >= 0) {						       	
-		    
+		if(execCode >= 0) {
+
 		    return false;
 		}
 		else {
-		    
+
 		    return true;
 		}
     }
@@ -134,25 +134,25 @@ public class GridEngineBackend implements Backend{
 			sgeTemplate.setWorkingDirectory(workingDirectoryPath);
 
 			sgeTemplate.setOutputPath(":" + logPath);
-			
+
 			// Tell the job where the script to be executed is
-			sgeTemplate.setRemoteCommand(scriptPath);	        
-			
+			sgeTemplate.setRemoteCommand(scriptPath);
+
 			// Actually submit the job to the grid engine
 			String id = session.runJob(sgeTemplate);
-			//log.info(String.format("Submitted SGE job #%s, job pair %s, script \"%s\".", id, pair.getId(), scriptPath)); 
+			//log.info(String.format("Submitted SGE job #%s, job pair %s, script \"%s\".", id, pair.getId(), scriptPath));
 
 			return Integer.parseInt(id);
 		} catch (org.ggf.drmaa.DrmaaException drme) {
 			log.warn("script Path = " + scriptPath);
 			//log.warn("sgeTemplate = " +sgeTemplate.toString());
-			//JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());			
+			//JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());
 			log.error("submitScript says " + drme.getMessage(), drme);
-			
+
 		} catch (Exception e) {
 		    //JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
 			log.error(e.getMessage(), e);
-			
+
 		} finally {
 			// Cleanup. Session's MUST be exited or SGE will be mean to you
 			if(sgeTemplate != null) {
@@ -169,7 +169,7 @@ public class GridEngineBackend implements Backend{
 }
 }
 
-    /** 
+    /**
      * Kills all running pairs
      * @return true if successful, false otherwise
      * kills a jobpair
@@ -193,7 +193,7 @@ public class GridEngineBackend implements Backend{
      */
     public boolean killPair(int execId){
 		try{
-		    Util.executeCommand("qdel " + execId);	
+		    Util.executeCommand("qdel " + execId);
 		    return true;
 		} catch (Exception e) {
 		    return false;
@@ -206,7 +206,7 @@ public class GridEngineBackend implements Backend{
      * @return a string representing the status of jobs running on the system
      */
     public String getRunningJobsStatus() {
-    	try {	
+    	try {
 			return Util.executeCommand("qstat -f");
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -245,7 +245,7 @@ public class GridEngineBackend implements Backend{
     		// Execute the SGE command to get the list of queues
     		String queuestr = Util.executeCommand(QUEUE_LIST_COMMAND);
 
-    		return queuestr.split(System.getProperty("line.separator"));	
+    		return queuestr.split(System.getProperty("line.separator"));
     	} catch (Exception e) {
     		log.error(e.getMessage(),e);
     	}
@@ -259,7 +259,7 @@ public class GridEngineBackend implements Backend{
      * the queue and node names should match the names returned when calling getWorkerNodes and getQueues.
      */
     public Map<String,String> getNodeQueueAssociations(){
-	
+
     	try {
     		String[] envp = new String[2];
     		envp[0] = "SGE_LONG_QNAMES=-1"; // this tells qstat not to truncate the names of the nodes, which it does by default
@@ -268,9 +268,9 @@ public class GridEngineBackend implements Backend{
 
     		// Parse the output from the SGE call to get the key/value pairs for the node
     		java.util.regex.Matcher matcher = GridEngineBackend.queueAssocPattern.matcher(results);
-    		
+
     		Map<String,String> nodesToQueuesMap = new HashMap<>();
-    		
+
     		// For each match...
     		while(matcher.find()) {
     			// Split apart the key from the value
@@ -283,7 +283,7 @@ public class GridEngineBackend implements Backend{
     		log.error(e.getMessage(),e);
     	}
     	return null;
-		
+
 
     }
 
@@ -348,7 +348,7 @@ public class GridEngineBackend implements Backend{
 		return false;
     }
 
-    
+
    /**
      * deletes a queue that no longer has nodes associated with it
 
@@ -360,11 +360,11 @@ public class GridEngineBackend implements Backend{
     		String[] split = queueName.split("\\.");
     		String shortQueueName = split[0];
 
-    		//DISABLE the queue: 
+    		//DISABLE the queue:
     		Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qmod -d " + queueName, getSGEEnv());
     		//DELETE the queue:
     		Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -dq " + queueName, getSGEEnv());
-    				
+
     		//Delete the host group:
     		Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -dhgrp @"+ shortQueueName +"hosts", getSGEEnv());
     		return true;
@@ -372,10 +372,10 @@ public class GridEngineBackend implements Backend{
     		log.error(e.getMessage(),e);
     	}
     	return false;
-	
+
     }
-    
-    
+
+
     /**
 	 * Gets a String array representing the environment for SGE
 	 * @return A size 1 array containing "SGE_ROOT=" plus the root path
@@ -391,7 +391,7 @@ public class GridEngineBackend implements Backend{
      * creates a new queue
 
      *@param queueName the name of the destination queue
-     *@param nodeNames the names of the nodes to be moved 
+     *@param nodeNames the names of the nodes to be moved
      *@param queueNames the names of the source queues
      *@return true if successful, false otherwise
      */
@@ -407,9 +407,9 @@ public class GridEngineBackend implements Backend{
 			log.debug("begin createQueue");
 			String[] split = queueName.split("\\.");
 			String shortQueueName = split[0];
-	
+
 			StringBuilder sb = new StringBuilder();
-			
+
 			//This is being called from "Create new permanent queue"
 			if (nodeNames != null) {
 			    for (int i=0;i<nodeNames.length;i++) {
@@ -418,7 +418,7 @@ public class GridEngineBackend implements Backend{
 					String shortName = split2[0];
 					sb.append(shortName);
 					sb.append(" ");
-					
+
 
 					String sourceQueueName = queueNames[i];
 					//if node is not orphaned
@@ -430,17 +430,17 @@ public class GridEngineBackend implements Backend{
 					}
 				}
 			}
-			
-			
+
+
 			String hostList = sb.toString();
-	
+
 			/***** CREATE A QUEUE *****/
 			// Create newHost.hgrp
 			String newHost;
-		
+
 			newHost = "group_name @" + shortQueueName + "hosts" +
 					  "\nhostlist " + hostList;
-			
+
 			File f = new File("/tmp/newHost30.hgrp");
 			FileUtils.writeStringToFile(f, newHost);
 			f.setReadable(true, false);
@@ -448,13 +448,13 @@ public class GridEngineBackend implements Backend{
 
 			//Add the host
 
-			Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -Ahgrp /tmp/newHost30.hgrp", getSGEEnv());			
-			
+			Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -Ahgrp /tmp/newHost30.hgrp", getSGEEnv());
+
 			// Create newQueue.q [COMPLETE]
 			String newQueue;
-		
-			newQueue = "qname                   " + queueName + 
-						"\nhostlist             @" + shortQueueName + "hosts" + 
+
+			newQueue = "qname                   " + queueName +
+						"\nhostlist             @" + shortQueueName + "hosts" +
 						"\nseq_no                0" +
 						"\nload_thresholds       np_load_avg=1.75" +
 						"\nsuspend_thresholds    NONE" +
@@ -503,12 +503,12 @@ public class GridEngineBackend implements Backend{
 						"\nh_rss                 INFINITY"+
 						"\ns_vmem                INFINITY"+
 						"\nh_vmem                INFINITY";
-			
+
 			File f2 = new File("/tmp/newQueue30.q");
 			FileUtils.writeStringToFile(f2, newQueue);
 			f2.setReadable(true, false);
 			f2.setWritable(true, false);
-				
+
 			Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -Aq /tmp/newQueue30.q", getSGEEnv());
 
 		    log.debug("created queue successfully");
@@ -523,7 +523,7 @@ public class GridEngineBackend implements Backend{
     /**
 
      *@param queueName the name of the destination queue
-     *@param nodeNames the names of the nodes to be moved 
+     *@param nodeNames the names of the nodes to be moved
      *@param sourceQueueNames the names of the source queues
      * moves nodes from source queues to the destination queue <queueName>
      * the ith element of nodeNames corresponds to the ith element of sourceQueueNames for every i
@@ -551,7 +551,7 @@ public class GridEngineBackend implements Backend{
 					//remove the association with this node and the queue it is currently associated with and add it to the queue
 					if (sourceQueueNames[i] != null) {
 					    // orphaned nodes could have null queues
-					    
+
 					    String name = sourceQueueNames[i];
 					    String[] split3 = name.split("\\.");
 					    String shortQName = split3[0];
@@ -568,7 +568,7 @@ public class GridEngineBackend implements Backend{
     		log.error(e.getMessage(),e);
     	}
     	return false;
-	
+
 
     }
 
@@ -603,7 +603,7 @@ public class GridEngineBackend implements Backend{
 				}
 			}
 		}
-		
+
 		return answer;
 	}
 
