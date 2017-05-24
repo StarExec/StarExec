@@ -191,6 +191,7 @@ public class GridEngineBackend implements Backend{
 	 */
 	public boolean killPair(int execId){
 		try{
+			log.trace("Killing pair " + execId);
 			Util.executeCommand("qdel " + execId);
 			return true;
 		} catch (Exception e) {
