@@ -66,18 +66,24 @@ public enum Analytics {
 	public void record() {
 		if (id == -1) return;
 
-		final java.util.Date _now = new java.util.Date();
-		final java.sql.Date now = new java.sql.Date(_now.getTime());
 		try {
 			Common.update(
 					"{CALL RecordEvent(?,?)}",
 					procedure -> {
 						procedure.setInt(1, id);
-						procedure.setDate(2, now);
+						procedure.setDate(2, now());
 					}
 			);
 		} catch (SQLException e) {
 			log.error("Cannot record event: " + this.name(), e);
 		}
+	}
+
+	/**
+	 * @return SQL Date that represents the current date
+	 */
+	private final Date now() {
+		final java.util.Date now = new java.util.Date();
+		return new java.sql.Date(now.getTime());
 	}
 }
