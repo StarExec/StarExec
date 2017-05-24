@@ -28,6 +28,14 @@ public enum Analytics {
 	 * on with life. It is not worth throwing an exception.
 	 */
 	Analytics() {
+		int id = id();
+	}
+
+	/**
+	 * Look up the ID for this event in the DB
+	 * @return ID if found, -1 if not found
+	 */
+	private int id() {
 		int id = -1;
 		try {
 			id = Common.query(
@@ -44,10 +52,9 @@ public enum Analytics {
 			 */
 			final StarLogger log = StarLogger.getLogger(Analytics.class);
 			log.error("Event not found in database: " + this.name());
-
 			id = -1;
 		} finally {
-			this.id = id;
+			return id;
 		}
 	}
 
