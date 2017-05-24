@@ -28,7 +28,7 @@ public enum Analytics {
 	 * on with life. It is not worth throwing an exception.
 	 */
 	Analytics() {
-		int id = id();
+		id = id();
 	}
 
 	/**
