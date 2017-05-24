@@ -8,7 +8,7 @@ import java.sql.SQLException;
 /**
  * Analytics keeps a record of how often events happen.
  * A count is kept of how many times an events occured per day.
- * Actions must be added both here and in the `analytics_events` table.
+ * Events must be added both here and in the `analytics_events` table.
  */
 public enum Analytics {
 	JOB_ATTRIBUTES,
