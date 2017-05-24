@@ -184,22 +184,20 @@ public class GridEngineBackend implements Backend{
 		return false;
     }
 
-
-    /**
-
-     * @param execId an int that identifies the pair to be killed, should match what is returned by submitScript
-     * @return true if successful, false otherwise
-     * kills a jobpair
-     */
-    public boolean killPair(int execId){
+	/**
+	 * @param execId an int that identifies the pair to be killed, should match what is returned by submitScript
+	 * @return true if successful, false otherwise
+	 * kills a jobpair
+	 */
+	public boolean killPair(int execId){
 		try{
-		    Util.executeCommand("qdel " + execId);
-		    return true;
+			Util.executeCommand("qdel " + execId);
+			return true;
 		} catch (Exception e) {
-		    return false;
+			log.error("Unable to killPair " + execId, e);
+			return false;
 		}
-    }
-
+	}
 
     /**
 
