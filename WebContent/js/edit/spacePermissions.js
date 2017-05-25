@@ -18,33 +18,7 @@ var curIsLeader = false;
 var communityIdList = null;
 var currentSpacePublic=false; // is the space we are currently in public (true) or private (false)
 
-//logger allows me to enable or disable console.log() lines
-var logger = function()
-{
-    var oldConsoleLog = null;
-    var pub = {};
-
-    pub.enableLogger =  function enableLogger()
-                        {
-                            if(oldConsoleLog == null)
-                                return;
-
-                            window['console']['log'] = oldConsoleLog;
-                        };
-
-    pub.disableLogger = function disableLogger()
-                        {
-                            oldConsoleLog = console.log;
-                            window['console']['log'] = function() {};
-                        };
-
-    return pub;
-}();
-
-
 $(document).ready(function(){
-
-	//logger.disableLogger();
 	log("spacePermissions log start");
 
 	currentUserId=parseInt($("#userId").attr("value"));
