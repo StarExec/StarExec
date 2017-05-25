@@ -110,10 +110,10 @@ public enum Analytics {
 				event.events.forEach( (k, v) -> {
 					try {
 						event.saveToDB(k, v.count, v.userCount());
-						if (k != now) {
-							event.events.remove(k);
-						} else {
+						if (k.equals(now)) {
 							v.count = 0;
+						} else {
+							event.events.remove(k);
 						}
 					} catch (SQLException e) {
 						log.error("Cannot record event: " + event.name(), e);
