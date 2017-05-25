@@ -1,4 +1,4 @@
-// All the classes given to a checkbox 
+// All the classes given to a checkbox
 var orderedCheckboxClasses = ['.cpuTimeCheckbox','.memUsageCheckbox','.wallclockCheckbox'];
 
 // A mapping of each checkbox class to the class it controls the visibility of
@@ -15,9 +15,9 @@ var checkboxEnabled = {
 	'.wallclockCheckbox': true
 };
 
-var jobId; 
-var jobSpaceId; 
-var stageNumber; 
+var jobId;
+var jobSpaceId;
+var stageNumber;
 
 // Entry point to JavaScript application.
 $(document).ready(function() {
@@ -55,15 +55,15 @@ $(document).ready(function() {
 
 
 	$('#selectStageButton').click(function() {
-		console.log('Select stage button clicked.');
+		log('Select stage button clicked.');
 		var stageToRedirectTo = $('#selectStageInput').val();
-		console.log('Input value is '+stageToRedirectTo);
+		log('Input value is '+stageToRedirectTo);
 		if (isInt(stageToRedirectTo)) {
-			console.log('Input value is an integer, redirecting.');
+			log('Input value is an integer, redirecting.');
 			var jobId = $('#jobId').text();
 			window.location.replace(starexecRoot + '/secure/details/jobMatrixView.jsp?id='+jobId+'&stage='+stageToRedirectTo);
 		} else {
-			console.log('Input value is not an integer, showing error message.');
+			log('Input value is not an integer, showing error message.');
 			$('#selectStageError').show();
 		}
 	});
@@ -181,7 +181,7 @@ function fixHeaderHorizontally() {
 	var leftOffset = parseInt($('#pageHeader').css('left'));
 	$(window).scroll(function() {
 		$('#pageHeader').css({
-			'left': $(this).scrollLeft() + leftOffset 
+			'left': $(this).scrollLeft() + leftOffset
 		});
 	});
 }

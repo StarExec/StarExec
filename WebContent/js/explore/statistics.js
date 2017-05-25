@@ -151,7 +151,7 @@ function updateCommunityStatsTable(info){
 		var job_pairs = value.job_pairs;
 		var disk_usage = value.disk_usage;
 
-		console.log("users: " + users);
+		log("users: " + users);
 
 		statsTable.fnAddData([name,users,solvers,benchmarks,jobs,job_pairs,disk_usage]);
 
@@ -175,18 +175,18 @@ function updateCommunityOverview() {
 				default:
 				    jsonObject=$.parseJSON(returnCode);
 
-				    console.log("about to process graphs and info");
+				    log("about to process graphs and info");
 
 				    lastUpdate = jsonObject.date;
 				    $("#lastUpdate").text("Last Updated: " + lastUpdate);
 
 				    communityGraphs=jsonObject.graphs;
 
-				    console.log(communityGraphs);
+				    log(communityGraphs);
 
 				    communityInfo=jsonObject.info;
 
-				    console.log(communityInfo);
+				    log(communityInfo);
 
 				    updateCommunityStatsTable(communityInfo);
 

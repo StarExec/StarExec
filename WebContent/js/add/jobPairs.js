@@ -54,7 +54,7 @@ function initUI() {
 						});
 					} else {
 						$('#dialog-confirm-add-delete-txt').text( data.pairsToBeDeleted + ' job pairs will be deleted.\n'+
-								data.pairsToBeAdded + ' job pairs will be added.\nWould you like to continue?' );		
+								data.pairsToBeAdded + ' job pairs will be added.\nWould you like to continue?' );
 
 						$('#dialog-confirm-add-delete').dialog({
 							modal: true,
@@ -72,7 +72,7 @@ function initUI() {
 							}
 						});
 					}
-					
+
 				} else {
 					alert ( data.message );
 				}
@@ -81,10 +81,10 @@ function initUI() {
 
 		e.preventDefault();
 	});
-	
+
 	$('.addToAllCheckbox').click(function() {
 		'use strict';
-		console.log('addToAllCheckbox clicked.');
+		log('addToAllCheckbox clicked.');
 
 		if ( $(this).prop('checked') ) {
 			// Check the other box if the user clicks it.
@@ -97,9 +97,9 @@ function initUI() {
 
 	$('.addToPairedCheckbox').click(function() {
 		'use strict';
-		
-		console.log('addToPairedCheckbox clicked.');
-		
+
+		log('addToPairedCheckbox clicked.');
+
 		if ( $(this).prop('checked') ) {
 			// Check the other box if the user clicks it.
 			$(this).siblings('.addToAllCheckbox').first().prop('checked', false);
@@ -112,10 +112,10 @@ function initUI() {
 
     $('.selectAllSolvers').click(function() {
     	$('.config').prop('checked', true);
-    }); 
+    });
     $('.selectNoneSolvers').click(function() {
     	$('.config').prop('checked', false);
-    }); 
+    });
 	registerSelectAllConfigsEventHandler();
 	registerSelectNoneConfigsEventHandler();
 	registerSolverConfigTableRowSelectionEventHandler();

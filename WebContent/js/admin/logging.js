@@ -8,7 +8,7 @@ $(document).ready(function(){
 
 
 function initUI(){
-	
+
 	$("#applyAll").button({
 		icons: {
 			primary: "ui-icon-check"
@@ -25,7 +25,7 @@ function initUI(){
 		}
 	});
 
-	
+
 	$("#applyAll").click(function() {
 		value=getSelectedRowValue(levelTable);
 		$.post(
@@ -33,12 +33,12 @@ function initUI(){
 				{},
 				function(returnCode) {
 					parseReturnCode(returnCode);
-					
+
 				},
 				"json"
 		);
 	});
-	
+
 	$("#applyToClass").click(function() {
 		value=getSelectedRowValue(levelTable);
 		$.post(
@@ -63,8 +63,8 @@ function initUI(){
 			"json"
 		);
 	});
-	
-	
+
+
 	levelTable=$('#tableLevels').dataTable( {
         "sDom"			: getDataTablesDom(),
         "iDisplayStart"	: 0,
@@ -73,7 +73,7 @@ function initUI(){
         "bPaginate": true
     });
 
-	
+
 	$("#tableLevels").on( "click", "tr", function() {
 		if (!$(this).hasClass("row_selected")) {
 			unselectAllRows(levelTable);
@@ -84,7 +84,7 @@ function initUI(){
 }
 
 function getSelectedRowValue() {
-	console.log($('.row_selected').attr('value'));
+	log($('.row_selected').attr('value'));
 	return $('.row_selected').attr('value');
 }
 
