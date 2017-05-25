@@ -129,13 +129,13 @@ public enum Analytics {
 		}
 	}
 
-	private final void saveToDB(Date date, int i, int users) throws SQLException {
+	private final void saveToDB(Date date, int count, int users) throws SQLException {
 		Common.update(
 			"{CALL RecordEvent(?,?,?,?)}",
 			procedure -> {
 				procedure.setInt(1, id);
 				procedure.setDate(2, date);
-				procedure.setInt(3, i);
+				procedure.setInt(3, count);
 				procedure.setInt(4, users);
 			}
 		);
