@@ -66,7 +66,7 @@ class PeriodicTasks {
 
         /**
          *
-         * @param fullInstanceOnly true if this task should only be run for a full starexec instance.
+         * @param fullInstanceOnly true if this task should only be run when a working backend is configured
          * @param task the runnable that will be run for the task.
          * @param delay initial delay before the task should be run.
          * @param period the period between each successive run of the task.
