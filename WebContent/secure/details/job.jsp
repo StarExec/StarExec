@@ -5,13 +5,14 @@
 <%
 	try {
 		JspHelpers.handleJobPage( request, response );
+		if (response.getStatus() == 200) {
+			Analytics.JOB_DETAILS.record();
+		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given job id was in an invalid format");
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
-
-	Analytics.JOB_DETAILS.record();
 %>
 
 <star:template title="${pageTitle}" js="util/sortButtons, util/jobDetailsUtilityFunctions, util/datatablesUtility, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, common/delaySpinner, explore/common, details/shared, details/job">
