@@ -5,6 +5,8 @@ import org.starexec.logger.StarLogger;
 import java.sql.Date;
 import java.sql.SQLException;
 
+import java.util.Iterator;
+import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -107,18 +109,22 @@ public enum Analytics {
 		Date now = now();
 		for (Analytics event : Analytics.values()) {
 			if (event.id != -1) {
-				event.events.forEach( (k, v) -> {
+				Iterator it = event.events.entrySet().iterator();
+				while (it.hasNext()) {
+					Map.Entry<Date,Data> kv = (Map.Entry<Date,Data>)it.next();
+					Date k = kv.getKey();
+					Data v = kv.getValue();
 					try {
 						event.saveToDB(k, v.count, v.userCount());
 						if (k.equals(now)) {
 							v.count = 0;
 						} else {
-							event.events.remove(k);
+							it.remove();
 						}
 					} catch (SQLException e) {
 						log.error("Cannot record event: " + event.name(), e);
 					}
-				} );
+				}
 			}
 		}
 	}
