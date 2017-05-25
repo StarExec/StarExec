@@ -44,6 +44,8 @@ public class Analytics extends HttpServlet {
 				endDate = new Date(130,04,01); // 2030-04-01
 			}
 
+			org.starexec.data.database.Analytics.saveToDB();
+
 			response.setContentType("application/json");
 			response.getWriter().write(gson.toJson(
 				org.starexec.data.to.AnalyticsResults.getAllEvents(startDate, endDate)
