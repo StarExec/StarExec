@@ -51,12 +51,13 @@ class PeriodicTasks {
         CLEAR_TEMPORARY_FILES(false, CLEAR_TEMPORARY_FILES_TASK, 0, () -> 3, TimeUnit.HOURS),
         CLEAR_JOB_LOG(false, CLEAR_JOB_LOG_TASK, 0, () -> 7, TimeUnit.DAYS),
         FIND_BROKEN_NODES(true, FIND_BROKEN_NODES_TASK, 0, () -> 6, TimeUnit.HOURS),
-	    CLEAR_JOB_SCRIPTS(false, CLEAR_JOB_SCRIPTS_TASK, 0, () -> 12, TimeUnit.HOURS),
-	    CLEAN_DATABASE(false, CLEAN_DATABASE_TASK, 0, () -> 7, TimeUnit.DAYS),
-	    CREATE_WEEKLY_REPORTS(false, CREATE_WEEKLY_REPORTS_TASK, 0, () -> 1, TimeUnit.DAYS),
-	    DELETE_OLD_ANONYMOUS_LINKS(false, DELETE_OLD_ANONYMOUS_LINKS_TASK, 0, () -> 30, TimeUnit.DAYS),
-	    UPDATE_USER_DISK_SIZES(false, UPDATE_USER_DISK_SIZES_TASK, 0, () -> 1, TimeUnit.DAYS),
-        UPDATE_COMMUNITY_STATS(false, UPDATE_COMMUNITY_STATS_TASK, 0, () -> 6, TimeUnit.HOURS);
+        CLEAR_JOB_SCRIPTS(false, CLEAR_JOB_SCRIPTS_TASK, 0, () -> 12, TimeUnit.HOURS),
+        CLEAN_DATABASE(false, CLEAN_DATABASE_TASK, 0, () -> 7, TimeUnit.DAYS),
+        CREATE_WEEKLY_REPORTS(false, CREATE_WEEKLY_REPORTS_TASK, 0, () -> 1, TimeUnit.DAYS),
+        DELETE_OLD_ANONYMOUS_LINKS(false, DELETE_OLD_ANONYMOUS_LINKS_TASK, 0, () -> 30, TimeUnit.DAYS),
+        UPDATE_USER_DISK_SIZES(false, UPDATE_USER_DISK_SIZES_TASK, 0, () -> 1, TimeUnit.DAYS),
+        UPDATE_COMMUNITY_STATS(false, UPDATE_COMMUNITY_STATS_TASK, 0, () -> 6, TimeUnit.HOURS),
+        SAVE_ANALYTICS(false, SAVE_ANALYTICS_TASK, 10, () -> 10, TimeUnit.MINUTES);
 
         public final boolean fullInstanceOnly;
         public final Runnable task;
@@ -324,4 +325,13 @@ class PeriodicTasks {
             }
         }
     };
+
+	private static final String  saveAnalyticsTask = "saveAnalyticsTask";
+	// Create a task that submits jobs that have pending/rejected job pairs
+	private static final Runnable SAVE_ANALYTICS_TASK = new RobustRunnable(saveAnalyticsTask) {
+		@Override
+		protected void dorun() {
+			Analytics.saveToDB();
+		}
+	};
 }
