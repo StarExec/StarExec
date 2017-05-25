@@ -111,6 +111,7 @@ public enum Analytics {
 			if (event.id != -1) {
 				Iterator it = event.events.entrySet().iterator();
 				while (it.hasNext()) {
+					@SuppressWarnings("unchecked")
 					Map.Entry<Date,Data> kv = (Map.Entry<Date,Data>)it.next();
 					Date k = kv.getKey();
 					Data v = kv.getValue();
