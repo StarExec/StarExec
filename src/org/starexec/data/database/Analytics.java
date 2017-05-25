@@ -154,6 +154,7 @@ public enum Analytics {
 	 */
 	private static final Date now() {
 		final java.util.Date now = new java.util.Date();
-		return new java.sql.Date(now.getTime());
+		long roundedTime = now.getTime() - (now.getTime() % 86400000);
+		return new Date(roundedTime);
 	}
 }
