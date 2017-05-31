@@ -489,11 +489,10 @@ public class Download extends HttpServlet {
 	 * @param useSpacePath If true, pair output will be in a directory including the pair space path. If false, they will simply
 	 * be in a flat list of directories with job pair IDs
 	 * @param lastModified Only retrieve files that were modified after the given date, for running job pairs only
-	 * @return
 	 */
-	private static boolean addJobPairsToZipOutput(List<JobPair> pairs, HttpServletResponse response, String baseName, boolean useSpacePath, Long lastModified) {
+	private static void addJobPairsToZipOutput(List<JobPair> pairs, HttpServletResponse response, String baseName, boolean useSpacePath, Long lastModified) {
 		if (pairs.size() == 0) {
-			return true; // don't try to make a zip if there are no pairs
+			return; // don't try to make a zip if there are no pairs
 		}
 		try {
 			ZipOutputStream stream = new ZipOutputStream(response.getOutputStream());
@@ -562,11 +561,9 @@ public class Download extends HttpServlet {
 
 			}
 			stream.close();
-			return true;
 		} catch (Exception e) {
 			log.error("addJobPairsToZipOutput says " + e.getMessage(), e);
 		}
-		return false;
 	}
 
 	/**
