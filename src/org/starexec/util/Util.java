@@ -1201,13 +1201,14 @@ public class Util {
 	 * @return True on success and false otherwise
 	 */
 	public static boolean copyFileFromURLUsingProxy(URL url, File archiveFile) {
+		final String methodName = "copyFileFromURLUsingProxy";
 		try {
 			Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(R.PROXY_ADDRESS, R.PROXY_PORT));
 			URLConnection connection = url.openConnection(proxy);
 			FileUtils.copyInputStreamToFile(connection.getInputStream(), archiveFile);
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
 		}
 		return false;
 	}
