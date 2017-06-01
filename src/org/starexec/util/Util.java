@@ -33,71 +33,72 @@ import java.util.concurrent.TimeUnit;
 /**
  * This class contains utility functions used throughout Starexec, including many
  * for executing commands and interacting with the filesystem.
- * @author Eric
  *
+ * @author Eric
  */
 public class Util {
-    private static final StarLogger log = StarLogger.getLogger(Util.class);
+	protected static final ExecutorService threadPool = Executors.newCachedThreadPool();
+	private static final StarLogger log = StarLogger.getLogger(Util.class);
+	private static String docRoot = null;
+	private static String docRootUrl = null;
 
-    protected static final ExecutorService threadPool = Executors.newCachedThreadPool();
+	/**
+	 * Checks to see if the two given objects are equal without throwing any null pointers.
+	 * if a and b are both null, returns true
+	 *
+	 * @param a
+	 * @param b
+	 * @return True if they are equal and false otherwise
+	 */
+	public static boolean objectsEqual(Object a, Object b) {
+		if (a == null && b == null) {
+			return true;
+		} else if (a == null) {
+			return false;
+		} else {
+			return a.equals(b);
+		}
 
-    /**
-     * Checks to see if the two given objects are equal without throwing any null pointers.
-     * if a and b are both null, returns true
-     * @param a
-     * @param b
-     * @return True if they are equal and false otherwise
-     */
-    public static boolean objectsEqual(Object a, Object b) {
-    	if (a==null && b==null) {
-    		return true;
-    	} else if (a==null) {
-    		return false;
-    	} else {
-    		return a.equals(b);
-    	}
-
-    }
+	}
 
 	/**
 	 * Gets the current stack trace in the program.
+	 *
 	 * @return the current stack trace as a String.
 	 */
 	public static String getCurrentStackTrace() {
 		return ExceptionUtils.getStackTrace(new Throwable());
 	}
 
-    /**
-     *
-     * @param c The string color
-     * @return The Java color corresponding to the string, or null if no such color exists
-     * Obtained at (http://stackoverflow.com/questions/2854043/converting-a-string-to-color-in-java)
-     */
-    public static Color getColorFromString(String c) {
-    	Color color;
-    	try {
-    	    Field field = Class.forName("java.awt.Color").getField(c);
-    	    color = (Color)field.get(null);
-    	} catch (Exception e) {
-    	    color = null; // Not defined
-    	}
-    	return color;
-    }
+	/**
+	 * @param c The string color
+	 * @return The Java color corresponding to the string, or null if no such color exists
+	 * Obtained at (http://stackoverflow.com/questions/2854043/converting-a-string-to-color-in-java)
+	 */
+	public static Color getColorFromString(String c) {
+		Color color;
+		try {
+			Field field = Class.forName("java.awt.Color").getField(c);
+			color = (Color) field.get(null);
+		} catch (Exception e) {
+			color = null; // Not defined
+		}
+		return color;
+	}
 
-    public static <T extends Enum<T>> boolean isLegalEnumValue(String value, Class<T> clazz) {
+	public static <T extends Enum<T>> boolean isLegalEnumValue(String value, Class<T> clazz) {
 		return EnumSet.allOf(clazz).stream().anyMatch(x -> x.toString().equals(value));
 	}
 
-
-
-    /**
-     * Gives back a String that is the contents of the first n lines of the file where n always less
-     * than or equal to lineLimit
-     * @param f The file to read
-     * @param lineLimit The maximum number of lines to read (anything less than 0 indicates no limit)
-     * @return The contents of the file as a String (null if it could not be found)
-     */
-    public static Optional<String> readFileLimited(File f, int lineLimit) throws IOException {
+	/**
+	 * Gives back a String that is the contents of the first n lines of the file where n always less
+	 * than or equal to lineLimit
+	 *
+	 * @param f The file to read
+	 * @param lineLimit The maximum number of lines to read (anything less than 0 indicates no limit)
+	 * @return The contents of the file as a String (null if it could not be found)
+	 */
+	public static Optional<String> readFileLimited(File f, int lineLimit) throws IOException {
 		final String methodName = "readFileLimited";
 		LineIterator lineItr = null;
 		log.debug(methodName, "calling readFileLimited");
@@ -134,9 +135,7 @@ public class Util {
 				return Optional.empty();
 			}
 		} catch (IOException e) {
-			log.error(methodName, "Caught IOException with inputs: "
-					+"\n\tFile f: "+f.getAbsolutePath()
-					+"\n\tint lineLimit: "+lineLimit);
+			log.error(methodName, "Caught IOException with inputs: " + "\n\tFile f: " + f.getAbsolutePath() + "\n\tint lineLimit: " + lineLimit);
 			throw e;
 		} finally {
 			// Release the line iterator without potential error
@@ -148,260 +147,276 @@ public class Util {
 		return new Timestamp(System.currentTimeMillis()).toString();
 	}
 
-    /**
-     * Determines whether we are currently running on production.
-     * @return True if this is production and false if it is a test instance
-     */
-    public static boolean isTestingAllowed() {
+	/**
+	 * Determines whether we are currently running on production.
+	 *
+	 * @return True if this is production and false if it is a test instance
+	 */
+	public static boolean isTestingAllowed() {
 		return R.ALLOW_TESTING;
-    }
+	}
 
-    /**
-     * execute the following Runnable using a thread from our cached thread pool
-     * @param c the Runnable to execute
-     * @author Aaron Stump
-     */
-    public static void threadPoolExecute(Runnable c) {
-    	threadPool.execute(c);
-    }
-    /**
-     * Shuts down the reserved threadpool this util uses.
-     * @throws Exception if termination of the thread pool is interrupted for taking
-     * longer than 2 seconds
-     */
-    public static void shutdownThreadPool() throws Exception {
+	/**
+	 * execute the following Runnable using a thread from our cached thread pool
+	 *
+	 * @param c the Runnable to execute
+	 * @author Aaron Stump
+	 */
+	public static void threadPoolExecute(Runnable c) {
+		threadPool.execute(c);
+	}
+
+	/**
+	 * Shuts down the reserved threadpool this util uses.
+	 *
+	 * @throws Exception if termination of the thread pool is interrupted for taking
+	 * longer than 2 seconds
+	 */
+	public static void shutdownThreadPool() throws Exception {
 		threadPool.shutdown();
 		threadPool.awaitTermination(2, TimeUnit.SECONDS);
-    }
+	}
 
+	/**
+	 * Returns a File object representing the sandbox directory for the headnode
+	 *
+	 * @return the File object
+	 * @author Eric Burns
+	 */
+	public static File getSandboxDirectory() {
+		return new File(R.SANDBOX_DIRECTORY);
+	}
 
-    /**
-     * Returns a File object representing the sandbox directory for the headnode
-     * @return the File object
-     * @author Eric Burns
-     */
-    public static File getSandboxDirectory() {
-    	return new File(R.SANDBOX_DIRECTORY);
-    }
+	/**
+	 * Ensures a number is within a given range
+	 *
+	 * @param min The minimum value the given value can be
+	 * @param max The maximum value the given value can be
+	 * @param value The actual value to clamp
+	 * @return min if value is less than min, max if value is
+	 * greater than max, or value if it is between min and max
+	 */
+	public static int clamp(int min, int max, int value) {
+		return Math.max(Math.min(value, max), min);
+	}
 
-    /**
-     * Ensures a number is within a given range
-     * @param min The minimum value the given value can be
-     * @param max The maximum value the given value can be
-     * @param value The actual value to clamp
-     * @return min if value is less than min, max if value is
-     * greater than max, or value if it is between min and max
-     */
-    public static int clamp(int min, int max, int value) {
-    	return Math.max(Math.min(value, max), min);
-    }
-
-    /**
-     * Clamps the given value to within the given range
-     * @param min The min of the range, inclusive
-     * @param max The max of the range, inclusive
-     * @param value The valu to clamp.
-     * @return min, if the value is lower, and max if the value is larger.
-     * The value itself otherwise
-     */
-    public static long clamp(long min, long max, long value) {
-		if (value<min) {
-		    return min;
+	/**
+	 * Clamps the given value to within the given range
+	 *
+	 * @param min The min of the range, inclusive
+	 * @param max The max of the range, inclusive
+	 * @param value The valu to clamp.
+	 * @return min, if the value is lower, and max if the value is larger.
+	 * The value itself otherwise
+	 */
+	public static long clamp(long min, long max, long value) {
+		if (value < min) {
+			return min;
 		}
 		if (value > max) {
-		    return max;
+			return max;
 		}
 		return value;
-    }
+	}
 
-    /**
-     * Initializes Starexec data directories by creating them if they
-     * do not exist
-     */
-    public static void initializeDataDirectories() {
-		File file=new File(R.STAREXEC_DATA_DIR);
+	/**
+	 * Initializes Starexec data directories by creating them if they
+	 * do not exist
+	 */
+	public static void initializeDataDirectories() {
+		File file = new File(R.STAREXEC_DATA_DIR);
 		file.mkdir();
 
-		file=new File(R.getJobInboxDir());
+		file = new File(R.getJobInboxDir());
 		file.mkdir();
-		file=new File(R.getJobLogDir());
+		file = new File(R.getJobLogDir());
 		file.mkdir();
-		file=new File(R.getBenchmarkPath());
+		file = new File(R.getBenchmarkPath());
 		file.mkdir();
-		file=new File(R.getSolverPath());
+		file = new File(R.getSolverPath());
 		file.mkdir();
-		file=new File(R.getSolverBuildOutputDir());
+		file = new File(R.getSolverBuildOutputDir());
 		file.mkdir();
-		file=new File(R.getProcessorDir());
+		file = new File(R.getProcessorDir());
 		file.mkdir();
-		file=new File(R.getJobOutputDirectory());
+		file = new File(R.getJobOutputDirectory());
 		file.mkdir();
-		file=new File(R.getPicturePath());
+		file = new File(R.getPicturePath());
 		file.mkdir();
 		file = new File(R.getSolverCacheClearLogDir());
 		file.mkdir();
-		File downloadDir=new File(R.STAREXEC_ROOT,R.DOWNLOAD_FILE_DIR);
+		File downloadDir = new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR);
 		downloadDir.mkdirs();
-		File graphDir=new File(R.STAREXEC_ROOT,R.JOBGRAPH_FILE_DIR);
+		File graphDir = new File(R.STAREXEC_ROOT, R.JOBGRAPH_FILE_DIR);
 		graphDir.mkdirs();
-    }
-
-    /**
-     * Extracts the file extesion from a file path
-     * @param s The file path
-     * @return The extension of the file
-     */
-    public static String getFileExtension(String s){
-	return s.substring(s.lastIndexOf('.') + 1);
-    }
-
-    /**
-     * @return The platform-dependent line separator
-     */
-    public static String getLineSeparator(){
-	return System.getProperty("line.separator");
-    }
+	}
 
 	/**
+	 * Extracts the file extesion from a file path
 	 *
+	 * @param s The file path
+	 * @return The extension of the file
+	 */
+	public static String getFileExtension(String s) {
+		return s.substring(s.lastIndexOf('.') + 1);
+	}
+
+	/**
+	 * @return The platform-dependent line separator
+	 */
+	public static String getLineSeparator() {
+		return System.getProperty("line.separator");
+	}
+
+	/**
 	 * @param name
 	 * @param request
 	 * @return True if the value of the param given by name is not null in the given request
 	 */
-    public static boolean paramExists(String name, HttpServletRequest request){
-    	return !isNullOrEmpty(request.getParameter(name));
-    }
+	public static boolean paramExists(String name, HttpServletRequest request) {
+		return !isNullOrEmpty(request.getParameter(name));
+	}
+
 	/**
-	 *
 	 * @param s
 	 * @return True if s is null or empty and false otherwise
 	 */
-    public static boolean isNullOrEmpty(String s){
-    	return (s == null || s.trim().length() <= 0);
-    }
+	public static boolean isNullOrEmpty(String s) {
+		return (s == null || s.trim().length() <= 0);
+	}
 
-    /**
-     * Generates a temporary password of between 6-20 characters, with at least 4 letters,
-     * 1 number, and 1 special character
-     * character
-     *
-     * @return a temporary password
-     */
-    public static String getTempPassword() {
-        Random r = new Random();
+	/**
+	 * Generates a temporary password of between 6-20 characters, with at least 4 letters,
+	 * 1 number, and 1 special character
+	 * character
+	 *
+	 * @return a temporary password
+	 */
+	public static String getTempPassword() {
+		Random r = new Random();
 
-        // Random temp password length between 6-20 characters
-        int newPassLength = r.nextInt(15) + 6;
-        int set = 0;
-        String[] charSets = {"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", "0123456789", "`~!@#$%^&*()_+-="};
-        StringBuffer sb = new StringBuffer();
+		// Random temp password length between 6-20 characters
+		int newPassLength = r.nextInt(15) + 6;
+		int set = 0;
+		String[] charSets = {"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", "0123456789", "`~!@#$%^&*()_+-="};
+		StringBuffer sb = new StringBuffer();
 
-        // Hash to store which character sets have been used
-        HashSet<Integer> setsUsed = new HashSet<>();
+		// Hash to store which character sets have been used
+		HashSet<Integer> setsUsed = new HashSet<>();
 
-        while (sb.length() != newPassLength) {
-	    // Choose a random character set to use & get a random character from it
-            set = r.nextInt(charSets.length);
-            setsUsed.add(set);
-            sb.append(charSets[set].charAt(r.nextInt(charSets[set].length())));
+		while (sb.length() != newPassLength) {
+			// Choose a random character set to use & get a random character from it
+			set = r.nextInt(charSets.length);
+			setsUsed.add(set);
+			sb.append(charSets[set].charAt(r.nextInt(charSets[set].length())));
 
-            // By the end, if the temporary password doesn't contain a character
-            // from all character sets, restart and generate a new temporary password
-            if (sb.length() == newPassLength && setsUsed.size() != 3) {
-                sb.delete(0, sb.length());
-                setsUsed.clear();
-            }
-        }
-        return sb.toString();
-    }
+			// By the end, if the temporary password doesn't contain a character
+			// from all character sets, restart and generate a new temporary password
+			if (sb.length() == newPassLength && setsUsed.size() != 3) {
+				sb.delete(0, sb.length());
+				setsUsed.clear();
+			}
+		}
+		return sb.toString();
+	}
 
-    /**
-     * Parses a multipart request and returns a hashmap of form parameters
-     * @param request The request to parse
-     * @return A hashmap containing the field name to field value mapping
-     * @throws Exception If the request is malformed
-     */
-    public static HashMap<String, Object> parseMultipartRequest(HttpServletRequest request) throws Exception {
+	/**
+	 * Parses a multipart request and returns a hashmap of form parameters
+	 *
+	 * @param request The request to parse
+	 * @return A hashmap containing the field name to field value mapping
+	 * @throws Exception If the request is malformed
+	 */
+	public static HashMap<String, Object> parseMultipartRequest(HttpServletRequest request) throws Exception {
 		// Use Tomcat's multipart form utilities
 		HashMap<String, Object> form = new HashMap<>();
 		for (Part p : request.getParts()) {
 			PartWrapper wrapper = new PartWrapper(p);
-		    // If we're dealing with a regular form field...
-		    if(!wrapper.isFile()) {
+			// If we're dealing with a regular form field...
+			if (!wrapper.isFile()) {
 				// Add the field name and field value to the hashmap
 				form.put(p.getName(), IOUtils.toString(p.getInputStream()));
-		    } else {
+			} else {
 				// Else we've encountered a file, so add the entire wrapper to the HashMap.
-		    	// The wrapper provides all the relevant interface of a FileItem
+				// The wrapper provides all the relevant interface of a FileItem
 				form.put(p.getName(), wrapper);
-		    }
+			}
 		}
 
 		return form;
-    }
+	}
 
-    /**
-     * Calls executeCommand with a size 1 String[]
-     * @param command
-     * @return See full executeCommand documentation
-     * @throws IOException
-     */
-    public static String executeCommand(String command) throws IOException {
-		final String[] cmd = { command };
+	/**
+	 * Calls executeCommand with a size 1 String[]
+	 *
+	 * @param command
+	 * @return See full executeCommand documentation
+	 * @throws IOException
+	 */
+	public static String executeCommand(String command) throws IOException {
+		final String[] cmd = {command};
 		return executeCommand(cmd, null, null);
-    }
-    /**
-     * Calls executecommand with a size 1 String[] and a null working directory
-     * @param command
-     * @param env
-     * @return See full executeCommand documentation
-     * @throws IOException
-     */
-    public static String executeCommand(String command, String[] env) throws IOException {
-		final String[] cmd = { command };
-		return executeCommand(cmd, env, null);
-    }
+	}
 
-    /**
-     * Calls executeCommand with a null environment and working directory
-     * @param command
-     * @return See full executeCommand documentation
-     * @throws IOException
-     */
-    public static String executeCommand(String[] command) throws IOException {
-    	return executeCommand(command,null,null);
-    }
-    /**
-     * Calls executeSandboxCommand with a null environment and working directory
-     * @param command
-     * @return See full executeCommand documentation
-     * @throws IOException
-     */
-    public static String executeSandboxCommand(String[] command) throws IOException {
-    	return executeSandboxCommand(command,null,null);
-    }
-    /**
-     * Executes a command as the sandbox user using sudo
-     * @param command The command to execute, tokenized
-     * @param envp Environment variables for the command
-     * @param workingDirectory Directory to use as the command working directory
-     * @return The combined stdout and stderr from the command
-     * @throws IOException
-     */
-    public static String executeSandboxCommand(String[] command, String[] envp, File workingDirectory) throws IOException {
-    	String[] newCommand=new String[command.length+3];
-    	newCommand[0]="sudo";
-    	newCommand[1]="-u";
-    	newCommand[2]=R.SANDBOX_USER_ONE;
-    	for (int i=0;i<command.length;i++) {
-    		newCommand[i+3]=command[i];
-    	}
-    	return executeCommand(newCommand,envp,workingDirectory);
-    }
+	/**
+	 * Calls executecommand with a size 1 String[] and a null working directory
+	 *
+	 * @param command
+	 * @param env
+	 * @return See full executeCommand documentation
+	 * @throws IOException
+	 */
+	public static String executeCommand(String command, String[] env) throws IOException {
+		final String[] cmd = {command};
+		return executeCommand(cmd, env, null);
+	}
+
+	/**
+	 * Calls executeCommand with a null environment and working directory
+	 *
+	 * @param command
+	 * @return See full executeCommand documentation
+	 * @throws IOException
+	 */
+	public static String executeCommand(String[] command) throws IOException {
+		return executeCommand(command, null, null);
+	}
+
+	/**
+	 * Calls executeSandboxCommand with a null environment and working directory
+	 *
+	 * @param command
+	 * @return See full executeCommand documentation
+	 * @throws IOException
+	 */
+	public static String executeSandboxCommand(String[] command) throws IOException {
+		return executeSandboxCommand(command, null, null);
+	}
+
+	/**
+	 * Executes a command as the sandbox user using sudo
+	 *
+	 * @param command The command to execute, tokenized
+	 * @param envp Environment variables for the command
+	 * @param workingDirectory Directory to use as the command working directory
+	 * @return The combined stdout and stderr from the command
+	 * @throws IOException
+	 */
+	public static String executeSandboxCommand(String[] command, String[] envp, File workingDirectory) throws IOException {
+		String[] newCommand = new String[command.length + 3];
+		newCommand[0] = "sudo";
+		newCommand[1] = "-u";
+		newCommand[2] = R.SANDBOX_USER_ONE;
+		for (int i = 0; i < command.length; i++) {
+			newCommand[i + 3] = command[i];
+		}
+		return executeCommand(newCommand, envp, workingDirectory);
+	}
 
 	/**
 	 * Runs a command on the system command line (bash for unix, command line for windows)
 	 * and returns the process representing the command
+	 *
 	 * @param command An array holding the command and then its arguments
 	 * @param envp The environment
 	 * @param workingDirectory the working directory to use
@@ -428,57 +443,56 @@ public class Util {
 		}
 	}
 
-    /**
-     * Runs a command on the system command line (bash for unix, command line for windows)
-     * and returns the results from the command as a string
-     * @param command An array holding the command and then its arguments
-     * @param envp The environment
-     * @param workingDirectory the working directory to use
-     * @return A String containing both stderr and stdout from the command
-     * @throws IOException We do not want to catch exceptions at this level, because this code is generic and
-     * has no useful way to handle them! Throwing an exception to higher levels is the desired behavior.
-     */
+	/**
+	 * Runs a command on the system command line (bash for unix, command line for windows)
+	 * and returns the results from the command as a string
+	 *
+	 * @param command An array holding the command and then its arguments
+	 * @param envp The environment
+	 * @param workingDirectory the working directory to use
+	 * @return A String containing both stderr and stdout from the command
+	 * @throws IOException We do not want to catch exceptions at this level, because this code is generic and
+	 * has no useful way to handle them! Throwing an exception to higher levels is the desired behavior.
+	 */
 
-    public static String executeCommand(String[] command, String[] envp, File workingDirectory) throws IOException {
-	    return drainStreams(executeCommandAndReturnProcess(command,envp,workingDirectory));
-    }
+	public static String executeCommand(String[] command, String[] envp, File workingDirectory) throws IOException {
+		return drainStreams(executeCommandAndReturnProcess(command, envp, workingDirectory));
+	}
 
-
-    /**
-     * drains the given InputStream, adding each line read to the given StringBuffer.
-     * @param sb the StringBuffer to which to append lines
-     * @param s the InputStream to drain
-     * @return true iff we read a string
-     */
-    protected static boolean drainInputStream(StringBuffer sb,InputStream s) {
+	/**
+	 * drains the given InputStream, adding each line read to the given StringBuffer.
+	 *
+	 * @param sb the StringBuffer to which to append lines
+	 * @param s the InputStream to drain
+	 * @return true iff we read a string
+	 */
+	protected static boolean drainInputStream(StringBuffer sb, InputStream s) {
 		InputStreamReader ins = new InputStreamReader(s);
 		BufferedReader reader = new BufferedReader(ins);
 
 		boolean readsomething = false;
 		String line = null;
 		try {
-		    while ((line = reader.readLine()) != null) {
+			while ((line = reader.readLine()) != null) {
 				readsomething = true;
 				sb.append(line + System.getProperty("line.separator"));
-		    }
-		    reader.close();
-		}
-		catch (IOException e) {
-		    log.warn("drainInputStream caught: "+e.toString(), e);
-		}
-		finally {
-		    try {
-		    	reader.close();
-		    }
-		    catch (Exception e) {
-		    	log.warn("Caught exception closing reader while draining streams.");
-		    }
+			}
+			reader.close();
+		} catch (IOException e) {
+			log.warn("drainInputStream caught: " + e.toString(), e);
+		} finally {
+			try {
+				reader.close();
+			} catch (Exception e) {
+				log.warn("Caught exception closing reader while draining streams.");
+			}
 		}
 		return readsomething;
-    }
+	}
 
 	/**
 	 * Drains both the stdout and stderr streams of a process and returns
+	 *
 	 * @param p
 	 * @return The combined stdout and stderr from the process
 	 */
@@ -491,486 +505,495 @@ public class Util {
 		   the process cannot advance in that case). */
 		final StringBuffer message = new StringBuffer();
 		threadPool.execute(() -> {
-            try {
-                if (drainInputStream(message, p.getErrorStream())) {
-                    message.insert(0, "The process produced stderr output:\n");
-                    log.error("drainStreams", message.toString());
-                }
-            }
-            catch(Exception e) {
-                log.error(
-                    "drainStreams",
-                    "Error draining stderr from process: " + e.toString()
-                );
-            }
-        });
+			try {
+				if (drainInputStream(message, p.getErrorStream())) {
+					message.insert(0, "The process produced stderr output:\n");
+					log.error("drainStreams", message.toString());
+				}
+			} catch (Exception e) {
+				log.error("drainStreams", "Error draining stderr from process: " + e.toString());
+			}
+		});
 		drainInputStream(message, p.getInputStream());
 		return message.toString();
 	}
 
-    /**
-     * Converts a list of strings into a list of ints
-     * @param stringList The list of numeric strings to convert to ints
-     * @return A list of ints parsed from the string list
-     */
-    public static List<Integer> toIntegerList(String[] stringList) {
-	if (stringList != null) {
-	    ArrayList<Integer> retList = new ArrayList<>(stringList.length);
+	/**
+	 * Converts a list of strings into a list of ints
+	 *
+	 * @param stringList The list of numeric strings to convert to ints
+	 * @return A list of ints parsed from the string list
+	 */
+	public static List<Integer> toIntegerList(String[] stringList) {
+		if (stringList != null) {
+			ArrayList<Integer> retList = new ArrayList<>(stringList.length);
 
-	    for(String s : stringList){
-		retList.add(Integer.parseInt(s));
-	    }
+			for (String s : stringList) {
+				retList.add(Integer.parseInt(s));
+			}
 
-	    return retList;
+			return retList;
+		}
+
+		return new ArrayList<>();
 	}
 
-	return new ArrayList<>();
-    }
-
-    /**
-     * Normalizes all line endings in the given file to the line ending of the OS the JVM is running on
-     * @param f The file to normalize
-     */
-    public static void normalizeFile(File f) {
+	/**
+	 * Normalizes all line endings in the given file to the line ending of the OS the JVM is running on
+	 *
+	 * @param f The file to normalize
+	 */
+	public static void normalizeFile(File f) {
 		File temp = null;
 		BufferedReader bufferIn = null;
 		BufferedWriter bufferOut = null;
 
 		try {
-		    if(f.exists()) {
-			// Create a new temp file to write to
-			temp = new File(f.getAbsolutePath() + ".normalized");
-			temp.createNewFile();
+			if (f.exists()) {
+				// Create a new temp file to write to
+				temp = new File(f.getAbsolutePath() + ".normalized");
+				temp.createNewFile();
 
-			// Get a stream to read from the file un-normalized file
-			FileInputStream fileIn = new FileInputStream(f);
-			DataInputStream dataIn = new DataInputStream(fileIn);
-			bufferIn = new BufferedReader(new InputStreamReader(dataIn));
+				// Get a stream to read from the file un-normalized file
+				FileInputStream fileIn = new FileInputStream(f);
+				DataInputStream dataIn = new DataInputStream(fileIn);
+				bufferIn = new BufferedReader(new InputStreamReader(dataIn));
 
-			// Get a stream to write to the noramlized file
-			FileOutputStream fileOut = new FileOutputStream(temp);
-			DataOutputStream dataOut = new DataOutputStream(fileOut);
-			bufferOut = new BufferedWriter(new OutputStreamWriter(dataOut));
+				// Get a stream to write to the noramlized file
+				FileOutputStream fileOut = new FileOutputStream(temp);
+				DataOutputStream dataOut = new DataOutputStream(fileOut);
+				bufferOut = new BufferedWriter(new OutputStreamWriter(dataOut));
 
-			// For each line in the un-normalized file
-			String line;
-			while ((line = bufferIn.readLine()) != null) {
-			    // Write the original line plus the operating-system dependent newline
-			    bufferOut.write(line);
-			    bufferOut.newLine();
+				// For each line in the un-normalized file
+				String line;
+				while ((line = bufferIn.readLine()) != null) {
+					// Write the original line plus the operating-system dependent newline
+					bufferOut.write(line);
+					bufferOut.newLine();
+				}
+
+				bufferIn.close();
+				bufferOut.close();
+
+				// Remove the original file
+				f.delete();
+
+				// And rename the original file to the new one
+				temp.renameTo(f);
+			} else {
+				// If the file doesn't exist...
+				log.warn("Could not find file to open: " + f.getAbsolutePath());
 			}
-
-			bufferIn.close();
-			bufferOut.close();
-
-			// Remove the original file
-			f.delete();
-
-			// And rename the original file to the new one
-			temp.renameTo(f);
-		    } else {
-			// If the file doesn't exist...
-			log.warn("Could not find file to open: " + f.getAbsolutePath());
-		    }
 		} catch (Exception e) {
-		    log.warn(e.getMessage(), e);
+			log.warn(e.getMessage(), e);
 		} finally {
-		    // Clean up, temp should never exist
-		    FileUtils.deleteQuietly(temp);
-		    IOUtils.closeQuietly(bufferIn);
-		    IOUtils.closeQuietly(bufferOut);
+			// Clean up, temp should never exist
+			FileUtils.deleteQuietly(temp);
+			IOUtils.closeQuietly(bufferIn);
+			IOUtils.closeQuietly(bufferOut);
 		}
-    }
+	}
 
 	/**
 	 * @param nums
 	 * @return A string containing a comma-separated list of the given numbers
 	 */
-    public static String makeCommaSeparatedList(List<Integer> nums) {
-    	StringBuilder sb=new StringBuilder();
-    	for (Integer id : nums) {
-    		sb.append(id);
-    		sb.append(",");
-    	}
-    	sb.delete(sb.length()-1, sb.length());
-    	return sb.toString();
-
-    }
-    /**
-     * Retrieves all files in the given directory that are as old as, or older than the specified number of days
-     * @param directory The directory to clear old files out of (non-recursive)
-     * @param daysAgo Files older than this many days ago will be deleted
-     * @param includeDirs Whether to include directories as well as files
-     * @return All files older than the given filter
-     */
-    public static Collection<File> getOldFiles(String directory, int daysAgo, boolean includeDirs) {
-    	File dir = new File(directory);
-
-	    if(!dir.exists()) {
-	    	return null;
-	    }
-
-	    // Subtract days from the current time
-	    Calendar calendar = Calendar.getInstance();
-	    calendar.add(Calendar.DATE, -daysAgo);
-	    // Create a new filter for files older than this new time
-	    IOFileFilter dateFilter = FileFilterUtils.ageFileFilter(calendar.getTime());
-	    Collection<File> outdatedFiles;
-	    // Get all of the outdated files
-	    if (!includeDirs) {
-		    outdatedFiles = FileUtils.listFiles(dir, dateFilter, null);
-
-	    } else {
-	    	File[] files=dir.listFiles((FileFilter)dateFilter);
-	    	outdatedFiles= new ArrayList<>();
-	    	for (File f : files) {
-	    		outdatedFiles.add(f);
-	    	}
-	    }
-	    return outdatedFiles;
-    }
-
-    /**
-     * Deletes all files in the given directory that are as old as, or older than the specified number of days.
-     * The given directory itself is NOT deleted
-     * @param directory The directory to clear old files out of (non-recursive)
-     * @param daysAgo Files older than this many days ago will be deleted
-     */
-    public static void clearOldSandboxFiles(String directory, int daysAgo){
-		try {
-		    Collection<File> outdatedFiles=getOldFiles(directory,daysAgo,true);
-		    log.debug("found a total of "+outdatedFiles.size() +" outdated files to delete in "+directory);
-		    // Remove them all
-		    for(File f : outdatedFiles) {
-		    	sandboxChmodDirectory(f);
-		    	if (f.isDirectory()) {
-			    	FileUtils.deleteDirectory(f);
-		    	} else {
-		    		FileUtils.deleteQuietly(f);
-		    	}
-		    }
-		} catch (Exception e) {
-		    log.warn(e.getMessage(), e);
+	public static String makeCommaSeparatedList(List<Integer> nums) {
+		StringBuilder sb = new StringBuilder();
+		for (Integer id : nums) {
+			sb.append(id);
+			sb.append(",");
 		}
-    }
-    /**
-     * THIS IS NOT SAFE TO RUN ON STAREXEC
-     *
-     * This code is designed to be used for single uses on Stardev to clear the job directory in a smart way after
-     * redeploying and resetting the stardev database causes job directories to clear out. This procedure may also
-     * be useful on Starexec, but extreme care needs to be taken to make sure the correct directories are deleted.
-     * This should not be used on Starexec without going through the code below line by line, as changes in the
-     * job output directory since this was written (April 2016) may cause unexpected results.
-     *
-     * Clears out directories under joboutput that do not belong to any job in the database. These
-     * directories are ones that were not cleared correctly.
-     */
-    public static void clearOrphanedJobDirectories() {
-    	log.info("calling clearOrphanedJobDirectories");
-    	File outputDirectory = new File(R.getJobOutputDirectory());
-    	// we are going to consider removing all files / directories under the job output directory
-    	HashSet<String> filesToConsider = new HashSet<>();
-    	for (File f : outputDirectory.listFiles()) {
-    		filesToConsider.add(f.getAbsolutePath());
-    	}
-    	log.info("found this many job output subdirectories to consider "+filesToConsider.size());
-    	// exclude the log directory from removal
-    	filesToConsider.remove(new File(R.getJobLogDir()).getAbsolutePath());
+		sb.delete(sb.length() - 1, sb.length());
+		return sb.toString();
 
-    	// exclude the directories of existing jobs from removal. This should be safe from race conditions
-    	// because we are getting the list of jobs after getting the list of files. As such, jobs directories
-    	// created between these operations will not be present in filesToConsider
-    	for (Integer i : Jobs.getAllJobIds()) {
-    		filesToConsider.remove(Jobs.getDirectory(i));
-    	}
-    	log.info("found this many job output subdirectories to consider after filter "+filesToConsider.size());
-
-    	for (String s : filesToConsider) {
-    		log.info("deleting the following orphaned job directory");
-    		log.info(s);
-    		if(!Util.safeDeleteDirectory(s)) {
-    			log.error("failed to deleted directory "+s);
-    		}
-    	}
-
-
-    }
-
-    /**
-     * Deletes all files in the given directory that are as old as, or older than the specified number of days
-     * @param directory The directory to clear old files out of (non-recursive)
-     * @param daysAgo Files older than this many days ago will be deleted
-     * @param includeDirs Whether to delete directories as well as files
-     */
-    public static void clearOldFiles(String directory, int daysAgo,boolean includeDirs){
-		try {
-		    Collection<File> outdatedFiles=getOldFiles(directory,daysAgo,includeDirs);
-		    log.debug("found a total of "+outdatedFiles.size() +" outdated files to delete in "+directory);
-		    // Remove them all
-		    for(File f : outdatedFiles) {
-
-		    	FileUtils.deleteQuietly(f);
-		    }
-		} catch (Exception e) {
-		    log.warn(e.getMessage(), e);
-		}
-    }
-
-
-
-    /**
-     * Returns a configuration's absolute file path given the solver's path and
-     * the configuration's name
-     *
-     * @param solverPath the absolute path to the solver's directory
-     * @param configName the configuration's name (which is also the filename)
-     * @return null if the solver path or configuration's name are null or empty, otherwise
-     * this returns the absolute path to the given configuration's file on disk
-     * @author Todd Elvers
-     */
-    public static String getSolverConfigPath(String solverPath, String configName){
-	if(isNullOrEmpty(solverPath) || isNullOrEmpty(configName)){
-	    return null;
 	}
 
-	StringBuilder sb = new StringBuilder();
-	sb.append(solverPath);			// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/
-	sb.append(R.SOLVER_BIN_DIR);	// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin
-	sb.append(File.separator);		// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin/
-	// Append 'run_' prefix to the configuration's filename if it isn't already there
-	if(!configName.startsWith(R.CONFIGURATION_PREFIX)){
-	    sb.append(R.CONFIGURATION_PREFIX);
+	/**
+	 * Retrieves all files in the given directory that are as old as, or older than the specified number of days
+	 *
+	 * @param directory The directory to clear old files out of (non-recursive)
+	 * @param daysAgo Files older than this many days ago will be deleted
+	 * @param includeDirs Whether to include directories as well as files
+	 * @return All files older than the given filter
+	 */
+	public static Collection<File> getOldFiles(String directory, int daysAgo, boolean includeDirs) {
+		File dir = new File(directory);
+
+		if (!dir.exists()) {
+			return null;
+		}
+
+		// Subtract days from the current time
+		Calendar calendar = Calendar.getInstance();
+		calendar.add(Calendar.DATE, -daysAgo);
+		// Create a new filter for files older than this new time
+		IOFileFilter dateFilter = FileFilterUtils.ageFileFilter(calendar.getTime());
+		Collection<File> outdatedFiles;
+		// Get all of the outdated files
+		if (!includeDirs) {
+			outdatedFiles = FileUtils.listFiles(dir, dateFilter, null);
+
+		} else {
+			File[] files = dir.listFiles((FileFilter) dateFilter);
+			outdatedFiles = new ArrayList<>();
+			for (File f : files) {
+				outdatedFiles.add(f);
+			}
+		}
+		return outdatedFiles;
 	}
-	sb.append(configName);			// Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin/{starexec_run_configName}
-	return sb.toString();
-    }
 
-    private static String docRoot = null;
-    private static String docRootUrl = null;
+	/**
+	 * Deletes all files in the given directory that are as old as, or older than the specified number of days.
+	 * The given directory itself is NOT deleted
+	 *
+	 * @param directory The directory to clear old files out of (non-recursive)
+	 * @param daysAgo Files older than this many days ago will be deleted
+	 */
+	public static void clearOldSandboxFiles(String directory, int daysAgo) {
+		try {
+			Collection<File> outdatedFiles = getOldFiles(directory, daysAgo, true);
+			log.debug("found a total of " + outdatedFiles.size() + " outdated files to delete in " + directory);
+			// Remove them all
+			for (File f : outdatedFiles) {
+				sandboxChmodDirectory(f);
+				if (f.isDirectory()) {
+					FileUtils.deleteDirectory(f);
+				} else {
+					FileUtils.deleteQuietly(f);
+				}
+			}
+		} catch (Exception e) {
+			log.warn(e.getMessage(), e);
+		}
+	}
+
+	/**
+	 * THIS IS NOT SAFE TO RUN ON STAREXEC
+	 * <p>
+	 * This code is designed to be used for single uses on Stardev to clear the job directory in a smart way after
+	 * redeploying and resetting the stardev database causes job directories to clear out. This procedure may also
+	 * be useful on Starexec, but extreme care needs to be taken to make sure the correct directories are deleted.
+	 * This should not be used on Starexec without going through the code below line by line, as changes in the
+	 * job output directory since this was written (April 2016) may cause unexpected results.
+	 * <p>
+	 * Clears out directories under joboutput that do not belong to any job in the database. These
+	 * directories are ones that were not cleared correctly.
+	 */
+	public static void clearOrphanedJobDirectories() {
+		log.info("calling clearOrphanedJobDirectories");
+		File outputDirectory = new File(R.getJobOutputDirectory());
+		// we are going to consider removing all files / directories under the job output directory
+		HashSet<String> filesToConsider = new HashSet<>();
+		for (File f : outputDirectory.listFiles()) {
+			filesToConsider.add(f.getAbsolutePath());
+		}
+		log.info("found this many job output subdirectories to consider " + filesToConsider.size());
+		// exclude the log directory from removal
+		filesToConsider.remove(new File(R.getJobLogDir()).getAbsolutePath());
+
+		// exclude the directories of existing jobs from removal. This should be safe from race conditions
+		// because we are getting the list of jobs after getting the list of files. As such, jobs directories
+		// created between these operations will not be present in filesToConsider
+		for (Integer i : Jobs.getAllJobIds()) {
+			filesToConsider.remove(Jobs.getDirectory(i));
+		}
+		log.info("found this many job output subdirectories to consider after filter " + filesToConsider.size());
+
+		for (String s : filesToConsider) {
+			log.info("deleting the following orphaned job directory");
+			log.info(s);
+			if (!Util.safeDeleteDirectory(s)) {
+				log.error("failed to deleted directory " + s);
+			}
+		}
 
 
-    private static void initDocRoot() {
-    	if (docRoot == null) {
-	    docRoot = "/" + R.STAREXEC_APPNAME + "/";
-    	}
-    }
+	}
 
-    private static void initDocRootUrl() {
-    	initDocRoot();
-    	if (docRootUrl == null) {
-    		docRootUrl = R.STAREXEC_URL_PREFIX+"://" + R.STAREXEC_SERVERNAME + docRoot;
-    	}
-    }
-    /**
-     * Prepend the document root to the given path, to form a site root-relative path.
-     * @param s
-     * @return a path to the given document relative to STAREXEC_ROOT
-     * @author Aaron Stump
-     */
-    public static String docRoot(String s) {
-    	initDocRoot();
-    	return docRoot + s;
-    }
-    /**
-     * Prepend the "https://", the server name, and the document root, to form an absolute path (URL).
-     * @param s The relative path to create a url for
-     * @return the absolute url associated with the given relative path
-     * @author Aaron Stump
-     */
-    public static String url(String s) {
-    	initDocRootUrl();
-    	return docRootUrl + s;
-    }
+	/**
+	 * Deletes all files in the given directory that are as old as, or older than the specified number of days
+	 *
+	 * @param directory The directory to clear old files out of (non-recursive)
+	 * @param daysAgo Files older than this many days ago will be deleted
+	 * @param includeDirs Whether to delete directories as well as files
+	 */
+	public static void clearOldFiles(String directory, int daysAgo, boolean includeDirs) {
+		try {
+			Collection<File> outdatedFiles = getOldFiles(directory, daysAgo, includeDirs);
+			log.debug("found a total of " + outdatedFiles.size() + " outdated files to delete in " + directory);
+			// Remove them all
+			for (File f : outdatedFiles) {
 
-    /**
-     * Given an integer number of bytes, returns a human-readable string
-     * approximating the number of bytes given with the proper units
-     * @param bytes The number of bytes
-     * @return The number of bytes to two decimal places in a useful unit
-     * @author Eric Burns
-     */
-    public static String byteCountToDisplaySize(long bytes) {
-    	String[] suffix=new String[]{"Bytes", "KB", "MB", "GB", "TB", "PB", "EB"};
-    	int suffixIndex=0;
-    	double b=(double)bytes;
-    	while (b>1024) {
-	    suffixIndex+=1;
-	    b=b/1024;
-    	}
-    	DecimalFormat df=new DecimalFormat("#.##");
+				FileUtils.deleteQuietly(f);
+			}
+		} catch (Exception e) {
+			log.warn(e.getMessage(), e);
+		}
+	}
 
-    	return df.format(b) +" "+suffix[suffixIndex];
-    }
-    /**
-     * Converts gigabytes to bytes.
-     * @param gigabytes
-     * @return Number of bytes representing the given gigabytes
-     */
-    public static long gigabytesToBytes(double gigabytes) {
-    	long bytes=(long)(1073741824*gigabytes);
-    	return bytes;
-    }
-    /**
-     *
-     * @param bytes
-     * @return Converts bytes to megabytes, truncated to the nearest integer megabyte
-     */
-    public static long bytesToMegabytes(long bytes) {
-    	return (bytes / (1024*1024));
-    }
+	/**
+	 * Returns a configuration's absolute file path given the solver's path and
+	 * the configuration's name
+	 *
+	 * @param solverPath the absolute path to the solver's directory
+	 * @param configName the configuration's name (which is also the filename)
+	 * @return null if the solver path or configuration's name are null or empty, otherwise
+	 * this returns the absolute path to the given configuration's file on disk
+	 * @author Todd Elvers
+	 */
+	public static String getSolverConfigPath(String solverPath, String configName) {
+		if (isNullOrEmpty(solverPath) || isNullOrEmpty(configName)) {
+			return null;
+		}
 
-    /**
-     *
-     * @param bytes
-     * @return the number of gigabytes representing the given number of bytes
-     */
-    public static double bytesToGigabytes(long bytes) {
-    	return ((double)bytes/1073741824.0);
-    }
+		StringBuilder sb = new StringBuilder();
+		sb.append(solverPath);            // Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/
+		sb.append(R.SOLVER_BIN_DIR);    // Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin
+		sb.append(File.separator);        // Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin/
+		// Append 'run_' prefix to the configuration's filename if it isn't already there
+		if (!configName.startsWith(R.CONFIGURATION_PREFIX)) {
+			sb.append(R.CONFIGURATION_PREFIX);
+		}
+		sb.append(configName);            // Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin/{starexec_run_configName}
+		return sb.toString();
+	}
 
-    /**
-     * Deletes the file specified by the given path, and then moves up and deletes
-     * empty directories on the path to the the file that was deleted. Will ignore any directories
-     * at or above 'endPath'
-     * @param path The path to the file to delete
-     * @param endPath The path specifying the directory to terminate at. Will not delete any directories
-     * at or above this path.
-     * @return True on success and false otherwise.
-     */
-    public static boolean safeDeleteFileAndEmptyParents(String path, String endPath) {
-    	log.debug("got call to delete file and empty parents on "+path);
-    	log.debug("endPath is " +endPath);
-    	if (!safeDeleteDirectory(path)) {
-    		return false;
-    	}
-    	File file = new File(path);
-    	File endFile = new File(endPath);
-    	while (file!=null) {
-    		file = file.getParentFile();
-    		if (file==null) {
-    			break;
-    		}
-    		log.debug("working on parent directory "+file.getAbsolutePath());
-    		if (endFile.getAbsolutePath().equals(file.getAbsolutePath())) {
-    			log.debug("terminating at endpath");
-    			break;
-    		}
-    		if (file.isDirectory()) {
-    			if (!file.delete()) {
-    				log.debug("terminating at non-empty directory");
-    				// if the directory does not get deleted, that just means that it was not empty
-    				break;
-    			}
-    			log.debug("deleted directory");
-    		}
-    	}
+	private static void initDocRoot() {
+		if (docRoot == null) {
+			docRoot = "/" + R.STAREXEC_APPNAME + "/";
+		}
+	}
 
-    	return true;
-    }
+	private static void initDocRootUrl() {
+		initDocRoot();
+		if (docRootUrl == null) {
+			docRootUrl = R.STAREXEC_URL_PREFIX + "://" + R.STAREXEC_SERVERNAME + docRoot;
+		}
+	}
 
-    /**
-     * Attempts to delete the directory or file specified the given path without
-     * throwing any errors
-     * @param path The path to the directory to delete
-     * @return True on success, false otherwise
-     * @author Eric Burns
-     */
-    public static boolean safeDeleteDirectory(String path) {
-    	try {
-    		File file=new File(path);
-		    if (file.isDirectory()) {
-		    	FileUtils.deleteDirectory(file);
-		    } else {
-		    	FileUtils.deleteQuietly(file);
-		    }
-		    return true;
-    	} catch (Exception e) {
-	    log.error("safeDeleteDirectory says "+e.getMessage(),e);
-    	}
-    	return false;
-    }
+	/**
+	 * Prepend the document root to the given path, to form a site root-relative path.
+	 *
+	 * @param s
+	 * @return a path to the given document relative to STAREXEC_ROOT
+	 * @author Aaron Stump
+	 */
+	public static String docRoot(String s) {
+		initDocRoot();
+		return docRoot + s;
+	}
 
-    /**
-     * Given a list, a comparator, and all of the attributes needed to paginate a DataTables object,
-     * returns a sublist of the given list containing the ordered items to display
-     * @param <T> Type of the given list and comparator. Can be any sortable object type.
-     * @param arr List to sort
-     * @param compare Comparator object that will be used to determine the ordering of objects during sorting
-     * @param start Record to start on
-     * @param records Number of records to give back (actual number will be less if the size of the list is less than records)
-     * @return Entries sorted and filtered according to the given comparator
-     */
+	/**
+	 * Prepend the "https://", the server name, and the document root, to form an absolute path (URL).
+	 *
+	 * @param s The relative path to create a url for
+	 * @return the absolute url associated with the given relative path
+	 * @author Aaron Stump
+	 */
+	public static String url(String s) {
+		initDocRootUrl();
+		return docRootUrl + s;
+	}
 
-    public static <T> List<T> handlePagination(List<T> arr, Comparator<T> compare,int start, int records) {
-    	Collections.sort(arr,compare);
-		List<T> returnList= new ArrayList<>();
-		if (start>=arr.size()) {
+	/**
+	 * Given an integer number of bytes, returns a human-readable string
+	 * approximating the number of bytes given with the proper units
+	 *
+	 * @param bytes The number of bytes
+	 * @return The number of bytes to two decimal places in a useful unit
+	 * @author Eric Burns
+	 */
+	public static String byteCountToDisplaySize(long bytes) {
+		String[] suffix = new String[]{"Bytes", "KB", "MB", "GB", "TB", "PB", "EB"};
+		int suffixIndex = 0;
+		double b = (double) bytes;
+		while (b > 1024) {
+			suffixIndex += 1;
+			b = b / 1024;
+		}
+		DecimalFormat df = new DecimalFormat("#.##");
+
+		return df.format(b) + " " + suffix[suffixIndex];
+	}
+
+	/**
+	 * Converts gigabytes to bytes.
+	 *
+	 * @param gigabytes
+	 * @return Number of bytes representing the given gigabytes
+	 */
+	public static long gigabytesToBytes(double gigabytes) {
+		long bytes = (long) (1073741824 * gigabytes);
+		return bytes;
+	}
+
+	/**
+	 * @param bytes
+	 * @return Converts bytes to megabytes, truncated to the nearest integer megabyte
+	 */
+	public static long bytesToMegabytes(long bytes) {
+		return (bytes / (1024 * 1024));
+	}
+
+	/**
+	 * @param bytes
+	 * @return the number of gigabytes representing the given number of bytes
+	 */
+	public static double bytesToGigabytes(long bytes) {
+		return ((double) bytes / 1073741824.0);
+	}
+
+	/**
+	 * Deletes the file specified by the given path, and then moves up and deletes
+	 * empty directories on the path to the the file that was deleted. Will ignore any directories
+	 * at or above 'endPath'
+	 *
+	 * @param path The path to the file to delete
+	 * @param endPath The path specifying the directory to terminate at. Will not delete any directories
+	 * at or above this path.
+	 * @return True on success and false otherwise.
+	 */
+	public static boolean safeDeleteFileAndEmptyParents(String path, String endPath) {
+		log.debug("got call to delete file and empty parents on " + path);
+		log.debug("endPath is " + endPath);
+		if (!safeDeleteDirectory(path)) {
+			return false;
+		}
+		File file = new File(path);
+		File endFile = new File(endPath);
+		while (file != null) {
+			file = file.getParentFile();
+			if (file == null) {
+				break;
+			}
+			log.debug("working on parent directory " + file.getAbsolutePath());
+			if (endFile.getAbsolutePath().equals(file.getAbsolutePath())) {
+				log.debug("terminating at endpath");
+				break;
+			}
+			if (file.isDirectory()) {
+				if (!file.delete()) {
+					log.debug("terminating at non-empty directory");
+					// if the directory does not get deleted, that just means that it was not empty
+					break;
+				}
+				log.debug("deleted directory");
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Attempts to delete the directory or file specified the given path without
+	 * throwing any errors
+	 *
+	 * @param path The path to the directory to delete
+	 * @return True on success, false otherwise
+	 * @author Eric Burns
+	 */
+	public static boolean safeDeleteDirectory(String path) {
+		try {
+			File file = new File(path);
+			if (file.isDirectory()) {
+				FileUtils.deleteDirectory(file);
+			} else {
+				FileUtils.deleteQuietly(file);
+			}
+			return true;
+		} catch (Exception e) {
+			log.error("safeDeleteDirectory says " + e.getMessage(), e);
+		}
+		return false;
+	}
+
+	/**
+	 * Given a list, a comparator, and all of the attributes needed to paginate a DataTables object,
+	 * returns a sublist of the given list containing the ordered items to display
+	 *
+	 * @param <T> Type of the given list and comparator. Can be any sortable object type.
+	 * @param arr List to sort
+	 * @param compare Comparator object that will be used to determine the ordering of objects during sorting
+	 * @param start Record to start on
+	 * @param records Number of records to give back (actual number will be less if the size of the list is less than records)
+	 * @return Entries sorted and filtered according to the given comparator
+	 */
+
+	public static <T> List<T> handlePagination(List<T> arr, Comparator<T> compare, int start, int records) {
+		Collections.sort(arr, compare);
+		List<T> returnList = new ArrayList<>();
+		if (start >= arr.size()) {
 			//we'll just return nothing
-		} else if (start+records>arr.size()) {
+		} else if (start + records > arr.size()) {
 			returnList = arr.subList(start, arr.size());
 		} else {
-			 returnList = arr.subList(start,start+records);
+			returnList = arr.subList(start, start + records);
 		}
 		return returnList;
-    }
+	}
 
-    public static String getSolverDetailsLink(int solverId, String linkText) {
-        return getPrimitiveDetailsLink(Primitive.SOLVER, solverId, linkText);
-    }
-    public static String getBenchDetailsLink(int benchId, String linkText) {
-        return getPrimitiveDetailsLink(Primitive.BENCHMARK, benchId, linkText);
-    }
-    public static String getUserDetailsLink(int userId, String linkText) {
-        return getPrimitiveDetailsLink(Primitive.USER, userId, linkText);
-    }
-    public static String getConfigDetailsLink(int configId, String linkText) {
-        return getPrimitiveDetailsLink(Primitive.CONFIGURATION, configId, linkText);
-    }
-    public static String getJobDetailsLink(int jobId, String linkText) {
-        return getPrimitiveDetailsLink(Primitive.JOB, jobId, linkText);
-    }
+	public static String getSolverDetailsLink(int solverId, String linkText) {
+		return getPrimitiveDetailsLink(Primitive.SOLVER, solverId, linkText);
+	}
 
-    public static String getPairDetailsLink(int pairId, String linkText) {
-        return getPrimitiveDetailsLink(Primitive.JOB_PAIR, pairId, linkText);
-    }
+	public static String getBenchDetailsLink(int benchId, String linkText) {
+		return getPrimitiveDetailsLink(Primitive.BENCHMARK, benchId, linkText);
+	}
 
-    private static String getPrimitiveDetailsLink(Primitive type, int id, String linkText) {
-        final String methodName = "getPrimitiveDetailsLink";
+	public static String getUserDetailsLink(int userId, String linkText) {
+		return getPrimitiveDetailsLink(Primitive.USER, userId, linkText);
+	}
 
-        String primitiveNameInLink = null;
-        switch (type) {
-            case USER:
-                primitiveNameInLink = "user";
-                break;
-            case BENCHMARK:
-                primitiveNameInLink = "benchmark";
-                break;
-            case SOLVER:
-                primitiveNameInLink = "solver";
-                break;
-            case CONFIGURATION:
-                primitiveNameInLink = "configuration";
-                break;
-            case JOB:
-                primitiveNameInLink = "job";
-                break;
-            case JOB_PAIR:
-                primitiveNameInLink = "pair";
-                break;
-            default:
-                log.error(methodName, "Threw and IllegalArgumentException because the input type does not have a details page.");
-                throw new IllegalArgumentException("Util.getPrimitiveDetailsLink does not support the given enum type.");
+	public static String getConfigDetailsLink(int configId, String linkText) {
+		return getPrimitiveDetailsLink(Primitive.CONFIGURATION, configId, linkText);
+	}
 
-        }
+	public static String getJobDetailsLink(int jobId, String linkText) {
+		return getPrimitiveDetailsLink(Primitive.JOB, jobId, linkText);
+	}
 
-        return ("<a href='"+Util.docRoot("secure/details/"+primitiveNameInLink+".jsp?id="+id)+"'>"
-                +linkText+"<img class='extLink' src='"+Util.docRoot("images/external.png")+"'/>"
-                +"</a>");
+	public static String getPairDetailsLink(int pairId, String linkText) {
+		return getPrimitiveDetailsLink(Primitive.JOB_PAIR, pairId, linkText);
+	}
+
+	private static String getPrimitiveDetailsLink(Primitive type, int id, String linkText) {
+		final String methodName = "getPrimitiveDetailsLink";
+
+		String primitiveNameInLink = null;
+		switch (type) {
+			case USER:
+				primitiveNameInLink = "user";
+				break;
+			case BENCHMARK:
+				primitiveNameInLink = "benchmark";
+				break;
+			case SOLVER:
+				primitiveNameInLink = "solver";
+				break;
+			case CONFIGURATION:
+				primitiveNameInLink = "configuration";
+				break;
+			case JOB:
+				primitiveNameInLink = "job";
+				break;
+			case JOB_PAIR:
+				primitiveNameInLink = "pair";
+				break;
+			default:
+				log.error(methodName, "Threw and IllegalArgumentException because the input type does not have a details page.");
+				throw new IllegalArgumentException("Util.getPrimitiveDetailsLink does not support the given enum type.");
+
+		}
+
+		return ("<a href='" + Util.docRoot("secure/details/" + primitiveNameInLink + ".jsp?id=" + id) + "'>" + linkText + "<img class='extLink' src='" + Util.docRoot("images/external.png") + "'/>" + "</a>");
 	}
 
 	/**
 	 * Gets a String representation of a Throwable object's
 	 * stack trace.
+	 *
 	 * @param t a throwable object
 	 * @return the string representation of t's stack trace.
 	 * @author Albert Giegerich
@@ -983,127 +1006,133 @@ public class Util {
 	}
 
 
-    /**
-     * Recursively grants full permission to the owner of everything in the given
-     * directory. The top level directory is not affected, only everything inside
-     * @param dir
-     * @throws IOException
-     */
-    public static void sandboxChmodDirectory(File dir) throws IOException {
-    	if (!dir.isDirectory()) {
-    		return;
-    	}
-    	//give sandbox full permissions over the solver directory
-		String[] chmod=new String[7];
-		chmod[0]="sudo";
-		chmod[1]="-u";
-		chmod[2]=R.SANDBOX_USER_ONE;
-		chmod[3]="chmod";
-		chmod[4]="-R";
-		chmod[5]="u+rwx,g+rwx";
+	/**
+	 * Recursively grants full permission to the owner of everything in the given
+	 * directory. The top level directory is not affected, only everything inside
+	 *
+	 * @param dir
+	 * @throws IOException
+	 */
+	public static void sandboxChmodDirectory(File dir) throws IOException {
+		if (!dir.isDirectory()) {
+			return;
+		}
+		//give sandbox full permissions over the solver directory
+		String[] chmod = new String[7];
+		chmod[0] = "sudo";
+		chmod[1] = "-u";
+		chmod[2] = R.SANDBOX_USER_ONE;
+		chmod[3] = "chmod";
+		chmod[4] = "-R";
+		chmod[5] = "u+rwx,g+rwx";
 		for (File f : dir.listFiles()) {
-			chmod[6]=f.getAbsolutePath();
+			chmod[6] = f.getAbsolutePath();
 			Util.executeCommand(chmod);
 		}
-    }
-    /**
-     * Adds rwx permissions to the directory for either the owner or the group
-     * @param dir The directory to modify
-     * @param group True to modify permissions for the group and false for the directory
-     * @throws IOException
-     */
-    public static void chmodDirectory(String dir,boolean group) throws IOException {
-		String[] chmod=new String[4];
-		chmod[0]="chmod";
-		chmod[1]="-R";
+	}
+
+	/**
+	 * Adds rwx permissions to the directory for either the owner or the group
+	 *
+	 * @param dir The directory to modify
+	 * @param group True to modify permissions for the group and false for the directory
+	 * @throws IOException
+	 */
+	public static void chmodDirectory(String dir, boolean group) throws IOException {
+		String[] chmod = new String[4];
+		chmod[0] = "chmod";
+		chmod[1] = "-R";
 		if (group) {
-		    chmod[2]="g+rwx";
+			chmod[2] = "g+rwx";
 
 		} else {
-		    chmod[2]="u+rwx";
+			chmod[2] = "u+rwx";
 
 		}
-		chmod[3]=dir;
+		chmod[3] = dir;
 		Util.executeCommand(chmod);
-    }
-
-    /**
-     * Copies all of the given files to a single, newly created sandbox directory
-     * and returns the sandbox directory. The sandbox user will be the owner and
-     * have full permissions over everthing in the sandbox directory.
-     * @param files
-     * @return The sandbox directory that contains all the copied files
-     * @throws IOException
-     */
-    public static File copyFilesToNewSandbox(List<File> files) throws IOException {
-    	File sandbox=null;
-    	File sandbox2=null;
-	try {
-	    sandbox=getRandomSandboxDirectory();
-	    sandbox2=getRandomSandboxDirectory();
-	    String[] cpCmd=new String[4];
-	    cpCmd[0]="cp";
-	    cpCmd[1]="-r";
-	    cpCmd[3]=sandbox.getAbsolutePath();
-	    for (File f : files) {
-    		cpCmd[2]=f.getAbsolutePath();
-    		Util.executeCommand(cpCmd);
-	    }
-
-	    //next, copy the files over so they are owned by sandbox
-	    String[] sudoCpCmd=new String[4];
-
-	    sudoCpCmd[0]="cp";
-	    sudoCpCmd[1]="-r";
-	    sudoCpCmd[3]=sandbox2.getAbsolutePath();
-	    for (File f : sandbox.listFiles()) {
-    		sudoCpCmd[2]=f.getAbsolutePath();
-    		Util.executeSandboxCommand(sudoCpCmd);
-	    }
-	    sandboxChmodDirectory(sandbox2);
 	}
-	finally {
-	    FileUtils.deleteQuietly(sandbox);
+
+	/**
+	 * Copies all of the given files to a single, newly created sandbox directory
+	 * and returns the sandbox directory. The sandbox user will be the owner and
+	 * have full permissions over everthing in the sandbox directory.
+	 *
+	 * @param files
+	 * @return The sandbox directory that contains all the copied files
+	 * @throws IOException
+	 */
+	public static File copyFilesToNewSandbox(List<File> files) throws IOException {
+		File sandbox = null;
+		File sandbox2 = null;
+		try {
+			sandbox = getRandomSandboxDirectory();
+			sandbox2 = getRandomSandboxDirectory();
+			String[] cpCmd = new String[4];
+			cpCmd[0] = "cp";
+			cpCmd[1] = "-r";
+			cpCmd[3] = sandbox.getAbsolutePath();
+			for (File f : files) {
+				cpCmd[2] = f.getAbsolutePath();
+				Util.executeCommand(cpCmd);
+			}
+
+			//next, copy the files over so they are owned by sandbox
+			String[] sudoCpCmd = new String[4];
+
+			sudoCpCmd[0] = "cp";
+			sudoCpCmd[1] = "-r";
+			sudoCpCmd[3] = sandbox2.getAbsolutePath();
+			for (File f : sandbox.listFiles()) {
+				sudoCpCmd[2] = f.getAbsolutePath();
+				Util.executeSandboxCommand(sudoCpCmd);
+			}
+			sandboxChmodDirectory(sandbox2);
+		} finally {
+			FileUtils.deleteQuietly(sandbox);
+		}
+		return sandbox2;
 	}
-    	return sandbox2;
-    }
 
-    /**
-     * Creates and returns a unique, empty directory immediately inside
-     * of the sandbox directory on the head node
-     * @return The sandbox directory that was created
-     */
-    public static File getRandomSandboxDirectory() {
-		File sandboxDirectory=Util.getSandboxDirectory();
-		String randomDirectory=TestUtil.getRandomAlphaString(64);
+	/**
+	 * Creates and returns a unique, empty directory immediately inside
+	 * of the sandbox directory on the head node
+	 *
+	 * @return The sandbox directory that was created
+	 */
+	public static File getRandomSandboxDirectory() {
+		File sandboxDirectory = Util.getSandboxDirectory();
+		String randomDirectory = TestUtil.getRandomAlphaString(64);
 
-		File sandboxDir=new File(sandboxDirectory,randomDirectory);
+		File sandboxDir = new File(sandboxDirectory, randomDirectory);
 
 		sandboxDir.mkdirs();
 		return sandboxDir;
-    }
-    /**
-     * Executes ls -l -R on the sandbox directory and logs the results
-     */
-    public static void logSandboxContents() {
-    	try {
-    		log.debug("logging sandbox contents");
-        	log.debug(Util.executeCommand("ls -l -R "+Util.getSandboxDirectory().getAbsolutePath()));
+	}
 
-    	} catch (Exception e) {
-    		log.error(e.getMessage(),e);
+	/**
+	 * Executes ls -l -R on the sandbox directory and logs the results
+	 */
+	public static void logSandboxContents() {
+		try {
+			log.debug("logging sandbox contents");
+			log.debug(Util.executeCommand("ls -l -R " + Util.getSandboxDirectory().getAbsolutePath()));
 
-    	}
-    }
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+
+		}
+	}
 
 	/**
 	 * Gets the HTML for a web page as a String with query parameters.
+	 *
 	 * @param url The url to get the page from.
 	 * @param queryParameters A mapping of query parameters to their values.
 	 * @param cookiesToSend Cookies to send with the request
 	 * @return the web page in string form.
-	 * @author Albert Giegerich
 	 * @throws IOException if there is some error getting the web pages
+	 * @author Albert Giegerich
 	 */
 	public static String getWebPage(String url, Map<String, String> queryParameters, List<Cookie> cookiesToSend) throws IOException {
 		if (queryParameters.keySet().size() == 0) {
@@ -1111,24 +1140,21 @@ public class Util {
 		}
 
 		// Initially contains the ? necessary for the query string.
-		//StringJoiner queryStringJoiner = new StringJoiner("&", "?", "");
-		StringBuilder queryStringBuilder = new StringBuilder();
+		StringBuilder queryStringBuilder = new StringBuilder("?");
 
-
-		queryStringBuilder.append("?");
 		for (String parameter : queryParameters.keySet()) {
 			String value = queryParameters.get(parameter);
-			queryStringBuilder.append(parameter+"="+value+"&");
-			//queryStringJoiner.add(parameter+"="+value);
+			queryStringBuilder.append(parameter).append("=").append(value).append("&");
 		}
 		// delete the last & character
 		queryStringBuilder.deleteCharAt(queryStringBuilder.length() - 1);
 
-		return getWebPage(url+queryStringBuilder.toString(), cookiesToSend);
+		return getWebPage(url + queryStringBuilder.toString(), cookiesToSend);
 	}
 
 	/**
 	 * Gets the HTML for a web page as a String.
+	 *
 	 * @param url The url to get the page from.
 	 * @param cookiesToSend The cookies to attach to this request.
 	 * @return the web page in String form.
@@ -1159,7 +1185,7 @@ public class Util {
 		//StringJoiner cookieStringJoiner = new StringJoiner("; ");
 		StringBuilder cookieStringBuilder = new StringBuilder();
 		for (Cookie cookie : cookies) {
-			cookieStringBuilder.append(cookie.getName()+"="+cookie.getValue() + ";");
+			cookieStringBuilder.append(cookie.getName()).append("=").append(cookie.getValue()).append(";");
 		}
 		if (cookies.size() > 0) {
 			cookieStringBuilder.deleteCharAt(cookieStringBuilder.length() - 1);
@@ -1167,35 +1193,38 @@ public class Util {
 		return cookieStringBuilder.toString();
 	}
 
-    /**
-     * Attempts to copy the file at the end of the given URL to the given file, using a proxy
-     * @param url
-     * @param archiveFile
-     * @return True on success and false otherwise
-     */
-    public static boolean copyFileFromURLUsingProxy(URL url, File archiveFile) {
-    	try {
-    		Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(R.PROXY_ADDRESS, R.PROXY_PORT));
-        	URLConnection connection = url.openConnection(proxy);
-        	FileUtils.copyInputStreamToFile(connection.getInputStream(), archiveFile);
-        	return true;
-    	} catch (Exception e) {
-    		log.error(e.getMessage(),e);
-    	}
-    	return false;
-    }
-    /**
-     * Writes the given InputStream to the given file. The InputStream
-     * will be close on return
-     * @param stream The InputStream to copy
-     * @param outputFile The File to write to
-     * @throws IOException If there were any writing exceptions
-     */
-    public static void writeInputStreamToFile(InputStream stream, File outputFile) throws IOException {
-    	FileOutputStream output = new FileOutputStream(outputFile);
-    	IOUtils.copy(stream, output);
-    	stream.close();
-    	output.close();
-    }
+	/**
+	 * Attempts to copy the file at the end of the given URL to the given file, using a proxy
+	 *
+	 * @param url
+	 * @param archiveFile
+	 * @return True on success and false otherwise
+	 */
+	public static boolean copyFileFromURLUsingProxy(URL url, File archiveFile) {
+		try {
+			Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(R.PROXY_ADDRESS, R.PROXY_PORT));
+			URLConnection connection = url.openConnection(proxy);
+			FileUtils.copyInputStreamToFile(connection.getInputStream(), archiveFile);
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+		return false;
+	}
+
+	/**
+	 * Writes the given InputStream to the given file. The InputStream
+	 * will be close on return
+	 *
+	 * @param stream The InputStream to copy
+	 * @param outputFile The File to write to
+	 * @throws IOException If there were any writing exceptions
+	 */
+	public static void writeInputStreamToFile(InputStream stream, File outputFile) throws IOException {
+		FileOutputStream output = new FileOutputStream(outputFile);
+		IOUtils.copy(stream, output);
+		stream.close();
+		output.close();
+	}
 
 }
