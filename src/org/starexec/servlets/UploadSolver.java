@@ -44,105 +44,102 @@ import java.util.Optional;
  * Allows for the uploading and handling of Solvers. Solvers can come in .zip,
  * .tar, or .tar.gz format, and configurations can be included in a top level
  * "bin" directory. Each Solver is saved in a unique directory on the filesystem.
- * 
+ *
  * @author Skylar Stark
  */
 @SuppressWarnings("serial")
 @MultipartConfig
 public class UploadSolver extends HttpServlet {
-	
-	private static final StarLogger log = StarLogger.getLogger(UploadSolver.class);	
-    private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);   
-    private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
-    
-    // Some param constants to process the form
-    private static final String SOLVER_DESC = "desc";
-    private static final String SOLVER_DESC_FILE = "d";
-    private static final String SOLVER_DOWNLOADABLE = "dlable";
-    private static final String SPACE_ID = R.SPACE;
-    private static final String UPLOAD_FILE = "f";
-    private static final String SOLVER_NAME = "sn";    		
-    private static final String UPLOAD_METHOD="upMethod";
-    private static final String DESC_METHOD = "descMethod";
-    private static final String FILE_URL="url";
-    private static final String RUN_TEST_JOB="runTestJob";
-    private static final String SETTING_ID="setting";
-    private static final String SOLVER_TYPE="type";
-        
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	int userId = SessionUtil.getUserId(request);
-    	try {	
-    		// If we're dealing with an upload request...
-	    log.info("doPost begins");
+
+	private static final StarLogger log = StarLogger.getLogger(UploadSolver.class);
+	private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
+	// Some param constants to process the form
+	private static final String SOLVER_DESC = "desc";
+	private static final String SOLVER_DESC_FILE = "d";
+	private static final String SOLVER_DOWNLOADABLE = "dlable";
+	private static final String SPACE_ID = R.SPACE;
+	private static final String UPLOAD_FILE = "f";
+	private static final String SOLVER_NAME = "sn";
+	private static final String UPLOAD_METHOD = "upMethod";
+	private static final String DESC_METHOD = "descMethod";
+	private static final String FILE_URL = "url";
+	private static final String RUN_TEST_JOB = "runTestJob";
+	private static final String SETTING_ID = "setting";
+	private static final String SOLVER_TYPE = "type";
+	private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
+
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		int userId = SessionUtil.getUserId(request);
+		try {
+			// If we're dealing with an upload request...
+			log.info("doPost begins");
 
 			if (ServletFileUpload.isMultipartContent(request)) {
-				HashMap<String, Object> form = Util.parseMultipartRequest(request); 
-				
-	                        log.debug("Parsed multipart request");
+				HashMap<String, Object> form = Util.parseMultipartRequest(request);
+
+				log.debug("Parsed multipart request");
 
 				// Make sure the request is valid
-				
-				
-				ValidatorStatusCode status=this.isValidRequest(form, request);
-				if(!status.isSuccess()) {
+
+
+				ValidatorStatusCode status = this.isValidRequest(form, request);
+				if (!status.isSuccess()) {
 					//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
 					response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
-					response.sendError(HttpServletResponse.SC_BAD_REQUEST,status.getMessage());
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 					return;
 				}
 				log.debug("Validated the request");
 
-				int spaceId=Integer.parseInt((String)form.get(SPACE_ID));
-				boolean runTestJob=Boolean.parseBoolean((String)form.get(RUN_TEST_JOB));
-				
+				int spaceId = Integer.parseInt((String) form.get(SPACE_ID));
+				boolean runTestJob = Boolean.parseBoolean((String) form.get(RUN_TEST_JOB));
+
 				// Parse the request as a solver
 				UploadSolverResult result = handleSolver(userId, form);
-				
+
 				// Redirect based on success/failure
-				if(result.status == UploadSolverStatus.SUCCESS) {
-					if(result.isBuildJob) {
+				if (result.status == UploadSolverStatus.SUCCESS) {
+					if (result.isBuildJob) {
 						log.debug("Submitting job to build solver.");
 						int job_return = JobManager.addBuildJob(result.solverId, spaceId);
 						if (job_return >= 0) {
 							log.info("Job created successfully. JobId: " + job_return);
-						}
-						else {
+						} else {
 							log.debug("Error in job creation for buildJob for solver: " + result.solverId);
 						}
 					}
-					
+
 					response.addCookie(new Cookie("New_ID", String.valueOf(result.solverId)));
-                    if(result.isBuildJob && !runTestJob) {
-					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&buildmsg=Building Solver On Starexec"));
-                    } else if (!result.hadConfigs) { //If there are no configs. We do not attempt to run a test job in this case
-					    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&msg=No configurations for the new solver"));
+					if (result.isBuildJob && !runTestJob) {
+						response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&buildmsg=Building Solver On Starexec"));
+					} else if (!result.hadConfigs) { //If there are no configs. We do not attempt to run a test job in this case
+						response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&msg=No configurations for the new solver"));
 					} else {
 						//if this solver has some configurations, we should check to see if the user wanted a test job
 						if (runTestJob) {
-                            log.debug("attempting to run test job");
+							log.debug("attempting to run test job");
 
-                            int settingsId = Communities.getDefaultSettings(spaceId).getId();
-                            //if the user gave a setting ID, then they need to have permission to use that profile
-                            // otherwise, the community default is used
-                            if (form.containsKey(SETTING_ID)) {
-                                settingsId = Integer.parseInt((String) form.get(SETTING_ID));
-                            }
+							int settingsId = Communities.getDefaultSettings(spaceId).getId();
+							//if the user gave a setting ID, then they need to have permission to use that profile
+							// otherwise, the community default is used
+							if (form.containsKey(SETTING_ID)) {
+								settingsId = Integer.parseInt((String) form.get(SETTING_ID));
+							}
 
-                            int jobId = CreateJob.buildSolverTestJob(result.solverId, spaceId, userId, settingsId);
-                            if (result.isBuildJob && jobId > 0) {
-                                response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&buildmsg=Building Solver On Starexec-- test job will be run after build"));
-                            } else if (jobId > 0) {
-                                response.sendRedirect(Util.docRoot("secure/details/job.jsp?id=" + jobId));
-                            } else {
-                                response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&msg=Internal error creating test job-- solver uploaded successfully"));
-                            }
+							int jobId = CreateJob.buildSolverTestJob(result.solverId, spaceId, userId, settingsId);
+							if (result.isBuildJob && jobId > 0) {
+								response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&buildmsg=Building Solver On Starexec-- test job will be run after build"));
+							} else if (jobId > 0) {
+								response.sendRedirect(Util.docRoot("secure/details/job.jsp?id=" + jobId));
+							} else {
+								response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&msg=Internal error creating test job-- solver uploaded successfully"));
+							}
 
-                        } else if (result.optionalMessage.isPresent()) {
-                            String url = "secure/details/solver.jsp?id=" + result.solverId
-                                    + "&msg="+result.optionalMessage.get();
-                            response.sendRedirect(Util.docRoot(url));
+						} else if (result.optionalMessage.isPresent()) {
+							String url = "secure/details/solver.jsp?id=" + result.solverId + "&msg=" + result.optionalMessage.get();
+							response.sendRedirect(Util.docRoot(url));
 						} else {
-						    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId));
+							response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId));
 						}
 					}
 				} else if (result.status == UploadSolverStatus.EXTRACTING_ERROR) {
@@ -156,21 +153,24 @@ public class UploadSolver extends HttpServlet {
 				// Got a non multi-part request, invalid
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 			}
-    	} catch (Exception e) {
-    		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+		} catch (Exception e) {
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 			log.error("Caught Exception in UploadSolver.doPost", e);
-    	}
+		}
 	}
-    /**
-     * Checks to see whether the given directory contains a solver build script in the top level
-     * @param dir The directory to look inside of
-     * @return True if the build script is there, and false otherwise
-     */
-    public boolean containsBuildScript(File dir) {
-    	return new File(dir,R.SOLVER_BUILD_SCRIPT).exists();
-    }
+
+	/**
+	 * Checks to see whether the given directory contains a solver build script in the top level
+	 *
+	 * @param dir The directory to look inside of
+	 * @return True if the build script is there, and false otherwise
+	 */
+	public boolean containsBuildScript(File dir) {
+		return new File(dir, R.SOLVER_BUILD_SCRIPT).exists();
+	}
+
 	private boolean containsRunOnUploadXml(File dir) {
-		return new File(dir,R.UPLOAD_TEST_JOB_XML).exists();
+		return new File(dir, R.UPLOAD_TEST_JOB_XML).exists();
 	}
 
 
@@ -178,9 +178,10 @@ public class UploadSolver extends HttpServlet {
 	 * This method is responsible for uploading a solver to
 	 * the appropriate location and updating the database to reflect
 	 * the solver's location.
+	 *
 	 * @param userId the user ID of the user making the upload request
 	 * @param form the HashMap representation of the upload request
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public UploadSolverResult handleSolver(int userId, HashMap<String, Object> form) throws Exception {
 		final String methodName = "handleSolver";
@@ -190,11 +191,11 @@ public class UploadSolver extends HttpServlet {
 		//returnArray[0] = 0;
 		//returnArray[1] = 0;
 		//returnArray[2] = 0; //0 if prebuilt, 1 if contains buildscript
-		
-		File sandboxDir=null;
+
+		File sandboxDir = null;
 
 		try {
-			sandboxDir=Util.getRandomSandboxDirectory();
+			sandboxDir = Util.getRandomSandboxDirectory();
 			Util.logSandboxContents();
 			String upMethod = (String) form.get(UploadSolver.UPLOAD_METHOD); //file upload or url
 			PartWrapper item = null;
@@ -313,14 +314,12 @@ public class UploadSolver extends HttpServlet {
 					try {
 						FileUtils.copyDirectoryToDirectory(f, uniqueDir);
 					} catch (FileNotFoundException e) {
-						throw new FileNotFoundException(
-								String.format("Check for broken symbolic links in your solver.%n%s", e.getMessage()));
+						throw new FileNotFoundException(String.format("Check for broken symbolic links in your solver.%n%s", e.getMessage()));
 					}
 				} else {
 					FileUtils.copyFileToDirectory(f, uniqueDir);
 				}
 			}
-
 
 
 			String DescMethod = (String) form.get(UploadSolver.DESC_METHOD);
@@ -361,7 +360,7 @@ public class UploadSolver extends HttpServlet {
 			//Try adding the solver to the database
 			int solverId = Solvers.add(newSolver, spaceId);
 
-            UploadSolverStatus status = UploadSolverStatus.SUCCESS;
+			UploadSolverStatus status = UploadSolverStatus.SUCCESS;
 
 			UploadSolverResult result = new UploadSolverResult(status, solverId, hadConfigs, isBuildJob);
 			// Now that we've added the solver to the database, run a test job
@@ -369,9 +368,9 @@ public class UploadSolver extends HttpServlet {
 			if (runOnUploadXml.exists()) {
 				JobUtil jobUtil = createTestJobFromXml(runOnUploadXml, userId, spaceId, solverId);
 				if (!jobUtil.getJobCreationSuccess()) {
-                    String message = "Test job creation failed: "+jobUtil.getErrorMessage();
-                    // Set the optional message so the user gets some more spectific feedback.
-                    result.optionalMessage = Optional.of(message);
+					String message = "Test job creation failed: " + jobUtil.getErrorMessage();
+					// Set the optional message so the user gets some more spectific feedback.
+					result.optionalMessage = Optional.of(message);
 					log.debug(message);
 				}
 			}
@@ -404,11 +403,7 @@ public class UploadSolver extends HttpServlet {
 		}
 	}
 
-	private JobUtil createTestJobFromXml(
-			final File jobXml,
-			final int userId,
-			final int spaceId,
-			final int newSolverId) throws SAXException, IOException, ParserConfigurationException {
+	private JobUtil createTestJobFromXml(final File jobXml, final int userId, final int spaceId, final int newSolverId) throws SAXException, IOException, ParserConfigurationException {
 
 		JobUtil jobUtil = new JobUtil();
 
@@ -434,6 +429,7 @@ public class UploadSolver extends HttpServlet {
 	 * Sees if a given String -> Object HashMap is a valid Upload Solver request.
 	 * Checks to see if it contains all the information needed and if the information
 	 * is in the right format.
+	 *
 	 * @param form the HashMap representing the upload request.
 	 * @return true iff the request is valid
 	 */
@@ -441,110 +437,106 @@ public class UploadSolver extends HttpServlet {
 		final String method = "isValidRequest";
 		try {
 			log.entry(method);
-			int userId=SessionUtil.getUserId(request);
+			int userId = SessionUtil.getUserId(request);
 			//defines the set of attributes that are required
-			if (!form.containsKey(UPLOAD_METHOD) ||
-					!form.containsKey(UploadSolver.SOLVER_TYPE) ||
-					(!form.containsKey(UploadSolver.UPLOAD_FILE) && form.get(UPLOAD_METHOD).equals("local")) ||
-					!form.containsKey(DESC_METHOD) || 
-					(!form.containsKey(SOLVER_DESC_FILE) && form.get(DESC_METHOD).equals("file"))) {
-				
+			if (!form.containsKey(UPLOAD_METHOD) || !form.containsKey(UploadSolver.SOLVER_TYPE) || (!form.containsKey(UploadSolver.UPLOAD_FILE) && form.get(UPLOAD_METHOD).equals("local")) || !form.containsKey(DESC_METHOD) || (!form.containsKey(SOLVER_DESC_FILE) && form.get(DESC_METHOD).equals("file"))) {
+
 				return new ValidatorStatusCode(false, "Required parameters are missing from the request");
 			}
-			
+
 			//ensure the space ID is valid
-			if (!Validator.isValidPosInteger((String)form.get(SPACE_ID))) {
+			if (!Validator.isValidPosInteger((String) form.get(SPACE_ID))) {
 				return new ValidatorStatusCode(false, "The given space ID is not a valid integer");
 			}
-			
-			if (!Validator.isValidBool((String)form.get(SOLVER_DOWNLOADABLE))) {
+
+			if (!Validator.isValidBool((String) form.get(SOLVER_DOWNLOADABLE))) {
 				return new ValidatorStatusCode(false, "The 'downloadable' attribute needs to be a valid boolean");
 			}
-			
-			if (!Validator.isValidPosInteger((String)form.get(SOLVER_TYPE))) {
+
+			if (!Validator.isValidPosInteger((String) form.get(SOLVER_TYPE))) {
 				return new ValidatorStatusCode(false, "Executable Type needed to be sent as a valid integer");
 			}
-			ExecutableType type=ExecutableType.valueOf(Integer.parseInt((String)form.get(SOLVER_TYPE)));
-			if (type==null) {
+			ExecutableType type = ExecutableType.valueOf(Integer.parseInt((String) form.get(SOLVER_TYPE)));
+			if (type == null) {
 				return new ValidatorStatusCode(false, "Invalid executable type");
 			}
-			
-			
-			if(!Validator.isValidSolverName((String)form.get(UploadSolver.SOLVER_NAME)))  {	
-				
+
+
+			if (!Validator.isValidSolverName((String) form.get(UploadSolver.SOLVER_NAME))) {
+
 				return new ValidatorStatusCode(false, "The given name is invalid-- please refer to the help files to see the proper format");
 			}
-			
-			String DescMethod = (String)form.get(UploadSolver.DESC_METHOD);
+
+			String DescMethod = (String) form.get(UploadSolver.DESC_METHOD);
 
 			if (DescMethod.equals("file")) {
-				PartWrapper item_desc = (PartWrapper)form.get(UploadSolver.SOLVER_DESC_FILE);
+				PartWrapper item_desc = (PartWrapper) form.get(UploadSolver.SOLVER_DESC_FILE);
 				if (!Validator.isValidPrimDescription(item_desc.getString())) {
 					return new ValidatorStatusCode(false, "The given description is invalid-- please refer to the help files to see the proper format");
 				}
 			}
 
-			if(!Validator.isValidPrimDescription((String)form.get(SOLVER_DESC)))  {	
+			if (!Validator.isValidPrimDescription((String) form.get(SOLVER_DESC))) {
 				return new ValidatorStatusCode(false, "The given description is invalid-- please refer to the help files to see the proper format");
 			}
-			
-			boolean goodExtension=false;
-			String fileName=null;
-			if ( ((String)form.get(UploadSolver.UPLOAD_METHOD)).equals("local")) {
-				fileName = FilenameUtils.getName(((PartWrapper)form.get(UploadSolver.UPLOAD_FILE)).getName());
-				
+
+			boolean goodExtension = false;
+			String fileName = null;
+			if (form.get(UploadSolver.UPLOAD_METHOD).equals("local")) {
+				fileName = FilenameUtils.getName(((PartWrapper) form.get(UploadSolver.UPLOAD_FILE)).getName());
+
 			} else {
-				fileName=(String)form.get(UploadSolver.FILE_URL);
-				
+				fileName = (String) form.get(UploadSolver.FILE_URL);
+
 			}
-			for(String ext : UploadSolver.extensions) {
-				if(fileName.endsWith(ext)) {
-					goodExtension=true;
+			for (String ext : UploadSolver.extensions) {
+				if (fileName.endsWith(ext)) {
+					goodExtension = true;
 				}
 			}
 			if (!goodExtension) {
 				return new ValidatorStatusCode(false, "Archives need to have an extension of .zip, .tar, or .tgz");
 			}
-			
-			int spaceId=Integer.parseInt((String)form.get(R.SPACE));
+
+			int spaceId = Integer.parseInt((String) form.get(R.SPACE));
 			Permission userPermissions = SessionUtil.getPermission(request, spaceId);
 			if (userPermissions == null || !userPermissions.canAddSolver()) {
 				return new ValidatorStatusCode(false, "You are not authorized to add solvers to this space");
 			}
-			
-			if (!Validator.isValidBool((String)form.get(RUN_TEST_JOB))) {
+
+			if (!Validator.isValidBool((String) form.get(RUN_TEST_JOB))) {
 				return new ValidatorStatusCode(false, "The 'run test job' attribute needs to be a valid boolean");
 			}
-			Boolean runTestJob=Boolean.parseBoolean((String)form.get(RUN_TEST_JOB));
-			
+			Boolean runTestJob = Boolean.parseBoolean((String) form.get(RUN_TEST_JOB));
+
 			//if the user wants to run a test job, there is some additional validation to do
 			if (runTestJob) {
-				int settingsId=Communities.getDefaultSettings(spaceId).getId();
+				int settingsId = Communities.getDefaultSettings(spaceId).getId();
 				//if the user gave a setting ID, then they need to have permission to use that profile
 				// otherwise, the community default is used
 				if (form.containsKey(SETTING_ID)) {
-					if (!Validator.isValidPosInteger((String)form.get(SETTING_ID))) {
+					if (!Validator.isValidPosInteger((String) form.get(SETTING_ID))) {
 						return new ValidatorStatusCode(false, "The given setting ID is not a valid integer");
 					}
-					settingsId=Integer.parseInt((String)form.get(SETTING_ID));
+					settingsId = Integer.parseInt((String) form.get(SETTING_ID));
 				}
-				
-				
+
+
 				// user must have permission to run a job in the given space
-				ValidatorStatusCode testJobStatus=JobSecurity.canCreateQuickJobWithCommunityDefaults(userId, spaceId,settingsId);
+				ValidatorStatusCode testJobStatus = JobSecurity.canCreateQuickJobWithCommunityDefaults(userId, spaceId, settingsId);
 				if (!testJobStatus.isSuccess()) {
 					return testJobStatus;
 				}
-				
-				
+
+
 			}
-			
-			
+
+
 			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
-		
+
 		return new ValidatorStatusCode(false, "Internal error uploading solver");
 	}
 }
