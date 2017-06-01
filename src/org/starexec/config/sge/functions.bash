@@ -7,9 +7,6 @@
 # AUTHOR:      
 # Tyler Jensen
 #
-# MODIFIED:    
-# 2/26/2012
-#
 # DESCRIPTION:
 # This is a script containing common functions used by the jobscript
 #
