@@ -403,7 +403,7 @@ public class RESTHelpers {
     public static void addImg(StringBuilder sb) {
     	sb.append("<img class=\"extLink\" src=\"");
     	sb.append(Util.docRoot("images/external.png"));
-    	sp.append("\"/></a>");
+    	sb.append("\"/></a>");
     }
 
 	/**
