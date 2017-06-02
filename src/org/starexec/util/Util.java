@@ -1228,4 +1228,14 @@ public class Util {
 		output.close();
 	}
 
+	/**
+	 * Replaces NODE path separator with HEAD path separator
+	 *
+	 * @param path to normalize
+	 * @return normalized path
+	 */
+	public static String normalizeFilePath(String path) {
+		return path.replace(R.JOB_PAIR_PATH_DELIMITER, File.separatorChar)
+	}
+
 }

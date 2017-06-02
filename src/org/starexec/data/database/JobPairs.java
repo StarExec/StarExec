@@ -1098,11 +1098,8 @@ public class JobPairs {
 	//Note that this function tries several things due to supporting several layers of backwards compatibility
 	public static String getPairStdout(JobPair pair) {
 		try {
-			File file=new File(Jobs.getDirectory(pair.getJobId()));
-			String[] pathSpaces=pair.getPath().split("/");
-			for (String space : pathSpaces) {
-				file=new File(file,space);
-			}
+			final String path = Util.normalizeFilePath(pair.getPath())
+			File file = new File(Jobs.getDirectory(pair.getJobId()), path);
 
 			file=new File(file,pair.getPrimarySolver().getName()+"___"+pair.getPrimaryConfiguration().getName());
 
