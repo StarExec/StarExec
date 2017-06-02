@@ -15,6 +15,7 @@ import java.util.Properties;
 
 /**
  * Represents a job pair which is a single unit of execution consisting of a solver(config)/benchmark pair
+ *
  * @author Tyler Jensen
  */
 public class JobPair extends Identifiable {
@@ -22,28 +23,27 @@ public class JobPair extends Identifiable {
 	private int backendExecId = -1;
 
 
-
-	private int completionId=-1;
-	private int jobSpaceId=-1;
-	private String jobSpaceName="";
+	private int completionId = -1;
+	private int jobSpaceId = -1;
+	private String jobSpaceName = "";
 	private WorkerNode node = null;
-	private Benchmark bench = null;	//this is the input benchmark to the jobline
+	private Benchmark bench = null;    //this is the input benchmark to the jobline
 	private Status status = null;
 	private Timestamp queueSubmitTime = null;
 	private Timestamp startTime = null;
 	private Timestamp endTime = null;
 	private int exitStatus;
-	private List<JoblineStage> stages=null; // this is an ordered list of all the stages in this jobline
+	private List<JoblineStage> stages = null; // this is an ordered list of all the stages in this jobline
 
 	// this field says what the primary stage is by stage number. It is used during job construction,
 	// before the job is loaded into the database, as before thta there are no ids. This is not necessary
 	// and will not be set for jobs after creation.
-	private Integer primaryStageNumber=null;
+	private Integer primaryStageNumber = null;
 
 	private int sandboxNum;
 	private Space space = null;//the space that the benchmark is in, not where the job is initiated
-	private String path=null; //A list of spaces seperated by '/' marks giving the path from the space
-							  //the job is initiated to the space the benchmark is in
+	private String path = null; //A list of spaces seperated by '/' marks giving the path from the space
+	//the job is initiated to the space the benchmark is in
 
 	//the inputs to this job pair, excluding the primary benchmark (in other words, the dependencies stored in the
 	//jobpair_inputs table
@@ -62,7 +62,7 @@ public class JobPair extends Identifiable {
 		this.node = new WorkerNode();
 		this.bench = new Benchmark();
 		this.status = new Status();
-		this.space=new Space();
+		this.space = new Space();
 		setStages(new ArrayList<>());
 		setBenchInputs(new ArrayList<>());
 	}
@@ -86,9 +86,8 @@ public class JobPair extends Identifiable {
 	}
 
 	public void setCompletionId(int completionId) {
-		this.completionId=completionId;
+		this.completionId = completionId;
 	}
-
 
 
 	/**
@@ -106,7 +105,6 @@ public class JobPair extends Identifiable {
 	}
 
 
-
 	/**
 	 * @return the node this pair ran on
 	 */
@@ -120,8 +118,6 @@ public class JobPair extends Identifiable {
 	public void setNode(WorkerNode node) {
 		this.node = node;
 	}
-
-
 
 
 	/**
@@ -188,21 +184,21 @@ public class JobPair extends Identifiable {
 	}
 
 	/**
-	 * @return the time the pair was submitted to the queue.
-	 * If the internal value is null, returns the current time
-	 */
-	public Timestamp getQueueSubmitTimeSafe() {
-		if (queueSubmitTime==null) {
-			return new Timestamp(System.currentTimeMillis());
-		}
-		return queueSubmitTime;
-	}
-
-	/**
 	 * @param queueSubmitTime queue submit time to set for this pair
 	 */
 	public void setQueueSubmitTime(Timestamp queueSubmitTime) {
 		this.queueSubmitTime = queueSubmitTime;
+	}
+
+	/**
+	 * @return the time the pair was submitted to the queue.
+	 * If the internal value is null, returns the current time
+	 */
+	public Timestamp getQueueSubmitTimeSafe() {
+		if (queueSubmitTime == null) {
+			return new Timestamp(System.currentTimeMillis());
+		}
+		return queueSubmitTime;
 	}
 
 	/**
@@ -233,15 +229,16 @@ public class JobPair extends Identifiable {
 	public void setSpace(Space space) {
 		this.space = space;
 	}
+
+	public String getPath() {
+		return path;
+	}
+
 	/**
 	 * @param path The path of this job_pair
 	 */
 	public void setPath(String path) {
 		this.path = path;
-	}
-
-	public String getPath() {
-		return path;
 	}
 
 	/**
@@ -260,22 +257,21 @@ public class JobPair extends Identifiable {
 		return sb.toString();
 	}
 
-	public void setJobSpaceId(int jobSpaceId) {
-		this.jobSpaceId = jobSpaceId;
-	}
-
 	public int getJobSpaceId() {
 		return jobSpaceId;
 	}
 
-	public void setJobSpaceName(String jobSpaceName) {
-		this.jobSpaceName = jobSpaceName;
+	public void setJobSpaceId(int jobSpaceId) {
+		this.jobSpaceId = jobSpaceId;
 	}
 
 	public String getJobSpaceName() {
 		return jobSpaceName;
 	}
 
+	public void setJobSpaceName(String jobSpaceName) {
+		this.jobSpaceName = jobSpaceName;
+	}
 
 	public List<JoblineStage> getStages() {
 		return stages;
@@ -287,6 +283,7 @@ public class JobPair extends Identifiable {
 
 	/**
 	 * Adds a stage to the END of this job pairs stage list.
+	 *
 	 * @param stage
 	 */
 	public void addStage(JoblineStage stage) {
@@ -301,7 +298,7 @@ public class JobPair extends Identifiable {
 	 */
 
 	public void sortStages() {
-		JoblineStageComparator comp= new JoblineStageComparator();
+		JoblineStageComparator comp = new JoblineStageComparator();
 		Collections.sort(stages, comp);
 	}
 
@@ -309,21 +306,22 @@ public class JobPair extends Identifiable {
 	 * Returns the primary stage of this job pair, as determined by the
 	 * primaryStageNumber field. If that field is not set, returns the first stage.
 	 * If no stages are set, returns null
+	 *
 	 * @return
 	 */
 	public JoblineStage getPrimaryStage() {
 
-		if (primaryStageNumber!=null && primaryStageNumber>0) {
+		if (primaryStageNumber != null && primaryStageNumber > 0) {
 
 			for (JoblineStage stage : this.getStages()) {
-				if (stage.getStageNumber()==primaryStageNumber) {
+				if (stage.getStageNumber() == primaryStageNumber) {
 					return stage;
 				}
 			}
 		}
 
 		// if the primary stage isn't set for some reason, we simply return the first stage.
-		if (stages.size()>0){
+		if (stages.size() > 0) {
 
 			return stages.get(0);
 
@@ -335,11 +333,12 @@ public class JobPair extends Identifiable {
 	/**
 	 * Returns the configuration of the "priamry" stage of this jobline. Returns
 	 * null  if there is no such stage.
+	 *
 	 * @return
 	 */
 	public Configuration getPrimaryConfiguration() {
-		JoblineStage s= getPrimaryStage();
-		if (s==null) {
+		JoblineStage s = getPrimaryStage();
+		if (s == null) {
 			return null;
 		}
 
@@ -349,11 +348,12 @@ public class JobPair extends Identifiable {
 	/**
 	 * Returns the solver of the "priamry" stage of this jobline. Returns
 	 * null  if there is no such stage.
+	 *
 	 * @return
 	 */
 	public Solver getPrimarySolver() {
-		JoblineStage s= getPrimaryStage();
-		if (s==null) {
+		JoblineStage s = getPrimaryStage();
+		if (s == null) {
 			return null;
 		}
 
@@ -363,11 +363,12 @@ public class JobPair extends Identifiable {
 	/**
 	 * Returns the solver of the "priamry" stage of this jobline. Returns
 	 * null  if there is no such stage.
+	 *
 	 * @return
 	 */
 	public Double getPrimaryCpuTime() {
-		JoblineStage s= getPrimaryStage();
-		if (s==null) {
+		JoblineStage s = getPrimaryStage();
+		if (s == null) {
 			return null;
 		}
 
@@ -375,8 +376,8 @@ public class JobPair extends Identifiable {
 	}
 
 	public void setPrimaryCpuTime(Double newCpuTime) {
-		JoblineStage s= getPrimaryStage();
-		if (s==null) {
+		JoblineStage s = getPrimaryStage();
+		if (s == null) {
 			return;
 		} else {
 			s.setCpuUsage(newCpuTime);
@@ -386,11 +387,12 @@ public class JobPair extends Identifiable {
 	/**
 	 * Returns the solver of the "priamry" stage of this jobline. Returns
 	 * null  if there is no such stage.
+	 *
 	 * @return
 	 */
 	public Double getPrimaryWallclockTime() {
-		JoblineStage s= getPrimaryStage();
-		if (s==null) {
+		JoblineStage s = getPrimaryStage();
+		if (s == null) {
 			return null;
 		}
 
@@ -398,8 +400,8 @@ public class JobPair extends Identifiable {
 	}
 
 	public void setPrimaryWallclockTime(Double newWallclockTime) {
-		JoblineStage s= getPrimaryStage();
-		if (s==null) {
+		JoblineStage s = getPrimaryStage();
+		if (s == null) {
 			return;
 		} else {
 			s.setWallclockTime(newWallclockTime);
@@ -409,11 +411,12 @@ public class JobPair extends Identifiable {
 	/**
 	 * Returns the solver of the "priamry" stage of this jobline. Returns
 	 * null  if there is no such stage.
+	 *
 	 * @return
 	 */
 	public Double getPrimaryMaxVirtualMemory() {
-		JoblineStage s= getPrimaryStage();
-		if (s==null) {
+		JoblineStage s = getPrimaryStage();
+		if (s == null) {
 			return null;
 		}
 
@@ -425,10 +428,11 @@ public class JobPair extends Identifiable {
 	 * using the following format. A colon will terminate the string. The
 	 * empty string is returned if there are no stages
 	 * <stage1id>:<stage2id>:...
+	 *
 	 * @return
 	 */
 	public String getStageString() {
-		StringBuilder sb=new StringBuilder();
+		StringBuilder sb = new StringBuilder();
 		for (JoblineStage s : stages) {
 			sb.append(s.getConfiguration().getId());
 			sb.append(":");
@@ -446,7 +450,6 @@ public class JobPair extends Identifiable {
 	}
 
 
-
 	public List<Integer> getBenchInputs() {
 		return benchInputs;
 	}
@@ -454,6 +457,7 @@ public class JobPair extends Identifiable {
 	public void setBenchInputs(List<Integer> benchInputs) {
 		this.benchInputs = benchInputs;
 	}
+
 	public void addBenchInput(Integer input) {
 		this.benchInputs.add(input);
 	}
@@ -465,19 +469,21 @@ public class JobPair extends Identifiable {
 	public void setPrimaryStageNumber(Integer primaryStageNumber) {
 		this.primaryStageNumber = primaryStageNumber;
 	}
+
 	/**
 	 * Returns a stage based on the number.
 	 * If given <=0, returns the primary stage
 	 * if given 1...n where there are n stages, returns the stage
 	 * if given >n returns null;
+	 *
 	 * @param stageNumber
 	 */
 	public JoblineStage getStageFromNumber(int stageNumber) {
-		if (stageNumber<=0) {
+		if (stageNumber <= 0) {
 			return this.getPrimaryStage();
 		} else {
 			for (JoblineStage stage : this.stages) {
-				if (stage.getStageNumber()==stageNumber) {
+				if (stage.getStageNumber() == stageNumber) {
 					return stage;
 				}
 			}
@@ -486,8 +492,8 @@ public class JobPair extends Identifiable {
 
 	}
 
-	public boolean hasStage( int stageNumber ) {
-		return getStageFromNumber( stageNumber ) != null;
+	public boolean hasStage(int stageNumber) {
+		return getStageFromNumber(stageNumber) != null;
 	}
 
 	/**
@@ -495,8 +501,7 @@ public class JobPair extends Identifiable {
 	 */
 	public String getPrimaryStarexecResult() {
 		Properties prop = this.getPrimaryStage().getAttributes();
-		return (prop != null && prop.containsKey(R.STAREXEC_RESULT) && prop.get(R.STAREXEC_RESULT)!=null)
-			? prop.getProperty(R.STAREXEC_RESULT) : "--";
+		return (prop != null && prop.containsKey(R.STAREXEC_RESULT) && prop.get(R.STAREXEC_RESULT) != null) ? prop.getProperty(R.STAREXEC_RESULT) : "--";
 	}
 
 	public SolverPipeline getPipeline() {
