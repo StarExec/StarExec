@@ -501,12 +501,7 @@ public class Download extends HttpServlet {
 				StringBuilder zipFileName = new StringBuilder(baseName);
 				zipFileName.append(File.separator);
 				if (useSpacePath) {
-					final String path = Util.normalizeFilePath(p.getPath());
-					zipFileName.append(path) zipFileName.append(p.getPrimarySolver().getName());
-					zipFileName.append("___");
-					zipFileName.append(p.getPrimaryConfiguration().getName());
-					zipFileName.append(File.separator);
-					zipFileName.append(p.getBench().getName());
+					zipFileName.append(p.getBenchPath());
 					zipFileNameParent = zipFileName.toString();
 					zipFileName.append(File.separator);
 					zipFileName.append(p.getId());

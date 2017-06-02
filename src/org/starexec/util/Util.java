@@ -1235,7 +1235,7 @@ public class Util {
 	 * @return normalized path
 	 */
 	public static String normalizeFilePath(String path) {
-		return path.replace(R.JOB_PAIR_PATH_DELIMITER, File.separatorChar)
+		return path.replace(R.JOB_PAIR_PATH_DELIMITER, File.separator);
 	}
 
 }
