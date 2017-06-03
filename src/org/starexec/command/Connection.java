@@ -38,27 +38,27 @@ import java.util.*;
  * This class is responsible for communicating with the Starexec server It is
  * designed to be a useful Starexec API, which makes it very important to keep
  * this file well documented.
- * 
+ *
  * @author Eric
  */
-@SuppressWarnings({ "deprecation" })
+@SuppressWarnings({"deprecation"})
 public class Connection {
 	final private CommandLogger log = CommandLogger.getLogger(Connection.class);
+	DefaultHttpClient client = null;
 	private String baseURL;
 	private String sessionID = null;
-	DefaultHttpClient client = null;
 	private String username, password;
 	private String lastError;
 	private HashMap<Integer, Integer> job_info_indices; // these two map job ids
-														// to the max completion
-														// index
+	// to the max completion
+	// index
 	private HashMap<Integer, PollJobData> job_out_indices;
 
 	/**
 	 * Constructor used for copying the setup of one connection into a new
 	 * connection. Useful if a connection gets into a bad state (possibly
 	 * response streams left open due to errors)
-	 * 
+	 *
 	 * @param con The old connection to copy
 	 */
 
@@ -79,11 +79,11 @@ public class Connection {
 	 * Sets the new Connection object's username and password based on
 	 * user-specified parameters. Also sets the instance of StarExec that is
 	 * being connected to
-	 * 
+	 *
 	 * @param user The username for this login
 	 * @param pass The password for this login
 	 * @param url the URL to the Starexec instance that we want to communicate
-	 *        with
+	 * with
 	 */
 
 	public Connection(String user, String pass, String url) {
@@ -97,7 +97,7 @@ public class Connection {
 	 * Sets the new Connection object's username and password based on
 	 * user-specified parameters. The URL instance used is the default
 	 * (www.starexec.org)
-	 * 
+	 *
 	 * @param user The username for this login
 	 * @param pass The password for this login
 	 */
@@ -119,14 +119,6 @@ public class Connection {
 		initializeComponents();
 	}
 
-	private void initializeComponents() {
-		client = buildClient();
-
-		setInfoIndices(new HashMap<>());
-		setOutputIndices(new HashMap<>());
-		lastError = "";
-	}
-
 	private static DefaultHttpClient buildClient() {
 		return new DefaultHttpClient();
 
@@ -136,12 +128,54 @@ public class Connection {
 		// return clientBuilder.build();
 	}
 
-	protected void setBaseURL(String baseURL1) {
-		this.baseURL = baseURL1;
+	private static String convertStreamToString(InputStream is) {
+		Scanner s = new Scanner(is).useDelimiter("\\A");
+		return s.hasNext() ? s.next() : "";
+	}
+
+	private static Optional<Integer> checkIfValidZipFile(File out) throws IOException {
+		ZipFile zipfile = null;
+		try {
+			// Make sure the file is a valid zipfile.
+			zipfile = new ZipFile(out);
+			return Optional.empty();
+		} catch (IOException e) {
+			out.delete();
+			throw e; // we got back an invalid archive for some reason
+		} finally {
+			try {
+				if (zipfile != null) {
+					zipfile.close();
+					zipfile = null;
+				}
+			} catch (IOException e) {
+			}
+		}
+	}
+
+	private void initializeComponents() {
+		client = buildClient();
+
+		setInfoIndices(new HashMap<>());
+		setOutputIndices(new HashMap<>());
+		lastError = "";
 	}
 
 	protected String getBaseURL() {
 		return baseURL;
+	}
+
+	protected void setBaseURL(String baseURL1) {
+		this.baseURL = baseURL1;
+	}
+
+	/**
+	 * Gets the username that is being used on this connection
+	 *
+	 * @return The username as a String
+	 */
+	protected String getUsername() {
+		return username;
 	}
 
 	protected void setUsername(String username1) {
@@ -149,47 +183,38 @@ public class Connection {
 	}
 
 	/**
-	 * Gets the username that is being used on this connection
-	 * 
-	 * @return The username as a String
-	 */
-	protected String getUsername() {
-		return username;
-	}
-
-	protected void setPassword(String password1) {
-		this.password = password1;
-	}
-
-	/**
 	 * Gets the password that is being used on this connection
-	 * 
+	 *
 	 * @return The password as a String
 	 */
 	protected String getPassword() {
 		return password;
 	}
 
-	protected void setOutputIndices(HashMap<Integer, PollJobData> job_out_indices) {
-		this.job_out_indices = job_out_indices;
+	protected void setPassword(String password1) {
+		this.password = password1;
 	}
 
 	protected HashMap<Integer, PollJobData> getOutputIndices() {
 		return job_out_indices;
 	}
 
-	protected void setInfoIndices(HashMap<Integer, Integer> job_info_indices) {
-		this.job_info_indices = job_info_indices;
+	protected void setOutputIndices(HashMap<Integer, PollJobData> job_out_indices) {
+		this.job_out_indices = job_out_indices;
 	}
 
 	protected HashMap<Integer, Integer> getInfoIndices() {
 		return job_info_indices;
 	}
 
+	protected void setInfoIndices(HashMap<Integer, Integer> job_info_indices) {
+		this.job_info_indices = job_info_indices;
+	}
+
 	/**
 	 * Updates the JSESSIONID of the current connection if the server has sent a
 	 * new ID
-	 * 
+	 *
 	 * @param headers an array of HTTP headers
 	 * @return 0 if the ID was found and changed, -1 otherwise
 	 * @author Eric Burns
@@ -205,60 +230,53 @@ public class Connection {
 
 	/**
 	 * @return whether the Connection object represents a valid connection to
-	 *         the server
+	 * the server
 	 * @author Eric Burns
 	 */
 
 	public boolean isValid() {
-		if (sessionID == null) {
-			return false;
-		}
-		return true;
+		return sessionID != null;
 	}
+
+	// TODO: Support dependencies for benchmarks
 
 	/**
 	 * Uploads a set of benchmarks to Starexec. The benchmarks will be expanded
 	 * in a full space hierarchy.
-	 * 
+	 *
 	 * @param filePath The path to the archive containing the benchmarks
 	 * @param processorID The ID of the processor that should be used on the
-	 *        benchmarks. If there is no such processor, this can be null
+	 * benchmarks. If there is no such processor, this can be null
 	 * @param spaceID The ID of the space to root the new hierarchy at
 	 * @param p The permission object representing permissions that should be
-	 *        applied to every space created when these benchmarks are uploaded
+	 * applied to every space created when these benchmarks are uploaded
 	 * @param downloadable Whether the benchmarks should be downloadable by
-	 *        other users.
+	 * other users.
 	 * @return A positive upload ID on success, and a negative error code
-	 *         otherwise.
+	 * otherwise.
 	 */
-	public int uploadBenchmarksToSpaceHierarchy(String filePath, Integer processorID, Integer spaceID, Permission p,
-			Boolean downloadable) {
+	public int uploadBenchmarksToSpaceHierarchy(String filePath, Integer processorID, Integer spaceID, Permission p, Boolean downloadable) {
 		return uploadBenchmarks(filePath, processorID, spaceID, "local", p, "", downloadable, true, false, false, null);
 	}
 
 	/**
 	 * Uploads a set of benchmarks to Starexec. The benchmarks will be expanded
 	 * in a full space hierarchy.
-	 * 
+	 *
 	 * @param filePath The path to the archive containing the benchmarks
 	 * @param processorID The ID of the processor that should be used on the
-	 *        benchmarks. If there is no such processor, this can be null
+	 * benchmarks. If there is no such processor, this can be null
 	 * @param spaceID The ID of the space to put the benchmarks in
 	 * @param downloadable Whether the benchmarks should be downloadable by
-	 *        other users.
+	 * other users.
 	 * @return A positive upload id on success, and a negative error code
-	 *         otherwise.
+	 * otherwise.
 	 */
-	public int uploadBenchmarksToSingleSpace(String filePath, Integer processorID, Integer spaceID,
-			Boolean downloadable) {
-		return uploadBenchmarks(filePath, processorID, spaceID, "local", new Permission(), "", downloadable, false,
-				false, false, null);
+	public int uploadBenchmarksToSingleSpace(String filePath, Integer processorID, Integer spaceID, Boolean downloadable) {
+		return uploadBenchmarks(filePath, processorID, spaceID, "local", new Permission(), "", downloadable, false, false, false, null);
 	}
 
-	// TODO: Support dependencies for benchmarks
-
-	protected int uploadBenchmarks(String filePath, Integer type, Integer spaceID, String upMethod, Permission p,
-			String url, Boolean downloadable, Boolean hierarchy, Boolean dependency, Boolean linked, Integer depRoot) {
+	protected int uploadBenchmarks(String filePath, Integer type, Integer spaceID, String upMethod, Permission p, String url, Boolean downloadable, Boolean hierarchy, Boolean dependency, Boolean linked, Integer depRoot) {
 		HttpResponse response = null;
 		try {
 
@@ -314,9 +332,9 @@ public class Connection {
 				} else {
 					lastError = "We did not get a New_ID header";
 					return Status.ERROR_INTERNAL; // we should have gotten an
-													// error from the server and
-													// no redirect if there was
-													// a catchable error
+					// error from the server and
+					// no redirect if there was
+					// a catchable error
 				}
 
 			} else {
@@ -382,13 +400,13 @@ public class Connection {
 
 	/**
 	 * Uploads a new configuration to an existing solver
-	 * 
+	 *
 	 * @param name The name of the new configuration
 	 * @param desc A description of the configuration
 	 * @param filePath The file to upload
 	 * @param solverID The ID of the solver to attach the configuration to
 	 * @return The ID of the new configuration on success (a positive integer),
-	 *         or a negative error code on failure
+	 * or a negative error code on failure
 	 */
 	public int uploadConfiguration(String name, String desc, String filePath, Integer solverID) {
 		HttpResponse response = null;
@@ -429,15 +447,15 @@ public class Connection {
 
 	/**
 	 * Uploads a processor to starexec
-	 * 
+	 *
 	 * @param name The name to give the processor
 	 * @param desc A description for the processor
 	 * @param filePath An absolute file path to the file to upload
 	 * @param communityID The ID of the community that will be given the
-	 *        processor
+	 * processor
 	 * @param type Must be "post" or R.BENCHMARK
 	 * @return The positive integer ID assigned the new processor on success, or
-	 *         a negative error code on failure
+	 * a negative error code on failure
 	 */
 
 	protected int uploadProcessor(String name, String desc, String filePath, Integer communityID, String type) {
@@ -477,14 +495,14 @@ public class Connection {
 
 	/**
 	 * Uploads a post processor to starexec
-	 * 
+	 *
 	 * @param name The name to give the post processor
 	 * @param desc A description for the processor
 	 * @param filePath An absolute file path to the file to upload
 	 * @param communityID The ID of the community that will be given the
-	 *        processor
+	 * processor
 	 * @return The positive integer ID assigned the new processor on success, or
-	 *         a negative error code on failure
+	 * a negative error code on failure
 	 */
 	public int uploadPostProc(String name, String desc, String filePath, Integer communityID) {
 		return uploadProcessor(name, desc, filePath, communityID, "post");
@@ -492,14 +510,14 @@ public class Connection {
 
 	/**
 	 * Uploads a benchmark processor to starexec
-	 * 
+	 *
 	 * @param name The name to give the benchmark processor
 	 * @param desc A description for the processor
 	 * @param filePath An absolute file path to the file to upload
 	 * @param communityID The ID of the community that will be given the
-	 *        processor
+	 * processor
 	 * @return The positive integer ID assigned the new processor on success, or
-	 *         a negative error code on failure
+	 * a negative error code on failure
 	 */
 	public int uploadBenchProc(String name, String desc, String filePath, Integer communityID) {
 		return uploadProcessor(name, desc, filePath, communityID, R.BENCHMARK);
@@ -507,14 +525,14 @@ public class Connection {
 
 	/**
 	 * Uploads a pre processor to starexec
-	 * 
+	 *
 	 * @param name The name to give the pre processor
 	 * @param desc A description for the processor
 	 * @param filePath An absolute file path to the file to upload
 	 * @param communityID The ID of the community that will be given the
-	 *        processor
+	 * processor
 	 * @return The positive integer ID assigned the new processor on success, or
-	 *         a negative error code on failure
+	 * a negative error code on failure
 	 */
 	public int uploadPreProc(String name, String desc, String filePath, Integer communityID) {
 		return uploadProcessor(name, desc, filePath, communityID, "pre");
@@ -522,13 +540,13 @@ public class Connection {
 
 	/**
 	 * Uploads an xml (job or space) to specified space
-	 * 
+	 *
 	 * @param filePath An absolute file path to the file to upload
 	 * @param spaceID The ID of the space where the job is being uploaded to
-	 * @return The ids of the newly created jobs. On failure, a size 1 list with
-	 *         a negative error code
-	 * @author Julio Cervantes
 	 * @param isJobXML True if this is a job XML and false if it is a space XML
+	 * @return The ids of the newly created jobs. On failure, a size 1 list with
+	 * a negative error code
+	 * @author Julio Cervantes
 	 */
 	public List<Integer> uploadXML(String filePath, Integer spaceID, boolean isJobXML) {
 		List<Integer> ids = new ArrayList<>();
@@ -576,52 +594,50 @@ public class Connection {
 	/**
 	 * Uploads a solver to Starexec. The description of the solver will be taken
 	 * from the archive being uploaded
-	 * 
+	 *
 	 * @param name The name of the solver
 	 * @param desc The description of the solver
 	 * @param spaceID The ID of the space to put the solver in
 	 * @param filePath the path to the solver archive to upload
 	 * @param downloadable True if the solver should be downloadable by other
-	 *        users, and false otherwise
+	 * users, and false otherwise
 	 * @param runTestJob Whether to run a test job after uploading this solver
 	 * @param settingId The ID of the settings profile to be used if a test job
-	 *        is created
+	 * is created
 	 * @param type the type of executable for this upload. See the
-	 *        StarexecCommand docs for a list of codes
+	 * StarexecCommand docs for a list of codes
 	 * @return The ID of the new solver, which must be positive, or a negative
-	 *         error code
+	 * error code
 	 */
-	public int uploadSolver(String name, String desc, Integer spaceID, String filePath, Boolean downloadable,
-			Boolean runTestJob, Integer settingId, Integer type) {
+	public int uploadSolver(String name, String desc, Integer spaceID, String filePath, Boolean downloadable, Boolean runTestJob, Integer settingId, Integer type) {
 		return uploadSolver(name, desc, "text", spaceID, filePath, downloadable, runTestJob, settingId, type);
 	}
 
 	/**
 	 * Uploads a solver to Starexec. The description of the solver will be taken
 	 * from the archive being uploaded
-	 * 
+	 *
 	 * @param name The name of the solver
 	 * @param spaceID The ID of the space to put the solver in
 	 * @param filePath the path to the solver archive to upload
 	 * @param downloadable True if the solver should be downloadable by other
-	 *        users, and false otherwise
+	 * users, and false otherwise
 	 * @param runTestJob Whether to run a test job after uploading this solver
 	 * @param settingId The ID of a settings profile to use if a test job is
-	 *        created
+	 * created
 	 * @param type the type of executable for this upload. See the
-	 *        StarexecCommand docs for a list of codes
+	 * StarexecCommand docs for a list of codes
 	 * @return The ID of the new solver, which must be positive, or a negative
-	 *         error code
+	 * error code
 	 */
-	public int uploadSolver(String name, Integer spaceID, String filePath, Boolean downloadable, Boolean runTestJob,
-			Integer settingId, Integer type) {
+	public int uploadSolver(String name, Integer spaceID, String filePath, Boolean downloadable, Boolean runTestJob, Integer settingId, Integer type) {
 		return uploadSolver(name, "", "upload", spaceID, filePath, downloadable, runTestJob, settingId, type);
 	}
 
 	/**
 	 * Uploads a solver to StarexecCommand. Called by one of the overloading
 	 * methods.
-	 * 
+	 *
 	 * @param entity
 	 * @param post
 	 * @param name
@@ -634,8 +650,7 @@ public class Connection {
 	 * @param type
 	 * @return
 	 */
-	private int uploadSolver(MultipartEntityBuilder entity, HttpPost post, String name, String desc, String descMethod,
-			Integer spaceID, Boolean downloadable, Boolean runTestJob, Integer settingId, Integer type) {
+	private int uploadSolver(MultipartEntityBuilder entity, HttpPost post, String name, String desc, String descMethod, Integer spaceID, Boolean downloadable, Boolean runTestJob, Integer settingId, Integer type) {
 		HttpResponse response = null;
 		try {
 			// Only include the description file if we need it
@@ -682,21 +697,20 @@ public class Connection {
 	/**
 	 * @param name The name of the solver
 	 * @param desc If the upload method is "text", then this should be the
-	 *        description. If it is "file", it should be a filepath to the
-	 *        needed description file. If it is "upload," it is not needed
+	 * description. If it is "file", it should be a filepath to the
+	 * needed description file. If it is "upload," it is not needed
 	 * @param descMethod Either "text", "upload", or "file"
 	 * @param spaceID The ID of the space to put the solver in
 	 * @param filePath The path to the solver archive to upload.
 	 * @param downloadable True if the solver should be downloadable by other
-	 *        users, and false otherwise
+	 * users, and false otherwise
 	 * @param runTestJob Whether to run a test job after uploading this solver
 	 * @param settingId The ID of the default settings profile that should be
-	 *        used for a test job for this job
+	 * used for a test job for this job
 	 * @return The ID of the new solver, which must be positive, or a negative
-	 *         error code
+	 * error code
 	 */
-	protected int uploadSolver(String name, String desc, String descMethod, Integer spaceID, String filePath,
-			Boolean downloadable, Boolean runTestJob, Integer settingId, Integer type) {
+	protected int uploadSolver(String name, String desc, String descMethod, Integer spaceID, String filePath, Boolean downloadable, Boolean runTestJob, Integer settingId, Integer type) {
 		try {
 			HttpPost post = new HttpPost(baseURL + C.URL_UPLOADSOLVER);
 			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
@@ -705,8 +719,7 @@ public class Connection {
 			logAddTextBody(entity, "url", "");
 			logAddTextBody(entity, "upMethod", "local");
 
-			return uploadSolver(entity, post, name, desc, descMethod, spaceID, downloadable, runTestJob, settingId,
-					type);
+			return uploadSolver(entity, post, name, desc, descMethod, spaceID, downloadable, runTestJob, settingId, type);
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
 		}
@@ -714,33 +727,31 @@ public class Connection {
 
 	/**
 	 * Uploads a solver to Starexec given a URL.
-	 * 
+	 *
 	 * @param name The name to give the solver
 	 * @param desc Either a string description OR a file path to a file
-	 *        containing the description, depending on the value of descMethod
+	 * containing the description, depending on the value of descMethod
 	 * @param descMethod The method by which a description is being provided,
-	 *        which is either 'file' or 'text'
+	 * which is either 'file' or 'text'
 	 * @param spaceID The space to put the solver in
 	 * @param url The direct URL to the solver
 	 * @param downloadable Whether the solver should be downloadable or not
 	 * @param runTestJob Whether to run a test job for this solver after
-	 *        uploading it
+	 * uploading it
 	 * @param settingId The ID of the settings profile that will be used if we
-	 *        want to run a test job\
+	 * want to run a test job\
 	 * @param type the type of executable for this upload. See the
-	 *        StarexecCommand docs for a list of codes
+	 * StarexecCommand docs for a list of codes
 	 * @return The positive ID for the solver or a negative error code
 	 */
-	public int uploadSolverFromURL(String name, String desc, String descMethod, Integer spaceID, String url,
-			Boolean downloadable, Boolean runTestJob, Integer settingId, Integer type) {
+	public int uploadSolverFromURL(String name, String desc, String descMethod, Integer spaceID, String url, Boolean downloadable, Boolean runTestJob, Integer settingId, Integer type) {
 		try {
 			HttpPost post = new HttpPost(baseURL + C.URL_UPLOADSOLVER);
 			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 			logAddTextBody(entity, "url", url);
 			logAddTextBody(entity, "upMethod", "URL");
 
-			return uploadSolver(entity, post, name, desc, descMethod, spaceID, downloadable, runTestJob, settingId,
-					type);
+			return uploadSolver(entity, post, name, desc, descMethod, spaceID, downloadable, runTestJob, settingId, type);
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
 		}
@@ -749,53 +760,51 @@ public class Connection {
 	/**
 	 * Uploads a solver to Starexec. The description of the solver will be taken
 	 * from the archive being uploaded
-	 * 
+	 *
 	 * @param name The name of the solver
 	 * @param desc The description of the solver
 	 * @param spaceID The ID of the space to put the solver in
 	 * @param url The URL of the archived solver to upload
 	 * @param downloadable True if the solver should be downloadable by other
-	 *        users, and false otherwise
+	 * users, and false otherwise
 	 * @param runTestJob Whether to run a test job for this solver after
-	 *        uploading it
+	 * uploading it
 	 * @param settingId The ID of the settings profile that will be used if we
-	 *        want to run a test job
+	 * want to run a test job
 	 * @param type The type of the executable being uploaded. See Starexec
-	 *        Command docs for a list of codes
+	 * Command docs for a list of codes
 	 * @return The ID of the new solver, which must be positive, or a negative
-	 *         error code
+	 * error code
 	 */
-	public int uploadSolverFromURL(String name, String desc, Integer spaceID, String url, Boolean downloadable,
-			Boolean runTestJob, Integer settingId, Integer type) {
+	public int uploadSolverFromURL(String name, String desc, Integer spaceID, String url, Boolean downloadable, Boolean runTestJob, Integer settingId, Integer type) {
 		return uploadSolverFromURL(name, desc, "text", spaceID, url, downloadable, runTestJob, settingId, type);
 	}
 
 	/**
 	 * Uploads a solver to Starexec. The description of the solver will be taken
 	 * from the archive being uploaded
-	 * 
+	 *
 	 * @param name The name of the solver
 	 * @param spaceID The ID of the space to put the solver in
 	 * @param url The URL of hte archived solver to upload
 	 * @param downloadable True if the solver should be downloadable by other
-	 *        users, and false otherwise
+	 * users, and false otherwise
 	 * @param runTestJob Whether to run a test job for this solver after
-	 *        uploading it
+	 * uploading it
 	 * @param type The type of the executable being uploaded. See Starexec
-	 *        Command docs for a list of codes
+	 * Command docs for a list of codes
 	 * @param settingId The ID of the settings profile that will be used if we
-	 *        want to run a test job
+	 * want to run a test job
 	 * @return The ID of the new solver, which must be positive, or a negative
-	 *         error code
+	 * error code
 	 */
-	public int uploadSolverFromURL(String name, Integer spaceID, String url, Boolean downloadable, Boolean runTestJob,
-			Integer settingId, Integer type) {
+	public int uploadSolverFromURL(String name, Integer spaceID, String url, Boolean downloadable, Boolean runTestJob, Integer settingId, Integer type) {
 		return uploadSolverFromURL(name, "", "upload", spaceID, url, downloadable, runTestJob, settingId, type);
 	}
 
 	/**
 	 * Sets HTTP headers required to communicate with the StarExec server
-	 * 
+	 *
 	 * @param msg --The outgoing HTTP request, likely an HttpGet or HttpPost
 	 * @return msg with required headers added
 	 * @author Eric Burns
@@ -811,7 +820,7 @@ public class Connection {
 
 	/**
 	 * Changes your first name on StarExec to the given value
-	 * 
+	 *
 	 * @param name The new name
 	 * @return 0 on success or a negative error code on failure
 	 */
@@ -822,7 +831,7 @@ public class Connection {
 
 	/**
 	 * Changes your last name on StarExec to the given value
-	 * 
+	 *
 	 * @param name The new name
 	 * @return 0 on success or a negative error code on failure
 	 */
@@ -832,7 +841,7 @@ public class Connection {
 
 	/**
 	 * Changes your institution on StarExec to the given value
-	 * 
+	 *
 	 * @param inst The name of the new institution
 	 * @return 0 on success or a negative error code on failure
 	 */
@@ -843,7 +852,7 @@ public class Connection {
 
 	/**
 	 * Deletes all of the given solvers permanently
-	 * 
+	 *
 	 * @param ids The IDs of each solver to delete
 	 * @return 0 on success or a negative error code on failure
 	 */
@@ -854,7 +863,7 @@ public class Connection {
 
 	/**
 	 * Deletes all of the given benchmarks permanently
-	 * 
+	 *
 	 * @param ids The IDs of each benchmark to delete
 	 * @return 0 on success or a negative error code on failure
 	 */
@@ -865,7 +874,7 @@ public class Connection {
 
 	/**
 	 * Deletes all of the given processors permanently
-	 * 
+	 *
 	 * @param ids The IDs of each processor to delete
 	 * @return 0 on success or a negative error code on failure
 	 */
@@ -876,7 +885,7 @@ public class Connection {
 
 	/**
 	 * Deletes all of the given configurations permanently
-	 * 
+	 *
 	 * @param ids The IDs of each configuration to delete
 	 * @return 0 on success or a negative error code on failure
 	 */
@@ -887,7 +896,7 @@ public class Connection {
 
 	/**
 	 * Deletes all of the given jobs permanently
-	 * 
+	 *
 	 * @param ids The IDs of each job to delete
 	 * @return 0 on success or a negative error code on failure
 	 */
@@ -897,7 +906,7 @@ public class Connection {
 
 	/**
 	 * Deletes all of the given primitives of the given type
-	 * 
+	 *
 	 * @param ids IDs of some primitive type
 	 * @param type The type of primitives being deleted
 	 * @return 0 on success or a negative error code on failure
@@ -937,7 +946,7 @@ public class Connection {
 	/**
 	 * Checks to see whether the given page can be retrieved normally, meaning
 	 * we get back HTTP status code 200
-	 * 
+	 *
 	 * @param relURL The URL following starexecRoot
 	 * @return True if the page was retrieved successfully and false otherwise
 	 */
@@ -962,7 +971,7 @@ public class Connection {
 
 	/**
 	 * Gets the HTML of a page using the open connection.
-	 * 
+	 *
 	 * @param relUrl The URL following starexecRoot
 	 * @return the HTML as a String
 	 * @throws IOException if the request fails.
@@ -984,7 +993,7 @@ public class Connection {
 
 	/**
 	 * Gets the ID of the user currently logged in to StarExec
-	 * 
+	 *
 	 * @return The integer user ID
 	 */
 	public int getUserID() {
@@ -1006,9 +1015,9 @@ public class Connection {
 
 	/**
 	 * Sets a space or hierarchy to be public or private
-	 * 
+	 *
 	 * @param spaceID The ID of the individual space or the root of the
-	 *        hierarchy to work on
+	 * hierarchy to work on
 	 * @param hierarchy True if working on a hierarchy, false if a single space
 	 * @param setPublic True if making the space(s) public, false if private
 	 * @return 0 on success or a negative error code otherwise
@@ -1016,8 +1025,7 @@ public class Connection {
 	protected int setSpaceVisibility(Integer spaceID, Boolean hierarchy, Boolean setPublic) {
 		HttpResponse response = null;
 		try {
-			HttpPost post = new HttpPost(baseURL + C.URL_EDITSPACEVISIBILITY + "/" + spaceID.toString() + "/"
-					+ hierarchy.toString() + "/" + setPublic.toString());
+			HttpPost post = new HttpPost(baseURL + C.URL_EDITSPACEVISIBILITY + "/" + spaceID.toString() + "/" + hierarchy.toString() + "/" + setPublic.toString());
 			post = (HttpPost) setHeaders(post);
 			response = executeGetOrPost(post);
 
@@ -1037,7 +1045,7 @@ public class Connection {
 	/**
 	 * Changes one of the settings for a given user (like name, institution, or
 	 * so on)
-	 * 
+	 *
 	 * @param setting The name of the setting
 	 * @param val The new value for the setting
 	 * @return
@@ -1049,7 +1057,7 @@ public class Connection {
 			int userId = getUserID();
 			String url = baseURL + C.URL_USERSETTING + setting + "/" + userId + "/" + val;
 			url = url.replace(" ", "%20"); // encodes white space, which can't
-											// be used in a URL
+			// be used in a URL
 			HttpPost post = new HttpPost(url);
 			post = (HttpPost) setHeaders(post);
 			response = executeGetOrPost(post);
@@ -1073,7 +1081,7 @@ public class Connection {
 
 	/**
 	 * Resumes a job on starexec that was paused previously
-	 * 
+	 *
 	 * @param jobID the ID of the job to resume running
 	 * @return 0 on success or a negative error code on failure
 	 */
@@ -1084,7 +1092,7 @@ public class Connection {
 
 	/**
 	 * Pauses a job that is currently running on starexec
-	 * 
+	 *
 	 * @param jobID The ID of the job to rerun
 	 * @return 0 on success or a negative error code on failure
 	 */
@@ -1095,7 +1103,7 @@ public class Connection {
 
 	/**
 	 * Reruns the job with the given ID
-	 * 
+	 *
 	 * @param jobID The ID of the job to rerun
 	 * @return An integer status code as definied in Status.java
 	 */
@@ -1106,7 +1114,7 @@ public class Connection {
 
 	/**
 	 * Reruns the job pair with the given ID
-	 * 
+	 *
 	 * @param pairID The ID of the pair to rerun
 	 * @return A status code as defined in status.java
 	 */
@@ -1145,7 +1153,7 @@ public class Connection {
 
 	/**
 	 * Pauses or resumes a job depending on the value of pause
-	 * 
+	 *
 	 * @param pause Pauses a job if true and resumes it if false
 	 * @return 0 on success or a negative error code on failure
 	 */
@@ -1170,7 +1178,7 @@ public class Connection {
 	/**
 	 * Removes the given solvers from the given space. The solvers are NOT
 	 * deleted.
-	 * 
+	 *
 	 * @param solverIds The IDs of the solvers to remove
 	 * @param spaceID The ID of the space
 	 * @return 0 on success, or a negative integer status code on failure
@@ -1181,7 +1189,7 @@ public class Connection {
 
 	/**
 	 * Removes the given jobs from the given space. The jobs are NOT deleted.
-	 * 
+	 *
 	 * @param jobIds The IDs of the jobs to remove
 	 * @param spaceID The ID of the space
 	 * @return 0 on success, or a negative integer status code on failure
@@ -1193,7 +1201,7 @@ public class Connection {
 
 	/**
 	 * Removes the given users from the given space. The users are NOT deleted.
-	 * 
+	 *
 	 * @param userIds The IDs of the users to remove
 	 * @param spaceID The ID of the space
 	 * @return 0 on success, or a negative integer status code on failure
@@ -1206,7 +1214,7 @@ public class Connection {
 	/**
 	 * Removes the given benchmarks from the given space. The benchmarks are NOT
 	 * deleted.
-	 * 
+	 *
 	 * @param benchmarkIds The IDs of the benchmarks to remove
 	 * @param spaceID The ID of the space
 	 * @return 0 on success, or a negative integer status code on failure
@@ -1218,11 +1226,11 @@ public class Connection {
 
 	/**
 	 * Removes the given subspaces from the given space.
-	 * 
+	 *
 	 * @param subspaceIds The IDs of the subspaces to remove
 	 * @param recyclePrims If true, all primitives owned by the calling user
-	 *        that are present in any space being removed will be deleted (or
-	 *        moved to the recycle bin, if applicable)
+	 * that are present in any space being removed will be deleted (or
+	 * moved to the recycle bin, if applicable)
 	 * @return 0 on success, or a negative integer status code on failure
 	 */
 
@@ -1232,7 +1240,7 @@ public class Connection {
 
 	/**
 	 * Removes the association between a primitive and a space on StarExec
-	 * 
+	 *
 	 * @param type The type of primitive being remove
 	 * @return 0 on success, and a negative error code on failure
 	 * @author Eric Burns
@@ -1279,7 +1287,7 @@ public class Connection {
 
 	/**
 	 * Ends the current Starexec session
-	 * 
+	 *
 	 * @return True on success, false otherwise
 	 * @author Eric Burns
 	 */
@@ -1298,16 +1306,11 @@ public class Connection {
 		}
 	}
 
-	private static String convertStreamToString(InputStream is) {
-		Scanner s = new Scanner(is).useDelimiter("\\A");
-		return s.hasNext() ? s.next() : "";
-	}
-
 	/**
 	 * Log into StarExec with the username and password of this connection
-	 * 
+	 *
 	 * @return An integer indicating status, with 0 being normal and a negative
-	 *         integer indicating an error
+	 * integer indicating an error
 	 * @author Eric Burns
 	 */
 	public int login() {
@@ -1391,10 +1394,10 @@ public class Connection {
 
 	/**
 	 * Links solvers to a new space
-	 * 
+	 *
 	 * @param solverIds The solver Ids to be added to a new space
 	 * @param oldSpaceId The space they are being linked from, or null if none
-	 *        exists
+	 * exists
 	 * @param newSpaceId The ID of the space they are being linked to
 	 * @param hierarchy Whether to link to the entire hierarchy
 	 * @return 0 on success or a negative status code on error
@@ -1406,10 +1409,10 @@ public class Connection {
 
 	/**
 	 * Links benchmark to a new space
-	 * 
+	 *
 	 * @param benchmarkIds The benchmark Ids to be added to a new space
 	 * @param oldSpaceId The space they are being linked from, or null if none
-	 *        exists
+	 * exists
 	 * @param newSpaceId The ID of the space they are being linked to
 	 * @return 0 on success or a negative status code on error
 	 */
@@ -1420,10 +1423,10 @@ public class Connection {
 
 	/**
 	 * Links jobs to a new space
-	 * 
+	 *
 	 * @param jobIds The job Ids to be added to a new space
 	 * @param oldSpaceId The space they are being linked from, or null if none
-	 *        exists
+	 * exists
 	 * @param newSpaceId The ID of the space they are being linked to
 	 * @return 0 on success or a negative status code on error
 	 */
@@ -1434,10 +1437,10 @@ public class Connection {
 
 	/**
 	 * Links users to a new space
-	 * 
+	 *
 	 * @param userIds The user Ids to be added to a new space
 	 * @param oldSpaceId The space they are being linked from, or null if none
-	 *        exists
+	 * exists
 	 * @param newSpaceId The ID of the space they are being linked to
 	 * @return 0 on success or a negative status code on error
 	 */
@@ -1447,10 +1450,10 @@ public class Connection {
 
 	/**
 	 * Copies solvers to a new space
-	 * 
+	 *
 	 * @param solverIds The solver Ids to be added to a new space
 	 * @param oldSpaceId The space they are being linked from, or null if none
-	 *        exists
+	 * exists
 	 * @param newSpaceId The ID of the space they are being linked to
 	 * @param hierarchy Whether to link to the entire hierarchy
 	 * @return 0 on success or a negative status code on error
@@ -1462,10 +1465,10 @@ public class Connection {
 
 	/**
 	 * Copies benchmarks to a new space
-	 * 
+	 *
 	 * @param benchmarkIds The benchmark Ids to be added to a new space
 	 * @param oldSpaceId The space they are being linked from, or null if none
-	 *        exists
+	 * exists
 	 * @param newSpaceId The ID of the space they are being linked to
 	 * @return 0 on success or a negative status code on error
 	 */
@@ -1476,56 +1479,53 @@ public class Connection {
 
 	/**
 	 * Copies spaces to a new space
-	 * 
+	 *
 	 * @param spaceIds The space Ids to be added to a new space
 	 * @param oldSpaceId The space they are being linked from, or null if none
-	 *        exists
+	 * exists
 	 * @param newSpaceId The ID of the space they are being linked to
 	 * @param hierarchy Whether to copy every space in the hierarchies rooted at
-	 *        the given spaces
+	 * the given spaces
 	 * @return 0 on success or a negative status code on error
 	 */
 
-	public List<Integer> copySpaces(Integer[] spaceIds, Integer oldSpaceId, Integer newSpaceId, Boolean hierarchy,
-			Boolean copyPrimitives) {
+	public List<Integer> copySpaces(Integer[] spaceIds, Integer oldSpaceId, Integer newSpaceId, Boolean hierarchy, Boolean copyPrimitives) {
 		return copyPrimitives(spaceIds, oldSpaceId, newSpaceId, hierarchy, copyPrimitives, R.SPACE);
 	}
 
 	/**
 	 * Copies all the primitives of the given types
-	 * 
+	 *
 	 * @param ids The IDs of the primitives to copy
 	 * @param oldSpaceId A space where the primitives currently reside, or null
-	 *        if there is no old space
+	 * if there is no old space
 	 * @param newSpaceID The ID of the space to put all the primitives in
 	 * @param hierarchy (only for solvers) True if copying the primitives to
-	 *        each space in a hierarchy (only 1 new prim is created per ID)
+	 * each space in a hierarchy (only 1 new prim is created per ID)
 	 * @param type The type of the primitives
 	 * @return A list of positive IDs on success, or size 1 list with a negative
-	 *         error code on failure
+	 * error code on failure
 	 */
 
-	protected List<Integer> copyPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean hierarchy,
-			Boolean copyPrimitives, String type) {
+	protected List<Integer> copyPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean hierarchy, Boolean copyPrimitives, String type) {
 		return copyOrLinkPrimitives(ids, oldSpaceId, newSpaceID, true, hierarchy, copyPrimitives, type);
 	}
 
 	/**
 	 * Links all the primitives of the given types
-	 * 
+	 *
 	 * @param ids The IDs of the primitives to link
 	 * @param oldSpaceId A space where the primitives currently reside, or null
-	 *        if there is no old space
+	 * if there is no old space
 	 * @param newSpaceID The ID of the space to put all the primitives in
 	 * @param hierarchy (only for solvers and users) True if linking the
-	 *        primitives to each space in a hierarchy (only 1 new prim is
-	 *        created per ID)
+	 * primitives to each space in a hierarchy (only 1 new prim is
+	 * created per ID)
 	 * @param type The type of the primitives
 	 * @return 0 on success or a negative error code on failure
 	 */
 
-	protected int linkPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean hierarchy,
-			String type) {
+	protected int linkPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean hierarchy, String type) {
 
 		return copyOrLinkPrimitives(ids, oldSpaceId, newSpaceID, false, hierarchy, false, type).get(0);
 	}
@@ -1533,15 +1533,14 @@ public class Connection {
 	/**
 	 * Sends a copy or link request to the StarExec server and returns a status
 	 * code indicating the result of the request
-	 * 
+	 *
 	 * @param copy True if a copy should be performed, and false if a link
-	 *        should be performed.
+	 * should be performed.
 	 * @param type The type of primitive being copied.
 	 * @return An integer error code where 0 indicates success and a negative
-	 *         number is an error.
+	 * number is an error.
 	 */
-	private List<Integer> copyOrLinkPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean copy,
-			Boolean hierarchy, Boolean copyPrimitives, String type) {
+	private List<Integer> copyOrLinkPrimitives(Integer[] ids, Integer oldSpaceId, Integer newSpaceID, Boolean copy, Boolean hierarchy, Boolean copyPrimitives, String type) {
 		List<Integer> fail = new ArrayList<>();
 		HttpResponse response = null;
 		try {
@@ -1578,8 +1577,7 @@ public class Connection {
 			params.add(new BasicNameValuePair("copy", copy.toString()));
 			params.add(new BasicNameValuePair("copyHierarchy", String.valueOf(hierarchy.toString())));
 
-			CopyPrimitivesOption copyPrimitivesOption = copyPrimitives ? CopyPrimitivesOption.COPY
-					: CopyPrimitivesOption.LINK;
+			CopyPrimitivesOption copyPrimitivesOption = copyPrimitives ? CopyPrimitivesOption.COPY : CopyPrimitivesOption.LINK;
 
 			params.add(new BasicNameValuePair("copyPrimitives", String.valueOf(copyPrimitivesOption.toString())));
 			post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
@@ -1618,12 +1616,12 @@ public class Connection {
 
 	/**
 	 * Creates a subspace of an existing space on StarExec
-	 * 
+	 *
 	 * @param name The name to give the new space
 	 * @param desc The description to give the new space
 	 * @param parentSpaceID The ID of the parent space for the new space
 	 * @param p The permission object reflecting all the default permissions for
-	 *        the new space
+	 * the new space
 	 * @param locked Whether the space should be locked initially
 	 * @return the new space ID on success and a negative error code otherwise
 	 * @author Eric Burns
@@ -1664,11 +1662,11 @@ public class Connection {
 	/**
 	 * Gets a HashMap that maps the IDs of solvers to their names for all
 	 * solvers in the given space
-	 * 
+	 *
 	 * @param spaceID The ID of the space
 	 * @return A HashMap mapping IDs to names If there was an error, the HashMap
-	 *         will contain only one key, and it will be negative, whereas all
-	 *         IDs must be positive.
+	 * will contain only one key, and it will be negative, whereas all
+	 * IDs must be positive.
 	 */
 
 	public HashMap<Integer, String> getSolversInSpace(Integer spaceID) {
@@ -1678,11 +1676,11 @@ public class Connection {
 	/**
 	 * Gets a HashMap that maps the IDs of solvers to their names for all
 	 * benchmarks in the given space
-	 * 
+	 *
 	 * @param spaceID The ID of the space
 	 * @return A HashMap mapping IDs to names If there was an error, the HashMap
-	 *         will contain only one key, and it will be negative, whereas all
-	 *         IDs must be positive.
+	 * will contain only one key, and it will be negative, whereas all
+	 * IDs must be positive.
 	 */
 
 	public HashMap<Integer, String> getBenchmarksInSpace(Integer spaceID) {
@@ -1692,11 +1690,11 @@ public class Connection {
 	/**
 	 * Gets a HashMap that maps the IDs of solvers to their names for all jobs
 	 * in the given space
-	 * 
+	 *
 	 * @param spaceID The ID of the space
 	 * @return A HashMap mapping IDs to names If there was an error, the HashMap
-	 *         will contain only one key, and it will be negative, whereas all
-	 *         IDs must be positive.
+	 * will contain only one key, and it will be negative, whereas all
+	 * IDs must be positive.
 	 */
 
 	public HashMap<Integer, String> getJobsInSpace(Integer spaceID) {
@@ -1706,11 +1704,11 @@ public class Connection {
 	/**
 	 * Gets a HashMap that maps the IDs of solvers to their names for all users
 	 * in the given space
-	 * 
+	 *
 	 * @param spaceID The ID of the space
 	 * @return A HashMap mapping IDs to names If there was an error, the HashMap
-	 *         will contain only one key, and it will be negative, whereas all
-	 *         IDs must be positive.
+	 * will contain only one key, and it will be negative, whereas all
+	 * IDs must be positive.
 	 */
 
 	public HashMap<Integer, String> getUsersInSpace(Integer spaceID) {
@@ -1720,11 +1718,11 @@ public class Connection {
 	/**
 	 * Gets a HashMap that maps the IDs of solvers to their names for all spaces
 	 * in the given space
-	 * 
+	 *
 	 * @param spaceID The ID of the space
 	 * @return A HashMap mapping IDs to names If there was an error, the HashMap
-	 *         will contain only one key, and it will be negative, whereas all
-	 *         IDs must be positive.
+	 * will contain only one key, and it will be negative, whereas all
+	 * IDs must be positive.
 	 */
 
 	public HashMap<Integer, String> getSpacesInSpace(Integer spaceID) {
@@ -1734,10 +1732,10 @@ public class Connection {
 	/**
 	 * Gets a HashMap that maps the IDs of solvers to their names for all
 	 * solvers the current user owns
-	 * 
+	 *
 	 * @return A HashMap mapping IDs to names If there was an error, the HashMap
-	 *         will contain only one key, and it will be negative, whereas all
-	 *         IDs must be positive.
+	 * will contain only one key, and it will be negative, whereas all
+	 * IDs must be positive.
 	 */
 
 	public HashMap<Integer, String> getSolversByUser() {
@@ -1747,10 +1745,10 @@ public class Connection {
 	/**
 	 * Gets a HashMap that maps the IDs of solvers to their names for all
 	 * benchmarks the current user owns
-	 * 
+	 *
 	 * @return A HashMap mapping IDs to names If there was an error, the HashMap
-	 *         will contain only one key, and it will be negative, whereas all
-	 *         IDs must be positive.
+	 * will contain only one key, and it will be negative, whereas all
+	 * IDs must be positive.
 	 */
 
 	public HashMap<Integer, String> getBenchmarksByUser() {
@@ -1760,10 +1758,10 @@ public class Connection {
 	/**
 	 * Gets a HashMap that maps the IDs of solvers to their names for all jobs
 	 * the current user owns
-	 * 
+	 *
 	 * @return A HashMap mapping IDs to names If there was an error, the HashMap
-	 *         will contain only one key, and it will be negative, whereas all
-	 *         IDs must be positive.
+	 * will contain only one key, and it will be negative, whereas all
+	 * IDs must be positive.
 	 */
 	public HashMap<Integer, String> getJobsByUser() {
 		return listPrims(null, null, true, "jobs");
@@ -1773,8 +1771,8 @@ public class Connection {
 	 * @param solverID Integer id of a solver
 	 * @param limit Integer limiting number of configurations displayed
 	 * @return A HashMap mapping IDs to names If there was an error, the HashMap
-	 *         will contain only one key, and it will be negative, whereas all
-	 *         IDs must be positive.
+	 * will contain only one key, and it will be negative, whereas all
+	 * IDs must be positive.
 	 */
 	protected HashMap<Integer, String> getSolverConfigs(Integer solverID, Integer limit) {
 		HashMap<Integer, String> errorMap = new HashMap<>();
@@ -1825,7 +1823,7 @@ public class Connection {
 
 	/**
 	 * Lists the IDs and names of some kind of primitives in a given space
-	 * 
+	 *
 	 * @return A HashMap mapping integer ids to string names
 	 * @author Eric Burns
 	 */
@@ -1948,35 +1946,33 @@ public class Connection {
 
 	/**
 	 * Downloads a solver from StarExec in the form of a zip file
-	 * 
+	 *
 	 * @param solverId The ID of the solver to download
 	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadSolver(Integer solverId, String filePath) throws IOException {
-		return downloadArchive(solverId, R.SOLVER, null, null, filePath, false, false, false, false, null, false, false,
-				null, false);
+		return downloadArchive(solverId, R.SOLVER, null, null, filePath, false, false, false, false, null, false, false, null, false);
 	}
 
 	/**
 	 * Downloads job pair output for one pair from StarExec in the form of a zip
 	 * file
-	 * 
+	 *
 	 * @param pairId The ID of the pair to download
 	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadJobPair(Integer pairId, String filePath, Boolean longPath) throws IOException {
-		return downloadArchive(pairId, R.PAIR_OUTPUT, null, null, filePath, false, false, false, false, null, false,
-				false, null, longPath);
+		return downloadArchive(pairId, R.PAIR_OUTPUT, null, null, filePath, false, false, false, false, null, false, false, null, longPath);
 	}
 
 	/**
 	 * Downloads a list of job pairs
-	 * 
+	 *
 	 * @param pairIds The IDs of all the pairs that should be downloaded
 	 * @param filePath Absolute file path to the spot that an archive containing
-	 *        all the given pairs should be placed
+	 * all the given pairs should be placed
 	 * @return A status code as defined in status.java
 	 */
 	public int downloadJobPairs(List<Integer> pairIds, String filePath) {
@@ -2017,8 +2013,7 @@ public class Connection {
 
 			// copy file from the HTTPResponse to an output stream
 			File out = new File(filePath);
-			File parent = new File(
-					out.getAbsolutePath().substring(0, out.getAbsolutePath().lastIndexOf(File.separator)));
+			File parent = new File(out.getAbsolutePath().substring(0, out.getAbsolutePath().lastIndexOf(File.separator)));
 			parent.mkdirs();
 			FileOutputStream outs = new FileOutputStream(out);
 			IOUtils.copy(response.getEntity().getContent(), outs);
@@ -2038,170 +2033,154 @@ public class Connection {
 	/**
 	 * Downloads the job output from a job from StarExec in the form of a zip
 	 * file
-	 * 
+	 *
 	 * @param jobId The ID of the job to download the output from
 	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadJobOutput(Integer jobId, String filePath) throws IOException {
-		return downloadArchive(jobId, R.JOB_OUTPUT, null, null, filePath, false, false, false, false, null, false,
-				false, null, false);
+		return downloadArchive(jobId, R.JOB_OUTPUT, null, null, filePath, false, false, false, false, null, false, false, null, false);
 	}
 
 	/**
 	 * Downloads a CSV describing a job from StarExec in the form of a zip file
-	 * 
+	 *
 	 * @param jobId The ID of the job to download the CSV for
 	 * @param filePath The output path where the file will be saved
 	 * @param includeIds Whether to include columns in the CSV displaying the
-	 *        IDs of the primitives involved
+	 * IDs of the primitives involved
 	 * @param onlyCompleted If true, only include completed pairs in the csv
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadJobInfo(Integer jobId, String filePath, boolean includeIds, boolean onlyCompleted)
-			throws IOException {
-		return downloadArchive(jobId, R.JOB, null, null, filePath, false, false, includeIds, false, null, onlyCompleted,
-				false, null, false);
+	public int downloadJobInfo(Integer jobId, String filePath, boolean includeIds, boolean onlyCompleted) throws IOException {
+		return downloadArchive(jobId, R.JOB, null, null, filePath, false, false, includeIds, false, null, onlyCompleted, false, null, false);
 	}
 
 	/**
 	 * Downloads a space XML file from StarExec in the form of a zip file
-	 * 
+	 *
 	 * @param spaceId The ID of the space to download the XML for
 	 * @param filePath The output path where the file will be saved
 	 * @param getAttributes If true, adds benchmark attributes to the XML
 	 * @param updateId The ID of the update processor to use in the XML. No
-	 *        update processor if null
+	 * update processor if null
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadSpaceXML(Integer spaceId, String filePath, boolean getAttributes, Integer updateId)
-			throws IOException {
-		return downloadArchive(spaceId, R.SPACE_XML, null, null, filePath, false, false, false, false, null, false,
-				getAttributes, updateId, false);
+	public int downloadSpaceXML(Integer spaceId, String filePath, boolean getAttributes, Integer updateId) throws IOException {
+		return downloadArchive(spaceId, R.SPACE_XML, null, null, filePath, false, false, false, false, null, false, getAttributes, updateId, false);
 	}
 
 	/**
 	 * Downloads the data contained in a single space
-	 * 
+	 *
 	 * @param spaceId The ID of the space to download
 	 * @param filePath Where to output the ZIP file
 	 * @param excludeSolvers If true, excludes solvers from the ZIP file.
 	 * @param excludeBenchmarks If true, excludes benchmarks from the ZIP file
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadSpace(Integer spaceId, String filePath, boolean excludeSolvers, boolean excludeBenchmarks)
-			throws IOException {
-		return downloadArchive(spaceId, R.SPACE, null, null, filePath, excludeSolvers, excludeBenchmarks, false, false,
-				null, false, false, null, false);
+	public int downloadSpace(Integer spaceId, String filePath, boolean excludeSolvers, boolean excludeBenchmarks) throws IOException {
+		return downloadArchive(spaceId, R.SPACE, null, null, filePath, excludeSolvers, excludeBenchmarks, false, false, null, false, false, null, false);
 	}
 
 	/**
 	 * Downloads the data contained in a space hierarchy rooted at the given
 	 * space
-	 * 
+	 *
 	 * @param spaceId The ID of the root space of the hierarchy to download
 	 * @param filePath Where to output the ZIP file
 	 * @param excludeSolvers If true, excludes solvers from the ZIP file.
 	 * @param excludeBenchmarks If true, excludes benchmarks from the ZIP file
 	 * @return A status code as defined in the Status class
 	 */
-	public int downloadSpaceHierarchy(Integer spaceId, String filePath, boolean excludeSolvers,
-			boolean excludeBenchmarks) throws IOException {
-		return downloadArchive(spaceId, R.SPACE, null, null, filePath, excludeSolvers, excludeBenchmarks, false, true,
-				null, false, false, null, false);
+	public int downloadSpaceHierarchy(Integer spaceId, String filePath, boolean excludeSolvers, boolean excludeBenchmarks) throws IOException {
+		return downloadArchive(spaceId, R.SPACE, null, null, filePath, excludeSolvers, excludeBenchmarks, false, true, null, false, false, null, false);
 	}
 
 	/**
 	 * Downloads a pre processor from StarExec in the form of a zip file
-	 * 
+	 *
 	 * @param procId The ID of the processor to download
 	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadPreProcessor(Integer procId, String filePath) throws IOException {
-		return downloadArchive(procId, R.PROCESSOR, null, null, filePath, false, false, false, false, "pre", false,
-				false, null, false);
+		return downloadArchive(procId, R.PROCESSOR, null, null, filePath, false, false, false, false, "pre", false, false, null, false);
 	}
 
 	/**
 	 * Downloads a benchmark processor from StarExec in the form of a zip file
-	 * 
+	 *
 	 * @param procId The ID of the processor to download
 	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadBenchProcessor(Integer procId, String filePath) throws IOException {
-		return downloadArchive(procId, R.PROCESSOR, null, null, filePath, false, false, false, false, R.BENCHMARK,
-				false, false, null, false);
+		return downloadArchive(procId, R.PROCESSOR, null, null, filePath, false, false, false, false, R.BENCHMARK, false, false, null, false);
 	}
 
 	/**
 	 * Downloads a post processor from StarExec in the form of a zip file
-	 * 
+	 *
 	 * @param procId The ID of the processor to download
 	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadPostProcessor(Integer procId, String filePath) throws IOException {
-		return downloadArchive(procId, R.PROCESSOR, null, null, filePath, false, false, false, false, "post", false,
-				false, null, false);
+		return downloadArchive(procId, R.PROCESSOR, null, null, filePath, false, false, false, false, "post", false, false, null, false);
 	}
 
 	/**
 	 * Downloads a benchmark from StarExec in the form of a zip file
-	 * 
+	 *
 	 * @param benchId The ID of the benchmark to download
 	 * @param filePath The output path where the file will be saved
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadBenchmark(Integer benchId, String filePath) throws IOException {
-		return downloadArchive(benchId, R.BENCHMARK, null, null, filePath, false, false, false, false, null, false,
-				false, null, false);
+		return downloadArchive(benchId, R.BENCHMARK, null, null, filePath, false, false, false, false, null, false, false, null, false);
 	}
 
 	/**
 	 * Downloads a CSV describing a job from StarExec in the form of a zip file.
 	 * Only job pairs that have a completion ID greater than "since" are
 	 * included
-	 * 
+	 *
 	 * @param jobId The ID of the job to download the CSV for
 	 * @param filePath The output path where the file will be saved
 	 * @param includeIds Whether to include columns in the CSV displaying the
-	 *        IDs of the primitives involved
+	 * IDs of the primitives involved
 	 * @param since A completion ID, indicating that only pairs with completion
-	 *        IDs greater should be included
+	 * IDs greater should be included
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadNewJobInfo(Integer jobId, String filePath, boolean includeIds, int since) throws IOException {
-		return downloadArchive(jobId, R.JOB, since, null, filePath, false, false, includeIds, false, null, false, false,
-				null, false);
+		return downloadArchive(jobId, R.JOB, since, null, filePath, false, false, includeIds, false, null, false, false, null, false);
 	}
 
 	/**
 	 * Downloads output from a job from StarExec in the form of a zip file. Only
 	 * job pairs that have a completion ID greater than "since" are included
-	 * 
+	 *
 	 * @param jobId The ID of the job to download the output
 	 * @param filePath The output path where the file will be saved
 	 * @param since A completion ID, indicating that only pairs with completion
-	 *        IDs greater should be included
+	 * IDs greater should be included
 	 * @return A status code as defined in the Status class
 	 */
 	public int downloadNewJobOutput(Integer jobId, String filePath, int since, long lastModified) throws IOException {
-		return downloadArchive(jobId, R.JOB_OUTPUT, since, lastModified, filePath, false, false, false, false, null,
-				false, false, null, false);
+		return downloadArchive(jobId, R.JOB_OUTPUT, since, lastModified, filePath, false, false, false, false, null, false, false, null, false);
 	}
 
 	/**
 	 * Returns the community id that a space is in.
-	 * 
+	 *
 	 * @param spaceId the space id to get the community of
 	 * @return the id of the community the space is in.
 	 * @throws IOException
 	 */
 	public int getCommunityIdOfSpace(int spaceId) throws IOException {
-		final String url = baseURL + C.URL_COMMUNITY_FROM_SPACE.replace(C.URL_COMMUNITY_FROM_SPACE_SPACE_ID_PARAM,
-				String.valueOf(spaceId));
+		final String url = baseURL + C.URL_COMMUNITY_FROM_SPACE.replace(C.URL_COMMUNITY_FROM_SPACE_SPACE_ID_PARAM, String.valueOf(spaceId));
 
 		HttpGet get = new HttpGet(url);
 		get = (HttpGet) setHeaders(get);
@@ -2217,27 +2196,25 @@ public class Connection {
 
 	/**
 	 * Downloads an archive from Starexec
-	 * 
+	 *
 	 * @param id The ID of the primitive that is going to be downloaded
 	 * @param type The type of the primitive (R.SOLVER, R.BENCHMARK, and so on
 	 * @param since If downloading new job info, this represents the last seen
-	 *        completion index. Otherwise, it should be null
+	 * completion index. Otherwise, it should be null
 	 * @param filePath The path to where the archive should be output, including
-	 *        the filename
+	 * the filename
 	 * @param excludeSolvers If downloading a space, whether to exclude solvers
 	 * @param excludeBenchmarks If downloading a space, whether to exclude
-	 *        benchmarks
+	 * benchmarks
 	 * @param includeIds If downloading a job info CSV, whether to include
-	 *        columns for IDs
+	 * columns for IDs
 	 * @param hierarchy If downloading a space, whether to get the full
-	 *        hierarchy
+	 * hierarchy
 	 * @param procClass If downloading a processor, what type of processor it is
-	 *        (R.BENCHMARK,"post",or "pre")
+	 * (R.BENCHMARK,"post",or "pre")
 	 * @return
 	 */
-	protected int downloadArchive(Integer id, String type, Integer since, Long lastTimestamp, final String filePath,
-			boolean excludeSolvers, boolean excludeBenchmarks, boolean includeIds, Boolean hierarchy, String procClass,
-			boolean onlyCompleted, boolean includeAttributes, Integer updateId, Boolean longPath) throws IOException {
+	protected int downloadArchive(Integer id, String type, Integer since, Long lastTimestamp, final String filePath, boolean excludeSolvers, boolean excludeBenchmarks, boolean includeIds, Boolean hierarchy, String procClass, boolean onlyCompleted, boolean includeAttributes, Integer updateId, Boolean longPath) throws IOException {
 		HttpResponse response = null;
 
 		try {
@@ -2351,14 +2328,12 @@ public class Connection {
 
 			// copy file from the HTTPResponse to an output stream
 			File out = new File(filePath);
-			File parent = new File(
-					out.getAbsolutePath().substring(0, out.getAbsolutePath().lastIndexOf(File.separator)));
+			File parent = new File(out.getAbsolutePath().substring(0, out.getAbsolutePath().lastIndexOf(File.separator)));
 			parent.mkdirs();
 			FileOutputStream outs = new FileOutputStream(out);
 			IOUtils.copy(response.getEntity().getContent(), outs);
 			outs.close();
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
-
 
 
 			// If it's not a valid zipfile we need to return SUCCESS_NOFILE if
@@ -2383,8 +2358,7 @@ public class Connection {
 					this.setJobOutCompletion(id, new PollJobData(lastSeen, lastModified));
 				}
 				if (pairsFound != 0) {
-					System.out.println("completed pairs found =" + (oldPairs + 1) + "-" + (oldPairs + pairsFound) + "/"
-							+ totalPairs + " (highest=" + lastSeen + ")");
+					System.out.println("completed pairs found =" + (oldPairs + 1) + "-" + (oldPairs + pairsFound) + "/" + totalPairs + " (highest=" + lastSeen + ")");
 				}
 				/*
 				 * if(runningPairsFound != 0) {
@@ -2407,29 +2381,9 @@ public class Connection {
 		}
 	}
 
-	private static Optional<Integer> checkIfValidZipFile(File out) throws IOException {
-		ZipFile zipfile = null;
-		try {
-			// Make sure the file is a valid zipfile.
-			zipfile = new ZipFile(out);
-			return Optional.empty();
-		} catch (IOException e) {
-			out.delete();
-			throw e; // we got back an invalid archive for some reason
-		} finally {
-			try {
-				if (zipfile != null) {
-					zipfile.close();
-					zipfile = null;
-				}
-			} catch (IOException e) {
-			}
-		}
-	}
-
 	/**
 	 * Sets the highest seen completion ID for info on a given job
-	 * 
+	 *
 	 * @param jobID An ID of a job on StarExec
 	 * @param completion The completion ID
 	 */
@@ -2439,7 +2393,7 @@ public class Connection {
 
 	/**
 	 * Sets the highest seen completion ID for output on a given job
-	 * 
+	 *
 	 * @param jobID An ID of a job on StarExec
 	 */
 	protected void setJobOutCompletion(int jobID, PollJobData data) {
@@ -2449,14 +2403,14 @@ public class Connection {
 	/**
 	 * Gets the status of a benchmark archive upload given the ID of the upload
 	 * status.
-	 * 
+	 *
 	 * @param statusId The upload ID to use
 	 * @return A human-readable string containing details of the benchmark
-	 *         upload in the following format benchmarks: {validated} / {failed
-	 *         validation} / {total} | spaces: {completed} / {total} {error
-	 *         message if exists} {"upload complete" if finished} Null is
-	 *         returned if there was an error, and this Connection's error
-	 *         message will have been set
+	 * upload in the following format benchmarks: {validated} / {failed
+	 * validation} / {total} | spaces: {completed} / {total} {error
+	 * message if exists} {"upload complete" if finished} Null is
+	 * returned if there was an error, and this Connection's error
+	 * message will have been set
 	 */
 	public String getBenchmarkUploadStatus(Integer statusId) {
 		HttpResponse response = null;
@@ -2489,35 +2443,33 @@ public class Connection {
 
 	/**
 	 * Creates a job on Starexec according to the given paramteters
-	 * 
+	 *
 	 * @param spaceId The ID of the root space for the job
 	 * @param name The name of the job. Must be unique to the space
 	 * @param desc A description of the job. Can be empty.
 	 * @param postProcId The ID of the post processor to apply to the job output
 	 * @param preProcId The ID of the pre procesor that will be run on
-	 *        benchmarks before they are fed into solvers
+	 * benchmarks before they are fed into solvers
 	 * @param queueId The ID of the queue to run the job on
 	 * @param wallclock The wallclock timeout for job pairs. If null, the
-	 *        default for the space will be used
+	 * default for the space will be used
 	 * @param cpu The cpu timeout for job pairs. If null, the default for the
-	 *        space will be used.
+	 * space will be used.
 	 * @param useDepthFirst If true, job pairs will be run in a depth-first
-	 *        fashion in the space hierarchy.
+	 * fashion in the space hierarchy.
 	 * @param startPaused If true, job will be paused upon creation
 	 * @param seed A number that will be passed into the preprocessor for every
-	 *        job pair in this job If false, they will be run in a round-robin
-	 *        fashion.
+	 * job pair in this job If false, they will be run in a round-robin
+	 * fashion.
 	 * @param maxMemory Specifies the maximum amount of memory, in gigabytes,
-	 *        that can be used by any one job pair.
+	 * that can be used by any one job pair.
 	 * @param suppressTimestamps If true, timestamps will not be added to job
-	 *        output lines. Defaults to false.
+	 * output lines. Defaults to false.
 	 * @param resultsInterval The interval at which to get incremental results,
-	 *        in seconds. 0 means no incremental results
+	 * in seconds. 0 means no incremental results
 	 * @return A status code as defined in status.java
 	 */
-	public int createJob(Integer spaceId, String name, String desc, Integer postProcId, Integer preProcId,
-			Integer queueId, Integer wallclock, Integer cpu, Boolean useDepthFirst, Double maxMemory,
-			boolean startPaused, Long seed, Boolean suppressTimestamps, Integer resultsInterval) {
+	public int createJob(Integer spaceId, String name, String desc, Integer postProcId, Integer preProcId, Integer queueId, Integer wallclock, Integer cpu, Boolean useDepthFirst, Double maxMemory, boolean startPaused, Long seed, Boolean suppressTimestamps, Integer resultsInterval) {
 		HttpResponse response = null;
 		try {
 			List<NameValuePair> params = new ArrayList<>();
@@ -2546,8 +2498,7 @@ public class Connection {
 			params.add(new BasicNameValuePair("seed", seed.toString()));
 			params.add(new BasicNameValuePair("resultsInterval", resultsInterval.toString()));
 			params.add(new BasicNameValuePair(C.FORMPARAM_TRAVERSAL, traversalMethod));
-			params.add(new BasicNameValuePair(R.BENCHMARKING_FRAMEWORK_OPTION,
-					R.DEFAULT_BENCHMARKING_FRAMEWORK.toString()));
+			params.add(new BasicNameValuePair(R.BENCHMARKING_FRAMEWORK_OPTION, R.DEFAULT_BENCHMARKING_FRAMEWORK.toString()));
 
 			if (maxMemory != null) {
 				params.add(new BasicNameValuePair("maxMem", String.valueOf(maxMemory)));
@@ -2587,7 +2538,7 @@ public class Connection {
 
 	/**
 	 * Gets the max completion ID yet seen for output downloads on a given job
-	 * 
+	 *
 	 * @param jobID The ID of a job on StarExec
 	 * @return The maximum completion ID seen yet, or 0 if not seen.
 	 */
@@ -2602,7 +2553,7 @@ public class Connection {
 
 	/**
 	 * Gets the max completion ID for info downloads on the given job.
-	 * 
+	 *
 	 * @param jobID The ID of a job on StarExec
 	 * @return The maximum completion ID seen for the job, or 0 if not seen
 	 */
@@ -2614,8 +2565,17 @@ public class Connection {
 	}
 
 	/**
+	 * @return The last error that was sent back by the server. This will be
+	 * updated whenever ERROR_SERVER is returned as a status code by any
+	 * function
+	 */
+	public String getLastError() {
+		return lastError;
+	}
+
+	/**
 	 * @param lastError the lastError to set. Leading/trailing whitespace and
-	 *        quotes will be removed
+	 * quotes will be removed
 	 */
 	private void setLastError(String lastError) {
 		if (lastError == null) {
@@ -2633,17 +2593,8 @@ public class Connection {
 	}
 
 	/**
-	 * @return The last error that was sent back by the server. This will be
-	 *         updated whenever ERROR_SERVER is returned as a status code by any
-	 *         function
-	 */
-	public String getLastError() {
-		return lastError;
-	}
-
-	/**
 	 * Gets the attributes for a queue in a Map
-	 * 
+	 *
 	 * @param id The primitive ID
 	 * @return The Map of attributes, or null on error
 	 */
@@ -2653,7 +2604,7 @@ public class Connection {
 
 	/**
 	 * Gets the attributes for a configuration in a Map
-	 * 
+	 *
 	 * @param id The primitive ID
 	 * @return The Map of attributes, or null on error
 	 */
@@ -2663,7 +2614,7 @@ public class Connection {
 
 	/**
 	 * Gets the attributes for a processor in a Map
-	 * 
+	 *
 	 * @param id The primitive ID
 	 * @return The Map of attributes, or null on error
 	 */
@@ -2673,7 +2624,7 @@ public class Connection {
 
 	/**
 	 * Gets the attributes for a solver in a Map
-	 * 
+	 *
 	 * @param id The primitive ID
 	 * @return The Map of attributes, or null on error
 	 */
@@ -2683,7 +2634,7 @@ public class Connection {
 
 	/**
 	 * Gets the attributes for a benchmark in a Map
-	 * 
+	 *
 	 * @param id The primitive ID
 	 * @return The Map of attributes, or null on error
 	 */
@@ -2694,7 +2645,7 @@ public class Connection {
 
 	/**
 	 * Gets the attributes for a job in a Map
-	 * 
+	 *
 	 * @param id The primitive ID
 	 * @return The Map of attributes, or null on error
 	 */
@@ -2705,7 +2656,7 @@ public class Connection {
 
 	/**
 	 * Gets the attributes for a space in a Map
-	 * 
+	 *
 	 * @param id The primitive ID
 	 * @return The Map of attributes, or null on error
 	 */
@@ -2717,7 +2668,7 @@ public class Connection {
 	/**
 	 * Asks the server for a Json object representing a primitive and returns
 	 * the attributes of that primitive in a Map of keys to values.
-	 * 
+	 *
 	 * @param id The ID of the primitive
 	 * @param type The type of the primitive
 	 * @return The Map, or null on error
@@ -2726,8 +2677,7 @@ public class Connection {
 		HashMap<String, String> failMap = new HashMap<>();
 		HttpResponse response = null;
 		try {
-			HttpGet get = new HttpGet(
-					baseURL + C.URL_GETPRIMJSON.replace("{type}", type).replace("{id}", String.valueOf(id)));
+			HttpGet get = new HttpGet(baseURL + C.URL_GETPRIMJSON.replace("{type}", type).replace("{id}", String.valueOf(id)));
 			get = (HttpGet) setHeaders(get);
 			response = executeGetOrPost(get);
 			JsonElement json = JsonHandler.getJsonString(response);
@@ -2748,7 +2698,7 @@ public class Connection {
 
 	/**
 	 * Closes an HttpResponse, suppressing any errors.
-	 * 
+	 *
 	 * @param response
 	 */
 	private void safeCloseResponse(HttpResponse response) {
