@@ -13,7 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 
 public class CommandValidator {
@@ -80,7 +80,7 @@ public class CommandValidator {
 	 * @param type The type of primitive being removed.
 	 * @return An integer status code as defined in Status.
 	 */
-	public static int isValidRemoveRequest(HashMap<String, String> commandParams, String type) {
+	public static int isValidRemoveRequest(Map<String, String> commandParams, String type) {
 		if (type.equals("subspace")) {
 			if (!paramsExist(new String[]{C.PARAM_ID}, commandParams)) {
 				return Status.ERROR_MISSING_PARAM;
@@ -109,7 +109,7 @@ public class CommandValidator {
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 */
 
-	public static int isValidDeleteRequest(HashMap<String, String> commandParams) {
+	public static int isValidDeleteRequest(Map<String, String> commandParams) {
 		if (!paramsExist(new String[]{C.PARAM_ID}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
@@ -129,7 +129,7 @@ public class CommandValidator {
 	 * @return 0 if the request is valid, and a negative error code otherwise
 	 */
 
-	public static int isValidCopyRequest(HashMap<String, String> commandParams, String type) {
+	public static int isValidCopyRequest(Map<String, String> commandParams, String type) {
 		if (!paramsExist(new String[]{C.PARAM_ID, C.PARAM_TO}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
@@ -164,7 +164,7 @@ public class CommandValidator {
 	 * completion ID to retrieve results after
 	 * @return A status code as defined in Status.java
 	 */
-	public static int isValidDownloadRequest(HashMap<String, String> commandParams, String type, Integer since) {
+	public static int isValidDownloadRequest(Map<String, String> commandParams, String type, Integer since) {
 		if (!paramsExist(new String[]{C.PARAM_ID, C.PARAM_OUTPUT_FILE}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
@@ -222,14 +222,14 @@ public class CommandValidator {
 	 * This function checks all the properties that are common to all uploads.
 	 * All uploads must specify an id, and either a filepath or a url
 	 *
-	 * @param commandParams A HashMap mapping String keys to String values
+	 * @param commandParams A Map mapping String keys to String values
 	 * @param archiveRequired If true, file given by user must be a valid
 	 * archive type (zip,tar, tgz)
 	 * @return 0 if the upload request has all the basic requirements, and a
 	 * negative error code otherwise.
 	 * @author Eric Burns
 	 */
-	private static int isValidUploadRequest(HashMap<String, String> commandParams, boolean archiveRequired) {
+	private static int isValidUploadRequest(Map<String, String> commandParams, boolean archiveRequired) {
 
 		// an ID and either a URL or a file is required for every upload
 		if (!paramsExist(new String[]{C.PARAM_ID}, commandParams)) {
@@ -293,7 +293,7 @@ public class CommandValidator {
 	 * @author Eric Burns
 	 */
 
-	private static int isValidUploadRequestNoURL(HashMap<String, String> commandParams, boolean archiveRequired) {
+	private static int isValidUploadRequestNoURL(Map<String, String> commandParams, boolean archiveRequired) {
 		int valid = isValidUploadRequest(commandParams, archiveRequired);
 		if (valid < 0) {
 			return valid;
@@ -314,7 +314,7 @@ public class CommandValidator {
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 */
 
-	public static int isValidUploadBenchmarkRequest(HashMap<String, String> commandParams) {
+	public static int isValidUploadBenchmarkRequest(Map<String, String> commandParams) {
 		int valid = isValidUploadRequest(commandParams, true);
 		if (valid < 0) {
 			return valid;
@@ -333,12 +333,12 @@ public class CommandValidator {
 	/**
 	 * Validates a solver upload request
 	 *
-	 * @param commandParams A HashMap mapping String keys to String values
+	 * @param commandParams A Map mapping String keys to String values
 	 * @return 0 if the upload request is valid, and a negative error code if it
 	 * is not.
 	 * @author Eric Burns
 	 */
-	public static int isValidSolverUploadRequest(HashMap<String, String> commandParams) {
+	public static int isValidSolverUploadRequest(Map<String, String> commandParams) {
 		int valid = isValidUploadRequest(commandParams, true);
 		if (valid < 0) {
 			return valid;
@@ -360,7 +360,7 @@ public class CommandValidator {
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 * @author Julio Cervantes
 	 */
-	public static int isValidUploadXMLRequest(HashMap<String, String> commandParams) {
+	public static int isValidUploadXMLRequest(Map<String, String> commandParams) {
 		int valid = isValidUploadRequestNoURL(commandParams, true);
 		if (valid < 0) {
 			return valid;
@@ -376,7 +376,7 @@ public class CommandValidator {
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 */
 
-	public static int isValidUploadConfigRequest(HashMap<String, String> commandParams) {
+	public static int isValidUploadConfigRequest(Map<String, String> commandParams) {
 		int valid = isValidUploadRequestNoURL(commandParams, false);
 		if (valid < 0) {
 			return valid;
@@ -392,7 +392,7 @@ public class CommandValidator {
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 */
 
-	public static int isValidUploadProcessorRequest(HashMap<String, String> commandParams) {
+	public static int isValidUploadProcessorRequest(Map<String, String> commandParams) {
 		int valid = isValidUploadRequestNoURL(commandParams, true);
 		if (valid < 0) {
 			return valid;
@@ -409,7 +409,7 @@ public class CommandValidator {
 	 * @param commandParams The parameters given by the user
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 */
-	public static int isValidGetPrimRequest(HashMap<String, String> urlParams, HashMap<String, String> commandParams) {
+	public static int isValidGetPrimRequest(Map<String, String> urlParams, Map<String, String> commandParams) {
 		if (!paramsExist(new String[]{C.PARAM_ID}, commandParams) && !paramsExist(new String[]{C.PARAM_USER}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
@@ -432,7 +432,7 @@ public class CommandValidator {
 		return 0;
 	}
 
-	public static int isValidPrintCommand(HashMap<String, String> commandParams) {
+	public static int isValidPrintCommand(Map<String, String> commandParams) {
 		if (!paramsExist(new String[]{C.PARAM_MESSAGE}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
@@ -448,7 +448,7 @@ public class CommandValidator {
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 */
 
-	public static int isValidSleepCommand(HashMap<String, String> commandParams) {
+	public static int isValidSleepCommand(Map<String, String> commandParams) {
 		if (!paramsExist(new String[]{C.PARAM_TIME}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
@@ -462,13 +462,13 @@ public class CommandValidator {
 	/**
 	 * Determines whether the given parameters form a valid job creation request
 	 *
-	 * @param commandParams A HashMap of key/value pairs indicating values given
+	 * @param commandParams A Map of key/value pairs indicating values given
 	 * by the user at the command line
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 * @author Eric Burns
 	 */
 
-	public static int isValidCreateJobRequest(HashMap<String, String> commandParams) {
+	public static int isValidCreateJobRequest(Map<String, String> commandParams) {
 		// Job creation must include a space ID, a processor ID, and a queue ID
 		if (!paramsExist(new String[]{C.PARAM_ID, C.PARAM_QUEUEID}, commandParams)) {
 			log.log("A parameter did not exist, should have had parameters: " + C.PARAM_ID + ", " + C.PARAM_QUEUEID);
@@ -543,7 +543,7 @@ public class CommandValidator {
 	 * @return 0 if the request is valid and a negative error code if not
 	 * @author Eric Burns
 	 */
-	public static int isValidCreateSubspaceRequest(HashMap<String, String> commandParams) {
+	public static int isValidCreateSubspaceRequest(Map<String, String> commandParams) {
 
 		if (!paramsExist(new String[]{C.PARAM_ID}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
@@ -565,7 +565,7 @@ public class CommandValidator {
 	 * @return 0 if the request is valid and a negative error code if not
 	 * @author Eric Burns
 	 */
-	public static int isValidSetSpaceVisibilityRequest(HashMap<String, String> commandParams) {
+	public static int isValidSetSpaceVisibilityRequest(Map<String, String> commandParams) {
 		if (!paramsExist(new String[]{C.PARAM_ID}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
@@ -583,7 +583,7 @@ public class CommandValidator {
 	 * @param commandParams The user-provided arguments
 	 * @return A status code as defined in Status.java
 	 */
-	public static int isValidLoginRequest(HashMap<String, String> commandParams) {
+	public static int isValidLoginRequest(Map<String, String> commandParams) {
 		if (!paramsExist(new String[]{C.PARAM_USER}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
@@ -603,7 +603,7 @@ public class CommandValidator {
 	 * @param commandParams The user-provided arguments
 	 * @return A status code as defined in Status.java
 	 */
-	public static int isValidPauseOrResumeRequest(HashMap<String, String> commandParams) {
+	public static int isValidPauseOrResumeRequest(Map<String, String> commandParams) {
 		if (!paramsExist(new String[]{C.PARAM_ID}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
@@ -622,7 +622,7 @@ public class CommandValidator {
 	 * @param commandParams The user-provided arguments
 	 * @return A status code as defined in Status.java
 	 */
-	public static int isValidRerunRequest(HashMap<String, String> commandParams) {
+	public static int isValidRerunRequest(Map<String, String> commandParams) {
 		if (!paramsExist(new String[]{C.PARAM_ID}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
@@ -641,7 +641,7 @@ public class CommandValidator {
 	 * @param commandParams The parameters given by the user
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 */
-	public static int isValidPollJobRequest(HashMap<String, String> commandParams) {
+	public static int isValidPollJobRequest(Map<String, String> commandParams) {
 		if (!paramsExist(new String[]{C.PARAM_ID, C.PARAM_OUTPUT_FILE, C.PARAM_TIME}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
@@ -675,7 +675,7 @@ public class CommandValidator {
 	 * @param commandParams The parameters given by the user
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 */
-	public static int isValidRunFileRequest(HashMap<String, String> commandParams) {
+	public static int isValidRunFileRequest(Map<String, String> commandParams) {
 		if (!paramsExist(new String[]{C.PARAM_FILE}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
@@ -693,7 +693,7 @@ public class CommandValidator {
 	 * @param commandParams The parameters given by the user
 	 * @return 0 if the request is valid and a negative error code otherwise
 	 */
-	public static int isValidSetUserSettingRequest(HashMap<String, String> commandParams) {
+	public static int isValidSetUserSettingRequest(Map<String, String> commandParams) {
 		if (!paramsExist(new String[]{C.PARAM_VAL}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
@@ -714,7 +714,7 @@ public class CommandValidator {
 	 * @param commandParams The arguments to validate
 	 * @return A status code as defined in Status.java
 	 */
-	public static int isValidPrintBenchUploadStatusRequest(HashMap<String, String> commandParams) {
+	public static int isValidPrintBenchUploadStatusRequest(Map<String, String> commandParams) {
 		if (!paramsExist(new String[]{C.PARAM_ID}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
@@ -734,7 +734,7 @@ public class CommandValidator {
 	 * @param commandParams The arguments to validate
 	 * @return A status code as defined in Status
 	 */
-	public static int isValidGetPrimitiveAttributesRequest(HashMap<String, String> commandParams) {
+	public static int isValidGetPrimitiveAttributesRequest(Map<String, String> commandParams) {
 		if (!paramsExist(new String[]{C.PARAM_ID}, commandParams)) {
 			return Status.ERROR_MISSING_PARAM;
 		}
@@ -758,7 +758,7 @@ public class CommandValidator {
 	 * @return True if all the required parameters are present, and false
 	 * otherwise
 	 */
-	private static boolean paramsExist(String[] params, HashMap<String, String> commandParams) {
+	private static boolean paramsExist(String[] params, Map<String, String> commandParams) {
 		for (String param : params) {
 			if (!commandParams.containsKey(param)) {
 				missingParam = param;
@@ -777,7 +777,7 @@ public class CommandValidator {
 	 * @param allowedParams The parameters that are expected
 	 * @param commandParams The parameters the user gave
 	 */
-	private static void findUnnecessaryParams(String[] allowedParams, HashMap<String, String> commandParams) {
+	private static void findUnnecessaryParams(String[] allowedParams, Map<String, String> commandParams) {
 		List<String> a = Arrays.asList(allowedParams);
 		unnecessaryParams = new ArrayList<>();
 		for (String x : commandParams.keySet()) {

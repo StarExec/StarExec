@@ -51,10 +51,10 @@ public class Connection {
 	private String sessionID = null;
 	private String username, password;
 	private String lastError;
-	private HashMap<Integer, Integer> job_info_indices; // these two map job ids
+	private Map<Integer, Integer> job_info_indices; // these two map job ids
 	// to the max completion
 	// index
-	private HashMap<Integer, PollJobData> job_out_indices;
+	private Map<Integer, PollJobData> job_out_indices;
 
 	/**
 	 * Constructor used for copying the setup of one connection into a new
@@ -148,7 +148,6 @@ public class Connection {
 			try {
 				if (zipfile != null) {
 					zipfile.close();
-					zipfile = null;
 				}
 			} catch (IOException e) {
 			}
@@ -197,37 +196,20 @@ public class Connection {
 		this.password = password1;
 	}
 
-	protected HashMap<Integer, PollJobData> getOutputIndices() {
+	protected Map<Integer, PollJobData> getOutputIndices() {
 		return job_out_indices;
 	}
 
-	protected void setOutputIndices(HashMap<Integer, PollJobData> job_out_indices) {
+	protected void setOutputIndices(Map<Integer, PollJobData> job_out_indices) {
 		this.job_out_indices = job_out_indices;
 	}
 
-	protected HashMap<Integer, Integer> getInfoIndices() {
+	protected Map<Integer, Integer> getInfoIndices() {
 		return job_info_indices;
 	}
 
-	protected void setInfoIndices(HashMap<Integer, Integer> job_info_indices) {
+	protected void setInfoIndices(Map<Integer, Integer> job_info_indices) {
 		this.job_info_indices = job_info_indices;
-	}
-
-	/**
-	 * Updates the JSESSIONID of the current connection if the server has sent a
-	 * new ID
-	 *
-	 * @param headers an array of HTTP headers
-	 * @return 0 if the ID was found and changed, -1 otherwise
-	 * @author Eric Burns
-	 */
-	private int setSessionIDIfExists(Header[] headers) {
-		String id = HTMLParser.extractCookie(headers, C.TYPE_SESSIONID);
-		if (id == null) {
-			return -1;
-		}
-		sessionID = id;
-		return 0;
 	}
 
 	/**
@@ -1161,7 +1143,6 @@ public class Connection {
 	 */
 
 	protected int pauseOrResumeJob(Integer jobID, boolean pause) {
-		HttpResponse response = null;
 		try {
 			String URL = baseURL + C.URL_PAUSEORRESUME;
 			if (pause) {
@@ -1172,8 +1153,6 @@ public class Connection {
 			return makePostWithId(URL, jobID);
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
-		} finally {
-			safeCloseResponse(response);
 		}
 	}
 
@@ -1250,7 +1229,7 @@ public class Connection {
 	protected int removePrimitives(List<Integer> primIDs, Integer spaceID, String type, Boolean recyclePrims) {
 		HttpResponse response = null;
 		try {
-			HttpPost post = null;
+			HttpPost post;
 			if (type.equalsIgnoreCase("subspace")) {
 				post = new HttpPost(baseURL + C.URL_REMOVEPRIMITIVE + "/" + type);
 
@@ -1662,123 +1641,123 @@ public class Connection {
 	}
 
 	/**
-	 * Gets a HashMap that maps the IDs of solvers to their names for all
+	 * Gets a Map that maps the IDs of solvers to their names for all
 	 * solvers in the given space
 	 *
 	 * @param spaceID The ID of the space
-	 * @return A HashMap mapping IDs to names If there was an error, the HashMap
+	 * @return A Map mapping IDs to names If there was an error, the Map
 	 * will contain only one key, and it will be negative, whereas all
 	 * IDs must be positive.
 	 */
 
-	public HashMap<Integer, String> getSolversInSpace(Integer spaceID) {
+	public Map<Integer, String> getSolversInSpace(Integer spaceID) {
 		return listPrims(spaceID, null, false, "solvers");
 	}
 
 	/**
-	 * Gets a HashMap that maps the IDs of solvers to their names for all
+	 * Gets a Map that maps the IDs of solvers to their names for all
 	 * benchmarks in the given space
 	 *
 	 * @param spaceID The ID of the space
-	 * @return A HashMap mapping IDs to names If there was an error, the HashMap
+	 * @return A Map mapping IDs to names If there was an error, the Map
 	 * will contain only one key, and it will be negative, whereas all
 	 * IDs must be positive.
 	 */
 
-	public HashMap<Integer, String> getBenchmarksInSpace(Integer spaceID) {
+	public Map<Integer, String> getBenchmarksInSpace(Integer spaceID) {
 		return listPrims(spaceID, null, false, "benchmarks");
 	}
 
 	/**
-	 * Gets a HashMap that maps the IDs of solvers to their names for all jobs
+	 * Gets a Map that maps the IDs of solvers to their names for all jobs
 	 * in the given space
 	 *
 	 * @param spaceID The ID of the space
-	 * @return A HashMap mapping IDs to names If there was an error, the HashMap
+	 * @return A Map mapping IDs to names If there was an error, the Map
 	 * will contain only one key, and it will be negative, whereas all
 	 * IDs must be positive.
 	 */
 
-	public HashMap<Integer, String> getJobsInSpace(Integer spaceID) {
+	public Map<Integer, String> getJobsInSpace(Integer spaceID) {
 		return listPrims(spaceID, null, false, "jobs");
 	}
 
 	/**
-	 * Gets a HashMap that maps the IDs of solvers to their names for all users
+	 * Gets a Map that maps the IDs of solvers to their names for all users
 	 * in the given space
 	 *
 	 * @param spaceID The ID of the space
-	 * @return A HashMap mapping IDs to names If there was an error, the HashMap
+	 * @return A Map mapping IDs to names If there was an error, the Map
 	 * will contain only one key, and it will be negative, whereas all
 	 * IDs must be positive.
 	 */
 
-	public HashMap<Integer, String> getUsersInSpace(Integer spaceID) {
+	public Map<Integer, String> getUsersInSpace(Integer spaceID) {
 		return listPrims(spaceID, null, false, "users");
 	}
 
 	/**
-	 * Gets a HashMap that maps the IDs of solvers to their names for all spaces
+	 * Gets a Map that maps the IDs of solvers to their names for all spaces
 	 * in the given space
 	 *
 	 * @param spaceID The ID of the space
-	 * @return A HashMap mapping IDs to names If there was an error, the HashMap
+	 * @return A Map mapping IDs to names If there was an error, the Map
 	 * will contain only one key, and it will be negative, whereas all
 	 * IDs must be positive.
 	 */
 
-	public HashMap<Integer, String> getSpacesInSpace(Integer spaceID) {
+	public Map<Integer, String> getSpacesInSpace(Integer spaceID) {
 		return listPrims(spaceID, null, false, "spaces");
 	}
 
 	/**
-	 * Gets a HashMap that maps the IDs of solvers to their names for all
+	 * Gets a Map that maps the IDs of solvers to their names for all
 	 * solvers the current user owns
 	 *
-	 * @return A HashMap mapping IDs to names If there was an error, the HashMap
+	 * @return A Map mapping IDs to names If there was an error, the Map
 	 * will contain only one key, and it will be negative, whereas all
 	 * IDs must be positive.
 	 */
 
-	public HashMap<Integer, String> getSolversByUser() {
+	public Map<Integer, String> getSolversByUser() {
 		return listPrims(null, null, true, "solvers");
 	}
 
 	/**
-	 * Gets a HashMap that maps the IDs of solvers to their names for all
+	 * Gets a Map that maps the IDs of solvers to their names for all
 	 * benchmarks the current user owns
 	 *
-	 * @return A HashMap mapping IDs to names If there was an error, the HashMap
+	 * @return A Map mapping IDs to names If there was an error, the Map
 	 * will contain only one key, and it will be negative, whereas all
 	 * IDs must be positive.
 	 */
 
-	public HashMap<Integer, String> getBenchmarksByUser() {
+	public Map<Integer, String> getBenchmarksByUser() {
 		return listPrims(null, null, true, "benchmarks");
 	}
 
 	/**
-	 * Gets a HashMap that maps the IDs of solvers to their names for all jobs
+	 * Gets a Map that maps the IDs of solvers to their names for all jobs
 	 * the current user owns
 	 *
-	 * @return A HashMap mapping IDs to names If there was an error, the HashMap
+	 * @return A Map mapping IDs to names If there was an error, the Map
 	 * will contain only one key, and it will be negative, whereas all
 	 * IDs must be positive.
 	 */
-	public HashMap<Integer, String> getJobsByUser() {
+	public Map<Integer, String> getJobsByUser() {
 		return listPrims(null, null, true, "jobs");
 	}
 
 	/**
 	 * @param solverID Integer id of a solver
 	 * @param limit Integer limiting number of configurations displayed
-	 * @return A HashMap mapping IDs to names If there was an error, the HashMap
+	 * @return A Map mapping IDs to names If there was an error, the Map
 	 * will contain only one key, and it will be negative, whereas all
 	 * IDs must be positive.
 	 */
-	protected HashMap<Integer, String> getSolverConfigs(Integer solverID, Integer limit) {
-		HashMap<Integer, String> errorMap = new HashMap<>();
-		HashMap<Integer, String> prims = new HashMap<>();
+	protected Map<Integer, String> getSolverConfigs(Integer solverID, Integer limit) {
+		Map<Integer, String> errorMap = new HashMap<>();
+		Map<Integer, String> prims = new HashMap<>();
 		HttpResponse response = null;
 		try {
 			String serverURL = baseURL + C.URL_GETSOLVERCONFIGS;
@@ -1826,20 +1805,20 @@ public class Connection {
 	/**
 	 * Lists the IDs and names of some kind of primitives in a given space
 	 *
-	 * @return A HashMap mapping integer ids to string names
+	 * @return A Map mapping integer ids to string names
 	 * @author Eric Burns
 	 */
-	protected HashMap<Integer, String> listPrims(Integer spaceID, Integer limit, boolean forUser, String type) {
-		HashMap<Integer, String> errorMap = new HashMap<>();
-		HashMap<Integer, String> prims = new HashMap<>();
+	protected Map<Integer, String> listPrims(Integer spaceID, Integer limit, boolean forUser, String type) {
+		Map<Integer, String> errorMap = new HashMap<>();
+		Map<Integer, String> prims = new HashMap<>();
 		HttpResponse response = null;
 		try {
 
-			HashMap<String, String> urlParams = new HashMap<>();
+			Map<String, String> urlParams = new HashMap<>();
 
 			urlParams.put(C.FORMPARAM_TYPE, type);
 
-			String URL = null;
+			String URL;
 			if (forUser) {
 				int id = getUserID();
 				if (id < 0) {
@@ -1980,7 +1959,7 @@ public class Connection {
 	public int downloadJobPairs(List<Integer> pairIds, String filePath) {
 		HttpResponse response = null;
 		try {
-			HashMap<String, String> urlParams = new HashMap<>();
+			Map<String, String> urlParams = new HashMap<>();
 			urlParams.put(C.FORMPARAM_TYPE, R.JOB_OUTPUTS);
 			StringBuilder sb = new StringBuilder();
 			for (Integer id : pairIds) {
@@ -1999,11 +1978,17 @@ public class Connection {
 			get = (HttpGet) setHeaders(get);
 			response = executeGetOrPost(get);
 
-			boolean fileFound = response.getFirstHeader("Content-Disposition") != null;
+			boolean fileFound = false;
+			for (Header x : response.getAllHeaders()) {
+				if (x.getName().equals("Content-Disposition")) {
+					fileFound = true;
+					break;
+				}
+			}
 
 			if (!fileFound) {
-				log.log("Content-Disposition header was missing.");
 				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE));
+
 				return Status.ERROR_ARCHIVE_NOT_FOUND;
 			}
 
@@ -2214,7 +2199,7 @@ public class Connection {
 		HttpResponse response = null;
 
 		try {
-			HashMap<String, String> urlParams = new HashMap<>();
+			Map<String, String> urlParams = new HashMap<>();
 			log.log("Downloading archive of type: " + type);
 			urlParams.put(C.FORMPARAM_TYPE, type);
 			urlParams.put(C.FORMPARAM_ID, id.toString());
@@ -2266,7 +2251,14 @@ public class Connection {
 			response = executeGetOrPost(get);
 			Boolean done = false;
 
-			boolean fileFound = response.getFirstHeader("Content-Disposition") != null;
+			boolean fileFound = false;
+
+			for (Header x : response.getAllHeaders()) {
+				if (x.getName().equals("Content-Disposition")) {
+					fileFound = true;
+					break;
+				}
+			}
 
 			final Map<String, String> cookies = getCookies(response);
 
@@ -2665,7 +2657,7 @@ public class Connection {
 	 * @return The Map, or null on error
 	 */
 	protected Map<String, String> getPrimitiveAttributes(int id, String type) {
-		HashMap<String, String> failMap = new HashMap<>();
+		Map<String, String> failMap = new HashMap<>();
 		HttpResponse response = null;
 		try {
 			HttpGet get = new HttpGet(baseURL + C.URL_GETPRIMJSON.replace("{type}", type).replace("{id}", String.valueOf(id)));
@@ -2708,7 +2700,7 @@ public class Connection {
 	 * @param response
 	 * @return Map of cookies set by response
 	 */
-	Map<String, String> getCookies(HttpResponse response) {
+	private Map<String, String> getCookies(HttpResponse response) {
 		final Map<String, String> cookies = new HashMap<>();
 		final Pattern regex = Pattern.compile("^\\s*([^=]+)=([^;]+)");
 		for (Header h : response.getHeaders("Set-Cookie")) {

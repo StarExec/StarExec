@@ -1,12 +1,12 @@
 package org.starexec.command;
 
 /**
- * This class is responsible for taking in the shell arguments from users, formatted as 
- * HashMaps of keys to values, and using those arguments to make calls in the Connection 
+ * This class is responsible for taking in the shell arguments from users, formatted as
+ * Maps of keys to values, and using those arguments to make calls in the Connection
  * API, which takes care of actually making request to Starexec. In other words, this
  * class is a midpoint between the shell interface and the StarexecCommand Java API, which is housed
  * in Connection
- * 
+ *
  * This class also makes calls to a validator to ensure that shell arguments are appropriate for the desired
  * calls
  */
@@ -27,7 +27,7 @@ class ArgumentParser {
 
 	/**
 	 * Gets the last server error message that was returned
-	 * 
+	 *
 	 * @return A string error message describing the last error. These messages
 	 *         should be human readable.
 	 */
@@ -39,11 +39,11 @@ class ArgumentParser {
 	 * Sets the new Connection object's username and password based on
 	 * user-specified parameters. Also sets the instance of StarExec that is
 	 * being connected to
-	 * 
+	 *
 	 * @param commandParams User specified parameters
 	 */
 
-	protected ArgumentParser(HashMap<String, String> commandParams) {
+	protected ArgumentParser(Map<String, String> commandParams) {
 		String base = null;
 		String username = "";
 		String password = "";
@@ -75,7 +75,7 @@ class ArgumentParser {
 
 	/**
 	 * Gets the max completion ID for info downloads on the given job.
-	 * 
+	 *
 	 * @param jobID The ID of a job on StarExec
 	 * @return The maximum completion ID seen for the job, or 0 if not seen
 	 */
@@ -85,7 +85,7 @@ class ArgumentParser {
 
 	/**
 	 * Gets the max completion ID yet seen for output downloads on a given job
-	 * 
+	 *
 	 * @param jobID The ID of a job on StarExec
 	 * @return The maximum completion ID seen yet, or 0 if not seen.
 	 */
@@ -97,7 +97,7 @@ class ArgumentParser {
 
 	/**
 	 * Log into StarExec with the username and password of this connection
-	 * 
+	 *
 	 * @return An integer indicating status, with 0 being normal and a negative
 	 *         integer indicating an error
 	 * @author Eric Burns
@@ -108,7 +108,7 @@ class ArgumentParser {
 
 	/**
 	 * Ends the current Starexec session
-	 * 
+	 *
 	 * @return True on success, false otherwise
 	 * @author Eric Burns
 	 */
@@ -120,13 +120,13 @@ class ArgumentParser {
 
 	/**
 	 * Creates a POST request to StarExec to create a new job
-	 * 
-	 * @param commandParams A HashMap containing key/value pairs gathered from
+	 *
+	 * @param commandParams A Map containing key/value pairs gathered from
 	 *        the user input at the command line
 	 * @return the new job ID on success, a negative integer otherwise
 	 * @author Eric Burns
 	 */
-	protected int createJob(HashMap<String, String> commandParams) {
+	protected int createJob(Map<String, String> commandParams) {
 		log.log("Creating job.");
 		try {
 			int valid = CommandValidator.isValidCreateJobRequest(commandParams);
@@ -195,14 +195,14 @@ class ArgumentParser {
 	/**
 	 * Sends a link request to the StarExec server and returns a status code
 	 * indicating the result of the request
-	 * 
+	 *
 	 * @param commandParams The parameters given by the user at the command
 	 *        line.
 	 * @param type The type of primitive being copied.
 	 * @return An integer error code where 0 indicates success and a negative
 	 *         number is an error.
 	 */
-	protected int linkPrimitives(HashMap<String, String> commandParams, String type) {
+	protected int linkPrimitives(Map<String, String> commandParams, String type) {
 
 		try {
 			int valid = CommandValidator.isValidCopyRequest(commandParams, type);
@@ -224,13 +224,13 @@ class ArgumentParser {
 	/**
 	 * This handles the case where the from parameter is missing, which is
 	 * allowed in link or copy commands.
-	 * 
+	 *
 	 * @param commandParams The parameters given by the user at the command
 	 *        line.
 	 * @return the from parameter's integer value, or null if there is no such
 	 *         parameter.
 	 */
-	protected Integer getParamFrom(HashMap<String, String> commandParams) {
+	protected Integer getParamFrom(Map<String, String> commandParams) {
 		String sfrom = commandParams.get(C.PARAM_FROM);
 		Integer ifrom = null;
 		if (sfrom != null)
@@ -241,14 +241,14 @@ class ArgumentParser {
 	/**
 	 * Sends a copy or link request to the StarExec server and returns a status
 	 * code indicating the result of the request
-	 * 
+	 *
 	 * @param commandParams The parameters given by the user at the command
 	 *        line.
 	 * @param type The type of primitive being copied.
 	 * @return An integer error code where 0 indicates success and a negative
 	 *         number is an error.
 	 */
-	protected List<Integer> copyPrimitives(HashMap<String, String> commandParams, String type) {
+	protected List<Integer> copyPrimitives(Map<String, String> commandParams, String type) {
 		List<Integer> fail = new ArrayList<>();
 		try {
 			int valid = CommandValidator.isValidCopyRequest(commandParams, type);
@@ -271,14 +271,14 @@ class ArgumentParser {
 
 	/**
 	 * Creates a subspace of an existing space on StarExec
-	 * 
-	 * @param commandParams A HashMap containing key/value pairs gathered from
+	 *
+	 * @param commandParams A Map containing key/value pairs gathered from
 	 *        user input at the command line
 	 * @return the new space ID on success and a negative error code otherwise
 	 * @author Eric Burns
 	 */
 
-	protected int createSubspace(HashMap<String, String> commandParams) {
+	protected int createSubspace(Map<String, String> commandParams) {
 		try {
 			int valid = CommandValidator.isValidCreateSubspaceRequest(commandParams);
 			if (valid < 0) {
@@ -315,13 +315,13 @@ class ArgumentParser {
 
 	/**
 	 * Removes the association between a primitive and a space on StarExec
-	 * 
+	 *
 	 * @param commandParams Parameters given by the user
 	 * @param type The type of primitive being remove
 	 * @return 0 on success, and a negative error code on failure
 	 * @author Eric Burns
 	 */
-	protected int removePrimitive(HashMap<String, String> commandParams, String type) {
+	protected int removePrimitive(Map<String, String> commandParams, String type) {
 		try {
 			int valid = CommandValidator.isValidRemoveRequest(commandParams, type);
 			if (valid < 0) {
@@ -340,37 +340,37 @@ class ArgumentParser {
 
 	/**
 	 * Resumes a job on starexec that was paused previously
-	 * 
+	 *
 	 * @param commandParams Parameters given by the user at the command line.
 	 *        Should include an ID
 	 * @return 0 on success or a negative error code on failure
 	 */
 
-	protected int resumeJob(HashMap<String, String> commandParams) {
+	protected int resumeJob(Map<String, String> commandParams) {
 		return pauseOrResumeJob(commandParams, false);
 	}
 
 	/**
 	 * Pauses a job that is currently running on starexec
-	 * 
+	 *
 	 * @param commandParams Parameters given by the user at the command line.
 	 *        Should include an ID
 	 * @return 0 on success or a negative error code on failure
 	 */
 
-	protected int pauseJob(HashMap<String, String> commandParams) {
+	protected int pauseJob(Map<String, String> commandParams) {
 		return pauseOrResumeJob(commandParams, true);
 	}
 
 	/**
 	 * Pauses or resumes a job depending on the value of pause
-	 * 
+	 *
 	 * @param commandParams Parameters given by the user at the command line
 	 * @param pause Pauses a job if true and resumes it if false
 	 * @return 0 on success or a negative error code on failure
 	 */
 
-	private int pauseOrResumeJob(HashMap<String, String> commandParams, boolean pause) {
+	private int pauseOrResumeJob(Map<String, String> commandParams, boolean pause) {
 		try {
 			int valid = CommandValidator.isValidPauseOrResumeRequest(commandParams);
 			if (valid < 0) {
@@ -383,7 +383,7 @@ class ArgumentParser {
 
 	}
 
-	protected int rerunPair(HashMap<String, String> commandParams) {
+	protected int rerunPair(Map<String, String> commandParams) {
 		try {
 			int valid = CommandValidator.isValidRerunRequest(commandParams);
 			if (valid < 0) {
@@ -395,7 +395,7 @@ class ArgumentParser {
 		}
 	}
 
-	protected int rerunJob(HashMap<String, String> commandParams) {
+	protected int rerunJob(Map<String, String> commandParams) {
 		try {
 			int valid = CommandValidator.isValidRerunRequest(commandParams);
 			if (valid < 0) {
@@ -409,15 +409,15 @@ class ArgumentParser {
 
 	/**
 	 * Deletes a primitive on StarExec
-	 * 
-	 * @param commandParams A HashMap of key/value pairs given by the user at
+	 *
+	 * @param commandParams A Map of key/value pairs given by the user at
 	 *        the command line
 	 * @param type -- The type of primitive to delete
 	 * @return 0 on success and a negative integer otherwise
 	 * @author Eric Burns
 	 */
 
-	protected int deletePrimitive(HashMap<String, String> commandParams, String type) {
+	protected int deletePrimitive(Map<String, String> commandParams, String type) {
 		try {
 			int valid = CommandValidator.isValidDeleteRequest(commandParams);
 			if (valid < 0) {
@@ -434,7 +434,7 @@ class ArgumentParser {
 	/**
 	 * Function for downloading archives from StarExec with the given parameters
 	 * and file output location.
-	 * 
+	 *
 	 * @param commandParams A list of name/value pairs that the user entered
 	 *        into the command line
 	 * @return 0 on success, a negative integer on error
@@ -442,7 +442,7 @@ class ArgumentParser {
 	 */
 
 	protected int downloadArchive(String type, Integer since, Long lastModified, Boolean hierarchy, String procClass,
-			HashMap<String, String> commandParams) {
+			Map<String, String> commandParams) {
 		try {
 			int valid = CommandValidator.isValidDownloadRequest(commandParams, type, since);
 			if (valid < 0) {
@@ -486,18 +486,18 @@ class ArgumentParser {
 	/**
 	 * Lists the IDs and names of some kind of primitives in a given space or by
 	 * user, depending on the parameters given
-	 * 
+	 *
 	 * @param commandParams Parameters given by the user at the command line
 	 * @return An integer error code with 0 indicating success and a negative
 	 *         number indicating an error
 	 * @author Eric Burns
 	 */
-	protected HashMap<Integer, String> listPrimsBySpaceOrUser(String type, HashMap<String, String> commandParams) {
-		HashMap<Integer, String> errorMap = new HashMap<>();
+	protected Map<Integer, String> listPrimsBySpaceOrUser(String type, Map<String, String> commandParams) {
+		Map<Integer, String> errorMap = new HashMap<>();
 
 		try {
 
-			HashMap<String, String> urlParams = new HashMap<>();
+			Map<String, String> urlParams = new HashMap<>();
 			urlParams.put("id", commandParams.get(C.PARAM_ID));
 			urlParams.put(C.FORMPARAM_TYPE, type);
 			int valid = CommandValidator.isValidGetPrimRequest(urlParams, commandParams);
@@ -530,13 +530,13 @@ class ArgumentParser {
 
 	/**
 	 * Sets a space or space hierarchy as either public or private
-	 * 
+	 *
 	 * @param commandParams Parameters given by the user at the command line
 	 * @param setPublic Set public if true and private if false
 	 * @return 0 if successful and a negative error code otherwise
 	 * @author Eric Burns
 	 */
-	protected int setSpaceVisibility(HashMap<String, String> commandParams, boolean setPublic) {
+	protected int setSpaceVisibility(Map<String, String> commandParams, boolean setPublic) {
 		try {
 
 			int valid = CommandValidator.isValidSetSpaceVisibilityRequest(commandParams);
@@ -558,13 +558,13 @@ class ArgumentParser {
 	/**
 	 * This function updates one of the default settings of the current Starexec
 	 * user
-	 * 
+	 *
 	 * @param setting The field to assign a new value to
 	 * @param commandParams Parameters given by the user at the command line
 	 * @return A code indicating the success of the operation
 	 * @author Eric Burns
 	 */
-	protected int setUserSetting(String setting, HashMap<String, String> commandParams) {
+	protected int setUserSetting(String setting, Map<String, String> commandParams) {
 
 		int valid = CommandValidator.isValidSetUserSettingRequest(commandParams);
 		if (valid < 0) {
@@ -576,16 +576,16 @@ class ArgumentParser {
 	}
 
 	/**
-	 * This method takes in a HashMap mapping String keys to String values and
+	 * This method takes in a Map mapping String keys to String values and
 	 * creates and HTTP POST request that pushes a solver to Starexec
-	 * 
+	 *
 	 * @param commandParams The parameters from the command line. "f" or "url",
 	 *        and "id" are required.
 	 * @return A status code indicating success or failure
 	 * @author Eric Burns
 	 */
 
-	protected int uploadBenchmarks(HashMap<String, String> commandParams) {
+	protected int uploadBenchmarks(Map<String, String> commandParams) {
 		int valid = CommandValidator.isValidUploadBenchmarkRequest(commandParams);
 		if (valid < 0) {
 			return valid;
@@ -642,7 +642,7 @@ class ArgumentParser {
 
 	/**
 	 * This function handles user requests for uploading a space XML archive.
-	 * 
+	 *
 	 * @param commandParams The key/value pairs given by the user at the command
 	 *        line. Should contain ID and File keys
 	 * @return the new configuration ID on success, and a negative error code
@@ -650,7 +650,7 @@ class ArgumentParser {
 	 * @author Eric Burns
 	 */
 
-	protected int uploadConfiguration(HashMap<String, String> commandParams) {
+	protected int uploadConfiguration(Map<String, String> commandParams) {
 		try {
 
 			int valid = CommandValidator.isValidUploadConfigRequest(commandParams);
@@ -678,9 +678,9 @@ class ArgumentParser {
 	}
 
 	/**
-	 * This method takes in a HashMap mapping String keys to String values and
+	 * This method takes in a Map mapping String keys to String values and
 	 * creates and HTTP POST request that pushes a processor to Starexec
-	 * 
+	 *
 	 * @param commandParams The parameters from the command line. A file and an
 	 *        ID are required.
 	 * @return The new processor ID on success, or a negative error code on
@@ -688,7 +688,7 @@ class ArgumentParser {
 	 * @author Eric Burns
 	 */
 
-	private int uploadProcessor(HashMap<String, String> commandParams, String type) {
+	private int uploadProcessor(Map<String, String> commandParams, String type) {
 
 		int valid = CommandValidator.isValidUploadProcessorRequest(commandParams);
 		if (valid < 0) {
@@ -716,47 +716,47 @@ class ArgumentParser {
 
 	/**
 	 * Handles requests for uploading post-processors.
-	 * 
+	 *
 	 * @param commandParams The key/value pairs given by the user at the command
 	 *        line. A file and an ID are required
 	 * @return 0 on success and a negative error code otherwise
 	 * @author Eric Burns
 	 */
 
-	protected int uploadPostProc(HashMap<String, String> commandParams) {
+	protected int uploadPostProc(Map<String, String> commandParams) {
 		return uploadProcessor(commandParams, "post");
 	}
 
 	/**
 	 * Handles requests for uploading pre-processors.
-	 * 
+	 *
 	 * @param commandParams The key/value pairs given by the user at the command
 	 *        line. A file and an ID are required
 	 * @return 0 on success and a negative error code otherwise
 	 * @author Eric Burns
 	 */
 
-	protected int uploadPreProc(HashMap<String, String> commandParams) {
+	protected int uploadPreProc(Map<String, String> commandParams) {
 		return uploadProcessor(commandParams, "pre");
 	}
 
 	/**
 	 * Handles requests for uploading benchmark processors.
-	 * 
+	 *
 	 * @param commandParams The key/value pairs given by the user at the command
 	 *        line. A file and an ID are required
 	 * @return 0 on success and a negative error code otherwise
 	 * @author Eric Burns
 	 */
 
-	protected int uploadBenchProc(HashMap<String, String> commandParams) {
+	protected int uploadBenchProc(Map<String, String> commandParams) {
 		return uploadProcessor(commandParams, R.BENCHMARK);
 	}
 
 	/**
 	 * This function handles user requests for uploading an xml archive (space
 	 * or job).
-	 * 
+	 *
 	 * @param commandParams The key/value pairs given by the user at the command
 	 *        line. Should contain ID and File keys
 	 * @param isJobXML true if job xml upload, false otherwise
@@ -764,7 +764,7 @@ class ArgumentParser {
 	 * @author Julio Cervantes
 	 */
 
-	protected List<Integer> uploadXML(HashMap<String, String> commandParams, boolean isJobXML) {
+	protected List<Integer> uploadXML(Map<String, String> commandParams, boolean isJobXML) {
 		List<Integer> fail = new ArrayList<>();
 
 		try {
@@ -785,11 +785,11 @@ class ArgumentParser {
 	/**
 	 * Prints out the status of a benchmark upload request to stdout, assuming
 	 * the status could be found
-	 * 
+	 *
 	 * @param commandParams
 	 * @return 0 on success and a negative error code otherwise
 	 */
-	protected int printBenchStatus(HashMap<String, String> commandParams) {
+	protected int printBenchStatus(Map<String, String> commandParams) {
 		int valid = CommandValidator.isValidPrintBenchUploadStatusRequest(commandParams);
 		if (valid < 0) {
 			return valid;
@@ -803,8 +803,8 @@ class ArgumentParser {
 		}
 	}
 
-	protected Map<String, String> getPrimitiveAttributes(HashMap<String, String> commandParams, String type) {
-		HashMap<String, String> failMap = new HashMap<>();
+	protected Map<String, String> getPrimitiveAttributes(Map<String, String> commandParams, String type) {
+		Map<String, String> failMap = new HashMap<>();
 		try {
 			int valid = CommandValidator.isValidGetPrimitiveAttributesRequest(commandParams);
 			if (valid < 0) {
@@ -823,9 +823,9 @@ class ArgumentParser {
 	}
 
 	/**
-	 * This method takes in a HashMap mapping String keys to String values and
+	 * This method takes in a Map mapping String keys to String values and
 	 * creates and HTTP POST request that pushes a solver to Starexec
-	 * 
+	 *
 	 * @param commandParams The parameters from the command line. A file or url
 	 *        and and ID are required.
 	 * @return The ID of the newly uploaded solver on success, or a negative
@@ -833,7 +833,7 @@ class ArgumentParser {
 	 * @author Eric Burns
 	 */
 
-	protected int uploadSolver(HashMap<String, String> commandParams) {
+	protected int uploadSolver(Map<String, String> commandParams) {
 		int valid = CommandValidator.isValidSolverUploadRequest(commandParams);
 		if (valid < 0) {
 			return valid;
@@ -917,7 +917,7 @@ class ArgumentParser {
 	/**
 	 * Returns the string name given to a primitive if none is specified. The
 	 * date is used currently
-	 * 
+	 *
 	 * @param prefix A prefix which should be added to the name
 	 * @return A string that will be valid for use as a primitive on Starexec
 	 * @author Eric Burns
