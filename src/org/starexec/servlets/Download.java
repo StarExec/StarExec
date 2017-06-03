@@ -492,6 +492,7 @@ public class Download extends HttpServlet {
 	 */
 	private static void addJobPairsToZipOutput(List<JobPair> pairs, HttpServletResponse response, String baseName, boolean useSpacePath, Long lastModified) {
 		if (pairs.size() == 0) {
+			response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 			return; // don't try to make a zip if there are no pairs
 		}
 		try {
