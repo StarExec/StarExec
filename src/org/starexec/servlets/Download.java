@@ -583,38 +583,37 @@ public class Download extends HttpServlet {
 			// it does NOT include running pairs
 			int pairsFound = 0;
 			int runningPairsFound = 0;
-			List<JobPair> pairsToRemove = new ArrayList<>();
-			for (JobPair x : pairs) {
+
+			final Iterator it = pairs.iterator();
+			while (it.hasNext()) {
+				final JobPair x = (JobPair) it.next();
 				log.trace("found pair id = " + x.getId() + " with completion id = " + x.getCompletionId());
+
 				if (x.getCompletionId() > maxCompletion) {
 					maxCompletion = x.getCompletionId();
 				}
+
 				if (x.getStatus().getCode().finishedRunning()) {
-					pairsFound++;
-				} else if (!jobCopiesBackIncrementally) {
-					pairsToRemove.add(x);
+					++pairsFound;
+				} else if (jobCopiesBackIncrementally) {
+					++runningPairsFound;
 				} else {
-					runningPairsFound++;
+					it.remove();
 				}
 			}
-			//If they do not want the output of running pairs
-			if (!jobCopiesBackIncrementally) {
-				for (JobPair x : pairsToRemove) {
-					pairs.remove(x);
-				}
-			}
+
 			log.debug("Older pairs: " + String.valueOf(olderPairs));
 			log.debug("Pairs-Found: " + String.valueOf(pairsFound));
-			if (jobCopiesBackIncrementally) {
-				log.debug("Running Pairs : " + String.valueOf(runningPairsFound));
-			}
 			log.debug("Total-Pairs : " + String.valueOf(Jobs.getPairCount(jobId)));
 			log.debug("Max Completion: " + String.valueOf(maxCompletion));
 			response.addCookie(new Cookie("Older-Pairs", String.valueOf(olderPairs)));
 			response.addCookie(new Cookie("Pairs-Found", String.valueOf(pairsFound)));
 			response.addCookie(new Cookie("Total-Pairs", String.valueOf(Jobs.getPairCount(jobId))));
 			response.addCookie(new Cookie("Max-Completion", String.valueOf(maxCompletion)));
-			response.addCookie(new Cookie("Running-Pairs", String.valueOf(runningPairsFound)));
+			if (jobCopiesBackIncrementally) {
+				log.debug("Running Pairs : " + String.valueOf(runningPairsFound));
+				response.addCookie(new Cookie("Running-Pairs", String.valueOf(runningPairsFound)));
+			}
 			log.debug("added the max-completion cookie, starting to write output for job id = " + jobId);
 			String baseName = "Job" + String.valueOf(jobId) + "_output";
 
