@@ -2243,9 +2243,25 @@ public class Connection {
 
 			get = (HttpGet) setHeaders(get);
 			response = executeGetOrPost(get);
+			final Map<String, String> cookies = getCookies(response);
+
+			switch (response.getStatusLine().getStatusCode()) {
+			case 200:
+				break; // Everything looks good so far
+			case 304:
+				return C.SUCCESS_NOFILE;
+			case 400:
+			case 401:
+			case 403:
+			case 404:
+				final String errorMessage = cookies.get(C.STATUS_MESSAGE_COOKIE);
+				log.log("Content-Disposition header was missing.");
+				log.log("Server status message: " + errorMessage);
+				setLastError(errorMessage);
+				return Status.ERROR_ARCHIVE_NOT_FOUND;
+			}
 
 			final boolean fileFound = response.getFirstHeader("Content-Disposition") != null;
-			final Map<String, String> cookies = getCookies(response);
 			boolean done = false;
 			int lastSeen = -1;
 			int totalPairs = 0;
