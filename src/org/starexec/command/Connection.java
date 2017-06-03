@@ -2243,11 +2243,15 @@ public class Connection {
 
 			get = (HttpGet) setHeaders(get);
 			response = executeGetOrPost(get);
-			Boolean done = false;
 
-			boolean fileFound = response.getFirstHeader("Content-Disposition") != null;
-
+			final boolean fileFound = response.getFirstHeader("Content-Disposition") != null;
 			final Map<String, String> cookies = getCookies(response);
+			boolean done = false;
+			int lastSeen = -1;
+			int totalPairs = 0;
+			int pairsFound = 0;
+			int oldPairs = 0;
+			int runningPairs = 0;
 
 			if (!fileFound) {
 				final String errorMessage = cookies.get(C.STATUS_MESSAGE_COOKIE);
@@ -2257,28 +2261,23 @@ public class Connection {
 				return Status.ERROR_ARCHIVE_NOT_FOUND;
 			}
 
-			// TODO: handle these prints better
-			Integer totalPairs = null;
-			Integer pairsFound = null;
-			Integer oldPairs = null;
-			// Integer runningPairsFound=null;
-			int lastSeen = -1;
-			// if we're sending 'since,' it means this is a request for new job
-			// data
+			// if we're sending 'since,' it means this is a request for new job data
 			boolean isNewJobRequest = urlParams.containsKey(C.FORMPARAM_SINCE);
-			boolean isNewOutputRequest = isNewJobRequest && urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB_OUTPUT);
 			if (isNewJobRequest) {
+				boolean isNewOutputRequest = urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB_OUTPUT);
 
 				totalPairs = Integer.parseInt(cookies.get("Total-Pairs"));
 				pairsFound = Integer.parseInt(cookies.get("Pairs-Found"));
+				oldPairs = Integer.parseInt(cookies.get("Older-Pairs"));
 
-				if (isNewOutputRequest && pairsFound == 0) {
+				/* Running-Pairs is not always sent, so we need to default to 0
+				 */
+				runningPairs = Integer.parseInt(cookies.getOrDefault("Running-Pairs", "0"));
+
+				if (isNewOutputRequest && pairsFound == 0 && runningPairs == 0) {
 					// There are no new pairs so the zip will be empty.
 					return C.SUCCESS_NOFILE;
 				}
-
-				oldPairs = Integer.parseInt(cookies.get("Older-Pairs"));
-				// runningPairsFound=Integer.parseInt(cookies.get("Running-Pairs"));
 
 				// check to see if the job is complete
 				done = totalPairs == (pairsFound + oldPairs);
@@ -2295,7 +2294,6 @@ public class Connection {
 				}
 			}
 
-
 			// copy file from the HTTPResponse to an output stream
 			File out = new File(filePath);
 			File parent = new File(out.getAbsolutePath().substring(0, out.getAbsolutePath().lastIndexOf(File.separator)));
@@ -2304,7 +2302,6 @@ public class Connection {
 			IOUtils.copy(response.getEntity().getContent(), outs);
 			outs.close();
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
-
 
 			// If it's not a valid zipfile we need to return SUCCESS_NOFILE if
 			// the request was a
@@ -2321,7 +2318,6 @@ public class Connection {
 			// maximum completion index,
 			// which keeps us from downloading the same stuff twice
 			if (urlParams.containsKey(C.FORMPARAM_SINCE) && lastSeen >= 0) {
-
 				if (urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB)) {
 					this.setJobInfoCompletion(id, lastSeen);
 				} else if (urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB_OUTPUT)) {
