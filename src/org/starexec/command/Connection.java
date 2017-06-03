@@ -33,6 +33,8 @@ import org.starexec.util.Validator;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * This class is responsible for communicating with the Starexec server It is
@@ -2279,8 +2281,10 @@ public class Connection {
 				}
 			}
 
+			final Map<String, String> cookies = getCookies(response);
+
 			if (!fileFound) {
-				final String errorMessage = HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE);
+				final String errorMessage = cookies.get(C.STATUS_MESSAGE_COOKIE);
 				log.log("Content-Disposition header was missing.");
 				log.log("Server status message: " + errorMessage);
 				setLastError(errorMessage);
@@ -2299,20 +2303,20 @@ public class Connection {
 			boolean isNewOutputRequest = isNewJobRequest && urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB_OUTPUT);
 			if (isNewJobRequest) {
 
-				totalPairs = Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(), "Total-Pairs"));
-				pairsFound = Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(), "Pairs-Found"));
+				totalPairs = Integer.parseInt(cookies.get("Total-Pairs"));
+				pairsFound = Integer.parseInt(cookies.get("Pairs-Found"));
 
 				if (isNewOutputRequest && pairsFound == 0) {
 					// There are no new pairs so the zip will be empty.
 					return C.SUCCESS_NOFILE;
 				}
 
-				oldPairs = Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(), "Older-Pairs"));
-				// runningPairsFound=Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(),"Running-Pairs"));
+				oldPairs = Integer.parseInt(cookies.get("Older-Pairs"));
+				// runningPairsFound=Integer.parseInt(cookies.get("Running-Pairs"));
 
 				// check to see if the job is complete
 				done = totalPairs == (pairsFound + oldPairs);
-				lastSeen = Integer.parseInt(HTMLParser.extractCookie(response.getAllHeaders(), "Max-Completion"));
+				lastSeen = Integer.parseInt(cookies.get("Max-Completion"));
 				// indicates there was no new information
 				if (lastSeen <= since) {
 					if (done) {
@@ -2707,6 +2711,28 @@ public class Connection {
 		} catch (Exception e) {
 			// ignore
 		}
+	}
+
+	/**
+	 * Returns a Map of all cookies set by a response.
+	 * Cookies are returned as individual Headers of the form:
+	 * Set-Cookie: key=value; expires=Sat, 02 May 2009 23:38:25 GMT
+	 *
+	 * @param response
+	 * @return Map of cookies set by response
+	 */
+	Map<String, String> getCookies(HttpResponse response) {
+		final Map<String, String> cookies = new HashMap<>();
+		final Pattern regex = Pattern.compile("^\\s*([^=]+)=([^;]+)");
+		for (Header h : response.getHeaders("Set-Cookie")) {
+			Matcher matcher = regex.matcher(h.getValue());
+			if (matcher.find()) {
+				final String k = matcher.group(1);
+				final String v = matcher.group(2);
+				cookies.put(k, v);
+			}
+		}
+		return cookies;
 	}
 
 }
