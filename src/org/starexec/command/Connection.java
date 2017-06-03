@@ -2425,7 +2425,7 @@ public class Connection {
 	}
 
 	/**
-	 * Creates a job on Starexec according to the given paramteters
+	 * Creates a job on Starexec according to the given parameters
 	 *
 	 * @param spaceId The ID of the root space for the job
 	 * @param name The name of the job. Must be unique to the space
