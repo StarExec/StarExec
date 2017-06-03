@@ -35,6 +35,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * This class is responsible for communicating with the Starexec server It is
@@ -2246,14 +2247,14 @@ public class Connection {
 			final Map<String, String> cookies = getCookies(response);
 
 			switch (response.getStatusLine().getStatusCode()) {
-			case 200:
+			case HttpServletResponse.SC_OK:
 				break; // Everything looks good so far
-			case 304:
+			case HttpServletResponse.SC_NOT_MODIFIED:
 				return C.SUCCESS_NOFILE;
-			case 400:
-			case 401:
-			case 403:
-			case 404:
+			case HttpServletResponse.SC_BAD_REQUEST:
+			case HttpServletResponse.SC_UNAUTHORIZED:
+			case HttpServletResponse.SC_FORBIDDEN:
+			case HttpServletResponse.SC_NOT_FOUND:
 				final String errorMessage = cookies.get(C.STATUS_MESSAGE_COOKIE);
 				log.log("Content-Disposition header was missing.");
 				log.log("Server status message: " + errorMessage);
