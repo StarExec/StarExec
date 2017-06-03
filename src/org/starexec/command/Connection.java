@@ -166,8 +166,8 @@ public class Connection {
 		return baseURL;
 	}
 
-	protected void setBaseURL(String baseURL1) {
-		this.baseURL = baseURL1;
+	protected void setBaseURL(String baseURL) {
+		this.baseURL = baseURL;
 	}
 
 	/**
@@ -179,8 +179,8 @@ public class Connection {
 		return username;
 	}
 
-	protected void setUsername(String username1) {
-		this.username = username1;
+	protected void setUsername(String username) {
+		this.username = username;
 	}
 
 	/**
@@ -192,8 +192,8 @@ public class Connection {
 		return password;
 	}
 
-	protected void setPassword(String password1) {
-		this.password = password1;
+	protected void setPassword(String password) {
+		this.password = password;
 	}
 
 	protected Map<Integer, PollJobData> getOutputIndices() {
