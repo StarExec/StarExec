@@ -310,7 +310,7 @@ public class Connection {
 
 			int returnCode = response.getStatusLine().getStatusCode();
 
-			if (returnCode == 302) {
+			if (returnCode == HttpServletResponse.SC_FOUND) {
 				int id = CommandValidator.getIdOrMinusOne(HTMLParser.extractCookie(response.getAllHeaders(), "New_ID"));
 				if (id > 0) {
 					return id;
@@ -464,7 +464,7 @@ public class Connection {
 			response = executeGetOrPost(post);
 
 			// we are expecting to be redirected to the page for the processor
-			if (response.getStatusLine().getStatusCode() != 302) {
+			if (response.getStatusLine().getStatusCode() != HttpServletResponse.SC_FOUND) {
 				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE));
 				return Status.ERROR_SERVER;
 			}
@@ -556,7 +556,7 @@ public class Connection {
 
 			int code = response.getStatusLine().getStatusCode();
 			// if space, gives 200 code. if job, gives 302
-			if (code != 200 && code != 302) {
+			if (code != HttpServletResponse.SC_OK && code != HttpServletResponse.SC_FOUND) {
 				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE));
 				ids.add(Status.ERROR_SERVER);
 				return ids;
@@ -944,7 +944,7 @@ public class Connection {
 			response = executeGetOrPost(get);
 
 			// we should get 200, which is the code for ok
-			return response.getStatusLine().getStatusCode() == 200;
+			return response.getStatusLine().getStatusCode() == HttpServletResponse.SC_OK;
 
 		} catch (Exception e) {
 
@@ -1014,9 +1014,8 @@ public class Connection {
 			post = (HttpPost) setHeaders(post);
 			response = executeGetOrPost(post);
 
-			// we should get back an HTTP OK if we're allowed to change the
-			// visibility
-			if (response.getStatusLine().getStatusCode() != 200) {
+			// we should get back an HTTP OK if we're allowed to change the visibility
+			if (response.getStatusLine().getStatusCode() != HttpServletResponse.SC_OK) {
 				return Status.ERROR_BAD_PARENT_SPACE;
 			}
 			return 0;
@@ -1629,7 +1628,7 @@ public class Connection {
 			post = (HttpPost) setHeaders(post);
 
 			response = executeGetOrPost(post);
-			if (response.getStatusLine().getStatusCode() != 302) {
+			if (response.getStatusLine().getStatusCode() != HttpServletResponse.SC_FOUND) {
 				return Status.ERROR_BAD_PARENT_SPACE;
 			}
 			int newID = Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(), "New_ID"));
@@ -1788,7 +1787,7 @@ public class Connection {
 
 			int code = response.getStatusLine().getStatusCode();
 			// if space, gives 200 code. if job, gives 302
-			if (code != 200 && code != 302) {
+			if (code != HttpServletResponse.SC_OK && code != HttpServletResponse.SC_FOUND) {
 				System.out.println("Connection.java : " + code + " " + response.getStatusLine().getReasonPhrase());
 
 			}
