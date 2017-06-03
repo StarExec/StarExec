@@ -1978,13 +1978,7 @@ public class Connection {
 			get = (HttpGet) setHeaders(get);
 			response = executeGetOrPost(get);
 
-			boolean fileFound = false;
-			for (Header x : response.getAllHeaders()) {
-				if (x.getName().equals("Content-Disposition")) {
-					fileFound = true;
-					break;
-				}
-			}
+			boolean fileFound = response.getFirstHeader("Content-Disposition") != null;
 
 			if (!fileFound) {
 				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE));
@@ -2251,14 +2245,7 @@ public class Connection {
 			response = executeGetOrPost(get);
 			Boolean done = false;
 
-			boolean fileFound = false;
-
-			for (Header x : response.getAllHeaders()) {
-				if (x.getName().equals("Content-Disposition")) {
-					fileFound = true;
-					break;
-				}
-			}
+			boolean fileFound = response.getFirstHeader("Content-Disposition") != null;
 
 			final Map<String, String> cookies = getCookies(response);
 
