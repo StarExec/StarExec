@@ -949,7 +949,7 @@ class CommandParser {
 			System.out
 					.println("Processing your download request, please wait. This will take some time for large files");
 			serverStatus = parser.downloadArchive(type, since, lastModified, hierarchy, procClass, commandParams);
-			if (serverStatus >= 0) {
+			if (serverStatus >= 0 && serverStatus != C.SUCCESS_NOFILE) {
 				System.out.println("Download complete");
 			}
 			return serverStatus;
