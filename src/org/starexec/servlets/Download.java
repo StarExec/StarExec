@@ -20,6 +20,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -490,13 +491,20 @@ public class Download extends HttpServlet {
 	 * be in a flat list of directories with job pair IDs
 	 * @param lastModified Only retrieve files that were modified after the given date, for running job pairs only
 	 */
-	private static void addJobPairsToZipOutput(List<JobPair> pairs, HttpServletResponse response, String baseName, boolean useSpacePath, Long lastModified) {
+	private static void addJobPairsToZipOutput(List<JobPair> pairs, HttpServletResponse response, String baseName, boolean useSpacePath, Long earlyDate) {
 		if (pairs.size() == 0) {
 			response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 			return; // don't try to make a zip if there are no pairs
 		}
+		long lastModified;
+		if (earlyDate != null) {
+			lastModified = earlyDate;
+		} else {
+			lastModified = -1;
+		}
+		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+		ZipOutputStream stream = new ZipOutputStream(buffer);
 		try {
-			ZipOutputStream stream = new ZipOutputStream(response.getOutputStream());
 			for (JobPair p : pairs) {
 				String zipFileNameParent = null;
 				StringBuilder zipFileName = new StringBuilder(baseName);
@@ -511,6 +519,7 @@ public class Download extends HttpServlet {
 				boolean running = p.getStatus().getCode().running();
 				for (File file : files) {
 					if (file.exists()) {
+						long modified;
 						if (file.isDirectory()) {
 							StringBuilder singleFileName = null;
 							if (useSpacePath) {
@@ -523,23 +532,26 @@ public class Download extends HttpServlet {
 								singleFileName.append(File.separator);
 								singleFileName.append(p.getId() + "_output");
 							}
-							if (!running || lastModified == null) {
-								ArchiveUtil.addDirToArchive(stream, file, singleFileName.toString());
+							if (!running || earlyDate == null) {
+								modified = ArchiveUtil.addDirToArchive(stream, file, singleFileName.toString());
 							} else {
-								ArchiveUtil.addDirToArchive(stream, file, singleFileName.toString(), lastModified);
+								modified = ArchiveUtil.addDirToArchive(stream, file, singleFileName.toString(), earlyDate);
 							}
 						} else {
 							StringBuilder singleFileName = new StringBuilder(zipFileName);
 							//singleFileName.append(File.separator);
 							//singleFileName.append(p.getBench().getName());
-							if (!running || lastModified == null) {
-								ArchiveUtil.addFileToArchive(stream, file, singleFileName.toString());
+							if (!running || earlyDate == null) {
+								modified = ArchiveUtil.addFileToArchive(stream, file, singleFileName.toString());
 
 							} else {
-								ArchiveUtil.addFileToArchive(stream, file, singleFileName.toString(), lastModified);
+								modified = ArchiveUtil.addFileToArchive(stream, file, singleFileName.toString(), earlyDate);
 							}
 						}
 
+						if (modified > lastModified) {
+							lastModified = modified;
+						}
 
 					} else {
 						//if we can't find output for the pair, just put an empty file there
@@ -548,6 +560,14 @@ public class Download extends HttpServlet {
 				}
 
 			}
+			if (lastModified == -1 || lastModified == earlyDate) {
+				response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+			} else {
+				response.setDateHeader("Last-Modified", lastModified);
+			}
+			stream.finish();
+			buffer.writeTo(response.getOutputStream());
+			response.getOutputStream().close();
 			stream.close();
 		} catch (Exception e) {
 			log.error("addJobPairsToZipOutput says " + e.getMessage(), e);

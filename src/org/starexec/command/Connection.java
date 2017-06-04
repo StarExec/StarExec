@@ -15,6 +15,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.params.ClientPNames;
+import org.apache.http.client.utils.DateUtils;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
@@ -2328,7 +2329,13 @@ public class Connection {
 				return statusCode.get();
 			}
 
-			long lastModified = ArchiveUtil.getMostRecentlyModifiedFileInZip(out);
+			final Header modifiedHeader = response.getFirstHeader("Last-Modified");
+			long lastModified;
+			if (modifiedHeader != null) {
+				lastModified = DateUtils.parseDate(modifiedHeader.getValue()).getTime();
+			} else {
+				lastModified = 0;
+			}
 
 			// only after we've successfully saved the file should we update the
 			// maximum completion index,

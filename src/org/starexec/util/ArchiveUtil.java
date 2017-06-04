@@ -370,11 +370,15 @@ public class ArchiveUtil {
 	 * @param zipFileName
 	 * @param earlyDate Milliseconds since the epoch. Only get files modified after this (non-inclusive)
 	 * @throws IOException
+	 * @return max of timestamp and earlyDate
 	 */
-	public static void addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName, long earlyDate) throws IOException {
-		if (srcFile.lastModified() > earlyDate) {
+	public static long addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName, long earlyDate) throws IOException {
+		long timestamp = srcFile.lastModified();
+		if (timestamp > earlyDate) {
 			addFileToArchive(zos, srcFile, zipFileName);
+			return timestamp;
 		}
+		return earlyDate;
 	}
 
 	/**
@@ -384,44 +388,27 @@ public class ArchiveUtil {
 	 * @param srcFile
 	 * @param zipFileName
 	 * @throws IOException
+	 * @return timestamp of file added
 	 */
-	public static void addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {
+	public static long addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {
 		ZipEntry entry = new ZipEntry(zipFileName);
 		try {
+			long timestamp = srcFile.lastModified();
 			zos.putNextEntry(entry);
 			FileInputStream input = new FileInputStream(srcFile);
-			entry.setLastModifiedTime(FileTime.fromMillis(srcFile.lastModified()));
+			entry.setLastModifiedTime(FileTime.fromMillis(timestamp));
 			IOUtils.copy(input, zos);
 			zos.closeEntry();
 			input.close();
+			return timestamp;
 		} catch (java.io.FileNotFoundException e) {
 			if (srcFile.getCanonicalPath() == srcFile.getAbsolutePath()) {
 				throw e;
 			}
 			log.debug("File not found exception probably broken symlink for: " + srcFile.getAbsolutePath());
+			return -1;
 		}
 
-	}
-
-	/**
-	 * Given a zip file, returns the file that was modified most recently. Directories are not checked.
-	 *
-	 * @param file
-	 * @return The lastModified timestamp of the file that was most recently changed in the archive
-	 * @throws IOException
-	 */
-	public static long getMostRecentlyModifiedFileInZip(File file) throws IOException {
-		long max = 0;
-		ZipFile temp = new ZipFile(file);
-		Enumeration<ZipArchiveEntry> x = temp.getEntries();
-		while (x.hasMoreElements()) {
-			ZipArchiveEntry e = x.nextElement();
-			if (!e.isDirectory()) {
-				max = Math.max(max, e.getLastModifiedTime().toMillis());
-			}
-		}
-		temp.close();
-		return max;
 	}
 
 	/**
@@ -433,16 +420,25 @@ public class ArchiveUtil {
 	 * @param zipFileName
 	 * @param earlyDate
 	 * @throws IOException
+	 * @return max of earlyDate and timestamp of most recently modified file
 	 */
-	public static void addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName, long earlyDate) throws IOException {
-		File[] files = srcFile.listFiles();
-		for (int index = 0; index < files.length; index++) {
-			if (files[index].isDirectory()) {
-				addDirToArchive(zos, files[index], zipFileName + File.separator + files[index].getName(), earlyDate);
-				continue;
+	public static long addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName, long earlyDate) throws IOException {
+		long maxTime = earlyDate;
+		final File[] files = srcFile.listFiles();
+		for (File file : files) {
+			final long t;
+			final String fileName = zipFileName + File.separator + file.getName();
+			if (file.isDirectory()) {
+				t = addDirToArchive(zos, file, fileName, earlyDate);
+			} else {
+				t = addFileToArchive(zos, file, fileName, earlyDate);
 			}
-			addFileToArchive(zos, files[index], zipFileName + File.separator + files[index].getName(), earlyDate);
+
+			if (t > maxTime) {
+				maxTime = t;
+			}
 		}
+		return maxTime;
 	}
 
 	/**
@@ -453,15 +449,8 @@ public class ArchiveUtil {
 	 * @param zipFileName
 	 * @throws IOException
 	 */
-	public static void addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {
-		File[] files = srcFile.listFiles();
-		for (int index = 0; index < files.length; index++) {
-			if (files[index].isDirectory()) {
-				addDirToArchive(zos, files[index], zipFileName + File.separator + files[index].getName());
-				continue;
-			}
-			addFileToArchive(zos, files[index], zipFileName + File.separator + files[index].getName());
-		}
+	public static long addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {
+		return addDirToArchive(zos, srcFile, zipFileName, -1);
 	}
 
 	/**
