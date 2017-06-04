@@ -365,6 +365,7 @@ public class Connection {
 
 		if (C.debugMode) {
 			log.log("Got response from server.");
+			log.log("HTTP Status: " + response.getStatusLine().getStatusCode());
 			List<Header> responseHeaders = Arrays.asList(response.getAllHeaders());
 			log.log("Headers for response: ");
 			for (Header header : responseHeaders) {
