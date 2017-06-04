@@ -492,10 +492,6 @@ public class Download extends HttpServlet {
 	 * @param lastModified Only retrieve files that were modified after the given date, for running job pairs only
 	 */
 	private static void addJobPairsToZipOutput(List<JobPair> pairs, HttpServletResponse response, String baseName, boolean useSpacePath, Long earlyDate) {
-		if (pairs.size() == 0) {
-			response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-			return; // don't try to make a zip if there are no pairs
-		}
 		long lastModified;
 		if (earlyDate != null) {
 			lastModified = earlyDate;
@@ -564,9 +560,9 @@ public class Download extends HttpServlet {
 				response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 			} else {
 				response.setDateHeader("Last-Modified", lastModified);
+				stream.finish();
+				buffer.writeTo(response.getOutputStream());
 			}
-			stream.finish();
-			buffer.writeTo(response.getOutputStream());
 			response.getOutputStream().close();
 			stream.close();
 		} catch (Exception e) {
