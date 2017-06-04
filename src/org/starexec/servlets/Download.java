@@ -489,7 +489,7 @@ public class Download extends HttpServlet {
 	 * @param baseName The top level name to give to the archive
 	 * @param useSpacePath If true, pair output will be in a directory including the pair space path. If false, they will simply
 	 * be in a flat list of directories with job pair IDs
-	 * @param lastModified Only retrieve files that were modified after the given date, for running job pairs only
+	 * @param earlyDate Only retrieve files that were modified after the given date, for running job pairs only
 	 */
 	private static void addJobPairsToZipOutput(List<JobPair> pairs, HttpServletResponse response, String baseName, boolean useSpacePath, Long earlyDate) {
 		long lastModified;
