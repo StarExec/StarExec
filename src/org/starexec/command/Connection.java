@@ -2246,16 +2246,12 @@ public class Connection {
 			get = (HttpGet) setHeaders(get);
 			response = executeGetOrPost(get);
 			final Map<String, String> cookies = getCookies(response);
+			final int httpStatus = response.getStatusLine().getStatusCode();
+			final boolean fileFound = response.getFirstHeader("Content-Disposition") != null;
 
-			switch (response.getStatusLine().getStatusCode()) {
-			case HttpServletResponse.SC_OK:
-				break; // Everything looks good so far
-			case HttpServletResponse.SC_NOT_MODIFIED:
-				return C.SUCCESS_NOFILE;
-			case HttpServletResponse.SC_BAD_REQUEST:
-			case HttpServletResponse.SC_UNAUTHORIZED:
-			case HttpServletResponse.SC_FORBIDDEN:
-			case HttpServletResponse.SC_NOT_FOUND:
+			Integer lastSeen = null;
+
+			if (!fileFound && httpStatus != HttpServletResponse.SC_NOT_MODIFIED) {
 				final String errorMessage = cookies.get(C.STATUS_MESSAGE_COOKIE);
 				log.log("Content-Disposition header was missing.");
 				log.log("Server status message: " + errorMessage);
@@ -2263,52 +2259,59 @@ public class Connection {
 				return Status.ERROR_ARCHIVE_NOT_FOUND;
 			}
 
-			final boolean fileFound = response.getFirstHeader("Content-Disposition") != null;
-			boolean done = false;
-			int lastSeen = -1;
-			int totalPairs = 0;
-			int pairsFound = 0;
-			int oldPairs = 0;
-			int runningPairs = 0;
-
-			if (!fileFound) {
-				final String errorMessage = cookies.get(C.STATUS_MESSAGE_COOKIE);
-				log.log("Content-Disposition header was missing.");
-				log.log("Server status message: " + errorMessage);
-				setLastError(errorMessage);
-				return Status.ERROR_ARCHIVE_NOT_FOUND;
+			final Header modifiedHeader = response.getFirstHeader("Last-Modified");
+			final long lastModified;
+			if (modifiedHeader != null) {
+				lastModified = DateUtils.parseDate(modifiedHeader.getValue()).getTime();
+			} else {
+				lastModified = 0;
 			}
 
 			// if we're sending 'since,' it means this is a request for new job data
-			boolean isNewJobRequest = urlParams.containsKey(C.FORMPARAM_SINCE);
+			final boolean isNewJobRequest = urlParams.containsKey(C.FORMPARAM_SINCE);
+			final boolean isNewOutputRequest = urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB_OUTPUT);
+			final boolean isNewInfoRequest = urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB);
+			boolean jobDone = false;
 			if (isNewJobRequest) {
-				boolean isNewOutputRequest = urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB_OUTPUT);
-
-				totalPairs = Integer.parseInt(cookies.get("Total-Pairs"));
-				pairsFound = Integer.parseInt(cookies.get("Pairs-Found"));
-				oldPairs = Integer.parseInt(cookies.get("Older-Pairs"));
-
 				/* Running-Pairs is not always sent, so we need to default to 0
 				 */
-				runningPairs = Integer.parseInt(cookies.getOrDefault("Running-Pairs", "0"));
+				final int runningPairs = Integer.parseInt(cookies.getOrDefault("Running-Pairs", "0"));
+				final int foundPairs = Integer.parseInt(cookies.get("Pairs-Found"));
+				final int totalPairs = Integer.parseInt(cookies.get("Total-Pairs"));
+				final int oldPairs = Integer.parseInt(cookies.get("Older-Pairs"));
 
-				if (isNewOutputRequest && pairsFound == 0 && runningPairs == 0) {
+				final boolean jobStarted = foundPairs != 0 || runningPairs != 0;
+				jobDone = totalPairs == (foundPairs + oldPairs);
+				if (isNewOutputRequest && !jobStarted && false) {
 					// There are no new pairs so the zip will be empty.
 					return C.SUCCESS_NOFILE;
 				}
 
 				// check to see if the job is complete
-				done = totalPairs == (pairsFound + oldPairs);
 				lastSeen = Integer.parseInt(cookies.get("Max-Completion"));
-				// indicates there was no new information
-				if (lastSeen <= since) {
-					if (done) {
+				if (lastSeen <= since) { // indicates there was no new information
+					if (jobDone) {
 						return C.SUCCESS_JOBDONE;
-					}
-					if (!isNewOutputRequest) {
+					} else if (!isNewOutputRequest) {
 						return C.SUCCESS_NOFILE;
 						// TODO: What to do in this situation?
 					}
+				}
+
+				System.out.printf(
+						"completed pairs found =%d-%d/ (highest=%d)\n",
+						oldPairs + 1,
+						oldPairs + foundPairs,
+						totalPairs,
+						lastSeen
+				);
+			}
+
+			if (httpStatus == HttpServletResponse.SC_NOT_MODIFIED) {
+				if (jobDone) {
+					return C.SUCCESS_JOBDONE;
+				} else {
+					return C.SUCCESS_NOFILE;
 				}
 			}
 
@@ -2321,45 +2324,26 @@ public class Connection {
 			outs.close();
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 
-			// If it's not a valid zipfile we need to return SUCCESS_NOFILE if
-			// the request was a
-			// new output request, otherwise throw the exception. Don't return
-			// anything if it is a valid zipfile.
-			Optional<Integer> statusCode = checkIfValidZipFile(out);
-			if (statusCode.isPresent()) {
-				return statusCode.get();
-			}
-
-			final Header modifiedHeader = response.getFirstHeader("Last-Modified");
-			long lastModified;
-			if (modifiedHeader != null) {
-				lastModified = DateUtils.parseDate(modifiedHeader.getValue()).getTime();
-			} else {
-				lastModified = 0;
+			/* If it's not a valid zipfile we need to return SUCCESS_NOFILE
+			 * if the request was a new output request, otherwise throw the
+			 * exception. Don't return anything if it is a valid zipfile.
+			 */
+			Optional<Integer> errorCode = checkIfValidZipFile(out);
+			if (errorCode.isPresent()) {
+				return errorCode.get();
 			}
 
 			// only after we've successfully saved the file should we update the
 			// maximum completion index,
 			// which keeps us from downloading the same stuff twice
-			if (urlParams.containsKey(C.FORMPARAM_SINCE) && lastSeen >= 0) {
-				if (urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB)) {
+			if (isNewJobRequest && lastSeen != null) {
+				if (isNewInfoRequest) {
 					this.setJobInfoCompletion(id, lastSeen);
-				} else if (urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB_OUTPUT)) {
+				} else if (isNewOutputRequest) {
 					this.setJobOutCompletion(id, new PollJobData(lastSeen, lastModified));
 				}
-				if (pairsFound != 0) {
-					System.out.println("completed pairs found =" + (oldPairs + 1) + "-" + (oldPairs + pairsFound) + "/" + totalPairs + " (highest=" + lastSeen + ")");
-				}
-				/*
-				 * if(runningPairsFound != 0) {
-				 * System.out.println("output from running pairs found="
-				 * +runningPairsFound); }
-				 */
+			}
 
-			}
-			if (done) {
-				return C.SUCCESS_JOBDONE;
-			}
 			return 0;
 		} catch (IOException e) {
 			log.log("Caught exception in downloadArchive: " + Util.getStackTrace(e));
