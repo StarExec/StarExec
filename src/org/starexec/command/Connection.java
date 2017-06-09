@@ -2267,19 +2267,19 @@ public class Connection {
 				lastModified = 0;
 			}
 
+			/* Running-Pairs is not always sent, so we need to default to 0
+			 */
+			final int runningPairs = Integer.parseInt(cookies.getOrDefault("Running-Pairs", "0"));
+			final int foundPairs = Integer.parseInt(cookies.get("Pairs-Found"));
+			final int totalPairs = Integer.parseInt(cookies.get("Total-Pairs"));
+			final int oldPairs = Integer.parseInt(cookies.get("Older-Pairs"));
+
 			// if we're sending 'since,' it means this is a request for new job data
 			final boolean isNewJobRequest = urlParams.containsKey(C.FORMPARAM_SINCE);
 			final boolean isNewOutputRequest = urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB_OUTPUT);
 			final boolean isNewInfoRequest = urlParams.get(C.FORMPARAM_TYPE).equals(R.JOB);
 			boolean jobDone = false;
 			if (isNewJobRequest) {
-				/* Running-Pairs is not always sent, so we need to default to 0
-				 */
-				final int runningPairs = Integer.parseInt(cookies.getOrDefault("Running-Pairs", "0"));
-				final int foundPairs = Integer.parseInt(cookies.get("Pairs-Found"));
-				final int totalPairs = Integer.parseInt(cookies.get("Total-Pairs"));
-				final int oldPairs = Integer.parseInt(cookies.get("Older-Pairs"));
-
 				final boolean jobStarted = foundPairs != 0 || runningPairs != 0;
 				jobDone = totalPairs == (foundPairs + oldPairs);
 				if (isNewOutputRequest && !jobStarted && false) {
@@ -2297,14 +2297,6 @@ public class Connection {
 						// TODO: What to do in this situation?
 					}
 				}
-
-				System.out.printf(
-						"completed pairs found =%d-%d/ (highest=%d)\n",
-						oldPairs + 1,
-						oldPairs + foundPairs,
-						totalPairs,
-						lastSeen
-				);
 			}
 
 			if (httpStatus == HttpServletResponse.SC_NOT_MODIFIED) {
@@ -2337,6 +2329,14 @@ public class Connection {
 			// maximum completion index,
 			// which keeps us from downloading the same stuff twice
 			if (isNewJobRequest && lastSeen != null) {
+				System.out.printf(
+						"completed pairs found =%d-%d/%d (highest=%d)\n",
+						oldPairs + 1,
+						oldPairs + foundPairs,
+						totalPairs,
+						lastSeen
+				);
+
 				if (isNewInfoRequest) {
 					this.setJobInfoCompletion(id, lastSeen);
 				} else if (isNewOutputRequest) {
