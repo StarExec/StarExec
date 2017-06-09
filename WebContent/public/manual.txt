@@ -171,14 +171,14 @@ REQUIRED: "u", "p". If "u" equals "guest" then "p" is not required.
 OPTIONAL: "addr"
 EXAMPLES:
 
-'login u=fake@email.com p=password'
+'login u=fake@example.com p=password'
 
 'login u=guest'
 
 By default, StarExecCommand attempts to log into www.starexec.org, but an alternative instance can also be specified.
 An example for connecting to an alternate instance of starexec would be
 
-'login u=fake@email.com p=password addr=http://stardev.cs.uiowa.edu/starexec/'
+'login u=fake@example.com p=password addr=http://stardev.cs.uiowa.edu/starexec/'
 
 In this case, 'addr' must be in this exact format-- it should point to the home page, not to any
 deeper page, and it should end with a '/'
@@ -365,7 +365,7 @@ EXAMPLE: 'pushsolver id=153 f=solverdirectory.tar n=fakesolver d=Solver Descript
                   Where XX is the upload request ID.
 REQUIRED: ("f" OR "url") "id" "bt"
 OPTIONAL: ("d" OR "df") "dep" "downloadable" "hier" "link" "allPerm" (also all other permission parameters)
-EXAMPLE: 'pushbenchmarks id=231 url=http://www.benchmarksite.com/benchmarks.zip df=descriptionfile.tar bt=1 '
+EXAMPLE: 'pushbenchmarks id=231 url=http://example.com/benchmarks.zip df=descriptionfile.tar bt=1 '
 
 --pushbenchproc -This command uploads a benchmark processor to a community. The parameter "id"
 				 refers to a community id. The ID of the newly uploaded processor will be printed if "returnids" has been called.
