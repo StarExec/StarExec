@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * This class holds constants specific to StarexecCommand
+ * This class holds constants and global variables specific to StarexecCommand
  *
  * @author Eric
  */
