@@ -586,6 +586,7 @@ public class Download extends HttpServlet {
 		log.debug("confirmed user can download job = " + jobId);
 		log.debug("since: " + since);
 		Boolean jobCopiesBackIncrementally = Jobs.doesJobCopyBackIncrementally(jobId);
+		final String baseName = "Job" + String.valueOf(jobId) + "_output";
 
 		//if we only want the new job pairs
 		if (since != null) {
@@ -631,14 +632,13 @@ public class Download extends HttpServlet {
 				response.addCookie(new Cookie("Running-Pairs", String.valueOf(runningPairsFound)));
 			}
 			log.debug("added the max-completion cookie, starting to write output for job id = " + jobId);
-			String baseName = "Job" + String.valueOf(jobId) + "_output";
 
 			// get all files in between
 			Download.addJobPairsToZipOutput(pairs, response, baseName, true, lastModified);
 
 		} else {
 			log.debug("preparing to create archive for job = " + jobId);
-			ArchiveUtil.createAndOutputZip(new File(Jobs.getDirectory(jobId)), response.getOutputStream(), "Job" + String.valueOf(jobId) + "_output", false);
+			ArchiveUtil.createAndOutputZip(new File(Jobs.getDirectory(jobId)), response.getOutputStream(), baseName, false);
 
 		}
 
