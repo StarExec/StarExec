@@ -2329,18 +2329,20 @@ public class Connection {
 			// maximum completion index,
 			// which keeps us from downloading the same stuff twice
 			if (isNewJobRequest && lastSeen != null) {
-				System.out.printf(
-						"completed pairs found =%d-%d/%d (highest=%d)\n",
-						oldPairs + 1,
-						oldPairs + foundPairs,
-						totalPairs,
-						lastSeen
-				);
-
 				if (isNewInfoRequest) {
 					this.setJobInfoCompletion(id, lastSeen);
 				} else if (isNewOutputRequest) {
 					this.setJobOutCompletion(id, new PollJobData(lastSeen, lastModified));
+				}
+
+				if (pairsFound != 0) {
+					System.out.printf(
+							"completed pairs found =%d-%d/%d (highest=%d)\n",
+							oldPairs + 1,
+							oldPairs + foundPairs,
+							totalPairs,
+							lastSeen
+					);
 				}
 			}
 
