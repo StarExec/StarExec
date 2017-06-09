@@ -2249,8 +2249,6 @@ public class Connection {
 			final int httpStatus = response.getStatusLine().getStatusCode();
 			final boolean fileFound = response.getFirstHeader("Content-Disposition") != null;
 
-			Integer lastSeen = null;
-
 			if (!fileFound && httpStatus != HttpServletResponse.SC_NOT_MODIFIED) {
 				final String errorMessage = cookies.get(C.STATUS_MESSAGE_COOKIE);
 				log.log("Content-Disposition header was missing.");
@@ -2270,9 +2268,10 @@ public class Connection {
 			/* Running-Pairs is not always sent, so we need to default to 0
 			 */
 			final int runningPairs = Integer.parseInt(cookies.getOrDefault("Running-Pairs", "0"));
-			final int foundPairs = Integer.parseInt(cookies.get("Pairs-Found"));
-			final int totalPairs = Integer.parseInt(cookies.get("Total-Pairs"));
-			final int oldPairs = Integer.parseInt(cookies.get("Older-Pairs"));
+			final int foundPairs = Integer.parseInt(cookies.getOrDefault("Pairs-Found", "0"));
+			final int totalPairs = Integer.parseInt(cookies.getOrDefault("Total-Pairs", "0"));
+			final int oldPairs = Integer.parseInt(cookies.getOrDefault("Older-Pairs", "0"));
+			final int lastSeen = Integer.parseInt(cookies.getOrDefault("Max-Completion", "0"));
 
 			// if we're sending 'since,' it means this is a request for new job data
 			final boolean isNewJobRequest = urlParams.containsKey(C.FORMPARAM_SINCE);
@@ -2288,7 +2287,6 @@ public class Connection {
 				}
 
 				// check to see if the job is complete
-				lastSeen = Integer.parseInt(cookies.get("Max-Completion"));
 				if (lastSeen <= since) { // indicates there was no new information
 					if (jobDone) {
 						return C.SUCCESS_JOBDONE;
@@ -2328,14 +2326,14 @@ public class Connection {
 			// only after we've successfully saved the file should we update the
 			// maximum completion index,
 			// which keeps us from downloading the same stuff twice
-			if (isNewJobRequest && lastSeen != null) {
+			if (isNewJobRequest) {
 				if (isNewInfoRequest) {
 					this.setJobInfoCompletion(id, lastSeen);
 				} else if (isNewOutputRequest) {
 					this.setJobOutCompletion(id, new PollJobData(lastSeen, lastModified));
 				}
 
-				if (pairsFound != 0) {
+				if (foundPairs != 0) {
 					System.out.printf(
 							"completed pairs found =%d-%d/%d (highest=%d)\n",
 							oldPairs + 1,
