@@ -1,6 +1,7 @@
 package org.starexec.command;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class holds constants specific to StarexecCommand
@@ -73,7 +74,7 @@ public class C {
 	public static int SUCCESS_LOGOUT  = Integer.MAX_VALUE - 3;
 	public static int SUCCESS_LOGIN   = Integer.MAX_VALUE - 4;
 
-	public static HashMap<Integer, String> successMessages = new HashMap<>();
+	public static final Map<Integer, String> successMessages = new HashMap<>();
 
 	static {
 		successMessages.put(SUCCESS_EXIT, "Goodbye");
