@@ -9,6 +9,7 @@
 				SELECT 	id,
 						name,
 						user_id,
+						queue_id,
 						created,
 						completed,
 						description,
