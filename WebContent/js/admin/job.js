@@ -1,12 +1,12 @@
 $(document).ready(function(){
 	initButton();
-	
+
 	initDataTables();
-	
+
 	$('#jobs tbody').on('click', "tr", function () {
 		   $(this).toggleClass( 'row_selected' );
 		} );
-	
+
 });
 
 function initButton() {
@@ -15,16 +15,16 @@ function initButton() {
 			primary: "ui-icon-pause"
 		}
 	});
-	
+
 	$("#resumeAll").button({
 		icons: {
 			primary: "ui-icon-play"
 		}
 	});
-	
+
 	$("#pauseAll").click(function() {
 		$('#dialog-confirm-pause-txt').text('are you sure you want to pause all running jobs?');
-	
+
 		$('#dialog-confirm-pause').dialog({
 			modal: true,
 			width: 380,
@@ -40,7 +40,7 @@ function initButton() {
 								if (s) {
 									setTimeout(function(){document.location.reload(true);}, 1000);
 								}
-								
+
 							},
 							"json"
 					);
@@ -52,10 +52,10 @@ function initButton() {
 			}
 		});
 	});
-	
+
 	$("#resumeAll").click(function() {
 		$('#dialog-confirm-pause-txt').text('are you sure you want to resume all admin paused jobs?');
-	
+
 		$('#dialog-confirm-pause').dialog({
 			modal: true,
 			width: 380,
@@ -101,7 +101,7 @@ function initDataTables() {
 function fnPaginationHandler(sSource, aoData, fnCallback) {
 
 	// Request the next page of primitives from the server via AJAX
-	$.post(  
+	$.post(
 			sSource + "jobs/admin/pagination",
 			aoData,
 			function(nextDataTablePage){
@@ -110,14 +110,14 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 
 					// Update the number displayed in this DataTable's fieldset
 					$('#userExpd').children('span:first-child').text(nextDataTablePage.iTotalRecords);
-				
+
 				// Replace the current page with the newly received page
 				fnCallback(nextDataTablePage);
-								
+
 				colorizeJobStatistics();
 				}
 
-			},  
+			},
 			"json"
 	)
 }
@@ -132,40 +132,40 @@ function colorizeJobStatistics(){
 			function() {
 				// Return the floating point value of the stat
 				var value = $(this).text();
-				return eval(value.slice(0, -1));				
+				return eval(value.slice(0, -1));
 			},
-			{ 
+			{
 				maxval: 100,
 				minval: 0,
 				colorStyle: 'greentored',
-				lightness: 0 
+				lightness: 0
 			}
 	);
 	//colorize the unchanging totals
 	$("#jobs p.static").heatcolor(
 			function() {
 				// Return the floating point value of the stat
-				return eval(1);				
+				return eval(1);
 			},
-			{ 
+			{
 				maxval: 1,
 				minval: 0,
 				colorStyle: 'greentored',
-				lightness: 0 
+				lightness: 0
 			}
 	);
 	// Colorize the statistics in the job table (for pending and error which use reverse color schemes)
 	$("#jobs p.desc").heatcolor(
 			function() {
 				var value = $(this).text();
-				return eval(value.slice(0, -1));	
+				return eval(value.slice(0, -1));
 			},
-			{ 
+			{
 				maxval: 100,
 				minval: 0,
 				colorStyle: 'greentored',
 				reverseOrder: true,
-				lightness: 0 
+				lightness: 0
 			}
 	);
 
