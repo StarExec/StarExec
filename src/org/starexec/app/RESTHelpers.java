@@ -1604,20 +1604,7 @@ public class RESTHelpers {
 			sb.append(hiddenJobId);
 			String jobLink = sb.toString();
 
-			String status = job.getLiteJobPairStats().get("pendingPairs") > 0 ? "incomplete" : "complete";
-			if (Jobs.isSystemPaused()) {
-				int userId = job.getUserId();
-				if (!Users.isDeveloper(userId) && !Users.isAdmin(userId)) {
-					status = "global pause";
-				}
-			}
-			if (Jobs.isJobPaused(job.getId())) {
-				status = "paused";
-			}
-			if (Jobs.isJobKilled(job.getId())) {
-				status = "killed";
-			}
-
+			final String status = job.getStatus();
 
 			if (dataAsObjects) {
 				dataTablePageEntries.add(getEntryAsObject(jobLink, status, job));

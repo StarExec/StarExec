@@ -3,6 +3,8 @@ package org.starexec.data.to;
 import com.google.gson.annotations.Expose;
 import org.jfree.util.Log;
 import org.starexec.constants.R;
+import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.pipelines.JoblineStage;
@@ -458,5 +460,28 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	 */
 	public void setDiskSize(long diskSize) {
 		this.diskSize = diskSize;
+	}
+
+	/**
+	 * @return Human readable description of this job's status
+	 */
+	public String getStatus() {
+		final int userId = getUserId();
+		final int id = getId();
+		String status;
+
+		if (Jobs.isJobKilled(id)) {
+			status = "killed";
+		} else if (Jobs.isJobPaused(id)) {
+			status = "paused";
+		} else if (Jobs.isSystemPaused() && !Users.isDeveloper(userId) && !Users.isAdmin(userId)) {
+			status = "global pause";
+		} else if (getLiteJobPairStats().get("pendingPairs") > 0) {
+			status = "incomplete";
+		} else {
+			status = "complete";
+		}
+
+		return status;
 	}
 }
