@@ -19,9 +19,7 @@ $(document).ready(function(){
 
 	// Setup the DataTable objects
 	var config = new star.DataTableConfig({
-		// "bServerSide"   : true,
 		"sAjaxSource"   : starexecRoot+"services/jobs/admin/pagination",
-		"fnServerData"  : fnPaginationHandler,
 		"aoColumns"     : [
 			{"mRender"  : formatName },
 			{"mRender"  : formatStatus },
@@ -111,20 +109,4 @@ function initButton() {
 			}
 		});
 	});
-}
-
-/**
- * Request the next page of primitives from the server via AJAX
- */
-function fnPaginationHandler(sSource, aoData, fnCallback) {
-	$.post(
-			sSource,
-			aoData,
-			function(nextDataTablePage){
-				if (parseReturnCode(nextDataTablePage)) {
-					fnCallback(nextDataTablePage);
-				}
-			},
-			"json"
-	)
 }
