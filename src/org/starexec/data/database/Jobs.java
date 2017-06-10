@@ -2583,10 +2583,10 @@ public class Jobs {
 				liteJobPairStats.put("pendingPairs", results.getInt("pendingPairs"));
 				liteJobPairStats.put("errorPairs", results.getInt("errorPairs"));
 
-				Integer completionPercentage = Math.round(100 * (float) (results.getInt("completePairs")) / ((float) results.getInt("totalPairs")));
+				Integer completionPercentage = Math.round(100f * results.getInt("completePairs") / results.getInt("totalPairs"));
 				liteJobPairStats.put("completionPercentage", completionPercentage);
 
-				Integer errorPercentage = Math.round(100 * (float) (results.getInt("errorPairs")) / ((float) results.getInt("totalPairs")));
+				Integer errorPercentage = Math.round(100f * results.getInt("errorPairs") / results.getInt("totalPairs"));
 				liteJobPairStats.put("errorPercentage", errorPercentage);
 
 				Job j = new Job();
