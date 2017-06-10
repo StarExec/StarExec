@@ -2594,7 +2594,6 @@ public class Jobs {
 				Job j = new Job();
 
 				j.setId(results.getInt("id"));
-				j.setUserId(results.getInt("user_id"));
 				j.setName(results.getString("name"));
 				j.setUserId(results.getInt("user_id"));
 				if (results.getBoolean("deleted")) {
