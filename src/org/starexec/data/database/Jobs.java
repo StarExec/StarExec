@@ -2628,32 +2628,16 @@ public class Jobs {
 	}
 
 	/**
-	 * Gets the minimal number of Jobs necessary in order to service the client's
-	 * request for the next page of Users in their DataTables object
+	 * Gets a list of Incomplete Jobs for admins
 	 *
-	 * @param query A DataTablesQuery object
-	 * @return a list of 10, 25, 50, or 100 Users containing the minimal amount of data necessary
-	 * @author Wyatt Kaiser
+	 * @return a List of incomplete Jobs
 	 **/
-	public static List<Job> getJobsForNextPageAdmin(DataTablesQuery query) {
-		Connection con = null;
-		NamedParameterStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();
-			PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_INCOMPLETE_JOBS_QUERY, getJobOrderColumn(query.getSortColumn()), query);
-			procedure = new NamedParameterStatement(con, builder.getSQL());
-			procedure.setString("query", query.getSearchQuery());
-			results = procedure.executeQuery();
-			return getJobsForNextPage(results);
-		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
-		return null;
+	public static List<Job> getIncompleteJobs() throws SQLException {
+		return Common.query(
+				"{CALL GetIncompleteJobs()}",
+				procedure -> {},
+				results -> getJobsForNextPage(results)
+		);
 	}
 
 	/**

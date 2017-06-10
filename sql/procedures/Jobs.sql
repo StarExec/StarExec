@@ -937,6 +937,19 @@ IN _space INT, IN _postProc INT, IN _preProc INT, IN _suffix VARCHAR(64), IN _re
 		VALUES (_jobId, _stage,_cpu,_clock,_mem,_space,_postProc,_preProc, _suffix, _resultsInterval, _stdoutSave, _extraSave);
 	END //
 
+-- Gets every incomplete Job
+DROP PROCEDURE IF EXISTS GetIncompleteJobs;
+CREATE PROCEDURE GetIncompleteJobs()
+	BEGIN
+		SELECT *,
+			total_pairs AS totalPairs,
+			GetCompletePairs(id) AS completePairs,
+			GetPendingPairs(id)  AS pendingPairs,
+			GetErrorPairs(id)    AS errorPairs
+		FROM jobs
+		WHERE GetJobStatus(id)="incomplete";
+	END //
+
 -- Gets the ID of every job that is currently running (has incomplete pairs and
 -- is not already paused / killed)
 DROP PROCEDURE IF EXISTS GetRunningJobs;

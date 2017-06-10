@@ -1,7 +1,35 @@
 $(document).ready(function(){
 	initButton();
 
-	initDataTables();
+	var formatName = function(row, type, val) {
+		return val["name"];
+	};
+
+	var formatStatus = function(row, type, val) {
+		return val["status"];
+	};
+
+	var formatUser = function(row, type, val) {
+		return val["user"]["name"];
+	};
+
+	var formatQueue = function(row, type, val) {
+		return val["queue"]["name"];
+	};
+
+	// Setup the DataTable objects
+	var config = new star.DataTableConfig({
+		// "bServerSide"   : true,
+		"sAjaxSource"   : starexecRoot+"services/jobs/admin/pagination",
+		"fnServerData"  : fnPaginationHandler,
+		"aoColumns"     : [
+			{"mRender"  : formatName },
+			{"mRender"  : formatStatus },
+			{"mRender"  : formatUser },
+			{"mRender"  : formatQueue },
+		]
+	});
+	$("#jobs").dataTable(config);
 
 	$('#jobs tbody').on('click', "tr", function () {
 		   $(this).toggleClass( 'row_selected' );
@@ -85,90 +113,18 @@ function initButton() {
 	});
 }
 
-function initDataTables() {
-	// Setup the DataTable objects
-	jobTable = $('#jobs').dataTable( {
-		"sDom"			: getDataTablesDom(),
-		"iDisplayStart"	: 0,
-		"iDisplayLength": defaultPageSize,
-		"bServerSide"	: true,
-		"sAjaxSource"	: starexecRoot+"services/",
-		"sServerMethod" : 'POST',
-		"fnServerData"	: fnPaginationHandler
-	});
-}
-
+/**
+ * Request the next page of primitives from the server via AJAX
+ */
 function fnPaginationHandler(sSource, aoData, fnCallback) {
-
-	// Request the next page of primitives from the server via AJAX
 	$.post(
-			sSource + "jobs/admin/pagination",
+			sSource,
 			aoData,
 			function(nextDataTablePage){
-				s=parseReturnCode(nextDataTablePage);
-				if (s) {
-
-					// Update the number displayed in this DataTable's fieldset
-					$('#userExpd').children('span:first-child').text(nextDataTablePage.iTotalRecords);
-
-				// Replace the current page with the newly received page
-				fnCallback(nextDataTablePage);
-
-				colorizeJobStatistics();
+				if (parseReturnCode(nextDataTablePage)) {
+					fnCallback(nextDataTablePage);
 				}
-
 			},
 			"json"
 	)
-}
-
-
-/**
- * Colorize the job statistics in the jobTable
- */
-function colorizeJobStatistics(){
-	// Colorize the statistics in the job table for completed pairs
-	$("#jobs p.asc").heatcolor(
-			function() {
-				// Return the floating point value of the stat
-				var value = $(this).text();
-				return eval(value.slice(0, -1));
-			},
-			{
-				maxval: 100,
-				minval: 0,
-				colorStyle: 'greentored',
-				lightness: 0
-			}
-	);
-	//colorize the unchanging totals
-	$("#jobs p.static").heatcolor(
-			function() {
-				// Return the floating point value of the stat
-				return eval(1);
-			},
-			{
-				maxval: 1,
-				minval: 0,
-				colorStyle: 'greentored',
-				lightness: 0
-			}
-	);
-	// Colorize the statistics in the job table (for pending and error which use reverse color schemes)
-	$("#jobs p.desc").heatcolor(
-			function() {
-				var value = $(this).text();
-				return eval(value.slice(0, -1));
-			},
-			{
-				maxval: 100,
-				minval: 0,
-				colorStyle: 'greentored',
-				reverseOrder: true,
-				lightness: 0
-			}
-	);
-
-
-
 }

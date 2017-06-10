@@ -870,34 +870,20 @@ public class RESTHelpers {
 
 	protected static JsonObject getNextDataTablesPageAdmin(Primitive type, HttpServletRequest request) {
 		// Parameter Validation
-		DataTablesQuery query = RESTHelpers.getAttrMap(type, request);
-		if (query == null) {
-			return null;
-		}
 		int currentUserId = SessionUtil.getUserId(request);
 
 		switch (type) {
 			case JOB:
-				List<Job> jobsToDisplay = new LinkedList<>();
-
-				query.setTotalRecords(Jobs.getRunningJobCount() + Jobs.getPausedJobCount());
-				// Retrieves the relevant Job objects to use in constructing the
-				// JSON to send to the client
-				jobsToDisplay = Jobs.getJobsForNextPageAdmin(query);
-
-				// If no search is provided, TOTAL_RECORDS_AFTER_QUERY =
-				// TOTAL_RECORDS
-				if (!query.hasSearchQuery()) {
-					query.setTotalRecordsAfterQuery(query.getTotalRecords());
-				}
-				// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
-				else {
-					query.setTotalRecordsAfterQuery(jobsToDisplay.size());
-
-				}
-				return convertJobsToJsonObject(jobsToDisplay, query, false);
+				final JsonObject o = new JsonObject();
+				final List<Job> jobsToDisplay = Jobs.getIncompleteJobs();
+				o.add("data", convertJobsToJsonArray(jobsToDisplay));
+				return o;
 
 			case USER:
+				DataTablesQuery query = RESTHelpers.getAttrMap(type, request);
+				if (query == null) {
+					return null;
+				}
 				List<User> usersToDisplay = new LinkedList<>();
 				query.setTotalRecords(Users.getCount());
 				// Retrieves the relevant User objects to use in constructing the
@@ -1615,6 +1601,40 @@ public class RESTHelpers {
 		}
 
 		return createPageDataJsonObject(query, dataTablePageEntries);
+	}
+
+	/**
+	 * Convert a List of Job into a detailed JsonArray
+	 *
+	 * @param jobs The jobs that will be the rows of the table
+	 * @return A JsonObject that can be used to populate a datatable
+	 */
+	public static JsonArray convertJobsToJsonArray(List<Job> jobs) {
+		final Map<Integer, JsonObject> users = new HashMap<>();
+		final JsonArray out = new JsonArray();
+		for (Job job : jobs) {
+			final JsonObject j = new JsonObject();
+			j.addProperty("name", job.getName());
+			j.addProperty("status", job.getStatus());
+
+			final int userId = job.getUserId();
+			if (!users.containsKey(userId)) {
+				final JsonObject o = new JsonObject();
+				final User jobUser = Users.get(userId);
+				o.addProperty("name", jobUser.getFullName());
+				o.addProperty("id",   jobUser.getId());
+				users.put(userId, o);
+			}
+			j.add("user", users.get(userId));
+
+			final JsonObject queue = new JsonObject();
+			queue.addProperty("name", job.getQueue().getName());
+			queue.addProperty("id", job.getQueue().getId());
+			j.add("queue", queue);
+
+			out.add(j);
+		}
+		return out;
 	}
 
 	private static JsonArray getEntryAsArray(String jobLink, String status, Job job) {
