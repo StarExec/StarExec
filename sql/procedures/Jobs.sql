@@ -947,7 +947,8 @@ CREATE PROCEDURE GetIncompleteJobs()
 			GetPendingPairs(id)  AS pendingPairs,
 			GetErrorPairs(id)    AS errorPairs
 		FROM jobs
-		WHERE GetJobStatus(id)="incomplete";
+		WHERE GetJobStatus(id)="incomplete" OR paused=true
+	;
 	END //
 
 -- Gets the ID of every job that is currently running (has incomplete pairs and
