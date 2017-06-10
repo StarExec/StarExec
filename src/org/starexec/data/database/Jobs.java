@@ -2569,6 +2569,8 @@ public class Jobs {
 	 */
 	private static List<Job> getJobsForNextPage(ResultSet results) {
 
+		final Map<Integer, org.starexec.data.to.Queue> queues = new HashMap<>();
+
 		try {
 
 			List<Job> jobs = new LinkedList<>();
@@ -2604,6 +2606,19 @@ public class Jobs {
 				j.setCompleteTime(results.getTimestamp("completed"));
 				j.setDiskSize(results.getLong("disk_size"));
 				j.setLiteJobPairStats(liteJobPairStats);
+
+				try {
+					final int queueId = results.getInt("queue_id");
+					if (!queues.containsKey(queueId)) {
+						queues.put(
+								queueId,
+								Queues.get(queueId)
+						);
+					}
+					j.setQueue(queues.get(queueId));
+				} catch (Exception e) {
+				}
+
 				jobs.add(j);
 			}
 			return jobs;
