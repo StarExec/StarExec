@@ -1,4 +1,6 @@
-$(document).ready(function(){
+"use strict";
+
+jQuery(function($) {
 	initButton();
 
 	var formatName = function(row, type, val) {
