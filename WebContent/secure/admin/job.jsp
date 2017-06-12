@@ -11,7 +11,7 @@
 
 <star:template title="${t_user.fullName}" js="admin/job, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/table, explore/common, explore/spaces, admin/admin, jqueryui/jquery-ui-1.8.16.starexec">
 
-	<fieldset  id="jobField">
+	<fieldset id="jobField" class="expdContainer">
 			<legend class="expd" id="jobExpd">jobs</legend>
 			<table id="jobs">
 				<thead>
