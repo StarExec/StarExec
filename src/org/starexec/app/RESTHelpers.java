@@ -875,7 +875,12 @@ public class RESTHelpers {
 		switch (type) {
 			case JOB:
 				final JsonObject o = new JsonObject();
-				final List<Job> jobsToDisplay = Jobs.getIncompleteJobs();
+				final List<Job> jobsToDisplay;
+				try {
+					jobsToDisplay = Jobs.getIncompleteJobs();
+				} catch (SQLException e) {
+					return null;
+				}
 				o.add("data", convertJobsToJsonArray(jobsToDisplay));
 				return o;
 
