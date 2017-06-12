@@ -1620,6 +1620,7 @@ public class RESTHelpers {
 		for (Job job : jobs) {
 			final JsonObject j = new JsonObject();
 			j.addProperty("name", job.getName());
+			j.addProperty("id", job.getId());
 			j.addProperty("status", job.getStatus());
 
 			final int userId = job.getUserId();
