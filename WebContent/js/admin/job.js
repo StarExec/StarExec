@@ -1,16 +1,16 @@
 "use strict";
 
 jQuery(function($) {
-	var formatName = function(row, type, val) {
-		return val["name"];
+	var formatJob = function(row, type, val) {
+		return star.format.jobLink(val);
+	};
+
+	var formatUser = function(row, type, val) {
+		return star.format.userLink(val["user"]);
 	};
 
 	var formatStatus = function(row, type, val) {
 		return val["status"];
-	};
-
-	var formatUser = function(row, type, val) {
-		return val["user"]["name"];
 	};
 
 	var formatQueue = function(row, type, val) {
@@ -22,19 +22,13 @@ jQuery(function($) {
 		new star.DataTableConfig({
 			"sAjaxSource"   : starexecRoot+"services/jobs/admin/pagination",
 			"aoColumns"     : [
-				{"mRender"  : formatName },
+				{"mRender"  : formatJob },
 				{"mRender"  : formatUser },
 				{"mRender"  : formatStatus },
 				{"mRender"  : formatQueue },
 			]
 		})
 	);
-
-	$("#jobs tbody").on("click", "tr", function() {
-//		.click(function() {
-			$(this).toggleClass("row_selected");
-		})
-	;
 
 	$("#pauseAll")
 		.button({
