@@ -8,7 +8,7 @@
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
-<star:template title="Jobs Admin" js="admin/job, lib/jquery.dataTables.min" css="common/table, explore/common">
+<star:template title="Jobs Admin" js="common/format, admin/job, lib/jquery.dataTables.min" css="common/table, explore/common">
 	<fieldset id="jobField" class="expdContainer">
 			<legend class="expd" id="jobExpd">jobs</legend>
 			<ul class="actionList">
