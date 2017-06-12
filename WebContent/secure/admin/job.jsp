@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, java.util.List, org.starexec.constants.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.Jobs"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
@@ -8,12 +8,10 @@
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
-
-<star:template title="${t_user.fullName}" js="admin/job, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min" css="common/table, explore/common, explore/spaces, admin/admin, jqueryui/jquery-ui-1.8.16.starexec">
-
+<star:template title="Jobs Admin" js="admin/job, lib/jquery.dataTables.min" css="common/table, explore/common">
 	<fieldset id="jobField" class="expdContainer">
 			<legend class="expd" id="jobExpd">jobs</legend>
-			<ul id="actionList">
+			<ul class="actionList">
 				<c:if test="${isSystemPaused}">
 					<li><button type="button" id="resumeAll">resume all</button></li>
 				</c:if><c:if test="${not isSystemPaused}">
@@ -31,11 +29,4 @@
 				</thead>
 			</table>
 	</fieldset>
-	<fieldset>
-		<legend>actions</legend>
-
-	</fieldset>
-	<div id="dialog-confirm-pause" title="confirm pause" class="hiddenDialog">
-				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-pause-txt"></span></p>
-	</div>
 </star:template>
