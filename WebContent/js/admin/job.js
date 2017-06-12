@@ -24,8 +24,8 @@ jQuery(function($) {
 		"sAjaxSource"   : starexecRoot+"services/jobs/admin/pagination",
 		"aoColumns"     : [
 			{"mRender"  : formatName },
-			{"mRender"  : formatStatus },
 			{"mRender"  : formatUser },
+			{"mRender"  : formatStatus },
 			{"mRender"  : formatQueue },
 		]
 	});

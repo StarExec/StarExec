@@ -17,8 +17,8 @@
 				<thead>
 					<tr>
 						<th>name</th>
-						<th>status</th>
 						<th>user</th>
+						<th>status</th>
 						<th>queue</th>
 					</tr>
 				</thead>
