@@ -1377,6 +1377,30 @@ public class RESTServices {
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 
+	/**
+	 * Returns all Jobs with enqueued pairs for display by DataTables
+	 *
+	 * @param request
+	 * @return a JSON object
+	 */
+	@POST
+	@Path("/jobs/admin/pagination/")
+	@Produces("application/json")
+	public String getAllJobsDetailsPagination(@Context HttpServletRequest request) {
+		final int userId = SessionUtil.getUserId(request);
+		if (!GeneralSecurity.hasAdminReadPrivileges(userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+
+		final JsonObject out = new JsonObject();
+		try {
+			final List<Job> jobsToDisplay = Jobs.getIncompleteJobs();
+			out.add("data", RESTHelpers.convertJobsToJsonArray(jobsToDisplay));
+		} catch (SQLException e) {
+			return gson.toJson(ERROR_DATABASE);
+		}
+		return gson.toJson(out);
+	}
 
 	/**
 	 * Returns the next page of entries in a given DataTable (not restricted by space, returns ALL).
@@ -1388,22 +1412,15 @@ public class RESTServices {
 	 * @author Wyatt kaiser
 	 */
 	@POST
-	@Path("/{primType}/admin/pagination/")
+	@Path("/users/admin/pagination/")
 	@Produces("application/json")
-	public String getAllPrimitiveDetailsPagination(@PathParam("primType") String primType, @Context HttpServletRequest request) {
-		int userId = SessionUtil.getUserId(request);
-		JsonObject nextDataTablesPage = null;
+	public String getAllUsersDetailsPagination(@Context HttpServletRequest request) {
+		final int userId = SessionUtil.getUserId(request);
 		if (!GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 
-		if (primType.startsWith("u")) {
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageAdmin(Primitive.USER, request);
-		}
-		if (primType.startsWith("j")) {
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageAdmin(Primitive.JOB, request);
-		}
-
+		final JsonObject nextDataTablesPage = RESTHelpers.getNextUsersPageAdmin(request);
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 

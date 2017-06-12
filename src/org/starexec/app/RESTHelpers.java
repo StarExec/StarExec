@@ -868,48 +868,31 @@ public class RESTHelpers {
 	 * @author Wyatt Kaiser
 	 */
 
-	protected static JsonObject getNextDataTablesPageAdmin(Primitive type, HttpServletRequest request) {
+	protected static JsonObject getNextUsersPageAdmin(HttpServletRequest request) {
 		// Parameter Validation
 		int currentUserId = SessionUtil.getUserId(request);
 
-		switch (type) {
-			case JOB:
-				final JsonObject o = new JsonObject();
-				final List<Job> jobsToDisplay;
-				try {
-					jobsToDisplay = Jobs.getIncompleteJobs();
-				} catch (SQLException e) {
-					return null;
-				}
-				o.add("data", convertJobsToJsonArray(jobsToDisplay));
-				return o;
-
-			case USER:
-				DataTablesQuery query = RESTHelpers.getAttrMap(type, request);
-				if (query == null) {
-					return null;
-				}
-				List<User> usersToDisplay = new LinkedList<>();
-				query.setTotalRecords(Users.getCount());
-				// Retrieves the relevant User objects to use in constructing the
-				// JSON to send to the client
-				usersToDisplay = Users.getUsersForNextPageAdmin(query);
-
-				// If no search is provided, TOTAL_RECORDS_AFTER_QUERY =
-				// TOTAL_RECORDS
-				if (!query.hasSearchQuery()) {
-					query.setTotalRecordsAfterQuery(query.getTotalRecords());
-				}
-				// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
-				else {
-					query.setTotalRecordsAfterQuery(usersToDisplay.size());
-				}
-
-				return convertUsersToJsonObject(usersToDisplay, query, currentUserId);
-			default:
-				log.error("invalid type given = " + type);
+		DataTablesQuery query = RESTHelpers.getAttrMap(Primitive.USER, request);
+		if (query == null) {
+			return null;
 		}
-		return null;
+		List<User> usersToDisplay = new LinkedList<>();
+		query.setTotalRecords(Users.getCount());
+		// Retrieves the relevant User objects to use in constructing the
+		// JSON to send to the client
+		usersToDisplay = Users.getUsersForNextPageAdmin(query);
+
+		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY =
+		// TOTAL_RECORDS
+		if (!query.hasSearchQuery()) {
+			query.setTotalRecordsAfterQuery(query.getTotalRecords());
+		}
+		// Otherwise, TOTAL_RECORDS_AFTER_QUERY < TOTAL_RECORDS
+		else {
+			query.setTotalRecordsAfterQuery(usersToDisplay.size());
+		}
+
+		return convertUsersToJsonObject(usersToDisplay, query, currentUserId);
 	}
 
 	public static JsonObject getNextBenchmarkPageForSpaceExplorer(int id, HttpServletRequest request) {
