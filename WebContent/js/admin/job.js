@@ -21,6 +21,7 @@ jQuery(function($) {
 	$("#jobs").dataTable(
 		new star.DataTableConfig({
 			"sAjaxSource"   : starexecRoot+"services/jobs/admin/pagination",
+			"sServerMethod"   : "GET",
 			"aoColumns"     : [
 				{"mRender"  : formatJob },
 				{"mRender"  : formatUser },

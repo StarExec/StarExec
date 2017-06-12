@@ -1383,7 +1383,7 @@ public class RESTServices {
 	 * @param request
 	 * @return a JSON object
 	 */
-	@POST
+	@GET
 	@Path("/jobs/admin/pagination/")
 	@Produces("application/json")
 	public String getAllJobsDetailsPagination(@Context HttpServletRequest request) {
