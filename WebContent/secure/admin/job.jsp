@@ -13,6 +13,13 @@
 
 	<fieldset id="jobField" class="expdContainer">
 			<legend class="expd" id="jobExpd">jobs</legend>
+			<ul id="actionList">
+				<c:if test="${isSystemPaused}">
+					<li><button type="button" id="resumeAll">resume all</button></li>
+				</c:if><c:if test="${not isSystemPaused}">
+					<li><button type="button" id="pauseAll">pause all</button></li>
+				</c:if>
+			</ul>
 			<table id="jobs">
 				<thead>
 					<tr>
@@ -26,14 +33,7 @@
 	</fieldset>
 	<fieldset>
 		<legend>actions</legend>
-			<ul id="actionList">
-				<c:if test="${isSystemPaused}">
-					<li><button type="button" id="resumeAll">resume all</button></li>
-				</c:if>
-				<c:if test="${not isSystemPaused}">
-					<li><button type="button" id="pauseAll">pause all</button></li>
-				</c:if>
-			</ul>
+
 	</fieldset>
 	<div id="dialog-confirm-pause" title="confirm pause" class="hiddenDialog">
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-pause-txt"></span></p>
