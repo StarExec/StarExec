@@ -220,7 +220,7 @@
 				</tbody>
 			</table>
 		</fieldset>
-				<fieldset id="fieldBenchMethod">
+		<fieldset id="fieldBenchMethod">
 			<legend>benchmark selection method</legend>
 			<table id="tblBenchMethodSelection" class="contentTbl">
 				<thead>
