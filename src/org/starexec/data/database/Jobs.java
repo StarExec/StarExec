@@ -5049,7 +5049,7 @@ public class Jobs {
 	 * Gets all the jobs on the system that currently have pairs pending or running
 	 * and which are not currently paused or killed
 	 *
-	 * @return A list of Job objects for the running jobs. Pairs are not populated
+	 * @return A list of Job ids for the running jobs. Pairs are not populated
 	 */
 	public static List<Integer> getRunningJobs() {
 		Connection con = null;
