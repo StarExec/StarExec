@@ -187,7 +187,7 @@
 							No<input type="radio" id="radioNoSaveExtraOutput" name="saveOtherOutput" value="false" checked="checked"/>
 						</td>
 					</tr>
-					<tr class="noHover advancedOptions" id="suppressTimestampsRow" title="whether to include timestamps in the stdout for the pairs in this job">
+					<tr class="noHover advancedOptions runsolveronly" title="whether to include timestamps in the stdout for the pairs in this job">
 						<td>
 							<p>Suppress Timestamps</p>
 						</td>

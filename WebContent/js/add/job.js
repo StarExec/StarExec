@@ -394,9 +394,11 @@ function benchmarkingFrameworkChanged() {
 
 	var newBenchmarkingFramework = $('#editBenchmarkingFramework').find(':selected').attr('value')
 	if (newBenchmarkingFramework === 'BENCHEXEC') {
-		$('#suppressTimestampsRow').hide();
+		$('.benchexeconly').show();
+		$('.runsolveronly').hide();
 	} else {
-		$('#suppressTimestampsRow').show();
+		$('.benchexeconly').hide();
+		$('.runsolveronly').show();
 	}
 }
 
