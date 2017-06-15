@@ -25,6 +25,7 @@
 						<th>user</th>
 						<th>status</th>
 						<th>queue</th>
+						<th>created</th>
 					</tr>
 				</thead>
 			</table>

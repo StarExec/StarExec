@@ -38,4 +38,8 @@ window.star.format = {};
 		);
 	};
 
+	format.timestamp = function(time) {
+		return (new Date(time)).toDateString();
+	}
+
 })(window.star.format);

@@ -17,16 +17,22 @@ jQuery(function($) {
 		return val["queue"]["name"];
 	};
 
+	var formatCreated = function(row, type, val) {
+		return star.format.timestamp(val["created"]);
+	};
+
 	// Setup the DataTable objects
 	$("#jobs").dataTable(
 		new star.DataTableConfig({
 			"sAjaxSource"   : starexecRoot+"services/jobs/admin/pagination",
-			"sServerMethod"   : "GET",
+			"sServerMethod" : "GET",
+			"order"         : [[4, "desc"]],
 			"aoColumns"     : [
 				{"mRender"  : formatJob },
 				{"mRender"  : formatUser },
 				{"mRender"  : formatStatus },
 				{"mRender"  : formatQueue },
+				{"mRender"  : formatCreated },
 			]
 		})
 	);
