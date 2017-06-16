@@ -30,6 +30,7 @@ a:link, a:visited {
 input, textarea, select {
 	@extend %heading;
 	@extend %rounded-corners;
+	-webkit-appearance: none; // Without this, background is white in Safari
 	background-color: $input-background;
 	border: 1px solid $input-background;
 	color: $input-text;
