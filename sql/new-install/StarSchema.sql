@@ -273,6 +273,8 @@ CREATE TABLE jobs (
 	seed BIGINT DEFAULT 0,
 	cpuTimeout INT,
 	clockTimeout INT,
+	kill_delay INT,
+	soft_time_limit INT,
 	maximum_memory BIGINT DEFAULT 1073741824,
 	primary_space INT, -- This is a JOB_SPACE, not simply a "space"
 	using_dependencies BOOLEAN NOT NULL DEFAULT FALSE, -- whether jobline dependencies are used by any pair

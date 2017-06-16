@@ -361,6 +361,12 @@
 								<td>unknown</td>
 								</c:if>
 							</tr>
+							<c:if test="${job.softTimeLimit > 0}">
+								<tr title="">
+									<td>soft time limit</td>
+									<td>${job.softTimeLimit}</td>
+								</tr>
+							</c:if>
 							<tr title="the wallclock timeout each pair in the job was subjected to">
 								<td>wallclock timeout</td>
 								<td>${wallclock}</td>
@@ -381,6 +387,12 @@
 								<td>disk usage</td>
 								<td>${diskUsage}</td>
 							</tr>
+							<c:if test="${job.killDelay > 0}">
+								<tr title="">
+									<td>kill delay</td>
+									<td>${job.killDelay}</td>
+								</tr>
+							</c:if>
 						</tbody>
 					</table>
 				</fieldset>

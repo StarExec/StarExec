@@ -197,6 +197,22 @@
 							No<input type="radio" id="radioNoSuppressTimestamps" name="${suppressTimestamp}" value="no" checked="checked"/>
 						</td>
 					</tr>
+					<tr class="noHover advancedOptions runsolveronly" title="">
+						<td>
+							<label for="killDelay">Delay before termination</label>
+						</td>
+						<td>
+							<input type="number" name="killDelay" value="0">
+						</td>
+					</tr>
+					<tr class="noHover advancedOptions benchexeconly" title="">
+						<td>
+							<label for="softTimeLimit">Soft time limit</label>
+						</td>
+						<td>
+							<input type="number" name="softTimeLimit" value="0">
+						</td>
+					</tr>
 				</tbody>
 			</table>
 		</fieldset>

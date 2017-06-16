@@ -51,6 +51,8 @@ public class CreateJob extends HttpServlet {
 	private static final String randSeed = "seed";
 	private static final String resultsInterval = "resultsInterval";
 	private static final String otherOutputOption = "saveOtherOutput";
+	private static final String killDelay = "killDelay";
+	private static final String softTimeLimit = "softTimeLimit";
 
 	//unique to quick jobs
 	private static final String benchProcessor = "benchProcess";
@@ -269,6 +271,17 @@ public class CreateJob extends HttpServlet {
 					.parseInt((String) request.getParameter(postProcessor)), Integer.parseInt((String) request
 					.getParameter(workerQueue)), seed, cpuLimit, runLimit, memoryLimit, suppressTimestamp, resultsIntervalNum, option, framework);
 
+			if (framework == BenchmarkingFramework.RUNSOLVER) { // runsolver specific settings
+				Integer d = Integer.parseInt( request.getParameter(killDelay) );
+				if (d != null && d > 0) {
+					j.setKillDelay(d);
+				}
+			} else if (framework == BenchmarkingFramework.BENCHEXEC) { // BenchExec specific settings
+				Integer d = Integer.parseInt( request.getParameter(softTimeLimit) );
+				if (d != null && d > 0) {
+					j.setSoftTimeLimit(d);
+				}
+			}
 
 			String selection = request.getParameter(run);
 			String benchMethod = request.getParameter(benchChoice);
@@ -599,6 +612,16 @@ public class CreateJob extends HttpServlet {
 			Integer runLimit = null;
 			if (Util.paramExists(clockTimeout, request)) {
 				runLimit = Integer.parseInt(request.getParameter(clockTimeout));
+			}
+
+			if (Util.paramExists(killDelay, request) && !Validator.isValidInteger(request.getParameter(killDelay))) {
+				return new ValidatorStatusCode(false,
+						"killDelay must be a positive integer");
+			}
+
+			if (Util.paramExists(softTimeLimit, request) && !Validator.isValidInteger(request.getParameter(softTimeLimit))) {
+				return new ValidatorStatusCode(false,
+						"softTimeLimit must be a positive integer");
 			}
 
 			// Passed all type checks-- next we check permissions

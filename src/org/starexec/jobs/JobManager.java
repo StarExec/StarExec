@@ -776,6 +776,8 @@ public abstract class JobManager {
 		replacements.put("$$MAX_CPUTIME$$", "" + Util.clamp(1, queue.getCpuTimeout(), job.getCpuTimeout()));
 		replacements.put("$$MAX_MEM$$", "" + Util.bytesToMegabytes(job.getMaxMemory()));
 		replacements.put("$$BENCH_ID$$", "" + pair.getBench().getId());
+		replacements.put("$$SOFT_TIME_LIMIT$$", "" + job.getSoftTimeLimit());
+		replacements.put("$$KILL_DELAY$$", "" + job.getKillDelay());
 
 		replacements.put("$$BENCHMARKING_FRAMEWORK$$", job.getBenchmarkingFramework().toString());
 

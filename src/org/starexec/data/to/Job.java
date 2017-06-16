@@ -29,9 +29,10 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 
 	private int cpuTimeout = -1;
 	private int wallclockTimeout = -1;
+	private int killDelay = 0;
+	private int softTimeLimit = 0;
 	private long maxMemory;		//maximum memory the pair can use, in bytes
 	private BenchmarkingFramework benchmarkingFramework;
-
 
 	@Expose private Timestamp createTime;
 	@Expose private Timestamp completeTime;
@@ -483,5 +484,31 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 		}
 
 		return status;
+	}
+
+	public void setKillDelay(int killDelay) {
+		this.killDelay = killDelay;
+	}
+
+	/**
+	 * If non-zero, process will recieve SIGTERM, and then SIGKILL after the
+	 * delay specified. Note that this option only applies to RunSolver
+	 * @return delay in seconds
+	 */
+	public int getKillDelay() {
+		return killDelay;
+	}
+
+	public void setSoftTimeLimit(int softTimeLimit) {
+		this.softTimeLimit = softTimeLimit;
+	}
+
+	/**
+	 * If non-zero, SIGTERM will be sent this many seconds after Job starts.
+	 * SIGKILL will be sent after other timeouts.
+	 * @return softTimeLimit in seconds
+	 */
+	public int getSoftTimeLimit() {
+		return softTimeLimit;
 	}
 }

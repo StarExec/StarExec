@@ -704,6 +704,7 @@ CREATE PROCEDURE AddJobPairStage(IN _pairId INT, IN _stageId INT,IN _stageNumber
 		INSERT INTO jobpair_stage_data (jobpair_id, stage_id,stage_number,solver_id,solver_name,config_id,config_name,job_space_id,status_code, disk_size)
 		VALUES (_pairId, _stageId,_stageNumber,_solverId,_solverName,_configId,_configName, _jobSpace,1,0);
 	END //
+
 -- Adds a new job record to the database
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddJob;
@@ -716,6 +717,8 @@ CREATE PROCEDURE AddJob(
 		IN _seed BIGINT,
 		IN _cpu INT,
 		IN _wall INT,
+		IN _softTimeLimit INT,
+		in _killDelay INT,
 		IN _mem BIGINT,
 		IN _suppressTimestamp BOOLEAN,
 		IN _usingDeps INT,
@@ -724,12 +727,16 @@ CREATE PROCEDURE AddJob(
 		IN _benchmarkingFramework ENUM('BENCHEXEC', 'RUNSOLVER'),
 		OUT _id INT)
 	BEGIN
-		INSERT INTO jobs (user_id, name, description, queue_id, primary_space,seed,cpuTimeout,clockTimeout,maximum_memory, paused,
-				suppress_timestamp, using_dependencies, buildJob, total_pairs, disk_size, benchmarking_framework)
-		VALUES (_userId, _name, _desc, _queueId, _spaceId,_seed,_cpu,_wall,_mem, true, _suppressTimestamp, _usingDeps, _buildJob, _totalPairs, 0, _benchmarkingFramework);
+		INSERT INTO jobs (user_id, name, description, queue_id, primary_space,
+				seed, cpuTimeout, clockTimeout, maximum_memory, paused,
+				suppress_timestamp, using_dependencies, buildJob, total_pairs,
+				soft_time_limit, kill_delay, disk_size, benchmarking_framework)
+		VALUES (_userId, _name, _desc, _queueId, _spaceId,
+				_seed, _cpu, _wall, _mem, true,
+				_suppressTimestamp, _usingDeps, _buildJob, _totalPairs,
+				_softTimeLimit, _killDelay, 0, _benchmarkingFramework);
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
-
 
 -- Retrieves all jobs belonging to a user (but not their job pairs)
 -- Author: Ruoyu Zhang

@@ -553,31 +553,30 @@ public class Jobs {
 		}
 
 		try {
-			procedure = con.prepareCall("{CALL AddJob(?, ?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?, ?)}");
+			procedure = con.prepareCall("{CALL AddJob(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)}");
 			procedure.setInt(1, job.getUserId());
 			procedure.setString(2, job.getName());
 			procedure.setString(3, job.getDescription());
 			procedure.setInt(4, job.getQueue().getId());
-
-
 			procedure.setInt(5, job.getPrimarySpace());
 			procedure.setLong(6, job.getSeed());
-			// The procedure will return the job's new ID in this parameter
 			procedure.setInt(7, job.getCpuTimeout());
 			procedure.setInt(8, job.getWallclockTimeout());
-			procedure.setLong(9, job.getMaxMemory());
-			procedure.setBoolean(10, job.timestampIsSuppressed());
-			procedure.setBoolean(11, job.isUsingDependencies());
-			procedure.setBoolean(12, job.isBuildJob());
-			procedure.setInt(13, job.getJobPairs().size());
-			procedure.setString(14, job.getBenchmarkingFramework().toString());
-			procedure.registerOutParameter(15, java.sql.Types.INTEGER);
+			procedure.setInt(9, job.getSoftTimeLimit());
+			procedure.setInt(10, job.getKillDelay());
+			procedure.setLong(11, job.getMaxMemory());
+			procedure.setBoolean(12, job.timestampIsSuppressed());
+			procedure.setBoolean(13, job.isUsingDependencies());
+			procedure.setBoolean(14, job.isBuildJob());
+			procedure.setInt(15, job.getJobPairs().size());
+			procedure.setString(16, job.getBenchmarkingFramework().toString());
+			procedure.registerOutParameter(17, java.sql.Types.INTEGER);
 			procedure.executeUpdate();
 
 			// Update the job's ID so it can be used outside this method
-			job.setId(procedure.getInt(15));
+			job.setId(procedure.getInt(17));
 		} catch (Exception e) {
-			log.error("addJob says " + e.getMessage(), e);
+			log.error("addJob", e.getMessage(), e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -1011,6 +1010,8 @@ public class Jobs {
 		j.setCpuTimeout(results.getInt("cpuTimeout"));
 		j.setWallclockTimeout(results.getInt("clockTimeout"));
 		j.setMaxMemory(results.getLong("maximum_memory"));
+		j.setKillDelay(results.getInt("kill_delay"));
+		j.setSoftTimeLimit(results.getInt("soft_time_limit"));
 		j.setBuildJob(results.getBoolean("buildJob"));
 		j.setDescription(results.getString("description"));
 		j.setSeed(results.getLong("seed"));
