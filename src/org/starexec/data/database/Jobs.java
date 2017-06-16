@@ -1009,7 +1009,7 @@ public class Jobs {
 	 */
 	public static Job resultsToLiteJob(ResultSet results) throws SQLException {
 		final boolean deleted = results.getBoolean("deleted");
-		final String name = results.getString("name") + (deleted ? " (deleted)" : "")
+		final String name = results.getString("name") + (deleted ? " (deleted)" : "");
 
 		final Job j = new Job();
 		j.setName(name);
