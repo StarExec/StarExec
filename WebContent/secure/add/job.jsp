@@ -47,6 +47,7 @@
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_NOT_FOUND, "You do not have permission to add to this space or the space does not exist");
 	}
+	request.setAttribute("MINIMUM_RESULTS_INTERVAL", R.MINIMUM_RESULTS_INTERVAL);
 %>
 
 <jsp:useBean id="now" class="java.util.Date" />
@@ -170,7 +171,7 @@
 						</td>
 					</tr>
 					<star:benchmarkingFrameworkRow />
-					<tr class="noHover advancedOptions" id="resultsIntervalRow" title="The interval, in seconds, at which to retrieve incremental results for pairs that are running. 0 means results are only obtained after pairs finish. 10 is the minimum if this is used.">
+					<tr class="noHover advancedOptions" id="resultsIntervalRow" title="The interval, in seconds, at which to retrieve incremental results for pairs that are running. 0 means results are only obtained after pairs finish. ${MINIMUM_RESULTS_INTERVAL} is the minimum if this is used.">
 						<td>
 							<p>Results Interval</p>
 						</td>
