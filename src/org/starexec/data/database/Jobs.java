@@ -1000,46 +1000,22 @@ public class Jobs {
 		return get(jobId, false, true);
 	}
 
-	/**
-	 * Converts SQL result into a Job with minimal fields set
-	 *
-	 * @param results
-	 * @return Job with minimal information set
-	 * @throws SQLException
-	 */
-	public static Job resultsToLiteJob(ResultSet results) throws SQLException {
-		final boolean deleted = results.getBoolean("deleted");
-		final String name = results.getString("name") + (deleted ? " (deleted)" : "");
-
-		final Job j = new Job();
-		j.setName(name);
-		j.setDeleted(deleted);
+	public static Job resultsToJob(ResultSet results) throws SQLException {
+		Job j = new Job();
 		j.setId(results.getInt("jobs.id"));
 		j.setUserId(results.getInt("user_id"));
+		j.setName(results.getString("name"));
+		j.setPrimarySpace(results.getInt("primary_space"));
 		j.setCreateTime(results.getTimestamp("created"));
 		j.setCompleteTime(results.getTimestamp("completed"));
-		j.setDescription(results.getString("description"));
-		j.setTotalPairs(results.getInt("total_pairs"));
-		j.setDiskSize(results.getLong("disk_size"));
-
-		return j;
-	}
-
-	/**
-	 * Converts SQL results into a Job with all fields set
-	 *
-	 * @param results
-	 * @return Job with all infomation set
-	 * @throws SQLException
-	 */
-	public static Job resultsToJob(ResultSet results) throws SQLException {
-		final Job j = resultsToLiteJob(results);
-		j.setPrimarySpace(results.getInt("primary_space"));
 		j.setCpuTimeout(results.getInt("cpuTimeout"));
 		j.setWallclockTimeout(results.getInt("clockTimeout"));
 		j.setMaxMemory(results.getLong("maximum_memory"));
 		j.setBuildJob(results.getBoolean("buildJob"));
+		j.setDescription(results.getString("description"));
 		j.setSeed(results.getLong("seed"));
+		j.setTotalPairs(results.getInt("total_pairs"));
+		j.setDiskSize(results.getLong("disk_size"));
 		j.setSuppressTimestamp(results.getBoolean("suppress_timestamp"));
 		j.setUsingDependencies(results.getBoolean("using_dependencies"));
 		j.setBenchmarkingFramework(BenchmarkingFramework.valueOf(results.getString("benchmarking_framework")));
@@ -1051,7 +1027,6 @@ public class Jobs {
 		} else {
 			j.setLowPriority();
 		}
-
 		return j;
 	}
 
@@ -2616,7 +2591,19 @@ public class Jobs {
 				Integer errorPercentage = Math.round(100f * results.getInt("errorPairs") / results.getInt("totalPairs"));
 				liteJobPairStats.put("errorPercentage", errorPercentage);
 
-				final Job j = resultsToLiteJob(results);
+				Job j = new Job();
+
+				j.setId(results.getInt("id"));
+				j.setName(results.getString("name"));
+				j.setUserId(results.getInt("user_id"));
+				if (results.getBoolean("deleted")) {
+					j.setName(j.getName() + " (deleted)");
+				}
+				j.setDeleted(results.getBoolean("deleted"));
+				j.setDescription(results.getString("description"));
+				j.setCreateTime(results.getTimestamp("created"));
+				j.setCompleteTime(results.getTimestamp("completed"));
+				j.setDiskSize(results.getLong("disk_size"));
 				j.setLiteJobPairStats(liteJobPairStats);
 
 				try {
