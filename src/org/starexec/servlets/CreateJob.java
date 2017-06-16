@@ -26,6 +26,7 @@ import java.util.*;
 
 /**
  * Servlet which handles incoming requests to create new jobs
+ *
  * @author Tyler Jensen
  */
 @SuppressWarnings("serial")
@@ -46,10 +47,10 @@ public class CreateJob extends HttpServlet {
 	private static final String spaceId = "sid";
 	private static final String traversal = "traversal";
 	private static final String pause = "pause";
-	private static final String maxMemory="maxMem";
-	private static final String randSeed="seed";
-	private static final String resultsInterval="resultsInterval";
-	private static final String otherOutputOption="saveOtherOutput";
+	private static final String maxMemory = "maxMem";
+	private static final String randSeed = "seed";
+	private static final String resultsInterval = "resultsInterval";
+	private static final String otherOutputOption = "saveOtherOutput";
 
 	//unique to quick jobs
 	private static final String benchProcessor = "benchProcess";
@@ -59,18 +60,11 @@ public class CreateJob extends HttpServlet {
 	private static final int MINIMUM_RESULTS_INTERVAL = 10;
 
 	/**
-	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
-	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-	}
-
-
-	/**
 	 * Creates a job which is a flat job with only a single solver and benchmark. Every configuration is run
 	 * on the benchmark, so the number of job pairs is equal to the number of configurations in the solver
-	 * @param j A job object for the job, which must have the following attributes set: userId, pre processor, post processor,
-	 * queue, name, description, seed
+	 *
+	 * @param j A job object for the job, which must have the following attributes set: userId, pre processor, post
+	 * processor, queue, name, description, seed
 	 * @param solverId The ID of the solver that will be run
 	 * @param benchId The ID of the benchmark that will be run
 	 * @param sId The ID of the space to put the job in
@@ -82,10 +76,11 @@ public class CreateJob extends HttpServlet {
 	}
 
 	/**
-	 * Creates a quick job, Every configuration is run
-	 * on the benchmark, so the number of job pairs is equal to the number of configurations in the solver
-	 * @param j A job object for the job, which must have the following attributes set: userId, pre processor, post processor,
-	 * queue, name, description, seed
+	 * Creates a quick job, Every configuration is run on the benchmark, so the number of job pairs is equal to the
+	 * number of configurations in the solver
+	 *
+	 * @param j A job object for the job, which must have the following attributes set: userId, pre processor, post
+	 * processor, queue, name, description, seed
 	 * @param solverId The ID of the solver that will be run
 	 * @param benchmarkIds The IDs of the benchmarks that will be run
 	 * @param sId The ID of the space to put the job in
@@ -95,8 +90,8 @@ public class CreateJob extends HttpServlet {
 
 		List<Configuration> config = Solvers.getConfigsForSolver(solverId);
 		List<Integer> configIds = new ArrayList<>();
-		for (Configuration c :config) {
-			if(!c.getName().equals("starexec_build")){
+		for (Configuration c : config) {
+			if (!c.getName().equals("starexec_build")) {
 				configIds.add(c.getId());
 			}
 		}
@@ -105,6 +100,7 @@ public class CreateJob extends HttpServlet {
 
 	/**
 	 * Tests a solver using default info for the space it is being uploaded in
+	 *
 	 * @param solverId ID of the solver ot put the job in.
 	 * @param spaceId Id of the space to put the job in
 	 * @param userId Id of the user that will make this job
@@ -112,24 +108,15 @@ public class CreateJob extends HttpServlet {
 	 * @return The ID of the job that was newly created, or -1 on error
 	 */
 	public static int buildSolverTestJob(int solverId, int spaceId, int userId, int settingsId) throws SQLException {
-		Solver s=Solvers.get(solverId);
-		DefaultSettings settings=Settings.getProfileById(settingsId);
-        int preProcessorId = ((settings.getPreProcessorId() == null) ? -1 : settings.getPreProcessorId());
-        int postProcessorId = ((settings.getPostProcessorId() == null) ? -1 : settings.getPreProcessorId());
-		Job j = JobManager.setupJob(
-				userId,
-				s.getName(),
-				"test job for new solver "+s.getName()+" "+"("+s.getId()+")",
-				preProcessorId,
-				postProcessorId,
-				Queues.getTestQueue(),
-				0,settings.getCpuTimeout(),
-				settings.getWallclockTimeout(),
-				settings.getMaxMemory(),
-				false,
-				0,
-				SaveResultsOption.SAVE,
-				R.DEFAULT_BENCHMARKING_FRAMEWORK);
+		Solver s = Solvers.get(solverId);
+		DefaultSettings settings = Settings.getProfileById(settingsId);
+		int preProcessorId = ((settings.getPreProcessorId() == null) ? -1 : settings.getPreProcessorId());
+		int postProcessorId = ((settings.getPostProcessorId() == null) ? -1 : settings.getPreProcessorId());
+		Job j = JobManager.setupJob(userId, s.getName(),
+				"test job for new solver " + s.getName() + " " + "(" + s.getId() +
+				")", preProcessorId, postProcessorId, Queues.getTestQueue(), 0, settings.getCpuTimeout(), settings
+						.getWallclockTimeout(), settings
+						.getMaxMemory(), false, 0, SaveResultsOption.SAVE, R.DEFAULT_BENCHMARKING_FRAMEWORK);
 
 		buildQuickJob(j, solverId, settings.getBenchIds(), spaceId);
 		boolean submitSuccess = Jobs.add(j, spaceId);
@@ -140,9 +127,74 @@ public class CreateJob extends HttpServlet {
 	}
 
 	/**
+	 * Validates that the given parameters are allowable for the given queue and user.
+	 *
+	 * @param userId The ID of the user trying to create a job. Invalid if this user does not have permission to use
+	 * the given queue.
+	 * @param queueId The queue being used.
+	 * @param cpuLimit The CPU timeout for the job. Invalid if it exceeds the queue limit. Not checked if null.
+	 * @param wallclockLimit The wallclock timeout for the job. Invalid if it exceeds the queue limit. Not checked if
+	 * null.
+	 * @param preProcId The ID of the pre processor being used. Invalid if the given user cannot use it.
+	 * @param postProcId The ID of the post processor being used. Invalid if the given user cannot use it.
+	 * @return A ValidatorStatusCode with a human readable error message if invalid.
+	 */
+	public static ValidatorStatusCode isValid(int userId, int queueId, Integer cpuLimit, Integer wallclockLimit,
+	                                          Integer preProcId, Integer postProcId) {
+		List<Queue> userQueues = Queues.getUserQueues(userId);
+		Boolean queueFound = false;
+		for (Queue queue : userQueues) {
+			if (queue.getId() == queueId) {
+				queueFound = true;
+				break;
+			}
+		}
+
+		if (!queueFound) {
+			return new ValidatorStatusCode(false, "The given queue does not exist or you do not have access to it");
+		}
+
+		Queue q = Queues.get(queueId);
+		if (wallclockLimit != null && wallclockLimit > q.getWallTimeout()) {
+			return new ValidatorStatusCode(false,
+					"The given wallclock timeout exceeds the maximum allowed for this queue, which is " +
+					q.getWallTimeout());
+		}
+
+		if (cpuLimit != null && cpuLimit > q.getCpuTimeout()) {
+			return new ValidatorStatusCode(false,
+					"The given cpu timeout exceeds the maximum allowed for this queue, which is " + q.getCpuTimeout());
+		}
+
+		if (preProcId != null) {
+			if (!ProcessorSecurity.canUserSeeProcessor(preProcId, userId).isSuccess()) {
+				return new ValidatorStatusCode(false,
+						"You do not have permission to use the given preprocessor, or it" + " does not exist");
+			}
+		}
+		if (postProcId != null) {
+			if (!ProcessorSecurity.canUserSeeProcessor(postProcId, userId).isSuccess()) {
+				return new ValidatorStatusCode(false,
+						"You do not have permission to use the given postprocessor, or " + "it does not exist");
+			}
+		}
+
+		return new ValidatorStatusCode(true);
+	}
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException,
+			IOException {
+		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
+	}
+
+	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
+			IOException {
 		try {
 			final String method = "doPost";
 			// Make sure the request is valid
@@ -169,8 +221,6 @@ public class CreateJob extends HttpServlet {
 			} else {
 				cpuLimit = settings.getCpuTimeout();
 			}
-
-
 
 			int runLimit = 0;
 			if (Util.paramExists(clockTimeout, request)) {
@@ -200,13 +250,12 @@ public class CreateJob extends HttpServlet {
 			memoryLimit = (memoryLimit <= 0) ? R.DEFAULT_PAIR_VMEM : memoryLimit;
 
 
-
-
 			boolean suppressTimestamp = false;
 			if (Util.paramExists(R.SUPPRESS_TIMESTAMP_INPUT_NAME, request)) {
 				suppressTimestamp = request.getParameter(R.SUPPRESS_TIMESTAMP_INPUT_NAME).equals("yes");
 			}
-			log.debug("(" + method + ")" + " User chose " + (suppressTimestamp ? "" : "not ") + "to suppress timestamps.");
+			log.debug("(" + method + ")" + " User chose " + (suppressTimestamp ? "" : "not ") +
+			          "to suppress timestamps.");
 
 			SaveResultsOption option = SaveResultsOption.SAVE;
 
@@ -216,25 +265,11 @@ public class CreateJob extends HttpServlet {
 				}
 			}
 
-
-
-
 			//Setup the job's attributes
-			Job j = JobManager.setupJob(
-					userId,
-					(String) request.getParameter(name),
-					(String) request.getParameter(description),
-					Integer.parseInt((String) request.getParameter(preProcessor)),
-					Integer.parseInt((String) request.getParameter(postProcessor)),
-					Integer.parseInt((String) request.getParameter(workerQueue)),
-					seed,
-					cpuLimit,
-					runLimit,
-					memoryLimit,
-					suppressTimestamp,
-					resultsIntervalNum,
-					option,
-					framework);
+			Job j = JobManager.setupJob(userId, (String) request.getParameter(name), (String) request
+					.getParameter(description), Integer.parseInt((String) request.getParameter(preProcessor)), Integer
+					.parseInt((String) request.getParameter(postProcessor)), Integer.parseInt((String) request
+					.getParameter(workerQueue)), seed, cpuLimit, runLimit, memoryLimit, suppressTimestamp, resultsIntervalNum, option, framework);
 
 
 			String selection = request.getParameter(run);
@@ -253,8 +288,10 @@ public class CreateJob extends HttpServlet {
 			} else if (selection.equals("keepHierarchy")) {
 				log.debug("User selected keepHierarchy");
 				//Create the HashMap to be used for creating job-pair path
-				HashMap<Integer, String> SP = Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
-				List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(space, userId)); //Remove spaces the user is not a member of
+				HashMap<Integer, String> SP =
+						Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
+				List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces
+						.getSubSpaceHierarchy(space, userId)); //Remove spaces the user is not a member of
 				log.debug("got all the subspaces for the job");
 				spaces.add(0, Spaces.get(space));
 
@@ -266,7 +303,8 @@ public class CreateJob extends HttpServlet {
 				}
 				log.debug("added all the job pairs from every space");
 
-				//if we're doing "depth first", we just add all the pairs from space1, then all the pairs from space2, and so on
+				//if we're doing "depth first", we just add all the pairs from space1, then all the pairs from space2,
+				// and so on
 				if (traversalMethod.equals("depth")) {
 					JobManager.addJobPairsDepthFirst(j, spaceToPairs);
 					//otherwise, we are doing "breadth first", so we interleave pairs from all the spaces
@@ -289,7 +327,9 @@ public class CreateJob extends HttpServlet {
 				} else if (benchMethod.equals("runAllBenchInHierarchy")) {
 					log.debug("got request to run all in bench hierarchy");
 
-					Map<Integer, List<JobPair>> spaceToPairs = JobManager.addBenchmarksFromHierarchy(Integer.parseInt(request.getParameter(spaceId)), SessionUtil.getUserId(request), configIds, SP);
+					Map<Integer, List<JobPair>> spaceToPairs = JobManager
+							.addBenchmarksFromHierarchy(Integer.parseInt(request.getParameter(spaceId)), SessionUtil
+									.getUserId(request), configIds, SP);
 
 					if (traversalMethod.equals("depth")) {
 						log.debug("User selected depth-first traversal");
@@ -304,19 +344,22 @@ public class CreateJob extends HttpServlet {
 				}
 			}
 
-
 			int pairCount = j.getJobPairs().size();
 			if (j.getJobPairs().size() == 0) {
 				String message = "Error: no job pairs created for the job. Could not proceed with job submission.";
 				Space jobSpace = Spaces.getDetails(space, userId);
 				if (jobSpace.getSubspaces().size() == 0) {
 					if (jobSpace.getSolvers().size() == 0) {
-						message = "Error: no job pairs created for the job. There are no solvers in this space. Could not proceed with job submission.";
+						message =
+								"Error: no job pairs created for the job. There are no solvers in this space. Could " +
+								"not proceed with job submission.";
 					} else if (jobSpace.getBenchmarks().size() == 0) {
-						message = "Error: no job pairs created for the job. There are no benchmarks in this space. Could not proceed with job submission.";
+						message = "Error: no job pairs created for the job. There are no benchmarks in this space. " +
+						          "Could" + " not proceed with job submission.";
 					}
 				} else if (!Spaces.configBenchPairExistsInHierarchy(space, userId)) {
-					message = "Error: no job pairs created for the job. There are no valid solver benchmark pairs in this space hierarchy. Could not proceed with job submission.";
+					message = "Error: no job pairs created for the job. There are no valid solver benchmark pairs in" +
+					          " " + "this space hierarchy. Could not proceed with job submission.";
 				}
 				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
@@ -326,16 +369,18 @@ public class CreateJob extends HttpServlet {
 
 			User u = Users.get(userId);
 			int pairsAvailable = Math.max(0, u.getPairQuota() - Jobs.countPairsByUser(userId));
-			// This just checks if a quota is totally full, which is sufficient for quick jobs and as a fast sanity check
-			// for full jobs. After the number of pairs have been acquired for a full job this check will be done factoring them in.
+			/* This just checks if a quota is totally full, which is sufficient for quick jobs and as a fast sanity
+			check for full jobs. After the number of pairs have been acquired for a full job this check will be done
+			factoring them in. */
 			if (pairsAvailable < pairCount) {
-				String message = "Error: You are trying to create " + pairCount + " pairs, but you have " + pairsAvailable + " remaining in your quota. Please delete some old jobs before continuing.";
+				String message =
+						"Error: You are trying to create " + pairCount + " pairs, but you have " + pairsAvailable +
+						" remaining in your quota. Please delete some old jobs before continuing.";
 				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, message));
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
 				// No pairs in the job means something went wrong; error out
 				return;
 			}
-
 
 			boolean submitSuccess = Jobs.add(j, space);
 			String start_paused = request.getParameter(pause);
@@ -358,7 +403,7 @@ public class CreateJob extends HttpServlet {
 				}
 			} else { // if not submitSuccess
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-						"Your job failed to submit for an unknown reason. Please try again.");
+						"Your job failed to submit for an " + "unknown reason. Please try again.");
 			}
 		} catch (Exception e) {
 			log.warn("Caught Exception in CreateJob.doPost.", e);
@@ -367,102 +412,60 @@ public class CreateJob extends HttpServlet {
 	}
 
 	/**
-	 * Validates that the given parameters are allowable for the given queue and user.
-	 * @param userId The ID of the user trying to create a job. Invalid if this user does not have permission
-	 * to use the given queue.
-	 * @param queueId The queue being used.
-	 * @param cpuLimit The CPU timeout for the job. Invalid if it exceeds the queue limit. Not checked if null.
-	 * @param wallclockLimit The wallclock timeout for the job. Invalid if it exceeds the queue limit. Not checked if null.
-	 * @param preProcId The ID of the pre processor being used. Invalid if the given user cannot use it.
-	 * @param postProcId The ID of the post processor being used. Invalid if the given user cannot use it.
-	 * @return A ValidatorStatusCode with a human readable error message if invalid.
-	 */
-	public static ValidatorStatusCode isValid(int userId, int queueId, Integer cpuLimit, Integer wallclockLimit, Integer preProcId, Integer postProcId) {
-		List<Queue> userQueues = Queues.getUserQueues(userId);
-		Boolean queueFound=false;
-		for (Queue queue:userQueues){
-			if (queue.getId() == queueId){
-				queueFound=true;
-				break;
-			}
-		}
-
-
-		if (!queueFound){
-			return new ValidatorStatusCode(false, "The given queue does not exist or you do not have access to it");
-		}
-
-		Queue q=Queues.get(queueId);
-		if (wallclockLimit!=null && wallclockLimit > q.getWallTimeout()) {
-			return new ValidatorStatusCode(false, "The given wallclock timeout exceeds the maximum allowed for this queue, which is "+q.getWallTimeout());
-		}
-
-		if (cpuLimit != null && cpuLimit>q.getCpuTimeout()) {
-			return new ValidatorStatusCode(false, "The given cpu timeout exceeds the maximum allowed for this queue, which is "+q.getCpuTimeout());
-		}
-
-		 if (preProcId != null) {
-		    if (!ProcessorSecurity.canUserSeeProcessor(preProcId, userId).isSuccess()) {
-		    	return new ValidatorStatusCode(false, "You do not have permission to use the given preprocessor, or it does not exist");
-			}
-		 }
-		 if (postProcId != null) {
-			if (!ProcessorSecurity.canUserSeeProcessor(postProcId, userId).isSuccess()) {
-			    return new ValidatorStatusCode(false, "You do not have permission to use the given postprocessor, or it does not exist");
-			}
-		 }
-
-		return new ValidatorStatusCode(true);
-	}
-
-	/**
-	 * Uses the Validate util to ensure the incoming request is valid. This checks for illegal characters
-	 * and content length requirements to ensure it is not malicious.
+	 * Uses the Validate util to ensure the incoming request is valid. This checks for illegal characters and content
+	 * length requirements to ensure it is not malicious.
+	 *
 	 * @param request The request to validate
 	 * @return True if the request is ok to act on, false otherwise
 	 */
 	private ValidatorStatusCode isValid(HttpServletRequest request) {
 		try {
 			// Make sure the parent space id is a int
-			if(!Validator.isValidPosInteger(request.getParameter(spaceId))) {
+			if (!Validator.isValidPosInteger(request.getParameter(spaceId))) {
 				return new ValidatorStatusCode(false, "The given space ID needs to be a valid integer");
 			}
 
 			if (!Util.paramExists(R.BENCHMARKING_FRAMEWORK_OPTION, request)) {
-				return new ValidatorStatusCode(false, "You must specify which benchmarking framework you want to use.");
+				return new ValidatorStatusCode(false,
+						"You must specify which benchmarking framework you want to use" + ".");
 			}
 
 
 			int userId = SessionUtil.getUserId(request);
 			if (Users.isDiskQuotaExceeded(userId)) {
-				return new ValidatorStatusCode(false, "Your disk quota has been exceeded: please clear out some old solvers, jobs, or benchmarks before proceeding");
+				return new ValidatorStatusCode(false, "Your disk quota has been exceeded: please clear out some old " +
+				                                      "solvers, jobs, or benchmarks before proceeding");
 			}
 			int sid = Integer.parseInt(request.getParameter(spaceId));
 			// Make sure the user has access to the space
 			Permission perm = Permissions.get(userId, sid);
-			if (sid>=0) {
-				if(perm == null || !perm.canAddJob()) {
+			if (sid >= 0) {
+				if (perm == null || !perm.canAddJob()) {
 					return new ValidatorStatusCode(false, "You do not have permission to add jobs in this space");
 				}
 			}
 
 			// Make sure timeout an int
-			if(Util.paramExists(clockTimeout, request) && !Validator.isValidPosInteger(request.getParameter(clockTimeout))) {
+			if (Util.paramExists(clockTimeout, request) && !Validator.isValidPosInteger(request.getParameter
+					(clockTimeout))) {
 				return new ValidatorStatusCode(false, "The given wallclock timeout needs to be a valid integer");
 			}
 
-			if(Util.paramExists(cpuTimeout, request) && !Validator.isValidPosInteger(request.getParameter(cpuTimeout))) {
+			if (Util.paramExists(cpuTimeout, request) && !Validator.isValidPosInteger(request.getParameter(cpuTimeout)
+			)) {
 				return new ValidatorStatusCode(false, "The given cpu timeout needs to be a valid integer");
 			}
 
-			if(Util.paramExists(maxMemory, request) && !Validator.isValidPosDouble(request.getParameter(maxMemory))) {
-				return new ValidatorStatusCode(false, "The given maximum memory needs to be a positive number (decimals are permitted)");
+			if (Util.paramExists(maxMemory, request) && !Validator.isValidPosDouble(request.getParameter(maxMemory))) {
+				return new ValidatorStatusCode(false,
+						"The given maximum memory needs to be a positive number " + "(decimals are permitted)");
 			}
-			if (!Util.paramExists(clockTimeout, request) || !Util.paramExists(cpuTimeout, request) || !Util.paramExists(maxMemory, request)) {
+			if (!Util.paramExists(clockTimeout, request) || !Util.paramExists(cpuTimeout, request) || !Util
+					.paramExists(maxMemory, request)) {
 				DefaultSettings s = Communities.getDefaultSettings(Integer.parseInt(request.getParameter(spaceId)));
-				if (s==null) {
-					return new ValidatorStatusCode(false, "There is no settings profile for the current space, "
-							+ "so time and memory limits must be specified");
+				if (s == null) {
+					return new ValidatorStatusCode(false, "There is no settings profile for the current space, " +
+					                                      "so time and memory limits must be specified");
 				}
 			}
 
@@ -471,54 +474,59 @@ public class CreateJob extends HttpServlet {
 			}
 			if (Util.paramExists(resultsInterval, request)) {
 				if (!Validator.isValidPosInteger(request.getParameter(resultsInterval))) {
-					return new ValidatorStatusCode(false, "The interval for obtaining results must be greater than or equal to 0");
+					return new ValidatorStatusCode(false,
+							"The interval for obtaining results must be greater than or " + "equal to 0");
 				}
 				int i = Integer.parseInt(request.getParameter(resultsInterval));
-				if (i!=0 && i < MINIMUM_RESULTS_INTERVAL) {
-					return new ValidatorStatusCode(false, "The interval for obtaining results must be at least "+MINIMUM_RESULTS_INTERVAL+" seconds");
+				if (i != 0 && i < MINIMUM_RESULTS_INTERVAL) {
+					return new ValidatorStatusCode(false,
+							"The interval for obtaining results must be at least " + MINIMUM_RESULTS_INTERVAL +
+							" seconds");
 				}
 			}
-			Integer preProc=null;
-			Integer postProc=null;
+			Integer preProc = null;
+			Integer postProc = null;
 			// If processors are specified, make sure they're valid ints
-			if(Util.paramExists(postProcessor, request)) {
+			if (Util.paramExists(postProcessor, request)) {
 
-				if(!Validator.isValidInteger(request.getParameter(postProcessor))) {
+				if (!Validator.isValidInteger(request.getParameter(postProcessor))) {
 					return new ValidatorStatusCode(false, "The given post processor ID needs to be a valid integer");
 				}
-				postProc=Integer.parseInt(request.getParameter(postProcessor));
+				postProc = Integer.parseInt(request.getParameter(postProcessor));
 				//means none was selected
-				if (postProc<1) {
-					postProc=null;
+				if (postProc < 1) {
+					postProc = null;
 				}
 			}
 
-			if(Util.paramExists(preProcessor, request)) {
-				if(!Validator.isValidInteger(request.getParameter(preProcessor))) {
+			if (Util.paramExists(preProcessor, request)) {
+				if (!Validator.isValidInteger(request.getParameter(preProcessor))) {
 					return new ValidatorStatusCode(false, "The given pre processor ID needs to be a valid integer");
 				}
-				preProc=Integer.parseInt(request.getParameter(preProcessor));
-				if (preProc<1) {
-					preProc=null;
+				preProc = Integer.parseInt(request.getParameter(preProcessor));
+				if (preProc < 1) {
+					preProc = null;
 				}
 			}
 
 			// Make sure the queue is a valid integer
-			if(!Validator.isValidPosInteger(request.getParameter(workerQueue))) {
+			if (!Validator.isValidPosInteger(request.getParameter(workerQueue))) {
 				return new ValidatorStatusCode(false, "The given queue ID needs to be a valid integer");
 			}
 			// Make sure the queue is a valid selection and user has access to it
 			Integer queueId = Integer.parseInt(request.getParameter(workerQueue));
 			// Ensure the job description is valid
-			if(!Validator.isValidPrimDescription((String)request.getParameter(description))) {
-				return new ValidatorStatusCode(false, "The given description is invalid, please see the help files to see the valid format");
+			if (!Validator.isValidPrimDescription((String) request.getParameter(description))) {
+				return new ValidatorStatusCode(false,
+						"The given description is invalid, please see the help files to " + "see the valid format");
 			}
 			if (!Util.paramExists(run, request)) {
 				return new ValidatorStatusCode(false, "You need to select a run choice for this job");
 			}
 			if (Util.paramExists(otherOutputOption, request)) {
 				if (!Validator.isValidBool(request.getParameter(otherOutputOption))) {
-					return new ValidatorStatusCode(false, "Whether to save extra output files needs to be a valid boolean");
+					return new ValidatorStatusCode(false,
+							"Whether to save extra output files needs to be a valid " + "boolean");
 				}
 			}
 
@@ -531,12 +539,12 @@ public class CreateJob extends HttpServlet {
 				if (!Validator.isValidPosInteger(request.getParameter(R.SOLVER))) {
 					return new ValidatorStatusCode(false, "The given solver ID is not a valid integer");
 				}
-				int solverId=Integer.parseInt(request.getParameter(R.SOLVER));
+				int solverId = Integer.parseInt(request.getParameter(R.SOLVER));
 				if (!Permissions.canUserSeeSolver(solverId, userId)) {
 					return new ValidatorStatusCode(false, "You do not have permission to see the given solver ID");
 				}
 
-				if (Solvers.getConfigsForSolver(solverId).size()==0) {
+				if (Solvers.getConfigsForSolver(solverId).size() == 0) {
 					return new ValidatorStatusCode(false, "The given solver does not have any configurations");
 				}
 
@@ -549,38 +557,40 @@ public class CreateJob extends HttpServlet {
 			if (request.getParameter(run).equals("choose")) {
 
 				// Check to see if we have a valid list of benchmark ids
-				if (request.getParameter(benchChoice).equals("runChosenFromSpace")){
+				if (request.getParameter(benchChoice).equals("runChosenFromSpace")) {
 					if (!Validator.isValidIntegerList(request.getParameterValues(R.BENCHMARK))) {
 						return new ValidatorStatusCode(false, "All selected benchmark IDs need to be valid integers");
 					}
 				}
-				List<Integer> benchmarkIds=Util.toIntegerList(request.getParameterValues(R.BENCHMARK));
+				List<Integer> benchmarkIds = Util.toIntegerList(request.getParameterValues(R.BENCHMARK));
 				if (request.getParameter(benchChoice).equals("runChosenFromSpace") && benchmarkIds.size() == 0) {
 					return new ValidatorStatusCode(false, "You need to chose at least one benchmark to run a job");
 				}
 				// Make sure the user is using benchmarks they can see
-				if(!Permissions.canUserSeeBenchs(benchmarkIds, userId)) {
-					return new ValidatorStatusCode(false, "You do not have permission to use one or more of the benchmarks you have selected");
+				if (!Permissions.canUserSeeBenchs(benchmarkIds, userId)) {
+					return new ValidatorStatusCode(false,
+							"You do not have permission to use one or more of the " + "benchmarks you have selected");
 				}
 
 				// Check to see if we have a valid list of configuration ids
-				if(!Validator.isValidIntegerList(request.getParameterValues(configs))) {
+				if (!Validator.isValidIntegerList(request.getParameterValues(configs))) {
 					return new ValidatorStatusCode(false, "All selected configuration IDs need to be valid integers");
 				}
 
-				Set<Integer> solverIds= new HashSet<>();
+				Set<Integer> solverIds = new HashSet<>();
 				for (Integer cid : Util.toIntegerList(request.getParameterValues(configs))) {
 					solverIds.add(Solvers.getSolverByConfig(cid, false).getId());
 				}
-				if (solverIds.size()==0) {
-					return new ValidatorStatusCode(false, "You need to select at least one configuration to run a job");
+				if (solverIds.size() == 0) {
+					return new ValidatorStatusCode(false,
+							"You need to select at least one configuration to run a " + "job");
 				}
 				// Make sure the user is using solvers they can see
-				if(!Permissions.canUserSeeSolvers(solverIds, userId)) {
-					return new ValidatorStatusCode(false, "You do not have permission to use all of the selected solvers");
+				if (!Permissions.canUserSeeSolvers(solverIds, userId)) {
+					return new ValidatorStatusCode(false,
+							"You do not have permission to use all of the selected " + "solvers");
 				}
 			}
-
 
 
 			//make sure both timeouts are <= the queue settings
@@ -594,7 +604,7 @@ public class CreateJob extends HttpServlet {
 			}
 
 			// Passed all type checks-- next we check permissions
-			return CreateJob.isValid(userId,queueId,cpuLimit,runLimit,preProc,postProc);
+			return CreateJob.isValid(userId, queueId, cpuLimit, runLimit, preProc, postProc);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
