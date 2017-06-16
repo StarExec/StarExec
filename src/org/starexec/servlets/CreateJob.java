@@ -195,14 +195,14 @@ public class CreateJob extends HttpServlet {
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
 			IOException {
+		final String method = "doPost";
+		log.debug(method, "starting job post");
 		try {
-			final String method = "doPost";
 			// Make sure the request is valid
-			log.debug("starting job post");
 			ValidatorStatusCode status = isValid(request);
 			if (!status.isSuccess()) {
 				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
-				log.debug("received an invalid job creation request");
+				log.debug(method, "received an invalid job creation request");
 				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 				return;
@@ -228,12 +228,14 @@ public class CreateJob extends HttpServlet {
 			} else {
 				runLimit = settings.getWallclockTimeout();
 			}
+
 			long memoryLimit = 0;
 			if (Util.paramExists(maxMemory, request)) {
 				memoryLimit = Util.gigabytesToBytes(Double.parseDouble(request.getParameter(maxMemory)));
 			} else {
 				memoryLimit = settings.getMaxMemory();
 			}
+
 			int resultsIntervalNum = 0;
 			if (Util.paramExists(resultsInterval, request)) {
 				resultsIntervalNum = Integer.parseInt(request.getParameter(resultsInterval));
@@ -249,12 +251,11 @@ public class CreateJob extends HttpServlet {
 			//memory is in units of bytes
 			memoryLimit = (memoryLimit <= 0) ? R.DEFAULT_PAIR_VMEM : memoryLimit;
 
-
 			boolean suppressTimestamp = false;
 			if (Util.paramExists(R.SUPPRESS_TIMESTAMP_INPUT_NAME, request)) {
 				suppressTimestamp = request.getParameter(R.SUPPRESS_TIMESTAMP_INPUT_NAME).equals("yes");
 			}
-			log.debug("(" + method + ")" + " User chose " + (suppressTimestamp ? "" : "not ") +
+			log.debug(method, "User chose " + (suppressTimestamp ? "" : "not ") +
 			          "to suppress timestamps.");
 
 			SaveResultsOption option = SaveResultsOption.SAVE;
@@ -283,16 +284,16 @@ public class CreateJob extends HttpServlet {
 				String bName = request.getParameter(benchName);
 				int benchProc = Integer.parseInt(request.getParameter(benchProcessor));
 				int benchId = BenchmarkUploader.addBenchmarkFromText(benchText, bName, userId, benchProc, false);
-				log.debug("new benchmark created for quickJob with id = " + benchId);
+				log.debug(method, "new benchmark created for quickJob with id = " + benchId);
 				buildQuickJob(j, solverId, benchId, space);
 			} else if (selection.equals("keepHierarchy")) {
-				log.debug("User selected keepHierarchy");
+				log.debug(method, "User selected keepHierarchy");
 				//Create the HashMap to be used for creating job-pair path
 				HashMap<Integer, String> SP =
 						Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
 				List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces
 						.getSubSpaceHierarchy(space, userId)); //Remove spaces the user is not a member of
-				log.debug("got all the subspaces for the job");
+				log.debug(method, "got all the subspaces for the job");
 				spaces.add(0, Spaces.get(space));
 
 				HashMap<Integer, List<JobPair>> spaceToPairs = new HashMap<>();
@@ -301,7 +302,7 @@ public class CreateJob extends HttpServlet {
 
 					spaceToPairs.put(s.getId(), pairs);
 				}
-				log.debug("added all the job pairs from every space");
+				log.debug(method, "added all the job pairs from every space");
 
 				//if we're doing "depth first", we just add all the pairs from space1, then all the pairs from space2,
 				// and so on
@@ -309,7 +310,7 @@ public class CreateJob extends HttpServlet {
 					JobManager.addJobPairsDepthFirst(j, spaceToPairs);
 					//otherwise, we are doing "breadth first", so we interleave pairs from all the spaces
 				} else {
-					log.debug("adding pairs round robin");
+					log.debug(method, "adding pairs round robin");
 					JobManager.addJobPairsRoundRobin(j, spaceToPairs);
 
 				}
@@ -325,17 +326,17 @@ public class CreateJob extends HttpServlet {
 					}
 
 				} else if (benchMethod.equals("runAllBenchInHierarchy")) {
-					log.debug("got request to run all in bench hierarchy");
+					log.debug(method, "got request to run all in bench hierarchy");
 
 					Map<Integer, List<JobPair>> spaceToPairs = JobManager
 							.addBenchmarksFromHierarchy(Integer.parseInt(request.getParameter(spaceId)), SessionUtil
 									.getUserId(request), configIds, SP);
 
 					if (traversalMethod.equals("depth")) {
-						log.debug("User selected depth-first traversal");
+						log.debug(method, "User selected depth-first traversal");
 						JobManager.addJobPairsDepthFirst(j, spaceToPairs);
 					} else {
-						log.debug("users selected round robin traversal");
+						log.debug(method, "users selected round robin traversal");
 						JobManager.addJobPairsRoundRobin(j, spaceToPairs);
 					}
 				} else {
@@ -406,7 +407,7 @@ public class CreateJob extends HttpServlet {
 						"Your job failed to submit for an " + "unknown reason. Please try again.");
 			}
 		} catch (Exception e) {
-			log.warn("Caught Exception in CreateJob.doPost.", e);
+			log.warn(method, "Caught Exception in CreateJob.doPost.", e);
 			throw e;
 		}
 	}
