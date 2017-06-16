@@ -21,11 +21,11 @@ import java.util.HashMap;
  * @author Tyler Jensen
  */
 public class R {
-    /* 
+    /*
      * IMPORTANT: This class only supports string, int and boolean types.
      * DO NOT change field names without changing their corresponding keys
      * in starexec-config.xml. Field names must match property key names!
-     * 
+     *
      * Any fields set here will be treated as defaults
      */
 
@@ -290,6 +290,10 @@ public class R {
 	public static int NUM_JOB_PAIRS_AT_A_TIME = 5;  // the number of job pairs from a job to submit at the same time, as we cycle through all jobs submitting pairs.
 	public static int NUM_REPOSTPROCESS_AT_A_TIME = 200; // number of job pairs to re-postprocess at a time with our periodic task
 	public static int DEFAULT_MAX_TIMEOUT = 259200;
+
+	/* Minimum interval for jobs that report incremental results.
+	 * Incremental reporting will be disabled beneth this threshold. */
+	public static final int MINIMUM_RESULTS_INTERVAL = 10;
 
 	// The number of minutes that is considered ok for a pair to be enqueued but not running.
 	public static int PAIR_ENQUEUE_TIME_THRESHOLD = 1440;

@@ -56,9 +56,6 @@ public class CreateJob extends HttpServlet {
 	private static final String benchProcessor = "benchProcess";
 	private static final String benchName = "benchName";
 
-
-	private static final int MINIMUM_RESULTS_INTERVAL = 10;
-
 	/**
 	 * Creates a job which is a flat job with only a single solver and benchmark. Every configuration is run
 	 * on the benchmark, so the number of job pairs is equal to the number of configurations in the solver
@@ -479,9 +476,9 @@ public class CreateJob extends HttpServlet {
 							"The interval for obtaining results must be greater than or " + "equal to 0");
 				}
 				int i = Integer.parseInt(request.getParameter(resultsInterval));
-				if (i != 0 && i < MINIMUM_RESULTS_INTERVAL) {
+				if (i != 0 && i < R.MINIMUM_RESULTS_INTERVAL) {
 					return new ValidatorStatusCode(false,
-							"The interval for obtaining results must be at least " + MINIMUM_RESULTS_INTERVAL +
+							"The interval for obtaining results must be at least " + R.MINIMUM_RESULTS_INTERVAL +
 							" seconds");
 				}
 			}
