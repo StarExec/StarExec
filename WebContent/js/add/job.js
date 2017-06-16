@@ -26,7 +26,6 @@ $(document).ready(function(){
 
 	initUI();
 	attachFormValidation();
-	benchmarkingFrameworkChanged();
 
 	$('#radioDepth').attr('checked','checked');
 	$('#radioNoPause').attr('checked','checked');
@@ -249,15 +248,15 @@ function initUI() {
 	 * benchmarking framework. Therefore, we exclude these options from our
 	 * toggle set and handle them elsewhere.
 	 */
-	var $advancedOptions = $('.advancedOptions:not(.runsolveronly,.benchexeconly)');
-	$advancedOptions.hide();
+	$('.advancedOptions').hide();
 	$('#advancedOptionsButton').button({
 		icons: {
 			primary: "ui-icon-gear"
 		}
 	}).click(function() {
 		$('#advancedOptionsRow').hide();
-		$advancedOptions.show();
+		$('.advancedOptions:not(.runsolveronly,.benchexeconly)').show();
+		benchmarkingFrameworkChanged();
 	});
 
 	$('#btnNext').button({
