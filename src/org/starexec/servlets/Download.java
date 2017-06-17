@@ -516,8 +516,8 @@ public class Download extends HttpServlet {
 				for (File file : files) {
 					if (file.exists()) {
 						long modified;
+						StringBuilder singleFileName;
 						if (file.isDirectory()) {
-							StringBuilder singleFileName = null;
 							if (useSpacePath) {
 								singleFileName = new StringBuilder(zipFileNameParent);
 							} else {
@@ -534,9 +534,9 @@ public class Download extends HttpServlet {
 								modified = ArchiveUtil.addDirToArchive(stream, file, singleFileName.toString(), earlyDate);
 							}
 						} else {
-							StringBuilder singleFileName = new StringBuilder(zipFileName);
-							//singleFileName.append(File.separator);
-							//singleFileName.append(p.getBench().getName());
+							singleFileName = new StringBuilder(zipFileNameParent);
+							singleFileName.append(File.separator);
+							singleFileName.append(file.getName());
 							if (!running || earlyDate == null) {
 								modified = ArchiveUtil.addFileToArchive(stream, file, singleFileName.toString());
 
