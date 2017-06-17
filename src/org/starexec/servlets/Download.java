@@ -1074,26 +1074,12 @@ public class Download extends HttpServlet {
 					List<Processor> proc = null;
 					shortName = "Processor";
 					response.addHeader("Content-Disposition", "attachment; filename=" + shortName + ".zip");
-					if (request.getParameter("procClass").equals("post")) {
-						log.debug(methodName, "download request is for post-processor.");
 
-						proc = Processors.getByCommunity(Integer.parseInt(request.getParameter(PARAM_ID)), ProcessorType.POST);
-					} else {
-						if (request.getParameter("procClass").equals("pre")) {
-							log.debug(methodName, "download request is for pre-processor");
-							proc = Processors.getByCommunity(Integer.parseInt(request.getParameter(PARAM_ID)), ProcessorType.PRE);
-						} else {
-							if (request.getParameter("procClass").equals("update")) {
-								log.debug(methodName, "download request is for update-processor");
+					final Integer id = Integer.parseInt(request.getParameter(PARAM_ID));
+					final ProcessorType type = ProcessorType.valueOf(request.getParameter("procClass").toUpperCase());
+					log.debug(methodName, "download request is for " + type.toString());
+					proc = Processors.getByCommunity(id, type);
 
-								proc = Processors.getByCommunity(Integer.parseInt(request.getParameter(PARAM_ID)), ProcessorType.UPDATE);
-							} else {
-								log.debug(methodName, "download request is for bench-processor");
-
-								proc = Processors.getByCommunity(Integer.parseInt(request.getParameter(PARAM_ID)), ProcessorType.BENCH);
-							}
-						}
-					}
 					if (proc.size() > 0) {
 						success = handleProc(proc, response);
 					} else {
