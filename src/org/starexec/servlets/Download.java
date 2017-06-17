@@ -551,7 +551,8 @@ public class Download extends HttpServlet {
 
 					} else {
 						//if we can't find output for the pair, just put an empty file there
-						ArchiveUtil.addStringToArchive(stream, " ", zipFileName.toString());
+						zipFileName.append(".txt");
+						ArchiveUtil.addStringToArchive(stream, "", zipFileName.toString());
 					}
 				}
 
