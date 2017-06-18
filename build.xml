@@ -8,7 +8,7 @@
 <!-- Starexec production build script. Author: Tyler Jensen, changes by Aaron Stump, Eric Burns -->
 <project name="starexec" default="epilog-test" basedir=".">
 
-		<loadproperties srcFile="local.properties"/>
+	<loadproperties srcFile="local.properties"/>
 
 	<!-- Set up path information for use throughout this script -->
 	<property name="project-name" value="${appname}" />
@@ -50,7 +50,7 @@
 			 2. then we rewrite some of the configurations, using information
 			from local.properties.
 		 -->
-		<!-- Removes old StarExecCommand version  -->
+	<!-- Removes old StarExecCommand version  -->
 
 	<target name="cleanstarcom" depends="">
 		<delete dir="${starcom-build}" />
@@ -62,7 +62,7 @@
 
 	<target name="compilestarcom" depends="cleanstarcom">
 		<javac debug="true" debuglevel="lines,vars,source" srcdir="${source-dir}" includes="org/starexec/command/*.java,org/starexec/data/to/Permission.java,org/starexec/data/to/Identifiable.java,org/starexec/constants/R.java,org/starexec/util/Validator.java,org/starexec/backend/Backend.java, org/starexec/util/ArchiveUtil.java" destdir="${starcom-comp}" classpathref="starcomclasspath">
-</javac>
+		</javac>
 	</target>
 
 	<!-- Builds a runnable jar with all necessasry libraries built in -->
@@ -86,12 +86,12 @@
 			<zipfileset dir="${starcomlib}" includes="commons-compress-1.4.1.jar"/>
 			<zipfileset dir="${starcomlib}" includes="gson-2.8.0.jar"/>
 			<zipfileset dir="${starcomlib}" includes="log4j-1.2.16.jar"/>
-				<zipfileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
+			<zipfileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
 
 		</jar>
 	</target>
 
-		<!-- Zips up the StarExecCommand folder with the readme and runnable jar  -->
+	<!-- Zips up the StarExecCommand folder with the readme and runnable jar  -->
 	<target name="zipstarcom" depends="command">
 		<copy file="WebContent/public/manual.txt" tofile="${starcom-build}/Manual.txt" />
 		<zip destfile="${starcomzip}" basedir="${starcom-build}"/>
@@ -141,18 +141,18 @@
 				<include name="**/*" />
 			</fileset>
 		</copy>
-			<mkdir dir="${esapi-dir}" />
-			<copy todir="${esapi-dir}">
+		<mkdir dir="${esapi-dir}" />
+		<copy todir="${esapi-dir}">
 			<fileset dir="${source-dir}/esapi">
 				<include name="**/*"/>
 			</fileset>
 		</copy>
-				<!-- Copy the soft-deploy template and fill it in -->
+		<!-- Copy the soft-deploy template and fill it in -->
 		<delete file="soft-deploy.sh" />
-				<copy file="${scripts-dir}/soft-deploy.template" tofile="soft-deploy.sh"/>
-				<replaceregexp file="soft-deploy.sh" match="the_appname" replace="${appname}" flags="g"/>
-				<replaceregexp file="soft-deploy.sh" match="the_data_dir" replace="${data_dir}"/>
-				<replaceregexp file="soft-deploy.sh" match="the_web_home" replace="${web-home}"/>
+		<copy file="${scripts-dir}/soft-deploy.template" tofile="soft-deploy.sh"/>
+		<replaceregexp file="soft-deploy.sh" match="the_appname" replace="${appname}" flags="g"/>
+		<replaceregexp file="soft-deploy.sh" match="the_data_dir" replace="${data_dir}"/>
+		<replaceregexp file="soft-deploy.sh" match="the_web_home" replace="${web-home}"/>
 
 		<chmod file="soft-deploy.sh" perm="774"/>
 
@@ -163,18 +163,18 @@
 		<replaceregexp file="createDistroArchive.sh" match="current_starexec_vesion" replace="${svnversion}"/>
 
 		<chmod file="createDistroArchive.sh" perm="774"/>
-				<!-- Copy the context template and fill it in -->
+		<!-- Copy the context template and fill it in -->
 		<delete file="${meta-inf}/context.xml" />
-				<copy file="context.template" tofile="${meta-inf}/context.xml"/>
-				<replaceregexp file="${meta-inf}/context.xml" match="the_appname" replace="${appname}" flags="g"/>
-				<replaceregexp file="${meta-inf}/context.xml" match="the_db_name" replace="${db_name}"/>
-				<replaceregexp file="${meta-inf}/context.xml" match="the_connection_name" replace="${connection-name}"/>
-				<replaceregexp file="${meta-inf}/context.xml" match="the_connection_password" replace="${connection-password}"/>
+		<copy file="context.template" tofile="${meta-inf}/context.xml"/>
+		<replaceregexp file="${meta-inf}/context.xml" match="the_appname" replace="${appname}" flags="g"/>
+		<replaceregexp file="${meta-inf}/context.xml" match="the_db_name" replace="${db_name}"/>
+		<replaceregexp file="${meta-inf}/context.xml" match="the_connection_name" replace="${connection-name}"/>
+		<replaceregexp file="${meta-inf}/context.xml" match="the_connection_password" replace="${connection-password}"/>
 
 
 		<!-- Create/update the build property file -->
 		<propertyfile file="${config-dir}/build.properties"
-			comment="This file contains automatically generated build metadata. DO NOT EDIT!">
+					  comment="This file contains automatically generated build metadata. DO NOT EDIT!">
 			<entry key="buildtime" value="${builtat}"/>
 			<entry key="build" value="${svnversion}"/>
 			<entry key="builder" value="${whoami}"/>
@@ -221,15 +221,15 @@
 
 		<!-- Update the upload commands to use the correct app -->
 		<replaceregexp file="deployed-upload-test/testDataCommands.txt" match="login addr=https://stardev.cs.uiowa.edu/(.+)/"
-				replace="login addr=https://${server-name}/${appname}/"  flags="g" byline="false" />
+					   replace="login addr=https://${server-name}/${appname}/"  flags="g" byline="false" />
 		<chmod file="deployed-upload-test/uploadTestData.sh" perm="774" />
 
 		<!-- Update the schemas to use the currect server and app -->
 		<delete>
-		   <fileset dir= "WebContent/public">
-			  <include name="**/*.xsd"/>
-			  <include name="**/*.xml"/>
-		   </fileset>
+			<fileset dir= "WebContent/public">
+				<include name="**/*.xsd"/>
+				<include name="**/*.xml"/>
+			</fileset>
 		</delete>
 
 		<copy todir="WebContent/public/">
@@ -240,18 +240,18 @@
 		</copy>
 
 		<replaceregexp	match="www.starexec.org/starexec/"
-				replace="${server-name}/${appname}/" byline="false" flags="g">
-		   <fileset dir="WebContent/public">
-						<include name="**/*.xsd"/>
+						  replace="${server-name}/${appname}/" byline="false" flags="g">
+			<fileset dir="WebContent/public">
+				<include name="**/*.xsd"/>
 				<include name="**/*.xml"/>
-		   </fileset>
+			</fileset>
 		</replaceregexp>
 
 		<!-- Update the log4j config file to only record INFO level events	-->
 		<propertyfile file="${config-dir}/log4j.properties" comment="This file has been modified by ANT">
 			<entry key="log4j.rootLogger" value="${logging_levels}"/>
-				<entry key="log4j.appender.STAREXEC.File" value="${catalina.base}/logs/${logfile_name}.log" />
-			</propertyfile>
+			<entry key="log4j.appender.STAREXEC.File" value="${catalina.base}/logs/${logfile_name}.log" />
+		</propertyfile>
 
 
 		<!-- Create the war file! -->
