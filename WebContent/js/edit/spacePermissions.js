@@ -12,7 +12,6 @@ var spaceChainInterval;
 var openDone = true;
 var usingSpaceChain = false;
 
-
 var curIsLeader = false;
 
 var communityIdList = null;
@@ -37,10 +36,6 @@ $(document).ready(function(){
 
 	 // Build right-hand side of page (space details)
 	 initSpaceDetails();
-
-	log("this is a test: " + spaceId);
-
-
 });
 
 function isAdmin(){
