@@ -43,21 +43,10 @@ $(document).ready(function(){
 
 });
 
-
-
-function stringToBoolean(s){
-    switch(s){
-    case "true" : return true;
-    case "false" : return false;
-    default : return false;
-    }
-}
-
 function isAdmin(){
-    admin = $("#isAdmin").attr("value");
-
-    return stringToBoolean(admin);
+	return $("#isAdmin").attr("value") === "true";
 }
+
 /**
  * utility function
  * community
