@@ -73,8 +73,7 @@ public class UploadJobXML extends HttpServlet {
 
 				Integer spaceId = Integer.parseInt((String) form.get(SPACE_ID));
 				if (!userMayUploadJobXML(userId, spaceId)) {
-					response.sendError(HttpServletResponse.SC_FORBIDDEN, "You are not allowed to run jobs in this " +
-					                                                     "space.");
+					response.sendError(HttpServletResponse.SC_FORBIDDEN, "You are not allowed to run jobs in this space.");
 					return;
 				}
 
@@ -89,7 +88,8 @@ public class UploadJobXML extends HttpServlet {
 					response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(result)));
 					response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
 				} else {
-					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to upload Job XML:\n" +
+					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+							"Failed to upload Job XML:\n" + jobUtil.getErrorMessage());
 				}
 			} else {
 				// Got a non multi-part request, invalid
