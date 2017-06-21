@@ -84,6 +84,8 @@
 			<element name="stage-num" type="jst:intInfo" minOccurs="1" maxOccurs="1"/>
 			<element name="cpu-timeout" type="jst:intInfo" minOccurs="0" maxOccurs="1"/>
 			<element name="wallclock-timeout" type="jst:intInfo" minOccurs="0" maxOccurs="1"/>
+			<element name="kill-delay" type="jst:intInfo" minOccurs="0" maxOccurs="1"/>
+			<element name="soft-time-limit" type="jst:intInfo" minOccurs="0" maxOccurs="1"/>
 
 			<!-- Note: This is in Gigabytes -->
 			<element name="mem-limit" type="jst:doubleInfo" minOccurs="0" maxOccurs="1"/>

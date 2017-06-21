@@ -32,10 +32,12 @@
 			<!-- The default for suppress-timestamps is false -->
 			<element name="suppress-timestamps" type="jst:booleanInfo" maxOccurs="1" minOccurs="0"/>
 
-
 			<!-- Note: Timeouts are in seconds -->
 			<element name="cpu-timeout" type="jst:intInfo"/>
 			<element name="wallclock-timeout" type="jst:intInfo"/>
+			<element name="kill-delay" type="jst:intInfo"/>
+			<element name="soft-time-limit" type="jst:intInfo"/>
+
 			<!-- Note: This is in Gigabytes -->
 			<element name="mem-limit" type="jst:doubleInfo"/>
 

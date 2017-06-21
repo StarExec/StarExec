@@ -192,7 +192,7 @@ public class JobToXMLer {
 	 *  @author Julio Cervantes
 	 *  @param job The job for which we want an xml representation.
 	 *  @param containsPipelines True if this job has pipelines and false otherwise
-	 *  @return jobElement for xml file to represent job pair info  of input job 
+	 *  @return jobElement for xml file to represent job pair info  of input job
 	 */
 
 
@@ -230,19 +230,30 @@ public class JobToXMLer {
 
 
 		//CPU timeout (seconds) : cpu-timeout
-
 		Element cpuTimeoutElement = doc.createElement("cpu-timeout");
 		cpuTimeoutElement.setAttribute("value", Integer.toString(job.getCpuTimeout()));
-
 		attrsElement.appendChild(cpuTimeoutElement);
 
 		//Wall Clock timeout (seconds) : wallclock-timeout
-
 		Element wallClockTimeoutElement = doc.createElement("wallclock-timeout");
-
 		wallClockTimeoutElement.setAttribute("value", Integer.toString(job.getWallclockTimeout()));
-
 		attrsElement.appendChild(wallClockTimeoutElement);
+
+		//Runsolver delay (seconds) : kill-delay
+		final Integer killDelay = job.getKillDelay();
+		if (killDelay != null) {
+			final Element killDelayElement = doc.createElement("kill-delay");
+			killDelayElement.setAttribute("value", killDelay.toString());
+			attrsElement.appendChild(killDelayElement);
+		}
+
+		//Soft time limit (seconds) : soft-time-limit
+		final Integer softTimeLimit = job.getSoftTimeLimit();
+		if (killDelay != null) {
+			final Element softTimeLimitElement = doc.createElement("soft-time-limit");
+			softTimeLimitElement.setAttribute("value", softTimeLimit.toString());
+			attrsElement.appendChild(softTimeLimitElement);
+		}
 
 		//Memory Limit (Gigabytes) : mem-limit (defaulting to 1)
 
