@@ -406,3 +406,17 @@ function handleAjaxError(textStatus) {
 function getDataTablesDom() {
 	return 'rt<"bottom"flpi><"clear">';
 }
+
+/**
+ * A helper function that will be passed a return code from an AJAX request.
+ * If request was sucessful, reload the page.
+ * Otherwise, display an error message and close the current dialog.
+ */
+star.reloadOnSucess = function(returnCode, printMessage) {
+	var s = parseReturnCode(returnCode, printMessage);
+	if (s) {
+		window.location.reload(true);
+	} else {
+		$(this).dialog("close");
+	}
+};
