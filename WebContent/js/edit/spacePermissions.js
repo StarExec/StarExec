@@ -675,6 +675,18 @@ function setUpButtons() {
 	});
 
     $("#makePublic").click(function(){
+		var changingToPublic = !currentSpacePublic;
+		var doPost = (function(hierarchy) {
+			var postUrl = starexecRoot + "services/space/changePublic/" + spaceId + "/" + hierarchy + "/" + changingToPublic;
+			return (function() {
+				$.post(
+						postUrl,
+						{},
+						star.reloadOnSucess.bind(this),
+						"json"
+				);
+			});
+		});
 		// Display the confirmation dialog
 		$('#dialog-confirm-change-txt').text('do you want to make the single space public or the hierarchy?');
 		$('#dialog-confirm-change').dialog({
@@ -682,36 +694,8 @@ function setUpButtons() {
 			width: 380,
 			height: 265,
 			buttons: {
-				'space': function(){
-					$.post(
-							starexecRoot+"services/space/changePublic/" + spaceId + "/" + false+"/"+!currentSpacePublic,
-							{},
-							function(returnCode) {
-								s=parseReturnCode(returnCode);
-								if (s) {
-									window.location.reload(true);
-								} else {
-									$(this).dialog("close");
-								}
-							},
-							"json"
-					);
-				},
-				'hierarchy': function(){
-					$.post(
-							starexecRoot+"services/space/changePublic/" + spaceId + "/" + true+"/"+!currentSpacePublic,
-							{},
-							function(returnCode) {
-								s=parseReturnCode(returnCode);
-								if (s) {
-									window.location.reload(true);
-								} else {
-									$(this).dialog("close");
-								}
-							},
-							"json"
-					);
-				},
+				"space": doPost(false).bind(this),
+				"hierarchy": doPost(true).bind(this),
 				"cancel": function() {
 					log('user canceled making public action');
 					$(this).dialog("close");
