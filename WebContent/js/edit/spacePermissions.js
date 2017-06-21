@@ -687,8 +687,14 @@ function setUpButtons() {
 				);
 			});
 		});
+		var message =
+			"Do you want to make the single space " +
+			(changingToPublic ? "public" : "private") +
+			" or the hierarchy?"
+		;
+
 		// Display the confirmation dialog
-		$('#dialog-confirm-change-txt').text('do you want to make the single space public or the hierarchy?');
+		$('#dialog-confirm-change-txt').text(message);
 		$('#dialog-confirm-change').dialog({
 			modal: true,
 			width: 380,

@@ -4455,12 +4455,18 @@ public class RESTServices {
 	@Produces("application/json")
 	public String makePublic(@PathParam("id") int spaceId, @PathParam("hierarchy") boolean hierarchy, @PathParam("makePublic") boolean makePublic, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
+		final String successMessage =
+			"Space" +
+			(hierarchy ? "s" : "") +
+			" successfully made " +
+			(makePublic ? "public" : "private")
+		;
 		ValidatorStatusCode status=SpaceSecurity.canSetSpacePublicOrPrivate(spaceId, userId);
 		if (!status.isSuccess()){
 			return gson.toJson(status);
 		}
 		if(Spaces.setPublicSpace(spaceId, userId, makePublic, hierarchy))
-			return gson.toJson(new ValidatorStatusCode(true,"Space(s) successfully made public"));
+			return gson.toJson(new ValidatorStatusCode(true, successMessage));
 		else
 			return gson.toJson(new ValidatorStatusCode(false, "Internal database error when making spaces public"));
 	}
