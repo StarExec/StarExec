@@ -411,12 +411,25 @@ function getDataTablesDom() {
  * A helper function that will be passed a return code from an AJAX request.
  * If request was sucessful, reload the page.
  * Otherwise, display an error message and close the current dialog.
+ * One gotcha: in order for this function to close the current dialog, it must
+ * be bound to the current dialog. In most cases, this means passing the
+ * function as such:
+ *     $.post(
+ *         url,
+ *         data,
+ *         star.reloadOnSucess.bind(this),
+ *         "json"
+ *     );
  */
 star.reloadOnSucess = function(returnCode, printMessage) {
 	var s = parseReturnCode(returnCode, printMessage);
 	if (s) {
 		window.location.reload(true);
 	} else {
-		$(this).dialog("close");
+		if (this !== window) {
+			$(this).dialog("close");
+		} else {
+			log("reloadOnSucess called without .bind(this)");
+		}
 	}
 };
