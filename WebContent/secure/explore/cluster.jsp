@@ -13,7 +13,7 @@
 		<span id="progressBar"></span>
 		<span id="activeStatus"></span>
 		<p class="accent" id="queueID"></p>
-		<fieldset id="detailField">
+		<fieldset id="detailField" class="expdContainer">
 			<legend class="expd" id="clusterExpd">Job Pairs</legend>
 			<table id="details" class="shaded">
 				<thead>
