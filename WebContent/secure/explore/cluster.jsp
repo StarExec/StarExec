@@ -7,9 +7,11 @@
 		<ul id="exploreList">
 		</ul>
 	</div>
-	
+
 	<div id="detailPanel">
-		<h3 id="workerName"></h3> <span id="progressBar"></span> <span id="activeStatus"></span>		
+		<h3 id="workerName"></h3>
+		<span id="progressBar"></span>
+		<span id="activeStatus"></span>
 		<p class="accent" id="queueID"></p>
 		<fieldset id="detailField">
 			<legend class="expd" id="clusterExpd">Job Pairs</legend>
@@ -18,29 +20,29 @@
 					<tr>
 						<th>Submit Time</th>
 						<th>Job</th>
-						<th>User</th>	
+						<th>User</th>
 						<th id="benchHead">Benchmark</th>
 						<th>Solver</th>
 						<th>Config</th>
-						<th>Path</th>					
+						<th>Path</th>
 					</tr>
-				</thead>	
+				</thead>
 				<tbody>
-					<!-- This will be populated by the job pair pagination feature -->
-				</tbody>		
+					<%-- This will be populated by the job pair pagination feature --%>
+				</tbody>
 			</table>
-			
-		</fieldset>	
+		</fieldset>
+
 		<fieldset id="loadsField">
 			<legend>queue load</legend>
 			<button id="refreshLoads">refresh</button>
 			<textarea id="loadOutput"></textarea>
 		</fieldset>
+
 		<fieldset id="qstatField">
 			<legend>qstat output</legend>
 			<button id="refreshQstat">refresh</button>
 			<textarea id="qstatOutput" ></textarea>
-		
 		</fieldset>
-	</div>	
+	</div>
 </star:template>
