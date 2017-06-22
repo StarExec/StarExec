@@ -273,7 +273,7 @@ public class CreateJob extends HttpServlet {
 
 			if (framework == BenchmarkingFramework.RUNSOLVER) { // runsolver specific settings
 				Integer d = Integer.parseInt( request.getParameter(killDelay) );
-				if (d != null && d > 0) {
+				if (d != null && d > 0 && d < R.MAX_KILL_DELAY) {
 					j.setKillDelay(d);
 				}
 			} else if (framework == BenchmarkingFramework.BENCHEXEC) { // BenchExec specific settings
@@ -614,12 +614,14 @@ public class CreateJob extends HttpServlet {
 				runLimit = Integer.parseInt(request.getParameter(clockTimeout));
 			}
 
-			if (Util.paramExists(killDelay, request) && !Validator.isValidPosInteger(request.getParameter(killDelay))) {
-				return new ValidatorStatusCode(false,
-						"killDelay must be a positive integer");
-			} else if (Integer.parse(request.getParameter(killDelay)) > R.MAX_KILL_DELAY) {
-				return new ValidatorStatusCode(false,
-						"killDelay must not exceed " + R.MAX_KILL_DELAY);
+			if (Util.paramExists(killDelay, request)){
+				if (!Validator.isValidPosInteger(request.getParameter(killDelay))) {
+					return new ValidatorStatusCode(false,
+							"killDelay must be a positive integer");
+				} else if (Integer.parseInt(request.getParameter(killDelay)) > R.MAX_KILL_DELAY) {
+					return new ValidatorStatusCode(false,
+							"killDelay must not exceed " + R.MAX_KILL_DELAY);
+				}
 			}
 
 			if (Util.paramExists(softTimeLimit, request) && !Validator.isValidPosInteger(request.getParameter(softTimeLimit))) {
