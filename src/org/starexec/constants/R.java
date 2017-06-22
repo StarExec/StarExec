@@ -291,6 +291,9 @@ public class R {
 	public static int NUM_REPOSTPROCESS_AT_A_TIME = 200; // number of job pairs to re-postprocess at a time with our periodic task
 	public static int DEFAULT_MAX_TIMEOUT = 259200;
 
+	/* Maximum Runsolver kill-delay */
+	public static final int MAX_KILL_DELAY = 120;
+
 	/* Minimum interval for jobs that report incremental results.
 	 * Incremental reporting will be disabled beneth this threshold. */
 	public static final int MINIMUM_RESULTS_INTERVAL = 10;
