@@ -4,6 +4,7 @@ package org.starexec.util;
 import org.starexec.constants.R;
 import org.starexec.logger.StarLogger;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -148,7 +149,10 @@ public class Validator {
 	 * contains only letters, numbers and dashes
 	 */
 	private static boolean isValidPrimName(String name, int maxLength) {
-		return name != null && patternPrimName.matcher(name).matches() && name.length() <= maxLength;
+		return
+			(name != null)
+			&& patternPrimName.matcher(name).matches()
+			&& (name.length() <= maxLength);
 	}
 
 	/**
@@ -228,14 +232,10 @@ public class Validator {
 	 * @return True if valid, false otherwise.
 	 * @author Eric Burns
 	 */
-
 	public static boolean isValidPosInteger(String str) {
 		try {
 			int check = Integer.parseInt(str);
-			if (check < 0) {
-				return false;
-			}
-			return true;
+			return check >= 0;
 		} catch (Exception e) {
 			return false;
 		}
@@ -249,14 +249,10 @@ public class Validator {
 	 * @return True if valid, false otherwise.
 	 * @author Eric Burns
 	 */
-
 	public static boolean isValidPosDouble(String str) {
 		try {
 			double check = Double.parseDouble(str);
-			if (check <= 0) {
-				return false;
-			}
-			return true;
+			return check > 0;
 		} catch (Exception e) {
 			return false;
 		}
@@ -294,18 +290,10 @@ public class Validator {
 	 * @return True if every string in the array can be parsed as a int
 	 */
 	public static boolean isValidIntegerList(String[] list) {
-		if (list == null) {
-			return false;
-		}
-		for (String s : list) {
-			if (!isValidInteger(s)) {
-				return false;
-			}
-		}
-
-		return true;
+		return
+			(list != null)
+			&& Arrays.stream(list).allMatch(s->(isValidInteger(s)));
 	}
-
 
 	/**
 	 * Determines whether the given string is a valid comma-separated list of positive integers
@@ -313,16 +301,10 @@ public class Validator {
 	 * @param ids The string to check
 	 * @return True if the string is a comma-separated list of positive integers, false otherwise
 	 */
-
 	public static boolean isValidPosIntegerList(String ids) {
-		String[] idArray = ids.split(",");
-		for (String id : idArray) {
-			if (!Validator.isValidPosInteger(id)) {
-				return false;
-			}
-		}
-
-		return true;
+		return
+			(ids != null)
+			&& Arrays.stream(ids.split(",")).allMatch(s->isValidPosInteger(s));
 	}
 
 	public static boolean isValidPictureType(String type) {
@@ -336,16 +318,7 @@ public class Validator {
 	 * @return true iff the format is of supported type
 	 */
 	public static boolean isValidArchiveType(String format) {
-		if (format == null) {
-			return false;
-		}
-		for (String ext : Validator.extensions) {
-			if (format.equals(ext)) {
-				return true;
-			}
-		}
-
-		return false;
+		return Arrays.stream(extensions).anyMatch(s->s.equals(format));
 	}
 
 	/**
@@ -354,16 +327,10 @@ public class Validator {
 	 * @param ids The string to check
 	 * @return True if the string is a comma-separated list of  integers, false otherwise
 	 */
-
 	public static boolean isValidIntegerList(String ids) {
-		String[] idArray = ids.split(",");
-		for (String id : idArray) {
-			if (!Validator.isValidInteger(id)) {
-				return false;
-			}
-		}
-
-		return true;
+		return
+			(ids != null)
+			&& Arrays.stream(ids.split(",")).allMatch(s->isValidInteger(s));
 	}
 
 	public static List<Integer> convertToIntList(String str) {
