@@ -127,7 +127,7 @@ public class JobUtil {
 			if (pipe == null) {
 				log.info("error creating pipeline");
 				secondaryErrorMessage = "Solver pipeline was null.";
-				return null; // this means there was some error. The error message should have been set already 
+				return null; // this means there was some error. The error message should have been set already
 				// the call to createPipelineFromElement
 			}
 			if (pipelineNames.containsKey(pipe.getName())) {
@@ -308,8 +308,8 @@ public class JobUtil {
 			}
 
 		}
-		//ensure that benchmark inputs are ordered correctly. Benchmark inputs must be ordered from 
-		//1 to n, where n is the total number of inputs. 
+		//ensure that benchmark inputs are ordered correctly. Benchmark inputs must be ordered from
+		//1 to n, where n is the total number of inputs.
 		if (benchmarkInputs.size() > 0) {
 			int maxSeen = Collections.max(benchmarkInputs);
 			if (maxSeen != benchmarkInputs.size()) {
@@ -529,6 +529,22 @@ public class JobUtil {
 			int cpuTimeout = Integer.parseInt(cpuTimeoutEle.getAttribute("value"));
 			job.setCpuTimeout(cpuTimeout);
 			stageOneAttributes.setCpuTimeout(cpuTimeout);
+
+			if (DOMHelper.hasElement(jobAttributes, "kill-delay")) {
+				Element killDelayEle = DOMHelper.getElementByName(jobAttributes, "kill-delay");
+				int killDelay = Integer.parseInt(killDelayEle.getAttribute("value"));
+				if (killDelay >= 10 && killDelay <= R.MAX_KILL_DELAY) {
+					job.setKillDelay(killDelay);
+				}
+			}
+
+			if (DOMHelper.hasElement(jobAttributes, "soft-time-limit")) {
+				Element softTimeLimitEle = DOMHelper.getElementByName(jobAttributes, "soft-time-limit");
+				int softTimeLimit = Integer.parseInt(softTimeLimitEle.getAttribute("value"));
+				if (softTimeLimit >= 0) {
+					job.setSoftTimeLimit(softTimeLimit);
+				}
+			}
 
 			Element memLimitEle = DOMHelper.getElementByName(jobAttributes, "mem-limit");
 			double memLimit = Double.parseDouble(memLimitEle.getAttribute("value"));
