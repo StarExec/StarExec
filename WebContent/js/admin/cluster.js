@@ -16,11 +16,11 @@ jQuery(function($) {
 	var id = -1;
 	curQueueId = -1;
 
-	$confirmRemove = $("<div title='confirm removal' class='hiddenDialog'>")
+	var $confirmRemove = $("<div title='confirm removal' class='hiddenDialog'>")
 		.append("<p><span class='ui-icon ui-icon-alert'></span></p>")
 		.appendTo("body")
 	;
-	$confirmRemoveMessage = $("<span>")
+	var $confirmRemoveMessage = $("<span>")
 		.appendTo($confirmRemove.contents("p"))
 	;
 
