@@ -11,7 +11,18 @@ var diskUseMessage = "disk use = space used by solvers + space used by benchmark
 
 // When the document is ready to be executed on
 jQuery(function($) {
-	statsTable = $('#statsTable').dataTable(new star.DataTableConfig());
+	statsTable = $('#statsTable').dataTable(new star.DataTableConfig({
+		"columnDefs" : {"searchable": false, "type": "num"},
+		"columns"    : [
+			{"searchable": true, "type": "string"},
+			null,
+			null,
+			null,
+			null,
+			null,
+			{"sortable": false, "type": "num-fmt"}
+		]
+	}));
 
 	// Make leaders and members expandable
 	$('.expd').parent().expandable(true)
