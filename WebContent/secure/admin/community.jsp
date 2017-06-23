@@ -1,10 +1,6 @@
 <%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, java.util.List, org.starexec.constants.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
-<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-
-
-<%		
+<%
 	// These will be used by the JavaScript.
 	request.setAttribute("leaderResponseParameterName", Mail.LEADER_RESPONSE);
 	request.setAttribute("emailCodeParameterName", Mail.EMAIL_CODE);
@@ -12,8 +8,7 @@
 	request.setAttribute("declineCommunityRequestName", Web.DECLINE_COMMUNITY_REQUEST);
 	request.setAttribute("sentFromCommunityPage", Web.SENT_FROM_COMMUNITY_PAGE);
 %>
-
-<star:template title="${t_user.fullName}" js="admin/community, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, shared/sharedFunctions" css="common/table, details/shared, explore/common, admin/admin">
+<star:template title="Community Admin" js="admin/community, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, shared/sharedFunctions" css="common/table, details/shared, explore/common, admin/admin">
 	<span id="leaderResponse" value="${leaderResponseParameterName}" hidden></span>
 	<span id="emailCode" value="${emailCodeParameterName}" hidden></span>
 	<span id="approveRequest" value="${approveCommunityRequestName}" hidden></span>
@@ -32,13 +27,13 @@
 
 	<div id="detailPanel">
 		<fieldset>
-		<legend>actions</legend>
+			<legend>actions</legend>
 			<ul id="actionList">
 				<li><a type="btnRun" id="removeCommLeader" href="${starexecRoot}/secure/edit/community.jsp">remove community leader</a></li>
-				<li><a type="btnRun" id="promoteCommLeader" href="${starexecRoot}/secure/edit/community.jsp">promote member to leader</a>			
-			</ul>	
-		</fieldset>	
-		<fieldset  id="communityField">
+				<li><a type="btnRun" id="promoteCommLeader" href="${starexecRoot}/secure/edit/community.jsp">promote member to leader</a>
+			</ul>
+		</fieldset>
+		<fieldset id="communityField" class="expdContainer">
 			<legend class="expd" id="communityExpd"><span>0</span> pending community requests</legend>
 			<table id="commRequests">
 				<thead>
@@ -49,8 +44,8 @@
 						<th>approve</th>
 						<th>decline</th>
 					</tr>
-				</thead>			
+				</thead>
 			</table>
 		</fieldset>
-	</div>	
+	</div>
 </star:template>
