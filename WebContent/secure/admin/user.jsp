@@ -3,7 +3,7 @@
 <%
 	request.setAttribute("columnWidth", "100px");
 %>
-<star:template title="Admin Users" js="admin/user, lib/jquery-ui.min, lib/jquery.dataTables.min" css="admin/user, common/table, explore/common, admin/admin, jqueryui/jquery-ui-1.8.16.starexec">
+<star:template title="Users Admin" js="admin/user, lib/jquery-ui.min, lib/jquery.dataTables.min" css="admin/user, common/table, explore/common, admin/admin, jqueryui/jquery-ui-1.8.16.starexec">
 	<fieldset id="userField" class="expdContainer">
 		<legend class="expd" id="userExpd"><span>0</span> users</legend>
 		<ul id="actionList">
