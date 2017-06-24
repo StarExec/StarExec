@@ -40,7 +40,7 @@
 	<path id="starcomclasspath">
 		<fileset dir="${starcomlib}" includes="**/*.jar"/>
 		<fileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
-
+		<fileset dir="local-lib" includes="**/*.jar"/>
 	</path>
 
 	<!-- Action for compiling the project and building the WAR file.
