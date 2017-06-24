@@ -36,13 +36,13 @@
 		<fieldset id="loadsField">
 			<legend>queue load</legend>
 			<button id="refreshLoads">refresh</button>
-			<textarea id="loadOutput"></textarea>
+			<textarea id="loadOutput" readonly></textarea>
 		</fieldset>
 
 		<fieldset id="qstatField">
 			<legend>qstat output</legend>
 			<button id="refreshQstat">refresh</button>
-			<textarea id="qstatOutput" ></textarea>
+			<textarea id="qstatOutput" readonly wrap="soft"></textarea>
 		</fieldset>
 	</div>
 </star:template>

@@ -3,9 +3,14 @@
 }
 
 #qstatOutput, #loadOutput {
-
 	width: 96%;
-	height:300px;	
+	height:300px;
+}
+
+#qstatOutput {
+	font-family: "Source Code Pro", Consolas, monospace;
+	font-size: 12px;
+	white-space: pre;
 }
 
 @media only screen and (max-width: 767px) {
@@ -41,7 +46,7 @@
 	body #details tr > *:nth-child(3) {
 		width: 33.33% !important;
 	}
-	
+
 
 	#details tr > *:nth-child(4) {
 		display: none;
