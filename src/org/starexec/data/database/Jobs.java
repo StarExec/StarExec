@@ -978,15 +978,11 @@ public class Jobs {
 	 */
 	public static Optional<String> getOutputBenchmarksPath(int jobId) throws SQLException {
 		return Common.query("{CALL GetOutputBenchmarksPath(?)}", procedure -> procedure.setInt(1, jobId), results -> {
-			if (!results.next()) {
-				return Optional.empty();
+			String path = null;
+			if (results.next()) {
+				path = results.getString("output_benchmarks_directory_path");
 			}
-			String path = results.getString("output_benchmarks_directory_path");
-			if (path == null) {
-				return Optional.empty();
-			} else {
-				return Optional.of(path);
-			}
+			return Optional.ofNullable(path);
 		});
 	}
 
