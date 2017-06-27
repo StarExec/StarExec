@@ -7,11 +7,11 @@
 				<thead>
 					<tr>
 						<th>name</th>
-						<th id="totalHead">total tests</th>
-						<th id="passedHead">tests passed</th>
-						<th id="failedHead">tests failed</th>
+						<th id="totalHead">tests</th>
+						<th id="passedHead">passed</th>
+						<th id="failedHead">failed</th>
 						<th>status</th>
-						<th id="errorHead">error trace</th>
+						<th id="errorHead">trace</th>
 					</tr>
 				</thead>
 			</table>

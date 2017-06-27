@@ -1,0 +1,23 @@
+#content #fieldTable, #content #actionField {
+	width:95%
+}
+
+#tableTests {
+	width:100%;
+}
+
+#errorHead {
+	width:40%;
+}
+
+#passedHead, #failedHead, #totalHead {
+	width:9%;
+}
+
+.success {
+	color: #9f9;
+}
+
+.fail {
+	color: #f99;
+}

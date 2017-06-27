@@ -1,20 +1,36 @@
-$(document).ready(function(){
-	var $tableTests=$("#tableTests");
-	initUI();
-	setInterval(function() {
-		rows = $tableTests.children("tbody").children("tr.row_selected");
-		if (rows.length==0) {
-			$tableTests.dataTable().api().ajax.reload(null,false);
+"use strict";
+
+jQuery(function($) {
+	var $tableTests = $("#tableTests");
+
+	var fnPaginationHandler = function (sSource, aoData, fnCallback) {
+		$.get(
+			sSource,
+			function(nextDataTablePage) {
+				var s = parseReturnCode(nextDataTablePage);
+				if (s) {
+					fnCallback(nextDataTablePage);
+				}
+			},
+			"json"
+		).error(function() {
+			showMessage("error","Internal error populating data table",5000);
+		});
+	};
+
+	var colorizeRow = function( row, data, index ) {
+		if (data[3] !== 0) {
+			$(row).addClass("fail");
+		} else if (data[4] === "success") {
+			$(row).addClass("success");
 		}
-	},5000);
-});
+	};
 
-
-function initUI(){
-	var $tableTests=$("#tableTests");
 	var tableConfig = new window.star.DataTableConfig({
 		"sAjaxSource"  : starexecRoot + "services/tests/pagination",
-		"fnServerData" : fnPaginationHandler // included in this file
+		"fnServerData" : fnPaginationHandler,
+		"rowCallback"  : colorizeRow,
+		"order"        : [[4, 'asc'], [0, 'asc']]
 	});
 
 	var buttonStyle = {
@@ -34,7 +50,7 @@ function initUI(){
 	});
 
 	$("#runSelected").button(buttonStyle).click(function() {
-		nameArray=getSelectedRows($tableTests);
+		var nameArray = getSelectedRows($tableTests);
 		$.post(
 			starexecRoot+"services/test/runTests",
 			{testNames : nameArray},
@@ -52,8 +68,13 @@ function initUI(){
 		$(this).toggleClass("row_selected");
 	});
 
-}
-
+	setInterval(function() {
+		var rows = $tableTests.children("tbody").children("tr.row_selected");
+		if (rows.length===0) {
+			$tableTests.dataTable().api().ajax.reload(null, false);
+		}
+	},5000);
+});
 
 /**
  * For a given dataTable, this extracts the id's of the rows that have been
@@ -70,19 +91,4 @@ function getSelectedRows($dataTable){
 		nameArray.push($(this).find("a:first").attr("name"));
 	});
 	return nameArray;
-}
-
-function fnPaginationHandler(sSource, aoData, fnCallback) {
-	$.get(
-		sSource,
-		function(nextDataTablePage){
-			var s = parseReturnCode(nextDataTablePage);
-			if (s) {
-				fnCallback(nextDataTablePage);
-			}
-		},
-		"json"
-	).error(function(){
-		showMessage("error","Internal error populating data table",5000);
-	});
 }
