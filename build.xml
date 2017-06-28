@@ -273,7 +273,7 @@
 	<target name="skipcompilation" depends="war">
 	</target>
 
-	<target name="epilog-test" depends="zipstarcom, compilestarexec, war">
+	<target name="test" depends="compilestarcom, compilestarexec, css">
 		<!-- Execute JUnit tests -->
 		<path id="testpath">
 			<pathelement path="${class-dir}"/>
@@ -291,5 +291,10 @@
 			</batchtest>
 		</junit>
 	</target>
+
+	<!-- Default Target
+	     Builds StarExec, runs unit tests, and packages everything for deployment
+	     -->
+	<target name="epilog-test" depends="test, zipstarcom, war" />
 
 </project>

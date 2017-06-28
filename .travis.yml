@@ -2,4 +2,4 @@ jdk: oraclejdk8
 rvm: 2.4
 
 before_script: utility-scripts/ci
-script: ant
+script: ant test
