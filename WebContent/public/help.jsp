@@ -29,5 +29,6 @@
 			<a href="https://www.youtube.com/channel/UCoYhHKXD5agIia60z-RiX2A">Video Tutorials</a>
 		</li>
 	</ul>
+	<p>Starexec revision ${buildVersion} built ${buildDate}</p>
 </div>
 </star:template>

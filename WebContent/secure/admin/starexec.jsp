@@ -24,6 +24,7 @@
 			<div id="dialog-confirm-restart" title="confirm restart" class="hiddenDialog">
 				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-restart-txt"></span></p>
 			</div>
+			<p>Starexec revision ${buildVersion} built ${buildDate}</p>
 		</fieldset>
 	</div>
 </star:template>
