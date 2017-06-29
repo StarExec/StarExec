@@ -1,5 +1,3 @@
-var debugMode = false; //console.log statements are turned off by default
-
 /**
  * StarExec namespace
  * Let's try to put global vars here going forward
