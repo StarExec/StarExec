@@ -33,14 +33,14 @@ public class Queues {
     public static String getDefaultQueueName(){
     	return "all";
     }
-	
+
 	/**
 	 * Removes a queue from the database and calls R.BACKEND.removeQueue
 	 * @param queueId The Id of the queue to remove.
 	 * @return True on success and false otherwise
 	 */
 	public static boolean removeQueue(int queueId) {
-	    
+
 	    Queue q=Queues.get(queueId);
 		if (q==null) {
 			return true;
@@ -62,21 +62,21 @@ public class Queues {
 			    R.BACKEND.moveNode(n.getName(), getDefaultQueueName());
 			}
 	    }
-		
+
 	    boolean success=true;
-		
-		
-	    /***** DELETE THE QUEUE *****/	
-	    
+
+
+	    /***** DELETE THE QUEUE *****/
+
 	    success=success && Queues.delete(queueId);
 	    R.BACKEND.deleteQueue(q.getName());
-			
+
 	    Cluster.loadWorkerNodes();
-	    Cluster.loadQueueDetails();	
+	    Cluster.loadQueueDetails();
 	    return success;
 	}
 
-    /** 
+    /**
      *Will pause jobs associated with queues if the number of nodes being removed from them
      *is equal to the number of nodes they have. used by MoveNodes
      *@param queueIdsToNodesRemoved A mapping from queueID to the number of ndoes being removed
@@ -92,13 +92,13 @@ public class Queues {
     				for (Job j : jobs) {
     					Jobs.pause(j.getId());
     				}
-    			}	
+    			}
     		}
     	}
     }
 
 	/**
-	 * Adds a new queue to the system. This action adds the queue, 
+	 * Adds a new queue to the system. This action adds the queue,
 	 * and adds a new association to the queue for the given list of nodes
 	 * This is a multi-step process, use transactions to ensure it completes as
 	 * an atomic unit.
@@ -108,24 +108,24 @@ public class Queues {
 	 * @param wallTimeout the max wallclock timeout for the new queue
 	 * @return The ID of the newly inserted queue, -1 if the operation failed
 	 * @author Tyler Jensen
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	protected static int add(Connection con, String queueName, int cpuTimeout, int wallTimeout) {
 		log.debug("preparing to call sql procedures to add queue with name = "+queueName);
 		CallableStatement procedure = null;
 		try {
-			
+
 			//Add the queue first
 			log.debug("Calling AddQueue");
 			log.debug("queueName = " + queueName);
-			procedure = con.prepareCall("{CALL AddQueue(?,?,?,?)}");	
+			procedure = con.prepareCall("{CALL AddQueue(?,?,?,?)}");
 			procedure.setString(1, queueName);
 			procedure.setInt(2, wallTimeout);
 			procedure.setInt(3,cpuTimeout);
 			procedure.registerOutParameter(4, java.sql.Types.INTEGER);
 			procedure.executeUpdate();
 			int newQueueId = procedure.getInt(4);
-			
+
 			log.info(String.format("New queue with name [%s] was successfully created", queueName));
 			return newQueueId;
 		} catch (Exception e) {
@@ -135,7 +135,7 @@ public class Queues {
 		}
 		return -1;
 	}
-	
+
 	/**
 	 * Adds a new queue to the system.
 	 * @param queueName The name of the queue to add
@@ -145,79 +145,79 @@ public class Queues {
 	 * @author Wyatt Kaiser
 	 */
 	public static int add(String queueName, int cpuTimeout, int wallTimeout) {
-		Connection con = null;			
-		
+		Connection con = null;
+
 		try {
 			con = Common.getConnection();
 			int newQueueId = Queues.add(con, queueName,cpuTimeout,wallTimeout);
 			return newQueueId;
-		} catch (Exception e){	
-			log.error(e.getMessage(), e);		
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return -1;
 	}
-	
+
 	/**
 	 * Associates a queue and a worker node to indicate the node belongs to the queue.
 	 * If the association already exists, any errors are ignored.
 	 * @param queueName The FULL name of the owning queue
 	 * @param nodeName The FULL name of the worker node that belongs to the queue
-	 * @return True if the operation was a success, false otherwise. 
+	 * @return True if the operation was a success, false otherwise.
 	 */
 	public static boolean associate(String queueName, String nodeName) {
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure = null;
 		try {
-			con = Common.getConnection();		
+			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL AssociateQueue(?, ?)}");
 			procedure.setString(1, queueName);
 			procedure.setString(2, nodeName);
-			
-			procedure.executeUpdate();						
+
+			procedure.executeUpdate();
 			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * Removes all associations between queues and nodes in db so that only up to date data
 	 * will be stored.
-	 * @return True if the operation was a success, false otherwise. 
+	 * @return True if the operation was a success, false otherwise.
 	 * @author Benton McCune
 	 */
 	public static boolean clearQueueAssociations() {
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure = null;
 		try {
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL clearQueueAssociations()}");			
-			procedure.executeUpdate();						
+			con = Common.getConnection();
+			 procedure = con.prepareCall("{CALL clearQueueAssociations()}");
+			procedure.executeUpdate();
 			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * Gets a queue with very basic information, not including any SGE attributes with the queue
 	 * @param con The connection to make the query with
 	 * @param qid The id of the queue to retrieve
 	 * @return a queue object representing the queue to retrieve
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	protected static Queue get(Connection con, int qid) {
 		final String methodName= "get";
@@ -225,15 +225,15 @@ public class Queues {
 		log.debug(methodName, "\tqid = " + qid);
 		ResultSet results=null;
 		CallableStatement procedure = null;
-		
+
 		try {
 			procedure = con.prepareCall("{CALL GetQueue(?)}");
-			procedure.setInt(1, qid);			
+			procedure.setInt(1, qid);
 			results = procedure.executeQuery();
 			if(results.next()){
 				return resultSetToQueue(results);
-			}										
-			
+			}
+
 		} catch (Exception e) {
 			log.error("Queue.get says "+e.getMessage(),e);
 		} finally {
@@ -242,7 +242,7 @@ public class Queues {
 			log.exit(methodName);
 		}
 		return null;
-	}	
+	}
 
 	/**
 	 * Gets a queue with very basic information, not including any SGE attributes with the queue
@@ -250,32 +250,32 @@ public class Queues {
 	 * @return a queue object representing the queue to retrieve
 	 */
 	public static Queue get(int qid) {
-		Connection con = null;			
-		
+		Connection con = null;
+
 		try {
-			con = Common.getConnection();					
+			con = Common.getConnection();
 			return Queues.get(con, qid);
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Gets all active queues in the starexec cluster
-	 * @return A list of queues 
+	 * @return A list of queues
 	 * @author Aaron Stump
 	 */
 	public static List<Queue> getAllActive() {
 	    return getQueues(0);
 	}
-	
+
 	/**
 	 * Gets all queues in the starexec cluster (Including Inactive queues)
-	 * @return A list of queues 
+	 * @return A list of queues
 	 * @author Wyatt Kaiser
 	 */
 	public static List<Queue> getAllAdmin() {
@@ -286,15 +286,15 @@ public class Queues {
 	protected static int getCountOfEnqueuedPairsByQueue(Connection con, int qId) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		
+
 		try {
 			 procedure = con.prepareCall("{CALL GetCountOfEnqueuedJobPairsByQueue(?)}");
-			procedure.setInt(1, qId);					
+			procedure.setInt(1, qId);
 			 results = procedure.executeQuery();
 
 			if(results.next()){
 				return results.getInt("count");
-			}			
+			}
 
 			return -1;
 		} catch (Exception e) {
@@ -305,7 +305,7 @@ public class Queues {
 		}
 		return -1;
 	}
-	
+
 	/**
 	 * Gets the number of pairs that are enqueued in the given queue.
 	 * @param qId The id of the queue to get pairs for
@@ -313,51 +313,51 @@ public class Queues {
 	 * @author Wyatt Kaiser
 	 */
 	public static int getCountOfEnqueuedPairsByQueue(int qId) {
-		Connection con = null;			
+		Connection con = null;
 
-		try {			
-			con = Common.getConnection();		
+		try {
+			con = Common.getConnection();
 			return getCountOfEnqueuedPairsByQueue(con, qId);
-		} catch (Exception e){			
-			log.error("getCountOfEnqueuedPairsShallow for queue " + qId + " says " + e.getMessage(), e);		
+		} catch (Exception e){
+			log.error("getCountOfEnqueuedPairsShallow for queue " + qId + " says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
 
-		return -1;		
+		return -1;
 	}
-	
+
 	/**
 	 * Gets the ID of a queue given the name of the queue
 	 * @param queueName The exact name of the queue, including .q
 	 * @return The name, or null if it was not found.
 	 */
 	public static int getIdByName(String queueName) {
-		Connection con = null;	
+		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		try {			
-			con = Common.getConnection();	
-			
+		try {
+			con = Common.getConnection();
+
 			procedure = con.prepareCall("{CALL GetIdByName(?)}");
 			procedure.setString(1, queueName);
-			
-			
+
+
 			results = procedure.executeQuery();
 
 			if (results.next()) {
-				return results.getInt("id");	
+				return results.getInt("id");
 			}
-		} catch (Exception e){			
-			log.error("getIdByName says " + e.getMessage(), e);		
+		} catch (Exception e){
+			log.error("getIdByName says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-			return -1;				
+			return -1;
 	}
-	
+
 	private static String getPairOrderColumnForClusterPage(int indexOrder) {
 		if (indexOrder==0) {
 			return "queuesub_time";
@@ -374,19 +374,19 @@ public class Queues {
 		} else if (indexOrder==6) {
 			return "path";
 		}
-		
+
 		return "jobs.name";
 	}
-	
+
 	/**
 	 * Given a ResultSet containing job pairs with fields set for the cluster DataTable page,
 	 * returns the list of job pairs.
 	 * @return
-	 * @throws SQLException 
+	 * @throws SQLException
 	 */
 	private static List<JobPair> resultSetToClusterPagePairs(ResultSet results) throws SQLException {
 		List<JobPair> returnList = new LinkedList<>();
-		
+
 		while(results.next()){
 			JobPair jp=new JobPair();
 			jp.setPrimaryStageNumber(results.getInt("job_pairs.primary_jobpair_data")); //because we are only populating the one stage
@@ -397,9 +397,9 @@ public class Queues {
 			Status stat = new Status();
 			//enqueued by definition, so we don't want to retrieve extra data from the db
 			stat.setCode(StatusCode.STATUS_ENQUEUED);
-			
+
 			jp.setStatus(stat);
-			
+
 			JoblineStage stage=new JoblineStage();
 			stage.setStageNumber(jp.getPrimaryStageNumber());
 
@@ -410,35 +410,35 @@ public class Queues {
 			b.setId(results.getInt("job_pairs.bench_id"));
 			b.setName(results.getString("job_pairs.bench_name"));
 			jp.setBench(b);
-			
+
 			Solver s=new Solver();
 			s.setId(results.getInt("jobpair_stage_data.solver_id"));
 			s.setName(results.getString("jobpair_stage_data.solver_name"));
 			stage.setSolver(s);
-			
+
 			Configuration c = new Configuration();
 			c.setId(results.getInt("jobpair_stage_data.config_id"));
 			c.setName(results.getString("jobpair_stage_data.config_name"));
 			stage.setConfiguration(c);
 			jp.getPrimarySolver().addConfiguration(c);
-			
+
 			User u=new User();
 			u.setId(results.getInt("users.id"));
 			u.setFirstName(results.getString("users.first_name"));
 			u.setLastName(results.getString("users.last_name"));
 			jp.setOwningUser(u);
-			
+
 			Job j = new Job();
 			j.setId(results.getInt("jobs.id"));
 			j.setName(results.getString("jobs.name"));
-			
+
 			jp.setOwningJob(j);
-			
+
 			returnList.add(jp);
 		}
 		return returnList;
 	}
-	
+
 	/**
 	 * Gets the pairs running on the given node. Only the fields required for the DataTables on the explore/cluster
 	 * page are populated
@@ -464,32 +464,32 @@ public class Queues {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Gets all the necessary job pairs for populating a datatables page on the cluster status page
 	 * @param query A DataTablesQuery object
 	 * @param id The ID of the queue or node
 	 * @return A list of JobPairs running on the node
 	 */
-	
+
 	public static List<JobPair> getJobPairsForNextClusterPage(DataTablesQuery query, int id) {
 		PaginationQueryBuilder builder = null;
 		builder = new PaginationQueryBuilder(PaginationQueries.GET_PAIRS_ENQUEUED_QUERY,getPairOrderColumnForClusterPage(query.getSortColumn()), query);
-		Connection con = null;		
+		Connection con = null;
 		NamedParameterStatement procedure = null;
 		ResultSet results = null;
-		try {			
-			con = Common.getConnection();	
-			
+		try {
+			con = Common.getConnection();
+
 			procedure = new NamedParameterStatement(con, builder.getSQL());
-			
+
 			procedure.setInt("id", id);
 			results = procedure.executeQuery();
-						
-			return resultSetToClusterPagePairs(results);			
-			
-		} catch (Exception e){			
-			log.error("getNextPageOfEnqueuedJobPairs for queue " + id + " says " + e.getMessage(), e);		
+
+			return resultSetToClusterPagePairs(results);
+
+		} catch (Exception e){
+			log.error("getNextPageOfEnqueuedJobPairs for queue " + id + " says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -517,7 +517,7 @@ public class Queues {
         return getPendingJobsHelper(queueId, false);
 	}
 
-    
+
 	/**
      * Wrapper method that only gets developer or admin jobs with pending job pairs for the given queue
      * @param queueId the id of the queue
@@ -525,7 +525,7 @@ public class Queues {
      */
     public static List<Job> getPendingDeveloperJobs(int queueId) {
         return getPendingJobsHelper(queueId, true);
-    
+
     }
 	/**
      * Gets jobs with pending job pairs for the given queue
@@ -535,7 +535,7 @@ public class Queues {
      * @author Ben McCune and Aaron Stump
      */
 	private static List<Job> getPendingJobsHelper(int queueId, Boolean developerOnly) {
-		Connection con = null;		
+		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
 
@@ -543,11 +543,11 @@ public class Queues {
 			con = Common.getConnection();
 			Queue queue = Queues.get(con, queueId);
             if(developerOnly) {
-                procedure = con.prepareCall("{CALL GetPendingDeveloperJobs(?)}");                  
+                procedure = con.prepareCall("{CALL GetPendingDeveloperJobs(?)}");
             } else {
                 procedure = con.prepareCall("{CALL GetPendingJobs(?)}");
             }
-			procedure.setInt(1, queueId);					
+			procedure.setInt(1, queueId);
 			 results = procedure.executeQuery();
 			List<Job> jobs = new LinkedList<>();
 
@@ -556,11 +556,11 @@ public class Queues {
 				j.setQueue(queue);
 				j.setStageAttributes(Jobs.getStageAttrsForJob(j.getId(), con));
 				j.setUser(Users.get(j.getUserId()));
-				jobs.add(j);				
-			}							
+				jobs.add(j);
+			}
 			return jobs;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -578,17 +578,17 @@ public class Queues {
         List<Queue> queues = Queues.getAllActive();
         for (Queue q : queues) {
                 int queueId = q.getId();
-                Connection con = null;      
+                Connection con = null;
                 CallableStatement procedure = null;
                 ResultSet results = null;
                 try {
-                    con = Common.getConnection();       
-                     procedure = con.prepareCall("{CALL GetPendingDeveloperJobs(?)}");                  
-                    procedure.setInt(1, queueId);                   
+                    con = Common.getConnection();
+                     procedure = con.prepareCall("{CALL GetPendingDeveloperJobs(?)}");
+                    procedure.setInt(1, queueId);
                      results = procedure.executeQuery();
-                     return results.next(); 
-                } catch (Exception e){          
-                    log.error(e.getMessage(), e);       
+                     return results.next();
+                } catch (Exception e){
+                    log.error(e.getMessage(), e);
                 } finally {
                     Common.safeClose(con);
                     Common.safeClose(procedure);
@@ -597,27 +597,27 @@ public class Queues {
         }
         return false;
     }
-	
+
 	private static Queue resultSetToQueue(ResultSet results) throws SQLException  {
 		Queue q = new Queue();
 		q.setName(results.getString("name"));
-		q.setId(results.getInt("id"));	
+		q.setId(results.getInt("id"));
 		q.setStatus(results.getString("status"));
 		q.setWallTimeout(results.getInt("clockTimeout"));
 		q.setCpuTimeout(results.getInt("cpuTimeout"));
 		q.setGlobalAccess(results.getBoolean("global_access"));
-		
+
 		return q;
 	}
-	
+
 	/**
 	 * Gets all queues in the starexec cluster (with no detailed information)
 	 * @param userId return the queues accessible by the given user, or all queues if the userId is 0
-	 * @return A list of queues 
+	 * @return A list of queues
 	 * @author Tyler Jensen and Aaron Stump
 	 */
 	protected static List<Queue> getQueues(int userId) {
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
@@ -635,20 +635,20 @@ public class Queues {
 
 			 results = procedure.executeQuery();
 			List<Queue> queues = new LinkedList<>();
-			
+
 			while(results.next()){
 				queues.add(Queues.resultSetToQueue(results));
-			}			
-						
+			}
+
 			return queues;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
-		
+
 		return null;
 	}
 	/**
@@ -660,21 +660,21 @@ public class Queues {
 	 */
 
 	public static Long getUserLoadOnQueue(int queueId, int userId) {
-		Connection con = null;	
+		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			con = Common.getConnection();		
-			procedure = con.prepareCall("{CALL GetUserLoadOnQueue(?,?)}");					
-			procedure.setInt(1, queueId);					
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetUserLoadOnQueue(?,?)}");
+			procedure.setInt(1, queueId);
 			procedure.setInt(2, userId);
 			results = procedure.executeQuery();
 
 			while(results.next()){
 				return results.getLong("queue_load");
-			}							
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+			}
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -683,7 +683,7 @@ public class Queues {
 
 		return null;
 	}
-	
+
 	/**
 	 * Returns the number of job pairs enqueued in the given queue
 	 * @param queueId The queue in question
@@ -691,22 +691,22 @@ public class Queues {
 	 */
 
 	public static Integer getSizeOfQueue(int queueId) {
-		Connection con = null;	
+		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetNumEnqueuedJobs(?)}");					
-			procedure.setInt(1, queueId);					
+			con = Common.getConnection();
+			 procedure = con.prepareCall("{CALL GetNumEnqueuedJobs(?)}");
+			procedure.setInt(1, queueId);
 			 results = procedure.executeQuery();
 
 			Integer qSize = -1;
 			while(results.next()){
-				qSize = results.getInt("count");	
-			}							
+				qSize = results.getInt("count");
+			}
 			return qSize;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -730,7 +730,7 @@ public class Queues {
 			return getQueues(userId);
 		}
 	}
-	
+
 	/**
 	 * Updates the status of ALL queues with the given status
 	 * @param status The status to set for all queues
@@ -747,35 +747,35 @@ public class Queues {
 	 * @return True if the operation was a success, false otherwise.
 	 */
 	public static boolean setStatus(String name, String status) {
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-						
+
 			if(name == null) {
 				// If no name was supplied, apply to all queues
 				procedure = con.prepareCall("{CALL UpdateAllQueueStatus(?)}");
-				procedure.setString(1, status);				
+				procedure.setString(1, status);
 			} else {
 				procedure = con.prepareCall("{CALL UpdateQueueStatus(?, ?)}");
 				procedure.setString(1, name);
 				procedure.setString(2, status);
 			}
-						
-			procedure.executeUpdate();			
+
+			procedure.executeUpdate();
 			return true;
-		} catch (Exception e){			
+		} catch (Exception e){
 			log.error(e.getMessage(), e);
 			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		
+
 		log.debug(String.format("Status for queue [%s] failed to be updated.", (name == null) ? "ALL" : name));
 		return false;
 	}
-	
+
 	/**
 	 * Checks to see whether the given name is already being used by a queue
 	 * @param queueName The name we want to check against all existing queues
@@ -785,40 +785,40 @@ public class Queues {
 	public static boolean notUniquePrimitiveName(String queueName) {
 		return Queues.getIdByName(queueName)>=0;
 	}
-	
+
 	/**
 	 * Gets the name of a queue given its ID
 	 * @param queueId The ID of the queue to retrieve the name of
 	 * @return The name of the queue, or null on error
 	 */
-	
+
 	public static String getNameById(int queueId) {
-		Connection con = null;	
+		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		try {			
-			con = Common.getConnection();	
-			
+		try {
+			con = Common.getConnection();
+
 			procedure = con.prepareCall("{CALL GetNameById(?)}");
 			procedure.setInt(1, queueId);
-			
-			
+
+
 			results = procedure.executeQuery();
 
 			while(results.next()){
 				return results.getString("name");
-			}						
-		} catch (Exception e){			
-			log.error("getIdByName says " + e.getMessage(), e);		
+			}
+		} catch (Exception e){
+			log.error("getIdByName says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		//we couldn't find the name 
+		//we couldn't find the name
 		return null;
 	}
-	
+
 	/**
 	 * Updates the cpu timeout for an existing queue
 	 * @param queueId The ID of the queue to update
@@ -840,7 +840,7 @@ public class Queues {
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
-			
+
 		}
 		return false;
 	}
@@ -865,7 +865,7 @@ public class Queues {
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
-			
+
 		}
 		return false;
 	}
@@ -875,17 +875,17 @@ public class Queues {
 	 * @param queueId The ID of the queue to check
 	 * @return True if it is global, and false if it is not OR if there is an error
 	 */
-	
+
 	public static boolean isQueueGlobal(int queueId) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();
-			
+
 			procedure = con.prepareCall("{CALL IsQueueGlobal(?)}");
 			procedure.setInt(1, queueId);
-			
+
 			results = procedure.executeQuery();
 			while(results.next()) {
 				return results.getBoolean("global_access");
@@ -899,7 +899,7 @@ public class Queues {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Deletes a queue from the database
 	 * @param queueId The ID of the queue to delete
@@ -911,7 +911,7 @@ public class Queues {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			
+
 			procedure = con.prepareCall("{CALL RemoveQueue(?)}");
 			procedure.setInt(1, queueId);
 			procedure.executeUpdate();
@@ -922,7 +922,7 @@ public class Queues {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		
+
 		return false;
 	}
 	/**
@@ -938,7 +938,7 @@ public class Queues {
 			procedure = con.prepareCall("{CALL MakeQueueGlobal(?)}");
 			procedure.setInt(1, queueId);
 			procedure.executeUpdate();
-			
+
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -948,7 +948,7 @@ public class Queues {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Sets the global_access column of the given queue to false
 	 * @param queueId The ID of the queue to remove
@@ -962,7 +962,7 @@ public class Queues {
 			procedure = con.prepareCall("{CALL RemoveQueueGlobal(?)}");
 			procedure.setInt(1, queueId);
 			procedure.executeUpdate();
-			
+
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -972,7 +972,7 @@ public class Queues {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Sets the given queue to be the system test queue.
 	 * @param queueId The ID of the queue to make the test queue.
@@ -986,7 +986,7 @@ public class Queues {
 			procedure=con.prepareCall("{CALL SetTestQueue(?)}");
 			procedure.setInt(1,queueId);
 			procedure.executeUpdate();
-			
+
 			return true;
 
 		} catch (Exception e) {
@@ -997,7 +997,7 @@ public class Queues {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Returns all.q, which is the one queue in the system that is always guaranteed to exist
 	 * @return The default queue, or null if it could not be found.
@@ -1005,7 +1005,7 @@ public class Queues {
 	public static Queue getAllQ() {
 		return Queues.get(R.DEFAULT_QUEUE_ID);
 	}
-	
+
 	/**
 	 * Gets the queue that should be used for running test jobs. If no such queue
 	 * is currently set, it will be set to all.q before returning. This is to ensure
@@ -1037,7 +1037,7 @@ public class Queues {
 		}
 		return -1;
 	}
-	
+
 
 	/**
 	 * Gives one or more communities access to a queue
@@ -1053,21 +1053,21 @@ public class Queues {
 		try {
 			con = Common.getConnection();
 			Common.beginTransaction(con);
-			
+
 			if (community_ids != null) {
 				for (int id : community_ids) {
 					procedure = con.prepareCall("{CALL SetQueueCommunityAccess(?, ?)}");
 					procedure.setInt(1, id);
 					procedure.setInt(2, queue_id);
-					
+
 					procedure.executeUpdate();
 				}
 			}
-			
+
 			Common.endTransaction(con);
-			
+
 			return true;
-			
+
 		} catch (Exception e) {
 			log.error("SetQueueCommunityAccess says " + e.getMessage(), e);
 		} finally {
@@ -1076,7 +1076,7 @@ public class Queues {
 			Common.safeClose(results);
 		}
 		return false;
-		
+
 	}
 
 }
