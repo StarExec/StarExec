@@ -69,6 +69,19 @@ are only obtained after pairs finish. 10 is the minimum if this is used.</p>
 <h3 class="helpPage">Save Additional Output Files</h3>
 <p class="helpPage">Saves solver output that is placed into the extra output directory given to each solver.</p>
 
+<h3 class="helpPage">Soft time limit</h3>
+<p class="helpPage"><strong>This option is only available when using BenchExec</strong></p>
+<p class="helpPage">If greater than zero, solver will be sent <code>TERM</code>
+signal after running for this number of seconds, but will not be sent <code>KILL</code>
+signal until either wallclock timeout or cpu timeout. This offers the solver an
+opportunity to do any necessary cleanup before being terminated.</p>
+
+<h3 class="helpPage">Delay before termination</h3>
+<p class="helpPage"><strong>This option is only available when using runsolver</strong></p>
+<p class="helpPage">If greater than zero, solver will be sent <code>TERM</code>
+signal after memory or time limits have exceeded, and <code>KILL</code> signal
+will be then sent after this number of seconds. This offers the solver an
+opportunity to do any necessary cleanup before being terminated.</p>
 
 <p class="helpPage">You can then select whether to "run and keep the hierarchy structure" or
 choose which benchmarks and solvers to execute.  The first option will find
