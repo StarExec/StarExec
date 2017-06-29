@@ -21,7 +21,7 @@ import java.util.Map;
 
 public class Cluster {
 	private static final StarLogger log = StarLogger.getLogger(Cluster.class);
-	
+
 	/**
 	 * Gets the worker nodes from BACKEND and adds them to the database if they don't already exist. This must be done
 	 * BEFORE queues have been loaded as the queues will make associations to the nodes.
@@ -29,17 +29,17 @@ public class Cluster {
 	public static synchronized void loadWorkerNodes() {
 
 		log.info("Loading worker nodes into the db");
-		try {			
+		try {
 
 			// Set all nodes as inactive (we will update them to active as we see them)
 			Cluster.setNodeStatus(R.NODE_STATUS_INACTIVE);
-			
+
 			String[] lines = R.BACKEND.getWorkerNodes();
 			for (int i = 0; i < lines.length; i++) {
 				String name = lines[i];
 				log.trace("Updating info for node "+name);
 				// In the database, update the attributes for the node
-				Cluster.addNodeIfNotExists(name);				
+				Cluster.addNodeIfNotExists(name);
 				// Set the node as active (because we just saw it!)
 				Cluster.setNodeStatus(name, R.NODE_STATUS_ACTIVE);
 			}
@@ -48,14 +48,14 @@ public class Cluster {
 		}
 		log.info("Completed loading info for worker nodes into db");
 	}
-	
+
 	/**
 	 * Loads the list of active queues on the system, loads their attributes into the database
 	 * as well as their associations to worker nodes that belong to each queue.
 	 */
 	public synchronized static void loadQueueDetails() {
 		log.info("Loading queue details into the db");
-		try {			
+		try {
 
 			// Set all queues as inactive (we will set them as active when we see them)
 			Queues.setStatus(R.QUEUE_STATUS_INACTIVE);
@@ -76,7 +76,7 @@ public class Cluster {
 			Cluster.setQueueAssociationsInDb();
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
-		} 
+		}
 		log.info("Completed loading the queue details into the db");
 	}
 
@@ -88,12 +88,12 @@ public class Cluster {
 	public static Boolean setQueueAssociationsInDb() {
 	    Queues.clearQueueAssociations();
 	    Map<String,String> assoc = R.BACKEND.getNodeQueueAssociations();
-	    
+
 	    for(String node : assoc.keySet()){
 	    	Queues.associate(assoc.get(node), node);
 	    }
 	    return true;
-	    
+
 	}
 
 	/**
@@ -103,20 +103,20 @@ public class Cluster {
 	 * @return A node object containing all of its attributes
 	 * @author Tyler Jensen
 	 */
-	protected static WorkerNode getNodeDetails(Connection con, int id) {				
+	protected static WorkerNode getNodeDetails(Connection con, int id) {
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
 			procedure = con.prepareCall("{CALL GetNodeDetails(?)}");
-			procedure.setInt(1, id);			
+			procedure.setInt(1, id);
 			results = procedure.executeQuery();
 			WorkerNode node = new WorkerNode();
 			if(results.next()){
 				node.setName(results.getString("name"));
 				node.setId(results.getInt("id"));
 				node.setStatus(results.getString("status"));
-			}							
-			
+			}
+
 			return node;
 		} catch (Exception e) {
 			log.error("getNodeDetails says "+e.getMessage(),e);
@@ -124,10 +124,10 @@ public class Cluster {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Gets a worker node with detailed information (Id and name aint with all attributes)
 	 * @param id The id of the node to get detailed information for
@@ -135,17 +135,17 @@ public class Cluster {
 	 * @author Tyler Jensen
 	 */
 	public static WorkerNode getNodeDetails(int id) {
-		Connection con = null;			
-		
+		Connection con = null;
+
 		try {
-			con = Common.getConnection();		
+			con = Common.getConnection();
 			return Cluster.getNodeDetails(con, id);
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
-		
+
 		return null;
 	}
 
@@ -156,36 +156,36 @@ public class Cluster {
 	 * @author Tyler Jensen
 	 */
 	public static List<WorkerNode> getNodesForQueue(int id) {
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure= null;
 		ResultSet results=null;
 		try {
-			con = Common.getConnection();		
+			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetNodesForQueue(?)}");
 			procedure.setInt(1, id);
 			results = procedure.executeQuery();
 			List<WorkerNode> nodes = new LinkedList<>();
-			
+
 			while(results.next()){
 				WorkerNode n = new WorkerNode();
 				n.setName(results.getString("node.name"));
 				n.setId(results.getInt("node.id"));
 				n.setStatus(results.getString("node.status"));
 				nodes.add(n);
-			}			
-						
+			}
+
 			return nodes;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Updates the status of ALL worker nodes with the given status
 	 * @param status The status to set for all nodes
@@ -203,29 +203,29 @@ public class Cluster {
 	 * @return True if the operation was a success, false otherwise.
 	 */
 	public static boolean setNodeStatus(String name, String status) {
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure= null;
 		try {
 			con = Common.getConnection();
-			
+
 			if(name == null) {
 				// If no name was supplied, apply to all nodes
 				procedure = con.prepareCall("{CALL UpdateAllNodeStatus(?)}");
-				procedure.setString(1, status);				
+				procedure.setString(1, status);
 			} else {
 				procedure = con.prepareCall("{CALL UpdateNodeStatus(?, ?)}");
 				procedure.setString(1, name);
 				procedure.setString(2, status);
-			}						
-			procedure.executeUpdate();			
+			}
+			procedure.executeUpdate();
 			return true;
-		} catch (Exception e){			
+		} catch (Exception e){
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		
+
 		log.debug(String.format("Status for node [%s] failed to be updated.", (name == null) ? "ALL" : name));
 		return false;
 	}
@@ -235,29 +235,29 @@ public class Cluster {
 	 * @return true on success and false otherwise
 	 */
 	public static boolean deleteNode(int nodeId) {
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			
+
 			procedure = con.prepareCall("{CALL DeleteNode(?)}");
-			
+
 			// First, add the node (MySQL will ignore this if it already exists)
 			procedure.setInt(1, nodeId);
 			procedure.executeUpdate();
-						
-			// Done, commit the changes	
+
+			// Done, commit the changes
 			return true;
-		} catch (Exception e){			
+		} catch (Exception e){
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		
+
 		return false;
 	}
-	
+
 	/**
 	 * Takes in a node name and adds it to the database if it doesn't aleady exist
 	 * @param name The name of the worker node to update/add
@@ -265,26 +265,26 @@ public class Cluster {
 	 * @author Tyler Jensen
 	 */
 	public static boolean addNodeIfNotExists(String name) {
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			
+
 			procedure = con.prepareCall("{CALL AddNode(?)}");
-			
+
 			// First, add the node (MySQL will ignore this if it already exists)
 			procedure.setString(1, name);
 			procedure.executeUpdate();
-						
-			// Done, commit the changes	
+
+			// Done, commit the changes
 			return true;
-		} catch (Exception e){			
+		} catch (Exception e){
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		
+
 		log.debug(String.format("Node [%s] failed to be updated.", name));
 		return false;
 	}
@@ -298,15 +298,15 @@ public class Cluster {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		try {			
-			con = Common.getConnection();	
-			
-			procedure = con.prepareCall("{CALL GetJobsRunningOnQueue(?)}");	
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL GetJobsRunningOnQueue(?)}");
 			procedure.setInt(1, queueId);
-			
+
 			results = procedure.executeQuery();
 			List<Job> jobs = new LinkedList<>();
-			
+
 			while(results.next()){
 				Job j = new Job();
 				j.setId(results.getInt("id"));
@@ -316,12 +316,12 @@ public class Cluster {
 				Queue queue = Queues.get(queue_Id);
 				j.setQueue(queue);
 				jobs.add(j);
-			}			
-			
+			}
+
 			return jobs;
-			
-		} catch (Exception e){			
-			log.error("GetJobsRunningOnQueue says " + e.getMessage(), e);		
+
+		} catch (Exception e){
+			log.error("GetJobsRunningOnQueue says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -329,7 +329,7 @@ public class Cluster {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Gets all nodes in the system
 	 * @return A list of nodes, or null on error
@@ -341,7 +341,7 @@ public class Cluster {
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();
-			
+
 			procedure = con.prepareCall("{CALL GetAllNodes()}");
 			results = procedure.executeQuery();
 			List<WorkerNode> nodes = new LinkedList<>();
@@ -362,7 +362,7 @@ public class Cluster {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Gets all of the nodes that are NOT associated with the given queue
 	 * @param queueId The ID of the queue
@@ -375,7 +375,7 @@ public class Cluster {
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();
-			
+
 			procedure = con.prepareCall("{CALL GetNonAttachedNodes(?)}");
 			procedure.setInt(1, queueId);
 			results = procedure.executeQuery();
@@ -388,7 +388,7 @@ public class Cluster {
 				Queue q=new Queue();
 				q.setName(results.getString("queues.name"));
 				q.setId(results.getInt("queues.id"));
-				
+
 				//we are displaying this data in a table, so we don't want a null name
 				if (q.getName()==null) {
 					q.setName("None");
@@ -418,7 +418,7 @@ public class Cluster {
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();
-			
+
 			procedure = con.prepareCall("{CALL GetQueueForNode(?)}");
 			procedure.setInt(1, nodeId);
 			results = procedure.executeQuery();
@@ -440,7 +440,7 @@ public class Cluster {
 	}
 
 	/**
-	 * Retrieves the ID of a node given its name. 
+	 * Retrieves the ID of a node given its name.
 	 * @param nodeName The name of the node to check
 	 * @return The ID of the node, or -1 if it couldn't be found
 	 */
