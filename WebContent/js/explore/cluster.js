@@ -12,7 +12,7 @@ $(document).ready(function(){
 	});
 
 	$("#details tbody").on( "click", "tr", function(){
-		if (jobPairTable.fnTotalRecords()>0) {
+		if (jobPairTable.DataTable().data().length > 0) {
 			var pairId = $(this).find('input').val();
 			window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
 		}
