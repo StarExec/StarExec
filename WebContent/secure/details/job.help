@@ -41,3 +41,10 @@ completed unzip the archive and navigate to the new directory that was
 created. Open the job.html file with your favorite web browser.
 </p>
 
+<h2>Set as High Priority</h2>
+<p>Setting a job as high priority will cause job pairs from that job to be
+prioritized over job pairs from a user’s other jobs. It will have no effect on
+when these job pairs are executed with respect to job pairs from other users.
+This allows a user to execute smaller jobs with a high priority while long
+running jobs continue to run at normal priority.
+</p>
