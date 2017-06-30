@@ -61,7 +61,7 @@
 <star:template title="${t_user.fullName}" js="util/draggable, util/spaceTree, common/delaySpinner, details/user, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="explore/common, details/user, common/delaySpinner, common/table, details/shared">
 	<span id="userId" value="${userId}"></span>
 	<div id="popDialog">
-  		<img id="popImage" src=""/>
+		<img id="popImage" src=""/>
 	</div>
 	<div id="explorer">
 		<h3>Spaces</h3>
@@ -165,7 +165,7 @@
 			<ul class="actionList">
 				<li><button prim="solver" id="recycleSolver" class="recycleButton recycleSelected">recycle selected</button></li>
 				<li><button title="This will move all of the solvers you own that are not in any spaces to the recycle bin." prim="solver" id="recycleOrphanedSolvers" class="recycleButton recycleOrphaned">recycle orphaned</button>
-		 	 </ul>
+			</ul>
 			<table id="solvers" uid="${t_user.id}" class="selectableTable">
 				<thead>
 					<tr>
@@ -196,7 +196,7 @@
 			<ul class="actionList">
 				<li><button id="deleteJob" class="deleteButton deleteSelected">delete selected</button></li>
 				<li><button id="deleteOrphanedJob" class="deleteButton deleteOrphaned" title="This will permanently delete all of the jobs you created that are no longer in any spaces">delete orphaned</button></li>
-		 	 </ul>
+			</ul>
 			<table id="jobs" uid="${t_user.id}" class="selectableTable">
 				<thead>
 					<tr>
@@ -215,20 +215,22 @@
 		<fieldset id="actionField">
 			<legend>user actions</legend>
 			<ul class="actionList">
-				<li><button id="showSpaceExplorer">show space explorer</button></li>
+				<li><a id="editButton" href="${starexecRoot}/secure/edit/account.jsp?id=${t_user.id}">edit</a></li>
+				<li><a id="showSpaceExplorer">show space explorer</a></li>
+				<li><a id="recycleBinButton" href="${starexecRoot}/secure/details/recycleBin.jsp">manage recycle bin</a></li>
 
 				<c:if test="${!t_user.subscribedToErrorLogs && canSubscribeToErrorLogs}">
-					<li><button id="subscribeToErrorLogs">subscribe to error logs</button></li>
+					<li><a id="subscribeToErrorLogs">subscribe to error logs</a></li>
 				</c:if>
+
 				<c:if test="${t_user.subscribedToErrorLogs && canSubscribeToErrorLogs}">
-					<li><button id="unsubscribeFromErrorLogs">unsubscribe from error logs</button></li>
+					<li><a id="unsubscribeFromErrorLogs">unsubscribe from error logs</a></li>
 				</c:if>
-				<li><button title="This will add all of your 'orphaned' solvers, benchmarks, and jobs to the space selected in the
-				  space explorer on the left. An item is 'orphaned' if it is not linked to any spaces" id="linkOrphanedButton">
+
+				<li><a id="linkOrphanedButton" title="This will add all of your 'orphaned' solvers, benchmarks, and jobs to the space selected in the space explorer on the left. An item is 'orphaned' if it is not linked to any spaces">
 					associate orphaned primitives with space
-			 	</button></li>
-				<li><a id="editButton" href="${starexecRoot}/secure/edit/account.jsp?id=${t_user.id}">edit</a></li>
-				<li><a id="recycleBinButton" href="${starexecRoot}/secure/details/recycleBin.jsp">manage recycle bin</a></li>
+				</a></li>
+			</ul>
 		</fieldset>
 
 		<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">

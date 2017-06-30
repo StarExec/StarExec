@@ -11,7 +11,6 @@ $(document).ready(function(){
 	$('legend img').hide();
 
 	$("#explorer").hide();
-	$("#linkOrphanedButton").hide();
 
 	$("#detailPanel").css("width","100%");
 
@@ -22,14 +21,17 @@ $(document).ready(function(){
 			secondary: "ui-icon-newwin"
     	}
 	});
-	$("#linkOrphanedButton").button({
-		icons: {
-			primary: "ui-icon-check"
-		}
-	});
-	$("#linkOrphanedButton").click(function() {
-		linkAllOrphaned();
-	});
+
+	$("#linkOrphanedButton")
+		.button({
+			icons: {
+				primary: "ui-icon-check"
+			}
+		})
+		.click(linkAllOrphaned)
+		.hide()
+	;
+
 	$(".recycleButton, .deleteButton").button({
 		icons: {
 			primary: "ui-icon-trash"
@@ -43,9 +45,8 @@ $(document).ready(function(){
 	$(".recycleOrphaned").click(function() {
 		recycleOrphaned($(this).attr("prim"));
 	});
-	$("#deleteJob").click(function() {
-		deleteSelectedJobs();
-	});
+
+	$("#deleteJob").click(deleteSelectedJobs);
 
 	$("#deleteOrphanedJob").click(function() {
 		deleteOrphanedJobs();
@@ -271,23 +272,22 @@ function colorizeJobStatistics(){
 
 function handleSelectChange() {
 	if ($("#benchmarks tr.row_selected").length>0) {
-			$("#recycleBenchmark").show();
-
-	}   else {
+		$("#recycleBenchmark").show();
+	} else {
 		$("#recycleBenchmark").hide();
-
 	}
+
 	if ($("#solvers tr.row_selected").length>0) {
 			$("#recycleSolver").show();
 	} else {
 		$("#recycleSolver").hide();
 	}
+
 	if ($("#jobs tr.row_selected").length>0) {
 		$("#deleteJob").show();
 	} else {
 		$("#deleteJob").hide();
 	}
-
 }
 
 /**
