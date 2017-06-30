@@ -169,17 +169,8 @@ sendStatus $STATUS_RUNNING
 
 initSandbox
 
-
-if ! isInteger $SANDBOX ; then
-        sendStatus $ERROR_RUNSCRIPT
-        sendStatusToLaterStages $ERROR_RUNSCRIPT 0
-
-        log "unable to secure any sandbox for this job!"
-        exit 0
-fi
-
-if [ $SANDBOX -eq -1 ]
-then
+if [ ! isInteger $SANDBOX || $SANDBOX -eq -1 ]; then
+        sendNode "$HOSTNAME" "0"
         sendStatus $ERROR_RUNSCRIPT
         sendStatusToLaterStages $ERROR_RUNSCRIPT 0
 
