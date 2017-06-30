@@ -34,6 +34,7 @@
 	<property name="starcomzip" value="WebContent/public/starexeccommand.zip"/>
 	<property name="starcomsrc" value="${starcom-base}"/>
 	<property name="bash-header" value="#!/bin/bash${line.separator}" />
+	<property name="compression-enabled" value="true" />
 
 	<!-- Tell java where to look for JAR files while compiling (our application lib and the apache lib) -->
 	<path id="classpath">
@@ -69,7 +70,7 @@
 	</target>
 
 	<target name="command" depends="compilestarcom" description="Build StarExecCommand only">
-		<jar destfile="${starcom-build}/StarexecCommand.jar">
+		<jar compress="${compression-enabled}" level="9" destfile="${starcom-build}/StarexecCommand.jar">
 			<manifest>
 				<attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
 				<attribute name="Rsrc-Main-Class" value="org.starexec.command.Shell"/>
@@ -95,7 +96,7 @@
 	<!-- Zips up the StarExecCommand folder with the readme and runnable jar  -->
 	<target name="zipstarcom" depends="command">
 		<copy file="WebContent/public/manual.txt" tofile="${starcom-build}/Manual.txt" />
-		<zip destfile="${starcomzip}" basedir="${starcom-build}"/>
+		<zip compress="${compression-enabled}" level="9" destfile="${starcomzip}" basedir="${starcom-build}"/>
 	</target>
 
 	<target name="register-commands">
@@ -280,7 +281,7 @@
 		</propertyfile>
 
 		<!-- Create the war file! -->
-		<war warfile="${war-file-name}" webxml="${web-inf}/web.xml">
+		<war compress="${compression-enabled}" level="9" warfile="${war-file-name}" webxml="${web-inf}/web.xml">
 			<classes dir="${class-dir}" />
 			<fileset dir="WebContent" excludes="**/*.scss"/>
 			<lib dir="${web-inf}/lib"/>
