@@ -472,7 +472,7 @@ public class ArchiveUtil {
 		for (File f : paths) {
 			log.debug("adding new file to zip = " + f.getAbsolutePath());
 			log.debug("directory status = " + f.isDirectory());
-			if (baseName == null || baseName.length() == 0) {
+			if (Util.isNullOrEmpty(baseName)) {
 				newFileName = f.getName();
 			} else {
 				newFileName = baseName + File.separator + f.getName();

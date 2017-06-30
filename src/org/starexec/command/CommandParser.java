@@ -565,7 +565,7 @@ class CommandParser {
 		command = command.trim();
 
 		// Empty lines and comments are equivalent.
-		if (command.length() == 0 || command.startsWith(C.COMMENT_SYMBOL)) {
+		if (command.isEmpty() || command.startsWith(C.COMMENT_SYMBOL)) {
 			return 0;
 		}
 

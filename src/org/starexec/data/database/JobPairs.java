@@ -95,7 +95,7 @@ public class JobPairs {
 					final int configId = getConfigIdFromElement(jobPairElement, configAttrMapPair);
 					//final int configId = Integer.parseInt(jobPairElement.getAttribute("config-id"));
 					String path = jobPairElement.getAttribute("job-space-path");
-					if (path.equals("")) {
+					if (path.isEmpty()) {
 						path = rootName;
 
 					}

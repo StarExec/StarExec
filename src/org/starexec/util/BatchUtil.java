@@ -344,7 +344,7 @@ public class BatchUtil {
 			return null;
 		}
 
-		//Create Space Hierarchies as children of parent space	
+		//Create Space Hierarchies as children of parent space
 		this.spaceCreationSuccess = true;
 		int spaceCounter = 0;
 		Timer timer = new Timer();
@@ -747,7 +747,7 @@ public class BatchUtil {
 			String name = "";
 			Benchmark b = Benchmarks.get(update.id);
 
-			if (update.name.equals("")) {
+			if (update.name.isEmpty()) {
 				name = b.getName();
 			} else {
 				name = update.name;

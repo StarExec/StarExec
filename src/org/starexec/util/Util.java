@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 /**
  * This class contains utility functions used throughout Starexec, including many
@@ -51,9 +53,9 @@ public class Util {
 	 * @return True if they are equal and false otherwise
 	 */
 	public static boolean objectsEqual(Object a, Object b) {
-		if (a == null && b == null) {
+		if (a == b) {
 			return true;
-		} else if (a == null) {
+		} else if (isNull(a)) {
 			return false;
 		} else {
 			return a.equals(b);
@@ -284,7 +286,7 @@ public class Util {
 	 * @return True if s is null or empty and false otherwise
 	 */
 	public static boolean isNullOrEmpty(String s) {
-		return (s == null || s.trim().length() <= 0);
+		return (isNull(s) || s.trim().isEmpty());
 	}
 
 	/**
@@ -529,7 +531,7 @@ public class Util {
 	 * @return A list of ints parsed from the string list
 	 */
 	public static List<Integer> toIntegerList(String[] stringList) {
-		if (stringList != null) {
+		if (nonNull(stringList)) {
 			ArrayList<Integer> retList = new ArrayList<>(stringList.length);
 
 			for (String s : stringList) {
@@ -766,14 +768,14 @@ public class Util {
 	}
 
 	private static void initDocRoot() {
-		if (docRoot == null) {
+		if (isNull(docRoot)) {
 			docRoot = "/" + R.STAREXEC_APPNAME + "/";
 		}
 	}
 
 	private static void initDocRootUrl() {
 		initDocRoot();
-		if (docRootUrl == null) {
+		if (isNull(docRootUrl)) {
 			docRootUrl = R.STAREXEC_URL_PREFIX + "://" + R.STAREXEC_SERVERNAME + docRoot;
 		}
 	}
@@ -868,9 +870,9 @@ public class Util {
 		}
 		File file = new File(path);
 		File endFile = new File(endPath);
-		while (file != null) {
+		while (nonNull(file)) {
 			file = file.getParentFile();
-			if (file == null) {
+			if (isNull(file)) {
 				break;
 			}
 			log.debug("working on parent directory " + file.getAbsolutePath());
@@ -1177,7 +1179,7 @@ public class Util {
 		StringBuilder outputHtml = new StringBuilder();
 		URL inputUrl = new URL(url);
 		URLConnection urlConnection = inputUrl.openConnection();
-		if (cookiesToSend != null) {
+		if (nonNull(cookiesToSend)) {
 			String cookieString = buildCookieString(cookiesToSend);
 			urlConnection.setRequestProperty("Cookie", cookieString);
 		}

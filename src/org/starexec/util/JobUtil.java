@@ -663,7 +663,7 @@ public class JobUtil {
 					}
 					//get the path of the job space for this pair. If empty, just use the root space
 					String path = jobLineElement.getAttribute("job-space-path");
-					if (path.equals("")) {
+					if (path.isEmpty()) {
 						path = rootName;
 					}
 					jobPair.setPath(path);
