@@ -111,8 +111,8 @@ public class JobUtil {
 
 		if (Users.isDiskQuotaExceeded(userId)) {
 			errorMessage =
-					"Your disk quota has been exceeded: please clear out some old solvers, jobs, or benchmarks before " +
-					"proceeding";
+					"Your disk quota has been exceeded: please clear out some old solvers, jobs, or benchmarks " +
+					"before proceeding";
 			return null;
 		}
 

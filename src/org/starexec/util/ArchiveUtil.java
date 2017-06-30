@@ -288,7 +288,8 @@ public class ArchiveUtil {
 	 * @param destination Where to unpack the contents to
 	 * @author Tyler Jensen
 	 */
-	private static void extractArchiveOfType(String fileName, String destination, ArchiveType archiveType) throws Exception {
+	private static void extractArchiveOfType(String fileName, String destination, ArchiveType archiveType) throws
+			Exception {
 		final String methodName = "extractArchiveOfType";
 		// Use the Apache commons compression library to open up the tar file...
 		log.debug("extracting " + archiveType);
@@ -308,7 +309,8 @@ public class ArchiveUtil {
 					// And create it if it doesn't exist so we can write a file inside it
 					success = dir.mkdirs();
 					if (!success) {
-						log.warn("Could not create directory: " + dir.getAbsolutePath() + "\n" + Util.getCurrentStackTrace());
+						log.warn("Could not create directory: " + dir.getAbsolutePath() + "\n" +
+						         Util.getCurrentStackTrace());
 						log.warn(methodName, "Did file already exist: " + dir.exists());
 						log.warn(methodName, "User was: " + System.getProperty("user.name"));
 						log.warn(methodName, "canWrite for file: " + dir.canWrite());
@@ -369,10 +371,11 @@ public class ArchiveUtil {
 	 * @param srcFile
 	 * @param zipFileName
 	 * @param earlyDate Milliseconds since the epoch. Only get files modified after this (non-inclusive)
-	 * @throws IOException
 	 * @return max of timestamp and earlyDate
+	 * @throws IOException
 	 */
-	public static long addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName, long earlyDate) throws IOException {
+	public static long addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName, long earlyDate) throws
+			IOException {
 		long timestamp = srcFile.lastModified();
 		if (timestamp > earlyDate) {
 			addFileToArchive(zos, srcFile, zipFileName);
@@ -387,8 +390,8 @@ public class ArchiveUtil {
 	 * @param zos
 	 * @param srcFile
 	 * @param zipFileName
-	 * @throws IOException
 	 * @return timestamp of file added
+	 * @throws IOException
 	 */
 	public static long addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {
 		ZipEntry entry = new ZipEntry(zipFileName);
@@ -419,10 +422,11 @@ public class ArchiveUtil {
 	 * @param srcFile
 	 * @param zipFileName
 	 * @param earlyDate
-	 * @throws IOException
 	 * @return max of earlyDate and timestamp of most recently modified file
+	 * @throws IOException
 	 */
-	public static long addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName, long earlyDate) throws IOException {
+	public static long addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName, long earlyDate) throws
+			IOException {
 		long maxTime = earlyDate;
 		final File[] files = srcFile.listFiles();
 		for (File file : files) {
@@ -497,11 +501,13 @@ public class ArchiveUtil {
 	 * @param path The directory or file to zip
 	 * @param output The outputstream to write to
 	 * @param baseName If not null or empty, all files will be in one directory with this name
-	 * @param removeTopLevel If true, includes all files in the given directory but not the directory itself. Basename will
+	 * @param removeTopLevel If true, includes all files in the given directory but not the directory itself. Basename
+	 * will
 	 * be IGNORED if this is true. It should be set to false if the desire is to simply rename the top level.
 	 * @throws Exception
 	 */
-	public static void createAndOutputZip(File path, OutputStream output, String baseName, boolean removeTopLevel) throws IOException {
+	public static void createAndOutputZip(File path, OutputStream output, String baseName, boolean removeTopLevel)
+			throws IOException {
 		if (removeTopLevel) {
 			File[] files = path.listFiles();
 			List<File> f = new ArrayList<>();

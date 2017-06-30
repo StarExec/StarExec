@@ -7,16 +7,17 @@ import java.util.HashMap;
 
 public class BenchmarkURLGenerator implements XYURLGenerator {
 
-	private HashMap<String,Integer> seriesMap;
-	public BenchmarkURLGenerator(HashMap<String,Integer> map) {
-		seriesMap=map;
+	private HashMap<String, Integer> seriesMap;
+
+	public BenchmarkURLGenerator(HashMap<String, Integer> map) {
+		seriesMap = map;
 	}
-	
+
 	@Override
 	public String generateURL(XYDataset dataset, int series, int item) {
-		
-		String key=series+":"+item;
-		return Util.docRoot("secure/details/benchmark.jsp?id="+seriesMap.get(key));
+
+		String key = series + ":" + item;
+		return Util.docRoot("secure/details/benchmark.jsp?id=" + seriesMap.get(key));
 	}
 
 }

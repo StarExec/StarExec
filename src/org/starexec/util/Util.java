@@ -135,7 +135,9 @@ public class Util {
 				return Optional.empty();
 			}
 		} catch (IOException e) {
-			log.error(methodName, "Caught IOException with inputs: " + "\n\tFile f: " + f.getAbsolutePath() + "\n\tint lineLimit: " + lineLimit);
+			log.error(methodName,
+					"Caught IOException with inputs: " + "\n\tFile f: " + f.getAbsolutePath() + "\n\tint lineLimit: " +
+					lineLimit);
 			throw e;
 		} finally {
 			// Release the line iterator without potential error
@@ -402,7 +404,8 @@ public class Util {
 	 * @return The combined stdout and stderr from the command
 	 * @throws IOException
 	 */
-	public static String executeSandboxCommand(String[] command, String[] envp, File workingDirectory) throws IOException {
+	public static String executeSandboxCommand(String[] command, String[] envp, File workingDirectory) throws
+			IOException {
 		String[] newCommand = new String[command.length + 3];
 		newCommand[0] = "sudo";
 		newCommand[1] = "-u";
@@ -424,7 +427,8 @@ public class Util {
 	 * @throws IOException We do not want to catch exceptions at this level, because this code is generic and
 	 * has no useful way to handle them! Throwing an exception to higher levels is the desired behavior.
 	 */
-	public static Process executeCommandAndReturnProcess(String[] command, String[] envp, File workingDirectory) throws IOException {
+	public static Process executeCommandAndReturnProcess(String[] command, String[] envp, File workingDirectory)
+			throws IOException {
 		Runtime r = Runtime.getRuntime();
 
 		final String methodName = "executeCommandAndReturnProcess";
@@ -756,7 +760,8 @@ public class Util {
 		if (!configName.startsWith(R.CONFIGURATION_PREFIX)) {
 			sb.append(R.CONFIGURATION_PREFIX);
 		}
-		sb.append(configName);            // Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin/{starexec_run_configName}
+		sb.append(configName);            // Path =
+		// .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin/{starexec_run_configName}
 		return sb.toString();
 	}
 
@@ -917,7 +922,8 @@ public class Util {
 	 * @param arr List to sort
 	 * @param compare Comparator object that will be used to determine the ordering of objects during sorting
 	 * @param start Record to start on
-	 * @param records Number of records to give back (actual number will be less if the size of the list is less than records)
+	 * @param records Number of records to give back (actual number will be less if the size of the list is less than
+	 * records)
 	 * @return Entries sorted and filtered according to the given comparator
 	 */
 
@@ -982,12 +988,16 @@ public class Util {
 				primitiveNameInLink = "pair";
 				break;
 			default:
-				log.error(methodName, "Threw and IllegalArgumentException because the input type does not have a details page.");
-				throw new IllegalArgumentException("Util.getPrimitiveDetailsLink does not support the given enum type.");
+				log.error(methodName,
+						"Threw and IllegalArgumentException because the input type does not have a " + "details page" +
+						".");
+				throw new IllegalArgumentException(
+						"Util.getPrimitiveDetailsLink does not support the given enum type" + ".");
 
 		}
 
-		return ("<a href='" + Util.docRoot("secure/details/" + primitiveNameInLink + ".jsp?id=" + id) + "'>" + linkText + "<img class='extLink' src='" + Util.docRoot("images/external.png") + "'/>" + "</a>");
+		return ("<a href='" + Util.docRoot("secure/details/" + primitiveNameInLink + ".jsp?id=" + id) + "'>" +
+		        linkText + "<img class='extLink' src='" + Util.docRoot("images/external.png") + "'/>" + "</a>");
 	}
 
 	/**
@@ -1134,7 +1144,8 @@ public class Util {
 	 * @throws IOException if there is some error getting the web pages
 	 * @author Albert Giegerich
 	 */
-	public static String getWebPage(String url, Map<String, String> queryParameters, List<Cookie> cookiesToSend) throws IOException {
+	public static String getWebPage(String url, Map<String, String> queryParameters, List<Cookie> cookiesToSend)
+			throws IOException {
 		if (queryParameters.keySet().size() == 0) {
 			return url;
 		}
@@ -1179,7 +1190,8 @@ public class Util {
 	}
 
 	/**
-	 * Builds a String representing a list of Cookies that we can pass to URLConnection.setRequestPropery to send cookies.
+	 * Builds a String representing a list of Cookies that we can pass to URLConnection.setRequestPropery to send
+	 * cookies.
 	 */
 	private static String buildCookieString(List<Cookie> cookies) {
 		//StringJoiner cookieStringJoiner = new StringJoiner("; ");
