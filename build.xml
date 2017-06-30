@@ -167,10 +167,10 @@
 		<copy file="${scripts-dir}/soft-deploy.template" tofile="soft-deploy.sh"/>
 		<replace file="soft-deploy.sh">
 			<replacefilter token="${bash-header}" value="${generated-bash-header}" />
+			<replacefilter token="the_appname" value="${appname}" />
+			<replacefilter token="the_data_dir" value="${data_dir}" />
+			<replacefilter token="the_web_home" value="${web-home}" />
 		</replace>
-		<replaceregexp file="soft-deploy.sh" match="the_appname" replace="${appname}" flags="g"/>
-		<replaceregexp file="soft-deploy.sh" match="the_data_dir" replace="${data_dir}"/>
-		<replaceregexp file="soft-deploy.sh" match="the_web_home" replace="${web-home}"/>
 		<chmod file="soft-deploy.sh" perm="774"/>
 
 		<!-- Fill in the createDistroArchive.sh template -->
@@ -178,19 +178,23 @@
 		<copy file="${scripts-dir}/createDistroArchiveTemplate.sh" tofile="createDistroArchive.sh"/>
 		<replace file="createDistroArchive.sh">
 			<replacefilter token="${bash-header}" value="${generated-bash-header}" />
+			<replacefilter token="current_checkout_dir" value="${basedir}" />
+			<replacefilter token="current_starexec_vesion" value="${svnversion}" />
 		</replace>
-		<replaceregexp file="createDistroArchive.sh" match="current_checkout_dir" replace="${basedir}"/>
-		<replaceregexp file="createDistroArchive.sh" match="current_starexec_vesion" replace="${svnversion}"/>
 		<chmod file="createDistroArchive.sh" perm="774"/>
 
 		<!-- Copy the context template and fill it in -->
 		<delete file="${meta-inf}/context.xml" />
 		<copy file="context.template" tofile="${meta-inf}/context.xml"/>
-		<replaceregexp file="${meta-inf}/context.xml" match="&lt;!\-\- (.+) \-\->" replace="&lt;!-- ${generated-message} -->" />
-		<replaceregexp file="${meta-inf}/context.xml" match="the_appname" replace="${appname}" flags="g"/>
-		<replaceregexp file="${meta-inf}/context.xml" match="the_db_name" replace="${db_name}"/>
-		<replaceregexp file="${meta-inf}/context.xml" match="the_connection_name" replace="${connection-name}"/>
-		<replaceregexp file="${meta-inf}/context.xml" match="the_connection_password" replace="${connection-password}"/>
+		<replaceregexp file="${meta-inf}/context.xml"
+		               match="&lt;!\-\- (.+) \-\->"
+		               replace="&lt;!-- ${generated-message} -->" />
+		<replace file="${meta-inf}/context.xml">
+			<replacefilter token="the_appname" value="${appname}" />
+			<replacefilter token="the_db_name" value="${db_name}" />
+			<replacefilter token="the_connection_name" value="${connection-name}" />
+			<replacefilter token="the_connection_password" value="${connection-password}" />
+		</replace>
 
 		<!-- Create/update the build property file -->
 		<propertyfile file="${config-dir}/build.properties"
@@ -262,15 +266,12 @@
 			</fileset>
 		</copy>
 
-		<replaceregexp match="www.starexec.org/starexec/"
-		               replace="${server-name}/${appname}/"
-		               byline="false"
-		               flags="g">
-			<fileset dir="WebContent/public">
-				<include name="**/*.xsd"/>
-				<include name="**/*.xml"/>
-			</fileset>
-		</replaceregexp>
+		<replace dir="WebContent/public/">
+			<replacefilter token="www.starexec.org/starexec/"
+			               value="${server-name}/${appname}/" />
+			<include name="**/*.xsd"/>
+			<include name="**/*.xml"/>
+		</replace>
 
 		<!-- Update the log4j config file to only record INFO level events	-->
 		<propertyfile file="${config-dir}/log4j.properties" comment="${generated-message}">
