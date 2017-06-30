@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- This build file must be configured for local use, using a file
-	 called local.properties, in this directory.
+     called local.properties, in this directory.
 
-	 See example.local.properties in this directory for an example. -->
+     See example.local.properties in this directory for an example.
+-->
 
 <!-- Starexec production build script. Author: Tyler Jensen, changes by Aaron Stump, Eric Burns -->
 <project name="starexec" default="epilog-test" basedir=".">
@@ -32,6 +33,7 @@
 	<property name="starcomlib" value="${web-inf}/lib"/>
 	<property name="starcomzip" value="WebContent/public/starexeccommand.zip"/>
 	<property name="starcomsrc" value="${starcom-base}"/>
+
 	<!-- Tell java where to look for JAR files while compiling (our application lib and the apache lib) -->
 	<path id="classpath">
 		<fileset dir="${web-inf}/lib" includes="**/*.jar"/>
@@ -45,15 +47,14 @@
 	</path>
 
 	<!-- Action for compiling the project and building the WAR file.
+		1. we first compile the Java sources and copy over scripts and
+		     configurations to ${build-dir}.
+		2. then we rewrite some of the configurations, using information
+		     from local.properties.
+	-->
 
-			 1. we first compile the Java sources and copy over scripts and
-				configurations to ${build-dir}.
-			 2. then we rewrite some of the configurations, using information
-			from local.properties.
-		 -->
 	<!-- Removes old StarExecCommand version  -->
-
-	<target name="cleanstarcom" depends="">
+	<target name="cleanstarcom">
 		<delete dir="${starcom-build}" />
 		<mkdir dir="${starcom-build}" />
 		<delete dir="${starcom-comp}" />
@@ -66,8 +67,7 @@
 		</javac>
 	</target>
 
-	<!-- Builds a runnable jar with all necessasry libraries built in -->
-	<target name="command" depends="compilestarcom">
+	<target name="command" depends="compilestarcom" description="Build StarExecCommand only">
 		<jar destfile="${starcom-build}/StarexecCommand.jar">
 			<manifest>
 				<attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
@@ -88,7 +88,6 @@
 			<zipfileset dir="${starcomlib}" includes="gson-2.8.0.jar"/>
 			<zipfileset dir="${starcomlib}" includes="log4j-1.2.16.jar"/>
 			<zipfileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
-
 		</jar>
 	</target>
 
@@ -98,7 +97,7 @@
 		<zip destfile="${starcomzip}" basedir="${starcom-build}"/>
 	</target>
 
-	<target name="register-commands" depends="">
+	<target name="register-commands">
 		<!-- Register commands and create build timestamp for build properties file -->
 		<tstamp>
 			<format property="builtat" pattern="MM/dd/yyyy hh:mm:ss aa" />
@@ -142,6 +141,7 @@
 				<include name="**/*" />
 			</fileset>
 		</copy>
+
 		<!--Copy over the resources directory from source to classes -->
 		<mkdir dir="${resource-dir}" />
 		<copy todir="${resource-dir}">
@@ -149,19 +149,20 @@
 				<include name="**/*" />
 			</fileset>
 		</copy>
+
 		<mkdir dir="${esapi-dir}" />
 		<copy todir="${esapi-dir}">
 			<fileset dir="${source-dir}/esapi">
 				<include name="**/*"/>
 			</fileset>
 		</copy>
+
 		<!-- Copy the soft-deploy template and fill it in -->
 		<delete file="soft-deploy.sh" />
 		<copy file="${scripts-dir}/soft-deploy.template" tofile="soft-deploy.sh"/>
 		<replaceregexp file="soft-deploy.sh" match="the_appname" replace="${appname}" flags="g"/>
 		<replaceregexp file="soft-deploy.sh" match="the_data_dir" replace="${data_dir}"/>
 		<replaceregexp file="soft-deploy.sh" match="the_web_home" replace="${web-home}"/>
-
 		<chmod file="soft-deploy.sh" perm="774"/>
 
 		<!-- Fill in the createDistroArchive.sh template -->
@@ -169,8 +170,8 @@
 		<copy file="${scripts-dir}/createDistroArchiveTemplate.sh" tofile="createDistroArchive.sh"/>
 		<replaceregexp file="createDistroArchive.sh" match="current_checkout_dir" replace="${basedir}"/>
 		<replaceregexp file="createDistroArchive.sh" match="current_starexec_vesion" replace="${svnversion}"/>
-
 		<chmod file="createDistroArchive.sh" perm="774"/>
+
 		<!-- Copy the context template and fill it in -->
 		<delete file="${meta-inf}/context.xml" />
 		<copy file="context.template" tofile="${meta-inf}/context.xml"/>
@@ -179,10 +180,9 @@
 		<replaceregexp file="${meta-inf}/context.xml" match="the_connection_name" replace="${connection-name}"/>
 		<replaceregexp file="${meta-inf}/context.xml" match="the_connection_password" replace="${connection-password}"/>
 
-
 		<!-- Create/update the build property file -->
 		<propertyfile file="${config-dir}/build.properties"
-					  comment="This file contains automatically generated build metadata. DO NOT EDIT!">
+		              comment="This file contains automatically generated build metadata. DO NOT EDIT!">
 			<entry key="buildtime" value="${builtat}"/>
 			<entry key="build" value="${svnversion}"/>
 			<entry key="builder" value="${whoami}"/>
@@ -190,9 +190,9 @@
 
 		<!-- Update the starexec-config file to use the production configuration -->
 		<replaceregexp file="${config-dir}/starexec-config.xml"
-					   match="default=(.+)"
-					   replace="default=&quot;${configuration}&quot;&gt;"
-					   byline="false"
+		               match="default=(.+)"
+		               replace="default=&quot;${configuration}&quot;&gt;"
+		               byline="false"
 		/>
 
 		<!-- Copy over SQL files to the deployed-sql directory.  They are there for updating the
@@ -228,8 +228,11 @@
 		</copy>
 
 		<!-- Update the upload commands to use the correct app -->
-		<replaceregexp file="deployed-upload-test/testDataCommands.txt" match="login addr=https://stardev.cs.uiowa.edu/(.+)/"
-					   replace="login addr=https://${server-name}/${appname}/"  flags="g" byline="false" />
+		<replaceregexp file="deployed-upload-test/testDataCommands.txt"
+		               match="login addr=https://stardev.cs.uiowa.edu/(.+)/"
+		               replace="login addr=https://${server-name}/${appname}/"
+		               flags="g"
+		               byline="false" />
 		<chmod file="deployed-upload-test/uploadTestData.sh" perm="774" />
 
 		<!-- Update the schemas to use the currect server and app -->
@@ -247,8 +250,10 @@
 			</fileset>
 		</copy>
 
-		<replaceregexp	match="www.starexec.org/starexec/"
-						  replace="${server-name}/${appname}/" byline="false" flags="g">
+		<replaceregexp match="www.starexec.org/starexec/"
+		               replace="${server-name}/${appname}/"
+		               byline="false"
+		               flags="g">
 			<fileset dir="WebContent/public">
 				<include name="**/*.xsd"/>
 				<include name="**/*.xml"/>
@@ -261,7 +266,6 @@
 			<entry key="log4j.appender.STAREXEC.File" value="${catalina.base}/logs/${logfile_name}.log" />
 		</propertyfile>
 
-
 		<!-- Create the war file! -->
 		<war warfile="${war-file-name}" webxml="${web-inf}/web.xml">
 			<classes dir="${class-dir}" />
@@ -270,10 +274,7 @@
 		</war>
 	</target>
 
-	<target name="skipcompilation" depends="war">
-	</target>
-
-	<target name="test" depends="compilestarcom, compilestarexec, css">
+	<target name="test" depends="compilestarcom, compilestarexec, css" description="Run all tests">
 		<!-- Execute JUnit tests -->
 		<path id="testpath">
 			<pathelement path="${class-dir}"/>
@@ -292,9 +293,8 @@
 		</junit>
 	</target>
 
-	<!-- Default Target
-	     Builds StarExec, runs unit tests, and packages everything for deployment
-	     -->
 	<target name="epilog-test" depends="test, zipstarcom, war" />
+	<target name="build" depends="epilog-test" description="Build" />
+	<target name="skipcompilation" depends="war" description="Package existing build into a WAR" />
 
 </project>
