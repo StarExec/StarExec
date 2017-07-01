@@ -501,7 +501,7 @@ public class JobUtil {
 			job.setUserId(userId);
 
 			String jobId = jobElement.getAttribute("id");
-			if (jobId != "" && jobId != null) {
+			if (!Util.isNullOrEmpty(jobId)) {
 				log.info("job id set: " + jobId);
 				job.setId(Integer.parseInt(jobId));
 			}

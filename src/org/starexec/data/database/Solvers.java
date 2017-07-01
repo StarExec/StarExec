@@ -2366,7 +2366,7 @@ public class Solvers {
 	 */
 	protected static List<Solver> filterSolvers(List<Solver> solvers, String searchQuery) {
 		//no filtering is necessary if there's no query
-		if (searchQuery==null || searchQuery=="") {
+		if (Util.isNullOrEmpty(searchQuery)) {
 			return solvers;
 		}
 		searchQuery=searchQuery.toLowerCase();

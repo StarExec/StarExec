@@ -55,7 +55,7 @@ public class Jobs {
 	 * @return
 	 */
 	private static String[] getSpaceNames(String path) throws IllegalArgumentException {
-		if (path == null || path == "") {
+		if (Util.isNullOrEmpty(path)) {
 			throw new IllegalArgumentException("Job paths cannot be empty");
 		}
 		return path.split(R.JOB_PAIR_PATH_DELIMITER);

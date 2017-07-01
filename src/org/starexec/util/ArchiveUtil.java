@@ -405,7 +405,7 @@ public class ArchiveUtil {
 			input.close();
 			return timestamp;
 		} catch (java.io.FileNotFoundException e) {
-			if (srcFile.getCanonicalPath() == srcFile.getAbsolutePath()) {
+			if (srcFile.getCanonicalPath().equals(srcFile.getAbsolutePath())) {
 				throw e;
 			}
 			log.debug("File not found exception probably broken symlink for: " + srcFile.getAbsolutePath());

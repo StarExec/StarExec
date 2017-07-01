@@ -754,7 +754,7 @@ public class JobPairs {
 	 */
 	protected static List<SolverComparison> filterComparisons(List<SolverComparison> comparisons, String searchQuery) {
 		//no filtering is necessary if there's no query
-		if (searchQuery == null || searchQuery == "") {
+		if (Util.isNullOrEmpty(searchQuery)) {
 			return comparisons;
 		}
 
@@ -786,7 +786,7 @@ public class JobPairs {
 
 	protected static List<JobPair> filterPairs(List<JobPair> pairs, String searchQuery, int stageNumber) {
 		//no filtering is necessary if there's no query
-		if (searchQuery == null || searchQuery == "") {
+		if (Util.isNullOrEmpty(searchQuery)) {
 			return pairs;
 		}
 

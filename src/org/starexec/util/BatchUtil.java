@@ -743,7 +743,7 @@ public class BatchUtil {
 			//Get the files.
 			List<File> files = new ArrayList<>();
 			log.debug("Update name = " + update.name);
-			log.debug("Update name = empty " + (update.name == ""));
+			log.debug("Update name = empty " + (update.name.isEmpty()));
 			String name = "";
 			Benchmark b = Benchmarks.get(update.id);
 

@@ -177,7 +177,7 @@ public class Statistics {
 
 	}
 
-	if(total.equals(0)){
+	if(total.equals(0.0)){
 	    return null;
 	}
 	else{
