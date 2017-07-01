@@ -756,6 +756,5 @@ function checkPermissions(jsonData, id) {
         });
     } else {
         $('#makePublic').fadeOut('fast');
-        return
     }
 }

@@ -73,21 +73,19 @@ $(document).ready(function() {
 
 function getFinishedJobPairsFromServer(done, dataTable) {
 	'use strict';
-	if (done) {
-		return;
-	} else {
+	if (!done) {
 		$.get(
-			starexecRoot+'services/matrix/finished/'+jobSpaceId+'/'+stageNumber,
+			starexecRoot + 'services/matrix/finished/' + jobSpaceId + '/' + stageNumber,
 			'',
-			function(data) {
+			function (data) {
 				log(data);
-				setTimeout(function() {
+				setTimeout(function () {
 					updateMatrix(data.benchSolverConfigElementMap, dataTable);
 					getFinishedJobPairsFromServer(data.done, dataTable);
 				}, 5000);
 			},
 			'json'
-		 );
+		);
 	}
 }
 

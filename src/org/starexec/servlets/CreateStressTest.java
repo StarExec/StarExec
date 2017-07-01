@@ -71,7 +71,6 @@ public class CreateStressTest extends HttpServlet {
 					Integer.parseInt(request.getParameter(SPACES_PER_JOB)));
 			if (!success) {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error when starting the stress test");
-				return;
 			} else {
 				response.sendRedirect((Util.docRoot("secure/admin/testing.jsp")));
 			}

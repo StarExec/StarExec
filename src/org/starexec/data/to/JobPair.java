@@ -377,9 +377,7 @@ public class JobPair extends Identifiable {
 
 	public void setPrimaryCpuTime(Double newCpuTime) {
 		JoblineStage s = getPrimaryStage();
-		if (s == null) {
-			return;
-		} else {
+		if (s != null) {
 			s.setCpuUsage(newCpuTime);
 		}
 	}
@@ -401,9 +399,7 @@ public class JobPair extends Identifiable {
 
 	public void setPrimaryWallclockTime(Double newWallclockTime) {
 		JoblineStage s = getPrimaryStage();
-		if (s == null) {
-			return;
-		} else {
+		if (s != null) {
 			s.setWallclockTime(newWallclockTime);
 		}
 	}

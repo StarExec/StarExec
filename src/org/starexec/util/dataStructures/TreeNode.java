@@ -74,9 +74,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
 	public void addChild(TreeNode<T> newChild) {
 		if (newChild == null) {
 			throw new NullPointerException("The new child to add cannot be null.");
-		} else if (this.hasChild(newChild)) {
-			return;
-		} else {
+		} else if (!this.hasChild(newChild)) {
 			children.add(newChild);
 			newChild.setParent(this);
 		}

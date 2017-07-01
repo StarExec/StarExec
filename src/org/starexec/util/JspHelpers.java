@@ -202,7 +202,6 @@ public class JspHelpers {
 				setSolverPageRequestAttributes( true, AnonymousLinks.areSolversAnonymized( primitivesToAnonymize.get() ), solver, request);
 			} else {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Page not found.");
-				return;
 			}
 		} catch ( IOException e ) {
 			log.error( methodName, "Caught an IOException while handling anonymous solver page: " + e.getMessage() );

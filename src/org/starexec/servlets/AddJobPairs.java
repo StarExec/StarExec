@@ -137,11 +137,9 @@ public class AddJobPairs extends HttpServlet {
 			Jobs.addJobPairsFromConfigIdsForAllBenchmarks( jobId, configIdsToAddToAll );
 
 			response.sendRedirect( Util.docRoot( "secure/details/job.jsp?id=" + jobId ) );
-			return;
 		} catch (Exception e) {
 			log.warn(methodName, "Caught exception while doing post for AddJobPairs: " + e.getMessage(), e);
 			response.sendError( HttpServletResponse.SC_INTERNAL_SERVER_ERROR, Util.getStackTrace( e ) );
-			return;
 		}
 	}
 

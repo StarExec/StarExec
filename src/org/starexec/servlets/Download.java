@@ -1133,13 +1133,10 @@ public class Download extends HttpServlet {
 			if (success) {
 				log.debug(methodName, "Successfully processed file for download.");
 				response.getOutputStream().close();
-				return;
 			} else {
 				log.debug(methodName, "Failed to process file for download.");
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");
-				return;
 			}
-
 		} catch (Exception e) {
 			log.warn("Caught Exception in Download.doGet", e);
 			response.getOutputStream().close();
@@ -1283,16 +1280,13 @@ public class Download extends HttpServlet {
 			}
 
 			List<Space> subspaceList = Spaces.getSubSpaces(space.getId(), uid);
-			if (subspaceList == null || subspaceList.size() == 0) {
-				return;
+			if (subspaceList != null) {
+				for (Space s : subspaceList) {
+					String subDir = dest + File.separator + s.getName();
+					//include solvers is always false except at the top level
+					storeSpaceHierarchy(s, uid, subDir, includeBenchmarks, false, recursive, stream, useIdDirectories);
+				}
 			}
-			for (Space s : subspaceList) {
-				String subDir = dest + File.separator + s.getName();
-				//include solvers is always false except at the top level
-				storeSpaceHierarchy(s, uid, subDir, includeBenchmarks, false, recursive, stream, useIdDirectories);
-			}
-			return;
 		}
-		return;
 	}
 }

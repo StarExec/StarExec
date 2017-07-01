@@ -144,10 +144,8 @@ public class UploadSolver extends HttpServlet {
 					}
 				} else if (result.status == UploadSolverStatus.EXTRACTING_ERROR) {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result.status.message);
-					return;
 				} else {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, result.status.message);
-					return;
 				}
 			} else {
 				// Got a non multi-part request, invalid

@@ -258,8 +258,8 @@ class ArgumentParser {
 			}
 
 			Integer[] ids = CommandParser.convertToIntArray(commandParams.get(C.PARAM_ID));
-			Boolean copyPrimitives = commandParams.containsKey(C.PARAM_COPY_PRIMITIVES)
-					? Boolean.parseBoolean(commandParams.get(C.PARAM_COPY_PRIMITIVES)) : false;
+			Boolean copyPrimitives = commandParams.containsKey(C.PARAM_COPY_PRIMITIVES) &&
+			                         Boolean.parseBoolean(commandParams.get(C.PARAM_COPY_PRIMITIVES));
 			return con.copyPrimitives(ids, getParamFrom(commandParams), Integer.parseInt(commandParams.get(C.PARAM_TO)),
 					commandParams.containsKey(C.PARAM_HIERARCHY), copyPrimitives, type);
 

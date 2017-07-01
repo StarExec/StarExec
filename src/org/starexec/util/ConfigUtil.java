@@ -91,25 +91,19 @@ public class ConfigUtil {
 		// Get all configuration nodes
 		NodeList configNodes = rootElement.getElementsByTagName(NODE_CONFIG);
 
-		// The config node to find
-		Node configNode = null;
-
 		// For each of the configuration nodes
 		for (int i = 0; i < configNodes.getLength(); i++) {
 			Node currentConfig = configNodes.item(i);
 			Node currentConfigNameAttr = currentConfig.getAttributes().getNamedItem(ATTR_NAME);
 
-			if (currentConfigNameAttr == null) {
-				// If the current node doesn't have a name attribute, skip it
-				continue;
-			} else if (currentConfigNameAttr.getNodeValue().equals(configName)) {
+			// Skip nodes without a name attribute
+			if (currentConfigNameAttr != null && currentConfigNameAttr.getNodeValue().equals(configName)) {
 				// Otherwise if we've found a config with the name that matches the one to use, keep it and break
-				configNode = currentConfig;
-				break;
+				return currentConfig;
 			}
 		}
 
-		return configNode;
+		return null;
 	}
 
 	/**
