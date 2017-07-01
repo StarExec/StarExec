@@ -1274,13 +1274,12 @@ public class Spaces {
 			CallableStatement procedure = null;
 			ResultSet results = null;
 			try {
-				 procedure = con.prepareCall("{CALL GetParentSpaceById(?)}");
+				procedure = con.prepareCall("{CALL GetParentSpaceById(?)}");
 				procedure.setInt(1, spaceId);
-				 results = procedure.executeQuery();
-				while(results.next()) {
+				results = procedure.executeQuery();
+				if (results.next()) {
 					return results.getInt("id");
 				}
-				
 			} catch (Exception e) {
 				log.error("getParentSpace says "+e.getMessage(),e);
 			} finally {

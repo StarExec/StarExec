@@ -422,8 +422,8 @@ public class Cluster {
 			procedure = con.prepareCall("{CALL GetQueueForNode(?)}");
 			procedure.setInt(1, nodeId);
 			results = procedure.executeQuery();
-			Queue q = new Queue();
-			while (results.next()){
+			if (results.next()) {
+				Queue q = new Queue();
 				q.setId(results.getInt("id"));
 				q.setName(results.getString("name"));
 				q.setStatus(results.getString("status"));
@@ -453,10 +453,9 @@ public class Cluster {
 			procedure = con.prepareCall("{CALL GetNodeIdByName(?)}");
 			procedure.setString(1, nodeName);
 			results = procedure.executeQuery();
-			while (results.next()) {
+			if (results.next()) {
 				return results.getInt("id");
 			}
-			return -1;
 		} catch (Exception e) {
 			log.error("GetNodeIdByName says " + e.getMessage(), e);
 		} finally {
@@ -481,10 +480,9 @@ public class Cluster {
 			procedure = con.prepareCall("{CALL GetNodeNameById(?)}");
 			procedure.setInt(1, id);
 			results = procedure.executeQuery();
-			while (results.next()) {
+			if (results.next()) {
 				return results.getString("name");
 			}
-			return null;
 		} catch (Exception e) {
 			log.error("GetNodeNameById says " + e.getMessage(), e);
 		} finally {

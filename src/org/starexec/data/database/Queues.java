@@ -670,7 +670,7 @@ public class Queues {
 			procedure.setInt(2, userId);
 			results = procedure.executeQuery();
 
-			while(results.next()){
+			if (results.next()) {
 				return results.getLong("queue_load");
 			}
 		} catch (Exception e){
@@ -802,10 +802,8 @@ public class Queues {
 			procedure = con.prepareCall("{CALL GetNameById(?)}");
 			procedure.setInt(1, queueId);
 
-
 			results = procedure.executeQuery();
-
-			while(results.next()){
+			if (results.next()) {
 				return results.getString("name");
 			}
 		} catch (Exception e){
@@ -887,7 +885,7 @@ public class Queues {
 			procedure.setInt(1, queueId);
 
 			results = procedure.executeQuery();
-			while(results.next()) {
+			if (results.next()) {
 				return results.getBoolean("global_access");
 			}
 		} catch (Exception e) {
