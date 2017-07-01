@@ -1055,7 +1055,7 @@ public class Solvers {
 
 		Stream<Solver> filteredSolversInJob = solversInJob.stream()
 				// filter out all the solvers in the job that are in the spaces.
-				.filter(jobSolver -> !solversInSpaces.stream().anyMatch(spaceSolver -> spaceSolver.getId() == jobSolver.getId()));
+				.filter(jobSolver -> solversInSpaces.stream().noneMatch(spaceSolver -> spaceSolver.getId() == jobSolver.getId()));
 
 		return Stream.concat(filteredSolversInJob, solversInSpaces.stream())
 				.collect(Collectors.toList());
