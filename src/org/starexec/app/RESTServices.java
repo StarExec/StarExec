@@ -360,11 +360,7 @@ public class RESTServices {
 		Benchmark b=Benchmarks.get(id);
 		try {
 			Optional<String> contents = Benchmarks.getContents(b, limit);
-			if (contents.isPresent()) {
-				return contents.get();
-			} else {
-				return notAvailableMessage;
-			}
+			return contents.orElse(notAvailableMessage);
 		} catch (IOException e) {
 			log.warn(methodName, "Caught IOException.");
 			return "Internal Error: not available";
@@ -485,11 +481,7 @@ public class RESTServices {
 		}
 		try {
 			Optional<String> stdout = JobPairs.getStdOut(jp.getId(), stageNumber, limit);
-			if (stdout.isPresent()) {
-				return stdout.get();
-			} else {
-				return "not available";
-			}
+			return stdout.orElse("not available");
 		} catch (IOException e) {
 			log.warn(methodName, "Caught IOException while trying to get jobpair stdout.");
 			return "not available";
