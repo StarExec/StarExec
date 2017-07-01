@@ -282,7 +282,7 @@ public class JspHelpers {
 		request.setAttribute("sites", formattedSites);
 		request.setAttribute("diskSize", Util.byteCountToDisplaySize(s.getDiskSize()));
 		List<Configuration> configs = Solvers.getConfigsForSolver(s.getId());
-		Collections.sort( configs, ( Configuration c1, Configuration c2 ) -> c1.getId() - c2.getId() );
+		configs.sort(Comparator.comparingInt(Identifiable::getId));
 
 		request.setAttribute("configs", configs );
 

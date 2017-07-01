@@ -304,7 +304,7 @@ public class Validator {
 	public static boolean isValidPosIntegerList(String ids) {
 		return
 			(ids != null)
-			&& Arrays.stream(ids.split(",")).allMatch(s->isValidPosInteger(s));
+			&& Arrays.stream(ids.split(",")).allMatch(Validator::isValidPosInteger);
 	}
 
 	public static boolean isValidPictureType(String type) {
@@ -330,7 +330,7 @@ public class Validator {
 	public static boolean isValidIntegerList(String ids) {
 		return
 			(ids != null)
-			&& Arrays.stream(ids.split(",")).allMatch(s->isValidInteger(s));
+			&& Arrays.stream(ids.split(",")).allMatch(Validator::isValidInteger);
 	}
 
 	public static List<Integer> convertToIntList(String str) {

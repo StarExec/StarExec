@@ -1041,8 +1041,7 @@ public class Solvers {
 			int jobId,
 			Set<Integer> spacesAssociatedWithJob) throws SQLException {
 
-		Comparator<Solver> compareById = (solver1, solver2) -> solver1.getId() - solver2.getId();
-
+		Comparator<Solver> compareById = Comparator.comparingInt(Identifiable::getId);
 
 		// Get all the solvers in the list of provided spaces.
 		List<Solver> solversInSpaces = spacesAssociatedWithJob.stream()
@@ -2437,7 +2436,7 @@ public class Solvers {
 	 */
     public static void sortConfigs(List<Solver> solvers) {
         for(Solver s : solvers) {
-            Collections.sort(s.getConfigurations(), (c1, c2) -> c1.getName().compareTo(c2.getName()));
+            s.getConfigurations().sort(Comparator.comparing(Configuration::getName));
         }
     }
 

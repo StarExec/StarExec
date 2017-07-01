@@ -78,7 +78,7 @@ public class MatrixTests extends TestSequence {
 		
 		List<Benchmark> benchmarks = Benchmarks.get(benchmarkIds);	
 		// sort alphabetically case insensitive
-		Collections.sort(benchmarks, (b1, b2) -> b1.getName().toLowerCase().compareTo(b2.getName().toLowerCase()));
+		benchmarks.sort(Comparator.comparing(b -> b.getName().toLowerCase()));
 
 		try {
 			matrix = Matrix.getMatrixForJobSpaceFromJobAndStageNumber(job, space.getId(), jobPairs.get(0).getPrimaryStageNumber());

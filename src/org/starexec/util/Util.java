@@ -907,7 +907,7 @@ public class Util {
 	 */
 
 	public static <T> List<T> handlePagination(List<T> arr, Comparator<T> compare, int start, int records) {
-		Collections.sort(arr, compare);
+		arr.sort(compare);
 		List<T> returnList = new ArrayList<>();
 		if (start >= arr.size()) {
 			//we'll just return nothing

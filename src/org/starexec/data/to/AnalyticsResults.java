@@ -60,7 +60,7 @@ public class AnalyticsResults {
 						procedure.setDate(1, start);
 						procedure.setDate(2, end);
 					},
-					results -> listFromResults(results)
+					AnalyticsResults::listFromResults
 			);
 		} catch (SQLException e) {
 			log.error("GetAnalyticsForDateRange");

@@ -296,7 +296,7 @@ public class JobPair extends Identifiable {
 
 	public void sortStages() {
 		JoblineStageComparator comp = new JoblineStageComparator();
-		Collections.sort(stages, comp);
+		stages.sort(comp);
 	}
 
 	/**

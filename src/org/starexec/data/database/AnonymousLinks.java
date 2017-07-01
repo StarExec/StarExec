@@ -690,7 +690,7 @@ public class AnonymousLinks {
 
 		List<JobSpace> jobSpaces = Spaces.getSubSpacesForJob( job.getPrimarySpace(), true );
 		jobSpaces.add( Spaces.getJobSpace( job.getPrimarySpace() ));
-		Collections.sort( jobSpaces, (space1, space2) -> space1.getId() - space2.getId() );
+		jobSpaces.sort(Comparator.comparingInt(Identifiable::getId));
 
 		Map<Integer, String> jobSpaceIdToAnonymizedName = new HashMap<>();
 		int numberToAppend = 1;

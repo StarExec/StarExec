@@ -2632,7 +2632,7 @@ public class Jobs {
 		return Common.query(
 				"{CALL GetIncompleteJobs()}",
 				procedure -> {},
-				results -> getJobsForNextPage(results)
+				Jobs::getJobsForNextPage
 		);
 	}
 

@@ -265,8 +265,7 @@ public abstract class JobManager {
 
 		// Get and return the high priority job that has been selected the least number of times.
 		Map.Entry<Integer, Integer> minEntry =
-				Collections.min(usersHighPriorityJobBalance.entrySet(), (a, b) -> a.getValue().compareTo(b.getValue
-						()));
+				Collections.min(usersHighPriorityJobBalance.entrySet(), Comparator.comparing(Map.Entry::getValue));
 
 		// Find the high priority state with the job id that has been selected the minimum number of times.
 		for (SchedulingState state : usersHighPriorityStates) {

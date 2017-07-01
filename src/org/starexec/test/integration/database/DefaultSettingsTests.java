@@ -94,7 +94,7 @@ public class DefaultSettingsTests extends TestSequence {
         int settingsId = settingsWithDefaultBenchmarks.getId();
         try {
             List<Benchmark> dbBenchmarks = Settings.getDefaultBenchmarks(settingsId);
-            Collections.sort(dbBenchmarks, (a,b) -> ((Integer)a.getId()).compareTo(b.getId()));
+            dbBenchmarks.sort((a, b) -> ((Integer) a.getId()).compareTo(b.getId()));
             List<Integer> settingsBenchmarks = settingsWithDefaultBenchmarks.getBenchIds();
             Collections.sort(settingsBenchmarks);
 
