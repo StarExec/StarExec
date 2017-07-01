@@ -952,31 +952,30 @@ public class Util {
 
 		String primitiveNameInLink = null;
 		switch (type) {
-			case USER:
-				primitiveNameInLink = "user";
-				break;
-			case BENCHMARK:
-				primitiveNameInLink = "benchmark";
-				break;
-			case SOLVER:
-				primitiveNameInLink = "solver";
-				break;
-			case CONFIGURATION:
-				primitiveNameInLink = "configuration";
-				break;
-			case JOB:
-				primitiveNameInLink = "job";
-				break;
-			case JOB_PAIR:
-				primitiveNameInLink = "pair";
-				break;
-			default:
-				log.error(methodName,
-						"Threw and IllegalArgumentException because the input type does not have a " + "details page" +
-						".");
-				throw new IllegalArgumentException(
-						"Util.getPrimitiveDetailsLink does not support the given enum type" + ".");
-
+		case USER:
+			primitiveNameInLink = "user";
+			break;
+		case BENCHMARK:
+			primitiveNameInLink = "benchmark";
+			break;
+		case SOLVER:
+			primitiveNameInLink = "solver";
+			break;
+		case CONFIGURATION:
+			primitiveNameInLink = "configuration";
+			break;
+		case JOB:
+			primitiveNameInLink = "job";
+			break;
+		case JOB_PAIR:
+			primitiveNameInLink = "pair";
+			break;
+		default:
+			log.error(methodName,
+					"Threw and IllegalArgumentException because the input type does not have a " + "details page" +
+					".");
+			throw new IllegalArgumentException(
+					"Util.getPrimitiveDetailsLink does not support the given enum type" + ".");
 		}
 
 		return ("<a href='" + Util.docRoot("secure/details/" + primitiveNameInLink + ".jsp?id=" + id) + "'>" +
