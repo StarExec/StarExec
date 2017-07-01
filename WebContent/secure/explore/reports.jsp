@@ -19,7 +19,7 @@ import="org.apache.commons.io.FileUtils,
 		List<List<Report>> reportsForAllQueues = Reports.getAllReportsForAllQueues();
 
 		File pastReportsDirectory = new File(R.STAREXEC_DATA_DIR, "/reports/");
-		Collection<File> pastReports = FileUtils.listFiles(pastReportsDirectory, new String[]{"txt"}, false);
+		List<File> pastReports = (List)FileUtils.listFiles(pastReportsDirectory, new String[]{"txt"}, false);
 
 		// Get the list into the correct order so most recent reports will be on top on the page.
 		Collections.sort(pastReports);
@@ -29,7 +29,7 @@ import="org.apache.commons.io.FileUtils,
 		// reports date.
 		String lastReportDay = "";
 		if (!pastReports.isEmpty()) {
-			File lastReport = pastReports.iterator().next();
+			File lastReport = pastReports.get(0);
 			lastReportDay = lastReport.getName().replace(".txt", "");
 		}
 
