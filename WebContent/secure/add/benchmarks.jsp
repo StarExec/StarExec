@@ -8,9 +8,9 @@
 		// Get parent space info for display
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
 		DefaultSettings settings = Communities.getDefaultSettings(spaceId);
-		
+
 		int userId = SessionUtil.getUserId(request);
-		List<Space> userSpaces = new ArrayList<>();
+		List<Space> userSpaces = new ArrayList<Space>();
 		List<Processor> postProcs = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId), ProcessorType.BENCH);
 		userSpaces = Spaces.getSpacesByUser(userId);
         Integer defaultProc = settings.getBenchProcessorId();
@@ -151,11 +151,11 @@
 							id="notLinked" type="radio" name="linked" value="false" /><label>no</label></td>
 					</tr>
 					<tr>
-						<td colspan="1"><button id="btnPrev" type="button">Cancel</button></td>						
+						<td colspan="1"><button id="btnPrev" type="button">Cancel</button></td>
 						<td colspan="1"><button id="btnUpload" type="submit">upload</button></td>
 					</tr>
 				</tbody>
-			</table>			
+			</table>
 		</fieldset>
 	</form>
 

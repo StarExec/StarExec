@@ -7,18 +7,18 @@
 	try {
 		int userId=-1;
 		try {
-			userId = Integer.parseInt(request.getParameter("id"));	
+			userId = Integer.parseInt(request.getParameter("id"));
 
 		} catch (Exception e) {
 			// if we can't get it from the URL, try to just use the current user ID
 			userId=SessionUtil.getUserId(request);
 		}
 		User t_user = Users.get(userId);
-		int visiting_userId = SessionUtil.getUserId(request);		
-		
-		
+		int visiting_userId = SessionUtil.getUserId(request);
+
+
 		if(t_user != null) {
-			long disk_usage = Users.getDiskUsage(t_user.getId());		
+			long disk_usage = Users.getDiskUsage(t_user.getId());
 
 			boolean owner = true;
 			boolean hasAdminReadPrivileges = GeneralSecurity.hasAdminReadPrivileges(visiting_userId);
@@ -31,19 +31,19 @@
 			} else {
 				List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsVisibleByUser(userId);
 
-				Map<Integer, List<Benchmark>> idToBenchmarks = new HashMap<>();
+				Map<Integer, List<Benchmark>> idToBenchmarks = new HashMap<Integer, List<Benchmark>>();
 				for (DefaultSettings setting : listOfDefaultSettings) {
 					idToBenchmarks.put(setting.getId(), Settings.getDefaultBenchmarks(setting.getId()));
 				}
 
 				request.setAttribute("settingIdToDefaultBenchmarks", idToBenchmarks);
-				
+
 				request.setAttribute("userId", userId);
 				request.setAttribute("diskQuota", Util.byteCountToDisplaySize(t_user.getDiskQuota()));
 				request.setAttribute("diskUsage", Util.byteCountToDisplaySize(disk_usage));
 				request.setAttribute("sites", Websites.getAllForHTML(userId, WebsiteType.USER));
 				request.setAttribute("settings",listOfDefaultSettings);
-				
+
 				List<Processor> ListOfPostProcessors = Processors.getByUser(userId,ProcessorType.POST);
 				List<Processor> ListOfPreProcessors = Processors.getByUser(userId,ProcessorType.PRE);
 				List<Processor> ListOfBenchProcessors = Processors.getByUser(userId,ProcessorType.BENCH);
@@ -54,7 +54,7 @@
 				request.setAttribute("pairUsage",Jobs.countPairsByUser(t_user.getId()));
 
 			}
-			
+
 			request.setAttribute("owner", owner);
 			request.setAttribute("canDeleteUser", canDeleteUser);
 			request.setAttribute("hasAdminReadPrivileges", hasAdminReadPrivileges);
@@ -71,8 +71,8 @@
 	<c:forEach items="${settings}" var="setting">
 		<star:settings setting="${setting}" />
 	</c:forEach>
-	
-	
+
+
 	<div id="popDialog">
   		<img id="popImage" src=""/>
 	</div>
@@ -88,8 +88,8 @@
 				</ul>
 			</td>
 		<td id="userDetail">
-			<table id="personal" class="shaded">   
-			<thead> 	
+			<table id="personal" class="shaded">
+			<thead>
 				<tr>
 					<th class="label">attribute</th>
 					<th>current value</th>
@@ -146,7 +146,7 @@
 							<td>job pairs owned</td>
 							<td>${pairUsage}</td>
 						</tr>
-					</tbody>			
+					</tbody>
 				</table>
 		</fieldset>
 	</c:if>
@@ -164,12 +164,12 @@
 					<td>table entries per page</td>
 					<td type="int" id="editpagesize">${pagesize}</td>
 				</tr>
-			
-			
+
+
 			</tbody>
-		
+
 		</table>
-		
+
 	</fieldset>
 	<fieldset>
 		<legend>associated websites</legend>
@@ -177,7 +177,7 @@
 			<thead>
 				<tr>
 					<th>link</th>
-					<th>action</th>					
+					<th>action</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -189,11 +189,11 @@
 			</c:forEach>
 			</tbody>
 		</table>
-		
+
 		<span id="toggleWebsite" class="caption"><span>+</span> add new</span>
 		<div id="new_website">
-			name: <input type="text" id="website_name" /> 
-			url: <input type="text" id="website_url" /> 
+			name: <input type="text" id="website_name" />
+			url: <input type="text" id="website_url" />
 			<button id="addWebsite">add</button>
 		</div>
 	</fieldset>
@@ -241,7 +241,7 @@
 		<select id="settingProfile">
 			<c:if test="${empty settings}">
 				<option value="" />
-			</c:if>				
+			</c:if>
 		<c:forEach var="setting" items="${settings}">
 		    <option class="settingOption" value="${setting.getId()}" type="${setting.getTypeString()}">${setting.name}</option>
 		</c:forEach>
@@ -253,10 +253,10 @@
 					<th>values</th>
 				</tr>
 			</thead>
-			<tbody>	
+			<tbody>
 				<tr>
 					<td title="the pre processor that will be selected by default for new jobs">pre processor </td>
-					<td>					
+					<td>
 						<select class="preProcessSetting" id="editPreProcess" name="editPreProcess" default="${defaultPreProcId}">
 						<option value=-1>none</option>
 						<c:forEach var="proc" items="${preProcs}">
@@ -265,10 +265,10 @@
 						</select>
 					</td>
 				</tr>
-				
+
 				<tr>
 					<td title="the benchmark processor that will be selected by default for new jobs">bench processor </td>
-					<td>					
+					<td>
 						<select class="benchProcessSetting" id="editBenchProcess" name="editBenchProcess" default="${defaultBPId}">
 						<option value=-1>none</option>
 						<c:forEach var="proc" items="${benchProcs}">
@@ -277,10 +277,10 @@
 						</select>
 					</td>
 				</tr>
-				
+
 				<tr>
 					<td title="the post processor that will be selected by default for new jobs">post processor </td>
-					<td>					
+					<td>
 						<select class="postProcessSetting" id="editPostProcess" name="editPostProcess" default="${defaultPPId}">
 						<option value=-1>none</option>
 						<c:forEach var="proc" items="${postProcs}">
@@ -293,7 +293,7 @@
 				<tr>
 					<td title="the wallclock timeout that will be selected by default for new jobs">wallclock timeout</td>
 					<td id="editClockTimeout"><input type="text" name="wallclockTimeout" id="wallclockTimeout"/></td>
-				</tr>	
+				</tr>
 				<tr>
 					<td title="the cpu timeout that will be selected by default for new jobs">cpu timeout</td>
 					<td id="editCpuTimeout"><input type="text" name="cpuTimeout" id="cpuTimeout" /></td>
@@ -320,15 +320,15 @@
 		<fieldset id="settingActions">
 			<legend>actions</legend>
 			<button id="saveProfile">save profile changes</button>
-			
+
 			<button id="createProfile">create new profile</button>
-			<button title="Setting a profile as a default means it will be selected 
+			<button title="Setting a profile as a default means it will be selected
 			automatically when visiting the job creation page" id="setDefaultProfile">set profile as default</button>
 			<button id="deleteProfile">delete selected profile</button>
-			
+
 		</fieldset>
-	</fieldset>	
-	
+	</fieldset>
+
 	<fieldset>
 		<legend>solvers</legend>
 		<table id="solverList">
@@ -342,12 +342,12 @@
 				<tbody>
 					<!-- Will be populated using AJAX -->
 			</tbody>
-			
+
 		</table>
 		<button id="useSolver">use selected solver</button>
-		
+
 	</fieldset>
-	
+
 	<fieldset>
 		<legend>benchmarks</legend>
 		<table id="benchmarkList">
@@ -360,10 +360,10 @@
 				<tbody>
 					<!-- Will be populated using AJAX -->
 			</tbody>
-			
+
 		</table>
 		<button id="useBenchmark">use selected benchmark</button>
-		
+
 	</fieldset>
 	<c:if test="${canDeleteUser}">
 		<fieldset>
@@ -371,12 +371,12 @@
 			<button id="deleteUser">delete user</button>
 		</fieldset>
 	</c:if>
-	
+
 	<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 			<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-delete-txt"></span></p>
 	</div>
 	<div id="dialog-createSettingsProfile" title="create settings profile" class="hiddenDialog">
 		<p><span id="dialog-createSettingsProfile-txt"></span></p><br/>
-		<p><label>name: </label><input id="settingName" type="text"/></p>			
+		<p><label>name: </label><input id="settingName" type="text"/></p>
 	</div>
 </star:template>
