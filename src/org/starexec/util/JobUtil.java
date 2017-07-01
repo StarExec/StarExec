@@ -794,7 +794,7 @@ public class JobUtil {
 			job.setSuppressTimestamp(suppressTimestamps);
 
 
-			log.info("start-paused: " + (new Boolean(startPaused).toString()));
+			log.info("start-paused: " + (Boolean.toString(startPaused)));
 
 			boolean submitSuccess = Jobs.add(job, spaceId);
 			if (!submitSuccess) {
