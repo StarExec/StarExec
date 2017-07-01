@@ -9,7 +9,7 @@
 			<li><a target="_blank"
 				href="${starexecRoot}/secure/details/user.jsp?id=${user.id}">${user.fullName}</a></li>
 			<li>|</li>
-			<li><a onclick="javascript:logout();">Logout</a></li>
+			<li><a onclick="logout();">Logout</a></li>
 	</c:if>
 	<c:if test="${empty user}">
 			<li><a id="loginLink" href="${starexecRoot}/secure/index.jsp">Login</a></li>

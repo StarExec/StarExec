@@ -29,7 +29,7 @@
 							<a href="#">Account</a>
 							<ul class="subnav round">
 								<li class="round"><a href="${starexecRoot}/secure/details/user.jsp?id=${user.id}">Profile</a></li>
-								<li class="round"><a href="#" onclick="javascript:logout();">Logout</a></li>
+								<li class="round"><a href="#" onclick="logout();">Logout</a></li>
 							</ul>
 						</li>
 					</c:if>
