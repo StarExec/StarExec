@@ -408,7 +408,7 @@ function onSpaceDrop(event, ui) {
 function displayOrHideSampleRate() {
 	var sampleBenchmarksValue = 'NO_JOBS_LINK_SOLVERS_SAMPLE_BENCHMARKS';
 	if ( $('#copyPrimitives').find(':selected').val() === sampleBenchmarksValue) {
-		$('#sampleRateDiv').show();	
+		$('#sampleRateDiv').show();
 	} else {
 		$('#sampleRateDiv').hide();
 	}
@@ -1421,7 +1421,7 @@ function checkPermissions(perms, id) {
 	} else if (perms == null) {
 		log('no permissions found, hiding action bar');
 		$('.actionList').hide();
-		retu.n;
+		return;
 	} else {
 		$('.actionList').show();
 	}
