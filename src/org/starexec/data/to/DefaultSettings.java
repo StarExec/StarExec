@@ -10,6 +10,7 @@ import org.starexec.util.Util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class DefaultSettings extends Identifiable {
 	public enum SettingType {
@@ -300,14 +301,16 @@ public class DefaultSettings extends Identifiable {
 		}
 
 
-		return (this.getId() == set.getId() && Util.objectsEqual(this.getName(), set.getName()) &&
-		        Util.objectsEqual(this.getPrimId(), set.getPrimId()) &&
-		        Util.objectsEqual(this.getPreProcessorId(), set.getPreProcessorId()) &&
-		        Util.objectsEqual(this.getBenchProcessorId(), set.getBenchProcessorId()) &&
-		        Util.objectsEqual(this.getPostProcessorId(), set.getPostProcessorId()) &&
+		return (this.getId() == set.getId() &&
+		        Objects.equals(this.getName(), set.getName()) &&
+		        Objects.equals(this.getPrimId(), set.getPrimId()) &&
+		        Objects.equals(this.getPreProcessorId(), set.getPreProcessorId()) &&
+		        Objects.equals(this.getBenchProcessorId(), set.getBenchProcessorId()) &&
+		        Objects.equals(this.getPostProcessorId(), set.getPostProcessorId()) &&
 		        this.getCpuTimeout() == set.getCpuTimeout() &&
 		        this.getWallclockTimeout() == set.getWallclockTimeout() &&
 		        this.getBenchmarkingFramework() == set.getBenchmarkingFramework() &&
-		        this.getMaxMemory() == set.getMaxMemory() && Util.objectsEqual(this.getSolverId(), set.getSolverId()));
+		        this.getMaxMemory() == set.getMaxMemory() &&
+		        Objects.equals(this.getSolverId(), set.getSolverId()));
 	}
 }

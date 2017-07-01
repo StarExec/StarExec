@@ -45,25 +45,6 @@ public class Util {
 	private static String docRootUrl = null;
 
 	/**
-	 * Checks to see if the two given objects are equal without throwing any null pointers.
-	 * if a and b are both null, returns true
-	 *
-	 * @param a
-	 * @param b
-	 * @return True if they are equal and false otherwise
-	 */
-	public static boolean objectsEqual(Object a, Object b) {
-		if (a == b) {
-			return true;
-		} else if (isNull(a)) {
-			return false;
-		} else {
-			return a.equals(b);
-		}
-
-	}
-
-	/**
 	 * Gets the current stack trace in the program.
 	 *
 	 * @return the current stack trace as a String.
