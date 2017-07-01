@@ -2030,10 +2030,7 @@ public static Integer getSubSpaceIDbyName(Integer spaceId,String subSpaceName,Co
 				results = procedure.executeQuery();		
 				
 				if(results.next()){
-					if(results.getInt(1) != 0) {
-						return true;
-					}
-					return false;
+					return results.getInt(1) != 0;
 				}
 			
 			

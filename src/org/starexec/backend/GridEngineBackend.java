@@ -103,14 +103,7 @@ public class GridEngineBackend implements Backend{
      *
      **/
     public boolean isError(int execCode){
-		if(execCode >= 0) {
-
-		    return false;
-		}
-		else {
-
-		    return true;
-		}
+    	return execCode < 0
     }
 
     /**

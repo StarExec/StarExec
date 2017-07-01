@@ -33,10 +33,7 @@ public class SettingSecurity {
 	public static boolean canUserAddOrSeeProfile(int userIdOfOwner, int userIdOfCaller) {
 		boolean callerIsOwner = (userIdOfOwner == userIdOfCaller);
 		boolean callerIsAdmin = GeneralSecurity.hasAdminWritePrivileges(userIdOfCaller);
-		if ( !(callerIsOwner || callerIsAdmin) || Users.isPublicUser(userIdOfCaller)) {
-			return false;
-		} 
-		return true;
+		return (callerIsOwner || callerIsAdmin) && !Users.isPublicUser(userIdOfCaller);
 	}
 	/**
 	 * 

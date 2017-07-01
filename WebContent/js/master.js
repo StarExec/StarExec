@@ -324,10 +324,8 @@ function parseBoolean(string) {
 	if (typeof string === 'undefined') {
 		return false;
 	}
-	if (string.trim().toLowerCase()=="true") {
-		return true;
-	}
-	return false;
+	return string.trim().toLowerCase() == "true";
+
 }
 
 /**

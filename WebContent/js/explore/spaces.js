@@ -56,11 +56,7 @@ function determineIfUserIsDeveloper() {
  * @author Todd Elvers
  */
 function isFieldsetOpen(fieldset){
-	if($(fieldset + ' span:last-child').text() == ' (+)'){
-		return false;
-	} else {
-		return true;
-	}
+	return $(fieldset + ' span:last-child').text() != ' (+)';
 }
 
 /**

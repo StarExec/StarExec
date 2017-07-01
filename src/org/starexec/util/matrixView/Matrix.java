@@ -376,11 +376,7 @@ public class Matrix {
 	 * @author Albert Giegerich
 	 */ 
 	private static boolean testForMultipleStages(JobPair pair) {
-		if (pair.getStages().size() > 1) {
-			return true;
-		} else {
-			return false;
-		}
+		return pair.getStages().size() > 1;
 	}
 
 

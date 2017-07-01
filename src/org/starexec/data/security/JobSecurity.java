@@ -141,12 +141,14 @@ public class JobSecurity {
 	 * @return True if valid and false otherwise
 	 */
 	public static boolean isValidGetPairType(String type) {
-		if (type.equals("all") || type.equals("solved") || type.equals("incomplete") || type.equals("wrong") ||
-				type.equals("unknown") || type.equals("resource") || type.equals("failed")) {
-			return true;
-		}
-		return false;
-		
+		return type.equals("all")
+		    || type.equals("solved")
+		    || type.equals("incomplete")
+		    || type.equals("wrong")
+		    || type.equals("unknown")
+		    || type.equals("resource")
+		    || type.equals("failed"))
+		;
 	}
 	
 	
@@ -385,10 +387,7 @@ public class JobSecurity {
 		if (GeneralSecurity.hasAdminWritePrivileges(userId)){
 			return true;
 		}
-		if(j.getUserId() != userId){
-			return false;
-		}
-		return true;
+		return j.getUserId() == userId;
 	}
 	
 	/**

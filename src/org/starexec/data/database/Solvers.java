@@ -574,10 +574,7 @@ public class Solvers {
 			}
 			
 			// Attempt to update the disk_size of the parent solver to reflect the file deletion
-			if(!Solvers.updateSolverDiskSize(s)){
-				return false;
-			}
-			return true;
+			return Solvers.updateSolverDiskSize(s);
 
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

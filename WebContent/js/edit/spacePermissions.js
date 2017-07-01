@@ -366,12 +366,7 @@ function isCommunity(space_id){
 }
 
 function canChangePermissions(user_id){
-    if(curIsLeader && !isRoot(spaceId) && (user_id != currentUserId)){
-    	return true;
-    }
-    else{
-    	return false;
-    }
+    return curIsLeader && !isRoot(spaceId) && (user_id != currentUserId);
 }
 
 function populatePermissionDetails(data, user_id) {
