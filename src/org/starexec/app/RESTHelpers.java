@@ -2483,41 +2483,6 @@ public class RESTHelpers {
 		}
 	}
 
-	/*
-	public static JsonObject convertJobAttributesToJsonObject(int jobSpaceId) throws SQLException {
-		List<AttributesTableRow> attributesTable = getAttributesTable(getSolverConfigToAttrCountMap(jobSpaceId));
-
-
-
-		JsonArray dataTablePageEntries = new JsonArray();
-		// Convert all the solver-config attr-value count data to Json data.
-		for(AttributesTableRow row : attributesTable) {
-            JsonArray entry = new JsonArray();
-			// First two columns in the data table will be the solver name and config name.
-			String solverNameLink = Util.getSolverDetailsLink(row.solverId, row.solverName);
-			String configNameLink = Util.getConfigDetailsLink(row.configId, row.configName);
-			entry.add(new JsonPrimitive(solverNameLink));
-			entry.add(new JsonPrimitive(configNameLink));
-
-			// Add all the attr_value counts under the appropriate headers. To do this we sort the list of headers.
-			// The headers will need to be sorted in the same way so the columns line up.
-			Map<String, Triple<Integer, Double, Double>> valueCounts = solverConfigToAttrCount.get(solverConfig);
-			List<String> attrValues = new ArrayList<>(valueCounts.keySet()).stream().sorted().collect(Collectors.toList());
-			for (String attrValue : attrValues) {
-				Triple<Integer,Double,Double> countWallclockCpu = valueCounts.get(attrValue);
-				// Add the wallclock sum and cpu sum to the column. On the page one of these two values will be hidden.
-				double wallclockSum = countWallclockCpu.getMiddle();
-				double cpuSum = countWallclockCpu.getRight();
-				entry.add(new JsonPrimitive(countWallclockCpu.getLeft() + " / "
-						+ getWallclockCpuAttributeTableHtml(wallclockSum, cpuSum)));
-			}
-			dataTablePageEntries.add(entry);
-        }
-        JsonObject jo = new JsonObject();
-        jo.add("aaData", dataTablePageEntries);
-        return (jo);
-    }*/
-
 	/**
 	 * Represents permission details for a given space and user
 	 *
