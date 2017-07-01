@@ -24,7 +24,7 @@
 		List<Solver> solvers = Solvers.getSolversInSpacesAndJob(jobId, spacesAssociatedWithJob);
 		Set<Integer> configIdSet = Solvers.getConfigIdSetByJob( jobId );
 		List<Solver> solversInJob = Solvers.getByJobSimpleWithConfigs( jobId );
-		Set<Integer> solverIdsInJob = new HashSet<Integer>();
+		Set<Integer> solverIdsInJob = new HashSet<>();
 		for ( Solver s : solversInJob ) {
 			solverIdsInJob.add(s.getId());
 		}

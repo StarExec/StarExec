@@ -10,7 +10,7 @@
 		DefaultSettings settings = Communities.getDefaultSettings(spaceId);
 		
 		int userId = SessionUtil.getUserId(request);
-		List<Space> userSpaces = new ArrayList<Space>();
+		List<Space> userSpaces = new ArrayList<>();
 		List<Processor> postProcs = Processors.getByCommunity(Spaces.getCommunityOfSpace(spaceId), ProcessorType.BENCH);
 		userSpaces = Spaces.getSpacesByUser(userId);
         Integer defaultProc = settings.getBenchProcessorId();

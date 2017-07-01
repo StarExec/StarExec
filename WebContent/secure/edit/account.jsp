@@ -31,7 +31,7 @@
 			} else {
 				List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsVisibleByUser(userId);
 
-				Map<Integer, List<Benchmark>> idToBenchmarks = new HashMap<Integer, List<Benchmark>>();
+				Map<Integer, List<Benchmark>> idToBenchmarks = new HashMap<>();
 				for (DefaultSettings setting : listOfDefaultSettings) {
 					idToBenchmarks.put(setting.getId(), Settings.getDefaultBenchmarks(setting.getId()));
 				}
