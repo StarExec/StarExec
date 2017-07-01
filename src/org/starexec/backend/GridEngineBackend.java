@@ -92,22 +92,16 @@ public class GridEngineBackend implements Backend{
 		}
     }
 
-
-
-
-
     /**
-
      * @param execCode : an execution code (returned by submitScript)
      * @return false if the execution code represents an error, true otherwise
      *
      **/
     public boolean isError(int execCode){
-    	return execCode < 0
+        return execCode < 0;
     }
 
     /**
-
      * @param scriptPath : the full path to the jobscript file
      * @param workingDirectoryPath  :  path to a directory that can be used for scratch space (read/write)
      * @param logPath  :  path to a directory that should be used to store jobscript logs
