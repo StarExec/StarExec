@@ -393,9 +393,7 @@ public class Util {
 		newCommand[0] = "sudo";
 		newCommand[1] = "-u";
 		newCommand[2] = R.SANDBOX_USER_ONE;
-		for (int i = 0; i < command.length; i++) {
-			newCommand[i + 3] = command[i];
-		}
+		System.arraycopy(command, 0, newCommand, 3, command.length);
 		return executeCommand(newCommand, envp, workingDirectory);
 	}
 
@@ -624,9 +622,7 @@ public class Util {
 		} else {
 			File[] files = dir.listFiles((FileFilter) dateFilter);
 			outdatedFiles = new ArrayList<>();
-			for (File f : files) {
-				outdatedFiles.add(f);
-			}
+			Collections.addAll(outdatedFiles, files);
 		}
 		return outdatedFiles;
 	}

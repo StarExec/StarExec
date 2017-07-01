@@ -270,13 +270,8 @@ public class Matrix {
 	 * @author Albert Giegerich
 	 */
 	private void populateRowAndColumnHeaders(List<Benchmark> rowElements, List<Pair<Solver,Configuration>> columnElements) {
-		for (Benchmark bench : rowElements) {
-			this.benchmarksByRow.add(bench);
-		}
-
-		for (Pair<Solver,Configuration> solverConfig : columnElements) {
-			this.solverConfigsByColumn.add(solverConfig);
-		}
+		this.benchmarksByRow.addAll(rowElements);
+		this.solverConfigsByColumn.addAll(columnElements);
 	}
 
 	/**

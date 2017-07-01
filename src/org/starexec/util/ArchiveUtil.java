@@ -511,9 +511,7 @@ public class ArchiveUtil {
 		if (removeTopLevel) {
 			File[] files = path.listFiles();
 			List<File> f = new ArrayList<>();
-			for (File temp : files) {
-				f.add(temp);
-			}
+			f.addAll(Arrays.asList(files));
 			createAndOutputZip(f, output, "");
 			return;
 		}

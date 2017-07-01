@@ -848,9 +848,7 @@ public class Solvers {
 			}
 			
 			List<Solver> solvers= new ArrayList<>();
-			for (Solver s : uniqueSolvers.values()) {
-				solvers.add(s);
-			}
+			solvers.addAll(uniqueSolvers.values());
 			return solvers;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);

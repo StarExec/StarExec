@@ -2474,9 +2474,7 @@ public class Benchmarks {
 			}
 			
 			List<Benchmark> benchmarks= new ArrayList<>();
-			for (Benchmark s : uniqueBenchmarks.values()) {
-				benchmarks.add(s);
-			}
+			benchmarks.addAll(uniqueBenchmarks.values());
 			return benchmarks;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);

@@ -277,7 +277,7 @@ public class Download extends HttpServlet {
 	private static boolean handlePairOutput(int pairId, int userId, HttpServletResponse response, Boolean longPath) {
 		//ArchiveUtil.createAndOutputZip(JobPairs.getOutputPaths(pairId), response.getOutputStream(), "");
 		//return true;
-		return handlePairOutputs(Arrays.asList(pairId), userId, response, longPath);
+		return handlePairOutputs(Collections.singletonList(pairId), userId, response, longPath);
 	}
 
 	/**

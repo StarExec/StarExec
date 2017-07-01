@@ -262,9 +262,7 @@ public abstract class TestSequence {
 	 */
 	public final List<TestResult> getTestResults() {
 		List<TestResult> tr= new ArrayList<>();
-		for (TestResult r : testResults.values()) {
-			tr.add(r);
-		}
+		tr.addAll(testResults.values());
 		return tr;
 	}
 	
