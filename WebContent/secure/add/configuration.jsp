@@ -75,7 +75,7 @@
 					</tr>
 					<tr>
 						<td>configuration contents</td>
-						<td><textarea id="saveConfigContents" name="saveConfigContents" rows="6" cols="40"/></textarea></td>
+						<td><textarea id="saveConfigContents" name="saveConfigContents" rows="6" cols="40" /></td>
 					</tr>
 				</tbody>
 			</table>	
