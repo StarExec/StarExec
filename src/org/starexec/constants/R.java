@@ -144,7 +144,7 @@ public class R {
 		// This is the standard way to do enum names. Benchmarking framework needs to be all caps so it's not confused
 		// with the enum BenchmarkingFramework.
 		BENCHMARKING_FRAMEWORK,
-		PreProcess;
+		PreProcess
 	}
 
 	// Matrix view settings

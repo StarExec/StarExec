@@ -15,17 +15,17 @@ $(document).ready(function(){
 		}).fail(function() {
 			showMessage('error','Internal error subscribing user',5000);
 		});
-	}
+	};
 
 	var subscribeUser = function() {
 		log('Subscribing user with id ' + currentUserId + ' to reports.');
 		makeSubscribeOrUnsubscribePost('subscribe');
-	}
+	};
 
 	var unsubscribeUser = function() {
 		log('Unsubscribing user with id ' + currentUserId + ' from reports.');
 		makeSubscribeOrUnsubscribePost('unsubscribe'); 
-	}
+	};
 
 	// Register subscribe/unsubscribe button event handlers
 	$('#subscribe').click(subscribeUser);

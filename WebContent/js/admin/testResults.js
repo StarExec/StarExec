@@ -14,7 +14,7 @@ jQuery(function($) {
 		).error(function(){
 			showMessage('error',"Internal error populating data table",5000);
 		});
-	}
+	};
 
 	var tableConfig = new window.star.DataTableConfig({
 		"sAjaxSource"  : starexecRoot+"services/testResults/pagination/"+$("#sequenceName").attr("value"),

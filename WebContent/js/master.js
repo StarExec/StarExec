@@ -65,7 +65,7 @@ $(document).ready(function(){
 
 				$legend.click(function() {
 					isOpen = !isOpen;
-					$this.trigger(isOpen ? 'open.expandable' : 'close.expandable')
+					$this.trigger(isOpen ? 'open.expandable' : 'close.expandable');
 					$legend.children('span:last-child').text(isOpen ? ' (-)' : ' (+)');
 					$legend.siblings().slideToggle('fast');
 					$legend.data('open', isOpen);

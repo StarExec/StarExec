@@ -2,7 +2,7 @@
 var EXP_SP = {
 	copySpaceDialog: '#dialog-confirm-space-copy',
 	copySpaceDialogText: '#dialog-confirm-space-copy-txt'
-}
+};
 
 /** Global Variables */
 var userTable;
@@ -492,7 +492,7 @@ function setupUserCopyDialog(ids, destSpace, destName, ui, destIsLeafSpace) {
 	userCopyDialogButtons["cancel"] = function() {
 		log('user canceled copy action');
 		$(this).dialog("close");
-	}
+	};
 	$('#dialog-confirm-copy').dialog({
 		modal: true,
 		width: 500,

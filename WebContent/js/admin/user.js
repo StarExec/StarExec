@@ -16,7 +16,7 @@ jQuery(function($) {
 			},
 			"json"
 		)
-	}
+	};
 
 	// Setup the DataTable objects
 	$('#users').dataTable(new window.star.DataTableConfig({

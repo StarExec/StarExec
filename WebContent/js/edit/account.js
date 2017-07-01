@@ -100,10 +100,10 @@ function initUI(){
 	$("button").button();
 
 	var getNewBenchmarkingFramework = function() {
-		var newBenchmarkingFramework = $('#editBenchmarkingFramework').find(':selected').attr('value')
+		var newBenchmarkingFramework = $('#editBenchmarkingFramework').find(':selected').attr('value');
 		log('New benchmarking framework is: '+newBenchmarkingFramework);
 		return newBenchmarkingFramework;
-	}
+	};
 	
 	
 	$("#saveProfile").click(function() {

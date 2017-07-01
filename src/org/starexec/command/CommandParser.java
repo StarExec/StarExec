@@ -305,9 +305,7 @@ class CommandParser {
 				serverStatus = Math.min(0, ids.get(0));
 			} else if (c.equals(C.COMMAND_LINKBENCH)) {
 				serverStatus = parser.linkPrimitives(commandParams, "benchmark");
-				;
 			} else if (c.equals(C.COMMAND_COPYSPACE)) {
-
 				ids = parser.copyPrimitives(commandParams, R.SPACE);
 				serverStatus = Math.min(0, ids.get(0));
 			} else if (c.equals(C.COMMAND_LINKJOB)) {

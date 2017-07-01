@@ -16,8 +16,8 @@ import java.util.List;
  * Handles all database interaction for user-defined websites
  */
 public class Websites {
-	private static final StarLogger log = StarLogger.getLogger(Websites.class);;
-	
+	private static final StarLogger log = StarLogger.getLogger(Websites.class);
+
 	/**
 	 * Adds a new website associated with the specified entity
 	 * @param id The ID of the entity the website is associated with

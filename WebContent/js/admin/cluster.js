@@ -12,7 +12,7 @@ jQuery(function($) {
 		if (parseReturnCode(returnCode)) {
 			setTimeout(function(){document.location.reload(true);}, 1000);
 		}
-	}
+	};
 	var id = -1;
 	curQueueId = -1;
 

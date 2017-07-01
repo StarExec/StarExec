@@ -196,7 +196,7 @@ function populateSpaceDetails(jsonData, id) {
 	 * all entries in every table, update every table with the current space's
 	 * primitives, and update the number displayed in every table's fieldset.
 	 */
-	redrawAllTables()
+	redrawAllTables();
 
 	// Check the new permissions for the loaded space. Varies between spaces.js and spacePermissions.js
 	checkPermissions(jsonData.perm, id);

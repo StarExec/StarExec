@@ -183,7 +183,7 @@ function updateCommunityOverview() {
 				communityGraphs = jsonObject.graphs;
 
 				updateCommunityStatsTable(jsonObject.info);
-				changeCommunityOverviewGraph("users")
+				changeCommunityOverviewGraph("users");
 
 				$("#lastUpdate").text("Last Updated: " + jsonObject.date);
 				$("#options").show();

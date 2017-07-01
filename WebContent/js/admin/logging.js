@@ -9,7 +9,7 @@ jQuery(function($) {
 
 	var getSelectedRowValue = function () {
 		return $('.row_selected').attr('value');
-	}
+	};
 
 	$("#applyAll")
 		.button({

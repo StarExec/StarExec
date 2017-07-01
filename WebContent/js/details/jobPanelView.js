@@ -121,7 +121,7 @@ function initializePanels() {
 		linkTemplate.href = url;
 		linkTemplate.textContent = text;
 		return linkTemplate.outerHTML;
-	}
+	};
 
 /*	var pairsTemplate = ["pairsInSpace.jsp?type=",null,"&sid=",DETAILS_JOB.rootJobSpaceId,"&configid=",null,"&stagenum=",null];
 	var getPairsInSpaceLink = function(type, configId, stageNumber) {
@@ -132,17 +132,17 @@ function initializePanels() {
 	}
 */
 
-	var solverTemplate = ["solver.jsp?id=",null]
+	var solverTemplate = ["solver.jsp?id=",null];
 	var getSolverLink = function(solver) {
 		solverTemplate[1] = solver;
 		return solverTemplate.join("");
-	}
+	};
 
-	var configTemplate = ["configuration.jsp?id=",null]
+	var configTemplate = ["configuration.jsp?id=",null];
 	var getConfigLink = function(config) {
 		configTemplate[1] = config;
 		return configTemplate.join("");
-	}
+	};
 
 	var formatSolver     = function(row, type, val) {
 		var href = getSolverLink(val[SOLVER_ID]);
