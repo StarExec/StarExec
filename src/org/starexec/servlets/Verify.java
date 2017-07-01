@@ -230,7 +230,7 @@ public class Verify extends HttpServlet {
     	
     	User newUser;
     	if(userId == -1) {
-    		log.info(String.format("email verification failed - likey a duplicate activation attempt"));
+    		log.info("email verification failed - likely a duplicate activation attempt");
     		response.sendError(HttpServletResponse.SC_NOT_FOUND, "This activation page has expired and no longer exists!");
     		return;
     	} else {

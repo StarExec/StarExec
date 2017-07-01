@@ -248,13 +248,10 @@ public class JobPair extends Identifiable {
 	 */
 	public String getBenchPath() {
 		final String path = Util.normalizeFilePath(getPath());
-		StringBuilder sb = new StringBuilder(path);
-		sb.append(getPrimarySolver().getName());
-		sb.append("___");
-		sb.append(getPrimaryConfiguration().getName());
-		sb.append(File.separator);
-		sb.append(getBench().getName());
-		return sb.toString();
+		String sb = path + getPrimarySolver().getName() + "___" + getPrimaryConfiguration().getName() + File
+				.separator +
+		            getBench().getName();
+		return sb;
 	}
 
 	public int getJobSpaceId() {

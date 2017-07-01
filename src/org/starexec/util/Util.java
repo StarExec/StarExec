@@ -284,7 +284,7 @@ public class Util {
 		int newPassLength = r.nextInt(15) + 6;
 		int set = 0;
 		String[] charSets = {"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", "0123456789", "`~!@#$%^&*()_+-="};
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 
 		// Hash to store which character sets have been used
 		HashSet<Integer> setsUsed = new HashSet<>();

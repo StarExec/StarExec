@@ -1359,21 +1359,18 @@ public class RESTHelpers {
 
 	private static String getHiddenJobPairLink(int pairId) {
 		// Create the hidden input tag containing the jobpair id
-		StringBuilder sb = new StringBuilder();
-		sb.append("<input type=\"hidden\" value=\"");
-		sb.append(pairId);
-		sb.append("\" name=\"pid\"/>");
-		return sb.toString();
+		String sb = "<input type=\"hidden\" value=\"" + pairId + "\" name=\"pid\"/>";
+		return sb;
 	}
 
 	private static String getHiddenBenchLink(Benchmark bench) {
-		StringBuilder sb = new StringBuilder();
+		String sb =
+				"<input name=\"bench\" type=\"hidden\" value=\"" + bench.getId() + "\" prim=\"benchmark\" userId=\"" +
+				bench.getUserId() + "\"  deleted=\"" + bench.isDeleted() + "\" recycled=\"" + bench.isRecycled() +
+				"\"/>";
 
 		// Create the hidden input tag containing the benchmark id
-		sb.append("<input name=\"bench\" type=\"hidden\" value=\"");
-		sb.append(bench.getId());
-		sb.append("\" prim=\"benchmark\" userId=\"" + bench.getUserId() + "\"  deleted=\"" + bench.isDeleted() + "\" recycled=\"" + bench.isRecycled() + "\"/>");
-		return sb.toString();
+		return sb;
 	}
 
 	private static StringBuilder getBenchLinkPrefix(Benchmark bench, PrimitivesToAnonymize primitivesToAnonymize) {
@@ -1511,13 +1508,9 @@ public class RESTHelpers {
 
 
 			// Create the status field
-			StringBuilder sb = new StringBuilder();
-			sb.append("<a title=\"");
-			sb.append(stage.getStatus().getDescription());
-			sb.append("\">");
-			sb.append(stage.getStatus().getStatus() + " (" + stage.getStatus().getCode().getVal() + ")");
-			sb.append("</a>");
-			String status = sb.toString();
+			String status =
+					"<a title=\"" + stage.getStatus().getDescription() + "\">" + stage.getStatus().getStatus() + " (" +
+					stage.getStatus().getCode().getVal() + ")" + "</a>";
 
 			// Create an object, and inject the above HTML, to represent an
 			// entry in the DataTable
@@ -1894,14 +1887,9 @@ public class RESTHelpers {
 		for (Benchmark bench : benchmarks) {
 			String benchLink = getBenchLink(bench);
 			// Create the benchmark type tag
-			StringBuilder sb = new StringBuilder();
-			sb.append("<span title=\"");
 			// Set the tooltip to be the benchmark type's description
-			sb.append(bench.getType().getDescription());
-			sb.append("\">");
-			sb.append(bench.getType().getName());
-			sb.append("</span>");
-			String typeSpan = sb.toString();
+			String typeSpan =
+					"<span title=\"" + bench.getType().getDescription() + "\">" + bench.getType().getName() + "</span>";
 
 			// Create an object, and inject the above HTML, to represent an
 			// entry in the DataTable
