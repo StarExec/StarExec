@@ -2109,8 +2109,8 @@ public class Benchmarks {
 	private static boolean validateDependencies(List<Benchmark> benchmarks, Integer spaceId, Boolean linked) {
 		HashMap<String, BenchmarkDependency> foundDependencies = new HashMap<>();
 		Benchmark benchmark = new Benchmark();
-		for (int i = 0; i< benchmarks.size(); i++){
-			benchmark = benchmarks.get(i);
+		for (Benchmark benchmark1 : benchmarks) {
+			benchmark = benchmark1;
 			if (!validateIndBenchDependencies(benchmark, spaceId, linked, foundDependencies)) {
 				log.warn("Dependent benchs not found for Bench " + benchmark.getName());
 				return false;

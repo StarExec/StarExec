@@ -383,11 +383,10 @@ public class Download extends HttpServlet {
 				have_expected = true;
 				sb.append(",expected");
 			}
-			Iterator<String> ita = attrNames.iterator();
-			while (ita.hasNext()) {
-				String attr = ita.next();
+			for (String attr : attrNames) {
 				if (!attr.equals(R.STAREXEC_RESULT) && !attr.equals(R.EXPECTED_RESULT)) {
-					// skip printing result and expected result in the header of the table, since we already included them
+					// skip printing result and expected result in the header of the table, since we already included
+					// them
 					sb.append(",");
 					sb.append(attr);
 				}
@@ -461,8 +460,7 @@ public class Download extends HttpServlet {
 						sb.append(",");
 						sb.append(props.getProperty(R.EXPECTED_RESULT, "-"));
 					}
-					for (Iterator<String> ita = attrNames.iterator(); ita.hasNext(); ) {
-						String attr = ita.next();
+					for (String attr : attrNames) {
 						if (!attr.equals(R.STAREXEC_RESULT) && !attr.equals(R.EXPECTED_RESULT)) {
 							/* we skip printing the starexec-result, and starexec-expected-result attributes,
 					   because we printed them already */

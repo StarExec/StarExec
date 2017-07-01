@@ -324,9 +324,9 @@ public class GridEngineBackend implements Backend{
     public boolean clearNodeErrorStates(){
     	try {
 			String[] allQueueNames = this.getQueues();
-			for(int i=0;i<allQueueNames.length;i++) {
-				Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qmod -cq "+allQueueNames[i],getSGEEnv());
-			}
+		    for (String allQueueName : allQueueNames) {
+			    Util.executeCommand("sudo -u sgeadmin " + GRID_ENGINE_PATH + "qmod -cq " + allQueueName, getSGEEnv());
+		    }
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);

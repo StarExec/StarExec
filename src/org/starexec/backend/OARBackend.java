@@ -186,8 +186,8 @@ public class OARBackend implements Backend {
 	
 	@Override
 	public boolean moveNodes(String destQueueName, String[] nodeNames, String[] sourceQueueNames) {
-		for (int i = 0; i < nodeNames.length; i++) {
-			moveNode(nodeNames[i], destQueueName);
+		for (String nodeName : nodeNames) {
+			moveNode(nodeName, destQueueName);
 		}
 		return false;
 	}

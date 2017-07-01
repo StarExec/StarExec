@@ -507,8 +507,8 @@ public class Statistics {
 
 			List<List<JobPair>> pairLists = Jobs.getJobPairsForSolverComparisonGraph( jobSpaceId, configIds, stageNumber, primitivesToAnonymize );
 			List<JobPair> pairs = new ArrayList<>();
-			for (int x=0;x<pairLists.size();x++) {
-				pairs.addAll(pairLists.get(x));
+			for (List<JobPair> pairList : pairLists) {
+				pairs.addAll(pairList);
 			}
 			if (pairs.size()>R.MAXIMUM_DATA_POINTS) {
 				return OVERSIZED_GRAPH_ERROR;

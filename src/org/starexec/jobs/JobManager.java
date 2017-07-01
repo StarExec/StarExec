@@ -537,10 +537,7 @@ public abstract class JobManager {
 	private static void populateCurrentQueueLoadAndHighPriorityMaps(List<SchedulingState> schedule, Queue q, final
 	Map<Integer, Map<Integer, Integer>> highPriorityJobBalance, final Map<Integer, Long> userToCurrentQueueLoad, final
 	Map<Integer, List<SchedulingState>> userToHighPriorityStates) {
-		Iterator<SchedulingState> it = schedule.iterator();
-		while (it.hasNext()) {
-			final SchedulingState s = it.next();
-
+		for (SchedulingState s : schedule) {
 			// Add all high priority states to the user to high priority states map.
 			if (s.job.isHighPriority()) {
 				addToHighPriorityStateMap(s, userToHighPriorityStates);

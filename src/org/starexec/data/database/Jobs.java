@@ -98,8 +98,7 @@ public class Jobs {
 			//log.debug("finding spaces for a new pair with path = " +pair.getPath());
 			String[] spaces = getSpaceNames(pair.getPath());
 			StringBuilder curPathBuilder = new StringBuilder();
-			for (int i = 0; i < spaces.length; i++) {
-				String name = spaces[i];
+			for (String name : spaces) {
 				curPathBuilder.append(R.JOB_PAIR_PATH_DELIMITER);
 				curPathBuilder.append(name);
 				//if we need to create a new space
@@ -107,7 +106,8 @@ public class Jobs {
 					String parentPath = curPathBuilder.toString();
 					parentPath = parentPath.substring(0, parentPath.lastIndexOf('/'));
 
-					// note that it is assumed that there are no name conflicts here. The security check is done outside this function
+					// note that it is assumed that there are no name conflicts here. The security check is done
+					// outside this function
 					int parentId = 0;
 					if (parentPath.length() > 0) {
 						parentId = pathsToIds.get(parentPath);
@@ -151,8 +151,7 @@ public class Jobs {
 			//log.debug("finding spaces for a new pair with path = " +pair.getPath());
 			String[] spaces = getSpaceNames(pair.getPath());
 			StringBuilder curPathBuilder = new StringBuilder();
-			for (int i = 0; i < spaces.length; i++) {
-				String jobSpaceName = spaces[i];
+			for (String jobSpaceName : spaces) {
 				curPathBuilder.append(R.JOB_PAIR_PATH_DELIMITER);
 				curPathBuilder.append(jobSpaceName);
 
@@ -2763,8 +2762,7 @@ public class Jobs {
 			List<JobPair> pairs = getPairsDetailed(jobId, results, true);
 			HashMap<Integer, HashMap<Integer, Properties>> props = Jobs.getNewJobAttributes(con, jobId, since);
 
-			for (Integer i = 0; i < pairs.size(); i++) {
-				JobPair jp = pairs.get(i);
+			for (JobPair jp : pairs) {
 				if (props.containsKey(jp.getId())) {
 					HashMap<Integer, Properties> pairInfo = props.get(jp.getId());
 					if (pairInfo.containsKey(jp.getPrimaryStage().getStageNumber())) {
@@ -3010,8 +3008,7 @@ public class Jobs {
 			results = procedure.executeQuery();
 			List<JobPair> pairs = getPairsDetailed(jobId, results, false);
 			HashMap<Integer, HashMap<Integer, Properties>> props = Jobs.getJobAttributes(con, jobId);
-			for (Integer i = 0; i < pairs.size(); i++) {
-				JobPair jp = pairs.get(i);
+			for (JobPair jp : pairs) {
 				if (props.containsKey(jp.getId())) {
 					HashMap<Integer, Properties> pairInfo = props.get(jp.getId());
 					if (pairInfo.containsKey(jp.getPrimaryStage().getStageNumber())) {

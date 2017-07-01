@@ -192,18 +192,17 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	    	return null;
 	    }
 		Set<String> attrs= new HashSet<>();
-	    Iterator<JobPair> itr = jobPairs.iterator();
-	    while(itr.hasNext()) {
-	    	JobPair pair = itr.next();
-	    	for (JoblineStage stage : pair.getStages()) {
-	    		Properties props = stage.getAttributes();
+		for (JobPair pair : jobPairs) {
+			for (JoblineStage stage : pair.getStages()) {
+				Properties props = stage.getAttributes();
 
-		    	if (pair.getStatus().getCode() == StatusCode.STATUS_COMPLETE)
-		    		attrs.addAll(props.stringPropertyNames());
+				if (pair.getStatus().getCode() == StatusCode.STATUS_COMPLETE) {
+					attrs.addAll(props.stringPropertyNames());
+				}
 
-	    	}
+			}
 
-	    }
+		}
 	    Log.debug("Returning "+attrs.size()+" unique attr names");
 	    return attrs;
 	}

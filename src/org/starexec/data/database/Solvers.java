@@ -2416,8 +2416,7 @@ public class Solvers {
 	 * @author Albert Giegerich
 	 */
 	public static void makeDefaultConfigsFirst(List<Solver> solvers) {
-		for (int i = 0; i < solvers.size(); i++) {
-			Solver s = solvers.get(i);
+		for (Solver s : solvers) {
 			List<Configuration> configs = s.getConfigurations();
 			for (int j = 0; j < configs.size(); j++) {
 				Configuration c = configs.get(j);

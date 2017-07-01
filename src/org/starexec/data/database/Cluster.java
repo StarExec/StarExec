@@ -35,9 +35,8 @@ public class Cluster {
 			Cluster.setNodeStatus(R.NODE_STATUS_INACTIVE);
 
 			String[] lines = R.BACKEND.getWorkerNodes();
-			for (int i = 0; i < lines.length; i++) {
-				String name = lines[i];
-				log.trace("Updating info for node "+name);
+			for (String name : lines) {
+				log.trace("Updating info for node " + name);
 				// In the database, update the attributes for the node
 				Cluster.addNodeIfNotExists(name);
 				// Set the node as active (because we just saw it!)
@@ -62,15 +61,13 @@ public class Cluster {
 
 			String[] queueNames = R.BACKEND.getQueues();
 
-			for (int i = 0; i < queueNames.length; i++) {
-			    String name = queueNames[i];
+			for (String name : queueNames) {
+				// adds queue if it does not already exist: max timeouts are used by
+				// default for queues that don't exist
+				Queues.add(name, R.DEFAULT_MAX_TIMEOUT, R.DEFAULT_MAX_TIMEOUT);
 
-			    // adds queue if it does not already exist: max timeouts are used by
-			    // default for queues that don't exist
-				Queues.add(name,R.DEFAULT_MAX_TIMEOUT,R.DEFAULT_MAX_TIMEOUT);
-
-			    // Set the queue as active since we just saw it
-			    Queues.setStatus(name, R.QUEUE_STATUS_ACTIVE);
+				// Set the queue as active since we just saw it
+				Queues.setStatus(name, R.QUEUE_STATUS_ACTIVE);
 			}
 			//Adds all the associations to the db
 			Cluster.setQueueAssociationsInDb();
