@@ -795,6 +795,7 @@ INSERT INTO analytics_events (name) VALUES
 	('JOB_PAUSE'),
 	('JOB_RESUME'),
 	('PAGEVIEW_HELP'),
+	('STAREXEC_DEPLOY'),
 	('STAREXECCOMMAND_LOGIN');
 
 -- Contains historical analytics data:

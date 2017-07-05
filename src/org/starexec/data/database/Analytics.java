@@ -24,6 +24,7 @@ public enum Analytics {
 	JOB_PAUSE,
 	JOB_RESUME,
 	PAGEVIEW_HELP,
+	STAREXEC_DEPLOY,
 	STAREXECCOMMAND_LOGIN;
 
 	protected static final StarLogger log = StarLogger.getLogger(Analytics.class);
