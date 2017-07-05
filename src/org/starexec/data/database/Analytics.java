@@ -12,7 +12,7 @@ import java.util.HashSet;
 
 /**
  * Analytics keeps a record of how often events happen.
- * A count is kept of how many times an events occured per day.
+ * A count is kept of how many times an events occurred per day.
  * A list is kept of unique users that have triggered an event per day.
  * Events must be added both here and in the `analytics_events` table.
  */
@@ -90,7 +90,7 @@ public enum Analytics {
 	}
 
 	/**
-	 * Record an occurance of this event initiated by a particular user
+	 * Record an occurrence of this event initiated by a particular user
 	 * @param userId the user who initiated this event
 	 */
 	public void record(Integer userId) {
@@ -98,7 +98,7 @@ public enum Analytics {
 	}
 
 	/**
-	 * Record an occurance of this event
+	 * Record an occurrence of this event
 	 * that was not initiated by a particular user
 	 */
 	public void record() {
