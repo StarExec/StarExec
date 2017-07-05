@@ -4,6 +4,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.log4j.PropertyConfigurator;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
+import org.starexec.data.database.Analytics;
 import org.starexec.data.database.Common;
 import org.starexec.data.database.Users;
 import org.starexec.exceptions.StarExecException;
@@ -44,6 +45,9 @@ public class Starexec implements ServletContextListener {
 			// Stop the task scheduler since it freezes in an unorderly shutdown...
 			log.debug("Stopping starexec task scheduler...");
 			taskScheduler.shutdown();
+
+			// Save cached Anayltics events to DB
+			Analytics.saveToDB();
 
 			// Make sure to clean up database resources
 			log.debug("Releasing database connections...");
