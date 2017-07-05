@@ -3,6 +3,11 @@
 <star:template title="Testing" js="admin/testing, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min,lib/jquery.validate.min" css="common/table, details/shared, explore/common, explore/spaces, admin/admin, admin/testing">
 		<fieldset id="fieldTable">
 			<legend>Existing Tests</legend>
+			<ul class="actionList">
+				<li><a id="runAll">Run All Tests</a></li>
+				<li><a id="runSelected">Run Selected Tests</a></li>
+				<li><a id="runStress">Create Stress Test</a></li>
+			</ul>
 			<table id="tableTests" class="shaded contentTbl">
 				<thead>
 					<tr>
@@ -15,12 +20,5 @@
 					</tr>
 				</thead>
 			</table>
-		</fieldset>
-
-		<fieldset id="actionField">
-			<legend>actions</legend>
-			<button id="runAll">Run All Tests</button>
-			<button id="runSelected">Run Selected Tests</button>
-			<button id="runStress">Create Stress Test</button>
 		</fieldset>
 </star:template>
