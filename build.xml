@@ -180,7 +180,7 @@
 		<replace file="createDistroArchive.sh">
 			<replacefilter token="${bash-header}" value="${generated-bash-header}" />
 			<replacefilter token="current_checkout_dir" value="${basedir}" />
-			<replacefilter token="current_starexec_vesion" value="${svnversion}" />
+			<replacefilter token="current_starexec_version" value="${svnversion}" />
 		</replace>
 		<chmod file="createDistroArchive.sh" perm="774"/>
 

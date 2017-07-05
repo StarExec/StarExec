@@ -48,6 +48,7 @@ import javax.servlet.http.HttpServletResponse;
 @SuppressWarnings({"deprecation"})
 public class Connection {
 	final private CommandLogger log = CommandLogger.getLogger(Connection.class);
+	private static final String USER_AGENT = "StarExecCommand (" + C.VERSION + ")";
 	DefaultHttpClient client = null;
 	private String baseURL;
 	private String sessionID = null;
@@ -361,6 +362,7 @@ public class Connection {
 				log.log("");
 			}
 		}
+		request.setHeader("User-Agent", USER_AGENT);
 		HttpResponse response = client.execute(request);
 
 		if (C.debugMode) {
