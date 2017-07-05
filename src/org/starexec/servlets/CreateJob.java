@@ -271,16 +271,20 @@ public class CreateJob extends HttpServlet {
 					.parseInt((String) request.getParameter(postProcessor)), Integer.parseInt((String) request
 					.getParameter(workerQueue)), seed, cpuLimit, runLimit, memoryLimit, suppressTimestamp, resultsIntervalNum, option, framework);
 
-			if (framework == BenchmarkingFramework.RUNSOLVER) { // runsolver specific settings
-				Integer d = Integer.parseInt( request.getParameter(killDelay) );
-				if (d != null && d > 0 && d < R.MAX_KILL_DELAY) {
-					j.setKillDelay(d);
+			try {
+				if (framework == BenchmarkingFramework.RUNSOLVER) { // runsolver specific settings
+					int d = Integer.valueOf( request.getParameter(killDelay) );
+					if (d > 0 && d < R.MAX_KILL_DELAY) {
+						j.setKillDelay(d);
+					}
+				} else if (framework == BenchmarkingFramework.BENCHEXEC) { // BenchExec specific settings
+					int d = Integer.valueOf( request.getParameter(softTimeLimit) );
+					if (d > 0) {
+						j.setSoftTimeLimit(d);
+					}
 				}
-			} else if (framework == BenchmarkingFramework.BENCHEXEC) { // BenchExec specific settings
-				Integer d = Integer.parseInt( request.getParameter(softTimeLimit) );
-				if (d != null && d > 0) {
-					j.setSoftTimeLimit(d);
-				}
+			} catch (NumberFormatException e) {
+				log.debug(method, "No killDelay/softTimeLimit provided");
 			}
 
 			String selection = request.getParameter(run);
