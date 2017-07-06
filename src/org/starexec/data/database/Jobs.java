@@ -1225,6 +1225,20 @@ public class Jobs {
 	}
 
 	/**
+	 * Get all the jobs enqueued on a specific queue
+	 *
+	 * @param queueId Id of the queue we are looking for
+	 * @return a list of Jobs on the Queue
+	 */
+	public static List<Job> getByQueueId(int queueId) throws SQLException {
+		return Common.query(
+			"{CALL GetQueueJobsById(?)}",
+			procedure -> procedure.setInt(1, queueId),
+			Jobs::getJobsForNextPage
+		);
+	}
+
+	/**
 	 * Get all the jobs belong to a specific user
 	 *
 	 * @param userId Id of the user we are looking for

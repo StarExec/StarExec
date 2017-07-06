@@ -124,6 +124,39 @@ function initDataTables() {
 		"sAjaxSource"  : starexecRoot+"services/cluster/",
 		"fnServerData" : fnPaginationHandler
 	}));
+
+
+	var formatName = function(row, type, val) {
+		return star.format.jobLink(val);
+	};
+
+	var formatStatus = function(row, type, val) {
+		return val["status"];
+	};
+
+	var formatUser = function(row, type, val) {
+		return star.format.userLink(val["user"]);
+	};
+
+	var formatTime = function(row, type, val) {
+		return star.format.timestamp(val["created"]);
+	};
+
+	$('#jobs').dataTable(new star.DataTableConfig({
+		"sServerMethod" : "GET",
+		"bServerSide"   : false,
+		"bFilter"       : false,
+		"order"         : [
+			[3, "desc"],
+			[0, "asc"]
+		],
+		"aoColumns"     : [
+			{"mRender"  : formatName   },
+			{"mRender"  : formatUser   },
+			{"mRender"  : formatStatus },
+			{"mRender"  : formatTime   },
+		]
+	}));
 }
 
 function fnPaginationHandler(sSource, aoData, fnCallback) {
@@ -168,10 +201,15 @@ function getDetails(id, type, parent_node) {
 	selectedId=id;
 	jobPairTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
 	if(type == 'active_queue' || type == 'inactive_queue') {
+		$("#clusterExpd").text("Enqueued Job Pairs");
+		$("#jobsContainer").show();
 		url = starexecRoot+"services/cluster/queues/details/" + id;
 		qid=id;
+		$("#jobs").dataTable().api().ajax.url( starexecRoot + "services/cluster/queues/jobs/" + id ).load();
 		window['type'] = 'queues';
 	} else if(type == 'enabled_node' || type == 'disabled_node') {
+		$("#clusterExpd").text("Running Job Pairs");
+		$("#jobsContainer").hide();
 		url = starexecRoot+"services/cluster/nodes/details/" + id;
 		qid=parent_node.attr("id");
 		window['type'] = 'nodes';
@@ -210,7 +248,6 @@ function loadQueueLoads() {
 			{},
 			function(data){
 				$("#loadOutput").val(data);
-
 			},
 			"text"
 	);

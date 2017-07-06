@@ -1,7 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 
-<star:template title="Compute Cluster" js="lib/jquery.dataTables.min, lib/jquery.jstree, shared/sharedFunctions, explore/cluster, lib/jquery.progressbar.min" css="explore/cluster, common/table, explore/common, shared/cluster">
+<star:template title="Compute Cluster" js="common/format, lib/jquery.dataTables.min, lib/jquery.jstree, shared/sharedFunctions, explore/cluster, lib/jquery.progressbar.min" css="explore/cluster, common/table, explore/common, shared/cluster">
 	<div id="explorer">
 		<h3>Active Queues</h3>
 		<ul id="exploreList">
@@ -13,6 +13,19 @@
 		<span id="progressBar"></span>
 		<span id="activeStatus"></span>
 		<p class="accent" id="queueID"></p>
+
+		<fieldset id="jobsContainer" class="expdContainer">
+			<legend class="expd">Running Jobs</legend>
+			<table id="jobs">
+				<thead><tr>
+					<th>Job</th>
+					<th>User</th>
+					<th>Status</th>
+					<th>Created</th>
+				</tr></thead>
+			</table>
+		</fieldset>
+
 		<fieldset id="detailField" class="expdContainer">
 			<legend class="expd" id="clusterExpd">Job Pairs</legend>
 			<table id="details" class="shaded">

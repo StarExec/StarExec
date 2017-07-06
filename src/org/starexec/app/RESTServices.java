@@ -501,14 +501,31 @@ public class RESTServices {
 		return gson.toJson(Cluster.getNodeDetails(id));
 	}
 
+	/**
+	 * @param id The ID of the queue to get jobs for
+	 * @param request
+	 * @return json object representing all Jobs running on the queue
+	 */
+	@GET
+	@Path("/cluster/queues/jobs/{id}")
+	@Produces("application/json")
+	public String getQueueJobs(@PathParam("id") int id, @Context HttpServletRequest request) {
+		final JsonObject out = new JsonObject();
+		try {
+			final List<Job> jobsToDisplay = Jobs.getByQueueId(id);
+			out.add("data", RESTHelpers.convertJobsToJsonArray(jobsToDisplay));
+		} catch (SQLException e) {
+			return gson.toJson(ERROR_DATABASE);
+		}
+		return gson.toJson(out);
+	}
 
 	/**
-	 * @param id Th eID of the queue to get details for
+	 * @param id The ID of the queue to get details for
 	 * @param request
 	 * @return a json string representing all attributes of the queue with the given id
 	 * @author Tyler Jensen
 	 */
-
 	@GET
 	@Path("/cluster/queues/details/{id}")
 	@Produces("application/json")

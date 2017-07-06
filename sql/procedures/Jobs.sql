@@ -749,6 +749,20 @@ CREATE PROCEDURE GetUserJobsById(IN _userId INT)
 		ORDER BY created DESC;
 	END //
 
+DROP PROCEDURE IF EXISTS GetQueueJobsById;
+CREATE PROCEDURE GetQueueJobsById(IN _queueId INT)
+	BEGIN
+		SELECT *,
+			total_pairs AS totalPairs,
+			GetCompletePairs(id) AS completePairs,
+			GetPendingPairs(id)  AS pendingPairs,
+			GetErrorPairs(id)    AS errorPairs
+		FROM jobs
+		WHERE queue_id=_queueId
+			and GetJobStatus(id)="incomplete"
+		ORDER BY created DESC;
+	END //
+
 -- Returns the number of jobs in the entire system
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetJobCount;
