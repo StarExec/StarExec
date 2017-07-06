@@ -409,7 +409,6 @@ public class CreateJob extends HttpServlet {
 				// If the submission was successful, send back to space explorer
 				response.addCookie(new Cookie("New_ID", String.valueOf(j.getId())));
 
-				Analytics.JOB_CREATE.record();
 				if (selection.equals("quickJob")) {
 					Analytics.JOB_CREATE_QUICKJOB.record();
 					response.sendRedirect(Util.docRoot("secure/details/job.jsp?id=" + j.getId()));
@@ -418,7 +417,7 @@ public class CreateJob extends HttpServlet {
 				}
 			} else { // if not submitSuccess
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-						"Your job failed to submit for an " + "unknown reason. Please try again.");
+						"Your job failed to submit for an unknown reason. Please try again.");
 			}
 		} catch (Exception e) {
 			log.warn(method, "Caught Exception in CreateJob.doPost.", e);

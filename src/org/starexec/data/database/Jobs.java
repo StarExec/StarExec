@@ -498,6 +498,8 @@ public class Jobs {
 			// record the job being added for the queue it was added to
 			Reports.addToEventOccurrencesForQueue("jobs initiated", 1, job.getQueue().getName());
 
+			Analytics.JOB_CREATE.record();
+
 
 			log.debug("job added, associating next");
 			//put the job in the space it was created in, assuming a space was selected
