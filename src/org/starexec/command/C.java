@@ -16,7 +16,7 @@ public class C {
 
 	public static Boolean debugMode = false;
 
-	public static String VERSION = "May 03, 2017";
+	public static String VERSION = "July 10, 2017";
 
 	public static final String USER_AGENT = "StarExecCommand (" + VERSION + ")";
 
