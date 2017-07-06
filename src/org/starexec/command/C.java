@@ -18,6 +18,8 @@ public class C {
 
 	public static String VERSION = "May 03, 2017";
 
+	public static final String USER_AGENT = "StarExecCommand (" + VERSION + ")";
+
 	public static String HELP_MESSAGE = "Welcome to StarexecCommand! This tool is intended to allow users to communicate with the "
 			+ "Starxec server. For assistance in using this tool, please consult the documentation present in the archive this tool was "
 			+ "packaged with.";
