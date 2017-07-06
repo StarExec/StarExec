@@ -28,7 +28,14 @@ import java.util.regex.Pattern;
  */
 public class SessionFilter implements Filter {
 	private static final StarLogger log = StarLogger.getLogger(SessionFilter.class);
-	private static final Pattern StarExecCommand = Pattern.compile("\\AStarExecCommand");
+
+	/**
+	 * This RegEx is used to match known StarExecCommand User-Agent headers.
+	 * Until r26351 StarExecCommand was not setting a User-Agent header, so it
+	 * would just send the default "Apache-HttpClient" string. For now, we may
+	 * as well just check for either of them.
+	 */
+	private static final Pattern StarExecCommand = Pattern.compile("\\AStarExecCommand|\\AApache-HttpClient/");
 
 	/**
 	 * Detects requests originating from StarExecCommand
