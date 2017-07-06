@@ -39,7 +39,7 @@ window.star.format = {};
 	};
 
 	format.timestamp = function(time) {
-		return (new Date(time)).toDateString();
+		return (new Date(time)).toISOString().replace("T", " ").substring(0, 16);
 	}
 
 })(window.star.format);
