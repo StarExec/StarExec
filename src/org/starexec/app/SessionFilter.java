@@ -154,7 +154,7 @@ public class SessionFilter implements Filter {
 		log.info(String.format("%s [%s] logged in.", user.getFullName(), user.getEmail()));
 
 		if (isFromCommand(request)) {
-			Analytics.STAREXECCOMMAND_LOGIN.record();
+			Analytics.STAREXECCOMMAND_LOGIN.record(user.getId());
 		}
 
 		String ip = request.getRemoteAddr();
