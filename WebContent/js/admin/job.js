@@ -56,11 +56,9 @@ jQuery(function($) {
 						$.post(
 								starexecRoot+"services/admin/pauseAll/",
 								function(returnCode) {
-									s=parseReturnCode(returnCode);
-									if (s) {
+									if (parseReturnCode(returnCode)) {
 										setTimeout(function(){document.location.reload(true);}, 1000);
 									}
-
 								},
 								"json"
 						);
@@ -92,10 +90,8 @@ jQuery(function($) {
 						$.post(
 								starexecRoot+"services/admin/resumeAll/",
 								function(returnCode) {
-									s=parseReturnCode(returnCode);
-									if (s) {
+									if (parseReturnCode(returnCode)) {
 										setTimeout(function(){document.location.reload(true);}, 1000);
-
 									}
 								},
 								"json"
