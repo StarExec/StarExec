@@ -50,7 +50,7 @@ window.star.format = {};
 	};
 	var heatcolorTemplate = ["<div class='stat'>", null, " %</div>"];
 	format.heatcolor = function(percent) {
-		heatcolorTemplate[1] = percent|0;
+		heatcolorTemplate[1] = parseInt(percent, 10);
 		return $(heatcolorTemplate.join(""))
 			.heatcolor(
 				function() {return percent},
