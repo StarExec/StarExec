@@ -147,19 +147,27 @@ function initDataTables() {
 	};
 
 	$('#jobs').dataTable(new star.DataTableConfig({
-		"sServerMethod" : "GET",
-		"bServerSide"   : false,
-		"bFilter"       : false,
-		"order"         : [
+		"sServerMethod"  : "GET",
+		"bServerSide"    : false,
+		"bFilter"        : false,
+		"order"          : [
 			[4, "desc"],
 			[0, "asc"]
 		],
-		"aoColumns"     : [
-			{"mRender"  : formatName     },
-			{"mRender"  : formatUser     },
-			{"mRender"  : formatPending  },
-			{"mRender"  : formatComplete },
-			{"mRender"  : formatTime     },
+		"columns"        : [
+			{"title"     : "Job",
+			 "render"    : formatName     },
+			{"title"     : "User",
+			 "render"    : formatUser     },
+			{"title"     : "Pending",
+			 "render"    : formatPending,
+			 "className" : "dt-body-right",
+			 "width"     : "80px"         },
+			{"title"     : "Status",
+			 "render"    : formatComplete,
+			 "width"     : "60px"         },
+			{"title"     : "Created",
+			 "render"    : formatTime     },
 		]
 	}));
 }

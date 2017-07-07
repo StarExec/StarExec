@@ -16,15 +16,7 @@
 
 		<fieldset id="jobsContainer" class="expdContainer">
 			<legend class="expd">Running Jobs</legend>
-			<table id="jobs">
-				<thead><tr>
-					<th>Job</th>
-					<th>User</th>
-					<th>Pending Pairs</th>
-					<th>Status</th>
-					<th>Created</th>
-				</tr></thead>
-			</table>
+			<table id="jobs"></table>
 		</fieldset>
 
 		<fieldset id="detailField" class="expdContainer">
