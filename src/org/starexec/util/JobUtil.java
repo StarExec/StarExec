@@ -530,6 +530,12 @@ public class JobUtil {
 			job.setCpuTimeout(cpuTimeout);
 			stageOneAttributes.setCpuTimeout(cpuTimeout);
 
+			if (DOMHelper.hasElement(jobAttributes, "seed")) {
+				final Element seedElement = DOMHelper.getElementByName(jobAttributes, "seed");
+				final long seed = Long.parseLong(seedElement.getAttribute("value"));
+				job.setSeed(seed);
+			}
+
 			if (DOMHelper.hasElement(jobAttributes, "kill-delay")) {
 				Element killDelayEle = DOMHelper.getElementByName(jobAttributes, "kill-delay");
 				int killDelay = Integer.parseInt(killDelayEle.getAttribute("value"));

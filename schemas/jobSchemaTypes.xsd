@@ -32,6 +32,8 @@
 			<!-- The default for suppress-timestamps is false -->
 			<element name="suppress-timestamps" type="jst:booleanInfo" maxOccurs="1" minOccurs="0"/>
 
+			<element name="seed" type="jst:longInfo" minOccurs="0" maxOccurs="1"/>
+
 			<!-- Note: Timeouts are in seconds -->
 			<element name="cpu-timeout" type="jst:intInfo"/>
 			<element name="wallclock-timeout" type="jst:intInfo"/>
@@ -78,6 +80,10 @@
 	<!-- job attributes type definitions -->
 	<complexType name="intInfo">
 		<attribute name="value" type="int" use="required"/>
+	</complexType>
+
+	<complexType name="longInfo">
+		<attribute name="value" type="long" use="required"/>
 	</complexType>
 
 	<complexType name="descriptionInfo">

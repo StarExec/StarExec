@@ -211,6 +211,10 @@ public class JobToXMLer {
 		wallClockTimeoutElement.setAttribute("value", Integer.toString(job.getWallclockTimeout()));
 		attrsElement.appendChild(wallClockTimeoutElement);
 
+		final Element seedElement = doc.createElement("seed");
+		seedElement.setAttribute("value", Long.toString(job.getSeed()));
+		attrsElement.appendChild(seedElement);
+
 		//Runsolver delay (seconds) : kill-delay
 		final Integer killDelay = job.getKillDelay();
 		if (killDelay != null) {
