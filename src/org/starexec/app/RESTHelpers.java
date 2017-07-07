@@ -1599,6 +1599,8 @@ public class RESTHelpers {
 			j.addProperty("id", job.getId());
 			j.addProperty("status", job.getStatus());
 			j.addProperty("created", job.getCreateTime().getTime());
+			j.addProperty("totalPairs", job.getLiteJobPairStats().get("totalPairs"));
+			j.addProperty("pendingPairs", job.getLiteJobPairStats().get("pendingPairs"));
 
 			final int userId = job.getUserId();
 			if (!users.containsKey(userId)) {

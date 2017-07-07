@@ -130,8 +130,12 @@ function initDataTables() {
 		return star.format.jobLink(val);
 	};
 
-	var formatStatus = function(row, type, val) {
-		return val["status"];
+	var formatComplete = function(row, type, val) {
+		return star.format.heatcolor((val["totalPairs"] - val["pendingPairs"]) * 100 / val["totalPairs"]);
+	};
+
+	var formatPending = function(row, type, val) {
+		return val["pendingPairs"];
 	};
 
 	var formatUser = function(row, type, val) {
@@ -147,14 +151,15 @@ function initDataTables() {
 		"bServerSide"   : false,
 		"bFilter"       : false,
 		"order"         : [
-			[3, "desc"],
+			[4, "desc"],
 			[0, "asc"]
 		],
 		"aoColumns"     : [
-			{"mRender"  : formatName   },
-			{"mRender"  : formatUser   },
-			{"mRender"  : formatStatus },
-			{"mRender"  : formatTime   },
+			{"mRender"  : formatName     },
+			{"mRender"  : formatUser     },
+			{"mRender"  : formatPending  },
+			{"mRender"  : formatComplete },
+			{"mRender"  : formatTime     },
 		]
 	}));
 }

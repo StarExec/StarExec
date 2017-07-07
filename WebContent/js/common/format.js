@@ -42,4 +42,24 @@ window.star.format = {};
 		return (new Date(time)).toISOString().replace("T", " ").substring(0, 16);
 	}
 
+	var heatcolorConfig = {
+		maxval: 100,
+		minval: 0,
+		colorStyle: 'greentored',
+		lightness: 0
+	};
+	var heatcolorTemplate = ["<div class='stat'>", null, " %</div>"];
+	format.heatcolor = function(percent) {
+		heatcolorTemplate[1] = percent|0;
+		return $(heatcolorTemplate.join(""))
+			.heatcolor(
+				function() {return percent},
+				heatcolorConfig
+			)
+			.wrapAll("<div>")
+			.parent()
+			.html()
+		;
+	}
+
 })(window.star.format);
