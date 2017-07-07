@@ -63,60 +63,44 @@ public class JobToXMLer {
 		stageAttrs.appendChild(stageNumberElement);
 
 		Element cpuTimeoutElement = doc.createElement("cpu-timeout");
-
 		cpuTimeoutElement.setAttribute("value", Integer.toString(attrs.getCpuTimeout()));
-
 		stageAttrs.appendChild(cpuTimeoutElement);
 
-
 		Element wallClockTimeoutElement = doc.createElement("wallclock-timeout");
-
 		wallClockTimeoutElement.setAttribute("value", Integer.toString(attrs.getWallclockTimeout()));
-
 		stageAttrs.appendChild(wallClockTimeoutElement);
 
-
 		Element memLimitElement = doc.createElement("mem-limit");
-
 		memLimitElement.setAttribute("value", Double.toString(Util.bytesToGigabytes(attrs.getMaxMemory())));
-
 		stageAttrs.appendChild(memLimitElement);
 
 
 		//all of the following attributes are optional, and so they are included only if they are not null.
 		if (attrs.getSpaceId()!=null && attrs.getSpaceId()>0) {
 			Element spaceIdElement = doc.createElement("space-id");
-
 			spaceIdElement.setAttribute("value", attrs.getSpaceId().toString());
-
 			stageAttrs.appendChild(spaceIdElement);
 		}
+
 		if (attrs.getBenchSuffix()!=null) {
 			Element benchSuffixElement=doc.createElement("bench-suffix");
 			benchSuffixElement.setAttribute("value", attrs.getBenchSuffix());
 			stageAttrs.appendChild(benchSuffixElement);
 		}
 
-
 		if (attrs.getPostProcessor()!=null) {
 			Element postProcessorElement = doc.createElement("postproc-id");
 			postProcessorElement.setAttribute("value", String.valueOf(attrs.getPostProcessor().getId()));
-
 			stageAttrs.appendChild(postProcessorElement);
 		}
 
 		if (attrs.getPreProcessor()!=null) {
 			Element preProcessorElement = doc.createElement("preproc-id");
-
 			preProcessorElement.setAttribute("value", String.valueOf(attrs.getPreProcessor().getId()));
-
 			stageAttrs.appendChild(preProcessorElement);
 		}
 
-
-
 		return stageAttrs;
-
 	}
 
 	public Element getDependencyElement(PipelineDependency dep) {
@@ -182,8 +166,6 @@ public class JobToXMLer {
 		Element rootJobElement = generateJobXML(job,neededPipes.size()!=0);
 		jobsElement.appendChild(rootJobElement);
 
-
-
 		return jobsElement;
 	}
 
@@ -200,34 +182,24 @@ public class JobToXMLer {
 		log.info("Generating Job XML for job " + job.getId());
 
 		Element jobElement = doc.createElement("Job");
-
-
+		jobElement.setAttribute("name", job.getName());
 
 		Element attrsElement = doc.createElement("JobAttributes");
 
-
-		jobElement.setAttribute("name", job.getName());
-
-		Element descriptionElement = doc.createElement("description");
-
 		// Description attribute : description
+		Element descriptionElement = doc.createElement("description");
 		descriptionElement.setAttribute("value", job.getDescription());
 		attrsElement.appendChild(descriptionElement);
-
-
 
 		//Id of queue : queue-id
 		Element queueIdElement = doc.createElement("queue-id");
 		queueIdElement.setAttribute("value", job.getQueue()!=null ? Integer.toString(job.getQueue().getId()) : "-1");
 		attrsElement.appendChild(queueIdElement);
 
-
-		Element startPausedElement = doc.createElement("start-paused");
-
 		// Should start paused attribute (default is false) : start-paused
+		Element startPausedElement = doc.createElement("start-paused");
 		startPausedElement.setAttribute("value", "false");
 		attrsElement.appendChild(startPausedElement);
-
 
 		//CPU timeout (seconds) : cpu-timeout
 		Element cpuTimeoutElement = doc.createElement("cpu-timeout");
@@ -256,11 +228,8 @@ public class JobToXMLer {
 		}
 
 		//Memory Limit (Gigabytes) : mem-limit (defaulting to 1)
-
 		Element memLimitElement = doc.createElement("mem-limit");
-
 		memLimitElement.setAttribute("value", Double.toString(Util.bytesToGigabytes(job.getMaxMemory())));
-
 		attrsElement.appendChild(memLimitElement);
 
 		//add job attributes element
@@ -276,7 +245,6 @@ public class JobToXMLer {
 				if (attrs.getPostProcessor()!=null) {
 					Element postProcessorElement = doc.createElement("postproc-id");
 					postProcessorElement.setAttribute("value", String.valueOf(attrs.getPostProcessor().getId()));
-
 					attrsElement.appendChild(postProcessorElement);
 				}
 				if (attrs.getPreProcessor()!=null) {
@@ -284,11 +252,10 @@ public class JobToXMLer {
 					preProcessorElement.setAttribute("value", String.valueOf(attrs.getPreProcessor().getId()));
 					attrsElement.appendChild(preProcessorElement);
 				}
-
 			}
 		}
 
-		List<JobPair> pairs= Jobs.getPairsSimple(job.getId());
+		List<JobPair> pairs = Jobs.getPairsSimple(job.getId());
 
 		HashMap<Integer,List<Integer>> benchInputs=Jobs.getAllBenchmarkInputsForJob(job.getId());
 
