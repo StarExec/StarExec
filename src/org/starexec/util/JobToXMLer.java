@@ -217,7 +217,7 @@ public class JobToXMLer {
 
 		//Runsolver delay (seconds) : kill-delay
 		final Integer killDelay = job.getKillDelay();
-		if (killDelay != null) {
+		if (killDelay != null && killDelay != 0) {
 			final Element killDelayElement = doc.createElement("kill-delay");
 			killDelayElement.setAttribute("value", killDelay.toString());
 			attrsElement.appendChild(killDelayElement);
@@ -225,7 +225,7 @@ public class JobToXMLer {
 
 		//Soft time limit (seconds) : soft-time-limit
 		final Integer softTimeLimit = job.getSoftTimeLimit();
-		if (killDelay != null) {
+		if (softTimeLimit != null && softTimeLimit != 0) {
 			final Element softTimeLimitElement = doc.createElement("soft-time-limit");
 			softTimeLimitElement.setAttribute("value", softTimeLimit.toString());
 			attrsElement.appendChild(softTimeLimitElement);
