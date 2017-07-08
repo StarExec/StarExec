@@ -169,7 +169,7 @@ sendStatus $STATUS_RUNNING
 
 initSandbox
 
-if [ ! isInteger $SANDBOX || $SANDBOX -eq -1 ]; then
+if ( ! isInteger $SANDBOX ) || [ $SANDBOX -eq -1 ]; then
         sendNode "$HOSTNAME" "0"
         sendStatus $ERROR_RUNSCRIPT
         sendStatusToLaterStages $ERROR_RUNSCRIPT 0
