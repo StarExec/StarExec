@@ -146,7 +146,8 @@ function initDataTables() {
 		return star.format.timestamp(val["created"]);
 	};
 
-	$('#jobs').dataTable(new star.DataTableConfig({
+	var $jobs = $("#jobs");
+	$jobs.dataTable(new star.DataTableConfig({
 		"sServerMethod"  : "GET",
 		"bServerSide"    : false,
 		"bFilter"        : false,
@@ -170,6 +171,8 @@ function initDataTables() {
 			 "render"    : formatTime     },
 		]
 	}));
+
+	window.setInterval($jobs.DataTable().ajax.reload, 10000);
 }
 
 function fnPaginationHandler(sSource, aoData, fnCallback) {
