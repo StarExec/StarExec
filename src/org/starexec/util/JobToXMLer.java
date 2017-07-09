@@ -146,7 +146,7 @@ public class JobToXMLer {
 	 *  @author Julio Cervantes
 	 *  @param job The job for which we want an xml representation.
 	 *  @param userId the id of the user making the request
-	 *  @return jobsElement for the xml file to represent job hierarchy of input job	 *
+	 *  @return jobsElement for the xml file to represent job hierarchy of input job
 	 */
 	public Element generateJobsXML(Job job, int userId){
 		log.info("Generating Jobs XML " + job.getId());
