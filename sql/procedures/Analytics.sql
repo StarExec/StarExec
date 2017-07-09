@@ -25,6 +25,25 @@ CREATE PROCEDURE RecordEvent(
 				count = count + _count;
 	END //
 
+-- Record an instance of
+--   a particular user triggering
+--   a patricular event on
+--   a particular day
+-- If we have already recorded this user/event/day, we can just ignore the
+-- DUPLICATE KEY warning
+DROP PROCEDURE IF EXISTS RecordEventUser;
+CREATE PROCEDURE RecordEventUser(
+		IN _event_id INT,
+		IN _date_recorded DATE,
+		IN _user_id INT
+	)
+	BEGIN
+		INSERT IGNORE
+			INTO analytics_users (event_id, date_recorded, user_id)
+			VALUES (_event_id, _date_recorded, _user_id)
+		;
+	END //
+
 DROP PROCEDURE IF EXISTS GetAnalyticsForDateRange;
 CREATE PROCEDURE GetAnalyticsForDateRange(
 		IN _start DATE,
@@ -32,11 +51,14 @@ CREATE PROCEDURE GetAnalyticsForDateRange(
 	BEGIN
 		SELECT
 			name as "event",
-			SUM(count) as count
+			SUM(count) as "count",
+			COUNT(distinct user_id) as "users"
 		FROM analytics_historical
+		LEFT JOIN analytics_users  ON analytics_historical.event_id = analytics_users.event_id
 		LEFT JOIN analytics_events ON analytics_historical.event_id = analytics_events.event_id
-		WHERE date_recorded >= _start AND date_recorded <= _end
-		GROUP BY analytics_historical.event_id;
+		WHERE analytics_historical.date_recorded >= _start AND analytics_historical.date_recorded <= _end
+		GROUP BY analytics_historical.event_id
+		;
 	END //
 
 DELIMITER ;

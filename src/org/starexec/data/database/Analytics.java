@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Analytics keeps a record of how often events happen.
@@ -33,7 +34,7 @@ public enum Analytics {
 	private final HashMap<Date, Data> events;
 
 	private final class Data {
-		private final HashSet<Integer> users;
+		private final Set<Integer> users;
 		public int count = 0;
 
 		Data() {
@@ -110,11 +111,18 @@ public enum Analytics {
 				while (it.hasNext()) {
 					@SuppressWarnings("unchecked")
 					Map.Entry<Date,Data> kv = (Map.Entry<Date,Data>)it.next();
-					Date k = kv.getKey();
+					Date date = kv.getKey();
 					Data v = kv.getValue();
 					try {
-						event.saveToDB(k, v.count);
-						if (k.equals(now)) {
+						event.saveToDB(date, v.count);
+						v.users.forEach(user -> {
+							try {
+								event.saveUserToDB(date, user);
+							} catch (SQLException e) {
+								log.error("Cannot record user " + user + " event: " + event.name(), e);
+							}
+						});
+						if (date.equals(now)) {
 							v.count = 0;
 						} else {
 							it.remove();
@@ -134,6 +142,17 @@ public enum Analytics {
 				procedure.setInt(1, id);
 				procedure.setDate(2, date);
 				procedure.setInt(3, count);
+			}
+		);
+	}
+
+	private final void saveUserToDB(Date date, int userId) throws SQLException {
+		Common.update(
+			"{CALL RecordEventUser(?,?,?)}",
+			procedure -> {
+				procedure.setInt(1, id);
+				procedure.setDate(2, date);
+				procedure.setInt(3, userId);
 			}
 		);
 	}

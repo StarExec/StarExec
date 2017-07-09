@@ -24,7 +24,7 @@ jQuery(function($) {
 		while (--row != -1) {
 			resultsTable.row.add([
 				data[row]["event"],
-				0,
+				data[row]["users"],
 				data[row]["count"],
 			]);
 		}
