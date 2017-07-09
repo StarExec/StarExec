@@ -10,14 +10,7 @@
 
 <fieldset>
 	<legend>Event Totals</legend>
-	<table id="analytics_results">
-		<thead><tr>
-			<th>Event</th>
-			<th>Count</th>
-			<th>Users</th>
-		</tr></thead>
-		<tbody></tbody>
-	</table>
+	<table id="analytics_results"></table>
 </fieldset>
 
 </star:template>

@@ -2,7 +2,16 @@
 
 jQuery(function($) {
 	var resultsTableConfig = new window.star.DataTableConfig({
-		"paging": false
+		"paging": false,
+		"columns" : [
+			{"title"     : "Event"},
+			{"title"     : "Users",
+			 "width"     : "120px",
+			 "className" : "dt-right"},
+			{"title"     : "Count",
+			 "width"     : "120px",
+			 "className" : "dt-right"},
+		],
 	});
 	var resultsTable = $("#analytics_results").DataTable(resultsTableConfig);
 
@@ -15,8 +24,8 @@ jQuery(function($) {
 		while (--row != -1) {
 			resultsTable.row.add([
 				data[row]["event"],
+				0,
 				data[row]["count"],
-				0
 			]);
 		}
 		resultsTable.draw();
