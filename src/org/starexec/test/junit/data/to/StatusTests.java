@@ -24,10 +24,10 @@ public class StatusTests {
 	@Test
 	public void statCompleteTest() {
 		for (StatusCode status : EnumSet.allOf(StatusCode.class)) {
-			if (status == StatusCode.STATUS_COMPLETE 
-					|| status == StatusCode.EXCEED_RUNTIME 
+			if (status == StatusCode.STATUS_COMPLETE
+					|| status == StatusCode.EXCEED_RUNTIME
 					|| status == StatusCode.EXCEED_CPU
-					|| status == StatusCode.EXCEED_FILE_WRITE 
+					|| status == StatusCode.EXCEED_FILE_WRITE
 					|| status == StatusCode.EXCEED_MEM) {
 				assertTrue("The "+status.toString()+" status should be complete.", status.statComplete());
 			} else {
