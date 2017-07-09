@@ -804,7 +804,6 @@ CREATE TABLE analytics_historical (
 	event_id INT NOT NULL,
 	date_recorded DATE NOT NULL,
 	count INT NOT NULL DEFAULT 0,
-	users INT NOT NULL DEFAULT 0,
 	PRIMARY KEY (event_id, date_recorded),
 	CONSTRAINT id_assoc FOREIGN KEY (event_id) REFERENCES analytics_events(event_id)
 );

@@ -46,10 +46,6 @@ public enum Analytics {
 				users.add(user);
 			}
 		}
-
-		int userCount() {
-			return users.size();
-		}
 	}
 
 	/**
@@ -117,7 +113,7 @@ public enum Analytics {
 					Date k = kv.getKey();
 					Data v = kv.getValue();
 					try {
-						event.saveToDB(k, v.count, v.userCount());
+						event.saveToDB(k, v.count);
 						if (k.equals(now)) {
 							v.count = 0;
 						} else {
@@ -131,14 +127,13 @@ public enum Analytics {
 		}
 	}
 
-	private final void saveToDB(Date date, int count, int users) throws SQLException {
+	private final void saveToDB(Date date, int count) throws SQLException {
 		Common.update(
-			"{CALL RecordEvent(?,?,?,?)}",
+			"{CALL RecordEvent(?,?,?)}",
 			procedure -> {
 				procedure.setInt(1, id);
 				procedure.setDate(2, date);
 				procedure.setInt(3, count);
-				procedure.setInt(4, users);
 			}
 		);
 	}

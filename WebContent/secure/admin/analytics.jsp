@@ -2,8 +2,6 @@
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <star:template title="Analytics" js="lib/jquery.dataTables.min, lib/jquery.jstree, admin/analytics" css="common/table, admin/analytics">
 
-<script src="https://d3js.org/d3.v4.min.js"></script>
-
 <form id="dateselector">
 	<label>Start <input type="date" placeholder="yyyy-mm-dd" pattern="\d{4}\-\d{1,2}\-\d{1,2}" name="start" /></label>
 	<label>End   <input type="date" placeholder="yyyy-mm-dd" pattern="\d{4}\-\d{1,2}\-\d{1,2}" name="end" /></label>
@@ -20,11 +18,6 @@
 		</tr></thead>
 		<tbody></tbody>
 	</table>
-</fieldset>
-
-<fieldset>
-	<legend>Timeline</legend>
-	<div id="analytics_timeline"></div>
 </fieldset>
 
 </star:template>

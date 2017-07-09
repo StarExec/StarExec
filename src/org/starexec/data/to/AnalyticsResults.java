@@ -39,7 +39,7 @@ public class AnalyticsResults {
 				new AnalyticsResults(
 					results.getString("event"),
 					results.getInt("count"),
-					results.getInt("users")
+					0
 				)
 			);
 		}
