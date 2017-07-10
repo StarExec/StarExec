@@ -1606,11 +1606,12 @@ public class RESTServices {
 	@Path("/job/{spaceId}/allbench/pagination/")
 	@Produces("application/json")
 	public String getAllBenchmarksInSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
-		log.trace("got a request to getPrimitiveDetailsPaginated!");
+		final String methodName = "getAllBenchmarksInSpace";
+		log.trace(methodName, "got a request");
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		// Ensure user can view the space containing the primitive(s)
-		log.trace("reached part two with space id = "+spaceId);
+		log.trace(methodName, "reached part two with space id = "+spaceId);
 
 		ValidatorStatusCode status=SpaceSecurity.canUserSeeSpace(spaceId, userId);
 		if (!status.isSuccess()) {
@@ -1638,11 +1639,12 @@ public class RESTServices {
 	@Path("/space/{id}/{primType}/pagination/")
 	@Produces("application/json")
 	public String getPrimitiveDetailsPaginated(@PathParam("id") int spaceId, @PathParam("primType") String primType, @Context HttpServletRequest request) {
-		log.trace("got a request to getPrimitiveDetailsPaginated!");
+		final String methodName = "getPrimitiveDetailsPaginated";
+		log.trace(methodName, "got a request");
 		int userId = SessionUtil.getUserId(request);
 		JsonObject nextDataTablesPage = null;
 		// Ensure user can view the space containing the primitive(s)
-		log.trace("reached part two with space id = "+spaceId);
+		log.trace(methodName, "reached part two with space id = "+spaceId);
 
 		ValidatorStatusCode status=SpaceSecurity.canUserSeeSpace(spaceId, userId);
 		if (!status.isSuccess()) {
