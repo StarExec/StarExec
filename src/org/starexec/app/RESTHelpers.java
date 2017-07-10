@@ -1612,10 +1612,14 @@ public class RESTHelpers {
 			}
 			j.add("user", users.get(userId));
 
-			final JsonObject queue = new JsonObject();
-			queue.addProperty("name", job.getQueue().getName());
-			queue.addProperty("id", job.getQueue().getId());
-			j.add("queue", queue);
+			try {
+				final JsonObject queue = new JsonObject();
+				queue.addProperty("name", job.getQueue().getName());
+				queue.addProperty("id", job.getQueue().getId());
+				j.add("queue", queue);
+			} catch (NullPointerException e) {
+				// Not all jobs have queues
+			}
 
 			out.add(j);
 		}
