@@ -273,6 +273,8 @@ CREATE TABLE jobs (
 	seed BIGINT DEFAULT 0,
 	cpuTimeout INT,
 	clockTimeout INT,
+	kill_delay INT,
+	soft_time_limit INT,
 	maximum_memory BIGINT DEFAULT 1073741824,
 	primary_space INT, -- This is a JOB_SPACE, not simply a "space"
 	using_dependencies BOOLEAN NOT NULL DEFAULT FALSE, -- whether jobline dependencies are used by any pair
@@ -282,6 +284,7 @@ CREATE TABLE jobs (
 	disk_size BIGINT NOT NULL,
 	is_high_priority BOOLEAN NOT NULL DEFAULT FALSE,
 	benchmarking_framework ENUM('RUNSOLVER', 'BENCHEXEC') NOT NULL DEFAULT 'RUNSOLVER',
+	output_benchmarks_directory_path TEXT DEFAULT NULL, -- directory for benchmarks created by this job
 	PRIMARY KEY (id),
 	CONSTRAINT jobs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	CONSTRAINT jobs_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL
@@ -792,6 +795,7 @@ INSERT INTO analytics_events (name) VALUES
 	('JOB_PAUSE'),
 	('JOB_RESUME'),
 	('PAGEVIEW_HELP'),
+	('STAREXEC_DEPLOY'),
 	('STAREXECCOMMAND_LOGIN');
 
 -- Contains historical analytics data:
@@ -802,4 +806,14 @@ CREATE TABLE analytics_historical (
 	count INT NOT NULL DEFAULT 0,
 	PRIMARY KEY (event_id, date_recorded),
 	CONSTRAINT id_assoc FOREIGN KEY (event_id) REFERENCES analytics_events(event_id)
+);
+
+-- Table to keep track of how many Users trigger an Event
+CREATE TABLE analytics_users (
+	event_id INT NOT NULL,
+	date_recorded DATE NOT NULL,
+	user_id INT NOT NULL,
+	PRIMARY KEY (event_id, date_recorded, user_id),
+	CONSTRAINT analytics_users_to_event FOREIGN KEY (event_id) REFERENCES analytics_events(event_id),
+	CONSTRAINT analytics_users_to_users FOREIGN KEY (user_id)  REFERENCES users(id)
 );

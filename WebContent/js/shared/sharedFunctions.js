@@ -45,16 +45,43 @@ function setupHandlersForCommunityRequestAcceptDeclineButtons() {
 // Shared by explore/communities and admin/community
 // Returns the new data table
 function initCommunityRequestsTable(tableSelector, getAllCommunities, communityId) {
-	'use strict';
-	return $(tableSelector).dataTable( {
-		"sDom"			: getDataTablesDom(),
-		"iDisplayStart"	: 0,
-		"iDisplayLength": defaultPageSize,
-		"bServerSide"	: true,
-		"sAjaxSource"	: starexecRoot+"services/",
-		"sServerMethod" : 'POST',
-		"fnServerData"	: buildPaginationHandler(getAllCommunities, communityId)
-	});
+	"use strict";
+
+	var getUrl = starexecRoot + "services/community/pending/requests/";
+
+	if (!getAllCommunities) {
+		getUrl += communityId;
+	}
+
+	var paginator = function(sSource, aoData, fnCallback) {
+		$.get(
+			sSource,
+			aoData,
+			function(nextDataTablePage){
+				var s = parseReturnCode(nextDataTablePage, false);
+				if (s) {
+					// Update the number displayed in this DataTable's fieldset
+					$('#communityExpd').children('span:first-child').text(nextDataTablePage.iTotalRecords);
+					// Replace the current page with the newly received page
+					fnCallback(nextDataTablePage);
+				}
+			},
+			"json"
+		);
+	};
+
+	return $(tableSelector).dataTable(new star.DataTableConfig({
+		"bServerSide"  : true,
+		"sAjaxSource"  : getUrl,
+		"fnServerData" : paginator,
+		"columns"      : [
+			null,
+			null,
+			null,
+			{ "searchable": false, "orderable": false },
+			{ "searchable": false, "orderable": false }
+		]
+	}));
 }
 
 function handleRequest(code, isApproved) {
@@ -101,37 +128,6 @@ function getCommunityRequestConstants() {
 
 }
 
-function buildPaginationHandler(getAllCommunities, communityId) {
-	'use strict';
-
-	var communityRequestPaginationHandler = function(sSource, aoData, fnCallback) {
-		var getUrl = 'community/pending/requests/';
-		if (!getAllCommunities) {
-			// append the community id if we're not getting all community ids.
-			getUrl += communityId;
-		}
-		// Request the next page of primitives from the server via AJAX
-		$.get(  
-				sSource + getUrl,
-				aoData,
-				function(nextDataTablePage){
-					s=parseReturnCode(nextDataTablePage, false);
-					if (s) {
-
-						// Update the number displayed in this DataTable's fieldset
-						$('#communityExpd').children('span:first-child').text(nextDataTablePage.iTotalRecords);
-					
-					// Replace the current page with the newly received page
-					fnCallback(nextDataTablePage);
-					}
-
-				},  
-				"json"
-		);
-	};
-	return communityRequestPaginationHandler;
-}
-
 /*-------------------------------END SHARED BETWEEN admin/community AND explore/communities------------------------------*/
 
 /*-------------------------------BEGIN SHARED BETWEEN explore/spaces AND edit/spacePermissions---------------------------*/
@@ -152,10 +148,10 @@ function populateSpaceDetails(jsonData, id) {
 		// Show a message why they can't see the space's details
 		$('#spaceDesc').fadeOut('fast', function(){
 			$('#spaceDesc').text('you cannot view this space\'s details since you are not a member. you can see this space exists because you are a member of one of its descendants.').fadeIn('fast');
-		});		
+		});
 		$('#spaceID').fadeOut('fast');
 		// Hide all the info table fieldsets
-		$('#detailPanel fieldset').fadeOut('fast');		
+		$('#detailPanel fieldset').fadeOut('fast');
 		$('#loader').hide();
 
 		// Stop executing the rest of this function
@@ -170,25 +166,25 @@ function populateSpaceDetails(jsonData, id) {
 	spaceId = jsonData.space.id;
 	spaceName = jsonData.space.name;
 
-	
+
 	// Populate space defaults
 	$('.spaceName').fadeOut('fast', function(){
 		$('.spaceName').text(jsonData.space.name).fadeIn('fast');
 	});
 	$('#spaceDesc').fadeOut('fast', function(){
 		$('#spaceDesc').text(jsonData.space.description).fadeIn('fast');
-	});	
+	});
 	$('#spaceID').fadeOut('fast', function() {
 		$('#spaceID').text("id = "+spaceId).fadeIn('fast');
 	});
-	
-	
+
+
 	// on the space permissions page, we display when the user is the space leader
 	if(spaceId != "1"){
 	    curIsLeader = jsonData.perm.isLeader;
 	} else {
 		curIsLeader = false;
-	}	
+	}
 	$('#spaceLeader').fadeOut('fast', function(){
 		if(curIsLeader){
 		    $('#spaceLeader').text("leader of current space").fadeIn('fast');
@@ -200,7 +196,7 @@ function populateSpaceDetails(jsonData, id) {
 	 * all entries in every table, update every table with the current space's
 	 * primitives, and update the number displayed in every table's fieldset.
 	 */
-	redrawAllTables()
+	redrawAllTables();
 
 	// Check the new permissions for the loaded space. Varies between spaces.js and spacePermissions.js
 	checkPermissions(jsonData.perm, id);
@@ -213,16 +209,16 @@ function populateSpaceDetails(jsonData, id) {
 
 /**
  * Populates the space details panel with the basic information about the space
- * (e.g. the name, description) but does not query for details about primitives 
+ * (e.g. the name, description) but does not query for details about primitives
  */
 function getSpaceDetails(id) {
 	$('#loader').show();
-	$.post(  
-			starexecRoot+"services/space/" + id,  
-			function(data){ 
+	$.post(
+			starexecRoot+"services/space/" + id,
+			function(data){
 				log('AJAX response received for details of space ' + id);
-				populateSpaceDetails(data, id);			
-			},  
+				populateSpaceDetails(data, id);
+			},
 			"json"
 	).error(function(){
 		showMessage('error',"Internal error getting space details",5000);
@@ -234,12 +230,12 @@ function getSpaceDetails(id) {
 /*-------------------------------BEGIN SHARED BETWEEN admin/permissions AND edit/spacePermissions------------------------*/
 
 
-function getPermissionDetails(user_id, space_id) {	
-	$.get(  
-		starexecRoot+"services/permissions/details/" + user_id + "/" + space_id,  
-		function(data){  			
-		    populatePermissionDetails(data, user_id);			
-		},  
+function getPermissionDetails(user_id, space_id) {
+	$.get(
+		starexecRoot+"services/permissions/details/" + user_id + "/" + space_id,
+		function(data){
+		    populatePermissionDetails(data, user_id);
+		},
 		"json"
 	).error(function(){
 		showMessage('error',"Internal error getting selectd user's permission details",5000);

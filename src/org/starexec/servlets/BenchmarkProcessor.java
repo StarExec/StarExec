@@ -44,11 +44,11 @@ public class BenchmarkProcessor extends HttpServlet {
 	
 	@GET
 	@Path("/process/benchmarks")
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		try {
 			// If we're dealing with an upload request...
 				
-			// Make sure the request is valid
+			// Make sure the reque st is valid
 			ValidatorStatusCode status=isValidProcessRequest(request);
 			if(!status.isSuccess()) {
 				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
@@ -81,7 +81,7 @@ public class BenchmarkProcessor extends HttpServlet {
 	/**
 	 * Uses the Validate util to ensure the incoming type upload request is valid. This checks for illegal characters
 	 * and content length requirements.
-	 * @param form The form to validate
+	 * @param request the HTTP request to validate.
 	 * @return True if the request is ok to act on, false otherwise
 	 */
 	private ValidatorStatusCode isValidProcessRequest(HttpServletRequest request) {

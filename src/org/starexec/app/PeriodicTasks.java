@@ -45,18 +45,19 @@ class PeriodicTasks {
         UPDATE_CLUSTER(true, UPDATE_CLUSTER_TASK, 0, () -> R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS),
         SUBMIT_JOBS(true, SUBMIT_JOBS_TASK, 0, () -> 60, TimeUnit.SECONDS),
         POST_PROCESS_JOBS(true, POST_PROCESS_JOBS_TASK, 0, () -> 45, TimeUnit.SECONDS),
-        RERUN_FAILED_PAIRS(true, RERUN_FAILED_PAIRS_TASK, 0, () -> 5, TimeUnit.MINUTES),
+        RERUN_FAILED_PAIRS(true, RERUN_FAILED_PAIRS_TASK, 0, () -> 90, TimeUnit.MINUTES),
         FIND_BROKEN_JOB_PAIRS(true, FIND_BROKEN_JOB_PAIRS_TASK, 0, () -> 3, TimeUnit.HOURS),
         SEND_ERROR_LOGS(true, SEND_ERROR_LOGS_TASK, 0, () -> 1, TimeUnit.DAYS),
         CLEAR_TEMPORARY_FILES(false, CLEAR_TEMPORARY_FILES_TASK, 0, () -> 3, TimeUnit.HOURS),
         CLEAR_JOB_LOG(false, CLEAR_JOB_LOG_TASK, 0, () -> 7, TimeUnit.DAYS),
         FIND_BROKEN_NODES(true, FIND_BROKEN_NODES_TASK, 0, () -> 6, TimeUnit.HOURS),
-	    CLEAR_JOB_SCRIPTS(false, CLEAR_JOB_SCRIPTS_TASK, 0, () -> 12, TimeUnit.HOURS),
-	    CLEAN_DATABASE(false, CLEAN_DATABASE_TASK, 0, () -> 7, TimeUnit.DAYS),
-	    CREATE_WEEKLY_REPORTS(false, CREATE_WEEKLY_REPORTS_TASK, 0, () -> 1, TimeUnit.DAYS),
-	    DELETE_OLD_ANONYMOUS_LINKS(false, DELETE_OLD_ANONYMOUS_LINKS_TASK, 0, () -> 30, TimeUnit.DAYS),
-	    UPDATE_USER_DISK_SIZES(false, UPDATE_USER_DISK_SIZES_TASK, 0, () -> 1, TimeUnit.DAYS),
-        UPDATE_COMMUNITY_STATS(false, UPDATE_COMMUNITY_STATS_TASK, 0, () -> 6, TimeUnit.HOURS);
+        CLEAR_JOB_SCRIPTS(false, CLEAR_JOB_SCRIPTS_TASK, 0, () -> 12, TimeUnit.HOURS),
+        CLEAN_DATABASE(false, CLEAN_DATABASE_TASK, 0, () -> 7, TimeUnit.DAYS),
+        CREATE_WEEKLY_REPORTS(false, CREATE_WEEKLY_REPORTS_TASK, 0, () -> 1, TimeUnit.DAYS),
+        DELETE_OLD_ANONYMOUS_LINKS(false, DELETE_OLD_ANONYMOUS_LINKS_TASK, 0, () -> 30, TimeUnit.DAYS),
+        UPDATE_USER_DISK_SIZES(false, UPDATE_USER_DISK_SIZES_TASK, 0, () -> 1, TimeUnit.DAYS),
+        UPDATE_COMMUNITY_STATS(false, UPDATE_COMMUNITY_STATS_TASK, 0, () -> 6, TimeUnit.HOURS),
+        SAVE_ANALYTICS(false, SAVE_ANALYTICS_TASK, 10, () -> 10, TimeUnit.MINUTES);
 
         public final boolean fullInstanceOnly;
         public final Runnable task;
@@ -66,7 +67,7 @@ class PeriodicTasks {
 
         /**
          *
-         * @param fullInstanceOnly true if this task should only be run for a full starexec instance.
+         * @param fullInstanceOnly true if this task should only be run when a working backend is configured
          * @param task the runnable that will be run for the task.
          * @param delay initial delay before the task should be run.
          * @param period the period between each successive run of the task.
@@ -324,4 +325,13 @@ class PeriodicTasks {
             }
         }
     };
+
+	private static final String  saveAnalyticsTask = "saveAnalyticsTask";
+	// Create a task that submits jobs that have pending/rejected job pairs
+	private static final Runnable SAVE_ANALYTICS_TASK = new RobustRunnable(saveAnalyticsTask) {
+		@Override
+		protected void dorun() {
+			Analytics.saveToDB();
+		}
+	};
 }

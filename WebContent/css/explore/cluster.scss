@@ -1,11 +1,30 @@
+@import "../global/helper";
+
 #benchHead {
 	width:19%;
 }
 
 #qstatOutput, #loadOutput {
-
 	width: 96%;
-	height:300px;	
+	height:300px;
+}
+
+#qstatOutput {
+	font-family: "Source Code Pro", Consolas, monospace;
+	font-size: 12px;
+	white-space: pre;
+}
+
+
+#jobs {
+	@extend %popup-links;
+
+	td .stat {
+		text-align: center;
+		color: #111;
+		border: 1px solid #111;
+		line-height: 2.2;
+	}
 }
 
 @media only screen and (max-width: 767px) {
@@ -41,7 +60,7 @@
 	body #details tr > *:nth-child(3) {
 		width: 33.33% !important;
 	}
-	
+
 
 	#details tr > *:nth-child(4) {
 		display: none;

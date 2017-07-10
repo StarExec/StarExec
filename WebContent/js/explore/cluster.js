@@ -1,59 +1,67 @@
 var jobPairTable;
-var qid=0; // ID of the selected queue, or the queue that owns the selected node
+var qid = 0; // ID of the selected queue, or the queue that owns the selected node
 var selectedId = 0;  // ID of the selected primitive
+
 // When the document is ready to be executed on
 $(document).ready(function(){
 	initDataTables();
+
 	//Set up row click to send to pair details page
 	$('#details tbody').on( "click", "a", function(event) {
 		event.stopPropogation();
 	});
+
 	$("#details tbody").on( "click", "tr", function(){
-		if (jobPairTable.fnTotalRecords()>0) {
+		if (jobPairTable.DataTable().data().length > 0) {
 			var pairId = $(this).find('input').val();
 			window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
 		}
-
 	});
+
 	// Build left-hand side of page (cluster explorer)
-	 initClusterExplorer();
-	 loadQstatOutput();
+	initClusterExplorer();
+	loadQstatOutput();
 
-	 $("#refreshQstat").button( {
-		 icons: {
-		 	primary: "ui-icon-refresh"
-	 	}
-	 });
-	 $("#refreshLoads").button( {
-		 icons: {
-		 	primary: "ui-icon-refresh"
-	 	}
-	 });
-	 $("#refreshQstat").click(function() {
-		 loadQstatOutput();
-	 });
-	 $("#refreshLoads").click(function() {
-		 loadQueueLoads();
-	 });
+	$("#refreshQstat")
+		.button({
+			icons: {
+				primary: "ui-icon-refresh"
+			}
+		})
+		.click(
+			loadQstatOutput
+		)
+	;
 
-	 $("#qstatField").expandable(true);
-	 $("#loadsField").expandable(true);
+	$("#refreshLoads")
+		.button({
+			icons: {
+				primary: "ui-icon-refresh"
+			}
+		})
+		.click(
+			loadQueueLoads
+		)
+	;
+
+	$("#qstatField").expandable(true);
+	$("#loadsField").expandable(true);
 
 
-	 setInterval(function() {
-		 jobPairTable.fnDraw(false);
-	 }, 10000);
+	setInterval(function() {
+		jobPairTable.fnDraw(false);
+	}, 10000);
 });
 
 function initClusterExplorer() {
 	// Set the path to the css theme fr the jstree plugin
-	 $.jstree._themes = starexecRoot+"css/jstree/";
+	$.jstree._themes = starexecRoot+"css/jstree/";
 
-	 $("#exploreList").bind("loaded.jstree", function(e, data) {
-		 // Register a callback for when the jstree has finished loading
+	$("#exploreList").bind("loaded.jstree", function(e, data) {
+		// Register a callback for when the jstree has finished loading
 		addNodeCountsToTree();
-	 }).jstree({
-		 // Initialize the jstree plugin for the explorer list
+	}).jstree({
+		// Initialize the jstree plugin for the explorer list
 		"json_data" : {
 			"ajax" : {
 				"url" : starexecRoot+"services/cluster/queues",	// Where we will be getting json data from
@@ -116,6 +124,55 @@ function initDataTables() {
 		"sAjaxSource"  : starexecRoot+"services/cluster/",
 		"fnServerData" : fnPaginationHandler
 	}));
+
+
+	var formatName = function(row, type, val) {
+		return star.format.jobLink(val);
+	};
+
+	var formatComplete = function(row, type, val) {
+		return star.format.heatcolor((val["totalPairs"] - val["pendingPairs"]) * 100 / val["totalPairs"]);
+	};
+
+	var formatPending = function(row, type, val) {
+		return val["pendingPairs"];
+	};
+
+	var formatUser = function(row, type, val) {
+		return star.format.userLink(val["user"]);
+	};
+
+	var formatTime = function(row, type, val) {
+		return star.format.timestamp(val["created"]);
+	};
+
+	var $jobs = $("#jobs");
+	$jobs.dataTable(new star.DataTableConfig({
+		"sServerMethod"  : "GET",
+		"bServerSide"    : false,
+		"bFilter"        : false,
+		"order"          : [
+			[4, "desc"],
+			[0, "asc"]
+		],
+		"columns"        : [
+			{"title"     : "Job",
+			 "render"    : formatName     },
+			{"title"     : "User",
+			 "render"    : formatUser     },
+			{"title"     : "Pending",
+			 "render"    : formatPending,
+			 "className" : "dt-body-right",
+			 "width"     : "80px"         },
+			{"title"     : "Status",
+			 "render"    : formatComplete,
+			 "width"     : "60px"         },
+			{"title"     : "Created",
+			 "render"    : formatTime     },
+		]
+	}));
+
+	window.setInterval($jobs.DataTable().ajax.reload, 10000);
 }
 
 function fnPaginationHandler(sSource, aoData, fnCallback) {
@@ -137,21 +194,19 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		window['type'] = 'queues';
 	}
 	//we have no pagination for inactive queues
-		$.get(
-				sSource + window['type'] + "/" + id + "/pagination",
-				aoData,
-				function(nextDataTablePage){
-					s=parseReturnCode(nextDataTablePage);
-					if (s) {
-						fnCallback(nextDataTablePage);
-					}
-
-				},
-				"json"
-		).error(function(){
-			showMessage('error',"Internal error populating table",5000);
-		});
-
+	$.get(
+			sSource + window['type'] + "/" + id + "/pagination",
+			aoData,
+			function(nextDataTablePage){
+				s=parseReturnCode(nextDataTablePage);
+				if (s) {
+					fnCallback(nextDataTablePage);
+				}
+			},
+			"json"
+	).error(function(){
+		showMessage('error',"Internal error populating table",5000);
+	});
 }
 
 /**
@@ -162,10 +217,15 @@ function getDetails(id, type, parent_node) {
 	selectedId=id;
 	jobPairTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
 	if(type == 'active_queue' || type == 'inactive_queue') {
+		$("#clusterExpd").text("Enqueued Job Pairs");
+		$("#jobsContainer").show();
 		url = starexecRoot+"services/cluster/queues/details/" + id;
 		qid=id;
+		$("#jobs").dataTable().api().ajax.url( starexecRoot + "services/cluster/queues/jobs/" + id ).load();
 		window['type'] = 'queues';
 	} else if(type == 'enabled_node' || type == 'disabled_node') {
+		$("#clusterExpd").text("Running Job Pairs");
+		$("#jobsContainer").hide();
 		url = starexecRoot+"services/cluster/nodes/details/" + id;
 		qid=parent_node.attr("id");
 		window['type'] = 'nodes';
@@ -180,9 +240,7 @@ function getDetails(id, type, parent_node) {
 	jobPairTable.fnDraw();
 	$.get(
 		url,
-		function(data){
-			populateAttributes(data);
-		},
+		populateAttributes,
 		"json"
 	).error(function(){
 		showMessage('error',"Internal error getting node details",5000);
@@ -195,7 +253,6 @@ function loadQstatOutput() {
 			{},
 			function(data){
 				$("#qstatOutput").val(data);
-
 			},
 			"text"
 	);
@@ -207,7 +264,6 @@ function loadQueueLoads() {
 			{},
 			function(data){
 				$("#loadOutput").val(data);
-
 			},
 			"text"
 	);

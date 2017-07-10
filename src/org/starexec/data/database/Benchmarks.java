@@ -1971,7 +1971,7 @@ public class Benchmarks {
 	 */
 	public static Benchmark resultToBenchmarkWithPrefix(ResultSet results, String prefix) throws SQLException {
 		Benchmark b = new Benchmark();
-		if (prefix==null || prefix=="") {
+		if (Util.isNullOrEmpty(prefix)) {
 			b.setId(results.getInt("id"));
 			b.setUserId(results.getInt("user_id"));
 			b.setName(results.getString("name"));
@@ -2109,8 +2109,8 @@ public class Benchmarks {
 	private static boolean validateDependencies(List<Benchmark> benchmarks, Integer spaceId, Boolean linked) {
 		HashMap<String, BenchmarkDependency> foundDependencies = new HashMap<>();
 		Benchmark benchmark = new Benchmark();
-		for (int i = 0; i< benchmarks.size(); i++){
-			benchmark = benchmarks.get(i);
+		for (Benchmark benchmark1 : benchmarks) {
+			benchmark = benchmark1;
 			if (!validateIndBenchDependencies(benchmark, spaceId, linked, foundDependencies)) {
 				log.warn("Dependent benchs not found for Bench " + benchmark.getName());
 				return false;
@@ -2474,9 +2474,7 @@ public class Benchmarks {
 			}
 			
 			List<Benchmark> benchmarks= new ArrayList<>();
-			for (Benchmark s : uniqueBenchmarks.values()) {
-				benchmarks.add(s);
-			}
+			benchmarks.addAll(uniqueBenchmarks.values());
 			return benchmarks;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -2493,7 +2491,7 @@ public class Benchmarks {
 	 */
 	protected static List<Benchmark> filterBenchmarks(List<Benchmark> benchmarks, String searchQuery) {
 		//no filtering is necessary if there's no query
-		if (searchQuery==null || searchQuery=="") {
+		if (Util.isNullOrEmpty(searchQuery)) {
 			return benchmarks;
 		}
 

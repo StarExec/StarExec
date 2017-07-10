@@ -91,15 +91,12 @@ public class Verify extends HttpServlet {
 				Users.updateEmail(userId, newEmail); 
 				Requests.deleteChangeEmailRequest(userId);
 				response.sendRedirect(Util.docRoot("public/messages/email_changed.jsp?email="+newEmail));
-				return;
 			} else {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-				return;
 			}
 		} catch (StarExecDatabaseException e) {
 			log.error("Database error while trying to change users email.", e);
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-			return;
 		}
 	}
     
@@ -233,7 +230,7 @@ public class Verify extends HttpServlet {
     	
     	User newUser;
     	if(userId == -1) {
-    		log.info(String.format("email verification failed - likey a duplicate activation attempt"));
+    		log.info("email verification failed - likely a duplicate activation attempt");
     		response.sendError(HttpServletResponse.SC_NOT_FOUND, "This activation page has expired and no longer exists!");
     		return;
     	} else {

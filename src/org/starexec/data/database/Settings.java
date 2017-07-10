@@ -334,12 +334,10 @@ public class Settings {
 	public static List<DefaultSettings>getDefaultSettingsVisibleByUser(int userId) {
 		List<DefaultSettings> listOfDefaultSettings= new ArrayList<>();
 		List<Space> comms=Communities.getAllCommunitiesUserIsIn(userId);
-		if (comms.size()>0) {
-			for (int i=0;i<comms.size();i++) {
-				DefaultSettings s=Communities.getDefaultSettings(comms.get(i).getId());
-				listOfDefaultSettings.add(s);
+		for (Space comm : comms) {
+			DefaultSettings s = Communities.getDefaultSettings(comm.getId());
+			listOfDefaultSettings.add(s);
 
-			}
 		}
 		List<DefaultSettings> userSettings=Settings.getDefaultSettingsOwnedByUser(userId);
 		if (userSettings!=null) {
@@ -351,12 +349,10 @@ public class Settings {
 	public static List<DefaultSettings>getDefaultSettingsVisibleByUser(Connection con, int userId) {
 		List<DefaultSettings> listOfDefaultSettings= new ArrayList<>();
 		List<Space> comms=Communities.getAllCommunitiesUserIsIn(con, userId);
-		if (comms.size()>0) {
-			for (int i=0;i<comms.size();i++) {
-				DefaultSettings s=Communities.getDefaultSettings(con, comms.get(i).getId());
-				listOfDefaultSettings.add(s);
+		for (Space comm : comms) {
+			DefaultSettings s = Communities.getDefaultSettings(con, comm.getId());
+			listOfDefaultSettings.add(s);
 
-			}
 		}
 		List<DefaultSettings> userSettings=Settings.getDefaultSettingsOwnedByUser(con, userId);
 		if (userSettings!=null) {

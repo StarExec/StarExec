@@ -1,3 +1,3 @@
-#!/bin/tcsh
+#!/bin/sh
 
-java -jar StarexecCommand.jar < testDataCommands.txt
+java -jar StarexecCommand.jar testDataCommands.txt

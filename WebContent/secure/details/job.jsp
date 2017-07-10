@@ -5,13 +5,14 @@
 <%
 	try {
 		JspHelpers.handleJobPage( request, response );
+		if (response.getStatus() == 200) {
+			Analytics.JOB_DETAILS.record();
+		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given job id was in an invalid format");
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
-
-	Analytics.JOB_DETAILS.record();
 %>
 
 <star:template title="${pageTitle}" js="util/sortButtons, util/jobDetailsUtilityFunctions, util/datatablesUtility, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, common/delaySpinner, explore/common, details/shared, details/job">
@@ -360,6 +361,12 @@
 								<td>unknown</td>
 								</c:if>
 							</tr>
+							<c:if test="${job.softTimeLimit > 0}">
+								<tr title="">
+									<td>soft time limit</td>
+									<td>${job.softTimeLimit}</td>
+								</tr>
+							</c:if>
 							<tr title="the wallclock timeout each pair in the job was subjected to">
 								<td>wallclock timeout</td>
 								<td>${wallclock}</td>
@@ -380,6 +387,12 @@
 								<td>disk usage</td>
 								<td>${diskUsage}</td>
 							</tr>
+							<c:if test="${job.killDelay > 0}">
+								<tr title="">
+									<td>kill delay</td>
+									<td>${job.killDelay}</td>
+								</tr>
+							</c:if>
 						</tbody>
 					</table>
 				</fieldset>
@@ -406,7 +419,7 @@
 					<legend>advanced actions</legend>
 					<ul class='actionList'>
 						<li><a id="jobXMLDownload" href="${starexecRoot}/secure/download?type=jobXML&id=${job.id}" >job xml download</a></li>
-						<li><button id="downloadJobPageButton" type="button">download job page</button></li>
+						<li><a id="downloadJobPageButton" type="button">download job page</a></li>
 						<c:if test="${job.userId == userId or isAdmin}">
 							<c:if test="${(isPaused or isComplete) and (not buildJob)}">
 								<li><a id="addJobPairs" href="${starexecRoot}/secure/add/jobPairs.jsp?jobId=${job.id}" >add/delete job pairs</a></li>
@@ -414,22 +427,22 @@
 							<li><a id="anonymousLink">get anonymous link</a></li>
 						</c:if>
 						<c:if test="${isAdmin}">
-							<li><button type="button" id="clearCache">clear cache</button></li>
-							<li><button type="button" id="recompileSpaces">recompile spaces</button></li>
+							<li><a id="clearCache">clear cache</a></li>
+							<li><a id="recompileSpaces">recompile spaces</a></li>
 						</c:if>
 						<c:if test="${job.userId == userId or isAdmin}">
 							<c:if test="${isComplete}">
-								<li><button type="button" id="postProcess">run new postprocessor</button></li>
+								<li><a id="postProcess">run new postprocessor</a></li>
 							</c:if>
 						</c:if>
 						<c:if test="${isPaused or isAdminPaused}">
-							<li><button type="button" id="changeQueue">Change Queue</button></li>
+							<li><a id="changeQueue">Change Queue</a></li>
 						</c:if>
 						<c:if test="${!isHighPriority}">
-							<li><button type="button" id="setHighPriority">set as high priority</button></li>
+							<li><a id="setHighPriority">set as high priority</a></li>
 						</c:if>
 						<c:if test="${isHighPriority}">
-							<li><button type="button" id="setLowPriority">set as low priority</button></li>
+							<li><a id="setLowPriority">set as low priority</a></li>
 						</c:if>
 					</ul>
 				</fieldset>

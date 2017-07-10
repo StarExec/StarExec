@@ -2,7 +2,7 @@
 var EXP_SP = {
 	copySpaceDialog: '#dialog-confirm-space-copy',
 	copySpaceDialogText: '#dialog-confirm-space-copy-txt'
-}
+};
 
 /** Global Variables */
 var userTable;
@@ -56,11 +56,7 @@ function determineIfUserIsDeveloper() {
  * @author Todd Elvers
  */
 function isFieldsetOpen(fieldset){
-	if($(fieldset + ' span:last-child').text() == ' (+)'){
-		return false;
-	} else {
-		return true;
-	}
+	return $(fieldset + ' span:last-child').text() != ' (+)';
 }
 
 /**
@@ -412,7 +408,7 @@ function onSpaceDrop(event, ui) {
 function displayOrHideSampleRate() {
 	var sampleBenchmarksValue = 'NO_JOBS_LINK_SOLVERS_SAMPLE_BENCHMARKS';
 	if ( $('#copyPrimitives').find(':selected').val() === sampleBenchmarksValue) {
-		$('#sampleRateDiv').show();	
+		$('#sampleRateDiv').show();
 	} else {
 		$('#sampleRateDiv').hide();
 	}
@@ -496,7 +492,7 @@ function setupUserCopyDialog(ids, destSpace, destName, ui, destIsLeafSpace) {
 	userCopyDialogButtons["cancel"] = function() {
 		log('user canceled copy action');
 		$(this).dialog("close");
-	}
+	};
 	$('#dialog-confirm-copy').dialog({
 		modal: true,
 		width: 500,
@@ -1425,7 +1421,7 @@ function checkPermissions(perms, id) {
 	} else if (perms == null) {
 		log('no permissions found, hiding action bar');
 		$('.actionList').hide();
-		retu.n;
+		return;
 	} else {
 		$('.actionList').show();
 	}

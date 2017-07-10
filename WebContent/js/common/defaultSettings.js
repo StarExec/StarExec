@@ -16,7 +16,7 @@ var COM_DS = {
 			$(runsolverOptionSelector).attr('selected', 'selected')
 		}*/
 	}
-}
+};
 
 $(document).ready(function() {
 	$("#settingProfile").change(function() {

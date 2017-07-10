@@ -140,12 +140,7 @@ public class Common {
 		if (dataPool.getWaitCount()>0){
 		log.info("# of threads waiting for a connection = " + dataPool.getWaitCount());
 		}
-		if (dataPool.getActive() > .5*R.MYSQL_POOL_MAX_SIZE){
-			return false;
-		}
-		else{
-			return true;
-		}
+		return dataPool.getActive() <= .5 * R.MYSQL_POOL_MAX_SIZE;
 	}
 	
 	/**

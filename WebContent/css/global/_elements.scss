@@ -42,12 +42,15 @@ input, textarea, select {
 }
 
 input[type="text"],
+input[type="search"],
 input[type="password"] {
+	-webkit-appearance: none;
 	height: 26px;
 	padding: 0px 5px 0px 5px;
 }
 
 textarea {
+	-webkit-appearance: none;
 	resize: none;
 	padding: 5px;
 }

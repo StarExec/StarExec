@@ -37,13 +37,12 @@ $(document).ready(function(){
 		$('#tblSpaceSelection tbody').children('tr').not('.row_selected').find('input').remove();
 		$('#tblSolverConfig tbody').children('tr').not('.row_selected').find('input').remove();
 		$('#tblBenchMethodSelection tbody').children('tr').not('.row_selected').find('input').remove();
-	  	return true;
+		return true;
 	});
 	if ($("#remainingQuota").attr("value")<=0) {
 		showMessage("warn","You have reached your pair quota. You will not be able to submit new jobs without removing some old jobs first.", 8000);
 	}
 });
-
 
 function getMaxCpuTimeout(){
 	maxtime=$( "#workerQueue option:selected" ).attr("cpumax");
@@ -243,7 +242,12 @@ function initUI() {
 		history.back(-1);
 	});
 
-
+	/**
+	 * When a user clicks the "Advanced Options" button, we want to display all
+	 * the advanced options *except* those that are not relevant for the current
+	 * benchmarking framework. Therefore, we exclude these options from our
+	 * toggle set and handle them elsewhere.
+	 */
 	$('.advancedOptions').hide();
 	$('#advancedOptionsButton').button({
 		icons: {
@@ -251,10 +255,9 @@ function initUI() {
 		}
 	}).click(function() {
 		$('#advancedOptionsRow').hide();
-		$('.advancedOptions').show();
+		$('.advancedOptions:not(.runsolveronly,.benchexeconly)').show();
+		benchmarkingFrameworkChanged();
 	});
-
-
 
 	$('#btnNext').button({
 		icons: {
@@ -392,11 +395,13 @@ function initUI() {
 function benchmarkingFrameworkChanged() {
 	'use strict';
 
-	var newBenchmarkingFramework = $('#editBenchmarkingFramework').find(':selected').attr('value')
+	var newBenchmarkingFramework = $('#editBenchmarkingFramework').find(':selected').attr('value');
 	if (newBenchmarkingFramework === 'BENCHEXEC') {
-		$('#suppressTimestampsRow').hide();
+		$('.benchexeconly').show();
+		$('.runsolveronly').hide();
 	} else {
-		$('#suppressTimestampsRow').show();
+		$('.benchexeconly').hide();
+		$('.runsolveronly').show();
 	}
 }
 

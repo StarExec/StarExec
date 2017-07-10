@@ -29,7 +29,7 @@ $helper-first-include: true !default;
 	%popup-links {
 		[target="_blank"]::after {
 			margin-left: .5em;
-			content: image-url("/external.png");
+			content: image-url("external.png");
 		}
 	}
 

@@ -32,9 +32,7 @@ public class Identifiable {
 
 	public static List<Identifiable> upcastList(List<? extends Identifiable> subclassIdentifiables) {
 		List<Identifiable> upcastedList = new ArrayList<>();
-		for (Identifiable identifiable: subclassIdentifiables) {
-			upcastedList.add(identifiable);
-		}
+		upcastedList.addAll(subclassIdentifiables);
 		return upcastedList;
 	}
 }

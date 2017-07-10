@@ -417,10 +417,7 @@ public class SpaceSecurity {
 		for (Benchmark b : oldBenches) {
 			userDiskQuota-=b.getDiskSize();
 		}
-		if (userDiskQuota<0) {
-			return false;
-		}
-		return true;
+		return userDiskQuota >= 0;
 	}
 	
 	/**

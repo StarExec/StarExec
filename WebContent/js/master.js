@@ -1,5 +1,3 @@
-var debugMode = true; //console.log statements are turned off by default
-
 /**
  * StarExec namespace
  * Let's try to put global vars here going forward
@@ -67,7 +65,7 @@ $(document).ready(function(){
 
 				$legend.click(function() {
 					isOpen = !isOpen;
-					$this.trigger(isOpen ? 'open.expandable' : 'close.expandable')
+					$this.trigger(isOpen ? 'open.expandable' : 'close.expandable');
 					$legend.children('span:last-child').text(isOpen ? ' (-)' : ' (+)');
 					$legend.siblings().slideToggle('fast');
 					$legend.data('open', isOpen);
@@ -222,7 +220,7 @@ function showMessage(type, message, duration) {
 
 	// Create a new DOM element to insert to display the message, and inject its classes and message
         var tmp="<div><img src='"+starexecRoot+"images/icons/exclaim.png' /></div>";
-	console.log(starexecRoot);
+	log(starexecRoot);
 	var msg = $(tmp).attr('class', type + " message");
 	$(msg).append(messageSpan);
 	$(msg).append(closeMessage);
@@ -326,10 +324,8 @@ function parseBoolean(string) {
 	if (typeof string === 'undefined') {
 		return false;
 	}
-	if (string.trim().toLowerCase()=="true") {
-		return true;
-	}
-	return false;
+	return string.trim().toLowerCase() == "true";
+
 }
 
 /**
@@ -406,3 +402,30 @@ function handleAjaxError(textStatus) {
 function getDataTablesDom() {
 	return 'rt<"bottom"flpi><"clear">';
 }
+
+/**
+ * A helper function that will be passed a return code from an AJAX request.
+ * If request was sucessful, reload the page.
+ * Otherwise, display an error message and close the current dialog.
+ * One gotcha: in order for this function to close the current dialog, it must
+ * be bound to the current dialog. In most cases, this means passing the
+ * function as such:
+ *     $.post(
+ *         url,
+ *         data,
+ *         star.reloadOnSucess.bind(this),
+ *         "json"
+ *     );
+ */
+star.reloadOnSucess = function(returnCode, printMessage) {
+	var s = parseReturnCode(returnCode, printMessage);
+	if (s) {
+		window.location.reload(true);
+	} else {
+		if (this !== window) {
+			$(this).dialog("close");
+		} else {
+			log("reloadOnSucess called without .bind(this)");
+		}
+	}
+};

@@ -1,9 +1,10 @@
 package org.starexec.command;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
- * This class holds constants specific to StarexecCommand
+ * This class holds constants and global variables specific to StarexecCommand
  *
  * @author Eric
  */
@@ -15,7 +16,9 @@ public class C {
 
 	public static Boolean debugMode = false;
 
-	public static String VERSION = "May 03, 2017";
+	public static String VERSION = "July 10, 2017";
+
+	public static final String USER_AGENT = "StarExecCommand (" + VERSION + ")";
 
 	public static String HELP_MESSAGE = "Welcome to StarexecCommand! This tool is intended to allow users to communicate with the "
 			+ "Starxec server. For assistance in using this tool, please consult the documentation present in the archive this tool was "
@@ -73,7 +76,7 @@ public class C {
 	public static int SUCCESS_LOGOUT  = Integer.MAX_VALUE - 3;
 	public static int SUCCESS_LOGIN   = Integer.MAX_VALUE - 4;
 
-	public static HashMap<Integer, String> successMessages = new HashMap<>();
+	public static final Map<Integer, String> successMessages = new HashMap<>();
 
 	static {
 		successMessages.put(SUCCESS_EXIT, "Goodbye");

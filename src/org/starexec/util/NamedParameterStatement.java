@@ -47,7 +47,7 @@ method is non-private so JUnit code can
     static final String parse(String query, Map<String,List<Integer>> paramMap) {
         
         int length=query.length();
-        StringBuffer parsedQuery=new StringBuffer(length);
+        StringBuilder parsedQuery=new StringBuilder(length);
 
         int index=1;
 

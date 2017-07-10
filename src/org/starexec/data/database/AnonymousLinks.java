@@ -640,7 +640,7 @@ public class AnonymousLinks {
 
 	/**
 	 * Gets a mapping of solver ID's to unique anonymized names.
-	 * @param jobId The id of the job to get a mapping for.
+	 * @param solvers a list of Solvers to map to anonymized name.
 	 * @author Albert Giegerich
 	*/
 	private static Map<Integer, String> buildAnonymizedSolverNamesMap( final List<Solver> solvers ) {
@@ -690,7 +690,7 @@ public class AnonymousLinks {
 
 		List<JobSpace> jobSpaces = Spaces.getSubSpacesForJob( job.getPrimarySpace(), true );
 		jobSpaces.add( Spaces.getJobSpace( job.getPrimarySpace() ));
-		Collections.sort( jobSpaces, (space1, space2) -> space1.getId() - space2.getId() );
+		jobSpaces.sort(Comparator.comparingInt(Identifiable::getId));
 
 		Map<Integer, String> jobSpaceIdToAnonymizedName = new HashMap<>();
 		int numberToAppend = 1;

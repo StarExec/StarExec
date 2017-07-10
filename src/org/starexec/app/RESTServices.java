@@ -215,7 +215,7 @@ public class RESTServices {
 
 	/**
 	 * Clears the error state E (which is generally caused by runscript errors) off of every node in the cluster
-	 * @param request
+	 * @param request the HTTP request.
 	 * @return  json ValidatorStatusCode
 	 */
 	@POST
@@ -236,7 +236,7 @@ public class RESTServices {
 
 	/**
 	 * @param id The ID of the queue to get nodes for. If <=0, gets a list of all queues.
-	 * @param request
+	 * @param request the HTTP request.
 	 * @return a json string representing all queues in the starexec cluster OR all nodes in a queue
 	 * @author Tyler Jensen
 	 */
@@ -255,7 +255,8 @@ public class RESTServices {
 	}
 
 	/**
-	 * @param request
+	 * Gets the status of running jobs in plain/text format.
+	 * @param request the HTTP request.
 	 * @return a text string that holds the result of running qstat -f
 	 * @author Tyler Jensen
 	 */
@@ -359,11 +360,7 @@ public class RESTServices {
 		Benchmark b=Benchmarks.get(id);
 		try {
 			Optional<String> contents = Benchmarks.getContents(b, limit);
-			if (contents.isPresent()) {
-				return contents.get();
-			} else {
-				return notAvailableMessage;
-			}
+			return contents.orElse(notAvailableMessage);
 		} catch (IOException e) {
 			log.warn(methodName, "Caught IOException.");
 			return "Internal Error: not available";
@@ -484,11 +481,7 @@ public class RESTServices {
 		}
 		try {
 			Optional<String> stdout = JobPairs.getStdOut(jp.getId(), stageNumber, limit);
-			if (stdout.isPresent()) {
-				return stdout.get();
-			} else {
-				return "not available";
-			}
+			return stdout.orElse("not available");
 		} catch (IOException e) {
 			log.warn(methodName, "Caught IOException while trying to get jobpair stdout.");
 			return "not available";
@@ -508,14 +501,31 @@ public class RESTServices {
 		return gson.toJson(Cluster.getNodeDetails(id));
 	}
 
+	/**
+	 * @param id The ID of the queue to get jobs for
+	 * @param request
+	 * @return json object representing all Jobs running on the queue
+	 */
+	@GET
+	@Path("/cluster/queues/jobs/{id}")
+	@Produces("application/json")
+	public String getQueueJobs(@PathParam("id") int id, @Context HttpServletRequest request) {
+		final JsonObject out = new JsonObject();
+		try {
+			final List<Job> jobsToDisplay = Jobs.getByQueueId(id);
+			out.add("data", RESTHelpers.convertJobsToJsonArray(jobsToDisplay));
+		} catch (SQLException e) {
+			return gson.toJson(ERROR_DATABASE);
+		}
+		return gson.toJson(out);
+	}
 
 	/**
-	 * @param id Th eID of the queue to get details for
+	 * @param id The ID of the queue to get details for
 	 * @param request
 	 * @return a json string representing all attributes of the queue with the given id
 	 * @author Tyler Jensen
 	 */
-
 	@GET
 	@Path("/cluster/queues/details/{id}")
 	@Produces("application/json")
@@ -1376,6 +1386,30 @@ public class RESTServices {
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 
+	/**
+	 * Returns all Jobs with enqueued pairs for display by DataTables
+	 *
+	 * @param request
+	 * @return a JSON object
+	 */
+	@GET
+	@Path("/jobs/admin/pagination/")
+	@Produces("application/json")
+	public String getAllJobsDetailsPagination(@Context HttpServletRequest request) {
+		final int userId = SessionUtil.getUserId(request);
+		if (!GeneralSecurity.hasAdminReadPrivileges(userId)) {
+			return gson.toJson(ERROR_INVALID_PERMISSIONS);
+		}
+
+		final JsonObject out = new JsonObject();
+		try {
+			final List<Job> jobsToDisplay = Jobs.getIncompleteJobs();
+			out.add("data", RESTHelpers.convertJobsToJsonArray(jobsToDisplay));
+		} catch (SQLException e) {
+			return gson.toJson(ERROR_DATABASE);
+		}
+		return gson.toJson(out);
+	}
 
 	/**
 	 * Returns the next page of entries in a given DataTable (not restricted by space, returns ALL).
@@ -1387,22 +1421,15 @@ public class RESTServices {
 	 * @author Wyatt kaiser
 	 */
 	@POST
-	@Path("/{primType}/admin/pagination/")
+	@Path("/users/admin/pagination/")
 	@Produces("application/json")
-	public String getAllPrimitiveDetailsPagination(@PathParam("primType") String primType, @Context HttpServletRequest request) {
-		int userId = SessionUtil.getUserId(request);
-		JsonObject nextDataTablesPage = null;
+	public String getAllUsersDetailsPagination(@Context HttpServletRequest request) {
+		final int userId = SessionUtil.getUserId(request);
 		if (!GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 
-		if (primType.startsWith("u")) {
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageAdmin(Primitive.USER, request);
-		}
-		if (primType.startsWith("j")) {
-			nextDataTablesPage = RESTHelpers.getNextDataTablesPageAdmin(Primitive.JOB, request);
-		}
-
+		final JsonObject nextDataTablesPage = RESTHelpers.getNextUsersPageAdmin(request);
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 
@@ -1727,6 +1754,13 @@ public class RESTServices {
 		return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
 	}
 
+	/**
+	 * Copies a benchmark and the processor for that benchmark to StarDev.
+	 * @param instance the StarDev instance to copy to.
+	 * @param benchmarkId the ID of the benchmark to copy.
+	 * @param request the HTTP request object.
+	 * @return a status indicating success or failure.
+	 */
 	@POST
 	@Path("/copy-bench-with-proc-to-stardev/{instance}/{benchId}")
 	@Produces("application/json")
@@ -1739,7 +1773,7 @@ public class RESTServices {
 			return gson.toJson(isValid);
 		}
 
-		Connection commandConnection = instantiateConnectionForCopyToStardev(instance, request);
+		Connection commandConnection = RESTHelpers.instantiateConnectionForCopyToStardev(instance, request);
 		int loginStatus = commandConnection.login();
 		if (loginStatus < 0) {
 			new ValidatorStatusCode(false, org.starexec.command.Status.getStatusMessage(loginStatus));
@@ -1765,14 +1799,14 @@ public class RESTServices {
 		}
 	}
 
-	private static Connection instantiateConnectionForCopyToStardev(String instance, HttpServletRequest request) {
-		final String username = request.getParameter(R.COPY_TO_STARDEV_USERNAME_PARAM);
-		final String password = request.getParameter(R.COPY_TO_STARDEV_PASSWORD_PARAM);
-		// Login to StarDev
-		String url = "https://stardev.cs.uiowa.edu/" + instance + "/";
-		return new Connection(username, password, url);
-	}
 
+	/**
+	 * Copies a primitive to StarDev.
+	 * @param instance the StarDev instance to copy to.
+	 * @param primitiveId the ID of the primitive to copy.
+	 * @param request the HTTP request object.
+	 * @return a status indicating success or failure.
+	 */
 	@POST
 	@Path("/copy-to-stardev/{instance}/{type}/{primitiveId}")
 	@Produces("application/json")
@@ -1787,38 +1821,21 @@ public class RESTServices {
 				return gson.toJson(isValid);
 			}
 
-			Connection commandConnection = instantiateConnectionForCopyToStardev(instance, request);
+			Connection commandConnection = RESTHelpers.instantiateConnectionForCopyToStardev(instance, request);
 			int loginStatus = commandConnection.login();
 			if (loginStatus < 0) {
-				new ValidatorStatusCode(false, org.starexec.command.Status.getStatusMessage(loginStatus));
+				return gson.toJson(new ValidatorStatusCode(false, org.starexec.command.Status.getStatusMessage(loginStatus)));
 			}
 
 			final Primitive primType = Primitive.valueOf(type);
-			return gson.toJson(copyPrimitiveToStarDev(commandConnection, primType, primitiveId, request));
+			return gson.toJson(RESTHelpers.copyPrimitiveToStarDev(commandConnection, primType, primitiveId, request));
 		} catch (Throwable t) {
 			log.error("Caught throwable while attempting to copy primitive to StarDev.", t);
 			return gson.toJson(ERROR_INTERNAL_SERVER);
 		}
 	}
 
-	private ValidatorStatusCode copyPrimitiveToStarDev(
-			Connection commandConnection,
-			Primitive primType,
-			Integer primitiveId,
-			HttpServletRequest request) {
-		final int spaceId = Integer.parseInt(request.getParameter(R.COPY_TO_STARDEV_SPACE_ID_PARAM));
-		switch (primType) {
-			case BENCHMARK:
-				final int benchProcessorId = Integer.parseInt(request.getParameter(R.COPY_TO_STARDEV_PROC_ID_PARAM));
-				return RESTHelpers.copyBenchmarkToStarDev(commandConnection, primitiveId, spaceId, benchProcessorId);
-			case SOLVER:
-				return RESTHelpers.copySolverToStarDev(commandConnection, primitiveId, spaceId);
-			case PROCESSOR:
-				return RESTHelpers.copyProcessorToStarDev(commandConnection, primitiveId, spaceId);
-			default:
-				return new ValidatorStatusCode(false, "That type is not yet supported.");
-		}
-	}
+
 
 	/**
 	 * Adds website information to the database. This is dynamic to allow adding a
@@ -4447,12 +4464,18 @@ public class RESTServices {
 	@Produces("application/json")
 	public String makePublic(@PathParam("id") int spaceId, @PathParam("hierarchy") boolean hierarchy, @PathParam("makePublic") boolean makePublic, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
+		final String successMessage =
+			"Space" +
+			(hierarchy ? "s" : "") +
+			" successfully made " +
+			(makePublic ? "public" : "private")
+		;
 		ValidatorStatusCode status=SpaceSecurity.canSetSpacePublicOrPrivate(spaceId, userId);
 		if (!status.isSuccess()){
 			return gson.toJson(status);
 		}
 		if(Spaces.setPublicSpace(spaceId, userId, makePublic, hierarchy))
-			return gson.toJson(new ValidatorStatusCode(true,"Space(s) successfully made public"));
+			return gson.toJson(new ValidatorStatusCode(true, successMessage));
 		else
 			return gson.toJson(new ValidatorStatusCode(false, "Internal database error when making spaces public"));
 	}

@@ -10,12 +10,14 @@ import org.starexec.util.Util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class DefaultSettings extends Identifiable {
 	public enum SettingType {
 		USER(0), COMMUNITY(1);
-		
-	    private final int value;
+
+		private final int value;
+
 		private SettingType(int value) {
 			this.value = value;
 		}
@@ -23,20 +25,18 @@ public class DefaultSettings extends Identifiable {
 		public int getValue() {
 			return value;
 		}
-		
-	public static SettingType toStatusCode(int code) {
-			
-		    switch (code) {
-		    case 0:
-		    	return SettingType.USER;
-		    case 1:
-		    	return SettingType.COMMUNITY;
-		
-		}
-		return null;
-	}
 
-}
+		public static SettingType toStatusCode(int code) {
+			switch (code) {
+				case 0:
+					return SettingType.USER;
+				case 1:
+					return SettingType.COMMUNITY;
+			}
+			return null;
+		}
+
+	}
 
 	private Integer primId;
 	private Integer preProcessorId;
@@ -51,136 +51,136 @@ public class DefaultSettings extends Identifiable {
 	private boolean dependenciesEnabled;
 	private String name;
 	private SettingType type;
+
 	/**
 	 * Initializes a new DefaultSettings object with every field set to the system default.
 	 */
 	public DefaultSettings() {
-		postProcessorId=null;
-		wallclockTimeout=10;
-		cpuTimeout=10;
-		benchIds=new ArrayList<>();
-		solverId=null;
-		maxMemory=1073741824;
-		preProcessorId=null;
-		name="settings";
-		dependenciesEnabled=false;
-		benchProcessorId=Processors.getNoTypeProcessor().getId();
-		type=null;
+		postProcessorId = null;
+		wallclockTimeout = 10;
+		cpuTimeout = 10;
+		benchIds = new ArrayList<>();
+		solverId = null;
+		maxMemory = 1073741824;
+		preProcessorId = null;
+		name = "settings";
+		dependenciesEnabled = false;
+		benchProcessorId = Processors.getNoTypeProcessor().getId();
+		type = null;
 		setPrimId(-1);
-		benchmarkingFramework= R.DEFAULT_BENCHMARKING_FRAMEWORK;
+		benchmarkingFramework = R.DEFAULT_BENCHMARKING_FRAMEWORK;
 	}
 
 	public static DefaultSettings copy(DefaultSettings settingsToCopy) {
-		return new DefaultSettings(
-				settingsToCopy.primId,
-				settingsToCopy.preProcessorId,
-				settingsToCopy.postProcessorId,
-				settingsToCopy.benchProcessorId,
-				settingsToCopy.benchIds,
-				settingsToCopy.solverId,
-				settingsToCopy.wallclockTimeout,
-				settingsToCopy.cpuTimeout,
-				settingsToCopy.maxMemory,
-				settingsToCopy.dependenciesEnabled,
-				settingsToCopy.name,
-				settingsToCopy.type,
-				settingsToCopy.benchmarkingFramework
-		);
+		return new DefaultSettings(settingsToCopy.primId, settingsToCopy.preProcessorId, settingsToCopy
+				.postProcessorId, settingsToCopy.benchProcessorId, settingsToCopy.benchIds, settingsToCopy.solverId,
+				settingsToCopy.wallclockTimeout, settingsToCopy.cpuTimeout, settingsToCopy.maxMemory, settingsToCopy
+				.dependenciesEnabled, settingsToCopy.name, settingsToCopy.type, settingsToCopy.benchmarkingFramework);
 	}
 
-	private DefaultSettings(
-			final Integer primId,
-			final Integer preProcessorId,
-			final Integer postProcessorId,
-			final Integer benchProcessorId,
-			final List<Integer> benchIds,
-			final Integer solverId,
-			final int wallclockTimeout,
-			final int cpuTimeout,
-			final long maxMemory,
-			final boolean dependenciesEnabled,
-			final String name,
-			final SettingType type,
-			final BenchmarkingFramework benchmarkingFramework
-	) {
-		this.primId=primId;
-		this.preProcessorId=preProcessorId;
-		this.postProcessorId=postProcessorId;
-		this.benchProcessorId=benchProcessorId;
-		this.benchIds=new ArrayList<>(benchIds);
-		this.solverId=solverId;
-		this.wallclockTimeout=wallclockTimeout;
-		this.cpuTimeout=cpuTimeout;
-		this.maxMemory=maxMemory;
-		this.dependenciesEnabled=dependenciesEnabled;
-		this.name=name;
-		this.type=type;
+	private DefaultSettings(final Integer primId, final Integer preProcessorId, final Integer postProcessorId, final
+	Integer benchProcessorId, final List<Integer> benchIds, final Integer solverId, final int wallclockTimeout, final
+	int cpuTimeout, final long maxMemory, final boolean dependenciesEnabled, final String name, final SettingType
+			type, final BenchmarkingFramework benchmarkingFramework) {
+		this.primId = primId;
+		this.preProcessorId = preProcessorId;
+		this.postProcessorId = postProcessorId;
+		this.benchProcessorId = benchProcessorId;
+		this.benchIds = new ArrayList<>(benchIds);
+		this.solverId = solverId;
+		this.wallclockTimeout = wallclockTimeout;
+		this.cpuTimeout = cpuTimeout;
+		this.maxMemory = maxMemory;
+		this.dependenciesEnabled = dependenciesEnabled;
+		this.name = name;
+		this.type = type;
 		this.benchmarkingFramework = benchmarkingFramework;
 	}
 
 	public void setPreProcessorId(Integer preProcessorId) {
 		this.preProcessorId = preProcessorId;
 	}
+
 	public Integer getPreProcessorId() {
 		return preProcessorId;
 	}
+
 	public void setPostProcessorId(Integer postProcessorId) {
 		this.postProcessorId = postProcessorId;
 	}
+
 	public Integer getPostProcessorId() {
 		return postProcessorId;
 	}
+
 	public void setBenchProcessorId(Integer benchProcessorId) {
 		this.benchProcessorId = benchProcessorId;
 	}
+
 	public Integer getBenchProcessorId() {
 		return benchProcessorId;
 	}
+
 	public void addBenchId(Integer benchId) {
 		benchIds.add(benchId);
 	}
+
 	public List<Integer> getBenchIds() {
 		return this.benchIds;
 	}
+
 	public void setBenchIds(final List<Integer> benchIds) {
 		this.benchIds = benchIds;
 	}
+
 	public void setSolverId(Integer solverId) {
 		this.solverId = solverId;
 	}
+
 	public Integer getSolverId() {
 		return solverId;
 	}
+
 	public void setWallclockTimeout(int wallclockTimeout) {
 		this.wallclockTimeout = wallclockTimeout;
 	}
+
 	public int getWallclockTimeout() {
 		return wallclockTimeout;
 	}
+
 	public void setCpuTimeout(int cpuTimeout) {
 		this.cpuTimeout = cpuTimeout;
 	}
+
 	public int getCpuTimeout() {
 		return cpuTimeout;
 	}
+
 	public void setMaxMemory(long mem) {
 		this.maxMemory = mem;
 	}
+
 	public long getMaxMemory() {
 		return this.maxMemory;
 	}
+
 	public double getRoundedMaxMemoryAsDouble() {
 		return Util.bytesToGigabytes(maxMemory);
 	}
+
 	public void setDependenciesEnabled(boolean dependenciesEnabled) {
 		this.dependenciesEnabled = dependenciesEnabled;
 	}
+
 	public boolean isDependenciesEnabled() {
 		return dependenciesEnabled;
 	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
+
 	public String getName() {
 		return name;
 	}
@@ -188,55 +188,62 @@ public class DefaultSettings extends Identifiable {
 	public BenchmarkingFramework getBenchmarkingFramework() {
 		return benchmarkingFramework;
 	}
+
 	public void setBenchmarkingFramework(final BenchmarkingFramework benchmarkingFramework) {
 		this.benchmarkingFramework = benchmarkingFramework;
 	}
 
 	public String getSolverName() {
-		if (solverId==null) {
+		if (solverId == null) {
 			return "None";
 		}
-		Solver s=Solvers.get(solverId);
-		if (s==null) {
+		Solver s = Solvers.get(solverId);
+		if (s == null) {
 			return "None";
 		}
 		return s.getName();
 	}
-	
+
 	public String getBenchmarkName(Integer index) {
 		Integer benchId = benchIds.get(index);
-		if (benchId==null) {
+		if (benchId == null) {
 			return "None";
 		}
-		Benchmark b=Benchmarks.get(benchId);
-		if (b==null) {
+		Benchmark b = Benchmarks.get(benchId);
+		if (b == null) {
 			return "None";
 		}
 		return b.getName();
-		
+
 	}
+
 	public void setPrimId(Integer primId) {
 		this.primId = primId;
 	}
+
 	public Integer getPrimId() {
 		return primId;
 	}
+
 	public void setType(SettingType type) {
 		this.type = type;
 	}
+
 	public void setType(int type) {
 		this.type = SettingType.toStatusCode(type);
 	}
+
 	public SettingType getType() {
 		return type;
 	}
+
 	public String getTypeString() {
 		return type.name();
 	}
-	
+
 	@Override
 	public String toString() {
-		StringBuilder sb=new StringBuilder();
+		StringBuilder sb = new StringBuilder();
 		sb.append(this.getId());
 		sb.append(" | ");
 		sb.append(this.getName());
@@ -251,7 +258,7 @@ public class DefaultSettings extends Identifiable {
 		sb.append(" | ");
 		sb.append(this.getSolverId());
 		sb.append(" | ");
-		for(int i = 0; i < benchIds.size(); i++) {
+		for (int i = 0; i < benchIds.size(); i++) {
 			sb.append(benchIds.get(i));
 			if (i != benchIds.size() - 1) {
 				sb.append(", ");
@@ -265,7 +272,7 @@ public class DefaultSettings extends Identifiable {
 		sb.append(this.getMaxMemory());
 		return sb.toString();
 	}
-	
+
 	/**
 	 * Checks for deep equality between this object and another DefaultSettings profile
 	 */
@@ -273,9 +280,9 @@ public class DefaultSettings extends Identifiable {
 	@Override
 	public boolean equals(Object s) {
 		if (!(s instanceof DefaultSettings)) {
-            return false;
+			return false;
 		}
-		DefaultSettings set=(DefaultSettings) s;
+		DefaultSettings set = (DefaultSettings) s;
 
 		List<Integer> thisBenchIds = this.getBenchIds();
 		List<Integer> setBenchIds = set.getBenchIds();
@@ -294,17 +301,16 @@ public class DefaultSettings extends Identifiable {
 		}
 
 
-
-		return (this.getId()==set.getId() &&
-				Util.objectsEqual(this.getName(), set.getName()) &&
-				Util.objectsEqual(this.getPrimId(),set.getPrimId()) &&
-				Util.objectsEqual(this.getPreProcessorId(),set.getPreProcessorId()) &&
-				Util.objectsEqual(this.getBenchProcessorId(),set.getBenchProcessorId()) &&
-				Util.objectsEqual(this.getPostProcessorId(),set.getPostProcessorId()) &&
-				this.getCpuTimeout()==set.getCpuTimeout() &&
-				this.getWallclockTimeout()==set.getWallclockTimeout()&&
-				this.getBenchmarkingFramework() == set.getBenchmarkingFramework() &&
-				this.getMaxMemory()==set.getMaxMemory() &&
-				Util.objectsEqual(this.getSolverId(),set.getSolverId()));
+		return (this.getId() == set.getId() &&
+		        Objects.equals(this.getName(), set.getName()) &&
+		        Objects.equals(this.getPrimId(), set.getPrimId()) &&
+		        Objects.equals(this.getPreProcessorId(), set.getPreProcessorId()) &&
+		        Objects.equals(this.getBenchProcessorId(), set.getBenchProcessorId()) &&
+		        Objects.equals(this.getPostProcessorId(), set.getPostProcessorId()) &&
+		        this.getCpuTimeout() == set.getCpuTimeout() &&
+		        this.getWallclockTimeout() == set.getWallclockTimeout() &&
+		        this.getBenchmarkingFramework() == set.getBenchmarkingFramework() &&
+		        this.getMaxMemory() == set.getMaxMemory() &&
+		        Objects.equals(this.getSolverId(), set.getSolverId()));
 	}
 }

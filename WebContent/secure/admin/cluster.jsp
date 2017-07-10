@@ -1,9 +1,6 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, java.util.List, org.starexec.constants.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
-<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-
-<star:template title="${t_user.fullName}" js="admin/cluster, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, shared/sharedFunctions" css="common/table, details/shared, explore/common, explore/spaces, admin/admin, shared/cluster">
+<star:template title="Cluster Admin" js="admin/cluster, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, shared/sharedFunctions" css="common/table, details/shared, explore/common, explore/spaces, admin/admin, shared/cluster">
 	<div id="explorer">
 		<h3>queues</h3>
 		<ul id="exploreList"></ul>
@@ -16,21 +13,17 @@
 
 	<div id="detailPanel">
 		<fieldset>
-		<legend>actions</legend>
+			<legend>actions</legend>
 			<ul id="actionList">
-				<li><button type="button" id="clearErrorStates">clear error states</button></li>
-				<li><button type="button" id="removeQueue">remove queue</button></li>
-				<li><a type="button" id="moveNodes" href="${starexecRoot}/secure/admin/moveNodes.jsp">move nodes to this queue</a></li>
-				<li><a type="button" id="CommunityAssoc" href="${starexecRoot}/secure/admin/assocCommunity.jsp">give communities access</a></li>
-				<li><button type="button" id="makeTest">set queue as test queue</button></li>
-				<li><button type="button" id="makeGlobal">give queue global access</button></li>
-				<li><button type="button" id="removeGlobal">remove global access</button></li>
-				<li><button type="button" id="editQueue">edit queue</button></li>
+				<li id="editQueue"><a>edit queue</a></li>
+				<li id="removeQueue"><a>remove queue</a></li>
+				<li id="removeGlobal"><a>remove global access</a></li>
+				<li id="clearErrorStates"><a>clear error states</a></li>
+				<li id="moveNodes" href="${starexecRoot}/secure/admin/moveNodes.jsp"><a>move nodes to this queue</a></li>
+				<li id="CommunityAssoc" href="${starexecRoot}/secure/admin/assocCommunity.jsp"><a>give communities access</a></li>
+				<li id="makeTest"><a>set queue as test queue</a></li>
+				<li id="makeGlobal"><a>give queue global access</a></li>
 			</ul>
-		</fieldset>	
-
-	</div>	
-	<div id="dialog-confirm-remove" title="confirm removal" class="hiddenDialog">
-				<p><span class="ui-icon ui-icon-alert"></span><span id="dialog-confirm-remove-txt"></span></p>
+		</fieldset>
 	</div>
 </star:template>

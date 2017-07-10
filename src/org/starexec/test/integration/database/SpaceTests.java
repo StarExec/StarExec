@@ -259,8 +259,8 @@ public class SpaceTests extends TestSequence {
             return boxedId.compareTo(otherBoxedId);
         };
 		// Sort both list copies by id
-		Collections.sort(identifiableListCopy, idComparator);
-		Collections.sort(otherIdentifiableListCopy, idComparator);
+		identifiableListCopy.sort(idComparator);
+		otherIdentifiableListCopy.sort(idComparator);
 		Assert.assertEquals(identifiableListCopy.size(), otherIdentifiableListCopy.size());
 		if (identifiableListCopy.size() != otherIdentifiableListCopy.size()) {
 			return; // Avoid a NoSuchElementException

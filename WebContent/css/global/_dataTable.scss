@@ -1,5 +1,10 @@
 // Table styles
 
+%text-align-left    { text-align: left    }
+%text-align-right   { text-align: right   }
+%text-align-center  { text-align: center  }
+%text-align-justify { text-align: justify }
+
 table.dataTable {
 	width: 100%;
 	margin: 0 auto;
@@ -298,130 +303,92 @@ table.dataTable {
 	}
 
 	&.compact {
-		thead {
-			th, td {
+		th, td {
+			thead {
 				padding: 5px 9px;
 			}
-		}
 
-		tfoot {
-			th, td {
+			tfoot {
 				padding: 5px 9px 3px 9px;
 			}
-		}
 
-		tbody {
-			th, td {
+			tbody {
 				padding: 4px 5px;
 			}
 		}
 	}
 
-	th.dt-left, td.dt-left {
-		text-align: left;
+	td.dataTables_empty {
+		@extend %text-align-center;
 	}
 
-	th.dt-center {
-		text-align: center;
-	}
-
-	td {
-		&.dt-center, &.dataTables_empty {
-			text-align: center;
+	th, td {
+		&.dt-center {
+			@extend %text-align-center;
 		}
-	}
 
-	th.dt-right, td.dt-right {
-		text-align: right;
-	}
-
-	th.dt-justify, td.dt-justify {
-		text-align: justify;
-	}
-
-	th.dt-nowrap, td.dt-nowrap {
-		white-space: nowrap;
-	}
-
-	thead {
-		th.dt-head-left, td.dt-head-left {
-			text-align: left;
+		&.dt-left {
+			@extend %text-align-left;
 		}
-	}
 
-	tfoot {
-		th.dt-head-left, td.dt-head-left {
-			text-align: left;
+		&.dt-right {
+			@extend %text-align-right;
 		}
-	}
 
-	thead {
-		th.dt-head-center, td.dt-head-center {
-			text-align: center;
+		&.dt-justify {
+			@extend %text-align-justify;
 		}
-	}
 
-	tfoot {
-		th.dt-head-center, td.dt-head-center {
-			text-align: center;
-		}
-	}
-
-	thead {
-		th.dt-head-right, td.dt-head-right {
-			text-align: right;
-		}
-	}
-
-	tfoot {
-		th.dt-head-right, td.dt-head-right {
-			text-align: right;
-		}
-	}
-
-	thead {
-		th.dt-head-justify, td.dt-head-justify {
-			text-align: justify;
-		}
-	}
-
-	tfoot {
-		th.dt-head-justify, td.dt-head-justify {
-			text-align: justify;
-		}
-	}
-
-	thead {
-		th.dt-head-nowrap, td.dt-head-nowrap {
+		&.dt-nowrap {
 			white-space: nowrap;
 		}
 	}
 
-	tfoot {
-		th.dt-head-nowrap, td.dt-head-nowrap {
-			white-space: nowrap;
+	th.dt-right {
+		padding-right: 2em !important;
+	}
+
+	thead, tfoot {
+		th, td {
+			&.dt-head-left {
+				@extend %text-align-left;
+			}
+
+			&.dt-head-right {
+				@extend %text-align-right;
+			}
+
+			&.dt-head-justify {
+				@extend %text-align-justify;
+			}
+
+			&.dt-head-nowrap {
+				white-space: nowrap;
+			}
 		}
 	}
 
 	tbody {
-		th.dt-body-left, td.dt-body-left {
-			text-align: left;
-		}
+		th, td {
+			&.dt-body-left {
+				@extend %text-align-left;
+			}
 
-		th.dt-body-center, td.dt-body-center {
-			text-align: center;
-		}
+			&.dt-body-center {
+				@extend %text-align-center;
+			}
 
-		th.dt-body-right, td.dt-body-right {
-			text-align: right;
-		}
+			&.dt-body-right {
+				@extend %text-align-right;
+			}
 
-		th.dt-body-justify, td.dt-body-justify {
-			text-align: justify;
-		}
+			&.dt-body-justify {
+				@extend %text-align-justify;
+			}
 
-		th.dt-body-nowrap, td.dt-body-nowrap {
-			white-space: nowrap;
+			&.dt-body-nowrap {
+				white-space: nowrap;
+			}
 		}
 	}
 
@@ -449,7 +416,7 @@ table.dataTable {
 
 	.dataTables_filter {
 		float: right;
-		text-align: right;
+		@extend %text-align-right;
 
 		input {
 			margin-left: 0.5em;
@@ -464,7 +431,7 @@ table.dataTable {
 
 	.dataTables_paginate {
 		float: right;
-		text-align: right;
+		@extend %text-align-right;
 		padding-top: 0.25em;
 
 		.paginate_button {
@@ -474,7 +441,7 @@ table.dataTable {
 			min-width: 1.5em;
 			padding: 0.5em 1em;
 			margin-left: 2px;
-			text-align: center;
+			@extend %text-align-center;
 			text-decoration: none !important;
 			cursor: pointer;
 			color: #fff !important;
@@ -512,7 +479,7 @@ table.dataTable {
 		margin-left: -50%;
 		margin-top: -25px;
 		padding-top: 20px;
-		text-align: center;
+		@extend %text-align-center;
 		font-size: 1.2em;
 		background-color: white;
 		background: -webkit-gradient(linear, left top, right top, color-stop(0%, rgba(255, 255, 255, 0)), color-stop(25%, rgba(255, 255, 255, 0.9)), color-stop(75%, rgba(255, 255, 255, 0.9)), color-stop(100%, rgba(255, 255, 255, 0))); // Chrome,Safari4+

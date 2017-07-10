@@ -68,21 +68,21 @@ public class Matrix {
 			log.debug(method,"Sorting benchmarks and solver-config pairs.");
 			// Sort the benchmarks alphabetically by name ignoring case.
 			ArrayList<Benchmark> uniqueBenchmarkList = new ArrayList<>(uniqueBenchmarks);
-			Collections.sort(uniqueBenchmarkList, NameableComparators.getCaseInsensitiveAlphabeticalComparator());
+			uniqueBenchmarkList.sort(NameableComparators.getCaseInsensitiveAlphabeticalComparator());
 			
 			ArrayList<Pair<Solver,Configuration>> uniqueSolverConfigList =
                     new ArrayList<>(uniqueSolverConfigs);
 			// Names of solver config will be "solver (config)", sort the solverConfigs
 			// alphabetically by name, ignore case.
-			Collections.sort(uniqueSolverConfigList, (sc1, sc2) -> {
-                String solverName1 = sc1.getLeft().getName();
-                String solverName2 = sc2.getLeft().getName();
-                String configName1 = sc1.getRight().getName();
-                String configName2 = sc2.getRight().getName();
-                String sc1Name = String.format("%s (%s)", solverName1, configName1);
-                String sc2Name = String.format("%s (%s)", solverName2, configName2);
-                return sc1Name.compareToIgnoreCase(sc2Name);
-            });
+			uniqueSolverConfigList.sort((sc1, sc2) -> {
+				String solverName1 = sc1.getLeft().getName();
+				String solverName2 = sc2.getLeft().getName();
+				String configName1 = sc1.getRight().getName();
+				String configName2 = sc2.getRight().getName();
+				String sc1Name = String.format("%s (%s)", solverName1, configName1);
+				String sc2Name = String.format("%s (%s)", solverName2, configName2);
+				return sc1Name.compareToIgnoreCase(sc2Name);
+			});
 
 			// Populate the matrix.
 			populateRowAndColumnHeaders(uniqueBenchmarkList, uniqueSolverConfigList); 
@@ -270,13 +270,8 @@ public class Matrix {
 	 * @author Albert Giegerich
 	 */
 	private void populateRowAndColumnHeaders(List<Benchmark> rowElements, List<Pair<Solver,Configuration>> columnElements) {
-		for (Benchmark bench : rowElements) {
-			this.benchmarksByRow.add(bench);
-		}
-
-		for (Pair<Solver,Configuration> solverConfig : columnElements) {
-			this.solverConfigsByColumn.add(solverConfig);
-		}
+		this.benchmarksByRow.addAll(rowElements);
+		this.solverConfigsByColumn.addAll(columnElements);
 	}
 
 	/**
@@ -376,11 +371,7 @@ public class Matrix {
 	 * @author Albert Giegerich
 	 */ 
 	private static boolean testForMultipleStages(JobPair pair) {
-		if (pair.getStages().size() > 1) {
-			return true;
-		} else {
-			return false;
-		}
+		return pair.getStages().size() > 1;
 	}
 
 
@@ -425,7 +416,7 @@ public class Matrix {
 		}
 
 		List<Pair<String, Integer>> orderedSpaces = new ArrayList<>(uniqueSpaces);
-		Collections.sort(orderedSpaces, (jobSpaceA, jobSpaceB) -> {
+		orderedSpaces.sort((jobSpaceA, jobSpaceB) -> {
 			// Try sorting alphabetically insensitive to case.
 			String jobSpaceNameA = jobSpaceA.getLeft();
 			String jobSpaceNameB = jobSpaceB.getLeft();

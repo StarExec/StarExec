@@ -55,7 +55,7 @@ function setupChangeTimeButton() {
 			$('.wallclockSum').show();
 			$('.cpuSum').hide();
 		}
-	}
+	};
 
 	$('.cpuSum').hide();
 

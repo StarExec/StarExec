@@ -34,21 +34,10 @@ public class PaginationQueryBuilder {
 		this.orderColumn=orderColumn;
 	}
 	
-	public String getSQL() { 
-		StringBuilder sb = new StringBuilder();
-		
-		sb.append(baseSQL);
-		sb.append("\n");
-		sb.append("ORDER BY ");
-		sb.append(orderColumn);
-		sb.append(" ");
-		sb.append(getOrderDirectionString());
-		sb.append("\n");
-		sb.append("LIMIT ");
-		sb.append(query.getStartingRecord());
-		sb.append(", ");
-		sb.append(query.getNumRecords());
-		sb.append(";");
-		return sb.toString();
+	public String getSQL() {
+		String sb = baseSQL + "\n" + "ORDER BY " + orderColumn + " " + getOrderDirectionString() + "\n" + "LIMIT " +
+		            query.getStartingRecord() + ", " + query.getNumRecords() + ";";
+
+		return sb;
 	}
 }

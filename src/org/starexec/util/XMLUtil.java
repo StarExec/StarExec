@@ -24,13 +24,15 @@ import java.io.IOException;
 
 /**
  * Contains functionality shared between JobUtil, BatchUtil, and JobToXMLer
+ *
  * @author Eric
  */
 public class XMLUtil {
 	private static StarLogger log = StarLogger.getLogger(XMLUtil.class);
-	
+
 	/**
 	 * Validates an XML document using a schema
+	 *
 	 * @param file The XML file
 	 * @param schemaLoc The absolute path to the schema
 	 * @return A ValidatorStatusCode containing true if the validation was successful and false plus an
@@ -38,7 +40,8 @@ public class XMLUtil {
 	 * @throws ParserConfigurationException
 	 * @throws IOException
 	 */
-	public static ValidatorStatusCode validateAgainstSchema(File file, String schemaLoc) throws ParserConfigurationException, IOException{
+	public static ValidatorStatusCode validateAgainstSchema(File file, String schemaLoc) throws
+			ParserConfigurationException, IOException {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setValidating(false);//This is true for DTD, but not W3C XML Schema that we're using
 		factory.setNamespaceAware(true);
@@ -46,36 +49,39 @@ public class XMLUtil {
 		SchemaFactory schemaFactory = SchemaFactory.newInstance("http://www.w3.org/2001/XMLSchema");
 
 		try {
-			factory.setSchema(schemaFactory.newSchema(new Source[] {new StreamSource(schemaLoc)}));
+			factory.setSchema(schemaFactory.newSchema(new Source[]{new StreamSource(schemaLoc)}));
 			Schema schema = factory.getSchema();
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document document = builder.parse(file);
 			Validator validator = schema.newValidator();
 			DOMSource source = new DOMSource(document);
-            validator.validate(source);
-            log.debug("XML File has been validated against the schema.");
-            return new ValidatorStatusCode(true);
-        } catch (SAXException ex) {
-            log.warn("File is not valid because: \"" + ex.getMessage() + "\"");
-            return new ValidatorStatusCode(false, "File is not valid because: \"" + ex.getMessage() + "\"");
-        }
-		
+			validator.validate(source);
+			log.debug("XML File has been validated against the schema.");
+			return new ValidatorStatusCode(true);
+		} catch (SAXException ex) {
+			log.warn("File is not valid because: \"" + ex.getMessage() + "\"");
+			return new ValidatorStatusCode(false, "File is not valid because: \"" + ex.getMessage() + "\"");
+		}
+
 	}
+
 	/**
 	 * Generates a new, empty XML Document object
+	 *
 	 * @return The new Document
 	 * @throws ParserConfigurationException
 	 */
 	public static Document generateNewDocument() throws ParserConfigurationException {
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-		
+
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-		
+
 		return docBuilder.newDocument();
 	}
-	
+
 	/**
 	 * Writes XML Document object out to a file and returns that file
+	 *
 	 * @param relPath The path to where the file should be place, relative to R.STAREXEC_ROOT.
 	 * Any spaces will be removed from the name
 	 * @param doc
@@ -84,13 +90,13 @@ public class XMLUtil {
 	 */
 	public static File writeDocumentToFile(String relPath, Document doc) throws Exception {
 		//no spaces are permitted at the top level
-		relPath=relPath.replaceAll("\\s+", "");
+		relPath = relPath.replaceAll("\\s+", "");
 		// write the content into xml file
 		TransformerFactory transformerFactory = TransformerFactory.newInstance();
 		Transformer transformer = transformerFactory.newTransformer();
 		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 		DOMSource source = new DOMSource(doc);
-				
+
 		//we can't let the top level have spaces in the name
 		File file = new File(R.STAREXEC_ROOT, relPath);
 		log.debug(file.getAbsolutePath());

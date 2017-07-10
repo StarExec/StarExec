@@ -181,7 +181,7 @@ function refreshStats(id){
 				$("#solverComparisonOptionField").hide();
 			}
 		}
-	}
+	};
 	summaryTable.api().ajax.reload(updateGraphs, true);
 }
 
@@ -1244,7 +1244,7 @@ function getSolverTableInitializer() {
 		linkTemplate.href = url;
 		linkTemplate.textContent = text;
 		return linkTemplate.outerHTML;
-	}
+	};
 
 	var pairsTemplate = ["pairsInSpace.jsp?type=",null,"&sid=",DETAILS_JOB.rootJobSpaceId,"&configid=",null,"&stagenum=",null];
 	var getPairsInSpaceLink = function(type, configId, stageNumber) {
@@ -1252,7 +1252,7 @@ function getSolverTableInitializer() {
 		pairsTemplate[5] = configId;
 		pairsTemplate[7] = stageNumber;
 		return pairsTemplate.join("");
-	}
+	};
 
 	var conflictsTemplate = ["conflictingBenchmarks.jsp?jobId=",null,"&configId=",null,"&stageNumber=",null];
 	var getConflictingLink = function(configId, stageNumber) {
@@ -1260,13 +1260,13 @@ function getSolverTableInitializer() {
 		conflictsTemplate[3] = configId;
 		conflictsTemplate[5] = stageNumber;
 		return conflictsTemplate.join("");
-	}
+	};
 
-	var solverTemplate = ["solver.jsp?id=",null]
+	var solverTemplate = ["solver.jsp?id=",null];
 	var getSolverLink = function(solver) {
 		solverTemplate[1] = solver;
 		return solverTemplate.join("");
-	}
+	};
 
 	var configTemplate = ["<a target='_blank' class='configLink' href='configuration.jsp?id=",null,"' id='",null,"'>",null,"</a>"];
 	var formatConfig     = function(row, type, val) {
@@ -1300,7 +1300,7 @@ function getSolverTableInitializer() {
 	};
 	var formatSolvedText = function(row, type, val) {
 		return val[SOLVED];
-	}
+	};
 	var formatWrong      = function(row, type, val) {
 		var href = getPairsInSpaceLink("wrong", val[CONFIG_ID], val[STAGE]);
 		return link(href, val[WRONG]);
@@ -1375,7 +1375,7 @@ function getSolverTableInitializer() {
 		var getPaginationUrl = function(spaceId) {
 			paginationUrlTemplate[1] = spaceId;
 			return paginationUrlTemplate.join("");
-		}
+		};
 
 		panelTableInitializer["fnServerData"] = fnShortStatsPaginationHandler;
 		window.getPanelTableInitializer = function(jobId, spaceId) {

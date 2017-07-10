@@ -87,11 +87,7 @@ public class UploadSpaceXML extends HttpServlet {
 
 	private boolean userMayUploadSpaceXML(int userId, int spaceId) {
 		Permission userPermission = Permissions.get(userId, spaceId);
-		if (userPermission != null && userPermission.canAddSpace()) {
-			return true;
-		} else {
-			return false;
-		}
+		return userPermission != null && userPermission.canAddSpace();
 	}
     
 	/**

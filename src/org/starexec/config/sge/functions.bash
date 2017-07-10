@@ -7,9 +7,6 @@
 # AUTHOR:      
 # Tyler Jensen
 #
-# MODIFIED:    
-# 2/26/2012
-#
 # DESCRIPTION:
 # This is a script containing common functions used by the jobscript
 #
@@ -339,20 +336,18 @@ function safeRm {
 
 #cleans up files to prepare for the next stage of the job
 function cleanForNextStage {
-		# Clear the output directory	
-	sudo chown -R `whoami` $WORKING_DIR 
-
+	cd $WORKING_DIR
+	sudo chown -R `whoami` $WORKING_DIR
 	chmod -R gu+rxw $WORKING_DIR
 
+	# Clear the output directory
 	safeRm output-directory "$OUT_DIR"
 
 	# Clear the local solver directory	
 	safeRm local-solver-directory "$LOCAL_SOLVER_DIR"
 
 	# Clear the local benchmark, as it will be replaced by the output of this stage
-	
 	rm "$LOCAL_BENCH_PATH"
-
 }
 
 # Kills all of a sandboxes processes if their job pair becomes deadlocked
@@ -377,6 +372,7 @@ function killDeadlockedJobPair {
 	date
 
 	log "killDeadlockedJobPair: About to kill jobpair run by $CURRENT_USER because it has exceeded it's total allotted runtime."
+	cd $WORKING_DIR
 	sudo -u $CURRENT_USER killall -SIGKILL --user $CURRENT_USER
 
     if [ $BUILD_JOB == "true" ]; then
@@ -412,6 +408,8 @@ function copyOutputIncrementally {
 # $2 The name of the user that executed this job. Used to clear out the /tmp directory. Only used if we are done with the job
 function cleanWorkspace {
 	log "cleaning execution host workspace..."
+
+	cd $WORKING_DIR
 	# change ownership and permissions to make sure we can clean everything up
 	sudo chown -R `whoami` $WORKING_DIR 
 
@@ -446,8 +444,8 @@ function cleanWorkspace {
 		rm -f "$JOB_IN_DIR/depend_$PAIR_ID.txt"
 		# remove all /tmp files owned by the user that executed this job
 		cd /tmp
-        sudo -u $2 find /tmp/* -user $2 -exec rm -fr {} \; 2>/dev/null
-        cd $WORKING_DIR
+		sudo -u $2 find /tmp/* -user $2 -exec rm -fr {} \; 2>/dev/null
+		cd $WORKING_DIR
 		if [ $SANDBOX -eq 1 ] 
 		then
 			safeRmLock "$SANDBOX_LOCK_DIR"
@@ -881,12 +879,11 @@ function verifyWorkspace {
 }
 
 function sandboxWorkspace {
+	cd $WORKING_DIR
 
-	if [[ $WORKING_DIR == *sandbox2* ]] 
-	
-	then
-	log "sandboxing workspace with second sandbox user"
-	sudo chown -R $SANDBOX_USER_TWO $WORKING_DIR 
+	if [[ $WORKING_DIR == *sandbox2* ]]; then
+		log "sandboxing workspace with second sandbox user"
+		sudo chown -R $SANDBOX_USER_TWO $WORKING_DIR 
 	else
 		log "sandboxing workspace with first sandbox user"
 		sudo chown -R $SANDBOX_USER_ONE $WORKING_DIR
@@ -1068,7 +1065,8 @@ function saveFileAsBenchmark {
 	CURRENT_BENCH_NAME="$CURRENT_BENCH_NAME$CURRENT_BENCH_SUFFIX"
 	
 	
-	CURRENT_BENCH_PATH=$BENCH_SAVE_DIR/$SPACE_PATH/$CURRENT_STAGE_NUMBER
+	CURRENT_BENCH_PATH=$BENCH_SAVE_DIR/$SPACE_PATH/$PAIR_ID/$CURRENT_STAGE_NUMBER
+	log "saving benchmark to dir: $CURRENT_BENCH_PATH"
 	
 	FILE_SIZE_IN_BYTES=`wc -c < $CURRENT_OUTPUT_FILE`
 	
@@ -1076,7 +1074,9 @@ function saveFileAsBenchmark {
 	
 	CURRENT_BENCH_PATH=$CURRENT_BENCH_PATH/$CURRENT_BENCH_NAME
 
-	if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddAndAssociateBenchmark('$CURRENT_BENCH_NAME','$CURRENT_BENCH_PATH',false,$USER_ID,1,$FILE_SIZE_IN_BYTES,$SPACE_ID,@id)" ; then
+	QUERY="CALL AddAndAssociateBenchmark('$CURRENT_BENCH_NAME','$CURRENT_BENCH_PATH',false,$USER_ID,1,$FILE_SIZE_IN_BYTES,$SPACE_ID,@id)"
+	log "Adding benchmark using query: $QUERY"
+	if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "$QUERY" ; then
 		log "error saving output as benchmark-- benchmark was not created"
 	else
 		cp $CURRENT_OUTPUT_FILE "$CURRENT_BENCH_PATH"

@@ -640,12 +640,8 @@ public class Users {
 			 procedure = con.prepareCall("{CALL GetUserByEmail(?)}");
 			procedure.setString(1,email);
 			 results = procedure.executeQuery();
-			
-			if (results.next()) {
-				return true;
-			} else {
-				return false;
-			}
+
+			return results.next();
 		} catch (Exception e) {
 			log.error (e.getMessage(),e);
 		} finally {

@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.regex.Pattern;
 
 /**
  * This class is responsible for intercepting all requests to protected resources
@@ -29,12 +30,22 @@ public class SessionFilter implements Filter {
 	private static final StarLogger log = StarLogger.getLogger(SessionFilter.class);
 
 	/**
+	 * This RegEx is used to match known StarExecCommand User-Agent headers.
+	 * Until r26351 StarExecCommand was not setting a User-Agent header, so it
+	 * would just send the default "Apache-HttpClient" string. For now, we may
+	 * as well just check for either of them.
+	 */
+	private static final Pattern StarExecCommand = Pattern.compile("\\AStarExecCommand|\\AApache-HttpClient/");
+
+	/**
 	 * Detects requests originating from StarExecCommand
 	 * @param request
 	 * @return true if request is from StarExecCommand, false otherwise
 	 */
-	private static final boolean isFromCommand(HttpServletRequest request) {
-		return request.getHeader("StarExecCommand") != null;
+	private static boolean isFromCommand(HttpServletRequest request) {
+		final String userAgent = request.getHeader("User-Agent");
+		return userAgent != null
+		    && StarExecCommand.matcher(userAgent).find();
 	}
 
 	@Override
@@ -52,7 +63,7 @@ public class SessionFilter implements Filter {
 
 			boolean isCommandRequest = isFromCommand(httpRequest);
 			if (isCommandRequest) {
-				log.debug(method, "Got request from StarExecCommand.");
+				log.debug(method, "isFromCommand: true");
 			}
 
 			HttpSession session = httpRequest.getSession();
@@ -143,7 +154,7 @@ public class SessionFilter implements Filter {
 		log.info(String.format("%s [%s] logged in.", user.getFullName(), user.getEmail()));
 
 		if (isFromCommand(request)) {
-			Analytics.STAREXECCOMMAND_LOGIN.record();
+			Analytics.STAREXECCOMMAND_LOGIN.record(user.getId());
 		}
 
 		String ip = request.getRemoteAddr();

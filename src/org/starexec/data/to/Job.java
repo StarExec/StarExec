@@ -3,6 +3,8 @@ package org.starexec.data.to;
 import com.google.gson.annotations.Expose;
 import org.jfree.util.Log;
 import org.starexec.constants.R;
+import org.starexec.data.database.Jobs;
+import org.starexec.data.database.Users;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.pipelines.JoblineStage;
@@ -14,31 +16,32 @@ import java.util.*;
 
 /**
  * Represents a job in the database
- * 
+ *
  * @author Tyler Jensen
  */
 public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
-	private int userId = -1;		
+	private int userId = -1;
 	private User user = null; // this is populated for the JobManager
 	@Expose private String name;
-	@Expose private String description = "no description"; 
+	@Expose private String description = "no description";
 	private Queue queue = null;
 	private long seed = 0;
-	
+
 	private int cpuTimeout = -1;
-	private int wallclockTimeout = -1; 
+	private int wallclockTimeout = -1;
+	private int killDelay = 0;
+	private int softTimeLimit = 0;
 	private long maxMemory;		//maximum memory the pair can use, in bytes
 	private BenchmarkingFramework benchmarkingFramework;
-	
-	
+
 	@Expose private Timestamp createTime;
 	@Expose private Timestamp completeTime;
 	// this is the root JOB SPACE for this job. It is NOT a space from the spaces table.
 	//Exception: Before a job is created, this field is used to store the space the job was created in
-	@Expose private int primarySpace; 
+	@Expose private int primarySpace;
 	private List<JobPair> jobPairs;
 	private HashMap<String, Integer> liteJobPairStats;
-		
+
 	private boolean deleted; // if true, this job has been deleted on disk and exists only in the database so we can see space associations
 	private boolean paused; // if true, this job is currently paused
 
@@ -48,21 +51,22 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 
 	// Whether to suppress the timestamp produced by runsolver for this job.
 	private boolean suppressTimestamp;
-	
+
 	private boolean usingDependencies = false;
 	private boolean isHighPriority = false;
 
 	private int totalPairs; // number of pairs this job owns
 	private long diskSize; // in bytes
+	private String outputBenchmarksPath;
 	public Job() {
 		jobPairs = new LinkedList<>();
-		
-		queue = new Queue();		
+
+		queue = new Queue();
 		setStageAttributes(new ArrayList<>());
 		setSuppressTimestamp(false); // false is default
 		setBuildJob(false); //false is default
 	}
-	
+
 	/**
 	 * @return the user id of the user who created the job
 	 */
@@ -76,7 +80,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	public void setUserId(int userId) {
 		this.userId = userId;
 	}
-	
+
 	/**
 	 * @return The root job space for this job
 	 */
@@ -104,12 +108,20 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	public void setBenchmarkingFramework(BenchmarkingFramework benchmarkingFramework) {
 		this.benchmarkingFramework = benchmarkingFramework;
 	}
-	
+
+	public String getOutputBenchmarksPath() {
+		return outputBenchmarksPath;
+	}
+
+	public void setOutputBenchmarksPath(String path) {
+		outputBenchmarksPath = path;
+	}
+
 	/**
 	 * Sets the root job space for this job
 	 * @param space The ID of the space
 	 */
-	
+
 	public void setPrimarySpace(int space) {
 		this.primarySpace=space;
 	}
@@ -157,14 +169,14 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 			this.description = description;
 		}
 	}
-	
+
 	/**
 	 * @return the list of job pairs belonging to this job
 	 */
 	public List<JobPair> getJobPairs() {
 		return jobPairs;
 	}
-	
+
 	/**
 	 * @param jobPairs the list of job pairs belonging to this job
 	 */
@@ -180,18 +192,17 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	    	return null;
 	    }
 		Set<String> attrs= new HashSet<>();
-	    Iterator<JobPair> itr = jobPairs.iterator();
-	    while(itr.hasNext()) {
-	    	JobPair pair = itr.next();
-	    	for (JoblineStage stage : pair.getStages()) {
-	    		Properties props = stage.getAttributes();
-		    	
-		    	if (pair.getStatus().getCode() == StatusCode.STATUS_COMPLETE) 
-		    		attrs.addAll(props.stringPropertyNames());
-		    		
-	    	}
-	    	
-	    }
+		for (JobPair pair : jobPairs) {
+			for (JoblineStage stage : pair.getStages()) {
+				Properties props = stage.getAttributes();
+
+				if (pair.getStatus().getCode() == StatusCode.STATUS_COMPLETE) {
+					attrs.addAll(props.stringPropertyNames());
+				}
+
+			}
+
+		}
 	    Log.debug("Returning "+attrs.size()+" unique attr names");
 	    return attrs;
 	}
@@ -205,7 +216,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	public void addJobPair(JobPair jobPair) {
 		jobPairs.add(jobPair);
 	}
-	
+
 	/**
 	 * @return the queue this job is intended to run on
 	 */
@@ -224,14 +235,14 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	public Iterator<JobPair> iterator() {
 		return this.jobPairs.iterator();
 	}
-	
+
 	/**
 	 * @param ljps the job pair statistics to store in this object
 	 */
 	public void setLiteJobPairStats(HashMap<String, Integer> ljps){
 		this.liteJobPairStats = ljps;
 	}
-	
+
 	/**
 	 * @return the job pair statistics stored in this object
 	 */
@@ -309,11 +320,11 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	public void setStageAttributes(List<StageAttributes> stageAttributes) {
 		this.stageAttributes = stageAttributes;
 	}
-	
+
 	public void addStageAttributes(StageAttributes attrs) {
 		this.stageAttributes.add(attrs);
 	}
-	
+
 	public boolean containsStageOneAttributes() {
 		for (StageAttributes attrs : this.stageAttributes) {
 			if (attrs.getStageNumber()==1) {
@@ -322,7 +333,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Returns the StageAttributes object for the given stage number.
 	 * If there is no such object, generates one using the defaults
@@ -334,10 +345,10 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 		for (StageAttributes attrs : stageAttributes) {
 			if (attrs.getStageNumber()==stageNumber) {
 				return attrs;
-				
+
 			}
 		}
-		
+
 		StageAttributes attrs=new StageAttributes();
 		attrs.setStageNumber(stageNumber);
 		attrs.setCpuTimeout(cpuTimeout);
@@ -392,7 +403,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	public void setBuildJob(boolean buildJob) {
 		this.buildJob = buildJob;
 	}
-	
+
 	/**
 	 * Gets the name of the root space for this job. Doing this requires that at least one job pair
 	 * is populated and that it has the correct path info set.
@@ -449,5 +460,54 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	 */
 	public void setDiskSize(long diskSize) {
 		this.diskSize = diskSize;
+	}
+
+	/**
+	 * @return Human readable description of this job's status
+	 */
+	public String getStatus() {
+		final int userId = getUserId();
+		final int id = getId();
+		String status;
+
+		if (Jobs.isJobKilled(id)) {
+			status = "killed";
+		} else if (Jobs.isJobPaused(id)) {
+			status = "paused";
+		} else if (Jobs.isSystemPaused() && !Users.isDeveloper(userId) && !Users.isAdmin(userId)) {
+			status = "global pause";
+		} else if (getLiteJobPairStats().get("pendingPairs") > 0) {
+			status = "incomplete";
+		} else {
+			status = "complete";
+		}
+
+		return status;
+	}
+
+	public void setKillDelay(int killDelay) {
+		this.killDelay = killDelay;
+	}
+
+	/**
+	 * If non-zero, process will recieve SIGTERM, and then SIGKILL after the
+	 * delay specified. Note that this option only applies to RunSolver
+	 * @return delay in seconds
+	 */
+	public int getKillDelay() {
+		return killDelay;
+	}
+
+	public void setSoftTimeLimit(int softTimeLimit) {
+		this.softTimeLimit = softTimeLimit;
+	}
+
+	/**
+	 * If non-zero, SIGTERM will be sent this many seconds after Job starts.
+	 * SIGKILL will be sent after other timeouts.
+	 * @return softTimeLimit in seconds
+	 */
+	public int getSoftTimeLimit() {
+		return softTimeLimit;
 	}
 }

@@ -15,15 +15,20 @@
 	<%-- This viewport meta tag should not be deleted. Allows website to render on phones. --%>
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 	<%
+		Integer userId = SessionUtil.getUserId(request);
+
 		try {
 			//try to use a cookie first so we don't always need to ask the database
-			String defaultPageSize=String.valueOf(Users.getDefaultPageSize(SessionUtil.getUserId(request)));
+			String
+			defaultPageSize=String.valueOf(Users.getDefaultPageSize(userId));
 			request.setAttribute("pagesize", defaultPageSize);
-
 		} catch (Exception e) {
 			//no user could be found
 			request.setAttribute("pagesize", 10);
 		}
+
+		boolean debugMode = Users.isDeveloper(userId);
+		request.setAttribute("debugMode", debugMode);
 	%>
 	<c:forEach var="globalCssFile" items="${globalCssFiles}">
 		<link rel="stylesheet" href="${starexecRoot}/css/${globalCssFile}.css" />
@@ -35,6 +40,7 @@
 		var starexecRoot="${starexecRoot}/";
 		var defaultPageSize=${pagesize};
 		var isLocalJobPage=${isLocalJobPage};
+		var debugMode=${debugMode};
 	</script>
 	<c:forEach var="globalJsFile" items="${globalJsFiles}">
 		<script type="text/javascript" src="${starexecRoot}/js/${globalJsFile}.js"></script>

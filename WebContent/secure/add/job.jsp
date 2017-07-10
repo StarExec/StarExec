@@ -2,14 +2,14 @@
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%	
-	try {		
+<%
+	try {
 		// Get parent space info for display
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
 		int userId = SessionUtil.getUserId(request);
 		// Verify this user can add jobs to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
-		
+
 		if (!GeneralSecurity.hasAdminReadPrivileges(userId) && (p == null || !p.canAddJob())) {
 			response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to create a job here");
 		} else {
@@ -20,13 +20,13 @@
 			request.setAttribute("jobNameLen", R.JOB_NAME_LEN);
 			request.setAttribute("jobDescLen", R.JOB_DESC_LEN);
 			int communityId = Spaces.getCommunityOfSpace(spaceId);
-			
+
 			List<Processor> ListOfPostProcessors = Processors.getByCommunity(communityId,ProcessorType.POST);
 			List<Processor> ListOfPreProcessors = Processors.getByCommunity(communityId,ProcessorType.PRE);
 			request.setAttribute("queues", Queues.getUserQueues(userId));
 			request.setAttribute("remainingPairQuota", remainingQuota);
 			List<Solver> solvers = Solvers.getBySpaceDetailed(spaceId);
-            Solvers.sortConfigs(solvers);
+			Solvers.sortConfigs(solvers);
 			Solvers.makeDefaultConfigsFirst(solvers);
 			request.setAttribute("solvers", solvers);
 			//This is for the currently shuttered select from hierarchy
@@ -34,7 +34,7 @@
 			request.setAttribute("preProcs", ListOfPreProcessors);
 			request.setAttribute("suppressTimestamp", R.SUPPRESS_TIMESTAMP_INPUT_NAME);
 			List<DefaultSettings> listOfDefaultSettings=Settings.getDefaultSettingsVisibleByUser(userId);
-			request.setAttribute("defaultSettings",listOfDefaultSettings);	
+			request.setAttribute("defaultSettings",listOfDefaultSettings);
 			Integer defaultId=Settings.getDefaultProfileForUser(userId);
 			if (defaultId!=null && defaultId>0) {
 				request.setAttribute("defaultProfile",defaultId);
@@ -45,8 +45,9 @@
 	} catch (NumberFormatException nfe) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The space id was not in the correct format");
 	} catch (Exception e) {
-		response.sendError(HttpServletResponse.SC_NOT_FOUND, "You do not have permission to add to this space or the space does not exist");		
+		response.sendError(HttpServletResponse.SC_NOT_FOUND, "You do not have permission to add to this space or the space does not exist");
 	}
+	request.setAttribute("MINIMUM_RESULTS_INTERVAL", R.MINIMUM_RESULTS_INTERVAL);
 %>
 
 <jsp:useBean id="now" class="java.util.Date" />
@@ -56,7 +57,7 @@
 	</c:forEach>
 	<span id="remainingQuota" style="display:none" value="${remainingPairQuota}"></span>
 	<span id="defaultProfile" style="display:none" value="${defaultProfile}"></span>
-	<form id="addForm" method="post" action="${starexecRoot}/secure/add/job">	
+	<form id="addForm" method="post" action="${starexecRoot}/secure/add/job">
 		<input type="hidden" name="sid" id="spaceIdInput" value="${space.id}"/>
 		<fieldset id="fieldStep1">
 			<legend>configure job</legend>
@@ -74,9 +75,9 @@
 							<select id="settingProfile">
 									<c:if test="${empty defaultSettings}">
 										<option value="" />
-									</c:if>				
+									</c:if>
 									<c:forEach var="setting" items="${defaultSettings}">
-		                                <option value="${setting.getId()}">${setting.name}</option>
+										<option value="${setting.getId()}">${setting.name}</option>
 									</c:forEach>
 							</select>
 						</td>
@@ -91,7 +92,7 @@
 					</tr>
 					<tr class="noHover" title="do you want to alter benchmarks before they are fed into the solvers?">
 						<td class="label"><p>pre processor</p></td>
-						<td>					
+						<td>
 							<select class="preProcessSetting" id="preProcess" name="preProcess">
 								<option value="-1">none</option>
 								<c:forEach var="proc" items="${preProcs}">
@@ -102,7 +103,7 @@
 					</tr>
 					<tr class="noHover" title="do you want to extract any custom attributes from the job results?">
 						<td class="label"><p>post processor</p></td>
-						<td>					
+						<td>
 							<select class="postProcessSetting" id="postProcess" name="postProcess">
 								<option value="-1">none</option>
 								<c:forEach var="proc" items="${postProcs}">
@@ -111,16 +112,15 @@
 							</select>
 						</td>
 					</tr>
-					
 					<tr class="noHover" title="which queue should this job be submitted to?">
 						<td class="label"><p>worker queue</p></td>
 						<td>
 							<select id="workerQueue" name="queue">
 								<c:if test="${empty queues}">
 									<option value="" />
-								</c:if>				
+								</c:if>
 								<c:forEach var="q" items="${queues}">
-	                                <option cpumax="${q.cpuTimeout}" wallmax="${q.wallTimeout}" value="${q.id}">${q.name} (${q.id})</option>
+									<option cpumax="${q.cpuTimeout}" wallmax="${q.wallTimeout}" value="${q.id}">${q.name} (${q.id})</option>
 								</c:forEach>
 							</select>
 						</td>
@@ -128,37 +128,40 @@
 					<tr class="noHover">
 						<td class="label"><p title="the maximum wallclock time (in seconds) that each pair can execute before it is terminated (max is any value less than 1)">wallclock timeout
 						<span class="ui-icon ui-icon-help" title="Smaller values may result in faster pair scheduling in the short term. See the cluster help page for more details."></span></p></td>
-						<td>	
+						<td>
 							<input type="text" name="wallclockTimeout" id="wallclockTimeout"/>
 						</td>
 					</tr>
 					<tr class="noHover" title="the maximum CPU time (in seconds) that each pair can execute before it is terminated (max is any value less than 1)">
 						<td class="label"><p>cpu timeout</p></td>
-						<td>	
+						<td>
 							<input type="text" name="cpuTimeout" id="cpuTimeout"/>
 						</td>
 					</tr>
 					<tr class="noHover" title="the maximum memory usage (in gigabytes) that each pair can use before it is terminated. The minimum of this value and half the available memory on the nodes will be used.">
 						<td class="label"><p>maximum memory</p></td>
-						<td>	
+						<td>
 							<input type="text" name="maxMem" id="maxMem"/>
 						</td>
 					</tr>
 
-					<tr id="advancedOptionsRow"><td></td><td><button id="advancedOptionsButton" type="button">advanced options</button></td></tr>
+					<tr id="advancedOptionsRow">
+						<td></td>
+						<td><button id="advancedOptionsButton" type="button">advanced options</button></td>
+					</tr>
 					<tr class="hidden"></tr>
 					<tr class="noHover advancedOptions" title="How would you like to traverse the job pairs?">
 						<td class="label"><p>Job-Pair Traversal</p></td>
 						<td>
-							Depth-First<input type="radio" id="radioDepth" name="traversal" value="depth"/> 	
-							Round-Robin<input type="radio" id="radioRobin" name="traversal" value="robin"/>	
+							Depth-First<input type="radio" id="radioDepth" name="traversal" value="depth"/>
+							Round-Robin<input type="radio" id="radioRobin" name="traversal" value="robin"/>
 						</td>
-					</tr>	
+					</tr>
 					<tr class="noHover advancedOptions" title="Would you like to immediately pause the job upon creation?">
 						<td class="label"><p>Create Paused</p></td>
 						<td>
-							Yes<input type="radio" id="radioYesPause" name="pause" value="yes"/> 	
-							No<input type="radio" id="radioNoPause" name="pause" value="no"/>	
+							Yes<input type="radio" id="radioYesPause" name="pause" value="yes"/>
+							No<input type="radio" id="radioNoPause" name="pause" value="no"/>
 						</td>
 					</tr>
 					<tr class="noHover advancedOptions" title="a random value that will be passed into any preprocessor used for this job">
@@ -166,9 +169,9 @@
 						<td>
 							<input type="text" name="seed" id="seed" value="0">
 						</td>
-					</tr>					
+					</tr>
 					<star:benchmarkingFrameworkRow />
-					<tr class="noHover advancedOptions" id="resultsIntervalRow" title="The interval, in seconds, at which to retrieve incremental results for pairs that are running. 0 means results are only obtained after pairs finish. 10 is the minimum if this is used.">
+					<tr class="noHover advancedOptions" id="resultsIntervalRow" title="The interval, in seconds, at which to retrieve incremental results for pairs that are running. 0 means results are only obtained after pairs finish. ${MINIMUM_RESULTS_INTERVAL} is the minimum if this is used.">
 						<td>
 							<p>Results Interval</p>
 						</td>
@@ -185,13 +188,29 @@
 							No<input type="radio" id="radioNoSaveExtraOutput" name="saveOtherOutput" value="false" checked="checked"/>
 						</td>
 					</tr>
-					<tr class="noHover advancedOptions" id="suppressTimestampsRow" title="whether to include timestamps in the stdout for the pairs in this job">
+					<tr class="noHover advancedOptions runsolveronly" title="whether to include timestamps in the stdout for the pairs in this job">
 						<td>
 							<p>Suppress Timestamps</p>
 						</td>
 						<td>
 							Yes<input type="radio" id="radioYesSuppressTimestamps" name="${suppressTimestamp}" value="yes"/>
 							No<input type="radio" id="radioNoSuppressTimestamps" name="${suppressTimestamp}" value="no" checked="checked"/>
+						</td>
+					</tr>
+					<tr class="noHover advancedOptions runsolveronly" title="">
+						<td>
+							<label for="killDelay">Delay before termination</label>
+						</td>
+						<td>
+							<input type="number" name="killDelay" value="0">
+						</td>
+					</tr>
+					<tr class="noHover advancedOptions benchexeconly" title="">
+						<td>
+							<label for="softTimeLimit">Soft time limit</label>
+						</td>
+						<td>
+							<input type="number" name="softTimeLimit" value="0">
 						</td>
 					</tr>
 				</tbody>
@@ -218,7 +237,7 @@
 				</tbody>
 			</table>
 		</fieldset>
-				<fieldset id="fieldBenchMethod">
+		<fieldset id="fieldBenchMethod">
 			<legend>benchmark selection method</legend>
 			<table id="tblBenchMethodSelection" class="contentTbl">
 				<thead>
@@ -240,70 +259,66 @@
 						<td><input type="hidden" name="benchChoice" value="runChosenFromSpace" />choose in ${space.name}</td>
 						<td>this will run chosen solvers/configurations on your selection of benchmarks in the hierarchy</td>
 					</tr>
-					
 				</tbody>
 			</table>
 		</fieldset>
-		<%-- <fieldset id="fieldStep3"> --%>
 		<fieldset id="fieldSolverSelection">
 			<legend>solver selection</legend>
-			<table id="tblSolverConfig" class="contentTbl">	
+			<table id="tblSolverConfig" class="contentTbl">
 				<thead>
 					<tr>
 						<th>solver</th>
-						<th>configuration</th>						
+						<th>configuration</th>
 					</tr>
 				</thead>
 				<tbody>
-				<c:forEach var="s" items="${solvers}">
-					<tr id="solver_${s.id}" class="solverRow">
+					<c:forEach var="s" items="${solvers}">
+						<tr id="solver_${s.id}" class="solverRow">
 							<td>
 								<input type="hidden" name="solver" value="${s.id}"/>
 								<star:solver value='${s}'/>
 							</td>
 							<td>
-								 <div class="selectConfigs">
+							 	 <div class="selectConfigs">
 									<div class="selectWrap configSelectWrap">
-										<p class="selectAll selectAllConfigs"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | 
+										<p class="selectAll selectAllConfigs"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> |
 										<p class="selectNone selectNoneConfigs"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
 									</div><br />
 									<c:forEach var="c" items="${s.configurations}">
-									<input class="config ${c.name}" type="checkbox" name="configs" value="${c.id}" title="${c.description}">${c.name} </input><br />
-									</c:forEach> 
-								</div> 
+										<input class="config ${c.name}" type="checkbox" name="configs" value="${c.id}" title="${c.description}">${c.name} </input><br />
+									</c:forEach>
+								</div>
 							</td>
-					</tr>
-				</c:forEach>			
-				</tbody>						
-			</table>				
+						</tr>
+					</c:forEach>
+				</tbody>
+			</table>
 		   	<div class="selectWrap solverSelectWrap">
 				<p class="selectAll selectAllSolvers"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectNone selectNoneSolvers"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
-			</div> 
+			</div>
 			<h6>please ensure the solver(s) you have selected are highlighted (yellow) before proceeding</h6>
 		</fieldset>
-		<%--<fieldset id="fieldStep4"> --%>
-		 <fieldset id="fieldSelectBenchSpace"> 
+		 <fieldset id="fieldSelectBenchSpace">
 			<legend>benchmark selection from space</legend>
 			<table id="tblBenchConfig" class="contentTbl">
 				<thead>
 					<tr>
 						<th>benchmark</th>
-						<th>type</th>						
+						<th>type</th>
 					</tr>
-				</thead>	
+				</thead>
 				<tbody>
-				</tbody>					
-			</table>	
+				</tbody>
+			</table>
 			<div class="selectWrap">
 				<p class="selectAll selectAllBenchmarks"><span class="ui-icon ui-icon-circlesmall-plus"></span>all</p> | <p class="selectNoneBenchmarks"><span class="ui-icon ui-icon-circlesmall-minus"></span>none</p>
-			</div>	
+			</div>
 		</fieldset>
-	
 		<div id="actionBar">
-			<button type="submit" class="round" id="btnDone">submit</button>			
-			<button type="button" class="round" id="btnNext">next</button>			
-			<button type="button" class="round" id="btnPrev">Prev</button>	
-			<button type="button" class="round" id="btnBack">Cancel</button>			
-		</div>			
-	</form>		
+			<button type="submit" class="round" id="btnDone">submit</button>
+			<button type="button" class="round" id="btnNext">next</button>
+			<button type="button" class="round" id="btnPrev">Prev</button>
+			<button type="button" class="round" id="btnBack">Cancel</button>
+		</div>
+	</form>
 </star:template>

@@ -2,7 +2,7 @@ package org.starexec.command;
 
 /**
  * This class is responsible for taking in a String command given by the user through the shell interface
- * (or in a file), generating a HashMap of the arguments, and passing off the command to the correct function
+ * (or in a file), generating a Map of the arguments, and passing off the command to the correct function
  * in the ArgumentParser class.
  */
 
@@ -16,7 +16,7 @@ import java.util.*;
 
 class CommandParser {
 	final private CommandLogger log = CommandLogger.getLogger(CommandParser.class);
-	final private HashMap<String, String> variables;
+	final private Map<String, String> variables;
 	private ArgumentParser parser = null;
 
 	private boolean returnIDsOnUpload = false;
@@ -90,7 +90,7 @@ class CommandParser {
 	 * @return
 	 */
 
-	protected int handleViewCommand(String c, HashMap<String, String> commandParams) {
+	protected int handleViewCommand(String c, Map<String, String> commandParams) {
 		try {
 			Map<String, String> attrs = null;
 			if (c.equals(C.COMMAND_VIEWJOB)) {
@@ -135,7 +135,7 @@ class CommandParser {
 	 * @return An integer status code with negative numbers indicating errors
 	 * @author Eric Burns
 	 */
-	protected int handleSetCommand(String c, HashMap<String, String> commandParams) {
+	protected int handleSetCommand(String c, Map<String, String> commandParams) {
 		try {
 			int serverStatus = 0;
 
@@ -173,7 +173,7 @@ class CommandParser {
 	 * @return An integer status code with negative numbers indicating errors
 	 * @author Eric Burns
 	 */
-	protected int handlePushCommand(String c, HashMap<String, String> commandParams) {
+	protected int handlePushCommand(String c, Map<String, String> commandParams) {
 		try {
 			List<Integer> ids = null;
 			int serverStatus;
@@ -230,14 +230,14 @@ class CommandParser {
 	 * @author Eric Burns
 	 */
 
-	protected int handleCreateCommand(String c, HashMap<String, String> commandParams) {
+	protected int handleCreateCommand(String c, Map<String, String> commandParams) {
 		try {
 			int serverStatus = 0;
 
 			boolean isPollJob = false;
 			if (c.equals(C.COMMAND_CREATEJOB)) {
 				if (commandParams.containsKey(C.PARAM_TIME) || commandParams.containsKey(C.PARAM_OUTPUT_FILE)) {
-					HashMap<String, String> pollParams = new HashMap<>();
+					Map<String, String> pollParams = new HashMap<>();
 					isPollJob = true;
 					pollParams.put(C.PARAM_TIME, commandParams.remove(C.PARAM_TIME));
 					pollParams.put(C.PARAM_OUTPUT_FILE, commandParams.remove(C.PARAM_OUTPUT_FILE));
@@ -291,7 +291,7 @@ class CommandParser {
 	 * @return An integer status code with negative numbers indicating errors
 	 * @author Eric Burns
 	 */
-	protected int handleCopyCommand(String c, HashMap<String, String> commandParams) {
+	protected int handleCopyCommand(String c, Map<String, String> commandParams) {
 		try {
 			int serverStatus = 0;
 			List<Integer> ids = null;
@@ -305,9 +305,7 @@ class CommandParser {
 				serverStatus = Math.min(0, ids.get(0));
 			} else if (c.equals(C.COMMAND_LINKBENCH)) {
 				serverStatus = parser.linkPrimitives(commandParams, "benchmark");
-				;
 			} else if (c.equals(C.COMMAND_COPYSPACE)) {
-
 				ids = parser.copyPrimitives(commandParams, R.SPACE);
 				serverStatus = Math.min(0, ids.get(0));
 			} else if (c.equals(C.COMMAND_LINKJOB)) {
@@ -339,7 +337,7 @@ class CommandParser {
 	 * @return An integer status code with negative numbers indicating errors
 	 * @author Eric Burns
 	 */
-	protected int handleRemoveCommand(String c, HashMap<String, String> commandParams) {
+	protected int handleRemoveCommand(String c, Map<String, String> commandParams) {
 		try {
 			int serverStatus = 0;
 
@@ -375,7 +373,7 @@ class CommandParser {
 	 * @return An integer status code with negative numbers indicating errors
 	 * @author Eric Burns
 	 */
-	protected int handleDeleteCommand(String c, HashMap<String, String> commandParams) {
+	protected int handleDeleteCommand(String c, Map<String, String> commandParams) {
 		try {
 			int serverStatus = 0;
 
@@ -402,9 +400,9 @@ class CommandParser {
 	/**
 	 * Prints primitives to standard output in a human-readable format
 	 *
-	 * @param prims A HashMap mapping integer IDs to string names
+	 * @param prims A Map mapping integer IDs to string names
 	 */
-	private static void printPrimitives(HashMap<Integer, String> prims) {
+	private static void printPrimitives(Map<Integer, String> prims) {
 		for (int id : prims.keySet()) {
 			System.out.print("id=");
 			System.out.print(id);
@@ -424,9 +422,9 @@ class CommandParser {
 	 * @author Eric Burns
 	 */
 
-	protected int handleLSCommand(String c, HashMap<String, String> commandParams) {
+	protected int handleLSCommand(String c, Map<String, String> commandParams) {
 		try {
-			HashMap<Integer, String> answer = new HashMap<>();
+			Map<Integer, String> answer = new HashMap<>();
 			String type = "";
 			if (c.equals(C.COMMAND_LISTSOLVERS)) {
 				type = "solvers";
@@ -565,7 +563,7 @@ class CommandParser {
 		command = command.trim();
 
 		// Empty lines and comments are equivalent.
-		if (command.length() == 0 || command.startsWith(C.COMMENT_SYMBOL)) {
+		if (command.isEmpty() || command.startsWith(C.COMMENT_SYMBOL)) {
 			return 0;
 		}
 
@@ -601,7 +599,7 @@ class CommandParser {
 			System.out.println("Variable names must start with '$'");
 		}
 
-		HashMap<String, String> commandParams = extractParams(command);
+		Map<String, String> commandParams = extractParams(command);
 		if (commandParams == null) {
 			return Status.ERROR_BAD_ARGS;
 		}
@@ -767,7 +765,7 @@ class CommandParser {
 	 * @author Eric Burns
 	 */
 
-	protected int pollJob(HashMap<String, String> commandParams) {
+	protected int pollJob(Map<String, String> commandParams) {
 		int valid = CommandValidator.isValidPollJobRequest(commandParams);
 		log.log("Is valid: " + valid);
 		if (valid < 0) {
@@ -869,7 +867,7 @@ class CommandParser {
 	 * @return An integer status code with negative numbers indicating errors
 	 * @author Eric Burns
 	 */
-	protected int handleGetCommand(String c, HashMap<String, String> commandParams) {
+	protected int handleGetCommand(String c, Map<String, String> commandParams) {
 
 		try {
 			int serverStatus = 0;
@@ -949,7 +947,7 @@ class CommandParser {
 			System.out
 					.println("Processing your download request, please wait. This will take some time for large files");
 			serverStatus = parser.downloadArchive(type, since, lastModified, hierarchy, procClass, commandParams);
-			if (serverStatus >= 0) {
+			if (serverStatus >= 0 && serverStatus != C.SUCCESS_NOFILE) {
 				System.out.println("Download complete");
 			}
 			return serverStatus;
@@ -963,17 +961,17 @@ class CommandParser {
 	 * parameters and flags
 	 *
 	 * @param command The string given by the user at the command line
-	 * @return A HashMap containing key/value pairs representing parameters
+	 * @return A Map containing key/value pairs representing parameters
 	 *         input by the user, or null if there was a parsing error
 	 * @author Eric Burns
 	 */
 
-	protected HashMap<String, String> extractParams(String command) {
+	protected Map<String, String> extractParams(String command) {
 		List<String> args = Arrays.asList(command.split(" "));
 
 		// the first element is the command, which we don't want
 		args = args.subList(1, args.size());
-		HashMap<String, String> answer = new HashMap<>();
+		Map<String, String> answer = new HashMap<>();
 		int index = 0;
 		String x;
 		StringBuilder value;

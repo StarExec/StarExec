@@ -82,7 +82,7 @@ public class BenchmarkTests extends TestSequence {
 
 			// Convert the benchmarks to their ids.
 			Set<Integer> benchmarkIds = benchmarks.stream()
-					.map((benchmark) -> benchmark.getId())
+					.map(Identifiable::getId)
 					.collect(Collectors.toSet());
 
 

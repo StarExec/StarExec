@@ -342,29 +342,26 @@ public class BenchmarkUploader extends HttpServlet {
 			}	
 		}
 		final File archiveFile = archive;
-		Util.threadPoolExecute(new Runnable() {
-			@Override
-			public void run(){
-				try{
-					addBenchmarksFromArchive(archiveFile, userId, spaceId, typeId,
-							downloadable, perm, uploadMethod, statusId,
-							hasDependencies, linked, depRootSpaceId);
+		Util.threadPoolExecute(() -> {
+			try{
+				addBenchmarksFromArchive(archiveFile, userId, spaceId, typeId,
+						downloadable, perm, uploadMethod, statusId,
+						hasDependencies, linked, depRootSpaceId);
 
-					BenchmarkUploadStatus status = Uploads.getBenchmarkStatus(statusId);
+				BenchmarkUploadStatus status = Uploads.getBenchmarkStatus(statusId);
 
-					if (status.isFileUploadComplete()) {
-						// if the benchmarks archive was successfully uploaded record that in the weekly reports table
-						Reports.addToEventOccurrencesNotRelatedToQueue("benchmark archives uploaded", 1);
-						// Record the total number of benchmarks uploaded in the weekly reports data table
-						int totalBenchmarksUploaded = status.getTotalBenchmarks();
-						Reports.addToEventOccurrencesNotRelatedToQueue("benchmarks uploaded", totalBenchmarksUploaded);				
-					}
-				} catch (Exception e){
-					log.error("Error in upload benchmark.", e);
+				if (status.isFileUploadComplete()) {
+					// if the benchmarks archive was successfully uploaded record that in the weekly reports table
+					Reports.addToEventOccurrencesNotRelatedToQueue("benchmark archives uploaded", 1);
+					// Record the total number of benchmarks uploaded in the weekly reports data table
+					int totalBenchmarksUploaded = status.getTotalBenchmarks();
+					Reports.addToEventOccurrencesNotRelatedToQueue("benchmarks uploaded", totalBenchmarksUploaded);
 				}
-				finally{
-					Uploads.benchmarkEverythingComplete(statusId);
-				}
+			} catch (Exception e){
+				log.error("Error in upload benchmark.", e);
+			}
+			finally{
+				Uploads.benchmarkEverythingComplete(statusId);
 			}
 		});
 	}		

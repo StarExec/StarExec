@@ -83,11 +83,11 @@ $(document).ready(function() {
 					var copyWithProcessor = $('.uploadProcessorWithBenchmarkCheckbox').is(':checked');
 					log('Id was: '+primId);
 					if (copyWithProcessor && type === benchmarkType) {
-						log('uploading benchmark with processor')
+						log('uploading benchmark with processor');
 						var url = starexecRoot+'services/copy-bench-with-proc-to-stardev/'+instance+'/'+primId;
 						makeCopyPost(url, username, password, spaceId, 1);
 					} else {
-						log('copying to stardev')
+						log('copying to stardev');
 						// by default use the no type proc ID, this won't matter for anything other than benchmark uploads.
 						var benchProcessorId = $('.benchProcessorId').attr('value');
 						var url = starexecRoot+'services/copy-to-stardev/'+instance+'/'+type+'/'+primId;

@@ -1,46 +1,30 @@
-var jobId; //the ID of the job being viewed
-$(document).ready(function(){
-	jobId=$("#jobId").attr("value");
-	initUI();
-});
+"use strict";
 
+jQuery(function($) {
+	var jobId = $("#jobId").attr("value"); //the ID of the job being viewed
 
-
-function initUI() {
 	$(".rerun").button({
 		icons: {
 			primary: "ui-icon-refresh"
 		}
 	});
-	
+
+	var postTo = function(url) {
+		return (function() {
+			$.post(url, parseReturnCode, "json");
+		});
+	};
 
 	$("#rerunPairs").click(function() {
-		statusCode = $('#statusCodeSelect').find(":selected").attr("value");
-		$.post(
-				starexecRoot+"services/jobs/rerunpairs/"+jobId+"/"+statusCode,
-				function(returnCode) {
-					parseReturnCode(returnCode);
-				},
-				"json");
+		var statusCode = $('#statusCodeSelect').find(":selected").attr("value");
+		(postTo(starexecRoot + "services/jobs/rerunpairs/" + jobId + "/" + statusCode))();
 	});
-	
-	$("#rerunTimelessPairs").click(function() {
-		$.post(
-				starexecRoot+"services/jobs/rerunpairs/"+jobId,
-				function(returnCode) {
-					parseReturnCode(returnCode);
 
-				},
-				"json");
-	});
-	
-	$("#rerunAllPairs").click(function() {
-		$.post(
-				starexecRoot+"services/jobs/rerunallpairs/"+jobId,
-				function(returnCode) {
-					parseReturnCode(returnCode);
-				},
-				"json");
-	});
-}
+	$("#rerunTimelessPairs").click(
+		postTo(starexecRoot + "services/jobs/rerunpairs/" + jobId)
+	);
 
+	$("#rerunAllPairs").click(
+		postTo(starexecRoot + "services/jobs/rerunallpairs/" + jobId)
+	);
+});

@@ -574,10 +574,7 @@ public class Solvers {
 			}
 			
 			// Attempt to update the disk_size of the parent solver to reflect the file deletion
-			if(!Solvers.updateSolverDiskSize(s)){
-				return false;
-			}
-			return true;
+			return Solvers.updateSolverDiskSize(s);
 
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -851,9 +848,7 @@ public class Solvers {
 			}
 			
 			List<Solver> solvers= new ArrayList<>();
-			for (Solver s : uniqueSolvers.values()) {
-				solvers.add(s);
-			}
+			solvers.addAll(uniqueSolvers.values());
 			return solvers;
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
@@ -1046,8 +1041,7 @@ public class Solvers {
 			int jobId,
 			Set<Integer> spacesAssociatedWithJob) throws SQLException {
 
-		Comparator<Solver> compareById = (solver1, solver2) -> solver1.getId() - solver2.getId();
-
+		Comparator<Solver> compareById = Comparator.comparingInt(Identifiable::getId);
 
 		// Get all the solvers in the list of provided spaces.
 		List<Solver> solversInSpaces = spacesAssociatedWithJob.stream()
@@ -1061,7 +1055,7 @@ public class Solvers {
 
 		Stream<Solver> filteredSolversInJob = solversInJob.stream()
 				// filter out all the solvers in the job that are in the spaces.
-				.filter(jobSolver -> !solversInSpaces.stream().anyMatch(spaceSolver -> spaceSolver.getId() == jobSolver.getId()));
+				.filter(jobSolver -> solversInSpaces.stream().noneMatch(spaceSolver -> spaceSolver.getId() == jobSolver.getId()));
 
 		return Stream.concat(filteredSolversInJob, solversInSpaces.stream())
 				.collect(Collectors.toList());
@@ -2372,7 +2366,7 @@ public class Solvers {
 	 */
 	protected static List<Solver> filterSolvers(List<Solver> solvers, String searchQuery) {
 		//no filtering is necessary if there's no query
-		if (searchQuery==null || searchQuery=="") {
+		if (Util.isNullOrEmpty(searchQuery)) {
 			return solvers;
 		}
 		searchQuery=searchQuery.toLowerCase();
@@ -2421,8 +2415,7 @@ public class Solvers {
 	 * @author Albert Giegerich
 	 */
 	public static void makeDefaultConfigsFirst(List<Solver> solvers) {
-		for (int i = 0; i < solvers.size(); i++) {
-			Solver s = solvers.get(i);
+		for (Solver s : solvers) {
 			List<Configuration> configs = s.getConfigurations();
 			for (int j = 0; j < configs.size(); j++) {
 				Configuration c = configs.get(j);
@@ -2443,7 +2436,7 @@ public class Solvers {
 	 */
     public static void sortConfigs(List<Solver> solvers) {
         for(Solver s : solvers) {
-            Collections.sort(s.getConfigurations(), (c1, c2) -> c1.getName().compareTo(c2.getName()));
+            s.getConfigurations().sort(Comparator.comparing(Configuration::getName));
         }
     }
 

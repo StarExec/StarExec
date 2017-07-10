@@ -312,9 +312,7 @@ public class LoadBalanceMonitor {
 	
 	private List<UserLoadData> getSortedDataList() {
 		List<UserLoadData> data = new ArrayList<>();
-		for (UserLoadData d : loads.values()) {
-			data.add(d);
-		}
+		data.addAll(loads.values());
 		Collections.sort(data);
 
 		return data;

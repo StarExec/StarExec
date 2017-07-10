@@ -3,10 +3,14 @@ package org.starexec.test.junit.data.to;
 import org.junit.Test;
 import org.starexec.data.to.Status.StatusCode;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.util.EnumSet;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class StatusTests {
 
@@ -24,10 +28,10 @@ public class StatusTests {
 	@Test
 	public void statCompleteTest() {
 		for (StatusCode status : EnumSet.allOf(StatusCode.class)) {
-			if (status == StatusCode.STATUS_COMPLETE 
-					|| status == StatusCode.EXCEED_RUNTIME 
+			if (status == StatusCode.STATUS_COMPLETE
+					|| status == StatusCode.EXCEED_RUNTIME
 					|| status == StatusCode.EXCEED_CPU
-					|| status == StatusCode.EXCEED_FILE_WRITE 
+					|| status == StatusCode.EXCEED_FILE_WRITE
 					|| status == StatusCode.EXCEED_MEM) {
 				assertTrue("The "+status.toString()+" status should be complete.", status.statComplete());
 			} else {
@@ -82,6 +86,7 @@ public class StatusTests {
 			}
 		}
 	}
+
 	@Test
 	public void incompleteTest() {
 		for (StatusCode status : EnumSet.allOf(StatusCode.class)) {
@@ -100,5 +105,32 @@ public class StatusTests {
 				assertFalse("The "+status.toString()+" status should not be a \"incomplete\" status.", status.incomplete());
 			}
 		}
+	}
+
+	/**
+	 * Make sure that all status codes used in our shell script exist in our
+	 * enum.
+	 */
+	@Test
+	public void enumMatchesShell() {
+		final String filename = "src/org/starexec/config/sge/status_codes.bash";
+		BufferedReader reader = null;
+
+		try {
+			reader = new BufferedReader(new FileReader(filename));
+		} catch (java.io.FileNotFoundException e) {
+			fail("File not found: " + filename);
+		}
+
+		reader.lines() // For every line in the script
+			.filter( l -> !l.isEmpty() && l.charAt(0) != '#' ) // Strip all lines that are empty or comments
+			.forEach( l -> {
+				String[] line = l.split("="); // Split the line at =
+				String shellStatusName = line[0]; // Name is left of =
+				int statusCode = Integer.parseInt(line[1]); // Code is right of =
+				String enumStatusName = StatusCode.toStatusCode(statusCode).toString(); // Find the corresponding enum status code
+				assertEquals(shellStatusName, enumStatusName); // Make sure they match
+			})
+		;
 	}
 }

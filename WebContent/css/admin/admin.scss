@@ -4,7 +4,7 @@
 	min-height: auto;
 	height: auto;
 	position: left;
-	bottom: 0px; 
+	bottom: 0px;
 }
 
 #table.manage {
@@ -39,12 +39,12 @@
 
 .dragClone {
 	max-width: 200px;
-	overflow: hidden;	
+	overflow: hidden;
 	position: fixed;
 	background-color: #fff;
 	color: #111;
 	z-index: 999;
-	text-align: center;	
+	text-align: center;
 	padding: 14px;
 	border-radius: 3px;
 	box-shadow: 4px 4px 5px #111;
@@ -57,7 +57,7 @@
 }
 
 #content fieldset {
-	margin: 50px auto 50px auto;	
+	margin: 50px auto 50px auto;
 }
 
 .contentTbl {
@@ -73,7 +73,7 @@
 	vertical-align: middle;
 }
 
-.contentTbl input[type="text"], 
+.contentTbl input[type="text"],
 .contentTbl textarea {
 	width: 200px;
 }
@@ -84,6 +84,9 @@ button {
 
 #loadData {
 	width: 96%;
-	height:300px;	
+	height:300px;
 }
 
+p {
+	clear: both;
+}

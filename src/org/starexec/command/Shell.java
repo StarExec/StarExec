@@ -48,7 +48,6 @@ public class Shell {
 			}
 		} catch (Exception e) {
 			System.out.println("Internal error, terminating session");
-			return;
 		}
 	}
 
