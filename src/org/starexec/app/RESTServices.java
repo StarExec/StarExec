@@ -1396,18 +1396,25 @@ public class RESTServices {
 	@Path("/jobs/admin/pagination/")
 	@Produces("application/json")
 	public String getAllJobsDetailsPagination(@Context HttpServletRequest request) {
+		final String methodName = "getAllJobsDetailsPagination";
+		log.trace(methodName, "Got request");
 		final int userId = SessionUtil.getUserId(request);
 		if (!GeneralSecurity.hasAdminReadPrivileges(userId)) {
+			log.trace(methodName, "ERROR_INVALID_PERMISSIONS");
 			return gson.toJson(ERROR_INVALID_PERMISSIONS);
 		}
 
 		final JsonObject out = new JsonObject();
 		try {
+			log.trace(methodName, "Getting jobsToDisplay");
 			final List<Job> jobsToDisplay = Jobs.getIncompleteJobs();
+			log.trace(methodName, "convertJobsToJsonArray");
 			out.add("data", RESTHelpers.convertJobsToJsonArray(jobsToDisplay));
-		} catch (SQLException e) {
+		} catch (Exception e) {
+			log.error(methodName, "Exception", e);
 			return gson.toJson(ERROR_DATABASE);
 		}
+		log.trace(methodName, "Returning JSON");
 		return gson.toJson(out);
 	}
 
