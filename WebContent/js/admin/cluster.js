@@ -309,8 +309,8 @@ function updateActionId(id, type, global) {
 		$("#removeGlobal").hide();
 	}
 
-	$('#moveNodes').attr('href', starexecRoot+"secure/admin/moveNodes a.jsp?id=" + id);
-	$('#CommunityAssoc').attr('href', starexecRoot + "secure/admin/assocCommunity.jsp?id=" + id);
+	$('#moveNodes a').attr('href', starexecRoot+"secure/admin/moveNodes.jsp?id=" + id);
+	$('#CommunityAssoc a').attr('href', starexecRoot + "secure/admin/assocCommunity.jsp?id=" + id);
 
 }
 

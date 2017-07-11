@@ -19,8 +19,8 @@
 				<li id="removeQueue"><a>remove queue</a></li>
 				<li id="removeGlobal"><a>remove global access</a></li>
 				<li id="clearErrorStates"><a>clear error states</a></li>
-				<li id="moveNodes" href="${starexecRoot}/secure/admin/moveNodes.jsp"><a>move nodes to this queue</a></li>
-				<li id="CommunityAssoc" href="${starexecRoot}/secure/admin/assocCommunity.jsp"><a>give communities access</a></li>
+				<li id="moveNodes"><a>move nodes to this queue</a></li>
+				<li id="CommunityAssoc"><a>give communities access</a></li>
 				<li id="makeTest"><a>set queue as test queue</a></li>
 				<li id="makeGlobal"><a>give queue global access</a></li>
 			</ul>

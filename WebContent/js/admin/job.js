@@ -14,7 +14,11 @@ jQuery(function($) {
 	};
 
 	var formatQueue = function(row, type, val) {
-		return val["queue"]["name"];
+		if (val["queue"] === undefined) {
+			return "NULL";
+		} else {
+			return val["queue"]["name"];
+		}
 	};
 
 	var formatCreated = function(row, type, val) {

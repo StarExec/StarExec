@@ -76,7 +76,5 @@ jQuery(function($) {
 
 	initCommunityRequestsTable('#commRequests', true);
 
-	 setInterval(function() {
-		 $("#commRequests").fnDraw(false);
-	 }, 10000);
+	setInterval($("#commRequests").DataTable().ajax.reload, 10000);
 });
