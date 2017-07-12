@@ -171,8 +171,6 @@ function initDataTables() {
 			 "render"    : formatTime     },
 		]
 	}));
-
-	window.setInterval($jobs.DataTable().ajax.reload, 10000);
 }
 
 function fnPaginationHandler(sSource, aoData, fnCallback) {
@@ -217,18 +215,26 @@ function getDetails(id, type, parent_node) {
 	selectedId=id;
 	jobPairTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
 	if(type == 'active_queue' || type == 'inactive_queue') {
+		var $jobs = $("#jobs");
 		$("#clusterExpd").text("Enqueued Job Pairs");
 		$("#jobsContainer").show();
 		url = starexecRoot+"services/cluster/queues/details/" + id;
 		qid=id;
-		$("#jobs").dataTable().api().ajax.url( starexecRoot + "services/cluster/queues/jobs/" + id ).load();
+		$jobs.dataTable().api().ajax.url( starexecRoot + "services/cluster/queues/jobs/" + id ).load();
 		window['type'] = 'queues';
+		if (star.JobTableRefresh === undefined) {
+			star.JobTableRefresh = window.setInterval($jobs.DataTable().ajax.reload, 10000);
+		}
 	} else if(type == 'enabled_node' || type == 'disabled_node') {
 		$("#clusterExpd").text("Running Job Pairs");
 		$("#jobsContainer").hide();
 		url = starexecRoot+"services/cluster/nodes/details/" + id;
 		qid=parent_node.attr("id");
 		window['type'] = 'nodes';
+		if (star.JobTableRefresh !== undefined) {
+			window.clearInterval(star.JobTableRefresh);
+			delete star.JobTableRefresh;
+		}
 	} else  {
 		showMessage('error',"Invalid node type",5000);
 		return;
