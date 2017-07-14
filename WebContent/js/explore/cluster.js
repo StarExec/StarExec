@@ -122,7 +122,16 @@ function initDataTables() {
 		"bServerSide"  : true,
 		"bFilter"      : false,
 		"sAjaxSource"  : starexecRoot+"services/cluster/",
-		"fnServerData" : fnPaginationHandler
+		"fnServerData" : fnPaginationHandler,
+		"columns"      : [
+			{"title"   : "Created"},
+			{"title"   : "Job"},
+			{"title"   : "User"},
+			{"title"   : "Benchmark"},
+			{"title"   : "Solver"},
+			{"title"   : "Config"},
+			{"title"   : "Path"},
+		]
 	}));
 
 
@@ -157,17 +166,20 @@ function initDataTables() {
 		],
 		"columns"        : [
 			{"title"     : "Job",
+			 "className" : "dt-left",
 			 "render"    : formatName     },
 			{"title"     : "User",
 			 "render"    : formatUser     },
 			{"title"     : "Pending",
 			 "render"    : formatPending,
-			 "className" : "dt-body-right",
+			 "className" : "dt-right",
 			 "width"     : "80px"         },
 			{"title"     : "Status",
 			 "render"    : formatComplete,
 			 "width"     : "60px"         },
 			{"title"     : "Created",
+			 "className" : "dt-right",
+			 "width"     : "8em",
 			 "render"    : formatTime     },
 		]
 	}));
