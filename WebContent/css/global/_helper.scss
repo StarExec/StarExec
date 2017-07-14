@@ -1,47 +1,49 @@
 @import "../properties";
 
-	@function stylesheet-url($path) {
-		@return url($rootUrl + "css/" + $path)
-	}
+@function stylesheet-url($path) {
+  @return url($rootUrl + "css/" + $path);
+}
 
-	@function image-url($path) {
-		@return url($rootUrl + "images/" + $path)
-	}
+@function image-url($path) {
+  @return url($rootUrl + "images/" + $path);
+}
 
-	@mixin mobile {
-		@media only screen and (max-width: 767px) {
-			@content;
-		}
-	}
+@mixin mobile {
+  @media only screen and (max-width: 767px) {
+    @content;
+  }
+}
 
-	@mixin not-mobile {
-		@media only screen and (min-width: 768px) {
-			@content;
-		}
-	}
+@mixin not-mobile {
+  @media only screen and (min-width: 768px) {
+    @content;
+  }
+}
 
 $helper-first-include: true !default;
+
 @if $helper-first-include {
-	%rounded-corners {
-		border-radius: 2px;
-	}
+  %rounded-corners {
+    border-radius: 2px;
+  }
 
-	%popup-links {
-		[target="_blank"]::after {
-			margin-left: .5em;
-			content: image-url("external.png");
-		}
-	}
+  %popup-links {
+    [target="_blank"]::after {
+      margin-left: .5em;
+      content: image-url("external.png");
+    }
+  }
 
-	%stat-column {
-		text-align:center;
-		color: #111;
-		border: 1px solid #111;
-//		position: absolute;
-//		top: 6px;
-//		width: 90%;
-		line-height: 2.2;
-	}
+  %stat-column {
+    text-align: center;
+    color: #111;
+    border: 1px solid #111;
 
-	$helper-already-imported: false;
+    //		position: absolute;
+    //		top: 6px;
+    //		width: 90%;
+    line-height: 2.2;
+  }
+
+  $helper-already-imported: false;
 }

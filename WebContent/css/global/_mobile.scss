@@ -1,19 +1,20 @@
 @include not-mobile {
-	.showMobile {
-		display: none;
-	}
+  .showMobile {
+    display: none;
+  }
 
-	.mobileBlock {
-		display: inline-block;
-	}
+  .mobileBlock {
+    display: inline-block;
+  }
 }
 
-@include mobile {
-	.hideMobile {
-		display: none;
-	}
 
-	.mobileBlock {
-		display: block;
-	}
+@include mobile {
+  .hideMobile {
+    display: none;
+  }
+
+  .mobileBlock {
+    display: block;
+  }
 }
