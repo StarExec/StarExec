@@ -51,24 +51,14 @@
 	margin-top: 35px;
 }
 
-.actionList {
+.actionList, #actionList {
 	list-style: none;
-}
 
-#actionList {
-	list-style: none;
-}
-
-#actionList li {
-	float: left;
-	margin-left: 5px;
-	margin-bottom: 10px;
-}
-
-.actionList li {
-	float: left;
-	margin-right: 4px;
-	margin-bottom: 10px;
+	li {
+		float: left;
+		margin-left: 5px;
+		margin-bottom: 10px;
+	}
 }
 
 .expd, .actionList li a, #actionList li a,
