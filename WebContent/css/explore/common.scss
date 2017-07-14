@@ -51,18 +51,7 @@
 	margin-top: 35px;
 }
 
-.actionList, #actionList {
-	list-style: none;
-
-	li {
-		float: left;
-		margin-left: 5px;
-		margin-bottom: 10px;
-	}
-}
-
-.expd, .actionList li a, #actionList li a,
-.qtip-nonPermanentLeader a.tooltipButton, img {
+.expd, .qtip-nonPermanentLeader a.tooltipButton, img {
 	cursor: pointer;
 }
 
