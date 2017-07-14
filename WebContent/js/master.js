@@ -80,6 +80,23 @@ $(document).ready(function(){
 	}
 
 	$(".hiddenDialog").hide();
+
+	var defaultDialogConfig = {
+		modal: true,
+		width: 380,
+		height: 165,
+		appendTo: "body",
+		autoOpen: true,
+	};
+	var removeThis = function() { $(this).remove(); };
+	star.openDialog = function(config, text, icon) {
+		icon = icon || "alert";
+		var d = $("<div>");
+		d.append("<span class='ui-icon ui-icon-" + icon + "'>");
+		d.append(text);
+		d.dialog($.extend({}, defaultDialogConfig, config));
+		d.on("dialogclose", removeThis);
+	};
 });
 
 /**
