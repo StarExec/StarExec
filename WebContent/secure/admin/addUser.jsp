@@ -14,10 +14,10 @@
 	request.setAttribute("msgLen", R.MSG_LEN);
 %>
 
-<star:template title="user registration" css="common/table, explore/common, admin/admin, jqueryui/jquery-ui-1.8.16.starexec" js="lib/jquery.validate.min, lib/jquery-ui-1.8.16.custom.min.js, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min, add/user">	
+<star:template title="user registration" css="common/table, explore/common, admin/admin, jqueryui/jquery-ui" js="lib/jquery.validate.min, lib/jquery-ui-1.8.16.custom.min.js, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min, add/user">
 	<p class="registration">create a new user account</p>
 	<form method="POST" action="${starexecRoot}/public/registration/manager" id="regForm" class="add">
-	<fieldset>			
+	<fieldset>
 		<legend>user information</legend>
 		<table class="shaded">
 			<thead>
@@ -25,8 +25,8 @@
 					<th>attribute</th>
 					<th>value</th>
 				</tr>
-			</thead>		
-			<tbody>						
+			</thead>
+			<tbody>
 				<tr>
 					<td class="label">first name</td>
 					<td><input id="firstname" type="text" name="fn" maxlength="${firstNameLen}"/></td>
@@ -47,11 +47,11 @@
 					<td class="label">password</td>
 					<td>
 						<input id="password" type="password" name="pwd" length="${passwordLen}"/>
-					</td>				
+					</td>
 				</tr>
 			</tbody>
-		</table>		
-	</fieldset>	
+		</table>
+	</fieldset>
 	<fieldset>
 		<legend>community information</legend>
 			<table class="shaded">
@@ -72,18 +72,18 @@
 								</c:forEach>
 							</select>
 						</td>
-					</tr>	
+					</tr>
 					<tr>
 						<td colspan="3"><button type="submit" id="submit" value="Submit">register</button></td>
 					</tr>
 				</tbody>
 			</table>
-	</fieldset>	
+	</fieldset>
 	</form>
-	<c:if test="${not empty param.result and param.result == 'regSuccess'}">			
+	<c:if test="${not empty param.result and param.result == 'regSuccess'}">
 		<div class='success message'>User was created successfully</div>
 	</c:if>
-	<c:if test="${not empty param.result and param.result == 'regFail'}">			
+	<c:if test="${not empty param.result and param.result == 'regFail'}">
 		<div class='error message'>User creation was unsuccessful -- please try again</div>
-	</c:if>	
+	</c:if>
 </star:template>
