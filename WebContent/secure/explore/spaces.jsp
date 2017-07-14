@@ -4,6 +4,7 @@
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%
 	int uid=SessionUtil.getUserId(request);
+	String pageTitle = "Space Explorer";
 
 	try {
 		int spaceId=Integer.parseInt(request.getParameter("id"));
@@ -16,21 +17,19 @@
 			}
 			stringChain.delete(stringChain.length()-1,stringChain.length());
 			request.setAttribute("spaceChain",stringChain.toString());
+			pageTitle = Spaces.get(spaceId).getName();
 		} else {
 			request.setAttribute("spaceChain","1");
-
 		}
-
 	} catch (Exception e) {
 		// we don't need the id, so we can just ignore errors here. It may not exist
 	}
 
 	request.setAttribute("userId",uid);
 	request.setAttribute("isAdmin",Users.isAdmin(uid));
-
-
+	request.setAttribute("pageTitle", pageTitle);
 %>
-<star:template title="Space Explorer" js="util/draggable, util/spaceTree, util/sortButtons, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, explore/spaces, util/datatablesUtility, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min, shared/sharedFunctions" css="common/delaySpinner, common/table, explore/common, explore/jquery.qtip, explore/spaces">
+<star:template title="${pageTitle}" js="util/draggable, util/spaceTree, util/sortButtons, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, explore/spaces, util/datatablesUtility, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min, shared/sharedFunctions" css="common/delaySpinner, common/table, explore/common, explore/jquery.qtip, explore/spaces">
 	<span id="userId" value="${userId}" ></span>
 	<span id="spaceChain" value="${spaceChain}"></span>
 	<div id="explorer">
