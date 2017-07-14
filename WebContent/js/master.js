@@ -188,7 +188,7 @@ jQuery(function($) {
 			"iDisplayLength"  : defaultPageSize,
 			"pagingType"      : "only_when_necessary",
 			"sServerMethod"   : "POST",
-			"oLanguage"       : {"sProcessing": "processing request"},
+			"language"        : {"sProcessing": "processing request"},
 		};
 		$.extend(true, this, config, overrides);
 	};

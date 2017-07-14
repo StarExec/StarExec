@@ -71,6 +71,7 @@ jQuery(function($) {
 			"bServerSide"  : true,
 			"sAjaxSource"  : starexecRoot + "services/users/",
 			"fnServerData" : fnRecycledPaginationHandler, // included in this file
+			"language"     : {"emptyTable": "No Solvers in Recycle Bin"},
 			"columns"      : [
 				{"title"   : "Name"},
 				{"title"   : "Description"},
@@ -85,6 +86,7 @@ jQuery(function($) {
 			"bServerSide"  : true,
 			"sAjaxSource"  : starexecRoot + "services/users/",
 			"fnServerData" : fnRecycledPaginationHandler, // included in this file
+			"language"     : {"emptyTable": "No Benchmarks in Recycle Bin"},
 			"columns"      : [
 				{"title"   : "Name"},
 				{"title"   : "Type"}
@@ -92,7 +94,7 @@ jQuery(function($) {
 		})
 	);
 
-	$("#rbenchmarks, #rsolvers").on("mousedown", "tr", function() {
+	$("#rbenchmarks, #rsolvers").on("mousedown", "tr:not(:has(.dataTables_empty))", function() {
 		$(this).toggleClass("row_selected");
 		handleClassChange();
 	});
@@ -120,7 +122,6 @@ function handleClassChange() {
 }
 
 function fnRecycledPaginationHandler(sSource, aoData, fnCallback) {
-
 	var tableName = $(this).attr('id');
 	var usrId = $(this).attr("uid");
 
@@ -133,7 +134,6 @@ function fnRecycledPaginationHandler(sSource, aoData, fnCallback) {
 					updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
 					fnCallback(nextDataTablePage);
 				}
-
 			},
 			"json"
 	).error(function(){
@@ -141,29 +141,31 @@ function fnRecycledPaginationHandler(sSource, aoData, fnCallback) {
 	});
 }
 
+var postCallback = function(nextDataTablePage) {
+	"use strict";
+	destroyDialog();
+	if (parseReturnCode(nextDataTablePage)) {
+		solverTable.fnDraw(false);
+		benchTable.fnDraw(false);
+		handleClassChange();
+	}
+};
 
 function deleteAll(prim) {
-	$('#dialog-confirm-delete-txt').text('Are you sure you want to delete all the ' +prim +'(s) from the recycle bin? After deletion, they can not be recovered');
+	var message = 'Are you sure you want to delete all the ' +prim +'(s) from the recycle bin? After deletion, they can not be recovered';
 
 	// Display the confirmation dialog
-	$('#dialog-confirm-delete').dialog({
+	star.openDialog({
+		title: "Confirm Delete",
 		modal: true,
 		height: 220,
 		buttons: {
 			'delete permanently': function() {
-				$("#dialog-confirm-delete").dialog("close");
+				$(this).dialog("close");
 				createDialog("Clearing your recycled "+prim+"(s), please wait. This will take some time for large numbers of "+prim+"(s).");
 				$.post(
 						starexecRoot +"services/deleterecycled/"+prim+"s",
-						function(nextDataTablePage){
-							destroyDialog();
-							s=parseReturnCode(nextDataTablePage);
-							if (s) {
-								solverTable.fnDraw(false);
-								benchTable.fnDraw(false);
-								handleClassChange();
-							}
-						},
+						postCallback,
 						"json"
 				).error(function(){
 					showMessage('error',"Internal error deleting "+prim+"s",5000);
@@ -173,31 +175,24 @@ function deleteAll(prim) {
 				$(this).dialog("close");
 			}
 		}
-	});
+	}, message);
 }
 
 function restoreAll(prim) {
-	$('#dialog-confirm-restore-txt').text('Are you sure you want to restore all the ' +prim +'(s) from the recycle bin?');
+	var message = 'Are you sure you want to restore all the ' +prim +'(s) from the recycle bin?';
 
 	// Display the confirmation dialog
-	$('#dialog-confirm-restore').dialog({
+	star.openDialog({
+		title: "Confirm Restore",
 		modal: true,
 		height: 220,
 		buttons: {
 			'restore': function() {
-				$("#dialog-confirm-restore").dialog("close");
+				$(this).dialog("close");
 				createDialog("Restoring your recycled "+prim+"(s), please wait. This will take some time for large numbers of "+prim+"(s).");
 				$.post(
 						starexecRoot +"services/restorerecycled/"+prim+"s",
-						function(nextDataTablePage){
-							destroyDialog();
-							s=parseReturnCode(nextDataTablePage);
-							if (s) {
-								solverTable.fnDraw(false);
-								benchTable.fnDraw(false);
-								handleClassChange();
-							}
-						},
+						postCallback,
 						"json"
 				).error(function(){
 					showMessage('error',"Internal error restoring "+prim+"s",5000);
@@ -207,36 +202,29 @@ function restoreAll(prim) {
 				$(this).dialog("close");
 			}
 		}
-	});
+	}, message);
 }
 
 function deleteSelected(prim) {
-	$('#dialog-confirm-delete-txt').text('Are you sure you want to delete all the selected ' +prim +'(s) from the recycle bin? After deletion, they can not be recovered');
+	var message = 'Are you sure you want to delete all the selected ' +prim +'(s) from the recycle bin? After deletion, they can not be recovered';
 	if (prim=="solver") {
 		table=solverTable;
 	} else {
 		table=benchTable;
 	}
 	// Display the confirmation dialog
-	$('#dialog-confirm-delete').dialog({
+	star.openDialog({
+		title: "Confirm Delete",
 		modal: true,
 		height: 220,
 		buttons: {
 			'delete permanently': function() {
-				$("#dialog-confirm-delete").dialog("close");
+				$(this).dialog("close");
 				createDialog("Clearing your recycled "+prim+"(s), please wait. This will take some time for large numbers of "+prim+"(s).");
 				$.post(
 						starexecRoot +"services/delete/"+prim,
 						{selectedIds : getSelectedRows(table)},
-						function(nextDataTablePage){
-							destroyDialog();
-							s=parseReturnCode(nextDataTablePage);
-							if (s) {
-								solverTable.fnDraw(false);
-								benchTable.fnDraw(false);
-								handleClassChange();
-							}
-						},
+						postCallback,
 						"json"
 				).error(function(){
 					showMessage('error',"Internal error deleting "+prim+"s",5000);
@@ -246,36 +234,29 @@ function deleteSelected(prim) {
 				$(this).dialog("close");
 			}
 		}
-	});
+	}, message);
 }
 
 function restoreSelected(prim) {
-	$('#dialog-confirm-restore-txt').text('Are you sure you want to restore all the selected ' +prim +'(s) from the recycle bin?');
+	var message = 'Are you sure you want to restore all the selected ' +prim +'(s) from the recycle bin?';
 	if (prim=="solver") {
 		table=solverTable;
 	} else {
 		table=benchTable;
 	}
 	// Display the confirmation dialog
-	$('#dialog-confirm-restore').dialog({
+	star.openDialog({
+		title: "Confirm Restore",
 		modal: true,
 		height: 220,
 		buttons: {
 			'restore': function() {
-				$("#dialog-confirm-restore").dialog("close");
+				$(this).dialog("close");
 				createDialog("Restoring your recycled "+prim+"(s), please wait. This will take some time for large numbers of "+prim+"(s).");
 				$.post(
 						starexecRoot +"services/restore/"+prim,
 						{selectedIds : getSelectedRows(table)},
-						function(returnCode){
-							destroyDialog();
-							s=parseReturnCode(returnCode);
-							if (s) {
-								solverTable.fnDraw(false);
-								benchTable.fnDraw(false);
-								handleClassChange();
-							}
-						},
+						postCallback,
 						"json"
 				).error(function(){
 					showMessage('error',"Internal error restoring "+prim+"s",5000);
@@ -285,7 +266,7 @@ function restoreSelected(prim) {
 				$(this).dialog("close");
 			}
 		}
-	});
+	}, message);
 }
 
 /**
