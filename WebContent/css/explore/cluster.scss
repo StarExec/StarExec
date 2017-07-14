@@ -20,10 +20,7 @@
 	@extend %popup-links;
 
 	td .stat {
-		text-align: center;
-		color: #111;
-		border: 1px solid #111;
-		line-height: 2.2;
+		@extend %stat-column;
 	}
 }
 
