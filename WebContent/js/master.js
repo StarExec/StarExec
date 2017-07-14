@@ -96,8 +96,10 @@ jQuery(function($) {
 	 * refactoring.
 	 */
 	var extpager;
+	var ext;
 	try {
 		extpager = $.fn.dataTable.ext.pager;
+		ext = $.fn.dataTable.ext;
 	} catch (e) {
 		return;
 	}
@@ -115,6 +117,11 @@ jQuery(function($) {
 				return extpager["full_numbers"](page, pages);
 		}
 	});
+
+	ext.errMode = function(settings, techNote, message) {
+		showMessage("error", "Internal error populating table", 5000);
+		log(message + "\nhttps://datatables.net/tn/" + techNote + "\nSettings: " + settings);
+	};
 
 	/**
 	 * Event listener called each time a table is drawn/redrawn
