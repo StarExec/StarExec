@@ -1,83 +1,83 @@
 @import "../global/helper";
 
 #benchHead {
-  width: 19%;
+	width: 19%;
 }
 
 #qstatOutput, #loadOutput {
-  width: 96%;
-  height: 300px;
+	width: 96%;
+	height: 300px;
 }
 
 #qstatOutput {
-  font-family: "Source Code Pro", Consolas, monospace;
-  font-size: 12px;
-  white-space: pre;
+	font-family: "Source Code Pro", Consolas, monospace;
+	font-size: 12px;
+	white-space: pre;
 }
 
 #jobs {
-  @extend %popup-links;
+	@extend %popup-links;
 
-  td .stat {
-    @extend %stat-column;
-  }
+	td .stat {
+		@extend %stat-column;
+	}
 }
 
 @media only screen and (max-width: 767px) {
-  #explorer {
-    width: 100%;
-    float: none;
-  }
+	#explorer {
+		width: 100%;
+		float: none;
+	}
 
-  .jstree-icon {
-    width: 30px;
-  }
+	.jstree-icon {
+		width: 30px;
+	}
 
-  #wrapper #detailPanel {
-    width: 75%;
-    float: none;
-    margin: auto;
-    border-left: initial;
-  }
+	#wrapper #detailPanel {
+		width: 75%;
+		float: none;
+		margin: auto;
+		border-left: initial;
+	}
 
-  #detailField {
-    width: 90%;
-  }
+	#detailField {
+		width: 90%;
+	}
 
-  #details {
-    width: 100%;
-  }
+	#details {
+		width: 100%;
+	}
 
-  body #details tr > *:first-child {
-    width: 33.33% !important;
-  }
+	body #details tr > *:first-child {
+		width: 33.33% !important;
+	}
 
-  body #details tr > *:nth-child(2) {
-    width: 33.33% !important;
-  }
+	body #details tr > *:nth-child(2) {
+		width: 33.33% !important;
+	}
 
-  body #details tr > *:nth-child(3) {
-    width: 33.33% !important;
-  }
+	body #details tr > *:nth-child(3) {
+		width: 33.33% !important;
+	}
 
-  #details tr > *:nth-child(4) {
-    display: none;
-  }
+	#details tr > *:nth-child(4) {
+		display: none;
+	}
 
-  #details tr > *:nth-child(5) {
-    display: none;
-  }
+	#details tr > *:nth-child(5) {
+		display: none;
+	}
 
-  #details tr > *:nth-child(6) {
-    display: none;
-  }
+	#details tr > *:nth-child(6) {
+		display: none;
+	}
 
-  #details tr > *:nth-child(7) {
-    display: none;
-  }
+	#details tr > *:nth-child(7) {
+		display: none;
+	}
 
-  #details td, #details th {
-    text-align: center;
-    font-size: 12px;
-  }
+	#details td, #details th {
+		text-align: center;
+		font-size: 12px;
+	}
 }

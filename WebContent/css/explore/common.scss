@@ -1,104 +1,104 @@
 #explorer {
-  margin-top: 15px;
-  float: left;
-  width: 28%;
-  min-height: 90%;
-  height: 90%;
-  overflow: auto;
-  overflow-y: hidden;
-  position: relative;
+	margin-top: 15px;
+	float: left;
+	width: 28%;
+	min-height: 90%;
+	height: 90%;
+	overflow: auto;
+	overflow-y: hidden;
+	position: relative;
 }
 
 #explorer a:link {
-  text-decoration: none;
+	text-decoration: none;
 }
 
 #detailPanel {
-  padding-left: 10px;
-  padding-right: 55px;
-  margin-top: 15px;
-  float: right;
-  width: 65%;
-  border-left: solid 3px #111111;
+	padding-left: 10px;
+	padding-right: 55px;
+	margin-top: 15px;
+	float: right;
+	width: 65%;
+	border-left: solid 3px #111111;
 }
 
 #detailPanel hr {
-  border-top: solid 1px #666666;
+	border-top: solid 1px #666666;
 }
 
 #detailPanel h3, #explorer h3 {
-  color: #FFFFFF;
-  font-size: 24px;
-  margin-bottom: 5px;
-  display: inline-block;
+	color: #FFFFFF;
+	font-size: 24px;
+	margin-bottom: 5px;
+	display: inline-block;
 }
 
 #detailPanel .spaceName, #detailPanel #spaceDesc {
-  width: 90%;
-  word-wrap: break-word;
+	width: 90%;
+	word-wrap: break-word;
 }
 
 #detailPanel p.accent {
-  color: #666666;
-  font-style: italic;
+	color: #666666;
+	font-style: italic;
 }
 
 #detailPanel .button {
-  margin-bottom: 9px;
+	margin-bottom: 9px;
 }
 
 #detailPanel fieldset {
-  margin-top: 35px;
+	margin-top: 35px;
 }
 
 .actionList {
-  list-style: none;
+	list-style: none;
 }
 
 #actionList {
-  list-style: none;
+	list-style: none;
 }
 
 #actionList li {
-  float: left;
-  margin-left: 5px;
-  margin-bottom: 10px;
+	float: left;
+	margin-left: 5px;
+	margin-bottom: 10px;
 }
 
 .actionList li {
-  float: left;
-  margin-right: 4px;
-  margin-bottom: 10px;
+	float: left;
+	margin-right: 4px;
+	margin-bottom: 10px;
 }
 
 .expd, .actionList li a, #actionList li a,
 .qtip-nonPermanentLeader a.tooltipButton, img {
-  cursor: pointer;
+	cursor: pointer;
 }
 
 #content table {
-  width: 100%;
+	width: 100%;
 }
 
 #progressBar {
-  display: inline-block;
-  margin-left: 20px;
+	display: inline-block;
+	margin-left: 20px;
 }
 
 .ui-dialog {
-  height: 1000px;
+	height: 1000px;
 }
 
 #dialog-confirm-copy,
 #dialog-confirm-delete {
-  min-height: 70px;
+	min-height: 70px;
 }
 
 .ui-icon-info, .ui-icon-alert {
-  float: left;
-  margin: 0 7px 20px 0;
+	float: left;
+	margin: 0 7px 20px 0;
 }
 
 #dialog-confirm-copy .ui-icon-info {
-  margin: 0 7px 0 0;
+	margin: 0 7px 0 0;
 }

@@ -4,100 +4,100 @@
 @import "fonts";
 
 body {
-  @extend %heading;
+	@extend %heading;
 
-  background-color: $background-color;
-  color: $text-main-color;
+	background-color: $background-color;
+	color: $text-main-color;
 
-  html, & {
-    @include mobile {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
-  }
+	html, & {
+		@include mobile {
+			width: 100%;
+			height: 100%;
+			margin: 0;
+			padding: 0;
+		}
+	}
 }
 
 h1, h2, h3, h4, h5, h6 {
-  @extend %heading;
+	@extend %heading;
 }
 
 a:link, a:visited {
-  color: $text-main-color;
-  text-decoration: none;
+	color: $text-main-color;
+	text-decoration: none;
 }
 
 input, textarea, select {
-  @extend %heading;
+	@extend %heading;
 
-  @extend %rounded-corners;
+	@extend %rounded-corners;
 
-  background-color: $input-background;
-  border: 1px solid $input-background;
-  color: $input-text;
-  font-size: 16px;
+	background-color: $input-background;
+	border: 1px solid $input-background;
+	color: $input-text;
+	font-size: 16px;
 
-  &:focus {
-    border-color: $accent-orange;
-    background-color: $input-background-selected;
-  }
+	&:focus {
+		border-color: $accent-orange;
+		background-color: $input-background-selected;
+	}
 }
 
 input[type="text"],
 input[type="search"],
 input[type="password"] {
-  -webkit-appearance: none;
-  height: 26px;
-  padding: 0px 5px 0px 5px;
+	-webkit-appearance: none;
+	height: 26px;
+	padding: 0px 5px 0px 5px;
 }
 
 textarea {
-  -webkit-appearance: none;
-  resize: none;
-  padding: 5px;
+	-webkit-appearance: none;
+	resize: none;
+	padding: 5px;
 }
 
 fieldset {
-  border-width: 3px;
-  border-style: solid;
-  border-color: $background-color;
-  border-radius: 3px;
-  margin: auto;
-  padding: 10px;
+	border-width: 3px;
+	border-style: solid;
+	border-color: $background-color;
+	border-radius: 3px;
+	margin: auto;
+	padding: 10px;
 }
 
 legend {
-  border-width: 2px;
-  border-style: solid;
-  border-color: $background-color;
-  border-radius: 3px;
-  background-color: $background-color;
-  padding: 5px 8px 5px 8px;
-  margin-left: 25px;
+	border-width: 2px;
+	border-style: solid;
+	border-color: $background-color;
+	border-radius: 3px;
+	background-color: $background-color;
+	padding: 5px 8px 5px 8px;
+	margin-left: 25px;
 }
 
 input.error {
-  border: solid 1px $accent-red;
+	border: solid 1px $accent-red;
 }
 
 textarea.error {
-  border: solid 1px $accent-red;
-  vertical-align: middle;
+	border: solid 1px $accent-red;
+	vertical-align: middle;
 }
 
 label.error {
-  margin-left: 15px;
-  display: inline;
-  color: $accent-red;
+	margin-left: 15px;
+	display: inline;
+	color: $accent-red;
 }
 
 .shaded > tbody > tr:nth-child(even),
 .shaded > thead > tr {
-  background-color: $background-color;
+	background-color: $background-color;
 }
 
 .shaded tbody > tr > td,
 .shaded thead > tr > th {
-  padding: 10px;
+	padding: 10px;
 }

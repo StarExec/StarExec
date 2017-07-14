@@ -1,297 +1,297 @@
 @import "../global/helper";
 
 fieldset {
-  width: 750px;
+	width: 750px;
 }
 
 #displayJobSpaceID {
-  margin-bottom: 8px;
+	margin-bottom: 8px;
 }
 
 #pairTbl tr {
-  cursor: pointer;
+	cursor: pointer;
 }
 
 #actionList {
-  list-style: none;
+	list-style: none;
 
-  li {
-    float: left;
-    margin-left: 5px;
-    margin-bottom: 10px;
-  }
+	li {
+		float: left;
+		margin-left: 5px;
+		margin-bottom: 10px;
+	}
 }
 
 #incompleteHead, #completeHead, #configHead {
-  width: 18%;
+	width: 18%;
 }
 
 #explorer {
-  &.jobDetails {
-    width: 23%;
-  }
+	&.jobDetails {
+		width: 23%;
+	}
 
-  a:link {
-    text-decoration: none;
-  }
+	a:link {
+		text-decoration: none;
+	}
 }
 
 #detailPanel {
-  &.jobDetails {
-    width: 70%;
-  }
+	&.jobDetails {
+		width: 70%;
+	}
 
-  fieldset {
-    width: 100%;
-  }
+	fieldset {
+		width: 100%;
+	}
 }
 
 tr {
-  width: 100%;
+	width: 100%;
 }
 
 thead {
-  width: inherit;
+	width: inherit;
 }
 
 #solveTbl {
-  font-size: 82%;
+	font-size: 82%;
 
-  @extend %popup-links;
+	@extend %popup-links;
 }
 
 .solvedHead, .resourceHead {
-  width: 10%;
-  max-width: 10%;
-  min-width: 10%;
+	width: 10%;
+	max-width: 10%;
+	min-width: 10%;
 }
 
 .incompleteHead {
-  width: 13%;
-  max-width: 13%;
-  min-width: 13%;
+	width: 13%;
+	max-width: 13%;
+	min-width: 13%;
 }
 
 .configHead, .unknownHead, .solverHead, .wrongHead {
-  width: 11%;
-  max-width: 11%;
-  min-width: 11%;
+	width: 11%;
+	max-width: 11%;
+	min-width: 11%;
 }
 
 .timeHead {
-  width: 8%;
-  max-width: 8%;
-  min-width: 8%;
+	width: 8%;
+	max-width: 8%;
+	min-width: 8%;
 }
 
 .failedHead {
-  width: 9%;
-  max-width: 9%;
-  min-width: 9%;
+	width: 9%;
+	max-width: 9%;
+	min-width: 9%;
 }
 
 .benchHead {
-  width: 17%;
+	width: 17%;
 }
 
 #graphField img {
-  border-style: solid;
-  border-width: 1px;
-  border-color: black;
+	border-style: solid;
+	border-width: 1px;
+	border-color: black;
 }
 
 #pairTbl tbody tr {
-  cursor: pointer;
+	cursor: pointer;
 }
 
 #solverChoice1 {
-  width: 90%;
+	width: 90%;
 }
 
 #solverChoice2 {
-  width: 90%;
-  margin-top: 5px;
+	width: 90%;
+	margin-top: 5px;
 }
 
 #detailPanel #optionField {
-  width: 95%;
+	width: 95%;
 }
 
 #solverComparison {
-  float: right;
+	float: right;
 }
 
 p.accent {
-  color: #666666;
-  font-style: italic;
+	color: #666666;
+	font-style: italic;
 }
 
 #spaceOverviewSelections {
-  overflow-y: scroll;
-  overflow-x: scroll;
-  width: 95%;
-  margin-top: 5px;
+	overflow-y: scroll;
+	overflow-x: scroll;
+	width: 95%;
+	margin-top: 5px;
 }
 
 #logScale {
-  float: left;
-  margin-right: auto;
-  margin-left: auto;
+	float: left;
+	margin-right: auto;
+	margin-left: auto;
 }
 
 #detailPanel {
-  #spaceOverviewOptionField {
-    float: left;
-    width: 290px;
+	#spaceOverviewOptionField {
+		float: left;
+		width: 290px;
 
-    /* text-align:center;*/
-  }
+		/* text-align:center;*/
+	}
 
-  #solverComparisonOptionField {
-    float: left;
-    width: 290px;
+	#solverComparisonOptionField {
+		float: left;
+		width: 290px;
 
-    /* text-align:center;*/
+		/* text-align:center;*/
 
-    /*needs to be determined whether we want everything centered*/
-  }
+		/*needs to be determined whether we want everything centered*/
+	}
 
-  #spaceOverviewUpdate, #solverComparisonUpdate {
-    margin-top: 10px;
-    margin-right: auto;
-    margin-left: auto;
-  }
+	#spaceOverviewUpdate, #solverComparisonUpdate {
+		margin-top: 10px;
+		margin-right: auto;
+		margin-left: auto;
+	}
 }
 
 #subspaceSummaryField {
-  .dataTables_wrapper {
-    float: left;
-    clear: none;
-    padding: 3px;
-  }
+	.dataTables_wrapper {
+		float: left;
+		clear: none;
+		padding: 3px;
+	}
 
-  table.panel {
-    @extend %popup-links;
+	table.panel {
+		@extend %popup-links;
 
-    font-size: 70%;
-    width: 100% !important;
-    min-width: 100% !important;
-  }
+		font-size: 70%;
+		width: 100% !important;
+		min-width: 100% !important;
+	}
 
-  legend {
-    max-width: 47%;
-    word-wrap: break-word;
-  }
+	legend {
+		max-width: 47%;
+		word-wrap: break-word;
+	}
 
-  .panelField {
-    max-width: 47%;
-    width: 47%;
-    float: left;
-    padding-right: 1px;
-    border: 1px;
-    border-color: #000000;
-    border-style: solid;
-    clear: none;
-    margin-right: 3px;
-    margin-bottom: 2px;
-    margin-right: 5px;
-    margin-top: 5px;
-    border-radius: 0px;
-    padding-left: 0px;
-    word-wrap: break-word;
-  }
+	.panelField {
+		max-width: 47%;
+		width: 47%;
+		float: left;
+		padding-right: 1px;
+		border: 1px;
+		border-color: #000000;
+		border-style: solid;
+		clear: none;
+		margin-right: 3px;
+		margin-bottom: 2px;
+		margin-right: 5px;
+		margin-top: 5px;
+		border-radius: 0px;
+		padding-left: 0px;
+		word-wrap: break-word;
+	}
 
-  #panelActions {
-    width: 97%;
-    border-color: black;
-    border-style: none none solid;
-    border-width: 0px 0px 5px;
-    margin-top: 0px;
-    padding-top: 0px;
-  }
+	#panelActions {
+		width: 97%;
+		border-color: black;
+		border-style: none none solid;
+		border-width: 0px 0px 5px;
+		margin-top: 0px;
+		padding-top: 0px;
+	}
 }
 
 #solverSummaryField #statActions, #pairTblField #pairActions {
-  width: 97%;
-  border-color: black;
-  border-style: none none solid;
-  border-width: 0px 0px 5px;
-  margin-top: 0px;
-  padding-top: 0px;
+	width: 97%;
+	border-color: black;
+	border-style: none none solid;
+	border-width: 0px 0px 5px;
+	margin-top: 0px;
+	padding-top: 0px;
 }
 
 tr.viewSubspace {
-  text-align: center;
-  font-size: 140%;
-  cursor: pointer;
+	text-align: center;
+	font-size: 140%;
+	cursor: pointer;
 }
 
 table.panel {
-  .configHead, .solverHead {
-    width: 30%;
-  }
+	.configHead, .solverHead {
+		width: 30%;
+	}
 
-  .solvedHead, .timeHead {
-    width: 20%;
-  }
+	.solvedHead, .timeHead {
+		width: 20%;
+	}
 }
 
 .stageSelector {
-  width: 90px;
+	width: 90px;
 }
 
 @media only screen and (max-width: 767px) {
-  #wrapper {
-    #explorer {
-      width: 100%;
-      float: none;
-    }
+	#wrapper {
+		#explorer {
+			width: 100%;
+			float: none;
+		}
 
-    fieldset {
-      width: 85%;
+		fieldset {
+			width: 85%;
 
-      &.panelField {
-        max-width: 100%;
-        width: 100%;
-        float: none;
-      }
-    }
-  }
+			&.panelField {
+				max-width: 100%;
+				width: 100%;
+				float: none;
+			}
+		}
+	}
 
-  .jstree-icon {
-    width: 30px;
-  }
+	.jstree-icon {
+		width: 30px;
+	}
 
-  #wrapper {
-    #detailPanel {
-      width: 100%;
-      float: none;
-      margin: 0;
-      border-left: initial;
-    }
+	#wrapper {
+		#detailPanel {
+			width: 100%;
+			float: none;
+			margin: 0;
+			border-left: initial;
+		}
 
-    #solveTbl tr > * {
-      &:nth-child(4), &:nth-child(5), &:nth-child(6), &:nth-child(7), &:nth-child(8) {
-        display: none;
-      }
-    }
+		#solveTbl tr > * {
+			&:nth-child(4), &:nth-child(5), &:nth-child(6), &:nth-child(7), &:nth-child(8) {
+				display: none;
+			}
+		}
 
-    #pairTbl {
-      tr > * {
-        &:nth-child(4), &:nth-child(6) {
-          display: none;
-        }
-      }
+		#pairTbl {
+			tr > * {
+				&:nth-child(4), &:nth-child(6) {
+					display: none;
+				}
+			}
 
-      font-size: 12px;
-    }
+			font-size: 12px;
+		}
 
-    #pairActions button {
-      margin: 0 5px 5px 0;
-    }
-  }
+		#pairActions button {
+			margin: 0 5px 5px 0;
+		}
+	}
 
-  th, td {
-    text-align: center;
-  }
+	th, td {
+		text-align: center;
+	}
 }

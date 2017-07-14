@@ -141,6 +141,7 @@
 
 	<target name="format-css" depends="css-properties">
 		<exec executable="sass-convert" failonerror="true">
+			<arg line="--indent t" />
 			<arg line="-i" />
 			<arg line="-R" />
 			<arg line="-F scss" />

@@ -1,193 +1,193 @@
 @import "../common/pass_strength_meter";
 
 fieldset {
-  width: 75%;
-  margin-top: 50px;
+	width: 75%;
+	margin-top: 50px;
 
-  table, ul {
-    width: 100%;
-  }
+	table, ul {
+		width: 100%;
+	}
 }
 
 #infoTable {
-  table-layout: auto;
+	table-layout: auto;
 }
 
 tr .label {
-  width: 25%;
+	width: 25%;
 }
 
 #passwordTable {
-  tr td button {
-    float: right;
-  }
+	tr td button {
+		float: right;
+	}
 
-  td:first-child {
-    width: 35%;
-  }
+	td:first-child {
+		width: 35%;
+	}
 }
 
 #diskUsageTable td:first-child {
-  width: 35%;
+	width: 35%;
 }
 
 fieldset h6 {
-  padding-top: 20px;
-  text-align: right;
-  font-size: small;
+	padding-top: 20px;
+	text-align: right;
+	font-size: small;
 }
 
 input {
-  width: 50%;
+	width: 50%;
 }
 
 fieldset ul li {
-  list-style: none;
-  display: block;
-  margin: auto;
-  padding: 10px;
-  width: 95%;
+	list-style: none;
+	display: block;
+	margin: auto;
+	padding: 10px;
+	width: 95%;
 }
 
 #new_website {
-  float: right;
+	float: right;
 
-  input {
-    width: 30%;
-  }
+	input {
+		width: 30%;
+	}
 }
 
 .delWebsite {
-  float: right;
-  cursor: pointer;
-  font-size: smaller;
+	float: right;
+	cursor: pointer;
+	font-size: smaller;
 }
 
 #editfirstname:hover, #editlastname:hover, #editinstitution:hover {
-  cursor: pointer;
+	cursor: pointer;
 }
 
 .caption {
-  text-align: right;
-  font-size: 14px;
-  display: block;
-  margin-top: 10px;
+	text-align: right;
+	font-size: 14px;
+	display: block;
+	margin-top: 10px;
 }
 
 #new_website {
-  float: right;
-  margin-top: 10px;
+	float: right;
+	margin-top: 10px;
 }
 
 input[type="text"] {
-  width: 50%;
+	width: 50%;
 }
 
 #toggleWebsite {
-  cursor: pointer;
+	cursor: pointer;
 }
 
 #popImage {
-  height: 400px;
+	height: 400px;
 }
 
 #popDialog {
-  display: none;
+	display: none;
 }
 
 #showPicture {
-  height: 160px;
+	height: 160px;
 }
 
 #userDetail {
-  vertical-align: top;
+	vertical-align: top;
 }
 
 #infoTable tbody tr:hover {
-  background-color: inherit;
+	background-color: inherit;
 }
 
 #personal {
-  tbody tr:hover {
-    background-color: #ae0000;
-  }
+	tbody tr:hover {
+		background-color: #ae0000;
+	}
 
-  thead tr:hover {
-    background-color: #111111;
-  }
+	thead tr:hover {
+		background-color: #111111;
+	}
 }
 
 .notShaded {
-  background-color: #111111;
+	background-color: #111111;
 }
 
 #picSection {
-  width: 133px;
+	width: 133px;
 }
 
 #infoTable {
-  tbody tr:hover {
-    background-color: #222222 !important;
-  }
+	tbody tr:hover {
+		background-color: #222222 !important;
+	}
 
-  #userDetail #personal {
-    thead tr:hover {
-      background-color: #111111 !important;
-    }
+	#userDetail #personal {
+		thead tr:hover {
+			background-color: #111111 !important;
+		}
 
-    tbody tr:hover {
-      background-color: #ae0000 !important;
-    }
-  }
+		tbody tr:hover {
+			background-color: #ae0000 !important;
+		}
+	}
 }
 
 #uploadPicture {
-  margin-left: 2px;
-  margin-top: -6px;
-  width: 107px;
+	margin-left: 2px;
+	margin-top: -6px;
+	width: 107px;
 }
 
 .selectPrim {
-  float: right;
-  font-size: 14px;
-  margin-top: 10px;
-  cursor: pointer;
+	float: right;
+	font-size: 14px;
+	margin-top: 10px;
+	cursor: pointer;
 }
 
 @media only screen and (max-width: 767px) {
-  #wrapper #picSection {
-    width: 0%;
-  }
+	#wrapper #picSection {
+		width: 0%;
+	}
 
-  body {
-    td, th {
-      text-align: center;
-    }
-  }
+	body {
+		td, th {
+			text-align: center;
+		}
+	}
 
-  #settingActions button {
-    margin: 0 5px 5px 0;
-  }
+	#settingActions button {
+		margin: 0 5px 5px 0;
+	}
 
-  #wrapper {
-    #showPicture, #picSection ul {
-      display: none;
-    }
+	#wrapper {
+		#showPicture, #picSection ul {
+			display: none;
+		}
 
-    #userDetail {
-      width: 100%;
-    }
+		#userDetail {
+			width: 100%;
+		}
 
-    #personal tr > * {
-      &:nth-child(1) {
-        width: 40%;
-      }
+		#personal tr > * {
+			&:nth-child(1) {
+				width: 40%;
+			}
 
-      &:nth-child(2) {
-        width: 60%;
-      }
-    }
-  }
+			&:nth-child(2) {
+				width: 60%;
+			}
+		}
+	}
 
-  /*Hide the "change image" button*/
+	/*Hide the "change image" button*/
 }
