@@ -46,7 +46,7 @@ $(document).ready(function(){
 
 	$("#qstatField").expandable(true);
 	$("#loadsField").expandable(true);
-
+	$("#detailField").expandable(true);
 
 	setInterval(function() {
 		jobPairTable.fnDraw(false);
@@ -124,13 +124,20 @@ function initDataTables() {
 		"sAjaxSource"  : starexecRoot+"services/cluster/",
 		"fnServerData" : fnPaginationHandler,
 		"columns"      : [
-			{"title"   : "Created"},
-			{"title"   : "Job"},
-			{"title"   : "User"},
-			{"title"   : "Benchmark"},
-			{"title"   : "Solver"},
-			{"title"   : "Config"},
-			{"title"   : "Path"},
+			{"title"   : "Created",
+			 "width"   : "12.5%"},
+			{"title"   : "Job",
+			 "width"   : "12.5%"},
+			{"title"   : "User",
+			 "width"   : "12.5%"},
+			{"title"   : "Benchmark",
+			 "width"   : "25%"},
+			{"title"   : "Solver",
+			 "width"   : "12.5%"},
+			{"title"   : "Config",
+			 "width"   : "12.5%"},
+			{"title"   : "Path",
+			 "width"   : "12.5%"},
 		]
 	}));
 
@@ -228,7 +235,7 @@ function getDetails(id, type, parent_node) {
 	jobPairTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
 	if(type == 'active_queue' || type == 'inactive_queue') {
 		var $jobs = $("#jobs");
-		$("#clusterExpd").text("Enqueued Job Pairs");
+		$("#clusterExpd").html("Enqueued Job Pairs <span> (+)</span>");
 		$("#jobsContainer").show();
 		url = starexecRoot+"services/cluster/queues/details/" + id;
 		qid=id;
@@ -237,6 +244,7 @@ function getDetails(id, type, parent_node) {
 		if (star.JobTableRefresh === undefined) {
 			star.JobTableRefresh = window.setInterval($jobs.DataTable().ajax.reload, 10000);
 		}
+		$("#detailField .expdContainer").css("display", "none");
 	} else if(type == 'enabled_node' || type == 'disabled_node') {
 		$("#clusterExpd").text("Running Job Pairs");
 		$("#jobsContainer").hide();
@@ -247,6 +255,7 @@ function getDetails(id, type, parent_node) {
 			window.clearInterval(star.JobTableRefresh);
 			delete star.JobTableRefresh;
 		}
+		$("#detailField .expdContainer").css("display", "block");
 	} else  {
 		showMessage('error',"Invalid node type",5000);
 		return;
