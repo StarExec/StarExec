@@ -45,19 +45,23 @@ CREATE FUNCTION GetErrorPairs(_jobId INT)
 -- Author: Todd Elvers
 DROP FUNCTION IF EXISTS GetJobStatus;
 CREATE FUNCTION GetJobStatus(_jobId INT)
-	RETURNS VARCHAR(10)
+	RETURNS ENUM("incomplete", "complete")
 	BEGIN
-		DECLARE status VARCHAR(10);
+		DECLARE status ENUM("incomplete", "complete");
 
-		IF(GetPendingPairs(_jobId) > 0) THEN
-			SET status = "incomplete";
-		ELSE
-			SET status = "complete";
-		END IF;
+		SELECT IF(
+			EXISTS(
+				SELECT *
+				FROM job_pairs
+				WHERE job_id=_jobId
+				AND (status_code BETWEEN 1 AND 6)
+			),
+			"incomplete",
+			"complete")
+		INTO status;
 
 		RETURN status;
 	END //
-
 
 -- Gets the number of pending job pairs for a given job id
 -- Author: Todd Elvers
