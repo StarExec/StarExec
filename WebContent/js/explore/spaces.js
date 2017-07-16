@@ -1197,7 +1197,7 @@ function colorizeJobStatistics(){
 			function() {
 				// Return the floating point value of the stat
 				var value = $(this).text();
-				return eval(value.slice(0, -1));
+				return parseInt(value.slice(0, -1));
 			},
 			{
 				maxval: 100,
@@ -1210,7 +1210,7 @@ function colorizeJobStatistics(){
 	$("#jobs p.static").heatcolor(
 			function() {
 				// Return the floating point value of the stat
-				return eval(1);
+				return 1;
 			},
 			{
 				maxval: 1,
@@ -1223,7 +1223,7 @@ function colorizeJobStatistics(){
 	$("#jobs p.desc").heatcolor(
 			function() {
 				var value = $(this).text();
-				return eval(value.slice(0, -1));
+				return parseInt(value.slice(0, -1));
 			},
 			{
 				maxval: 100,
