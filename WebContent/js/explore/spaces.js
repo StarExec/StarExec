@@ -1431,13 +1431,13 @@ function checkPermissions(perms, id) {
 		createTooltip($('#users tbody'), 'tr', 'leader');
 
 		$('#editSpace').fadeIn('fast');
-		//$('#editSpacePermissions').fadeIn('fast');
+		$('#editSpacePermissions').fadeIn('fast');
 
 	} else {
 		// Otherwise only attach a personal tooltip to the current user's entry in the userTable
 		createTooltip($('#users tbody'), 'tr', 'personal');
 		$('#editSpace').fadeOut('fast');
-		//$('#editSpacePermissions').fadeOut('fast');
+		$('#editSpacePermissions').fadeOut('fast');
 	}
 
 	log('perms.addSpace='+perms.addSpace);
