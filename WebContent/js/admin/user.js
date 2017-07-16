@@ -27,10 +27,10 @@ jQuery(function($) {
 			null,
 			null,
 			null,
-			{ "searchable": false, "orderable": false },
-			{ "searchable": false, "orderable": false },
-			{ "searchable": false, "orderable": false },
-			{ "searchable": false, "orderable": false }
+			{ "searchable": false, "orderable": false, "width": "100px" },
+			{ "searchable": false, "orderable": false, "width": "80px"  },
+			{ "searchable": false, "orderable": false, "width": "80px"  },
+			{ "searchable": false, "orderable": false, "width": "80px"  }
 		]
 	}));
 
