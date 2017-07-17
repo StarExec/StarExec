@@ -143,7 +143,7 @@ public class JobPairTests extends TestSequence {
 		JobPair jp=JobPairs.getPair(job.getJobPairs().get(0).getId());
 		JobPairs.setPairStatus(jp.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 		Jobs.setBrokenPairsToErrorStatus(R.BACKEND);
-		Assert.assertTrue(JobPairs.getPair(job.getJobPairs().get(0).getId()).getStatus().getCode()==Status.StatusCode.ERROR_SUBMIT_FAIL);
+		Assert.assertEquals(Status.StatusCode.ERROR_SUBMIT_FAIL.getVal(),JobPairs.getPair(jp.getId()).getStatus().getCode().getVal());
 	}
 
 	@StarexecTest
