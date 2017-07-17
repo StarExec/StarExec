@@ -1,9 +1,6 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.HashSet, org.apache.commons.lang3.StringUtils, org.starexec.app.RESTHelpers, org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.security.*, org.starexec.data.to.*, org.starexec.data.to.JobStatus.JobStatusCode, org.starexec.util.*, org.starexec.data.to.enums.ProcessorType, org.starexec.util.dataStructures.*"%>
-<%@ page import="java.util.*" %>
-<%@ page import="java.util.stream.Collectors" %>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.HashSet, java.util.List, java.util.Set, org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.security.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.util.dataStructures.*" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%
 	try {
 		int jobId = Integer.parseInt( request.getParameter("jobId") );
@@ -19,7 +16,6 @@
 			return;
 		}
 
-
 		Set<Integer> spacesAssociatedWithJob = Spaces.getByJob(jobId);
 		List<Solver> solvers = Solvers.getSolversInSpacesAndJob(jobId, spacesAssociatedWithJob);
 		Set<Integer> configIdSet = Solvers.getConfigIdSetByJob( jobId );
@@ -32,11 +28,6 @@
 		Solvers.sortConfigs(solvers);
 		Solvers.makeDefaultConfigsFirst( solvers );
 
-		/*
-		request.setAttribute("solvers", new ArrayList<Solver>());
-		request.setAttribute("configIdSet", new HashSet<Integer>());
-		request.setAttribute("jobId", jobId);
-		*/
 		request.setAttribute("solverIdsInJob", solverIdsInJob);
 		request.setAttribute("solvers", solvers);
 		request.setAttribute("configIdSet", configIdSet);
