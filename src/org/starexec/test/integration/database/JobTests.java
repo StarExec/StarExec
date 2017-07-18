@@ -33,7 +33,6 @@ public class JobTests extends TestSequence {
 	private int wallclockTimeout=100;
 	private int cpuTimeout=100;
 	private int gbMemory=1;
-
 	private User user2=null;
 	private Job job2=null;
 
@@ -42,7 +41,6 @@ public class JobTests extends TestSequence {
 		Job testJob=Jobs.get(job.getId());
 		Assert.assertNotNull(testJob);
 		Assert.assertEquals(testJob.getName(),job.getName());
-
 	}
 
 	@StarexecTest
@@ -93,7 +91,6 @@ public class JobTests extends TestSequence {
 		} catch (SQLException e) {
 			Assert.fail("Caught SQL exception while trying to change job priority: " + Util.getStackTrace(e));
 		}
-
 	}
 
 	@StarexecTest
@@ -152,9 +149,6 @@ public class JobTests extends TestSequence {
 		Assert.assertNotNull(path);
 	}
 
-
-
-
 	// this just checks to see whether the function throws errors: more detailed logic testing
 	// is handled in a unit test
 	@StarexecTest
@@ -173,13 +167,11 @@ public class JobTests extends TestSequence {
 	@StarexecTest
 	private void IsDeletedTest() {
 		Assert.assertFalse(Jobs.isJobDeleted(job.getId()));
-
 	}
 
 	@StarexecTest
 	private void IsKilledTest() {
 		Assert.assertFalse(Jobs.isJobKilled(job.getId()));
-
 	}
 
 	@StarexecTest
@@ -187,11 +179,7 @@ public class JobTests extends TestSequence {
 		Assert.assertFalse(Jobs.isJobPaused(job.getId()));
 		Assert.assertTrue(Jobs.pause(job.getId()));
 		Assert.assertTrue(Jobs.isJobPaused(job.getId()));
-
 		Assert.assertTrue(Jobs.resume(job.getId()));
-
-		Assert.assertFalse(Jobs.isJobPaused(job.getId()));
-
 	}
 
 	@StarexecTest
@@ -200,7 +188,6 @@ public class JobTests extends TestSequence {
 		solverIds.add(solver.getId());
 		Job temp=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
 		Assert.assertFalse(Jobs.isJobDeleted(temp.getId()));
-
 		try {
 			Assert.assertTrue(Jobs.delete(temp.getId()));
 			Assert.assertTrue(Jobs.isJobDeleted(temp.getId()));
@@ -208,8 +195,6 @@ public class JobTests extends TestSequence {
 		} catch (SQLException e) {
 			Assert.fail("Caught sql exception while trying to delete job: " + Util.getStackTrace(e));
 		}
-
-
 	}
 
 	@StarexecTest
@@ -263,12 +248,11 @@ public class JobTests extends TestSequence {
 			if (jp.getJobSpaceId()!=spaceId) {
 				//if we are changing to a new space
 				if (spaceId>=0) {
-					Assert.assertEquals(spacesToPairs.get(spaceId).size(),counter); // we should see all the pairs in this space
-																					//before seeing any other spaces
+					// we should see all the pairs in this space before seeing any other spaces
+					Assert.assertEquals(spacesToPairs.get(spaceId).size(),counter);
 				}
 				spaceId=jp.getJobSpaceId();
 				counter=1;
-
 			} else {
 				counter++;
 			}
@@ -344,7 +328,6 @@ public class JobTests extends TestSequence {
 		}
 		Assert.assertEquals(job.getJobPairs().size(), Jobs.countOlderPairs(job.getId(), maxCompletionId));
 		Assert.assertEquals(1, Jobs.countOlderPairs(job.getId(), minCompletionId));
-
 	}
 
 	@StarexecTest
@@ -387,13 +370,10 @@ public class JobTests extends TestSequence {
 		job=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
 		job2=loader.loadJobIntoDatabase(space.getId(), user2.getId(), -1, postProc.getId(), solverIds, benchmarkIds, cpuTimeout, wallclockTimeout, gbMemory);
 		Assert.assertNotNull(Jobs.get(job.getId()));
-
 	}
 
 	@Override
 	protected void teardown() throws Exception {
 		loader.deleteAllPrimitives();
-
 	}
-
 }
