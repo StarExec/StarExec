@@ -10,13 +10,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class LoadBalanceMonitorTests {
-	
 	private LoadBalanceMonitor monitor = null;
+
 	@Before
 	public void setup() {
 		monitor = new LoadBalanceMonitor();
 	}
-	
+
 	@Test
 	public void testAddSingleUser() {
 		Map<Integer, Long> users = new HashMap<>();
@@ -25,7 +25,7 @@ public class LoadBalanceMonitorTests {
 		Assert.assertEquals(0, (long)monitor.getLoad(1));
 		Assert.assertEquals(0, (long)monitor.getMin());
 	}
-	
+
 	@Test
 	public void addExistingUser() {
 		Map<Integer, Long> users = new HashMap<>();
@@ -35,7 +35,7 @@ public class LoadBalanceMonitorTests {
 		monitor.setUsers(users);
 		Assert.assertEquals(1, (long)monitor.getLoad(1));
 	}
-	
+
 	@Test
 	public void testRemoveSingleUser() {
 		Map<Integer, Long> users = new HashMap<>();
@@ -43,12 +43,12 @@ public class LoadBalanceMonitorTests {
 		monitor.setUsers(users);
 		monitor.changeLoad(1, 12);
 		monitor.setUsers(new HashMap<>());
-		
+
 		// user is still there, just inactive
 		Assert.assertEquals(12, (long)monitor.getLoad(1));
-		Assert.assertEquals(null, monitor.getMin());
+		Assert.assertNull(monitor.getMin());
 	}
-	
+
 	@Test
 	public void testRemoveMinUser() {
 		Map<Integer, Long> users = new HashMap<>();
@@ -62,7 +62,7 @@ public class LoadBalanceMonitorTests {
 
 		Assert.assertEquals(3, (long)monitor.getMin());
 	}
-	
+
 	@Test
 	public void testIncrementLoadSingleUser() {
 		Map<Integer, Long> users = new HashMap<>();
@@ -75,9 +75,8 @@ public class LoadBalanceMonitorTests {
 		monitor.changeLoad(1, 7);
 		Assert.assertEquals(13, (long)monitor.getLoad(1));
 		Assert.assertEquals(13, (long)monitor.getMin());
-
 	}
-	
+
 	@Test
 	public void testIncrementLoadTwoUsers() {
 		Map<Integer, Long> users = new HashMap<>();
@@ -94,7 +93,7 @@ public class LoadBalanceMonitorTests {
 		Assert.assertEquals(7, (long)monitor.getLoad(2));
 		Assert.assertEquals(6, (long)monitor.getMin());
 	}
-	
+
 	@Test
 	public void testSetUsersEmptyMonitor() {
 		Map<Integer, Long> users = new HashMap<>();
@@ -109,7 +108,7 @@ public class LoadBalanceMonitorTests {
 		}
 		Assert.assertEquals(3, (long)monitor.getMin());
 	}
-	
+
 	@Test
 	public void testSetUsersNoOverlap() {
 		Map<Integer, Long> users = new HashMap<>();
@@ -127,7 +126,7 @@ public class LoadBalanceMonitorTests {
 		Assert.assertEquals(5, (long)monitor.getLoad(4));
 		Assert.assertEquals(6, (long)monitor.getMin());
 	}
-	
+
 	@Test
 	public void testSetUsersAllOverlap() {
 		Map<Integer, Long> users = new HashMap<>();
@@ -145,7 +144,7 @@ public class LoadBalanceMonitorTests {
 		}
 		Assert.assertEquals(2, (long)monitor.getMin());
 	}
-	
+
 	@Test
 	public void skipUserTestSingleUser() {
 		Map<Integer, Long> users = new HashMap<>();
@@ -155,7 +154,7 @@ public class LoadBalanceMonitorTests {
 		monitor.changeLoad(1, 3000);
 		Assert.assertFalse(monitor.skipUser(1));
 	}
-	
+
 	@Test
 	public void skipUserTestTwoUsers() {
 		Map<Integer, Long> users = new HashMap<>();
@@ -169,7 +168,7 @@ public class LoadBalanceMonitorTests {
 		Assert.assertTrue(monitor.skipUser(1));
 		Assert.assertFalse(monitor.skipUser(2));
 	}
-	
+
 	@Test
 	public void testAddUserAfterLoad() {
 		Map<Integer, Long> users = new HashMap<>();
@@ -182,7 +181,7 @@ public class LoadBalanceMonitorTests {
 		Assert.assertEquals(5, (long)monitor.getLoad(2));
 		Assert.assertEquals(5, (long)monitor.getMin());
 	}
-	
+
 	@Test
 	public void testForMinWithInactiveUser() {
 		Map<Integer, Long> users = new HashMap<>();
@@ -194,6 +193,7 @@ public class LoadBalanceMonitorTests {
 		monitor.changeLoad(2, 10);
 		Assert.assertEquals(10, (long)monitor.getMin());
 	}
+
 	@Test
 	public void testAddUserWithInactiveUser() {
 		Map<Integer, Long> userOne = new HashMap<>();
