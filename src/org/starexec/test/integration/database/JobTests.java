@@ -44,53 +44,37 @@ public class JobTests extends TestSequence {
 	}
 
 	@StarexecTest
-	private void setOutputBenchmarksDirectoryPath() {
-		try  {
-			final String testPath = "test1";
-			Jobs.setOutputBenchmarksPath(job.getId(), testPath);
-			assertEquals("The test path was not updated.", Jobs.get(job.getId()).getOutputBenchmarksPath(), testPath);
-			final String testPath2 = "test2";
-			Jobs.setOutputBenchmarksPath(job.getId(), testPath2);
-			assertEquals("The 2nd test path was not updated.", Jobs.get(job.getId()).getOutputBenchmarksPath(), testPath2);
-		} catch (SQLException e) {
-			fail("An SQLException was thrown: "+Util.getStackTrace(e));
-		}
+	private void setOutputBenchmarksDirectoryPath() throws SQLException {
+		final String testPath = "test1";
+		Jobs.setOutputBenchmarksPath(job.getId(), testPath);
+		assertEquals("The test path was not updated.", Jobs.get(job.getId()).getOutputBenchmarksPath(), testPath);
+		final String testPath2 = "test2";
+		Jobs.setOutputBenchmarksPath(job.getId(), testPath2);
+		assertEquals("The 2nd test path was not updated.", Jobs.get(job.getId()).getOutputBenchmarksPath(), testPath2);
 	}
 
 	@StarexecTest
-	private void getOutputBenchmarksDirectoryPath() {
-		try {
-			final String testPath = "test1";
-			Jobs.setOutputBenchmarksPath(job.getId(), testPath);
-			assertEquals("The test path could not be retrieved.", Jobs.getOutputBenchmarksPath(job.getId()).get(), testPath);
-			final String testPath2 = "test2";
-			Jobs.setOutputBenchmarksPath(job.getId(), testPath2);
-			assertEquals("The 2nd test path could not be retrieved.", Jobs.getOutputBenchmarksPath(job.getId()).get(), testPath2);
-		} catch (Exception e) {
-			fail("An Exception was thrown: "+Util.getStackTrace(e));
-		}
+	private void getOutputBenchmarksDirectoryPath() throws SQLException {
+		final String testPath = "test1";
+		Jobs.setOutputBenchmarksPath(job.getId(), testPath);
+		assertEquals("The test path could not be retrieved.", Jobs.getOutputBenchmarksPath(job.getId()).get(), testPath);
+		final String testPath2 = "test2";
+		Jobs.setOutputBenchmarksPath(job.getId(), testPath2);
+		assertEquals("The 2nd test path could not be retrieved.", Jobs.getOutputBenchmarksPath(job.getId()).get(), testPath2);
 	}
 
 	@StarexecTest
-	private void IsHighPriorityTest() {
-		try {
-			Jobs.setAsHighPriority(job.getId());
-			Job testJob = Jobs.get(job.getId());
-			Assert.assertTrue(testJob.isHighPriority());
-		} catch (SQLException e) {
-			Assert.fail("Caught SQL exception while trying to change job priority: " + Util.getStackTrace(e));
-		}
+	private void IsHighPriorityTest() throws SQLException {
+		Jobs.setAsHighPriority(job.getId());
+		Job testJob = Jobs.get(job.getId());
+		Assert.assertTrue(testJob.isHighPriority());
 	}
 
 	@StarexecTest
-	private void SetAsLowPrioirtyTest() {
-		try {
-			Jobs.setAsLowPriority(job.getId());
-			Job testJob = Jobs.get(job.getId());
-			Assert.assertFalse(testJob.isHighPriority());
-		} catch (SQLException e) {
-			Assert.fail("Caught SQL exception while trying to change job priority: " + Util.getStackTrace(e));
-		}
+	private void SetAsLowPrioirtyTest() throws SQLException {
+		Jobs.setAsLowPriority(job.getId());
+		Job testJob = Jobs.get(job.getId());
+		Assert.assertFalse(testJob.isHighPriority());
 	}
 
 	@StarexecTest
@@ -183,18 +167,14 @@ public class JobTests extends TestSequence {
 	}
 
 	@StarexecTest
-	private void DeleteJobTest() {
+	private void DeleteJobTest() throws SQLException {
 		List<Integer> solverIds= new ArrayList<>();
 		solverIds.add(solver.getId());
 		Job temp=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
 		Assert.assertFalse(Jobs.isJobDeleted(temp.getId()));
-		try {
-			Assert.assertTrue(Jobs.delete(temp.getId()));
-			Assert.assertTrue(Jobs.isJobDeleted(temp.getId()));
-			Assert.assertTrue(Jobs.deleteAndRemove(temp.getId()));
-		} catch (SQLException e) {
-			Assert.fail("Caught sql exception while trying to delete job: " + Util.getStackTrace(e));
-		}
+		Assert.assertTrue(Jobs.delete(temp.getId()));
+		Assert.assertTrue(Jobs.isJobDeleted(temp.getId()));
+		Assert.assertTrue(Jobs.deleteAndRemove(temp.getId()));
 	}
 
 	@StarexecTest
@@ -299,15 +279,11 @@ public class JobTests extends TestSequence {
 	}
 
 	@StarexecTest
-	private void cleanOrphanedDeletedJobTest() {
+	private void cleanOrphanedDeletedJobTest() throws SQLException {
 		Job tempJob = loader.loadJobIntoDatabase(space.getId(), user.getId(), solver.getId(), benchmarkIds);
 		List<Integer> job = new ArrayList<>();
 		job.add(tempJob.getId());
-		try {
-			Jobs.delete(tempJob.getId());
-		} catch (SQLException e) {
-			Assert.fail("Caught SQLException while trying to delete job: " + Util.getStackTrace(e));
-		}
+		Jobs.delete(tempJob.getId());
 		Assert.assertTrue(Jobs.cleanOrphanedDeletedJobs());
 		Assert.assertNotNull(Jobs.getIncludeDeleted(tempJob.getId()));
 
