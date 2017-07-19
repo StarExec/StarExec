@@ -49,12 +49,11 @@ CREATE FUNCTION GetJobStatus(_jobId INT)
 	BEGIN
 		DECLARE status ENUM("incomplete", "complete");
 
-		SELECT IF(
-			EXISTS(
-				SELECT *
+		SELECT IF (
+			_jobId IN (
+				SELECT job_id
 				FROM job_pairs
-				WHERE job_id=_jobId
-				AND (status_code BETWEEN 1 AND 6)
+				WHERE status_code BETWEEN 1 AND 6
 			),
 			"incomplete",
 			"complete")
@@ -72,11 +71,11 @@ CREATE FUNCTION GetJobStatusDetail(_jobId INT)
 		DECLARE status ENUM("RUNNING", "PROCESSING", "COMPLETE", "DELETED", "KILLED", "PAUSED", "GLOBAL_PAUSE");
 
 		SELECT
-			IF ( EXISTS ( SELECT * FROM jobs WHERE id=_jobId AND deleted ), "DELETED",
-			IF ( EXISTS ( SELECT * FROM jobs WHERE id=_jobId AND killed  ), "KILLED",
-			IF ( EXISTS ( SELECT * FROM jobs WHERE id=_jobId AND paused  ), "PAUSED",
-			IF ( EXISTS ( SELECT * FROM job_pairs WHERE job_id=_jobId AND status_code=22), "PROCESSING",
-			IF ( EXISTS ( SELECT * FROM job_pairs WHERE job_id=_jobId AND (status_code BETWEEN 1 AND 6)),
+			IF ( _jobId IN ( SELECT id FROM jobs WHERE deleted ), "DELETED",
+			IF ( _jobId IN ( SELECT id FROM jobs WHERE killed  ), "KILLED",
+			IF ( _jobId IN ( SELECT id FROM jobs WHERE paused  ), "PAUSED",
+			IF ( _jobId IN ( SELECT id FROM job_pairs WHERE status_code=22), "PROCESSING",
+			IF ( _jobId IN ( SELECT id FROM job_pairs WHERE status_code BETWEEN 1 AND 6),
 				IF ( EXISTS ( SELECT * FROM system_flags WHERE paused )
 				     AND NOT EXISTS (SELECT role
 						FROM user_roles
