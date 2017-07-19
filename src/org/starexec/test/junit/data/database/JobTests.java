@@ -13,7 +13,6 @@ import org.starexec.backend.GridEngineBackend;
 import org.starexec.constants.R;
 import org.starexec.data.database.Jobs;
 import org.starexec.data.to.Job;
-import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.Queue;
 import org.starexec.util.Util;
 
@@ -29,46 +28,6 @@ public class JobTests {
 	@Before
 	public void initialize() {
 		PowerMockito.mockStatic(Jobs.class);
-	}
-
-	@Test
-	public void GetStatusPausedTest() {
-		BDDMockito.given(Jobs.isJobPausedOrKilled(jobId)).willReturn(1);
-		BDDMockito.given(Jobs.getJobStatusCode(jobId)).willCallRealMethod();
-		Assert.assertEquals(JobStatus.JobStatusCode.STATUS_PAUSED, Jobs.getJobStatusCode(jobId).getCode());
-	}
-
-	@Test
-	public void GetStatusKilledTest() {
-		BDDMockito.given(Jobs.isJobPausedOrKilled(jobId)).willReturn(2);
-		BDDMockito.given(Jobs.getJobStatusCode(jobId)).willCallRealMethod();
-		Assert.assertEquals(JobStatus.JobStatusCode.STATUS_KILLED, Jobs.getJobStatusCode(jobId).getCode());
-	}
-
-	@Test
-	public void GetStatusProcessingTest() {
-		BDDMockito.given(Jobs.isJobPausedOrKilled(jobId)).willReturn(0);
-		BDDMockito.given(Jobs.hasProcessingPairs(jobId)).willReturn(true);
-		BDDMockito.given(Jobs.getJobStatusCode(jobId)).willCallRealMethod();
-		Assert.assertEquals(JobStatus.JobStatusCode.STATUS_PROCESSING, Jobs.getJobStatusCode(jobId).getCode());
-	}
-
-	@Test
-	public void GetStatusCompleteTest() {
-		BDDMockito.given(Jobs.isJobPausedOrKilled(jobId)).willReturn(0);
-		BDDMockito.given(Jobs.hasProcessingPairs(jobId)).willReturn(false);
-		BDDMockito.given(Jobs.countIncompletePairs(jobId)).willReturn(0);
-		BDDMockito.given(Jobs.getJobStatusCode(jobId)).willCallRealMethod();
-		Assert.assertEquals(JobStatus.JobStatusCode.STATUS_COMPLETE, Jobs.getJobStatusCode(jobId).getCode());
-	}
-
-	@Test
-	public void GetStatusRunningTest() {
-		BDDMockito.given(Jobs.isJobPausedOrKilled(jobId)).willReturn(0);
-		BDDMockito.given(Jobs.hasProcessingPairs(jobId)).willReturn(false);
-		BDDMockito.given(Jobs.countIncompletePairs(jobId)).willReturn(1);
-		BDDMockito.given(Jobs.getJobStatusCode(jobId)).willCallRealMethod();
-		Assert.assertEquals(JobStatus.JobStatusCode.STATUS_RUNNING, Jobs.getJobStatusCode(jobId).getCode());
 	}
 
 	private static Job getTestJob() {

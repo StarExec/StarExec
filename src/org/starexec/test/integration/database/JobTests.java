@@ -4,6 +4,7 @@ import org.junit.Assert;
 import static org.junit.Assert.*;
 import org.starexec.data.database.*;
 import org.starexec.data.to.*;
+import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.jobs.JobManager;
@@ -325,6 +326,53 @@ public class JobTests extends TestSequence {
 		Assert.assertTrue(JobPairs.updatePairExecutionHost(jp.getId(), n.getId()));
 		Assert.assertEquals(n.getId(), JobPairs.getPairDetailed(jp.getId()).getNode().getId());
 		jp.setNode(n);
+	}
+
+	private void assertJobHasStatus(Job job, JobStatusCode status) {
+		JobStatusCode actual = Jobs.getJobStatusCode(job.getId()).getCode();
+		if (status != actual) {
+			Assert.assertEquals(status.name(), actual.name());
+		}
+	}
+
+	@StarexecTest
+	private void JobStatus() throws SQLException {
+		// We need our *own* job because we are going to be modifying the status
+		// in irreparable ways
+		Job job = loader.loadJobIntoDatabase(space.getId(), user.getId(), solver.getId(), benchmarkIds);
+		final HashMap<String, Integer> stats = new HashMap<>();
+		job.setLiteJobPairStats(stats);
+		stats.put("pendingPairs", 0);
+		final int jobId = job.getId();
+		Status status = new Status();
+		int jp = job.getJobPairs().get(0).getId();
+		try {
+			assertJobHasStatus(job, JobStatusCode.STATUS_COMPLETE);
+			Assert.assertEquals("complete", job.getStatus());
+
+			status.setCode(StatusCode.STATUS_ENQUEUED);
+			JobPairs.setStatusForPairAndStages(jp, status.getCode().getVal());
+			stats.put("pendingPairs", 1);
+			assertJobHasStatus(job, JobStatusCode.STATUS_RUNNING);
+			Assert.assertEquals("incomplete", job.getStatus());
+
+			status.setCode(StatusCode.STATUS_PROCESSING);
+			JobPairs.setStatusForPairAndStages(jp, status.getCode().getVal());
+			assertJobHasStatus(job, JobStatusCode.STATUS_PROCESSING);
+			Assert.assertEquals("incomplete", job.getStatus());
+
+			Jobs.pause(jobId);
+			assertJobHasStatus(job, JobStatusCode.STATUS_PAUSED);
+			Assert.assertEquals("paused", job.getStatus());
+
+			Jobs.kill(jobId);
+			assertJobHasStatus(job, JobStatusCode.STATUS_KILLED);
+			Assert.assertEquals("killed", job.getStatus());
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			Jobs.deleteAndRemove(jobId);
+		}
 	}
 
 	@Override
