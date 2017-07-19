@@ -11,6 +11,7 @@ import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.StageAttributes;
 import org.starexec.util.Util;
 
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -466,23 +467,12 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	 * @return Human readable description of this job's status
 	 */
 	public String getStatus() {
-		final int userId = getUserId();
 		final int id = getId();
-		String status;
-
-		if (Jobs.isJobKilled(id)) {
-			status = "killed";
-		} else if (Jobs.isJobPaused(id)) {
-			status = "paused";
-		} else if (Jobs.isSystemPaused() && !Users.isDeveloper(userId) && !Users.isAdmin(userId)) {
-			status = "global pause";
-		} else if (getLiteJobPairStats().get("pendingPairs") > 0) {
-			status = "incomplete";
-		} else {
-			status = "complete";
+		try {
+			return Jobs.getJobStatus(id).toString();
+		} catch (SQLException e) {
+			return "";
 		}
-
-		return status;
 	}
 
 	public void setKillDelay(int killDelay) {

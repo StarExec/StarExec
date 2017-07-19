@@ -10,7 +10,7 @@ import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
 import org.starexec.data.to.*;
-import org.starexec.data.to.JobStatus.JobStatusCode;
+import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.SolverBuildStatus.SolverBuildStatusCode;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.compare.JobPairComparator;
@@ -3667,8 +3667,11 @@ public class Jobs {
 	 */
 
 	public static boolean canJobBePostProcessed(int jobId) {
-		JobStatus status = getJobStatusCode(jobId);
-		return status.getCode() == JobStatusCode.STATUS_COMPLETE;
+		try {
+			return getJobStatus(jobId) == JobStatus.COMPLETE;
+		} catch (SQLException e) {
+			return false;
+		}
 	}
 
 	/**
@@ -3699,34 +3702,12 @@ public class Jobs {
 	 * @param jobId The ID of the job to check
 	 * @return A JobStatus object
 	 */
-	public static JobStatus getJobStatusCode(int jobId) {
-		JobStatus status = new JobStatus();
-		try {
-			int a = Jobs.isJobPausedOrKilled(jobId);
-			if (a == 1) {
-				status.setCode(JobStatusCode.STATUS_PAUSED);
-				return status;
-			} else if (a == 2) {
-				status.setCode(JobStatusCode.STATUS_KILLED);
-				return status;
-			}
-
-			if (hasProcessingPairs(jobId)) {
-				status.setCode(JobStatusCode.STATUS_PROCESSING);
-				return status;
-			}
-
-			//if the job is not paused and no pending pairs remain, it is done
-			if (countIncompletePairs(jobId) == 0) {
-				status.setCode(JobStatusCode.STATUS_COMPLETE);
-				return status;
-			}
-			status.setCode(JobStatusCode.STATUS_RUNNING);
-			return status;
-		} catch (Exception e) {
-			log.error("getJobStatusCode says " + e.getMessage(), e);
-		}
-		return status;
+	public static JobStatus getJobStatus(int jobId) throws SQLException {
+		return Common.query(
+			"SELECT GetJobStatusDetail(?);",
+			procedure -> procedure.setInt(1, jobId),
+			JobStatus::fromResultSet
+		);
 	}
 
 	/**
@@ -3736,9 +3717,12 @@ public class Jobs {
 	 * @return True if the job is complete, false otherwise (includes the possibility of error)
 	 * @author Eric Burns
 	 */
-
 	public static boolean isJobComplete(int jobId) {
-		return getJobStatusCode(jobId).getCode() == JobStatusCode.STATUS_COMPLETE;
+		try {
+			return getJobStatus(jobId) == JobStatus.COMPLETE;
+		} catch (SQLException e) {
+			return false;
+		}
 	}
 
 	/**

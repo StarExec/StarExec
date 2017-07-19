@@ -63,6 +63,38 @@ CREATE FUNCTION GetJobStatus(_jobId INT)
 		RETURN status;
 	END //
 
+-- Returns human readable description of this job's status
+-- This Function looks intimidating, but it is just a big IF ELSE IF chain
+DROP FUNCTION IF EXISTS GetJobStatusDetail;
+CREATE FUNCTION GetJobStatusDetail(_jobId INT)
+	RETURNS ENUM("RUNNING", "PROCESSING", "COMPLETE", "DELETED", "KILLED", "PAUSED", "GLOBAL_PAUSE")
+	BEGIN
+		DECLARE status ENUM("RUNNING", "PROCESSING", "COMPLETE", "DELETED", "KILLED", "PAUSED", "GLOBAL_PAUSE");
+
+		SELECT
+			IF ( EXISTS ( SELECT * FROM jobs WHERE id=_jobId AND deleted ), "DELETED",
+			IF ( EXISTS ( SELECT * FROM jobs WHERE id=_jobId AND killed  ), "KILLED",
+			IF ( EXISTS ( SELECT * FROM jobs WHERE id=_jobId AND paused  ), "PAUSED",
+			IF ( EXISTS ( SELECT * FROM job_pairs WHERE job_id=_jobId AND status_code=22), "PROCESSING",
+			IF ( EXISTS ( SELECT * FROM job_pairs WHERE job_id=_jobId AND (status_code BETWEEN 1 AND 6)),
+				IF ( EXISTS ( SELECT * FROM system_flags WHERE paused )
+				     AND NOT EXISTS (SELECT role
+						FROM user_roles
+						JOIN users ON user_roles.email=users.email
+						LEFT JOIN jobs ON user_id=users.id
+						WHERE jobs.id=_jobId
+						AND (role = "admin" OR role = "developer")
+						),
+					"GLOBAL_PAUSE",
+					"RUNNING"
+				),
+			"COMPLETE"
+			)))))
+		INTO status;
+
+		RETURN status;
+	END //
+
 -- Gets the number of pending job pairs for a given job id
 -- Author: Todd Elvers
 DROP FUNCTION IF EXISTS GetPendingPairs;

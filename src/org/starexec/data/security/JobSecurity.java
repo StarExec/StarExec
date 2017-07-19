@@ -4,7 +4,7 @@ package org.starexec.data.security;
 import org.starexec.app.RESTServices;
 import org.starexec.data.database.*;
 import org.starexec.data.to.*;
-import org.starexec.data.to.JobStatus.JobStatusCode;
+import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.logger.StarLogger;
 
@@ -214,6 +214,7 @@ public class JobSecurity {
 	}
 
 	private static ValidatorStatusCode rerunPairsHelper(int jobId, int userId, boolean readOrWritePrivileges) {
+		final String methodName = "rerunPairsHelper";
 		Job job=Jobs.get(jobId);
 		if (job==null) {
 			return new ValidatorStatusCode(false, "The job could not be found");
@@ -226,11 +227,18 @@ public class JobSecurity {
 			return new ValidatorStatusCode(false, "You may not rerun solver build jobs. Please reupload your solver instead.");
 		}
 
-		JobStatus status= Jobs.getJobStatusCode(jobId);
-		if (status.getCode().getVal()==JobStatusCode.STATUS_PAUSED.getVal()) {
+		JobStatus status = null;
+		try {
+			status = Jobs.getJobStatus(jobId);
+		} catch (SQLException e) {
+			log.error(methodName, "Could not find job " + jobId + "in DB", e);
+			return RESTServices.ERROR_DATABASE;
+		}
+
+		if (status == JobStatus.PAUSED) {
 			return new ValidatorStatusCode(false, "This job is currently paused. Please unpause it before rerunning pairs");
 		}
-		if (status.getCode().getVal()==JobStatusCode.STATUS_KILLED.getVal()) {
+		if (status == JobStatus.KILLED) {
 			return new ValidatorStatusCode(false, "This job has been killed. It may no longer be run");
 		}
 		if (Jobs.isJobDeleted(jobId)) {
@@ -284,7 +292,6 @@ public class JobSecurity {
 	 * @param userId The ID of the user making the request
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise
 	 */
-
 	public static ValidatorStatusCode canUserResumeJob(int jobId, int userId) {
 		if (!userOwnsJobOrIsAdmin(jobId,userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to resume this job");
@@ -297,7 +304,6 @@ public class JobSecurity {
 		return new ValidatorStatusCode(true);
 	}
 
-
 	/**
 	 * Checks to see if the given user has permission to delete all jobs in the given list of jobs
 	 * @param jobIds The IDs of the jobs being checked
@@ -305,7 +311,6 @@ public class JobSecurity {
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise.
 	 * If the user does not have the needed permissions for even one job, the error code will be returned
 	 */
-
 	public static ValidatorStatusCode canUserDeleteJobs(List<Integer> jobIds, int userId) {
 		for (Integer jid : jobIds) {
 			ValidatorStatusCode status=canUserDeleteJob(jid,userId);
@@ -335,7 +340,6 @@ public class JobSecurity {
 	 * @param userId The ID of the user making the request
 	 * @return new ValidatorStatusCode(true) if the operation is allowed and a status code from ValidatorStatusCodes otherwise.
 	 */
-
 	public static ValidatorStatusCode canChangeQueue(int jobId, int userId, int queueId) {
 		if (!userOwnsJobOrIsAdmin(jobId,userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to change queues for this job");
@@ -429,9 +433,6 @@ public class JobSecurity {
 				log.error(methodName,"Caught SQLException.", e);
 				return RESTServices.ERROR_DATABASE;
 			}
-
-
-
 			return new ValidatorStatusCode(true);
 	}
 

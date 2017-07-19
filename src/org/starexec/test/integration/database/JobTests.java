@@ -4,7 +4,6 @@ import org.junit.Assert;
 import static org.junit.Assert.*;
 import org.starexec.data.database.*;
 import org.starexec.data.to.*;
-import org.starexec.data.to.JobStatus.JobStatusCode;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.jobs.JobManager;
@@ -137,8 +136,8 @@ public class JobTests extends TestSequence {
 	// this just checks to see whether the function throws errors: more detailed logic testing
 	// is handled in a unit test
 	@StarexecTest
-	private void GetStatusTest() {
-		Assert.assertNotNull(Jobs.getJobStatusCode(job.getId()));
+	private void GetStatusTest() throws SQLException {
+		Assert.assertNotNull(Jobs.getJobStatus(job.getId()));
 	}
 
 	@StarexecTest
@@ -328,8 +327,8 @@ public class JobTests extends TestSequence {
 		jp.setNode(n);
 	}
 
-	private void assertJobHasStatus(Job job, JobStatusCode status) {
-		JobStatusCode actual = Jobs.getJobStatusCode(job.getId()).getCode();
+	private void assertJobHasStatus(Job job, JobStatus status) throws SQLException {
+		JobStatus actual = Jobs.getJobStatus(job.getId());
 		if (status != actual) {
 			Assert.assertEquals(status.name(), actual.name());
 		}
@@ -347,26 +346,26 @@ public class JobTests extends TestSequence {
 		Status status = new Status();
 		int jp = job.getJobPairs().get(0).getId();
 		try {
-			assertJobHasStatus(job, JobStatusCode.STATUS_COMPLETE);
+			assertJobHasStatus(job, JobStatus.COMPLETE);
 			Assert.assertEquals("complete", job.getStatus());
 
 			status.setCode(StatusCode.STATUS_ENQUEUED);
 			JobPairs.setStatusForPairAndStages(jp, status.getCode().getVal());
 			stats.put("pendingPairs", 1);
-			assertJobHasStatus(job, JobStatusCode.STATUS_RUNNING);
+			assertJobHasStatus(job, JobStatus.RUNNING);
 			Assert.assertEquals("incomplete", job.getStatus());
 
 			status.setCode(StatusCode.STATUS_PROCESSING);
 			JobPairs.setStatusForPairAndStages(jp, status.getCode().getVal());
-			assertJobHasStatus(job, JobStatusCode.STATUS_PROCESSING);
+			assertJobHasStatus(job, JobStatus.PROCESSING);
 			Assert.assertEquals("incomplete", job.getStatus());
 
 			Jobs.pause(jobId);
-			assertJobHasStatus(job, JobStatusCode.STATUS_PAUSED);
+			assertJobHasStatus(job, JobStatus.PAUSED);
 			Assert.assertEquals("paused", job.getStatus());
 
 			Jobs.kill(jobId);
-			assertJobHasStatus(job, JobStatusCode.STATUS_KILLED);
+			assertJobHasStatus(job, JobStatus.KILLED);
 			Assert.assertEquals("killed", job.getStatus());
 		} catch (Exception e) {
 			throw e;
