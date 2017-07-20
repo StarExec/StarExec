@@ -150,6 +150,8 @@ echo "====================================="
 echo "date: `date`"
 echo "user: $USER_ID"
 echo "pair id: $PAIR_ID"
+echo "solver ids: ${SOLVER_IDS[*]}"
+echo "benchmark id: $BENCH_ID"
 echo "execution host: $HOSTNAME"
 echo "benchmarking framework: $BENCHMARKING_FRAMEWORK"
 
