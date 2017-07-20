@@ -76,14 +76,14 @@ CREATE FUNCTION GetJobStatusDetail(_jobId INT)
 			IF ( _jobId IN ( SELECT id FROM jobs WHERE paused  ), "PAUSED",
 			IF ( _jobId IN ( SELECT id FROM job_pairs WHERE status_code=22), "PROCESSING",
 			IF ( _jobId IN ( SELECT id FROM job_pairs WHERE status_code BETWEEN 1 AND 6),
-				IF ( EXISTS ( SELECT * FROM system_flags WHERE paused )
-				     AND NOT EXISTS (SELECT role
-						FROM user_roles
-						JOIN users ON user_roles.email=users.email
-						LEFT JOIN jobs ON user_id=users.id
-						WHERE jobs.id=_jobId
-						AND (role = "admin" OR role = "developer")
-						),
+				IF ( TRUE IN (SELECT paused FROM system_flags)
+					AND _jobId NOT IN (
+						SELECT jobs.id
+						FROM jobs
+						JOIN users ON user_id=users.id
+						JOIN user_roles ON user_roles.email=users.email
+						WHERE (role = "admin" OR role = "developer")
+					),
 					"GLOBAL_PAUSE",
 					"RUNNING"
 				),
