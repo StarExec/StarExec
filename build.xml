@@ -140,13 +140,14 @@
 	</target>
 
 	<target name="format-css" depends="css-properties">
+		<!-- autoformat all SCSS files -->
 		<exec executable="sass-convert" failonerror="true">
 			<arg line="--indent t" />
-			<arg line="-i" />
-			<arg line="-R" />
+			<arg value="-i" />
+			<arg value="-R" />
 			<arg line="-F scss" />
 			<arg line="-T scss" />
-			<arg line="WebContent/css" />
+			<arg value="${css-input-dir}" />
 		</exec>
 	</target>
 
