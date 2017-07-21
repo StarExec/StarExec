@@ -20,31 +20,34 @@ public class Queue extends Identifiable implements Iterable<WorkerNode>, Nameabl
 	@Expose private HashMap<Integer, String[]> jobPairs;
 	@Expose private int cpuTimeout;
 	@Expose private int wallTimeout;
-	
+
 	public Queue() {
 		this.nodes = new LinkedList<>();
 		this.attributes = new HashMap<>();
 		this.jobPairs = new HashMap<>();
 	}
-	
+
 	/**
 	 * @return the name of the queue
 	 */
 	public String getName() {
 		return name;
 	}
+
 	/**
 	 * @param name the name to set for the queue
 	 */
 	public void setName(String name) {
 		this.name = name;
 	}
+
 	/**
 	 * @return the status of the queue
 	 */
 	public String getStatus() {
 		return status;
 	}
+
 	/**
 	 * @param status the status to set for the queue
 	 */
@@ -58,7 +61,7 @@ public class Queue extends Identifiable implements Iterable<WorkerNode>, Nameabl
 	public boolean getGlobalAccess() {
 		return global_access;
 	}
-	
+
 	/**
 	 * @param global_access true if queue is global, false otherwise
 	 */
@@ -72,13 +75,14 @@ public class Queue extends Identifiable implements Iterable<WorkerNode>, Nameabl
 	public List<WorkerNode> getNodes() {
 		return nodes;
 	}
+
 	/**
 	 * @param node the worker node to add to the queue
 	 */
 	public void addNode(WorkerNode node) {
 		this.nodes.add(node);
 	}
-	
+
 	/**
 	 * @return The attributes for this worker node
 	 */
@@ -93,14 +97,14 @@ public class Queue extends Identifiable implements Iterable<WorkerNode>, Nameabl
 	public void putAttribute(String key, String val) {
 		this.attributes.put(key, val);
 	}
-	
+
 	/**
 	 * @return The job pairs
 	 */
 	public HashMap<Integer, String[]> getJobPair() {
 		return jobPairs;
 	}
-	
+
 	public void putJobPair(int key, String[] values) {
 		this.jobPairs.put(key, values);
 	}
@@ -142,5 +146,4 @@ public class Queue extends Identifiable implements Iterable<WorkerNode>, Nameabl
 	public int getWallTimeout() {
 		return wallTimeout;
 	}
-
 }
