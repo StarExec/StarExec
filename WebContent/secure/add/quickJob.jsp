@@ -53,10 +53,10 @@
 			request.setAttribute("isPublicUser",isPublicUser);
 		}
 	} catch (NumberFormatException nfe) {
-		log.error(nfe.getMessage(),nfe);
+		log.debug(nfe.getMessage(),nfe);
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The space id was not in the correct format");
 	} catch (Exception e) {
-		log.error(e.getMessage(),e);
+		log.debug(e.getMessage(),e);
 		response.sendError(HttpServletResponse.SC_NOT_FOUND, "You do not have permission to add to this space or the space does not exist");
 	}
 %>
