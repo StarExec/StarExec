@@ -41,6 +41,7 @@ public class Solvers {
 	 * @author Skylar Stark
 	 */
 	public static int add(Solver s, int spaceId) throws SQLException {
+		final String methodName = "add";
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -89,6 +90,7 @@ public class Solvers {
 	 * @author Skylar Stark
 	 */
 	protected static int addConfiguration(Connection con, Configuration c) throws SQLException {
+		final String methodName = "addConfiguration";
 		CallableStatement procedure = null;
 		try {
 			procedure = con.prepareCall("{CALL AddConfiguration(?, ?, ?, ?, ?)}");
@@ -101,7 +103,7 @@ public class Solvers {
 			c.setId(procedure.getInt(5));
 			return c.getId();
 		} catch (SQLException e) {
-			log.error("addConfiguration says " + e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
 			throw e;
 		} finally {
 			Common.safeClose(procedure);
@@ -119,6 +121,7 @@ public class Solvers {
 	 * @author Todd Elvers
 	 */
 	public static int addConfiguration(Solver s, Configuration c) {
+		final String methodName = "addConfiguration";
 		Connection con = null;
 		try {
 			con = Common.getConnection();
@@ -131,7 +134,7 @@ public class Solvers {
 
 			return newConfigId;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -149,6 +152,7 @@ public class Solvers {
 	 * @author Skylar Stark
 	 */
 	protected static boolean associate(Connection con, int spaceId, int solverId) throws SQLException {
+		final String methodName = "associate";
 		CallableStatement procedure = null;
 		try {
 			procedure = con.prepareCall("{CALL AddSolverAssociation(?, ?)}");
@@ -158,7 +162,7 @@ public class Solvers {
 			procedure.executeUpdate();
 			return true;
 		} catch (SQLException e) {
-			log.error("Solvers.associate says " + e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
 			throw e;
 		} finally {
 			Common.safeClose(procedure);
@@ -177,6 +181,7 @@ public class Solvers {
 	 * @author Todd Elvers
 	 */
 	protected static boolean associate(Connection con, List<Integer> solverIds, int spaceId) throws Exception {
+		final String methodName = "associate";
 		for (int sid : solverIds) {
 			Solvers.associate(con, spaceId, sid);
 		}
@@ -192,6 +197,7 @@ public class Solvers {
 	 * @author Eric Burns
 	 */
 	public static boolean associate(int solverId, int spaceId) {
+		final String methodName = "associate";
 		List<Integer> solverIds = new ArrayList<>();
 		solverIds.add(solverId);
 		return associate(solverIds, spaceId);
@@ -206,6 +212,7 @@ public class Solvers {
 	 * @author Tyler Jensen
 	 */
 	public static boolean associate(List<Integer> solverIds, int spaceId) {
+		final String methodName = "associate";
 		Connection con = null;
 
 		try {
@@ -221,13 +228,13 @@ public class Solvers {
 			Common.endTransaction(con);
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			final String message = "Failed to add solvers " + solverIds.toString() + " to space [" + spaceId + "]";
+			log.error(methodName, message, e);
 			Common.doRollback(con);
+			return false;
 		} finally {
 			Common.safeClose(con);
 		}
-		log.error("Failed to add solvers " + solverIds.toString() + " to space [" + spaceId + "]");
-		return false;
 	}
 
 	/**
@@ -242,10 +249,11 @@ public class Solvers {
 	 */
 	public static boolean associate(List<Integer> solverIds, int rootSpaceId, boolean linkInSubspaces, int userId,
 	                                boolean includeRoot) {
+		final String methodName = "associate";
 		// Either copy the solvers to the destination space or the destination space and all of its subspaces (that
 		// the user can see)
 		if (linkInSubspaces) {
-			log.debug("got a request to link in subspaces");
+			log.trace("got a request to link in subspaces");
 			List<Space> subspaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(rootSpaceId, userId));
 			log.debug("found a total subspaces = " + subspaces.size());
 			List<Integer> subspaceIds = new LinkedList<>();
@@ -280,6 +288,7 @@ public class Solvers {
 	 * @author Todd Elvers
 	 */
 	public static boolean associate(List<Integer> solverIds, List<Integer> spaceIds) {
+		final String methodName = "associate";
 		Connection con = null;
 
 		try {
@@ -295,13 +304,13 @@ public class Solvers {
 			Common.endTransaction(con);
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			String message = "Failed to add solvers " + solverIds.toString() + " to spaces " + spaceIds.toString();
+			log.error(methodName, message, e);
 			Common.doRollback(con);
+			return false;
 		} finally {
 			Common.safeClose(con);
 		}
-		log.error("Failed to add solvers " + solverIds.toString() + " to spaces " + spaceIds.toString());
-		return false;
 	}
 
 	/**
@@ -311,22 +320,21 @@ public class Solvers {
 	 * @param con The open connection to make the SQL call on
 	 * @return True on success and false otherwise
 	 */
-
 	private static boolean removeSolverFromDatabase(int solverId, Connection con) {
-		log.debug("got request permanently remove this solver from the database " + solverId);
+		final String methodName = "removeSolverFromDatabase";
+		log.trace("got request permanently remove this solver from the database " + solverId);
 		CallableStatement procedure = null;
 		try {
 			procedure = con.prepareCall("CALL RemoveSolverFromDatabase(?)");
 			procedure.setInt(1, solverId);
 			procedure.executeUpdate();
 			return true;
-
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return false;
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
 
 	/**
@@ -336,6 +344,7 @@ public class Solvers {
 	 * @return True on success, false on error
 	 */
 	public static boolean cleanOrphanedDeletedSolvers() {
+		final String methodName = "cleanOrphanedDeletedSolvers";
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -351,7 +360,6 @@ public class Solvers {
 			}
 			Common.safeClose(procedure);
 			Common.safeClose(results);
-
 
 			procedure = con.prepareCall("{CALL GetSolversAssociatedWithPairs()}");
 			results = procedure.executeQuery();
@@ -380,7 +388,7 @@ public class Solvers {
 			}
 			return true;
 		} catch (Exception e) {
-			log.error("cleanOrphanedDeletedSolvers says " + e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -402,7 +410,6 @@ public class Solvers {
 		List<Integer> ids = new ArrayList<>();
 		for (Solver s : solvers) {
 			ids.add(copySolver(s, userId, spaceId));
-
 		}
 		return ids;
 	}
@@ -417,8 +424,8 @@ public class Solvers {
 	 * @return The ID of the new solver, or -1 on failure
 	 * @author Eric Burns
 	 */
-
 	public static int copySolver(Solver s, int userId, int spaceId) {
+		final String methodName = "copySolver";
 		log.debug("Copying solver " + s.getName() + " to new user id= " + String.valueOf(userId));
 		Solver newSolver = new Solver();
 		newSolver.setDescription(s.getDescription());
@@ -442,10 +449,8 @@ public class Solvers {
 				newSolver.addConfiguration(c);
 			}
 			return Solvers.add(newSolver, spaceId);
-
 		} catch (Exception e) {
-
-			log.error("copySolver says " + e.getMessage());
+			log.error(methodName, e.getMessage(), e);
 			return -1;
 		}
 	}
@@ -458,8 +463,8 @@ public class Solvers {
 	 * @param id
 	 * @return True on success and false otherwise.
 	 */
-
 	public static boolean deleteAndRemoveSolver(int id) {
+		final String methodName = "deleteAndRemoveSolver";
 		Solver s = Solvers.getIncludeDeleted(id);
 		if (s == null) {
 			return true;
@@ -476,11 +481,11 @@ public class Solvers {
 			con = Common.getConnection();
 			return Solvers.removeSolverFromDatabase(id, con);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return false;
 		} finally {
 			Common.safeClose(con);
 		}
-		return false;
 	}
 
 	/**
@@ -491,11 +496,11 @@ public class Solvers {
 	 * @author Todd Elvers
 	 */
 	public static boolean delete(int id) {
-		log.debug("Solvers.delete() called on solver with id = " + id);
+		final String methodName = "delete";
+		log.trace("Solvers.delete() called on solver with id = " + id);
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
-
 			File buildOutput = Solvers.getSolverBuildOutput(id);
 			if (buildOutput.exists()) {
 				Util.safeDeleteDirectory(buildOutput.getParent());
@@ -508,7 +513,7 @@ public class Solvers {
 			procedure.executeUpdate();
 
 			String sourcePath = procedure.getString(2) + "_src";
-			log.info("Deleting solver source from disk, path: " + sourcePath);
+			log.trace("Deleting solver source from disk, path: " + sourcePath);
 			Util.safeDeleteDirectory(sourcePath);
 			File srcFile = new File(sourcePath);
 			if (srcFile.getParentFile().exists()) {
@@ -524,14 +529,13 @@ public class Solvers {
 
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			String message = String.format("Deletion of solver [id=%d] failed.", id);
+			log.error(methodName, message, e);
+			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-
-		log.debug(String.format("Deletion of solver [id=%d] failed.", id));
-		return false;
 	}
 
 	/**
@@ -543,6 +547,7 @@ public class Solvers {
 	 * @author Todd Elvers
 	 */
 	public static boolean deleteConfiguration(int configId) {
+		final String methodName = "deleteConfiguration";
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -555,13 +560,13 @@ public class Solvers {
 
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			String message = String.format("Configuration %d has failed to be deleted from the database.", configId);
+			log.error(methodName, message, e);
+			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		log.warn(String.format("Configuration %d has failed to be deleted from the database.", configId));
-		return false;
 	}
 
 	/**
@@ -574,6 +579,7 @@ public class Solvers {
 	 * @author Todd Elvers
 	 */
 	public static boolean deleteConfigurationFile(Configuration config) {
+		final String methodName = "deleteConfigurationFile";
 		try {
 			Solver s = Solvers.getSolverByConfig(config.getId(), false);
 			// Builds the path to the configuration object's physical file on disk, then deletes it from disk
@@ -581,7 +587,6 @@ public class Solvers {
 			if (configFile.delete()) {
 				log.info(String.format("Configuration %d has been successfully deleted from disk.", config.getId()));
 			}
-
 
 			// Attempt to remove the configuration's entry in the database
 			if (!Solvers.deleteConfiguration(config.getId())) {
@@ -592,11 +597,10 @@ public class Solvers {
 			return Solvers.updateSolverDiskSize(s);
 
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			String message = String.format("Configuration %d has failed to be deleted from disk.", config.getId());
+			log.error(methodName, message, e);
+			return false;
 		}
-
-		log.warn(String.format("Configuration %d has failed to be deleted from disk.", config.getId()));
-		return false;
 	}
 
 	/**
@@ -625,7 +629,7 @@ public class Solvers {
 				// Make sure the configuration has the right line endings
 				Util.normalizeFile(f);
 			}
-			//f.setExecutable(true, false);	//previous version only got top level		
+			//f.setExecutable(true, false);	//previous version only got top level
 		}
 		setHierarchyExecutable(binDir);//should make entire hierarchy executable
 		return returnList;
@@ -639,8 +643,8 @@ public class Solvers {
 	 * @author Tyler Jensen
 	 */
 	public static Solver get(Connection con, int solverId, boolean includeDeleted) {
+		final String methodName = "get";
 		CallableStatement procedure = null;
-
 		ResultSet results = null;
 
 		try {
@@ -657,7 +661,7 @@ public class Solvers {
 				return s;
 			}
 		} catch (Exception e) {
-			log.error("Solvers.get says " + e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -682,18 +686,18 @@ public class Solvers {
 	 * @author Tyler Jensen
 	 */
 	public static Solver get(int solverId, boolean includeDeleted) {
+		final String methodName = "get";
 		Connection con = null;
 
 		try {
 			con = Common.getConnection();
 			return Solvers.get(con, solverId, includeDeleted);
 		} catch (Exception e) {
-			log.error("Solver get says " + e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return null;
 		} finally {
 			Common.safeClose(con);
 		}
-
-		return null;
 	}
 
 	/**
@@ -702,6 +706,7 @@ public class Solvers {
 	 * @author Tyler Jensen
 	 */
 	public static List<Solver> get(List<Integer> solverIds) {
+		final String methodName = "get";
 		Connection con = null;
 
 		try {
@@ -714,11 +719,11 @@ public class Solvers {
 
 			return solvers;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return null;
 		} finally {
 			Common.safeClose(con);
 		}
-		return null;
 	}
 
 	/**
@@ -729,6 +734,7 @@ public class Solvers {
 	 * @author Eric Burns
 	 */
 	public static List<Integer> getAssociatedSpaceIds(int solverId) {
+		final String methodName = "getAssociatedSpaceIds";
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -743,13 +749,13 @@ public class Solvers {
 			}
 			return ids;
 		} catch (Exception e) {
-			log.error("Solvers.getAssociatedSpaceIds says " + e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return null;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
-		return null;
 	}
 
 	/**
@@ -760,6 +766,7 @@ public class Solvers {
 	 * @author Skylar Stark
 	 */
 	public static Solver getByConfigId(int configId) {
+		final String methodName = "getByConfigId";
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
@@ -782,13 +789,13 @@ public class Solvers {
 
 			return null; //The solver/config pair was invalid.
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return null;
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		return null;
 	}
 
 	/**
@@ -798,6 +805,7 @@ public class Solvers {
 	 * @return The list of solvers, or null on error
 	 */
 	public static List<Solver> getSolversInSharedSpaces(int userId) {
+		final String methodName = "getSolversInSharedSpaces";
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -813,13 +821,13 @@ public class Solvers {
 			}
 			return solvers;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return null;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		return null; //error
 	}
 
 	/**
@@ -831,6 +839,7 @@ public class Solvers {
 	 * @return The list of solvers
 	 */
 	public static List<Solver> getByUserWithConfigs(int userId) {
+		final String methodName = "getByUserWithConfigs";
 		List<Solver> solvers = getByUser(userId);
 		for (Solver s : solvers) {
 			s.getConfigurations().addAll(Solvers.getConfigsForSolver(s.getId()));
@@ -847,6 +856,7 @@ public class Solvers {
 	 * @return The list of solvers
 	 */
 	public static List<Solver> getByUser(int userId) {
+		final String methodName = "getByUser";
 		try {
 			//will stores solvers according to their IDs, used to remove duplicates
 			HashMap<Integer, Solver> uniqueSolvers = new HashMap<>();
@@ -865,9 +875,9 @@ public class Solvers {
 			solvers.addAll(uniqueSolvers.values());
 			return solvers;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return null;
 		}
-		return null;
 	}
 
 	/**
@@ -878,6 +888,7 @@ public class Solvers {
 	 * @author Todd Elvers
 	 */
 	public static List<Solver> getByOwner(int userId) {
+		final String methodName = "getByOwner";
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
@@ -900,15 +911,14 @@ public class Solvers {
 
 			return solvers;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			String message = String.format("Getting the solvers owned by user %d failed.", userId);
+			log.error(methodName, message, e);
+			return null;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-
-		log.debug(String.format("Getting the solvers owned by user %d failed.", userId));
-		return null;
 	}
 
 	/**
@@ -917,6 +927,7 @@ public class Solvers {
 	 * @author Tyler Jensen
 	 */
 	public static List<Solver> getBySpace(int spaceId) {
+		final String methodName = "getBySpace";
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -934,13 +945,12 @@ public class Solvers {
 
 			return solvers;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-
 		return null;
 	}
 
@@ -1088,6 +1098,7 @@ public class Solvers {
 	 * @author Tyler Jensen
 	 */
 	public static List<Solver> getBySpaceDetailed(int spaceId) {
+		final String methodName = "getBySpaceDetailed";
 		Connection con = null;
 
 		try {
@@ -1100,7 +1111,7 @@ public class Solvers {
 
 			return solvers;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -1120,6 +1131,7 @@ public class Solvers {
 	 * @author Eric Burns
 	 */
 	public static List<Solver> getBySpaceHierarchy(int spaceId, int userId) {
+		final String methodName = "getBySpaceHierarchy";
 		List<Solver> solvers = new ArrayList<>();
 		solvers.addAll(Solvers.getBySpace(spaceId));
 		List<Space> spaceIds = Spaces.getSubSpaceHierarchy(spaceId, userId);
@@ -1143,7 +1155,6 @@ public class Solvers {
 		for (Configuration c : configs) {
 			configIds.add(c.getId());
 		}
-
 		return configIds;
 	}
 
@@ -1155,6 +1166,7 @@ public class Solvers {
 	 * @author Tyler Jensen
 	 */
 	public static List<Configuration> getConfigsForSolver(int solverId) {
+		final String methodName = "getConfigsForSolver";
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
@@ -1176,14 +1188,13 @@ public class Solvers {
 
 			return configs;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return null;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-
-		return null;
 	}
 
 	/**
@@ -1195,6 +1206,7 @@ public class Solvers {
 	 * @author Tyler Jensen
 	 */
 	protected static Configuration getConfiguration(Connection con, int configId) {
+		final String methodName = "getConfiguration";
 		CallableStatement procedure = null;
 		ResultSet results = null;
 
@@ -1212,11 +1224,10 @@ public class Solvers {
 				return c;
 			}
 		} catch (Exception e) {
-			log.error("getConfiguration says " + e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
-
 		}
 		return null;
 	}
@@ -1265,16 +1276,17 @@ public class Solvers {
 	 * @author Tyler Jensen
 	 */
 	public static Configuration getConfiguration(int configId) {
+		final String methodName = "getConfiguration";
 		Connection con = null;
 		try {
 			con = Common.getConnection();
 			return Solvers.getConfiguration(con, configId);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return null;
 		} finally {
 			Common.safeClose(con);
 		}
-		return null;
 	}
 
 	/**
@@ -1297,6 +1309,7 @@ public class Solvers {
 	 * @author Eric Burns
 	 */
 	public static int getCountInSpace(int spaceId, String query) {
+		final String methodName = "getCountInSpace";
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
@@ -1311,13 +1324,12 @@ public class Solvers {
 				return results.getInt("solverCount");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-
 		return 0;
 	}
 
@@ -1349,6 +1361,7 @@ public class Solvers {
 	 * @author Benton McCune
 	 */
 	public static List<Solver> getPublicSolvers() {
+		final String methodName = "getPublicSolvers";
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -1364,13 +1377,13 @@ public class Solvers {
 			}
 			return solvers;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return null;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		return null;
 	}
 
 	/**
@@ -1390,6 +1403,7 @@ public class Solvers {
 	 * @author Eric Burns
 	 */
 	public static int getRecycledSolverCountByUser(int userId, String query) {
+		final String methodName = "getRecycledSolverCountByUser";
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
@@ -1403,7 +1417,7 @@ public class Solvers {
 				return results.getInt("solverCount");
 			}
 		} catch (Exception e) {
-			log.error("getRecycledSolverCountByUser says " + e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -1420,6 +1434,7 @@ public class Solvers {
 	 * @author Tyler Jensen
 	 */
 	protected static Solver getSolverByConfig(Connection con, int configId, boolean includeDeleted) {
+		final String methodName = "getSolverByConfig";
 		Configuration c = Solvers.getConfiguration(con, configId);
 		if (c == null) {
 			log.debug("getSolverByConfig called with configId = " + configId + " but config was null");
@@ -1446,13 +1461,14 @@ public class Solvers {
 	 * @author Tyler Jensen
 	 */
 	public static Solver getSolverByConfig(int configId, boolean includeDeleted) {
+		final String methodName = "getSolverByConfig";
 		Connection con = null;
 
 		try {
 			con = Common.getConnection();
 			return Solvers.getSolverByConfig(con, configId, includeDeleted);
 		} catch (Exception e) {
-			log.error("getSolverByConfig says " + e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -1468,6 +1484,7 @@ public class Solvers {
 	 * @author Wyatt Kaiser
 	 */
 	public static int getSolverCountByUser(int userId) {
+		final String methodName = "getSolverCountByUser";
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
@@ -1481,7 +1498,7 @@ public class Solvers {
 				return results.getInt("solverCount");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1501,6 +1518,7 @@ public class Solvers {
 	 * @author Wyatt Kaiser
 	 */
 	public static int getSolverCountByUser(int userId, String query) {
+		final String methodName = "getSolverCountByUser";
 		Connection con = null;
 		ResultSet results = null;
 		CallableStatement procedure = null;
@@ -1515,13 +1533,12 @@ public class Solvers {
 				return results.getInt("solverCount");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-
 		return 0;
 	}
 
@@ -1535,6 +1552,7 @@ public class Solvers {
 	 * @author Wyatt Kaiser + Eric Burns
 	 */
 	public static List<Solver> getSolversByUserForNextPage(DataTablesQuery query, int userId, boolean recycled) {
+		final String methodName = "getSolversByUserForNextPage";
 		Connection con = null;
 		ResultSet results = null;
 		NamedParameterStatement procedure = null;
@@ -1571,14 +1589,13 @@ public class Solvers {
 
 			return solvers;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return null;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-
-		return null;
 	}
 
 	private static String getSolverOrderColumn(int orderIndex) {
@@ -1601,6 +1618,7 @@ public class Solvers {
 	 * @return A list of solvers, or null on error
 	 */
 	public static List<Solver> getSolversForNextPage(DataTablesQuery query, int spaceId) {
+		final String methodName = "getSolversForNextPage";
 		Connection con = null;
 		ResultSet results = null;
 		NamedParameterStatement procedure = null;
@@ -1639,14 +1657,13 @@ public class Solvers {
 
 			return solvers;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return null;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-
-		return null;
 	}
 
 	/**
@@ -1656,17 +1673,17 @@ public class Solvers {
 	 * @author Tyler Jensen
 	 */
 	public static Solver getWithConfig(int solverId, int configId) {
-
+		final String methodName = "getWithConfig";
 		Solver s = Solvers.get(solverId);
 		Configuration c = Solvers.getConfiguration(configId);
 		if (s == null) {
+			log.warn(methodName, "Solver not found: " + solverId);
 			return null;
 		}
 		if (s.getId() == c.getSolverId()) {
 			// Make sure this configuration actually belongs to the solver, and add it if it does
 			s.addConfiguration(c);
 		}
-
 		return s;
 	}
 
@@ -1680,7 +1697,7 @@ public class Solvers {
 	 * @author Tyler Jensen & Skylar Stark
 	 */
 	public static List<Solver> getWithConfig(List<Integer> configIds) {
-
+		final String methodName = "getWithConfig";
 		try {
 			List<Solver> solvers = new LinkedList<>();
 			for (int cid : configIds) {
@@ -1689,13 +1706,11 @@ public class Solvers {
 					solvers.add(s);
 				}
 			}
-
 			return solvers;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return null;
 		}
-
-		return null;
 	}
 
 	public static boolean isPublic(Connection con, int solverId) {
@@ -1742,18 +1757,17 @@ public class Solvers {
 	 * @return True on success and false otherwise
 	 */
 	public static boolean isPublic(int solverId) {
+		final String methodName = "isPublic";
 		Connection con = null;
 		try {
 			con = Common.getConnection();
 			return isPublic(con, solverId);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return false;
 		} finally {
 			Common.safeClose(con);
-
 		}
-
-		return false;
 	}
 
 
@@ -1764,8 +1778,8 @@ public class Solvers {
 	 * @param solverId The ID of the solver in question
 	 * @return True if the solver has been deleted, false otherwise (includes the possibility of an error)
 	 */
-
 	protected static boolean isSolverDeleted(Connection con, int solverId) {
+		final String methodName = "isSolverDeleted";
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
@@ -1778,13 +1792,12 @@ public class Solvers {
 			}
 			return deleted;
 		} catch (Exception e) {
-			log.error("isSolverDeleted says " + e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return false;
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
-
 
 	/**
 	 * Determines whether the solver with the given ID exists in the database with the column "deleted" set to true
@@ -1792,21 +1805,19 @@ public class Solvers {
 	 * @param solverId The ID of the solver in question
 	 * @return True if the solver exists in the database and has the deleted flag set to true
 	 */
-
 	public static boolean isSolverDeleted(int solverId) {
+		final String methodName = "isSolverDeleted";
 		Connection con = null;
 		try {
 			con = Common.getConnection();
-
 			return isSolverDeleted(con, solverId);
 		} catch (Exception e) {
-			log.error("isSolverDeleted says " + e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return false;
 		} finally {
 			Common.safeClose(con);
 		}
-		return false;
 	}
-
 
 	/**
 	 * Returns whether a solver with the given ID is present in the database with the
@@ -1817,8 +1828,8 @@ public class Solvers {
 	 * true, and false otherwise
 	 * @author Eric Burns
 	 */
-
 	protected static boolean isSolverRecycled(Connection con, int solverId) {
+		final String methodName = "isSolverRecycled";
 		CallableStatement procedure = null;
 		ResultSet results = null;
 
@@ -1832,12 +1843,12 @@ public class Solvers {
 			}
 			return deleted;
 		} catch (Exception e) {
-			log.error("isSolverRecycled says " + e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return false;
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		return false;
 	}
 
 	/**
@@ -1850,16 +1861,17 @@ public class Solvers {
 	 * @author Eric Burns
 	 */
 	public static boolean isSolverRecycled(int solverId) {
+		final String methodName = "isSolverRecycled";
 		Connection con = null;
 		try {
 			con = Common.getConnection();
 			return isSolverRecycled(con, solverId);
 		} catch (Exception e) {
-			log.error("isSolverRecycled says " + e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return false;
 		} finally {
 			Common.safeClose(con);
 		}
-		return false;
 	}
 
 	/**
@@ -1870,7 +1882,6 @@ public class Solvers {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Eric Burns
 	 */
-
 	public static boolean recycle(int id) {
 		return setRecycledState(id, true);
 	}
@@ -1890,7 +1901,6 @@ public class Solvers {
 				success = success && Solvers.recycle(s.getId());
 			}
 		}
-
 		return success;
 	}
 
@@ -1902,7 +1912,6 @@ public class Solvers {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Eric Burns
 	 */
-
 	public static boolean restore(int id) {
 		return setRecycledState(id, false);
 	}
@@ -1915,6 +1924,7 @@ public class Solvers {
 	 * @author Eric Burns
 	 */
 	public static boolean restoreRecycledSolvers(int userId) {
+		final String methodName = "restoreRecycledSolvers";
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -1930,17 +1940,18 @@ public class Solvers {
 			}
 			return true;
 		} catch (Exception e) {
-			log.error("restoreRecycledSolvers says " + e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		return false;
 	}
 
 	public static List<Triple<Solver, Configuration, String>> getSolverConfigResultsForBenchmarkInJob(int jobId, int
 			benchId, int stageNum) throws SQLException {
+		final String methodName = "getSolverConfigResultsForBenchmarkInJob";
 		return Common.query("{CALL GetSolverConfigResultsForBenchmarkInJob(?,?,?)}", procedure -> {
 			procedure.setInt(1, jobId);
 			procedure.setInt(2, benchId);
@@ -1959,16 +1970,11 @@ public class Solvers {
 
 	private static String transformPrefix(String prefix) {
 		// first format the prefix so it is either empty OR is the prefix plus a period
-		if (prefix == null) {
-			return "";
-		}
-		if (!prefix.isEmpty()) {
+		if (prefix != null && !prefix.isEmpty()) {
 			return prefix + ".";
 		}
-
 		return "";
 	}
-
 
 	/**
 	 * Given a ResultSet containing solver info, returns a Solver object representing  that info
@@ -2017,7 +2023,6 @@ public class Solvers {
 		return config;
 	}
 
-
 	/**
 	 * Sets every file in a hierarchy to be executable
 	 *
@@ -2044,6 +2049,7 @@ public class Solvers {
 	 * @author Eric Burns
 	 */
 	public static boolean setRecycledSolversToDeleted(int userId) {
+		final String methodName = "setRecycledSolversToDeleted";
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -2068,13 +2074,13 @@ public class Solvers {
 
 			return true;
 		} catch (Exception e) {
-			log.error("setRecycledSolversToDeleted says " + e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		return false;
 	}
 
 	/**
@@ -2086,11 +2092,11 @@ public class Solvers {
 	 * @author Eric Burns
 	 */
 	public static boolean setRecycledState(int id, boolean state) {
+		final String methodName = "setRecycledState";
 		Connection con = null;
 		CallableStatement procedure = null;
 
 		try {
-
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL SetSolverRecycledValue(?, ?)}");
 			procedure.setInt(1, id);
@@ -2098,12 +2104,12 @@ public class Solvers {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
 
 	/**
@@ -2116,6 +2122,7 @@ public class Solvers {
 	 * @author Todd Elvers
 	 */
 	public static boolean updateConfigDetails(int configId, String name, String description) {
+		final String methodName = "updateConfigDetails";
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -2136,16 +2143,14 @@ public class Solvers {
 				return true;
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			String message = String.format("Configuration [%s] failed to update properly.", name);
+			log.error(methodName, message, e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-
-		log.warn(String.format("Configuration [%s] failed to update properly.", name));
 		return false;
 	}
-
 
 	/**
 	 * Updates a configuration file's contents and/or filename
@@ -2156,6 +2161,7 @@ public class Solvers {
 	 * @author Todd Elvers
 	 */
 	public static boolean updateConfigFile(int configId, String newConfigName) {
+		final String methodName = "updateConfigFile";
 		try {
 			if (configId < 0 || Util.isNullOrEmpty(newConfigName)) {
 				log.warn("The configuration file parameters to update with are invalid.");
@@ -2185,14 +2191,11 @@ public class Solvers {
 			if (!isConfigNameUnchanged) {
 				FileUtils.moveFile(oldConfig, newConfig);
 			}
-
-
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return false;
 		}
-
-		return false;
 	}
 
 	/**
@@ -2206,6 +2209,7 @@ public class Solvers {
 	 * @author Todd Elvers
 	 */
 	public static boolean updateDetails(int id, String name, String description, boolean isDownloadable) {
+		final String methodName = "updateDetails";
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -2221,14 +2225,13 @@ public class Solvers {
 
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			String message = String.format("Solver [id=%d] failed to be updated.", id);
+			log.error(methodName, message, e);
+			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-
-		log.debug(String.format("Solver [id=%d] failed to be updated.", id));
-		return false;
 	}
 
 	/**
@@ -2240,6 +2243,7 @@ public class Solvers {
 	 * @author Todd Elvers
 	 */
 	private static boolean updateSolverDiskSize(Connection con, Solver s) {
+		final String methodName = "updateSolverDiskSize";
 		CallableStatement procedure = null;
 		try {
 			// Get the size of the solver's directory
@@ -2254,11 +2258,11 @@ public class Solvers {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error("updateSolverDiskSize says " + e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return false;
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
 
 	/**
@@ -2269,6 +2273,7 @@ public class Solvers {
 	 * @author Todd Elvers
 	 */
 	public static boolean updateSolverDiskSize(Solver solver) {
+		final String methodName = "updateSolverDiskSize";
 		Connection con = null;
 		try {
 			con = Common.getConnection();
@@ -2278,13 +2283,12 @@ public class Solvers {
 							.getName()));
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+		String message = String.format("Configuration's parent solver '%s' has failed to have its disk size updated.", solver.getName());
+			log.error(methodName, message, e);
+			return false;
 		} finally {
 			Common.safeClose(con);
 		}
-		log.warn(String.format("Configuration's parent solver '%s' has failed to have its disk size updated.", solver
-				.getName()));
-		return false;
 	}
 
 	/**
@@ -2297,16 +2301,14 @@ public class Solvers {
 	 * @author Eric Burns
 	 */
 	public static String getMostRecentTimestamp(Connection con, int solverId) {
-
+		final String methodName = "getMostRecentTimestamp";
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-
 			procedure = con.prepareCall("{CALL GetMaxConfigTimestamp(?)}");
 			procedure.setInt(1, solverId);
 			results = procedure.executeQuery();
 			if (results.next()) {
-
 				Timestamp t = (results.getTimestamp("recent"));
 				//timestamp doesn't like SQL's default string of zeroes, so if that is present
 				//we get a null value
@@ -2316,9 +2318,8 @@ public class Solvers {
 				return t.toString();
 			}
 		} catch (Exception e) {
-			log.error("getMostRecentTimestamp says " + e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
 		} finally {
-
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
@@ -2346,15 +2347,15 @@ public class Solvers {
 	 * @return The File object, or null if one cannot be found
 	 */
 	public static File getSolverBuildOutput(int solverId) {
+		final String methodName = "getSolverBuildOutput";
 		try {
 			File buildFile = new File(R.getSolverBuildOutputDir(), "" + solverId);
 			buildFile = new File(buildFile, R.SOLVER_BUILD_OUTPUT);
 			return buildFile;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return null;
 		}
-		return null;
-
 	}
 
 	/**
@@ -2365,6 +2366,7 @@ public class Solvers {
 	 * by the given user
 	 */
 	public static List<Integer> getOrphanedSolvers(int userId) {
+		final String methodName = "getOrphanedSolvers";
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -2379,13 +2381,13 @@ public class Solvers {
 			}
 			return ids;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return null;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		return null;
 	}
 
 	/**
@@ -2395,6 +2397,7 @@ public class Solvers {
 	 * @return True on success and false otherwise
 	 */
 	public static boolean recycleOrphanedSolvers(int userId) {
+		final String methodName = "recycleOrphanedSolvers";
 		List<Integer> ids = getOrphanedSolvers(userId);
 
 		//now that we have all the orphaned ids, we can recycle them
@@ -2405,12 +2408,10 @@ public class Solvers {
 			}
 			return success;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return false;
 		}
-
-		return false;
 	}
-
 
 	/**
 	 * Filters a list of solvers using the given search query.
@@ -2421,6 +2422,7 @@ public class Solvers {
 	 * or the description includes the search query.
 	 */
 	protected static List<Solver> filterSolvers(List<Solver> solvers, String searchQuery) {
+		final String methodName = "filterSolvers";
 		//no filtering is necessary if there's no query
 		if (Util.isNullOrEmpty(searchQuery)) {
 			return solvers;
@@ -2437,7 +2439,6 @@ public class Solvers {
 				log.warn("filtering solvers had an exception for solver id= " + s.getId());
 			}
 		}
-
 		return filteredSolvers;
 	}
 
@@ -2453,6 +2454,7 @@ public class Solvers {
 	 * @return Solvers to display on the next page, in order
 	 */
 	public static List<Solver> getSolversForNextPageByUser(DataTablesQuery query, int userId, int[] totals) {
+		final String methodName = "getSolversForNextPageByUser";
 		List<Solver> solvers = Solvers.getByUser(userId);
 
 		totals[0] = solvers.size();
@@ -2505,6 +2507,7 @@ public class Solvers {
 	 * @author Andrew Lubinus
 	 */
 	public static boolean setSolverBuildStatus(Solver s, int status) {
+		final String methodName = "setSolverBuildStatus";
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -2514,12 +2517,11 @@ public class Solvers {
 			procedure.setInt(2, status);
 			procedure.executeUpdate();
 			return true;
-
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(methodName, e.getMessage(), e);
+			return false;
 		} finally {
 			Common.safeClose(con);
 		}
-		return false;
 	}
 }
