@@ -5298,15 +5298,17 @@ public class Jobs {
 	}
 
 	public static List<String> getJobAttributeValues(int jobSpaceId) throws SQLException {
-		return Common.query("{CALL GetJobAttributesTableHeaders(?)}", procedure -> {
-			procedure.setInt(1, jobSpaceId);
-		}, results -> {
-			List<String> headers = new ArrayList<>();
-			while (results.next()) {
-				headers.add(results.getString("attr_value"));
+		return Common.query(
+			"{CALL GetJobAttributesTableHeaders(?)}",
+			procedure -> procedure.setInt(1, jobSpaceId),
+			results -> {
+				List<String> headers = new ArrayList<>();
+				while (results.next()) {
+					headers.add(results.getString("attr_value"));
+				}
+				return headers;
 			}
-			return headers;
-		});
+		);
 	}
 
 	public static List<String> getJobAttributesTableHeader(int jobSpaceId) throws SQLException {
@@ -5397,15 +5399,17 @@ public class Jobs {
 	 * @throws SQLException
 	 */
 	public static List<Triple<String, Integer, TimePair>> getJobAttributeTotals(int jobspaceId) throws SQLException {
-		return Common.query("{CALL GetSumOfJobAttributes(?)}", procedure -> {
-			procedure.setInt(1, jobspaceId);
-		}, results -> {
-			List<Triple<String, Integer, TimePair>> valueCounts = new ArrayList<>();
-			while (results.next()) {
-				valueCounts.add(new ImmutableTriple<>(results.getString("attr_value"), results.getInt("attr_count"), new TimePair(String.format("%.4f", results.getDouble("wallclock")), String.format("%.4f", results.getDouble("cpu")))));
+		return Common.query(
+			"{CALL GetSumOfJobAttributes(?)}",
+			procedure -> procedure.setInt(1, jobspaceId),
+			results -> {
+				List<Triple<String, Integer, TimePair>> valueCounts = new ArrayList<>();
+				while (results.next()) {
+					valueCounts.add(new ImmutableTriple<>(results.getString("attr_value"), results.getInt("attr_count"), new TimePair(String.format("%.4f", results.getDouble("wallclock")), String.format("%.4f", results.getDouble("cpu")))));
+				}
+				return valueCounts;
 			}
-			return valueCounts;
-		});
+		);
 	}
 
 }
