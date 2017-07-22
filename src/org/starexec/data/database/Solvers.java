@@ -1679,9 +1679,16 @@ public class Solvers {
 		Configuration c = Solvers.getConfiguration(configId);
 		if (s == null) {
 			log.warn(methodName, "Solver not found: " + solverId);
-			return null;
-		}
-		if (s.getId() == c.getSolverId()) {
+		} else if (c == null) {
+			log.warn(methodName, "Configuration not found: " + configId);
+		} else if (s.getId() != c.getSolverId()) {
+			String message = String.format(
+					"Configuration '%s' does not belong to Solver '%s'",
+					c.getName(),
+					s.getName()
+			);
+			log.warn(methodName, message, new Throwable());
+		} else {
 			// Make sure this configuration actually belongs to the solver, and add it if it does
 			s.addConfiguration(c);
 		}
