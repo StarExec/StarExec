@@ -188,10 +188,6 @@ public abstract class JobManager {
 		}
 	}
 
-	private static void logSchedulingState(final String methodName, final SchedulingState s) {
-		logSchedulingState(methodName, s, 0);
-	}
-
 	private static void logSchedulingState(final String methodName, final SchedulingState s, final int tabLevel) {
 		final StringBuilder logMessage = new StringBuilder();
 		for (int i = 0; i < tabLevel; i++) {
@@ -955,34 +951,6 @@ public abstract class JobManager {
 		out.close();
 		log.debug("done writing dependency file");
 		return true;
-	}
-
-	/**
-	 * Creates an array for the bash script.  This array will consist of all the paths for the copies of the secondary
-	 * benchmarks on the execution host or the paths of the secondary benchmarks on the starexec system depending on
-	 * the local Boolean paramter.
-	 * Will return "" if there are no dependencies.
-	 *
-	 * @param bench the bench that possibly has dependencies
-	 * @param local TRUE for execution host paths, FALSE for paths to benchmarks on starexec
-	 * @return arrayString a String that will be an array within a bash script
-	 * @author Benton McCune
-	 */
-	public static String writeDependencyArray(Benchmark bench, Boolean local) {
-		String arrayString = "\"";
-		List<BenchmarkDependency> dependencies = Benchmarks.getBenchDependencies(bench.getId());
-		log.info("Number of dependencies = " + dependencies.size());
-		for (BenchmarkDependency bd : dependencies) {
-			//spaces in the paths not allowed
-			String path =
-					(local) ? bd.getSecondaryBench().getPath().replaceAll("\\s", "") : bd.getDependencyPath()
-					                                                                     .replaceAll("\\s", "");
-			arrayString = arrayString + "" + path + " ";
-		}
-		arrayString = arrayString.trim() + "\"";
-		log.info(arrayString);
-		log.info("Array String Length for " + bench.getName() + " is " + arrayString.length());
-		return arrayString;
 	}
 
 	/**
