@@ -1599,15 +1599,16 @@ public class Solvers {
 	}
 
 	private static String getSolverOrderColumn(int orderIndex) {
-		if (orderIndex == 0) {
+		switch (orderIndex) {
+		case 0:
 			return "name";
-		} else if (orderIndex == 1) {
+		case 1:
 			return "description";
-		} else if (orderIndex == 2) {
+		case 2:
 			return "type_name";
+		default:
+			return "name";
 		}
-
-		return "name";
 	}
 
 	/**
