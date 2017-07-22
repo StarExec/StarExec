@@ -55,14 +55,11 @@ public class SolverComparison {
 		
 		String result1=pair1.getStageFromNumber(stageNumber).getAttributes().getProperty(R.STAREXEC_RESULT);
 		String result2=pair2.getStageFromNumber(stageNumber).getAttributes().getProperty(R.STAREXEC_RESULT);
-		if (result1==null && result2==null) {
+		if (result1 == result2) {
 			return true;
-		} else if (result1== null || result2==null) {
-			return false;
 		} else {
-			return result1.equals(result2);
-
+			return !(result1 == null || result2 == null) && result1.equals(result2);
 		}
-		
+
 	}
 }

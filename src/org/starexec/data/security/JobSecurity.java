@@ -385,13 +385,10 @@ public class JobSecurity {
 	 */
 	public static boolean userOwnsJobOrIsAdmin(int jobId, int userId) {
 		Job j = Jobs.get(jobId);
-		if (j==null) {
+		if (j == null) {
 			return false;
 		}
-		if (GeneralSecurity.hasAdminWritePrivileges(userId)){
-			return true;
-		}
-		return j.getUserId() == userId;
+		return GeneralSecurity.hasAdminWritePrivileges(userId) || j.getUserId() == userId;
 	}
 
 	/**

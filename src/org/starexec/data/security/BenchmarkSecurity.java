@@ -291,15 +291,12 @@ public class BenchmarkSecurity {
 	 * @return True if the user owns the status, false otherwise
 	 * @author Benton McCune
 	 */
-	public static boolean canUserSeeBenchmarkStatus(int statusId, int userId) {		
-		
-		BenchmarkUploadStatus status=Uploads.getBenchmarkStatus(statusId);
-		if (status==null) {
+	public static boolean canUserSeeBenchmarkStatus(int statusId, int userId) {
+
+		BenchmarkUploadStatus status = Uploads.getBenchmarkStatus(statusId);
+		if (status == null) {
 			return false;
 		}
-		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
-			return true;
-		}
-		return status.getUserId()==userId;
+		return GeneralSecurity.hasAdminReadPrivileges(userId) || status.getUserId() == userId;
 	}
 }
