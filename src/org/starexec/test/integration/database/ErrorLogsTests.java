@@ -129,7 +129,7 @@ public class ErrorLogsTests extends TestSequence {
             Assert.assertTrue("Log did not exist in database.",optionalLog.isPresent());
             if (optionalLog.isPresent()) {
                 ErrorLog log = optionalLog.get();
-                Assert.assertEquals(new Integer(log.getId()), new Integer(id.get()));
+                Assert.assertEquals(new Integer(log.getId()), id.get());
                 Assert.assertEquals(level, log.getLevel());
                 Assert.assertEquals(message, log.getMessage());
 
