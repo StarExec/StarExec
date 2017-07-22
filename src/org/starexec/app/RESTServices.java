@@ -4013,7 +4013,7 @@ public class RESTServices {
 	    // Update database with new permissions
 	    for(Integer permittedSpaceId : permittedSpaces){
 			if(permittedSpaceId != null){
-			    Permissions.set(userId,permittedSpaceId.intValue(),newPerm);
+			    Permissions.set(userId, permittedSpaceId, newPerm);
 			}
 	    }
 
