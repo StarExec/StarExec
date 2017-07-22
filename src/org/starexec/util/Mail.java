@@ -9,6 +9,7 @@ import org.starexec.data.database.Reports;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.ErrorLog;
+import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.Report;
 import org.starexec.data.to.User;
 import org.starexec.logger.StarLogger;
@@ -392,5 +393,9 @@ public class Mail {
 		log.debug("Storing reports email as " + R.STAREXEC_DATA_DIR + "/reports/" + filename);
 		todaysReport.createNewFile();
 		FileUtils.writeStringToFile(todaysReport, email, "UTF8", false);
+	}
+
+	public static void notifyUserOfJobStatus(String email, int jobId, JobStatus status) {
+		// TODO: Write this method
 	}
 }
