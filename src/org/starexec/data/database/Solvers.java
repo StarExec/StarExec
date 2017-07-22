@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 public class Solvers {
 	private static final StarLogger log = StarLogger.getLogger(Solvers.class);
 	private static final String CONFIG_PREFIX = R.CONFIGURATION_PREFIX;
-	private static DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
+	private static final DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
 
 	/**
 	 * Adds a solver to the database. Solver association to a space and run configurations
@@ -151,7 +151,7 @@ public class Solvers {
 	 * @return True if the operation was a success, false otherwise
 	 * @author Skylar Stark
 	 */
-	protected static boolean associate(Connection con, int spaceId, int solverId) throws SQLException {
+	protected static void associate(Connection con, int spaceId, int solverId) throws SQLException {
 		final String methodName = "associate";
 		CallableStatement procedure = null;
 		try {
@@ -160,7 +160,6 @@ public class Solvers {
 			procedure.setInt(2, solverId);
 
 			procedure.executeUpdate();
-			return true;
 		} catch (SQLException e) {
 			log.error(methodName, e.getMessage(), e);
 			throw e;
@@ -180,12 +179,11 @@ public class Solvers {
 	 * @throws Exception
 	 * @author Todd Elvers
 	 */
-	protected static boolean associate(Connection con, List<Integer> solverIds, int spaceId) throws Exception {
+	protected static void associate(Connection con, List<Integer> solverIds, int spaceId) throws Exception {
 		final String methodName = "associate";
 		for (int sid : solverIds) {
 			Solvers.associate(con, spaceId, sid);
 		}
-		return true;
 	}
 
 	/**
@@ -1149,15 +1147,6 @@ public class Solvers {
 		return filteredSolvers;
 	}
 
-	public static Set<Integer> getConfigIdSetForSolver(int solverId) {
-		List<Configuration> configs = getConfigsForSolver(solverId);
-		Set<Integer> configIds = new HashSet<>();
-		for (Configuration c : configs) {
-			configIds.add(c.getId());
-		}
-		return configIds;
-	}
-
 	/**
 	 * Gets all configurations for the given solver
 	 *
@@ -2017,10 +2006,6 @@ public class Solvers {
 		return s;
 	}
 
-	public static Configuration resultSetToConfiguration(ResultSet results) throws SQLException {
-		return resultSetToConfiguration(results, "");
-	}
-
 	public static Configuration resultSetToConfiguration(ResultSet results, String prefix) throws SQLException {
 		prefix = transformPrefix(prefix);
 		Configuration config = new Configuration();
@@ -2037,14 +2022,13 @@ public class Solvers {
 	 * @param rootDir the directory that we wish to have executable files in
 	 * @return Boolean true if successful
 	 */
-	public static Boolean setHierarchyExecutable(File rootDir) {
+	public static void setHierarchyExecutable(File rootDir) {
 		for (File f : rootDir.listFiles()) {
 			f.setExecutable(true, false);
 			if (f.isDirectory()) {
 				setHierarchyExecutable(f);
 			}
 		}
-		return true;
 	}
 
 	/**
@@ -2250,7 +2234,7 @@ public class Solvers {
 	 * @return true iff the solver's size was successfully updated, false otherwise
 	 * @author Todd Elvers
 	 */
-	private static boolean updateSolverDiskSize(Connection con, Solver s) {
+	private static void updateSolverDiskSize(Connection con, Solver s) {
 		final String methodName = "updateSolverDiskSize";
 		CallableStatement procedure = null;
 		try {
@@ -2264,10 +2248,8 @@ public class Solvers {
 			procedure.setLong(2, s.getDiskSize());
 
 			procedure.executeUpdate();
-			return true;
 		} catch (Exception e) {
 			log.error(methodName, e.getMessage(), e);
-			return false;
 		} finally {
 			Common.safeClose(procedure);
 		}
