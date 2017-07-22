@@ -510,8 +510,7 @@ public class ArchiveUtil {
 			throws IOException {
 		if (removeTopLevel) {
 			File[] files = path.listFiles();
-			List<File> f = new ArrayList<>();
-			f.addAll(Arrays.asList(files));
+			List<File> f = Arrays.asList(files);
 			createAndOutputZip(f, output, "");
 			return;
 		}
