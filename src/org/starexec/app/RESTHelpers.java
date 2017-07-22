@@ -1635,9 +1635,7 @@ public class RESTHelpers {
 		entry.add(new JsonPrimitive(getPercentStatHtml("asc", job.getLiteJobPairStats().get("completionPercentage"), true)));
 		entry.add(new JsonPrimitive(getPercentStatHtml("static", job.getLiteJobPairStats().get("totalPairs"), false)));
 		entry.add(new JsonPrimitive(getPercentStatHtml("desc", job.getLiteJobPairStats().get("errorPercentage"), true)));
-
 		entry.add(new JsonPrimitive(job.getCreateTime().toString()));
-		JsonObject diskSize = new JsonObject();
 		entry.add(new JsonPrimitive(Util.byteCountToDisplaySize(job.getDiskSize())));
 		return entry;
 	}
@@ -2193,21 +2191,6 @@ public class RESTHelpers {
 
 		// Return the next DataTable page
 		return nextPage;
-	}
-
-	private static JsonObject convertNodesToJsonObject(List<WorkerNode> nodes, DataTablesQuery query) {
-		JsonArray dataTablePageEntries = new JsonArray();
-
-		for (WorkerNode n : nodes) {
-			// Create an object, and inject the above HTML, to represent an
-			// entry in the DataTable
-			JsonArray entry = new JsonArray();
-			entry.add(new JsonPrimitive(n.getName()));
-			entry.add(new JsonPrimitive(n.getStatus()));
-
-			dataTablePageEntries.add(entry);
-		}
-		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 
 	/**

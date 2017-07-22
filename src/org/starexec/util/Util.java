@@ -664,6 +664,7 @@ public class Util {
 	 * Clears out directories under joboutput that do not belong to any job in the database. These
 	 * directories are ones that were not cleared correctly.
 	 */
+	/*
 	public static void clearOrphanedJobDirectories() {
 		log.info("calling clearOrphanedJobDirectories");
 		File outputDirectory = new File(R.getJobOutputDirectory());
@@ -691,9 +692,8 @@ public class Util {
 				log.error("failed to deleted directory " + s);
 			}
 		}
-
-
 	}
+	*/
 
 	/**
 	 * Deletes all files in the given directory that are as old as, or older than the specified number of days
@@ -1142,21 +1142,6 @@ public class Util {
 			log.error(methodName, e.getMessage(), e);
 		}
 		return false;
-	}
-
-	/**
-	 * Writes the given InputStream to the given file. The InputStream
-	 * will be close on return
-	 *
-	 * @param stream The InputStream to copy
-	 * @param outputFile The File to write to
-	 * @throws IOException If there were any writing exceptions
-	 */
-	public static void writeInputStreamToFile(InputStream stream, File outputFile) throws IOException {
-		FileOutputStream output = new FileOutputStream(outputFile);
-		IOUtils.copy(stream, output);
-		stream.close();
-		output.close();
 	}
 
 	/**

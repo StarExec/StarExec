@@ -274,16 +274,6 @@ public class Validator {
 	}
 
 	/**
-	 * Validates a string to ensure it can be treated as a date
-	 *
-	 * @param s The string to validate as a date
-	 * @return True if the string is in the date format, false otherwise
-	 */
-	public static boolean isValidDate(String s) {
-		return s != null && patternDate.matcher(s).matches();
-	}
-
-	/**
 	 * Validates a list of strings to ensure every one is a valid int
 	 *
 	 * @param list The list of strings to validate
