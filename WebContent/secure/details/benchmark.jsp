@@ -4,7 +4,7 @@
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%		
+<%
 	try {
 		String uniqueId = request.getParameter("anonId");
 		boolean isAnonymousPage = uniqueId != null;
@@ -17,12 +17,12 @@
 		}
 		request.setAttribute("primitiveType", Primitive.BENCHMARK);
 	} catch (NumberFormatException nfe) {
-		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given benchmark id was in an invalid format");		
+		response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The given benchmark id was in an invalid format");
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
-<star:template title="${benchPageTitle}" js="common/delaySpinner, shared/copyToStardev, details/shared, details/benchmark, lib/jquery.dataTables.min" css="common/delaySpinner, details/shared, common/table, details/benchmark, shared/copyToStardev">
+<star:template title="${benchPageTitle}" js="common/delaySpinner, lib/jquery.dataTables.min, shared/copyToStardev, details/shared, lib/prettify, lib/lang-smtlib, details/benchmark" css="common/delaySpinner, details/shared, common/table, details/benchmark, shared/copyToStardev, prettify/prettify">
 	<star:primitiveTypes/>
 	<span style="display:none;" id="isAnonymousPage" value="${isAnonymousPage}"></span>
 	<c:if test="${!isAnonymousPage}">
@@ -51,27 +51,27 @@
 				</thead>
 				<tbody>
 					<tr>
-						<td>description</td>			
+						<td>description</td>
 						<td>${bench.description}</td>
 					</tr>
 					<tr>
-						<td>owner</td>			
+						<td>owner</td>
 						<td><star:user value="${usr}" /></td>
-					</tr>							
+					</tr>
 					<tr>
-						<td>uploaded</td>			
+						<td>uploaded</td>
 						<td><fmt:formatDate pattern="MMM dd yyyy" value="${bench.uploadDate}" /></td>
 					</tr>
 					<tr>
-						<td>disk size</td>			
+						<td>disk size</td>
 						<td>${diskSize}</td>
-					</tr>	
+					</tr>
 					<tr>
-						<td>downloadable</td>			
+						<td>downloadable</td>
 						<td>${bench.downloadable}</td>
-					</tr>		
+					</tr>
 				</tbody>
-			</table>	
+			</table>
 		</fieldset>
 	</c:if>
 	<fieldset id="fieldType">
@@ -85,27 +85,27 @@
 			</thead>
 			<tbody>
 				<tr>
-					<td>name</td>			
+					<td>name</td>
 					<td>${bench.type.name}</td>
 				</tr>
 				<tr>
-					<td>processor id</td>			
+					<td>processor id</td>
 					<td>${bench.type.id}</td>
 				</tr>
 				<tr>
-					<td>description</td>			
+					<td>description</td>
 					<td>${bench.type.description}</td>
 				</tr>
 				<c:if test="${!isAnonymousPage}">
 					<tr>
-						<td>owning community</td>			
+						<td>owning community</td>
 						<td><star:community value="${com}" /></td>
-					</tr>		
-				</c:if>	
+					</tr>
+				</c:if>
 			</tbody>
-		</table>	
-	</fieldset>			
-	
+		</table>
+	</fieldset>
+
 	<c:if test="${not empty attributes}">
 		<fieldset id="fieldAttributes">
 			<legend>attributes</legend>
@@ -122,12 +122,12 @@
 						<td>${entry.key}</td>
 						<td>${entry.value}</td>
 					</tr>
-				</c:forEach>					
+				</c:forEach>
 				</tbody>
-		</table>					
-		</fieldset>							
-	</c:if>	
-	
+		</table>
+		</fieldset>
+	</c:if>
+
 	<c:if test="${not empty depends}">
 		<fieldset id="fieldDepends">
 			<legend>dependencies</legend>
@@ -141,46 +141,46 @@
 				<tbody>
 				<c:forEach var="dependency" items="${depends}">
 					<tr>
-						<td><star:benchmark value="${dependency.secondaryBench}" /></td>			
+						<td><star:benchmark value="${dependency.secondaryBench}" /></td>
 						<td>${dependency.dependencyPath}</td>
 					</tr>
-				</c:forEach>					
+				</c:forEach>
 				</tbody>
-		</table>					
-		</fieldset>							
-	</c:if>	
+		</table>
+		</fieldset>
+	</c:if>
 
 	<c:if test="${downloadable}">
 		<fieldset id="fieldContents">
 			<legend><img alt="loading" src="${starexecRoot}/images/loader.gif"> contents</legend>
-			<textarea class="contentTextarea" id="benchContent" readonly="readonly" >${content}</textarea>	
+			<pre class="prettyprint lang-smtlib">${content}</pre>
 			<a href="${starexecRoot}/services/benchmarks/${bench.id}/contents?limit=-1" target="_blank" class="popoutLink">popout</a>
 			<p class="caption">content may be truncated. 'popout' for larger text window.</p>
-		</fieldset>			
-	</c:if> 
+		</fieldset>
+	</c:if>
 
 	<fieldset id="actions">
 		<legend>actions</legend>
 
 		<c:if test="${!isAnonymousPage}">
 			<a id="anonymousLink">get anonymous link</a>
-		
+
 			<c:if test="${usr.id == user.id || hasAdminReadPrivileges}">
 				<a id="editLink" href="${starexecRoot}/secure/edit/benchmark.jsp?id=${bench.id}">edit</a>
 			</c:if>
 		</c:if>
-		
+
 		<c:if test="${downloadable || hasAdminReadPrivileges}">
 			<a id="downLink" href="${starexecRoot}/secure/download?type=bench&id=${bench.id}">download benchmark</a>
 		</c:if>
 		<c:if test="${hasAdminReadPrivileges && !isAnonymousPage}">
 			<star:copyToStardevButton/>
 		</c:if>
-		
+
 	</fieldset>
 	<div id="dialog-warning" title="warning" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert" ></span><span id="dialog-warning-txt"></span></p>
-	</div>		
+	</div>
 	<div id="dialog-show-anonymous-link" title="anonymous link" class="hiddenDialog">
 		<p>
 			<span class="ui-icon ui-icon-info"></span>
