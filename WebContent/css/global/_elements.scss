@@ -103,6 +103,8 @@ label.error {
 }
 
 pre {
-	font-size:16px;
 	font-family: "Source Code Pro", Menlo, Consolas, monospace;
+	font-size: 16px;
+	line-height: 1.13;
+	overflow: scroll;
 }

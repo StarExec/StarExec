@@ -1,11 +1,4 @@
-.prettyprint {
-	height: 300px;
-	padding: 5px;
-	overflow: scroll;
-	max-width: 590px;
-	white-space: pre-wrap;
-	line-height: 1.13;
-}
+@import "shared/prettyprint";
 
 @media only screen and (max-width: 767px) {
 	#showPicture {
