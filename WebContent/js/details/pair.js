@@ -1,4 +1,6 @@
 jQuery(function($) {
+	PR.prettyPrint();
+
 	$('#pairTbl').dataTable( {
 		"sDom": getDataTablesDom()
 	});

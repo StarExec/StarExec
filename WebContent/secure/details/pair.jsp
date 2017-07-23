@@ -45,7 +45,7 @@
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
-<star:template title="${job.name} pair #${pair.id}" js="lib/jquery.dataTables.min, details/pair, details/shared" css="common/table, details/shared, details/pair">
+<star:template title="${job.name} pair #${pair.id}" js="lib/jquery.dataTables.min, lib/prettify, lib/lang-log, details/pair, details/shared" css="common/table, details/shared, details/pair, prettify/prettify">
 	<span id="pairId" value="${pair.id}"></span>
 	<fieldset id="fieldDetails">
 		<legend>details</legend>
@@ -202,7 +202,7 @@
 
 	<fieldset id="fieldLog">
 		<legend><img alt="loading" src="${starexecRoot}/images/loader.gif"> job log</legend>
-		<textarea class=contentTextarea id="jpLog" readonly="readonly">${log}</textarea>
+		<pre class="prettyprint lang-log">${log}</pre>
 		<a href="${starexecRoot}/services/jobs/pairs/${pair.id}/log" target="_blank" class="popoutLink">popout</a>
 	</fieldset>
 
