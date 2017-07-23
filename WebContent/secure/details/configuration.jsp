@@ -39,7 +39,7 @@ try {
 	response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 }
 %>
-<star:template title="${config.name}" css="details/configuration, details/shared" js="details/configuration, details/shared">
+<star:template title="${config.name}" css="details/configuration, details/shared, prettify/prettify" js="details/shared, lib/prettify, details/configuration">
 	<input type="hidden" id="solverId" value="${solver.id}"/>
 	<fieldset>
 		<legend>details</legend>
@@ -68,7 +68,7 @@ try {
 	</fieldset>
 	<fieldset id="configContents">
 		<legend>contents</legend>
-		<textarea id="contents" readonly="readonly">${contents}</textarea>
+		<pre class="prettyprint">${contents}</pre>
 	</fieldset>
 	<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><span id="dialog-confirm-delete-txt"></span></p>

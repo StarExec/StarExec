@@ -1,3 +1,5 @@
+@import "shared/prettyprint";
+
 fieldset {
 	width: 75%;
 	margin-bottom: 30px;
@@ -32,12 +34,6 @@ tr {
 #deleteConfig, #returnLinkMargin {
 	float: right;
 	margin-right: 185px;
-}
-
-textarea {
-	width: 98%;
-	height: 100px;
-	font-family: monospace;
 }
 
 @media only screen and (max-width: 767px) {

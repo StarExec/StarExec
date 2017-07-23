@@ -1,4 +1,6 @@
 jQuery(function($) {
+	PR.prettyPrint();
+
 	$('#deleteConfig').button({
 		icons: {
 			secondary: "ui-icon-minus"
@@ -37,4 +39,4 @@ jQuery(function($) {
 			}
 		});
 	});
-}
+});
