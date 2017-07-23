@@ -27,11 +27,11 @@ PR['registerLangHandler'](
          // Whitespace
          [PR['PR_PLAIN'], /^[\t\n\r \xA0]+/, null, '\t\n\r \xA0'],
          // A double quoted, possibly multi-line, string.
-         [PR['PR_STRING'], /^\"(?:[^\"\\]|\\[\s\S])*(?:\"|$)/, null, '"'],
-         // A quoted symbol
-         [PR['PR_PLAIN'], /^\|[^\|\\]+\|/, null, '|']
+         [PR['PR_STRING'], /^\"(?:[^\"\\]|\\[\s\S])*(?:\"|$)/, null, '"']
         ],
         [
+         // A quoted symbol
+         [PR['PR_PLAIN'], /^\|[^\|\\]+\|/],
          [PR['PR_KEYWORD'],
           /^(?:continued-execution|error|false|immediate-exit|incomplete|logic|memout|sat|success|theory|true|unknown|unsupported|unsat|_|!|as|BINARY|DECIMAL|exists|HEXADECIMAL|forall|let|NUMERAL|par|STRING|assert|check-sat|check-sat-assuming|declare-const|declare-datatype|declare-datatypes|declare-fun|declare-sort|define-fun|define-fun-rec|define-sort|echo|exit|get-assertions|get-assignment|get-info|get-model|get-option|get-proof|get-unsat-assumptions|get-unsat-core|get-value|pop|push|reset|reset-assertions|set-info|set-logic|set-option)\b/,
           null
