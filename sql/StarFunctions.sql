@@ -71,11 +71,11 @@ CREATE FUNCTION GetJobStatusDetail(_jobId INT)
 		DECLARE status ENUM("RUNNING", "PROCESSING", "COMPLETE", "DELETED", "KILLED", "PAUSED", "GLOBAL_PAUSE");
 
 		SELECT
-			IF ( _jobId IN ( SELECT id FROM jobs WHERE deleted ), "DELETED",
-			IF ( _jobId IN ( SELECT id FROM jobs WHERE killed  ), "KILLED",
-			IF ( _jobId IN ( SELECT id FROM jobs WHERE paused  ), "PAUSED",
-			IF ( _jobId IN ( SELECT id FROM job_pairs WHERE status_code=22), "PROCESSING",
-			IF ( _jobId IN ( SELECT id FROM job_pairs WHERE status_code BETWEEN 1 AND 6),
+			IF ( _jobId IN ( SELECT     id FROM jobs      WHERE deleted ), "DELETED",
+			IF ( _jobId IN ( SELECT     id FROM jobs      WHERE killed  ), "KILLED",
+			IF ( _jobId IN ( SELECT     id FROM jobs      WHERE paused  ), "PAUSED",
+			IF ( _jobId IN ( SELECT job_id FROM job_pairs WHERE status_code=22), "PROCESSING",
+			IF ( _jobId IN ( SELECT job_id FROM job_pairs WHERE status_code BETWEEN 1 AND 6),
 				IF ( TRUE IN (SELECT paused FROM system_flags)
 					AND _jobId NOT IN (
 						SELECT jobs.id
