@@ -1,6 +1,6 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.test.*,java.util.List, org.starexec.data.database.*, org.starexec.constants.*, org.starexec.util.*, org.starexec.data.to.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
-<star:template title="Testing" js="admin/testing, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min,lib/jquery.validate.min" css="common/table, admin/testing">
+<star:template title="Integration Tests" js="lib/jquery.dataTables.min, admin/testing" css="common/table, admin/testing">
 		<fieldset id="fieldTable">
 			<legend>Existing Tests</legend>
 			<ul class="actionList">
