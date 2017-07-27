@@ -1002,6 +1002,7 @@ public class Jobs {
 		j.setUserId(results.getInt("user_id"));
 		j.setName(results.getString("name"));
 		j.setPrimarySpace(results.getInt("primary_space"));
+		j.setPaused(results.getBoolean("paused"));
 		j.setCreateTime(results.getTimestamp("created"));
 		j.setCompleteTime(results.getTimestamp("completed"));
 		j.setCpuTimeout(results.getInt("cpuTimeout"));
