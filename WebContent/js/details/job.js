@@ -17,32 +17,6 @@ var getPanelTableInitializer;
 var openAjaxRequests = [];
 
 $(document).ready(function(){
-	/*
-	var isAborted = function(req) {
-		'use strict';
-		return (req.xhr.status === 0 && req.xhr.statusText === 'abort');
-	}
-
-	var isNotAborted = function(req) {
-		'use strict';
-		return !isAborted(req);
-	}
-	setInterval(function() {
-		'use strict';
-		log('Checking for aborted XHR calls.');
-		log(openAjaxRequests);
-
-		var abortedRequests = openAjaxRequests.filter(isAborted);
-		// Get rid of the aborted requests so that we don't try to call them again.
-		openAjaxRequests = openAjaxRequests.filter(isNotAborted)
-		abortedRequests.forEach(function(req) {
-			log('Detected aborted XHR call. Retrying...');
-			// Redo the xhr request and put it in the ajax requests.
-			var newCall = xhrCall();
-			openAjaxRequests.push(newCall);
-		});
-	}, 15000);
-	*/
 	initializeGlobalPageVariables();
 	initUI();
 	initSpaceExplorer();
@@ -207,11 +181,6 @@ function initSpaceExplorer() {
 	$.jstree._themes = starexecRoot+"css/jstree/";
 	var id;
 
-	// Initialize the jstree plugin for the explorer list
-	/*$("#exploreList").bind("loaded.jstree", function() {
-		log("exploreList tree has finished loading.");
-		$("#exploreList").jstree("select_node", ".rootNode");
-	})*/
 	$("#exploreList").jstree({
 		"json_data" : DETAILS_JOB.spaceExplorerJsonData,
 		"themes" : {
@@ -708,9 +677,7 @@ function setupDeleteJobButton() {
 							var s=parseReturnCode(returnCode);
 							if (s) {
 								window.location = starexecRoot+'secure/explore/spaces.jsp';
-
 							}
-
 						},
 						"json"
 					);
@@ -847,7 +814,6 @@ function setupChangeQueueButton() {
 										function() {document.location.reload(true)},
 										1000
 									);
-
 								}
 							},
 							"json"
@@ -930,7 +896,6 @@ function updateSpaceOverviewGraph() {
 			} else {
 				$("#spaceOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
 			}
-
 		},
 		"text"
 	);
@@ -1205,7 +1170,6 @@ function initDataTables(){
 //Adds fnProcessingIndicator and fnFilterOnDoneTyping to dataTables api
 //
 function extendDataTableFunctions(){
-
 	// Allows manually turning on and off of the processing indicator (used for jobs table)
 	addProcessingIndicator();
 	addFilterOnDoneTyping();
