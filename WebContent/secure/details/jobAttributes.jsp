@@ -9,6 +9,8 @@
 <%
 	try {
 		int userId = SessionUtil.getUserId(request);
+		Analytics.JOB_ATTRIBUTES.record(userId);
+
 		int jobSpaceId=Integer.parseInt(request.getParameter("id"));
 		JobSpace space = Spaces.getJobSpace(jobSpaceId);
 		if(space==null || !JobSecurity.canUserSeeJob(space.getJobId(), userId).isSuccess()) {
@@ -40,8 +42,6 @@
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
-
-	Analytics.JOB_ATTRIBUTES.record();
 %>
 
 <star:template title="Starexec-Result Attributes Summary" js="util/spaceTree, util/sortButtons, util/jobDetailsUtilityFunctions, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, lib/dataTables.fixedColumns.min, details/jobAttributes" css="common/table, details/jobAttributes, common/dataTables.fixedColumns">
