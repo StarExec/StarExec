@@ -5239,6 +5239,13 @@ public class RESTServices {
         return gson.toJson(headers);
     }
 
+	/**
+	 * Subscribe a User to status updates from a Job.
+	 * The body of the return is irrelevant; the client only needs the HTTP
+	 * status code. 200 is success, anything else is failure.
+	 * Yay for RESTful APIs.
+	 * @param jobId The Job
+	 */
 	@POST
 	@Path("/jobs/notifications/subscribe")
 	@Produces("application/json")
@@ -5248,6 +5255,10 @@ public class RESTServices {
 		return "{}";
 	}
 
+	/**
+	 * Unsubscribe a User from status updates from a Job.
+	 * @param jobId The Job
+	 */
 	@POST
 	@Path("/jobs/notifications/unsubscribe")
 	@Produces("application/json")

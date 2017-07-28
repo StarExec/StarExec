@@ -387,6 +387,13 @@ public class Mail {
 		FileUtils.writeStringToFile(todaysReport, email, "UTF8", false);
 	}
 
+	/**
+	 * Notify User of a changed JobStatus.
+	 * `user` needs to have set a name and email
+	 * @param user
+	 * @param jobId
+	 * @param status New status of Job
+	 */
 	public static void notifyUserOfJobStatus(User user, int jobId, JobStatus status) {
 		final String method = "notifyUserOfJobStatus";
 		String message = "";

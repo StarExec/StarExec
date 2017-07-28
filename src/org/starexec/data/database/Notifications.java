@@ -62,6 +62,14 @@ public class Notifications {
 		);
 	}
 
+	/**
+	 * Update the last seen status of a Job to status.
+	 * After we have sent a notification, we need to record the current status
+	 * of the Job so that we can be notified when it changes again.
+	 * @param userId
+	 * @param job
+	 * @param status
+	 */
 	private static void updateNotificationJobStatus(int userId, int job, JobStatus status) throws SQLException {
 		log.warn("updateNotificationJobStatus", "user: " + userId + "    job: " + job + "   status " + status.toString());
 		Common.update(
@@ -74,6 +82,12 @@ public class Notifications {
 		);
 	}
 
+	/**
+	 * Send email notifications for Jobs with changed status.
+	 * Query the DB for Jobs whose status has changed since last we checked.
+	 * Send email notifications to users subscribed to those jobs, then record
+	 * the new status so we will know if it changes again in the future.
+	 */
 	public static void sendEmailNotifications() {
 		final String method = "sendEmailNotifications";
 		try {
