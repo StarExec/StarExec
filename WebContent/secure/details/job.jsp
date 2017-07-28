@@ -15,6 +15,12 @@
 	}
 %>
 <star:template title="${pageTitle}" js="util/sortButtons, util/jobDetailsUtilityFunctions, util/datatablesUtility, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, common/delaySpinner, explore/common, details/shared, details/job">
+	<script>
+		star = star || {};
+		<c:if test="${!isLocalJobPage and !isPublicUser && !isComplete}">
+		star.isUserSubscribedToJob = ${isUserSubscribedToJob};
+		</c:if>
+	</script>
 	<c:if test="${!isAnonymousPage}">
 		<p id="displayJobID" class="accent" >job id  = ${job.id}</p>
 		<span style="display:none" id="jobId" value="${job.id}" > </span>

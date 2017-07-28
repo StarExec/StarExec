@@ -96,6 +96,8 @@ public class JspHelpers {
 				boolean isRunning = (status == JobStatus.RUNNING);
 				boolean isProcessing = (status == JobStatus.PROCESSING);
 				boolean isComplete = (status == JobStatus.COMPLETE);
+				boolean isPublicUser = Users.isPublicUser(userId);
+				boolean isUserSubscribedToJob = Notifications.isUserSubscribedToJob(userId, jobId);
 				int wallclock=j.getWallclockTimeout();
 				int cpu=j.getCpuTimeout();
 				long memory=j.getMaxMemory();
@@ -147,6 +149,8 @@ public class JspHelpers {
 				request.setAttribute("isComplete", isComplete);
 				request.setAttribute("queueIsEmpty", queueIsEmpty);
 				request.setAttribute("isProcessing", isProcessing);
+				request.setAttribute("isPublicUser", isPublicUser);
+				request.setAttribute("isUserSubscribedToJob", isUserSubscribedToJob);
 				request.setAttribute("postProcs", ListOfPostProcessors);
 				request.setAttribute("pageTitle", isAnonymousPage ? "Anonymous Job" : j.getName() );
 				request.setAttribute("initialSpaceName", isAnonymousPage ? "" : jobSpace.getName() );

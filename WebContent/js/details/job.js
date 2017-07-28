@@ -586,6 +586,57 @@ function initUI(){
 			}).click(function() {
 				updateSolverComparison(300, "white");
 			});
+
+		if (star.isUserSubscribedToJob !== undefined) (function() {
+			var $notificationButton = $("<a href='#'>")
+				.button({
+					icons: {primary: "ui-icon-mail-closed"},
+				})
+			;
+			var toggleSubscribe = function() {
+				var url = starexecRoot + (
+					star.isUserSubscribedToJob?
+					"services/jobs/notifications/unsubscribe":
+					"services/jobs/notifications/subscribe"
+				);
+				var status = !star.isUserSubscribedToJob;
+				$.ajax({
+					type: "POST",
+					url: url,
+					data: {"id": jobId},
+					dataType: "json",
+					success: function() {
+						window.star.isUserSubscribedToJob = status;
+						updateLabel();
+						$notificationButton.button("enable");
+					},
+					error: function() {
+						var message = "Unable to " +
+							$notificationButton.button("option", "label");
+						showMessage("error", message, 5000);
+					}
+				});
+			};
+			var updateLabel = function() {
+				var label = star.isUserSubscribedToJob?
+					"unsubscribe from email updates":
+					"subscribe to email updates";
+				$notificationButton.button("option", "label", label);
+			};
+			var notificationClick = function(e) {
+				e.preventDefault();
+				$notificationButton.button("disable");
+				toggleSubscribe();
+			};
+
+			updateLabel();
+			$notificationButton
+				.click(notificationClick)
+				.wrapAll("<li>")
+				.parent()
+				.appendTo("#actionList")
+			;
+		})();
 	}
 
 	setupSetHighPriorityButton();

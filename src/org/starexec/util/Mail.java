@@ -387,7 +387,31 @@ public class Mail {
 		FileUtils.writeStringToFile(todaysReport, email, "UTF8", false);
 	}
 
-	public static void notifyUserOfJobStatus(String email, int jobId, JobStatus status) {
-		// TODO: Write this method
+	public static void notifyUserOfJobStatus(User user, int jobId, JobStatus status) {
+		final String method = "notifyUserOfJobStatus";
+		String message = "";
+
+		try {
+			message = FileUtils.readFileToString(new File(R.CONFIG_PATH, "/email/notifyJob_email.txt"));
+		} catch (Exception e) {
+			log.error(method, "Cannot open email template", e);
+			return;
+		}
+
+		final String url = Util.url("secure/details/job.jsp?id=") + jobId;
+
+		message = message
+			.replace("$$JOBID$$", Integer.toString(jobId))
+			.replace("$$JOBLINK$$", url)
+			.replace("$$JOBSTATUS$$", status.toString())
+			.replace("$$USER$$", user.toString());
+
+		final String subject = new StringBuilder("STAREXEC Job ")
+			.append(jobId)
+			.append(": ")
+			.append(status.toString())
+			.toString();
+
+		mail(message, subject, user.getEmail());
 	}
 }

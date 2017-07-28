@@ -1,0 +1,7 @@
+$$USER$$,
+
+Job $$JOBID$$ is now $$JOBSTATUS$$
+
+$$JOBLINK$$
+
+-STAREXEC TEAM

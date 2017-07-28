@@ -5239,6 +5239,24 @@ public class RESTServices {
         return gson.toJson(headers);
     }
 
+	@POST
+	@Path("/jobs/notifications/subscribe")
+	@Produces("application/json")
+	public String subscribeUserToJob(@FormParam("id") int jobId, @Context HttpServletRequest request) throws SQLException {
+		int userId = SessionUtil.getUserId(request);
+		Notifications.subscribeUserToJob(userId, jobId);
+		return "{}";
+	}
+
+	@POST
+	@Path("/jobs/notifications/unsubscribe")
+	@Produces("application/json")
+	public String unsubscribeUserToJob(@FormParam("id") int jobId, @Context HttpServletRequest request) throws SQLException {
+		int userId = SessionUtil.getUserId(request);
+		Notifications.unsubscribeUserToJob(userId, jobId);
+		return "{}";
+	}
+
 //	@POST
 //	@Path("/jobs/attributes/totals/{jobSpaceId}")
 //	@Produces("application/json")

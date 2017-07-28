@@ -6,6 +6,7 @@ import org.starexec.constants.R;
 import org.starexec.data.database.*;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.to.ErrorLog;
+import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.User;
 import org.starexec.data.to.tuples.PairIdJobId;
@@ -57,7 +58,8 @@ class PeriodicTasks {
         DELETE_OLD_ANONYMOUS_LINKS(false, DELETE_OLD_ANONYMOUS_LINKS_TASK, 0, () -> 30, TimeUnit.DAYS),
         UPDATE_USER_DISK_SIZES(false, UPDATE_USER_DISK_SIZES_TASK, 0, () -> 1, TimeUnit.DAYS),
         UPDATE_COMMUNITY_STATS(false, UPDATE_COMMUNITY_STATS_TASK, 0, () -> 6, TimeUnit.HOURS),
-        SAVE_ANALYTICS(false, SAVE_ANALYTICS_TASK, 10, () -> 10, TimeUnit.MINUTES);
+        SAVE_ANALYTICS(false, SAVE_ANALYTICS_TASK, 10, () -> 10, TimeUnit.MINUTES),
+        NOTIFY_USERS_OF_JOBS(false, NOTIFY_USERS_OF_JOBS_TASK, 0, () -> 5, TimeUnit.MINUTES);
 
         public final boolean fullInstanceOnly;
         public final Runnable task;
@@ -332,6 +334,16 @@ class PeriodicTasks {
 		@Override
 		protected void dorun() {
 			Analytics.saveToDB();
+		}
+	};
+
+	// Create a task that notifies Users of status changes to Jobs they have
+	// subscribed to
+	private static final String notifyUsersOfJobsTask = "notifyUsersOfJobsTask";
+	private static final Runnable NOTIFY_USERS_OF_JOBS_TASK = new RobustRunnable(notifyUsersOfJobsTask) {
+		@Override
+		protected void dorun() {
+			Notifications.sendEmailNotifications();
 		}
 	};
 }
