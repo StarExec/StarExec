@@ -498,7 +498,7 @@ public class Jobs {
 			// record the job being added for the queue it was added to
 			Reports.addToEventOccurrencesForQueue("jobs initiated", 1, job.getQueue().getName());
 
-			Analytics.JOB_CREATE.record();
+			Analytics.JOB_CREATE.record(job.getUserId());
 
 
 			log.debug("job added, associating next");
