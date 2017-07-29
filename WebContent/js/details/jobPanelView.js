@@ -11,7 +11,7 @@ $(document).ready(function(){
 	$('#selectStageButton').click(function() {
 		var stageToRedirectTo = $('#selectStageInput').val();
 		if (isInt(stageToRedirectTo)) {
-			window.location.replace(starexecRoot + '/secure/details/jobPanelView.jsp?jobid='+jobId+'&spaceid='+jobSpaceId+'&stage='+stageToRedirectTo);
+			window.location.replace(starexecRoot + 'secure/details/jobPanelView.jsp?jobid='+jobId+'&spaceid='+jobSpaceId+'&stage='+stageToRedirectTo);
 		} else {
 			$('#selectStageError').show();
 		}
@@ -186,8 +186,13 @@ function initializePanels() {
 		}
 		$(".viewSubspace").each(function() {
 			$(this).click(function() {
-				spaceId=$(this).parents("table.panel").attr("spaceId");
-				window.location=starexecRoot+"secure/details/jobPanelView.jsp?jobid="+jobId+"&spaceid="+spaceId;
+				var jobSpaceId = $(this).parents("table.panel").attr("spaceId");
+				var stageToRedirectTo = $('#selectStageInput').val();
+				if (isInt(stageToRedirectTo)) {
+					window.location.replace(starexecRoot + 'secure/details/jobPanelView.jsp?jobid='+jobId+'&spaceid='+jobSpaceId+'&stage='+stageToRedirectTo);
+				} else {
+					$('#selectStageError').show();
+				}
 			});
 
 		});
