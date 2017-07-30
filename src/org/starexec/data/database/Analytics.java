@@ -43,7 +43,9 @@ public enum Analytics {
 
 		void record(Integer user) {
 			++count;
-			users.add(user);
+			if (user != null) {
+				users.add(user);
+			}
 		}
 	}
 
