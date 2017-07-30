@@ -196,6 +196,10 @@ public class JobToXMLer {
 		queueIdElement.setAttribute("value", job.getQueue()!=null ? Integer.toString(job.getQueue().getId()) : "-1");
 		attrsElement.appendChild(queueIdElement);
 
+		Element benchFrameworkElement = doc.createElement(R.XML_BENCH_FRAMEWORK_ELE_NAME);
+		benchFrameworkElement.setAttribute("value", job.getBenchmarkingFramework().name().toLowerCase());
+		attrsElement.appendChild(benchFrameworkElement);
+
 		// Should start paused attribute : start-paused
 		Element startPausedElement = doc.createElement("start-paused");
 		startPausedElement.setAttribute("value", Boolean.toString(job.isPaused()));
