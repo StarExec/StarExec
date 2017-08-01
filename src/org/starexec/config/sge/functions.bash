@@ -859,7 +859,7 @@ function fillDependArrays {
 
 #this is run after a solver is built on starexec
 function copySolverBack {
-	NEW_SOLVER_PATH="$(echo "$SOLVER_PATH" | sed 's/....$//')"
+	NEW_SOLVER_PATH="${SOLVER_PATH/%????/}"
 
 	log "Old Solverpath: $SOLVER_PATH"
 	log "NEW solver path is $NEW_SOLVER_PATH"
