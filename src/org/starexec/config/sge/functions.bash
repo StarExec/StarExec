@@ -517,6 +517,7 @@ function processAttributes {
 	fi
 
 	a=0
+	local QUERY=""
 	while read line; do
 		a=$(($a+1));
 		key=${line%=*};
@@ -527,9 +528,13 @@ function processAttributes {
 		#testing to see if key or value is empty
 		if (( $product )); then
 			log "processing attribute $a (pair=$PAIR_ID, key='$key', value='$value' stage='$2')"
-			mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddJobAttr($PAIR_ID,'$key','$value',$2)"
+			QUERY += "CALL AddJobAttr($PAIR_ID, '$key', '$value', $2);"
 		else
 			log "bad post processing - cannot process attribute $a"
+		fi
+		if [[ ! -z $QUERY ]]; then
+			log "saving attributes to database"
+			dbExec "$QUERY"
 		fi
 	done < $1
 }
@@ -598,15 +603,15 @@ function updateStats {
 
 	EXEC_HOST=`hostname`
 	getTotalOutputSizeToCopy $3 $4
-	log "mysql -u... -p... -h $REPORT_HOST $DB_NAME -e \"CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER, $DISK_SIZE)\""
+	log "sending Pair Stats"
 
-	if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER, $DISK_SIZE)" ; then
-	log "Error copying stats from watchfile into database. Copying varfile to log {"
-	cat $1
-	log "} End varfile."
-	log "Copying watchfile to log {"
-	cat $2
-	log "} End watchfile."
+	if ! (dbExec "CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER, $DISK_SIZE)") ; then
+		log "Error copying stats from watchfile into database. Copying varfile to log {"
+		cat $1
+		log "} End varfile."
+		log "Copying watchfile to log {"
+		cat $2
+		log "} End watchfile."
 	fi
 
 	log "sent job stats to $REPORT_HOST"
@@ -874,14 +879,17 @@ function copySolverBack {
 
 	safeCpAll "copying solver back" "$LOCAL_SOLVER_DIR" "$NEW_SOLVER_PATH"
 	log "solver copied back to head node"
+
 	log "updating build status to built and changing path for solver to $NEW_SOLVER_PATH"
-	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetSolverPath('$SOLVER_ID','$NEW_SOLVER_PATH')"
 	log "set build status to built on starexec for $SOLVER_ID"
-	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetSolverBuildStatus('$SOLVER_ID','2')"
 	log "deleting build configuration from db for solver: $SOLVER_ID"
-	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL DeleteBuildConfig('$SOLVER_ID')"
 	log "removing benchmark bench name: $BENCH_NAME id: $BENCH_ID from the db"
-	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL RemoveBenchmarkFromDatabase('$BENCH_ID')"
+	dbExec "
+		CALL SetSolverPath('$SOLVER_ID','$NEW_SOLVER_PATH');
+		CALL SetSolverBuildStatus('$SOLVER_ID','2');
+		CALL DeleteBuildConfig('$SOLVER_ID');
+		CALL RemoveBenchmarkFromDatabase('$BENCH_ID');
+	"
 
 	rm $BENCH_PATH
 }
@@ -890,14 +898,15 @@ function copySolverBack {
 function cleanUpAfterKilledBuildJob {
 	if [ $BUILD_JOB == "true" ]; then
 		log "Build job has been failed, cleaning up:"
-		mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetSolverBuildStatus('$SOLVER_ID','3')"
 		log "deleting build configuration from db for solver: $SOLVER_ID"
-		mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL DeleteBuildConfig('$SOLVER_ID')"
 		log "removing benchmark bench name: $BENCH_NAME id: $BENCH_ID from the db"
-		mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL RemoveBenchmarkFromDatabase('$BENCH_ID')"
+		dbExec "
+			CALL SetSolverBuildStatus('$SOLVER_ID','3');
+			CALL DeleteBuildConfig('$SOLVER_ID');
+			CALL RemoveBenchmarkFromDatabase('$BENCH_ID');
+		"
 
 		BENCH_PATH_DIR=$(dirname $BENCH_PATH)
-
 		log "Deleting benchmark directory: $BENCH_PATH_DIR"
 		safeRm $BENCH_PATH_DIR
 		rm $BENCH_PATH
@@ -990,7 +999,7 @@ function saveFileAsBenchmark {
 
 	QUERY="CALL AddAndAssociateBenchmark('$CURRENT_BENCH_NAME','$CURRENT_BENCH_PATH',false,$USER_ID,1,$FILE_SIZE_IN_BYTES,$SPACE_ID,@id)"
 	log "Adding benchmark using query: $QUERY"
-	if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "$QUERY" ; then
+	if ! (dbExec "$QUERY") ; then
 		log "error saving output as benchmark-- benchmark was not created"
 	else
 		cp $CURRENT_OUTPUT_FILE "$CURRENT_BENCH_PATH"
