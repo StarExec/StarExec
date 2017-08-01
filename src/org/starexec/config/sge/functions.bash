@@ -241,7 +241,7 @@ function trySandbox {
 				return 0
 			fi
 		else
-			log "found that pair $pairID is running in sandbox $1"
+			log "found that pair $pairPID is running in sandbox $1"
 		fi
 		#could not get the sandbox
 		return 1
