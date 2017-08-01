@@ -528,7 +528,7 @@ function processAttributes {
 		#testing to see if key or value is empty
 		if (( $product )); then
 			log "processing attribute $a (pair=$PAIR_ID, key='$key', value='$value' stage='$2')"
-			QUERY += "CALL AddJobAttr($PAIR_ID, '$key', '$value', $2);"
+			QUERY+="CALL AddJobAttr($PAIR_ID, '$key', '$value', $2);"
 		else
 			log "bad post processing - cannot process attribute $a"
 		fi
