@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # STAREXEC JOB STATUS CODES
 # These variables are defined for use in the jobscript
 # They MUST correspond with the status codes defined in the starexec schema
