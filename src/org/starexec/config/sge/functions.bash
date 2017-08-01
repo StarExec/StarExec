@@ -435,7 +435,8 @@ function dbExec {
 	local ATTEMPT=2
 	while
 		[ $ATTEMPT != 0 ] &&
-		! (mysql -u"$DB_USER" -p"$DB_PASS" -h "$REPORT_HOST" "$DB_NAME" -e "$1")
+		! (mysql -u"$DB_USER" -p"$DB_PASS" -h "$REPORT_HOST" "$DB_NAME" -e "$1") &&
+		(log "Unable to connect to database.")
 	do
 		sleep 20
 		((ATTEMPT--))
