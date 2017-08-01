@@ -29,8 +29,7 @@ function decodePathArrays {
 	TEMP_ARRAY_INDEX=0
 
 	#decode every solver name, solver path, and benchmark suffix in the arrays
-	while [ $TEMP_ARRAY_INDEX -lt $NUM_STAGES ]
-	do
+	while [ $TEMP_ARRAY_INDEX -lt $NUM_STAGES ]; do
 		echo ${SOLVER_NAMES[$TEMP_ARRAY_INDEX]} > $TMP
 		SOLVER_NAMES[$TEMP_ARRAY_INDEX]=`base64 -d $TMP`
 
@@ -44,31 +43,25 @@ function decodePathArrays {
 	done
 
 	TEMP_ARRAY_INDEX=0
-	while [ $TEMP_ARRAY_INDEX -lt $NUM_BENCH_INPUTS ]
-	do
-
+	while [ $TEMP_ARRAY_INDEX -lt $NUM_BENCH_INPUTS ]; do
 		echo ${BENCH_INPUT_PATHS[$TEMP_ARRAY_INDEX]} > $TMP
 		BENCH_INPUT_PATHS[$TEMP_ARRAY_INDEX]=`base64 -d $TMP`
 		log "decoded the benchmark input ${BENCH_INPUT_PATHS[$TEMP_ARRAY_INDEX]}"
 		TEMP_ARRAY_INDEX=$(($TEMP_ARRAY_INDEX+1))
 	done
 
-
 	rm $TMP
 }
 
 
 function decodeBenchmarkName {
-
 	TMP=`mktemp --tmpdir=$TMPDIR starexec_base64.XXXXXXXX`
-
-
 	echo $BENCH_PATH > $TMP
 	BENCH_PATH=`base64 -d $TMP`
 	rm $TMP
 }
-#need to make sure benchmark name is decoded in every file
 
+#need to make sure benchmark name is decoded in every file
 decodeBenchmarkName
 
 #################################################################################
@@ -89,21 +82,15 @@ JOB_IN_DIR="$SHARED_DIR/jobin"
 # Path to the job output directory
 JOB_OUT_DIR="$SHARED_DIR/joboutput"
 
-
-
-
 ######################################################################
 
-
-
-#initializes all workspace variables based on the value of the SANDBOX variable, which should already be set
-# either by calling initSandbox
+# initializes all workspace variables based on the value of the SANDBOX variable,
+# which should already be set either by calling initSandbox
 function initWorkspaceVariables {
-	if [ $SANDBOX -eq 1 ]
-	then
-	WORKING_DIR=$WORKING_DIR_BASE'/sandbox'
+	if [ $SANDBOX -eq 1 ]; then
+		WORKING_DIR=$WORKING_DIR_BASE'/sandbox'
 	else
-	WORKING_DIR=$WORKING_DIR_BASE'/sandbox2'
+		WORKING_DIR=$WORKING_DIR_BASE'/sandbox2'
 	fi
 
 	LOCAL_TMP_DIR="$WORKING_DIR/tmp"
@@ -121,12 +108,12 @@ function initWorkspaceVariables {
 
 	BENCH_FILE_EXTENSION="${BENCH_NAME##*.}"
 
-        if [ "$BENCH_FILE_EXTENSION" == "$BENCH_NAME" ] ; then
-          # this means that there is no file extension in $BENCH_NAME
-          LOCAL_BENCH_NAME="theBenchmark"
-        else
-          LOCAL_BENCH_NAME="theBenchmark.$BENCH_FILE_EXTENSION"
-        fi
+	if [ "$BENCH_FILE_EXTENSION" == "$BENCH_NAME" ]; then
+		# this means that there is no file extension in $BENCH_NAME
+		LOCAL_BENCH_NAME="theBenchmark"
+	else
+		LOCAL_BENCH_NAME="theBenchmark.$BENCH_FILE_EXTENSION"
+	fi
 
 	# The path to the benchmark on the execution host
 	LOCAL_BENCH_PATH="$LOCAL_BENCH_DIR/$LOCAL_BENCH_NAME"
@@ -138,12 +125,11 @@ function initWorkspaceVariables {
 	LOCAL_PREPROCESSOR_DIR="$WORKING_DIR/preprocessor"
 
 	# The path to the bin directory of the solver on the execution host
-    if [ $BUILD_JOB == "true" ]; then
-	    LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/runsolver"
-    else
-	    LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/bin/runsolver"
-    fi
-
+	if [ $BUILD_JOB == "true" ]; then
+		LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/runsolver"
+	else
+		LOCAL_RUNSOLVER_PATH="$LOCAL_SOLVER_DIR/bin/runsolver"
+	fi
 
 	OUT_DIR="$WORKING_DIR/output"
 
@@ -151,7 +137,6 @@ function initWorkspaceVariables {
 	PROCESSED_BENCH_PATH="$OUT_DIR/procBenchmark"
 
 	SAVED_OUTPUT_DIR="$WORKING_DIR/savedoutput"
-
 }
 
 function createLocalTmpDirectory {
@@ -169,38 +154,37 @@ function createLocalTmpDirectory {
 #checks to see whether the first argument is a valid integer
 function isInteger {
 	log "isInteger called on $1"
-	re='^[0-9]+$'
+	local re='^[0-9]+$'
 	if ! [[ $1 =~ $re ]] ; then
-   		return 1
+		return 1
 	fi
 	return 0
 }
+
 # checks to see whether the pair with the given PID is actually running
 function isPairRunning {
 	log "isPairRunning called on pair pid = $1"
 
-	if ! isInteger $1 ; then
+	if ! (isInteger $1); then
 		log "$1 is not a valid integer, so no pair is running"
 		return 1
 	fi
 	output=`cat "$LOCK_DIR/$1"`
-	if [ -z "${output// }" ]
-	then
+	if [ -z "${output// }" ]; then
 		echo "no process output was saved in the lock file, so assuming pair was deleted"
 		# the job is not still running
-        return 1
+		return 1
 	fi
 
 	log "$output"
 	currentOutput=`ps -p $1 -o pid,cmd | awk 'NR>1'`
 	log "$currentOutput"
 	#check to make sure the output of ps from when the lock was written is equivalent to what we see now
-	if [[ $currentOutput == *$output* ]]
-	then
+	if [[ $currentOutput == *$output* ]]; then
 		log "process is still running, so the sandbox is still in use"
 		return 0
 	fi
-  	#otherwise, the job is not still running
+	#otherwise, the job is not still running
 	return 1
 }
 
@@ -219,13 +203,13 @@ function makeLockFile {
 #first argument is the sandbox (1 or 2) and second argument is the pair ID
 function trySandbox {
 
-	if [ $1 -eq 1 ] ; then
-			LOCK_DIR="$SANDBOX_LOCK_DIR"
-			LOCK_USED="$SANDBOX_LOCK_USED"
-		else
-			LOCK_DIR="$SANDBOX2_LOCK_DIR"
-			LOCK_USED="$SANDBOX2_LOCK_USED"
-		fi
+	if [ $1 -eq 1 ]; then
+		LOCK_DIR="$SANDBOX_LOCK_DIR"
+		LOCK_USED="$SANDBOX_LOCK_USED"
+	else
+		LOCK_DIR="$SANDBOX2_LOCK_DIR"
+		LOCK_USED="$SANDBOX2_LOCK_USED"
+	fi
 	#force script to wait until it can get the outer lock file to do the block in parens
 	#timeout is 4 seconds-- we give up if we aren't able to get the lock in that amount of time
 	if (
@@ -276,14 +260,11 @@ function trySandbox {
 #figures out which sandbox the given job pair should run in.
 function initSandbox {
 	#try to get sandbox1 first
-	if trySandbox 1; then
+	if (trySandbox 1); then
 		SANDBOX=1
 		initWorkspaceVariables
 		return 0
-	fi
-
-	#couldn't get sandbox 1, so try sandbox2 next
-	if trySandbox 2 ; then
+	elif (trySandbox 2); then
 		SANDBOX=2
 		initWorkspaceVariables
 		return 0
@@ -291,8 +272,6 @@ function initSandbox {
 	#failed to get either sandbox
 	SANDBOX=-1
 	return 1
-
-
 }
 
 function log {
@@ -313,24 +292,23 @@ function safeRmLock {
 function safeCpAll {
 	if [ "$2" == "" ]; then
 		log "$1: Unsafe cp -r $2/* $3"
-  	else
-    	log "$1: Doing safeCpAll on $2 to $3"
-   		cp -r "$2"/* "$3"
- 	fi
-
+	else
+		log "$1: Doing safeCpAll on $2 to $3"
+		cp -r "$2"/* "$3"
+	fi
 }
 
 # call "safeRm description dirname" to do an "rm -r dirname/*" except if
 # dirname is the empty string, in which case an error message is printed.
 function safeRm {
-  if [ "$2" == "" ] ; then
-    log "Unsafe rm all detected for $1"
-  else
-    log "Doing rm all on $2 ($1)"
-    rm -rf "$2"
-    mkdir "$2"
-    chmod gu+rwx "$2"
-  fi
+	if [ "$2" == "" ] ; then
+		log "Unsafe rm all detected for $1"
+	else
+		log "Doing rm all on $2 ($1)"
+		rm -rf "$2"
+		mkdir "$2"
+		chmod gu+rwx "$2"
+	fi
 }
 
 #cleans up files to prepare for the next stage of the job
@@ -374,9 +352,9 @@ function killDeadlockedJobPair {
 	cd $WORKING_DIR
 	sudo -u $CURRENT_USER killall -SIGKILL --user $CURRENT_USER
 
-    if [ $BUILD_JOB == "true" ]; then
-        cleanUpAfterKilledBuildJob
-    fi
+	if [ $BUILD_JOB == "true" ]; then
+		cleanUpAfterKilledBuildJob
+	fi
 }
 
 # Calls copyOutput at an increment specified. Should be killed
@@ -389,13 +367,11 @@ function killDeadlockedJobPair {
 function copyOutputIncrementally {
 	PERIOD=$1
 	TIMEOUT=$2
-	while [ $TIMEOUT -gt 0 ]
-	do
+	while [ $TIMEOUT -gt 0 ]; do
 		sleep $PERIOD
 		copyOutputNoStats $3 $4 $5
 
-		if [ $DISK_QUOTA_EXCEEDED -eq 1 ]
-		then
+		if [ $DISK_QUOTA_EXCEEDED -eq 1 ]; then
 			break
 		fi
 		TIMEOUT=$(($TIMEOUT-$PERIOD))
@@ -437,7 +413,7 @@ function cleanWorkspace {
 
 	#only delete the job script / lock files if we are done with the job
 	log "about to check whether to delete lock files given $1"
-	if [ $1 -eq 0 ] ; then
+	if [ $1 -eq 0 ]; then
 		log "cleaning up scripts and lock files"
 		rm -f "$SCRIPT_PATH"
 		rm -f "$JOB_IN_DIR/depend_$PAIR_ID.txt"
@@ -445,12 +421,10 @@ function cleanWorkspace {
 		cd /tmp
 		sudo -u $2 find /tmp/* -user $2 -exec rm -fr {} \; 2>/dev/null
 		cd $WORKING_DIR
-		if [ $SANDBOX -eq 1 ]
-		then
+
+		if [ $SANDBOX -eq 1 ]; then
 			safeRmLock "$SANDBOX_LOCK_DIR"
-		fi
-		if [ $SANDBOX -eq 2 ]
-		then
+		elif [ $SANDBOX -eq 2 ]; then
 			safeRmLock "$SANDBOX2_LOCK_DIR"
 		fi
 	fi
@@ -489,21 +463,21 @@ function sendStatus {
 }
 
 function sendWallclockExceededStatus {
-    log "epilog detects wall clock time exceeded"
-    sendStatus $EXCEED_RUNTIME
-    sendStageStatus $EXCEED_RUNTIME ${STAGE_NUMBERS[$STAGE_INDEX]}
+	log "epilog detects wall clock time exceeded"
+	sendStatus $EXCEED_RUNTIME
+	sendStageStatus $EXCEED_RUNTIME ${STAGE_NUMBERS[$STAGE_INDEX]}
 }
 
 function sendCpuExceededStatus {
-    log "epilog detects cpu time exceeded"
-    sendStatus $EXCEED_CPU
-    sendStageStatus $EXCEED_CPU ${STAGE_NUMBERS[$STAGE_INDEX]}
+	log "epilog detects cpu time exceeded"
+	sendStatus $EXCEED_CPU
+	sendStageStatus $EXCEED_CPU ${STAGE_NUMBERS[$STAGE_INDEX]}
 }
 
 function sendExceedMemStatus {
-    log "epilog detects max virtual memory exceeded"
-    sendStatus $EXCEED_MEM
-    sendStageStatus $EXCEED_MEM ${STAGE_NUMBERS[$STAGE_INDEX]}
+	log "epilog detects max virtual memory exceeded"
+	sendStatus $EXCEED_MEM
+	sendStageStatus $EXCEED_MEM ${STAGE_NUMBERS[$STAGE_INDEX]}
 }
 
 function setStartTime {
@@ -535,29 +509,27 @@ function limitExceeded {
 # and a stage number as the second argument
 # Ben McCune
 function processAttributes {
+	if [ -z $1 ]; then
+	log "No argument passed to processAttributes"
+	exit 1
+	fi
 
-if [ -z $1 ]; then
-  log "No argument passed to processAttributes"
-  exit 1
-fi
-
-a=0
-while read line
-do a=$(($a+1));
-key=${line%=*};
-value=${line#*=};
-keySize=${#key}
-valueSize=${#value}
-product=$[keySize*valueSize]
-#testing to see if key or value is empty
-if (( $product ))
-   then
-	log "processing attribute $a (pair=$PAIR_ID, key='$key', value='$value' stage='$2')"
-	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddJobAttr($PAIR_ID,'$key','$value',$2)"
-else
-        log "bad post processing - cannot process attribute $a"
-fi
-done < $1
+	a=0
+	while read line; do
+		a=$(($a+1));
+		key=${line%=*};
+		value=${line#*=};
+		keySize=${#key}
+		valueSize=${#value}
+		product=$[keySize*valueSize]
+		#testing to see if key or value is empty
+		if (( $product )); then
+			log "processing attribute $a (pair=$PAIR_ID, key='$key', value='$value' stage='$2')"
+			mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddJobAttr($PAIR_ID,'$key','$value',$2)"
+		else
+			log "bad post processing - cannot process attribute $a"
+		fi
+	done < $1
 }
 
 # updates stats for the pair - parameters are var.out ($1) and watcher.out ($2) from runsolver
@@ -568,90 +540,88 @@ done < $1
 # $4 The option on how to copy back the other output fiels
 # $5 The benchmarking framework
 function updateStats {
+	if [ "$5" == "$BENCHEXEC" ]; then
+		WALLCLOCK_TIME=`sed -n 's/^{\?walltime=\([0-9\.]*\)s}\?$/\1/p' $1`
+		CPU_TIME=`sed -n 's/^{\?cputime=\([0-9\.]*\)s}\?$/\1/p' $1`
+		CPU_USER_TIME=0
+		SYSTEM_TIME=0
+		MAX_VIRTUAL_MEMORY=`sed -n 's/^{\?memory=\([0-9\.]*\)}\?$/\1/p' $1`
 
-if [ "$5" == "$BENCHEXEC" ]; then
-	WALLCLOCK_TIME=`sed -n 's/^{\?walltime=\([0-9\.]*\)s}\?$/\1/p' $1`
-	CPU_TIME=`sed -n 's/^{\?cputime=\([0-9\.]*\)s}\?$/\1/p' $1`
-	CPU_USER_TIME=0
-	SYSTEM_TIME=0
-	MAX_VIRTUAL_MEMORY=`sed -n 's/^{\?memory=\([0-9\.]*\)}\?$/\1/p' $1`
+		MAX_RESIDENT_SET_SIZE=0
+		PAGE_RECLAIMS=0
+		PAGE_FAULTS=0
+		BLOCK_INPUT=0
+		BLOCK_OUTPUT=0
+		VOL_CONTEXT_SWITCHES=0
+		INVOL_CONTEXT_SWITCHES=0
+	else
+		WALLCLOCK_TIME=`sed -n 's/^WCTIME=\([0-9\.]*\)$/\1/p' $1`
+		CPU_TIME=`sed -n 's/^CPUTIME=\([0-9\.]*\)$/\1/p' $1`
+		CPU_USER_TIME=`sed -n 's/^USERTIME=\([0-9\.]*\)$/\1/p' $1`
+		SYSTEM_TIME=`sed -n 's/^SYSTEMTIME=\([0-9\.]*\)$/\1/p' $1`
+		MAX_VIRTUAL_MEMORY=`sed -n 's/^MAXVM=\([0-9\.]*\)$/\1/p' $1`
 
-	MAX_RESIDENT_SET_SIZE=0
-	PAGE_RECLAIMS=0
-	PAGE_FAULTS=0
-	BLOCK_INPUT=0
-	BLOCK_OUTPUT=0
-	VOL_CONTEXT_SWITCHES=0
-	INVOL_CONTEXT_SWITCHES=0
-else
-	WALLCLOCK_TIME=`sed -n 's/^WCTIME=\([0-9\.]*\)$/\1/p' $1`
-	CPU_TIME=`sed -n 's/^CPUTIME=\([0-9\.]*\)$/\1/p' $1`
-	CPU_USER_TIME=`sed -n 's/^USERTIME=\([0-9\.]*\)$/\1/p' $1`
-	SYSTEM_TIME=`sed -n 's/^SYSTEMTIME=\([0-9\.]*\)$/\1/p' $1`
-	MAX_VIRTUAL_MEMORY=`sed -n 's/^MAXVM=\([0-9\.]*\)$/\1/p' $1`
+		log "the max virtual memory was $MAX_VIRTUAL_MEMORY"
+		log "the var file was"
+		cat $1
+		log "end varfile"
 
-	log "the max virtual memory was $MAX_VIRTUAL_MEMORY"
-	log "the var file was"
+		SOLVER_STATUS_CODE=`awk '/Child status/ { print $3 }' $2`
+
+		log "the solver exit code was $SOLVER_STATUS_CODE"
+
+		MAX_RESIDENT_SET_SIZE=`awk '/maximum resident set size/ { print $5 }' $2`
+		PAGE_RECLAIMS=`awk '/page reclaims/ { print $3 }' $2`
+		PAGE_FAULTS=`awk '/page faults/ { print $3 }' $2`
+		BLOCK_INPUT=`awk '/block input/ { print $4 }' $2`
+		BLOCK_OUTPUT=`awk '/block output/ { print $4 }' $2`
+		VOL_CONTEXT_SWITCHES=`awk '/^voluntary context switches/ { print $4 }' $2`
+		INVOL_CONTEXT_SWITCHES=`awk '/involuntary context switches/ { print $4 }' $2`
+
+		# just sanitize these latter to avoid db errors, since fishing things out of the watchfile is more error-prone apparently.
+		if [[ ! ( "$MAX_RESIDENT_SET_SIZE" =~ ^[0-9\.]+$ ) ]] ; then MAX_RESIDENT_SET_SIZE=0 ; fi
+		if [[ ! ( "$PAGE_RECLAIMS" =~ ^[0-9\.]+$ ) ]] ; then PAGE_RECLAIMS=0 ; fi
+		if [[ ! ( "$PAGE_FAULTS" =~ ^[0-9\.]+$ ) ]] ; then PAGE_FAULTS=0 ; fi
+		if [[ ! ( "$BLOCK_INPUT" =~ ^[0-9\.]+$ ) ]] ; then BLOCK_INPUT=0 ; fi
+		if [[ ! ( "$BLOCK_OUTPUT" =~ ^[0-9\.]+$ ) ]] ; then BLOCK_OUTPUT=0 ; fi
+		if [[ ! ( "$VOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then VOL_CONTEXT_SWITCHES=0 ; fi
+		if [[ ! ( "$INVOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then INVOL_CONTEXT_SWITCHES=0 ; fi
+	fi
+
+	ROUNDED_WALLCLOCK_TIME=$( printf "%.0f" $WALLCLOCK_TIME )
+	ROUNDED_CPU_TIME=$( printf "%.0f" $CPU_TIME )
+
+	STAREXEC_WALLCLOCK_LIMIT=$(($STAREXEC_WALLCLOCK_LIMIT-$ROUNDED_WALLCLOCK_TIME))
+	STAREXEC_CPU_LIMIT=$(($STAREXEC_CPU_LIMIT-$ROUNDED_CPU_TIME))
+
+	EXEC_HOST=`hostname`
+	getTotalOutputSizeToCopy $3 $4
+	log "mysql -u... -p... -h $REPORT_HOST $DB_NAME -e \"CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER, $DISK_SIZE)\""
+
+	if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER, $DISK_SIZE)" ; then
+	log "Error copying stats from watchfile into database. Copying varfile to log {"
 	cat $1
-	log "end varfile"
+	log "} End varfile."
+	log "Copying watchfile to log {"
+	cat $2
+	log "} End watchfile."
+	fi
 
-	SOLVER_STATUS_CODE=`awk '/Child status/ { print $3 }' $2`
+	log "sent job stats to $REPORT_HOST"
 
-	log "the solver exit code was $SOLVER_STATUS_CODE"
-
-	MAX_RESIDENT_SET_SIZE=`awk '/maximum resident set size/ { print $5 }' $2`
-	PAGE_RECLAIMS=`awk '/page reclaims/ { print $3 }' $2`
-	PAGE_FAULTS=`awk '/page faults/ { print $3 }' $2`
-	BLOCK_INPUT=`awk '/block input/ { print $4 }' $2`
-	BLOCK_OUTPUT=`awk '/block output/ { print $4 }' $2`
-	VOL_CONTEXT_SWITCHES=`awk '/^voluntary context switches/ { print $4 }' $2`
-	INVOL_CONTEXT_SWITCHES=`awk '/involuntary context switches/ { print $4 }' $2`
-
-	# just sanitize these latter to avoid db errors, since fishing things out of the watchfile is more error-prone apparently.
-	if [[ ! ( "$MAX_RESIDENT_SET_SIZE" =~ ^[0-9\.]+$ ) ]] ; then MAX_RESIDENT_SET_SIZE=0 ; fi
-	if [[ ! ( "$PAGE_RECLAIMS" =~ ^[0-9\.]+$ ) ]] ; then PAGE_RECLAIMS=0 ; fi
-	if [[ ! ( "$PAGE_FAULTS" =~ ^[0-9\.]+$ ) ]] ; then PAGE_FAULTS=0 ; fi
-	if [[ ! ( "$BLOCK_INPUT" =~ ^[0-9\.]+$ ) ]] ; then BLOCK_INPUT=0 ; fi
-	if [[ ! ( "$BLOCK_OUTPUT" =~ ^[0-9\.]+$ ) ]] ; then BLOCK_OUTPUT=0 ; fi
-	if [[ ! ( "$VOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then VOL_CONTEXT_SWITCHES=0 ; fi
-	if [[ ! ( "$INVOL_CONTEXT_SWITCHES" =~ ^[0-9\.]+$ ) ]] ; then INVOL_CONTEXT_SWITCHES=0 ; fi
-fi
-
-ROUNDED_WALLCLOCK_TIME=$( printf "%.0f" $WALLCLOCK_TIME )
-ROUNDED_CPU_TIME=$( printf "%.0f" $CPU_TIME )
-
-STAREXEC_WALLCLOCK_LIMIT=$(($STAREXEC_WALLCLOCK_LIMIT-$ROUNDED_WALLCLOCK_TIME))
-STAREXEC_CPU_LIMIT=$(($STAREXEC_CPU_LIMIT-$ROUNDED_CPU_TIME))
-
-EXEC_HOST=`hostname`
-getTotalOutputSizeToCopy $3 $4
-log "mysql -u... -p... -h $REPORT_HOST $DB_NAME -e \"CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER, $DISK_SIZE)\""
-
-if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER, $DISK_SIZE)" ; then
-log "Error copying stats from watchfile into database. Copying varfile to log {"
-cat $1
-log "} End varfile."
-log "Copying watchfile to log {"
-cat $2
-log "} End watchfile."
-fi
-
-log "sent job stats to $REPORT_HOST"
-
-#echo host name = $EXEC_HOST;
-log "cpu usage = $CPU_TIME"
-log "wallclock time = $WALLCLOCK_TIME"
-#echo user time = $CPU_USER_TIME;
-#echo system_time = $SYSTEM_TIME;
-#echo max virt mem = $MAX_VIRTUAL_MEMORY;
-#echo max res set size = $MAX_RESIDENT_SET_SIZE;
-#echo page reclaims = $PAGE_RECLAIMS;
-#echo page faults = $PAGE_FAULTS;
-#echo block input = $BLOCK_INPUT;
-#echo block output = $BLOCK_OUTPUT;
-#echo VOL Context switches = $VOL_CONTEXT_SWITCHES;
-#echo invol context switches = $INVOL_CONTEXT_SWITCHES;
-
+	#echo host name = $EXEC_HOST;
+	log "cpu usage = $CPU_TIME"
+	log "wallclock time = $WALLCLOCK_TIME"
+	#echo user time = $CPU_USER_TIME;
+	#echo system_time = $SYSTEM_TIME;
+	#echo max virt mem = $MAX_VIRTUAL_MEMORY;
+	#echo max res set size = $MAX_RESIDENT_SET_SIZE;
+	#echo page reclaims = $PAGE_RECLAIMS;
+	#echo page faults = $PAGE_FAULTS;
+	#echo block input = $BLOCK_INPUT;
+	#echo block output = $BLOCK_OUTPUT;
+	#echo VOL Context switches = $VOL_CONTEXT_SWITCHES;
+	#echo invol context switches = $INVOL_CONTEXT_SWITCHES;
 }
 
 function createDir {
@@ -672,38 +642,32 @@ function createDir {
 # $3 the other output copy option (same as above)
 function copyOutputNoStats {
 	setDiskQuotaExceeded $2 $3
-	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]
-	then
+	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]; then
 		log "not saving output: user disk quota exceeded"
 		return
 	fi
 	createDir "$PAIR_OUTPUT_DIRECTORY"
 	createDir "$SAVED_OUTPUT_DIR"
 	OUTPUT_SUFFIX="_output"
-	if [ $NUM_STAGES -eq 1 ]
-	then
+	if [ $NUM_STAGES -eq 1 ]; then
 		PAIR_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$PAIR_ID.txt"
 		PAIR_OTHER_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$PAIR_ID$OUTPUT_SUFFIX"
 	else
 		PAIR_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$1.txt"
 		PAIR_OTHER_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$1$OUTPUT_SUFFIX"
-
 	fi
 
-	if [ $2 -ne 1 ]
-	then
+	if [ $2 -ne 1 ]; then
 		cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
 	fi
 
-	if [ $3 -ne 1 ]
-	then
+	if [ $3 -ne 1 ]; then
 		rsync --prune-empty-dirs -r -u "$OUT_DIR/output_files/" "$PAIR_OTHER_OUTPUT_PATH"
 	fi
 	SAVED_PAIR_OUTPUT_PATH="$SAVED_OUTPUT_DIR/$1"
 	SAVED_PAIR_OTHER_OUTPUT_PATH=$SAVED_OUTPUT_DIR"/"$1"_output"
 
 	cp "$OUT_DIR"/stdout.txt "$SAVED_PAIR_OUTPUT_PATH"
-
 	rsync -r -u "$OUT_DIR/output_files/" "$SAVED_PAIR_OTHER_OUTPUT_PATH"
 }
 
@@ -728,42 +692,36 @@ function copyOutput {
 	fi
 
 	copyOutputNoStats $1 $2 $3
-
 	log "copying job output complete"
 }
 
 #fills arrays from file
 function fillDependArrays {
-#separator
-sep=',,,'
+	#separator
+	sep=',,,'
 
-INDEX=0
+	INDEX=0
 
-log "has depends = $HAS_DEPENDS"
+	log "has depends = $HAS_DEPENDS"
 
-if [ $HAS_DEPENDS -eq 1 ]
-then
-while read line
-do
-  BENCH_DEPENDS_ARRAY[INDEX]=${line//$sep*};
-  LOCAL_DEPENDS_ARRAY[INDEX]=${line//*$sep};
-  INDEX=$((INDEX + 1))
-done < "$JOB_IN_DIR/depend_$PAIR_ID.txt"
-fi
+	if [ $HAS_DEPENDS -eq 1 ]; then
+		while read line; do
+			BENCH_DEPENDS_ARRAY[INDEX]=${line//$sep*};
+			LOCAL_DEPENDS_ARRAY[INDEX]=${line//*$sep};
+			INDEX=$((INDEX + 1))
+		done < "$JOB_IN_DIR/depend_$PAIR_ID.txt"
+	fi
 
-return $?
+	return $?
 }
-
-
-
 
 #will see if a solver is cached and change the current SOLVER_PATH to the cache if so
 function checkCache {
 	if [ -d "$SOLVER_CACHE_PATH" ]; then
 		if [ -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
 			log "solver exists in cache at $SOLVER_CACHE_PATH"
-  			SOLVER_PATH=$SOLVER_CACHE_PATH
-  			SOLVER_CACHED=1
+			SOLVER_PATH=$SOLVER_CACHE_PATH
+			SOLVER_CACHED=1
 		fi
 	fi
 }
@@ -771,15 +729,16 @@ function checkCache {
 function enablePython34 {
     scl enable rh-python34 bash
 }
+
 function setupBenchexecCgroups {
 	echo $$ > /sys/fs/cgroup/cpuset/system.slice/benchexec-cgroup.service/tasks
 	echo $$ > /sys/fs/cgroup/cpuacct/system.slice/benchexec-cgroup.service/tasks
 	echo $$ > /sys/fs/cgroup/memory/system.slice/benchexec-cgroup.service/tasks
 	echo $$ > /sys/fs/cgroup/freezer/system.slice/benchexec-cgroup.service/tasks
 }
+
 function checkIfBenchmarkDependenciesExists {
-	for (( i = 0 ; i < ${#BENCH_DEPENDS_ARRAY[@]} ; i++ ))
-	do
+	for (( i = 0 ; i < ${#BENCH_DEPENDS_ARRAY[@]} ; i++ )); do
 		log "Checking if axiom at location exists: '${BENCH_DEPENDS_ARRAY[$i]}'"
 		if [ ! -f "${BENCH_DEPENDS_ARRAY[$i]}" ]; then
 			log "${BENCH_DEPENDS_ARRAY[$i]} did not exists, returning 0."
@@ -797,44 +756,31 @@ function copyBenchmarkDependencies {
 		cd "$OUT_DIR"/preProcessor
 	fi
 
-
 	log "copying benchmark dependencies to execution host..."
-	for (( i = 0 ; i < ${#BENCH_DEPENDS_ARRAY[@]} ; i++ ))
-	do
+	for (( i = 0 ; i < ${#BENCH_DEPENDS_ARRAY[@]} ; i++ )); do
 		log "Axiom location = '${BENCH_DEPENDS_ARRAY[$i]}'"
 		NEW_D=$(dirname "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}")
 		mkdir -p $NEW_D
 		if [ "$PRIMARY_PREPROCESSOR_PATH" != "" ]; then
 			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
-
 			"./process" "${BENCH_DEPENDS_ARRAY[$i]}" $RAND_SEED > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
 		else
 			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
-
 			cp "${BENCH_DEPENDS_ARRAY[$i]}" "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
 		fi
-
-
 	done
 
 	BENCH_INPUT_INDEX=0
 	mkdir -p $BENCH_INPUT_DIR
 
-	while [ $BENCH_INPUT_INDEX -lt $(($NUM_BENCH_INPUTS)) ]
-	do
+	while [ $BENCH_INPUT_INDEX -lt $(($NUM_BENCH_INPUTS)) ]; do
 		CURRENT_BENCH_INPUT_PATH=${BENCH_INPUT_PATHS[$BENCH_INPUT_INDEX]}
 		cp "$CURRENT_BENCH_INPUT_PATH" "$BENCH_INPUT_DIR/$(($BENCH_INPUT_INDEX+1))"
 		BENCH_INPUT_INDEX=$(($BENCH_INPUT_INDEX+1))
 	done
 
 	log "benchmark dependencies copy complete"
-
 }
-
-
-
-
-
 
 #benchmark dependencies not currently verified.
 function verifyWorkspace {
@@ -844,7 +790,6 @@ function verifyWorkspace {
 		#get rid of the cache, as if we're here then something is probably wrong with it
 		rm -r "$SOLVER_CACHE_PATH"
 		sendStatus $ERROR_RUNSCRIPT
-
 	else
 		log "execution host solver configuration verified"
 	fi
@@ -871,8 +816,8 @@ function sandboxWorkspace {
 		sudo chown -R $SANDBOX_USER_ONE $WORKING_DIR
 	fi
 	sudo chown -R `whoami` $LOCAL_BENCH_PATH
-    chmod 644 $LOCAL_BENCH_PATH
-    ls -lR "$WORKING_DIR"
+	chmod 644 $LOCAL_BENCH_PATH
+	ls -lR "$WORKING_DIR"
 	return 0
 }
 
@@ -881,100 +826,86 @@ function checkCache {
 	if [ -d "$SOLVER_CACHE_PATH" ]; then
 		if [ -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
 			log "solver exists in cache at $SOLVER_CACHE_PATH"
-  			SOLVER_PATH=$SOLVER_CACHE_PATH
-  			SOLVER_CACHED=1
+			SOLVER_PATH=$SOLVER_CACHE_PATH
+			SOLVER_CACHED=1
 		fi
 	fi
 }
 
 #fills arrays from file
 function fillDependArrays {
-#separator
-sep=',,,'
+	#separator
+	sep=',,,'
+	INDEX=0
 
-INDEX=0
+	log "has depends = $HAS_DEPENDS"
 
-log "has depends = $HAS_DEPENDS"
-
-if [ $HAS_DEPENDS -eq 1 ]
-then
-while read line
-do
-  BENCH_DEPENDS_ARRAY[INDEX]=${line//$sep*};
-  LOCAL_DEPENDS_ARRAY[INDEX]=${line//*$sep};
-  INDEX=$((INDEX + 1))
-done < "$JOB_IN_DIR/depend_$PAIR_ID.txt"
-fi
-
-return $?
+	if [ $HAS_DEPENDS -eq 1 ]; then
+		while read line; do
+			BENCH_DEPENDS_ARRAY[INDEX]=${line//$sep*};
+			LOCAL_DEPENDS_ARRAY[INDEX]=${line//*$sep};
+			INDEX=$((INDEX + 1))
+		done < "$JOB_IN_DIR/depend_$PAIR_ID.txt"
+	fi
+	return $?
 }
-
 
 #this is run after a solver is built on starexec
 function copySolverBack {
+	NEW_SOLVER_PATH="$(echo "$SOLVER_PATH" | sed 's/....$//')"
 
-NEW_SOLVER_PATH="$(echo "$SOLVER_PATH" | sed 's/....$//')"
+	log "Old Solverpath: $SOLVER_PATH"
+	log "NEW solver path is $NEW_SOLVER_PATH"
 
-log "Old Solverpath: $SOLVER_PATH"
-log "NEW solver path is $NEW_SOLVER_PATH"
+	if [ -e $LOCAL_RUNSOLVER_PATH ]; then
+			rm $LOCAL_RUNSOLVER_PATH
+	fi
 
-if [ -e $LOCAL_RUNSOLVER_PATH ]; then
-        rm $LOCAL_RUNSOLVER_PATH
-fi
+	if [ -e $LOCAL_CONFIG_PATH ]; then
+			rm $LOCAL_CONFIG_PATH
+	fi
 
-if [ -e $LOCAL_CONFIG_PATH ]; then
-        rm $LOCAL_CONFIG_PATH
-fi
+	mkdir $SHARED_DIR/Solvers/buildoutput/$SOLVER_ID
+	log "the output to be copied back $PAIR_OUTPUT_DIRECTORY/$PAIR_ID.txt"
+	log "the directory copying to: $SHARED_DIR/Solvers/buildoutput/$SOLVER_ID"
+	cp "$PAIR_OUTPUT_DIRECTORY/$PAIR_ID.txt" $SHARED_DIR/Solvers/buildoutput/$SOLVER_ID/starexec_build_log
 
-mkdir $SHARED_DIR/Solvers/buildoutput/$SOLVER_ID
-log "the output to be copied back $PAIR_OUTPUT_DIRECTORY/$PAIR_ID.txt"
-log "the directory copying to: $SHARED_DIR/Solvers/buildoutput/$SOLVER_ID"
-cp "$PAIR_OUTPUT_DIRECTORY/$PAIR_ID.txt" $SHARED_DIR/Solvers/buildoutput/$SOLVER_ID/starexec_build_log
+	safeCpAll "copying solver back" "$LOCAL_SOLVER_DIR" "$NEW_SOLVER_PATH"
+	log "solver copied back to head node"
+	log "updating build status to built and changing path for solver to $NEW_SOLVER_PATH"
+	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetSolverPath('$SOLVER_ID','$NEW_SOLVER_PATH')"
+	log "set build status to built on starexec for $SOLVER_ID"
+	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetSolverBuildStatus('$SOLVER_ID','2')"
+	log "deleting build configuration from db for solver: $SOLVER_ID"
+	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL DeleteBuildConfig('$SOLVER_ID')"
+	log "removing benchmark bench name: $BENCH_NAME id: $BENCH_ID from the db"
+	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL RemoveBenchmarkFromDatabase('$BENCH_ID')"
 
-safeCpAll "copying solver back" "$LOCAL_SOLVER_DIR" "$NEW_SOLVER_PATH"
-log "solver copied back to head node"
-log "updating build status to built and changing path for solver to $NEW_SOLVER_PATH"
-mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetSolverPath('$SOLVER_ID','$NEW_SOLVER_PATH')"
-log "set build status to built on starexec for $SOLVER_ID"
-mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetSolverBuildStatus('$SOLVER_ID','2')"
-log "deleting build configuration from db for solver: $SOLVER_ID"
-mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL DeleteBuildConfig('$SOLVER_ID')"
-log "removing benchmark bench name: $BENCH_NAME id: $BENCH_ID from the db"
-mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL RemoveBenchmarkFromDatabase('$BENCH_ID')"
-
-rm $BENCH_PATH
-
-
+	rm $BENCH_PATH
 }
 
-#For build jobs this cleans up files used in the build script.
-
+# For build jobs this cleans up files used in the build script.
 function cleanUpAfterKilledBuildJob {
- if [ $BUILD_JOB == "true" ]; then
+	if [ $BUILD_JOB == "true" ]; then
+		log "Build job has been failed, cleaning up:"
+		mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetSolverBuildStatus('$SOLVER_ID','3')"
+		log "deleting build configuration from db for solver: $SOLVER_ID"
+		mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL DeleteBuildConfig('$SOLVER_ID')"
+		log "removing benchmark bench name: $BENCH_NAME id: $BENCH_ID from the db"
+		mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL RemoveBenchmarkFromDatabase('$BENCH_ID')"
 
-    log "Build job has been failed, cleaning up:"
+		BENCH_PATH_DIR=$(dirname $BENCH_PATH)
 
-    mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetSolverBuildStatus('$SOLVER_ID','3')"
-    log "deleting build configuration from db for solver: $SOLVER_ID"
-    mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL DeleteBuildConfig('$SOLVER_ID')"
-    log "removing benchmark bench name: $BENCH_NAME id: $BENCH_ID from the db"
-    mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL RemoveBenchmarkFromDatabase('$BENCH_ID')"
-
-    BENCH_PATH_DIR=$(dirname $BENCH_PATH)
-
-    log "Deleting benchmark directory: $BENCH_PATH_DIR"
-
-    safeRm $BENCH_PATH_DIR
-    rm $BENCH_PATH
-
- fi
+		log "Deleting benchmark directory: $BENCH_PATH_DIR"
+		safeRm $BENCH_PATH_DIR
+		rm $BENCH_PATH
+	fi
 }
-
 
 function copyDependencies {
-safeCpAll "copying solver" "$SOLVER_PATH" "$LOCAL_SOLVER_DIR"
-log "solver copy complete"
-if [[ ($SOLVER_CACHED -eq 0) && ($BUILD_JOB != "true") ]]; then
+	safeCpAll "copying solver" "$SOLVER_PATH" "$LOCAL_SOLVER_DIR"
+	log "solver copy complete"
+	if [[ ($SOLVER_CACHED -eq 0) && ($BUILD_JOB != "true") ]]; then
 		mkdir -p "$SOLVER_CACHE_PATH"
 		if mkdir "$SOLVER_CACHE_PATH/lock.lock" ; then
 			if [ ! -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
@@ -992,15 +923,19 @@ if [[ ($SOLVER_CACHED -eq 0) && ($BUILD_JOB != "true") ]]; then
 			fi
 		fi
 	fi
-        log "chmod gu+rwx on the solver directory on the execution host ($LOCAL_SOLVER_DIR)"
-        chmod -R gu+rwx $LOCAL_SOLVER_DIR
+
+	log "chmod gu+rwx on the solver directory on the execution host ($LOCAL_SOLVER_DIR)"
+	chmod -R gu+rwx $LOCAL_SOLVER_DIR
 
 	log "copying runSolver to execution host..."
 	cp "$RUNSOLVER_PATH" "$LOCAL_RUNSOLVER_PATH"
+
 	log "runsolver copy complete"
 	ls -l "$LOCAL_RUNSOLVER_PATH"
+
 	log "copying benchmark $BENCH_PATH to $LOCAL_BENCH_PATH on execution host..."
 	cp "$BENCH_PATH" "$LOCAL_BENCH_PATH"
+
 	log "benchmark copy complete"
 
 	#doing benchmark preprocessing here if the pre_processor actually exists
@@ -1017,8 +952,6 @@ if [[ ($SOLVER_CACHED -eq 0) && ($BUILD_JOB != "true") ]]; then
 		rm "$LOCAL_BENCH_PATH"
 		mv "$PROCESSED_BENCH_PATH" "$LOCAL_BENCH_PATH"
 	fi
-
-
 	return $?
 }
 
@@ -1030,8 +963,7 @@ function saveFileAsBenchmark {
 	CURRENT_OUTPUT_FILE=$1
 	BENCH_NAME_ADDON="stage-"
 	FILE_NAME=$BENCH_NAME
-	if [ $2 -eq 2 ]
-	then
+	if [ $2 -eq 2 ]; then
 		FILE_NAME=`basename $1`
 	fi
 	# if no suffix is given, we just use the suffix of the benchmark
@@ -1045,8 +977,6 @@ function saveFileAsBenchmark {
 	MAX_BENCH_NAME_LENGTH=$(($BENCH_NAME_LENGTH_LIMIT-${#CURRENT_BENCH_SUFFIX}))
 	CURRENT_BENCH_NAME=${CURRENT_BENCH_NAME:0:$MAX_BENCH_NAME_LENGTH}
 	CURRENT_BENCH_NAME="$CURRENT_BENCH_NAME$CURRENT_BENCH_SUFFIX"
-
-
 	CURRENT_BENCH_PATH=$BENCH_SAVE_DIR/$SPACE_PATH/$PAIR_ID/$CURRENT_STAGE_NUMBER
 	log "saving benchmark to dir: $CURRENT_BENCH_PATH"
 
@@ -1075,8 +1005,7 @@ function setRemainingDiskQuota {
 	REMAINING_DISK_QUOTA=$(($REMAINING_DISK_QUOTA + 1073741824))
 	log "remaining user disk quota is"
 	log $REMAINING_DISK_QUOTA
-	if [ $REMAINING_DISK_QUOTA -lt 0 ]
-	then
+	if [ $REMAINING_DISK_QUOTA -lt 0 ]; then
 		REMAINING_DISK_QUOTA=0
 	fi
 }
@@ -1085,14 +1014,12 @@ function setRemainingDiskQuota {
 # Option to copy back stdout
 # Option to copy back other output files
 function setDiskQuotaExceeded {
-	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]
-	then
+	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]; then
 		return
 	fi
 	getTotalOutputSizeToCopy $1 $2
 	setRemainingDiskQuota
-	if [ $DISK_SIZE -gt $REMAINING_DISK_QUOTA ]
-	then
+	if [ $DISK_SIZE -gt $REMAINING_DISK_QUOTA ]; then
 		DISK_QUOTA_EXCEEDED=1
 		# we may have already copied some data, so we want to delete that
 		safeRm $PAIR_OUTPUT_DIRECTORY
@@ -1104,33 +1031,28 @@ function setDiskQuotaExceeded {
 # $1 The argument for whether we are copying back the stdout (1 = no copy, 2 = copy, 3 = copy + benchmark)
 # $2 The argument for whether we are copying back the other output files
 function getTotalOutputSizeToCopy {
-	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]
-	then
+	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]; then
 		DISK_SIZE=0
 		return
 	fi
 	STDOUT_SIZE=0
 	OTHER_SIZE=0
-	if [ $1 -ne 1 ]
-	then
+	if [ $1 -ne 1 ]; then
 		STDOUT_SIZE=`wc -c < $OUT_DIR/stdout.txt`
 	fi
 
-	if [ $1 -eq 3 ]
-	then
+	if [ $1 -eq 3 ]; then
 		# user is requesting two copies
 		STDOUT_SIZE=$(($STDOUT_SIZE * 2))
 	fi
 	log "found the following stdout size"
 	log $STDOUT_SIZE
 
-	if [ $2 -ne 1 ]
-	then
+	if [ $2 -ne 1 ]; then
 		OTHER_SIZE=`du -sb "$OUT_DIR/output_files" | awk '{print $1}'`
 	fi
 
-	if [ $2 -eq 3 ]
-	then
+	if [ $2 -eq 3 ]; then
 		# user is requesting two copies
 		OTHER_SIZE=$(($OTHER_SIZE * 2))
 	fi
@@ -1143,8 +1065,7 @@ function getTotalOutputSizeToCopy {
 
 # Saves the current stdout as a new benchmark
 function saveStdoutAsBenchmark {
-	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]
-	then
+	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]; then
 		log "not saving new benchmark: user disk quota has been exceeded"
 		return
 	fi
@@ -1154,22 +1075,18 @@ function saveStdoutAsBenchmark {
 
 # Saves the extra output directory as a new set of benchmarks
 function saveExtraOutputAsBenchmarks {
-	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]
-	then
+	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]; then
 		log "not saving new benchmarks: user disk quota has been exceeded"
 		return
 	fi
 	OUTPUT_DIR=$SAVED_OUTPUT_DIR"/"$CURRENT_STAGE_NUMBER"_output/*"
-	for f in $OUTPUT_DIR
-	do
+	for f in $OUTPUT_DIR; do
 		if [ -f $f ]
 		then
 			saveFileAsBenchmark $f 2
 		fi
 	done
 }
-
-
 
 #benchmark dependencies not currently verified.
 function verifyWorkspace {
@@ -1185,12 +1102,11 @@ function verifyWorkspace {
 
 	# Make sure the benchmark exists before the job runs
 	if ! [ -r "$LOCAL_BENCH_PATH" ]; then
-                echo "job error: could not locate the readable benchmark '$BENCH_NAME' on the execution host."
-                sendStatus $ERROR_BENCHMARK
-        else
+		log "job error: could not locate the readable benchmark '$BENCH_NAME' on the execution host."
+		sendStatus $ERROR_BENCHMARK
+	else
 		log "execution host benchmark verified"
 	fi
-
 	return $?
 }
 
@@ -1198,10 +1114,9 @@ function verifyWorkspace {
 # $1 The current stage number
 function markRunscriptError {
 	sendStatus $ERROR_RUNSCRIPT
-    sendStatusToLaterStages $ERROR_RUNSCRIPT $(($1-1))
-    setRunStatsToZeroForLaterStages $(($1-1))
+	sendStatusToLaterStages $ERROR_RUNSCRIPT $(($1-1))
+	setRunStatsToZeroForLaterStages $(($1-1))
 }
-
 
 # this function checks to make sure that runsolver output was generated correctly.
 # runsolver output should have a terminating line that contains 'EOF'. If this is not present,
@@ -1214,9 +1129,9 @@ function markRunscriptError {
 function isOutputValid {
 	log "checking to see if runsolver output is valid for stage $2"
 	if [ ! -f $1 ]; then
-    	log "Runsolver output could not be found"
+		log "Runsolver output could not be found"
 		markRunscriptError $2
-    	return 1
+		return 1
 	fi
 
 	log "Checking values of BENCHEXEC constant and benchmarking framework variable."
@@ -1232,10 +1147,8 @@ function isOutputValid {
 		return 0
 	fi
 
-
 	LAST_LINE=`tail -n 1 $1`
-	if [[ $LAST_LINE == *"EOF"* ]]
-	then
+	if [[ $LAST_LINE == *"EOF"* ]]; then
 		log "Runsolver output was valid"
 		return 0
 	fi
