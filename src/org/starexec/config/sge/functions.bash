@@ -459,44 +459,35 @@ function cleanWorkspace {
 	return $?
 }
 
+function dbExec {
+	local ATTEMPT=2
+	while
+		[ $ATTEMPT != 0 ] &&
+		! (mysql -u"$DB_USER" -p"$DB_PASS" -h "$REPORT_HOST" "$DB_NAME" -e "$1")
+	do
+		sleep 20
+		((ATTEMPT--))
+	done
+}
+
 function sendStageStatus {
 	log "sending status for stage number $2"
-    if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairStageStatus($PAIR_ID,$2, $1)" ; then
-       sleep 20
-       mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairStageStatus($PAIR_ID,$2, $1)"
-    fi
-	return $?
+	dbExec "CALL UpdatePairStageStatus($PAIR_ID, $2, $1)"
 }
 
 function sendStatusToLaterStages {
-
 	log "sending status for stage numbers greater than $2"
-    if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdateLaterStageStatuses($PAIR_ID,$2, $1)" ; then
-       sleep 20
-       mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdateLaterStageStatuses($PAIR_ID,$2, $1)"
-    fi
-	return $?
-
+	dbExec "CALL UpdateLaterStageStatuses($PAIR_ID, $2, $1)"
 }
 
 function setRunStatsToZeroForLaterStages {
-
 	log "setting all stats to 0 for stages greater than $1"
-    if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetRunStatsForLaterStagesToZero($PAIR_ID,$1)" ; then
-       sleep 20
-       mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetRunStatsForLaterStagesToZero($PAIR_ID,$1)"
-    fi
-	return $?
-
+	dbExec "CALL SetRunStatsForLaterStagesToZero($PAIR_ID, $1)"
 }
 
 function sendStatus {
-    if ! mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairStatus($PAIR_ID, $1)" ; then
-       sleep 20
-       mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdatePairStatus($PAIR_ID, $1)"
-    fi
-	log "sent job status $1 to $REPORT_HOST"
-	return $?
+	log "sending job status $1"
+	dbExec "CALL UpdatePairStatus($PAIR_ID, $1)"
 }
 
 function sendWallclockExceededStatus {
