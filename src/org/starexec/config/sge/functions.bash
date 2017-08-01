@@ -507,8 +507,8 @@ function sendExceedMemStatus {
 }
 
 function setStartTime {
-	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetPairStartTime($PAIR_ID)"
-	log "set start time for pair id = $PAIR_ID"
+	log "sending start time for pair id = $PAIR_ID"
+	dbExec "CALL SetPairStartTime($PAIR_ID)"
 }
 
 function setEndTime {
@@ -521,8 +521,8 @@ function setEndTime {
 }
 
 function sendNode {
-    mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdateNodeId($PAIR_ID, '$1', '$2' )"
 	log "sent Node Id $1 to $REPORT_HOST in sandbox $2"
+	dbExec "CALL UpdateNodeId($PAIR_ID, '$1', '$2')"
 }
 
 function limitExceeded {
