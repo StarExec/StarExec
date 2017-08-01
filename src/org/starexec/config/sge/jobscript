@@ -541,7 +541,7 @@ if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
 
 elif [ "$BENCHMARKING_FRAMEWORK" == "$RUNSOLVER" ]; then
   log "Checking for errors for runsolver."
-  if ( cat "$SGE_STDOUT_PATH" | grep 'job error:' ) then
+  if ( grep 'job error:' "$SGE_STDOUT_PATH" ) then
 	ERROR_DETECTED=true
   elif ( grep 'wall clock time exceeded' $WATCHFILE ) || [ "$JOB_PAIR_DEADLOCKED" = true ]; then
 	sendWallclockExceededStatus
