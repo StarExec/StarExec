@@ -440,6 +440,7 @@ function dbExec {
 	do
 		sleep 20
 		((ATTEMPT--))
+		(exit 1) # set $? to fail on last iteration
 	done
 }
 
