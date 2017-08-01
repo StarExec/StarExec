@@ -513,10 +513,12 @@ function setStartTime {
 
 function setEndTime {
 	log "sending end time for pair id = $PAIR_ID"
-	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetPairEndTime($PAIR_ID)"
-	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddToEventOccurrencesNotRelatedToQueue('job pairs run', 1); CALL AddToEventOccurrencesForJobPairsQueue('job pairs run', 1, $PAIR_ID)"
+	dbExec "
+		CALL SetPairEndTime($PAIR_ID);
+		CALL AddToEventOccurrencesNotRelatedToQueue('job pairs run', 1);
+		CALL AddToEventOccurrencesForJobPairsQueue('job pairs run', 1, $PAIR_ID);
+	"
 }
-
 
 function sendNode {
     mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdateNodeId($PAIR_ID, '$1', '$2' )"
