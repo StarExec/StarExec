@@ -297,7 +297,6 @@ function initSandbox {
 
 function log {
 	echo "`date +'%D %r %Z'`: $1"
-	return $?
 }
 
 function safeRmLock {
@@ -456,7 +455,6 @@ function cleanWorkspace {
 		fi
 	fi
 	log "execution host $HOSTNAME cleaned"
-	return $?
 }
 
 function dbExec {
@@ -511,25 +509,21 @@ function sendExceedMemStatus {
 function setStartTime {
 	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetPairStartTime($PAIR_ID)"
 	log "set start time for pair id = $PAIR_ID"
-	return $?
 }
 
 function setEndTime {
 	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetPairEndTime($PAIR_ID)"
 	log "set start time for pair id = $PAIR_ID"
-	return $?
 }
 
 function recordJobPairRun {
 	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddToEventOccurrencesNotRelatedToQueue('job pairs run', 1); CALL AddToEventOccurrencesForJobPairsQueue('job pairs run', 1, $PAIR_ID)"
-	return $?
 }
 
 
 function sendNode {
     mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL UpdateNodeId($PAIR_ID, '$1', '$2' )"
 	log "sent Node Id $1 to $REPORT_HOST in sandbox $2"
-	return $?
 }
 
 function limitExceeded {
@@ -737,8 +731,6 @@ function copyOutput {
 	copyOutputNoStats $1 $2 $3
 
 	log "copying job output complete"
-
-	return $?
 }
 
 #fills arrays from file
