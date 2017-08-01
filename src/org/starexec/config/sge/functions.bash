@@ -512,11 +512,8 @@ function setStartTime {
 }
 
 function setEndTime {
+	log "sending end time for pair id = $PAIR_ID"
 	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL SetPairEndTime($PAIR_ID)"
-	log "set start time for pair id = $PAIR_ID"
-}
-
-function recordJobPairRun {
 	mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -e "CALL AddToEventOccurrencesNotRelatedToQueue('job pairs run', 1); CALL AddToEventOccurrencesForJobPairsQueue('job pairs run', 1, $PAIR_ID)"
 }
 
