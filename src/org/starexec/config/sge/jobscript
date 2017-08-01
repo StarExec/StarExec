@@ -11,11 +11,11 @@
 # Enable resource limit signals
 #$ -notify
 
-# Submit under sandbox user 
+# Submit under sandbox user
 #$ -u $$SANDBOX_USER_ONE$$
 
 # Resource limits
-#$ -l s_fsize=$$MAX_WRITE$$G 
+#$ -l s_fsize=$$MAX_WRITE$$G
 
 # we are using runsolver now instead of giving these to SGE: -l s_vmem=$$MAX_MEM$$G -l s_rt=$$MAX_RUNTIME$$ -l s_cpu=$$MAX_CPUTIME$$
 
@@ -133,7 +133,7 @@ trap "limitExceeded 'file write' $EXCEED_FILE_WRITE" SIGXFSZ
 
 
 handleUsrTwo() {
-	
+
   echo "Jobscript received USR2."
 }
 
@@ -247,7 +247,7 @@ OTHER_INPUT_PATH=""
 
 # if we are using pipelines, the OTHER_INPUT_PATH should always exist.
 # so, we start with an empty directory here
-if [ $NUM_STAGES -gt 1 ] 
+if [ $NUM_STAGES -gt 1 ]
 then
 	mkdir "$OUT_DIR"/empty_output_dir
 	OTHER_INPUT_PATH="$OUT_DIR"/empty_output_dir
@@ -377,7 +377,7 @@ log "user disk quota : $DISK_QUOTA"
 
 
 if [ "$SANDBOX_FOUND" = true ] ; then
-	echo "Checking who current user is using: whoami ..."	
+	echo "Checking who current user is using: whoami ..."
 	whoami
 
 	# this will be set to true in killDeadlockedJobPair if the job pair gets deadlocked
@@ -387,7 +387,7 @@ if [ "$SANDBOX_FOUND" = true ] ; then
 	# Get the process of our defensive killDeadlockedJobPair function.
 	KILL_DEADLOCKED_JOB_PAIR_PID=$!
 	echo "KILL_DEADLOCKED_JOB_PAIR_PID = $KILL_DEADLOCKED_JOB_PAIR_PID"
-		
+
 	if [ $RESULTS_INTERVAL -gt 0 ] ; then
 		copyOutputIncrementally $RESULTS_INTERVAL $STAREXEC_WALLCLOCK_LIMIT $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION &
 		COPY_OUTPUT_INCREMENTALLY_PID=$!
@@ -539,7 +539,7 @@ if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
   fi
 
 
-elif [ "$BENCHMARKING_FRAMEWORK" == "$RUNSOLVER" ]; then 
+elif [ "$BENCHMARKING_FRAMEWORK" == "$RUNSOLVER" ]; then
   log "Checking for errors for runsolver."
   if ( cat "$SGE_STDOUT_PATH" | grep 'job error:' ) then
 	ERROR_DETECTED=true
@@ -566,14 +566,14 @@ fi
 if [ "$ERROR_DETECTED" = false ]; then
   log "execution on $HOSTNAME complete"
   sendStageStatus $STATUS_COMPLETE ${STAGE_NUMBERS[$STAGE_INDEX]}
-  
+
   if [ $STAGE_INDEX -eq $(($NUM_STAGES-1)) ]
   then
   	  log "job finished successfully"
   	  sendStatus $STATUS_COMPLETE
-  fi  
-  log "STAREXEC job $PAIR_ID completed successfully"	
-else 
+  fi
+  log "STAREXEC job $PAIR_ID completed successfully"
+else
   log "STAREXEC job $PAIR_ID exited with errors"
   sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
   setRunStatsToZeroForLaterStages ${STAGE_NUMBERS[$STAGE_INDEX]}
