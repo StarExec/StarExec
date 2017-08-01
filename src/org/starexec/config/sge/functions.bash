@@ -39,7 +39,7 @@ function decodePathArrays {
 		echo ${BENCH_SUFFIXES[$TEMP_ARRAY_INDEX]} > $TMP
 		BENCH_SUFFIXES[$TEMP_ARRAY_INDEX]=`base64 -d $TMP`
 
-		TEMP_ARRAY_INDEX=$(($TEMP_ARRAY_INDEX+1))
+		TEMP_ARRAY_INDEX=$((TEMP_ARRAY_INDEX+1))
 	done
 
 	TEMP_ARRAY_INDEX=0
@@ -47,7 +47,7 @@ function decodePathArrays {
 		echo ${BENCH_INPUT_PATHS[$TEMP_ARRAY_INDEX]} > $TMP
 		BENCH_INPUT_PATHS[$TEMP_ARRAY_INDEX]=`base64 -d $TMP`
 		log "decoded the benchmark input ${BENCH_INPUT_PATHS[$TEMP_ARRAY_INDEX]}"
-		TEMP_ARRAY_INDEX=$(($TEMP_ARRAY_INDEX+1))
+		TEMP_ARRAY_INDEX=$((TEMP_ARRAY_INDEX+1))
 	done
 
 	rm $TMP
@@ -374,7 +374,7 @@ function copyOutputIncrementally {
 		if [ $DISK_QUOTA_EXCEEDED -eq 1 ]; then
 			break
 		fi
-		TIMEOUT=$(($TIMEOUT-$PERIOD))
+		TIMEOUT=$((TIMEOUT-PERIOD))
 	done
 	log "done copying incremental output: the pair's timeout has been reached"
 }
@@ -519,14 +519,14 @@ function processAttributes {
 	a=0
 	local QUERY=""
 	while read line; do
-		a=$(($a+1));
+		a=$((a+1));
 		key=${line%=*};
 		value=${line#*=};
 		keySize=${#key}
 		valueSize=${#value}
-		product=$[keySize*valueSize]
+		product=$((keySize*valueSize))
 		#testing to see if key or value is empty
-		if (( $product )); then
+		if ((product)); then
 			log "processing attribute $a (pair=$PAIR_ID, key='$key', value='$value' stage='$2')"
 			QUERY+="CALL AddJobAttr($PAIR_ID, '$key', '$value', $2);"
 		else
@@ -598,8 +598,8 @@ function updateStats {
 	ROUNDED_WALLCLOCK_TIME=$( printf "%.0f" $WALLCLOCK_TIME )
 	ROUNDED_CPU_TIME=$( printf "%.0f" $CPU_TIME )
 
-	STAREXEC_WALLCLOCK_LIMIT=$(($STAREXEC_WALLCLOCK_LIMIT-$ROUNDED_WALLCLOCK_TIME))
-	STAREXEC_CPU_LIMIT=$(($STAREXEC_CPU_LIMIT-$ROUNDED_CPU_TIME))
+	STAREXEC_WALLCLOCK_LIMIT=$((STAREXEC_WALLCLOCK_LIMIT-ROUNDED_WALLCLOCK_TIME))
+	STAREXEC_CPU_LIMIT=$((STAREXEC_CPU_LIMIT-ROUNDED_CPU_TIME))
 
 	EXEC_HOST=`hostname`
 	getTotalOutputSizeToCopy $3 $4
@@ -780,10 +780,10 @@ function copyBenchmarkDependencies {
 	BENCH_INPUT_INDEX=0
 	mkdir -p $BENCH_INPUT_DIR
 
-	while [ $BENCH_INPUT_INDEX -lt $(($NUM_BENCH_INPUTS)) ]; do
+	while [ $BENCH_INPUT_INDEX -lt $((NUM_BENCH_INPUTS)) ]; do
 		CURRENT_BENCH_INPUT_PATH=${BENCH_INPUT_PATHS[$BENCH_INPUT_INDEX]}
-		cp "$CURRENT_BENCH_INPUT_PATH" "$BENCH_INPUT_DIR/$(($BENCH_INPUT_INDEX+1))"
-		BENCH_INPUT_INDEX=$(($BENCH_INPUT_INDEX+1))
+		cp "$CURRENT_BENCH_INPUT_PATH" "$BENCH_INPUT_DIR/$((BENCH_INPUT_INDEX+1))"
+		BENCH_INPUT_INDEX=$((BENCH_INPUT_INDEX+1))
 	done
 
 	log "benchmark dependencies copy complete"
@@ -985,7 +985,7 @@ function saveFileAsBenchmark {
 	fi
 
 	CURRENT_BENCH_NAME=${FILE_NAME%%.*}$BENCH_NAME_ADDON$CURRENT_STAGE_NUMBER
-	MAX_BENCH_NAME_LENGTH=$(($BENCH_NAME_LENGTH_LIMIT-${#CURRENT_BENCH_SUFFIX}))
+	MAX_BENCH_NAME_LENGTH=$((BENCH_NAME_LENGTH_LIMIT-${#CURRENT_BENCH_SUFFIX}))
 	CURRENT_BENCH_NAME=${CURRENT_BENCH_NAME:0:$MAX_BENCH_NAME_LENGTH}
 	CURRENT_BENCH_NAME="$CURRENT_BENCH_NAME$CURRENT_BENCH_SUFFIX"
 	CURRENT_BENCH_PATH=$BENCH_SAVE_DIR/$SPACE_PATH/$PAIR_ID/$CURRENT_STAGE_NUMBER
@@ -1012,8 +1012,8 @@ function saveFileAsBenchmark {
 function setRemainingDiskQuota {
 	DISK_USAGE=$(mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -N -e "CALL GetUserDiskUsage($USER_ID)")
 	log "user disk usage is $DISK_USAGE"
-	REMAINING_DISK_QUOTA=$(($DISK_QUOTA - $DISK_USAGE))
-	REMAINING_DISK_QUOTA=$(($REMAINING_DISK_QUOTA + 1073741824))
+	REMAINING_DISK_QUOTA=$((DISK_QUOTA - DISK_USAGE))
+	REMAINING_DISK_QUOTA=$((REMAINING_DISK_QUOTA + 1073741824))
 	log "remaining user disk quota is"
 	log $REMAINING_DISK_QUOTA
 	if [ $REMAINING_DISK_QUOTA -lt 0 ]; then
@@ -1054,7 +1054,7 @@ function getTotalOutputSizeToCopy {
 
 	if [ $1 -eq 3 ]; then
 		# user is requesting two copies
-		STDOUT_SIZE=$(($STDOUT_SIZE * 2))
+		STDOUT_SIZE=$((STDOUT_SIZE * 2))
 	fi
 	log "found the following stdout size"
 	log $STDOUT_SIZE
@@ -1065,11 +1065,11 @@ function getTotalOutputSizeToCopy {
 
 	if [ $2 -eq 3 ]; then
 		# user is requesting two copies
-		OTHER_SIZE=$(($OTHER_SIZE * 2))
+		OTHER_SIZE=$((OTHER_SIZE * 2))
 	fi
 	log "found the following other files size"
 	log $OTHER_SIZE
-	DISK_SIZE=$(($OTHER_SIZE + $STDOUT_SIZE))
+	DISK_SIZE=$((OTHER_SIZE + STDOUT_SIZE))
 	log "returning the following disk size"
 	log $DISK_SIZE
 }

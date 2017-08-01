@@ -200,12 +200,12 @@ $$STAGE_DEPENDENCY_ARRAY$$
 NODE_MEM=$(vmstat -s | head -1 | sed 's/K total memory//')
 
 #then, convert kb to mb
-NODE_MEM=$(($NODE_MEM/1024))
+NODE_MEM=$((NODE_MEM/1024))
 
 log "node memory in megabytes = $NODE_MEM"
 
 #then, set to half the memory
-NODE_MEM=$(($NODE_MEM/$NUM_SLOTS))
+NODE_MEM=$((NODE_MEM/NUM_SLOTS))
 
 log "node memory after accounting for pairs allowed to run on node = $NODE_MEM"
 
@@ -567,7 +567,7 @@ if [ "$ERROR_DETECTED" = false ]; then
   log "execution on $HOSTNAME complete"
   sendStageStatus $STATUS_COMPLETE ${STAGE_NUMBERS[$STAGE_INDEX]}
 
-  if [ $STAGE_INDEX -eq $(($NUM_STAGES-1)) ]
+  if [ $STAGE_INDEX -eq $((NUM_STAGES-1)) ]
   then
   	  log "job finished successfully"
   	  sendStatus $STATUS_COMPLETE
@@ -591,7 +591,7 @@ cleanForNextStage
 BENCH_PATH="$SAVED_OUTPUT_DIR/$CURRENT_STAGE_NUMBER"
 OTHER_INPUT_PATH=$SAVED_OUTPUT_DIR"/"$CURRENT_STAGE_NUMBER"_output"
 
-STAGE_INDEX=$(($STAGE_INDEX+1))
+STAGE_INDEX=$((STAGE_INDEX+1))
 
 done
 
