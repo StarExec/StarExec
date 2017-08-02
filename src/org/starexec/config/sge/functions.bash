@@ -532,11 +532,12 @@ function processAttributes {
 		else
 			log "bad post processing - cannot process attribute $a"
 		fi
-		if [[ ! -z $QUERY ]]; then
-			log "saving attributes to database"
-			dbExec "$QUERY"
-		fi
 	done < $1
+
+	if [[ ! -z $QUERY ]]; then
+		log "saving attributes to database"
+		dbExec "$QUERY"
+	fi
 }
 
 # updates stats for the pair - parameters are var.out ($1) and watcher.out ($2) from runsolver
