@@ -531,7 +531,7 @@ function processAttributes {
 		fi
 	done < $1
 
-	if [[ ! -z $QUERY ]]; then
+	if [[ -n $QUERY ]]; then
 		log "saving attributes to database"
 		dbExec "$QUERY"
 	fi
