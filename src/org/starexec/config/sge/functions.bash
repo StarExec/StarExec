@@ -512,21 +512,18 @@ function limitExceeded {
 # Ben McCune
 function processAttributes {
 	if [ -z $1 ]; then
-	log "No argument passed to processAttributes"
-	exit 1
+		log "No argument passed to processAttributes"
+		exit 1
 	fi
 
 	a=0
 	local QUERY=""
 	while read line; do
-		a=$((a+1));
-		key=${line%=*};
-		value=${line#*=};
-		keySize=${#key}
-		valueSize=${#value}
-		product=$((keySize*valueSize))
-		#testing to see if key or value is empty
-		if ((product)); then
+		((a++))
+		key=${line%=*}   # everything before '='
+		value=${line#*=} # everything after  '='
+		# Only process if key and value are both non-null strings
+		if [[ -n $key && -n $value]]; then
 			log "processing attribute $a (pair=$PAIR_ID, key='$key', value='$value' stage='$2')"
 			QUERY+="CALL AddJobAttr($PAIR_ID, '$key', '$value', $2);"
 		else
