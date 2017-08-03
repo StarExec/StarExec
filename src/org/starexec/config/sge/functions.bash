@@ -24,20 +24,20 @@ function decodePathArrays {
 	log "decoding all base 64 encoded strings"
 	# create a temporary file in $TMPDIR using the template starexec_base64.XXXXXXXX
 
-	TMP=`mktemp --tmpdir=$TMPDIR starexec_base64.XXXXXXXX`
+	TMP=$(mktemp --tmpdir=$TMPDIR starexec_base64.XXXXXXXX)
 
 	TEMP_ARRAY_INDEX=0
 
 	#decode every solver name, solver path, and benchmark suffix in the arrays
 	while [ $TEMP_ARRAY_INDEX -lt $NUM_STAGES ]; do
 		echo ${SOLVER_NAMES[$TEMP_ARRAY_INDEX]} > $TMP
-		SOLVER_NAMES[$TEMP_ARRAY_INDEX]=`base64 -d $TMP`
+		SOLVER_NAMES[$TEMP_ARRAY_INDEX]=$(base64 -d $TMP)
 
 		echo ${SOLVER_PATHS[$TEMP_ARRAY_INDEX]} > $TMP
-		SOLVER_PATHS[$TEMP_ARRAY_INDEX]=`base64 -d $TMP`
+		SOLVER_PATHS[$TEMP_ARRAY_INDEX]=$(base64 -d $TMP)
 
 		echo ${BENCH_SUFFIXES[$TEMP_ARRAY_INDEX]} > $TMP
-		BENCH_SUFFIXES[$TEMP_ARRAY_INDEX]=`base64 -d $TMP`
+		BENCH_SUFFIXES[$TEMP_ARRAY_INDEX]=$(base64 -d $TMP)
 
 		TEMP_ARRAY_INDEX=$((TEMP_ARRAY_INDEX+1))
 	done
@@ -45,7 +45,7 @@ function decodePathArrays {
 	TEMP_ARRAY_INDEX=0
 	while [ $TEMP_ARRAY_INDEX -lt $NUM_BENCH_INPUTS ]; do
 		echo ${BENCH_INPUT_PATHS[$TEMP_ARRAY_INDEX]} > $TMP
-		BENCH_INPUT_PATHS[$TEMP_ARRAY_INDEX]=`base64 -d $TMP`
+		BENCH_INPUT_PATHS[$TEMP_ARRAY_INDEX]=$(base64 -d $TMP)
 		log "decoded the benchmark input ${BENCH_INPUT_PATHS[$TEMP_ARRAY_INDEX]}"
 		TEMP_ARRAY_INDEX=$((TEMP_ARRAY_INDEX+1))
 	done
@@ -55,9 +55,9 @@ function decodePathArrays {
 
 
 function decodeBenchmarkName {
-	TMP=`mktemp --tmpdir=$TMPDIR starexec_base64.XXXXXXXX`
+	TMP=$(mktemp --tmpdir=$TMPDIR starexec_base64.XXXXXXXX)
 	echo $BENCH_PATH > $TMP
-	BENCH_PATH=`base64 -d $TMP`
+	BENCH_PATH=$(base64 -d $TMP)
 	rm $TMP
 }
 
@@ -169,7 +169,7 @@ function isPairRunning {
 		log "$1 is not a valid integer, so no pair is running"
 		return 1
 	fi
-	output=`cat "$LOCK_DIR/$1"`
+	output=$(cat "$LOCK_DIR/$1")
 	if [ -z "${output// }" ]; then
 		echo "no process output was saved in the lock file, so assuming pair was deleted"
 		# the job is not still running
@@ -177,7 +177,7 @@ function isPairRunning {
 	fi
 
 	log "$output"
-	currentOutput=`ps -p $1 -o pid,cmd | awk 'NR>1'`
+	currentOutput=$(ps -p $1 -o pid,cmd | awk 'NR>1')
 	log "$currentOutput"
 	#check to make sure the output of ps from when the lock was written is equivalent to what we see now
 	if [[ $currentOutput == *$output* ]]; then
@@ -194,7 +194,7 @@ function makeLockFile {
 	log "able to get sandbox $1!"
 	# make a file that is named with the current PID so we know which pair should be running here
 	touch "$LOCK_DIR/$$"
-	processString=`ps -p $$ -o pid,cmd | awk 'NR>1'`
+	processString=$(ps -p $$ -o pid,cmd | awk 'NR>1')
 	log "Found data for this process $processString"
 	echo $processString > "$LOCK_DIR/$$"
 	log "putting this job into sandbox $1 $$"
@@ -226,7 +226,7 @@ function trySandbox {
 		#or a previous job did not clean up the lock correctly. To check, we see if the pair given
 		#in the directory is still running
 
-		pairPID=`ls "$LOCK_DIR"`
+		pairPID=$(ls "$LOCK_DIR")
 		log "found the pairID = $pairPID"
 
 
@@ -275,7 +275,7 @@ function initSandbox {
 }
 
 function log {
-	echo "`date +'%D %r %Z'`: $1"
+	echo "$(date +'%D %r %Z'): $1"
 }
 
 function safeRmLock {
@@ -314,7 +314,7 @@ function safeRm {
 #cleans up files to prepare for the next stage of the job
 function cleanForNextStage {
 	cd $WORKING_DIR
-	sudo chown -R `whoami` $WORKING_DIR
+	sudo chown -R $(whoami) $WORKING_DIR
 	chmod -R gu+rxw $WORKING_DIR
 
 	# Clear the output directory
@@ -386,7 +386,7 @@ function cleanWorkspace {
 
 	cd $WORKING_DIR
 	# change ownership and permissions to make sure we can clean everything up
-	sudo chown -R `whoami` $WORKING_DIR
+	sudo chown -R $(whoami) $WORKING_DIR
 
 	mkdir -p $WORKING_DIR
 
@@ -546,11 +546,11 @@ function processAttributes {
 # $5 The benchmarking framework
 function updateStats {
 	if [ "$5" == "$BENCHEXEC" ]; then
-		WALLCLOCK_TIME=`sed -n 's/^{\?walltime=\([0-9\.]*\)s}\?$/\1/p' $1`
-		CPU_TIME=`sed -n 's/^{\?cputime=\([0-9\.]*\)s}\?$/\1/p' $1`
+		WALLCLOCK_TIME=$(sed -n 's/^{\?walltime=\([0-9\.]*\)s}\?$/\1/p' $1)
+		CPU_TIME=$(sed -n 's/^{\?cputime=\([0-9\.]*\)s}\?$/\1/p' $1)
 		CPU_USER_TIME=0
 		SYSTEM_TIME=0
-		MAX_VIRTUAL_MEMORY=`sed -n 's/^{\?memory=\([0-9\.]*\)}\?$/\1/p' $1`
+		MAX_VIRTUAL_MEMORY=$(sed -n 's/^{\?memory=\([0-9\.]*\)}\?$/\1/p' $1)
 
 		MAX_RESIDENT_SET_SIZE=0
 		PAGE_RECLAIMS=0
@@ -560,28 +560,28 @@ function updateStats {
 		VOL_CONTEXT_SWITCHES=0
 		INVOL_CONTEXT_SWITCHES=0
 	else
-		WALLCLOCK_TIME=`sed -n 's/^WCTIME=\([0-9\.]*\)$/\1/p' $1`
-		CPU_TIME=`sed -n 's/^CPUTIME=\([0-9\.]*\)$/\1/p' $1`
-		CPU_USER_TIME=`sed -n 's/^USERTIME=\([0-9\.]*\)$/\1/p' $1`
-		SYSTEM_TIME=`sed -n 's/^SYSTEMTIME=\([0-9\.]*\)$/\1/p' $1`
-		MAX_VIRTUAL_MEMORY=`sed -n 's/^MAXVM=\([0-9\.]*\)$/\1/p' $1`
+		WALLCLOCK_TIME=$(sed -n 's/^WCTIME=\([0-9\.]*\)$/\1/p' $1)
+		CPU_TIME=$(sed -n 's/^CPUTIME=\([0-9\.]*\)$/\1/p' $1)
+		CPU_USER_TIME=$(sed -n 's/^USERTIME=\([0-9\.]*\)$/\1/p' $1)
+		SYSTEM_TIME=$(sed -n 's/^SYSTEMTIME=\([0-9\.]*\)$/\1/p' $1)
+		MAX_VIRTUAL_MEMORY=$(sed -n 's/^MAXVM=\([0-9\.]*\)$/\1/p' $1)
 
 		log "the max virtual memory was $MAX_VIRTUAL_MEMORY"
 		log "the var file was"
 		cat $1
 		log "end varfile"
 
-		SOLVER_STATUS_CODE=`awk '/Child status/ { print $3 }' $2`
+		SOLVER_STATUS_CODE=$(awk '/Child status/ { print $3 }' $2)
 
 		log "the solver exit code was $SOLVER_STATUS_CODE"
 
-		MAX_RESIDENT_SET_SIZE=`awk '/maximum resident set size/ { print $5 }' $2`
-		PAGE_RECLAIMS=`awk '/page reclaims/ { print $3 }' $2`
-		PAGE_FAULTS=`awk '/page faults/ { print $3 }' $2`
-		BLOCK_INPUT=`awk '/block input/ { print $4 }' $2`
-		BLOCK_OUTPUT=`awk '/block output/ { print $4 }' $2`
-		VOL_CONTEXT_SWITCHES=`awk '/^voluntary context switches/ { print $4 }' $2`
-		INVOL_CONTEXT_SWITCHES=`awk '/involuntary context switches/ { print $4 }' $2`
+		MAX_RESIDENT_SET_SIZE=$(awk '/maximum resident set size/ { print $5 }' $2)
+		PAGE_RECLAIMS=$(awk '/page reclaims/ { print $3 }' $2)
+		PAGE_FAULTS=$(awk '/page faults/ { print $3 }' $2)
+		BLOCK_INPUT=$(awk '/block input/ { print $4 }' $2)
+		BLOCK_OUTPUT=$(awk '/block output/ { print $4 }' $2)
+		VOL_CONTEXT_SWITCHES=$(awk '/^voluntary context switches/ { print $4 }' $2)
+		INVOL_CONTEXT_SWITCHES=$(awk '/involuntary context switches/ { print $4 }' $2)
 
 		# just sanitize these latter to avoid db errors, since fishing things out of the watchfile is more error-prone apparently.
 		if [[ ! ( "$MAX_RESIDENT_SET_SIZE" =~ ^[0-9\.]+$ ) ]] ; then MAX_RESIDENT_SET_SIZE=0 ; fi
@@ -599,7 +599,7 @@ function updateStats {
 	STAREXEC_WALLCLOCK_LIMIT=$((STAREXEC_WALLCLOCK_LIMIT-ROUNDED_WALLCLOCK_TIME))
 	STAREXEC_CPU_LIMIT=$((STAREXEC_CPU_LIMIT-ROUNDED_CPU_TIME))
 
-	EXEC_HOST=`hostname`
+	EXEC_HOST=$(hostname)
 	getTotalOutputSizeToCopy $3 $4
 	log "sending Pair Stats"
 
@@ -820,7 +820,7 @@ function sandboxWorkspace {
 		log "sandboxing workspace with first sandbox user"
 		sudo chown -R $SANDBOX_USER_ONE $WORKING_DIR
 	fi
-	sudo chown -R `whoami` $LOCAL_BENCH_PATH
+	sudo chown -R $(whoami) $LOCAL_BENCH_PATH
 	chmod 644 $LOCAL_BENCH_PATH
 	ls -lR "$WORKING_DIR"
 	return 0
@@ -973,7 +973,7 @@ function saveFileAsBenchmark {
 	BENCH_NAME_ADDON="stage-"
 	FILE_NAME=$BENCH_NAME
 	if [ $2 -eq 2 ]; then
-		FILE_NAME=`basename $1`
+		FILE_NAME=$(basename $1)
 	fi
 	# if no suffix is given, we just use the suffix of the benchmark
 	if [ "$CURRENT_BENCH_SUFFIX" == "" ] ; then
@@ -989,7 +989,7 @@ function saveFileAsBenchmark {
 	CURRENT_BENCH_PATH=$BENCH_SAVE_DIR/$SPACE_PATH/$PAIR_ID/$CURRENT_STAGE_NUMBER
 	log "saving benchmark to dir: $CURRENT_BENCH_PATH"
 
-	FILE_SIZE_IN_BYTES=`wc -c < $CURRENT_OUTPUT_FILE`
+	FILE_SIZE_IN_BYTES=$(wc -c < $CURRENT_OUTPUT_FILE)
 
 	createDir $CURRENT_BENCH_PATH
 
@@ -1047,7 +1047,7 @@ function getTotalOutputSizeToCopy {
 	STDOUT_SIZE=0
 	OTHER_SIZE=0
 	if [ $1 -ne 1 ]; then
-		STDOUT_SIZE=`wc -c < $OUT_DIR/stdout.txt`
+		STDOUT_SIZE=$(wc -c < $OUT_DIR/stdout.txt)
 	fi
 
 	if [ $1 -eq 3 ]; then
@@ -1058,7 +1058,7 @@ function getTotalOutputSizeToCopy {
 	log $STDOUT_SIZE
 
 	if [ $2 -ne 1 ]; then
-		OTHER_SIZE=`du -sb "$OUT_DIR/output_files" | awk '{print $1}'`
+		OTHER_SIZE=$(du -sb "$OUT_DIR/output_files" | awk '{print $1}')
 	fi
 
 	if [ $2 -eq 3 ]; then
@@ -1156,7 +1156,7 @@ function isOutputValid {
 		return 0
 	fi
 
-	LAST_LINE=`tail -n 1 $1`
+	LAST_LINE=$(tail -n 1 $1)
 	if [[ $LAST_LINE == *"EOF"* ]]; then
 		log "Runsolver output was valid"
 		return 0
