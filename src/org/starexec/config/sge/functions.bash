@@ -444,6 +444,11 @@ function dbExec {
 	done
 }
 
+# Will strip quotes from the first argument
+function dbEscape {
+	echo ${1//[\'\"]/}
+}
+
 function sendStageStatus {
 	log "sending status for stage number $2"
 	dbExec "CALL UpdatePairStageStatus($PAIR_ID, $2, $1)"
