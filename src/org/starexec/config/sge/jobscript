@@ -115,8 +115,6 @@ $$STDOUT_SAVE_OPTION_ARRAY$$
 
 $$EXTRA_SAVE_OPTION_ARRAY$$
 
-STAGE_INDEX=0
-
 NUM_STAGES=${#STAGE_NUMBERS[@]}
 
 NUM_BENCH_INPUTS=$((${#BENCH_INPUT_PATHS[@]}-1)) # we terminate the array with an empty string, so the number is the size-1
@@ -248,7 +246,7 @@ fi
 
 log "the number of stages is $NUM_STAGES"
 
-while [ $STAGE_INDEX -lt $NUM_STAGES ]; do
+for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 	CURRENT_STAGE_MEMORY=$MAX_MEM   #start with the default max mem
 	CURRENT_STAGE_CPU=$STAREXEC_CPU_LIMIT
 	CURRENT_STAGE_WALLCLOCK=$STAREXEC_WALLCLOCK_LIMIT
@@ -562,8 +560,6 @@ while [ $STAGE_INDEX -lt $NUM_STAGES ]; do
 	# update the path to the input to the output of the last stage
 	BENCH_PATH="$SAVED_OUTPUT_DIR/$CURRENT_STAGE_NUMBER"
 	OTHER_INPUT_PATH=$SAVED_OUTPUT_DIR"/"$CURRENT_STAGE_NUMBER"_output"
-
-	STAGE_INDEX=$((STAGE_INDEX+1))
 done
 
 setEndTime
