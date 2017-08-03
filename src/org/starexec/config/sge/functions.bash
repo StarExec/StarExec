@@ -1127,9 +1127,6 @@ function isOutputValid {
 		return 1
 	fi
 
-	log "Checking values of BENCHEXEC constant and benchmarking framework variable."
-	log "$4"
-	log "$BENCHEXEC"
 	if [ "$4" = "$BENCHEXEC" ] ; then
 		log "benchmarking framework was benchexec so there will be no EOF appended."
 		return 0
@@ -1140,11 +1137,11 @@ function isOutputValid {
 		return 0
 	fi
 
-	LAST_LINE=$(tail -n 1 $1)
-	if [[ $LAST_LINE == *"EOF"* ]]; then
+	if [[ $(tail -n 1 $1) == *"EOF"* ]]; then
 		log "Runsolver output was valid"
 		return 0
+	else
+		log "Runsolver output was NOT valid"
+		return 1
 	fi
-	log "runsolver output was not valid"
-	return 1
 }
