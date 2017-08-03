@@ -24,41 +24,20 @@ function decodePathArrays {
 	log "decoding all base 64 encoded strings"
 	# create a temporary file in $TMPDIR using the template starexec_base64.XXXXXXXX
 
-	TMP=$(mktemp --tmpdir=$TMPDIR starexec_base64.XXXXXXXX)
-
-	TEMP_ARRAY_INDEX=0
-
 	#decode every solver name, solver path, and benchmark suffix in the arrays
-	while [ $TEMP_ARRAY_INDEX -lt $NUM_STAGES ]; do
-		echo ${SOLVER_NAMES[$TEMP_ARRAY_INDEX]} > $TMP
-		SOLVER_NAMES[$TEMP_ARRAY_INDEX]=$(base64 -d $TMP)
+	for (( i = 0; i < NUM_STAGES; ++i )); do
+		SOLVER_NAMES[$i]=$(     echo "${SOLVER_NAMES[i]}"      | base64 -d)
+		SOLVER_PATHS[$i]=$(     echo "${SOLVER_PATHS[i]}"      | base64 -d)
+		BENCH_SUFFIXES[$i]=$(   echo "${BENCH_SUFFIXES[i]}"    | base64 -d)
+		BENCH_INPUT_PATHS[$i]=$(echo "${BENCH_INPUT_PATHS[i]}" | base64 -d)
 
-		echo ${SOLVER_PATHS[$TEMP_ARRAY_INDEX]} > $TMP
-		SOLVER_PATHS[$TEMP_ARRAY_INDEX]=$(base64 -d $TMP)
-
-		echo ${BENCH_SUFFIXES[$TEMP_ARRAY_INDEX]} > $TMP
-		BENCH_SUFFIXES[$TEMP_ARRAY_INDEX]=$(base64 -d $TMP)
-
-		TEMP_ARRAY_INDEX=$((TEMP_ARRAY_INDEX+1))
+		log "decoded the benchmark input ${BENCH_INPUT_PATHS[$i]}"
 	done
-
-	TEMP_ARRAY_INDEX=0
-	while [ $TEMP_ARRAY_INDEX -lt $NUM_BENCH_INPUTS ]; do
-		echo ${BENCH_INPUT_PATHS[$TEMP_ARRAY_INDEX]} > $TMP
-		BENCH_INPUT_PATHS[$TEMP_ARRAY_INDEX]=$(base64 -d $TMP)
-		log "decoded the benchmark input ${BENCH_INPUT_PATHS[$TEMP_ARRAY_INDEX]}"
-		TEMP_ARRAY_INDEX=$((TEMP_ARRAY_INDEX+1))
-	done
-
-	rm $TMP
 }
 
 
 function decodeBenchmarkName {
-	TMP=$(mktemp --tmpdir=$TMPDIR starexec_base64.XXXXXXXX)
-	echo $BENCH_PATH > $TMP
-	BENCH_PATH=$(base64 -d $TMP)
-	rm $TMP
+	BENCH_PATH=$(echo "$BENCH_PATH" | base64 -d)
 }
 
 #need to make sure benchmark name is decoded in every file
