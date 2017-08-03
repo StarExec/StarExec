@@ -11,10 +11,15 @@ $(document).ready(function(){
 		event.stopPropogation();
 	});
 
-	$("#details tbody").on( "click", "tr", function(){
+	$("#details tbody").on( "click", "tr", function(event) {
 		if (jobPairTable.DataTable().data().length > 0) {
 			var pairId = $(this).find('input').val();
-			window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
+			var url = starexecRoot + "secure/details/pair.jsp?id=" + pairId;
+			if (event.ctrlKey || event.metaKey) {
+				window.open(url, "_blank").focus();
+			} else {
+				window.location.assign(url);
+			}
 		}
 	});
 
