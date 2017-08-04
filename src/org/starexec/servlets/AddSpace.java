@@ -1,6 +1,5 @@
 package org.starexec.servlets;
 
-
 import org.starexec.constants.R;
 import org.starexec.data.database.*;
 import org.starexec.data.security.ValidatorStatusCode;
@@ -21,6 +20,7 @@ import java.util.Set;
 
 /**
  * Servlet which handles incoming requests adding new spaces
+ *
  * @author Tyler Jensen
  */
 public class AddSpace extends HttpServlet {
@@ -44,19 +44,21 @@ public class AddSpace extends HttpServlet {
 	private static final String removeUser = "removeUser";
 	private static final String removeSpace = "removeSpace";
 	private static final String removeJob = "removeJob";
-	private static final String stickyLeaders="sticky";
+	private static final String stickyLeaders = "sticky";
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 	}
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		try {
 			// Make sure the request is valid
 			ValidatorStatusCode status = isValid(request);
@@ -152,7 +154,10 @@ public class AddSpace extends HttpServlet {
 
 			if (newSpaceId <= 0) {
 				// If it failed, notify an error
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error adding the space to the starexec database");
+				response.sendError(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+						"There was an internal error adding the space to the starexec database"
+				);
 			} else {
 				// On success, redirect to the space explorer so they can see changes
 				response.addCookie(new Cookie("New_ID", String.valueOf(newSpaceId)));
@@ -165,57 +170,66 @@ public class AddSpace extends HttpServlet {
 	}
 
 	/**
-	 * Uses the Validate util to ensure the incoming request is valid. This checks for illegal characters
-	 * and content length requirements to ensure it is not malicious.
+	 * Uses the Validate util to ensure the incoming request is valid. This checks for illegal characters and content
+	 * length requirements to ensure it is not malicious.
+	 *
 	 * @return True if the request is ok to act on, false otherwise
 	 */
 	private ValidatorStatusCode isValid(HttpServletRequest request) {
 		try {
 			// Make sure the parent space id is a int
 			if (!Validator.isValidPosInteger(request.getParameter(parentSpace))) {
-				return new ValidatorStatusCode(false,"The space ID needs to be an integer");
+				return new ValidatorStatusCode(false, "The space ID needs to be an integer");
 			}
 			int spaceId = Integer.parseInt(request.getParameter(parentSpace));
 
 			// Ensure the space name is valid (alphanumeric < SPACE_NAME_LEN chars)
-			if(!Validator.isValidSpaceName(request.getParameter(name))) {
-				return new ValidatorStatusCode(false, "The given name is invalid-- please reference the help pages to see valid space names");
+			if (!Validator.isValidSpaceName(request.getParameter(name))) {
+				return new ValidatorStatusCode(
+						false, "The given name is invalid-- please reference the help pages to see valid space names");
 			}
-			String n=request.getParameter(name);
+			String n = request.getParameter(name);
 			// Ensure the description is < 1024 characters
-			if(!Validator.isValidPrimDescription(request.getParameter(description))) {
-				return new ValidatorStatusCode(false, "The given description is invalid-- please reference the help pages to see valid description names");
+			if (!Validator.isValidPrimDescription(request.getParameter(description))) {
+				return new ValidatorStatusCode(
+						false,
+						"The given description is invalid-- please reference the help pages to see valid description " +
+								"names"
+				);
 			}
 
 			// Ensure the isLocked value is a parseable boolean
-			String lockVal = (String)request.getParameter(locked);
-			if(!lockVal.equals("true") && ! lockVal.equals("false")) {
+			String lockVal = (String) request.getParameter(locked);
+			if (!lockVal.equals("true") && !lockVal.equals("false")) {
 				return new ValidatorStatusCode(false, "The 'locked' attribute needs to be either true or false");
 			}
 			//sticky should also be a parsable boolean
 			String sticky = (String) request.getParameter(stickyLeaders);
 			if (sticky != null) {
-				if (!sticky.equals("true") && ! sticky.equals("false")) {
-					return new ValidatorStatusCode(false, "The 'sticky leaders' attribute needs to be either true or false");
+				if (!sticky.equals("true") && !sticky.equals("false")) {
+					return new ValidatorStatusCode(
+							false, "The 'sticky leaders' attribute needs to be either true or false");
 				}
 
 
 				//subspaces of the root can not have sticky leaders enabled
-				if (spaceId==1 && sticky.equals("true")) {
+				if (spaceId == 1 && sticky.equals("true")) {
 					return new ValidatorStatusCode(false, "Communities may not enable the sticky leaders option");
 				}
-
 			}
 
 			// Verify this user can add spaces to this space
 			Permission p = SessionUtil.getPermission(request, spaceId);
-			if(p==null || !p.canAddSpace()) {
+			if (p == null || !p.canAddSpace()) {
 				return new ValidatorStatusCode(false, "You do not have permission to add a new space here");
 			}
 
 
 			if (Spaces.getSubSpaceIDbyName(spaceId, n) != -1) {
-				return new ValidatorStatusCode(false,"The subspace should have a unique name in the space. It is possible a private subspace you are not authorized to see has the same name.");
+				return new ValidatorStatusCode(false,
+				                               "The subspace should have a unique name in the space. It is possible a " +
+						                               "private subspace you are not authorized to see has the same " +
+						                               "name.");
 			}
 
 			// Passed all checks, return true

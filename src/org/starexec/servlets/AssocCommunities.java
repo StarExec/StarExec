@@ -1,6 +1,5 @@
 package org.starexec.servlets;
 
-
 import org.starexec.constants.R;
 import org.starexec.data.database.Queues;
 import org.starexec.data.security.GeneralSecurity;
@@ -18,8 +17,8 @@ import java.util.List;
 
 /**
  * Servlet that handles requests for assocating queues with particular communities
- * @author Eric
  *
+ * @author Eric
  */
 public class AssocCommunities extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(AssocCommunities.class);
@@ -31,14 +30,16 @@ public class AssocCommunities extends HttpServlet {
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 	}
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		try {
 			int userId = SessionUtil.getUserId(request);
 			if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {

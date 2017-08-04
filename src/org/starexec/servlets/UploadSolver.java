@@ -41,9 +41,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Allows for the uploading and handling of Solvers. Solvers can come in .zip,
- * .tar, or .tar.gz format, and configurations can be included in a top level
- * "bin" directory. Each Solver is saved in a unique directory on the filesystem.
+ * Allows for the uploading and handling of Solvers. Solvers can come in .zip, .tar, or .tar.gz format, and
+ * configurations can be included in a top level "bin" directory. Each Solver is saved in a unique directory on the
+ * filesystem.
  *
  * @author Skylar Stark
  */
@@ -67,7 +67,8 @@ public class UploadSolver extends HttpServlet {
 	private static final String SOLVER_TYPE = "type";
 	private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
 
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		int userId = SessionUtil.getUserId(request);
 		try {
 			// If we're dealing with an upload request...
@@ -110,9 +111,12 @@ public class UploadSolver extends HttpServlet {
 
 					response.addCookie(new Cookie("New_ID", String.valueOf(result.solverId)));
 					if (result.isBuildJob && !runTestJob) {
-						response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&buildmsg=Building Solver On Starexec"));
-					} else if (!result.hadConfigs) { //If there are no configs. We do not attempt to run a test job in this case
-						response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&msg=No configurations for the new solver"));
+						response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId +
+								                                   "&buildmsg=Building Solver On Starexec"));
+					} else if (!result.hadConfigs) { //If there are no configs. We do not attempt to run a test job in
+						// this case
+						response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId +
+								                                   "&msg=No configurations for the new solver"));
 					} else {
 						//if this solver has some configurations, we should check to see if the user wanted a test job
 						if (runTestJob) {
@@ -127,15 +131,19 @@ public class UploadSolver extends HttpServlet {
 
 							int jobId = CreateJob.buildSolverTestJob(result.solverId, spaceId, userId, settingsId);
 							if (result.isBuildJob && jobId > 0) {
-								response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&buildmsg=Building Solver On Starexec-- test job will be run after build"));
+								response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId +
+										                                   "&buildmsg=Building Solver On Starexec-- " +
+										                                   "test job will be run after build"));
 							} else if (jobId > 0) {
 								response.sendRedirect(Util.docRoot("secure/details/job.jsp?id=" + jobId));
 							} else {
-								response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId + "&msg=Internal error creating test job-- solver uploaded successfully"));
+								response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId +
+										                                   "&msg=Internal error creating test job-- " +
+										                                   "solver uploaded successfully"));
 							}
-
 						} else if (result.optionalMessage.isPresent()) {
-							String url = "secure/details/solver.jsp?id=" + result.solverId + "&msg=" + result.optionalMessage.get();
+							String url = "secure/details/solver.jsp?id=" + result.solverId + "&msg=" +
+									result.optionalMessage.get();
 							response.sendRedirect(Util.docRoot(url));
 						} else {
 							response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId));
@@ -170,11 +178,9 @@ public class UploadSolver extends HttpServlet {
 		return new File(dir, R.UPLOAD_TEST_JOB_XML).exists();
 	}
 
-
 	/**
-	 * This method is responsible for uploading a solver to
-	 * the appropriate location and updating the database to reflect
-	 * the solver's location.
+	 * This method is responsible for uploading a solver to the appropriate location and updating the database to
+	 * reflect the solver's location.
 	 *
 	 * @param userId the user ID of the user making the upload request
 	 * @param form the HashMap representation of the upload request
@@ -240,7 +246,8 @@ public class UploadSolver extends HttpServlet {
 			File archiveFile = null;
 			//String FileName=null;
 			if (upMethod.equals("local")) {
-				//Using IE will cause item.getName() to return a full path, which is why we wrap it with the FilenameUtils call
+				//Using IE will cause item.getName() to return a full path, which is why we wrap it with the
+				// FilenameUtils call
 				archiveFile = new File(uniqueDir, FilenameUtils.getName(item.getName()));
 				new File(archiveFile.getParent()).mkdir();
 				item.write(archiveFile);
@@ -270,10 +277,12 @@ public class UploadSolver extends HttpServlet {
 			FileUtils.copyFileToDirectory(archiveFile, sandboxDir);
 			archiveFile.delete();
 			archiveFile = new File(sandboxDir, archiveFile.getName());
-			log.debug("location of archive file = " + archiveFile.getAbsolutePath() + " and archive file exists =" + archiveFile.exists());
+			log.debug("location of archive file = " + archiveFile.getAbsolutePath() + " and archive file exists =" +
+					          archiveFile.exists());
 
 			//extracts the given archive using the sandbox user
-			boolean extracted = ArchiveUtil.extractArchiveAsSandbox(archiveFile.getAbsolutePath(), sandboxDir.getAbsolutePath());
+			boolean extracted =
+					ArchiveUtil.extractArchiveAsSandbox(archiveFile.getAbsolutePath(), sandboxDir.getAbsolutePath());
 
 			//give sandbox full permissions over the solver directory
 			Util.sandboxChmodDirectory(sandboxDir);
@@ -311,7 +320,8 @@ public class UploadSolver extends HttpServlet {
 					try {
 						FileUtils.copyDirectoryToDirectory(f, uniqueDir);
 					} catch (FileNotFoundException e) {
-						throw new FileNotFoundException(String.format("Check for broken symbolic links in your solver.%n%s", e.getMessage()));
+						throw new FileNotFoundException(
+								String.format("Check for broken symbolic links in your solver.%n%s", e.getMessage()));
 					}
 				} else {
 					FileUtils.copyFileToDirectory(f, uniqueDir);
@@ -331,17 +341,16 @@ public class UploadSolver extends HttpServlet {
 					if (descriptionFile.exists()) {
 						String description = FileUtils.readFileToString(descriptionFile);
 						if (!Validator.isValidPrimDescription(description)) {
-							return new UploadSolverResult(UploadSolverStatus.DESCRIPTION_MALFORMED, -1, false, isBuildJob);
+							return new UploadSolverResult(
+									UploadSolverStatus.DESCRIPTION_MALFORMED, -1, false, isBuildJob);
 						}
 						newSolver.setDescription(description);
-
 					} else {
 						log.debug("description file option chosen, but file was not present");
 					}
 				} catch (Exception e) {
 					log.error(e.getMessage(), e);
 				}
-
 			}
 
 
@@ -400,7 +409,8 @@ public class UploadSolver extends HttpServlet {
 		}
 	}
 
-	private JobUtil createTestJobFromXml(final File jobXml, final int userId, final int spaceId, final int newSolverId) throws SAXException, IOException, ParserConfigurationException {
+	private JobUtil createTestJobFromXml(final File jobXml, final int userId, final int spaceId, final int newSolverId)
+			throws SAXException, IOException, ParserConfigurationException {
 
 		JobUtil jobUtil = new JobUtil();
 
@@ -421,11 +431,9 @@ public class UploadSolver extends HttpServlet {
 		return jobUtil;
 	}
 
-
 	/**
-	 * Sees if a given String -> Object HashMap is a valid Upload Solver request.
-	 * Checks to see if it contains all the information needed and if the information
-	 * is in the right format.
+	 * Sees if a given String -> Object HashMap is a valid Upload Solver request. Checks to see if it contains all the
+	 * information needed and if the information is in the right format.
 	 *
 	 * @param form the HashMap representing the upload request.
 	 * @return true iff the request is valid
@@ -436,7 +444,10 @@ public class UploadSolver extends HttpServlet {
 			log.entry(method);
 			int userId = SessionUtil.getUserId(request);
 			//defines the set of attributes that are required
-			if (!form.containsKey(UPLOAD_METHOD) || !form.containsKey(UploadSolver.SOLVER_TYPE) || (!form.containsKey(UploadSolver.UPLOAD_FILE) && form.get(UPLOAD_METHOD).equals("local")) || !form.containsKey(DESC_METHOD) || (!form.containsKey(SOLVER_DESC_FILE) && form.get(DESC_METHOD).equals("file"))) {
+			if (!form.containsKey(UPLOAD_METHOD) || !form.containsKey(UploadSolver.SOLVER_TYPE) ||
+					(!form.containsKey(UploadSolver.UPLOAD_FILE) && form.get(UPLOAD_METHOD).equals("local")) ||
+					!form.containsKey(DESC_METHOD) ||
+					(!form.containsKey(SOLVER_DESC_FILE) && form.get(DESC_METHOD).equals("file"))) {
 
 				return new ValidatorStatusCode(false, "Required parameters are missing from the request");
 			}
@@ -461,7 +472,8 @@ public class UploadSolver extends HttpServlet {
 
 			if (!Validator.isValidSolverName((String) form.get(UploadSolver.SOLVER_NAME))) {
 
-				return new ValidatorStatusCode(false, "The given name is invalid-- please refer to the help files to see the proper format");
+				return new ValidatorStatusCode(
+						false, "The given name is invalid-- please refer to the help files to see the proper format");
 			}
 
 			String DescMethod = (String) form.get(UploadSolver.DESC_METHOD);
@@ -469,22 +481,27 @@ public class UploadSolver extends HttpServlet {
 			if (DescMethod.equals("file")) {
 				PartWrapper item_desc = (PartWrapper) form.get(UploadSolver.SOLVER_DESC_FILE);
 				if (!Validator.isValidPrimDescription(item_desc.getString())) {
-					return new ValidatorStatusCode(false, "The given description is invalid-- please refer to the help files to see the proper format");
+					return new ValidatorStatusCode(
+							false,
+							"The given description is invalid-- please refer to the help files to see the proper " +
+									"format"
+					);
 				}
 			}
 
 			if (!Validator.isValidPrimDescription((String) form.get(SOLVER_DESC))) {
-				return new ValidatorStatusCode(false, "The given description is invalid-- please refer to the help files to see the proper format");
+				return new ValidatorStatusCode(
+						false,
+						"The given description is invalid-- please refer to the help files to see the proper format"
+				);
 			}
 
 			boolean goodExtension = false;
 			String fileName = null;
 			if (form.get(UploadSolver.UPLOAD_METHOD).equals("local")) {
 				fileName = FilenameUtils.getName(((PartWrapper) form.get(UploadSolver.UPLOAD_FILE)).getName());
-
 			} else {
 				fileName = (String) form.get(UploadSolver.FILE_URL);
-
 			}
 			for (String ext : UploadSolver.extensions) {
 				if (fileName.endsWith(ext)) {
@@ -520,7 +537,8 @@ public class UploadSolver extends HttpServlet {
 
 
 				// user must have permission to run a job in the given space
-				ValidatorStatusCode testJobStatus = JobSecurity.canCreateQuickJobWithCommunityDefaults(userId, spaceId, settingsId);
+				ValidatorStatusCode testJobStatus =
+						JobSecurity.canCreateQuickJobWithCommunityDefaults(userId, spaceId, settingsId);
 				if (!testJobStatus.isSuccess()) {
 					return testJobStatus;
 				}

@@ -21,29 +21,31 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Supports the saving of new configuration files to the Starexec file system
- * (i.e. writing a configuration file instead of uploading a configuration file)
+ * Supports the saving of new configuration files to the Starexec file system (i.e. writing a configuration file instead
+ * of uploading a configuration file)
  *
  * @author Todd Elvers
  */
 public class SaveConfiguration extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(SaveConfiguration.class);
 
-    // Param constants to use to process the form
-    private static final String CONFIG_DESC = "saveConfigDesc";
-    private static final String SOLVER_ID = "solverId";
-    private static final String CONFIG_CONTENTS = "saveConfigContents";
-    private static final String CONFIG_NAME = "saveConfigName";
+	// Param constants to use to process the form
+	private static final String CONFIG_DESC = "saveConfigDesc";
+	private static final String SOLVER_ID = "solverId";
+	private static final String CONFIG_CONTENTS = "saveConfigContents";
+	private static final String CONFIG_NAME = "saveConfigName";
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Wrong type of request.");
-    }
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Wrong type of request.");
+	}
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-    	try {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
+		try {
 			// Parameter validation
-    		ValidatorStatusCode status=this.isValidRequest(request);
-			if(!status.isSuccess()) {
+			ValidatorStatusCode status = this.isValidRequest(request);
+			if (!status.isSuccess()) {
 				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
 				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
@@ -51,34 +53,34 @@ public class SaveConfiguration extends HttpServlet {
 			}
 
 
-
-			// Process the configuration file and write it to the parent solver's /bin directory, then update the solver's disk_size attribute
+			// Process the configuration file and write it to the parent solver's /bin directory, then update the
+			// solver's disk_size attribute
 			int result = handleConfiguration(request);
 
 			// Redirect user based on how the configuration handling went
-			if(result == -1) {
+			if (result == -1) {
 				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, "Failed to save new configuration."));
 
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to save new configuration.");
 			} else {
 				response.addCookie(new Cookie("New_ID", String.valueOf(result)));
 
-			    response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + Integer.parseInt((String)request.getParameter(SOLVER_ID))));
+				response.sendRedirect(Util.docRoot(
+						"secure/details/solver.jsp?id=" + Integer.parseInt((String) request.getParameter(SOLVER_ID))));
 			}
-    	} catch (Exception e) {
-    		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+		} catch (Exception e) {
+			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 			log.warn("Caught Exception in SaveConfiguration.doPost", e);
-    	}
+		}
 	}
 
-
-    /**
-     * Handles writing a new configuration file to disk
-     *
-     * @param request the object containing the new configuration's name, description and contents
-     * @return a positive number representing the new configuration's id, or a negative number if an error occurred
-     * @author Todd Elvers
-     */
+	/**
+	 * Handles writing a new configuration file to disk
+	 *
+	 * @param request the object containing the new configuration's name, description and contents
+	 * @return a positive number representing the new configuration's id, or a negative number if an error occurred
+	 * @author Todd Elvers
+	 */
 	public int handleConfiguration(HttpServletRequest request) {
 		try {
 
@@ -90,15 +92,17 @@ public class SaveConfiguration extends HttpServlet {
 			newConfig.setSolverId(solver.getId());
 			String configContents = request.getParameter(CONFIG_CONTENTS);
 
-			// Build a path to the appropriate solver bin directory and ensure the file pointed to by newConfigFile doesn't already exist
+			// Build a path to the appropriate solver bin directory and ensure the file pointed to by newConfigFile
+			// doesn't already exist
 			File newConfigFile = new File(Util.getSolverConfigPath(solver.getPath(), newConfig.getName()));
-			// If a configuration file exists on disk with the same name, append an integer to the file to make it unique
-			if(newConfigFile.exists()){
+			// If a configuration file exists on disk with the same name, append an integer to the file to make it
+			// unique
+			if (newConfigFile.exists()) {
 				boolean fileAlreadyExists = true;
 				int intSuffix = 0;
-				while(fileAlreadyExists){
+				while (fileAlreadyExists) {
 					File temp = new File(newConfigFile.getAbsolutePath() + (++intSuffix));
-					if(!temp.exists()){
+					if (!temp.exists()) {
 						newConfigFile = temp;
 						newConfig.setName(request.getParameter(CONFIG_NAME) + intSuffix);
 						fileAlreadyExists = false;
@@ -124,10 +128,9 @@ public class SaveConfiguration extends HttpServlet {
 		return -1;
 	}
 
-
 	/**
-	 * Validates a 'save configuration' request by ensuring the necessary parts
-	 * of the configuration file were provided by the client
+	 * Validates a 'save configuration' request by ensuring the necessary parts of the configuration file were provided
+	 * by the client
 	 *
 	 * @param request the object containing the new configuration file's name, description and contents
 	 * @return true iff all necessary configuration file info was provided by the client and is valid
@@ -135,28 +138,33 @@ public class SaveConfiguration extends HttpServlet {
 	 */
 	private ValidatorStatusCode isValidRequest(HttpServletRequest request) {
 		try {
-			int userId=SessionUtil.getUserId(request);
-			if(Util.isNullOrEmpty((String) request.getParameter(CONFIG_CONTENTS))){
+			int userId = SessionUtil.getUserId(request);
+			if (Util.isNullOrEmpty((String) request.getParameter(CONFIG_CONTENTS))) {
 				return new ValidatorStatusCode(false, "The configuration did not have any contents");
 			}
 
 
 			if (!Validator.isValidPrimDescription(request.getParameter(CONFIG_DESC))) {
-				return new ValidatorStatusCode(false, "The supplied description is not valid-- please see the help files to see the correct format");
+				return new ValidatorStatusCode(
+						false,
+						"The supplied description is not valid-- please see the help files to see the correct format"
+				);
 			}
 
 
-			if (!Validator.isValidPosInteger((String)request.getParameter(SOLVER_ID))) {
-				return new ValidatorStatusCode(false,"The supplied solver ID is not a valid integer");
+			if (!Validator.isValidPosInteger((String) request.getParameter(SOLVER_ID))) {
+				return new ValidatorStatusCode(false, "The supplied solver ID is not a valid integer");
 			}
 
 			// Ensure the configuration's name and description are valid
-			if(!Validator.isValidConfigurationName(request.getParameter(CONFIG_NAME))) {
-				return new ValidatorStatusCode(false, "The supplied name is not valid-- please see the help files to see the correct format");
+			if (!Validator.isValidConfigurationName(request.getParameter(CONFIG_NAME))) {
+				return new ValidatorStatusCode(
+						false, "The supplied name is not valid-- please see the help files to see the correct format");
 			}
 
 			// Permissions check; ensure the user owns the solver to which they are saving
-			if( Solvers.get(Integer.parseInt(request.getParameter(SOLVER_ID))).getUserId() != userId && !GeneralSecurity.hasAdminWritePrivileges(userId)){
+			if (Solvers.get(Integer.parseInt(request.getParameter(SOLVER_ID))).getUserId() != userId &&
+					!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 				return new ValidatorStatusCode(false, "Only owners of a solver may save configurations to it.");
 			}
 
