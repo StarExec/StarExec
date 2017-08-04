@@ -8,9 +8,7 @@ import java.util.Map;
  *
  * @author Eric
  */
-@SuppressWarnings("javadoc")
 public class C {
-
 	private C() {
 	} // Make C uninstantiable
 

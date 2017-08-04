@@ -31,54 +31,52 @@ import java.util.HashMap;
  * Servlet which handles incoming requests to add and update processors
  * @author Tyler Jensen
  */
-@SuppressWarnings("serial")
 @MultipartConfig
-public class ProcessorManager extends HttpServlet {		
+public class ProcessorManager extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(ProcessorManager.class);
 
 	// The unique date stamped file name format (for saving processor files)
 	private static DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
     private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
 
-	
+
 	// Request attributes
 	private static final String PROCESSOR_NAME = "name";
 	private static final String PROCESSOR_DESC = "desc";
-	private static final String PROCESSOR_FILE = "file";	
+	private static final String PROCESSOR_FILE = "file";
 	private static final String PROCESSOR_URL = "processorUrl";
 	private static final String UPLOAD_METHOD = "uploadMethod";
 	private static final String LOCAL_UPLOAD_METHOD = "local";
 	private static final String OWNING_COMMUNITY = "com";
-	
-	
+
 	private static final String ACTION = "action";
 	private static final String ADD_ACTION = "add";
-	
+
 	private static final String PROCESSOR_TYPE = "type";
 	private static final String PRE_PROCESS_TYPE = "pre";
 	private static final String POST_PROCESS_TYPE = "post";
         private static final String UPDATE_PROCESS_TYPE = "update";
-	
+
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-	}	
-	
-	
+	}
+
+
 	@Path("/update")
 	public void doPost(HttpServletRequest request, HttpServletResponse response) {
-		try {			
-			
-			if(ServletFileUpload.isMultipartContent(request)) {								
+		try {
+
+			if(ServletFileUpload.isMultipartContent(request)) {
 				HashMap<String, Object> form = Util.parseMultipartRequest(request);
 				String action = (String)form.get(ACTION);
-				
+
 				// Make sure we have an action parameter
 				if(action != null) {
 					// Delegate the request based on the action
 					if(action.equals(ADD_ACTION)) {
 						this.handleAddRequest(form, request, response);
 					} else {
-						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid form action");	
+						response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid form action");
 					}
 				} else {
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Form action required");
@@ -89,8 +87,8 @@ public class ProcessorManager extends HttpServlet {
 		} catch (Exception e) {
 			log.warn("Caught Exception in ProcessorManager.doPost", e);
 		}
-	}	
-	
+	}
+
 	/**
 	 * Handles requests to add a processor
 	 */
@@ -112,25 +110,25 @@ public class ProcessorManager extends HttpServlet {
 
 				return;
 			}
-			
+
 			// Add the benchmark type to the database/filesystem
 			Processor result = this.addNewProcessor(form);
-			
+
 			// Redirect based on the results of the addition
 			if(result != null) {
 				response.addCookie(new Cookie("New_ID",String.valueOf(result.getId())));
-			    response.sendRedirect(Util.docRoot("secure/edit/community.jsp?cid=" + result.getCommunityId()));	
+			    response.sendRedirect(Util.docRoot("secure/edit/community.jsp?cid=" + result.getCommunityId()));
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Failed to add new processor. Please ensure the archive is in the correct format, with a " +
-						"process script in the top level.");	
-			}									
+						"process script in the top level.");
+			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
-			
-		}	
+
+		}
 	}
-	
+
 	/**
 	 * Given a directory, recursively sets all files in the directory as executable
 	 * @param directory The directory in question
@@ -149,7 +147,7 @@ public class ProcessorManager extends HttpServlet {
 		}
 	}
 
-	
+
 	/**
 	 * Parses through form items and builds a new Processor object from it. Then it is
 	 * added to the database. Also writes the processor file to disk included in the request.
@@ -158,20 +156,20 @@ public class ProcessorManager extends HttpServlet {
 	 */
 	private Processor addNewProcessor(HashMap<String, Object> form) {
 		final String method = "addNewProcessor";
-		try {						
+		try {
 			Processor newProc = new Processor();
 			newProc.setName((String)form.get(PROCESSOR_NAME));
-			newProc.setDescription((String)form.get(PROCESSOR_DESC));					
+			newProc.setDescription((String)form.get(PROCESSOR_DESC));
 			newProc.setCommunityId(Integer.parseInt((String)form.get(OWNING_COMMUNITY)));
-			
+
 			String uploadMethod = (String)form.get(UPLOAD_METHOD);
 
 			log.debug(method+" - upload method for the processor="+uploadMethod);
 			String procType = (String)form.get(PROCESSOR_TYPE);
-			newProc.setType(toProcessorEnum(procType));						
-			
+			newProc.setType(toProcessorEnum(procType));
+
 			File uniqueDir = getProcessorDirectory(newProc.getCommunityId(),newProc.getName());
-			
+
 			File archiveFile;
 
 			URL processorUrl;
@@ -197,35 +195,35 @@ public class ProcessorManager extends HttpServlet {
 			}
 
 
-			newProc.setFilePath(uniqueDir.getAbsolutePath());				
-			
+			newProc.setFilePath(uniqueDir.getAbsolutePath());
+
 			ArchiveUtil.extractArchive(archiveFile.getAbsolutePath());
-			
+
 			File processorScript=new File(uniqueDir,R.PROCESSOR_RUN_SCRIPT);
 			if (!processorScript.exists()) {
 				log.warn("the new processor did not have a process script!");
 				return null;
 			}
 			ProcessorManager.setAllFilesExecutable(new File(newProc.getFilePath()));
-			
-			
-	
-			log.info(String.format("Wrote new %s processor to %s for community %d", procType, uniqueDir.getAbsolutePath(), newProc.getCommunityId()));					
-			
+
+
+
+			log.info(String.format("Wrote new %s processor to %s for community %d", procType, uniqueDir.getAbsolutePath(), newProc.getCommunityId()));
+
 			int newProcId=Processors.add(newProc);
 			if(newProcId>0) {
 				newProc.setId(newProcId);
-				return newProc;					
-			}						
+				return newProc;
+			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
-		}				
-		
+		}
+
 		return null;
 	}
-	
-	
-	
+
+
+
 	/**
 	 * @param type The string version of the type as retrieved from the HTML form
 	 * @return The enum representation of the type
@@ -240,9 +238,9 @@ public class ProcessorManager extends HttpServlet {
 		} else if(type.equals(UPDATE_PROCESS_TYPE)) {
 		    return ProcessorType.UPDATE;
 		}
-		
+
 		return ProcessorType.DEFAULT;
-	}	
+	}
 
 	/**
 	 * Creates a unique file path for the given file to write in the benchmark type directory
@@ -258,7 +256,7 @@ public class ProcessorManager extends HttpServlet {
 		uniqueDir.mkdirs();
 		return uniqueDir;
 	}
-	
+
 	/**
 	 * Uses the Validate util to ensure the incoming type upload request is valid. This checks for illegal characters
 	 * and content length requirements.
@@ -267,9 +265,9 @@ public class ProcessorManager extends HttpServlet {
 	 */
 	private ValidatorStatusCode isValidCreateRequest(HashMap<String, Object> form) {
 		final String method = "isValidCreateRequest";
-		try {			
-			  
-										
+		try {
+
+
 			if(!Validator.isValidProcessorName((String)form.get(PROCESSOR_NAME))) {
 
 				return new ValidatorStatusCode(false,"The supplied name is invalid-- please refer to the help files to see the correct format");
@@ -279,7 +277,7 @@ public class ProcessorManager extends HttpServlet {
 
 			boolean goodExtension=false;
 			String fileName;
-			
+
 			if (uploadMethod.equals(LOCAL_UPLOAD_METHOD)) {
 				fileName = ((PartWrapper)form.get(PROCESSOR_FILE)).getName();
 			} else {
@@ -299,20 +297,20 @@ public class ProcessorManager extends HttpServlet {
 			if (!goodExtension) {
 				return new ValidatorStatusCode(false,"Uploaded archives must be a .zip, .tar, or .tgz");
 			}
-																	
+
 			if(!Validator.isValidPrimDescription((String)form.get(PROCESSOR_DESC))) {
 
 				return new ValidatorStatusCode(false,"The supplied description is invalid-- please refer to the help files to see the correct format");
 			}
-			
+
 			if(!Validator.isValidPosInteger((String)form.get(OWNING_COMMUNITY))) {
 
 				return new ValidatorStatusCode(false,"The given community ID is not a valid integer");
 			}
-			
+
 			String procType = (String)form.get(PROCESSOR_TYPE);
-			if(procType==null || !procType.equals(POST_PROCESS_TYPE) && 
-			   !procType.equals(PRE_PROCESS_TYPE) && 
+			if(procType==null || !procType.equals(POST_PROCESS_TYPE) &&
+			   !procType.equals(PRE_PROCESS_TYPE) &&
 			   !procType.equals(R.BENCHMARK) && !procType.equals(UPDATE_PROCESS_TYPE)) {
 
 				return new ValidatorStatusCode(false,"The given processor type is invalid");
@@ -322,9 +320,9 @@ public class ProcessorManager extends HttpServlet {
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
-		
+
 		// Return false control flow is broken and ends up here
 		return new ValidatorStatusCode(true, "Internal error processing request");
 	}
-	
+
 }

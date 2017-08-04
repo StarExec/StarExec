@@ -22,15 +22,14 @@ import java.util.UUID;
 /**
  * Handles a user's request to reset their password by emailing them a link that
  * takes them to a page where they receive a temporary password
- * 
+ *
  * @author Todd Elvers
  */
 
-@SuppressWarnings("serial")
 public class PasswordReset extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(PasswordReset.class);
 	public static final String PASS_RESET = "reset";		// Param string for password reset codes
-	
+
 	/**
 	 * This is the second half of the procedure -- the user has already requested a password reset and received an email
 	 */
@@ -61,8 +60,8 @@ public class PasswordReset extends HttpServlet {
 			throw e;
 		}
 	}
-	
-	
+
+
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {
@@ -101,41 +100,38 @@ public class PasswordReset extends HttpServlet {
 			throw e;
 		}
 	}
-	
 
-	
 	/**
 	 * Validates the parameters of the password reset request
-	 * 
+	 *
 	 * @param request the serlvet containing the parameters to be validated
-	 * @return true iff the first name, last name, and email address in the 
+	 * @return true iff the first name, last name, and email address in the
 	 * password reset request exist and are valid
 	 */
 	private static ValidatorStatusCode isPostRequestValid(HttpServletRequest request) {
 		try {
-			
+
 			// Ensure the parameters are valid values
 			if (!Validator.isValidUserName((String) request.getParameter(Registration.USER_FIRSTNAME))) {
 				return new ValidatorStatusCode(false, "The given first name is invalid-- please refer to the help files to see the proper format");
 			}
-			
+
 			// Ensure the parameters are valid values
 			if (!Validator.isValidUserName((String) request.getParameter(Registration.USER_LASTNAME))) {
 				return new ValidatorStatusCode(false, "The given last name is invalid-- please refer to the help files to see the proper format");
 			}
-			
+
 			// Ensure the parameters are valid values
 			if (!Validator.isValidEmail((String) request.getParameter(Registration.USER_EMAIL))) {
 				return new ValidatorStatusCode(false, "The given email is invalid-- please refer to the help files to see the proper format");
 			}
-			
-			
-			
+
+
+
 			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
 		return new ValidatorStatusCode(false, "There was an internal error resetting your password");
 	}
-
 }

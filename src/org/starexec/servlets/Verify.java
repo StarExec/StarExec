@@ -28,21 +28,18 @@ import java.io.IOException;
  * Servlet that handles email verification for new users, emailing leaders
  * of spaces when new users request to join, and accept/decline responses
  * sent back from leaders about user join requests
- * 
+ *
  * @author Todd Elvers & Tyler Jensen
  */
-@SuppressWarnings("serial")
 public class Verify extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(Verify.class);
 	private static Gson gson = new Gson();
-	
-	
-	
+
     @Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
     }
-    
+
     @Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {
@@ -88,7 +85,7 @@ public class Verify extends HttpServlet {
 			String newEmail = emailAndCode.getLeft();
 			String codeInDb = emailAndCode.getRight();
 			if (codeInDb.equals(codeParam)) {
-				Users.updateEmail(userId, newEmail); 
+				Users.updateEmail(userId, newEmail);
 				Requests.deleteChangeEmailRequest(userId);
 				response.sendRedirect(Util.docRoot("public/messages/email_changed.jsp?email="+newEmail));
 			} else {
@@ -99,10 +96,10 @@ public class Verify extends HttpServlet {
 			response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 		}
 	}
-    
+
     /**
      * Deals with acceptance email responses from leaders of a group
-     * 
+     *
      * @param request the servlet containing the incoming GET request
      * @param response the servlet that handles redirection
      * @throws IOException if any of the redirects fail
@@ -111,7 +108,7 @@ public class Verify extends HttpServlet {
     private void handleAcceptance(HttpServletRequest request, HttpServletResponse response) throws IOException  {
     	String code = (String)request.getParameter(Mail.EMAIL_CODE);
 		String verdict = (String)request.getParameter(Mail.LEADER_RESPONSE);
-		
+
 		CommunityRequest comRequest = Requests.getCommunityRequest(code);
 
 		// TODO Give requests that were sent by email parameter too.
@@ -122,20 +119,20 @@ public class Verify extends HttpServlet {
 			return;
 		}
 
-		
+
 		boolean isRegistered = false;
-		
+
 		// See if the user is registered or not
 		User user = Users.getUnregistered(comRequest.getUserId());
 		if(user == null){
 			user = Users.get(comRequest.getUserId());
 			isRegistered = true;
 		}
-		
+
 		// Get name of community user is trying to join
 		String communityName = Spaces.getName(comRequest.getCommunityId());
-		
-		if(verdict.equals(Web.APPROVE_COMMUNITY_REQUEST)){			
+
+		if(verdict.equals(Web.APPROVE_COMMUNITY_REQUEST)){
 			handleApproveCommunityRequest(response, user, comRequest, communityName, sentFromCommunityPage);
 		} else if(verdict.equals(Web.DECLINE_COMMUNITY_REQUEST)) {
 			handleDeclineCommunityRequest(response, user, comRequest, isRegistered, communityName, sentFromCommunityPage);
@@ -143,8 +140,8 @@ public class Verify extends HttpServlet {
 		log.debug("Finished handling community request.");
     }
 
-	private static boolean checkIfRequestHasBeenHandled(HttpServletResponse response, CommunityRequest comRequest, 
-			boolean sentFromCommunityPage) throws IOException 
+	private static boolean checkIfRequestHasBeenHandled(HttpServletResponse response, CommunityRequest comRequest,
+			boolean sentFromCommunityPage) throws IOException
 	{
 		// Check if a leader has handled this acceptance email already
 		if(comRequest == null){
@@ -161,7 +158,7 @@ public class Verify extends HttpServlet {
 		}
 	}
 
-	private static void handleApproveCommunityRequest(HttpServletResponse response, User user, CommunityRequest comRequest, 
+	private static void handleApproveCommunityRequest(HttpServletResponse response, User user, CommunityRequest comRequest,
 			String communityName, boolean sentFromCommunityPage) throws IOException
 	{
 		// Add them to the community & remove the request from the database
@@ -172,15 +169,15 @@ public class Verify extends HttpServlet {
 					+" even though an admin or community leader approved them.");
 			return;
 		}
-		
-		// Notify user they've been approved				
+
+		// Notify user they've been approved
 		Mail.sendRequestResults(user, communityName, successfullyApproved, false);
-		
+
 		// Create a personal subspace for the user in the space they were admitted to
 		if(createPersonalSubspace(comRequest.getCommunityId(), user)){
 			log.info(String.format("Personal space successfully created for user [%s]", user.getFullName()));
 		}
-		
+
 		log.info(String.format("User [%s] has finished the approval process and now apart of the %s community.", user.getFullName(), communityName));
 		if (sentFromCommunityPage) {
 			response.setContentType("application/json");
@@ -190,7 +187,7 @@ public class Verify extends HttpServlet {
 		}
 	}
 
-	private static void handleDeclineCommunityRequest( HttpServletResponse response, User user, CommunityRequest comRequest, 
+	private static void handleDeclineCommunityRequest( HttpServletResponse response, User user, CommunityRequest comRequest,
 			boolean isRegistered, String communityName, boolean sentFromCommunityPage) throws IOException
 	{
 		// Remove their entry from INVITES
@@ -198,11 +195,11 @@ public class Verify extends HttpServlet {
 
 		// Notify user they've been declined
 		if(isRegistered) {
-			Mail.sendRequestResults(user, communityName, false, false);	
+			Mail.sendRequestResults(user, communityName, false, false);
 		} else {
 			Mail.sendRequestResults(user, communityName, false, true);
-		}					
-		
+		}
+
 		log.info(String.format("User [%s]'s request to join the %s community was declined.", user.getFullName(), communityName));
 		if (sentFromCommunityPage) {
 			response.setContentType("application/json");
@@ -211,11 +208,11 @@ public class Verify extends HttpServlet {
 			response.sendRedirect(Util.docRoot("public/messages/leader_response.jsp"));
 		}
 	}
-    
+
     /**
      * Handles the email verification hyperlinks and activates the given user
      * if the activation code they provide matches that from the table VERIFY
-     * 
+     *
      * @param request the servlet containing the incoming GET request
      * @param response the servlet that handles redirection
      * @throws IOException if any of the redirects fail
@@ -223,11 +220,11 @@ public class Verify extends HttpServlet {
      */
     private void handleActivation(HttpServletRequest request, HttpServletResponse response) throws IOException {
     	String code = request.getParameter(Mail.EMAIL_CODE).toString();
-		
+
     	// IF no code in VERIFY matches, then userId = -1
     	// ELSE userId = the id of the user that was just activated
     	int userId = Requests.redeemActivationCode(code);
-    	
+
     	User newUser;
     	if(userId == -1) {
     		log.info("email verification failed - likely a duplicate activation attempt");
@@ -237,21 +234,21 @@ public class Verify extends HttpServlet {
     		newUser = Users.getUnregistered(userId);
     		log.info(String.format("User [%s] has been activated.", newUser.getFullName()));
     		response.sendRedirect(Util.docRoot("public/messages/email_activated.jsp"));
-    	}   
-    	
+    	}
+
     	CommunityRequest comReq = Requests.getCommunityRequest(userId);
     	if(comReq == null){
     		log.warn(String.format("No community request exists for user [%s].", newUser.getFullName()));
     		return;
     	}
-    	
+
     	// Send the invite to the leaders of the community
-    	Mail.sendCommunityRequest(newUser, comReq);    	   
+    	Mail.sendCommunityRequest(newUser, comReq);
     }
-    
+
     /**
      * Creates a new personal space as a subspace of the space the user was admitted to
-     * 
+     *
      * @param parentSpaceId the id of the space this new personal space will be a subspace of
      * @param user the user for whom this new personal space is being created
      * @return true if the personal subspace was successfully created, false otherwise
@@ -263,17 +260,16 @@ public class Verify extends HttpServlet {
 		sb.append("_");
 		sb.append(user.getLastName().toLowerCase());
 		sb.toString();
-		
+
     	// Set the space's attributes
 		Space s = new Space();
     	s.setName(sb.toString());
 		s.setDescription(R.PERSONAL_SPACE_DESCRIPTION);
 		s.setLocked(false);
 		s.setPermission(new Permission(true));
-		
+
 		// Return true if the subspace is successfully created, false otherwise
 		s.setParentSpace(parentSpaceId);
     	return Spaces.add(s, user.getId()) > 0;
     }
- 
 }

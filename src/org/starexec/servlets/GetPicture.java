@@ -17,19 +17,18 @@ import java.io.IOException;
 
 /**
  * Handles the request to get the picture from the file system. If there
- * is such a picture for the request, or else a default one, named as 
+ * is such a picture for the request, or else a default one, named as
  * Pic0.jpg is returned.
  * @author Ruoyu Zhang & Todd Elvers
  */
-@SuppressWarnings("serial")
 public class GetPicture extends HttpServlet{
 	private static final StarLogger log = StarLogger.getLogger(GetPicture.class);
-    
+
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Wrong type of request.");
 	}
-	
+
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {
@@ -142,7 +141,7 @@ public class GetPicture extends HttpServlet{
 			throw e;
 		}
 	}
-	
+
 	/**
 	 * Validates the GetPicture request to make sure the requested data is of the right format
 	 * @param request The request need to be validated.
@@ -153,11 +152,11 @@ public class GetPicture extends HttpServlet{
     		if (!Util.paramExists("type", request)) {
     			return new ValidatorStatusCode(false, "The supplied type is not valid");
     		}
-    		
+
     		if (!Validator.isValidPosInteger(request.getParameter("Id"))) {
     			return new ValidatorStatusCode(false, "The supplied id is not a valid integer");
     		}
-        	
+
     		if (!(request.getParameter("type").equals("uthn") ||
     			  request.getParameter("type").equals("uorg") ||
     			  request.getParameter("type").equals("sthn") ||
@@ -168,26 +167,26 @@ public class GetPicture extends HttpServlet{
     			  )) {
     			return new ValidatorStatusCode(false, "The supplied type is not valid");
     		}
-    		
+
 			return new ValidatorStatusCode(true);
     	} catch (Exception e) {
     		log.warn(e.getMessage(), e);
     	}
-    	
+
     	return new ValidatorStatusCode(false, "Internal error getting image");
     }
-    
-    
+
+
     /**
      * Gets the path of the default picture for a particular primitive
-     * 
+     *
      * @param primType the type of primitive whose default picture we need
      * @return the default picture of the specified primitive type
      * @author Todd Elvers
      */
     private static String getDefaultPicture(String primType){
     	StringBuilder sb = new StringBuilder();
-    	
+
     	switch(primType.charAt(0)){
 	    	case 'u':
 	    		sb.append("users");
@@ -210,8 +209,8 @@ public class GetPicture extends HttpServlet{
 	    		sb.append("Pic0.jpg");
 	    		break;
     	}
-    	
+
     	return sb.toString();
     }
-    
+
 }

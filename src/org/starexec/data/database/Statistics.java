@@ -321,7 +321,6 @@ public class Statistics {
 	 * Returns null on error
 	 * @author Eric Burns
 	 */
-
 	@SuppressWarnings("deprecation")
 	public static List<String> makeSolverComparisonChart(List<JobPair> pairs1, List<JobPair> pairs2, int jobSpaceId,
 			int edgeLengthInPixels, Color axisColor, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize) {

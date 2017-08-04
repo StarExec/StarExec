@@ -33,27 +33,26 @@ import java.util.HashMap;
  * @author Ruoyu Zhang
  *
  */
-@SuppressWarnings("serial")
 @MultipartConfig
 public class UploadPicture extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(UploadPicture.class);
-    
+
     // Request attributes
     private static final String PICTURE_FILE = "f";
     private static final String TYPE = "type";
     private static final String ID = "Id";
-    
+
     /**
      * UploadPicture doesn't handle doGet request
      */
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "Wrong type of request.");
     }
-    
 
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {    	
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
     	int userIdOfCaller = SessionUtil.getUserId(request);
-    	try {	
+    	try {
 			// Extract data from the multipart request
 			HashMap<String, Object> form = Util.parseMultipartRequest(request);
 
@@ -73,7 +72,7 @@ public class UploadPicture extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, "You cannot change this user's picture.");
 				return;
 			}
-			
+
 			ValidatorStatusCode status=this.isRequestValid(form);
 			// If the request is valid
 			if(status.isSuccess()) {
@@ -83,12 +82,12 @@ public class UploadPicture extends HttpServlet {
 				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
 				// Or else the request was invalid, send bad request error
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
-			}					
+			}
 		} catch (Exception e) {
 			log.warn("Caught Exception in UploadPicture.doPost", e);
 		}
 	}
-    
+
     /**
      * Upload the picture to the file system and return the redirection string.
      * @param userId The user uploading picture.
@@ -102,11 +101,11 @@ public class UploadPicture extends HttpServlet {
 			PartWrapper item = (PartWrapper)form.get(UploadPicture.PICTURE_FILE);
 			String fileName = "";
 			String redir = Util.docRoot("secure/edit/account.jsp");
-			
+
 			String type = (String)form.get(UploadPicture.TYPE);
 			String id = (String)form.get(UploadPicture.ID);
 			StringBuilder sb = new StringBuilder();
-			
+
 			if (type.equals("user")) {
 				sb.delete(0, sb.length());
 				sb.append("/users/Pic");
@@ -116,31 +115,31 @@ public class UploadPicture extends HttpServlet {
 			} else if (type.equals(R.SOLVER)) {
 				sb.delete(0, sb.length());
 				sb.append("/solvers/Pic");
-				sb.append(id);			
+				sb.append(id);
 				fileName = sb.toString();
-				
+
 				sb.delete(0, sb.length());
 				sb.append(Util.docRoot("secure/details/solver.jsp?id="));
-				sb.append(id);			
+				sb.append(id);
 				redir = sb.toString();
 			} else if (type.equals("benchmark")) {
 				sb.delete(0, sb.length());
 				sb.append("/benchmarks/Pic");
-				sb.append(id);			
+				sb.append(id);
 				fileName = sb.toString();
-				
+
 				sb.delete(0, sb.length());
 				sb.append(Util.docRoot("secure/details/benchmark.jsp?id="));
-				sb.append(id);			
+				sb.append(id);
 				redir = sb.toString();
 			}
-			
+
 			sb.delete(0, sb.length());
 			sb.append(R.getPicturePath());
 			sb.append(File.separator);
 			sb.append(fileName);
 			sb.append("_org.jpg");
-	    	String filenameupload = sb.toString();  	
+	    	String filenameupload = sb.toString();
 			File archiveFile = new File(filenameupload);
 			archiveFile.getParentFile().mkdirs();
 			item.write(archiveFile);
@@ -156,9 +155,9 @@ public class UploadPicture extends HttpServlet {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
-		return null;	
+		return null;
 	}
-	
+
 	/**
 	 * Validates a picture upload request to determine if it can be acted on or not.
 	 * @param form A list of form items contained in the request
@@ -166,7 +165,7 @@ public class UploadPicture extends HttpServlet {
 	 * @author Ruoyu Zhang
 	 */
 	private ValidatorStatusCode isRequestValid(HashMap<String, Object> form) {
-		try {			
+		try {
 			if(!form.containsKey(PICTURE_FILE)) {
 				return new ValidatorStatusCode(false, "No picture was supplied");
 			}
@@ -177,15 +176,15 @@ public class UploadPicture extends HttpServlet {
 			if (type==null || (!type.equals(R.SOLVER) && !type.equals("user") && !type.equals("benchmark"))) {
 				return new ValidatorStatusCode(false, "The supplied image type is not valid");
 			}
-			
+
 			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
-		
-		return new ValidatorStatusCode(false, "Internal error handling picture upload request");	
+
+		return new ValidatorStatusCode(false, "Internal error handling picture upload request");
 	}
-	
+
 	/**
 	 * Scale the source file into a shrunk one with the width and height
 	 * specified in the parameter.
@@ -197,14 +196,14 @@ public class UploadPicture extends HttpServlet {
 	 * @author Ruoyu Zhang
 	 */
 	public static void scale(String srcFile, int destWidth, int destHeight, String destFile) throws IOException {
-		
+
 		BufferedImage src = ImageIO.read(new File(srcFile));
 		BufferedImage dest = new BufferedImage(destWidth, destHeight, BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = dest.createGraphics();
 		AffineTransform at = AffineTransform.getScaleInstance(
 				(double)destWidth/src.getWidth(),
 				(double)destHeight/src.getHeight());
-		
+
 		g.drawRenderedImage(src, at);
 		ImageIO.write(dest,"JPG",new File(destFile));
 		}

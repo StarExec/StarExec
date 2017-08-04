@@ -47,7 +47,6 @@ import java.util.Optional;
  *
  * @author Skylar Stark
  */
-@SuppressWarnings("serial")
 @MultipartConfig
 public class UploadSolver extends HttpServlet {
 
@@ -525,16 +524,11 @@ public class UploadSolver extends HttpServlet {
 				if (!testJobStatus.isSuccess()) {
 					return testJobStatus;
 				}
-
-
 			}
-
-
 			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
-
 		return new ValidatorStatusCode(false, "Internal error uploading solver");
 	}
 }

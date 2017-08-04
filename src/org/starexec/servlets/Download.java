@@ -33,7 +33,6 @@ import java.util.zip.ZipOutputStream;
  *
  * @author Skylar Stark & Tyler Jensen
  */
-@SuppressWarnings("serial")
 public class Download extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(Download.class);
 	private static final String JS_FILE_TYPE = "js";

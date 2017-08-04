@@ -23,15 +23,14 @@ import java.util.Set;
  * Servlet which handles incoming requests adding new spaces
  * @author Tyler Jensen
  */
-@SuppressWarnings("serial")
-public class AddSpace extends HttpServlet {		
+public class AddSpace extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(AddSpace.class);
 
 	// Request attributes
 	private static final String parentSpace = "parent";
 	private static final String name = "name";
 	private static final String description = "desc";
-	private static final String locked = "locked";	
+	private static final String locked = "locked";
 	private static final String users = "users";
 	private static final String solvers = "solvers";
 	private static final String benchmarks = "benchmarks";
@@ -46,7 +45,7 @@ public class AddSpace extends HttpServlet {
 	private static final String removeSpace = "removeSpace";
 	private static final String removeJob = "removeJob";
 	private static final String stickyLeaders="sticky";
-	
+
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
@@ -177,7 +176,7 @@ public class AddSpace extends HttpServlet {
 				return new ValidatorStatusCode(false,"The space ID needs to be an integer");
 			}
 			int spaceId = Integer.parseInt(request.getParameter(parentSpace));
-			
+
 			// Ensure the space name is valid (alphanumeric < SPACE_NAME_LEN chars)
 			if(!Validator.isValidSpaceName(request.getParameter(name))) {
 				return new ValidatorStatusCode(false, "The given name is invalid-- please reference the help pages to see valid space names");
@@ -187,7 +186,7 @@ public class AddSpace extends HttpServlet {
 			if(!Validator.isValidPrimDescription(request.getParameter(description))) {
 				return new ValidatorStatusCode(false, "The given description is invalid-- please reference the help pages to see valid description names");
 			}
-			
+
 			// Ensure the isLocked value is a parseable boolean
 			String lockVal = (String)request.getParameter(locked);
 			if(!lockVal.equals("true") && ! lockVal.equals("false")) {
@@ -199,32 +198,32 @@ public class AddSpace extends HttpServlet {
 				if (!sticky.equals("true") && ! sticky.equals("false")) {
 					return new ValidatorStatusCode(false, "The 'sticky leaders' attribute needs to be either true or false");
 				}
-				
-				
+
+
 				//subspaces of the root can not have sticky leaders enabled
 				if (spaceId==1 && sticky.equals("true")) {
 					return new ValidatorStatusCode(false, "Communities may not enable the sticky leaders option");
 				}
-				
+
 			}
-		
+
 			// Verify this user can add spaces to this space
 			Permission p = SessionUtil.getPermission(request, spaceId);
 			if(p==null || !p.canAddSpace()) {
 				return new ValidatorStatusCode(false, "You do not have permission to add a new space here");
 			}
-			
-			
+
+
 			if (Spaces.getSubSpaceIDbyName(spaceId, n) != -1) {
 				return new ValidatorStatusCode(false,"The subspace should have a unique name in the space. It is possible a private subspace you are not authorized to see has the same name.");
 			}
-			
+
 			// Passed all checks, return true
 			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
-		
+
 		// Return false control flow is broken and ends up here
 		return new ValidatorStatusCode(false, "Internal error processing request");
 	}

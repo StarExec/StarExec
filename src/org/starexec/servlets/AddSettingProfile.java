@@ -31,7 +31,6 @@ import java.util.List;
  * Servlet which handles requests to create new DefaultSettings profiles for users
  * @author Eric Burns
  */
-@SuppressWarnings("serial")
 public class AddSettingProfile extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(AddSettingProfile.class);
 
@@ -53,7 +52,7 @@ public class AddSettingProfile extends HttpServlet {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 	}
 
-	
+
 	/**
 	 * Post requests should have all the attributes required for a DefaultSettings object
 	 */
@@ -61,7 +60,7 @@ public class AddSettingProfile extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {
 			final String method = "doPost";
-			
+
 			log.debug("got a request to create a new settings profile");
 
 			try {
@@ -80,7 +79,7 @@ public class AddSettingProfile extends HttpServlet {
 			}
 
 			DefaultSettings d=new DefaultSettings();
-			
+
 			//this servlet currently only handles requests for users. Community profiles are created automatically
 			d.setType(SettingType.USER);
 
@@ -104,16 +103,13 @@ public class AddSettingProfile extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to add a setting profile for this user.");
 			}
 
-
-
-			
 			//all profiles must set the following attributes
 			d.setWallclockTimeout(Integer.parseInt(request.getParameter(WALLCLOCK_TIMEOUT)));
 			d.setCpuTimeout(Integer.parseInt(request.getParameter(CPU_TIMEOUT)));
 			d.setMaxMemory(Util.gigabytesToBytes(Double.parseDouble(request.getParameter(MAX_MEMORY))));
 			d.setDependenciesEnabled(Boolean.parseBoolean(request.getParameter(DEPENDENCIES)));
 			d.setBenchmarkingFramework(BenchmarkingFramework.valueOf(request.getParameter(BENCHMARKING_FRAMEWORK)));
-			
+
 			//the next attributes do not necessarily need to be set, as they can be null
 			String postId=request.getParameter(POST_PROCESSOR);
 			String solver=request.getParameter(R.SOLVER);
@@ -121,12 +117,8 @@ public class AddSettingProfile extends HttpServlet {
 			String benchProcId=request.getParameter(BENCH_PROCESSOR);
 			log.debug("Getting benchIds from request.");
 
-
 			List<String> benchIds = getBenchIds(request);
 
-
-
-			
 			log.debug("Casting parameters to integers.");
 			//it is only set it if is an integer>0, as all real IDs are greater than 0. Same for all subsequent objects
 			if (Validator.isValidPosInteger(postId)) {
@@ -190,7 +182,7 @@ public class AddSettingProfile extends HttpServlet {
 	private List<String> getBenchIds(HttpServletRequest request) {
 			String[] rawBenchIds = request.getParameterValues(R.BENCHMARK+"[]");
 			List<String> benchIds = null;
-			if (rawBenchIds == null) { 
+			if (rawBenchIds == null) {
 				benchIds = new ArrayList<>();
 			} else {
 				benchIds=new ArrayList<>(Arrays.asList(rawBenchIds));
@@ -200,14 +192,14 @@ public class AddSettingProfile extends HttpServlet {
 			}
 			return benchIds;
 	}
-	
+
 	private ValidatorStatusCode isValidRequest(HttpServletRequest request) throws SQLException {
 		final String methodName = "isValidRequest";
 		int userId=SessionUtil.getUserId(request);
 		if (Users.isPublicUser(userId)) {
 			return new ValidatorStatusCode(false, "Only registered users can take this action");
 		}
-		
+
 		if (!Validator.isValidBool(request.getParameter(DEPENDENCIES))) {
 			return new ValidatorStatusCode(false, "invalid dependency selection");
 		}
@@ -217,7 +209,7 @@ public class AddSettingProfile extends HttpServlet {
 		if (!Validator.isValidPosInteger(request.getParameter(WALLCLOCK_TIMEOUT))) {
 			return new ValidatorStatusCode(false, "invalid wallclock timeout");
 		}
-		
+
 		if (!Validator.isValidPosDouble(request.getParameter(MAX_MEMORY))) {
 			return new ValidatorStatusCode(false, "invalid maximum memory");
 		}
@@ -228,7 +220,7 @@ public class AddSettingProfile extends HttpServlet {
 		if (EnumSet.allOf(BenchmarkingFramework.class).stream().noneMatch(framework -> framework.toString().equals(benchmarkingFramework))) {
 			return new ValidatorStatusCode(false, "invalid benchmarking framework: "+benchmarkingFramework);
 		}
-		
+
 		String postId=request.getParameter(POST_PROCESSOR);
 		String solver=request.getParameter(R.SOLVER);
 		log.debug("got sent the solver "+solver);
@@ -243,7 +235,7 @@ public class AddSettingProfile extends HttpServlet {
 		if (!statusCode.isSuccess()) return statusCode;
 		statusCode= checkIfUserCanSeeProcessor(benchProcId, userId);
 		if (!statusCode.isSuccess()) return statusCode;
-		
+
 		if (Validator.isValidPosInteger(solver)) {
 			int s=Integer.parseInt(solver);
 			if (s>0) {
@@ -277,13 +269,13 @@ public class AddSettingProfile extends HttpServlet {
 			if (!Validator.isValidSettingsName(request.getParameter(NAME))) {
 				return new ValidatorStatusCode(false, "Invalid name");
 			}
-			
+
 		}
-		
-		
+
+
 		return new ValidatorStatusCode(true);
 	}
-	
+
 	private static ValidatorStatusCode checkIfUserCanSeeProcessor(String param, int userId) {
 		//-1 is not an error-- it indicates that nothing was selected for all the following cases
 		if (Validator.isValidPosInteger(param)) {
@@ -296,5 +288,4 @@ public class AddSettingProfile extends HttpServlet {
 		}
 		return new ValidatorStatusCode(true);
 	}
-	        
 }

@@ -21,13 +21,11 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-
 /**
  * Servlet which handles incoming requests adding new queues
  * @author Wyatt Kaiser
  */
-@SuppressWarnings("serial")
-public class CreateQueue extends HttpServlet {		
+public class CreateQueue extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(CreateQueue.class);
 
 	// Request attributes
@@ -36,7 +34,7 @@ public class CreateQueue extends HttpServlet {
 	private static final String maxCpuTimeout="cpuTimeout";
 	private static final String maxWallTimeout="wallTimeout";
     private static final String numberOfJobsPerQueue="numberOfJobs";
-	
+
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
@@ -47,7 +45,7 @@ public class CreateQueue extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {	
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {
 			ValidatorStatusCode status = isRequestValid(request);
 			if (!status.isSuccess()) {
@@ -114,7 +112,7 @@ public class CreateQueue extends HttpServlet {
 			throw e;
 		}
 	}
-	
+
 	private static ValidatorStatusCode isRequestValid(HttpServletRequest request) {
 		try {
 			int userId=SessionUtil.getUserId(request);
@@ -122,13 +120,13 @@ public class CreateQueue extends HttpServlet {
 			if (!Validator.isValidPosInteger(request.getParameter(maxCpuTimeout)) || !Validator.isValidPosInteger(request.getParameter(maxWallTimeout))) {
 				return new ValidatorStatusCode(false, "Timeouts need to be valid integers");
 			}
-			
+
 			Integer cpuTimeout=Integer.parseInt(request.getParameter(maxCpuTimeout));
 			Integer wallTimeout=Integer.parseInt(request.getParameter(maxWallTimeout));
 			if (cpuTimeout<=0 || wallTimeout<=0) {
 				return new ValidatorStatusCode(false,"Timeouts need to be greater than 0.");
 			}
-			
+
 		    Integer jobsPerQueue = Integer.parseInt(request.getParameter(numberOfJobsPerQueue));
             if (jobsPerQueue != 1 && jobsPerQueue != 2) {
                 return new ValidatorStatusCode(false,"Number of jobs must be 1 or 2");
@@ -139,8 +137,8 @@ public class CreateQueue extends HttpServlet {
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}
-		
+
 		return new ValidatorStatusCode(false, "Internal error processing queue creation request");
-		
+
 	}
 }

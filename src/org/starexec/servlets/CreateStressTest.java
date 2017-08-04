@@ -21,8 +21,7 @@ import java.io.IOException;
  * Servlet which handles incoming requests adding new spaces
  * @author Tyler Jensen
  */
-@SuppressWarnings("serial")
-public class CreateStressTest extends HttpServlet {		
+public class CreateStressTest extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(CreateStressTest.class);
 
 	// Request attributes
@@ -36,10 +35,10 @@ public class CreateStressTest extends HttpServlet {
 
 	private static final String MIN_USERS_PER_SPACE="minUsersPer";
 	private static final String MAX_USERS_PER_SPACE="maxUsersPer";
-	
+
 	private static final String JOB_COUNT="jobCount";
 	private static final String SPACES_PER_JOB="spacesPerJob";
-	
+
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
@@ -92,62 +91,62 @@ public class CreateStressTest extends HttpServlet {
 			if (!Validator.isValidInteger(request.getParameter(USER_COUNT))) {
 				return new ValidatorStatusCode(false,"The user count needs to be an integer");
 			}
-			
+
 			// Make sure the parent space id is a int
 			if (!Validator.isValidInteger(request.getParameter(SPACE_COUNT))) {
 				return new ValidatorStatusCode(false,"The space count needs to be an integer");
 			}
-			
+
 			// Make sure the parent space id is a int
 			if (!Validator.isValidInteger(request.getParameter(JOB_COUNT))) {
 				return new ValidatorStatusCode(false,"The job count needs to be an integer");
 			}
-			
+
 			// Make sure the parent space id is a int
 			if (!Validator.isValidInteger(request.getParameter(MIN_SOLVERS_PER_SPACE))) {
 				return new ValidatorStatusCode(false,"The solvers per space needs to be an integer");
 			}
-			
+
 			// Make sure the parent space id is a int
 			if (!Validator.isValidInteger(request.getParameter(MAX_SOLVERS_PER_SPACE))) {
 				return new ValidatorStatusCode(false,"The solvers per space needs to be an integer");
 			}
-			
+
 			// Make sure the parent space id is a int
 			if (!Validator.isValidInteger(request.getParameter(MIN_BENCHMARKS_PER_SPACE))) {
 				return new ValidatorStatusCode(false,"The benchmarks per space needs to be an integer");
 			}
-			
+
 			// Make sure the parent space id is a int
 			if (!Validator.isValidInteger(request.getParameter(MAX_BENCHMARKS_PER_SPACE))) {
 				return new ValidatorStatusCode(false,"The benchmarks per space needs to be an integer");
 			}
-			
+
 			// Make sure the parent space id is a int
 			if (!Validator.isValidInteger(request.getParameter(MIN_USERS_PER_SPACE))) {
 				return new ValidatorStatusCode(false,"The users per space needs to be an integer");
 			}
-			
+
 			// Make sure the parent space id is a int
 			if (!Validator.isValidInteger(request.getParameter(MAX_USERS_PER_SPACE))) {
 				return new ValidatorStatusCode(false,"The users per space needs to be an integer");
 			}
-			
+
 			// Make sure the parent space id is a int
 			if (!Validator.isValidInteger(request.getParameter(SPACES_PER_JOB))) {
 				return new ValidatorStatusCode(false,"The spaces per job needs to be an integer");
 			}
-			
+
 			int spaceCount=Integer.parseInt(request.getParameter(SPACE_COUNT));
 			if (spaceCount<0) {
 				return new ValidatorStatusCode(false, "The number of spaces needs to be greater than or equal to 0");
 			}
-			
+
 			int jobCount=Integer.parseInt(request.getParameter(JOB_COUNT));
 			if (jobCount<0) {
 				return new ValidatorStatusCode(false, "The number of jobs needs to be greater than or equal to 0");
 			}
-			
+
 			int userCount=Integer.parseInt(request.getParameter(USER_COUNT));
 			if (userCount<0) {
 				return new ValidatorStatusCode(false, "The number of users needs to be greater than or equal to 0");
@@ -156,10 +155,10 @@ public class CreateStressTest extends HttpServlet {
 			if (spacesPerJob<1 && jobCount>0) {
 				return new ValidatorStatusCode(false, "Jobs need to have at least one space");
 			}
-			
+
 			int minUsersPerSpace=Integer.parseInt(request.getParameter(MIN_USERS_PER_SPACE));
 			int maxUsersPerSpace=Integer.parseInt(request.getParameter(MAX_USERS_PER_SPACE));
-			
+
 			if (minUsersPerSpace<1) {
 				return new ValidatorStatusCode(false, "The number of users per space must be greater than or equal to 1");
 			} else if (maxUsersPerSpace<minUsersPerSpace) {
@@ -167,34 +166,34 @@ public class CreateStressTest extends HttpServlet {
 			} else if (maxUsersPerSpace>userCount) {
 				return new ValidatorStatusCode(false, "You can not have more users per space than total users created");
 			}
-			
+
 			int minSolversPerSpace=Integer.parseInt(request.getParameter(MIN_SOLVERS_PER_SPACE));
 			int maxSolversPerSpace=Integer.parseInt(request.getParameter(MAX_SOLVERS_PER_SPACE));
-			
+
 			if (minSolversPerSpace<0) {
 				return new ValidatorStatusCode(false, "The number of solves per space must be greater than or equal to 0");
 			} else if (maxSolversPerSpace<minSolversPerSpace) {
 				return new ValidatorStatusCode(false, "The max solvers per space must be greater than or equal to the min users per space");
 			}
-			
-			
+
+
 			int minBenchmarksPerSpace=Integer.parseInt(request.getParameter(MIN_BENCHMARKS_PER_SPACE));
 			int maxBenchmarksPerSpace=Integer.parseInt(request.getParameter(MAX_BENCHMARKS_PER_SPACE));
-			
+
 			if (minBenchmarksPerSpace<0) {
 				return new ValidatorStatusCode(false, "The number of benchmarks per space must be greater than or equal to 0");
 			} else if (maxBenchmarksPerSpace<minBenchmarksPerSpace) {
 				return new ValidatorStatusCode(false, "The max benchmarks per space must be greater than or equal to the min users per space");
 			}
-			
-			
-			
+
+
+
 			// Validated inputs-- next make sure user has permission
 			return GeneralSecurity.canUserRunTests(SessionUtil.getUserId(request),true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
-		
+
 		// Return false control flow is broken and ends up here
 		return new ValidatorStatusCode(false, "Internal error processing request");
 	}

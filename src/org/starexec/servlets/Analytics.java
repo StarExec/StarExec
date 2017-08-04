@@ -14,7 +14,6 @@ import java.sql.Date;
 /**
  * Returns Analytics information
  */
-@SuppressWarnings("serial")
 public class Analytics extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(Analytics.class);
 	private static Gson gson = new Gson();

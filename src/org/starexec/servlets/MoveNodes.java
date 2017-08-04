@@ -23,15 +23,13 @@ import java.util.List;
  * Servlet which handles incoming requests to move nodes from queue to queue
  * @author Wyatt Kaiser
  */
-@SuppressWarnings("serial")
-public class MoveNodes extends HttpServlet {		
+public class MoveNodes extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(MoveNodes.class);
 
 	// Request attributes
 	private static final String name = "name";
 	private static final String nodes = "node";
 
-	
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
@@ -42,8 +40,7 @@ public class MoveNodes extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {	
-
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 	try {
 		int userId=SessionUtil.getUserId(request);
 		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
@@ -56,9 +53,9 @@ public class MoveNodes extends HttpServlet {
 
 	    String queueName = (String)request.getParameter(name);
 	    List<Integer> nodeIds = Util.toIntegerList(request.getParameterValues(nodes));
-				
+
 	    log.debug("nodeIds = " + nodeIds);
-	    
+
 	    LinkedList<String> nodeNames = new LinkedList<>();
 	    LinkedList<String> queueNames = new LinkedList<>();
 	    // map for counting how many nodes will be removed from each queue
@@ -66,7 +63,7 @@ public class MoveNodes extends HttpServlet {
 	    if (nodeIds != null) {
 			for (int id : nodeIds) {
 			    Queue q = Cluster.getQueueForNode(id);
-			   
+
 			    nodeNames.add(Cluster.getNodeNameById(id));
 			    if(q == null){
 			    	queueNames.add(null);
@@ -77,15 +74,15 @@ public class MoveNodes extends HttpServlet {
 					 }
 					 queueIdToNodesRemoved.put(q.getId(), queueIdToNodesRemoved.get(q.getId())+1);
 			    }
-	
+
 			}
 	    }
-		
+
 	    //BACKEND Changes
 	    R.BACKEND.moveNodes(queueName,nodeNames.toArray(new String[nodeNames.size()]),queueNames.toArray(new String[queueNames.size()]));
 
 	    Cluster.loadWorkerNodes();
-	    Cluster.loadQueueDetails();		
+	    Cluster.loadQueueDetails();
 	    response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));
 	}
 	catch (Exception e) {

@@ -29,7 +29,6 @@ import java.util.*;
  *
  * @author Tyler Jensen
  */
-@SuppressWarnings("serial")
 public class CreateJob extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(CreateJob.class);
 
