@@ -9,7 +9,6 @@ import org.starexec.util.Util;
 import java.io.File;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
@@ -21,7 +20,6 @@ import java.util.Properties;
 public class JobPair extends Identifiable {
 	private int jobId = -1;
 	private int backendExecId = -1;
-
 
 	private int completionId = -1;
 	private int jobSpaceId = -1;
@@ -52,11 +50,10 @@ public class JobPair extends Identifiable {
 
 	private SolverPipeline pipeline = null;
 
-
-	// these are usually not populated-- only a pagination query uses them so that we can get all the necessary data at once
+	// these are usually not populated-- only a pagination query uses them so that we can get all the necessary data
+	// at once
 	private Job owningJob = null;
 	private User owningUser = null;
-
 
 	public JobPair() {
 		this.node = new WorkerNode();
@@ -89,7 +86,6 @@ public class JobPair extends Identifiable {
 		this.completionId = completionId;
 	}
 
-
 	/**
 	 * @return the actual job id of this pair in the grid engine
 	 */
@@ -104,7 +100,6 @@ public class JobPair extends Identifiable {
 		this.backendExecId = gridEngineId;
 	}
 
-
 	/**
 	 * @return the node this pair ran on
 	 */
@@ -118,7 +113,6 @@ public class JobPair extends Identifiable {
 	public void setNode(WorkerNode node) {
 		this.node = node;
 	}
-
 
 	/**
 	 * @return the benchmark used in this pair
@@ -191,8 +185,7 @@ public class JobPair extends Identifiable {
 	}
 
 	/**
-	 * @return the time the pair was submitted to the queue.
-	 * If the internal value is null, returns the current time
+	 * @return the time the pair was submitted to the queue. If the internal value is null, returns the current time
 	 */
 	public Timestamp getQueueSubmitTimeSafe() {
 		if (queueSubmitTime == null) {
@@ -214,7 +207,6 @@ public class JobPair extends Identifiable {
 	public void setExitStatus(int exitStatus) {
 		this.exitStatus = exitStatus;
 	}
-
 
 	/**
 	 * @return the space
@@ -250,7 +242,7 @@ public class JobPair extends Identifiable {
 		final String path = Util.normalizeFilePath(getPath());
 		String sb = path + getPrimarySolver().getName() + "___" + getPrimaryConfiguration().getName() + File
 				.separator +
-		            getBench().getName();
+				getBench().getName();
 		return sb;
 	}
 
@@ -288,9 +280,8 @@ public class JobPair extends Identifiable {
 	}
 
 	/**
-	 * Arranges all the stages in this job pair in order of their stage_number.
-	 * In other words, after calling this function, calling getStages().get(0)
-	 * will return the stage with the lowest stage number, then the second lowest,
+	 * Arranges all the stages in this job pair in order of their stage_number. In other words, after calling this
+	 * function, calling getStages().get(0) will return the stage with the lowest stage number, then the second lowest,
 	 * and so on
 	 */
 
@@ -300,9 +291,8 @@ public class JobPair extends Identifiable {
 	}
 
 	/**
-	 * Returns the primary stage of this job pair, as determined by the
-	 * primaryStageNumber field. If that field is not set, returns the first stage.
-	 * If no stages are set, returns null
+	 * Returns the primary stage of this job pair, as determined by the primaryStageNumber field. If that field is not
+	 * set, returns the first stage. If no stages are set, returns null
 	 *
 	 * @return
 	 */
@@ -321,15 +311,13 @@ public class JobPair extends Identifiable {
 		if (stages.size() > 0) {
 
 			return stages.get(0);
-
 		}
 
 		return null;
 	}
 
 	/**
-	 * Returns the configuration of the "priamry" stage of this jobline. Returns
-	 * null  if there is no such stage.
+	 * Returns the configuration of the "priamry" stage of this jobline. Returns null  if there is no such stage.
 	 *
 	 * @return
 	 */
@@ -343,8 +331,7 @@ public class JobPair extends Identifiable {
 	}
 
 	/**
-	 * Returns the solver of the "priamry" stage of this jobline. Returns
-	 * null  if there is no such stage.
+	 * Returns the solver of the "priamry" stage of this jobline. Returns null  if there is no such stage.
 	 *
 	 * @return
 	 */
@@ -358,8 +345,7 @@ public class JobPair extends Identifiable {
 	}
 
 	/**
-	 * Returns the solver of the "priamry" stage of this jobline. Returns
-	 * null  if there is no such stage.
+	 * Returns the solver of the "priamry" stage of this jobline. Returns null  if there is no such stage.
 	 *
 	 * @return
 	 */
@@ -380,8 +366,7 @@ public class JobPair extends Identifiable {
 	}
 
 	/**
-	 * Returns the solver of the "priamry" stage of this jobline. Returns
-	 * null  if there is no such stage.
+	 * Returns the solver of the "priamry" stage of this jobline. Returns null  if there is no such stage.
 	 *
 	 * @return
 	 */
@@ -402,8 +387,7 @@ public class JobPair extends Identifiable {
 	}
 
 	/**
-	 * Returns the solver of the "priamry" stage of this jobline. Returns
-	 * null  if there is no such stage.
+	 * Returns the solver of the "priamry" stage of this jobline. Returns null  if there is no such stage.
 	 *
 	 * @return
 	 */
@@ -417,10 +401,8 @@ public class JobPair extends Identifiable {
 	}
 
 	/**
-	 * Returns a string that uniquely identifies the stages of this jobline
-	 * using the following format. A colon will terminate the string. The
-	 * empty string is returned if there are no stages
-	 * <stage1id>:<stage2id>:...
+	 * Returns a string that uniquely identifies the stages of this jobline using the following format. A colon will
+	 * terminate the string. The empty string is returned if there are no stages <stage1id>:<stage2id>:...
 	 *
 	 * @return
 	 */
@@ -433,7 +415,6 @@ public class JobPair extends Identifiable {
 		return sb.toString();
 	}
 
-
 	public int getSandboxNum() {
 		return sandboxNum;
 	}
@@ -441,7 +422,6 @@ public class JobPair extends Identifiable {
 	public void setSandboxNum(int sandboxNum) {
 		this.sandboxNum = sandboxNum;
 	}
-
 
 	public List<Integer> getBenchInputs() {
 		return benchInputs;
@@ -464,10 +444,8 @@ public class JobPair extends Identifiable {
 	}
 
 	/**
-	 * Returns a stage based on the number.
-	 * If given <=0, returns the primary stage
-	 * if given 1...n where there are n stages, returns the stage
-	 * if given >n returns null;
+	 * Returns a stage based on the number. If given <=0, returns the primary stage if given 1...n where there are n
+	 * stages, returns the stage if given >n returns null;
 	 *
 	 * @param stageNumber
 	 */
@@ -482,7 +460,6 @@ public class JobPair extends Identifiable {
 			}
 		}
 		return null;
-
 	}
 
 	public boolean hasStage(int stageNumber) {
@@ -494,7 +471,8 @@ public class JobPair extends Identifiable {
 	 */
 	public String getPrimaryStarexecResult() {
 		Properties prop = this.getPrimaryStage().getAttributes();
-		return (prop != null && prop.containsKey(R.STAREXEC_RESULT) && prop.get(R.STAREXEC_RESULT) != null) ? prop.getProperty(R.STAREXEC_RESULT) : "--";
+		return (prop != null && prop.containsKey(R.STAREXEC_RESULT) && prop.get(R.STAREXEC_RESULT) != null) ?
+		       prop.getProperty(R.STAREXEC_RESULT) : "--";
 	}
 
 	public SolverPipeline getPipeline() {
@@ -528,6 +506,4 @@ public class JobPair extends Identifiable {
 	public void setOwningUser(User owningUser) {
 		this.owningUser = owningUser;
 	}
-
-
 }

@@ -1,14 +1,16 @@
 package org.starexec.data.database;
 
-import java.sql.SQLException;
-import org.starexec.data.to.Job;
 import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.User;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.Mail;
 
+import java.sql.SQLException;
+
 public class Notifications {
-	private Notifications() {} // Class cannot be instantiated
+	private Notifications() {
+	} // Class cannot be instantiated
+
 	private static StarLogger log = StarLogger.getLogger(Notifications.class);
 
 	/**
@@ -17,17 +19,13 @@ public class Notifications {
 	 * @return True if user is subscribed to job, false otherwise
 	 */
 	public static boolean isUserSubscribedToJob(int user, int job) throws SQLException {
-		return Common.query(
-			"{CALL UserSubscribedToJob(?,?)}",
-			procedure -> {
-				procedure.setInt(1, user);
-				procedure.setInt(2, job);
-			},
-			results -> {
-				results.next();
-				return results.getBoolean(1);
-			}
-		);
+		return Common.query("{CALL UserSubscribedToJob(?,?)}", procedure -> {
+			procedure.setInt(1, user);
+			procedure.setInt(2, job);
+		}, results -> {
+			results.next();
+			return results.getBoolean(1);
+		});
 	}
 
 	/**
@@ -37,13 +35,10 @@ public class Notifications {
 	 * @param job ID of Job
 	 */
 	public static void subscribeUserToJob(int user, int job) throws SQLException {
-		Common.update(
-			"{CALL SubscribeUserToJob(?,?)}",
-			procedure -> {
-				procedure.setInt(1, user);
-				procedure.setInt(2, job);
-			}
-		);
+		Common.update("{CALL SubscribeUserToJob(?,?)}", procedure -> {
+			procedure.setInt(1, user);
+			procedure.setInt(2, job);
+		});
 	}
 
 	/**
@@ -53,40 +48,36 @@ public class Notifications {
 	 * @param job ID of Job
 	 */
 	public static void unsubscribeUserToJob(int user, int job) throws SQLException {
-		Common.update(
-			"{CALL UnsubscribeUserFromJob(?,?)}",
-			procedure -> {
-				procedure.setInt(1, user);
-				procedure.setInt(2, job);
-			}
-		);
+		Common.update("{CALL UnsubscribeUserFromJob(?,?)}", procedure -> {
+			procedure.setInt(1, user);
+			procedure.setInt(2, job);
+		});
 	}
 
 	/**
-	 * Update the last seen status of a Job to status.
-	 * After we have sent a notification, we need to record the current status
-	 * of the Job so that we can be notified when it changes again.
+	 * Update the last seen status of a Job to status. After we have sent a notification, we need to record the current
+	 * status of the Job so that we can be notified when it changes again.
+	 *
 	 * @param userId
 	 * @param job
 	 * @param status
 	 */
 	private static void updateNotificationJobStatus(int userId, int job, JobStatus status) throws SQLException {
-		log.warn("updateNotificationJobStatus", "user: " + userId + "    job: " + job + "   status " + status.toString());
-		Common.update(
-			"{CALL UpdateNotificationJobStatus(?,?,?)}",
-			procedure -> {
-				procedure.setInt(1, userId);
-				procedure.setInt(2, job);
-				procedure.setString(3, status.name());
-			}
+		log.warn(
+				"updateNotificationJobStatus",
+				"user: " + userId + "    job: " + job + "   status " + status.toString()
 		);
+		Common.update("{CALL UpdateNotificationJobStatus(?,?,?)}", procedure -> {
+			procedure.setInt(1, userId);
+			procedure.setInt(2, job);
+			procedure.setString(3, status.name());
+		});
 	}
 
 	/**
-	 * Send email notifications for Jobs with changed status.
-	 * Query the DB for Jobs whose status has changed since last we checked.
-	 * Send email notifications to users subscribed to those jobs, then record
-	 * the new status so we will know if it changes again in the future.
+	 * Send email notifications for Jobs with changed status. Query the DB for Jobs whose status has changed since last
+	 * we checked. Send email notifications to users subscribed to those jobs, then record the new status so we will
+	 * know if it changes again in the future.
 	 */
 	public static void sendEmailNotifications() {
 		final String method = "sendEmailNotifications";

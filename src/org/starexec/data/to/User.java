@@ -12,10 +12,10 @@ import java.util.List;
  * @author Tyler Jensen
  */
 public class User extends Identifiable {
-	@Expose	private String email;
-	@Expose	private String firstName;
-	@Expose	private String lastName;
-	@Expose	private String institution;
+	@Expose private String email;
+	@Expose private String firstName;
+	@Expose private String lastName;
+	@Expose private String institution;
 	private String role;
 	private Timestamp createDate;
 	private transient String password;
@@ -29,14 +29,14 @@ public class User extends Identifiable {
 	/**
 	 * @return the user's disk quota (in bytes)
 	 */
-	public long getDiskQuota(){
+	public long getDiskQuota() {
 		return diskQuota;
 	}
 
 	/**
 	 * @param diskQuota the disk quota to set
 	 */
-	public void setDiskQuota(long diskQuota){
+	public void setDiskQuota(long diskQuota) {
 		this.diskQuota = diskQuota;
 	}
 
@@ -175,6 +175,7 @@ public class User extends Identifiable {
 
 	/**
 	 * Subscribe/unsubscribe user to reports.
+	 *
 	 * @param subscribe Whether or not to subscribe the user.
 	 * @author Albert Giegerich
 	 */

@@ -7,11 +7,12 @@ import org.starexec.util.Util;
  */
 public enum JobXmlType {
 
-    STANDARD(Util.url("public/batchJobSchema.xsd")),
-    SOLVER_UPLOAD(Util.url("public/runSolverOnUploadBatchJobSchema.xsd"));
+	STANDARD(Util.url("public/batchJobSchema.xsd")), SOLVER_UPLOAD(
+			Util.url("public/runSolverOnUploadBatchJobSchema.xsd"));
 
-    public final String schemaPath;
-    JobXmlType(String schemaPath) {
-        this.schemaPath = schemaPath;
-    }
+	public final String schemaPath;
+
+	JobXmlType(String schemaPath) {
+		this.schemaPath = schemaPath;
+	}
 }

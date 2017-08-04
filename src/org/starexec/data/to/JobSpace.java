@@ -1,21 +1,22 @@
 package org.starexec.data.to;
 
-public class JobSpace extends Identifiable implements Nameable{
+public class JobSpace extends Identifiable implements Nameable {
 	private String name;
 	private Integer parentSpace;
 	private Integer maxStages;
 	private Integer jobId;
+
 	public JobSpace() {
-		
+
 	}
-	
+
 	/**
 	 * @return the user defined name for the space
 	 */
 	public String getName() {
 		return name;
 	}
-	
+
 	/**
 	 * @param name the name to set for the space
 	 */

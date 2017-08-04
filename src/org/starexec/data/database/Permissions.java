@@ -22,16 +22,17 @@ public class Permissions {
 
 	/**
 	 * Adds a new permission record to the database. This is an internal helper method.
+	 *
 	 * @param p The permission to add
 	 * @param con The connection to add the permission with
 	 * @return The ID of the inserted record
+	 * @throws Exception
 	 * @author Tyler Jensen
-	 * @throws Exception 
 	 */
 	protected static int add(Permission p, Connection con) {
 		CallableStatement procDefaultPerm = null;
 		try {
-			 procDefaultPerm = con.prepareCall("{CALL AddPermissions(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
+			procDefaultPerm = con.prepareCall("{CALL AddPermissions(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)}");
 			procDefaultPerm.setBoolean(1, p.canAddSolver());
 			procDefaultPerm.setBoolean(2, p.canAddBenchmark());
 			procDefaultPerm.setBoolean(3, p.canAddUser());
@@ -43,39 +44,40 @@ public class Permissions {
 			procDefaultPerm.setBoolean(9, p.canRemoveUser());
 			procDefaultPerm.setBoolean(10, p.canRemoveJob());
 			procDefaultPerm.setBoolean(11, p.isLeader());
-			procDefaultPerm.registerOutParameter(12, java.sql.Types.INTEGER);			
+			procDefaultPerm.registerOutParameter(12, java.sql.Types.INTEGER);
 
 			procDefaultPerm.execute();
 			return procDefaultPerm.getInt(12);
 		} catch (Exception e) {
-			log.error("Permissions.add says "+e.getMessage(),e);
+			log.error("Permissions.add says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(procDefaultPerm);
 		}
 		return -1;
 	}
-	
+
 	/**
-	 * Checks to see if the user has access to the benchmark in some way. More specifically,
-	 * this checks if the user belongs to any space the benchmark belongs to.
+	 * Checks to see if the user has access to the benchmark in some way. More specifically, this checks if the user
+	 * belongs to any space the benchmark belongs to.
+	 *
 	 * @param benchId The benchmark to check if the user can see
 	 * @param userId The user that is requesting to view the given benchmark
-	 * @param con The open connection to make the query on 
+	 * @param con The open connection to make the query on
 	 * @return True if the user can somehow see the benchmark, false otherwise
 	 * @author Tyler Jensen
 	 */
-	
+
 	public static boolean canUserSeeBench(Connection con, int benchId, int userId) {
 		Benchmark b = Benchmarks.getIncludeDeletedAndRecycled(con, benchId, false);
-		if (b==null) {
+		if (b == null) {
 			return false;
 		}
-		if (Benchmarks.isPublic(con, benchId)){
+		if (Benchmarks.isPublic(con, benchId)) {
 			return true;
 		}
 
-		User u=Users.get(con, userId);
-		if (u!=null && (u.getRole().equals(R.ADMIN_ROLE_NAME) || u.getRole().equals(R.DEVELOPER_ROLE_NAME))) {
+		User u = Users.get(con, userId);
+		if (u != null && (u.getRole().equals(R.ADMIN_ROLE_NAME) || u.getRole().equals(R.DEVELOPER_ROLE_NAME))) {
 			return true;
 		}
 		if (Settings.canUserSeeBenchmarkInSettings(con, userId, benchId)) {
@@ -85,134 +87,136 @@ public class Permissions {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			 procedure = con.prepareCall("{CALL CanViewBenchmark(?, ?)}");
-			procedure.setInt(1, benchId);					
+			procedure = con.prepareCall("{CALL CanViewBenchmark(?, ?)}");
+			procedure.setInt(1, benchId);
 			procedure.setInt(2, userId);
-			 results = procedure.executeQuery();
+			results = procedure.executeQuery();
 
-			if(results.first()) {
+			if (results.first()) {
 				return results.getBoolean(1);
 			}
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
 
-		return false;	
+		return false;
 	}
 
 	/**
-	 * Checks to see if the user has access to the benchmark in some way. More specifically,
-	 * this checks if the user belongs to any space the benchmark belongs to.
+	 * Checks to see if the user has access to the benchmark in some way. More specifically, this checks if the user
+	 * belongs to any space the benchmark belongs to.
+	 *
 	 * @param benchId The benchmark to check if the user can see
-	 * @param userId The user that is requesting to view the given benchmark	 * 
+	 * @param userId The user that is requesting to view the given benchmark	 *
 	 * @return True if the user can somehow see the benchmark, false otherwise
 	 * @author Tyler Jensen
 	 */
 	public static boolean canUserSeeBench(int benchId, int userId) {
-		Connection con = null;			
+		Connection con = null;
 		try {
-			con = Common.getConnection();		
+			con = Common.getConnection();
 			return canUserSeeBench(con, benchId, userId);
-		
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
 
-		return false;				
+		return false;
 	}
 
 	/**
-	 * Checks to see if the user has access to the benchmarks in some way. More specifically,
-	 * this checks if the user belongs to all spaces the benchmarks belong to.
+	 * Checks to see if the user has access to the benchmarks in some way. More specifically, this checks if the user
+	 * belongs to all spaces the benchmarks belong to.
+	 *
 	 * @param benchIds The benchmarks to check if the user can see
-	 * @param userId The user that is requesting to view the given benchmarks 
+	 * @param userId The user that is requesting to view the given benchmarks
 	 * @return True if the user can somehow see all benchmarks, false otherwise
 	 * @author Tyler Jensen
 	 */
 	public static boolean canUserSeeBenchs(List<Integer> benchIds, int userId) {
-		Connection con = null;			
+		Connection con = null;
 		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return true;
 		}
 		try {
-			con = Common.getConnection();		
+			con = Common.getConnection();
 			//check the permissions for every benchmark
-			for(int id : benchIds) {
-				if (!canUserSeeBench(con, id,userId)) {
+			for (int id : benchIds) {
+				if (!canUserSeeBench(con, id, userId)) {
 					return false;
 				}
-			}			
+			}
 			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
 
-		return false;				
+		return false;
 	}
 
 	/**
-	 * Checks to see if the user has access to the job in some way. More specifically,
-	 * this checks if the user belongs to any space the job belongs to.
+	 * Checks to see if the user has access to the job in some way. More specifically, this checks if the user belongs
+	 * to any space the job belongs to.
+	 *
 	 * @param jobId The job to check if the user can see
-	 * @param userId The user that is requesting to view the given job 
+	 * @param userId The user that is requesting to view the given job
 	 * @return True if the user can somehow see the job, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static ValidatorStatusCode canUserSeeJob(final int jobId, final int userId){
+	public static ValidatorStatusCode canUserSeeJob(final int jobId, final int userId) {
 		final String methodName = "canUserSeeJob";
 		log.entry(methodName);
-		log.debug(methodName, "\tjobId: "+jobId);
-		log.debug(methodName, "\tuserId: "+userId);
-		
-		Connection con = null;			
-		ResultSet results=null;
+		log.debug(methodName, "\tjobId: " + jobId);
+		log.debug(methodName, "\tuserId: " + userId);
+
+		Connection con = null;
+		ResultSet results = null;
 		CallableStatement procedure = null;
 		try {
 			Job j = Jobs.get(jobId);
 			// job does not exist or has been deleted.
-			if (j==null) {
+			if (j == null) {
 				final String message = "Job does not exist or has been deleted.";
 				log.debug(methodName, "User can't see job: " + message);
 				return new ValidatorStatusCode(false, message);
 			}
-			if (Jobs.isPublic(jobId) ) {
+			if (Jobs.isPublic(jobId)) {
 				log.debug(methodName, "User can see job: Job is public.");
 				return new ValidatorStatusCode(true);
 			}
-			if ( GeneralSecurity.hasAdminReadPrivileges(userId) ){
+			if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 				log.debug(methodName, "User can see job: User has admin read privileges.");
 				return new ValidatorStatusCode(true);
 			}
-			
+
 			//if there was no special case, check to see if the user shares a space with the job or owns the job
-			con = Common.getConnection();		
+			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL CanViewJob(?, ?)}");
-			procedure.setInt(1, jobId);					
+			procedure.setInt(1, jobId);
 			procedure.setInt(2, userId);
 			results = procedure.executeQuery();
 
-			if(results.first()) {
+			if (results.first()) {
 				boolean userCanSeeJob = results.getBoolean(1);
 				if (userCanSeeJob) {
 					log.debug(methodName, "User can see job.");
 					return new ValidatorStatusCode(true);
 				} else {
 					final String failureMessage = "You do not have permission to view this job.";
-					log.debug(methodName, "User can't see job: "+failureMessage);
+					log.debug(methodName, "User can't see job: " + failureMessage);
 					return new ValidatorStatusCode(false, failureMessage);
 				}
 			} else {
 				log.warn(methodName, "Failed to retrieve results.");
 				return new ValidatorStatusCode(false, "Database error: Failed to retrieve results.");
 			}
-		} catch (SQLException e){
+		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
 			return new ValidatorStatusCode(false, "Database error: Caught SQLException at " + Util.getTime());
 		} finally {
@@ -222,22 +226,23 @@ public class Permissions {
 			log.exit(methodName);
 		}
 	}
+
 	/**
-	 * Checks to see if the user has access to the solver in some way. More specifically,
-	 * this checks if the user belongs to any space the solver belongs to.
+	 * Checks to see if the user has access to the solver in some way. More specifically, this checks if the user
+	 * belongs to any space the solver belongs to.
+	 *
 	 * @param solverId The solver to check if the user can see
-	 * @param userId The user that is requesting to view the given solver	
+	 * @param userId The user that is requesting to view the given solver
 	 * @param con The open connection to query on
 	 * @return True if the user can somehow see the solver, false otherwise
 	 * @author Tyler Jensen
-	 * 
 	 */
 	public static boolean canUserSeeSolver(Connection con, int solverId, int userId) {
 		Solver s = Solvers.getIncludeDeleted(con, solverId);
-		if (s==null) {
+		if (s == null) {
 			return false;
 		}
-		if (Solvers.isPublic(con, solverId)){
+		if (Solvers.isPublic(con, solverId)) {
 			return true;
 		}
 		if (GeneralSecurity.hasAdminReadPrivileges(con, userId)) {
@@ -250,16 +255,16 @@ public class Permissions {
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			 procedure = con.prepareCall("{CALL CanViewSolver(?, ?)}");
-			procedure.setInt(1, solverId);					
+			procedure = con.prepareCall("{CALL CanViewSolver(?, ?)}");
+			procedure.setInt(1, solverId);
 			procedure.setInt(2, userId);
-			 results = procedure.executeQuery();
+			results = procedure.executeQuery();
 
-			if(results.first()) {
+			if (results.first()) {
 				return results.getBoolean(1);
 			}
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
@@ -269,127 +274,132 @@ public class Permissions {
 	}
 
 	/**
-	 * Checks to see if the user has access to the solver in some way. More specifically,
-	 * this checks if the user belongs to any space the solver belongs to.
+	 * Checks to see if the user has access to the solver in some way. More specifically, this checks if the user
+	 * belongs to any space the solver belongs to.
+	 *
 	 * @param solverId The solver to check if the user can see
-	 * @param userId The user that is requesting to view the given solver	
+	 * @param userId The user that is requesting to view the given solver
 	 * @return True if the user can somehow see the solver, false otherwise
 	 * @author Tyler Jensen
 	 */
 	public static boolean canUserSeeSolver(int solverId, int userId) {
-		Connection con = null;			
+		Connection con = null;
 		try {
-			con = Common.getConnection();	
-			return canUserSeeSolver(con, solverId,userId);
-			
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+			con = Common.getConnection();
+			return canUserSeeSolver(con, solverId, userId);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
 
-		return false;		
+		return false;
 	}
 
 	/**
-	 * Checks to see if the user has access to the given solvers in some way. More specifically,
-	 * this checks if the user belongs to all the spaces the solvers belong to.
+	 * Checks to see if the user has access to the given solvers in some way. More specifically, this checks if the
+	 * user
+	 * belongs to all the spaces the solvers belong to.
+	 *
 	 * @param solverIds The solvers to check if the user can see
-	 * @param userId The user that is requesting to view the given solvers	
+	 * @param userId The user that is requesting to view the given solvers
 	 * @return True if the user can somehow see the solvers, false otherwise
 	 * @author Tyler Jensen
 	 */
 	public static boolean canUserSeeSolvers(Collection<Integer> solverIds, int userId) {
-		Connection con = null;			
+		Connection con = null;
 		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return true;
 		}
 		try {
 			con = Common.getConnection();
 			//do the check for every solver
-			for(int id : solverIds) {	
-				if (!canUserSeeSolver(con, id,userId)) {
+			for (int id : solverIds) {
+				if (!canUserSeeSolver(con, id, userId)) {
 					return false;
 				}
 			}
 			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
 
-		return false;		
+		return false;
 	}
 
 	/**
-	 * Checks to see if the user belongs to the given space. Note that this is to check whether a user can 
-	 * see the details of a space, not to check whether they can see the space in the explorer tree due
-	 * to being a member of a subspace.
+	 * Checks to see if the user belongs to the given space. Note that this is to check whether a user can see the
+	 * details of a space, not to check whether they can see the space in the explorer tree due to being a member of a
+	 * subspace.
+	 *
 	 * @param spaceId The space to check if the user can see
 	 * @param userId The user that is requesting to view the given space
 	 * @return True if the user belongs to the space, false otherwise
 	 * @author Tyler Jensen
 	 */
-	public static boolean canUserSeeSpace(int spaceId, int userId) {		
-		if(spaceId <= 1) {
+	public static boolean canUserSeeSpace(int spaceId, int userId) {
+		if (spaceId <= 1) {
 			// Can always see root space
 			return true;
 		}
-		if (Spaces.isPublicSpace(spaceId)){
+		if (Spaces.isPublicSpace(spaceId)) {
 			return true;
 		}
 		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 			return true;
 		}
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL CanViewSpace(?, ?)}");
-			procedure.setInt(1, spaceId);					
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL CanViewSpace(?, ?)}");
+			procedure.setInt(1, spaceId);
 			procedure.setInt(2, userId);
-			 results = procedure.executeQuery();
+			results = procedure.executeQuery();
 
-			if(results.first()) {
+			if (results.first()) {
 				return results.getBoolean(1);
 			}
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
 
-		return false;		
+		return false;
 	}
 
 	/**
 	 * Retrieves the user's maximum set of permissions in a space.
-	 * @param userId The user to get permissions for	
+	 *
+	 * @param userId The user to get permissions for
 	 * @param spaceId The id of the space to get the user's permissions on
-	 * @return A permission object containing the user's permission on the space. Null if the user is not apart of the space.
+	 * @return A permission object containing the user's permission on the space. Null if the user is not apart of the
+	 * space.
 	 * @author Tyler Jensen
 	 */
 	public static Permission get(int userId, int spaceId) {
-		log.debug("getting permissions for user id = "+userId+" and space id  = "+spaceId);
-		Connection con = null;			
+		log.debug("getting permissions for user id = " + userId + " and space id  = " + spaceId);
+		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		
-		Space s=Spaces.get(spaceId);
-		if (s==null) {
+
+		Space s = Spaces.get(spaceId);
+		if (s == null) {
 			return null; //the space does not even exist
 		}
-		
+
 		//the admin has full permissions everywhere
 		if (GeneralSecurity.hasAdminWritePrivileges(userId)) {
-			log.debug("permissions for an admin were obtained userId = "+userId);
+			log.debug("permissions for an admin were obtained userId = " + userId);
 			return Permissions.getFullPermission();
 		}
-		
+
 		if (Users.isPublicUser(userId)) {
 			if (Spaces.isPublicSpace(spaceId)) {
 				return Permissions.getEmptyPermission();
@@ -397,21 +407,21 @@ public class Permissions {
 			return null;
 		}
 		try {
-			
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetUserPermissions(?, ?)}");
-			procedure.setInt(1, userId);					
-			procedure.setInt(2, spaceId);
-			 results = procedure.executeQuery();
 
-			if(results.first()) {				
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetUserPermissions(?, ?)}");
+			procedure.setInt(1, userId);
+			procedure.setInt(2, spaceId);
+			results = procedure.executeQuery();
+
+			if (results.first()) {
 				Permission p = resultsToPermissionWithId(userId, results);
-				if(results.wasNull()) {
+				if (results.wasNull()) {
 					/* If the permission doesn't exist we always get a result
 					but all of it's values are null, so here we check for a 
 					null result and return null */
-					
-					if (GeneralSecurity.hasAdminReadPrivileges(userId)){ 
+
+					if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
 						Permission empty = Permissions.getEmptyPermission();
 						empty.setAddSpace(true);
 						empty.setAddUser(true);
@@ -422,23 +432,24 @@ public class Permissions {
 
 				return p;
 			}
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
 
-		return null;		
+		return null;
 	}
-	
+
 	/**
 	 * Returns a permissions object with every permission set to true. The ID is not set
+	 *
 	 * @return Permissions object
 	 * @author Eric Burns
 	 */
-	
+
 	public static Permission getFullPermission() {
 		Permission p = new Permission();
 		p.setAddBenchmark(true);
@@ -457,10 +468,11 @@ public class Permissions {
 
 	/**
 	 * Returns a permissions object with every permission set to false. The ID is not set
+	 *
 	 * @return Permissions object
 	 * @author Eric Burns
 	 */
-	
+
 	public static Permission getEmptyPermission() {
 		Permission p = new Permission();
 		p.setAddBenchmark(false);
@@ -477,35 +489,35 @@ public class Permissions {
 		return p;
 	}
 
-
 	/**
 	 * Retrieves the default permissions applied to a user when they are added to a space
+	 *
 	 * @param spaceId The id of the space to get the default user's permission
 	 * @return A permission object containing the space's default user permissionsuser's permission on the space.
 	 * @author Tyler Jensen
 	 */
 	public static Permission getSpaceDefault(int spaceId) {
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
 		try {
-			con = Common.getConnection();		
-			 procedure = con.prepareCall("{CALL GetSpacePermissions(?)}");			
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetSpacePermissions(?)}");
 			procedure.setInt(1, spaceId);
-			 results = procedure.executeQuery();
+			results = procedure.executeQuery();
 
-			if(results.first()) {
+			if (results.first()) {
 				return resultsToPermissionWithId(results.getInt("id"), results);
 			}
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
 
-		return null;		
+		return null;
 	}
 
 	private static Permission resultsToPermissionWithId(int id, ResultSet results) throws SQLException {
@@ -527,7 +539,7 @@ public class Permissions {
 
 	/**
 	 * Sets the permissions of a given user in a given space
-	 * 
+	 *
 	 * @param userId the id of the user to set the permissions of
 	 * @param spaceId the id of the space where the permissions will effect
 	 * @param newPerm the new set of permissions to set
@@ -535,13 +547,13 @@ public class Permissions {
 	 * @author Todd Elvers
 	 */
 	public static boolean set(int userId, int spaceId, Permission newPerm) {
-		Connection con = null;			
+		Connection con = null;
 
 		try {
-			con = Common.getConnection();		
+			con = Common.getConnection();
 			return Permissions.set(userId, spaceId, newPerm, con);
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -552,23 +564,22 @@ public class Permissions {
 
 	/**
 	 * Sets the permissions of a given user in a given space
-	 * 
+	 *
 	 * @param userId the id of the user to set the permissions of
 	 * @param spaceId the id of the space where the permissions will effect
 	 * @param newPerm the new set of permissions to set
 	 * @param con The open connection to make the call on
 	 * @return true iff the permissions were successfully set, false otherwise
+	 * @throws Exception
 	 * @author Todd Elvers
-	 * 
-	 * @throws Exception 
 	 */
 	protected static boolean set(int userId, int spaceId, Permission newPerm, Connection con) {
 		CallableStatement procedure = null;
 		int permissionId = add(newPerm, con);
-		
+
 		try {
-			 procedure = con.prepareCall("{CALL SetUserPermissions2(?, ?, ?)}");
-			procedure.setInt(1, userId);					
+			procedure = con.prepareCall("{CALL SetUserPermissions2(?, ?, ?)}");
+			procedure.setInt(1, userId);
 			procedure.setInt(2, spaceId);
 			procedure.setInt(3, permissionId);
 
@@ -576,27 +587,28 @@ public class Permissions {
 			log.debug(String.format("Permissions successfully changed for user [%d] in space [%d]", userId, spaceId));
 			return true;
 		} catch (Exception e) {
-			log.error("Permissions.set says "+e.getMessage(),e);
+			log.error("Permissions.set says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(procedure);
 		}
 		return false;
 	}
 
-	/** Updates the permission with the given id. Since this will be one step in a
-	 * multi-step process, we use transactions. 
-	 * 
+	/**
+	 * Updates the permission with the given id. Since this will be one step in a multi-step process, we use
+	 * transactions.
+	 *
 	 * @param permId the id of the permission to change
 	 * @param perm a Permission object containing the new permissions
 	 * @param con The open connection to make the call on
 	 * @return true iff the permission update was successful
+	 * @throws Exception
 	 * @author Skylar Stark
-	 * @throws Exception 
 	 */
 	protected static boolean updatePermission(int permId, Permission perm, Connection con) {
 		CallableStatement procedure = null;
-		
-		 try {
+
+		try {
 			procedure = con.prepareCall("{CALL UpdatePermissions(?,?,?,?,?,?,?,?,?,?,?)}");
 
 			procedure.setInt(1, permId);
@@ -615,7 +627,7 @@ public class Permissions {
 			log.info(String.format("Permission [%d] successfully updated.", permId));
 			return true;
 		} catch (Exception e) {
-			log.error("updatePermission says "+e.getMessage(),e);
+			log.error("updatePermission says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(procedure);
 		}

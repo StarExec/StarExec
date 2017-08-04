@@ -73,20 +73,17 @@ public class Processors {
 	 */
 	public static int add(Processor processor) {
 		try {
-			int procId = Common.updateWithOutput(
-				"{CALL AddProcessor(?,?,?,?,?,?,?)}",
-				procedure -> {
-					procedure.setString(1, processor.getName());
-					procedure.setString(2, processor.getDescription());
-					procedure.setString(3, processor.getFilePath());
-					procedure.setInt(4, processor.getCommunityId());
-					procedure.setInt(5, processor.getType().getVal());
-					procedure.setLong(6, FileUtils.sizeOf(new File(processor.getFilePath())));
-					procedure.registerOutParameter(7, java.sql.Types.INTEGER);
-				},
-				procedure -> procedure.getInt(7)
-			);
-			log.debug("the new processor has the ID = " + procId + " and community id = " + processor.getCommunityId());
+			int procId = Common.updateWithOutput("{CALL AddProcessor(?,?,?,?,?,?,?)}", procedure -> {
+				procedure.setString(1, processor.getName());
+				procedure.setString(2, processor.getDescription());
+				procedure.setString(3, processor.getFilePath());
+				procedure.setInt(4, processor.getCommunityId());
+				procedure.setInt(5, processor.getType().getVal());
+				procedure.setLong(6, FileUtils.sizeOf(new File(processor.getFilePath())));
+				procedure.registerOutParameter(7, java.sql.Types.INTEGER);
+			}, procedure -> procedure.getInt(7));
+			log.debug("the new processor has the ID = " + procId + " and community id = " + processor.getCommunityId
+					());
 			return procId;
 		} catch (SQLException e) {
 			log.error(e.getMessage(), e);
@@ -115,34 +112,28 @@ public class Processors {
 		}
 		try {
 			// Get processor_path of processor
-			final File processorFile = Common.updateWithOutput(
-				"{CALL DeleteProcessor(?,?)}",
-				procedure -> {
-					procedure.setInt(1, processorId);
-					procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
-				},
-				procedure -> {
-					return new File(procedure.getString(2));
-				}
-			);
+			final File processorFile = Common.updateWithOutput("{CALL DeleteProcessor(?,?)}", procedure -> {
+				procedure.setInt(1, processorId);
+				procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
+			}, procedure -> {
+				return new File(procedure.getString(2));
+			});
 			message = String.format("Removal of processor [id=%d] was successful.", processorId);
 			log.debug(method, message);
 
 			// Try and delete file referenced by processor_path and its parent directory
 			if (processorFile.exists()) {
 				if (processorFile.delete()) {
-					message = String.format(
-						"File [%s] was deleted at [%s] because it was not inter referenced anywhere.",
-						processorFile.getName(),
-						processorFile.getAbsolutePath()
-					);
+					message =
+							String.format("File [%s] was deleted at [%s] because it was not inter referenced " +
+									              "anywhere.", processorFile.getName(), processorFile.getAbsolutePath()
+							);
 					log.debug(method, message);
 				}
 				if (processorFile.getParentFile() != null) {
 					if (processorFile.getParentFile().delete()) {
-						message = String.format(
-							"Directory [%s] was deleted because it was empty.",
-							processorFile.getParentFile().getAbsolutePath()
+						message = String.format("Directory [%s] was deleted because it was empty.",
+						                        processorFile.getParentFile().getAbsolutePath()
 						);
 						log.debug(method, message);
 					}
@@ -150,11 +141,7 @@ public class Processors {
 			}
 			return true;
 		} catch (SQLException e) {
-			log.debug(
-				method,
-				String.format("Removal of processor [id=%d] failed.", processorId),
-				e
-			);
+			log.debug(method, String.format("Removal of processor [id=%d] failed.", processorId), e);
 		}
 		return false;
 	}
@@ -166,13 +153,9 @@ public class Processors {
 	 */
 	public static Processor get(int processorId) {
 		try {
-			return Common.query(
-				"{CALL GetProcessorById(?)}",
-				procedure -> {
-					procedure.setInt(1, processorId);
-				},
-				Processors::resultSetToProcessor
-			);
+			return Common.query("{CALL GetProcessorById(?)}", procedure -> {
+				procedure.setInt(1, processorId);
+			}, Processors::resultSetToProcessor);
 		} catch (SQLException e) {
 			log.error("get", e.getMessage(), e);
 		}
@@ -188,13 +171,9 @@ public class Processors {
 	 */
 	public static List<Processor> getAll(ProcessorType type) {
 		try {
-			return Common.query(
-				"{CALL GetAllProcessors(?)}",
-				procedure -> {
-					procedure.setInt(1, type.getVal());
-				},
-				Processors::resultSetToProcessors
-			);
+			return Common.query("{CALL GetAllProcessors(?)}", procedure -> {
+				procedure.setInt(1, type.getVal());
+			}, Processors::resultSetToProcessors);
 		} catch (SQLException e) {
 			log.error("getAll", e.getMessage(), e);
 		}
@@ -216,14 +195,10 @@ public class Processors {
 	 */
 	public static List<Processor> getByCommunity(int communityId, ProcessorType type) {
 		try {
-			return Common.query(
-				"{CALL GetProcessorsByCommunity(?,?)}",
-				procedure -> {
-					procedure.setInt(1, communityId);
-					procedure.setInt(2, type.getVal());
-				},
-				Processors::resultSetToProcessors
-			);
+			return Common.query("{CALL GetProcessorsByCommunity(?,?)}", procedure -> {
+				procedure.setInt(1, communityId);
+				procedure.setInt(2, type.getVal());
+			}, Processors::resultSetToProcessors);
 		} catch (SQLException e) {
 			log.error("getByCommunity", e.getMessage(), e);
 		}
@@ -240,14 +215,10 @@ public class Processors {
 	 */
 	public static List<Processor> getByUser(int userId, ProcessorType type) {
 		try {
-			return Common.query(
-				"{CALL GetProcessorsByUser(?,?)}",
-				procedure -> {
-					procedure.setInt(1, userId);
-					procedure.setInt(2, type.getVal());
-				},
-				Processors::resultSetToProcessors
-			);
+			return Common.query("{CALL GetProcessorsByUser(?,?)}", procedure -> {
+				procedure.setInt(1, userId);
+				procedure.setInt(2, type.getVal());
+			}, Processors::resultSetToProcessors);
 		} catch (SQLException e) {
 			log.error("getByUser", e.getMessage(), e);
 		}
@@ -264,13 +235,10 @@ public class Processors {
 	 */
 	public static boolean updateDescription(int processorId, String newDesc) {
 		try {
-			Common.update(
-				"{CALL UpdateProcessorDescription(?,?)}",
-				procedure -> {
-					procedure.setInt(1, processorId);
-					procedure.setString(2, newDesc);
-				}
-			);
+			Common.update("{CALL UpdateProcessorDescription(?,?)}", procedure -> {
+				procedure.setInt(1, processorId);
+				procedure.setString(2, newDesc);
+			});
 			return true;
 		} catch (SQLException e) {
 			log.error("updateDescription", e.getMessage(), e);
@@ -300,13 +268,10 @@ public class Processors {
 	 */
 	public static boolean updateFilePath(int processorId, String newPath) {
 		try {
-			Common.update(
-				"{CALL UpdateProcessorFilePath(?,?)}",
-				procedure -> {
-					procedure.setInt(1, processorId);
-					procedure.setString(2, newPath);
-				}
-			);
+			Common.update("{CALL UpdateProcessorFilePath(?,?)}", procedure -> {
+				procedure.setInt(1, processorId);
+				procedure.setString(2, newPath);
+			});
 			return true;
 		} catch (SQLException e) {
 			log.error("updateFilePath", e.getMessage(), e);
@@ -324,13 +289,10 @@ public class Processors {
 	 */
 	public static boolean updateName(int processorId, String newName) {
 		try {
-			Common.update(
-				"{CALL UpdateProcessorName(?,?)}",
-				procedure -> {
-					procedure.setInt(1, processorId);
-					procedure.setString(2, newName);
-				}
-			);
+			Common.update("{CALL UpdateProcessorName(?,?)}", procedure -> {
+				procedure.setInt(1, processorId);
+				procedure.setString(2, newName);
+			});
 			return true;
 		} catch (SQLException e) {
 			log.error("updateName", e.getMessage(), e);

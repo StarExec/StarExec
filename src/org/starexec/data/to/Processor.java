@@ -9,8 +9,8 @@ import org.starexec.util.Util;
 import java.io.File;
 
 /**
- * Represents a processor, which is an arbitrary user specified filed that takes
- * input and produces output. This is used at various stages in the job pipeline
+ * Represents a processor, which is an arbitrary user specified filed that takes input and produces output. This is used
+ * at various stages in the job pipeline
  *
  * @author Tyler Jensen
  */

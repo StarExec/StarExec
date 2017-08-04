@@ -7,49 +7,49 @@ import java.util.List;
 
 // Represents a single row of the job attributes table for jobAttributes.jsp
 public class AttributesTableRow {
-    public int solverId;
-    public String solverName;
-    public int configId;
-    public String configName;
-    public List<Triple<Integer, String, String>> countAndTimes = new ArrayList<>();
+	public int solverId;
+	public String solverName;
+	public int configId;
+	public String configName;
+	public List<Triple<Integer, String, String>> countAndTimes = new ArrayList<>();
 
-    public int getSolverId() {
-        return solverId;
-    }
+	public int getSolverId() {
+		return solverId;
+	}
 
-    public void setSolverId(int solverId) {
-        this.solverId = solverId;
-    }
+	public void setSolverId(int solverId) {
+		this.solverId = solverId;
+	}
 
-    public String getSolverName() {
-        return solverName;
-    }
+	public String getSolverName() {
+		return solverName;
+	}
 
-    public void setSolverName(String solverName) {
-        this.solverName = solverName;
-    }
+	public void setSolverName(String solverName) {
+		this.solverName = solverName;
+	}
 
-    public int getConfigId() {
-        return configId;
-    }
+	public int getConfigId() {
+		return configId;
+	}
 
-    public void setConfigId(int configId) {
-        this.configId = configId;
-    }
+	public void setConfigId(int configId) {
+		this.configId = configId;
+	}
 
-    public String getConfigName() {
-        return configName;
-    }
+	public String getConfigName() {
+		return configName;
+	}
 
-    public void setConfigName(String configName) {
-        this.configName = configName;
-    }
+	public void setConfigName(String configName) {
+		this.configName = configName;
+	}
 
-    public List<Triple<Integer, String, String>> getCountAndTimes() {
-        return countAndTimes;
-    }
+	public List<Triple<Integer, String, String>> getCountAndTimes() {
+		return countAndTimes;
+	}
 
-    public void setCountAndTimes(List<Triple<Integer, String, String>> countAndTimes) {
-        this.countAndTimes = countAndTimes;
-    }
+	public void setCountAndTimes(List<Triple<Integer, String, String>> countAndTimes) {
+		this.countAndTimes = countAndTimes;
+	}
 }

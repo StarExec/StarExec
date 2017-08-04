@@ -4,7 +4,7 @@ import java.sql.Timestamp;
 
 /**
  * Represents an request to join a community in the database
- * 
+ *
  * @author Todd Elvers & Tyler Jensen
  */
 public class CommunityRequest {
@@ -13,21 +13,21 @@ public class CommunityRequest {
 	private String code;
 	private Timestamp createDate;
 	private int userId;
-	
+
 	/**
 	 * @return the user_id of the user who created the request
 	 */
-	public int getUserId(){
+	public int getUserId() {
 		return this.userId;
 	}
-	
+
 	/**
 	 * @param userId the userId of the user who created this invite
 	 */
-	public void setUserId(int userId){
+	public void setUserId(int userId) {
 		this.userId = userId;
 	}
-	
+
 	/**
 	 * @return the id of the community this request is for
 	 */
@@ -45,29 +45,28 @@ public class CommunityRequest {
 	/**
 	 * @return the unique code for this request (used for hyperlinking)
 	 */
-	public String getCode(){
+	public String getCode() {
 		return this.code;
 	}
-	
+
 	/**
 	 * @param code the unique code to set to this request (used for hyperlinking)
 	 */
-	public void setCode(String code){
+	public void setCode(String code) {
 		this.code = code;
 	}
-	
-	
+
 	/**
 	 * @return the message the user attached to the request
 	 */
 	public String getMessage() {
 		return this.message;
 	}
-	
+
 	/**
 	 * @param message the message to set for this request
 	 */
-	public void setMessage(String message){
+	public void setMessage(String message) {
 		this.message = message;
 	}
 
@@ -84,5 +83,4 @@ public class CommunityRequest {
 	public void setCreateDate(Timestamp createDate) {
 		this.createDate = createDate;
 	}
-
 }

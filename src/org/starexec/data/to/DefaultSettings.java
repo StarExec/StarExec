@@ -74,14 +74,19 @@ public class DefaultSettings extends Identifiable {
 	public static DefaultSettings copy(DefaultSettings settingsToCopy) {
 		return new DefaultSettings(settingsToCopy.primId, settingsToCopy.preProcessorId, settingsToCopy
 				.postProcessorId, settingsToCopy.benchProcessorId, settingsToCopy.benchIds, settingsToCopy.solverId,
-				settingsToCopy.wallclockTimeout, settingsToCopy.cpuTimeout, settingsToCopy.maxMemory, settingsToCopy
-				.dependenciesEnabled, settingsToCopy.name, settingsToCopy.type, settingsToCopy.benchmarkingFramework);
+		                           settingsToCopy.wallclockTimeout, settingsToCopy.cpuTimeout, settingsToCopy
+				                           .maxMemory,
+		                           settingsToCopy.dependenciesEnabled, settingsToCopy.name, settingsToCopy.type,
+		                           settingsToCopy.benchmarkingFramework
+		);
 	}
 
-	private DefaultSettings(final Integer primId, final Integer preProcessorId, final Integer postProcessorId, final
-	Integer benchProcessorId, final List<Integer> benchIds, final Integer solverId, final int wallclockTimeout, final
-	int cpuTimeout, final long maxMemory, final boolean dependenciesEnabled, final String name, final SettingType
-			type, final BenchmarkingFramework benchmarkingFramework) {
+	private DefaultSettings(
+			final Integer primId, final Integer preProcessorId, final Integer postProcessorId,
+			final Integer benchProcessorId, final List<Integer> benchIds, final Integer solverId,
+			final int wallclockTimeout, final int cpuTimeout, final long maxMemory, final boolean dependenciesEnabled,
+			final String name, final SettingType type, final BenchmarkingFramework benchmarkingFramework
+	) {
 		this.primId = primId;
 		this.preProcessorId = preProcessorId;
 		this.postProcessorId = postProcessorId;
@@ -214,7 +219,6 @@ public class DefaultSettings extends Identifiable {
 			return "None";
 		}
 		return b.getName();
-
 	}
 
 	public void setPrimId(Integer primId) {
@@ -301,16 +305,14 @@ public class DefaultSettings extends Identifiable {
 		}
 
 
-		return (this.getId() == set.getId() &&
-		        Objects.equals(this.getName(), set.getName()) &&
-		        Objects.equals(this.getPrimId(), set.getPrimId()) &&
-		        Objects.equals(this.getPreProcessorId(), set.getPreProcessorId()) &&
-		        Objects.equals(this.getBenchProcessorId(), set.getBenchProcessorId()) &&
-		        Objects.equals(this.getPostProcessorId(), set.getPostProcessorId()) &&
-		        this.getCpuTimeout() == set.getCpuTimeout() &&
-		        this.getWallclockTimeout() == set.getWallclockTimeout() &&
-		        this.getBenchmarkingFramework() == set.getBenchmarkingFramework() &&
-		        this.getMaxMemory() == set.getMaxMemory() &&
-		        Objects.equals(this.getSolverId(), set.getSolverId()));
+		return (this.getId() == set.getId() && Objects.equals(this.getName(), set.getName()) &&
+				Objects.equals(this.getPrimId(), set.getPrimId()) &&
+				Objects.equals(this.getPreProcessorId(), set.getPreProcessorId()) &&
+				Objects.equals(this.getBenchProcessorId(), set.getBenchProcessorId()) &&
+				Objects.equals(this.getPostProcessorId(), set.getPostProcessorId()) &&
+				this.getCpuTimeout() == set.getCpuTimeout() &&
+				this.getWallclockTimeout() == set.getWallclockTimeout() &&
+				this.getBenchmarkingFramework() == set.getBenchmarkingFramework() &&
+				this.getMaxMemory() == set.getMaxMemory() && Objects.equals(this.getSolverId(), set.getSolverId()));
 	}
 }

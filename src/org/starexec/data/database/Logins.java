@@ -6,7 +6,6 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 
-
 /**
  * Class for accessing the logins table.
  */
@@ -16,6 +15,7 @@ public class Logins {
 
 	/**
 	 * Gets the number of unique user logins in the logins table.
+	 *
 	 * @return number of unique user logins, null if an Exception occurs.
 	 * @author Albert Giegerich
 	 */
@@ -45,6 +45,7 @@ public class Logins {
 
 	/**
 	 * Clears all data in the logins table.
+	 *
 	 * @author Albert Giegerich
 	 */
 	public static void resetLogins() {
