@@ -152,7 +152,7 @@ public class UploadJobXML extends HttpServlet {
 				if (current != null) {
 					jobIds.addAll(current);
 				} else {
-					log.warn("the uploaded job xml was not formatted correctly");
+					log.debug("the uploaded job xml was not formatted correctly");
 				}
 			}
 			log.info(method, "Finished creating jobs from XML files.");
@@ -160,8 +160,8 @@ public class UploadJobXML extends HttpServlet {
 				log.info(method, "Job(s) created successfully.");
 				return jobIds;
 			}
-			log.warn(method, jobUtil.getErrorMessage());
-			log.warn(method, "Job(s) could not be created from XML.");
+			log.debug(method, jobUtil.getErrorMessage());
+			log.debug(method, "Job(s) could not be created from XML.");
 			return null;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
