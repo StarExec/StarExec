@@ -5,6 +5,8 @@ import org.junit.Test;
 import org.starexec.util.Util;
 
 import java.awt.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 public class UtilTests {
@@ -90,5 +92,16 @@ public class UtilTests {
 	public void getNullColorFromStringTest() {
 		Color c = Util.getColorFromString("fakecolor");
 		Assert.assertNull(c);
+	}
+
+	@Test
+	public void isBinaryFile() throws IOException {
+		File binaryFile = new File("upload-test/solvers/always-sat-solver.zip");
+		Assert.assertTrue(binaryFile.exists());
+		Assert.assertTrue(Util.isBinaryFile(binaryFile));
+
+		File textFile = new File("build.xml");
+		Assert.assertTrue(textFile.exists());
+		Assert.assertFalse(Util.isBinaryFile(textFile));
 	}
 }
