@@ -22,14 +22,13 @@ try {
 
 		// Ensure the configuration file exists on disk before assigning attributes
 		if(configFile.exists()){
-			final boolean isBinary = Util.executeCommand("file -bi "+configFile).contains("charset=binary");
 			con.setDescription(GeneralSecurity.getHTMLSafeString(con.getDescription()));
 			String contents=GeneralSecurity.getHTMLSafeString(FileUtils.readFileToString(configFile));
 			request.setAttribute("ownerId", solver.getUserId());
 			request.setAttribute("config", con);
 			request.setAttribute("solver", solver);
 			request.setAttribute("contents", contents);
-			request.setAttribute("isBinary", isBinary);
+			request.setAttribute("isBinary", Util.isBinaryFile(configFile));
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "the configuration file path points to a location that does not exist on disk");
 		}

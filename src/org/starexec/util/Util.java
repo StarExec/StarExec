@@ -1154,4 +1154,14 @@ public class Util {
 		return path.replace(R.JOB_PAIR_PATH_DELIMITER, File.separator) + File.separator;
 	}
 
+	/**
+	 * Try to detect if a file is binary.
+	 * For example, if a file is an execuatable binary instead of a text shell
+	 * script, this function will return true
+	 * @param file to check
+	 * @return true if file is binary, false otherwise
+	 */
+	public static boolean isBinaryFile(File f) throws IOException {
+		return Util.executeCommand("file -bi "+f).contains("charset=binary");
+	}
 }
