@@ -153,7 +153,7 @@
 	<c:if test="${downloadable}">
 		<fieldset id="fieldContents">
 			<legend><img alt="loading" src="${starexecRoot}/images/loader.gif"> contents</legend>
-			<pre class="prettyprint lang-smtlib">${content}</pre>
+			<star:displayTextContents text="${content}" lang="smtlib" />
 			<a href="${starexecRoot}/services/benchmarks/${bench.id}/contents?limit=-1" target="_blank" class="popoutLink">popout</a>
 			<p class="caption">content may be truncated. 'popout' for larger text window.</p>
 		</fieldset>

@@ -202,7 +202,7 @@
 
 	<fieldset id="fieldLog">
 		<legend><img alt="loading" src="${starexecRoot}/images/loader.gif"> job log</legend>
-		<pre class="prettyprint lang-log">${log}</pre>
+		<star:displayTextContents text="${log}" lang="log" />
 		<a href="${starexecRoot}/services/jobs/pairs/${pair.id}/log" target="_blank" class="popoutLink">popout</a>
 	</fieldset>
 

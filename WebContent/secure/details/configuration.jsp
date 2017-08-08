@@ -22,12 +22,14 @@ try {
 
 		// Ensure the configuration file exists on disk before assigning attributes
 		if(configFile.exists()){
+			final boolean isBinary = Util.executeCommand("file -bi "+configFile).contains("charset=binary");
 			con.setDescription(GeneralSecurity.getHTMLSafeString(con.getDescription()));
 			String contents=GeneralSecurity.getHTMLSafeString(FileUtils.readFileToString(configFile));
 			request.setAttribute("ownerId", solver.getUserId());
 			request.setAttribute("config", con);
 			request.setAttribute("solver", solver);
 			request.setAttribute("contents", contents);
+			request.setAttribute("isBinary", isBinary);
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "the configuration file path points to a location that does not exist on disk");
 		}
@@ -68,7 +70,7 @@ try {
 	</fieldset>
 	<fieldset id="configContents">
 		<legend>contents</legend>
-		<pre class="prettyprint">${contents}</pre>
+		<star:displayTextContents text="${contents}" isBinary="${isBinary}" />
 	</fieldset>
 	<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><span id="dialog-confirm-delete-txt"></span></p>
