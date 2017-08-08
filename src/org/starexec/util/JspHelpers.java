@@ -437,7 +437,7 @@ public class JspHelpers {
 			String content = GeneralSecurity.getHTMLSafeString(benchmarkContents.get());
 			request.setAttribute( "content", content );
 		} catch (IOException e) {
-			log.warn(methodName, "Caught exception while trying to set benchmark contents.");
+			log.warn(methodName, "Caught exception while trying to set benchmark contents.", e);
 			request.setAttribute("content", "IO Error: Could not get benchmark contents.");
 		}
 	}
