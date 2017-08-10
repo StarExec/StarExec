@@ -117,5 +117,18 @@ CREATE PROCEDURE UpdateProcessorPath(IN _id INT, IN _path TEXT, IN _diskSize BIG
 		WHERE id=_id;
 	END //
 
+DROP PROCEDURE IF EXISTS UpdateProcessorSyntax;
+CREATE PROCEDURE UpdateProcessorSyntax(IN _id INT, IN _syntax INT)
+	BEGIN
+		UPDATE processors
+		SET syntax_id=_syntax
+		WHERE id=_id;
+	END //
+
+DROP PROCEDURE IF EXISTS GetAllSyntaxes;
+CREATE PROCEDURE GetAllSyntaxes()
+	BEGIN
+		SELECT * FROM syntax;
+	END //
 
 DELIMITER ; -- This should always be at the end of this file

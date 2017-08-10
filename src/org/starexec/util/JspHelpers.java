@@ -404,6 +404,15 @@ public class JspHelpers {
 			return;
 		}
 
+		StringBuilder js = new StringBuilder("common/delaySpinner, lib/jquery.dataTables.min, shared/copyToStardev, details/shared, lib/prettify, details/benchmark");
+		StringBuilder lang = new StringBuilder();
+		if (b.getType().getSyntax().js != null) {
+			js.append(", ").append(b.getType().getSyntax().js);
+			lang.append(b.getType().getSyntax().classname);
+		}
+		request.setAttribute("js", js.toString());
+		request.setAttribute("lang", lang.toString());
+
 		// Set the page title to be the name of the benchmark if we're showing the benchmark name.
 		final String benchPageTitleAttributeName = "benchPageTitle";
 		if ( hideBenchmarkName ) {

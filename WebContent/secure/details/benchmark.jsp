@@ -22,7 +22,7 @@
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
-<star:template title="${benchPageTitle}" js="common/delaySpinner, lib/jquery.dataTables.min, shared/copyToStardev, details/shared, lib/prettify, lib/lang-smtlib, details/benchmark" css="common/delaySpinner, details/shared, common/table, details/benchmark, shared/copyToStardev, prettify/prettify">
+<star:template title="${benchPageTitle}" js="${js}" css="common/delaySpinner, details/shared, common/table, details/benchmark, shared/copyToStardev, prettify/prettify">
 	<star:primitiveTypes/>
 	<span style="display:none;" id="isAnonymousPage" value="${isAnonymousPage}"></span>
 	<c:if test="${!isAnonymousPage}">
@@ -153,7 +153,7 @@
 	<c:if test="${downloadable}">
 		<fieldset id="fieldContents">
 			<legend><img alt="loading" src="${starexecRoot}/images/loader.gif"> contents</legend>
-			<star:displayTextContents text="${content}" lang="smtlib" />
+			<star:displayTextContents text="${content}" lang="${lang}" />
 			<a href="${starexecRoot}/services/benchmarks/${bench.id}/contents?limit=-1" target="_blank" class="popoutLink">popout</a>
 			<p class="caption">content may be truncated. 'popout' for larger text window.</p>
 		</fieldset>

@@ -1,6 +1,7 @@
 jQuery(function($) {
 	var $name = $("#name");
 	var $description = $("#description");
+	var $syntax = $("[name='syntax']");
 	var $editProcForm = $("#editProcForm");
 
 	// Adds regular expression 'regex' function to validator
@@ -75,6 +76,9 @@ jQuery(function($) {
 					"name" : $name.val(),
 					"desc" : $description.val(),
 				};
+				if ($syntax.length !== 0) {
+					data["syntax"] = $syntax.val();
+				}
 				$.post(
 					starexecRoot+"services/edit/processor/" + getParameterByName("id"),
 					data,

@@ -3,6 +3,7 @@ package org.starexec.data.database;
 import org.apache.commons.io.FileUtils;
 import org.starexec.constants.R;
 import org.starexec.data.to.Processor;
+import org.starexec.data.to.Syntax;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.Util;
@@ -43,6 +44,7 @@ public class Processors {
 		t.setFilePath(results.getString(prefix + "path"));
 		t.setDiskSize(results.getLong(prefix + "disk_size"));
 		t.setType(ProcessorType.valueOf(results.getInt("processor_type")));
+		t.setSyntax(results.getInt("syntax_id"));
 
 		return t;
 	}
@@ -298,5 +300,15 @@ public class Processors {
 			log.error("updateName", e.getMessage(), e);
 		}
 		return false;
+	}
+
+	public static void updateSyntax(int processorId, int syntaxId) throws SQLException {
+		Common.update(
+			"{CALL UpdateProcessorSyntax(?,?)}",
+			procedure -> {
+				procedure.setInt(1, processorId);
+				procedure.setInt(2, syntaxId);
+			}
+		);
 	}
 }

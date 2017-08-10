@@ -2583,6 +2583,16 @@ public class RESTServices {
 			}
 		}
 
+		if (Util.paramExists("syntax", request)) {
+			int syntax = Integer.parseInt(request.getParameter("syntax"));
+			try {
+				Processors.updateSyntax(pid, syntax);
+			} catch (SQLException e) {
+				log.error("editProcessor", "Cannot update processor syntax", e);
+				return gson.toJson(ERROR_DATABASE);
+			}
+		}
+
 		return gson.toJson(new ValidatorStatusCode(true,"Processor edited successfully"));
 	}
 

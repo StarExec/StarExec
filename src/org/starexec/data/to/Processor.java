@@ -2,8 +2,10 @@ package org.starexec.data.to;
 
 import com.google.gson.annotations.Expose;
 import org.starexec.constants.R;
+import org.starexec.data.database.Syntaxes;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.data.to.tuples.Locatable;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.Util;
 
 import java.io.File;
@@ -15,6 +17,8 @@ import java.io.File;
  * @author Tyler Jensen
  */
 public class Processor extends Identifiable implements Nameable, Locatable {
+	private static final StarLogger log = StarLogger.getLogger(Processor.class);
+
 	@Expose private String name = "none";
 	@Expose private String description = "no description";
 	@Expose private String fileName;
@@ -22,6 +26,7 @@ public class Processor extends Identifiable implements Nameable, Locatable {
 	private String filePath;
 	private long diskSize;
 	private int communityId;
+	private Syntax syntax;
 
 	/**
 	 * @return the type of the processor (bench, pre or post proessor)
@@ -148,5 +153,17 @@ public class Processor extends Identifiable implements Nameable, Locatable {
 	 */
 	public void setDiskSize(long diskSize) {
 		this.diskSize = diskSize;
+	}
+
+	public void setSyntax(Syntax s) {
+		syntax = s;
+	}
+
+	public void setSyntax(int id) {
+		syntax = Syntaxes.get(id);
+	}
+
+	public Syntax getSyntax() {
+		return syntax;
 	}
 }

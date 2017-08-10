@@ -5,7 +5,7 @@
 <%@attribute name="text" %>
 <%@attribute name="lang" %>
 
-<c:set var="preClass" value='prettyprint${(empty lang) ? "" : " lang-".concat(lang)}' />
+<c:set var="preClass" value='prettyprint ${(empty lang) ? "prettyprinted" : "lang-".concat(lang)}' />
 <c:choose>
 	<c:when test="${(not empty isBinary) && isBinary==true}">
 		<p>Cannot display binary file</p>
