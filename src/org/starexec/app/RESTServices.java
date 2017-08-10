@@ -2546,38 +2546,39 @@ public class RESTServices {
 	 *
 	 * @author Eric Burns
 	 */
-
 	@POST
 	@Path("/edit/processor/{procId}")
 	@Produces("application/json")
 	public String editProcessor(@PathParam("procId") int pid, @Context HttpServletRequest request) {
-		int userId=SessionUtil.getUserId(request);
-		Processor p=Processors.get(pid);
-		if(!Util.paramExists("name", request)){
+		if (!Util.paramExists("name", request)) {
 			return gson.toJson(ERROR_INVALID_PARAMS);
 		}
-		String name=request.getParameter("name");
-		String desc="";
+
+		int userId = SessionUtil.getUserId(request);
+		Processor p = Processors.get(pid);
+		String name = request.getParameter("name");
+		String desc = "";
+
 		// Ensure the parameters are valid
 		if (Util.paramExists("desc", request)) {
-			desc=request.getParameter("desc");
+			desc = request.getParameter("desc");
 		}
-		ValidatorStatusCode status=ProcessorSecurity.canUserEditProcessor(pid, userId,name,desc);
+
+		ValidatorStatusCode status = ProcessorSecurity.canUserEditProcessor(pid, userId, name, desc);
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
 
-
 		if (!p.getName().equals(name)) {
-			boolean x=Processors.updateName(pid, name);
-			if (!x) {
+			boolean success = Processors.updateName(pid, name);
+			if (!success) {
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
 
 		if (!p.getDescription().equals(desc)) {
-			boolean x=Processors.updateDescription(pid, desc);
-			if (!x) {
+			boolean success = Processors.updateDescription(pid, desc);
+			if (!success) {
 				return gson.toJson(ERROR_DATABASE);
 			}
 		}
