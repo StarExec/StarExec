@@ -501,7 +501,7 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 		if (grep 'terminationreason=cputime' $VARFILE) then
 			sendCpuExceededStatus
 			ERROR_DETECTED=true
-		elif (grep 'terminationreason=walltime' $VARFILE) then
+		elif (grep 'terminationreason=walltime' $VARFILE) || [ "$JOB_PAIR_DEADLOCKED" = true ]; then
 			sendWallclockExceededStatus
 			ERROR_DETECTED=true
 		elif (grep 'terminationreason=memory' $VARFILE) then
