@@ -164,14 +164,14 @@ fi
 
 echo ""
 
-sendStatus $STATUS_RUNNING
+sendStatus "$STATUS_RUNNING"
 
 initSandbox
 
-if ( ! isInteger $SANDBOX ) || [ $SANDBOX -eq -1 ]; then
+if ( ! isInteger "$SANDBOX" ) || [ "$SANDBOX" -eq -1 ]; then
 	sendNode "$HOSTNAME" "0"
-	sendStatus $ERROR_RUNSCRIPT
-	sendStatusToLaterStages $ERROR_RUNSCRIPT 0
+	sendStatus "$ERROR_RUNSCRIPT"
+	sendStatusToLaterStages "$ERROR_RUNSCRIPT" 0
 
 	log "unable to secure any sandbox for this job!"
 	exit 0
@@ -216,16 +216,16 @@ checkIfBenchmarkDependenciesExists
 dependenciesExist=$?
 log "dependenciesExist was $dependenciesExist"
 if [ "$dependenciesExist" -eq "0" ]; then
-	sendStatus $ERROR_BENCH_DEPENDENCY_MISSING
+	sendStatus "$ERROR_BENCH_DEPENDENCY_MISSING"
 	exit 0
 fi
 #todo: alter the way we copy runsolver over so it only happens once
 copyBenchmarkDependencies
 
-TMP=$(mktemp --tmpdir=$TMPDIR starexec_base64.XXXXXXXX)
+TMP=$(mktemp --tmpdir="$TMPDIR" starexec_base64.XXXXXXXX)
 log "the temp directory is $TMP"
-echo $PAIR_OUTPUT_DIRECTORY > $TMP
-PAIR_OUTPUT_DIRECTORY=$(base64 -d $TMP)
+echo $PAIR_OUTPUT_DIRECTORY > "$TMP"
+PAIR_OUTPUT_DIRECTORY=$(base64 -d "$TMP")
 #==============================================================================
 # This is the start of the loop that runs for each stage
 #
@@ -239,7 +239,7 @@ OTHER_INPUT_PATH=""
 
 # if we are using pipelines, the OTHER_INPUT_PATH should always exist.
 # so, we start with an empty directory here
-if [ $NUM_STAGES -gt 1 ]; then
+if [ "$NUM_STAGES" -gt 1 ]; then
 	mkdir "$OUT_DIR"/empty_output_dir
 	OTHER_INPUT_PATH="$OUT_DIR"/empty_output_dir
 fi
@@ -251,15 +251,15 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 	CURRENT_STAGE_CPU=$STAREXEC_CPU_LIMIT
 	CURRENT_STAGE_WALLCLOCK=$STAREXEC_WALLCLOCK_LIMIT
 
-	if [ $CURRENT_STAGE_MEMORY -gt ${STAGE_MEM_LIMITS[$STAGE_INDEX]} ]; then
+	if [ $CURRENT_STAGE_MEMORY -gt "${STAGE_MEM_LIMITS[$STAGE_INDEX]}" ]; then
 		CURRENT_STAGE_MEMORY=${STAGE_MEM_LIMITS[$STAGE_INDEX]}
 	fi
 
-	if [ $CURRENT_STAGE_CPU -gt ${STAGE_CPU_TIMEOUTS[$STAGE_INDEX]} ]; then
+	if [ $CURRENT_STAGE_CPU -gt "${STAGE_CPU_TIMEOUTS[$STAGE_INDEX]}" ]; then
 		CURRENT_STAGE_CPU=${STAGE_CPU_TIMEOUTS[$STAGE_INDEX]}
 	fi
 
-	if [ $CURRENT_STAGE_WALLCLOCK -gt ${STAGE_CLOCK_TIMEOUTS[$STAGE_INDEX]} ]; then
+	if [ $CURRENT_STAGE_WALLCLOCK -gt "${STAGE_CLOCK_TIMEOUTS[$STAGE_INDEX]}" ]; then
 		CURRENT_STAGE_WALLCLOCK=${STAGE_CLOCK_TIMEOUTS[$STAGE_INDEX]}
 	fi
 
@@ -309,16 +309,16 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 	sandboxWorkspace
 
 	log "listing contents of sandbox..."
-	ls -l $WORKING_DIR
+	ls -l "$WORKING_DIR"
 
 	CURRENT_STAGE_NUMBER=${STAGE_NUMBERS[$STAGE_INDEX]}
 
 	SANDBOX_FOUND=true
 	# SANDBOX_PARAM designates which user will run runsolver
-	if [ $SANDBOX -eq 1 ]; then
+	if [ "$SANDBOX" -eq 1 ]; then
 		SANDBOX_PARAM=$SANDBOX_USER_ONE
 		CORES="0-3"
-	elif [ $SANDBOX -eq 2 ]; then
+	elif [ "$SANDBOX" -eq 2 ]; then
 		SANDBOX_PARAM=$SANDBOX_USER_TWO
 		CORES="4-7"
 	else
@@ -361,19 +361,19 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 		# this will be set to true in killDeadlockedJobPair if the job pair gets deadlocked
 		echo "Calling killDeadlockedJobPair"
 
-		killDeadlockedJobPair $CURRENT_STAGE_WALLCLOCK $JOB_PAIR_EXTRA_TIME $SANDBOX_PARAM &
+		killDeadlockedJobPair "$CURRENT_STAGE_WALLCLOCK" $JOB_PAIR_EXTRA_TIME $SANDBOX_PARAM &
 		# Get the process of our defensive killDeadlockedJobPair function.
 		KILL_DEADLOCKED_JOB_PAIR_PID=$!
 		echo "KILL_DEADLOCKED_JOB_PAIR_PID = $KILL_DEADLOCKED_JOB_PAIR_PID"
 
-		if [ $RESULTS_INTERVAL -gt 0 ]; then
-			copyOutputIncrementally $RESULTS_INTERVAL $STAREXEC_WALLCLOCK_LIMIT $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION &
+		if [ "$RESULTS_INTERVAL" -gt 0 ]; then
+			copyOutputIncrementally "$RESULTS_INTERVAL" "$STAREXEC_WALLCLOCK_LIMIT" "$CURRENT_STAGE_NUMBER" "$STDOUT_SAVE_OPTION" "$EXTRA_SAVE_OPTION" &
 			COPY_OUTPUT_INCREMENTALLY_PID=$!
 		fi
 
 		if [ $BUILD_JOB == "true" ]; then
 			cd $WORKING_DIR_BASE/$SANDBOX_PARAM/solver
-			rm $LOCAL_BENCH_PATH
+			rm "$LOCAL_BENCH_PATH"
 			LOCAL_BENCH_PATH=""
 		else
 			cd $WORKING_DIR_BASE/$SANDBOX_PARAM/solver/bin
@@ -382,7 +382,7 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 		pwd
 
 		log "listing contents of the output directory"
-		ls -l $OUT_DIR
+		ls -l "$OUT_DIR"
 
 		if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
 			MEM_IN_BYTES=$(( CURRENT_STAGE_MEMORY*1000000 ))
@@ -400,7 +400,7 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 			echo "runexec --no-container --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK $SOFT_TIME_LIMIT_FLAG --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH $OUT_DIR/output_files $OTHER_INPUT_PATH $ARGUMENT_STRING"
 
 			# Run runexec, runexec will output the stdout of the solver to $OUT_DIR/stdout.txt and will output statistics to $OUT_DIR/var.out
-			sudo -u $SANDBOX_PARAM TMPDIR=$LOCAL_TMP_DIR STAREXEC_MAX_MEM=$CURRENT_STAGE_MEMORY STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$CURRENT_STAGE_CPU STAREXEC_WALLCLOCK_LIMIT=$CURRENT_STAGE_WALLCLOCK runexec --no-container --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK $SOFT_TIME_LIMIT_FLAG --cores $CORES --output $OUT_DIR/stdout.txt $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH "$OUT_DIR/output_files" $OTHER_INPUT_PATH $ARGUMENT_STRING > $OUT_DIR/var.out
+			sudo -u $SANDBOX_PARAM TMPDIR="$LOCAL_TMP_DIR" STAREXEC_MAX_MEM="$CURRENT_STAGE_MEMORY" STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT="$CURRENT_STAGE_CPU" STAREXEC_WALLCLOCK_LIMIT="$CURRENT_STAGE_WALLCLOCK" runexec --no-container --memlimit "$MEM_IN_BYTES" --timelimit "$CURRENT_STAGE_CPU" --walltimelimit "$CURRENT_STAGE_WALLCLOCK" "$SOFT_TIME_LIMIT_FLAG" --cores "$CORES" --output "$OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" "$OUT_DIR/output_files" "$OTHER_INPUT_PATH" "$ARGUMENT_STRING" > "$OUT_DIR/var.out"
 
 			# make a blank watchfile
 			touch "$OUT_DIR"/watcher.out
@@ -423,13 +423,13 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 				ADDEOF_PARAM="--add-eof"
 			fi
 
-			sudo -u $SANDBOX_PARAM TMPDIR=$LOCAL_TMP_DIR STAREXEC_MAX_MEM=$CURRENT_STAGE_MEMORY STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT=$CURRENT_STAGE_CPU STAREXEC_WALLCLOCK_LIMIT=$CURRENT_STAGE_WALLCLOCK "$LOCAL_RUNSOLVER_PATH" $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $CURRENT_STAGE_CPU -W $CURRENT_STAGE_WALLCLOCK $KILL_DELAY_FLAG -M $MAX_MEM  -w "$OUT_DIR/watcher.out" -v "$OUT_DIR/var.out" -o "$OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" "$OUT_DIR/output_files" $OTHER_INPUT_PATH $ARGUMENT_STRING
+			sudo -u "$SANDBOX_PARAM" TMPDIR="$LOCAL_TMP_DIR" STAREXEC_MAX_MEM="$CURRENT_STAGE_MEMORY" STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT="$CURRENT_STAGE_CPU" STAREXEC_WALLCLOCK_LIMIT="$CURRENT_STAGE_WALLCLOCK" "$LOCAL_RUNSOLVER_PATH" "$TIMESTAMP_PARAM" "$ADDEOF_PARAM" --cores "$CORES" -C "$CURRENT_STAGE_CPU" -W "$CURRENT_STAGE_WALLCLOCK" "$KILL_DELAY_FLAG" -M "$MAX_MEM"  -w "$OUT_DIR/watcher.out" -v "$OUT_DIR/var.out" -o "$OUT_DIR/stdout.txt" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" "$OUT_DIR/output_files" "$OTHER_INPUT_PATH" "$ARGUMENT_STRING"
 		fi
 
 
 		# move the working directory back to the top level sandbox
 		cd $WORKING_DIR_BASE/$SANDBOX_PARAM
-		if [ $RESULTS_INTERVAL -gt 0 ]; then
+		if [ "$RESULTS_INTERVAL" -gt 0 ]; then
 			kill $COPY_OUTPUT_INCREMENTALLY_PID
 		fi
 
@@ -445,11 +445,11 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 		fi
 	else
 		log "no job run for pair $PAIR_ID because a sandbox was not found"
-		sendStatus $ERROR_RUNSCRIPT
+		sendStatus "$ERROR_RUNSCRIPT"
 	fi
 
 	log "listing contents of the output directory"
-	ls -l $OUT_DIR
+	ls -l "$OUT_DIR"
 
 	log "recording header of job pair output"
 	head -5 "$OUT_DIR/stdout.txt"
@@ -459,38 +459,38 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 	VARFILE="$OUT_DIR"/var.out
 	STDOUT_FILE="$OUT_DIR"/stdout.txt
 
-	if [ ! -f $WATCHFILE ]; then
+	if [ ! -f "$WATCHFILE" ]; then
 		log "Runsolver watchfile could not be found. Terminating job pair."
-		copyOutput $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION $BENCHMARKING_FRAMEWORK
-		markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
+		copyOutput "$CURRENT_STAGE_NUMBER" "$STDOUT_SAVE_OPTION" "$EXTRA_SAVE_OPTION" "$BENCHMARKING_FRAMEWORK"
+		markRunscriptError "${STAGE_NUMBERS[$STAGE_INDEX]}"
 		exit 0
 	fi
 
-	if [ ! -f $VARFILE ]; then
+	if [ ! -f "$VARFILE" ]; then
 		echo "Varfile could not be found. Terminating job pair."
-		copyOutput $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION $BENCHMARKING_FRAMEWORK
-		markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
+		copyOutput "$CURRENT_STAGE_NUMBER" "$STDOUT_SAVE_OPTION" "$EXTRA_SAVE_OPTION" "$BENCHMARKING_FRAMEWORK"
+		markRunscriptError "${STAGE_NUMBERS[$STAGE_INDEX]}"
 		exit 0
 	fi
 
-	if ! isOutputValid $STDOUT_FILE $CURRENT_STAGE_NUMBER $SUPPRESS_TIMESTAMP $BENCHMARKING_FRAMEWORK ; then
+	if ! isOutputValid "$STDOUT_FILE" "$CURRENT_STAGE_NUMBER" "$SUPPRESS_TIMESTAMP" "$BENCHMARKING_FRAMEWORK" ; then
 		log "runsolver output was not valid. Terminating job pair."
-		markRunscriptError ${STAGE_NUMBERS[$STAGE_INDEX]}
+		markRunscriptError "${STAGE_NUMBERS[$STAGE_INDEX]}"
 		exit 0
 	fi
 
 	# check for which cores we are on
 	log "epilog checking for information on cores, from runsolver's watch file:"
-	grep 'cores:' $WATCHFILE
+	grep 'cores:' "$WATCHFILE"
 
 	# this also does post processing
-	copyOutput $CURRENT_STAGE_NUMBER $STDOUT_SAVE_OPTION $EXTRA_SAVE_OPTION $BENCHMARKING_FRAMEWORK
+	copyOutput "$CURRENT_STAGE_NUMBER" "$STDOUT_SAVE_OPTION" "$EXTRA_SAVE_OPTION" "$BENCHMARKING_FRAMEWORK"
 
-	if [ $STDOUT_SAVE_OPTION -eq 3 ]; then
+	if [ "$STDOUT_SAVE_OPTION" -eq 3 ]; then
 		saveStdoutAsBenchmark
 	fi
 
-	if [ $EXTRA_SAVE_OPTION -eq 3 ]; then
+	if [ "$EXTRA_SAVE_OPTION" -eq 3 ]; then
 		saveExtraOutputAsBenchmarks
 	fi
 
@@ -498,16 +498,16 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 
 	if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
 		log "Checking for errors for benchexec."
-		if (grep 'terminationreason=cputime' $VARFILE) then
+		if (grep 'terminationreason=cputime' "$VARFILE") then
 			sendCpuExceededStatus
 			ERROR_DETECTED=true
-		elif (grep 'terminationreason=walltime' $VARFILE) || [ "$JOB_PAIR_DEADLOCKED" = true ]; then
+		elif (grep 'terminationreason=walltime' "$VARFILE") || [ "$JOB_PAIR_DEADLOCKED" = true ]; then
 			sendWallclockExceededStatus
 			ERROR_DETECTED=true
-		elif (grep 'terminationreason=memory' $VARFILE) then
+		elif (grep 'terminationreason=memory' "$VARFILE") then
 			sendExceedMemStatus
 			ERROR_DETECTED=true
-		elif (grep 'terminationreason=' $VARFILE) then
+		elif (grep 'terminationreason=' "$VARFILE") then
 			# generic case for failure
 			ERROR_DETECTED=true
 		fi
@@ -515,39 +515,39 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 		log "Checking for errors for runsolver."
 		if (grep 'job error:' "$SGE_STDOUT_PATH" ) then
 			ERROR_DETECTED=true
-		elif (grep 'wall clock time exceeded' $WATCHFILE ) || [ "$JOB_PAIR_DEADLOCKED" = true ]; then
+		elif (grep 'wall clock time exceeded' "$WATCHFILE" ) || [ "$JOB_PAIR_DEADLOCKED" = true ]; then
 			sendWallclockExceededStatus
 			ERROR_DETECTED=true
-		elif (grep 'CPU time exceeded' $WATCHFILE ) then
+		elif (grep 'CPU time exceeded' "$WATCHFILE" ) then
 			sendCpuExceededStatus
 			ERROR_DETECTED=true
-		elif (grep 'VSize exceeded' $WATCHFILE ) then
+		elif (grep 'VSize exceeded' "$WATCHFILE" ) then
 			sendExceedMemStatus
 			ERROR_DETECTED=true
 		fi
 	fi
 
-	if [ "$ERROR_DETECTED" = false ] && [ $DISK_QUOTA_EXCEEDED -eq 1 ]; then
+	if [ "$ERROR_DETECTED" = false ] && [ "$DISK_QUOTA_EXCEEDED" -eq 1 ]; then
 		log "Error: disk quota exceeded"
-		sendStatus $ERROR_DISK_QUOTA_EXCEEDED
-		sendStageStatus $ERROR_DISK_QUOTA_EXCEEDED ${STAGE_NUMBERS[$STAGE_INDEX]}
+		sendStatus "$ERROR_DISK_QUOTA_EXCEEDED"
+		sendStageStatus "$ERROR_DISK_QUOTA_EXCEEDED" "${STAGE_NUMBERS[$STAGE_INDEX]}"
 		ERROR_DETECTED=true
 	fi
 
 	# This appears to be the idiomatic Bash way to test if a value is false.
 	if [ "$ERROR_DETECTED" = false ]; then
 		log "execution on $HOSTNAME complete"
-		sendStageStatus $STATUS_COMPLETE ${STAGE_NUMBERS[$STAGE_INDEX]}
+		sendStageStatus "$STATUS_COMPLETE" "${STAGE_NUMBERS[$STAGE_INDEX]}"
 
 		if [ $STAGE_INDEX -eq $((NUM_STAGES-1)) ]; then
 			log "job finished successfully"
-			sendStatus $STATUS_COMPLETE
+			sendStatus "$STATUS_COMPLETE"
 		fi
 		log "STAREXEC job $PAIR_ID completed successfully"
 	else
 		log "STAREXEC job $PAIR_ID exited with errors"
-		sendStatusToLaterStages $STATUS_NOT_REACHED ${STAGE_NUMBERS[$STAGE_INDEX]}
-		setRunStatsToZeroForLaterStages ${STAGE_NUMBERS[$STAGE_INDEX]}
+		sendStatusToLaterStages "$STATUS_NOT_REACHED" "${STAGE_NUMBERS[$STAGE_INDEX]}"
+		setRunStatsToZeroForLaterStages "${STAGE_NUMBERS[$STAGE_INDEX]}"
 		cleanUpAfterKilledBuildJob
 	fi
 
@@ -566,6 +566,6 @@ setEndTime
 
 cleanWorkspace 0 $SANDBOX_PARAM
 
-rm $TMP
+rm "$TMP"
 
 echo "Jobscript ending."
