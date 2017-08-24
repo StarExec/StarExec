@@ -503,7 +503,7 @@ function processAttributes {
 	a=0
 	local QUERY=""
 	while read line; do
-		if [[ -z $line ]] then
+		if [[ -z $line ]]; then
 			continue # line is empty, can be skipped
 		fi
 		((a++))
