@@ -411,14 +411,10 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 
 			if [ "$SUPPRESS_TIMESTAMP" = true ]; then
 				log "Suppressing timestamp."
-			else
-				log "Not suppressing timestamp."
-			fi
-
-			if [ "$SUPPRESS_TIMESTAMP" = true ]; then
 				TIMESTAMP_PARAM=""
 				ADDEOF_PARAM=""
 			else
+				log "Not suppressing timestamp."
 				TIMESTAMP_PARAM="--timestamp"
 				ADDEOF_PARAM="--add-eof"
 			fi
