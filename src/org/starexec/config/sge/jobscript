@@ -455,14 +455,14 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 	VARFILE="$OUT_DIR"/var.out
 	STDOUT_FILE="$OUT_DIR"/stdout.txt
 
-	if [ ! -f "$WATCHFILE" ]; then
+	if [ ! -s "$WATCHFILE" ]; then
 		log "Runsolver watchfile could not be found. Terminating job pair."
 		copyOutput "$CURRENT_STAGE_NUMBER" "$STDOUT_SAVE_OPTION" "$EXTRA_SAVE_OPTION" "$BENCHMARKING_FRAMEWORK"
 		markRunscriptError "${STAGE_NUMBERS[$STAGE_INDEX]}"
 		exit 0
 	fi
 
-	if [ ! -f "$VARFILE" ]; then
+	if [ ! -s "$VARFILE" ]; then
 		echo "Varfile could not be found. Terminating job pair."
 		copyOutput "$CURRENT_STAGE_NUMBER" "$STDOUT_SAVE_OPTION" "$EXTRA_SAVE_OPTION" "$BENCHMARKING_FRAMEWORK"
 		markRunscriptError "${STAGE_NUMBERS[$STAGE_INDEX]}"
