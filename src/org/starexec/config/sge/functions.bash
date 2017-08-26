@@ -132,7 +132,6 @@ function createLocalTmpDirectory {
 
 #checks to see whether the first argument is a valid integer
 function isInteger {
-	log "isInteger called on $1"
 	local re='^[0-9]+$'
 	if ! [[ $1 =~ $re ]] ; then
 		return 1
