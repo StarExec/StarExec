@@ -66,7 +66,7 @@ JOB_OUT_DIR="$SHARED_DIR/joboutput"
 # initializes all workspace variables based on the value of the SANDBOX variable,
 # which should already be set either by calling initSandbox
 function initWorkspaceVariables {
-	if [ $SANDBOX -eq 1 ]; then
+	if ((SANDBOX == 1)); then
 		WORKING_DIR=$WORKING_DIR_BASE'/sandbox'
 	else
 		WORKING_DIR=$WORKING_DIR_BASE'/sandbox2'
@@ -182,7 +182,7 @@ function makeLockFile {
 #first argument is the sandbox (1 or 2) and second argument is the pair ID
 function trySandbox {
 
-	if [ $1 -eq 1 ]; then
+	if (($1 == 1)); then
 		LOCK_DIR="$SANDBOX_LOCK_DIR"
 		LOCK_USED="$SANDBOX_LOCK_USED"
 	else
@@ -346,14 +346,14 @@ function killDeadlockedJobPair {
 function copyOutputIncrementally {
 	PERIOD=$1
 	TIMEOUT=$2
-	while [ $TIMEOUT -gt 0 ]; do
+	while ((TIMEOUT > 0)); do
 		sleep $PERIOD
 		copyOutputNoStats $3 $4 $5
 
-		if [ $DISK_QUOTA_EXCEEDED -eq 1 ]; then
+		if ((DISK_QUOTA_EXCEEDED == 1)); then
 			break
 		fi
-		TIMEOUT=$((TIMEOUT-PERIOD))
+		((TIMEOUT = TIMEOUT - PERIOD))
 	done
 	log "done copying incremental output: the pair's timeout has been reached"
 }
@@ -392,7 +392,7 @@ function cleanWorkspace {
 
 	#only delete the job script / lock files if we are done with the job
 	log "about to check whether to delete lock files given $1"
-	if [ $1 -eq 0 ]; then
+	if (($1 == 0)); then
 		log "cleaning up scripts and lock files"
 		rm -f "$SCRIPT_PATH"
 		rm -f "$JOB_IN_DIR/depend_$PAIR_ID.txt"
@@ -401,9 +401,9 @@ function cleanWorkspace {
 		sudo -u $2 find /tmp/* -user $2 -exec rm -fr {} \; 2>/dev/null
 		cd $WORKING_DIR
 
-		if [ $SANDBOX -eq 1 ]; then
+		if ((SANDBOX == 1)); then
 			safeRmLock "$SANDBOX_LOCK_DIR"
-		elif [ $SANDBOX -eq 2 ]; then
+		elif ((SANDBOX == 2)); then
 			safeRmLock "$SANDBOX2_LOCK_DIR"
 		fi
 	fi
@@ -418,7 +418,7 @@ function dbExec {
 	do
 		log "Unable to connect to database."
 		sleep 20
-		((ATTEMPT--))
+		((--ATTEMPT))
 		false # set $? to fail on last iteration
 	done
 }
@@ -583,8 +583,8 @@ function updateStats {
 	ROUNDED_WALLCLOCK_TIME=$( printf "%.0f" $WALLCLOCK_TIME )
 	ROUNDED_CPU_TIME=$( printf "%.0f" $CPU_TIME )
 
-	STAREXEC_WALLCLOCK_LIMIT=$((STAREXEC_WALLCLOCK_LIMIT-ROUNDED_WALLCLOCK_TIME))
-	STAREXEC_CPU_LIMIT=$((STAREXEC_CPU_LIMIT-ROUNDED_CPU_TIME))
+	((STAREXEC_WALLCLOCK_LIMIT = STAREXEC_WALLCLOCK_LIMIT - ROUNDED_WALLCLOCK_TIME))
+	((STAREXEC_CPU_LIMIT = STAREXEC_CPU_LIMIT - ROUNDED_CPU_TIME))
 
 	EXEC_HOST=$(hostname)
 	getTotalOutputSizeToCopy $3 $4
@@ -634,14 +634,14 @@ function createDir {
 # $3 the other output copy option (same as above)
 function copyOutputNoStats {
 	setDiskQuotaExceeded $2 $3
-	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]; then
+	if ((DISK_QUOTA_EXCEEDED == 1)); then
 		log "not saving output: user disk quota exceeded"
 		return
 	fi
 	createDir "$PAIR_OUTPUT_DIRECTORY"
 	createDir "$SAVED_OUTPUT_DIR"
 	OUTPUT_SUFFIX="_output"
-	if [ $NUM_STAGES -eq 1 ]; then
+	if ((NUM_STAGES == 1)); then
 		PAIR_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$PAIR_ID.txt"
 		PAIR_OTHER_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$PAIR_ID$OUTPUT_SUFFIX"
 	else
@@ -696,11 +696,11 @@ function fillDependArrays {
 
 	log "has depends = $HAS_DEPENDS"
 
-	if [ $HAS_DEPENDS -eq 1 ]; then
+	if ((HAS_DEPENDS == 1)); then
 		while read line; do
 			BENCH_DEPENDS_ARRAY[INDEX]=${line//$sep*};
 			LOCAL_DEPENDS_ARRAY[INDEX]=${line//*$sep};
-			INDEX=$((INDEX + 1))
+			((++INDEX))
 		done < "$JOB_IN_DIR/depend_$PAIR_ID.txt"
 	fi
 
@@ -765,10 +765,10 @@ function copyBenchmarkDependencies {
 	BENCH_INPUT_INDEX=0
 	mkdir -p $BENCH_INPUT_DIR
 
-	while [ $BENCH_INPUT_INDEX -lt $((NUM_BENCH_INPUTS)) ]; do
+	while ((BENCH_INPUT_INDEX < NUM_BENCH_INPUTS)); do
 		CURRENT_BENCH_INPUT_PATH=${BENCH_INPUT_PATHS[$BENCH_INPUT_INDEX]}
 		cp "$CURRENT_BENCH_INPUT_PATH" "$BENCH_INPUT_DIR/$((BENCH_INPUT_INDEX+1))"
-		BENCH_INPUT_INDEX=$((BENCH_INPUT_INDEX+1))
+		((++BENCH_INPUT_INDEX))
 	done
 
 	log "benchmark dependencies copy complete"
@@ -832,11 +832,11 @@ function fillDependArrays {
 
 	log "has depends = $HAS_DEPENDS"
 
-	if [ $HAS_DEPENDS -eq 1 ]; then
+	if ((HAS_DEPENDS == 1)); then
 		while read line; do
 			BENCH_DEPENDS_ARRAY[INDEX]=${line//$sep*};
 			LOCAL_DEPENDS_ARRAY[INDEX]=${line//*$sep};
-			INDEX=$((INDEX + 1))
+			((++INDEX))
 		done < "$JOB_IN_DIR/depend_$PAIR_ID.txt"
 	fi
 	return $?
@@ -901,7 +901,7 @@ function cleanUpAfterKilledBuildJob {
 function copyDependencies {
 	safeCpAll "copying solver" "$SOLVER_PATH" "$LOCAL_SOLVER_DIR"
 	log "solver copy complete"
-	if [[ ($SOLVER_CACHED -eq 0) && ($BUILD_JOB != "true") ]]; then
+	if ((SOLVER_CACHED == 0)) && [[ $BUILD_JOB != "true" ]]; then
 		mkdir -p "$SOLVER_CACHE_PATH"
 		if mkdir "$SOLVER_CACHE_PATH/lock.lock" ; then
 			if [ ! -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
@@ -959,7 +959,7 @@ function saveFileAsBenchmark {
 	CURRENT_OUTPUT_FILE=$1
 	BENCH_NAME_ADDON="stage-"
 	FILE_NAME=$BENCH_NAME
-	if [ $2 -eq 2 ]; then
+	if (($2 == 2)); then
 		FILE_NAME=$(basename $1)
 	fi
 	# if no suffix is given, we just use the suffix of the benchmark
@@ -970,7 +970,7 @@ function saveFileAsBenchmark {
 	fi
 
 	CURRENT_BENCH_NAME=${FILE_NAME%%.*}$BENCH_NAME_ADDON$CURRENT_STAGE_NUMBER
-	MAX_BENCH_NAME_LENGTH=$((BENCH_NAME_LENGTH_LIMIT-${#CURRENT_BENCH_SUFFIX}))
+	((MAX_BENCH_NAME_LENGTH = BENCH_NAME_LENGTH_LIMIT - ${#CURRENT_BENCH_SUFFIX}))
 	CURRENT_BENCH_NAME=${CURRENT_BENCH_NAME:0:$MAX_BENCH_NAME_LENGTH}
 	CURRENT_BENCH_NAME="$CURRENT_BENCH_NAME$CURRENT_BENCH_SUFFIX"
 	CURRENT_BENCH_PATH=$BENCH_SAVE_DIR/$SPACE_PATH/$PAIR_ID/$CURRENT_STAGE_NUMBER
@@ -997,11 +997,10 @@ function saveFileAsBenchmark {
 function setRemainingDiskQuota {
 	DISK_USAGE=$(mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -N -e "CALL GetUserDiskUsage($USER_ID)")
 	log "user disk usage is $DISK_USAGE"
-	REMAINING_DISK_QUOTA=$((DISK_QUOTA - DISK_USAGE))
-	REMAINING_DISK_QUOTA=$((REMAINING_DISK_QUOTA + 1073741824))
+	((REMAINING_DISK_QUOTA = DISK_QUOTA - DISK_USAGE + 1073741824))
 	log "remaining user disk quota is"
 	log $REMAINING_DISK_QUOTA
-	if [ $REMAINING_DISK_QUOTA -lt 0 ]; then
+	if ((REMAINING_DISK_QUOTA < 0)); then
 		REMAINING_DISK_QUOTA=0
 	fi
 }
@@ -1010,12 +1009,12 @@ function setRemainingDiskQuota {
 # Option to copy back stdout
 # Option to copy back other output files
 function setDiskQuotaExceeded {
-	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]; then
+	if ((DISK_QUOTA_EXCEEDED == 1)); then
 		return
 	fi
 	getTotalOutputSizeToCopy $1 $2
 	setRemainingDiskQuota
-	if [ $DISK_SIZE -gt $REMAINING_DISK_QUOTA ]; then
+	if ((DISK_SIZE > REMAINING_DISK_QUOTA)); then
 		DISK_QUOTA_EXCEEDED=1
 		# we may have already copied some data, so we want to delete that
 		safeRm $PAIR_OUTPUT_DIRECTORY
@@ -1027,41 +1026,41 @@ function setDiskQuotaExceeded {
 # $1 The argument for whether we are copying back the stdout (1 = no copy, 2 = copy, 3 = copy + benchmark)
 # $2 The argument for whether we are copying back the other output files
 function getTotalOutputSizeToCopy {
-	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]; then
+	if ((DISK_QUOTA_EXCEEDED == 1)); then
 		DISK_SIZE=0
 		return
 	fi
 	STDOUT_SIZE=0
 	OTHER_SIZE=0
-	if [ $1 -ne 1 ]; then
+	if (($1 != 1)); then
 		STDOUT_SIZE=$(wc -c < $OUT_DIR/stdout.txt)
 	fi
 
-	if [ $1 -eq 3 ]; then
+	if (($1 == 3)); then
 		# user is requesting two copies
-		STDOUT_SIZE=$((STDOUT_SIZE * 2))
+		((STDOUT_SIZE = STDOUT_SIZE * 2))
 	fi
 	log "found the following stdout size"
 	log $STDOUT_SIZE
 
-	if [ $2 -ne 1 ]; then
+	if (($2 != 1)); then
 		OTHER_SIZE=$(du -sb "$OUT_DIR/output_files" | awk '{print $1}')
 	fi
 
-	if [ $2 -eq 3 ]; then
+	if (($2 == 3)); then
 		# user is requesting two copies
-		OTHER_SIZE=$((OTHER_SIZE * 2))
+		((OTHER_SIZE = OTHER_SIZE * 2))
 	fi
 	log "found the following other files size"
 	log $OTHER_SIZE
-	DISK_SIZE=$((OTHER_SIZE + STDOUT_SIZE))
+	((DISK_SIZE = OTHER_SIZE + STDOUT_SIZE))
 	log "returning the following disk size"
 	log $DISK_SIZE
 }
 
 # Saves the current stdout as a new benchmark
 function saveStdoutAsBenchmark {
-	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]; then
+	if ((DISK_QUOTA_EXCEEDED == 1)); then
 		log "not saving new benchmark: user disk quota has been exceeded"
 		return
 	fi
@@ -1071,7 +1070,7 @@ function saveStdoutAsBenchmark {
 
 # Saves the extra output directory as a new set of benchmarks
 function saveExtraOutputAsBenchmarks {
-	if [ $DISK_QUOTA_EXCEEDED -eq 1 ]; then
+	if ((DISK_QUOTA_EXCEEDED == 1)); then
 		log "not saving new benchmarks: user disk quota has been exceeded"
 		return
 	fi

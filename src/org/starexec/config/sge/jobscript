@@ -117,7 +117,7 @@ $$EXTRA_SAVE_OPTION_ARRAY$$
 
 NUM_STAGES=${#STAGE_NUMBERS[@]}
 
-NUM_BENCH_INPUTS=$((${#BENCH_INPUT_PATHS[@]}-1)) # we terminate the array with an empty string, so the number is the size-1
+((NUM_BENCH_INPUTS = ${#BENCH_INPUT_PATHS[@]} - 1)) # we terminate the array with an empty string, so the number is the size-1
 
 #==========================================================================
 # Signal Traps
@@ -168,7 +168,7 @@ sendStatus "$STATUS_RUNNING"
 
 initSandbox
 
-if ( ! isInteger "$SANDBOX" ) || [ "$SANDBOX" -eq -1 ]; then
+if ((SANDBOX < 1)); then
 	sendNode "$HOSTNAME" "0"
 	sendStatus "$ERROR_RUNSCRIPT"
 	sendStatusToLaterStages "$ERROR_RUNSCRIPT" 0
@@ -196,16 +196,16 @@ $$STAGE_DEPENDENCY_ARRAY$$
 NODE_MEM=$(vmstat -s | head -1 | sed 's/K total memory//')
 
 #then, convert kb to mb
-NODE_MEM=$((NODE_MEM/1024))
+((NODE_MEM = NODE_MEM / 1024))
 
 log "node memory in megabytes = $NODE_MEM"
 
 #then, set to half the memory
-NODE_MEM=$((NODE_MEM/NUM_SLOTS))
+((NODE_MEM = NODE_MEM / NUM_SLOTS))
 
 log "node memory after accounting for pairs allowed to run on node = $NODE_MEM"
 
-if [ $MAX_MEM -gt $NODE_MEM ]; then
+if ((MAX_MEM > NODE_MEM)); then
 	echo "truncating max memory from requested $MAX_MEM to $NODE_MEM"
 	export MAX_MEM=$NODE_MEM
 fi
@@ -215,7 +215,7 @@ fillDependArrays
 checkIfBenchmarkDependenciesExists
 dependenciesExist=$?
 log "dependenciesExist was $dependenciesExist"
-if [ "$dependenciesExist" -eq "0" ]; then
+if ((dependenciesExist == 0)); then
 	sendStatus "$ERROR_BENCH_DEPENDENCY_MISSING"
 	exit 0
 fi
@@ -239,7 +239,7 @@ OTHER_INPUT_PATH=""
 
 # if we are using pipelines, the OTHER_INPUT_PATH should always exist.
 # so, we start with an empty directory here
-if [ "$NUM_STAGES" -gt 1 ]; then
+if ((NUM_STAGES > 1)); then
 	mkdir "$OUT_DIR"/empty_output_dir
 	OTHER_INPUT_PATH="$OUT_DIR"/empty_output_dir
 fi
@@ -251,15 +251,15 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 	CURRENT_STAGE_CPU=$STAREXEC_CPU_LIMIT
 	CURRENT_STAGE_WALLCLOCK=$STAREXEC_WALLCLOCK_LIMIT
 
-	if [ $CURRENT_STAGE_MEMORY -gt "${STAGE_MEM_LIMITS[$STAGE_INDEX]}" ]; then
+	if ((CURRENT_STAGE_MEMORY > "${STAGE_MEM_LIMITS[$STAGE_INDEX]}")); then
 		CURRENT_STAGE_MEMORY=${STAGE_MEM_LIMITS[$STAGE_INDEX]}
 	fi
 
-	if [ $CURRENT_STAGE_CPU -gt "${STAGE_CPU_TIMEOUTS[$STAGE_INDEX]}" ]; then
+	if ((CURRENT_STAGE_CPU > "${STAGE_CPU_TIMEOUTS[$STAGE_INDEX]}")); then
 		CURRENT_STAGE_CPU=${STAGE_CPU_TIMEOUTS[$STAGE_INDEX]}
 	fi
 
-	if [ $CURRENT_STAGE_WALLCLOCK -gt "${STAGE_CLOCK_TIMEOUTS[$STAGE_INDEX]}" ]; then
+	if ((CURRENT_STAGE_WALLCLOCK > "${STAGE_CLOCK_TIMEOUTS[$STAGE_INDEX]}")); then
 		CURRENT_STAGE_WALLCLOCK=${STAGE_CLOCK_TIMEOUTS[$STAGE_INDEX]}
 	fi
 
@@ -315,10 +315,10 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 
 	SANDBOX_FOUND=true
 	# SANDBOX_PARAM designates which user will run runsolver
-	if [ "$SANDBOX" -eq 1 ]; then
+	if ((SANDBOX == 1)); then
 		SANDBOX_PARAM=$SANDBOX_USER_ONE
 		CORES="0-3"
-	elif [ "$SANDBOX" -eq 2 ]; then
+	elif ((SANDBOX == 2)); then
 		SANDBOX_PARAM=$SANDBOX_USER_TWO
 		CORES="4-7"
 	else
@@ -366,7 +366,7 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 		KILL_DEADLOCKED_JOB_PAIR_PID=$!
 		echo "KILL_DEADLOCKED_JOB_PAIR_PID = $KILL_DEADLOCKED_JOB_PAIR_PID"
 
-		if [ "$RESULTS_INTERVAL" -gt 0 ]; then
+		if ((RESULTS_INTERVAL > 0)); then
 			copyOutputIncrementally "$RESULTS_INTERVAL" "$STAREXEC_WALLCLOCK_LIMIT" "$CURRENT_STAGE_NUMBER" "$STDOUT_SAVE_OPTION" "$EXTRA_SAVE_OPTION" &
 			COPY_OUTPUT_INCREMENTALLY_PID=$!
 		fi
@@ -385,7 +385,7 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 		ls -l "$OUT_DIR"
 
 		if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
-			MEM_IN_BYTES=$(( CURRENT_STAGE_MEMORY*1000000 ))
+			((MEM_IN_BYTES = CURRENT_STAGE_MEMORY * 1000000))
 
 			log "Setting up cpuset cgroup..."
 			echo $$ > /sys/fs/cgroup/cpuset/system.slice/benchexec-cgroup.service/tasks
@@ -425,7 +425,7 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 
 		# move the working directory back to the top level sandbox
 		cd $WORKING_DIR_BASE/$SANDBOX_PARAM
-		if [ "$RESULTS_INTERVAL" -gt 0 ]; then
+		if ((RESULTS_INTERVAL > 0)); then
 			kill $COPY_OUTPUT_INCREMENTALLY_PID
 		fi
 
@@ -482,11 +482,11 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 	# this also does post processing
 	copyOutput "$CURRENT_STAGE_NUMBER" "$STDOUT_SAVE_OPTION" "$EXTRA_SAVE_OPTION" "$BENCHMARKING_FRAMEWORK"
 
-	if [ "$STDOUT_SAVE_OPTION" -eq 3 ]; then
+	if ((STDOUT_SAVE_OPTION == 3)); then
 		saveStdoutAsBenchmark
 	fi
 
-	if [ "$EXTRA_SAVE_OPTION" -eq 3 ]; then
+	if ((EXTRA_SAVE_OPTION == 3)); then
 		saveExtraOutputAsBenchmarks
 	fi
 
@@ -523,7 +523,7 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 		fi
 	fi
 
-	if [ "$ERROR_DETECTED" = false ] && [ "$DISK_QUOTA_EXCEEDED" -eq 1 ]; then
+	if [ "$ERROR_DETECTED" = false ] && ((DISK_QUOTA_EXCEEDED == 1)); then
 		log "Error: disk quota exceeded"
 		sendStatus "$ERROR_DISK_QUOTA_EXCEEDED"
 		sendStageStatus "$ERROR_DISK_QUOTA_EXCEEDED" "${STAGE_NUMBERS[$STAGE_INDEX]}"
@@ -535,7 +535,7 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 		log "execution on $HOSTNAME complete"
 		sendStageStatus "$STATUS_COMPLETE" "${STAGE_NUMBERS[$STAGE_INDEX]}"
 
-		if [ $STAGE_INDEX -eq $((NUM_STAGES-1)) ]; then
+		if ((STAGE_INDEX == NUM_STAGES - 1)); then
 			log "job finished successfully"
 			sendStatus "$STATUS_COMPLETE"
 		fi
