@@ -845,8 +845,8 @@ function fillDependArrays {
 function copySolverBack {
 	NEW_SOLVER_PATH="${SOLVER_PATH/%????/}"
 
-	log "Old Solverpath: $SOLVER_PATH"
-	log "NEW solver path is $NEW_SOLVER_PATH"
+	log "OLD solver path: $SOLVER_PATH"
+	log "NEW solver path: $NEW_SOLVER_PATH"
 
 	if [ -e $LOCAL_RUNSOLVER_PATH ]; then
 			rm $LOCAL_RUNSOLVER_PATH
@@ -940,7 +940,7 @@ function copyDependencies {
 		chmod -R gu+rwx $OUT_DIR/preProcessor
 		cd "$OUT_DIR"/preProcessor
 		log "executing pre processor"
-		log "random seed = "$RAND_SEED
+		log "random seed = $RAND_SEED"
 
 		./process "$LOCAL_BENCH_PATH" $RAND_SEED > "$PROCESSED_BENCH_PATH"
 		#use the processed benchmark in subsequent steps
@@ -997,8 +997,7 @@ function setRemainingDiskQuota {
 	DISK_USAGE=$(mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -N -e "CALL GetUserDiskUsage($USER_ID)")
 	log "user disk usage is $DISK_USAGE"
 	((REMAINING_DISK_QUOTA = DISK_QUOTA - DISK_USAGE + 1073741824))
-	log "remaining user disk quota is"
-	log $REMAINING_DISK_QUOTA
+	log "remaining user disk quota: $REMAINING_DISK_QUOTA"
 	if ((REMAINING_DISK_QUOTA < 0)); then
 		REMAINING_DISK_QUOTA=0
 	fi
@@ -1039,8 +1038,7 @@ function getTotalOutputSizeToCopy {
 		# user is requesting two copies
 		((STDOUT_SIZE = STDOUT_SIZE * 2))
 	fi
-	log "found the following stdout size"
-	log $STDOUT_SIZE
+	log "found the following stdout size: $STDOUT_SIZE"
 
 	if (($2 != 1)); then
 		OTHER_SIZE=$(du -sb "$OUT_DIR/output_files" | awk '{print $1}')
@@ -1050,11 +1048,9 @@ function getTotalOutputSizeToCopy {
 		# user is requesting two copies
 		((OTHER_SIZE = OTHER_SIZE * 2))
 	fi
-	log "found the following other files size"
-	log $OTHER_SIZE
+	log "found the following other files size: $OTHER_SIZE"
 	((DISK_SIZE = OTHER_SIZE + STDOUT_SIZE))
-	log "returning the following disk size"
-	log $DISK_SIZE
+	log "returning the following disk size: $DISK_SIZE"
 }
 
 # Saves the current stdout as a new benchmark
