@@ -649,11 +649,11 @@ function copyOutputNoStats {
 		PAIR_OTHER_OUTPUT_PATH="$PAIR_OUTPUT_DIRECTORY/$1$OUTPUT_SUFFIX"
 	fi
 
-	if [ $2 -ne 1 ]; then
+	if (($2 != 1)); then
 		cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
 	fi
 
-	if [ $3 -ne 1 ]; then
+	if (($3 != 1)); then
 		rsync --prune-empty-dirs -r -u "$OUT_DIR/output_files/" "$PAIR_OTHER_OUTPUT_PATH"
 	fi
 	SAVED_PAIR_OUTPUT_PATH="$SAVED_OUTPUT_DIR/$1"
