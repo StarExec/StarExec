@@ -138,12 +138,11 @@ trap 'handleUsrTwo' USR2
 # Execute (prolog will take care of data staging)
 #==========================================================================
 
-whoami
 echo "STAREXEC Job Log"
 echo "(C) $(date +%Y) The University of Iowa"
 echo "====================================="
 echo "date: $(date)"
-echo "user: $USER_ID"
+echo "user: $USER_ID ($(whoami))"
 echo "pair id: $PAIR_ID"
 echo "solver ids: ${SOLVER_IDS[*]}"
 echo "benchmark id: $BENCH_ID"
