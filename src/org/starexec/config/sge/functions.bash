@@ -492,7 +492,7 @@ function sendNode {
 	local NODE=$(dbEscape $1)
 	local SANDBOX=$(($2))
 	log "sent Node Id $NODE to $REPORT_HOST in sandbox $SANDBOX"
-	dbExec "CALL UpdateNodeId($PAIR_ID, $NODE, $SANDBOX)"
+	dbExec "CALL UpdateNodeId($PAIR_ID, '$NODE', $SANDBOX)"
 }
 
 function limitExceeded {
