@@ -152,7 +152,7 @@ function isPairRunning {
 	fi
 	output=$(cat "$LOCK_DIR/$1")
 	if [ -z "${output// }" ]; then
-		echo "no process output was saved in the lock file, so assuming pair was deleted"
+		log "no process output was saved in the lock file, so assuming pair was deleted"
 		# the job is not still running
 		return 1
 	fi
@@ -614,19 +614,8 @@ function updateStats {
 
 	log "sent job stats to $REPORT_HOST"
 
-	#echo host name = $EXEC_HOST;
 	log "cpu usage = $CPU_TIME"
 	log "wallclock time = $WALLCLOCK_TIME"
-	#echo user time = $CPU_USER_TIME;
-	#echo system_time = $SYSTEM_TIME;
-	#echo max virt mem = $MAX_VIRTUAL_MEMORY;
-	#echo max res set size = $MAX_RESIDENT_SET_SIZE;
-	#echo page reclaims = $PAGE_RECLAIMS;
-	#echo page faults = $PAGE_FAULTS;
-	#echo block input = $BLOCK_INPUT;
-	#echo block output = $BLOCK_OUTPUT;
-	#echo VOL Context switches = $VOL_CONTEXT_SWITCHES;
-	#echo invol context switches = $INVOL_CONTEXT_SWITCHES;
 }
 
 function createDir {
@@ -801,7 +790,7 @@ function verifyWorkspace {
 
 	# Make sure the benchmark exists before the job runs
 	if ! [ -r "$LOCAL_BENCH_PATH" ]; then
-		echo "job error: could not locate the readable benchmark '$BENCH_NAME' on the execution host."
+		log "job error: could not locate the readable benchmark '$BENCH_NAME' on the execution host."
 		sendStatus $ERROR_BENCHMARK
 	else
 		log "execution host benchmark verified"
