@@ -431,23 +431,29 @@ function dbEscape {
 }
 
 function sendStageStatus {
-	log "sending status for stage number $2"
-	dbExec "CALL UpdatePairStageStatus($PAIR_ID, $2, $1)"
+	local STAGE_NUMBER=$(($2))
+	local STATUS=$(($1))
+	log "sending status for stage number $STAGE_NUMBER"
+	dbExec "CALL UpdatePairStageStatus($PAIR_ID, $STAGE_NUMBER, $STATUS)"
 }
 
 function sendStatusToLaterStages {
-	log "sending status for stage numbers greater than $2"
-	dbExec "CALL UpdateLaterStageStatuses($PAIR_ID, $2, $1)"
+	local STAGE_NUMBER=$(($2))
+	local STATUS=$(($1))
+	log "sending status for stage numbers greater than $STAGE_NUMBER"
+	dbExec "CALL UpdateLaterStageStatuses($PAIR_ID, $STAGE_NUMBER, $STATUS)"
 }
 
 function setRunStatsToZeroForLaterStages {
-	log "setting all stats to 0 for stages greater than $1"
-	dbExec "CALL SetRunStatsForLaterStagesToZero($PAIR_ID, $1)"
+	local STATUS=$(($1))
+	log "setting all stats to 0 for stages greater than $STATUS"
+	dbExec "CALL SetRunStatsForLaterStagesToZero($PAIR_ID, $STATUS)"
 }
 
 function sendStatus {
-	log "sending job status $1"
-	dbExec "CALL UpdatePairStatus($PAIR_ID, $1)"
+	local STATUS=$(($1))
+	log "sending job status $STATUS"
+	dbExec "CALL UpdatePairStatus($PAIR_ID, $STATUS)"
 }
 
 function sendWallclockExceededStatus {
@@ -483,8 +489,10 @@ function setEndTime {
 }
 
 function sendNode {
-	log "sent Node Id $1 to $REPORT_HOST in sandbox $2"
-	dbExec "CALL UpdateNodeId($PAIR_ID, '$1', '$2')"
+	local NODE=$(dbEscape $1)
+	local SANDBOX=$(($2))
+	log "sent Node Id $NODE to $REPORT_HOST in sandbox $SANDBOX"
+	dbExec "CALL UpdateNodeId($PAIR_ID, $NODE, $SANDBOX)"
 }
 
 function limitExceeded {
@@ -497,6 +505,7 @@ function limitExceeded {
 # and a stage number as the second argument
 # Ben McCune
 function processAttributes {
+	local STAGE=$(($2))
 	if [ -z $1 ]; then
 		log "No argument passed to processAttributes"
 		exit 1
@@ -513,8 +522,10 @@ function processAttributes {
 		value=${line#*=} # everything after  '='
 		# Only process if key and value are both non-null strings
 		if [[ -n $key && -n $value ]]; then
-			log "processing attribute $a (pair=$PAIR_ID, key='$key', value='$value' stage='$2')"
-			QUERY+="CALL AddJobAttr($PAIR_ID, '$key', '$value', $2);"
+			key=$(dbEscape $key)
+			value=$(dbEscape $value)
+			log "processing attribute $a (pair=$PAIR_ID, key='$key', value='$value' stage='$STAGE')"
+			QUERY+="CALL AddJobAttr($PAIR_ID, '$key', '$value', $STAGE);"
 		else
 			log "bad post processing - cannot process attribute $a"
 		fi
@@ -592,7 +603,7 @@ function updateStats {
 	getTotalOutputSizeToCopy $3 $4
 	log "sending Pair Stats"
 
-	if ! (dbExec "CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $MAX_RESIDENT_SET_SIZE, $CURRENT_STAGE_NUMBER, $DISK_SIZE)") ; then
+	if ! (dbExec "CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $((MAX_RESIDENT_SET_SIZE)), $((CURRENT_STAGE_NUMBER)), $((DISK_SIZE)))") ; then
 		log "Error copying stats from watchfile into database. Copying varfile to log {"
 		cat $1
 		log "} End varfile."
@@ -872,10 +883,10 @@ function copySolverBack {
 	log "deleting build configuration from db for solver: $SOLVER_ID"
 	log "removing benchmark bench name: $BENCH_NAME id: $BENCH_ID from the db"
 	dbExec "
-		CALL SetSolverPath('$SOLVER_ID','$NEW_SOLVER_PATH');
-		CALL SetSolverBuildStatus('$SOLVER_ID','2');
-		CALL DeleteBuildConfig('$SOLVER_ID');
-		CALL RemoveBenchmarkFromDatabase('$BENCH_ID');
+		CALL SetSolverPath($((SOLVER_ID)), '$(dbEscape $NEW_SOLVER_PATH)');
+		CALL SetSolverBuildStatus($((SOLVER_ID)), 2);
+		CALL DeleteBuildConfig($((SOLVER_ID)));
+		CALL RemoveBenchmarkFromDatabase($((BENCH_ID)));
 	"
 
 	rm $BENCH_PATH
@@ -888,9 +899,9 @@ function cleanUpAfterKilledBuildJob {
 		log "deleting build configuration from db for solver: $SOLVER_ID"
 		log "removing benchmark bench name: $BENCH_NAME id: $BENCH_ID from the db"
 		dbExec "
-			CALL SetSolverBuildStatus('$SOLVER_ID','3');
-			CALL DeleteBuildConfig('$SOLVER_ID');
-			CALL RemoveBenchmarkFromDatabase('$BENCH_ID');
+			CALL SetSolverBuildStatus($((SOLVER_ID)), 3);
+			CALL DeleteBuildConfig($((SOLVER_ID)));
+			CALL RemoveBenchmarkFromDatabase($((BENCH_ID)));
 		"
 
 		BENCH_PATH_DIR=$(dirname $BENCH_PATH)
@@ -984,7 +995,7 @@ function saveFileAsBenchmark {
 
 	CURRENT_BENCH_PATH=$CURRENT_BENCH_PATH/$CURRENT_BENCH_NAME
 
-	QUERY="CALL AddAndAssociateBenchmark('$CURRENT_BENCH_NAME','$CURRENT_BENCH_PATH',false,$USER_ID,1,$FILE_SIZE_IN_BYTES,$SPACE_ID,@id)"
+	QUERY="CALL AddAndAssociateBenchmark('$(dbEscape $CURRENT_BENCH_NAME)', '$(dbEscape $CURRENT_BENCH_PATH)', false, $((USER_ID)), 1, $((FILE_SIZE_IN_BYTES)), $((SPACE_ID)), @id)"
 	log "Adding benchmark using query: $QUERY"
 	if ! (dbExec "$QUERY") ; then
 		log "error saving output as benchmark-- benchmark was not created"
@@ -997,7 +1008,7 @@ function saveFileAsBenchmark {
 # sets the variable REMAINING_DISK_QUOTA with the number of bytes the user should be allowed
 # to write. This includes a 1G buffer for going over their quota
 function setRemainingDiskQuota {
-	DISK_USAGE=$(mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -N -e "CALL GetUserDiskUsage($USER_ID)")
+	DISK_USAGE=$(mysql -u"$DB_USER" -p"$DB_PASS" -h $REPORT_HOST $DB_NAME -N -e "CALL GetUserDiskUsage($((USER_ID)))")
 	log "user disk usage is $DISK_USAGE"
 	((REMAINING_DISK_QUOTA = DISK_QUOTA - DISK_USAGE + 1073741824))
 	log "remaining user disk quota: $REMAINING_DISK_QUOTA"
