@@ -813,6 +813,8 @@ function verifyWorkspace {
 function sandboxWorkspace {
 	cd $WORKING_DIR
 
+	# First, recursively change the owner of everything *inside* WORKING_DIR to
+	# the sandbox user
 	if [[ $WORKING_DIR == *sandbox2* ]]; then
 		log "sandboxing workspace with second sandbox user"
 		sudo chown -R $SANDBOX_USER_TWO $WORKING_DIR
@@ -820,10 +822,15 @@ function sandboxWorkspace {
 		log "sandboxing workspace with first sandbox user"
 		sudo chown -R $SANDBOX_USER_ONE $WORKING_DIR
 	fi
-	sudo chown -R $(whoami) $LOCAL_BENCH_PATH
-	chmod 644 $LOCAL_BENCH_PATH
+
+	# Then, change the owner of the WORKING_DIR *itself* back to tomcat
+	# and change the owner of everything inside the benchmark dir to tomcat
+	# but give everybody permission to read (but not write or delete) the benchmark
+	sudo chown $(whoami) "$WORKING_DIR"
+	sudo chown -R $(whoami) "$LOCAL_BENCH_DIR"
+	chmod -R a=r "$LOCAL_BENCH_PATH"
+
 	ls -lR "$WORKING_DIR"
-	return 0
 }
 
 #will see if a solver is cached and change the SOLVER_PATH to the cache if so
