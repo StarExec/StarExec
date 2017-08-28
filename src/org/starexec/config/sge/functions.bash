@@ -25,12 +25,12 @@ function decodePathArrays {
 
 	#decode every solver name, solver path, and benchmark suffix in the arrays
 	for (( i = 0; i < NUM_STAGES; ++i )); do
-		SOLVER_NAMES[$i]=$(     echo "${SOLVER_NAMES[i]}"      | base64 -d)
-		SOLVER_PATHS[$i]=$(     echo "${SOLVER_PATHS[i]}"      | base64 -d)
-		BENCH_SUFFIXES[$i]=$(   echo "${BENCH_SUFFIXES[i]}"    | base64 -d)
-		BENCH_INPUT_PATHS[$i]=$(echo "${BENCH_INPUT_PATHS[i]}" | base64 -d)
+		SOLVER_NAMES[i]=$(     echo "${SOLVER_NAMES[i]}"      | base64 -d)
+		SOLVER_PATHS[i]=$(     echo "${SOLVER_PATHS[i]}"      | base64 -d)
+		BENCH_SUFFIXES[i]=$(   echo "${BENCH_SUFFIXES[i]}"    | base64 -d)
+		BENCH_INPUT_PATHS[i]=$(echo "${BENCH_INPUT_PATHS[i]}" | base64 -d)
 
-		log "decoded the benchmark input ${BENCH_INPUT_PATHS[$i]}"
+		log "decoded the benchmark input ${BENCH_INPUT_PATHS[i]}"
 	done
 }
 
@@ -459,19 +459,19 @@ function sendStatus {
 function sendWallclockExceededStatus {
 	log "epilog detects wall clock time exceeded"
 	sendStatus $EXCEED_RUNTIME
-	sendStageStatus $EXCEED_RUNTIME ${STAGE_NUMBERS[$STAGE_INDEX]}
+	sendStageStatus $EXCEED_RUNTIME ${STAGE_NUMBERS[STAGE_INDEX]}
 }
 
 function sendCpuExceededStatus {
 	log "epilog detects cpu time exceeded"
 	sendStatus $EXCEED_CPU
-	sendStageStatus $EXCEED_CPU ${STAGE_NUMBERS[$STAGE_INDEX]}
+	sendStageStatus $EXCEED_CPU ${STAGE_NUMBERS[STAGE_INDEX]}
 }
 
 function sendExceedMemStatus {
 	log "epilog detects max virtual memory exceeded"
 	sendStatus $EXCEED_MEM
-	sendStageStatus $EXCEED_MEM ${STAGE_NUMBERS[$STAGE_INDEX]}
+	sendStageStatus $EXCEED_MEM ${STAGE_NUMBERS[STAGE_INDEX]}
 }
 
 function setStartTime {
@@ -733,9 +733,9 @@ function setupBenchexecCgroups {
 
 function checkIfBenchmarkDependenciesExists {
 	for (( i = 0 ; i < ${#BENCH_DEPENDS_ARRAY[@]} ; i++ )); do
-		log "Checking if axiom at location exists: '${BENCH_DEPENDS_ARRAY[$i]}'"
-		if [ ! -f "${BENCH_DEPENDS_ARRAY[$i]}" ]; then
-			log "${BENCH_DEPENDS_ARRAY[$i]} did not exists, returning 0."
+		log "Checking if axiom at location exists: '${BENCH_DEPENDS_ARRAY[i]}'"
+		if [ ! -f "${BENCH_DEPENDS_ARRAY[i]}" ]; then
+			log "${BENCH_DEPENDS_ARRAY[i]} did not exists, returning 0."
 			return 0
 		fi
 	done
@@ -752,15 +752,15 @@ function copyBenchmarkDependencies {
 
 	log "copying benchmark dependencies to execution host..."
 	for (( i = 0 ; i < ${#BENCH_DEPENDS_ARRAY[@]} ; i++ )); do
-		log "Axiom location = '${BENCH_DEPENDS_ARRAY[$i]}'"
-		NEW_D=$(dirname "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}")
+		log "Axiom location = '${BENCH_DEPENDS_ARRAY[i]}'"
+		NEW_D=$(dirname "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[i]}")
 		mkdir -p $NEW_D
 		if [ "$PRIMARY_PREPROCESSOR_PATH" != "" ]; then
-			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
-			"./process" "${BENCH_DEPENDS_ARRAY[$i]}" $RAND_SEED > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
+			log "copying benchmark ${BENCH_DEPENDS_ARRAY[i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[i]} on execution host..."
+			"./process" "${BENCH_DEPENDS_ARRAY[i]}" $RAND_SEED > "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[i]}"
 		else
-			log "copying benchmark ${BENCH_DEPENDS_ARRAY[$i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]} on execution host..."
-			cp "${BENCH_DEPENDS_ARRAY[$i]}" "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[$i]}"
+			log "copying benchmark ${BENCH_DEPENDS_ARRAY[i]} to $LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[i]} on execution host..."
+			cp "${BENCH_DEPENDS_ARRAY[i]}" "$LOCAL_BENCH_DIR/${LOCAL_DEPENDS_ARRAY[i]}"
 		fi
 	done
 
@@ -768,7 +768,7 @@ function copyBenchmarkDependencies {
 	mkdir -p $BENCH_INPUT_DIR
 
 	while ((BENCH_INPUT_INDEX < NUM_BENCH_INPUTS)); do
-		CURRENT_BENCH_INPUT_PATH=${BENCH_INPUT_PATHS[$BENCH_INPUT_INDEX]}
+		CURRENT_BENCH_INPUT_PATH=${BENCH_INPUT_PATHS[BENCH_INPUT_INDEX]}
 		cp "$CURRENT_BENCH_INPUT_PATH" "$BENCH_INPUT_DIR/$((BENCH_INPUT_INDEX+1))"
 		((++BENCH_INPUT_INDEX))
 	done
