@@ -434,7 +434,7 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++NUM_STAGES )); do
 		kill $KILL_DEADLOCKED_JOB_PAIR_PID
 		KILL_EXIT_STATUS=$?
 		JOB_PAIR_DEADLOCKED=false
-		if [ $KILL_EXIT_STATUS = 1 ]; then
+		if ((KILL_EXIT_STATUS == 1)); then
 			#killDeadlockedJobPair was dead so the job pair
 			log "Job pair was deadlocked."
 			JOB_PAIR_DEADLOCKED=true
