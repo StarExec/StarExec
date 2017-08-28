@@ -111,6 +111,9 @@ function initWorkspaceVariables {
 	fi
 
 	OUT_DIR="$WORKING_DIR/output"
+	WATCHFILE="$OUT_DIR/watcher.out"
+	VARFILE="$OUT_DIR/var.out"
+	STDOUT_FILE="$OUT_DIR/stdout.txt"
 
 	# The path to the benchmark on the execution host
 	PROCESSED_BENCH_PATH="$OUT_DIR/procBenchmark"
@@ -649,7 +652,7 @@ function copyOutputNoStats {
 	fi
 
 	if (($2 != 1)); then
-		cp "$OUT_DIR"/stdout.txt "$PAIR_OUTPUT_PATH"
+		cp "$STDOUT_FILE" "$PAIR_OUTPUT_PATH"
 	fi
 
 	if (($3 != 1)); then
@@ -658,7 +661,7 @@ function copyOutputNoStats {
 	SAVED_PAIR_OUTPUT_PATH="$SAVED_OUTPUT_DIR/$1"
 	SAVED_PAIR_OTHER_OUTPUT_PATH=$SAVED_OUTPUT_DIR"/"$1"_output"
 
-	cp "$OUT_DIR"/stdout.txt "$SAVED_PAIR_OUTPUT_PATH"
+	cp "$STDOUT_FILE" "$SAVED_PAIR_OUTPUT_PATH"
 	rsync -r -u "$OUT_DIR/output_files/" "$SAVED_PAIR_OTHER_OUTPUT_PATH"
 }
 
@@ -677,7 +680,7 @@ function copyOutput {
 		chmod -R gu+rwx $OUT_DIR/postProcessor
 		cd "$OUT_DIR"/postProcessor
 		log "executing post processor"
-		./process $OUT_DIR/stdout.txt $LOCAL_BENCH_PATH "$OUT_DIR/output_files" > "$OUT_DIR"/attributes.txt
+		./process "$STDOUT_FILE" $LOCAL_BENCH_PATH "$OUT_DIR/output_files" > "$OUT_DIR"/attributes.txt
 		log "processing attributes"
 		processAttributes $OUT_DIR/attributes.txt $1
 	fi
@@ -1031,7 +1034,7 @@ function getTotalOutputSizeToCopy {
 	STDOUT_SIZE=0
 	OTHER_SIZE=0
 	if (($1 != 1)); then
-		STDOUT_SIZE=$(wc -c < $OUT_DIR/stdout.txt)
+		STDOUT_SIZE=$(wc -c < "$STDOUT_FILE")
 	fi
 
 	if (($1 == 3)); then
