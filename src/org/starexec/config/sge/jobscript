@@ -1,4 +1,27 @@
 #!/bin/bash
+#==========================================================================
+# Standard SGE job script setup.
+#==========================================================================
+
+# The queue to submit to
+#$ -q $$QUEUE$$
+#OAR -q $$QUEUE$$
+#OAR -p queue='$$QUEUE$$'
+
+# Enable resource limit signals
+#$ -notify
+
+# Submit under sandbox user
+#$ -u $$SANDBOX_USER_ONE$$
+
+# Resource limits
+#$ -l s_fsize=$$MAX_WRITE$$G
+
+# Default shell is bash
+#$ -S /bin/bash
+
+# Merge stdout and stderr streams
+#$ -j y
 
 export readonly BENCHEXEC='BENCHEXEC'
 export readonly RUNSOLVER='RUNSOLVER'
