@@ -502,7 +502,7 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++STAGE_INDEX )); do
 		fi
 	elif [ "$BENCHMARKING_FRAMEWORK" == "$RUNSOLVER" ]; then
 		log "Checking for errors for runsolver."
-		if (grep 'job error:' "$SGE_STDOUT_PATH" ) then
+		if (grep 'job error:' "$SGE_STDOUT_PATH" > /dev/null) then
 			ERROR_DETECTED=true
 		elif (grep 'wall clock time exceeded' "$WATCHFILE" ) || [ "$JOB_PAIR_DEADLOCKED" = true ]; then
 			sendWallclockExceededStatus
