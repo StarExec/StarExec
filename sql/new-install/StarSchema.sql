@@ -117,8 +117,9 @@ CREATE TABLE syntax (
 -- will be the default for processors without a syntax set
 INSERT INTO syntax (id, name, class, js) VALUES
 	(1, 'Plain Text', 'prettyprinted',  NULL            ),
-	(2, 'SMT-LIB'   , 'lang-smtlib'  , 'lib/lang-smtlib'),
-	(3, 'TPTP'      , 'lang-tptp'    , 'lib/lang-tptp'  )
+	(2, 'C'         , 'lang-c'       ,  NULL            ),
+	(3, 'SMT-LIB'   , 'lang-smtlib'  , 'lib/lang-smtlib'),
+	(4, 'TPTP'      , 'lang-tptp'    , 'lib/lang-tptp'  )
 ;
 
 -- All pre, post and bench processors in the system
