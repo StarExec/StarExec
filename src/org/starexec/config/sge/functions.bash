@@ -22,7 +22,6 @@
 # will do a base 64 decode on all solver_names, all solver_paths, and the bench path
 function decodePathArrays {
 	log "decoding all base 64 encoded strings"
-	# create a temporary file in $TMPDIR using the template starexec_base64.XXXXXXXX
 
 	#decode every solver name, solver path, and benchmark suffix in the arrays
 	for (( i = 0; i < NUM_STAGES; ++i )); do
@@ -38,6 +37,7 @@ function decodePathArrays {
 
 function decodeBenchmarkName {
 	BENCH_PATH=$(echo "$BENCH_PATH" | base64 -d)
+	PAIR_OUTPUT_DIRECTORY=$(echo "$PAIR_OUTPUT_DIRECTORY" | base64 -d)
 }
 
 #need to make sure benchmark name is decoded in every file
