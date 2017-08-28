@@ -732,7 +732,7 @@ function checkCache {
 }
 
 function enablePython34 {
-    scl enable rh-python34 bash
+	scl enable rh-python34 bash
 }
 
 function setupBenchexecCgroups {
@@ -801,9 +801,9 @@ function verifyWorkspace {
 
 	# Make sure the benchmark exists before the job runs
 	if ! [ -r "$LOCAL_BENCH_PATH" ]; then
-                echo "job error: could not locate the readable benchmark '$BENCH_NAME' on the execution host."
-                sendStatus $ERROR_BENCHMARK
-        else
+		echo "job error: could not locate the readable benchmark '$BENCH_NAME' on the execution host."
+		sendStatus $ERROR_BENCHMARK
+	else
 		log "execution host benchmark verified"
 	fi
 
@@ -870,11 +870,11 @@ function copySolverBack {
 	log "NEW solver path: $NEW_SOLVER_PATH"
 
 	if [ -e $LOCAL_RUNSOLVER_PATH ]; then
-			rm $LOCAL_RUNSOLVER_PATH
+		rm $LOCAL_RUNSOLVER_PATH
 	fi
 
 	if [ -e $LOCAL_CONFIG_PATH ]; then
-			rm $LOCAL_CONFIG_PATH
+		rm $LOCAL_CONFIG_PATH
 	fi
 
 	mkdir $SHARED_DIR/Solvers/buildoutput/$SOLVER_ID
