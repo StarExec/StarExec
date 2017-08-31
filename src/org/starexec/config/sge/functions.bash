@@ -776,29 +776,6 @@ function copyBenchmarkDependencies {
 	log "benchmark dependencies copy complete"
 }
 
-#benchmark dependencies not currently verified.
-function verifyWorkspace {
-	# Make sure the configuration exists before we execute it
-	if ! [ -x "$LOCAL_CONFIG_PATH" ]; then
-		log "job error: could not locate the configuration script '$CONFIG_NAME' on the execution host"
-		#get rid of the cache, as if we're here then something is probably wrong with it
-		rm -r "$SOLVER_CACHE_PATH"
-		sendStatus $ERROR_RUNSCRIPT
-	else
-		log "execution host solver configuration verified"
-	fi
-
-	# Make sure the benchmark exists before the job runs
-	if ! [ -r "$LOCAL_BENCH_PATH" ]; then
-		log "job error: could not locate the readable benchmark '$BENCH_NAME' on the execution host."
-		sendStatus $ERROR_BENCHMARK
-	else
-		log "execution host benchmark verified"
-	fi
-
-	return $?
-}
-
 function sandboxWorkspace {
 	cd $WORKING_DIR
 
