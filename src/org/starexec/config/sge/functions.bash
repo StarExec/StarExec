@@ -709,17 +709,6 @@ function fillDependArrays {
 	return $?
 }
 
-#will see if a solver is cached and change the current SOLVER_PATH to the cache if so
-function checkCache {
-	if [ -d "$SOLVER_CACHE_PATH" ]; then
-		if [ -d "$SOLVER_CACHE_PATH/finished.lock" ]; then
-			log "solver exists in cache at $SOLVER_CACHE_PATH"
-			SOLVER_PATH=$SOLVER_CACHE_PATH
-			SOLVER_CACHED=1
-		fi
-	fi
-}
-
 function enablePython34 {
 	scl enable rh-python34 bash
 }
@@ -810,24 +799,6 @@ function checkCache {
 			SOLVER_CACHED=1
 		fi
 	fi
-}
-
-#fills arrays from file
-function fillDependArrays {
-	#separator
-	sep=',,,'
-	INDEX=0
-
-	log "has depends = $HAS_DEPENDS"
-
-	if ((HAS_DEPENDS == 1)); then
-		while read line; do
-			BENCH_DEPENDS_ARRAY[INDEX]=${line//$sep*};
-			LOCAL_DEPENDS_ARRAY[INDEX]=${line//*$sep};
-			((++INDEX))
-		done < "$JOB_IN_DIR/depend_$PAIR_ID.txt"
-	fi
-	return $?
 }
 
 #this is run after a solver is built on starexec
