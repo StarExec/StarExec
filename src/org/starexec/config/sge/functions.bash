@@ -63,6 +63,25 @@ JOB_OUT_DIR="$SHARED_DIR/joboutput"
 
 ######################################################################
 
+# setup the memory limit for this stage
+function limitMem {
+	#Gets the memory of the node in kilobytes
+	local NODE_MEM=$(vmstat -s | head -1 | sed 's/K total memory//')
+
+	#then, convert kb to mb
+	((NODE_MEM = NODE_MEM / 1024))
+	log "node memory in megabytes = $NODE_MEM"
+
+	#then, set to half the memory
+	((NODE_MEM = NODE_MEM / NUM_SLOTS))
+	log "node memory after accounting for pairs allowed to run on node = $NODE_MEM"
+
+	if ((MAX_MEM > NODE_MEM)); then
+		log "truncating max memory from requested $MAX_MEM to $NODE_MEM"
+		export MAX_MEM=$NODE_MEM
+	fi
+}
+
 # initializes all workspace variables based on the value of the SANDBOX variable,
 # which should already be set either by calling initSandbox
 function initWorkspaceVariables {
@@ -113,6 +132,8 @@ function initWorkspaceVariables {
 	PROCESSED_BENCH_PATH="$OUT_DIR/procBenchmark"
 
 	SAVED_OUTPUT_DIR="$WORKING_DIR/savedoutput"
+
+	limitMem
 }
 
 function createLocalTmpDirectory {

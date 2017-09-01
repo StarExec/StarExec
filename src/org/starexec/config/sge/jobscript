@@ -176,28 +176,6 @@ log "there are this many benchmark inputs $NUM_BENCH_INPUTS"
 decodePathArrays
 
 $$STAGE_DEPENDENCY_ARRAY$$
-
-
-# setup the memory limit for this stage
-
-#Gets the memory of the node in kilobytes
-NODE_MEM=$(vmstat -s | head -1 | sed 's/K total memory//')
-
-#then, convert kb to mb
-((NODE_MEM = NODE_MEM / 1024))
-
-log "node memory in megabytes = $NODE_MEM"
-
-#then, set to half the memory
-((NODE_MEM = NODE_MEM / NUM_SLOTS))
-
-log "node memory after accounting for pairs allowed to run on node = $NODE_MEM"
-
-if ((MAX_MEM > NODE_MEM)); then
-	echo "truncating max memory from requested $MAX_MEM to $NODE_MEM"
-	export MAX_MEM=$NODE_MEM
-fi
-
 fillDependArrays
 
 checkIfBenchmarkDependenciesExists
