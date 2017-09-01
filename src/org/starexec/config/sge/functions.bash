@@ -343,10 +343,7 @@ function killDeadlockedJobPair {
 	log "Extra time given to jobpair on top of wallclock timeout before we kill it = $EXTRA"
 	log "User whose job will be killed if it exceeds it's runtime = $CURRENT_USER"
 
-	date
-	sleep $TIMEOUT
-	sleep $EXTRA
-	date
+	sleep $(( TIMEOUT + EXTRA ))
 
 	log "killDeadlockedJobPair: About to kill jobpair run by $CURRENT_USER because it has exceeded it's total allotted runtime."
 	cd $WORKING_DIR
