@@ -162,8 +162,6 @@ fi
 
 echo ""
 
-sendStatus "$STATUS_RUNNING"
-
 initSandbox
 initWorkspaceVariables
 cleanWorkspace 1
