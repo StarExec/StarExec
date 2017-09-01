@@ -324,8 +324,7 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++STAGE_INDEX )); do
 	log "additional output save option : $EXTRA_SAVE_OPTION"
 	log "user disk quota : $DISK_QUOTA"
 
-	echo "Checking who current user is using: whoami ..."
-	whoami
+	log "whoami: $(whoami)"
 
 	# this will be set to true in killDeadlockedJobPair if the job pair gets deadlocked
 	echo "Calling killDeadlockedJobPair"
