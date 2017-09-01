@@ -333,90 +333,90 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++STAGE_INDEX )); do
 	log "additional output save option : $EXTRA_SAVE_OPTION"
 	log "user disk quota : $DISK_QUOTA"
 
-		echo "Checking who current user is using: whoami ..."
-		whoami
+	echo "Checking who current user is using: whoami ..."
+	whoami
 
-		# this will be set to true in killDeadlockedJobPair if the job pair gets deadlocked
-		echo "Calling killDeadlockedJobPair"
+	# this will be set to true in killDeadlockedJobPair if the job pair gets deadlocked
+	echo "Calling killDeadlockedJobPair"
 
-		killDeadlockedJobPair "$CURRENT_STAGE_WALLCLOCK" $JOB_PAIR_EXTRA_TIME $SANDBOX_PARAM &
-		# Get the process of our defensive killDeadlockedJobPair function.
-		KILL_DEADLOCKED_JOB_PAIR_PID=$!
-		echo "KILL_DEADLOCKED_JOB_PAIR_PID = $KILL_DEADLOCKED_JOB_PAIR_PID"
+	killDeadlockedJobPair "$CURRENT_STAGE_WALLCLOCK" $JOB_PAIR_EXTRA_TIME $SANDBOX_PARAM &
+	# Get the process of our defensive killDeadlockedJobPair function.
+	KILL_DEADLOCKED_JOB_PAIR_PID=$!
+	echo "KILL_DEADLOCKED_JOB_PAIR_PID = $KILL_DEADLOCKED_JOB_PAIR_PID"
 
-		if ((RESULTS_INTERVAL > 0)); then
-			copyOutputIncrementally "$RESULTS_INTERVAL" "$STAREXEC_WALLCLOCK_LIMIT" "$CURRENT_STAGE_NUMBER" "$STDOUT_SAVE_OPTION" "$EXTRA_SAVE_OPTION" &
-			COPY_OUTPUT_INCREMENTALLY_PID=$!
-		fi
+	if ((RESULTS_INTERVAL > 0)); then
+		copyOutputIncrementally "$RESULTS_INTERVAL" "$STAREXEC_WALLCLOCK_LIMIT" "$CURRENT_STAGE_NUMBER" "$STDOUT_SAVE_OPTION" "$EXTRA_SAVE_OPTION" &
+		COPY_OUTPUT_INCREMENTALLY_PID=$!
+	fi
 
-		if [ $BUILD_JOB == "true" ]; then
-			cd $WORKING_DIR_BASE/$SANDBOX_PARAM/solver
-			rm "$LOCAL_BENCH_PATH"
-			LOCAL_BENCH_PATH=""
+	if [ $BUILD_JOB == "true" ]; then
+		cd $WORKING_DIR_BASE/$SANDBOX_PARAM/solver
+		rm "$LOCAL_BENCH_PATH"
+		LOCAL_BENCH_PATH=""
+	else
+		cd $WORKING_DIR_BASE/$SANDBOX_PARAM/solver/bin
+	fi
+
+	pwd
+
+	log "listing contents of the output directory"
+	ls -l "$OUT_DIR"
+
+	if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
+		((MEM_IN_BYTES = CURRENT_STAGE_MEMORY * 1000000))
+
+		log "Setting up cpuset cgroup..."
+		echo $$ > /sys/fs/cgroup/cpuset/system.slice/benchexec-cgroup.service/tasks
+		log "Setting up cpuacct cgroup..."
+		echo $$ > /sys/fs/cgroup/cpuacct/system.slice/benchexec-cgroup.service/tasks
+		log "Setting up memory cgroup..."
+		echo $$ > /sys/fs/cgroup/memory/system.slice/benchexec-cgroup.service/tasks
+		log "Setting up freezer cgroup..."
+		echo $$ > /sys/fs/cgroup/freezer/system.slice/benchexec-cgroup.service/tasks
+
+		log "Running runexec."
+		echo "runexec --no-container --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK $SOFT_TIME_LIMIT_FLAG --cores $CORES --output $STDOUT_FILE $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH $OUT_DIR/output_files $OTHER_INPUT_PATH $ARGUMENT_STRING"
+
+		# Run runexec, runexec will output the stdout of the solver to $OUT_DIR/stdout.txt and will output statistics to $OUT_DIR/var.out
+		sudo -u $SANDBOX_PARAM TMPDIR="$LOCAL_TMP_DIR" STAREXEC_MAX_MEM="$CURRENT_STAGE_MEMORY" STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT="$CURRENT_STAGE_CPU" STAREXEC_WALLCLOCK_LIMIT="$CURRENT_STAGE_WALLCLOCK" runexec --no-container --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK $SOFT_TIME_LIMIT_FLAG --cores $CORES --output "$STDOUT_FILE" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" "$OUT_DIR/output_files" $OTHER_INPUT_PATH $ARGUMENT_STRING > "$VARFILE"
+
+		# make a blank watchfile
+		touch "$WATCHFILE"
+	else
+		# run runsolver
+		log "Running runsolver."
+		echo "  $LOCAL_RUNSOLVER_PATH $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $CURRENT_STAGE_CPU -W $CURRENT_STAGE_WALLCLOCK $KILL_DELAY_FLAG -M $$MAX_MEM$$  -w $WATCHFILE -v $VARFILE -o $STDOUT_FILE $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
+
+		if [ "$SUPPRESS_TIMESTAMP" = true ]; then
+			log "Suppressing timestamp."
+			TIMESTAMP_PARAM=""
+			ADDEOF_PARAM=""
 		else
-			cd $WORKING_DIR_BASE/$SANDBOX_PARAM/solver/bin
+			log "Not suppressing timestamp."
+			TIMESTAMP_PARAM="--timestamp"
+			ADDEOF_PARAM="--add-eof"
 		fi
 
-		pwd
-
-		log "listing contents of the output directory"
-		ls -l "$OUT_DIR"
-
-		if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
-			((MEM_IN_BYTES = CURRENT_STAGE_MEMORY * 1000000))
-
-			log "Setting up cpuset cgroup..."
-			echo $$ > /sys/fs/cgroup/cpuset/system.slice/benchexec-cgroup.service/tasks
-			log "Setting up cpuacct cgroup..."
-			echo $$ > /sys/fs/cgroup/cpuacct/system.slice/benchexec-cgroup.service/tasks
-			log "Setting up memory cgroup..."
-			echo $$ > /sys/fs/cgroup/memory/system.slice/benchexec-cgroup.service/tasks
-			log "Setting up freezer cgroup..."
-			echo $$ > /sys/fs/cgroup/freezer/system.slice/benchexec-cgroup.service/tasks
-
-			log "Running runexec."
-			echo "runexec --no-container --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK $SOFT_TIME_LIMIT_FLAG --cores $CORES --output $STDOUT_FILE $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH $OUT_DIR/output_files $OTHER_INPUT_PATH $ARGUMENT_STRING"
-
-			# Run runexec, runexec will output the stdout of the solver to $OUT_DIR/stdout.txt and will output statistics to $OUT_DIR/var.out
-			sudo -u $SANDBOX_PARAM TMPDIR="$LOCAL_TMP_DIR" STAREXEC_MAX_MEM="$CURRENT_STAGE_MEMORY" STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT="$CURRENT_STAGE_CPU" STAREXEC_WALLCLOCK_LIMIT="$CURRENT_STAGE_WALLCLOCK" runexec --no-container --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK $SOFT_TIME_LIMIT_FLAG --cores $CORES --output "$STDOUT_FILE" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" "$OUT_DIR/output_files" $OTHER_INPUT_PATH $ARGUMENT_STRING > "$VARFILE"
-
-			# make a blank watchfile
-			touch "$WATCHFILE"
-		else
-			# run runsolver
-			log "Running runsolver."
-			echo "  $LOCAL_RUNSOLVER_PATH $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $CURRENT_STAGE_CPU -W $CURRENT_STAGE_WALLCLOCK $KILL_DELAY_FLAG -M $$MAX_MEM$$  -w $WATCHFILE -v $VARFILE -o $STDOUT_FILE $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
-
-			if [ "$SUPPRESS_TIMESTAMP" = true ]; then
-				log "Suppressing timestamp."
-				TIMESTAMP_PARAM=""
-				ADDEOF_PARAM=""
-			else
-				log "Not suppressing timestamp."
-				TIMESTAMP_PARAM="--timestamp"
-				ADDEOF_PARAM="--add-eof"
-			fi
-
-			sudo -u "$SANDBOX_PARAM" TMPDIR="$LOCAL_TMP_DIR" STAREXEC_MAX_MEM="$CURRENT_STAGE_MEMORY" STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT="$CURRENT_STAGE_CPU" STAREXEC_WALLCLOCK_LIMIT="$CURRENT_STAGE_WALLCLOCK" "$LOCAL_RUNSOLVER_PATH" $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $CURRENT_STAGE_CPU -W $CURRENT_STAGE_WALLCLOCK $KILL_DELAY_FLAG -M $MAX_MEM  -w "$WATCHFILE" -v "$VARFILE" -o "$STDOUT_FILE" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" "$OUT_DIR/output_files" "$OTHER_INPUT_PATH" $ARGUMENT_STRING
-		fi
+		sudo -u "$SANDBOX_PARAM" TMPDIR="$LOCAL_TMP_DIR" STAREXEC_MAX_MEM="$CURRENT_STAGE_MEMORY" STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT="$CURRENT_STAGE_CPU" STAREXEC_WALLCLOCK_LIMIT="$CURRENT_STAGE_WALLCLOCK" "$LOCAL_RUNSOLVER_PATH" $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $CURRENT_STAGE_CPU -W $CURRENT_STAGE_WALLCLOCK $KILL_DELAY_FLAG -M $MAX_MEM  -w "$WATCHFILE" -v "$VARFILE" -o "$STDOUT_FILE" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" "$OUT_DIR/output_files" "$OTHER_INPUT_PATH" $ARGUMENT_STRING
+	fi
 
 
-		# move the working directory back to the top level sandbox
-		cd $WORKING_DIR_BASE/$SANDBOX_PARAM
-		if ((RESULTS_INTERVAL > 0)); then
-			kill $COPY_OUTPUT_INCREMENTALLY_PID
-		fi
+	# move the working directory back to the top level sandbox
+	cd $WORKING_DIR_BASE/$SANDBOX_PARAM
+	if ((RESULTS_INTERVAL > 0)); then
+		kill $COPY_OUTPUT_INCREMENTALLY_PID
+	fi
 
-		# If runsolver finishes then stop the killDeadlockedJobPair function.
-		log "Runsolver finished. Killing the defensive killall function."
-		kill $KILL_DEADLOCKED_JOB_PAIR_PID
-		KILL_EXIT_STATUS=$?
-		JOB_PAIR_DEADLOCKED=false
-		if ((KILL_EXIT_STATUS == 1)); then
-			#killDeadlockedJobPair was dead so the job pair
-			log "Job pair was deadlocked."
-			JOB_PAIR_DEADLOCKED=true
-		fi
+	# If runsolver finishes then stop the killDeadlockedJobPair function.
+	log "Runsolver finished. Killing the defensive killall function."
+	kill $KILL_DEADLOCKED_JOB_PAIR_PID
+	KILL_EXIT_STATUS=$?
+	JOB_PAIR_DEADLOCKED=false
+	if ((KILL_EXIT_STATUS == 1)); then
+		#killDeadlockedJobPair was dead so the job pair
+		log "Job pair was deadlocked."
+		JOB_PAIR_DEADLOCKED=true
+	fi
 
 	log "listing contents of the output directory"
 	ls -l "$OUT_DIR"
