@@ -244,15 +244,12 @@ function initSandbox {
 	if (trySandbox 1); then
 		SANDBOX=1
 		initWorkspaceVariables
-		return 0
 	elif (trySandbox 2); then
 		SANDBOX=2
 		initWorkspaceVariables
-		return 0
+	else #failed to get either sandbox
+		SANDBOX=-1
 	fi
-	#failed to get either sandbox
-	SANDBOX=-1
-	return 1
 }
 
 function log {
