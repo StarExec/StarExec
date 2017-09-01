@@ -237,19 +237,23 @@ function trySandbox {
 
 }
 
-
-#figures out which sandbox the given job pair should run in.
+# figures out which sandbox the given job pair should run in.
+# If no sandbox can be secured, terminate this jobpair
 function initSandbox {
 	#try to get sandbox1 first
 	if (trySandbox 1); then
 		SANDBOX=1
-		initWorkspaceVariables
 	elif (trySandbox 2); then
 		SANDBOX=2
-		initWorkspaceVariables
 	else #failed to get either sandbox
-		SANDBOX=-1
+		log "unable to secure any sandbox for this job!"
+		sendNode "$HOSTNAME" "0"
+		sendStatus "$ERROR_RUNSCRIPT"
+		sendStatusToLaterStages "$ERROR_RUNSCRIPT" 0
+		exit 0
 	fi
+	initWorkspaceVariables
+	sendNode "$HOSTNAME" "$SANDBOX"
 }
 
 function log {

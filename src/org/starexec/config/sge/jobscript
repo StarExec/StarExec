@@ -165,17 +165,6 @@ echo ""
 sendStatus "$STATUS_RUNNING"
 
 initSandbox
-
-if ((SANDBOX < 1)); then
-	sendNode "$HOSTNAME" "0"
-	sendStatus "$ERROR_RUNSCRIPT"
-	sendStatusToLaterStages "$ERROR_RUNSCRIPT" 0
-
-	log "unable to secure any sandbox for this job!"
-	exit 0
-fi
-
-sendNode "$HOSTNAME" "$SANDBOX"
 cleanWorkspace 1
 setStartTime
 
@@ -307,7 +296,6 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++STAGE_INDEX )); do
 
 	CURRENT_STAGE_NUMBER=${STAGE_NUMBERS[STAGE_INDEX]}
 
-	SANDBOX_FOUND=true
 	# SANDBOX_PARAM designates which user will run runsolver
 	if ((SANDBOX == 1)); then
 		SANDBOX_PARAM=$SANDBOX_USER_ONE
@@ -315,8 +303,6 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++STAGE_INDEX )); do
 	elif ((SANDBOX == 2)); then
 		SANDBOX_PARAM=$SANDBOX_USER_TWO
 		CORES="4-7"
-	else
-		SANDBOX_FOUND=false
 	fi
 
 
@@ -347,8 +333,6 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++STAGE_INDEX )); do
 	log "additional output save option : $EXTRA_SAVE_OPTION"
 	log "user disk quota : $DISK_QUOTA"
 
-
-	if [ "$SANDBOX_FOUND" = true ]; then
 		echo "Checking who current user is using: whoami ..."
 		whoami
 
@@ -433,10 +417,6 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++STAGE_INDEX )); do
 			log "Job pair was deadlocked."
 			JOB_PAIR_DEADLOCKED=true
 		fi
-	else
-		log "no job run for pair $PAIR_ID because a sandbox was not found"
-		sendStatus "$ERROR_RUNSCRIPT"
-	fi
 
 	log "listing contents of the output directory"
 	ls -l "$OUT_DIR"
