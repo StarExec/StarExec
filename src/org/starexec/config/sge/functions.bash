@@ -123,8 +123,6 @@ function createLocalTmpDirectory {
 		mkdir "$LOCAL_TMP_DIR"
 		log "job error: cannot create sandbox tmp directory '$LOCAL_TMP_DIR'"
 	fi
-
-	return $?
 }
 
 #checks to see whether the first argument is a valid integer
@@ -626,8 +624,6 @@ function createDir {
 		mkdir "$1"
 		log "job error: cannot create directory '$1' this jobs output cannot be saved"
 	fi
-
-	return $?
 }
 
 # copys output without doing post-processing or updating the database stats
@@ -705,8 +701,6 @@ function fillDependArrays {
 			((++INDEX))
 		done < "$JOB_IN_DIR/depend_$PAIR_ID.txt"
 	fi
-
-	return $?
 }
 
 function enablePython34 {
@@ -907,7 +901,6 @@ function copyDependencies {
 		rm "$LOCAL_BENCH_PATH"
 		mv "$PROCESSED_BENCH_PATH" "$LOCAL_BENCH_PATH"
 	fi
-	return $?
 }
 
 # Saves a file as a benchmark on Starexec
@@ -1057,7 +1050,6 @@ function verifyWorkspace {
 	else
 		log "execution host benchmark verified"
 	fi
-	return $?
 }
 
 # Marks this pair as having had a runscript error
