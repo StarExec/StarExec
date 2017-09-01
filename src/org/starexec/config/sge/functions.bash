@@ -66,12 +66,6 @@ JOB_OUT_DIR="$SHARED_DIR/joboutput"
 # initializes all workspace variables based on the value of the SANDBOX variable,
 # which should already be set either by calling initSandbox
 function initWorkspaceVariables {
-	if ((SANDBOX == 1)); then
-		WORKING_DIR=$WORKING_DIR_BASE'/sandbox'
-	else
-		WORKING_DIR=$WORKING_DIR_BASE'/sandbox2'
-	fi
-
 	LOCAL_TMP_DIR="$WORKING_DIR/tmp"
 
 	# Path to where the solver will be copied
@@ -243,8 +237,14 @@ function initSandbox {
 	#try to get sandbox1 first
 	if (trySandbox 1); then
 		SANDBOX=1
+		SANDBOX_PARAM=$SANDBOX_USER_ONE
+		CORES="0-3"
+		WORKING_DIR=$WORKING_DIR_BASE'/sandbox'
 	elif (trySandbox 2); then
 		SANDBOX=2
+		SANDBOX_PARAM=$SANDBOX_USER_TWO
+		CORES="4-7"
+		WORKING_DIR=$WORKING_DIR_BASE'/sandbox2'
 	else #failed to get either sandbox
 		log "unable to secure any sandbox for this job!"
 		sendNode "$HOSTNAME" "0"
@@ -252,7 +252,6 @@ function initSandbox {
 		sendStatusToLaterStages "$ERROR_RUNSCRIPT" 0
 		exit 0
 	fi
-	initWorkspaceVariables
 	sendNode "$HOSTNAME" "$SANDBOX"
 }
 

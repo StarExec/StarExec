@@ -165,6 +165,7 @@ echo ""
 sendStatus "$STATUS_RUNNING"
 
 initSandbox
+initWorkspaceVariables
 cleanWorkspace 1
 setStartTime
 
@@ -295,16 +296,6 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++STAGE_INDEX )); do
 	ls -l "$WORKING_DIR"
 
 	CURRENT_STAGE_NUMBER=${STAGE_NUMBERS[STAGE_INDEX]}
-
-	# SANDBOX_PARAM designates which user will run runsolver
-	if ((SANDBOX == 1)); then
-		SANDBOX_PARAM=$SANDBOX_USER_ONE
-		CORES="0-3"
-	elif ((SANDBOX == 2)); then
-		SANDBOX_PARAM=$SANDBOX_USER_TWO
-		CORES="4-7"
-	fi
-
 
 	#Give job pairs 2 extra minutes before we kill them.
 	JOB_PAIR_EXTRA_TIME=120
