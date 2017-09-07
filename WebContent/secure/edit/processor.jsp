@@ -14,7 +14,7 @@ try {
 		DefaultSettings settings=Communities.getDefaultSettings(proc.getCommunityId());
 		request.setAttribute("defaultPPId",settings.getPostProcessorId());
 		request.setAttribute("primitiveType", Primitive.PROCESSOR);
-	request.setAttribute( "hasAdminReadPrivileges", GeneralSecurity.hasAdminReadPrivileges( userId ));
+		request.setAttribute( "hasAdminReadPrivileges", GeneralSecurity.hasAdminReadPrivileges( userId ));
 	} catch (Exception e) {
 		//We couldn't find the default post processor ID, which is not a big deal
 	}
@@ -44,11 +44,10 @@ try {
 				.append(s.name)
 				.append("</option>")
 			;
-		};
+		}
 		syntaxes.append("</select>");
 		request.setAttribute("syntaxes", syntaxes.toString());
 	}
-
 } catch (Exception e) {
 	response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 }
