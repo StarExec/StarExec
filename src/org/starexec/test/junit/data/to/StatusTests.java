@@ -126,7 +126,7 @@ public class StatusTests {
 			.filter( l -> !l.isEmpty() && l.charAt(0) != '#' ) // Strip all lines that are empty or comments
 			.forEach( l -> {
 				String[] line = l.split("="); // Split the line at =
-				String shellStatusName = line[0]; // Name is left of =
+				String shellStatusName = line[0].replaceAll("^readonly\\s+",""); // Name is left of =
 				int statusCode = Integer.parseInt(line[1]); // Code is right of =
 				String enumStatusName = StatusCode.toStatusCode(statusCode).toString(); // Find the corresponding enum status code
 				assertEquals(shellStatusName, enumStatusName); // Make sure they match
