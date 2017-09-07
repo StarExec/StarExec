@@ -28,25 +28,28 @@ try {
 	} else {
 		request.setAttribute("proc", proc);
 
-		StringBuilder syntaxes = new StringBuilder("<select name='syntax'>");
-		int thisSyntax = proc.getSyntax().getId();
-		for (Syntax s : Syntaxes.getAll()) {
-			syntaxes
-				.append("<option value='")
-				.append(""+s.getId())
-				.append("'")
-			;
-			if (thisSyntax == s.getId()) {
-				syntaxes.append(" selected");
+		if (proc.getType() == ProcessorType.BENCH) {
+			StringBuilder syntaxes = new StringBuilder("<select name='syntax'>");
+			int thisSyntax = proc.getSyntax().getId();
+			for (Syntax s : Syntaxes.getAll()) {
+				syntaxes
+					.append("<option value='")
+					.append(""+s.getId())
+					.append("'")
+				;
+				if (thisSyntax == s.getId()) {
+					syntaxes.append(" selected");
+				}
+				syntaxes
+					.append(">")
+					.append(s.name)
+					.append("</option>")
+				;
 			}
-			syntaxes
-				.append(">")
-				.append(s.name)
-				.append("</option>")
-			;
+			syntaxes.append("</select>");
+			request.setAttribute("syntaxes", syntaxes.toString());
+			request.setAttribute("benchmarkProcessor", 1==1);
 		}
-		syntaxes.append("</select>");
-		request.setAttribute("syntaxes", syntaxes.toString());
 	}
 } catch (Exception e) {
 	response.sendError(HttpServletResponse.SC_BAD_REQUEST);
@@ -77,10 +80,12 @@ try {
 						<td class="label">description</td>
 						<td><textarea id="description" name="description" length="${processorDescLen}" >${proc.description}</textarea></td>
 					</tr>
+					<c:if test="${benchmarkProcessor}">
 					<tr>
 						<td class="label">Syntax Highlighting</td>
 						<td>${syntaxes}</td>
 					</tr>
+					</c:if>
 				</tbody>
 			</table>
 		</fieldset>
