@@ -7,12 +7,9 @@ var EDIT_COMMUNITY = {
 $(document).ready(function(){
 	var id = $('#comId').val();
 
-	leaderTable = $('#leaders').dataTable( {
-		"sDom": getDataTablesDom()
-	});
-	memberTable = $('#Members').dataTable( {
-		"sDom": getDataTablesDom()
-	});
+	var dataTableConfig = new window.star.DataTableConfig();
+	leaderTable = $('#leaders').dataTable(dataTableConfig);
+	memberTable = $('#Members').dataTable(dataTableConfig);
 
 	$.get(
 			starexecRoot+"services/communities/details/" + id,
