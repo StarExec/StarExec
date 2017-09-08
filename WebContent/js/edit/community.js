@@ -4,70 +4,69 @@ var EDIT_COMMUNITY = {
 	benchmarkingFrameworkAttr: 'BENCHMARKING_FRAMEWORK'
 };
 
-
 $(document).ready(function(){
 	var id = $('#comId').val();
-	
+
 	leaderTable = $('#leaders').dataTable( {
-        "sDom": getDataTablesDom()
-    });
+		"sDom": getDataTablesDom()
+	});
 	memberTable = $('#Members').dataTable( {
-        "sDom": getDataTablesDom()
-    });
-	
-	$.get(  
-			starexecRoot+"services/communities/details/" + id,  
-			function(data){  			
-				populateDetails(data);			
-			},  
+		"sDom": getDataTablesDom()
+	});
+
+	$.get(
+			starexecRoot+"services/communities/details/" + id,
+			function(data){
+				populateDetails(data);
+			},
 			"json"
 		).error(function(){
 			showMessage('error',"Internal error getting community details",5000);
 		});
-	
+
 	initUI();
 	attachFormValidation();
 	attachWebsiteMonitor();
 	attachProcessorFormListener();
 });
 
-function populateDetails(jsonData) {	
+function populateDetails(jsonData) {
 	var id = $('#comId').val();
 
 	// Populate leaders table
 	$('#leaderField legend').children('span:first-child').text(jsonData.leaders.length);
-	leaderTable.fnClearTable();	
+	leaderTable.fnClearTable();
 	$.each(jsonData.leaders, function(i, user) {
 		var fullName = user.firstName + ' ' + user.lastName;
 		var userLink = '<a href="'+starexecRoot+'secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src="'+starexecRoot+'images/external.png" /></a>';
 		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="'+starexecRoot+'images/external.png" /></a>';
 		var deleteUser = '<input type="button" onclick="removeUser(' + user.id + ', ' + id + ')" value="X"/>';
 		var demoteUser = '<input type="button" onclick="demoteUser(' + user.id + ', ' + id + ')" value="Demote"/>';
-		
+
 		leaderTable.fnAddData([userLink, user.institution, emailLink, deleteUser, demoteUser]);
 
 	});
-	
+
 	// Populate members table
 	$('#memberField legend').children('span:first-child').text(jsonData.space.users.length);
-	//memberTable.fnClearTable();	
+	//memberTable.fnClearTable();
 	$.each(jsonData.space.users, function(i, user) {
 		var hiddenUserId = '<input type="hidden" value="' + user.id + '" >';
 		var fullName = user.firstName + ' ' + user.lastName;
 		var userLink = '<a href="'+starexecRoot+'secure/details/user.jsp?id=' + user.id + '" target="blank">' + fullName + '<img class="extLink" src="'+starexecRoot+'images/external.png"/></a>' + hiddenUserId;
-		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="'+starexecRoot+'images/external.png"/></a>';		
+		var emailLink = '<a href="mailto:' + user.email + '">' + user.email + '<img class="extLink" src="'+starexecRoot+'images/external.png"/></a>';
 		var deleteUser = '<input type="button" onclick="removeUser(' + user.id + ', ' + id + ')" value="X"/>';
 		var promoteUser = '<input type="button" onclick="promoteUser(' + user.id + ', ' + id + ')" value="Promote"/>';
-		
+
 		memberTable.fnAddData([userLink, user.institution, emailLink, deleteUser, promoteUser]);
-		
+
 	});
 }
 
 function removeUser(userid, id) {
 	var idArray = new Array();
 	idArray.push(userid);
-	$.post(  
+	$.post(
 			starexecRoot+"services/remove/user/" + id,
 			{selectedIds : idArray},
 			function(returnCode) {
@@ -82,8 +81,8 @@ function removeUser(userid, id) {
 
 function promoteUser(userid, id) {
 	var idArray = new Array();
-	idArray.push(userid);		
-	$.post(  
+	idArray.push(userid);
+	$.post(
 			starexecRoot+"services/makeLeader/" + id ,
 			{selectedIds : idArray},
 			function(returnCode) {
@@ -91,17 +90,17 @@ function promoteUser(userid, id) {
 				if (s) {
 					setTimeout(function(){document.location.reload(true);}, 1000);
 				}
-				
+
 			},
 			"json"
 		).error(function(){
 			showMessage('error',"Internal error making user a leader",5000);
 		});
-	
+
 }
 
-function demoteUser(userId, id) {		
-	$.post(  
+function demoteUser(userId, id) {
+	$.post(
 			starexecRoot+"services/demoteLeader/" + id + "/" + userId ,
 			function(returnCode) {
 				s=parseReturnCode(returnCode);
@@ -124,7 +123,7 @@ function attachWebsiteMonitor(){
 		var id = $(this).attr('id');
 		var parent = $(this).parent().parent();
 		$('#dialog-confirm-delete-txt').text('Are you sure you want to delete this website?');
-		
+
 		$('#dialog-confirm-delete').dialog({
 			modal: true,
 			width: 380,
@@ -132,7 +131,7 @@ function attachWebsiteMonitor(){
 			buttons: {
 				'OK': function() {
 					$('#dialog-confirm-delete').dialog('close');
-					
+
 					$.post(
 							starexecRoot+"services/websites/delete/"+ id,
 							function(returnData){
@@ -152,23 +151,23 @@ function attachWebsiteMonitor(){
 			}
 		});
 	});
-	
+
 	// Handles adding a new website
 	$("#addWebsite").click(function(){
 		var name = $("#website_name").val();
 		var url = $("#website_url").val();
-		
+
 		if(name.trim().length == 0) {
 			showMessage('error', 'please enter a website name', 5000);
 			return;
-		} else if (url.indexOf("http://") != 0) {			
+		} else if (url.indexOf("http://") != 0) {
 			showMessage('error', 'url must start with http://', 5000);
 			return;
 		} else if (url.trim().length <= 12) {
 			showMessage('error', 'the given url is not long enough', 5000);
 			return;
-		}	
-		
+		}
+
 		var data = {name: name, url: url};
 		$.post(
 				starexecRoot+"services/website/add/space/" + $('#comId').val(),
@@ -177,14 +176,14 @@ function attachWebsiteMonitor(){
 					s=parseReturnCode(returnCode);
 					if (s) {
 						$("#website_name").val("");
-			    		$("#website_url").val("");
-			    		$('#websites li').remove();
-			    		refreshSpaceWebsites();
+						$("#website_url").val("");
+						$('#websites li').remove();
+						refreshSpaceWebsites();
 					}
 				},
 				"json"
 		);
-		
+
 	});
 }
 
@@ -200,74 +199,72 @@ function attachProcessorFormListener() {
 		log('.radioURL clicked.');
 		$('.radioURL').prop('checked', true);
 		$('.radioLocal').prop('checked', false);
-		$('.processorFileSpan').hide();	
+		$('.processorFileSpan').hide();
 		$('.fileURL').show();
 	});
 }
 
 function initUI(){
-	
 	populateDefaultsWithId($("#settingId").attr("value"));
 
 	// Hide #radioURL since choose post processor by URL is not seleted by default.
 	$('.fileURL').hide();
-	
+
 	// Make forms editable
 	editable("name");
 	editable("desc");
 	editable("CpuTimeout");
 	editable("ClockTimeout");
 	editable("MaxMem");
-	// Add toggles for the "add new" buttons and hide them by default	
+	// Add toggles for the "add new" buttons and hide them by default
 	$('#toggleWebsite').click(function() {
 		$('#newWebsite').slideToggle('fast');
 		togglePlusMinus(this);
-	});	
-	
+	});
+
 	$('#toggleBenchType').click(function() {
 		$('#newTypeTbl').slideToggle('fast');
 		togglePlusMinus(this);
-	});	
-	
+	});
+
 	$('#togglePostProcessor').click(function() {
 		$('#newPostProcessTbl').slideToggle('fast');
 		togglePlusMinus(this);
-	});	
-	
+	});
+
 	$('#togglePreProcessor').click(function() {
 		$('#newPreProcessTbl').slideToggle('fast');
 		togglePlusMinus(this);
 	});
 
-        $('#toggleUpdateProcessor').click(function() {
+	$('#toggleUpdateProcessor').click(function() {
 		$('#newUpdateProcessTbl').slideToggle('fast');
 		togglePlusMinus(this);
 	});
-	
+
 	$('#editPostProcess').change(function() {
 		saveChanges($(this).children('option:selected').attr('value'), true, 'PostProcess', 0);
 	});
-	
+
 	$('#editBenchProcess').change(function() {
 		saveChanges($(this).children('option:selected').attr('value'), true, 'BenchProcess', 0);
 	});
-	
+
 	$('#editPreProcess').change(function() {
 		saveChanges($(this).children('option:selected').attr('value'), true, 'PreProcess', 0);
 	});
 
-       	$('#editUpdateProcess').change(function() {
+	$('#editUpdateProcess').change(function() {
 		saveChanges($(this).children('option:selected').attr('value'), true, 'UpdateProcess', 0);
 	});
 
-	
 	$('#editDependenciesEnabled').change(function() {
 		saveChanges($(this).children('option:selected').attr('value'), true, 'DependenciesEnabled', 0);
 	});
 
 	$('#editBenchmarkingFramework').change(function() {
-		log('changing benchmarking framework');
 		'use strict';
+		log('changing benchmarking framework');
 		saveChanges($(this).children('option:selected').attr('value'), true, EDIT_COMMUNITY.benchmarkingFrameworkAttr, 0);
 	});
 
@@ -279,54 +276,56 @@ function initUI(){
 		$.post(
 			starexecRoot+'services/delete/defaultBenchmark/'+settingId+'/'+benchId,
 			'',
-			function(returnCode){  	
+			function(returnCode){
 				'use strict';
 				var success = parseReturnCode(returnCode);
 				if (success) {
 					location.reload(true);
 				}
-			 },  
-			'json'  
+			 },
+			'json'
 		);
 	});
-	
+
 	$('#newWebsite').hide();
 	$('#newTypeTbl').hide();
 	$('#newPostProcessTbl').hide();
-        $('#newPreProcessTbl').hide();
-        $('#newUpdateProcessTbl').hide();
-	
+	$('#newPreProcessTbl').hide();
+	$('#newUpdateProcessTbl').hide();
+
 	$('#leaderField').expandable(false);
 	$('#memberField').expandable(false);
 	$('#websiteField').expandable(true);
 	$('#benchmarkField').expandable(true);
 	$('#settingsField').expandable(true);
-    $('#postProcessorField').expandable(true);
-    $('#updateProcessorField').expandable(true);
+	$('#postProcessorField').expandable(true);
+	$('#updateProcessorField').expandable(true);
 	$("#preProcessorField").expandable(true);
+
 	$('#addType').button({
 		icons: {
 			secondary: "ui-icon-arrowthick-1-n"
-    }});
-	
+	}});
+
 	$('#addPostProcessor').button({
 		icons: {
 			secondary: "ui-icon-arrowthick-1-n"
-    }});
+	}});
+
 	$('#addPreProcessor').button({
 		icons: {
 			secondary: "ui-icon-arrowthick-1-n"
-		}});
-	
-    $('#addUpdateProcessor').button({
+	}});
+
+	$('#addUpdateProcessor').button({
 		icons: {
 			secondary: "ui-icon-arrowthick-1-n"
-		}});
-	
+	}});
+
 	$('#addWebsite').button({
 		icons: {
 			secondary: "ui-icon-plus"
-    }});	
+	}});
 }
 
 /**
@@ -335,23 +334,23 @@ function initUI(){
 function attachFormValidation(){
 	// Re-validate the 'post-processor' and benchmark 'processor type' fields when they loses focus
 	$("#typeFile").change(function(){
-		 $("#typeFile").blur().focus(); 
-    });
+		 $("#typeFile").blur().focus();
+	});
+
 	$(".processorFile").change(function(){
-		 $(".processorFile").blur().focus(); 
-    });
-	
-	
+		 $(".processorFile").blur().focus();
+	});
+
 	// Adds regular expression handling to JQuery validator
 	$.validator.addMethod(
-			"regex", 
+			"regex",
 			function(value, element, regexp) {
 				var re = new RegExp(regexp);
 				return this.optional(element) || re.test(value);
 	});
-	
-    var formsToValidate = ['#addPostProcessorForm','#addPreProcessorForm', '#newTypeForm', '#addUpdateProcessorForm'];
-	
+
+	var formsToValidate = ['#addPostProcessorForm','#addPreProcessorForm', '#newTypeForm', '#addUpdateProcessorForm'];
+
 	$.each(formsToValidate, function(i, selector) {
 		$(selector).validate({
 			rules : {
@@ -359,16 +358,14 @@ function attachFormValidation(){
 					required : true,
 					maxlength: $("#procName").attr("length"),
 					regex : getPrimNameRegex()
-					
 				},
 				desc: {
 					maxlength: $("#procDesc").attr("length"),
 					regex : getPrimDescRegex()
-					
 				},
 				file: {
-					required : true				
-				}			
+					required : true
+				}
 			},
 			messages : {
 				name : {
@@ -376,17 +373,17 @@ function attachFormValidation(){
 					maxlength : $("#procName").attr("length") + " characters maximum",
 					regex : "invalid character(s)"
 				},
-				desc : {				
+				desc : {
 					required : "enter a processor description",
-					maxlength : $("#procDesc").attr("length") + " characters maximum",	
+					maxlength : $("#procDesc").attr("length") + " characters maximum",
 					regex : "invalid character(s)"
 				},
 				file : {
-					required : "choose a file"				
+					required : "choose a file"
 				}
-			}		
-		});	
-	});	
+			}
+		});
+	});
 }
 
 /**
@@ -399,7 +396,7 @@ function refreshSpaceWebsites(){
 
 /**
  * Processes website data by adding a delete button to the HTML and inject that into the DOM
- 
+
 function processWebsiteData(jsonData) {
 	// Injects the clickable delete button that's always present
 	$('#websiteTable tr').remove();
@@ -408,40 +405,38 @@ function processWebsiteData(jsonData) {
 	});
 }*/
 
-
 function editable(attribute) {
 	$('#edit' + attribute).click(function(){
 		var old = $(this).html();
-		
+
 		if(attribute == "desc") {
 			$(this).after('<td><textarea>' + old + '</textarea>&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();
 		} else if (attribute == "name"){
-			$(this).after('<td><input type="text" value="' + old + '" />&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();	
+			$(this).after('<td><input type="text" value="' + old + '" />&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();
 		} else if (attribute == "CpuTimeout"){
-			$(this).after('<td><input type="text" value="' + old + '" />&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();	
+			$(this).after('<td><input type="text" value="' + old + '" />&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();
 		} else if (attribute == "ClockTimeout"){
-			$(this).after('<td><input type="text" value="' + old + '" />&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();	
+			$(this).after('<td><input type="text" value="' + old + '" />&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();
 		} else if (attribute =="MaxMem") {
-			$(this).after('<td><input type="text" value="' + old + '" />&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();	
-
+			$(this).after('<td><input type="text" value="' + old + '" />&nbsp;<button id="save' + attribute + '">save</button>&nbsp;<button id="cancel' + attribute + '">cancel</button>&nbsp;</td>').remove();
 		}
-		
+
 		$('#save' + attribute).click(function(){saveChanges(this, true, attribute, old);});
 		$('#cancel' + attribute).click(function(){saveChanges(this, false, attribute, old);});
-		
+
 		$('#save' + attribute).button({
 			icons: {
 				secondary: "ui-icon-check"
-	    }});
-		
+		}});
+
 		$('#cancel' + attribute).button({
 			icons: {
 				secondary: "ui-icon-close"
-	    }});
+		}});
 	});
-	
+
 	$('#edit' + attribute).css('cursor', 'pointer');
-} 
+}
 
 function saveChanges(obj, save, attr, old) {
 	if (true == save) {
@@ -450,7 +445,7 @@ function saveChanges(obj, save, attr, old) {
 		//from the correct object
 		if (attr == 'desc') {
 			newVal = $(obj).siblings('textarea:first').val();
-			
+
 			if (newVal.length>$('#descRow').attr('length')) {
 				showMessage('error', $('#descRow').attr('length')+ " characters maximum",5000);
 				return;
@@ -472,58 +467,58 @@ function saveChanges(obj, save, attr, old) {
 		} else if(attr = "MaxMem") {
 			newVal = $(obj).siblings('input:first').val();
 		}
-		
+
 		// Fixes 'session expired' bug that would occur if user inputed the empty String
 		newVal = (newVal == "") ? "-1" : newVal;
-		
+
 		//these attributes are of the community itself
 		if (attr=="name" || attr=="desc") {
-			$.post(  
+			$.post(
 					starexecRoot+"services/edit/space/" + attr + "/" + getParameterByName("cid"),
 					{val: newVal},
-				    function(returnCode){  	
+					function(returnCode){
 						s=parseReturnCode(returnCode);
 						if (s) {
 							// Hide the input box and replace it with the table cell
-				    		$(obj).parent().after('<td id="edit' + attr + '">' + newVal + '</td>').remove();
-				    		// Make the value editable again
-				    		editable(attr);
+							$(obj).parent().after('<td id="edit' + attr + '">' + newVal + '</td>').remove();
+							// Make the value editable again
+							editable(attr);
 						} else {
 							$(obj).parent().after('<td id="edit' + attr + '">' + old + '</td>').remove();
-				    		// Make the value editable again
-				    		editable(attr);
+							// Make the value editable again
+							editable(attr);
 						}
-				     },  
-				     "json"  
+					 },
+					 "json"
 			).error(function(){
 				showMessage('error',"Internal error updating field",5000);
 			});
-			
+
 			//every other attribute is of the DefaultSettings profile the community has
 		} else {
 			log('making post to changing default settings for community');
-			$.post(  
+			$.post(
 					starexecRoot+"services/edit/defaultSettings/" + attr + "/" + $("#settingId").attr("value"),
 					{val: newVal},
-				    function(returnCode){  	
+					function(returnCode){
 						s=parseReturnCode(returnCode);
 						if (s) {
 							// Hide the input box and replace it with the table cell
-				    		$(obj).parent().after('<td id="edit' + attr + '">' + newVal + '</td>').remove();
-				    		// Make the value editable again
-				    		editable(attr);
+							$(obj).parent().after('<td id="edit' + attr + '">' + newVal + '</td>').remove();
+							// Make the value editable again
+							editable(attr);
 						} else {
 							$(obj).parent().after('<td id="edit' + attr + '">' + old + '</td>').remove();
-				    		// Make the value editable again
-				    		editable(attr);
+							// Make the value editable again
+							editable(attr);
 						}
-				     },  
-				     "json"  
+					 },
+					 "json"
 			).error(function(){
 				showMessage('error',"Internal error updating field",5000);
 			});
 		}
-		
+
 	} else {
 		// Hide the input box and replace it with the table cell
 		$(obj).parent().after('<td id="edit' + attr + '">' + old + '</td>').remove();
