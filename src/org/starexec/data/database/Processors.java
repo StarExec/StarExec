@@ -154,6 +154,7 @@ public class Processors {
 	 * @author Tyler Jensen
 	 */
 	public static Processor get(int processorId) {
+		if (processorId == 0) return null;
 		try {
 			return Common.query("{CALL GetProcessorById(?)}", procedure -> {
 				procedure.setInt(1, processorId);
