@@ -44,6 +44,7 @@ public class Processors {
 		t.setFilePath(results.getString(prefix + "path"));
 		t.setDiskSize(results.getLong(prefix + "disk_size"));
 		t.setType(ProcessorType.valueOf(results.getInt("processor_type")));
+		t.setTimeLimit(results.getInt("time_limit"));
 		t.setSyntax(results.getInt("syntax_id"));
 
 		return t;
@@ -75,15 +76,16 @@ public class Processors {
 	 */
 	public static int add(Processor processor) {
 		try {
-			int procId = Common.updateWithOutput("{CALL AddProcessor(?,?,?,?,?,?,?)}", procedure -> {
+			int procId = Common.updateWithOutput("{CALL AddProcessor(?,?,?,?,?,?,?,?)}", procedure -> {
 				procedure.setString(1, processor.getName());
 				procedure.setString(2, processor.getDescription());
 				procedure.setString(3, processor.getFilePath());
 				procedure.setInt(4, processor.getCommunityId());
 				procedure.setInt(5, processor.getType().getVal());
 				procedure.setLong(6, FileUtils.sizeOf(new File(processor.getFilePath())));
-				procedure.registerOutParameter(7, java.sql.Types.INTEGER);
-			}, procedure -> procedure.getInt(7));
+				procedure.setInt(7, processor.getTimeLimit());
+				procedure.registerOutParameter(8, java.sql.Types.INTEGER);
+			}, procedure -> procedure.getInt(8));
 			log.debug("the new processor has the ID = " + procId + " and community id = " + processor.getCommunityId
 					());
 			return procId;
@@ -155,6 +157,7 @@ public class Processors {
 	 */
 	public static Processor get(int processorId) {
 		if (processorId == 0) return null;
+		log.error("get", "Getting processor: " + processorId);
 		try {
 			return Common.query("{CALL GetProcessorById(?)}", procedure -> {
 				procedure.setInt(1, processorId);
@@ -299,6 +302,19 @@ public class Processors {
 			return true;
 		} catch (SQLException e) {
 			log.error("updateName", e.getMessage(), e);
+		}
+		return false;
+	}
+
+	public static boolean updateTimeLimit(int processorId, int timeLimit) {
+		try {
+			Common.update("{CALL UpdateProcessorTimeLimit(?,?)}", procedure -> {
+				procedure.setInt(1, processorId);
+				procedure.setInt(2, timeLimit);
+			});
+			return true;
+		} catch (SQLException e) {
+			log.error("updateTimeLimit", e.getMessage(), e);
 		}
 		return false;
 	}

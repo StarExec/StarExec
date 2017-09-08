@@ -1,6 +1,7 @@
 jQuery(function($) {
 	var $name = $("#name");
 	var $description = $("#description");
+	var $timeLimit = $("[name='timelimit']");
 	var $syntax = $("[name='syntax']");
 	var $editProcForm = $("#editProcForm");
 
@@ -75,6 +76,7 @@ jQuery(function($) {
 				var data = {
 					"name" : $name.val(),
 					"desc" : $description.val(),
+					"timelimit" : parseInt($timeLimit.val(), 10)
 				};
 				if ($syntax.length !== 0) {
 					data["syntax"] = $syntax.val();

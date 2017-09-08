@@ -80,6 +80,10 @@ try {
 						<td class="label">description</td>
 						<td><textarea id="description" name="description" length="${processorDescLen}" >${proc.description}</textarea></td>
 					</tr>
+					<tr>
+						<td class="label">time limit</td>
+						<td><input type="number" name="timelimit" min="1" max="60" value="${proc.timeLimit}"/></td>
+					</tr>
 					<c:if test="${benchmarkProcessor}">
 					<tr>
 						<td class="label">Syntax Highlighting</td>

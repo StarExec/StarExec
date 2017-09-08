@@ -25,6 +25,7 @@ public class Processor extends Identifiable implements Nameable, Locatable {
 	@Expose private ProcessorType type = ProcessorType.DEFAULT;
 	private String filePath;
 	private long diskSize;
+	private int timeLimit = 15;
 	private int communityId;
 	private Syntax syntax;
 
@@ -153,6 +154,14 @@ public class Processor extends Identifiable implements Nameable, Locatable {
 	 */
 	public void setDiskSize(long diskSize) {
 		this.diskSize = diskSize;
+	}
+
+	public int getTimeLimit() {
+		return timeLimit;
+	}
+
+	public void setTimeLimit(int timeLimit) {
+		this.timeLimit = timeLimit;
 	}
 
 	public void setSyntax(Syntax s) {

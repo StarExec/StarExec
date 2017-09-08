@@ -631,7 +631,9 @@ public abstract class JobManager {
 		List<String> solverTimestamps = new ArrayList<>();
 		List<String> solverPaths = new ArrayList<>();
 		List<String> postProcessorPaths = new ArrayList<>();
+		List<String> postProcessorTimeLimits = new ArrayList<>();
 		List<String> preProcessorPaths = new ArrayList<>();
+		List<String> preProcessorTimeLimits = new ArrayList<>();
 		List<Integer> spaceIds = new ArrayList<>();
 		List<String> benchInputPaths = new ArrayList<>();
 		List<String> argStrings = new ArrayList<>();
@@ -690,14 +692,19 @@ public abstract class JobManager {
 			// in the Bash scripts, an empty string will be interpreted as "no processor"
 			Processor p = attrs.getPostProcessor();
 			if (p == null) {
+				postProcessorTimeLimits.add("");
 				postProcessorPaths.add("");
 			} else {
+				postProcessorTimeLimits.add(String.valueOf(p.getTimeLimit()));
 				postProcessorPaths.add(p.getFilePath());
 			}
 			p = attrs.getPreProcessor();
+			preProcessorTimeLimits.add("1");
 			if (p == null) {
+				preProcessorTimeLimits.add("");
 				preProcessorPaths.add("");
 			} else {
+				preProcessorTimeLimits.add(String.valueOf(p.getTimeLimit()));
 				preProcessorPaths.add(p.getFilePath());
 				if (stage.getStageNumber() == pair.getPrimaryStageNumber()) {
 					primaryPreprocessorPath = p.getFilePath();
@@ -788,8 +795,9 @@ public abstract class JobManager {
 		replacements.put("$$SOLVER_TIMESTAMP_ARRAY$$", toBashArray("SOLVER_TIMESTAMPS", solverTimestamps, false));
 		replacements.put("$$CONFIG_NAME_ARRAY$$", toBashArray("CONFIG_NAMES", configNames, false));
 		replacements.put("$$PRE_PROCESSOR_PATH_ARRAY$$", toBashArray("PRE_PROCESSOR_PATHS", preProcessorPaths, false));
-		replacements
-				.put("$$POST_PROCESSOR_PATH_ARRAY$$", toBashArray("POST_PROCESSOR_PATHS", postProcessorPaths, false));
+		replacements.put("$$PRE_PROCESSOR_TIME_LIMIT_ARRAY$$", toBashArray("PRE_PROCESSOR_TIME_LIMITS", preProcessorTimeLimits, false));
+		replacements.put("$$POST_PROCESSOR_PATH_ARRAY$$", toBashArray("POST_PROCESSOR_PATHS", postProcessorPaths, false));
+		replacements.put("$$POST_PROCESSOR_TIME_LIMIT_ARRAY$$", toBashArray("POST_PROCESSOR_TIME_LIMITS", postProcessorTimeLimits, false));
 		replacements.put("$$SPACE_ID_ARRAY$$", numsToBashArray("SPACE_IDS", spaceIds));
 		replacements.put("$$SOLVER_NAME_ARRAY$$", toBashArray("SOLVER_NAMES", solverNames, true));
 		replacements.put("$$SOLVER_PATH_ARRAY$$", toBashArray("SOLVER_PATHS", solverPaths, true));

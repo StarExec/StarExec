@@ -131,7 +131,9 @@ CREATE TABLE processors (
 	community INT NOT NULL,
 	processor_type TINYINT DEFAULT 0,
 	disk_size BIGINT NOT NULL,
+	preserve_input BOOLEAN DEFAULT TRUE,
 	syntax_id INT DEFAULT 1,
+	time_limit TINYINT DEFAULT 15,
 	PRIMARY KEY (id),
 	CONSTRAINT processors_community FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE,
 	CONSTRAINT processors_syntax FOREIGN KEY (syntax_id) REFERENCES syntax(id)

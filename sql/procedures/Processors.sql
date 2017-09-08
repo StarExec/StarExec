@@ -7,10 +7,10 @@ DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 -- Adds a new processor with the given information
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddProcessor;
-CREATE PROCEDURE AddProcessor(IN _name VARCHAR(64), IN _desc TEXT, IN _path TEXT, IN _comId INT, IN _type TINYINT, IN _diskSize BIGINT, OUT _id INT)
+CREATE PROCEDURE AddProcessor(IN _name VARCHAR(64), IN _desc TEXT, IN _path TEXT, IN _comId INT, IN _type TINYINT, IN _diskSize BIGINT, IN _time_limit TINYINT, OUT _id INT)
 	BEGIN
-		INSERT INTO processors (name, description, path, community, processor_type, disk_size)
-		VALUES (_name, _desc, _path, _comId, _type, _diskSize);
+		INSERT INTO processors (name, description, path, community, processor_type, disk_size, time_limit)
+		VALUES (_name, _desc, _path, _comId, _type, _diskSize, _time_limit);
 
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
@@ -114,6 +114,14 @@ CREATE PROCEDURE UpdateProcessorPath(IN _id INT, IN _path TEXT, IN _diskSize BIG
 		UPDATE processors
 		SET path=_path,
 			disk_size=_diskSize
+		WHERE id=_id;
+	END //
+
+DROP PROCEDURE IF EXISTS UpdateProcessorTimeLimit;
+CREATE PROCEDURE UpdateProcessorTimeLimit(IN _id INT, IN _timeLimit TINYINT)
+	BEGIN
+		UPDATE processors
+		SET time_limit=_timeLimit
 		WHERE id=_id;
 	END //
 

@@ -2593,6 +2593,16 @@ public class RESTServices {
 			}
 		}
 
+		if (Util.paramExists("timelimit", request)) {
+			int timeLimit = Integer.parseInt(request.getParameter("timelimit"));
+			if (p.getTimeLimit() != timeLimit) {
+				boolean success = Processors.updateTimeLimit(pid, timeLimit);
+				if (!success) {
+					return gson.toJson(ERROR_DATABASE);
+				}
+			}
+		}
+
 		return gson.toJson(new ValidatorStatusCode(true,"Processor edited successfully"));
 	}
 
