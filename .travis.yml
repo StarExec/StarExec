@@ -1,5 +1,10 @@
 jdk: oraclejdk8
 rvm: 2.4
 
+addons:
+  apt:
+    packages:
+    - ant-optional
+
 before_script: utility-scripts/ci
 script: ant test
