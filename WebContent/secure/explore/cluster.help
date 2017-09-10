@@ -16,10 +16,6 @@ Compute nodes are moved from one queue to another depending on need.
 
 <p>You can select a queue to see pending job pairs for that queue, or a node
 to see currently executing job pairs on that node.
-<!-- In the latter
-case, you may sometimes see multiple job pairs listed when only
-one is running (this is a bug we have not resolved yet).
--->
 </p>
 
 <h2>Scheduling</h2>
