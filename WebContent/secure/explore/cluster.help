@@ -1,6 +1,6 @@
 <h1>Checking cluster status</h1>
 
-<p>This page shows the current queues for StarExec.  The queues 
+<p>This page shows the current queues for StarExec.  The queues
 <ul>
 <li>all.q</li>
 <li>all2.q</li>
@@ -11,11 +11,11 @@ for competitions).
 Compute nodes are moved from one queue to another depending on need.
 </p>
 
-<p>Note that only community leaders can request reservation of a queue.  
+<p>Note that only community leaders can request reservation of a queue.
 </p>
 
 <p>You can select a queue to see pending job pairs for that queue, or a node
-to see currently executing job pairs on that node.  
+to see currently executing job pairs on that node.
 <!-- In the latter
 case, you may sometimes see multiple job pairs listed when only
 one is running (this is a bug we have not resolved yet).
@@ -26,7 +26,7 @@ one is running (this is a bug we have not resolved yet).
 
 <p>When several users are attempting to use the same queue at the same time,
 pairs are scheduled to balance compute time among each user as evenly as possible.
-This is done by tracking the compute time used by each user and preferentially 
+This is done by tracking the compute time used by each user and preferentially
 adding pairs for users that have taken the least runtime.
 Whenever a job pair is added to a queue, the pair's wallclock timeout is used as
 an estimation of the pair's runtime until the pair finishes, at which point the
