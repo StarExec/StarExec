@@ -420,6 +420,18 @@ public class CreateJob extends HttpServlet {
 			}
 
 			if (submitSuccess) {
+				// If submission was successful and user requested to be
+				// notified upon job completion, subscribe user to Job
+				// notifications
+				if (Util.paramExists("subscribe", request) && request.getParameter("subscribe").equals("yes")) {
+					try {
+						Notifications.subscribeUserToJob(userId, j.getId());
+					} catch (SQLException e) {
+						// Could not subscribe user to job. So what?
+						log.error("Could not subscribe user " + userId + " to job " + j.getId());
+					}
+				}
+
 				// If the submission was successful, send back to space explorer
 				response.addCookie(new Cookie("New_ID", String.valueOf(j.getId())));
 

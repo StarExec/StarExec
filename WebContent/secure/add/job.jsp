@@ -144,6 +144,13 @@
 							<input type="text" name="maxMem" id="maxMem"/>
 						</td>
 					</tr>
+					<tr class="noHover" title="ask to be notified when the status of this job changes">
+						<td class="label"><p>subscribe to job notifications</p></td>
+						<td>
+							Yes<input type="radio" name="subscribe" value="yes"/>
+							No<input type="radio" name="subscribe" value="no" checked="checked"/>
+						</td>
+					</tr>
 
 					<tr id="advancedOptionsRow">
 						<td></td>
