@@ -11,7 +11,8 @@ Compute nodes are moved from one queue to another depending on need.
 <p>Note that only community leaders can request reservation of a queue.
 </p>
 
-<p>You can select a queue to see pending job pairs for that queue, or a node
+<p>You can select a queue to see jobs running on that queue as well as pending
+(enqueued but not yet executing) job pairs for that queue, or a node
 to see currently executing job pairs on that node.
 </p>
 
