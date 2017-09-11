@@ -5203,32 +5203,6 @@ public class RESTServices {
 	}
 
 	/**
-	 * Gets table of starexec-result attributes summary
-	 * @param jobSpaceId The ID of the primitive
-	 * @param request
-	 * @return json table entries for starexec-result summary
-	 *
-    @POST
-    @Path("/jobs/attributes/{jobSpaceId}")
-    @Produces("application/json")
-    public String getJobSpaceAttributesSummary(@PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {
-		final String methodName = "getJobSpaceAttributesSummary";
-        int userId = SessionUtil.getUserId(request);
-        JsonObject nextDataTablesPage = null;
-        ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
-        if (!status.isSuccess()) {
-            return gson.toJson(status);
-        }
-        try {
-			nextDataTablesPage = RESTHelpers.convertJobAttributesToJsonObject(jobSpaceId);
-		} catch (SQLException e) {
-			log.error(methodName, "Caught database exception while attempting to get job attributes.", e);
-			return gson.toJson(ERROR_DATABASE);
-		}
-        return gson.toJson(nextDataTablesPage);
-	}*/
-
-	/**
 	 * Gets headers of the table of starexec-result attributes summary
 	 * @param jobSpaceId The ID of the primitive
 	 * @param request
