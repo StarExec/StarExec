@@ -139,6 +139,18 @@
 		</exec>
 	</target>
 
+	<target name="format-css" depends="css-properties">
+		<!-- autoformat all SCSS files -->
+		<exec executable="sass-convert" failonerror="true">
+			<arg line="--indent t" />
+			<arg value="-i" />
+			<arg value="-R" />
+			<arg line="-F scss" />
+			<arg line="-T scss" />
+			<arg value="${css-input-dir}" />
+		</exec>
+	</target>
+
 	<target name="war" depends="register-commands, css">
 		<!-- Copy over the org.starexec.config folder from source to classes -->
 		<mkdir dir="${class-dir}/org/starexec/config" />
@@ -307,6 +319,7 @@
 		</junit>
 	</target>
 
+	<target name="format-source" depends="format-css" description="Reformat source" />
 	<target name="epilog-test" depends="test, zipstarcom, war" />
 	<target name="build" depends="epilog-test" description="Build" />
 	<target name="skipcompilation" depends="war" description="Package existing build into a WAR" />

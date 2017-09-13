@@ -5,6 +5,7 @@
 
 body {
 	@extend %heading;
+
 	background-color: $background-color;
 	color: $text-main-color;
 
@@ -29,7 +30,9 @@ a:link, a:visited {
 
 input, textarea, select {
 	@extend %heading;
+
 	@extend %rounded-corners;
+
 	background-color: $input-background;
 	border: 1px solid $input-background;
 	color: $input-text;
@@ -97,4 +100,11 @@ label.error {
 .shaded tbody > tr > td,
 .shaded thead > tr > th {
 	padding: 10px;
+}
+
+pre {
+	font-family: "Source Code Pro", Menlo, Consolas, monospace;
+	font-size: 16px;
+	line-height: 1.13;
+	overflow: scroll;
 }

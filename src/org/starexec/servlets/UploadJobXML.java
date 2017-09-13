@@ -29,8 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Allows for the creation of job pairs as represented in xml. Files can come in .zip,
- * .tar, or .tar.gz format.
+ * Allows for the creation of job pairs as represented in xml. Files can come in .zip, .tar, or .tar.gz format.
  *
  * @author Tim Smith
  */
@@ -43,8 +42,8 @@ public class UploadJobXML extends HttpServlet {
 	private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
 	private static final String SPACE_ID = R.SPACE;
 
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException,
-			IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		final String method = "doPost";
 		log.entry(method);
 		int userId = SessionUtil.getUserId(request);
@@ -73,7 +72,8 @@ public class UploadJobXML extends HttpServlet {
 
 				Integer spaceId = Integer.parseInt((String) form.get(SPACE_ID));
 				if (!userMayUploadJobXML(userId, spaceId)) {
-					response.sendError(HttpServletResponse.SC_FORBIDDEN, "You are not allowed to run jobs in this space.");
+					response.sendError(
+							HttpServletResponse.SC_FORBIDDEN, "You are not allowed to run jobs in this space.");
 					return;
 				}
 
@@ -89,7 +89,8 @@ public class UploadJobXML extends HttpServlet {
 					response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
 				} else {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-							"Failed to upload Job XML:\n" + jobUtil.getErrorMessage());
+					                   "Failed to upload Job XML:\n" + jobUtil.getErrorMessage()
+					);
 				}
 			} else {
 				// Got a non multi-part request, invalid
@@ -113,8 +114,8 @@ public class UploadJobXML extends HttpServlet {
 	 * @param form a hashmap representation of the form on secure/add/batchJob.jsp
 	 * @author Tim Smith
 	 */
-	private List<Integer> handleXMLFile(int userId, int spaceId, HashMap<String, Object> form, JobUtil jobUtil) throws
-			StarExecException {
+	private List<Integer> handleXMLFile(int userId, int spaceId, HashMap<String, Object> form, JobUtil jobUtil)
+			throws StarExecException {
 		final String method = "handleXMLFile";
 		log.entry(method);
 		try {
@@ -144,14 +145,14 @@ public class UploadJobXML extends HttpServlet {
 
 			log.info(method, "Started creating jobs from XML files");
 			for (File file : uniqueDir.listFiles()) {
-				final List<Integer> current =
-						jobUtil.createJobsFromFile(file, userId, spaceId, JobXmlType.STANDARD, new ConfigAttrMapPair
-								(ConfigXmlAttribute.ID));
+				final List<Integer> current = jobUtil.createJobsFromFile(file, userId, spaceId, JobXmlType.STANDARD,
+				                                                         new ConfigAttrMapPair(ConfigXmlAttribute.ID)
+				);
 
 				if (current != null) {
 					jobIds.addAll(current);
 				} else {
-					log.warn("the uploaded job xml was not formatted correctly");
+					log.debug("the uploaded job xml was not formatted correctly");
 				}
 			}
 			log.info(method, "Finished creating jobs from XML files.");
@@ -159,8 +160,8 @@ public class UploadJobXML extends HttpServlet {
 				log.info(method, "Job(s) created successfully.");
 				return jobIds;
 			}
-			log.warn(method, jobUtil.getErrorMessage());
-			log.warn(method, "Job(s) could not be created from XML.");
+			log.debug(method, jobUtil.getErrorMessage());
+			log.debug(method, "Job(s) could not be created from XML.");
 			return null;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -185,8 +186,8 @@ public class UploadJobXML extends HttpServlet {
 	private ValidatorStatusCode isValidRequest(HashMap<String, Object> form) {
 		try {
 			if (!form.containsKey(UploadJobXML.UPLOAD_FILE) || !form.containsKey(SPACE_ID)) {
-				return new ValidatorStatusCode(false, "Missing field from the form for the file to upload or the space" +
-				                                      " id");
+				return new ValidatorStatusCode(
+						false, "Missing field from the form for the file to upload or the space" + " id");
 			}
 
 			if (!Validator.isValidPosInteger((String) form.get(SPACE_ID))) {
@@ -210,5 +211,4 @@ public class UploadJobXML extends HttpServlet {
 		}
 		return new ValidatorStatusCode(false, "Internal error uploading job XML");
 	}
-
 }

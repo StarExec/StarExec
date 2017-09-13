@@ -188,10 +188,6 @@ public abstract class JobManager {
 		}
 	}
 
-	private static void logSchedulingState(final String methodName, final SchedulingState s) {
-		logSchedulingState(methodName, s, 0);
-	}
-
 	private static void logSchedulingState(final String methodName, final SchedulingState s, final int tabLevel) {
 		final StringBuilder logMessage = new StringBuilder();
 		for (int i = 0; i < tabLevel; i++) {
@@ -635,7 +631,9 @@ public abstract class JobManager {
 		List<String> solverTimestamps = new ArrayList<>();
 		List<String> solverPaths = new ArrayList<>();
 		List<String> postProcessorPaths = new ArrayList<>();
+		List<String> postProcessorTimeLimits = new ArrayList<>();
 		List<String> preProcessorPaths = new ArrayList<>();
+		List<String> preProcessorTimeLimits = new ArrayList<>();
 		List<Integer> spaceIds = new ArrayList<>();
 		List<String> benchInputPaths = new ArrayList<>();
 		List<String> argStrings = new ArrayList<>();
@@ -694,14 +692,19 @@ public abstract class JobManager {
 			// in the Bash scripts, an empty string will be interpreted as "no processor"
 			Processor p = attrs.getPostProcessor();
 			if (p == null) {
+				postProcessorTimeLimits.add("");
 				postProcessorPaths.add("");
 			} else {
+				postProcessorTimeLimits.add(String.valueOf(p.getTimeLimit()));
 				postProcessorPaths.add(p.getFilePath());
 			}
 			p = attrs.getPreProcessor();
+			preProcessorTimeLimits.add("1");
 			if (p == null) {
+				preProcessorTimeLimits.add("");
 				preProcessorPaths.add("");
 			} else {
+				preProcessorTimeLimits.add(String.valueOf(p.getTimeLimit()));
 				preProcessorPaths.add(p.getFilePath());
 				if (stage.getStageNumber() == pair.getPrimaryStageNumber()) {
 					primaryPreprocessorPath = p.getFilePath();
@@ -792,8 +795,9 @@ public abstract class JobManager {
 		replacements.put("$$SOLVER_TIMESTAMP_ARRAY$$", toBashArray("SOLVER_TIMESTAMPS", solverTimestamps, false));
 		replacements.put("$$CONFIG_NAME_ARRAY$$", toBashArray("CONFIG_NAMES", configNames, false));
 		replacements.put("$$PRE_PROCESSOR_PATH_ARRAY$$", toBashArray("PRE_PROCESSOR_PATHS", preProcessorPaths, false));
-		replacements
-				.put("$$POST_PROCESSOR_PATH_ARRAY$$", toBashArray("POST_PROCESSOR_PATHS", postProcessorPaths, false));
+		replacements.put("$$PRE_PROCESSOR_TIME_LIMIT_ARRAY$$", toBashArray("PRE_PROCESSOR_TIME_LIMITS", preProcessorTimeLimits, false));
+		replacements.put("$$POST_PROCESSOR_PATH_ARRAY$$", toBashArray("POST_PROCESSOR_PATHS", postProcessorPaths, false));
+		replacements.put("$$POST_PROCESSOR_TIME_LIMIT_ARRAY$$", toBashArray("POST_PROCESSOR_TIME_LIMITS", postProcessorTimeLimits, false));
 		replacements.put("$$SPACE_ID_ARRAY$$", numsToBashArray("SPACE_IDS", spaceIds));
 		replacements.put("$$SOLVER_NAME_ARRAY$$", toBashArray("SOLVER_NAMES", solverNames, true));
 		replacements.put("$$SOLVER_PATH_ARRAY$$", toBashArray("SOLVER_PATHS", solverPaths, true));
@@ -955,34 +959,6 @@ public abstract class JobManager {
 		out.close();
 		log.debug("done writing dependency file");
 		return true;
-	}
-
-	/**
-	 * Creates an array for the bash script.  This array will consist of all the paths for the copies of the secondary
-	 * benchmarks on the execution host or the paths of the secondary benchmarks on the starexec system depending on
-	 * the local Boolean paramter.
-	 * Will return "" if there are no dependencies.
-	 *
-	 * @param bench the bench that possibly has dependencies
-	 * @param local TRUE for execution host paths, FALSE for paths to benchmarks on starexec
-	 * @return arrayString a String that will be an array within a bash script
-	 * @author Benton McCune
-	 */
-	public static String writeDependencyArray(Benchmark bench, Boolean local) {
-		String arrayString = "\"";
-		List<BenchmarkDependency> dependencies = Benchmarks.getBenchDependencies(bench.getId());
-		log.info("Number of dependencies = " + dependencies.size());
-		for (BenchmarkDependency bd : dependencies) {
-			//spaces in the paths not allowed
-			String path =
-					(local) ? bd.getSecondaryBench().getPath().replaceAll("\\s", "") : bd.getDependencyPath()
-					                                                                     .replaceAll("\\s", "");
-			arrayString = arrayString + "" + path + " ";
-		}
-		arrayString = arrayString.trim() + "\"";
-		log.info(arrayString);
-		log.info("Array String Length for " + bench.getName() + " is " + arrayString.length());
-		return arrayString;
 	}
 
 	/**

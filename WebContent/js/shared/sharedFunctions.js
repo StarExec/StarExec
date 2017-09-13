@@ -142,7 +142,9 @@ function populateSpaceDetails(jsonData, id) {
 	if(jsonData.space == null) {
 		// Go ahead and show the space's name
 		$('.spaceName').fadeOut('fast', function(){
-			$('.spaceName').text($('.jstree-clicked').text()).fadeIn('fast');
+			var spaceName = $('.jstree-clicked').text();
+			$('.spaceName').text(spaceName).fadeIn('fast');
+			document.title = spaceName + " - StarExec";
 		});
 
 		// Show a message why they can't see the space's details
@@ -168,10 +170,11 @@ function populateSpaceDetails(jsonData, id) {
 
 
 	// Populate space defaults
-	$('.spaceName').fadeOut('fast', function(){
-		$('.spaceName').text(jsonData.space.name).fadeIn('fast');
+	$('.spaceName').fadeOut('fast', function() {
+		$('.spaceName').text(spaceName).fadeIn('fast');
+		document.title = spaceName + " - StarExec";
 	});
-	$('#spaceDesc').fadeOut('fast', function(){
+	$('#spaceDesc').fadeOut('fast', function() {
 		$('#spaceDesc').text(jsonData.space.description).fadeIn('fast');
 	});
 	$('#spaceID').fadeOut('fast', function() {

@@ -21,6 +21,10 @@ jQuery(function($) {
 		}
 	};
 
+	var formatComplete = function(row, type, val) {
+		return star.format.heatcolor((val["totalPairs"] - val["pendingPairs"]) * 100 / val["totalPairs"]);
+	};
+
 	var formatCreated = function(row, type, val) {
 		return star.format.timestamp(val["created"]);
 	};
@@ -30,13 +34,23 @@ jQuery(function($) {
 		new star.DataTableConfig({
 			"sAjaxSource"   : starexecRoot+"services/jobs/admin/pagination",
 			"sServerMethod" : "GET",
-			"order"         : [[4, "desc"]],
+			"order"         : [[5, "desc"]],
 			"aoColumns"     : [
-				{"mRender"  : formatJob },
-				{"mRender"  : formatUser },
-				{"mRender"  : formatStatus },
-				{"mRender"  : formatQueue },
-				{"mRender"  : formatCreated },
+				{"mRender"  : formatJob,
+				 "title"    : "Job"},
+				{"mRender"  : formatUser,
+				 "title"    : "User"},
+				{"mRender"  : formatQueue,
+				 "title"    : "Queue"},
+				{"mRender"  : formatComplete,
+				 "width"    : "95px",
+				 "title"    : "Complete"},
+				{"mRender"  : formatStatus,
+				 "width"    : "115px",
+				 "title"    : "Status"},
+				{"mRender"  : formatCreated,
+				 "width"    : "140px",
+				 "title"    : "Created"},
 			]
 		})
 	);
@@ -48,12 +62,8 @@ jQuery(function($) {
 			}
 		})
 		.click(function() {
-			$("#dialog-confirm-pause-txt").text("are you sure you want to pause all running jobs?");
-
-			$("#dialog-confirm-pause").dialog({
-				modal: true,
-				width: 380,
-				height: 165,
+			star.openDialog({
+				title: "Confirm Pause",
 				buttons: {
 					"OK": function() {
 						$("#dialog-confirm-pause").dialog("close");
@@ -71,7 +81,7 @@ jQuery(function($) {
 						$(this).dialog("close");
 					}
 				}
-			});
+			}, "Are you sure you want to pause all running jobs?");
 		})
 	;
 
@@ -82,12 +92,8 @@ jQuery(function($) {
 			}
 		})
 		.click(function() {
-			$("#dialog-confirm-pause-txt").text("are you sure you want to resume all admin paused jobs?");
-
-			$("#dialog-confirm-pause").dialog({
-				modal: true,
-				width: 380,
-				height: 165,
+			star.openDialog({
+				title: "Confirm Resume",
 				buttons: {
 					"OK": function() {
 						$("#dialog-confirm-pause").dialog("close");
@@ -105,7 +111,7 @@ jQuery(function($) {
 						$(this).dialog("close");
 					}
 				}
-			});
+			}, "Are you sure you want to resume all admin paused jobs?");
 		})
 	;
 });

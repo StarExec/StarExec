@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="java.util.HashMap, java.util.Map, java.util.ArrayList, java.util.List, org.apache.commons.lang3.StringUtils, org.starexec.app.RESTHelpers, org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.data.to.JobStatus.JobStatusCode, org.starexec.util.*, org.starexec.data.to.enums.ProcessorType, org.starexec.util.dataStructures.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.constants.*, org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*, org.starexec.util.dataStructures.*"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -14,8 +14,13 @@
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
-
 <star:template title="${pageTitle}" js="util/sortButtons, util/jobDetailsUtilityFunctions, util/datatablesUtility, common/delaySpinner, lib/jquery.jstree, lib/jquery.dataTables.min, details/shared, details/job, lib/jquery.ba-throttle-debounce.min, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min" css="common/table, common/delaySpinner, explore/common, details/shared, details/job">
+	<script>
+		star = star || {};
+		<c:if test="${!isLocalJobPage and !isPublicUser && !isComplete}">
+		star.isUserSubscribedToJob = ${isUserSubscribedToJob};
+		</c:if>
+	</script>
 	<c:if test="${!isAnonymousPage}">
 		<p id="displayJobID" class="accent" >job id  = ${job.id}</p>
 		<span style="display:none" id="jobId" value="${job.id}" > </span>
@@ -53,13 +58,10 @@
 			<c:if test="${isAnonymousPage && (job.userId == userId || isAdmin) }">
 				<button id="solverNameKeyButton" type="button">solver name key</button>
 			</c:if>
-
-
 			<fieldset id="statsErrorField">
 			<legend>solver summary</legend>
 			<p> There are too many job pairs in this space hierarchy to efficiently compile them into stats and graphs. Please navigate to a subspace with fewer pairs</p>
 			</fieldset>
-
 			<fieldset id="subspaceSummaryField">
 				<legend class="expd" id="subspaceExpd">subspace summaries</legend>
 				<fieldset id="panelActions" class="tableActions">
@@ -106,7 +108,6 @@
 										<th class="wrongHead"><span title="Number of job pairs that completed successfully and without resource errors, but for which the result did not match the expected result. If the actual or expected result is starexec-unknown, it is not counted.">wrong</span></th>
 										<th class="resourceHead"><span title="Number of job pairs for which there was a timeout or memout">resource out</span></th>
 										<th class="failedHead"><span title="Number of job pairs that failed due to some sort of internal error, such as job script or benchmark errors">failed</span></th>
-
 										<th class="unknownHead"><span title="Number of job pairs that had the result starexec-unknown">unknown</span></th>
 										<th class="incompleteHead"><span title="Number of job pairs that are still waiting to run or are running right now">incomplete</span></th>
 										<th class="timeHead"><span title="total wallclock or cpu time for all job pairs run that were solved correctly">time</span></th>
@@ -145,7 +146,6 @@
 									<th class="wrongHead"><span title="Number of job pairs that completed successfully and without resource errors, but for which the result did not match the expected result. If the actual or expected result is starexec-unknown, it is not counted.">wrong</span></th>
 									<th class="resourceHead"><span title="Number of job pairs for which there was a timeout or memout">resource out</span></th>
 									<th class="failedHead"><span title="Number of job pairs that failed due to some sort of internal error, such as job script or benchmark errors">failed</span></th>
-
 									<th class="unknownHead"><span title="Number of job pairs that had the result starexec-unknown">unknown</span></th>
 									<th class="incompleteHead"><span title="Number of job pairs that are still waiting to run or are running right now">incomplete</span></th>
 									<th class="timeHead"><span title="total wallclock or cpu time for all job pairs run that were solved correctly">time</span></th>
@@ -153,7 +153,7 @@
 								</tr>
 							</thead>
 							<tbody>
-								<!-- This will be populated by the job pair pagination feature -->
+								<%-- This will be populated by the job pair pagination feature --%>
 							</tbody>
 						</table>
 					</c:otherwise>
@@ -163,7 +163,6 @@
 			<c:if test="${!isLocalJobPage}">
 				<fieldset id="graphField">
 					<legend>graphs</legend>
-					<%--<img id="spaceOverview" src="" width="300" height="300" />--%>
 					<img id="spaceOverview" src="${starexecRoot}/images/loadingGraph.png" width="300" height="300" />
 					<img id="solverComparison300" width="300" height="300" src="${starexecRoot}/images/loadingGraph.png" usemap="#solverComparisonMap300" />
 					<br>
@@ -171,18 +170,14 @@
 						<legend>options</legend>
 						<fieldset id="spaceOverviewOptionField">
 							<legend>space overview options</legend>
-
 							<input type="checkbox" id="logScale"/> <span>use log scale</span>
-
 							<select multiple size="5" id="spaceOverviewSelections">
-
 							</select>
 							<button id="spaceOverviewUpdate" type="button">Update</button>
 						</fieldset>
 						<fieldset id="solverComparisonOptionField">
 							<legend>solver comparison options</legend>
 							<select id="solverChoice1">
-
 							</select>
 							<select id="solverChoice2">
 							</select>
@@ -210,7 +205,6 @@
 						<c:forEach var="i" begin="1" end="${jobspace.maxStages}">
 							<option value="${i}">${i}</option>
 						</c:forEach>
-
 					</select>
 					</fieldset>
 				<c:choose>
@@ -242,7 +236,7 @@
 											<td>${pair.getPrimaryStage().getStarexecResult()}</td>
 										</tr>
 									</c:forEach>
-									<!-- This will be populated by the job pair pagination feature -->
+									<%-- This will be populated by the job pair pagination feature --%>
 								</tbody>
 							</table>
 						</c:forEach>
@@ -260,7 +254,7 @@
 								</tr>
 							</thead>
 							<tbody>
-								<!-- This will be populated by the job pair pagination feature -->
+								<%-- This will be populated by the job pair pagination feature --%>
 							</tbody>
 						</table>
 					</c:otherwise>
@@ -301,7 +295,6 @@
 								<c:if test="${not isPaused && not isKilled && not isAdminPaused}">
 									<td>${isComplete ? 'complete' : 'incomplete'}</td>
 								</c:if>
-
 							</tr>
 							<tr title="the job creator's description for this job">
 								<td id="jobDescriptionTitle">description (click to edit)</td>
@@ -353,7 +346,6 @@
 									<td>
 										<a href="${starexecRoot}/secure/explore/cluster.jsp">
 											${job.queue.name}
-											<%-- <img class="extLink" src="${starexecRoot}/images/external.png"/> --%>
 										</a>
 									</td>
 								</c:if>
@@ -463,7 +455,6 @@
 				</div>
 				<div id="dialog-postProcess" title="run new postprocessor" class="hiddenDialog">
 					<p><span id="dialog-postProcess-txt"></span></p><br/>
-
 					<p>
 					<label for="postProcessorSelection">Post Processor</label>
 					<select id="postProcessorSelection">
@@ -482,13 +473,11 @@
 				</div>
 				<div id="dialog-changeQueue" title="change queue" class="hiddenDialog">
 					<p><span id="dialog-changeQueue-txt"></span></p><br/>
-
 					<p><select id="changeQueueSelection">
 						<c:forEach var="q" items="${queues}">
 							<option value="${q.id}">${q.name} (${q.id})</option>
 						</c:forEach>
 					</select></p>
-
 				</div>
 				<div id="dialog-spaceOverview" title="space overview chart" class="hiddenDialog">
 					<img src="" id="bigSpaceOverview"/>

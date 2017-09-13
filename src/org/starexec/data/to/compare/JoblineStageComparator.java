@@ -6,8 +6,8 @@ import java.util.Comparator;
 
 /**
  * A comparator for jobline stages that will arrange stages by increasing stage number
- * @author Eric
  *
+ * @author Eric
  */
 
 public class JoblineStageComparator implements Comparator<JoblineStage> {
@@ -16,5 +16,4 @@ public class JoblineStageComparator implements Comparator<JoblineStage> {
 	public int compare(JoblineStage arg0, JoblineStage arg1) {
 		return arg0.getStageNumber().compareTo(arg1.getStageNumber());
 	}
-
 }

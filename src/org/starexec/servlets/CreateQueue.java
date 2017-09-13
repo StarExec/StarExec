@@ -1,6 +1,5 @@
 package org.starexec.servlets;
 
-
 import org.starexec.constants.R;
 import org.starexec.data.database.Cluster;
 import org.starexec.data.database.Queues;
@@ -21,33 +20,34 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
-
 /**
  * Servlet which handles incoming requests adding new queues
+ *
  * @author Wyatt Kaiser
  */
-@SuppressWarnings("serial")
-public class CreateQueue extends HttpServlet {		
+public class CreateQueue extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(CreateQueue.class);
 
 	// Request attributes
 	private static final String name = "name";
 	private static final String nodes = "node";
-	private static final String maxCpuTimeout="cpuTimeout";
-	private static final String maxWallTimeout="wallTimeout";
-    private static final String numberOfJobsPerQueue="numberOfJobs";
-	
+	private static final String maxCpuTimeout = "cpuTimeout";
+	private static final String maxWallTimeout = "wallTimeout";
+	private static final String numberOfJobsPerQueue = "numberOfJobs";
+
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 	}
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {	
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		try {
 			ValidatorStatusCode status = isRequestValid(request);
 			if (!status.isSuccess()) {
@@ -104,7 +104,10 @@ public class CreateQueue extends HttpServlet {
 			boolean success = Queues.updateQueueCpuTimeout(queueId, cpuTimeout);
 			success = success && Queues.updateQueueWallclockTimeout(queueId, wallTimeout);
 			if (!success) {
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an internal error adding the queue to the starexec database");
+				response.sendError(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+						"There was an internal error adding the queue to the starexec database"
+				);
 			} else {
 				// On success, redirect to the space explorer so they can see changes
 				response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));
@@ -114,33 +117,32 @@ public class CreateQueue extends HttpServlet {
 			throw e;
 		}
 	}
-	
+
 	private static ValidatorStatusCode isRequestValid(HttpServletRequest request) {
 		try {
-			int userId=SessionUtil.getUserId(request);
+			int userId = SessionUtil.getUserId(request);
 			String queueName = request.getParameter(name);
-			if (!Validator.isValidPosInteger(request.getParameter(maxCpuTimeout)) || !Validator.isValidPosInteger(request.getParameter(maxWallTimeout))) {
+			if (!Validator.isValidPosInteger(request.getParameter(maxCpuTimeout)) ||
+					!Validator.isValidPosInteger(request.getParameter(maxWallTimeout))) {
 				return new ValidatorStatusCode(false, "Timeouts need to be valid integers");
 			}
-			
-			Integer cpuTimeout=Integer.parseInt(request.getParameter(maxCpuTimeout));
-			Integer wallTimeout=Integer.parseInt(request.getParameter(maxWallTimeout));
-			if (cpuTimeout<=0 || wallTimeout<=0) {
-				return new ValidatorStatusCode(false,"Timeouts need to be greater than 0.");
+
+			Integer cpuTimeout = Integer.parseInt(request.getParameter(maxCpuTimeout));
+			Integer wallTimeout = Integer.parseInt(request.getParameter(maxWallTimeout));
+			if (cpuTimeout <= 0 || wallTimeout <= 0) {
+				return new ValidatorStatusCode(false, "Timeouts need to be greater than 0.");
 			}
-			
-		    Integer jobsPerQueue = Integer.parseInt(request.getParameter(numberOfJobsPerQueue));
-            if (jobsPerQueue != 1 && jobsPerQueue != 2) {
-                return new ValidatorStatusCode(false,"Number of jobs must be 1 or 2");
-            }
 
-			return	QueueSecurity.canUserMakeQueue(userId, queueName);
+			Integer jobsPerQueue = Integer.parseInt(request.getParameter(numberOfJobsPerQueue));
+			if (jobsPerQueue != 1 && jobsPerQueue != 2) {
+				return new ValidatorStatusCode(false, "Number of jobs must be 1 or 2");
+			}
 
+			return QueueSecurity.canUserMakeQueue(userId, queueName);
 		} catch (Exception e) {
-			log.error(e.getMessage(),e);
+			log.error(e.getMessage(), e);
 		}
-		
+
 		return new ValidatorStatusCode(false, "Internal error processing queue creation request");
-		
 	}
 }

@@ -7,7 +7,9 @@ import org.starexec.logger.StarLogger;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Analytics keeps a record of how often events happen.
@@ -32,7 +34,7 @@ public class AnalyticsResults {
 	 * @param results ResultSet containing
 	 * @return list of AnalyticsResults
 	 */
-	private static LinkedList<AnalyticsResults> listFromResults(ResultSet results) throws SQLException {
+	private static List<AnalyticsResults> listFromResults(ResultSet results) throws SQLException {
 		LinkedList<AnalyticsResults> list = new LinkedList<>();
 		while (results.next()) {
 			list.add(
@@ -43,7 +45,7 @@ public class AnalyticsResults {
 				)
 			);
 		}
-		return list;
+		return Collections.unmodifiableList(list);
 	}
 
 	/**
@@ -64,7 +66,7 @@ public class AnalyticsResults {
 			);
 		} catch (SQLException e) {
 			log.error("GetAnalyticsForDateRange");
-			return new LinkedList<>();
+			return Collections.<AnalyticsResults>emptyList();
 		}
 	}
 }

@@ -6,26 +6,23 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-
-
 /**
- * Very simple servlet that simply blocks access to the files directory.
- * We might decide to move these in the future, which will make this unnecessary.
+ * Very simple servlet that simply blocks access to the files directory. We might decide to move these in the future,
+ * which will make this unnecessary.
+ *
  * @author Eric Burns
  */
-@SuppressWarnings("serial")
-public class InvalidPath extends HttpServlet {		
-
-	
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+public class InvalidPath extends HttpServlet {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 	}
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {		
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
-		
 	}
 }

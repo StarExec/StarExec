@@ -11,7 +11,7 @@ import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.to.*;
-import org.starexec.data.to.JobStatus.JobStatusCode;
+import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.data.to.enums.ProcessorType;
@@ -89,13 +89,15 @@ public class JspHelpers {
 
 			if (jobSpaceId>0) {
 				j=Jobs.get(jobId);
-				JobStatus status=Jobs.getJobStatusCode(jobId);
-				boolean isPaused = (status.getCode() == JobStatusCode.STATUS_PAUSED);
+				JobStatus status = Jobs.getJobStatus(jobId);
+				boolean isPaused = (status == JobStatus.PAUSED);
 				boolean isAdminPaused = Jobs.isSystemPaused();
-				boolean isKilled = (status.getCode() == JobStatusCode.STATUS_KILLED);
-				boolean isRunning = (status.getCode() == JobStatusCode.STATUS_RUNNING);
-				boolean isProcessing = (status.getCode() == JobStatusCode.STATUS_PROCESSING);
-				boolean isComplete = (status.getCode() == JobStatusCode.STATUS_COMPLETE);
+				boolean isKilled = (status == JobStatus.KILLED);
+				boolean isRunning = (status == JobStatus.RUNNING);
+				boolean isProcessing = (status == JobStatus.PROCESSING);
+				boolean isComplete = (status == JobStatus.COMPLETE);
+				boolean isPublicUser = Users.isPublicUser(userId);
+				boolean isUserSubscribedToJob = Notifications.isUserSubscribedToJob(userId, jobId);
 				int wallclock=j.getWallclockTimeout();
 				int cpu=j.getCpuTimeout();
 				long memory=j.getMaxMemory();
@@ -147,6 +149,8 @@ public class JspHelpers {
 				request.setAttribute("isComplete", isComplete);
 				request.setAttribute("queueIsEmpty", queueIsEmpty);
 				request.setAttribute("isProcessing", isProcessing);
+				request.setAttribute("isPublicUser", isPublicUser);
+				request.setAttribute("isUserSubscribedToJob", isUserSubscribedToJob);
 				request.setAttribute("postProcs", ListOfPostProcessors);
 				request.setAttribute("pageTitle", isAnonymousPage ? "Anonymous Job" : j.getName() );
 				request.setAttribute("initialSpaceName", isAnonymousPage ? "" : jobSpace.getName() );
@@ -400,6 +404,15 @@ public class JspHelpers {
 			return;
 		}
 
+		StringBuilder js = new StringBuilder("common/delaySpinner, lib/jquery.dataTables.min, shared/copyToStardev, details/shared, lib/prettify, details/benchmark");
+		StringBuilder lang = new StringBuilder();
+		if (b.getType().getSyntax().js != null) {
+			js.append(", ").append(b.getType().getSyntax().js);
+			lang.append(b.getType().getSyntax().classname);
+		}
+		request.setAttribute("js", js.toString());
+		request.setAttribute("lang", lang.toString());
+
 		// Set the page title to be the name of the benchmark if we're showing the benchmark name.
 		final String benchPageTitleAttributeName = "benchPageTitle";
 		if ( hideBenchmarkName ) {
@@ -433,7 +446,7 @@ public class JspHelpers {
 			String content = GeneralSecurity.getHTMLSafeString(benchmarkContents.get());
 			request.setAttribute( "content", content );
 		} catch (IOException e) {
-			log.warn(methodName, "Caught exception while trying to set benchmark contents.");
+			log.warn(methodName, "Caught exception while trying to set benchmark contents.", e);
 			request.setAttribute("content", "IO Error: Could not get benchmark contents.");
 		}
 	}

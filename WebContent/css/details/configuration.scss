@@ -1,0 +1,43 @@
+@import "shared/prettyprint";
+
+fieldset {
+	width: 75%;
+	margin-bottom: 30px;
+	margin-top: 30px;
+
+	table, ul {
+		width: 100%;
+	}
+}
+
+tr {
+	.label {
+		width: 25%;
+	}
+
+	td, th {
+		padding: 10px;
+		vertical-align: middle;
+	}
+}
+
+#detailsTbl tr td {
+	&:first-child {
+		width: 40%;
+	}
+
+	textarea {
+		height: 125px;
+	}
+}
+
+#deleteConfig, #returnLinkMargin {
+	float: right;
+	margin-right: 185px;
+}
+
+@media only screen and (max-width: 767px) {
+	th, td {
+		text-align: center;
+	}
+}

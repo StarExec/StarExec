@@ -41,6 +41,12 @@ taking an unreasonable amount of time won't keep your other pairs from running.<
 <p class="helpPage">The units for the maximum memory field is Gigabytes. This option limits the amount of memory a pair can use
 before it is terminated.</p>
 
+<h3 class="helpPage">Subscribe to Job Notifications</h3>
+<p class="helpPage">
+Choose to recieve an email notification when the job status changes
+(ie: when the job completes).
+</p>
+
 <h2 class="helpPage"> Advanced Options </h2>
 
 <h3 class="helpPage">Choosing an execution order</h3>

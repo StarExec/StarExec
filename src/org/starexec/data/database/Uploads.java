@@ -20,246 +20,255 @@ public class Uploads {
 
 	/**
 	 * Adds failed benchmark name to db
+	 *
 	 * @param statusId - id of status object being changed
-	 * @param name 
+	 * @param name
 	 * @param errorMessage The string message explaining why this benchmark could not be validated
 	 * @return true if successful, false if not
 	 */
-	public static Boolean addFailedBenchmark(Integer statusId, String name, String errorMessage){
-		if (statusId==null) {
+	public static Boolean addFailedBenchmark(Integer statusId, String name, String errorMessage) {
+		if (statusId == null) {
 			return false;
 		}
-		Connection con = null;	
+		Connection con = null;
 		CallableStatement procedure = null;
-		
+
 		try {
-			con = Common.getConnection();	
-				
+			con = Common.getConnection();
+
 			procedure = con.prepareCall("{CALL AddUnvalidatedBenchmark(?,?, ?)}");
-		
+
 			procedure.setInt(1, statusId);
-			procedure.setString(2,name);
+			procedure.setString(2, name);
 			procedure.setString(3, errorMessage);
-			procedure.executeUpdate();			
+			procedure.executeUpdate();
 			return true;
-		} catch (Exception e){			
-			log.error("addFailedBenchmark says " + e.getMessage(), e);	
+		} catch (Exception e) {
+			log.error("addFailedBenchmark says " + e.getMessage(), e);
 			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 	}
-	
+
 	/**
 	 * Creates object representing the current status of a user's upload of benchmarks
+	 *
 	 * @param spaceId - the id of the parent space that benchmarks are being uploaded to
 	 * @param userId - id of the user uploading benchmarks
 	 * @return the id of the UploadStatus object
 	 * @author Benton McCune
 	 */
-	public static Integer createBenchmarkUploadStatus(Integer spaceId, Integer userId){
-		
-		Connection con = null;			
+	public static Integer createBenchmarkUploadStatus(Integer spaceId, Integer userId) {
+
+		Connection con = null;
 		CallableStatement procedure = null;
 		try {
-			con = Common.getConnection();	
-				
-			 procedure = con.prepareCall("{CALL CreateBenchmarkUploadStatus(?, ?, ?)}");
-		
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL CreateBenchmarkUploadStatus(?, ?, ?)}");
+
 			procedure.setInt(1, spaceId);
-			procedure.setInt(2, userId);	
-			procedure.registerOutParameter(3, java.sql.Types.INTEGER);	
-			procedure.executeUpdate();			
+			procedure.setInt(2, userId);
+			procedure.registerOutParameter(3, java.sql.Types.INTEGER);
+			procedure.executeUpdate();
 			Integer newStatusId = procedure.getInt(3);
 			return newStatusId;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 			return -1;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 	}
-	
+
 	/**
 	 * Creates object representing the current status of a user's upload of benchmarks
+	 *
 	 * @param userId - id of the user uploading benchmarks
 	 * @return the id of the UploadStatus object
 	 * @author Benton McCune
 	 */
-	public static int createSpaceXMLUploadStatus(Integer userId){
-		
-		Connection con = null;			
+	public static int createSpaceXMLUploadStatus(Integer userId) {
+
+		Connection con = null;
 		CallableStatement procedure = null;
 		try {
-			con = Common.getConnection();	
-				
+			con = Common.getConnection();
+
 			procedure = con.prepareCall("{CALL CreateSpaceXMLUploadStatus(?, ?)}");
-		
-			procedure.setInt(1, userId);	
-			procedure.registerOutParameter(2, java.sql.Types.INTEGER);	
-			procedure.executeUpdate();			
+
+			procedure.setInt(1, userId);
+			procedure.registerOutParameter(2, java.sql.Types.INTEGER);
+			procedure.executeUpdate();
 			Integer newStatusId = procedure.getInt(2);
 			return newStatusId;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 			return -1;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 	}
-	
+
 	/**
-	 * Sets the 'everything complete' flag to true for the XML upload entry
-	 * with the given ID
+	 * Sets the 'everything complete' flag to true for the XML upload entry with the given ID
+	 *
 	 * @param statusId
 	 * @return True on success and false otherwise, including if the given statusId is null
 	 */
-	public static boolean XMLEverythingComplete(Integer statusId){
-		if (statusId==null) {
+	public static boolean XMLEverythingComplete(Integer statusId) {
+		if (statusId == null) {
 			return false;
 		}
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure = null;
 		try {
-			con = Common.getConnection();		
+			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL XMLEverythingComplete(?)}");
-		
+
 			procedure.setInt(1, statusId);
-			procedure.executeUpdate();			
+			procedure.executeUpdate();
 			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 	}
-	
+
 	/**
-	 * Indicates that the entire benchmark upload process is complete.  This is triggered
-	 * even if the upload failed for some reason.
+	 * Indicates that the entire benchmark upload process is complete.  This is triggered even if the upload failed for
+	 * some reason.
+	 *
 	 * @param statusId
 	 * @return true if successful, false if not
 	 */
-	public static Boolean benchmarkEverythingComplete(Integer statusId){
-		if (statusId==null) {
+	public static Boolean benchmarkEverythingComplete(Integer statusId) {
+		if (statusId == null) {
 			return false;
 		}
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure = null;
 		try {
-			con = Common.getConnection();		
+			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL BenchmarkEverythingComplete(?)}");
-		
+
 			procedure.setInt(1, statusId);
-			procedure.executeUpdate();			
+			procedure.executeUpdate();
 			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 	}
+
 	/**
 	 * The archived file has been successfully extracted.
+	 *
 	 * @param statusId
 	 * @return true if successful, false if not
 	 */
-	public static Boolean fileExtractComplete(Integer statusId){
-		if (statusId==null) {
+	public static Boolean fileExtractComplete(Integer statusId) {
+		if (statusId == null) {
 			return false;
 		}
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure = null;
 		try {
-			con = Common.getConnection();	
-				
+			con = Common.getConnection();
+
 			procedure = con.prepareCall("{CALL FileExtractComplete(?)}");
-		
+
 			procedure.setInt(1, statusId);
-			procedure.executeUpdate();			
+			procedure.executeUpdate();
 			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 	}
-	
+
 	/**
 	 * Informs the database that the archive file has been uploaded and is in the file system.
+	 *
 	 * @param statusId - id of uploadStatus object
 	 * @return true if successful, false if not
 	 */
-	public static Boolean XMLFileUploadComplete(Integer statusId){
-		if (statusId==null) {
+	public static Boolean XMLFileUploadComplete(Integer statusId) {
+		if (statusId == null) {
 			return false;
 		}
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure = null;
 		try {
-			con = Common.getConnection();	
-				
+			con = Common.getConnection();
+
 			procedure = con.prepareCall("{CALL XMLFileUploadComplete(?)}");
-		
+
 			procedure.setInt(1, statusId);
-			procedure.executeUpdate();			
+			procedure.executeUpdate();
 			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 	}
-	
+
 	/**
 	 * Informs the database that the archive file has been uploaded and is in the file system.
+	 *
 	 * @param statusId - id of uploadStatus object
 	 * @return true if successful, false if not
 	 */
-	public static Boolean benchmarkFileUploadComplete(Integer statusId){
-		if (statusId==null) {
+	public static Boolean benchmarkFileUploadComplete(Integer statusId) {
+		if (statusId == null) {
 			return false;
 		}
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure = null;
 		try {
-			con = Common.getConnection();	
-				
+			con = Common.getConnection();
+
 			procedure = con.prepareCall("{CALL BenchmarkFileUploadComplete(?)}");
-		
+
 			procedure.setInt(1, statusId);
-			procedure.executeUpdate();			
+			procedure.executeUpdate();
 			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 	}
-	
+
 	/**
-	 * Gets a string summary of an upload status, suitable for printing out and displaying to users
-	 * (used in StarexeCommand)
+	 * Gets a string summary of an upload status, suitable for printing out and displaying to users (used in
+	 * StarexeCommand)
+	 *
 	 * @param statusId
 	 * @return The string summary, or null on error
 	 */
 	public static String getUploadStatusSummary(int statusId) {
 		try {
-			BenchmarkUploadStatus status=getBenchmarkStatus(statusId);
-			StringBuilder sb=new StringBuilder();
+			BenchmarkUploadStatus status = getBenchmarkStatus(statusId);
+			StringBuilder sb = new StringBuilder();
 			sb.append("benchmarks: ");
 			sb.append(status.getValidatedBenchmarks());
 			sb.append(" / ");
@@ -273,7 +282,7 @@ public class Uploads {
 			sb.append(status.getTotalSpaces());
 			sb.append("\n");
 			sb.append(status.getErrorMessage());
-			if(status.isEverythingComplete()) {
+			if (status.isEverythingComplete()) {
 				sb.append("\n");
 				sb.append("upload complete");
 			}
@@ -283,26 +292,25 @@ public class Uploads {
 		}
 		return null;
 	}
-	
+
 	/**
-	 *
 	 * @param statusId
 	 * @return the upload status object for a space XML upload
 	 */
 	public static SpaceXMLUploadStatus getSpaceXMLStatus(int statusId) {
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		try {			
-			con = Common.getConnection();		
+		try {
+			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetXMLUploadStatusById(?)}");
-			procedure.setInt(1, statusId);					
-			results = procedure.executeQuery();		
-			
-			if(results.next()){
+			procedure.setInt(1, statusId);
+			results = procedure.executeQuery();
+
+			if (results.next()) {
 				SpaceXMLUploadStatus s = new SpaceXMLUploadStatus();
 				s.setId(results.getInt("id"));
-				
+
 				s.setTotalBenchmarks(results.getInt("total_benchmarks"));
 				s.setCompletedBenchmarks(results.getInt("completed_benchmarks"));
 
@@ -311,34 +319,34 @@ public class Uploads {
 
 				s.setTotalSolvers(results.getInt("total_solvers"));
 				s.setCompletedSolvers(results.getInt("completed_solvers"));
-				
+
 				s.setTotalUpdates(results.getInt("total_updates"));
 				s.setCompletedUpdates(results.getInt("completed_updates"));
-				
+
 				s.setUploadDate(results.getTimestamp("upload_time"));
 				s.setUserId(results.getInt("user_id"));
 				s.setFileUploadComplete(results.getBoolean("file_upload_complete"));
 				s.setEverythingComplete(results.getBoolean("everything_complete"));
 				s.setErrorMessage(results.getString("error_message"));
 				return s;
-			}														
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
-	 * Accepts a result set currently pointing to a row containing a BenchmarkUploadStatus
-	 * and returns that status.
+	 * Accepts a result set currently pointing to a row containing a BenchmarkUploadStatus and returns that status.
+	 *
 	 * @param results The open resultset.
 	 * @return The BenchmarkUploadStatus
-	 * @throws SQLException 
+	 * @throws SQLException
 	 */
 	private static BenchmarkUploadStatus resultsToBenchmarkUploadStatus(ResultSet results) throws SQLException {
 		BenchmarkUploadStatus s = new BenchmarkUploadStatus();
@@ -359,480 +367,491 @@ public class Uploads {
 		s.setFailedBenchmarks(results.getInt("failed_benchmarks"));
 		return s;
 	}
-	
+
 	/**
 	 * Gets the upload status object when given its id
+	 *
 	 * @param statusId The id of the status to get information for
 	 * @return An upload status object
 	 * @author Benton McCune
 	 */
 	public static BenchmarkUploadStatus getBenchmarkStatus(int statusId) {
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		try {			
-			con = Common.getConnection();		
+		try {
+			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetBenchmarkUploadStatusById(?)}");
-			procedure.setInt(1, statusId);					
-			results = procedure.executeQuery();		
-			
-			if(results.next()){
+			procedure.setInt(1, statusId);
+			results = procedure.executeQuery();
+
+			if (results.next()) {
 				return resultsToBenchmarkUploadStatus(results);
-			}														
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-		
+
 		return null;
 	}
+
 	/**
 	 * Gets the upload status object when given its id
+	 *
 	 * @param statusId The id of the status to get information for
 	 * @return An upload status object
 	 * @author Benton McCune
 	 */
 	public static List<Benchmark> getFailedBenches(int statusId) {
-		
-		Connection con = null;			
+
+		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		try {			
-			con = Common.getConnection();		
+		try {
+			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetUnvalidatedBenchmarks(?)}");
-			procedure.setInt(1, statusId);					
-			results = procedure.executeQuery();		
+			procedure.setInt(1, statusId);
+			results = procedure.executeQuery();
 			List<Benchmark> badBenches = new LinkedList<>();
-			while(results.next()){
+			while (results.next()) {
 				Benchmark b = new Benchmark();
 				b.setName(results.getString("bench_name"));
 				b.setId(results.getInt("id"));
 				badBenches.add(b);
 			}
 			return badBenches;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Gets the benchmark processor output for a particular benchmark that failed validation
+	 *
 	 * @param id The ID of the invalid benchmark row
 	 * @return The output of the processor as a string. Returns null if it does not exist.
 	 */
 	public static String getInvalidBenchmarkErrorMessage(int id) {
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		try {			
-			con = Common.getConnection();		
+		try {
+			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetInvalidBenchmarkMessage(?)}");
 			procedure.setInt(1, id);
-			results = procedure.executeQuery();		
-			if(results.next()){
+			results = procedure.executeQuery();
+			if (results.next()) {
 				return results.getString("error_message");
 			}
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
-	 * Given the ID of a row of an invalid benchmark, return the containing
-	 * BenchmarkUploadStatus
+	 * Given the ID of a row of an invalid benchmark, return the containing BenchmarkUploadStatus
+	 *
 	 * @param id The ID of the invalid benchmark row
 	 * @return The BenchmarkUploadStatus, or null on error
 	 */
 	public static BenchmarkUploadStatus getUploadStatusForInvalidBenchmarkId(int id) {
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
-		try {			
-			con = Common.getConnection();		
+		try {
+			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetUploadStatusForInvalidBenchmarkId(?)}");
 			procedure.setInt(1, id);
-			results = procedure.executeQuery();		
-			if(results.next()){
+			results = procedure.executeQuery();
+			if (results.next()) {
 				return resultsToBenchmarkUploadStatus(results);
 			}
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
 			Common.safeClose(procedure);
 		}
-		
+
 		return null;
 	}
-	
+
 	/**
 	 * Adds incrementCount to the count of completed benchmarks when a benchmark is finished and added to the db.
+	 *
 	 * @param statusId - id of status object being incremented
 	 * @param incrementCount The number to increment by
 	 * @return true if successful, false if not
 	 */
-	public static Boolean incrementCompletedBenchmarks(Integer statusId,int incrementCount){
-		if (statusId==null || statusId<=0) {
+	public static Boolean incrementCompletedBenchmarks(Integer statusId, int incrementCount) {
+		if (statusId == null || statusId <= 0) {
 			return false;
 		}
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure = null;
 		try {
-			con = Common.getConnection();	
-				
+			con = Common.getConnection();
+
 			procedure = con.prepareCall("{CALL IncrementCompletedBenchmarks(?,?)}");
-		
-			procedure.setInt(1, statusId);
-			procedure.setInt(2,incrementCount);
-			procedure.executeUpdate();			
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
-			return false;
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-	}
-	/**
-	 * Adds 1 to the count of completed spaces when a space is finished and added to the db.
-	 * @param statusId - id of status object being incremented
-	 * @param incrementCount The number to increment by
-	 * @return true if successful, false if not
-	 */
-	public static Boolean incrementCompletedSpaces(Integer statusId, int incrementCount){
-		if (statusId==null) {
-			return false;
-		}
-		Connection con = null;			
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();	
-				
-			procedure = con.prepareCall("{CALL IncrementCompletedSpaces(?,?)}");
-		
+
 			procedure.setInt(1, statusId);
 			procedure.setInt(2, incrementCount);
-			procedure.executeUpdate();			
+			procedure.executeUpdate();
 			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 	}
-	
+
+	/**
+	 * Adds 1 to the count of completed spaces when a space is finished and added to the db.
+	 *
+	 * @param statusId - id of status object being incremented
+	 * @param incrementCount The number to increment by
+	 * @return true if successful, false if not
+	 */
+	public static Boolean incrementCompletedSpaces(Integer statusId, int incrementCount) {
+		if (statusId == null) {
+			return false;
+		}
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL IncrementCompletedSpaces(?,?)}");
+
+			procedure.setInt(1, statusId);
+			procedure.setInt(2, incrementCount);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return false;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+
 	/**
 	 * Adds 1 to the count of failed benchmarks when a benchmark fails validation.
+	 *
 	 * @param statusId - id of status object being incremented
 	 * @param incrementCounter The number to increment by
 	 * @return true if successful, false if not
 	 */
-	public static Boolean incrementFailedBenchmarks(Integer statusId,int incrementCounter){
-		if (statusId==null) {
+	public static Boolean incrementFailedBenchmarks(Integer statusId, int incrementCounter) {
+		if (statusId == null) {
 			return false;
 		}
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure = null;
 		try {
-			con = Common.getConnection();	
-				
+			con = Common.getConnection();
+
 			procedure = con.prepareCall("{CALL IncrementFailedBenchmarks(?,?)}");
-		
-			procedure.setInt(1, statusId);
-			procedure.setInt(2,incrementCounter);
-			procedure.executeUpdate();			
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
-			return false;
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-	}
-	
-	private static Boolean incrementXMLCompletedOfType(Integer statusId, int num,String type){
-		if (statusId==null) {
-			return false;
-		}
-		Connection con = null;			
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();	
-				
-			procedure = con.prepareCall("{CALL IncrementXMLCompleted"+type+"s(?,?)}");
-			procedure.setInt(1, statusId);
-			procedure.setInt(2,num);
-			procedure.executeUpdate();			
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
-			return false;
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-	}
-	
-	public static Boolean incrementXMLCompletedBenchmarks(Integer statusId, int num){
-		return incrementXMLCompletedOfType(statusId,num,"Benchmark");
-	}
-	public static Boolean incrementXMLCompletedSolvers(Integer statusId, int num){
-		return incrementXMLCompletedOfType(statusId,num,"Solver");
-	}
-	public static Boolean incrementXMLCompletedUpdates(Integer statusId, int num){
-		return incrementXMLCompletedOfType(statusId,num,"Update");
-	}
-	public static Boolean incrementXMLCompletedSpaces(Integer statusId, int num){
-		return incrementXMLCompletedOfType(statusId,num,"Space");
-	}
-	
-	private static Boolean setXMLTotalOfType(Integer statusId, int num,String type){
-		if (statusId==null) {
-			return false;
-		}
-		Connection con = null;			
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();	
-				
-			procedure = con.prepareCall("{CALL SetXMLTotal"+type+"s(?,?)}");
-			procedure.setInt(1, statusId);
-			procedure.setInt(2,num);
-			procedure.executeUpdate();			
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
-			return false;
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-	}
-	
-	public static Boolean setXMLTotalBenchmarks(Integer statusId, int num){
-		return setXMLTotalOfType(statusId,num,"Benchmark");
-	}
-	
-	public static Boolean setXMLTotalSolvers(Integer statusId, int num){
-		return setXMLTotalOfType(statusId,num,"Solver");
-	}
-	
-	public static Boolean setXMLTotalUpdates(Integer statusId, int num){
-		return setXMLTotalOfType(statusId,num,"Update");
-	}
-	
-	public static Boolean setXMLTotalSpaces(Integer statusId, int num){
-		return setXMLTotalOfType(statusId,num,"Space");
-	}
-	
-	/**
-	 *  Adds 1 to the count of total benchmarks when a file is encountered in the creation of space
-	 * java objects.
-	 * @param statusId - id of status object being incremented
-	 * @return true if successful, false if not
-	 */
-	public static Boolean incrementTotalBenchmarks(Integer statusId, int incrementCounter){
-		if (statusId==null) {
-			return false;
-		}
-		if (incrementCounter==0) {
-			return true;
-		}
-		Connection con = null;			
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();	
-				
-			procedure = con.prepareCall("{CALL IncrementTotalBenchmarks(?,?)}");
-			procedure.setInt(1, statusId);
-			procedure.setInt(2,incrementCounter);
-			procedure.executeUpdate();			
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
-			return false;
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-	}
-	
-	/**
-	 * Adds 1 to the count of total spaces when a directory is encountered in the creation of space
-	 * java objects.
-	 * @param statusId - id of status object being incremented
-	 * @param incrementCounter The number to increment by
-	 * @return true if successful, false if not
-	 */
-	public static Boolean incrementTotalSpaces(Integer statusId, int incrementCounter){
-		if (statusId==null) {
-			return false;
-		}
-		if (incrementCounter==0) {
-			return true;
-		}
-		Connection con = null;			
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();	
-				
-			procedure = con.prepareCall("{CALL IncrementTotalSpaces(?,?)}");
-		
-			procedure.setInt(1, statusId);
-			procedure.setInt(2,incrementCounter);
-			procedure.executeUpdate();			
-			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
-			return false;
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-		}
-	}
-	
-	/**
-	 *  Adds 1 to the count of validated benchmarks when a benchmark is processed and validated.  Benchmark must still be 
-	 *  added to the db at this point.
-	 * @param statusId - id of status object being incremented
-	 * @param incrementCounter The number to increment by
-	 * @return true if successful, false if not
-	 */
-	public static Boolean incrementValidatedBenchmarks(Integer statusId, int incrementCounter){
-		if (statusId==null) {
-			return false;
-		}
-		Connection con = null;			
-		CallableStatement procedure = null;
-		try {
-			con = Common.getConnection();	
-				
-			procedure = con.prepareCall("{CALL IncrementValidatedBenchmarks(?,?)}");
-		
+
 			procedure.setInt(1, statusId);
 			procedure.setInt(2, incrementCounter);
-			procedure.executeUpdate();			
+			procedure.executeUpdate();
 			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 	}
-	
+
+	private static Boolean incrementXMLCompletedOfType(Integer statusId, int num, String type) {
+		if (statusId == null) {
+			return false;
+		}
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL IncrementXMLCompleted" + type + "s(?,?)}");
+			procedure.setInt(1, statusId);
+			procedure.setInt(2, num);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return false;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+
+	public static Boolean incrementXMLCompletedBenchmarks(Integer statusId, int num) {
+		return incrementXMLCompletedOfType(statusId, num, "Benchmark");
+	}
+
+	public static Boolean incrementXMLCompletedSolvers(Integer statusId, int num) {
+		return incrementXMLCompletedOfType(statusId, num, "Solver");
+	}
+
+	public static Boolean incrementXMLCompletedUpdates(Integer statusId, int num) {
+		return incrementXMLCompletedOfType(statusId, num, "Update");
+	}
+
+	public static Boolean incrementXMLCompletedSpaces(Integer statusId, int num) {
+		return incrementXMLCompletedOfType(statusId, num, "Space");
+	}
+
+	private static Boolean setXMLTotalOfType(Integer statusId, int num, String type) {
+		if (statusId == null) {
+			return false;
+		}
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL SetXMLTotal" + type + "s(?,?)}");
+			procedure.setInt(1, statusId);
+			procedure.setInt(2, num);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return false;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+
+	public static Boolean setXMLTotalBenchmarks(Integer statusId, int num) {
+		return setXMLTotalOfType(statusId, num, "Benchmark");
+	}
+
+	public static Boolean setXMLTotalSolvers(Integer statusId, int num) {
+		return setXMLTotalOfType(statusId, num, "Solver");
+	}
+
+	public static Boolean setXMLTotalUpdates(Integer statusId, int num) {
+		return setXMLTotalOfType(statusId, num, "Update");
+	}
+
+	public static Boolean setXMLTotalSpaces(Integer statusId, int num) {
+		return setXMLTotalOfType(statusId, num, "Space");
+	}
+
 	/**
-	 * Indicates that benchmark and space java objects have been created for the entire space hierarchy.  
-	 * This is called when the benchmarks are being validated and entered into the database.
+	 * Adds 1 to the count of total benchmarks when a file is encountered in the creation of space java objects.
+	 *
+	 * @param statusId - id of status object being incremented
+	 * @return true if successful, false if not
+	 */
+	public static Boolean incrementTotalBenchmarks(Integer statusId, int incrementCounter) {
+		if (statusId == null) {
+			return false;
+		}
+		if (incrementCounter == 0) {
+			return true;
+		}
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL IncrementTotalBenchmarks(?,?)}");
+			procedure.setInt(1, statusId);
+			procedure.setInt(2, incrementCounter);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return false;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+
+	/**
+	 * Adds 1 to the count of total spaces when a directory is encountered in the creation of space java objects.
+	 *
+	 * @param statusId - id of status object being incremented
+	 * @param incrementCounter The number to increment by
+	 * @return true if successful, false if not
+	 */
+	public static Boolean incrementTotalSpaces(Integer statusId, int incrementCounter) {
+		if (statusId == null) {
+			return false;
+		}
+		if (incrementCounter == 0) {
+			return true;
+		}
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL IncrementTotalSpaces(?,?)}");
+
+			procedure.setInt(1, statusId);
+			procedure.setInt(2, incrementCounter);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return false;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+
+	/**
+	 * Adds 1 to the count of validated benchmarks when a benchmark is processed and validated.  Benchmark must
+	 * still be
+	 * added to the db at this point.
+	 *
+	 * @param statusId - id of status object being incremented
+	 * @param incrementCounter The number to increment by
+	 * @return true if successful, false if not
+	 */
+	public static Boolean incrementValidatedBenchmarks(Integer statusId, int incrementCounter) {
+		if (statusId == null) {
+			return false;
+		}
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL IncrementValidatedBenchmarks(?,?)}");
+
+			procedure.setInt(1, statusId);
+			procedure.setInt(2, incrementCounter);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return false;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+
+	/**
+	 * Indicates that benchmark and space java objects have been created for the entire space hierarchy. This is called
+	 * when the benchmarks are being validated and entered into the database.
+	 *
 	 * @param statusId
 	 * @return true if successful, false if not
 	 */
-	public static Boolean processingBegun(Integer statusId){
-		if (statusId==null) {
+	public static Boolean processingBegun(Integer statusId) {
+		if (statusId == null) {
 			return false;
 		}
-		Connection con = null;			
+		Connection con = null;
 		CallableStatement procedure = null;
 		try {
-			con = Common.getConnection();	
-				
+			con = Common.getConnection();
+
 			procedure = con.prepareCall("{CALL processingBegun(?)}");
-		
+
 			procedure.setInt(1, statusId);
-			procedure.executeUpdate();			
+			procedure.executeUpdate();
 			return true;
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);	
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 	}
+
 	/**
-	 * 
 	 * @param statusId
 	 * @param message
 	 * @return True on success and false on error
 	 */
-	public static Boolean setXMLErrorMessage(Integer statusId, String message){
-	    if (statusId == null) {
+	public static Boolean setXMLErrorMessage(Integer statusId, String message) {
+		if (statusId == null) {
 			return false;
+		}
+		Connection con = null;
+		CallableStatement procedure = null;
 
-	    }
-	    Connection con = null;	
-	    CallableStatement procedure = null;
-	   
-	    try {
-			con = Common.getConnection();	
-					
+		try {
+			con = Common.getConnection();
+
 			procedure = con.prepareCall("{CALL SetXMLErrorMessage(?,?)}");
-			
+
 			procedure.setInt(1, statusId);
-			procedure.setString(2,message);
-			procedure.executeUpdate();			
+			procedure.setString(2, message);
+			procedure.executeUpdate();
 			return true;
-	    } catch (Exception e){			
-			log.error(e.getMessage(), e);	
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 			return false;
-	    } finally {
+		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
-	    }
+		}
 	}
-	   
-	
+
 	/**
 	 * Sets error message
+	 *
 	 * @param statusId - id of status object being changed
 	 * @param message The error message to set.
 	 * @return true if successful, false if not
 	 */
-	public static Boolean setBenchmarkErrorMessage(Integer statusId, String message){
-	    if (statusId == null) {
+	public static Boolean setBenchmarkErrorMessage(Integer statusId, String message) {
+		if (statusId == null) {
 			return false;
+		}
+		Connection con = null;
+		CallableStatement procedure = null;
 
-	    }
-	    Connection con = null;	
-	    CallableStatement procedure = null;
-	    
-	    try {
-			con = Common.getConnection();	
-					
+		try {
+			con = Common.getConnection();
+
 			procedure = con.prepareCall("{CALL SetBenchmarkErrorMessage(?,?)}");
-			
+
 			procedure.setInt(1, statusId);
-			procedure.setString(2,message);
-			procedure.executeUpdate();			
+			procedure.setString(2, message);
+			procedure.executeUpdate();
 			return true;
-	    } catch (Exception e){			
-			log.error(e.getMessage(), e);	
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
 			return false;
-	    } finally {
+		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
-	    }
+		}
 	}
-    
 }

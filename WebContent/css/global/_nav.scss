@@ -16,6 +16,7 @@ nav {
 		}
 	}
 
+
 	ul li {
 		display: inline-block;
 		list-style-type: none;
@@ -29,6 +30,7 @@ nav {
 		@include mobile {
 			margin: 0 0 10px 0;
 		}
+
 
 		ul li a {
 			cursor: pointer;

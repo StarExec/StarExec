@@ -664,6 +664,7 @@ public class Util {
 	 * Clears out directories under joboutput that do not belong to any job in the database. These
 	 * directories are ones that were not cleared correctly.
 	 */
+	/*
 	public static void clearOrphanedJobDirectories() {
 		log.info("calling clearOrphanedJobDirectories");
 		File outputDirectory = new File(R.getJobOutputDirectory());
@@ -691,9 +692,8 @@ public class Util {
 				log.error("failed to deleted directory " + s);
 			}
 		}
-
-
 	}
+	*/
 
 	/**
 	 * Deletes all files in the given directory that are as old as, or older than the specified number of days
@@ -1145,21 +1145,6 @@ public class Util {
 	}
 
 	/**
-	 * Writes the given InputStream to the given file. The InputStream
-	 * will be close on return
-	 *
-	 * @param stream The InputStream to copy
-	 * @param outputFile The File to write to
-	 * @throws IOException If there were any writing exceptions
-	 */
-	public static void writeInputStreamToFile(InputStream stream, File outputFile) throws IOException {
-		FileOutputStream output = new FileOutputStream(outputFile);
-		IOUtils.copy(stream, output);
-		stream.close();
-		output.close();
-	}
-
-	/**
 	 * Replaces NODE path separator with HEAD path separator
 	 *
 	 * @param path to normalize
@@ -1169,4 +1154,14 @@ public class Util {
 		return path.replace(R.JOB_PAIR_PATH_DELIMITER, File.separator) + File.separator;
 	}
 
+	/**
+	 * Try to detect if a file is binary.
+	 * For example, if a file is an execuatable binary instead of a text shell
+	 * script, this function will return true
+	 * @param file to check
+	 * @return true if file is binary, false otherwise
+	 */
+	public static boolean isBinaryFile(File f) throws IOException {
+		return Util.executeCommand("file -bi "+f).contains("charset=binary");
+	}
 }

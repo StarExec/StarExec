@@ -8,39 +8,38 @@ import java.util.List;
 
 /**
  * Represents a user in the database
- * 
+ *
  * @author Tyler Jensen
  */
 public class User extends Identifiable {
-	@Expose	private String email;
-	@Expose	private String firstName;
-	@Expose	private String lastName;
-	@Expose	private String institution;	
+	@Expose private String email;
+	@Expose private String firstName;
+	@Expose private String lastName;
+	@Expose private String institution;
 	private String role;
-	private Timestamp createDate;	
-	private transient String password;		
+	private Timestamp createDate;
+	private transient String password;
 	private List<Website> websites;
 	private long diskQuota;
 	private long diskUsage;
 	private boolean subscribedToReports;
 	private boolean subscribedToErrorLogs;
 	private int pairQuota;
-	
-	
+
 	/**
 	 * @return the user's disk quota (in bytes)
 	 */
-	public long getDiskQuota(){
+	public long getDiskQuota() {
 		return diskQuota;
 	}
-	
+
 	/**
 	 * @param diskQuota the disk quota to set
 	 */
-	public void setDiskQuota(long diskQuota){
+	public void setDiskQuota(long diskQuota) {
 		this.diskQuota = diskQuota;
 	}
-	
+
 	/**
 	 * @return the user's registered email address
 	 */
@@ -75,8 +74,6 @@ public class User extends Identifiable {
 	public String getLastName() {
 		return lastName;
 	}
-	
-	
 
 	/**
 	 * @param lastName the last name to set for the user
@@ -98,7 +95,7 @@ public class User extends Identifiable {
 	public void setInstitution(String institution) {
 		this.institution = institution;
 	}
-	
+
 	/**
 	 * @return the role of the user
 	 */
@@ -147,15 +144,14 @@ public class User extends Identifiable {
 	public String getFullName() {
 		return firstName + " " + lastName;
 	}
-	
+
 	/**
 	 * @return A list of websites associated with the user
 	 */
 	public List<Website> getWebsites() {
-		if(websites == null) {
+		if (websites == null) {
 			this.websites = new LinkedList<>();
 		}
-		
 		return websites;
 	}
 
@@ -163,10 +159,9 @@ public class User extends Identifiable {
 	 * @param website A website to associate with the user
 	 */
 	public void addWebsite(Website website) {
-		if(this.websites == null) {
+		if (this.websites == null) {
 			websites = new LinkedList<>();
 		}
-		
 		this.websites.add(website);
 	}
 
@@ -180,6 +175,7 @@ public class User extends Identifiable {
 
 	/**
 	 * Subscribe/unsubscribe user to reports.
+	 *
 	 * @param subscribe Whether or not to subscribe the user.
 	 * @author Albert Giegerich
 	 */
@@ -194,7 +190,7 @@ public class User extends Identifiable {
 	public void setSubscribedToErrorLogs(boolean subscribedToErrorLogs) {
 		this.subscribedToErrorLogs = subscribedToErrorLogs;
 	}
-	
+
 	@Override
 	public String toString() {
 		return this.getFullName();

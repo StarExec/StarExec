@@ -12,16 +12,6 @@ fieldset {
 	cursor: pointer;
 }
 
-#actionList {
-	list-style: none;
-
-	li {
-		float: left;
-		margin-left: 5px;
-		margin-bottom: 10px;
-	}
-}
-
 #incompleteHead, #completeHead, #configHead {
 	width: 18%;
 }
@@ -56,6 +46,7 @@ thead {
 
 #solveTbl {
 	font-size: 82%;
+
 	@extend %popup-links;
 }
 
@@ -171,6 +162,7 @@ p.accent {
 
 	table.panel {
 		@extend %popup-links;
+
 		font-size: 70%;
 		width: 100% !important;
 		min-width: 100% !important;

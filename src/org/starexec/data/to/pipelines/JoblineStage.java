@@ -10,13 +10,13 @@ import java.util.Properties;
 
 /**
  * This class represents the set of results for a single stage of a jobline
- * @author Eric
  *
+ * @author Eric
  */
 public class JoblineStage {
 	private Solver solver = null;
-	private Integer stageId=null; // This is the ID of the PipelineStage that this JoblineStage refers to 
-	private Integer jobpairId=null;
+	private Integer stageId = null; // This is the ID of the PipelineStage that this JoblineStage refers to
+	private Integer jobpairId = null;
 	private double wallclockTime;
 	private double cpuTime;
 	private double userTime;
@@ -25,23 +25,20 @@ public class JoblineStage {
 	private double maxVirtualMemory;
 	private double maxResidenceSetSize;
 	private Configuration configuration = null;
-	private boolean noOp=false;
+	private boolean noOp = false;
 	private Properties attributes = null;
-	private Integer stageNumber =null; //which stage is this? 1,2... etc.
-	
+	private Integer stageNumber = null; //which stage is this? 1,2... etc.
+
 	private List<PipelineDependency> dependencies;
 
-	
-	
 	// the standard output of this pair. This is only populated for a short time in pair.jsp
-	private String output=null;
+	private String output = null;
+
 	public JoblineStage() {
 		this.setSolver(new Solver());
 		this.setConfiguration(new Configuration());
-		status=new Status();
-		this.attributes=new Properties();
-		
-		
+		status = new Status();
+		this.attributes = new Properties();
 	}
 
 	public Configuration getConfiguration() {
@@ -67,7 +64,6 @@ public class JoblineStage {
 	public void setMaxVirtualMemory(double maxVirtualMemory) {
 		this.maxVirtualMemory = maxVirtualMemory;
 	}
-
 
 	public double getSystemTime() {
 		return systemTime;
@@ -117,7 +113,6 @@ public class JoblineStage {
 		this.stageId = stageId;
 	}
 
-
 	public Integer getJobpairId() {
 		return jobpairId;
 	}
@@ -141,7 +136,7 @@ public class JoblineStage {
 	public void setNoOp(boolean noOp) {
 		this.noOp = noOp;
 	}
-	
+
 	/**
 	 * @return the attributes for this job pair
 	 */
@@ -155,14 +150,14 @@ public class JoblineStage {
 	public void setAttributes(Properties attributes) {
 		this.attributes = attributes;
 	}
-	
+
 	/**
 	 * @return the starexec-result value from attributes list
 	 */
 	public String getStarexecResult() {
 		Properties prop = this.getAttributes();
-		return (prop != null && prop.containsKey(R.STAREXEC_RESULT) && prop.get(R.STAREXEC_RESULT)!=null) 
-			? prop.getProperty(R.STAREXEC_RESULT) : "--";
+		return (prop != null && prop.containsKey(R.STAREXEC_RESULT) && prop.get(R.STAREXEC_RESULT) != null) ?
+		       prop.getProperty(R.STAREXEC_RESULT) : "--";
 	}
 
 	public Integer getStageNumber() {
@@ -188,5 +183,4 @@ public class JoblineStage {
 	public void setDependencies(List<PipelineDependency> dependencies) {
 		this.dependencies = dependencies;
 	}
-	
 }

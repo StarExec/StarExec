@@ -28,12 +28,12 @@ public enum Analytics {
 	STAREXEC_DEPLOY,
 	STAREXECCOMMAND_LOGIN;
 
-	protected static final StarLogger log = StarLogger.getLogger(Analytics.class);
+	private static final StarLogger log = StarLogger.getLogger(Analytics.class);
 
 	private final int id;
 	private final HashMap<Date, Data> events;
 
-	private final class Data {
+	private static final class Data {
 		private final Set<Integer> users;
 		public int count = 0;
 
@@ -81,10 +81,8 @@ public enum Analytics {
 			 */
 			final StarLogger log = StarLogger.getLogger(Analytics.class);
 			log.error("Event not found in database: " + this.name());
-			id = -1;
-		} finally {
-			return id;
 		}
+		return id;
 	}
 
 	/**
@@ -103,7 +101,7 @@ public enum Analytics {
 		record(null);
 	}
 
-	public final static void saveToDB() {
+	public static void saveToDB() {
 		Date now = now();
 		for (Analytics event : Analytics.values()) {
 			if (event.id != -1) {
@@ -135,7 +133,7 @@ public enum Analytics {
 		}
 	}
 
-	private final void saveToDB(Date date, int count) throws SQLException {
+	private void saveToDB(Date date, int count) throws SQLException {
 		Common.update(
 			"{CALL RecordEvent(?,?,?)}",
 			procedure -> {
@@ -146,7 +144,7 @@ public enum Analytics {
 		);
 	}
 
-	private final void saveUserToDB(Date date, int userId) throws SQLException {
+	private void saveUserToDB(Date date, int userId) throws SQLException {
 		Common.update(
 			"{CALL RecordEventUser(?,?,?)}",
 			procedure -> {
@@ -163,18 +161,13 @@ public enum Analytics {
 	 * @return Data
 	 */
 	private Data todaysData() {
-		Data today = events.get(now());
-		if (today == null) {
-			today = new Data();
-			events.put(now(), today);
-		}
-		return today;
+		return events.computeIfAbsent(now(), k -> new Data());
 	}
 
 	/**
 	 * @return SQL Date that represents the current date
 	 */
-	private static final Date now() {
+	private static Date now() {
 		final java.util.Date now = new java.util.Date();
 		long roundedTime = now.getTime() - (now.getTime() % 86400000);
 		return new Date(roundedTime);

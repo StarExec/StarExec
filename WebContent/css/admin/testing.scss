@@ -1,17 +1,13 @@
-#content #fieldTable, #content #actionField {
-	width:95%
-}
-
-#tableTests {
-	width:100%;
+fieldset {
+	margin: 35px 0 0;
 }
 
 #errorHead {
-	width:40%;
+	width: 40%;
 }
 
 #passedHead, #failedHead, #totalHead {
-	width:9%;
+	width: 9%;
 }
 
 .success {

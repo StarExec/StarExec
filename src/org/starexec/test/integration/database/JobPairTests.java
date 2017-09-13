@@ -27,10 +27,10 @@ import java.util.*;
  */
 public class JobPairTests extends TestSequence {
 
-	
+
 	private Space space=null; //space to put the test job
 	private Solver solver=null; //solver to use for the job
-	private Job job=null;       
+	private Job job=null;
 	private Processor postProc=null; //post processor to use for the job
 	private List<Integer> benchmarkIds=null; // benchmarks to use for the job
 	private User user=null;                  //owner of all the test primitives
@@ -39,16 +39,16 @@ public class JobPairTests extends TestSequence {
 	private int wallclockTimeout=100;
 	private int cpuTimeout=100;
 	private int gbMemory=1;
-	
+
 	private User user2=null;
 	private Job job2=null;
 	private Random rand = new Random();
-		
+
 	@Override
 	protected String getTestName() {
 		return "JobPairTests";
 	}
-	
+
 	@StarexecTest
 	private void addAndRetrieveAttributesTest() {
 		JobPair jp=job.getJobPairs().get(0);
@@ -57,9 +57,9 @@ public class JobPairTests extends TestSequence {
 		p.put(prop, prop);
 		Assert.assertTrue(JobPairs.addJobPairAttributes(jp.getId(),jp.getPrimaryStage().getStageNumber(), p));
 		Properties test=JobPairs.getAttributes(jp.getId()).get(jp.getPrimaryStage().getStageNumber());
-		Assert.assertTrue(test.contains(prop));		
+		Assert.assertTrue(test.contains(prop));
 	}
-	
+
 	@StarexecTest
 	private void updateBackendIdTest() {
 		JobPair jp = job.getJobPairs().get(0);
@@ -67,46 +67,46 @@ public class JobPairTests extends TestSequence {
 		Assert.assertTrue(JobPairs.updateBackendExecId(jp.getId(), backendId));
 		Assert.assertEquals(backendId, JobPairs.getPair(jp.getId()).getBackendExecId());
 		jp.setBackendExecId(backendId);
-		
+
 	}
-	
+
 	@StarexecTest
 	private void getJobPairLogTest() {
 		String path=JobPairs.getLogFilePath(job.getJobPairs().get(0));
 		Assert.assertNotNull(path);
 	}
-	
+
 	@StarexecTest
 	private void getJobPairLogByIdTest() {
 		String path=JobPairs.getStdout(job.getJobPairs().get(0).getId());
 		Assert.assertNotNull(path);
 	}
-	
+
 	@StarexecTest
 	private void getJobPairPathTest() {
 		String path=JobPairs.getPairStdout(job.getJobPairs().get(0));
 		Assert.assertNotNull(path);
 	}
-	
+
 	@StarexecTest
 	private void getJobPairPathByIdTest() {
 		String path=JobPairs.getStdout(job.getJobPairs().get(0).getId());
 		Assert.assertNotNull(path);
 	}
-	
+
 	@StarexecTest
 	private void getJobPairTest() {
 		JobPair test=JobPairs.getPair(job.getJobPairs().get(0).getId());
 		Assert.assertNotNull(test);
 		Assert.assertEquals(test.getJobId(),job.getId());
 	}
-	
+
 	@StarexecTest
 	private void getJobPairDetailedTest() {
 		JobPair test=JobPairs.getPairDetailed(job.getJobPairs().get(0).getId());
 		Assert.assertNotNull(test);
 		Assert.assertEquals(test.getJobId(),job.getId());
-		
+
 		Assert.assertEquals(test.getPrimarySolver().getName(),solver.getName());
 	}
 
@@ -130,22 +130,22 @@ public class JobPairTests extends TestSequence {
 			Assert.fail("Caught an SQLException.");
 		}
 	}
-	
+
 	@StarexecTest
 	private void setPairStatusTest() {
 		JobPair jp=JobPairs.getPair(job.getJobPairs().get(0).getId());
 		Assert.assertTrue(JobPairs.setPairStatus(jp.getId(), StatusCode.STATUS_UNKNOWN.getVal()));
 		Assert.assertEquals(StatusCode.STATUS_UNKNOWN.getVal(),JobPairs.getPair(jp.getId()).getStatus().getCode().getVal());
 	}
-	
+
 	@StarexecTest
 	private void setBrokenPairsToErrorStatusTest() throws IOException {
 		JobPair jp=JobPairs.getPair(job.getJobPairs().get(0).getId());
 		JobPairs.setPairStatus(jp.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 		Jobs.setBrokenPairsToErrorStatus(R.BACKEND);
-		Assert.assertTrue(JobPairs.getPair(job.getJobPairs().get(0).getId()).getStatus().getCode()==Status.StatusCode.ERROR_SUBMIT_FAIL);
+		Assert.assertEquals(Status.StatusCode.ERROR_SUBMIT_FAIL.getVal(),JobPairs.getPair(jp.getId()).getStatus().getCode().getVal());
 	}
-	
+
 	@StarexecTest
 	private void getStdOutTest() {
 		JobPair jp = job.getJobPairs().get(0);
@@ -163,7 +163,7 @@ public class JobPairTests extends TestSequence {
 		String output = JobPairs.getStdout(jp.getId());
 		Assert.assertNotNull(output);
 	}
-	
+
 	@StarexecTest
 	private void getPairsToBeProcessedTest() {
 		JobPair jp = job.getJobPairs().get(0);
@@ -172,11 +172,11 @@ public class JobPairTests extends TestSequence {
 		boolean found = false;
 		for (PairStageProcessorTriple triple : pairs) {
 			found = found || triple.getPairId()==jp.getId();
-		}		
+		}
 		Assert.assertTrue(found);
 		JobPairs.setStatusForPairAndStages(jp.getId(), StatusCode.STATUS_COMPLETE.getVal());
 	}
-	
+
 	@StarexecTest
 	private void setBrokenPairsToErrorStatusNoChange() throws IOException {
 		JobPair jp=JobPairs.getPair(job.getJobPairs().get(0).getId());
@@ -195,7 +195,7 @@ public class JobPairTests extends TestSequence {
 		stage.getStatus().setCode(StatusCode.STATUS_PENDING_SUBMIT.getVal());
 		Assert.assertEquals(-1, JobPairs.isPairCorrect(stage));
 	}
-	
+
 	@StarexecTest
 	private void isPairCorrectCompleteTest() {
 		JoblineStage stage = new JoblineStage();
@@ -206,7 +206,7 @@ public class JobPairTests extends TestSequence {
 		stage.getStatus().setCode(StatusCode.STATUS_COMPLETE.getVal());
 		Assert.assertEquals(0, JobPairs.isPairCorrect(stage));
 	}
-	
+
 	@StarexecTest
 	private void isPairCorrectWrongTest() {
 		JoblineStage stage = new JoblineStage();
@@ -217,7 +217,7 @@ public class JobPairTests extends TestSequence {
 		stage.getStatus().setCode(StatusCode.STATUS_COMPLETE.getVal());
 		Assert.assertEquals(1, JobPairs.isPairCorrect(stage));
 	}
-	
+
 	@StarexecTest
 	private void isPairCorrectUnknownTest() {
 		JoblineStage stage = new JoblineStage();
@@ -228,7 +228,7 @@ public class JobPairTests extends TestSequence {
 		stage.getStatus().setCode(StatusCode.STATUS_COMPLETE.getVal());
 		Assert.assertEquals(2, JobPairs.isPairCorrect(stage));
 	}
-	
+
 	@StarexecTest
 	private void isPairCorrectNoExpectedTest() {
 		JoblineStage stage = new JoblineStage();
@@ -238,7 +238,7 @@ public class JobPairTests extends TestSequence {
 		stage.getStatus().setCode(StatusCode.STATUS_COMPLETE.getVal());
 		Assert.assertEquals(2, JobPairs.isPairCorrect(stage));
 	}
-	
+
 	@StarexecTest
 	private void setPairStageStatusTest() {
 		JobPair jp = job.getJobPairs().get(0);
@@ -247,7 +247,7 @@ public class JobPairTests extends TestSequence {
 		Assert.assertEquals(StatusCode.STATUS_UNKNOWN.getVal(), JobPairs.getPairDetailed(jp.getId()).getStages().get(0).getStatus().getCode().getVal());
 		JobPairs.setPairStatus(jp.getId(), stage.getStageNumber(), StatusCode.STATUS_COMPLETE.getVal());
 	}
-	
+
 	@StarexecTest
 	private void setAllPairStageStatusTest() {
 		JobPair jp = job.getJobPairs().get(0);
@@ -255,7 +255,7 @@ public class JobPairTests extends TestSequence {
 		Assert.assertEquals(StatusCode.STATUS_UNKNOWN.getVal(), JobPairs.getPairDetailed(jp.getId()).getStages().get(0).getStatus().getCode().getVal());
 		JobPairs.setAllPairStageStatus(jp.getId(),StatusCode.STATUS_COMPLETE.getVal());
 	}
-	
+
 	@StarexecTest
 	private void setStatusForPairAndStagesTest() {
 		JobPair jp = job.getJobPairs().get(0);
@@ -299,7 +299,7 @@ public class JobPairTests extends TestSequence {
 			Assert.fail("SQL Exception: " + Util.getStackTrace(e));
 		}
 	}
-	
+
 	@Override
 	protected void setup() throws Exception {
 		user=loader.loadUserIntoDatabase();
@@ -310,12 +310,12 @@ public class JobPairTests extends TestSequence {
 		solver=loader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
 		postProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
 		benchmarkIds=loader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
-		
+
 		List<Integer> solverIds= new ArrayList<>();
 		solverIds.add(solver.getId());
 		job=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
 		job2=loader.loadJobIntoDatabase(space.getId(), user2.getId(), -1, postProc.getId(), solverIds, benchmarkIds, cpuTimeout, wallclockTimeout, gbMemory);
-		Assert.assertNotNull(Jobs.get(job.getId()));				
+		Assert.assertNotNull(Jobs.get(job.getId()));
 	}
 
 	@Override

@@ -116,10 +116,7 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
 	 * @return true if possibleChild is a child of this TreeNode
 	 */
 	public boolean hasChild(TreeNode<T> possibleChild) {
-		if (possibleChild == null) {
-			return false;
-		}
-		return children.contains(possibleChild);
+		return possibleChild != null && children.contains(possibleChild);
 	}
 
 	@Override

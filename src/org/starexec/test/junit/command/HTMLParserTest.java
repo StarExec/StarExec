@@ -17,6 +17,7 @@ public class HTMLParserTest {
 		when(h.getValue()).thenReturn(value);
 		return h;
 	}
+
 	@Test
 	public void testExtractCookie() {
 		Header h = getMockHeader("Set-Cookie", "first=fake cookie;second=another cookie");
@@ -26,8 +27,8 @@ public class HTMLParserTest {
 		headers [2] = getMockHeader("c", "d");
 		Assert.assertEquals("fake cookie",HTMLParser.extractCookie(headers, "first"));
 		Assert.assertEquals("another cookie",HTMLParser.extractCookie(headers, "second"));
-		Assert.assertEquals(null, HTMLParser.extractCookie(headers, "third"));
-		Assert.assertEquals(null, HTMLParser.extractCookie(null, "first"));
+		Assert.assertNull(HTMLParser.extractCookie(headers, "third"));
+		Assert.assertNull(HTMLParser.extractCookie(null, "first"));
 	}
 
 	@Test
@@ -59,8 +60,8 @@ public class HTMLParserTest {
 
 	@Test
 	public void testExtractNameFromJson() {
-		Assert.assertEquals(null, HTMLParser.extractNameFromJson("",   "spaces"));
-		Assert.assertEquals(null, HTMLParser.extractNameFromJson("",   "solvers"));
+		Assert.assertNull(HTMLParser.extractNameFromJson("",   "spaces"));
+		Assert.assertNull(HTMLParser.extractNameFromJson("",   "solvers"));
 
 		Assert.assertEquals("SPACE", HTMLParser.extractNameFromJson("<a onclick=\"openSpace()\">SPACE</a>", "spaces"));
 		Assert.assertEquals("SOLVER", HTMLParser.extractNameFromJson("<a target=\"_blank\">SOLVER</a>", "solvers"));
@@ -68,12 +69,11 @@ public class HTMLParserTest {
 
 	@Test
 	public void testExtractIDFromJson() {
-		Assert.assertEquals(null, HTMLParser.extractIDFromJson(""));
-		Assert.assertEquals(null, HTMLParser.extractIDFromJson(null));
-		Assert.assertEquals(null, HTMLParser.extractIDFromJson("< name=one >"));
-		Assert.assertEquals(null, HTMLParser.extractIDFromJson("<value=\"1\">< type=\"hidden\" >"));
+		Assert.assertNull(HTMLParser.extractIDFromJson(""));
+		Assert.assertNull(HTMLParser.extractIDFromJson(null));
+		Assert.assertNull(HTMLParser.extractIDFromJson("< name=one >"));
+		Assert.assertNull(HTMLParser.extractIDFromJson("<value=\"1\">< type=\"hidden\" >"));
 
 		Assert.assertEquals(3, (int)HTMLParser.extractIDFromJson("<input value=\"1\"><input value=\"3\"type=\"hidden\" >"));
-
 	}
 }

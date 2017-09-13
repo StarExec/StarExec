@@ -18,24 +18,24 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.UUID;
 
-
 /**
- * Handles a user's request to reset their password by emailing them a link that
- * takes them to a page where they receive a temporary password
- * 
+ * Handles a user's request to reset their password by emailing them a link that takes them to a page where they receive
+ * a temporary password
+ *
  * @author Todd Elvers
  */
 
-@SuppressWarnings("serial")
 public class PasswordReset extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(PasswordReset.class);
-	public static final String PASS_RESET = "reset";		// Param string for password reset codes
-	
+	public static final String PASS_RESET = "reset";        // Param string for password reset codes
+
 	/**
-	 * This is the second half of the procedure -- the user has already requested a password reset and received an email
+	 * This is the second half of the procedure -- the user has already requested a password reset and received an
+	 * email
 	 */
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		try {
 			if (Util.paramExists(PasswordReset.PASS_RESET, request)) {
 				// Try and redeem the code from the database
@@ -61,10 +61,10 @@ public class PasswordReset extends HttpServlet {
 			throw e;
 		}
 	}
-	
-	
+
 	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		try {
 			// Ensure the parameters are well formed
 			ValidatorStatusCode status = isPostRequestValid(request);
@@ -72,9 +72,9 @@ public class PasswordReset extends HttpServlet {
 
 				// Check if the provided credentials match any in the database
 				User user = Users.get(request.getParameter(Registration.USER_EMAIL));
-				if (user == null
-						|| !user.getFirstName().equalsIgnoreCase(request.getParameter(Registration.USER_FIRSTNAME))
-						|| !user.getLastName().equalsIgnoreCase(request.getParameter(Registration.USER_LASTNAME))) {
+				if (user == null ||
+						!user.getFirstName().equalsIgnoreCase(request.getParameter(Registration.USER_FIRSTNAME)) ||
+						!user.getLastName().equalsIgnoreCase(request.getParameter(Registration.USER_LASTNAME))) {
 					response.sendRedirect(Util.docRoot("public/password_reset.jsp?result=noUserFound"));
 					return;
 				}
@@ -101,41 +101,43 @@ public class PasswordReset extends HttpServlet {
 			throw e;
 		}
 	}
-	
 
-	
 	/**
 	 * Validates the parameters of the password reset request
-	 * 
+	 *
 	 * @param request the serlvet containing the parameters to be validated
-	 * @return true iff the first name, last name, and email address in the 
-	 * password reset request exist and are valid
+	 * @return true iff the first name, last name, and email address in the password reset request exist and are valid
 	 */
 	private static ValidatorStatusCode isPostRequestValid(HttpServletRequest request) {
 		try {
-			
+
 			// Ensure the parameters are valid values
 			if (!Validator.isValidUserName((String) request.getParameter(Registration.USER_FIRSTNAME))) {
-				return new ValidatorStatusCode(false, "The given first name is invalid-- please refer to the help files to see the proper format");
+				return new ValidatorStatusCode(
+						false,
+						"The given first name is invalid-- please refer to the help files to see the proper format"
+				);
 			}
-			
+
 			// Ensure the parameters are valid values
 			if (!Validator.isValidUserName((String) request.getParameter(Registration.USER_LASTNAME))) {
-				return new ValidatorStatusCode(false, "The given last name is invalid-- please refer to the help files to see the proper format");
+				return new ValidatorStatusCode(
+						false,
+						"The given last name is invalid-- please refer to the help files to see the proper format"
+				);
 			}
-			
+
 			// Ensure the parameters are valid values
 			if (!Validator.isValidEmail((String) request.getParameter(Registration.USER_EMAIL))) {
-				return new ValidatorStatusCode(false, "The given email is invalid-- please refer to the help files to see the proper format");
+				return new ValidatorStatusCode(
+						false, "The given email is invalid-- please refer to the help files to see the proper format");
 			}
-			
-			
-			
+
+
 			return new ValidatorStatusCode(true);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
 		return new ValidatorStatusCode(false, "There was an internal error resetting your password");
 	}
-
 }

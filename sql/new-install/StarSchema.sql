@@ -97,6 +97,31 @@ INSERT INTO spaces (name, created, description, locked, default_permission, publ
 ('root', SYSDATE(), 'this is the starexec container space which holds all communities.', 1, 1, 1);
 INSERT INTO closure VALUES(1,1);
 
+-- A table where we can keep track of the different syntax highlighters we
+-- support for benchmarks
+--   name:  Human readable display name of the syntax
+--   class: Class name that will be used in the HTML to denote this syntax
+--   js:    Relative path to JavaScript lexer for this syntax
+CREATE TABLE syntax (
+	id    INT      NOT NULL AUTO_INCREMENT,
+	name  CHAR(32) NOT NULL,
+	class CHAR(32) NOT NULL,
+	js    CHAR(32),
+	PRIMARY KEY (id),
+	UNIQUE KEY (name)
+);
+
+-- Here we add the supported lexers to the DB
+-- In general, id is not important and should be set automatically. However, it
+-- is important that 1 represent Plain Text (ie: No highlighting) because that
+-- will be the default for processors without a syntax set
+INSERT INTO syntax (id, name, class, js) VALUES
+	(1, 'Plain Text', 'prettyprinted',  NULL            ),
+	(2, 'C'         , 'lang-c'       ,  NULL            ),
+	(3, 'SMT-LIB'   , 'lang-smtlib'  , 'lib/lang-smtlib'),
+	(4, 'TPTP'      , 'lang-tptp'    , 'lib/lang-tptp'  )
+;
+
 -- All pre, post and bench processors in the system
 CREATE TABLE processors (
 	id INT NOT NULL AUTO_INCREMENT,
@@ -106,8 +131,12 @@ CREATE TABLE processors (
 	community INT NOT NULL,
 	processor_type TINYINT DEFAULT 0,
 	disk_size BIGINT NOT NULL,
+	preserve_input BOOLEAN DEFAULT TRUE,
+	syntax_id INT DEFAULT 1,
+	time_limit TINYINT DEFAULT 15,
 	PRIMARY KEY (id),
-	CONSTRAINT processors_community FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE
+	CONSTRAINT processors_community FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE,
+	CONSTRAINT processors_syntax FOREIGN KEY (syntax_id) REFERENCES syntax(id)
 );
 
 
@@ -816,4 +845,19 @@ CREATE TABLE analytics_users (
 	PRIMARY KEY (event_id, date_recorded, user_id),
 	CONSTRAINT analytics_users_to_event FOREIGN KEY (event_id) REFERENCES analytics_events(event_id),
 	CONSTRAINT analytics_users_to_users FOREIGN KEY (user_id)  REFERENCES users(id)
+);
+
+-- Users can subscribe to be notified when a Job status changes
+-- Here we record the Job, User, and the last seen status
+-- A periodic task will check the Job current status against the status recorded
+-- here, and alert the User if status has changed
+CREATE TABLE notifications_jobs_users (
+	job_id  INT NOT NULL,
+	user_id INT NOT NULL,
+	last_seen_status
+		ENUM("RUNNING", "PROCESSING", "COMPLETE", "DELETED", "KILLED", "PAUSED", "GLOBAL_PAUSE")
+		NOT NULL,
+	PRIMARY KEY (job_id, user_id),
+	CONSTRAINT notifications_jobs_users_to_jobs  FOREIGN KEY (job_id)   REFERENCES jobs(id)  ON DELETE CASCADE,
+	CONSTRAINT notifications_jobs_users_to_users FOREIGN KEY (user_id)  REFERENCES users(id) ON DELETE CASCADE
 );

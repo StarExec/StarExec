@@ -8,7 +8,7 @@
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
 %>
-<star:template title="Jobs Admin" js="common/format, admin/job, lib/jquery.dataTables.min" css="common/table, explore/common">
+<star:template title="Jobs Admin" js="lib/jquery.heatcolor.0.0.1.min, common/format, admin/job, lib/jquery.dataTables.min" css="common/table, explore/common">
 	<fieldset id="jobField" class="expdContainer">
 			<legend class="expd" id="jobExpd">jobs</legend>
 			<ul class="actionList">
@@ -18,16 +18,6 @@
 					<li><button type="button" id="pauseAll">pause all</button></li>
 				</c:if>
 			</ul>
-			<table id="jobs">
-				<thead>
-					<tr>
-						<th>name</th>
-						<th>user</th>
-						<th>status</th>
-						<th>queue</th>
-						<th>created</th>
-					</tr>
-				</thead>
-			</table>
+			<table id="jobs"></table>
 	</fieldset>
 </star:template>

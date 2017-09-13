@@ -1,0 +1,18 @@
+.prettyprint {
+	height: 300px;
+	padding: 5px;
+	max-width: 590px;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+
+	.warn {
+		background: #ae0000;
+		color: #fff;
+		font-weight: bold;
+		display: inline-block;
+	}
+
+	.pun::after {
+		content: '\200B';
+	}
+}

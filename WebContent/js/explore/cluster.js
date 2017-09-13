@@ -11,10 +11,15 @@ $(document).ready(function(){
 		event.stopPropogation();
 	});
 
-	$("#details tbody").on( "click", "tr", function(){
+	$("#details tbody").on( "click", "tr", function(event) {
 		if (jobPairTable.DataTable().data().length > 0) {
 			var pairId = $(this).find('input').val();
-			window.location.assign(starexecRoot+"secure/details/pair.jsp?id=" + pairId);
+			var url = starexecRoot + "secure/details/pair.jsp?id=" + pairId;
+			if (event.ctrlKey || event.metaKey) {
+				window.open(url, "_blank").focus();
+			} else {
+				window.location.assign(url);
+			}
 		}
 	});
 
@@ -46,7 +51,7 @@ $(document).ready(function(){
 
 	$("#qstatField").expandable(true);
 	$("#loadsField").expandable(true);
-
+	$("#detailField").expandable(true);
 
 	setInterval(function() {
 		jobPairTable.fnDraw(false);
@@ -122,7 +127,23 @@ function initDataTables() {
 		"bServerSide"  : true,
 		"bFilter"      : false,
 		"sAjaxSource"  : starexecRoot+"services/cluster/",
-		"fnServerData" : fnPaginationHandler
+		"fnServerData" : fnPaginationHandler,
+		"columns"      : [
+			{"title"   : "Created",
+			 "width"   : "12.5%"},
+			{"title"   : "Job",
+			 "width"   : "12.5%"},
+			{"title"   : "User",
+			 "width"   : "12.5%"},
+			{"title"   : "Benchmark",
+			 "width"   : "25%"},
+			{"title"   : "Solver",
+			 "width"   : "12.5%"},
+			{"title"   : "Config",
+			 "width"   : "12.5%"},
+			{"title"   : "Path",
+			 "width"   : "12.5%"},
+		]
 	}));
 
 
@@ -157,22 +178,23 @@ function initDataTables() {
 		],
 		"columns"        : [
 			{"title"     : "Job",
+			 "className" : "dt-left",
 			 "render"    : formatName     },
 			{"title"     : "User",
 			 "render"    : formatUser     },
 			{"title"     : "Pending",
 			 "render"    : formatPending,
-			 "className" : "dt-body-right",
+			 "className" : "dt-right",
 			 "width"     : "80px"         },
 			{"title"     : "Status",
 			 "render"    : formatComplete,
 			 "width"     : "60px"         },
 			{"title"     : "Created",
+			 "className" : "dt-right",
+			 "width"     : "8em",
 			 "render"    : formatTime     },
 		]
 	}));
-
-	window.setInterval($jobs.DataTable().ajax.reload, 10000);
 }
 
 function fnPaginationHandler(sSource, aoData, fnCallback) {
@@ -217,18 +239,28 @@ function getDetails(id, type, parent_node) {
 	selectedId=id;
 	jobPairTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
 	if(type == 'active_queue' || type == 'inactive_queue') {
-		$("#clusterExpd").text("Enqueued Job Pairs");
+		var $jobs = $("#jobs");
+		$("#clusterExpd").html("Enqueued Job Pairs <span> (+)</span>");
 		$("#jobsContainer").show();
 		url = starexecRoot+"services/cluster/queues/details/" + id;
 		qid=id;
-		$("#jobs").dataTable().api().ajax.url( starexecRoot + "services/cluster/queues/jobs/" + id ).load();
+		$jobs.dataTable().api().ajax.url( starexecRoot + "services/cluster/queues/jobs/" + id ).load();
 		window['type'] = 'queues';
+		if (star.JobTableRefresh === undefined) {
+			star.JobTableRefresh = window.setInterval($jobs.DataTable().ajax.reload, 10000);
+		}
+		$("#detailField .expdContainer").css("display", "none");
 	} else if(type == 'enabled_node' || type == 'disabled_node') {
 		$("#clusterExpd").text("Running Job Pairs");
 		$("#jobsContainer").hide();
 		url = starexecRoot+"services/cluster/nodes/details/" + id;
 		qid=parent_node.attr("id");
 		window['type'] = 'nodes';
+		if (star.JobTableRefresh !== undefined) {
+			window.clearInterval(star.JobTableRefresh);
+			delete star.JobTableRefresh;
+		}
+		$("#detailField .expdContainer").css("display", "block");
 	} else  {
 		showMessage('error',"Invalid node type",5000);
 		return;

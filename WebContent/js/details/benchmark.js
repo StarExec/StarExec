@@ -1,15 +1,15 @@
 var bid;
 
 $(document).ready(function(){
-	bid = getParameterByName('id');	
+	bid = getParameterByName('id');
 	$('#fieldType').expandable(true);
 	$('#fieldAttributes').expandable(true);
 	$('#fieldDepends').expandable(true);
-	
+
 	$('#fieldContents').expandable(true);
 	$('#actions').expandable(true);
 
-	
+	PR.prettyPrint();
 
 	registerDownloadLinkButtonEventHandler();
 	registerAnonymousLinkButtonEventHandler();
@@ -42,7 +42,7 @@ function registerAnonymousLinkButtonEventHandler() {
 			width: 600,
 			height: 200,
 			buttons: {
-				'yes': function() { 
+				'yes': function() {
 					$(this).dialog('close');
 					makeAnonymousLinkPost('bench', $('#benchId').attr('value'), 'all');
 				},
@@ -51,6 +51,6 @@ function registerAnonymousLinkButtonEventHandler() {
 					makeAnonymousLinkPost('bench', $('#benchId').attr('value'), 'none');
 				}
 			}
-		});	
+		});
 	});
 }

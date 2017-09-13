@@ -26,42 +26,42 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
 
-
 /**
  * Servlet which handles requests to create new DefaultSettings profiles for users
+ *
  * @author Eric Burns
  */
-@SuppressWarnings("serial")
 public class AddSettingProfile extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(AddSettingProfile.class);
 
 	// Param strings for processing
 	private static String POST_PROCESSOR = "postp";
-	private static String PRE_PROCESSOR ="prep";
-	private static String BENCH_PROCESSOR ="benchp";
-	private static String NAME="name";
-	private static String CPU_TIMEOUT="cpu";
-	private static String WALLCLOCK_TIMEOUT="wall";
-	private static String DEPENDENCIES="dep";
-	private static String MAX_MEMORY="mem";
-	private static String SETTING_ID= "settingId"; //this is set if we are doing an update only
+	private static String PRE_PROCESSOR = "prep";
+	private static String BENCH_PROCESSOR = "benchp";
+	private static String NAME = "name";
+	private static String CPU_TIMEOUT = "cpu";
+	private static String WALLCLOCK_TIMEOUT = "wall";
+	private static String DEPENDENCIES = "dep";
+	private static String MAX_MEMORY = "mem";
+	private static String SETTING_ID = "settingId"; //this is set if we are doing an update only
 	private static String USER_ID_OF_OWNER = "userIdOfOwner";
 	private static String BENCHMARKING_FRAMEWORK = "benchmarkingFramework";
 
 	@Override
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 	}
 
-	
 	/**
 	 * Post requests should have all the attributes required for a DefaultSettings object
 	 */
 	@Override
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		try {
 			final String method = "doPost";
-			
+
 			log.debug("got a request to create a new settings profile");
 
 			try {
@@ -75,19 +75,22 @@ public class AddSettingProfile extends HttpServlet {
 				log.debug("Validated add setting profile request.");
 			} catch (SQLException e) {
 				log.warn(method, "Caught SQLException, returning internal error.", e);
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Database error while trying to check permissions.");
+				response.sendError(
+						HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+						"Database error while trying to check permissions."
+				);
 				return;
 			}
 
-			DefaultSettings d=new DefaultSettings();
-			
+			DefaultSettings d = new DefaultSettings();
+
 			//this servlet currently only handles requests for users. Community profiles are created automatically
 			d.setType(SettingType.USER);
 
-			int userIdOfCaller=SessionUtil.getUserId(request);
+			int userIdOfCaller = SessionUtil.getUserId(request);
 			int userIdOfOwner = -1;
-			String rawUserIdOfOwner=request.getParameter(USER_ID_OF_OWNER);
-			log.debug(method+": userIdOfOwner="+rawUserIdOfOwner);
+			String rawUserIdOfOwner = request.getParameter(USER_ID_OF_OWNER);
+			log.debug(method + ": userIdOfOwner=" + rawUserIdOfOwner);
 
 			if (Validator.isValidPosInteger(rawUserIdOfOwner)) {
 				log.debug("rawUserIdOfOwner was a valid integer.");
@@ -101,62 +104,58 @@ public class AddSettingProfile extends HttpServlet {
 
 			if (!SettingSecurity.canUserAddOrSeeProfile(userIdOfOwner, userIdOfCaller)) {
 				log.debug("User cannot add or see profile.");
-				response.sendError(HttpServletResponse.SC_FORBIDDEN, "You do not have permission to add a setting profile for this user.");
+				response.sendError(
+						HttpServletResponse.SC_FORBIDDEN,
+						"You do not have permission to add a setting profile for this user."
+				);
 			}
 
-
-
-			
 			//all profiles must set the following attributes
 			d.setWallclockTimeout(Integer.parseInt(request.getParameter(WALLCLOCK_TIMEOUT)));
 			d.setCpuTimeout(Integer.parseInt(request.getParameter(CPU_TIMEOUT)));
 			d.setMaxMemory(Util.gigabytesToBytes(Double.parseDouble(request.getParameter(MAX_MEMORY))));
 			d.setDependenciesEnabled(Boolean.parseBoolean(request.getParameter(DEPENDENCIES)));
 			d.setBenchmarkingFramework(BenchmarkingFramework.valueOf(request.getParameter(BENCHMARKING_FRAMEWORK)));
-			
-			//the next attributes do not necessarily need to be set, as they can be null
-			String postId=request.getParameter(POST_PROCESSOR);
-			String solver=request.getParameter(R.SOLVER);
-			String preId=request.getParameter(PRE_PROCESSOR);
-			String benchProcId=request.getParameter(BENCH_PROCESSOR);
-			log.debug("Getting benchIds from request.");
 
+			//the next attributes do not necessarily need to be set, as they can be null
+			String postId = request.getParameter(POST_PROCESSOR);
+			String solver = request.getParameter(R.SOLVER);
+			String preId = request.getParameter(PRE_PROCESSOR);
+			String benchProcId = request.getParameter(BENCH_PROCESSOR);
+			log.debug("Getting benchIds from request.");
 
 			List<String> benchIds = getBenchIds(request);
 
-
-
-			
 			log.debug("Casting parameters to integers.");
 			//it is only set it if is an integer>0, as all real IDs are greater than 0. Same for all subsequent objects
 			if (Validator.isValidPosInteger(postId)) {
-				int p=Integer.parseInt(postId);
-				if (p>0) {
+				int p = Integer.parseInt(postId);
+				if (p > 0) {
 					d.setPostProcessorId(p);
 				}
 			}
 			if (Validator.isValidPosInteger(preId)) {
-				int p=Integer.parseInt(preId);
-				if (p>0) {
+				int p = Integer.parseInt(preId);
+				if (p > 0) {
 					d.setPreProcessorId(p);
 				}
 			}
 			if (Validator.isValidPosInteger(benchProcId)) {
-				int p=Integer.parseInt(benchProcId);
-				if (p>0) {
+				int p = Integer.parseInt(benchProcId);
+				if (p > 0) {
 					d.setBenchProcessorId(p);
 				}
 			}
-			log.debug("got sent the solver "+solver);
+			log.debug("got sent the solver " + solver);
 			if (Validator.isValidPosInteger(solver)) {
-				int p=Integer.parseInt(solver);
-				if (p>0) {
+				int p = Integer.parseInt(solver);
+				if (p > 0) {
 					log.debug("setting the solver");
 					d.setSolverId(p);
 				}
 			}
 			for (String benchId : benchIds) {
-				log.debug("Got the benchId: "+benchId);
+				log.debug("Got the benchId: " + benchId);
 				if (Validator.isValidPosInteger(benchId)) {
 					int p = Integer.parseInt(benchId);
 					if (p > 0) {
@@ -166,18 +165,17 @@ public class AddSettingProfile extends HttpServlet {
 				}
 			}
 
-			boolean success=true;
+			boolean success = true;
 			//if we are doing an update
-			if (Util.paramExists(SETTING_ID,request)) {
+			if (Util.paramExists(SETTING_ID, request)) {
 				d.setId(Integer.parseInt(request.getParameter(SETTING_ID)));
-				success=Settings.updateDefaultSettings(d);
+				success = Settings.updateDefaultSettings(d);
 			} else {
 				d.setName(request.getParameter(NAME));
 				//otherwise, we are creating a new profile
-				success=(Users.createNewDefaultSettings(d)>0);
-
+				success = (Users.createNewDefaultSettings(d) > 0);
 			}
-			log.debug(method+": Creating a new default settings was"+(success?" ":" not ")+"successful.");
+			log.debug(method + ": Creating a new default settings was" + (success ? " " : " not ") + "successful.");
 			if (!success) {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
@@ -188,26 +186,26 @@ public class AddSettingProfile extends HttpServlet {
 	}
 
 	private List<String> getBenchIds(HttpServletRequest request) {
-			String[] rawBenchIds = request.getParameterValues(R.BENCHMARK+"[]");
-			List<String> benchIds = null;
-			if (rawBenchIds == null) { 
-				benchIds = new ArrayList<>();
-			} else {
-				benchIds=new ArrayList<>(Arrays.asList(rawBenchIds));
-				for (String benchId : benchIds) {
-					log.debug("Got benchId: " + benchId);
-				}
+		String[] rawBenchIds = request.getParameterValues(R.BENCHMARK + "[]");
+		List<String> benchIds = null;
+		if (rawBenchIds == null) {
+			benchIds = new ArrayList<>();
+		} else {
+			benchIds = new ArrayList<>(Arrays.asList(rawBenchIds));
+			for (String benchId : benchIds) {
+				log.debug("Got benchId: " + benchId);
 			}
-			return benchIds;
+		}
+		return benchIds;
 	}
-	
+
 	private ValidatorStatusCode isValidRequest(HttpServletRequest request) throws SQLException {
 		final String methodName = "isValidRequest";
-		int userId=SessionUtil.getUserId(request);
+		int userId = SessionUtil.getUserId(request);
 		if (Users.isPublicUser(userId)) {
 			return new ValidatorStatusCode(false, "Only registered users can take this action");
 		}
-		
+
 		if (!Validator.isValidBool(request.getParameter(DEPENDENCIES))) {
 			return new ValidatorStatusCode(false, "invalid dependency selection");
 		}
@@ -217,36 +215,43 @@ public class AddSettingProfile extends HttpServlet {
 		if (!Validator.isValidPosInteger(request.getParameter(WALLCLOCK_TIMEOUT))) {
 			return new ValidatorStatusCode(false, "invalid wallclock timeout");
 		}
-		
+
 		if (!Validator.isValidPosDouble(request.getParameter(MAX_MEMORY))) {
 			return new ValidatorStatusCode(false, "invalid maximum memory");
 		}
 
 		// Check if the benchmarking framework parameter doesn't match any available benchmarking frameworks.
 		final String benchmarkingFramework = request.getParameter(BENCHMARKING_FRAMEWORK);
-		log.debug(methodName, "Benchmarking framework was: "+benchmarkingFramework);
-		if (EnumSet.allOf(BenchmarkingFramework.class).stream().noneMatch(framework -> framework.toString().equals(benchmarkingFramework))) {
-			return new ValidatorStatusCode(false, "invalid benchmarking framework: "+benchmarkingFramework);
+		log.debug(methodName, "Benchmarking framework was: " + benchmarkingFramework);
+		if (EnumSet.allOf(BenchmarkingFramework.class).stream()
+		           .noneMatch(framework -> framework.toString().equals(benchmarkingFramework))) {
+			return new ValidatorStatusCode(false, "invalid benchmarking framework: " + benchmarkingFramework);
 		}
-		
-		String postId=request.getParameter(POST_PROCESSOR);
-		String solver=request.getParameter(R.SOLVER);
-		log.debug("got sent the solver "+solver);
-		String preId=request.getParameter(PRE_PROCESSOR);
-		String benchProcId=request.getParameter(BENCH_PROCESSOR);
+
+		String postId = request.getParameter(POST_PROCESSOR);
+		String solver = request.getParameter(R.SOLVER);
+		log.debug("got sent the solver " + solver);
+		String preId = request.getParameter(PRE_PROCESSOR);
+		String benchProcId = request.getParameter(BENCH_PROCESSOR);
 		List<String> benchIds = getBenchIds(request);
 
 
 		ValidatorStatusCode statusCode = checkIfUserCanSeeProcessor(postId, userId);
-		if (!statusCode.isSuccess()) return statusCode;
-		statusCode= checkIfUserCanSeeProcessor(preId, userId);
-		if (!statusCode.isSuccess()) return statusCode;
-		statusCode= checkIfUserCanSeeProcessor(benchProcId, userId);
-		if (!statusCode.isSuccess()) return statusCode;
-		
+		if (!statusCode.isSuccess()) {
+			return statusCode;
+		}
+		statusCode = checkIfUserCanSeeProcessor(preId, userId);
+		if (!statusCode.isSuccess()) {
+			return statusCode;
+		}
+		statusCode = checkIfUserCanSeeProcessor(benchProcId, userId);
+		if (!statusCode.isSuccess()) {
+			return statusCode;
+		}
+
 		if (Validator.isValidPosInteger(solver)) {
-			int s=Integer.parseInt(solver);
-			if (s>0) {
+			int s = Integer.parseInt(solver);
+			if (s > 0) {
 				//if we actually did select a solver
 				if (!Permissions.canUserSeeSolver(s, userId)) {
 					return new ValidatorStatusCode(false, "You do not have permission to use the given solver");
@@ -268,8 +273,8 @@ public class AddSettingProfile extends HttpServlet {
 			if (!Validator.isValidPosInteger(request.getParameter(SETTING_ID))) {
 				return new ValidatorStatusCode(false, "The given setting ID is not a valid integer");
 			}
-			int settingId=Integer.parseInt(request.getParameter(SETTING_ID));
-			ValidatorStatusCode status=SettingSecurity.canModifySettings(settingId, userId);
+			int settingId = Integer.parseInt(request.getParameter(SETTING_ID));
+			ValidatorStatusCode status = SettingSecurity.canModifySettings(settingId, userId);
 			if (!status.isSuccess()) {
 				return status;
 			}
@@ -277,24 +282,22 @@ public class AddSettingProfile extends HttpServlet {
 			if (!Validator.isValidSettingsName(request.getParameter(NAME))) {
 				return new ValidatorStatusCode(false, "Invalid name");
 			}
-			
 		}
-		
-		
+
+
 		return new ValidatorStatusCode(true);
 	}
-	
+
 	private static ValidatorStatusCode checkIfUserCanSeeProcessor(String param, int userId) {
 		//-1 is not an error-- it indicates that nothing was selected for all the following cases
 		if (Validator.isValidPosInteger(param)) {
-			int p=Integer.parseInt(param);
+			int p = Integer.parseInt(param);
 
-			ValidatorStatusCode status=ProcessorSecurity.canUserSeeProcessor(p, userId);
-			if (!status.isSuccess() && p>0) {
+			ValidatorStatusCode status = ProcessorSecurity.canUserSeeProcessor(p, userId);
+			if (!status.isSuccess() && p > 0) {
 				return status;
 			}
 		}
 		return new ValidatorStatusCode(true);
 	}
-	        
 }

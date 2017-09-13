@@ -19,7 +19,7 @@
 			<table id="jobs"></table>
 		</fieldset>
 
-		<fieldset id="detailField" class="expdContainer">
+		<fieldset id="detailField">
 			<legend class="expd" id="clusterExpd">Job Pairs</legend>
 			<table id="details" class="shaded">
 				<thead>

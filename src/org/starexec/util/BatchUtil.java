@@ -269,7 +269,7 @@ public class BatchUtil {
 			SAXException, ParserConfigurationException, IOException {
 		List<Integer> spaceIds = new ArrayList<>();
 		if (!validateAgainstSchema(file)) {
-			log.warn("File from User " + userId + " is not Schema valid.");
+			log.debug("File from User " + userId + " is not Schema valid.");
 			return null;
 		}
 

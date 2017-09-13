@@ -80,6 +80,23 @@ $(document).ready(function(){
 	}
 
 	$(".hiddenDialog").hide();
+
+	var defaultDialogConfig = {
+		modal: true,
+		width: 380,
+		height: 165,
+		appendTo: "body",
+		autoOpen: true,
+	};
+	var removeThis = function() { $(this).remove(); };
+	star.openDialog = function(config, text, icon) {
+		icon = icon || "alert";
+		var d = $("<div>");
+		d.append("<span class='ui-icon ui-icon-" + icon + "'>");
+		d.append(text);
+		d.dialog($.extend({}, defaultDialogConfig, config));
+		d.on("dialogclose", removeThis);
+	};
 });
 
 /**
@@ -96,8 +113,10 @@ jQuery(function($) {
 	 * refactoring.
 	 */
 	var extpager;
+	var ext;
 	try {
 		extpager = $.fn.dataTable.ext.pager;
+		ext = $.fn.dataTable.ext;
 	} catch (e) {
 		return;
 	}
@@ -115,6 +134,11 @@ jQuery(function($) {
 				return extpager["full_numbers"](page, pages);
 		}
 	});
+
+	ext.errMode = function(settings, techNote, message) {
+		showMessage("error", "Internal error populating table", 5000);
+		log(message + "\nhttps://datatables.net/tn/" + techNote + "\nSettings: " + settings);
+	};
 
 	/**
 	 * Event listener called each time a table is drawn/redrawn
@@ -164,7 +188,7 @@ jQuery(function($) {
 			"iDisplayLength"  : defaultPageSize,
 			"pagingType"      : "only_when_necessary",
 			"sServerMethod"   : "POST",
-			"oLanguage"       : {"sProcessing": "processing request"},
+			"language"        : {"sProcessing": "processing request"},
 		};
 		$.extend(true, this, config, overrides);
 	};

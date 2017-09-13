@@ -1,11 +1,11 @@
 #explorer {
 	margin-top: 15px;
-	float:left;
+	float: left;
 	width: 28%;
 	min-height: 90%;
 	height: 90%;
 	overflow: auto;
-	overflow-y:hidden;
+	overflow-y: hidden;
 	position: relative;
 }
 
@@ -15,9 +15,9 @@
 
 #detailPanel {
 	padding-left: 10px;
-	padding-right:55px;
+	padding-right: 55px;
 	margin-top: 15px;
-	float:right;
+	float: right;
 	width: 65%;
 	border-left: solid 3px #111111;
 }
@@ -34,7 +34,7 @@
 }
 
 #detailPanel .spaceName, #detailPanel #spaceDesc {
-	width:90%;
+	width: 90%;
 	word-wrap: break-word;
 }
 
@@ -43,38 +43,20 @@
 	font-style: italic;
 }
 
-#detailPanel .button{
-	margin-bottom:9px;
+#detailPanel .button {
+	margin-bottom: 9px;
 }
 
 #detailPanel fieldset {
 	margin-top: 35px;
 }
 
-.actionList {
-	list-style: none;
-}
-#actionList {
-	list-style: none;
-}
-#actionList li {
-	float: left;
-	margin-left: 5px;
-	margin-bottom: 10px;
-}
-.actionList li {
-	float: left;
-	margin-right: 4px;
-	margin-bottom: 10px;
-}
-
-.expd, .actionList li a , #actionList li a,
-.qtip-nonPermanentLeader a.tooltipButton, img {
+.expd, .qtip-nonPermanentLeader a.tooltipButton, img {
 	cursor: pointer;
 }
 
 #content table {
- 	width: 100%;
+	width: 100%;
 }
 
 #progressBar {
@@ -97,5 +79,5 @@
 }
 
 #dialog-confirm-copy .ui-icon-info {
-    margin: 0 7px 0 0;
+	margin: 0 7px 0 0;
 }

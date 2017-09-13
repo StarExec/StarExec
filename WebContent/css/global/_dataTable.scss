@@ -1,9 +1,20 @@
 // Table styles
 
-%text-align-left    { text-align: left    }
-%text-align-right   { text-align: right   }
-%text-align-center  { text-align: center  }
-%text-align-justify { text-align: justify }
+%text-align-left {
+	text-align: left;
+}
+
+%text-align-right {
+	text-align: right;
+}
+
+%text-align-center {
+	text-align: center;
+}
+
+%text-align-justify {
+	text-align: justify;
+}
 
 table.dataTable {
 	width: 100%;
@@ -416,6 +427,7 @@ table.dataTable {
 
 	.dataTables_filter {
 		float: right;
+
 		@extend %text-align-right;
 
 		input {
@@ -431,17 +443,22 @@ table.dataTable {
 
 	.dataTables_paginate {
 		float: right;
+
 		@extend %text-align-right;
+
 		padding-top: 0.25em;
 
 		.paginate_button {
 			@extend %rounded-corners;
+
 			box-sizing: border-box;
 			display: inline-block;
 			min-width: 1.5em;
 			padding: 0.5em 1em;
 			margin-left: 2px;
+
 			@extend %text-align-center;
+
 			text-decoration: none !important;
 			cursor: pointer;
 			color: #fff !important;
@@ -466,7 +483,6 @@ table.dataTable {
 				border-color: #d8f0fa;
 				background-color: $accent-orange;
 			}
-
 		}
 	}
 
@@ -479,15 +495,30 @@ table.dataTable {
 		margin-left: -50%;
 		margin-top: -25px;
 		padding-top: 20px;
+
 		@extend %text-align-center;
+
 		font-size: 1.2em;
 		background-color: white;
-		background: -webkit-gradient(linear, left top, right top, color-stop(0%, rgba(255, 255, 255, 0)), color-stop(25%, rgba(255, 255, 255, 0.9)), color-stop(75%, rgba(255, 255, 255, 0.9)), color-stop(100%, rgba(255, 255, 255, 0))); // Chrome,Safari4+
-		background: -webkit-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 25%, rgba(255, 255, 255, 0.9) 75%, rgba(255, 255, 255, 0) 100%); // Chrome10+,Safari5.1+
-		background: -moz-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 25%, rgba(255, 255, 255, 0.9) 75%, rgba(255, 255, 255, 0) 100%); // FF3.6+
-		background: -ms-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 25%, rgba(255, 255, 255, 0.9) 75%, rgba(255, 255, 255, 0) 100%); // IE10+
-		background: -o-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 25%, rgba(255, 255, 255, 0.9) 75%, rgba(255, 255, 255, 0) 100%); // Opera 11.10+
-		background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 25%, rgba(255, 255, 255, 0.9) 75%, rgba(255, 255, 255, 0) 100%); // W3C
+		background: -webkit-gradient(linear, left top, right top, color-stop(0%, rgba(255, 255, 255, 0)), color-stop(25%, rgba(255, 255, 255, 0.9)), color-stop(75%, rgba(255, 255, 255, 0.9)), color-stop(100%, rgba(255, 255, 255, 0)));
+
+		// Chrome,Safari4+
+		background: -webkit-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 25%, rgba(255, 255, 255, 0.9) 75%, rgba(255, 255, 255, 0) 100%);
+
+		// Chrome10+,Safari5.1+
+		background: -moz-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 25%, rgba(255, 255, 255, 0.9) 75%, rgba(255, 255, 255, 0) 100%);
+
+		// FF3.6+
+		background: -ms-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 25%, rgba(255, 255, 255, 0.9) 75%, rgba(255, 255, 255, 0) 100%);
+
+		// IE10+
+		background: -o-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 25%, rgba(255, 255, 255, 0.9) 75%, rgba(255, 255, 255, 0) 100%);
+
+		// Opera 11.10+
+		background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.9) 25%, rgba(255, 255, 255, 0.9) 75%, rgba(255, 255, 255, 0) 100%);
+
+		// W3C
+
 	}
 
 	.dataTables_length, .dataTables_filter, .dataTables_info, .dataTables_processing, .dataTables_paginate {

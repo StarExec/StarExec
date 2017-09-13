@@ -1,27 +1,25 @@
 <%@page contentType="text/html" pageEncoding="UTF-8" import="java.io.File, org.apache.commons.io.FileUtils, org.starexec.data.database.*,org.starexec.data.security.GeneralSecurity, org.starexec.data.to.*, org.starexec.util.*, org.starexec.constants.R" session="true"%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
 <%
 try {
-		
 	// Grab relevant user id & configuration info
 	int configId = Integer.parseInt((String)request.getParameter("id"));
 	int userId = SessionUtil.getUserId(request);
 	Configuration con = Solvers.getConfiguration(configId);
 	Solver solver = null;
-	
+
 	// Gets parent solver if user has permission to view parent solver
 	if(Permissions.canUserSeeSolver(con.getSolverId(), userId)){
 		solver = Solvers.get(con.getSolverId());
 	}
-	
+
 	// The solver and configuration objects are valid...
 	if(con != null && solver != null) {
-		
+
 		// Build the configuration file path
 		File configFile = new File(Util.getSolverConfigPath(solver.getPath(), con.getName()));
-		
+
 		// Ensure the configuration file exists on disk before assigning attributes
 		if(configFile.exists()){
 			con.setDescription(GeneralSecurity.getHTMLSafeString(con.getDescription()));
@@ -30,6 +28,7 @@ try {
 			request.setAttribute("config", con);
 			request.setAttribute("solver", solver);
 			request.setAttribute("contents", contents);
+			request.setAttribute("isBinary", Util.isBinaryFile(configFile));
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "the configuration file path points to a location that does not exist on disk");
 		}
@@ -41,8 +40,7 @@ try {
 	response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 }
 %>
-
-<star:template title="${config.name}" css="details/configuration, details/shared" js="details/configuration, details/shared">
+<star:template title="${config.name}" css="details/configuration, details/shared, prettify/prettify" js="details/shared, lib/prettify, details/configuration">
 	<input type="hidden" id="solverId" value="${solver.id}"/>
 	<fieldset>
 		<legend>details</legend>
@@ -66,12 +64,12 @@ try {
 					<td>owning solver</td>
 					<td><star:solver value='${solver}'/></td>
 				</tr>
-			</tbody>	
+			</tbody>
 		</table>
 	</fieldset>
 	<fieldset id="configContents">
-		<legend>contents</legend>			
-		<textarea id="contents" readonly="readonly">${contents}</textarea>	
+		<legend>contents</legend>
+		<star:displayTextContents text="${contents}" isBinary="${isBinary}" />
 	</fieldset>
 	<div id="dialog-confirm-delete" title="confirm delete" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-alert" style="float:left; margin:0 7px 20px 0;"></span><span id="dialog-confirm-delete-txt"></span></p>

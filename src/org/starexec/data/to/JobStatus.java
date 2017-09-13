@@ -1,124 +1,35 @@
 package org.starexec.data.to;
 
-import com.google.gson.annotations.Expose;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * Represents a status for a job
- * @author Eric Burns
  */
-public class JobStatus {
-	public enum JobStatusCode {
-		STATUS_UNKNOWN(0),
-		STATUS_COMPLETE(1),
-		STATUS_RUNNING(2),
-		STATUS_PAUSED(3),
-		STATUS_KILLED(4),
-		STATUS_PROCESSING(5);		
-		private int val;
-		
-		JobStatusCode(int val) {
-			this.val = val;			
-		}				
-		
-		public int getVal() {
-			return this.val;			
-		}				
-	
-		public static JobStatusCode toStatusCode(int code) {
-			
-		    switch (code) {
-		    case 0:
-		    	return JobStatusCode.STATUS_UNKNOWN;
-		    case 1:
-		    	return JobStatusCode.STATUS_COMPLETE;
-		    case 2: 
-		    	return JobStatusCode.STATUS_RUNNING;
-		    case 3:
-		    	return JobStatusCode.STATUS_PAUSED;
-		    case 4:
-		    	return JobStatusCode.STATUS_KILLED;
-		    case 5:
-		    	return JobStatusCode.STATUS_PROCESSING;
-		    }
-		    return JobStatusCode.STATUS_UNKNOWN;
-		}
+public enum JobStatus {
+	UNKNOWN("unknown"), COMPLETE("complete"), RUNNING("incomplete"), PAUSED("paused"), KILLED("killed"), PROCESSING(
+			"incomplete"), // This is only "incomplete" instead of "processing" for historical reasons
+	DELETED("deleted"), GLOBAL_PAUSE("global pause");
+
+	private final String status;
+
+	private JobStatus(String status) {
+		this.status = status;
 	}
 
-
-	private static String getDescription(int code) {
-		switch (code) {
-		    case 1:
-			return "this job has finished running";
-		    case 2:
-			return "this job is still running on the grid engine";
-		    case 3:
-			return "this job has been paused by the owner";
-		    case 4:
-			return "this job was killed by the owner prior to being completed";
-		    case 5:
-			return "this job's output is currently being processed by a new post processor";
-		   
-	    }
-		return "the job status is not known or has not been set";
-	}
-	private static String getStatus(int code) {
-		switch (code) {
-		    case 1:
-			return "complete";
-		    case 2:
-			return "incomplete";
-		    case 3:
-			return "paused";
-		    case 4:
-			return "killed";
-		    case 5:
-			return "processing";
-		   
-	    }
-		return "unknown";
-	}
-	
-
-
-	@Expose private JobStatusCode code = JobStatusCode.STATUS_UNKNOWN;
-
-	
-	/**
-	 * @return the status code for this status
-	 */
-	public JobStatusCode getCode() {
-		return code;
-	}
-	
-	/**
-	 * @param code the status code to set for this status
-	 */
-	public void setCode(JobStatusCode code) {
-		this.code = code;
-	}
-	
-	/**
-	 * @param code the status code to set for this status
-	 */
-	public void setCode(int code) {
-	    this.code = JobStatusCode.toStatusCode(code);
-	}
-
-	/**
-	 * @return the canonical status
-	 */
-	public String getStatus() {
-		return JobStatus.getStatus(this.code.getVal());
-	}
-	
-	/**
-	 * @return the description of what the status means
-	 */
-	public String getDescription() {
-		return JobStatus.getDescription(this.code.getVal());
-	}
 	@Override
 	public String toString() {
-		return this.getStatus();
+		return status;
+	}
+
+	/**
+	 * Returns a JobStatus from an SQL result
+	 *
+	 * @param SQL Result containing ONLY a JobStatus label
+	 * @return the corresponding JobStatus
+	 */
+	public static JobStatus fromResultSet(ResultSet result) throws SQLException {
+		result.next();
+		return valueOf(result.getString(1));
 	}
 }

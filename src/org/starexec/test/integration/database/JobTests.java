@@ -26,74 +26,55 @@ import java.util.Random;
 public class JobTests extends TestSequence {
 	private Space space=null; //space to put the test job
 	private Solver solver=null; //solver to use for the job
-	private Job job=null;       
+	private Job job=null;
 	private Processor postProc=null; //post processor to use for the job
 	private List<Integer> benchmarkIds=null; // benchmarks to use for the job
 	private User user=null;                  //owner of all the test primitives
 	private int wallclockTimeout=100;
 	private int cpuTimeout=100;
 	private int gbMemory=1;
-	
 	private User user2=null;
 	private Job job2=null;
-	
+
 	@StarexecTest
 	private void GetTest() {
 		Job testJob=Jobs.get(job.getId());
 		Assert.assertNotNull(testJob);
 		Assert.assertEquals(testJob.getName(),job.getName());
-		
 	}
 
 	@StarexecTest
-	private void setOutputBenchmarksDirectoryPath() {
-		try  {
-			final String testPath = "test1";
-			Jobs.setOutputBenchmarksPath(job.getId(), testPath);
-			assertEquals("The test path was not updated.", Jobs.get(job.getId()).getOutputBenchmarksPath(), testPath);
-			final String testPath2 = "test2";
-			Jobs.setOutputBenchmarksPath(job.getId(), testPath2);
-			assertEquals("The 2nd test path was not updated.", Jobs.get(job.getId()).getOutputBenchmarksPath(), testPath2);
-		} catch (SQLException e) {
-			fail("An SQLException was thrown: "+Util.getStackTrace(e));
-		}
+	private void setOutputBenchmarksDirectoryPath() throws SQLException {
+		final String testPath = "test1";
+		Jobs.setOutputBenchmarksPath(job.getId(), testPath);
+		assertEquals("The test path was not updated.", Jobs.get(job.getId()).getOutputBenchmarksPath(), testPath);
+		final String testPath2 = "test2";
+		Jobs.setOutputBenchmarksPath(job.getId(), testPath2);
+		assertEquals("The 2nd test path was not updated.", Jobs.get(job.getId()).getOutputBenchmarksPath(), testPath2);
 	}
 
 	@StarexecTest
-	private void getOutputBenchmarksDirectoryPath() {
-		try {
-			final String testPath = "test1";
-			Jobs.setOutputBenchmarksPath(job.getId(), testPath);
-			assertEquals("The test path could not be retrieved.", Jobs.getOutputBenchmarksPath(job.getId()).get(), testPath);
-			final String testPath2 = "test2";
-			Jobs.setOutputBenchmarksPath(job.getId(), testPath2);
-			assertEquals("The 2nd test path could not be retrieved.", Jobs.getOutputBenchmarksPath(job.getId()).get(), testPath2);
-		} catch (Exception e) {
-			fail("An Exception was thrown: "+Util.getStackTrace(e));
-		}
+	private void getOutputBenchmarksDirectoryPath() throws SQLException {
+		final String testPath = "test1";
+		Jobs.setOutputBenchmarksPath(job.getId(), testPath);
+		assertEquals("The test path could not be retrieved.", Jobs.getOutputBenchmarksPath(job.getId()).get(), testPath);
+		final String testPath2 = "test2";
+		Jobs.setOutputBenchmarksPath(job.getId(), testPath2);
+		assertEquals("The 2nd test path could not be retrieved.", Jobs.getOutputBenchmarksPath(job.getId()).get(), testPath2);
 	}
 
 	@StarexecTest
-	private void IsHighPriorityTest() {
-		try {
-			Jobs.setAsHighPriority(job.getId());
-			Job testJob = Jobs.get(job.getId());
-			Assert.assertTrue(testJob.isHighPriority());
-		} catch (SQLException e) {
-			Assert.fail("Caught SQL exception while trying to change job priority: " + Util.getStackTrace(e));
-		}
+	private void IsHighPriorityTest() throws SQLException {
+		Jobs.setAsHighPriority(job.getId());
+		Job testJob = Jobs.get(job.getId());
+		Assert.assertTrue(testJob.isHighPriority());
 	}
 
 	@StarexecTest
-	private void SetAsLowPrioirtyTest() {
-		try {
-			Jobs.setAsLowPriority(job.getId());
-			Job testJob = Jobs.get(job.getId());
-			Assert.assertFalse(testJob.isHighPriority());
-		} catch (SQLException e) {
-			Assert.fail("Caught SQL exception while trying to change job priority: " + Util.getStackTrace(e));
-		}
-
+	private void SetAsLowPrioirtyTest() throws SQLException {
+		Jobs.setAsLowPriority(job.getId());
+		Job testJob = Jobs.get(job.getId());
+		Assert.assertFalse(testJob.isHighPriority());
 	}
 
 	@StarexecTest
@@ -101,67 +82,64 @@ public class JobTests extends TestSequence {
 		List<Job> jobs=Jobs.getByUserId(user.getId());
 		Assert.assertEquals(1,jobs.size());
 		Assert.assertEquals(jobs.get(0).getName(),job.getName());
-		
+
 		jobs=Jobs.getByUserId(user2.getId());
 		Assert.assertEquals(1,jobs.size());
 		Assert.assertEquals(jobs.get(0).getName(),job2.getName());
 	}
-	
+
 	@StarexecTest
 	private void GetBySpaceTest() {
 		List<Job> jobs=Jobs.getBySpace(space.getId());
 		Assert.assertEquals(2,jobs.size());
 	}
-	
+
 	@StarexecTest
 	private void GetDirectoryTest() {
 		String path=Jobs.getDirectory(job.getId());
 		Assert.assertNotNull(path);
 	}
-	
+
 	@StarexecTest
 	private void GetTotalCountTest() {
 		Assert.assertTrue(Jobs.getJobCount()>0);
 	}
-	
+
 	@StarexecTest
 	private void countPairsByUserTest() {
 		Assert.assertEquals(job.getJobPairs().size(), Jobs.countPairsByUser(user.getId()));
 	}
-	
+
 	@StarexecTest
 	private void countPairsByFakeUserTest() {
 		Assert.assertEquals(0, Jobs.countPairsByUser(-1));
 	}
-	
+
 	@StarexecTest
 	private void GetCountInSpaceTest() {
 		Assert.assertEquals(2,Jobs.getCountInSpace(space.getId()));
 	}
-	
+
 	@StarexecTest
 	private void GetCountInSpaceWithQuery() {
 		Assert.assertEquals(1,Jobs.getCountInSpace(space.getId(), job.getName()));
 		Assert.assertEquals(1,Jobs.getCountInSpace(space.getId(),job2.getName()));
 		Assert.assertEquals(0,Jobs.getCountInSpace(space.getId(),TestUtil.getRandomJobName()));
 	}
-	
+
 	@StarexecTest
 	private void GetLogDirectoryTest() {
 		String path=Jobs.getLogDirectory(job.getId());
 		Assert.assertNotNull(path);
 	}
-	
-	
-	
-	
+
 	// this just checks to see whether the function throws errors: more detailed logic testing
 	// is handled in a unit test
 	@StarexecTest
-	private void GetStatusTest() {
-		Assert.assertNotNull(Jobs.getJobStatusCode(job.getId()));
+	private void GetStatusTest() throws SQLException {
+		Assert.assertNotNull(Jobs.getJobStatus(job.getId()));
 	}
-	
+
 	@StarexecTest
 	private void PauseAndResumeAllTest() {
 		Assert.assertTrue(Jobs.pauseAll());
@@ -169,61 +147,48 @@ public class JobTests extends TestSequence {
 		Assert.assertTrue(Jobs.resumeAll());
 		Assert.assertFalse(Jobs.isSystemPaused());
 	}
-	
+
 	@StarexecTest
 	private void IsDeletedTest() {
 		Assert.assertFalse(Jobs.isJobDeleted(job.getId()));
-		
 	}
-	
+
 	@StarexecTest
 	private void IsKilledTest() {
 		Assert.assertFalse(Jobs.isJobKilled(job.getId()));
-		
 	}
-	
+
 	@StarexecTest
 	private void PauseAndUnpauseTest() {
 		Assert.assertFalse(Jobs.isJobPaused(job.getId()));
 		Assert.assertTrue(Jobs.pause(job.getId()));
 		Assert.assertTrue(Jobs.isJobPaused(job.getId()));
-
 		Assert.assertTrue(Jobs.resume(job.getId()));
-		
-		Assert.assertFalse(Jobs.isJobPaused(job.getId()));
-
 	}
-	
-	@StarexecTest 
-	private void DeleteJobTest() {
+
+	@StarexecTest
+	private void DeleteJobTest() throws SQLException {
 		List<Integer> solverIds= new ArrayList<>();
 		solverIds.add(solver.getId());
 		Job temp=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
 		Assert.assertFalse(Jobs.isJobDeleted(temp.getId()));
-
-		try {
-			Assert.assertTrue(Jobs.delete(temp.getId()));
-			Assert.assertTrue(Jobs.isJobDeleted(temp.getId()));
-			Assert.assertTrue(Jobs.deleteAndRemove(temp.getId()));
-		} catch (SQLException e) {
-			Assert.fail("Caught sql exception while trying to delete job: " + Util.getStackTrace(e));
-		}
-		
-		
+		Assert.assertTrue(Jobs.delete(temp.getId()));
+		Assert.assertTrue(Jobs.isJobDeleted(temp.getId()));
+		Assert.assertTrue(Jobs.deleteAndRemove(temp.getId()));
 	}
-	
+
 	@StarexecTest
 	private void CountPendingPairsTest() {
 		int count=Jobs.countPendingPairs(job.getId());
 		Assert.assertTrue(count>=0);
 	}
-	
+
 	@StarexecTest
 	private void CountIncompletePairsTest() {
 		int count=Jobs.countIncompletePairs(job.getId());
 		Assert.assertTrue(count>=0);
 	}
-	
+
 	private HashMap<Integer, List<JobPair>> getPairSetup() {
 		HashMap<Integer,List<JobPair>> spacesToPairs= new HashMap<>();
 		Random rand=new Random();
@@ -241,7 +206,7 @@ public class JobTests extends TestSequence {
 		}
 		return spacesToPairs;
 	}
-	
+
 	private int getTotalSize(HashMap<Integer,List<JobPair>> pairs) {
 		int sum=0;
 		for (Integer i : pairs.keySet()) {
@@ -249,7 +214,7 @@ public class JobTests extends TestSequence {
 		}
 		return sum;
 	}
-	
+
 	@StarexecTest
 	private void depthFirstAddTest() {
 		Job j=new Job();
@@ -263,18 +228,17 @@ public class JobTests extends TestSequence {
 			if (jp.getJobSpaceId()!=spaceId) {
 				//if we are changing to a new space
 				if (spaceId>=0) {
-					Assert.assertEquals(spacesToPairs.get(spaceId).size(),counter); // we should see all the pairs in this space
-																					//before seeing any other spaces
+					// we should see all the pairs in this space before seeing any other spaces
+					Assert.assertEquals(spacesToPairs.get(spaceId).size(),counter);
 				}
 				spaceId=jp.getJobSpaceId();
 				counter=1;
-				
 			} else {
 				counter++;
 			}
 		}
 	}
-	
+
 	@StarexecTest
 	private void roundRobinAddTest() {
 		Job j=new Job();
@@ -295,44 +259,40 @@ public class JobTests extends TestSequence {
 			max=Math.max(max, spacesToCounts.get(space));
 		}
 	}
-	
+
 	@StarexecTest
 	private void CountTimelessPairsTest() {
 		int count=Jobs.countTimelessPairs(job.getId());
-		Assert.assertTrue(count>=0);		
+		Assert.assertTrue(count>=0);
 	}
-	
+
 	@StarexecTest
 	private void getPairsByStatusTest() {
 		List<Integer> pairs=Jobs.getPairsByStatus(job.getId(), StatusCode.STATUS_COMPLETE.getVal());
 		Assert.assertEquals(job.getJobPairs().size(), pairs.size());
 	}
-	
+
 	@StarexecTest
 	private void getTimelessPairsByStatusTest() {
 		List<Integer> pairs= Jobs.getTimelessPairsByStatus(job.getId(), StatusCode.STATUS_COMPLETE.getVal());
 		Assert.assertNotNull(pairs);
 	}
-	
+
 	@StarexecTest
-	private void cleanOrphanedDeletedJobTest() {
+	private void cleanOrphanedDeletedJobTest() throws SQLException {
 		Job tempJob = loader.loadJobIntoDatabase(space.getId(), user.getId(), solver.getId(), benchmarkIds);
 		List<Integer> job = new ArrayList<>();
 		job.add(tempJob.getId());
-		try {
-			Jobs.delete(tempJob.getId());
-		} catch (SQLException e) {
-			Assert.fail("Caught SQLException while trying to delete job: " + Util.getStackTrace(e));
-		}
+		Jobs.delete(tempJob.getId());
 		Assert.assertTrue(Jobs.cleanOrphanedDeletedJobs());
 		Assert.assertNotNull(Jobs.getIncludeDeleted(tempJob.getId()));
-		
+
 		Spaces.removeJobs(job, space.getId());
-		
+
 		Assert.assertTrue(Jobs.cleanOrphanedDeletedJobs());
 		Assert.assertNull(Jobs.getIncludeDeleted(tempJob.getId()));
 	}
-	
+
 	@StarexecTest
 	private void countOlderPairsTest() {
 		int maxCompletionId = 0;
@@ -344,9 +304,8 @@ public class JobTests extends TestSequence {
 		}
 		Assert.assertEquals(job.getJobPairs().size(), Jobs.countOlderPairs(job.getId(), maxCompletionId));
 		Assert.assertEquals(1, Jobs.countOlderPairs(job.getId(), minCompletionId));
-
 	}
-	
+
 	@StarexecTest
 	private void associateJobsTest() {
 		List<Integer> jobIds = new ArrayList<>();
@@ -355,10 +314,10 @@ public class JobTests extends TestSequence {
 		Space newSpace = loader.loadSpaceIntoDatabase(user.getId(), space.getId());
 		Assert.assertTrue(Jobs.associate(jobIds, newSpace.getId()));
 		Assert.assertEquals(2, Jobs.getBySpace(newSpace.getId()).size());
-		
+
 		Spaces.removeSubspace(newSpace.getId());
 	}
-	
+
 	@StarexecTest
 	private void updateNodeTest() {
 		JobPair jp = job.getJobPairs().get(0);
@@ -367,7 +326,54 @@ public class JobTests extends TestSequence {
 		Assert.assertEquals(n.getId(), JobPairs.getPairDetailed(jp.getId()).getNode().getId());
 		jp.setNode(n);
 	}
-	
+
+	private void assertJobHasStatus(Job job, JobStatus status) throws SQLException {
+		JobStatus actual = Jobs.getJobStatus(job.getId());
+		if (status != actual) {
+			Assert.assertEquals(status.name(), actual.name());
+		}
+	}
+
+	@StarexecTest
+	private void JobStatus() throws SQLException {
+		// We need our *own* job because we are going to be modifying the status
+		// in irreparable ways
+		Job job = loader.loadJobIntoDatabase(space.getId(), user.getId(), solver.getId(), benchmarkIds);
+		final HashMap<String, Integer> stats = new HashMap<>();
+		job.setLiteJobPairStats(stats);
+		stats.put("pendingPairs", 0);
+		final int jobId = job.getId();
+		Status status = new Status();
+		int jp = job.getJobPairs().get(0).getId();
+		try {
+			assertJobHasStatus(job, JobStatus.COMPLETE);
+			Assert.assertEquals("complete", job.getStatus());
+
+			status.setCode(StatusCode.STATUS_ENQUEUED);
+			JobPairs.setStatusForPairAndStages(jp, status.getCode().getVal());
+			stats.put("pendingPairs", 1);
+			assertJobHasStatus(job, JobStatus.RUNNING);
+			Assert.assertEquals("incomplete", job.getStatus());
+
+			status.setCode(StatusCode.STATUS_PROCESSING);
+			JobPairs.setStatusForPairAndStages(jp, status.getCode().getVal());
+			assertJobHasStatus(job, JobStatus.PROCESSING);
+			Assert.assertEquals("incomplete", job.getStatus());
+
+			Jobs.pause(jobId);
+			assertJobHasStatus(job, JobStatus.PAUSED);
+			Assert.assertEquals("paused", job.getStatus());
+
+			Jobs.kill(jobId);
+			assertJobHasStatus(job, JobStatus.KILLED);
+			Assert.assertEquals("killed", job.getStatus());
+		} catch (Exception e) {
+			throw e;
+		} finally {
+			Jobs.deleteAndRemove(jobId);
+		}
+	}
+
 	@Override
 	protected String getTestName() {
 		return "JobTests";
@@ -381,19 +387,16 @@ public class JobTests extends TestSequence {
 		solver=loader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
 		postProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
 		benchmarkIds=loader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
-		
+
 		List<Integer> solverIds= new ArrayList<>();
 		solverIds.add(solver.getId());
 		job=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
 		job2=loader.loadJobIntoDatabase(space.getId(), user2.getId(), -1, postProc.getId(), solverIds, benchmarkIds, cpuTimeout, wallclockTimeout, gbMemory);
 		Assert.assertNotNull(Jobs.get(job.getId()));
-		
 	}
 
 	@Override
 	protected void teardown() throws Exception {
 		loader.deleteAllPrimitives();
-		
 	}
-
 }

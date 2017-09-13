@@ -11,31 +11,32 @@ import java.util.List;
 
 /**
  * Represents a space in the database.
- * 
+ *
  * @author Tyler Jensen
  */
-public class Space extends Identifiable implements Iterable<Space>, Nameable {	
-	@Expose	private String name;
+public class Space extends Identifiable implements Iterable<Space>, Nameable {
+	@Expose private String name;
 	@Expose private String description = "no description";
 	private boolean locked;
 	private boolean isPublic;
 	private Timestamp created;
 	private Permission defaultPermission;
-	@Expose	private List<Solver> solvers;
-	@Expose	private List<Benchmark> benchmarks;
-	@Expose	private List<Job> jobs;
-	@Expose	private List<User> users;
-	@Expose	private List<Space> subspaces;
+	@Expose private List<Solver> solvers;
+	@Expose private List<Benchmark> benchmarks;
+	@Expose private List<Job> jobs;
+	@Expose private List<User> users;
+	@Expose private List<Space> subspaces;
 	@Expose private Integer parentSpace;
 	@Expose private boolean stickyLeaders;
+
 	public void setParentSpace(Integer space) {
 		this.parentSpace = space;
 	}
-	
+
 	public Integer getParentSpace() {
 		return this.parentSpace;
 	}
-	
+
 	public Space() {
 		this.solvers = new LinkedList<>();
 		this.benchmarks = new LinkedList<>();
@@ -43,74 +44,73 @@ public class Space extends Identifiable implements Iterable<Space>, Nameable {
 		this.users = new LinkedList<>();
 		this.subspaces = new LinkedList<>();
 		this.defaultPermission = new Permission();
-		
 	}
-	
+
 	/**
 	 * @return the default permission entry that represents the permission newly added users have
 	 */
 	public Permission getPermission() {
 		return defaultPermission;
 	}
-	
+
 	/**
 	 * @param permission the default permission to set for this space
 	 */
 	public void setPermission(Permission permission) {
 		this.defaultPermission = permission;
 	}
-	
+
 	/**
 	 * @return the user defined name for the space
 	 */
 	public String getName() {
 		return name;
 	}
-	
+
 	/**
 	 * @param name the name to set for the space
 	 */
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	/**
 	 * @return the user defined description of the space
 	 */
 	public String getDescription() {
 		return description;
 	}
-	
+
 	/**
 	 * @param description the description to set for the space
 	 */
 	public void setDescription(String description) {
-		if(!Util.isNullOrEmpty(description)) {
+		if (!Util.isNullOrEmpty(description)) {
 			this.description = description;
 		}
 	}
-	
+
 	/**
 	 * @return true if the space is 'locked' false otherwise (locked indicates no links can be made to the space)
 	 */
 	public boolean isLocked() {
 		return locked;
 	}
-	
+
 	/**
 	 * @param locked the locked property to set for the space
 	 */
 	public void setLocked(boolean locked) {
 		this.locked = locked;
 	}
-	
+
 	/**
 	 * @return the time the space was created
 	 */
 	public Timestamp getCreated() {
 		return created;
 	}
-	
+
 	/**
 	 * @param created the creation time to set for the space
 	 */
@@ -138,6 +138,7 @@ public class Space extends Identifiable implements Iterable<Space>, Nameable {
 	public List<Benchmark> getBenchmarks() {
 		return this.benchmarks;
 	}
+
 	/**
 	 * @return all benchmarks in this space and all subspaces recursively
 	 */
@@ -226,16 +227,15 @@ public class Space extends Identifiable implements Iterable<Space>, Nameable {
 	public void setSubspaces(List<Space> subspaces) {
 		this.subspaces = subspaces;
 	}
-	
-	
+
 	public boolean isPublic() {
 		return isPublic;
 	}
-	
+
 	public void setPublic(boolean pbc) {
 		isPublic = pbc;
 	}
-	
+
 	@Override
 	public Iterator<Space> iterator() {
 		return this.subspaces.iterator();
@@ -247,5 +247,5 @@ public class Space extends Identifiable implements Iterable<Space>, Nameable {
 
 	public boolean isStickyLeaders() {
 		return stickyLeaders;
-	}			
+	}
 }

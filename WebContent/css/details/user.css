@@ -1,5 +1,5 @@
 .actionField {
-	width:95%;	
+	width:95%;
 }
 
 #detailPanel.userDetailPanel {
@@ -8,17 +8,6 @@
 
 .community {
 	text-align: center;
-}
-
-#jobs p.stat {
-    margin: auto;
-    text-align: center;
-    width: 80px;
-    height: 30px;
-    padding-top: 10px;
-    color: #111;
-    display: block;
-    border: 1px solid #111;
 }
 
 @media only screen and (max-width: 767px) {
@@ -34,7 +23,7 @@
 		width: 100% !important;
 	}
 
-	#jobs tr > *:nth-child(2), #jobs tr > *:nth-child(3), #jobs tr > *:nth-child(4), 
+	#jobs tr > *:nth-child(2), #jobs tr > *:nth-child(3), #jobs tr > *:nth-child(4),
 	#jobs tr > *:nth-child(5), #jobs tr > *:nth-child(6) {
 		display: none;
 	}
@@ -46,5 +35,4 @@
 	body td, body th {
 		text-align: center;
 	}
-
 }

@@ -11,65 +11,62 @@ import java.util.List;
 
 /**
  * Represents a solver in the database
- * 
+ *
  * @author Tyler Jensen
  */
-public class Solver extends Identifiable implements Iterable<Configuration>, Nameable, Locatable{
-	
+public class Solver extends Identifiable implements Iterable<Configuration>, Nameable, Locatable {
+
 	/**
 	 * Represents the type of the processor (along with it's SQL storage values)
 	 */
 	public enum ExecutableType {
-		
-		SOLVER(1), 
-		TRANSFORMER(2), 
-		RESULTCHECKER(3),
-		OTHER(4);
-		
+
+		SOLVER(1), TRANSFORMER(2), RESULTCHECKER(3), OTHER(4);
+
 		private int val;
-		
+
 		ExecutableType(int val) {
 			this.val = val;
 		}
-		
+
 		public int getVal() {
 			return this.val;
 		}
-		
+
 		public static ExecutableType valueOf(int val) {
-			switch(val) {			
+			switch (val) {
 				case 1:
 					return SOLVER;
 				case 2:
 					return TRANSFORMER;
 				case 3:
 					return RESULTCHECKER;
-			    case 4:
-				   return OTHER;
+				case 4:
+					return OTHER;
 				default:
-					return null;				
+					return null;
 			}
 		}
 	}
-	
-	
+
 	private int userId = -1;
-	@Expose	private String name;
+	@Expose private String name;
 	@Expose private String description = "no description";
-	private Timestamp uploadDate;	
+	private Timestamp uploadDate;
 	private String mostRecentUpdateString;
 	private transient String path;
-	private boolean isDownloadable;	
+	private boolean isDownloadable;
 	private List<Configuration> configurations;
 	private long diskSize;
 	private boolean recycled;
 	private boolean deleted;
 	private ExecutableType type;
 	private SolverBuildStatus buildStatus;
+
 	public Solver() {
 		this.configurations = new LinkedList<>();
 	}
-	
+
 	/**
 	 * @return the user id of the user who uploaded the solver
 	 */
@@ -90,44 +87,44 @@ public class Solver extends Identifiable implements Iterable<Configuration>, Nam
 	public String getName() {
 		return name;
 	}
-	
+
 	/**
 	 * @param name the name to set for the solver
 	 */
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	/**
 	 * @return the user defined description of the solver
 	 */
 	public String getDescription() {
 		return description;
 	}
-	
+
 	/**
 	 * @param description the description to set for the solver
 	 */
 	public void setDescription(String description) {
-		if(!Util.isNullOrEmpty(description)) {
+		if (!Util.isNullOrEmpty(description)) {
 			this.description = description;
 		}
-	}	
-	
+	}
+
 	/**
 	 * @return the date the solver was added to the system
 	 */
 	public Timestamp getUploadDate() {
 		return uploadDate;
 	}
-	
+
 	/**
 	 * @param uploadDate the upload date to set for the solver
 	 */
 	public void setUploadDate(Timestamp uploadDate) {
 		this.uploadDate = uploadDate;
 	}
-	
+
 	/**
 	 * @return the absolute file path to the solver on disk
 	 */
@@ -135,7 +132,7 @@ public class Solver extends Identifiable implements Iterable<Configuration>, Nam
 	public String getPath() {
 		return path;
 	}
-	
+
 	/**
 	 * @param path the absolute path to set for the solver
 	 */
@@ -143,14 +140,14 @@ public class Solver extends Identifiable implements Iterable<Configuration>, Nam
 	public void setPath(String path) {
 		this.path = path;
 	}
-	
+
 	/**
 	 * @return true if this solver can be downloaded, false otherwise
 	 */
 	public boolean isDownloadable() {
 		return isDownloadable;
 	}
-	
+
 	/**
 	 * @param isDownloadable sets whether or not this solver down be downloaded
 	 */
@@ -178,41 +175,39 @@ public class Solver extends Identifiable implements Iterable<Configuration>, Nam
 	public void removeConfigurations() {
 		this.configurations.clear();
 	}
-	
+
 	@Override
 	public Iterator<Configuration> iterator() {
 		return this.configurations.iterator();
-	}	
-	
+	}
+
 	/**
 	 * @param diskSize the number of bytes this solver consumes on disk
 	 */
-	public void setDiskSize(long diskSize){
+	public void setDiskSize(long diskSize) {
 		this.diskSize = diskSize;
 	}
-	
+
 	/**
 	 * @return the number of bytes this solver consumes on disk
 	 */
-	public long getDiskSize(){
+	public long getDiskSize() {
 		return diskSize;
 	}
 
-	
 	/**
 	 * @return SolverBuildStatus the solver build status
 	 */
 	public SolverBuildStatus buildStatus() {
 		return buildStatus;
 	}
-	
+
 	/**
 	 * @param buildStatus sets the whether this solver has been built or not
 	 */
 	public void setBuildStatus(SolverBuildStatus buildStatus) {
 		this.buildStatus = buildStatus;
 	}
-
 
 	public void setMostRecentUpdate(String mostRecentUpdate) {
 		this.mostRecentUpdateString = mostRecentUpdate;

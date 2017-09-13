@@ -52,11 +52,10 @@ public class JobUtil {
 	                                        ConfigAttrMapPair configAttrMapPair) throws IOException,
 			ParserConfigurationException, SAXException {
 
-		final String methodName = "createJobsFromFile";
 		final String method = "createJobsFromFile";
 		List<Integer> jobIds = new ArrayList<>();
 		if (!validateAgainstSchema(file, xmlType)) {
-			log.warn(method, "File from User " + userId + " is not Schema valid.");
+			log.debug(method, "File from User " + userId + " is not Schema valid.");
 			errorMessage = "File from User " + userId + " is not Schema valid.";
 			return null;
 		}
@@ -472,7 +471,7 @@ public class JobUtil {
 	private Integer createJobFromElement(int userId, Integer spaceId, Element jobElement, HashMap<String,
 			SolverPipeline> pipelines, ConfigAttrMapPair configAttrMapPair) {
 		try {
-			final String methodName = "createJobFromElement";
+			final String method = "createJobFromElement";
 
 			Element jobAttributes = DOMHelper.getElementByName(jobElement, "JobAttributes");
 			HashMap<Integer, Solver> configIdsToSolvers = new HashMap<>();

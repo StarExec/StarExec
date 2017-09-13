@@ -6,21 +6,23 @@ import java.util.HashMap;
 
 /**
  * Represents a worker node in the database
+ *
  * @author Tyler Jensen
  */
-public class WorkerNode extends Identifiable implements Nameable{
+public class WorkerNode extends Identifiable implements Nameable {
 	@Expose private String name;
 	@Expose private String status;
 	@Expose private HashMap<String, String> attributes;
 	@Expose private HashMap<Integer, String[]> jobPairs;
 	@Expose private Queue queue;
+
 	public WorkerNode() {
 		// Default constructor
 		attributes = new HashMap<>();
 		jobPairs = new HashMap<>();
 		setQueue(new Queue());
 	}
-	
+
 	/**
 	 * @param name The name of the node
 	 */
@@ -29,7 +31,7 @@ public class WorkerNode extends Identifiable implements Nameable{
 		attributes = new HashMap<>();
 		jobPairs = new HashMap<>();
 	}
-	
+
 	/**
 	 * @return The node's canonical name
 	 */
@@ -42,7 +44,7 @@ public class WorkerNode extends Identifiable implements Nameable{
 	 */
 	public void setName(String name) {
 		this.name = name;
-	}		
+	}
 
 	/**
 	 * @return the status of the node
@@ -57,7 +59,7 @@ public class WorkerNode extends Identifiable implements Nameable{
 	public void setStatus(String status) {
 		this.status = status;
 	}
-	
+
 	/**
 	 * @return The attributes for this worker node
 	 */
@@ -75,16 +77,16 @@ public class WorkerNode extends Identifiable implements Nameable{
 
 	@Override
 	public String toString() {
-	 return this.name;
+		return this.name;
 	}
-	
+
 	/**
 	 * @return The job pairs
 	 */
 	public HashMap<Integer, String[]> getJobPair() {
 		return jobPairs;
 	}
-	
+
 	public void putJobPair(int key, String[] values) {
 		this.jobPairs.put(key, values);
 	}

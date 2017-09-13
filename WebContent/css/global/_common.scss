@@ -31,3 +31,17 @@ ul.horizontal {
 .italic {
 	font-style: italic;
 }
+
+.actionList, #actionList {
+	list-style: none;
+
+	li {
+		float: left;
+		margin-left: 5px;
+		margin-bottom: 10px;
+
+		a {
+			cursor: pointer;
+		}
+	}
+}

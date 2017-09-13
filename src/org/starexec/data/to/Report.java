@@ -1,8 +1,7 @@
 package org.starexec.data.to;
 
 /**
- * Class that represents a report in the weekly reports system.
- * Author: Albert Giegerich
+ * Class that represents a report in the weekly reports system. Author: Albert Giegerich
  */
 public class Report {
 	// The name of the event the report is about.
@@ -32,6 +31,7 @@ public class Report {
 
 	/**
 	 * Gets the name of the event the report is about.
+	 *
 	 * @return the name of the event the report is a bout
 	 * @author Albert Giegerich
 	 */
@@ -41,6 +41,7 @@ public class Report {
 
 	/**
 	 * Gets the number of time the report's event occurred.
+	 *
 	 * @return the number times the report's event occurred.
 	 * @author Albert Giegerich
 	 */
@@ -53,12 +54,13 @@ public class Report {
 	 * @return the id of the queue related to the report, null if the report is not related to a queue.
 	 * @author Albert Giegerich
 	public int getQueueId() {
-		return queueId;
+	return queueId;
 	}
-	*/
+	 */
 
 	/**
 	 * Gets the name of the queue related to the report.
+	 *
 	 * @return the name of the queue related to the report, null if the report is not related to a queue.
 	 * @author Albert Giegerich
 	 */

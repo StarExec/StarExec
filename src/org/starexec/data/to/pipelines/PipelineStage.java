@@ -13,20 +13,23 @@ public class PipelineStage extends Identifiable {
 	//this field is not stored in the database-- it is transiently used during a job XML upload
 	private boolean isPrimary;
 	private List<PipelineDependency> dependencies;
-	
+
 	public PipelineStage() {
 		setDependencies(new ArrayList<>());
 	}
-	
+
 	public int getPipelineId() {
 		return pipelineId;
 	}
+
 	public void setPipelineId(int pipelineId) {
 		this.pipelineId = pipelineId;
 	}
+
 	public Integer getConfigId() {
 		return configId;
 	}
+
 	public void setConfigId(Integer configId) {
 		this.configId = configId;
 	}
@@ -38,13 +41,10 @@ public class PipelineStage extends Identifiable {
 	public void setDependencies(List<PipelineDependency> dependencies) {
 		this.dependencies = dependencies;
 	}
+
 	public void addDependency(PipelineDependency dep) {
 		this.dependencies.add(dep);
 	}
-
-	
-
-	
 
 	public boolean isPrimary() {
 		return isPrimary;

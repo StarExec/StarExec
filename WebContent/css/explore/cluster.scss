@@ -1,12 +1,12 @@
 @import "../global/helper";
 
 #benchHead {
-	width:19%;
+	width: 19%;
 }
 
 #qstatOutput, #loadOutput {
 	width: 96%;
-	height:300px;
+	height: 300px;
 }
 
 #qstatOutput {
@@ -15,22 +15,18 @@
 	white-space: pre;
 }
 
-
 #jobs {
 	@extend %popup-links;
 
 	td .stat {
-		text-align: center;
-		color: #111;
-		border: 1px solid #111;
-		line-height: 2.2;
+		@extend %stat-column;
 	}
 }
 
 @media only screen and (max-width: 767px) {
 	#explorer {
 		width: 100%;
-		float:none;
+		float: none;
 	}
 
 	.jstree-icon {
@@ -51,26 +47,31 @@
 	#details {
 		width: 100%;
 	}
+
 	body #details tr > *:first-child {
 		width: 33.33% !important;
 	}
+
 	body #details tr > *:nth-child(2) {
 		width: 33.33% !important;
 	}
+
 	body #details tr > *:nth-child(3) {
 		width: 33.33% !important;
 	}
 
-
 	#details tr > *:nth-child(4) {
 		display: none;
 	}
+
 	#details tr > *:nth-child(5) {
 		display: none;
 	}
+
 	#details tr > *:nth-child(6) {
 		display: none;
 	}
+
 	#details tr > *:nth-child(7) {
 		display: none;
 	}
