@@ -274,7 +274,7 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++STAGE_INDEX )); do
 	sandboxWorkspace
 
 	log "listing contents of sandbox..."
-	ls -l "$WORKING_DIR"
+	ls -lR "$WORKING_DIR"
 
 	CURRENT_STAGE_NUMBER=${STAGE_NUMBERS[STAGE_INDEX]}
 

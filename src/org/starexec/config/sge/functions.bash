@@ -798,12 +798,10 @@ function sandboxWorkspace {
 	# and change the owner of everything inside the benchmark dir to tomcat
 	# but give everybody permission to read (but not write or delete) the benchmark
 	sudo chown $(whoami) "$WORKING_DIR"
-	chmod a=rx,o+w "$WORKING_DIR"
+	chmod a=rx,u+w "$WORKING_DIR"
 
 	sudo chown -R $(whoami) "$LOCAL_BENCH_DIR"
-	chmod -R a=r "$LOCAL_BENCH_PATH"
-
-	ls -lR "$WORKING_DIR"
+	chmod a=rx,u+w "$LOCAL_BENCH_DIR"
 }
 
 #will see if a solver is cached and change the SOLVER_PATH to the cache if so
