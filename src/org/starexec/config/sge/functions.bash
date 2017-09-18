@@ -798,10 +798,10 @@ function sandboxWorkspace {
 	# and change the owner of everything inside the benchmark dir to tomcat
 	# but give everybody permission to read (but not write or delete) the benchmark
 	sudo chown $(whoami) "$WORKING_DIR"
-	chmod a=rx,o+w "$WORKING_DIR"
+	chmod a=rx,u+w "$WORKING_DIR"
 
 	sudo chown -R $(whoami) "$LOCAL_BENCH_DIR"
-	chmod -R a=r "$LOCAL_BENCH_DIR"
+	chmod a=rx,u+w "$LOCAL_BENCH_DIR"
 
 	ls -lR "$WORKING_DIR"
 }
