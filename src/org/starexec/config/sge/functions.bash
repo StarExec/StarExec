@@ -801,7 +801,7 @@ function sandboxWorkspace {
 	chmod a=rx,o+w "$WORKING_DIR"
 
 	sudo chown -R $(whoami) "$LOCAL_BENCH_DIR"
-	chmod -R a=r "$LOCAL_BENCH_PATH"
+	chmod -R a=r "$LOCAL_BENCH_DIR"
 
 	ls -lR "$WORKING_DIR"
 }
