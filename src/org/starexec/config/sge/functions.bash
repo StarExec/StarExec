@@ -802,8 +802,6 @@ function sandboxWorkspace {
 
 	sudo chown -R $(whoami) "$LOCAL_BENCH_DIR"
 	chmod a=rx,u+w "$LOCAL_BENCH_DIR"
-
-	ls -lR "$WORKING_DIR"
 }
 
 #will see if a solver is cached and change the SOLVER_PATH to the cache if so
