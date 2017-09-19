@@ -759,7 +759,8 @@ CREATE PROCEDURE GetQueueJobsById(IN _queueId INT)
 			GetErrorPairs(id)    AS errorPairs
 		FROM jobs
 		WHERE queue_id=_queueId
-		  AND GetJobStatus(id)="incomplete"
+		  AND id IN
+			(SELECT job_id FROM job_pairs WHERE status_code BETWEEN 1 AND 6)
 		  AND NOT paused
 		  AND NOT killed
 		ORDER BY created DESC;
