@@ -413,11 +413,7 @@ public class Mail {
 			.replace("$$JOBSTATUS$$", status.toString())
 			.replace("$$USER$$", user.toString());
 
-		final String subject = new StringBuilder("STAREXEC Job ")
-			.append(jobId)
-			.append(": ")
-			.append(status.toString())
-			.toString();
+		final String subject = "STAREXEC Job " + jobId + ": " + status.toString();
 
 		mail(message, subject, user.getEmail());
 	}
