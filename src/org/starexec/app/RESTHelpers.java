@@ -860,7 +860,6 @@ public class RESTHelpers {
 	 * Gets the next page of entries for a DataTable Object (ALL regardless of
 	 * space)
 	 *
-	 * @param type the kind of primitives to query for
 	 * @param request the object containing all the DataTable parameters
 	 * @return a JSON object representing the next page of primitives to return
 	 * to the client, <br>

@@ -25,7 +25,7 @@ public enum JobStatus {
 	/**
 	 * Returns a JobStatus from an SQL result
 	 *
-	 * @param SQL Result containing ONLY a JobStatus label
+	 * @param result SQL result containing ONLY a JobStatus label
 	 * @return the corresponding JobStatus
 	 */
 	public static JobStatus fromResultSet(ResultSet result) throws SQLException {

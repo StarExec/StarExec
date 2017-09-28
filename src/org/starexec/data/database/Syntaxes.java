@@ -39,10 +39,9 @@ public class Syntaxes {
 	}
 
 	/**
-	 * Given a result set where the current row points to a  processor, return the processor
+	 * Given a result set where the current row points to a processor, return the processor
 	 *
 	 * @param results
-	 * @param prefix The table alias given to the processor table in this query. Empty means no prefix.
 	 * @return The processor if it exists
 	 * @throws SQLException If the ResultSet does not contain a required processor attribute
 	 */

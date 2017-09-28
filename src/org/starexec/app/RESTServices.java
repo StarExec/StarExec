@@ -1397,7 +1397,6 @@ public class RESTServices {
 	/**
 	 * Returns the next page of entries in a given DataTable (not restricted by space, returns ALL).
 	 * These populate tables on the admin pages
-	 * @param primType the type of primitive
 	 * @param request the object containing the DataTable information
 	 * @return a JSON object representing the next page of entries if successful,<br>
 	 * 		1 if the request fails parameter validation, <br>

@@ -23,6 +23,7 @@ import java.util.List;
  *
  * @author Wyatt Kaiser
  */
+@SuppressWarnings("ALL")
 public class MoveNodes extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(MoveNodes.class);
 
