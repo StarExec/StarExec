@@ -18,7 +18,7 @@ public class DefaultSettings extends Identifiable {
 
 		private final int value;
 
-		private SettingType(int value) {
+		SettingType(int value) {
 			this.value = value;
 		}
 

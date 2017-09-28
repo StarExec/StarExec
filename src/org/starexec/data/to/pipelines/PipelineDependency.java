@@ -17,7 +17,7 @@ public class PipelineDependency {
 
 		private int val;
 
-		private PipelineInputType(int val) {
+		PipelineInputType(int val) {
 			this.val = val;
 		}
 

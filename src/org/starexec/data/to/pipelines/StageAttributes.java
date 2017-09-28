@@ -20,7 +20,7 @@ public class StageAttributes {
 
 		private int val;
 
-		private SaveResultsOption(int val) {
+		SaveResultsOption(int val) {
 			this.val = val;
 		}
 

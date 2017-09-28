@@ -15,7 +15,7 @@ public class TestStatus {
 		STATUS_FAILED(4);
 		private int val;
 		
-		private TestStatusCode(int val) {
+		TestStatusCode(int val) {
 			this.val = val;			
 		}				
 		

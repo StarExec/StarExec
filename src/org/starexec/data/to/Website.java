@@ -13,7 +13,7 @@ public class Website extends Identifiable implements Nameable {
 
 		private int val;
 
-		private WebsiteType(int val) {
+		WebsiteType(int val) {
 			this.val = val;
 		}
 

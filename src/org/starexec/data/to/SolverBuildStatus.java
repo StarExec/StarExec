@@ -8,7 +8,7 @@ public class SolverBuildStatus {
 
 		private int val;
 
-		private SolverBuildStatusCode(int val) {
+		SolverBuildStatusCode(int val) {
 			this.val = val;
 		}
 
