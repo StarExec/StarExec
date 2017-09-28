@@ -7,7 +7,7 @@ import com.google.gson.annotations.Expose;
  * @author Eric Burns
  */
 public class TestStatus {
-	public static enum TestStatusCode {
+	public enum TestStatusCode {
 		STATUS_UNKNOWN(0),
 		STATUS_NOT_RUN(1),
 		STATUS_RUNNING(2),

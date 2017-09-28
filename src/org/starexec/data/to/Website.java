@@ -7,7 +7,7 @@ public class Website extends Identifiable implements Nameable {
 	/**
 	 * Represents the type of the processor (along with it's SQL storage values)
 	 */
-	public static enum WebsiteType {
+	public enum WebsiteType {
 
 		USER(1), SOLVER(2), SPACE(3);  //type for the output from a previous stage
 

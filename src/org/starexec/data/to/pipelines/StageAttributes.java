@@ -13,7 +13,7 @@ public class StageAttributes {
 	/**
 	 * Enum describing options for what to do with job pair output. Applies to both stdout and
 	 */
-	public static enum SaveResultsOption {
+	public enum SaveResultsOption {
 		NO_SAVE(1),       // do not write output back in any way
 		SAVE(2),          // save output as pair results (default, used by all non-pipeline jobs)
 		CREATE_BENCH(3);  // both save results as output and also create benchmark from output
