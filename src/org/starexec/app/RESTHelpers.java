@@ -1284,10 +1284,10 @@ public class RESTHelpers {
 		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 
+	/**
+	 * Generate the HTML for the next DataTable page of entries
+	 */
 	public static JsonObject convertSolverComparisonsToJsonObject(List<SolverComparison> comparisons, DataTablesQuery query, boolean useWallclock, int stageNumber, int jobSpaceId) {
-		/**
-		 * Generate the HTML for the next DataTable page of entries
-		 */
 		JsonArray dataTablePageEntries = new JsonArray();
 		for (SolverComparison c : comparisons) {
 
@@ -1489,8 +1489,8 @@ public class RESTHelpers {
 	 */
 	public static JsonObject convertJobPairsToJsonObject(List<JobPair> pairs, DataTablesQuery query, boolean useWallclock, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize) {
 
-		/**
-		 * Generate the HTML for the next DataTable page of entries
+		/*
+		  Generate the HTML for the next DataTable page of entries
 		 */
 		JsonArray dataTablePageEntries = new JsonArray();
 		String solverLink = null;
@@ -1546,8 +1546,8 @@ public class RESTHelpers {
 	 * @author Eric Burns
 	 */
 	public static JsonObject convertJobsToJsonObject(List<Job> jobs, DataTablesQuery query, boolean dataAsObjects) {
-		/**
-		 * Generate the HTML for the next DataTable page of entries
+		/*
+		  Generate the HTML for the next DataTable page of entries
 		 */
 		JsonArray dataTablePageEntries = new JsonArray();
 		for (Job job : jobs) {
@@ -1669,8 +1669,8 @@ public class RESTHelpers {
 	 * @author Eric Burns
 	 */
 	public static JsonObject convertUsersToJsonObject(List<User> users, DataTablesQuery query, int currentUserId) {
-		/**
-		 * Generate the HTML for the next DataTable page of entries
+		/*
+		  Generate the HTML for the next DataTable page of entries
 		 */
 		JsonArray dataTablePageEntries = new JsonArray();
 		for (User user : users) {
@@ -1747,8 +1747,8 @@ public class RESTHelpers {
 	 * @author Eric Burns
 	 */
 	public static JsonObject convertTestSequencesToJsonObject(List<TestSequence> tests, DataTablesQuery query) {
-		/**
-		 * Generate the HTML for the next DataTable page of entries
+		/*
+		  Generate the HTML for the next DataTable page of entries
 		 */
 		JsonArray dataTablePageEntries = new JsonArray();
 		for (TestSequence test : tests) {
@@ -1784,8 +1784,8 @@ public class RESTHelpers {
 	 * @author Eric Burns
 	 */
 	public static JsonObject convertTestResultsToJsonObject(List<TestResult> tests, DataTablesQuery query) {
-		/**
-		 * Generate the HTML for the next DataTable page of entries
+		/*
+		  Generate the HTML for the next DataTable page of entries
 		 */
 		JsonArray dataTablePageEntries = new JsonArray();
 		for (TestResult test : tests) {
@@ -1814,8 +1814,8 @@ public class RESTHelpers {
 	 * @author Eric Burns
 	 */
 	public static JsonObject convertSpacesToJsonObject(List<Space> spaces, DataTablesQuery query) {
-		/**
-		 * Generate the HTML for the next DataTable page of entries
+		/*
+		  Generate the HTML for the next DataTable page of entries
 		 */
 		JsonArray dataTablePageEntries = new JsonArray();
 		for (Space space : spaces) {
@@ -1842,8 +1842,8 @@ public class RESTHelpers {
 	 * @author Eric Burns
 	 */
 	public static JsonObject convertSolversToJsonObject(List<Solver> solvers, DataTablesQuery query) {
-		/**
-		 * Generate the HTML for the next DataTable page of entries
+		/*
+		  Generate the HTML for the next DataTable page of entries
 		 */
 		JsonArray dataTablePageEntries = new JsonArray();
 		for (Solver solver : solvers) {
@@ -1883,8 +1883,8 @@ public class RESTHelpers {
 	 * @author Eric Burns
 	 */
 	public static JsonObject convertBenchmarksToJsonObject(List<Benchmark> benchmarks, DataTablesQuery query) {
-		/**
-		 * Generate the HTML for the next DataTable page of entries
+		/*
+		  Generate the HTML for the next DataTable page of entries
 		 */
 		JsonArray dataTablePageEntries = new JsonArray();
 		for (Benchmark bench : benchmarks) {
@@ -2145,8 +2145,8 @@ public class RESTHelpers {
 	}
 
 	public static JsonObject convertCommunityRequestsToJsonObject(List<CommunityRequest> requests, DataTablesQuery query, int currentUserId) {
-		/**
-		 * Generate the HTML for the next DataTable page of entries
+		/*
+		  Generate the HTML for the next DataTable page of entries
 		 */
 		JsonArray dataTablePageEntries = new JsonArray();
 		for (CommunityRequest req : requests) {
