@@ -296,7 +296,7 @@ public class UserTests extends TestSequence {
 	private void DeleteUserDeletesUsersJobsTest() {
 		User tempUser = loader.loadUserIntoDatabase();
 		Solver tempSolver = loader.loadSolverIntoDatabase(space.getId(), tempUser.getId()); 
-		List<Integer> tempSolverIds = Arrays.asList(new Integer[]{tempSolver.getId()}); 
+		List<Integer> tempSolverIds = Arrays.asList(tempSolver.getId());
 		List<Integer> tempBenchmarkIds = loader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
 
 		Job tempJob = loader.loadJobIntoDatabase(
@@ -317,7 +317,7 @@ public class UserTests extends TestSequence {
 	private void DeleteUserDeletesJobPairsTest() {
 		User tempUser = loader.loadUserIntoDatabase();
 		Solver tempSolver = loader.loadSolverIntoDatabase(space.getId(), tempUser.getId()); 
-		List<Integer> tempSolverIds = Arrays.asList(new Integer[]{tempSolver.getId()}); 
+		List<Integer> tempSolverIds = Arrays.asList(tempSolver.getId());
 		List<Integer> tempBenchmarkIds = loader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
 
 		Job tempJob = loader.loadJobIntoDatabase(
@@ -342,7 +342,7 @@ public class UserTests extends TestSequence {
 	private void DeleteUserDeletesJobDirectoriesTest() {
 		User tempUser = loader.loadUserIntoDatabase();
 		Solver tempSolver = loader.loadSolverIntoDatabase(space.getId(), tempUser.getId()); 
-		List<Integer> tempSolverIds = Arrays.asList(new Integer[]{tempSolver.getId()}); 
+		List<Integer> tempSolverIds = Arrays.asList(tempSolver.getId());
 		List<Integer> tempBenchmarkIds = loader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
 
 		Job tempJob = loader.loadJobIntoDatabase(

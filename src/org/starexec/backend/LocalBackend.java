@@ -79,7 +79,7 @@ public class LocalBackend implements Backend {
 	private void runJob(LocalJob j){
 		try {
 			j.process = Util.executeCommandAndReturnProcess(new String[] {j.scriptPath}, null, new File(j.workingDirectoryPath));
-	    	ProcessBuilder builder = new ProcessBuilder(new String[] {j.scriptPath});
+	    	ProcessBuilder builder = new ProcessBuilder(j.scriptPath);
 	    	builder.redirectErrorStream(true);
 	    	builder.directory(new File(j.workingDirectoryPath));
 	    	builder.redirectOutput(new File(j.logPath));
