@@ -183,8 +183,7 @@ public class Websites {
 			procedure.setInt(1, websiteId);
 			results = procedure.executeQuery();
 			if (results.next()) {
-				Website w = resultToWebsite(results);
-				return w;
+				return resultToWebsite(results);
 			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);

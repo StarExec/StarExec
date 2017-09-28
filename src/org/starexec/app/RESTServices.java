@@ -4882,8 +4882,7 @@ public class RESTServices {
 	public String getPastReport(@PathParam("reportName") String reportName, @Context HttpServletRequest request) {
 		try {
 			File pastReport = new File(R.STAREXEC_DATA_DIR, "/reports/" + reportName);
-			String pastReportContents = FileUtils.readFileToString(pastReport, "UTF8");
-			return pastReportContents;
+			return FileUtils.readFileToString(pastReport, "UTF8");
 		} catch (IOException e) {
 			return "Could not get file.";
 		}

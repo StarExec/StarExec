@@ -14,10 +14,7 @@ $(document).ready(function() {
 	
 	initDataTables();
 	
-	
-	var queueName = document.getElementById("queueName").value;
-
-	document.getElementById('qName').innerHTML = queueName;
+	document.getElementById('qName').innerHTML = document.getElementById("queueName").value;
 	
 	var start_date = document.getElementById("start").value;
 	dateComponents = start_date.split("/");

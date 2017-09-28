@@ -26,8 +26,7 @@ public class Hash {
 			MessageDigest hasher = MessageDigest.getInstance(R.PWD_HASH_ALGORITHM);
 			hasher.update(unhashedPassword.getBytes());
 			// get the hashed version of the password
-			String hashedPass = Hash.getHex(hasher.digest());
-			return hashedPass;
+			return Hash.getHex(hasher.digest());
 
 		} catch (NoSuchAlgorithmException e) {
 			log.error(e.getMessage(), e);

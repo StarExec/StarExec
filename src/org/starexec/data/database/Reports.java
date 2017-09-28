@@ -115,10 +115,7 @@ public class Reports {
 
 				reportsForAllQueues.add(report);
 			}
-
-			List<List<Report>> reportsByQueue = separateReportsByQueue(reportsForAllQueues);
-
-			return reportsByQueue;
+			return separateReportsByQueue(reportsForAllQueues);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);

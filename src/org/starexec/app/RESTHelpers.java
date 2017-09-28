@@ -1358,18 +1358,14 @@ public class RESTHelpers {
 
 	private static String getHiddenJobPairLink(int pairId) {
 		// Create the hidden input tag containing the jobpair id
-		String sb = "<input type=\"hidden\" value=\"" + pairId + "\" name=\"pid\"/>";
-		return sb;
+		return "<input type=\"hidden\" value=\"" + pairId + "\" name=\"pid\"/>";
 	}
 
 	private static String getHiddenBenchLink(Benchmark bench) {
-		String sb =
-				"<input name=\"bench\" type=\"hidden\" value=\"" + bench.getId() + "\" prim=\"benchmark\" userId=\"" +
-				bench.getUserId() + "\"  deleted=\"" + bench.isDeleted() + "\" recycled=\"" + bench.isRecycled() +
-				"\"/>";
-
 		// Create the hidden input tag containing the benchmark id
-		return sb;
+		return "<input name=\"bench\" type=\"hidden\" value=\"" + bench.getId() + "\" prim=\"benchmark\" userId=\"" +
+		bench.getUserId() + "\"  deleted=\"" + bench.isDeleted() + "\" recycled=\"" + bench.isRecycled() +
+		"\"/>";
 	}
 
 	private static StringBuilder getBenchLinkPrefix(Benchmark bench, PrimitivesToAnonymize primitivesToAnonymize) {

@@ -379,8 +379,7 @@ public class JobPairs {
 	 */
 	public static Optional<String> getStdOut(int pairId, int stageNumber, int limit) throws IOException {
 		String stdoutPath = JobPairs.getStdout(pairId, stageNumber);
-		Optional<String> stdOut = Util.readFileLimited(new File(stdoutPath), limit);
-		return stdOut;
+		return Util.readFileLimited(new File(stdoutPath), limit);
 	}
 
 	/**

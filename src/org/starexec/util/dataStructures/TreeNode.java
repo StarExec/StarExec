@@ -121,9 +121,9 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
 
 	@Override
 	public Iterator<TreeNode<T>> iterator() {
-		Iterator<TreeNode<T>> iterator = new Iterator<TreeNode<T>>() {
+		return new Iterator<TreeNode<T>>() {
 			private int currentIndex = 0;
-			
+
 			@Override
 			public boolean hasNext() {
 				return currentIndex < getNumberOfChildren();
@@ -141,7 +141,6 @@ public class TreeNode<T> implements Iterable<TreeNode<T>> {
 				throw new UnsupportedOperationException();
 			}
 		};
-		return iterator;
 	}
 
 	/**

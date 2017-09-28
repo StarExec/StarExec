@@ -207,8 +207,7 @@ public class Spaces {
 		log.debug("adding new job space with name = " + name);
 		try {
 			con = Common.getConnection();
-			int newSpaceId = addJobSpace(name, jobId, con);
-			return newSpaceId;
+			return addJobSpace(name, jobId, con);
 		} catch (Exception e) {
 			log.error("addJobSpace says " + e.getMessage(), e);
 		} finally {
@@ -388,9 +387,7 @@ public class Spaces {
 			procedure.setInt(2, jobId);
 			procedure.registerOutParameter(3, java.sql.Types.INTEGER);
 			procedure.executeUpdate();
-			int newSpaceId = procedure.getInt(3);
-
-			return newSpaceId;
+			return procedure.getInt(3);
 		} catch (Exception e) {
 			log.error("addJobSpace says " + e.getMessage(), e);
 		} finally {
@@ -459,8 +456,7 @@ public class Spaces {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
-			boolean success = associateJobSpaces(parentId, childId, con);
-			return success;
+			return associateJobSpaces(parentId, childId, con);
 		} catch (Exception e) {
 			log.error("associateJobSpaces says " + e.getMessage(), e);
 		} finally {

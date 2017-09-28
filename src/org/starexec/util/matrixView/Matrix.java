@@ -318,9 +318,8 @@ public class Matrix {
 		Configuration config = stage.getConfiguration();
 		String uniqueIdentifier = String.format(R.MATRIX_ELEMENT_ID_FORMAT, benchmark.getName(), benchmark.getId(), solver.getName(),solver.getId(), 
 				config.getName(), config.getId());
-		MatrixElement displayData = new MatrixElement(status, cpuTime, memUsage, wallclock, jobPairId, uniqueIdentifier);
 
-		return displayData;
+		return new MatrixElement(status, cpuTime, memUsage, wallclock, jobPairId, uniqueIdentifier);
 	}
 
 

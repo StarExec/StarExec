@@ -435,7 +435,6 @@ public class Jobs {
 						pair.getPrimaryStage().getSolver().getId() == solver.getId() &&
 						!benchmarksAlreadySeen.contains(pair.getBench().getId())) {
 					// Modify the current pair by changing the configuration then add the new job pair to the job.
-					JobPair pairToAdd = pair;
 					pair.getPrimaryStage().setConfiguration(Solvers.getConfiguration(configId));
 					jobPairsToAdd.add(pair);
 					benchmarksAlreadySeen.add(pair.getBench().getId());
@@ -1778,10 +1777,7 @@ public class Jobs {
 			indexOfColumnSortedBy = 8;
 		}
 		JobPairComparator compare = new JobPairComparator(indexOfColumnSortedBy, stageNumber, query.isSortASC());
-		List<JobPair> finalPairs =
-				Util.handlePagination(pairs, compare, query.getStartingRecord(), query.getNumRecords());
-
-		return finalPairs;
+		return Util.handlePagination(pairs, compare, query.getStartingRecord(), query.getNumRecords());
 	}
 
 	/**
@@ -2418,9 +2414,7 @@ public class Jobs {
 			procedure.setInt("configId", configId);
 			procedure.setString("pairType", type);
 			results = procedure.executeQuery();
-			List<JobPair> jobPairs = getJobPairsForDataTable(jobId, results, false, false, PrimitivesToAnonymize.NONE);
-
-			return jobPairs;
+			return getJobPairsForDataTable(jobId, results, false, false, PrimitivesToAnonymize.NONE);
 		} catch (Exception e) {
 			log.error("get JobPairs for Next Page of Job " + jobId + " says " + e.getMessage(), e);
 		} finally {
@@ -2766,9 +2760,7 @@ public class Jobs {
 			procedure = con.prepareCall("{CALL GetAllJobPairsByJob(?)}");
 			procedure.setInt(1, jobId);
 			results = procedure.executeQuery();
-			List<JobPair> jobPairs = getPairsDetailed(jobId, results, false);
-
-			return jobPairs;
+			return getPairsDetailed(jobId, results, false);
 		} catch (Exception e) {
 			log.error("getNewCompletedPairsDetailed says " + e.getMessage(), e);
 		} finally {

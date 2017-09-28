@@ -809,8 +809,7 @@ public class Util {
 	 * @return Number of bytes representing the given gigabytes
 	 */
 	public static long gigabytesToBytes(double gigabytes) {
-		long bytes = (long) (1073741824 * gigabytes);
-		return bytes;
+		return (long) (1073741824 * gigabytes);
 	}
 
 	/**

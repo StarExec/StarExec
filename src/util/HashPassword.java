@@ -43,8 +43,7 @@ public class HashPassword {
 	    MessageDigest hasher = MessageDigest.getInstance("SHA-512");
 	    hasher.update(unhashedPassword.getBytes());
 	    // get the hashed version of the password
-	    String hashedPass = HashPassword.getHex(hasher.digest());
-	    return hashedPass;
+		return HashPassword.getHex(hasher.digest());
 			
 	} catch (NoSuchAlgorithmException e) {
 	    System.err.println(e.getMessage());

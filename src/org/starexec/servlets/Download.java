@@ -728,8 +728,7 @@ public class Download extends HttpServlet {
 
 			File parentDirectory = filetypeDirectory;
 			for (String directory : filesInHierarchy) {
-				File childDirectory = new File(parentDirectory, directory);
-				parentDirectory = childDirectory;
+				parentDirectory = new File(parentDirectory, directory);
 			}
 			parentDirectory.mkdirs();
 			File fileOnServer = new File(R.STAREXEC_ROOT + filetypeDirectoryName + "/" + filePath + "." + filetype);

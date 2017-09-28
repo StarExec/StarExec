@@ -465,8 +465,7 @@ public class Benchmarks {
 
 				// Next add them to the database (must happen AFTER they are processed and have dependencies
 				// validated);
-				List<Integer> ids = Benchmarks.addAndAssociate(benchmarks, spaceId, statusId);
-				return ids;
+				return Benchmarks.addAndAssociate(benchmarks, spaceId, statusId);
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);
 			}
@@ -957,8 +956,7 @@ public class Benchmarks {
 		if (spaces.length == 0) {
 			return -1;
 		}
-		int startIndex = (linked) ? 1 : 0;//if linked, skip the first directory in path
-		int index = startIndex;
+		int index = (linked) ? 1 : 0;
 		log.debug("First Space(or Bench) to look for = " + spaces[index]);
 		//List<Space> subSpaces;
 		Integer currentSpaceId = spaceId;

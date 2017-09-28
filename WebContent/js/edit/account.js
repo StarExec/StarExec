@@ -291,8 +291,7 @@ function initUI(){
 }
 
 function getUserIdAssociatedWithPage() {
-	var userId = $('#infoTable').attr('uid');
-	return userId;
+	return $('#infoTable').attr('uid');
 }
 
 function sendDeleteUserRequest(userId) {

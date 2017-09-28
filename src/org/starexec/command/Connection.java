@@ -452,8 +452,7 @@ public class Connection {
 				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE));
 				return Status.ERROR_SERVER;
 			}
-			int id = Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(), "New_ID"));
-			return id;
+			return Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(), "New_ID"));
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
 		} finally {
@@ -1550,8 +1549,7 @@ public class Connection {
 			if (response.getStatusLine().getStatusCode() != HttpServletResponse.SC_FOUND) {
 				return Status.ERROR_BAD_PARENT_SPACE;
 			}
-			int newID = Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(), "New_ID"));
-			return newID;
+			return Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(), "New_ID"));
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
 		} finally {

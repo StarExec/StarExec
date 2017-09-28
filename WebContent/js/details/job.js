@@ -1057,7 +1057,7 @@ function getPanelTable(space) {
 	var spaceName=space.attr("name");
 	var spaceId=parseInt(space.attr("id"));
 
-	var table="<fieldset class=\"panelField\">" +
+	return "<fieldset class=\"panelField\">" +
 			"<legend class=\"panelHeader\">"+spaceName+"</legend>" +
 			"<table id=panel"+spaceId+" spaceId=\""+spaceId+"\" class=\"panel\"><thead>" +
 					"<tr class=\"viewSubspace\"><th colspan=\"4\" >Go To Subspace</th></tr>" +
@@ -1066,7 +1066,6 @@ function getPanelTable(space) {
 			"<th class=\"timeHead\" title=\"total wallclock or cpu time for all job pairs run that were solved correctly\">time</th> </tr>" +
 			"</thead>" +
 			"<tbody></tbody> </table></fieldset>";
-	return table;
 }
 
 function initializePanels() {

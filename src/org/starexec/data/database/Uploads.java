@@ -73,8 +73,7 @@ public class Uploads {
 			procedure.setInt(2, userId);
 			procedure.registerOutParameter(3, java.sql.Types.INTEGER);
 			procedure.executeUpdate();
-			Integer newStatusId = procedure.getInt(3);
-			return newStatusId;
+			return procedure.getInt(3);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			return -1;
@@ -103,8 +102,7 @@ public class Uploads {
 			procedure.setInt(1, userId);
 			procedure.registerOutParameter(2, java.sql.Types.INTEGER);
 			procedure.executeUpdate();
-			Integer newStatusId = procedure.getInt(2);
-			return newStatusId;
+			return procedure.getInt(2);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 			return -1;

@@ -151,8 +151,7 @@ public class Queues {
 
 		try {
 			con = Common.getConnection();
-			int newQueueId = Queues.add(con, queueName, cpuTimeout, wallTimeout);
-			return newQueueId;
+			return Queues.add(con, queueName, cpuTimeout, wallTimeout);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {

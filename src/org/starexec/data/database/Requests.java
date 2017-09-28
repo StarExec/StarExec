@@ -542,9 +542,7 @@ public class Requests {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-
-		Pair<String, String> emailAndCode = new ImmutablePair<>(newEmail, emailChangeCodeAssociatedWithUser);
-		return emailAndCode;
+		return new ImmutablePair<>(newEmail, emailChangeCodeAssociatedWithUser);
 	}
 
 	/**
