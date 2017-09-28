@@ -1,10 +1,5 @@
 package org.starexec.command;
 
-/**
- * This class is responsible for validating the arguments given to functions in the ArgumentParser.
- * These arguments ultimately come from user input at the command line or through a file
- */
-
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.starexec.constants.R;
 import org.starexec.util.Validator;
@@ -16,6 +11,10 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.List;
 
+/**
+ * This class is responsible for validating the arguments given to functions in the ArgumentParser.
+ * These arguments ultimately come from user input at the command line or through a file
+ */
 public class CommandValidator {
 
 	/**

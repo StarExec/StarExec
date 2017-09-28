@@ -420,7 +420,7 @@ public class GridEngineBackend implements Backend{
 
 			String hostList = sb.toString();
 
-			/***** CREATE A QUEUE *****/
+			/* CREATE A QUEUE */
 			// Create newHost.hgrp
 			String newHost;
 

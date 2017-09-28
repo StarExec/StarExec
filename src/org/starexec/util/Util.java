@@ -652,7 +652,7 @@ public class Util {
 		}
 	}
 
-	/**
+	/*
 	 * THIS IS NOT SAFE TO RUN ON STAREXEC
 	 * <p>
 	 * This code is designed to be used for single uses on Stardev to clear the job directory in a smart way after

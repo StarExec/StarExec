@@ -1,5 +1,13 @@
 package org.starexec.command;
 
+import org.starexec.constants.R;
+import org.starexec.data.to.Permission;
+import org.starexec.util.Util;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+
 /**
  * This class is responsible for taking in the shell arguments from users, formatted as
  * Maps of keys to values, and using those arguments to make calls in the Connection
@@ -10,15 +18,6 @@ package org.starexec.command;
  * This class also makes calls to a validator to ensure that shell arguments are appropriate for the desired
  * calls
  */
-
-import org.starexec.constants.R;
-import org.starexec.data.to.Permission;
-import org.starexec.util.Util;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
 class ArgumentParser {
 
 	final private CommandLogger log = CommandLogger.getLogger(ArgumentParser.class);

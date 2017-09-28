@@ -1,11 +1,5 @@
 package org.starexec.command;
 
-/**
- * This class is responsible for taking in a String command given by the user through the shell interface
- * (or in a file), generating a Map of the arguments, and passing off the command to the correct function
- * in the ArgumentParser class.
- */
-
 import org.starexec.constants.R;
 import org.starexec.util.Util;
 
@@ -14,6 +8,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * This class is responsible for taking in a String command given by the user through the shell interface
+ * (or in a file), generating a Map of the arguments, and passing off the command to the correct function
+ * in the ArgumentParser class.
+ */
 class CommandParser {
 	final private CommandLogger log = CommandLogger.getLogger(CommandParser.class);
 	final private Map<String, String> variables;

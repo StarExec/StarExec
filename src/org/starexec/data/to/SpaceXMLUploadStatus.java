@@ -1,6 +1,3 @@
-/**
- *
- */
 package org.starexec.data.to;
 
 import java.sql.Timestamp;

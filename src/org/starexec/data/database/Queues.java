@@ -67,7 +67,7 @@ public class Queues {
 		boolean success = true;
 
 
-		/***** DELETE THE QUEUE *****/
+		/* DELETE THE QUEUE */
 
 		success = success && Queues.delete(queueId);
 		R.BACKEND.deleteQueue(q.getName());

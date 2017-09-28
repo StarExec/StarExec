@@ -142,34 +142,6 @@ public class Matrix {
 	}
 
 	/**
-	 * Takes a Job and creates a HashMap that maps all of the ids of the job Spaces in the map to a list
-	 * of the JobPairs in that job Space.
-	 * @param job the job to build a map from.
-	 * @return a HashMap that maps all the job pairs associated with a job space ID to a list in the map.
-	 * @author Albert Giegerich
-	 * 
-	private static HashMap<Integer, List<JobPair>> getJobPairsBySpaceIdMapFromJob(Job job) {
-		HashMap<Integer, List<JobPair>> jobPairsBySpaceIdMap = new HashMap<Integer, List<JobPair>>();
-		List<JobPair> jobPairs = job.getJobPairs();
-		for (JobPair pair : jobPairs) {
-			Integer jobSpaceId = pair.getJobSpaceId();
-			if (jobPairsBySpaceIdMap.containsKey(jobSpaceId)) {
-				// If the map already contains a list of job pairs associated with this id then add this
-				// pair to the list.
-				List<JobPair> jobPairsAssociatedWithJobSpaceId = jobPairsBySpaceIdMap.get(jobSpaceId);
-				jobPairsAssociatedWithJobSpaceId.add(pair);
-			} else {
-				// Otherwise add a new list associated with the id to the map containing the pair.
-				List<JobPair> newListOfJobPairs = new LinkedList<JobPair>();
-				newListOfJobPairs.add(pair);
-				jobPairsBySpaceIdMap.put(jobSpaceId, newListOfJobPairs);
-			}
-		}
-		return jobPairsBySpaceIdMap;
-	}
-	*/
-
-	/**
 	 * Gets the job space name associated with the matrix. 
 	 * @return the job space name associated with the matrix.
 	 * @author Albert Giegerich
