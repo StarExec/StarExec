@@ -321,8 +321,6 @@ public class Common {
 			procedure = con.prepareCall(callPreparationSql);
 			setParameters.accept(procedure);
 			procedure.executeUpdate();
-		} catch (SQLException e) {
-			throw e;
 		} finally {
 			Common.safeClose(procedure);
 		}

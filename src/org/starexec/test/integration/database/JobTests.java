@@ -367,8 +367,6 @@ public class JobTests extends TestSequence {
 			Jobs.kill(jobId);
 			assertJobHasStatus(job, JobStatus.KILLED);
 			Assert.assertEquals("killed", job.getStatus());
-		} catch (Exception e) {
-			throw e;
 		} finally {
 			Jobs.deleteAndRemove(jobId);
 		}

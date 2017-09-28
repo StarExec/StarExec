@@ -484,8 +484,6 @@ public class AnonymousLinks {
 			procedure = con.prepareCall("{CALL DeleteAnonymousLink(?)}");
 			procedure.setString(1, uuid);
 			procedure.executeUpdate();
-		} catch (SQLException e) {
-			throw e;
 		} finally {
 			Common.safeClose(procedure);
 		}

@@ -473,8 +473,6 @@ public class JobPairs {
 			procedure = con.prepareCall("{CALL DeleteJobPair(?)}");
 			procedure.setInt(1, pairToDelete.getId());
 			procedure.executeQuery();
-		} catch (SQLException e) {
-			throw e;
 		} finally {
 			Common.safeClose(procedure);
 		}
