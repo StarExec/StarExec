@@ -99,6 +99,7 @@ public class LocalBackend implements Backend {
 	 * Loops forever, executing the jobs in jobsToRun. Sleeps for 20 seconds at a time if the queue is empty, and
 	 * runs a single job at a time when it is not empty.
 	 */
+	@SuppressWarnings("InfiniteLoopStatement")
 	private void runJobsForever() {
 		while (true) {
 			try {
