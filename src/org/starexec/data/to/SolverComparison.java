@@ -57,13 +57,8 @@ public class SolverComparison {
 	 */
 
 	public boolean doResultsMatch(int stageNumber) {
-
 		String result1 = pair1.getStageFromNumber(stageNumber).getAttributes().getProperty(R.STAREXEC_RESULT);
 		String result2 = pair2.getStageFromNumber(stageNumber).getAttributes().getProperty(R.STAREXEC_RESULT);
-		if (result1 == result2) {
-			return true;
-		} else {
-			return !(result1 == null || result2 == null) && result1.equals(result2);
-		}
+		return result1 == result2 || !(result1 == null || result2 == null) && result1.equals(result2);
 	}
 }

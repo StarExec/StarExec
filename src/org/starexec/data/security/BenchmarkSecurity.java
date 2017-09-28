@@ -307,9 +307,6 @@ public class BenchmarkSecurity {
 	public static boolean canUserSeeBenchmarkStatus(int statusId, int userId) {
 
 		BenchmarkUploadStatus status = Uploads.getBenchmarkStatus(statusId);
-		if (status == null) {
-			return false;
-		}
-		return GeneralSecurity.hasAdminReadPrivileges(userId) || status.getUserId() == userId;
+		return status != null && (GeneralSecurity.hasAdminReadPrivileges(userId) || status.getUserId() == userId);
 	}
 }
