@@ -30,7 +30,7 @@ public abstract class TestSequence {
 		sequenceName=getTestName(); //this method is implemented in every subclass
 	}
 	
-	private final void initTestResults() {
+	private void initTestResults() {
 		List<Method> tests=this.getTests();
 		for (Method m : tests) {
 			TestResult t=new TestResult();

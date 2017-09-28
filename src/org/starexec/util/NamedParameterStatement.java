@@ -44,7 +44,7 @@ method is non-private so JUnit code can
      * @param paramMap map to hold parameter-index mappings
      * @return the parsed query
      */
-    static final String parse(String query, Map<String,List<Integer>> paramMap) {
+    static String parse(String query, Map<String,List<Integer>> paramMap) {
         
         int length=query.length();
         StringBuilder parsedQuery=new StringBuilder(length);
