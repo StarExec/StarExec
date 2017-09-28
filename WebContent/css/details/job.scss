@@ -85,9 +85,7 @@ thead {
 }
 
 #graphField img {
-	border-style: solid;
-	border-width: 1px;
-	border-color: black;
+	border: 1px solid black;
 }
 
 #pairTbl tbody tr {
@@ -178,11 +176,8 @@ p.accent {
 		width: 47%;
 		float: left;
 		padding-right: 1px;
-		border: 1px;
-		border-color: #000000;
-		border-style: solid;
+		border: 1px solid #000000;
 		clear: none;
-		margin-right: 3px;
 		margin-bottom: 2px;
 		margin-right: 5px;
 		margin-top: 5px;
@@ -193,9 +188,8 @@ p.accent {
 
 	#panelActions {
 		width: 97%;
-		border-color: black;
-		border-style: none none solid;
-		border-width: 0px 0px 5px;
+		border: 0px none black;
+		border-bottom: 5px solid;
 		margin-top: 0px;
 		padding-top: 0px;
 	}
@@ -203,9 +197,8 @@ p.accent {
 
 #solverSummaryField #statActions, #pairTblField #pairActions {
 	width: 97%;
-	border-color: black;
-	border-style: none none solid;
-	border-width: 0px 0px 5px;
+	border: 0px none black;
+	border-bottom: 5px solid;
 	margin-top: 0px;
 	padding-top: 0px;
 }

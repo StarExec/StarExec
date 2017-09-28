@@ -42,10 +42,9 @@ tr th {
 #websiteList li {
 	list-style: none;
 	display: block;
-	margin: auto;
 	padding: 10px;
-	width: 97%;		
-	margin-bottom: 10px;
+	width: 97%;
+	margin: auto auto 10px;
 }
 
 #newWebsite {	

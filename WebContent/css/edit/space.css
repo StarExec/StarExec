@@ -4,8 +4,7 @@
 }
 
 #tblDefaultPerm tr td {
-	padding: 0px;
-	padding-right: 40px;	
+	padding: 0 40px 0 0;
 }
 
 #tblDefaultPerm tr th {
