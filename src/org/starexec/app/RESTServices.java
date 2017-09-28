@@ -258,10 +258,10 @@ public class RESTServices {
 	@Produces("text/plain")
 	public String getQstatOutput(@Context HttpServletRequest request) {
 		String qstat=R.BACKEND.getRunningJobsStatus();
-		if(!Util.isNullOrEmpty(qstat)) {
-			return qstat;
+		if(Util.isNullOrEmpty(qstat)) {
+			return "not available";
 		}
-		return "not available";
+		return qstat;
 	}
 
 	/**
@@ -279,11 +279,10 @@ public class RESTServices {
 			return valid.getMessage();
 		}
 		String stdout=Uploads.getInvalidBenchmarkErrorMessage(id);
-		if(!Util.isNullOrEmpty(stdout)) {
-			return stdout;
+		if(Util.isNullOrEmpty(stdout)) {
+			return "not available";
 		}
-
-		return "not available";
+		return stdout;
 	}
 
 	/**
@@ -297,11 +296,10 @@ public class RESTServices {
 	@Produces("text/plain")
 	public String getLoadsForQueue(@PathParam("queueId") int queueId, @Context HttpServletRequest request) {
 		String loads = JobManager.getLoadRepresentationForQueue(queueId);
-		if(!Util.isNullOrEmpty(loads)) {
-			return loads;
+		if(Util.isNullOrEmpty(loads)) {
+			return "not available";
 		}
-
-		return "not available";
+		return loads;
 	}
 
 	/**
@@ -317,15 +315,14 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		ValidatorStatusCode status=JobSecurity.canUserSeeJobWithPair(id, userId);
 		if (!status.isSuccess()) {
-		    return ("user "+ userId + " does not have access to see job " + id);
+			return ("user "+ userId + " does not have access to see job " + id);
 		}
 
-			String log = JobPairs.getJobLog(id);
-
-			if(!Util.isNullOrEmpty(log)) {
-				return log;
-			}
-		return "not available";
+		String log = JobPairs.getJobLog(id);
+		if(Util.isNullOrEmpty(log)) {
+			return "not available";
+		}
+		return log;
 	}
 
 	/**
@@ -344,14 +341,14 @@ public class RESTServices {
 		log.entry(methodName);
 		int userId = SessionUtil.getUserId(request);
 
-		final String notAvailableMessage = "not available";
 		if (!BenchmarkSecurity.canUserSeeBenchmarkContents(id,userId).isSuccess()) {
-			return notAvailableMessage;
+			return "not available";
 		}
 		Benchmark b=Benchmarks.get(id);
 		try {
-			Optional<String> contents = Benchmarks.getContents(b, limit);
-			return contents.orElse(notAvailableMessage);
+			return Benchmarks.getContents(b, limit).get();
+		} catch (NoSuchElementException e) {
+			return "not available";
 		} catch (IOException e) {
 			log.warn(methodName, "Caught IOException.");
 			return "Internal Error: not available";
@@ -466,8 +463,9 @@ public class RESTServices {
 			return "not available";
 		}
 		try {
-			Optional<String> stdout = JobPairs.getStdOut(jp.getId(), stageNumber, limit);
-			return stdout.orElse("not available");
+			return JobPairs.getStdOut(jp.getId(), stageNumber, limit).get();
+		} catch (NoSuchElementException e) {
+			return "not available";
 		} catch (IOException e) {
 			log.warn(methodName, "Caught IOException while trying to get jobpair stdout.");
 			return "not available";
