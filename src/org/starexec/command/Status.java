@@ -16,8 +16,8 @@ public class Status {
 	public static final int ERROR_BAD_COMMAND = -1;
 	public static final int ERROR_BAD_ARGS = -2;
 	public static final int ERROR_SERVER = -4; // no error message exists for this
-	                                     // status-- it is used when there is
-	                                     // a server-supplied message
+	                                           // status-- it is used when there is
+	                                           // a server-supplied message
 	public static final int ERROR_BAD_ARCHIVETYPE = -5;
 	public static final int ERROR_FILE_AND_URL = -6;
 	public static final int ERROR_MISSING_PARAM = -7;
@@ -56,7 +56,6 @@ public class Status {
 	// error messages
 	private static final HashMap<Integer, String> messages = new HashMap<>();
 	static {
-		messages = new HashMap<>();
 		messages.put(STATUS_SUCCESS, "Execution was successful");
 		messages.put(ERROR_BAD_COMMAND, "Unrecognized command");
 		messages.put(ERROR_BAD_ARGS, "Parameters must be in the form {key}={value} and there may be no duplicates");
