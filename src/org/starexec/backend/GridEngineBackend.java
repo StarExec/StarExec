@@ -339,9 +339,8 @@ public class GridEngineBackend implements Backend{
      * deletes a queue that no longer has nodes associated with it
 
      * @param queueName the name of the queue to be removed
-     * @return true if successful, false otherwise
      */
-    public boolean deleteQueue(String queueName){
+    public void deleteQueue(String queueName){
     	try {
     		String[] split = queueName.split("\\.");
     		String shortQueueName = split[0];
@@ -353,12 +352,10 @@ public class GridEngineBackend implements Backend{
 
     		//Delete the host group:
     		Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -dhgrp @"+ shortQueueName +"hosts", getSGEEnv());
-    		return true;
-    	} catch (Exception e) {
+
+	    } catch (Exception e) {
     		log.error(e.getMessage(),e);
     	}
-    	return false;
-
     }
 
 
@@ -507,15 +504,13 @@ public class GridEngineBackend implements Backend{
 
 
     /**
-
-     *@param queueName the name of the destination queue
-     *@param nodeNames the names of the nodes to be moved
-     *@param sourceQueueNames the names of the source queues
-     * moves nodes from source queues to the destination queue <queueName>
-     * the ith element of nodeNames corresponds to the ith element of sourceQueueNames for every i
-     * if node is an orphaned node, the corresponding queue name in sourceQueueNames will be null
+     * @param queueName the name of the destination queue
+     * @param nodeNames the names of the nodes to be moved
+     * @param sourceQueueNames the names of the source queues
+* moves nodes from source queues to the destination queue <queueName>
+* the ith element of nodeNames corresponds to the ith element of sourceQueueNames for every i
      */
-    public boolean moveNodes(String queueName,String[] nodeNames,String[] sourceQueueNames){
+    public void moveNodes(String queueName,String[] nodeNames,String[] sourceQueueNames){
     	try {
     		log.info("moveNodes begins, for queue "+queueName);
     		String[] split = queueName.split("\\.");
@@ -549,13 +544,9 @@ public class GridEngineBackend implements Backend{
     		}
 
 	    	log.debug("Move nodes ending.");
-	    	return true;
-    	} catch (Exception e) {
+	    } catch (Exception e) {
     		log.error(e.getMessage(),e);
     	}
-    	return false;
-
-
     }
 
     /**
@@ -563,16 +554,14 @@ public class GridEngineBackend implements Backend{
 
      * @param nodeName the name of a node
      * @param queueName the name of a queue
-     * @return true if successful, false otherwise
      */
-    public boolean moveNode(String nodeName, String queueName){
+    public void moveNode(String nodeName, String queueName){
     	try {
     		Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -dattr hostgroup hostlist " + nodeName + " @" + queueName + "hosts", getSGEEnv());
-    	    return true;
-    	} catch (Exception e) {
+
+	    } catch (Exception e) {
     		log.error(e.getMessage(),e);
     	}
-    	return false;
     }
 
 	@Override

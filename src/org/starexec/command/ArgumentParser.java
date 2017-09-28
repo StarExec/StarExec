@@ -108,13 +108,10 @@ class ArgumentParser {
 	/**
 	 * Ends the current Starexec session
 	 *
-	 * @return True on success, false otherwise
 	 * @author Eric Burns
 	 */
-
-	protected boolean logout() {
-		return con.logout();
-
+	protected void logout() {
+		con.logout();
 	}
 
 	/**

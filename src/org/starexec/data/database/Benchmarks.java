@@ -84,20 +84,18 @@ public class Benchmarks {
 	 * @param attrs The attrs to add. Old attributes sharing keys will be overwritten
 	 * @param benchmark The benchmark to add attributes to
 	 * @param statusId The ID of a benchmark status upload object, or null if we aren't using one
-	 * @return True on success and false otherwise
 	 */
-	public static boolean addAttributeSetToDbIfValid(Map<String, String> attrs, Benchmark benchmark, Integer
+	public static void addAttributeSetToDbIfValid(Map<String, String> attrs, Benchmark benchmark, Integer
 			statusId) {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
-			return addAttributeSetToDbIfValid(con, attrs, benchmark, statusId);
+			addAttributeSetToDbIfValid(con, attrs, benchmark, statusId);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
-		return false;
 	}
 
 	/**
@@ -148,19 +146,17 @@ public class Benchmarks {
 	 * @param benchId The ID of the benchmark
 	 * @param key The attribute key. Will overwrite any other attribute with the same key.
 	 * @param val The attribute val
-	 * @return True on success and false otherwise.
 	 */
-	public static boolean addBenchAttr(int benchId, String key, String val) {
+	public static void addBenchAttr(int benchId, String key, String val) {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
-			return addBenchAttr(con, benchId, key, val);
+			addBenchAttr(con, benchId, key, val);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
-		return false;
 	}
 
 	/**

@@ -267,18 +267,15 @@ public class ArchiveUtil {
 	 * is deleted. Note if the extraction failed, some files/folders may have been partially created.
 	 *
 	 * @param fileName The full file path to the archive file
-	 * @return True if extraction was successful, false otherwise.
 	 * @author Tyler Jensen
 	 */
-	public static Boolean extractArchive(String fileName) {
+	public static void extractArchive(String fileName) {
 		try {
 			String parent = new File(fileName).getParentFile().getCanonicalPath() + File.separator;
-			return ArchiveUtil.extractArchive(fileName, parent);
+			ArchiveUtil.extractArchive(fileName, parent);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
-
-		return true;
 	}
 
 	/**

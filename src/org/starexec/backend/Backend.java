@@ -110,9 +110,8 @@ public interface Backend{
    /**
      * deletes a queue that no longer has nodes associated with it
      * @param queueName the name of the queue to be removed
-     * @return true if successful, false otherwise
      */
-   boolean deleteQueue(String queueName);
+   void deleteQueue(String queueName);
 
     /**
      * creates a new queue
@@ -135,23 +134,21 @@ public interface Backend{
     boolean createQueueWithSlots(String newQueueName, String[] nodeNames, String[] sourceQueueNames, Integer slots);
 
     /**
-     *@param destQueueName the name of the destination queue
-     *@param nodeNames the names of the nodes to be moved 
-     *@param sourceQueueNames the names of the source queues
-     * moves nodes from source queues to the destination queue <queueName>
-     * the ith element of nodeNames corresponds to the ith element of sourceQueueNames for every i
-     * if node is an orphaned node, the corresponding queue name in sourceQueueNames will be null
-     * @return True on success and false on failure.
+     * @param destQueueName the name of the destination queue
+     * @param nodeNames the names of the nodes to be moved
+     * @param sourceQueueNames the names of the source queues
+* moves nodes from source queues to the destination queue <queueName>
+* the ith element of nodeNames corresponds to the ith element of sourceQueueNames for every i
+* if node is an orphaned node, the corresponding queue name in sourceQueueNames will be null
      */
-    boolean moveNodes(String destQueueName, String[] nodeNames, String[] sourceQueueNames);
+    void moveNodes(String destQueueName, String[] nodeNames, String[] sourceQueueNames);
 
     /**
      * moves the given node to the given queue
      * @param nodeName the name of a node
      * @param queueName the name of a queue
-     * @return true if successful, false otherwise
      */
-    boolean moveNode(String nodeName, String queueName);
+    void moveNode(String nodeName, String queueName);
 
 
 }

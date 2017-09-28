@@ -29,7 +29,7 @@ import java.util.Map.Entry;
 public class JobPairs {
 	private static final StarLogger log = StarLogger.getLogger(JobPairs.class);
 
-	private static boolean addJobPairInputs(List<JobPair> pairs, Connection con) {
+	private static void addJobPairInputs(List<JobPair> pairs, Connection con) {
 		final String methodName = "addJobPairInputs";
 		CallableStatement procedure = null;
 		int batchCounter = 0;
@@ -66,14 +66,11 @@ public class JobPairs {
 				);
 				procedure.executeBatch();
 			}
-
-			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
 
 	public static Optional<String> populateConfigIdsToSolversMapAndJobPairsForJobXMLUpload(
@@ -232,9 +229,8 @@ public class JobPairs {
 	 *
 	 * @param pairs The pairs to add the stages of
 	 * @param con The open connection to make the call on
-	 * @return
 	 */
-	private static boolean addJobPairStages(List<JobPair> pairs, Connection con) {
+	private static void addJobPairStages(List<JobPair> pairs, Connection con) {
 		final String methodName = "addJobPairStages";
 		CallableStatement procedure = null;
 		int totalPairsSubmitted = 0;
@@ -285,16 +281,14 @@ public class JobPairs {
 				);
 				procedure.executeBatch();
 			}
-			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
 
-	public static boolean addJobPairs(int jobId, List<JobPair> pairs) {
+	public static void addJobPairs(int jobId, List<JobPair> pairs) {
 		final String methodName = "addJobPairs( int, List<JobPair> )";
 
 		Connection con = null;
@@ -304,12 +298,11 @@ public class JobPairs {
 			log.debug("addJobPairs one");
 			boolean success = incrementTotalJobPairsForJob(jobId, pairs.size(), con);
 			if (!success) {
-				return false;
+				return;
 			}
 			log.debug("addJobPairs two");
 			success = addJobPairs(con, jobId, pairs);
 			log.debug("addJobPairs three");
-			return success;
 		} finally {
 			Common.endTransaction(con);
 			Common.safeClose(con);
@@ -494,9 +487,8 @@ public class JobPairs {
 	 * @param pairId The ID of the pair to process
 	 * @param stageNumber
 	 * @param processorId The ID of the processor to use
-	 * @return True on success, false on error
 	 */
-	public static boolean postProcessPair(int pairId, int stageNumber, int processorId) {
+	public static void postProcessPair(int pairId, int stageNumber, int processorId) {
 		Connection con = null;
 		try {
 			Properties props = runPostProcessorOnPair(pairId, stageNumber, processorId);
@@ -506,7 +498,6 @@ public class JobPairs {
 			JobPairs.setPairStatus(pairId, StatusCode.STATUS_COMPLETE.getVal(), con);
 			JobPairs.setPairStageStatus(pairId, StatusCode.STATUS_COMPLETE.getVal(), stageNumber, con);
 			Common.endTransaction(con);
-			return true;
 		} catch (Exception e) {
 			Common.doRollback(con);
 			log.error("postProcessPair says " + e.getMessage(), e);
@@ -514,7 +505,6 @@ public class JobPairs {
 			Common.endTransaction(con);
 			Common.safeClose(con);
 		}
-		return false;
 	}
 
 	/**
@@ -567,10 +557,9 @@ public class JobPairs {
 	 * @param pairId The id of the job pair the attribute is for
 	 * @param key The key of the attribute
 	 * @param val The value of the attribute
-	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	protected static boolean addJobPairAttr(Connection con, int pairId, int stageId, String key, String val) {
+	protected static void addJobPairAttr(Connection con, int pairId, int stageId, String key, String val) {
 		CallableStatement procedure = null;
 		try {
 			procedure = con.prepareCall("{CALL AddJobAttr(?, ?, ?,?)}");
@@ -580,13 +569,11 @@ public class JobPairs {
 			procedure.setString(3, val);
 			procedure.setInt(4, stageId);
 			procedure.executeUpdate();
-			return true;
 		} catch (Exception e) {
 			log.error("addJobAttr says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
 
 	/**
@@ -1014,10 +1001,9 @@ public class JobPairs {
 	 * Removes a specific pair from the job_pair_completion table
 	 *
 	 * @param pairId The ID of the pair being removed
-	 * @return True on success and false otherwise
 	 */
 
-	public static boolean removePairFromCompletedTable(int pairId) {
+	public static void removePairFromCompletedTable(int pairId) {
 		Connection con = null;
 		CallableStatement procedure = null;
 
@@ -1026,15 +1012,12 @@ public class JobPairs {
 			procedure = con.prepareCall("CALL RemovePairFromCompletedTable(?)");
 			procedure.setInt(1, pairId);
 			procedure.executeUpdate();
-			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-
-		return false;
 	}
 
 	/**
@@ -1529,9 +1512,8 @@ public class JobPairs {
 	 * Sets the disk_size for the given job pair to 0, updating the jobpair_stage_data, jobs, and users tables
 	 *
 	 * @param jobPairId
-	 * @return True on success and false otherwise
 	 */
-	public static boolean setJobPairDiskSizeToZero(int jobPairId) {
+	public static void setJobPairDiskSizeToZero(int jobPairId) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -1539,14 +1521,12 @@ public class JobPairs {
 			procedure = con.prepareCall("{CALL RemoveJobPairDiskSize(?)}");
 			procedure.setInt(1, jobPairId);
 			procedure.executeUpdate();
-			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
 
 	/**
@@ -1816,21 +1796,18 @@ public class JobPairs {
 	 *
 	 * @param jobPairs The pairs to update
 	 * @param con An open connection to make calls on
-	 * @return True on success and false otherwise
 	 * @author Eric Burns
 	 */
 
-	public static boolean updateJobSpaces(List<JobPair> jobPairs, Connection con) {
+	public static void updateJobSpaces(List<JobPair> jobPairs, Connection con) {
 
 		try {
 			for (JobPair jp : jobPairs) {
 				UpdateJobSpaces(jp.getId(), jp.getJobSpaceId(), con);
 			}
-			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
-		return false;
 	}
 
 	/**
@@ -1838,18 +1815,15 @@ public class JobPairs {
 	 *
 	 * @param pairId
 	 * @param execId
-	 * @return True on success and false otherwise
 	 */
-	public static boolean killPair(int pairId, int execId) {
+	public static void killPair(int pairId, int execId) {
 		try {
 			R.BACKEND.killPair(execId);
 			JobPairs.setJobPairDiskSizeToZero(pairId);
 			JobPairs.UpdateStatus(pairId, Status.StatusCode.STATUS_KILLED.getVal());
-			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
-		return false;
 	}
 
 	/**
@@ -1857,9 +1831,8 @@ public class JobPairs {
 	 *
 	 * @param jobPairId The ID of the job pair in question
 	 * @param status_code The new status code to assign to the job pair
-	 * @return True on success, false otherwise
 	 */
-	public static boolean UpdateStatus(int jobPairId, int status_code) {
+	public static void UpdateStatus(int jobPairId, int status_code) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -1868,10 +1841,8 @@ public class JobPairs {
 			procedure.setInt(1, jobPairId);
 			procedure.setInt(2, status_code);
 			procedure.executeUpdate();
-			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
-			return false;
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1942,9 +1913,8 @@ public class JobPairs {
 	 * but is still set to the error status code.
 	 *
 	 * @param p The JobPair to affect. Must have ID and status code set
-	 * @return True on success and false otherwise
 	 */
-	public static boolean setBrokenPairStatus(JobPair p) {
+	public static void setBrokenPairStatus(JobPair p) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -1955,8 +1925,6 @@ public class JobPairs {
 			procedure.setInt(2, p.getStatus().getCode().getVal());
 			procedure.setInt(3, Status.StatusCode.ERROR_SUBMIT_FAIL.getVal());
 			procedure.executeUpdate();
-
-			return true;
 		} catch (Exception e) {
 			log.error("getPairsByStatus says " + e.getMessage(), e);
 		} finally {
@@ -1964,8 +1932,6 @@ public class JobPairs {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-
-		return false;
 	}
 
 	/**

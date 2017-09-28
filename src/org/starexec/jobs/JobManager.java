@@ -69,7 +69,7 @@ public abstract class JobManager {
 		JobPairs.getAndClearTimeDeltas(-1);
 	}
 
-	public synchronized static boolean checkPendingJobs() {
+	public synchronized static void checkPendingJobs() {
 		try {
 			Boolean devJobsOnly = false;
 			log.debug("about to check if the system is paused");
@@ -79,7 +79,7 @@ public abstract class JobManager {
 					devJobsOnly = true;
 				} else {
 					log.info("Not adding more job pairs to any queues, as the system is paused");
-					return false;
+					return;
 				}
 			}
 			Common.logConnectionsOpen();
@@ -124,8 +124,6 @@ public abstract class JobManager {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
-
-		return false;
 	}
 
 
@@ -928,10 +926,9 @@ public abstract class JobManager {
 	 *
 	 * @param pairId
 	 * @param dependencies
-	 * @return
 	 * @throws Exception
 	 */
-	public static Boolean writeDependencyFile(Integer pairId, List<BenchmarkDependency> dependencies) throws
+	public static void writeDependencyFile(Integer pairId, List<BenchmarkDependency> dependencies) throws
 			Exception {
 		StringBuilder sb = new StringBuilder();
 		String separator = ",,,";
@@ -951,14 +948,13 @@ public abstract class JobManager {
 					"Can't change owner permissions on job dependencies file. This will prevent the grid engine from" +
 					" " +
 					"being able to open the file. File path: " + dependFilePath);
-			return false;
+			return;
 		}
 		log.debug("dependencies file = " + sb.toString());
 		FileWriter out = new FileWriter(f);
 		out.write(sb.toString());
 		out.close();
 		log.debug("done writing dependency file");
-		return true;
 	}
 
 	/**

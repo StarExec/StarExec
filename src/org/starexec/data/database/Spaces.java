@@ -309,15 +309,14 @@ public class Spaces {
 	 * present, this function just returns true
 	 *
 	 * @param jobSpaceId
-	 * @return True on success and false otherwise
 	 */
-	public static boolean updateJobSpaceClosureTable(int jobSpaceId) {
+	public static void updateJobSpaceClosureTable(int jobSpaceId) {
 		int callID = new Random().nextInt();
 		log.debug("beginning updateJobSpaceClosureTable " + callID);
 		if (jobSpaceAncestorExists(jobSpaceId)) {
 			//don't update-- it is already present
 			log.debug("closure entries were already present");
-			return true;
+			return;
 		}
 		Connection con = null;
 		try {
@@ -328,19 +327,16 @@ public class Spaces {
 				Common.doRollback(con);
 				log.debug("ending with error updateJobSpaceClosureTable " + callID);
 
-				return false;
+				return;
 			}
 			Common.endTransaction(con);
 			log.debug("ending successfully updateJobSpaceClosureTable " + callID);
-
-			return true;
 		} catch (Exception e) {
 			Common.doRollback(con);
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
-		return false;
 	}
 
 	/**
@@ -2094,12 +2090,10 @@ public class Spaces {
 	 * @param spaceId the space to remove the benchmarks from, if it's negative then the system will probe the database
 	 * with the given list of benchmark ids and see if any aren't referenced anywhere in StarExec
 	 * @param con the connection containing the existing transaction
-	 * @return true iff all benchmarks in 'benchIds' are successfully removed from the space referenced by 'spaceId',
-	 * false otherwise
 	 * @throws SQLException if an error occurs while removing benchmarks from the database
 	 * @author Todd Elvers
 	 */
-	protected static boolean removeBenches(List<Integer> benchIds, int spaceId, Connection con) {
+	protected static void removeBenches(List<Integer> benchIds, int spaceId, Connection con) {
 		CallableStatement procedure = null;
 		try {
 			procedure = con.prepareCall("{CALL RemoveBenchFromSpace(?, ?)}");
@@ -2111,15 +2105,11 @@ public class Spaces {
 				procedure.executeUpdate();
 			}
 			log.info(benchIds.size() + " benchmark(s) were successfully removed from space " + spaceId);
-
-
-			return true;
 		} catch (Exception e) {
 			log.error("removeBenches says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
 
 	/**
@@ -2176,12 +2166,10 @@ public class Spaces {
 	 * @param jobIds the id's of the jobs to remove from a given space
 	 * @param spaceId the space to remove the jobs from
 	 * @param con the connection containing the existing transaction
-	 * @return true iff all jobs in 'jobIds' are successfully removed from the space referenced by 'spaceId', false
-	 * otherwise
 	 * @throws SQLException if an error occurs while removing jobs from the database
 	 * @author Todd Elvers
 	 */
-	protected static boolean removeJobs(List<Integer> jobIds, int spaceId, Connection con) {
+	protected static void removeJobs(List<Integer> jobIds, int spaceId, Connection con) {
 		CallableStatement procedure = null;
 		try {
 			procedure = con.prepareCall("{CALL RemoveJobFromSpace(?, ?)}");
@@ -2194,13 +2182,11 @@ public class Spaces {
 			}
 
 			log.info(jobIds.size() + " job(s) were successfully removed from space " + spaceId);
-			return true;
 		} catch (Exception e) {
 			log.error("removeJobs says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
 
 	/**
@@ -2240,13 +2226,11 @@ public class Spaces {
 	 * @param spaceId the space to remove the solvers from, if it's negative then the system will probe the database
 	 * with the given list of solver ids and see if any aren't referenced anywhere in StarExec
 	 * @param con the connection containing the existing transaction
-	 * @return true iff all solvers in 'solversIds' are successfully removed from the space referenced by 'spaceId',
-	 * false otherwise
 	 * @throws SQLException if an error occurs while removing solvers from the database
 	 * @throws IOException if an error occurs while removing solvers from disk
 	 * @author Todd Elvers
 	 */
-	protected static boolean removeSolvers(List<Integer> solverIds, int spaceId, Connection con) {
+	protected static void removeSolvers(List<Integer> solverIds, int spaceId, Connection con) {
 		CallableStatement procedure = null;
 		try {
 			procedure = con.prepareCall("{CALL RemoveSolverFromSpace(?, ?)}");
@@ -2258,14 +2242,11 @@ public class Spaces {
 				procedure.executeUpdate();
 			}
 			log.info(solverIds.size() + " solver(s) were successfully removed from space " + spaceId);
-
-			return true;
 		} catch (Exception e) {
 			log.error("removeSolvers says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
 
 	/**
@@ -2500,10 +2481,9 @@ public class Spaces {
 	 *
 	 * @param spaceId the space to make public.
 	 * @param userId the user making the request.
-	 * @return true on success, otherwise false.
 	 */
-	public static boolean makeSingleSpacePublic(int spaceId, int userId) {
-		return setPublicSpace(spaceId, userId, true, false);
+	public static void makeSingleSpacePublic(int spaceId, int userId) {
+		setPublicSpace(spaceId, userId, true, false);
 	}
 
 	/**

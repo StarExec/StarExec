@@ -601,11 +601,10 @@ public class Permissions {
 	 * @param permId the id of the permission to change
 	 * @param perm a Permission object containing the new permissions
 	 * @param con The open connection to make the call on
-	 * @return true iff the permission update was successful
 	 * @throws Exception
 	 * @author Skylar Stark
 	 */
-	protected static boolean updatePermission(int permId, Permission perm, Connection con) {
+	protected static void updatePermission(int permId, Permission perm, Connection con) {
 		CallableStatement procedure = null;
 
 		try {
@@ -625,12 +624,10 @@ public class Permissions {
 
 			procedure.executeUpdate();
 			log.info(String.format("Permission [%d] successfully updated.", permId));
-			return true;
 		} catch (Exception e) {
 			log.error("updatePermission says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
 }

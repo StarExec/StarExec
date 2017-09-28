@@ -596,10 +596,9 @@ public class Jobs {
 	 * @param con The connection to make the association on
 	 * @param jobId the id of the job we are associating to the space
 	 * @param spaceId the ID of the space we are making the association to
-	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	protected static boolean associate(Connection con, int jobId, int spaceId) {
+	protected static void associate(Connection con, int jobId, int spaceId) {
 
 		CallableStatement procedure = null;
 		try {
@@ -607,14 +606,11 @@ public class Jobs {
 			procedure.setInt(1, jobId);
 			procedure.setInt(2, spaceId);
 			procedure.executeUpdate();
-
-			return true;
 		} catch (Exception e) {
 			log.error("Jobs.associate says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
 
 	/**
@@ -3941,21 +3937,18 @@ public class Jobs {
 	 * kills a running/paused job, and also sets the killed property to true in the database.
 	 *
 	 * @param jobId The ID of the job to kill
-	 * @return True on success, false otherwise
 	 * @author Wyatt Kaiser
 	 */
-	public static boolean kill(int jobId) {
+	public static void kill(int jobId) {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
-			return kill(jobId, con);
+			kill(jobId, con);
 		} catch (Exception e) {
 			log.error("Jobs.kill says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
-
-		return false;
 	}
 
 	/**
@@ -4101,14 +4094,12 @@ public class Jobs {
 	 * Pauses all jobs owned by the given user
 	 *
 	 * @param userId
-	 * @return True on success and false on error
 	 */
-	public static boolean pauseAllUserJobs(int userId) {
+	public static void pauseAllUserJobs(int userId) {
 		boolean success = true;
 		for (Integer i : Jobs.getRunningJobs(userId)) {
 			success = success && Jobs.pause(i);
 		}
-		return success;
 	}
 
 	/**
@@ -4708,14 +4699,13 @@ public class Jobs {
 	 *
 	 * @param jobId The ID of the job we are storing stats for
 	 * @param stats The stats, which should have been compiled already
-	 * @return True if the call was successful, false otherwise
 	 * @author Eric Burns
 	 */
-	public static boolean saveStats(int jobId, Collection<SolverStats> stats) {
+	public static void saveStats(int jobId, Collection<SolverStats> stats) {
 
 		if (!isJobComplete(jobId)) {
 			log.debug("stats for job with id = " + jobId + " were not saved because the job is incomplete");
-			return false; //don't save stats if the job is not complete
+			return; //don't save stats if the job is not complete
 		}
 		Connection con = null;
 		try {
@@ -4727,7 +4717,6 @@ public class Jobs {
 					throw new Exception("saving stats failed, rolling back connection");
 				}
 			}
-			return true;
 		} catch (Exception e) {
 			log.error("saveStats says " + e.getMessage(), e);
 			Common.doRollback(con);
@@ -4735,8 +4724,6 @@ public class Jobs {
 			Common.endTransaction(con);
 			Common.safeClose(con);
 		}
-
-		return false;
 	}
 
 	/**
@@ -4784,24 +4771,20 @@ public class Jobs {
 	 * @param jobId The ID of the job in question
 	 * @param jobSpaceId The new job space ID
 	 * @param con the open connection to make the call on
-	 * @return true on success, false otherwise
 	 * @author Eric Burns
 	 */
-
-	private static boolean updatePrimarySpace(int jobId, int jobSpaceId, Connection con) {
+	private static void updatePrimarySpace(int jobId, int jobSpaceId, Connection con) {
 		CallableStatement procedure = null;
 		try {
 			procedure = con.prepareCall("{CALL UpdatePrimarySpace(?, ?)}");
 			procedure.setInt(1, jobId);
 			procedure.setInt(2, jobSpaceId);
 			procedure.executeUpdate();
-			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
 
 	/**

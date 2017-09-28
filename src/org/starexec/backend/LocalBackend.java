@@ -221,8 +221,7 @@ public class LocalBackend implements Backend {
 	 * below simply return false.
 	 */
 	@Override
-	public boolean deleteQueue(String queueName) {
-		return false;
+	public void deleteQueue(String queueName) {
 	}
 
 	@Override
@@ -236,13 +235,11 @@ public class LocalBackend implements Backend {
     }
 
 	@Override
-	public boolean moveNodes(String destQueueName, String[] nodeNames, String[] sourceQueueNames) {
-		return true;
+	public void moveNodes(String destQueueName, String[] nodeNames, String[] sourceQueueNames) {
 	}
 
 	@Override
-	public boolean moveNode(String nodeName, String queueName) {
-		return false;
+	public void moveNode(String nodeName, String queueName) {
 	}
 	
 	@Override

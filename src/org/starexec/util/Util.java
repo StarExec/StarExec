@@ -7,8 +7,6 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.starexec.constants.R;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.to.enums.Primitive;
 import org.starexec.logger.StarLogger;
 import org.starexec.test.TestUtil;
 
@@ -371,11 +369,10 @@ public class Util {
 	 * Calls executeSandboxCommand with a null environment and working directory
 	 *
 	 * @param command
-	 * @return See full executeCommand documentation
 	 * @throws IOException
 	 */
-	public static String executeSandboxCommand(String[] command) throws IOException {
-		return executeSandboxCommand(command, null, null);
+	public static void executeSandboxCommand(String[] command) throws IOException {
+		executeSandboxCommand(command, null, null);
 	}
 
 	/**

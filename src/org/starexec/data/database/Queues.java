@@ -193,25 +193,21 @@ public class Queues {
 	/**
 	 * Removes all associations between queues and nodes in db so that only up to date data will be stored.
 	 *
-	 * @return True if the operation was a success, false otherwise.
 	 * @author Benton McCune
 	 */
-	public static boolean clearQueueAssociations() {
+	public static void clearQueueAssociations() {
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL clearQueueAssociations()}");
 			procedure.executeUpdate();
-			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-
-		return false;
 	}
 
 	/**
@@ -755,10 +751,9 @@ public class Queues {
 	 * Updates the status of ALL queues with the given status
 	 *
 	 * @param status The status to set for all queues
-	 * @return True if the operation was a success, false otherwise.
 	 */
-	public static boolean setStatus(String status) {
-		return Queues.setStatus(null, status);
+	public static void setStatus(String status) {
+		Queues.setStatus(null, status);
 	}
 
 	/**
