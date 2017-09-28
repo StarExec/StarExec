@@ -28,7 +28,7 @@ import java.io.IOException;
  * @author Eric
  */
 public class XMLUtil {
-	private static StarLogger log = StarLogger.getLogger(XMLUtil.class);
+	private static final StarLogger log = StarLogger.getLogger(XMLUtil.class);
 
 	/**
 	 * Validates an XML document using a schema

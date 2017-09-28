@@ -61,7 +61,7 @@ public class RESTHelpers {
 	 */
 	private static final String TOTAL_RECORDS = "iTotalRecords";
 	private static final String TOTAL_RECORDS_AFTER_QUERY = "iTotalDisplayRecords";
-	private static Gson gson = new Gson();
+	private static final Gson gson = new Gson();
 
 	/**
 	 * Takes in a list of spaces and converts it into a list of JSTreeItems
@@ -2415,9 +2415,9 @@ public class RESTHelpers {
 	 */
 	protected static class SpacePermPair {
 		@Expose
-		private Space space;
+		private final Space space;
 		@Expose
-		private Permission perm;
+		private final Permission perm;
 
 		public SpacePermPair(Space s, Permission p) {
 			this.space = s;
@@ -2435,16 +2435,16 @@ public class RESTHelpers {
 	 */
 	protected static class CommunityDetails {
 		@Expose
-		private Space space;
+		private final Space space;
 		@Expose
-		private Permission perm;
+		private final Permission perm;
 		@Expose
-		private List<User> leaders;
+		private final List<User> leaders;
 		@Expose
-		private List<Website> websites;
+		private final List<Website> websites;
 
 		@Expose
-		private Boolean isMember;
+		private final Boolean isMember;
 
 		public CommunityDetails(Space s, Permission p, List<User> leaders, List<Website> websites, Boolean member) {
 			this.space = s;
@@ -2462,15 +2462,15 @@ public class RESTHelpers {
 	 */
 	protected static class PermissionDetails {
 		@Expose
-		private Permission perm;
+		private final Permission perm;
 		@Expose
-		private Space space;
+		private final Space space;
 		@Expose
-		private User user;
+		private final User user;
 		@Expose
-		private User requester;
+		private final User requester;
 		@Expose
-		private boolean isCommunity;
+		private final boolean isCommunity;
 
 		public PermissionDetails(Permission p, Space s, User u, User r, boolean c) {
 			this.perm = p;

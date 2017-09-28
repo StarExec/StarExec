@@ -27,7 +27,7 @@ public class AddJobPairs extends HttpServlet {
 	private final String configsParam = "configs";
 	private final String addToAllParam = "addToAll";
 	private final String addToPairedParam = "addToPaired";
-	JsonParser parser = new JsonParser();
+	final JsonParser parser = new JsonParser();
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)

@@ -6,7 +6,7 @@ import org.starexec.logger.StarLogger;
 public abstract class RobustRunnable implements Runnable {
     private static final StarLogger log = StarLogger.getLogger(RobustRunnable.class);
     
-    protected String name;
+    protected final String name;
 
     abstract protected void dorun();
 

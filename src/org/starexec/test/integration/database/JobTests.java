@@ -30,9 +30,9 @@ public class JobTests extends TestSequence {
 	private Processor postProc=null; //post processor to use for the job
 	private List<Integer> benchmarkIds=null; // benchmarks to use for the job
 	private User user=null;                  //owner of all the test primitives
-	private int wallclockTimeout=100;
-	private int cpuTimeout=100;
-	private int gbMemory=1;
+	private final int wallclockTimeout=100;
+	private final int cpuTimeout=100;
+	private final int gbMemory=1;
 	private User user2=null;
 	private Job job2=null;
 

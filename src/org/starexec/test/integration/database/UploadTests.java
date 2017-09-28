@@ -21,7 +21,7 @@ public class UploadTests extends TestSequence {
 	private Space s=null;
 	private BenchmarkUploadStatus bs=null;
 	private SpaceXMLUploadStatus ss=null;
-	private Random rand=new Random();
+	private final Random rand=new Random();
 	@Override
 	protected String getTestName() {
 		return "UploadTests";

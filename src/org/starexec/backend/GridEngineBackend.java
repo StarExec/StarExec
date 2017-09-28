@@ -21,14 +21,14 @@ import java.util.regex.Pattern;
 
 public class GridEngineBackend implements Backend{
     // SGE Configurations, see GridEngineBackend
-    private static String QUEUE_LIST_COMMAND = "qconf -sql";					// The SGE command to execute to get a list of all job queues
-    private static String QUEUE_STATS_COMMAND = "qstat -f";				// The SGE command to get stats about all the queues
-    private static String NODE_LIST_COMMAND = "qconf -sel";					// The SGE command to execute to get a list of all worker nodes
-    private static String QUEUE_ASSOC_PATTERN = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,16}\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
-	public static String QUEUE_NAME_PATTERN = "QUEUE_NAME";
-	public static String QUEUE_GET_SLOTS_PATTERN = "qconf -sq " + QUEUE_NAME_PATTERN;// + " | grep 'slots' | grep -o '[0-9]\\{1,\\}'";
+    private static final String QUEUE_LIST_COMMAND = "qconf -sql";					// The SGE command to execute to get a list of all job queues
+    private static final String QUEUE_STATS_COMMAND = "qstat -f";				// The SGE command to get stats about all the queues
+    private static final String NODE_LIST_COMMAND = "qconf -sel";					// The SGE command to execute to get a list of all worker nodes
+    private static final String QUEUE_ASSOC_PATTERN = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,16}\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
+	public static final String QUEUE_NAME_PATTERN = "QUEUE_NAME";
+	public static final String QUEUE_GET_SLOTS_PATTERN = "qconf -sq " + QUEUE_NAME_PATTERN;// + " | grep 'slots' | grep -o '[0-9]\\{1,\\}'";
 
-    private static String GRID_ENGINE_PATH = "/cluster/gridengine-8.1.8/bin/lx-amd64/";
+    private static final String GRID_ENGINE_PATH = "/cluster/gridengine-8.1.8/bin/lx-amd64/";
 
 
     private Session session = null;
@@ -36,7 +36,7 @@ public class GridEngineBackend implements Backend{
     private String BACKEND_ROOT = null;
 
     // The regex patterns used to parse SGE output
- 	private static Pattern queueAssocPattern;
+ 	private static final Pattern queueAssocPattern;
 
  	static {
  		// Compile the SGE output parsing patterns when this class is loaded

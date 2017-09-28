@@ -33,9 +33,9 @@ public class UserTests extends TestSequence {
 	private Space space=null;
 	private Space subspace=null;
 	private Space comm=null;
-	private int wallclockTimeout=100;
-	private int cpuTimeout=100;
-	private int gbMemory=1;
+	private final int wallclockTimeout=100;
+	private final int cpuTimeout=100;
+	private final int gbMemory=1;
 	private final String BENCH_ARCHIVE = "benchmarks.zip";
 	
 	private boolean removeUserFromSpace(User user, Space space) {

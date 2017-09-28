@@ -6,11 +6,11 @@ import com.google.gson.annotations.Expose;
  * Created by agieg on 8/26/2016.
  */
 public class Conflict {
-	@Expose private Solver firstSolver;
-	@Expose private Solver secondSolver;
-	@Expose private Benchmark benchmark;
-	@Expose private String firstResult;
-	@Expose private String secondResult;
+	@Expose private final Solver firstSolver;
+	@Expose private final Solver secondSolver;
+	@Expose private final Benchmark benchmark;
+	@Expose private final String firstResult;
+	@Expose private final String secondResult;
 
 	public Conflict(
 			Solver firstSolver, Solver secondSolver, Benchmark benchmark, String firstResult, String secondResult

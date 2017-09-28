@@ -41,10 +41,10 @@ public class Download extends HttpServlet {
 	private static final String GIF_FILE_TYPE = "gif";
 	private static final String ICO_FILE_TYPE = "ico";
 	private static final String IMAGES_DIRECTORY_NAME = "images";
-	private static String PARAM_TYPE = "type";
-	private static String PARAM_ID = "id";
-	private static String PARAM_ANON_ID = "anonId";
-	private static String PARAM_REUPLOAD = "reupload";
+	private static final String PARAM_TYPE = "type";
+	private static final String PARAM_ID = "id";
+	private static final String PARAM_ANON_ID = "anonId";
+	private static final String PARAM_REUPLOAD = "reupload";
 
 	private static Optional<Solver> handleSolverAndSolverSrc(HttpServletRequest request, HttpServletResponse response)
 			throws IOException, SQLException {

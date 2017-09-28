@@ -15,7 +15,7 @@ public class PipelineDependency {
 
 		BENCHMARK(1), ARTIFACT(2);  //type for the output from a previous stage
 
-		private int val;
+		private final int val;
 
 		PipelineInputType(int val) {
 			this.val = val;

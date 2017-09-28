@@ -5,8 +5,8 @@ import org.starexec.data.to.Benchmark;
 import java.util.Comparator;
 
 public class BenchmarkComparator implements Comparator<Benchmark> {
-	private int column;
-	private boolean asc;
+	private final int column;
+	private final boolean asc;
 
 	public BenchmarkComparator(int c, boolean a) {
 		column = c;

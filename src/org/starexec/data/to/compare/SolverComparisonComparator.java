@@ -7,10 +7,10 @@ import org.starexec.data.to.pipelines.JoblineStage;
 import java.util.Comparator;
 
 public class SolverComparisonComparator implements Comparator<SolverComparison> {
-	private int column; //will specify which field we are using to sort the job pairs
-	private boolean asc;
-	private boolean isWallclock;
-	private int stageNumber;
+	private final int column; //will specify which field we are using to sort the job pairs
+	private final boolean asc;
+	private final boolean isWallclock;
+	private final int stageNumber;
 
 	/**
 	 * Creates a new object that will compare SolverComparisons on different fields based on the given parameters

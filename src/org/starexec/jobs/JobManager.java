@@ -1354,9 +1354,9 @@ public abstract class JobManager {
 	}
 
 	static class SchedulingState {
-		Job job;
-		String jobTemplate;
-		Iterator<JobPair> pairIter;
+		final Job job;
+		final String jobTemplate;
+		final Iterator<JobPair> pairIter;
 
 		SchedulingState(Job _job, String _jobTemplate, Iterator<JobPair> _pairIter) {
 			job = _job;

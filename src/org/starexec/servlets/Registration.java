@@ -28,13 +28,13 @@ public class Registration extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(Registration.class);
 
 	// Param strings for processing
-	public static String USER_COMMUNITY = "cm";
-	public static String USER_PASSWORD = "pwd";
-	public static String USER_INSTITUTION = "inst";
-	public static String USER_EMAIL = "em";
-	public static String USER_FIRSTNAME = "fn";
-	public static String USER_LASTNAME = "ln";
-	public static String USER_MESSAGE = "msg";
+	public static final String USER_COMMUNITY = "cm";
+	public static final String USER_PASSWORD = "pwd";
+	public static final String USER_INSTITUTION = "inst";
+	public static final String USER_EMAIL = "em";
+	public static final String USER_FIRSTNAME = "fn";
+	public static final String USER_LASTNAME = "ln";
+	public static final String USER_MESSAGE = "msg";
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)

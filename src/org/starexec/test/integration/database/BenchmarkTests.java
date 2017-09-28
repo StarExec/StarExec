@@ -40,8 +40,8 @@ public class BenchmarkTests extends TestSequence {
 	private Job job=null;
 	private Processor postProc=null; //post processor to use for the job
 	//private List<Integer> benchmarkIds=null; // benchmarks to use for the job
-	private int cpuTimeout=100;
-	private int gbMemory=1;
+	private final int cpuTimeout=100;
+	private final int gbMemory=1;
 
 	private Job job2=null;
 	private Random rand = new Random();

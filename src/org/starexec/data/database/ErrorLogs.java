@@ -17,7 +17,7 @@ public class ErrorLogs {
 	// We have to use NonSavingStarLogger here to prevent us from attempting to save errors that occur in this class.
 	// If we tried to save an error that occurred in this class to the error_logs table it would call us to recursively
 	// call the methods in this class again potentially leading to infinite recursion.
-	private static NonSavingStarLogger log = NonSavingStarLogger.getLogger(ErrorLogs.class);
+	private static final NonSavingStarLogger log = NonSavingStarLogger.getLogger(ErrorLogs.class);
 
 	/**
 	 * Adds an error reports to the error_reports table. This method must catch all exceptions so that another method

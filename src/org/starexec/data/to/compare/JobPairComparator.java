@@ -10,9 +10,9 @@ import java.util.Comparator;
 public class JobPairComparator implements Comparator<JobPair> {
 	protected static final StarLogger log = StarLogger.getLogger(JobPairComparator.class);
 
-	private int column; //will specify which field we are using to sort the job pairs
-	private int stageNumber;
-	private boolean asc;
+	private final int column; //will specify which field we are using to sort the job pairs
+	private final int stageNumber;
+	private final boolean asc;
 
 	/**
 	 * Compares the solver names of jp1 and jp2

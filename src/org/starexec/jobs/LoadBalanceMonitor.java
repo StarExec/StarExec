@@ -9,7 +9,7 @@ import java.util.*;
 public class LoadBalanceMonitor {
 	private static final StarLogger log = StarLogger.getLogger(LoadBalanceMonitor.class);
 	class UserLoadData implements Comparable<UserLoadData> {
-		int userId;
+		final int userId;
 		
 		/* Whenever a user is added to the LoadBalanceMonitor, they are initialized
 		 * with a 'basis' equal to the minimum value at the time they were added.
@@ -119,7 +119,7 @@ public class LoadBalanceMonitor {
 
 	
 	// thirty minutes in seconds
-	private Long loadDifferenceThreshold = 1800L;
+	private final Long loadDifferenceThreshold = 1800L;
 	
 	/**
 	 * Gets the minimum load value among all active users. Inactive users

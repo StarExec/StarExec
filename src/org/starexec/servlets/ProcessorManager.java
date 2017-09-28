@@ -36,7 +36,7 @@ public class ProcessorManager extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(ProcessorManager.class);
 
 	// The unique date stamped file name format (for saving processor files)
-	private static DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
+	private static final DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
 	private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
 
 	// Request attributes

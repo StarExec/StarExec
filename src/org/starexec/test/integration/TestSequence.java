@@ -15,14 +15,14 @@ import java.util.List;
 public abstract class TestSequence {
 	protected static final StarLogger log = StarLogger.getLogger(TestSequence.class);
 	protected String sequenceName="No Name";
-	protected TestStatus status=new TestStatus();
+	protected final TestStatus status=new TestStatus();
 	protected String message="No Message";
 	protected int testsPassed=0;
 	protected int testsFailed=0;
 	protected Throwable error = null;
 	protected ResourceLoader loader = null; 
 	//maps the names of tests to some data about them. Every test gets an entry when the TestSequence object is created
-	HashMap<String,TestResult> testResults= new HashMap<>();
+	final HashMap<String,TestResult> testResults= new HashMap<>();
 	
 	
 	public TestSequence() {

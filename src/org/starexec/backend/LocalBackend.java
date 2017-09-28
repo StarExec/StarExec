@@ -15,7 +15,7 @@ import java.util.*;
  *
  */
 public class LocalBackend implements Backend {
-	private static StarLogger log = StarLogger.getLogger(LocalBackend.class);
+	private static final StarLogger log = StarLogger.getLogger(LocalBackend.class);
 
 	private class LocalJob {
 		public int execId = 0;
@@ -37,7 +37,7 @@ public class LocalBackend implements Backend {
 			return sb.toString();
 		}
 	}	
-	private Map<Integer, LocalJob> activeIds = new HashMap<>();
+	private final Map<Integer, LocalJob> activeIds = new HashMap<>();
 	
 	private String NODE_NAME = "n001";
 	/**
@@ -45,7 +45,7 @@ public class LocalBackend implements Backend {
 	 * completed. Jobs are kept in this queue until they are finished executing, meaning
 	 * that the running job will be the head of the queue
 	 */
-	java.util.Queue<LocalJob> jobsToRun = new ArrayDeque<>();
+	final java.util.Queue<LocalJob> jobsToRun = new ArrayDeque<>();
 	
 	private int curID = 1;
 	/**

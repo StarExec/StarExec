@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  */
 class PeriodicTasks {
 
-    private static StarLogger log = StarLogger.getLogger(PeriodicTasks.class);
+    private static final StarLogger log = StarLogger.getLogger(PeriodicTasks.class);
 
     // Enum constants of all the periodic tasks.
     enum PeriodicTask {

@@ -14,7 +14,7 @@ import java.util.HashMap;
  */
 public class BenchmarkTooltipGenerator implements XYToolTipGenerator {
 
-	private HashMap<String, String> names;
+	private final HashMap<String, String> names;
 
 	/**
 	 * @param data A mapping from series:item in the graph to a benchmark name.

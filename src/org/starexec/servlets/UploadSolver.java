@@ -65,7 +65,7 @@ public class UploadSolver extends HttpServlet {
 	private static final String RUN_TEST_JOB = "runTestJob";
 	private static final String SETTING_ID = "setting";
 	private static final String SOLVER_TYPE = "type";
-	private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
+	private final DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {

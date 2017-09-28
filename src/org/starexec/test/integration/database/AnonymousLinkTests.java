@@ -27,7 +27,7 @@ public class AnonymousLinkTests extends TestSequence {
 	private List<Benchmark> benchmarks = null;
 	private Solver solver = null;
 	// Create a list of all PrimitivesToAnonymize enums. (Need a list rather than a set to guarantee iteration order )
-	private List<PrimitivesToAnonymize> primitivesToAnonymizeList = new ArrayList<>( EnumSet.allOf( PrimitivesToAnonymize.class ) );
+	private final List<PrimitivesToAnonymize> primitivesToAnonymizeList = new ArrayList<>(EnumSet.allOf(PrimitivesToAnonymize.class ) );
 
 
 	@StarexecTest

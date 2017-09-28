@@ -6,7 +6,7 @@ public class SolverBuildStatus {
 	public enum SolverBuildStatusCode {
 		UNBUILT(0), BUILT(1), BUILT_BY_STAREXEC(2), BUILD_FAILED(3), STATUS_UNKNOWN(4);
 
-		private int val;
+		private final int val;
 
 		SolverBuildStatusCode(int val) {
 			this.val = val;

@@ -16,7 +16,7 @@ import java.sql.Date;
  */
 public class Analytics extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(Analytics.class);
-	private static Gson gson = new Gson();
+	private static final Gson gson = new Gson();
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)

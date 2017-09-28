@@ -7,7 +7,7 @@ import java.util.HashMap;
 
 public class BenchmarkURLGenerator implements XYURLGenerator {
 
-	private HashMap<String, Integer> seriesMap;
+	private final HashMap<String, Integer> seriesMap;
 
 	public BenchmarkURLGenerator(HashMap<String, Integer> map) {
 		seriesMap = map;

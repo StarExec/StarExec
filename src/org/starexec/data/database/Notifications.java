@@ -11,7 +11,7 @@ public class Notifications {
 	private Notifications() {
 	} // Class cannot be instantiated
 
-	private static StarLogger log = StarLogger.getLogger(Notifications.class);
+	private static final StarLogger log = StarLogger.getLogger(Notifications.class);
 
 	/**
 	 * @param user ID of User

@@ -6,9 +6,9 @@ import java.util.List;
 
 
 public class TreeNode<T> implements Iterable<TreeNode<T>> {
-	private T data;
+	private final T data;
 	private TreeNode<T> parent;
-	private List<TreeNode<T>> children;
+	private final List<TreeNode<T>> children;
 
 	/**
 	 * Basic constructor that makes a new TreeNode.

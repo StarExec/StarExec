@@ -12,8 +12,8 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class ReportsTests extends TestSequence {
-	private static String loginsEvent = "unique logins"; // will be set to 0 at the start of the test sequence and reset after
-	private static String pairsEvent = "job pairs run";
+	private static final String loginsEvent = "unique logins"; // will be set to 0 at the start of the test sequence and reset after
+	private static final String pairsEvent = "job pairs run";
 	int uniqueLogins = 0;
 	int pairsRun = 0;
 	

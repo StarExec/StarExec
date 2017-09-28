@@ -5,8 +5,8 @@ import org.starexec.data.to.Solver;
 import java.util.Comparator;
 
 public class SolverComparator implements Comparator<Solver> {
-	private int column;
-	private boolean asc;
+	private final int column;
+	private final boolean asc;
 
 	public SolverComparator(int c, boolean a) {
 		column = c;

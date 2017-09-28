@@ -42,8 +42,8 @@ import java.util.*;
 @Path("")
 public class RESTServices {
 	private static final StarLogger log = StarLogger.getLogger(RESTServices.class);
-	private static Gson gson = new Gson();
-	private static Gson limitGson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+	private static final Gson gson = new Gson();
+	private static final Gson limitGson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
 	public static final ValidatorStatusCode ERROR_DATABASE=new ValidatorStatusCode(false, "There was an internal database error processing your request");
 	private static final ValidatorStatusCode ERROR_INTERNAL_SERVER=new ValidatorStatusCode(false, "There was an internal server error processing your request");
@@ -742,14 +742,10 @@ public class RESTServices {
 
 	// Simplified matrix element so we can send less data via JSON.
 	private class SimpleMatrixElement {
-		@Expose
-		String status;
-		@Expose
-		String cpuTime;
-		@Expose
-		String memUsage;
-		@Expose
-		String wallclock;
+		@Expose final String status;
+		@Expose final String cpuTime;
+		@Expose final String memUsage;
+		@Expose final String wallclock;
 		public SimpleMatrixElement(String status, String cpuTime, String memUsage, String wallclock) {
 			this.status = status;
 			this.cpuTime = cpuTime;
@@ -759,10 +755,8 @@ public class RESTServices {
 	}
 
 	private class MatrixJson {
-		@Expose
-		boolean done;
-		@Expose
-		Map<String, SimpleMatrixElement> benchSolverConfigElementMap;
+		@Expose final boolean done;
+		@Expose final Map<String, SimpleMatrixElement> benchSolverConfigElementMap;
 
 		public MatrixJson(boolean done, Map<String, SimpleMatrixElement> benchSolverConfigElementMap) {
 			this.done = done;

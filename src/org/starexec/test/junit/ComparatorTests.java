@@ -16,7 +16,7 @@ import java.util.Random;
 // by checking to see if they sort correctly on all their relevant columns
 
 public class ComparatorTests {
-	Random rand=new Random();
+	final Random rand=new Random();
 	@Test
 	public void benchmarkComparatorTest() {
 		BenchmarkComparator comp=new BenchmarkComparator(0,true);

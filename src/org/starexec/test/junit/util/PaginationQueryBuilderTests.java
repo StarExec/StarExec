@@ -9,7 +9,7 @@ import org.starexec.util.PaginationQueryBuilder;
 
 public class PaginationQueryBuilderTests {
 
-	private static String baseSQL = "select * from users";
+	private static final String baseSQL = "select * from users";
 	private static DataTablesQuery query = null;
 	
 	@Before

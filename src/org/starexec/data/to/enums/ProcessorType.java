@@ -6,7 +6,7 @@ package org.starexec.data.to.enums;
 public enum ProcessorType {
 	DEFAULT(0), PRE(1), POST(2), BENCH(3), UPDATE(4);
 
-	private int val;
+	private final int val;
 
 	ProcessorType(int val) {
 		this.val = val;

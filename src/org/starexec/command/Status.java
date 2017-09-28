@@ -12,49 +12,49 @@ import java.util.HashMap;
 public class Status {
 	// Error codes for command parsing. The messages below give descriptions of
 	// each code suitable for presenting ot users.
-	public static int STATUS_SUCCESS = 0;
-	public static int ERROR_BAD_COMMAND = -1;
-	public static int ERROR_BAD_ARGS = -2;
-	public static int ERROR_SERVER = -4; // no error message exists for this
+	public static final int STATUS_SUCCESS = 0;
+	public static final int ERROR_BAD_COMMAND = -1;
+	public static final int ERROR_BAD_ARGS = -2;
+	public static final int ERROR_SERVER = -4; // no error message exists for this
 	                                     // status-- it is used when there is
 	                                     // a server-supplied message
-	public static int ERROR_BAD_ARCHIVETYPE = -5;
-	public static int ERROR_FILE_AND_URL = -6;
-	public static int ERROR_MISSING_PARAM = -7;
-	public static int ERROR_FILE_NOT_FOUND = -8;
-	public static int ERROR_INVALID_FILEPATH = -9;
-	public static int ERROR_ARCHIVE_NOT_FOUND = -10;
-	public static int ERROR_FILE_EXISTS = -11;
-	public static int ERROR_BAD_PARENT_SPACE = -12;
-	public static int ERROR_BAD_CREDENTIALS = -13;
-	public static int ERROR_COMMAND_NOT_IMPLEMENTED = -14;
-	public static int ERROR_URL_NOT_ALLOWED = -15;
-	public static int ERROR_INVALID_ID = -16;
-	public static int ERROR_INVALID_TIMEOUT = -17;
-	public static int ERROR_CONNECTION_LOST = -18;
-	public static int ERROR_BAD_NAME = -19;
-	public static int ERROR_BAD_DESCRIPTION = -20;
-	public static int ERROR_BAD_TIME = -21;
-	public static int ERROR_NOT_LOGGED_IN = -22;
-	public static int ERROR_CONNECTION_EXISTS = -23;
-	public static int ERROR_BAD_URL = -24;
-	public static int ERROR_BAD_INSTITUTION = -25;
-	public static int ERROR_PERMISSION_DENIED = -26;
-	public static int ERROR_COMMAND_FILE_TERMINATING = -27;
-	public static int ERROR_INSUFFICIENT_QUOTA = -28;
-	public static int ERROR_NAME_NOT_UNIQUE = -29;
-	public static int ERROR_BAD_TRAVERSAL_TYPE = -30;
-	public static int ERROR_ID_AND_USER = -31;
-	public static int ERROR_NO_USER_PRIMS = -32;
-	public static int ERROR_INTERNAL = -33;
-	public static int ERROR_INVALID_MEMORY = -34;
-	public static int ERROR_SEED = -35;
-	public static int ERROR_JOB_INCOMPLETE = -36;
-	public static int ERROR_INVALID_RESULTS_INTERVAL = -37;
-	public static int ERROR_INTERNAL_EXCEPTION = -38;
+	public static final int ERROR_BAD_ARCHIVETYPE = -5;
+	public static final int ERROR_FILE_AND_URL = -6;
+	public static final int ERROR_MISSING_PARAM = -7;
+	public static final int ERROR_FILE_NOT_FOUND = -8;
+	public static final int ERROR_INVALID_FILEPATH = -9;
+	public static final int ERROR_ARCHIVE_NOT_FOUND = -10;
+	public static final int ERROR_FILE_EXISTS = -11;
+	public static final int ERROR_BAD_PARENT_SPACE = -12;
+	public static final int ERROR_BAD_CREDENTIALS = -13;
+	public static final int ERROR_COMMAND_NOT_IMPLEMENTED = -14;
+	public static final int ERROR_URL_NOT_ALLOWED = -15;
+	public static final int ERROR_INVALID_ID = -16;
+	public static final int ERROR_INVALID_TIMEOUT = -17;
+	public static final int ERROR_CONNECTION_LOST = -18;
+	public static final int ERROR_BAD_NAME = -19;
+	public static final int ERROR_BAD_DESCRIPTION = -20;
+	public static final int ERROR_BAD_TIME = -21;
+	public static final int ERROR_NOT_LOGGED_IN = -22;
+	public static final int ERROR_CONNECTION_EXISTS = -23;
+	public static final int ERROR_BAD_URL = -24;
+	public static final int ERROR_BAD_INSTITUTION = -25;
+	public static final int ERROR_PERMISSION_DENIED = -26;
+	public static final int ERROR_COMMAND_FILE_TERMINATING = -27;
+	public static final int ERROR_INSUFFICIENT_QUOTA = -28;
+	public static final int ERROR_NAME_NOT_UNIQUE = -29;
+	public static final int ERROR_BAD_TRAVERSAL_TYPE = -30;
+	public static final int ERROR_ID_AND_USER = -31;
+	public static final int ERROR_NO_USER_PRIMS = -32;
+	public static final int ERROR_INTERNAL = -33;
+	public static final int ERROR_INVALID_MEMORY = -34;
+	public static final int ERROR_SEED = -35;
+	public static final int ERROR_JOB_INCOMPLETE = -36;
+	public static final int ERROR_INVALID_RESULTS_INTERVAL = -37;
+	public static final int ERROR_INTERNAL_EXCEPTION = -38;
 
 	// error messages
-	private static HashMap<Integer, String> messages = new HashMap<>();
+	private static final HashMap<Integer, String> messages = new HashMap<>();
 	static {
 		messages = new HashMap<>();
 		messages.put(STATUS_SUCCESS, "Execution was successful");

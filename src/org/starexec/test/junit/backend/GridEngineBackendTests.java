@@ -17,8 +17,8 @@ import java.util.Set;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({Util.class})
 public class GridEngineBackendTests {
-	GridEngineBackend backend = new GridEngineBackend();
-	private static String testSGEOutputString = "job-ID  prior   name       user         state submit/start at     queue                          slots ja-task-ID \n"+ 
+	final GridEngineBackend backend = new GridEngineBackend();
+	private static final String testSGEOutputString = "job-ID  prior   name       user         state submit/start at     queue                          slots ja-task-ID \n"+
 "-----------------------------------------------------------------------------------------------------------------\n" +
 "    998 0.55500 job_768.ba tomcat       qw    12/03/2015 13:18:55                                    1        \n" +
 "    999 0.55500 job_769.ba tomcat       qw    12/03/2015 13:18:55                                    1        \n" +

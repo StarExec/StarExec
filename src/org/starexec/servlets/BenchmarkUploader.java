@@ -30,7 +30,7 @@ public class BenchmarkUploader extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(BenchmarkUploader.class);
 
 	// The unique date stamped file name format
-	private static DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
+	private static final DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
 
 	// Valid file types for uploads
 	private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};

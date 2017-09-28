@@ -16,14 +16,14 @@ import java.util.regex.Pattern;
  * Implementation of the Backend interface depending on the OAR scheduler (https://oar.imag.fr/)
  */
 public class OARBackend implements Backend {    
-	private static StarLogger log = StarLogger.getLogger(OARBackend.class);
+	private static final StarLogger log = StarLogger.getLogger(OARBackend.class);
 	
-	private static String JOB_ID_PATTERN = "OAR_JOB_ID=(-?\\d+)";
+	private static final String JOB_ID_PATTERN = "OAR_JOB_ID=(-?\\d+)";
 	
 	
 	
     // The regex patterns used to parse SGE output
- 	private static Pattern jobIdPattern;
+ 	private static final Pattern jobIdPattern;
 
  	static {
  		// Compile the SGE output parsing patterns when this class is loaded

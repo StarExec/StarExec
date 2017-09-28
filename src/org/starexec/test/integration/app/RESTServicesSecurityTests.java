@@ -30,7 +30,7 @@ import java.util.Map;
  *
  */
 public class RESTServicesSecurityTests extends TestSequence {
-	private RESTServices services = new RESTServices();
+	private final RESTServices services = new RESTServices();
 	User user = null; // user that should have no permissions to do anything
 	User admin = null;
 
@@ -44,7 +44,7 @@ public class RESTServicesSecurityTests extends TestSequence {
 	Website solverWebsite = null;
 	int invalidBenchId = 0;
 	String anonymousJobId = null;
-	private Gson gson = new Gson();
+	private final Gson gson = new Gson();
 	Processor postProcessor = null;
 	Queue allQ = null;
 	private void assertResultIsInvalid(String result) {
@@ -997,7 +997,7 @@ public class RESTServicesSecurityTests extends TestSequence {
 		assertResultIsInvalid(services.getGsonPrimitive(1, "badType", TestUtil.getMockHttpRequest(admin.getId())));
 	}
 
-	private static String testName = "RESTServicesSecurityTests";
+	private static final String testName = "RESTServicesSecurityTests";
 
 	@Override
 	protected String getTestName() {

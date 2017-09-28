@@ -11,7 +11,7 @@ public class Website extends Identifiable implements Nameable {
 
 		USER(1), SOLVER(2), SPACE(3);  //type for the output from a previous stage
 
-		private int val;
+		private final int val;
 
 		WebsiteType(int val) {
 			this.val = val;

@@ -13,7 +13,7 @@ public class TestStatus {
 		STATUS_RUNNING(2),
 		STATUS_SUCCESS(3),
 		STATUS_FAILED(4);
-		private int val;
+		private final int val;
 		
 		TestStatusCode(int val) {
 			this.val = val;			

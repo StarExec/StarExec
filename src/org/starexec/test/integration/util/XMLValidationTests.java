@@ -21,7 +21,7 @@ public class XMLValidationTests extends TestSequence {
     private User admin = null;
     private Solver solver = null;
     private List<Integer> benchmarkIds = null;
-    private ResourceLoader loader = new ResourceLoader();
+    private final ResourceLoader loader = new ResourceLoader();
 
     @StarexecTest
     public void basicJobXmlValidationTest() {
