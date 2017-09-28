@@ -119,7 +119,7 @@ public class LoadBalanceMonitor {
 
 	
 	// thirty minutes in seconds
-	private Long loadDifferenceThreshold = 1800l;
+	private Long loadDifferenceThreshold = 1800L;
 	
 	/**
 	 * Gets the minimum load value among all active users. Inactive users
@@ -239,7 +239,7 @@ public class LoadBalanceMonitor {
 		loads.get(userId).load = loads.get(userId).load + load;
 		if (loads.get(userId).load < 0) {
 			log.warn("User "+userId +" has load value set to less than 0!");
-			loads.get(userId).load = 0l;
+			loads.get(userId).load = 0L;
 		}
 	}
 	

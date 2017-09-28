@@ -876,7 +876,7 @@ class CommandParser {
 			String type = null;
 			Boolean hierarchy = null;
 			Integer since = null;
-			Long lastModified = 0l;
+			Long lastModified = 0L;
 			if (c.equals(C.COMMAND_GETJOBOUT)) {
 				type = R.JOB_OUTPUT;
 			} else if (c.equals(C.COMMAND_GETJOBINFO)) {

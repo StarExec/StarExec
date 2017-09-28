@@ -415,7 +415,7 @@ public abstract class JobManager {
 							          s.job.getUserId());
 							Long min = monitor.getMin();
 							if (min == null) {
-								min = -1l;
+								min = -1L;
 							}
 							log.debug("user had already submitted " + i + " pairs in this iteration. Load = " +
 							          monitor.getLoad(s.job.getUserId()) + " Min = " + min);
