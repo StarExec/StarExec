@@ -162,14 +162,19 @@ public class AnonymousLinkTests extends TestSequence {
 
 				Optional<Integer> primitiveIdFromDb = Optional.empty();
 
-				if ( primitiveName.equals( R.JOB ) ) {
-					primitiveIdFromDb = AnonymousLinks.getIdOfJobAssociatedWithLink( uuid );
-				} else if ( primitiveName.equals( R.SOLVER ) ) {
-					primitiveIdFromDb = AnonymousLinks.getIdOfSolverAssociatedWithLink( uuid );
-				} else if ( primitiveName.equals( R.BENCHMARK ) ) {
-					primitiveIdFromDb = AnonymousLinks.getIdOfBenchmarkAssociatedWithLink( uuid );
-				} else {
-					Assert.fail("Invalid primitive name given: " + primitiveName );
+				switch (primitiveName) {
+				case R.JOB:
+					primitiveIdFromDb = AnonymousLinks.getIdOfJobAssociatedWithLink(uuid);
+					break;
+				case R.SOLVER:
+					primitiveIdFromDb = AnonymousLinks.getIdOfSolverAssociatedWithLink(uuid);
+					break;
+				case R.BENCHMARK:
+					primitiveIdFromDb = AnonymousLinks.getIdOfBenchmarkAssociatedWithLink(uuid);
+					break;
+				default:
+					Assert.fail("Invalid primitive name given: " + primitiveName);
+					break;
 				}
 
 				Assert.assertTrue( primitiveIdFromDb.isPresent() );
@@ -220,14 +225,19 @@ public class AnonymousLinkTests extends TestSequence {
 
 				Optional<PrimitivesToAnonymize> primitivesToAnonymizeFromDb = Optional.empty();
 
-				if ( primitiveName.equals( R.JOB ) ) {
-					primitivesToAnonymizeFromDb = AnonymousLinks.getPrimitivesToAnonymizeForJob( uuid );
-				} else if ( primitiveName.equals( R.SOLVER ) ) {
-					primitivesToAnonymizeFromDb = AnonymousLinks.getPrimitivesToAnonymizeForSolver( uuid );
-				} else if ( primitiveName.equals( R.BENCHMARK ) ) {
-					primitivesToAnonymizeFromDb = AnonymousLinks.getPrimitivesToAnonymizeForBenchmark( uuid );
-				} else {
-					Assert.fail("Invalid primitive name given: " + primitiveName );
+				switch (primitiveName) {
+				case R.JOB:
+					primitivesToAnonymizeFromDb = AnonymousLinks.getPrimitivesToAnonymizeForJob(uuid);
+					break;
+				case R.SOLVER:
+					primitivesToAnonymizeFromDb = AnonymousLinks.getPrimitivesToAnonymizeForSolver(uuid);
+					break;
+				case R.BENCHMARK:
+					primitivesToAnonymizeFromDb = AnonymousLinks.getPrimitivesToAnonymizeForBenchmark(uuid);
+					break;
+				default:
+					Assert.fail("Invalid primitive name given: " + primitiveName);
+					break;
 				}
 
 				Assert.assertTrue( primitivesToAnonymizeFromDb.isPresent() );

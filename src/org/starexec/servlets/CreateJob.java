@@ -305,71 +305,84 @@ public class CreateJob extends HttpServlet {
 			String traversalMethod = request.getParameter(traversal);
 			//Depending on our run selection, handle each case differently
 			//if the user created a quickJob, they uploaded a single text benchmark and a solver to run
-			if (selection.equals("quickJob")) {
-				int solverId = Integer.parseInt(request.getParameter(R.SOLVER));
-				String benchText = request.getParameter(R.BENCHMARK);
-				String bName = request.getParameter(benchName);
-				int benchProc = Integer.parseInt(request.getParameter(benchProcessor));
-				int benchId = BenchmarkUploader.addBenchmarkFromText(benchText, bName, userId, benchProc, false);
-				log.debug(method, "new benchmark created for quickJob with id = " + benchId);
-				buildQuickJob(j, solverId, benchId, space);
-			} else if (selection.equals("keepHierarchy")) {
-				log.debug(method, "User selected keepHierarchy");
-				//Create the HashMap to be used for creating job-pair path
-				HashMap<Integer, String> SP =
-						Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
-				List<Space> spaces = Spaces.trimSubSpaces(userId,
-				                                          Spaces.getSubSpaceHierarchy(space, userId)
-				); //Remove spaces the user is not a member of
-				log.debug(method, "got all the subspaces for the job");
-				spaces.add(0, Spaces.get(space));
+			switch (selection) {
+				case "quickJob":
+					int solverId = Integer.parseInt(request.getParameter(R.SOLVER));
+					String benchText = request.getParameter(R.BENCHMARK);
+					String bName = request.getParameter(benchName);
+					int benchProc = Integer.parseInt(request.getParameter(benchProcessor));
+					int benchId = BenchmarkUploader.addBenchmarkFromText(benchText, bName, userId, benchProc, false);
+					log.debug(method, "new benchmark created for quickJob with id = " + benchId);
+					buildQuickJob(j, solverId, benchId, space);
+					break;
+				case "keepHierarchy": {
+					log.debug(method, "User selected keepHierarchy");
+					//Create the HashMap to be used for creating job-pair path
+					HashMap<Integer, String> SP =
+							Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
+					List<Space> spaces = Spaces.trimSubSpaces(userId,
+					                                          Spaces.getSubSpaceHierarchy(space, userId)
+					); //Remove spaces the user is not a member of
 
-				HashMap<Integer, List<JobPair>> spaceToPairs = new HashMap<>();
-				for (Space s : spaces) {
-					List<JobPair> pairs = JobManager.addJobPairsFromSpace(s.getId(), SP.get(s.getId()));
+					log.debug(method, "got all the subspaces for the job");
+					spaces.add(0, Spaces.get(space));
 
-					spaceToPairs.put(s.getId(), pairs);
-				}
-				log.debug(method, "added all the job pairs from every space");
+					HashMap<Integer, List<JobPair>> spaceToPairs = new HashMap<>();
+					for (Space s : spaces) {
+						List<JobPair> pairs = JobManager.addJobPairsFromSpace(s.getId(), SP.get(s.getId()));
 
-				//if we're doing "depth first", we just add all the pairs from space1, then all the pairs from space2,
-				// and so on
-				if (traversalMethod.equals("depth")) {
-					JobManager.addJobPairsDepthFirst(j, spaceToPairs);
-					//otherwise, we are doing "breadth first", so we interleave pairs from all the spaces
-				} else {
-					log.debug(method, "adding pairs round robin");
-					JobManager.addJobPairsRoundRobin(j, spaceToPairs);
-				}
-			} else { //user selected "choose"
-
-				HashMap<Integer, String> SP =
-						Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
-				List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
-
-				if (benchMethod.equals("runAllBenchInSpace")) {
-					List<JobPair> pairs = JobManager.addJobPairsFromSpace(space, Spaces.getName(space), configIds);
-					if (pairs != null) {
-						j.addJobPairs(pairs);
+						spaceToPairs.put(s.getId(), pairs);
 					}
-				} else if (benchMethod.equals("runAllBenchInHierarchy")) {
-					log.debug(method, "got request to run all in bench hierarchy");
+					log.debug(method, "added all the job pairs from every space");
 
-					Map<Integer, List<JobPair>> spaceToPairs = JobManager
-							.addBenchmarksFromHierarchy(Integer.parseInt(request.getParameter(spaceId)),
-							                            SessionUtil.getUserId(request), configIds, SP
-							);
-
+					//if we're doing "depth first", we just add all the pairs from space1, then all the pairs from
+					// space2,
+					// and so on
 					if (traversalMethod.equals("depth")) {
-						log.debug(method, "User selected depth-first traversal");
 						JobManager.addJobPairsDepthFirst(j, spaceToPairs);
+						//otherwise, we are doing "breadth first", so we interleave pairs from all the spaces
 					} else {
-						log.debug(method, "users selected round robin traversal");
+						log.debug(method, "adding pairs round robin");
 						JobManager.addJobPairsRoundRobin(j, spaceToPairs);
 					}
-				} else {
-					List<Integer> benchmarkIds = Util.toIntegerList(request.getParameterValues(R.BENCHMARK));
-					JobManager.buildJob(j, benchmarkIds, configIds, space);
+					break;
+				}
+				default: { //user selected "choose"
+
+					HashMap<Integer, String> SP =
+							Spaces.spacePathCreate(userId, Spaces.getSubSpaceHierarchy(space, userId), space);
+					List<Integer> configIds = Util.toIntegerList(request.getParameterValues(configs));
+
+					switch (benchMethod) {
+					case "runAllBenchInSpace":
+						List<JobPair> pairs =
+								JobManager.addJobPairsFromSpace(space, Spaces.getName(space), configIds);
+						if (pairs != null) {
+							j.addJobPairs(pairs);
+						}
+						break;
+					case "runAllBenchInHierarchy":
+						log.debug(method, "got request to run all in bench hierarchy");
+
+						Map<Integer, List<JobPair>> spaceToPairs = JobManager
+								.addBenchmarksFromHierarchy(Integer.parseInt(request.getParameter(spaceId)),
+															SessionUtil.getUserId(request), configIds, SP
+								);
+
+						if (traversalMethod.equals("depth")) {
+							log.debug(method, "User selected depth-first traversal");
+							JobManager.addJobPairsDepthFirst(j, spaceToPairs);
+						} else {
+							log.debug(method, "users selected round robin traversal");
+							JobManager.addJobPairsRoundRobin(j, spaceToPairs);
+						}
+						break;
+					default:
+						List<Integer> benchmarkIds = Util.toIntegerList(request.getParameterValues(R.BENCHMARK));
+						JobManager.buildJob(j, benchmarkIds, configIds, space);
+						break;
+					}
+					break;
 				}
 			}
 

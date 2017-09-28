@@ -652,56 +652,62 @@ public class JobPairs {
 		log.debug("filtering pairs by type with type = " + type);
 		List<JobPair> filteredPairs = new ArrayList<>();
 
-		if (type.equals("incomplete")) {
+		switch (type) {
+		case "incomplete":
 			for (JobPair jp : pairs) {
 				if (jp.getStageFromNumber(stageNumber).getStatus().getCode().statIncomplete()) {
 					filteredPairs.add(jp);
 				}
 			}
-		} else if (type.equals("resource")) {
+			break;
+		case "resource":
 			for (JobPair jp : pairs) {
 				if (jp.getStageFromNumber(stageNumber).getStatus().getCode().resource()) {
 					filteredPairs.add(jp);
 				}
 			}
-		} else if (type.equals("failed")) {
+			break;
+		case "failed":
 			for (JobPair jp : pairs) {
 				if (jp.getStageFromNumber(stageNumber).getStatus().getCode().failed()) {
 					filteredPairs.add(jp);
 				}
 			}
-		} else if (type.equals("solved")) {
-
+			break;
+		case "solved":
 			for (JobPair jp : pairs) {
 				JoblineStage stage = jp.getStageFromNumber(stageNumber);
-
 				if (JobPairs.isPairCorrect(stage) == 0) {
 					filteredPairs.add(jp);
 				}
 			}
-		} else if (type.equals("wrong")) {
+			break;
+		case "wrong":
 			for (JobPair jp : pairs) {
 				JoblineStage stage = jp.getStageFromNumber(stageNumber);
 				if (JobPairs.isPairCorrect(stage) == 1) {
 					filteredPairs.add(jp);
 				}
 			}
-		} else if (type.equals("unknown")) {
+			break;
+		case "unknown":
 			for (JobPair jp : pairs) {
 				JoblineStage stage = jp.getStageFromNumber(stageNumber);
-
 				if (JobPairs.isPairCorrect(stage) == 2) {
 					filteredPairs.add(jp);
 				}
 			}
-		} else if (type.equals("complete")) {
+			break;
+		case "complete":
 			for (JobPair jp : pairs) {
 				if (jp.getStageFromNumber(stageNumber).getStatus().getCode().statComplete()) {
 					filteredPairs.add(jp);
 				}
 			}
-		} else {
+			break;
+		default:
 			filteredPairs = pairs;
+			break;
 		}
 		return filteredPairs;
 	}

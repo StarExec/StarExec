@@ -233,13 +233,14 @@ public class ProcessorManager extends HttpServlet {
 	 * @return The enum representation of the type
 	 */
 	private ProcessorType toProcessorEnum(String type) {
-		if (type.equals(POST_PROCESS_TYPE)) {
+		switch (type) {
+		case POST_PROCESS_TYPE:
 			return ProcessorType.POST;
-		} else if (type.equals(PRE_PROCESS_TYPE)) {
+		case PRE_PROCESS_TYPE:
 			return ProcessorType.PRE;
-		} else if (type.equals(R.BENCHMARK)) {
+		case R.BENCHMARK:
 			return ProcessorType.BENCH;
-		} else if (type.equals(UPDATE_PROCESS_TYPE)) {
+		case UPDATE_PROCESS_TYPE:
 			return ProcessorType.UPDATE;
 		}
 

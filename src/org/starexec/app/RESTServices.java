@@ -1716,20 +1716,23 @@ public class RESTServices {
 	@Produces("application/json")
 	public String getWebsites(@PathParam("type") String type, @PathParam("id") int id, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
-		if(type.equals("user")){
-			return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.USER));
-		} else if(type.equals("space")){
-			ValidatorStatusCode status = SpaceSecurity.canUserSeeSpace(id, userId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
+		switch (type) {
+			case "user":
+				return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.USER));
+			case "space": {
+				ValidatorStatusCode status = SpaceSecurity.canUserSeeSpace(id, userId);
+				if (!status.isSuccess()) {
+					return gson.toJson(status);
+				}
+				return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.SPACE));
 			}
-			return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.SPACE));
-		} else if (type.equals(R.SOLVER)) {
-			ValidatorStatusCode status = SolverSecurity.canUserSeeSolver(id, userId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
+			case R.SOLVER: {
+				ValidatorStatusCode status = SolverSecurity.canUserSeeSolver(id, userId);
+				if (!status.isSuccess()) {
+					return gson.toJson(status);
+				}
+				return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.SOLVER));
 			}
-			return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.SOLVER));
 		}
 		return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
 	}
@@ -1835,13 +1838,16 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		if (type.equals(R.USER)) {
-			success = Websites.add(id, url, name,WebsiteType.USER);
-		} else if (type.equals(R.SPACE)) {
+		switch (type) {
+		case R.USER:
+			success = Websites.add(id, url, name, WebsiteType.USER);
+			break;
+		case R.SPACE:
 			success = Websites.add(id, url, name, WebsiteType.SPACE);
-		} else if (type.equals(R.SOLVER)) {
+			break;
+		case R.SOLVER:
 			success = Websites.add(id, url, name, WebsiteType.SOLVER);
-
+			break;
 		}
 
 		// Passed validation AND Database update successful
@@ -1985,27 +1991,30 @@ public class RESTServices {
 		// Go through all the cases, depending on what attribute we are changing.
 		// First, validate that it is in legal form. Then, try to update the database.
 		// Finally, update the current session data
-		if (attribute.equals("firstname")) {
-
+		switch (attribute) {
+		case "firstname":
 			success = Users.updateFirstName(userId, newValue);
 			if (success) {
 				SessionUtil.getUser(request).setFirstName(newValue);
 				messageToUser = "Edit successful.";
 			}
-		} else if (attribute.equals("lastname")) {
+			break;
+		case "lastname":
 			success = Users.updateLastName(userId, newValue);
 			if (success) {
 				SessionUtil.getUser(request).setLastName(newValue);
 				messageToUser = "Edit successful.";
 			}
-		} else if (attribute.equals("institution")) {
+			break;
+		case "institution":
 			success = Users.updateInstitution(userId, newValue);
 			if (success) {
 				SessionUtil.getUser(request).setInstitution(newValue);
 				messageToUser = "Edit successful.";
 			}
-		} else if (attribute.equals("email")) {
-			log.info("User with id="+userId+" has requested to change their email to "+newValue);
+			break;
+		case "email":
+			log.info("User with id=" + userId + " has requested to change their email to " + newValue);
 			success = true;
 			if (!Users.getUserByEmail(newValue)) {
 				try {
@@ -2015,10 +2024,15 @@ public class RESTServices {
 					// Send a validation email to the new email address. using a unique
 					// code to safely reference this user's entry in verification hyperlinks
 					Mail.sendEmailChangeValidation(newValue, code);
-					log.debug("Email sent to user with id="+userId+" at address "+newValue+" to validate email change request.");
+					log.debug("Email sent to user with id=" + userId + " at address " + newValue +
+									  " to validate email change request.");
 					messageToUser = "A verification email has been sent to the new email address.";
 				} catch (IOException e) {
-					log.warn("(editUserInfo) an error occurred while trying to send a change email verification email.", e);
+					log.warn(
+							"(editUserInfo) an error occurred while trying to send a change email verification " +
+									"email.",
+							e
+					);
 					messageToUser = "Could not send verification email.";
 					success = false;
 				} catch (StarExecDatabaseException e) {
@@ -2030,28 +2044,32 @@ public class RESTServices {
 				messageToUser = "A user with that email already exists.";
 				success = false;
 			}
-		} else if (attribute.equals("diskquota")) {
+			break;
+		case "diskquota":
 			log.debug("diskquota");
-			success=Users.setDiskQuota(userId, Long.parseLong(newValue));
+			success = Users.setDiskQuota(userId, Long.parseLong(newValue));
 			log.debug("success = " + success);
 			if (success) {
 				SessionUtil.getUser(request).setDiskQuota(Long.parseLong(newValue));
 				messageToUser = "Edit successful.";
 			}
-		} else if (attribute.equals("pairquota")) {
+			break;
+		case "pairquota":
 			log.debug("pairquota");
-			success=Users.setPairQuota(userId, Integer.parseInt(newValue));
+			success = Users.setPairQuota(userId, Integer.parseInt(newValue));
 			log.debug("success = " + success);
 			if (success) {
 				SessionUtil.getUser(request).setPairQuota(Integer.parseInt(newValue));
 				messageToUser = "Edit successful.";
 			}
-		} else if (attribute.equals("pagesize")) {
+			break;
+		case "pagesize":
 
-			success=Users.setDefaultPageSize(userId, Integer.parseInt(newValue));
+			success = Users.setDefaultPageSize(userId, Integer.parseInt(newValue));
 			if (success) {
 				messageToUser = "Edit successful.";
 			}
+			break;
 		}
 
 		String json = null;
@@ -4957,52 +4975,59 @@ public class RESTServices {
 	@Produces("application/json")
 	public String getGsonPrimitive(@PathParam("id") int id, @PathParam("type") String type, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		if (type.equals(R.SOLVER)) {
-			ValidatorStatusCode status=SolverSecurity.canGetJsonSolver(id, userId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
+		switch (type) {
+			case R.SOLVER: {
+				ValidatorStatusCode status = SolverSecurity.canGetJsonSolver(id, userId);
+				if (!status.isSuccess()) {
+					return gson.toJson(status);
+				}
+				return gson.toJson(Solvers.getIncludeDeleted(id));
 			}
-			return gson.toJson(Solvers.getIncludeDeleted(id));
-		} else if (type.equals("benchmark")) {
-			ValidatorStatusCode status=BenchmarkSecurity.canGetJsonBenchmark(id, userId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
+			case "benchmark": {
+				ValidatorStatusCode status = BenchmarkSecurity.canGetJsonBenchmark(id, userId);
+				if (!status.isSuccess()) {
+					return gson.toJson(status);
+				}
+				return gson.toJson(Benchmarks.getIncludeDeletedAndRecycled(id, false));
 			}
-			return gson.toJson(Benchmarks.getIncludeDeletedAndRecycled(id,false));
-		} else if (type.equals(R.JOB)) {
-			ValidatorStatusCode status=JobSecurity.canGetJsonJob(id, userId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
+			case R.JOB: {
+				ValidatorStatusCode status = JobSecurity.canGetJsonJob(id, userId);
+				if (!status.isSuccess()) {
+					return gson.toJson(status);
+				}
+				return gson.toJson(Jobs.getIncludeDeleted(id));
 			}
-			return gson.toJson(Jobs.getIncludeDeleted(id));
+			case R.SPACE: {
+				ValidatorStatusCode status = SpaceSecurity.canGetJsonSpace(id, userId);
+				if (!status.isSuccess()) {
+					return gson.toJson(status);
+				}
+				return gson.toJson(Spaces.get(id));
+			}
+			case "configuration": {
+				ValidatorStatusCode status = SolverSecurity.canGetJsonConfiguration(id, userId);
+				if (!status.isSuccess()) {
+					return gson.toJson(status);
+				}
 
- 		} else if (type.equals(R.SPACE)) {
- 			ValidatorStatusCode status=SpaceSecurity.canGetJsonSpace(id, userId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
+				return gson.toJson(Solvers.getConfiguration(id));
 			}
-			return gson.toJson(Spaces.get(id));
- 		} else if (type.equals("configuration")) {
- 			ValidatorStatusCode status=SolverSecurity.canGetJsonConfiguration(id, userId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
-			}
+			case "processor": {
+				ValidatorStatusCode status = ProcessorSecurity.canUserSeeProcessor(id, userId);
+				if (!status.isSuccess()) {
+					return gson.toJson(status);
+				}
 
- 			return gson.toJson(Solvers.getConfiguration(id));
- 		} else if (type.equals("processor")) {
- 			ValidatorStatusCode status=ProcessorSecurity.canUserSeeProcessor(id, userId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
+				return gson.toJson(Processors.get(id));
 			}
-
- 			return gson.toJson(Processors.get(id));
- 		} else if (type.equals("queue")) {
- 			ValidatorStatusCode status=QueueSecurity.canGetJsonQueue(id, userId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
+			case "queue": {
+				ValidatorStatusCode status = QueueSecurity.canGetJsonQueue(id, userId);
+				if (!status.isSuccess()) {
+					return gson.toJson(status);
+				}
+				return gson.toJson(Queues.get(id));
 			}
- 			return gson.toJson(Queues.get(id));
- 		}
+		}
 		return gson.toJson(new ValidatorStatusCode(false,"Invalid type specified"));
 	}
 

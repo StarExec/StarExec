@@ -835,37 +835,51 @@ public class Download extends HttpServlet {
 		log.debug(methodName, PARAM_ID + " = " + id);
 
 		ValidatorStatusCode status = null;
-		if (type.equals(R.SOLVER) || type.equals(R.SOLVER_SOURCE)) {
+		switch (type) {
+		case R.SOLVER:
+		case R.SOLVER_SOURCE:
 			status = SolverSecurity.canUserDownloadSolver(id, userId);
 			if (!status.isSuccess()) {
 				return status;
 			}
-		} else if (type.equals(R.SPACE_XML) || type.equals(R.SPACE) || type.equals(R.PROCESSOR)) {
+			break;
+		case R.SPACE_XML:
+		case R.SPACE:
+		case R.PROCESSOR:
 			if (!Permissions.canUserSeeSpace(id, userId)) {
 				return new ValidatorStatusCode(false, "You do not have permission to see this space");
 			}
-		} else if (type.equals(R.JOB) || type.equals(R.JOB_XML) || type.equals(R.JOB_OUTPUT)) {
+			break;
+		case R.JOB:
+		case R.JOB_XML:
+		case R.JOB_OUTPUT: {
 			ValidatorStatusCode canSeeJobStatus = Permissions.canUserSeeJob(id, userId);
 			if (!canSeeJobStatus.isSuccess()) {
 				log.debug(methodName, "User could not see job, returning failure status.");
 				return canSeeJobStatus;
 			}
-		} else if (type.equals(R.PAIR_OUTPUT)) {
+			break;
+		}
+		case R.PAIR_OUTPUT: {
 			int jobId = JobPairs.getPair(id).getJobId();
 			ValidatorStatusCode canSeeJobStatus = Permissions.canUserSeeJob(jobId, userId);
 			if (!canSeeJobStatus.isSuccess()) {
 				return canSeeJobStatus;
 			}
-		} else if (type.equals(R.BENCHMARK)) {
+			break;
+		}
+		case R.BENCHMARK:
 			status = BenchmarkSecurity.canUserDownloadBenchmark(id, userId);
 			if (!status.isSuccess()) {
 				return status;
 			}
-		} else if (type.equals(R.JOB_PAGE_DOWNLOAD_TYPE)) {
+			break;
+		case R.JOB_PAGE_DOWNLOAD_TYPE:
 			status = JobSecurity.canUserSeeJob(id, userId);
 			if (!status.isSuccess()) {
 				return status;
 			}
+			break;
 		}
 		return new ValidatorStatusCode(true);
 	}

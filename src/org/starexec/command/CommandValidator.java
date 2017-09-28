@@ -139,15 +139,20 @@ public class CommandValidator {
 
 		// the hierarchy parameter is also acceptable if the type is either
 		// solver or space
-		if (type.equals("user")) {
+		switch (type) {
+		case "user":
 			findUnnecessaryParams(allowedCopyUserParams, commandParams);
-		} else if (type.equals(R.SPACE)) {
+			break;
+		case R.SPACE:
 			findUnnecessaryParams(allowedCopySpaceParams, commandParams);
-		} else if (type.equals(R.SOLVER)) {
+			break;
+		case R.SOLVER:
 			findUnnecessaryParams(allowedCopySolverParams, commandParams);
-
-		} else if (type.equals("benchmark") || type.equals(R.JOB)) {
+			break;
+		case "benchmark":
+		case R.JOB:
 			findUnnecessaryParams(allowedCopyBenchmarkParams, commandParams);
+			break;
 		}
 
 		return 0;
@@ -198,20 +203,23 @@ public class CommandValidator {
 				return Status.ERROR_FILE_EXISTS;
 			}
 		}
-		if (type.equals(R.JOB)) {
+		switch (type) {
+		case R.JOB:
 			findUnnecessaryParams(allowedDownloadCSVParams, commandParams);
-		} else if (type.equals(R.SPACE)) {
+			break;
+		case R.SPACE:
 			findUnnecessaryParams(allowedDownloadSpaceParams, commandParams);
-		} else if (type.equals(R.SPACE_XML)) {
+			break;
+		case R.SPACE_XML:
 			findUnnecessaryParams(allowedDownloadSpaceXMLParams, commandParams);
-		} else {
+			break;
+		default:
 			if (since == null) {
 				findUnnecessaryParams(allowedDownloadParams, commandParams);
-
 			} else {
 				findUnnecessaryParams(allowedNewDownloadParams, commandParams);
-
 			}
+			break;
 		}
 
 		return 0;

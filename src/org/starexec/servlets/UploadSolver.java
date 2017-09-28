@@ -330,12 +330,15 @@ public class UploadSolver extends HttpServlet {
 
 
 			String DescMethod = (String) form.get(UploadSolver.DESC_METHOD);
-			if (DescMethod.equals("text")) {
+			switch (DescMethod) {
+			case "text":
 				newSolver.setDescription((String) form.get(UploadSolver.SOLVER_DESC));
-			} else if (DescMethod.equals("file")) {
+				break;
+			case "file":
 				PartWrapper item_desc = (PartWrapper) form.get(UploadSolver.SOLVER_DESC_FILE);
 				newSolver.setDescription(item_desc.getString());
-			} else {    //Upload starexec_description.txt
+				break;
+			default:     //Upload starexec_description.txt
 				try {
 					File descriptionFile = new File(uniqueDir, R.SOLVER_DESC_PATH);
 					if (descriptionFile.exists()) {
@@ -351,6 +354,7 @@ public class UploadSolver extends HttpServlet {
 				} catch (Exception e) {
 					log.error(e.getMessage(), e);
 				}
+				break;
 			}
 
 

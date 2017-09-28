@@ -171,19 +171,23 @@ public class GeneralSecurity {
 		final String methodName = "canUserGetAnonymousLinkForPrimitive";
 		log.entry(methodName);
 		log.debug("Checking if user can get anonymous link for primitive of type " + primitiveType);
-		if (primitiveType.equals(R.BENCHMARK)) {
-			log.debug(methodName, "Found that primitive was of type " + R.BENCHMARK +
-					" while checking if an anonymous link could be generated for it.");
+		switch (primitiveType) {
+		case R.BENCHMARK:
+			log.debug(
+					methodName, "Found that primitive was of type " + R.BENCHMARK +
+							" while checking if an anonymous link could be generated for it.");
 			return BenchmarkSecurity.canUserGetAnonymousLink(primitiveId, userId);
-		} else if (primitiveType.equals(R.SOLVER)) {
-			log.debug(methodName, "Found that primitive was of type " + R.SOLVER +
-					" while checking if an anonymous link could be generated for it.");
+		case R.SOLVER:
+			log.debug(
+					methodName, "Found that primitive was of type " + R.SOLVER +
+							" while checking if an anonymous link could be generated for it.");
 			return SolverSecurity.canUserGetAnonymousLink(primitiveId, userId);
-		} else if (primitiveType.equals(R.JOB)) {
-			log.debug(methodName, "Found that primitive was of type " + R.JOB +
-					" while checking if an anonymous link could be generated for it.");
+		case R.JOB:
+			log.debug(
+					methodName, "Found that primitive was of type " + R.JOB +
+							" while checking if an anonymous link could be generated for it.");
 			return JobSecurity.canUserGetAnonymousLink(primitiveId, userId);
-		} else {
+		default:
 			return new ValidatorStatusCode(
 					false, "You do not have permission to get an anonymous link for this primitive.");
 		}

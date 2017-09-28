@@ -1439,16 +1439,22 @@ public class Connection {
 		HttpResponse response = null;
 		try {
 			String urlExtension;
-			if (type.equals(R.SOLVER)) {
+			switch (type) {
+			case R.SOLVER:
 				urlExtension = C.URL_COPYSOLVER;
-			} else if (type.equals(R.SPACE)) {
+				break;
+			case R.SPACE:
 				urlExtension = C.URL_COPYSPACE;
-			} else if (type.equals(R.JOB)) {
+				break;
+			case R.JOB:
 				urlExtension = C.URL_COPYJOB;
-			} else if (type.equals("user")) {
+				break;
+			case "user":
 				urlExtension = C.URL_COPYUSER;
-			} else {
+				break;
+			default:
 				urlExtension = C.URL_COPYBENCH;
+				break;
 			}
 
 			urlExtension = urlExtension.replace("{spaceID}", newSpaceID.toString());
@@ -1755,16 +1761,22 @@ public class Connection {
 			// GetNextPageOfPrimitives in RESTHelpers
 			// expects
 			String columns = "0";
-			if (type.equals("solvers")) {
+			switch (type) {
+			case "solvers":
 				columns = "2";
-			} else if (type.equals("users")) {
+				break;
+			case "users":
 				columns = "3";
-			} else if (type.equals("benchmarks")) {
+				break;
+			case "benchmarks":
 				columns = "2";
-			} else if (type.equals("jobs")) {
+				break;
+			case "jobs":
 				columns = "6";
-			} else if (type.equals("spaces")) {
+				break;
+			case "spaces":
 				columns = "2";
+				break;
 			}
 
 			URL = URL.replace("{id}", urlParams.get(C.PARAM_ID));
