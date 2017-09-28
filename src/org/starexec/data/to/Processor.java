@@ -85,7 +85,7 @@ public class Processor extends Identifiable implements Nameable, Locatable {
 	/**
 	 * Alias for getFilePath, needed for Locatable interface.
 	 *
-	 * @return
+	 * @return The physical path of the processor
 	 */
 	@Override
 	public String getPath() {

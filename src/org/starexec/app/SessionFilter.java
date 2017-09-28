@@ -39,7 +39,7 @@ public class SessionFilter implements Filter {
 
 	/**
 	 * Detects requests originating from StarExecCommand
-	 * @param request
+	 * @param request HTTP Request
 	 * @return true if request is from StarExecCommand, false otherwise
 	 */
 	private static boolean isFromCommand(HttpServletRequest request) {

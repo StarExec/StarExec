@@ -86,7 +86,7 @@ public class RESTHelpers {
 	 * Takes in a list of spaces and converts it into a list of JSTreeItems
 	 * suitable for being displayed on the client side with the jsTree plugin.
 	 *
-	 * @param jobSpaceList
+	 * @param jobSpaceList list of JobSpace to convert
 	 * @return List of JSTreeItems to be serialized and sent to client
 	 * @author Tyler Jensen
 	 */
@@ -518,7 +518,7 @@ public class RESTHelpers {
 	 * @param commandConnection an open StarExecCommand connection.
 	 * @param processorId the processor to copy.
 	 * @param communityId the community to copy the processor to (on stardev).
-	 * @return
+	 * @return ValidatorStatusCode representing success or failure
 	 */
 	protected static ValidatorStatusCode copyProcessorToStarDev(Connection commandConnection, int processorId, int communityId) {
 		Processor processorToCopy = Processors.get(processorId);
@@ -580,7 +580,7 @@ public class RESTHelpers {
 	 *
 	 * @param request the copy to stardev request.
 	 * @param primType the primitive type
-	 * @return
+	 * @return ValidatorStatusCode representing success or failure
 	 */
 	public static ValidatorStatusCode validateCopyToStardev(HttpServletRequest request, final String primType) {
 

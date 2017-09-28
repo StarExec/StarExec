@@ -412,7 +412,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	 * Gets the name of the root space for this job. Doing this requires that at least one job pair is populated and
 	 * that it has the correct path info set.
 	 *
-	 * @Return the root space name, or null if it cannot be found
+	 * @return the root space name, or null if it cannot be found
 	 */
 	public String getRootSpaceName() {
 		if (getJobPairs().size() == 0) {

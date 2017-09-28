@@ -50,8 +50,8 @@ public class AnalyticsResults {
 
 	/**
 	 * Gets results for all events between `start` and `end`
-	 * @param start
-	 * @param end
+	 * @param start date
+	 * @param end date
 	 * @return AnalyticsResults
 	 */
 	public static Iterable<AnalyticsResults> getAllEvents(Date start, Date end) {

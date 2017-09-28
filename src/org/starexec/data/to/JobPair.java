@@ -273,7 +273,7 @@ public class JobPair extends Identifiable {
 	/**
 	 * Adds a stage to the END of this job pairs stage list.
 	 *
-	 * @param stage
+	 * @param stage JoblineStage to add to stages list
 	 */
 	public void addStage(JoblineStage stage) {
 		this.stages.add(stage);
@@ -294,7 +294,7 @@ public class JobPair extends Identifiable {
 	 * Returns the primary stage of this job pair, as determined by the primaryStageNumber field. If that field is not
 	 * set, returns the first stage. If no stages are set, returns null
 	 *
-	 * @return
+	 * @return primary stage
 	 */
 	public JoblineStage getPrimaryStage() {
 
@@ -317,9 +317,9 @@ public class JobPair extends Identifiable {
 	}
 
 	/**
-	 * Returns the configuration of the "priamry" stage of this jobline. Returns null  if there is no such stage.
+	 * Returns the configuration of the "priamry" stage of this jobline. Returns null if there is no such stage.
 	 *
-	 * @return
+	 * @return primary configuration
 	 */
 	public Configuration getPrimaryConfiguration() {
 		JoblineStage s = getPrimaryStage();
@@ -331,9 +331,9 @@ public class JobPair extends Identifiable {
 	}
 
 	/**
-	 * Returns the solver of the "priamry" stage of this jobline. Returns null  if there is no such stage.
+	 * Returns the solver of the "priamry" stage of this jobline. Returns null if there is no such stage.
 	 *
-	 * @return
+	 * @return primary solver
 	 */
 	public Solver getPrimarySolver() {
 		JoblineStage s = getPrimaryStage();
@@ -345,9 +345,9 @@ public class JobPair extends Identifiable {
 	}
 
 	/**
-	 * Returns the solver of the "priamry" stage of this jobline. Returns null  if there is no such stage.
+	 * Returns CPU time of the primary stage of this Jobline. Returns null if there is no such stage.
 	 *
-	 * @return
+	 * @return CPU time of primary stage
 	 */
 	public Double getPrimaryCpuTime() {
 		JoblineStage s = getPrimaryStage();
@@ -366,9 +366,9 @@ public class JobPair extends Identifiable {
 	}
 
 	/**
-	 * Returns the solver of the "priamry" stage of this jobline. Returns null  if there is no such stage.
+	 * Returns wallclock time of the primary stage of this Jobline. Returns null if there is no such stage.
 	 *
-	 * @return
+	 * @return wallclock time of primary stage
 	 */
 	public Double getPrimaryWallclockTime() {
 		JoblineStage s = getPrimaryStage();
@@ -404,7 +404,7 @@ public class JobPair extends Identifiable {
 	 * Returns a string that uniquely identifies the stages of this jobline using the following format. A colon will
 	 * terminate the string. The empty string is returned if there are no stages <stage1id>:<stage2id>:...
 	 *
-	 * @return
+	 * @return UUID of Stage
 	 */
 	public String getStageString() {
 		StringBuilder sb = new StringBuilder();
