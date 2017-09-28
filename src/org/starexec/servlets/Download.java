@@ -709,12 +709,17 @@ public class Download extends HttpServlet {
 			throws IOException {
 		// Create a new directory named after the filetype such as /js or /css
 		String filetypeDirectoryName = null;
-		if (filetype.equals(CSS_FILE_TYPE) || filetype.equals(JS_FILE_TYPE)) {
+		switch (filetype) {
+		case CSS_FILE_TYPE:
+		case JS_FILE_TYPE:
 			filetypeDirectoryName = filetype;
-		} else if (filetype.equals(PNG_FILE_TYPE) || filetype.equals(GIF_FILE_TYPE) || filetype.equals
-				(ICO_FILE_TYPE)) {
+			break;
+		case PNG_FILE_TYPE:
+		case GIF_FILE_TYPE:
+		case ICO_FILE_TYPE:
 			filetypeDirectoryName = IMAGES_DIRECTORY_NAME;
-		} else {
+			break;
+		default:
 			throw new IOException("Attempted to copy unsupported file type: " + filetype);
 		}
 
