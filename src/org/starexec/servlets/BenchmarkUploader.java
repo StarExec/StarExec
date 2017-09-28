@@ -428,7 +428,7 @@ public class BenchmarkUploader extends HttpServlet {
 			}
 			String fileName = null;
 			// Last test, return true when we find a valid file extension
-			if (((String) form.get(FILE_LOC)).equals("local")) {
+			if (form.get(FILE_LOC).equals("local")) {
 				fileName = ((PartWrapper) form.get(BENCHMARK_FILE)).getName();
 			} else {
 				fileName = (String) form.get(FILE_URL);

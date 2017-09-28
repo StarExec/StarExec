@@ -493,7 +493,7 @@ public class BenchmarkTests extends TestSequence {
 		Assert.assertTrue(Benchmarks.clearAttributes(benchmarks.get(0).getId()));
 		Assert.assertEquals(0, Benchmarks.getAttributes(benchmarks.get(0).getId()).size());
 		for (Object o : benchmarks.get(0).getAttributes().keySet()) {
-			Benchmarks.addBenchAttr(benchmarks.get(0).getId(),(String)o, (String) benchmarks.get(0).getAttributes().get(o));
+			Benchmarks.addBenchAttr(benchmarks.get(0).getId(), (String)o, benchmarks.get(0).getAttributes().get(o));
 		}
 	}
 	

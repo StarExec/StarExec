@@ -66,7 +66,7 @@ public class AnalyticsResults {
 			);
 		} catch (SQLException e) {
 			log.error("GetAnalyticsForDateRange");
-			return Collections.<AnalyticsResults>emptyList();
+			return Collections.emptyList();
 		}
 	}
 }

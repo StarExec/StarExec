@@ -181,8 +181,8 @@ public class AnonymousLinkTests extends TestSequence {
 				Assert.assertEquals( 
 					"The id retrieved from the database was not the same as the one given to the database for "
 							+ AnonymousLinks.getPrimitivesToAnonymizeName( primitivesToAnonymize),
-					(int)primitiveIdFromDb.get(), 
-					(int)primitiveId );
+					(int)primitiveIdFromDb.get(), primitiveId
+				);
 
 				newUuids.add( uuid );
 			}

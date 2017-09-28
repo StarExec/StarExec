@@ -801,7 +801,7 @@ public class Benchmarks {
 			newBenchmark.setPath(uniqueDir.getAbsolutePath() + File.separator + benchmarkFile.getName());
 
 			FileUtils.copyFileToDirectory(benchmarkFile, uniqueDir);
-			int benchId = Benchmarks.addAndAssociate(newBenchmark, spaceId, (Integer) null);
+			int benchId = Benchmarks.addAndAssociate(newBenchmark, spaceId, null);
 			if (benchId < 0) {
 				log.error("Benchmark being copied could not be successfully added to the database");
 				return benchId;

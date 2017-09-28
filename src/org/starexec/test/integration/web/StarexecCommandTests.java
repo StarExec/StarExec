@@ -484,7 +484,7 @@ public class StarexecCommandTests extends TestSequence {
 			Space testSpace=Spaces.get(newSpaceId);
 			Assert.assertNotNull(testSpace);
 			Assert.assertEquals(name, testSpace.getName());
-			Assert.assertEquals(testCommunity.getId(), (int)Spaces.getParentSpace(testSpace.getId()));
+			Assert.assertEquals(testCommunity.getId(), Spaces.getParentSpace(testSpace.getId()));
 
 			Assert.assertTrue(Spaces.removeSubspace(newSpaceId));
 		} else {
