@@ -70,7 +70,7 @@ public class SolverSecurity {
 	}
 
 	/**
-	 * Checks if a user can get an anonymou link for a solver.
+	 * Checks if a user can get an anonymous link for a solver.
 	 *
 	 * @param solverId The id of the solver that we're getting a link for
 	 * @param userId The id of the user trying to get the anonymous link.
@@ -373,7 +373,7 @@ public class SolverSecurity {
 
 	/**
 	 * Checks to see whether a user is allowed to remove a solver from a space hierarchy. They are allowed if they can
-	 * remvoe the solver from the root plus ANY SUBSET of subspaces, including the empty subset. Other validation needs
+	 * remove the solver from the root plus ANY SUBSET of subspaces, including the empty subset. Other validation needs
 	 * to be done to make sure solvers are remove from only the correct subspaces
 	 *
 	 * @param rootSpaceId The ID of the space at the root of the hierarchy in question
@@ -391,7 +391,7 @@ public class SolverSecurity {
 	}
 
 	/**
-	 * Checks to see whether the given user can delete all of the given configuraitons
+	 * Checks to see whether the given user can delete all of the given configurations
 	 *
 	 * @param configIds The IDs of the configurations being checked
 	 * @param userId The ID of the user making the request
@@ -409,7 +409,7 @@ public class SolverSecurity {
 	}
 
 	/**
-	 * Checks to see whether the given user can delete the given configuraiton
+	 * Checks to see whether the given user can delete the given configuration
 	 *
 	 * @param configId The ID of the configuration being checked
 	 * @param userId The ID of the user making the request

@@ -35,7 +35,7 @@ CREATE PROCEDURE IsSolverACommunityDefault(IN _solverId INT)
 		WHERE default_solver = _solverId AND setting_type=1;
 	END //
 
--- Updates the maximum memory setting for a defaultsettings tuple
+-- Updates the maximum memory setting for a default_settings tuple
 DROP PROCEDURE IF EXISTS SetMaximumMemorySetting;
 CREATE PROCEDURE SetMaximumMemorySetting(IN _id INT, IN _bytes BIGINT)
 	BEGIN

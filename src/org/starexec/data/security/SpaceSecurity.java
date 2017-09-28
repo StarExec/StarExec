@@ -32,7 +32,7 @@ public class SpaceSecurity {
 
 		//communities are not allowed to have sticky leaders enabled
 		if (Communities.isCommunity(spaceId) && stickyLeaders) {
-			return new ValidatorStatusCode(false, "Communitity spaces may not enable sticky leaders");
+			return new ValidatorStatusCode(false, "Community spaces may not enable sticky leaders");
 		}
 
 		Space os = Spaces.get(spaceId);
@@ -801,7 +801,7 @@ public class SpaceSecurity {
 	/**
 	 * Checks to see whether a list of users can all be removed from the given space
 	 *
-	 * @param userIdsBeingRemoved The IDs of the users that wouldbe removed
+	 * @param userIdsBeingRemoved The IDs of the users that would be removed
 	 * @param userIdDoingRemoval The ID of the user making the request
 	 * @param rootSpaceId The space ID to check
 	 * @param hierarchy If true, checks to see whether the users can be removed from the entire hierarchy

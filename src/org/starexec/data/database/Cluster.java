@@ -260,7 +260,7 @@ public class Cluster {
 	}
 
 	/**
-	 * Takes in a node name and adds it to the database if it doesn't aleady exist
+	 * Takes in a node name and adds it to the database if it doesn't already exist
 	 *
 	 * @param name The name of the worker node to update/add
 	 * @return True if the operation was a success, false otherwise.

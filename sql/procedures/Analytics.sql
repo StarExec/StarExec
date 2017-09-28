@@ -27,7 +27,7 @@ CREATE PROCEDURE RecordEvent(
 
 -- Record an instance of
 --   a particular user triggering
---   a patricular event on
+--   a particular event on
 --   a particular day
 -- If we have already recorded this user/event/day, we can just ignore the
 -- DUPLICATE KEY warning

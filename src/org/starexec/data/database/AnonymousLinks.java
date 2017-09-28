@@ -96,7 +96,7 @@ public class AnonymousLinks {
 	}
 
 	/**
-	 * Converts from a PrimitivesToAnonymize enum to the string represenation of that enum.
+	 * Converts from a PrimitivesToAnonymize enum to the string representation of that enum.
 	 *
 	 * @param primitivesToAnonymize a PrimitivesToAnonymize enum.
 	 * @return the String representation of the input enum.
@@ -607,7 +607,7 @@ public class AnonymousLinks {
 			}
 			return anonymizedSolverNamesKey;
 		} catch (SQLException e) {
-			log.error(methodName, "Database failure while geting anonymized solver names key.", e);
+			log.error(methodName, "Database failure while getting anonymized solver names key.", e);
 			throw e;
 		} finally {
 			Common.safeClose(con);
@@ -682,7 +682,7 @@ public class AnonymousLinks {
 	}
 
 	/**
-	 * Gets a mapping of bencmark ID's to unique anonymized names.
+	 * Gets a mapping of benchmark ID's to unique anonymized names.
 	 *
 	 * @param benchmarks a list of benchmarks to get anonymized names for.
 	 * @return a mapping from benchmark ID's to an anonymous name for the benchmark.

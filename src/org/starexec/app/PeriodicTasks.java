@@ -267,7 +267,7 @@ class PeriodicTasks {
             try {
                 AnonymousLinks.deleteOldLinks(R.MAX_AGE_OF_ANONYMOUS_LINKS_IN_DAYS);
             } catch (SQLException e) {
-                log.error( "Caught SQLExcpetion: Failed to delete old anonymous links.", e);
+                log.error( "Caught SQLException: Failed to delete old anonymous links.", e);
             }
         }
     };

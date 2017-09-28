@@ -81,7 +81,7 @@ public class Queues {
 	 * Will pause jobs associated with queues if the number of nodes being removed from them is equal to the number of
 	 * nodes they have. used by MoveNodes
 	 *
-	 * @param queueIdsToNodesRemoved A mapping from queueID to the number of ndoes being removed from that queue
+	 * @param queueIdsToNodesRemoved A mapping from queueID to the number of nodes being removed from that queue
 	 **/
 	public static void pauseJobsIfNoRemainingNodes(Map<Integer, Integer> queueIdsToNodesRemoved) {
 		//if this is going to make the queue empty...... need to pause all jobs first

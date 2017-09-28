@@ -130,7 +130,7 @@ public class JobUtil {
 				// the call to createPipelineFromElement
 			}
 			if (pipelineNames.containsKey(pipe.getName())) {
-				errorMessage = " Duplicate pipline name = " + pipe.getName() +
+				errorMessage = " Duplicate pipeline name = " + pipe.getName() +
 				               ". All pipelines in this upload must have unique names";
 				return null;
 			}

@@ -13,7 +13,7 @@ public class UploadSecurity {
 	 *
 	 * @param userId The ID of the user making the request
 	 * @param unvalidatedBenchmarkId The ID of the unvalidated benchmark
-	 * @return A ValidatorStatusCode ojbect
+	 * @return A ValidatorStatusCode object
 	 */
 	public static ValidatorStatusCode canViewUnvalidatedBenchmarkOutput(int userId, int unvalidatedBenchmarkId) {
 		if (GeneralSecurity.hasAdminReadPrivileges(userId)) {

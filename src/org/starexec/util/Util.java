@@ -190,7 +190,7 @@ public class Util {
 	 *
 	 * @param min The min of the range, inclusive
 	 * @param max The max of the range, inclusive
-	 * @param value The valu to clamp.
+	 * @param value The value to clamp.
 	 * @return min, if the value is lower, and max if the value is larger.
 	 * The value itself otherwise
 	 */
@@ -237,7 +237,7 @@ public class Util {
 	}
 
 	/**
-	 * Extracts the file extesion from a file path
+	 * Extracts the file extension from a file path
 	 *
 	 * @param s The file path
 	 * @return The extension of the file
@@ -985,7 +985,7 @@ public class Util {
 	/**
 	 * Copies all of the given files to a single, newly created sandbox directory
 	 * and returns the sandbox directory. The sandbox user will be the owner and
-	 * have full permissions over everthing in the sandbox directory.
+	 * have full permissions over everything in the sandbox directory.
 	 *
 	 * @param files
 	 * @return The sandbox directory that contains all the copied files
@@ -1109,7 +1109,7 @@ public class Util {
 	}
 
 	/**
-	 * Builds a String representing a list of Cookies that we can pass to URLConnection.setRequestPropery to send
+	 * Builds a String representing a list of Cookies that we can pass to URLConnection.setRequestProperty to send
 	 * cookies.
 	 */
 	private static String buildCookieString(List<Cookie> cookies) {

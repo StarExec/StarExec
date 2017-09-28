@@ -11,7 +11,7 @@ public class LoadBalanceMonitor {
 	class UserLoadData implements Comparable<UserLoadData> {
 		int userId;
 		
-		/* Whenever a user is added to the LoadBalanceMonitor, they are intialized
+		/* Whenever a user is added to the LoadBalanceMonitor, they are initialized
 		 * with a 'basis' equal to the minimum value at the time they were added.
 		 * From then on, if the minimum value in the monitor ever drops below the basis
 		 * for a user, that user's load is decreased by the value (user-basis - new-min),

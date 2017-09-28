@@ -532,7 +532,7 @@ public class Statistics {
 	 * @param pairs The pairs to plot results of
 	 * @param logX Whether to use a log scale for the X axis
 	 * @param logY Whether to use a log scale for the Y axis
-	 * @param stageNumber The stage number of analyze for al lthe job pairs
+	 * @param stageNumber The stage number of analyze for all the job pairs
 	 * @param primitivesToAnonymize an enum describing which (if any) primitives to anonymize.
 	 * @return The absolute filepath to the chart that was created
 	 */

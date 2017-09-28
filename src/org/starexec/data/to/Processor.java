@@ -30,7 +30,7 @@ public class Processor extends Identifiable implements Nameable, Locatable {
 	private Syntax syntax;
 
 	/**
-	 * @return the type of the processor (bench, pre or post proessor)
+	 * @return the type of the processor (bench, pre or post processor)
 	 */
 	public ProcessorType getType() {
 		return type;

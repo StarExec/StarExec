@@ -484,7 +484,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	}
 
 	/**
-	 * If non-zero, process will recieve SIGTERM, and then SIGKILL after the delay specified. Note that this option
+	 * If non-zero, process will receive SIGTERM, and then SIGKILL after the delay specified. Note that this option
 	 * only
 	 * applies to RunSolver
 	 *

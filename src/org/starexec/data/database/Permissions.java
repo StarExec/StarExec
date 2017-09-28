@@ -493,7 +493,7 @@ public class Permissions {
 	 * Retrieves the default permissions applied to a user when they are added to a space
 	 *
 	 * @param spaceId The id of the space to get the default user's permission
-	 * @return A permission object containing the space's default user permissionsuser's permission on the space.
+	 * @return A permission object containing the default user permission on the space.
 	 * @author Tyler Jensen
 	 */
 	public static Permission getSpaceDefault(int spaceId) {

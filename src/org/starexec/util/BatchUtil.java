@@ -355,7 +355,7 @@ public class BatchUtil {
 
 				int spaceId = createSpaceFromElement(spaceElement, parentSpaceId, userId, statusId);
 
-				// Check if an error occured in createSpaceFromElement
+				// Check if an error occurred in createSpaceFromElement
 				if (spaceId == -1) {
 					return null;
 				}

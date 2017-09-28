@@ -8,7 +8,7 @@ import java.util.HashMap;
 /**
  * Class used when generating a solver comparison graph for Statistics.java
  * Creates tooltips so that benchmark names are displayed when hovering over
- * data points in the grpah
+ * data points in the graph
  *
  * @author Eric
  */

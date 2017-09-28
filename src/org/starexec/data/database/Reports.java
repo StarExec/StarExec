@@ -228,7 +228,7 @@ public class Reports {
 	 * @author Albert Giegerich
 	 */
 	private static List<List<Report>> separateReportsByQueue(List<Report> reports) {
-		// Build a map that seperates all the reports into lists based on which queue they're related to.
+		// Build a map that separates all the reports into lists based on which queue they're related to.
 		Map<String, List<Report>> reportMap = new HashMap<>();
 		for (Report report : reports) {
 			String queueName = report.getQueueName();
@@ -243,12 +243,12 @@ public class Reports {
 
 		// Use the map to build a list of lists where each inner list contains all the reports related to a single
 		// queue.
-		List<List<Report>> reportsSeperatedByQueue = new LinkedList<>();
+		List<List<Report>> reportsSeparatedByQueue = new LinkedList<>();
 		Set<String> keys = reportMap.keySet();
 		for (String key : keys) {
-			reportsSeperatedByQueue.add(reportMap.get(key));
+			reportsSeparatedByQueue.add(reportMap.get(key));
 		}
 
-		return reportsSeperatedByQueue;
+		return reportsSeparatedByQueue;
 	}
 }

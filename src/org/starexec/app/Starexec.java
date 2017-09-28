@@ -46,7 +46,7 @@ public class Starexec implements ServletContextListener {
 			log.debug("Stopping starexec task scheduler...");
 			taskScheduler.shutdown();
 
-			// Save cached Anayltics events to DB
+			// Save cached Analytics events to DB
 			Analytics.saveToDB();
 
 			// Make sure to clean up database resources

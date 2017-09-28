@@ -242,7 +242,7 @@ public class Solvers {
 	 * @param rootSpaceId
 	 * @param linkInSubspaces Whether to link solvers recursively or not
 	 * @param userId ID of user making the request
-	 * @param includeRoot If linking recursivley, whether to include the space given by rootSpaceId
+	 * @param includeRoot If linking recursively, whether to include the space given by rootSpaceId
 	 * @return True on success and false otherwise
 	 */
 	public static boolean associate(
@@ -1206,7 +1206,7 @@ public class Solvers {
 	}
 
 	/**
-	 * @param jobId The job id to get conflic
+	 * @param jobId The job id to get conflict
 	 * @param stageId
 	 * @return
 	 * @throws SQLException

@@ -370,7 +370,7 @@ public class RESTHelpers {
 	}
 
 	/**
-	 * Gets the next page of job pairs as a JsonObject in the gien jobSpaceId, with info populated from the given stage.
+	 * Gets the next page of job pairs as a JsonObject in the given jobSpaceId, with info populated from the given stage.
 	 *
 	 * @param jobSpaceId The ID of the job space
 	 * @param request
@@ -1918,8 +1918,8 @@ public class RESTHelpers {
 	 * populate a datatable client-side.
 	 * In any other case, this should produce objects with named fields.
 	 * However, this particular API can produce output with many thousands of
-	 * rows of output. Naming each field would more than tripple the size of the
-	 * file. In order to keep the size of the output managable, we are simply
+	 * rows of output. Naming each field would more than triple the size of the
+	 * file. In order to keep the size of the output manageable, we are simply
 	 * returning an array. This makes this API particularly fragile, and the
 	 * server-side and client-side must be kept in sync!
 	 *

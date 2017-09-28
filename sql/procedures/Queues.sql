@@ -40,7 +40,7 @@ CREATE PROCEDURE GetPendingJobs(IN _queueId INT)
 		AND EXISTS (select 1 from job_pairs FORCE INDEX (job_id_2) WHERE status_code=1 and job_id=jobs.id);
 	END //
 
---Retreives all pending job pairs for a give queue owned by a developer
+--Retrieves all pending job pairs for a give queue owned by a developer
 DROP PROCEDURE IF EXISTS GetPendingDeveloperJobs;
 CREATE PROCEDURE GetPendingDeveloperJobs(IN _queueId INT)
     BEGIN

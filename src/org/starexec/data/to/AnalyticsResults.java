@@ -13,7 +13,7 @@ import java.util.List;
 
 /**
  * Analytics keeps a record of how often events happen.
- * A count is kept of how many times an events occured per day.
+ * A count is kept of how many times an events occurred per day.
  * Actions must be added both here and in the `analytics_events` table.
  */
 public class AnalyticsResults {

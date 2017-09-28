@@ -14,7 +14,7 @@ import java.sql.*;
 
 /**
  * The common database class which provides common methods used by other database accessors such
- * as transaction management and rollback suport. Also provides connections and maintains an active
+ * as transaction management and rollback support. Also provides connections and maintains an active
  * data pool of available connections to the MySql database.
  */
 public class Common {

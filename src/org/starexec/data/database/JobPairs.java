@@ -122,7 +122,7 @@ public class JobPairs {
 							} else if (errorBench.isDeleted()) {
 								return Optional.of(errorBench.getName() + " has been deleted by it's user.");
 							} else if (errorBench.isRecycled()) {
-								return Optional.of(errorBench.getName() + " has been reycled by it's user.");
+								return Optional.of(errorBench.getName() + " has been recycled by it's user.");
 							} else {
 								return Optional.of("Unknown problem with benchmark: " + benchmarkId);
 							}
@@ -1346,7 +1346,7 @@ public class JobPairs {
 	}
 
 	/**
-	 * Extracts query informaiton into a JoblineStage. Does NOT get deep information like solver and configuration
+	 * Extracts query information into a JoblineStage. Does NOT get deep information like solver and configuration
 	 *
 	 * @param result
 	 * @return

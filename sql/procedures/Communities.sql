@@ -43,7 +43,7 @@ CREATE PROCEDURE LeaveSpace(IN _userId INT, IN _spaceId INT)
 	
 
 	
--- Removes every association a user has with every space in the hierarchy rooted at the given spacew
+-- Removes every association a user has with every space in the hierarchy rooted at the given space
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS LeaveHierarchy;
 CREATE PROCEDURE LeaveHierarchy(IN _userId INT, IN _spaceId INT)

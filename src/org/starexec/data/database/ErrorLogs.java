@@ -92,7 +92,7 @@ public class ErrorLogs {
 	 *
 	 * @param time the time to get logs since.
 	 * @return the logs since the given time as a list.
-	 * @throws SQLException on databse error.
+	 * @throws SQLException on database error.
 	 */
 	public static List<ErrorLog> getSince(Timestamp time) throws SQLException {
 		return Common.query("{CALL GetErrorLogsSince(?)}", procedure -> procedure.setTimestamp(1, time),

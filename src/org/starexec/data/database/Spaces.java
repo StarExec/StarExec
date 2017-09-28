@@ -108,7 +108,7 @@ public class Spaces {
 		HashSet<Integer> alreadySeen = new HashSet<>();
 		while (spaceId > 1) {
 			if (alreadySeen.contains(spaceId)) {
-				log.error("there was a cycle in the space heirarchy!");
+				log.error("there was a cycle in the space hierarchy!");
 				return null; // found a cycle in the space hierarchy
 			}
 			alreadySeen.add(spaceId);
@@ -843,7 +843,7 @@ public class Spaces {
 	 */
 
 	public static int copySpace(int srcId, int desId, int usrId) throws StarExecException {
-		//invoke helper method assuming final paramater of copyPrimites is set to false
+		//invoke helper method assuming final parameter of copyPrimites is set to false
 		return copySpace(srcId, desId, usrId, CopyPrimitivesOption.LINK, null);
 	}
 
@@ -1667,7 +1667,7 @@ public class Spaces {
 	}
 
 	/**
-	 * Helper method for getSubSpaces() - recursivley finds all the subspaces of the given root space that the given
+	 * Helper method for getSubSpaces() - recursively finds all the subspaces of the given root space that the given
 	 * user can see
 	 *
 	 * @param spaceId The id of the space to get the subspaces of
@@ -2589,7 +2589,7 @@ public class Spaces {
 	}
 
 	/**
-	 * Given a list of spaces, generates a HashMap maping spaceIds to the path for each space, rooted at the given
+	 * Given a list of spaces, generates a HashMap mapping spaceIds to the path for each space, rooted at the given
 	 * rootSpaceId.
 	 *
 	 * @param userId The ID of the user making the request
@@ -2902,7 +2902,7 @@ public class Spaces {
 	 * Determines whether the given space ID is the ID of the root space
 	 *
 	 * @param spaceId
-	 * @return True if the given spaceis the root and false otherwise
+	 * @return True if the given space is the root and false otherwise
 	 */
 	public static boolean isRoot(int spaceId) {
 		return 1 == spaceId;

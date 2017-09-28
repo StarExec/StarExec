@@ -137,7 +137,7 @@ CREATE PROCEDURE UpdatePairStageStatus(IN _jobPairId INT,IN _stageNumber INT, IN
 		UPDATE jobpair_stage_data SET status_code=_statusCode WHERE jobpair_id=_jobPairId AND stage_number=_stageNumber;
 	END //
 
--- Sets the status code of every stage ocurring after the given stage to the given status code.
+-- Sets the status code of every stage occurring after the given stage to the given status code.
 -- We do this, for example, when an early stage times out and so later stages are never run
 DROP PROCEDURE IF EXISTS UpdateLaterStageStatuses;
 CREATE PROCEDURE UpdateLaterStageStatuses(IN _jobPairId INT, IN _stageNumber INT, IN _statusCode TINYINT)
@@ -215,7 +215,7 @@ CREATE PROCEDURE GetJobPairFilePathInfo(IN _pairId INT)
 		WHERE job_pairs.id=_pairId and jobpair_stage_data.stage_number = job_pairs.primary_jobpair_data;
 	END //
 	
--- Gets every pair_id and processor_id for pairs awiting processing
+-- Gets every pair_id and processor_id for pairs awaiting processing
 DROP PROCEDURE IF EXISTS GetPairsToBeProcessed;
 CREATE PROCEDURE GetPairsToBeProcessed(IN _processingStatus INT)
 	BEGIN

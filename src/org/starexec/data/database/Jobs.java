@@ -1698,7 +1698,7 @@ public class Jobs {
 	 * @param query A DataTablesQuery object
 	 * @param jobSpaceId The ID of the root job space of the job space hierarchy to get data for
 	 * @param configId1 The ID of the first configuration of the comparision
-	 * @param configId2 The ID of the second configuraiton of the comparison
+	 * @param configId2 The ID of the second configuration of the comparison
 	 * @param wallclock True to use wallclock time and false to use CPU time
 	 * @param stageNumber The stage number ot use for the comparison
 	 * @param totals A size 2 int array that, upon return, will contain in the first slot the total number of pairs and
@@ -3849,7 +3849,7 @@ public class Jobs {
 	}
 
 	/**
-	 * Determines whether the job with the given ID has either the paused or killed column set to ttrue
+	 * Determines whether the job with the given ID has either the paused or killed column set to true
 	 *
 	 * @param jobId The ID of the job in question
 	 * @return 0 if the job is neither paused nor killed (or error) 1 if the job is paused (i.e. the paused flag is set
@@ -4085,7 +4085,7 @@ public class Jobs {
 			timer.stop();
 			log.info("Pause job with " + numPairs + " pairs took " + timer.getTime() + " milliseconds");
 
-			log.debug("Deletion of paused job pairs from queue was succesful");
+			log.debug("Deletion of paused job pairs from queue was successful");
 			Analytics.JOB_PAUSE.record();
 			return true;
 		} catch (Exception e) {
@@ -4134,7 +4134,7 @@ public class Jobs {
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL PauseAll()}");
 			procedure.executeUpdate();
-			log.debug("Pausation of system was successful");
+			log.debug("Pause of system was successful");
 			R.BACKEND.killAll();
 			List<Integer> jobs = new LinkedList<>();
 			jobs = Jobs.getRunningJobs();
@@ -4159,7 +4159,7 @@ public class Jobs {
 							JobPairs.UpdateStatus(jp.getId(), 1);
 						}
 					}
-					log.debug("Deletion of paused job pairs from queue was succesful");
+					log.debug("Deletion of paused job pairs from queue was successful");
 				}
 			}
 
@@ -5345,7 +5345,7 @@ public class Jobs {
 			} catch (StarExecException e) {
 				log.error(
 						methodName, "Could not get number of slots from backend.getSlotsInQueue. " +
-								"SGE may not have returned an integer when queryed.", e);
+								"SGE may not have returned an integer when queried.", e);
 			}
 		}
 		return R.DEFAULT_QUEUE_SLOTS;

@@ -52,7 +52,7 @@ public class TestStatus {
 		    case 3:
 			return "this test completed without any errors";
 		    case 4:
-			return "there was an error duing the execution of this test: check the message and log for more information";
+			return "there was an error during the execution of this test: check the message and log for more information";
 		   
 	    }
 		return "the job status is not known or has not been set";

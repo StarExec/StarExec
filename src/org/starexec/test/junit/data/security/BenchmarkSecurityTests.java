@@ -558,7 +558,7 @@ public class BenchmarkSecurityTests {
         boolean success = BenchmarkSecurity.userOwnsBenchOrIsAdmin(bench, 1);
 
         // then
-        assertFalse("Bench is null so nobobody should own it.", success);
+        assertFalse("Bench is null so nobody should own it.", success);
     }
 
     @Test

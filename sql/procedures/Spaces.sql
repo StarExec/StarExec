@@ -141,7 +141,7 @@ CREATE PROCEDURE GetAllSpaces()
 DROP PROCEDURE IF EXISTS GetSubSpaceHierarchyById;
 CREATE PROCEDURE GetSubSpaceHierarchyById(IN _spaceId INT, IN _userId INT)
 	BEGIN
-		IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the mininum ID)
+		IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the minimum ID)
 			SELECT spaces.name,spaces.description,spaces.locked,spaces.id
 			FROM spaces
 			WHERE id = 
@@ -161,7 +161,7 @@ CREATE PROCEDURE GetSubSpaceHierarchyById(IN _spaceId INT, IN _userId INT)
 DROP PROCEDURE IF EXISTS GetSubSpacesById;
 CREATE PROCEDURE GetSubSpacesById(IN _spaceId INT, IN _userId INT)
 	BEGIN
-		IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the mininum ID)
+		IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the minimum ID)
 			SELECT spaces.name,spaces.description,spaces.locked,spaces.id
 			FROM spaces
 			WHERE id = 
@@ -242,7 +242,7 @@ CREATE PROCEDURE GetParentSpaceById(IN _spaceId INT)
 DROP PROCEDURE IF EXISTS GetSubSpaceByName;
 CREATE PROCEDURE GetSubSpaceByName(IN _spaceId INT, IN _userId INT, IN _name VARCHAR(255))
 	BEGIN
-		IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the mininum ID)
+		IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the minimum ID)
 			SELECT id
 			FROM spaces
 			ORDER BY id limit 1;
@@ -398,7 +398,7 @@ CREATE PROCEDURE UpdateSpaceName(IN _id INT, IN _name VARCHAR(255))
 		WHERE id = _id;
 	END //
 
--- Updates the name of the spacewith the given id
+-- Updates the name of the space with the given id
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS UpdateSpaceDescription;
 CREATE PROCEDURE UpdateSpaceDescription(IN _id INT, IN _desc TEXT)

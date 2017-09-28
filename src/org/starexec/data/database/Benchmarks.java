@@ -378,7 +378,7 @@ public class Benchmarks {
 	protected static List<Integer> addAndAssociate(List<Benchmark> benchmarks, Integer spaceId, Integer statusId)
 			throws Exception {
 		ArrayList<Integer> benchmarkIds = new ArrayList<>();
-		log.info("in add (list) method (no con paramter )- adding " + benchmarks.size() + " benchmarks to space " +
+		log.info("in add (list) method (no con parameter )- adding " + benchmarks.size() + " benchmarks to space " +
 				         spaceId);
 		int incrementCounter = 0;
 		Timer timer = new Timer();
@@ -2157,7 +2157,7 @@ public class Benchmarks {
 	 * @param benchmarks The list of benchmarks that might have dependencies
 	 * @param spaceId the id of the space where the axiom benchmarks lie
 	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
-	 * @return the data structure that has information about depedencies
+	 * @return the data structure that has information about dependencies
 	 * @author Eric Burns
 	 */
 	private static boolean validateDependencies(List<Benchmark> benchmarks, Integer spaceId, Boolean linked) {
@@ -2583,7 +2583,7 @@ public class Benchmarks {
 	 * Returns the Benchmarks needed to populate a DataTables page for a given user. Benchmarks include all Benchmarks
 	 * the user can see
 	 *
-	 * @param query DataTablesQuery object containing paramters for this search
+	 * @param query DataTablesQuery object containing parameters for this search
 	 * @param userId ID of user to get Benchmarks for
 	 * @param totals Size 2 array that, on return, will contain the total number of records as the first element and
 	 * the

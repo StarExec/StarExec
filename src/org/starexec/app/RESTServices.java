@@ -58,7 +58,7 @@ public class RESTServices {
 	private static final ValidatorStatusCode ERROR_CANT_PROMOTE_LEADER=new ValidatorStatusCode(false, "The user is already a leader");
 
 	protected static final ValidatorStatusCode ERROR_TOO_MANY_JOB_PAIRS=new ValidatorStatusCode(false, "There are too many job pairs to display",1);
-	protected static final ValidatorStatusCode  ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS=new ValidatorStatusCode(false, "There are too many solver / configuraiton pairs to display");
+	protected static final ValidatorStatusCode  ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS=new ValidatorStatusCode(false, "There are too many solver / configuration pairs to display");
 
 	public static final ValidatorStatusCode ERROR_LOG_SUBSCRIPTION_SUCCESS = new ValidatorStatusCode(true, "User subscribed successfully.");
 
@@ -1876,7 +1876,7 @@ public class RESTServices {
 
 	@POST
 	@Path("/test/runTests")
-	@Produces("appliation/json")
+	@Produces("application/json")
 	public String runTest(@Context HttpServletRequest request) {
 		int u=SessionUtil.getUserId(request);
 		ValidatorStatusCode status=GeneralSecurity.canUserRunTests(u,false);
@@ -1901,7 +1901,7 @@ public class RESTServices {
 
 	@POST
 	@Path("/test/runAllTests")
-	@Produces("appliation/json")
+	@Produces("application/json")
 	public String runAllTests(@Context HttpServletRequest request) {
 		int u=SessionUtil.getUserId(request);
 
@@ -2571,7 +2571,7 @@ public class RESTServices {
 	/**
 	 * Removes one or more benchmarks from the given space
 	 * @param spaceId The ID of the space to remove benchmarks from
-	 * @param request should have a selectedIds parameter containing an array of benchmarks tor emove
+	 * @param request should have a selectedIds parameter containing an array of benchmarks to remove
 	 * @return	0: if the benchmark was successfully removed from the space,<br>
 	 * 			1: if there was a failure at the database level,<br>
 	 * 			2: insufficient permissions
@@ -3057,7 +3057,7 @@ public class RESTServices {
 			}
 			return Spaces.removeSolversFromHierarchy(selectedSolvers, spaceId,userId) ? gson.toJson(new ValidatorStatusCode(true,"Solver(s) removed successfully")) : gson.toJson(ERROR_DATABASE);
 		} else {
-			// Permissions check; ensures user has permissison to remove solver
+			// Permissions check; ensures user has permission to remove solver
 			ValidatorStatusCode status=SolverSecurity.canUserRemoveSolver(spaceId, SessionUtil.getUserId(request));
 			if (!status.isSuccess()) {
 				return gson.toJson(status);
@@ -4708,7 +4708,7 @@ public class RESTServices {
 
 	}
 	/**
-	 * Changes a user the suspended role back to the nornmal user role
+	 * Changes a user the suspended role back to the normal user role
 	 * @param userId The ID of the user to update
 	 * @param request
 	 * @return a json ValidatorStatusCode
