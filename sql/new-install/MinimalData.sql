@@ -42,7 +42,6 @@ INSERT INTO user_assoc VALUES (1, 1, 2);
 INSERT INTO user_assoc VALUES (2, 2, 3);
 INSERT INTO user_assoc VALUES (4,2,2);
 INSERT INTO user_assoc VALUES (5,2,3);
-INSERT INTO user_assoc VALUES (6,2,3);
 
 INSERT INTO website (user_id, name, url) VALUES (1, 'Personal', 'http://www.google.com');
 INSERT INTO website (user_id, name, url) VALUES (1, 'University', 'http://www.cs.uiowa.edu');
