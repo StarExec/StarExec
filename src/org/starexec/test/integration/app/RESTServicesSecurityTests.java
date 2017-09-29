@@ -12,6 +12,7 @@ import org.starexec.data.to.*;
 import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.data.to.enums.ProcessorType;
+import org.starexec.exceptions.RESTException;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
@@ -321,26 +322,38 @@ public class RESTServicesSecurityTests extends TestSequence {
 
 	@StarexecTest
 	private void getJobPairStdoutTest() {
-		Assert.assertTrue(services.getJobPairStdout(job.getJobPairs().get(0).getId(), 1, 100,
-				TestUtil.getMockHttpRequest(user.getId())).contains("not available"));
-		Assert.assertTrue(services.getJobPairStdout(-1, 1, 100,
-				TestUtil.getMockHttpRequest(admin.getId())).contains("not available"));
+		try {
+			services.getJobPairStdout(job.getJobPairs().get(0).getId(), 1, 100, TestUtil.getMockHttpRequest(user.getId()));
+			Assert.fail("No exception raised");
+		} catch (RESTException e) {}
+		try {
+			services.getJobPairStdout(-1, 1, 100, TestUtil.getMockHttpRequest(admin.getId()));
+			Assert.fail("No exception raised");
+		} catch (RESTException e) {}
 	}
 
 	@StarexecTest
 	private void getBenchmarkContentTest() {
-		Assert.assertTrue(services.getBenchmarkContent(benchmarkIds.get(0), 100,
-				TestUtil.getMockHttpRequest(user.getId())).contains("not available"));
-		Assert.assertTrue(services.getBenchmarkContent(-1, 100,
-				TestUtil.getMockHttpRequest(admin.getId())).contains("not available"));
+		try {
+			services.getBenchmarkContent(benchmarkIds.get(0), 100, TestUtil.getMockHttpRequest(user.getId()));
+			Assert.fail("No exception raised");
+		} catch (RESTException e) {}
+		try {
+			services.getBenchmarkContent(-1, 100, TestUtil.getMockHttpRequest(admin.getId()));
+			Assert.fail("No exception raised");
+		} catch (RESTException e) {}
 	}
 
 	@StarexecTest
 	private void getSolverBuildLogTest() {
-		Assert.assertTrue(services.getSolverBuildLog(solver.getId(),
-				TestUtil.getMockHttpRequest(user.getId())).contains("not available"));
-		Assert.assertTrue(services.getSolverBuildLog(-1,
-				TestUtil.getMockHttpRequest(admin.getId())).contains("not available"));
+		try {
+			services.getSolverBuildLog(solver.getId(), TestUtil.getMockHttpRequest(user.getId()));
+			Assert.fail("No exception raised");
+		} catch (RESTException e) {}
+		try {
+			services.getSolverBuildLog(-1, TestUtil.getMockHttpRequest(admin.getId()));
+			Assert.fail("No exception raised");
+		} catch (RESTException e) {}
 	}
 
 	@StarexecTest

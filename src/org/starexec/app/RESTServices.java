@@ -17,6 +17,7 @@ import org.starexec.data.to.enums.Primitive;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.exceptions.StarExecException;
+import org.starexec.exceptions.RESTException;
 import org.starexec.jobs.ClearCacheManager;
 import org.starexec.jobs.JobManager;
 import org.starexec.logger.StarLevel;
@@ -259,7 +260,7 @@ public class RESTServices {
 	public String getQstatOutput(@Context HttpServletRequest request) {
 		String qstat=R.BACKEND.getRunningJobsStatus();
 		if(Util.isNullOrEmpty(qstat)) {
-			return "not available";
+			throw RESTException.NOT_FOUND;
 		}
 		return qstat;
 	}
@@ -280,7 +281,7 @@ public class RESTServices {
 		}
 		String stdout=Uploads.getInvalidBenchmarkErrorMessage(id);
 		if(Util.isNullOrEmpty(stdout)) {
-			return "not available";
+			throw RESTException.NOT_FOUND;
 		}
 		return stdout;
 	}
@@ -297,7 +298,7 @@ public class RESTServices {
 	public String getLoadsForQueue(@PathParam("queueId") int queueId, @Context HttpServletRequest request) {
 		String loads = JobManager.getLoadRepresentationForQueue(queueId);
 		if(Util.isNullOrEmpty(loads)) {
-			return "not available";
+			throw RESTException.NOT_FOUND;
 		}
 		return loads;
 	}
@@ -320,7 +321,7 @@ public class RESTServices {
 
 		String log = JobPairs.getJobLog(id);
 		if(Util.isNullOrEmpty(log)) {
-			return "not available";
+			throw RESTException.NOT_FOUND;
 		}
 		return log;
 	}
@@ -342,16 +343,16 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 
 		if (!BenchmarkSecurity.canUserSeeBenchmarkContents(id,userId).isSuccess()) {
-			return "not available";
+			throw RESTException.FORBIDDEN;
 		}
 		Benchmark b=Benchmarks.get(id);
 		try {
 			return Benchmarks.getContents(b, limit).get();
 		} catch (NoSuchElementException e) {
-			return "not available";
+			throw RESTException.NOT_FOUND;
 		} catch (IOException e) {
 			log.warn(methodName, "Caught IOException.");
-			return "Internal Error: not available";
+			throw RESTException.INTERNAL_SERVER_ERROR;
 		}
 	}
 
@@ -369,17 +370,18 @@ public class RESTServices {
 
 		ValidatorStatusCode status=SolverSecurity.canUserSeeBuildLog(id, userId);
 		if (!status.isSuccess()) {
-			return "not available";
+			throw RESTException.FORBIDDEN;
 		}
 		try {
 			File output=Solvers.getSolverBuildOutput(id);
-			if(output.exists()) {
-				return FileUtils.readFileToString(output);
+			if(!output.exists()) {
+				throw RESTException.NOT_FOUND;
 			}
+			return FileUtils.readFileToString(output);
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
+			throw RESTException.INTERNAL_SERVER_ERROR;
 		}
-		return "not available";
 	}
 
 	/**
@@ -455,20 +457,20 @@ public class RESTServices {
 		final String methodName = "getJobPairStdout";
 		JobPair jp = JobPairs.getPair(id);
 		if (jp==null) {
-			return "not available";
+			throw RESTException.NOT_FOUND;
 		}
 		int userId = SessionUtil.getUserId(request);
 		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jp.getJobId(), userId);
 		if (!status.isSuccess()) {
-			return "not available";
+			throw RESTException.FORBIDDEN;
 		}
 		try {
 			return JobPairs.getStdOut(jp.getId(), stageNumber, limit).get();
 		} catch (NoSuchElementException e) {
-			return "not available";
+			throw RESTException.NOT_FOUND;
 		} catch (IOException e) {
 			log.warn(methodName, "Caught IOException while trying to get jobpair stdout.");
-			return "not available";
+			throw RESTException.INTERNAL_SERVER_ERROR;
 		}
 	}
 
