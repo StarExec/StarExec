@@ -14,11 +14,7 @@ INSERT INTO users (email, first_name,last_name,institution,created,password,disk
 INSERT INTO users (email, first_name,last_name,institution,created,password,disk_quota)
 	VALUES ('dev@uiowa.edu','Dev', 'User','The University of Iowa', SYSDATE(),'caffab36904a1c155f9fb1b6ea83d6abaa818097eac56d80ff8b70e2555b11a4f363ea7932b48ae8d0f6380bb7ac78fc04f6e2ff4eaf0bab2aa49675f2928b33',107374182400);
 
-INSERT INTO users (email, first_name,last_name,institution,created,password,disk_quota)
-	VALUES ('albert-giegerich@uiowa.edu','Albert', 'Giegerich','The University of Iowa', SYSDATE(),'caffab36904a1c155f9fb1b6ea83d6abaa818097eac56d80ff8b70e2555b11a4f363ea7932b48ae8d0f6380bb7ac78fc04f6e2ff4eaf0bab2aa49675f2928b33',107374182400);
-
 INSERT INTO user_roles VALUES('user@uiowa.edu', 'user');
-INSERT INTO user_roles VALUES('albert-giegerich@uiowa.edu', 'developer');
 INSERT INTO user_roles VALUES('admin@uiowa.edu', 'admin');
 INSERT INTO user_roles VALUES('public', 'user');
 INSERT INTO user_roles VALUES('test@uiowa.edu','user');
@@ -30,10 +26,10 @@ INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, rem
 	(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0);
 INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, remove_solver, remove_bench, remove_user, remove_space, remove_job, is_leader) VALUES
 	(1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0);
-	
+
 -- Starts at 2 (the root space is defined in the schema)
 INSERT INTO spaces(name, created, description, locked, default_permission) VALUES
-	('Test', SYSDATE(), 'The Test community', 0, 3);	
+	('Test', SYSDATE(), 'The Test community', 0, 3);
 INSERT INTO spaces(name, created, description, locked, default_permission) VALUES
 	('public', SYSDATE(), 'this is the unviewable space for benchmarks and jobs from public', 0, 4);
 
