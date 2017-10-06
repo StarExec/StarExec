@@ -170,14 +170,14 @@
 		</fieldset>
 
 	</div>
-	<br class=".clear" />
+	<br class="clear" />
 	<div id="dialog-confirm-space-copy" title="confirm copy" class="hiddenDialog">
 		<p><span class="ui-icon ui-icon-info"></span><span id="dialog-confirm-space-copy-txt"></span></p>
 		<select id="hier-copy-options" class="copy-options-hidden" name="copySpace">
 			<option value="false">copy space</option>
 			<option value="true">copy hierarchy</option>
 		</select>
-		<br class=".clear" />
+		<br class="clear" />
 		<div id="copy-primitives-options" class="copy-options-hidden">
 			<span class="ui-icon ui-icon-info"></span>
 			<span>would you like to copy or link primitives to the new space?</span>
