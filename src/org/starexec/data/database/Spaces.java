@@ -41,7 +41,7 @@ public class Spaces {
 		CallableStatement procSubspace = null;
 		CallableStatement procAddUser = null;
 		try {
-			// Add the default permission for the space to the database		
+			// Add the default permission for the space to the database
 			int defaultPermId = Permissions.add(s.getPermission(), con);
 
 			// Add the space with the default permissions
@@ -72,7 +72,7 @@ public class Spaces {
 
 			Permission perm = new Permission(true);
 			perm.setLeader(true);
-			// Set maximal permissions for the user who added the space	
+			// Set maximal permissions for the user who added the space
 			Permissions.set(userId, newSpaceId, perm, con);
 
 			log.info(String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId,
@@ -2359,7 +2359,7 @@ public class Spaces {
 			for (int subspaceId : subspaceIds) {
 				log.debug("subspaceId = " + subspaceId);
 
-				// Check if it has any subspaces itself, and if so delete them 
+				// Check if it has any subspaces itself, and if so delete them
 				Spaces.removeSubspaces(subspaceId, con);
 
 				procedure = con.prepareCall("{CALL RemoveSubspace(?)}");
@@ -2624,7 +2624,7 @@ public class Spaces {
 	) {
 		ArrayList<Integer> ids = new ArrayList<>();
 		try {
-			// Add the new space to the database and get it's ID	
+			// Add the new space to the database and get it's ID
 			int spaceId = Spaces.add(space, userId);
 
 			log.info("traversing (with deps) space " + space.getName());
