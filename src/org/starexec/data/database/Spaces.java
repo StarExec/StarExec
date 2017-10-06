@@ -876,8 +876,7 @@ public class Spaces {
 		// Set the default permission on the space
 		tempSpace.setPermission(sourceSpace.getPermission());
 		tempSpace.setParentSpace(desId);
-		int newSpaceId = Spaces.add(tempSpace, usrId);
-
+		final int newSpaceId = Spaces.add(tempSpace, usrId);
 		if (newSpaceId <= 0) {
 			throw new StarExecException(
 					"Copying space with name '" + sourceSpace.getName() + "' to space with id '" + desId +
@@ -941,13 +940,6 @@ public class Spaces {
 				}
 				Jobs.associate(jobIds, newSpaceId);
 			}
-		}
-
-
-		if (newSpaceId == 0) {
-			throw new StarExecException(
-					"Copying space with name '" + sourceSpace.getName() + "' to space with id '" + desId +
-							"' failed for user with id '" + usrId + "'");
 		}
 
 		return newSpaceId;
