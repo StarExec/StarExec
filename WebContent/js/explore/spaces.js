@@ -11,8 +11,8 @@ var solverTable;
 var spaceTable;
 var resultTable;
 var jobTable;
-var spaceId;			// id of the current space
-var spaceName;			// name of the current space
+var spaceId;      // id of the current space
+var spaceName;    // name of the current space
 var currentUserId;
 var spaceChain;   // array of space ids to trigger in order
 var spaceChainIndex=0; //the current index of the space chain
@@ -141,10 +141,10 @@ function initDraggable(table) {
 	makeTableDraggable(table,onDragStart,getDragClone);
 	// Make the trash can in the explorer list be a droppable target
 	$('#trashcan').droppable({
-		drop		: onTrashDrop,
-		tolerance	: 'touch',	// Use the pointer to determine drop position instead of the middle of the drag clone element
-		hoverClass	: 'hover',		// Class applied to the space element when something is being dragged over it
-		activeClass	: 'active'		// Class applied to the space element when something is being dragged
+		drop        : onTrashDrop,
+		tolerance   : 'touch',  // Use the pointer to determine drop position instead of the middle of the drag clone element
+		hoverClass  : 'hover',  // Class applied to the space element when something is being dragged over it
+		activeClass : 'active'  // Class applied to the space element when something is being dragged
 	});
 	$("#trashcan").click(function(){
 		window.location.href=starexecRoot+"secure/details/recycleBin.jsp";
@@ -163,10 +163,9 @@ function onDragStart(event, ui) {
 	// fixed the bug where spaces that were expanded after initDraggable() was called would not be
 	// recognized as a viable drop target
 	$('#exploreList').find('a').droppable( {
-		drop		: onSpaceDrop,
-		tolerance	: 'pointer',	// Use the pointer to determine drop position instead of the middle of the drag clone element
-
-		activeClass	: 'active'		// Class applied to the space element when something is being dragged
+		drop       : onSpaceDrop,
+		tolerance  : 'pointer',// Use the pointer to determine drop position instead of the middle of the drag clone element
+		activeClass: 'active'// Class applied to the space element when something is being dragged
 	});
 }
 
@@ -235,15 +234,15 @@ function onSpaceDrop(event, ui) {
 			allSpacesBeingCopiedAreLeaves = ids.every(function(idOfSpaceBeingCopied) {
 				return spaceIsLeaf(idOfSpaceBeingCopied);
 			});
-            $('#copy-primitives-options').removeClass('copy-options-hidden');
+			$('#copy-primitives-options').removeClass('copy-options-hidden');
 			if (allSpacesBeingCopiedAreLeaves) {
 				$(EXP_SP.copySpaceDialogText).text(
 						'about to copy ' + ui.draggable.data('name') + ' to' + destName +'.');
 			} else {
 				$(EXP_SP.copySpaceDialogText).text(
 						'would you like to copy ' + ui.draggable.data('name') + ' only or the hierarchy to' + destName +'?');
-                $('#hier-copy-options').removeClass('copy-options-hidden');
-            }
+				$('#hier-copy-options').removeClass('copy-options-hidden');
+			}
 		}
 		// If they're trying to copy a solver.
 		else if(ui.draggable.data('type')[0] == 's'){
@@ -274,14 +273,14 @@ function onSpaceDrop(event, ui) {
 	} else {
 		// If they're trying to copy a space.
 		if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p'){
-            $('#copy-primitives-options').removeClass('copy-options-hidden');
+			$('#copy-primitives-options').removeClass('copy-options-hidden');
 			allSpacesBeingCopiedAreLeaves = ids.every(function(idOfSpaceBeingCopied) {
 				return spaceIsLeaf(idOfSpaceBeingCopied);
 			});
 			if (allSpacesBeingCopiedAreLeaves) {
 				$(EXP_SP.copySpaceDialogText).text('do you want to copy the '+ ids.length + ' selected spaces to' + destName + '?');
 			} else {
-                $('#hier-copy-options').removeClass('copy-options-hidden');
+				$('#hier-copy-options').removeClass('copy-options-hidden');
 				$(EXP_SP.copySpaceDialogText).text(
 						'do you want to copy the ' + ids.length + ' selected spaces only or the hierarchy to' + destName +'?');
 			}
@@ -442,19 +441,19 @@ function setupSpaceCopyDialog(ids, destSpace, destName) {
 		log('Copying single space');
 		spaceCopyDialogButtons['confirm'] = singleSpaceCopy;
 	} else {
-        spaceCopyDialogButtons['confirm'] = function() {
-            var copyHierOption = $("#hier-copy-options").find(":selected").val();
+		spaceCopyDialogButtons['confirm'] = function() {
+			var copyHierOption = $("#hier-copy-options").find(":selected").val();
 			log('copyHierOption: ' + copyHierOption);
 			$(EXP_SP.copySpaceDialog).dialog('close');
 			doSpaceCopyPost(ids,destSpace,copyHierOption,destName);
-            $('#hier-copy-options').addClass('copy-options-hidden');
-        }
+			$('#hier-copy-options').addClass('copy-options-hidden');
+		}
 	}
 
 	spaceCopyDialogButtons['cancel'] = function() {
 		log('user canceled copy action');
-        $('#hier-copy-options').addClass('copy-options-hidden');
-        $('#copy-primitives-options').addClass('copy-options-hidden');
+		$('#hier-copy-options').addClass('copy-options-hidden');
+		$('#copy-primitives-options').addClass('copy-options-hidden');
 		$(this).dialog('close');
 	};
 
@@ -502,13 +501,13 @@ function setupUserCopyDialog(ids, destSpace, destName, ui, destIsLeafSpace) {
 }
 
 function doSpaceCopyPost(ids,destSpace,copyHierarchy,destName) {
-    //var copyPrimitives = $("input[type='radio'][name='copyPrimitives']:checked").val();
-    var copyPrimitives = $("#copyPrimitives").find(":selected").val();
+	//var copyPrimitives = $("input[type='radio'][name='copyPrimitives']:checked").val();
+	var copyPrimitives = $("#copyPrimitives").find(":selected").val();
 	log('copyPrimitives: ' + copyPrimitives);
 	log('copyHierarchy: ' + copyHierarchy);
 	var sampleRate = $('#sampleRate').val();
 	log('Sample rate is: '+ sampleRate);
-    $('#copy-primitives-options').addClass('copy-options-hidden');
+	$('#copy-primitives-options').addClass('copy-options-hidden');
 	$.post(
 			starexecRoot+'services/spaces/' + destSpace + '/copySpace',
 			{selectedIds : ids, copyHierarchy: copyHierarchy, copyPrimitives: copyPrimitives, sampleRate: sampleRate},
@@ -1133,7 +1132,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			// Update the number displayed in this DataTable's fieldset
 			updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
 
-		 	// Replace the current page with the newly received page
+			// Replace the current page with the newly received page
 			fnCallback(nextDataTablePage);
 
 			// If the primitive type is 'job', then color code the results appropriately
@@ -1141,7 +1140,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 				colorizeJobStatistics();
 			}
 
-		 	// Make the table that was just populated draggable too
+			// Make the table that was just populated draggable too
 			initDraggable('#' + tableName);
 		}
 	}).always(function() {
@@ -1233,11 +1232,7 @@ function colorizeJobStatistics(){
 				lightness: 0
 			}
 	);
-
-
-
 }
-
 
 
 /**
@@ -1498,50 +1493,50 @@ function updateButtonIds(id) {
 
 
 
-        $("#downloadXML").unbind("click");
-        $('#downloadXML').click(function (e) {
-	    $('#dialog-spacexml-attributes-txt').text('Do you want benchmark attributes included in the XML?');
+		$("#downloadXML").unbind("click");
+		$('#downloadXML').click(function (e) {
+		$('#dialog-spacexml-attributes-txt').text('Do you want benchmark attributes included in the XML?');
 
 
-	    $('#dialog-spacexml').dialog({
+		$('#dialog-spacexml').dialog({
 		modal: true,
 		width: 380,
 		height: 300,
 		buttons: {
-		    "download": function () {
+			"download": function () {
 			var attVal = $('input[name=att]:checked').val();
 			attBool = attVal == "true";
 
 			createDownloadSpaceXMLRequest(attBool, false,-1, id);
 			$(this).dialog("close");
-		    },
-                    "cancel": function () {
+			},
+					"cancel": function () {
 			$(this).dialog("close");
-		    }
+			}
 		}
-	    });
+		});
 	});
 
-    $('#showUpdateDialog').click(function(){
-        $("#dialog-spaceUpdateXml").dialog();
-        $('#dialog-spacexml').dialog("close");
-        $('#dialog-spacexml-updates-txt').text('Enter default update processor id');
-        $('#dialog-spaceUpdateXml').dialog({
+	$('#showUpdateDialog').click(function(){
+		$("#dialog-spaceUpdateXml").dialog();
+		$('#dialog-spacexml').dialog("close");
+		$('#dialog-spacexml-updates-txt').text('Enter default update processor id');
+		$('#dialog-spaceUpdateXml').dialog({
 		modal: true,
 		width: 380,
 		height: 300,
 		buttons: {
-		    "download": function () {
+			"download": function () {
 			var updatePID = $('#updateID').val();
 			createDownloadSpaceXMLRequest(false, true,updatePID, id);
 			$(this).dialog("close");
-		    },
-                    "cancel": function () {
+			},
+					"cancel": function () {
 			$(this).dialog("close");
-		    }
+			}
 		}
-	    });
-    });
+		});
+	});
 
 	$('#uploadJobXML').attr('href', starexecRoot+"secure/add/batchJob.jsp?sid=" + id);
 	$('#uploadXML').attr('href', starexecRoot+"secure/add/batchSpace.jsp?sid=" + id);
@@ -1653,24 +1648,24 @@ function updateTable(dataTable){
  * @returns A jQuery object that is the table to display in the UI for the given permissions
  */
 function getPermTable(tooltip, perms, type, isCommunity) {
-	var permWrap = $('<div>');	// A wrapper for the table and leader info
-	var table = $('<table class="tooltipTable">');	// The table where the permissions are displayed
+	var permWrap = $('<div>');  // A wrapper for the table and leader info
+	var table = $('<table class="tooltipTable">'); // The table where the permissions are displayed
 	$(table).append('<tr><th>property</th><th>add</th><th>remove</th></tr>');
 
 	// Resolves bug where tooltip is empty
 	if('undefined' == typeof perms || null == perms){
 		perms = {
-				isLeader		: false,
-				addJob			: false,
-				removeJob		: false,
-				addUser			: false,
-				removeUser		: false,
-				addSolver		: false,
-				removeSolver	: false,
-				addBenchmark	: false,
-				removeBenchmark	: false,
-				addSpace		: false,
-				removeSpace		: false
+				isLeader        : false,
+				addJob          : false,
+				removeJob       : false,
+				addUser         : false,
+				removeUser      : false,
+				addSolver       : false,
+				removeSolver    : false,
+				addBenchmark    : false,
+				removeBenchmark : false,
+				addSpace        : false,
+				removeSpace     : false
 		};
 	}
 
@@ -1725,7 +1720,7 @@ function getSinglePermTable(name, add, remove) {
  *
  **/
 function editPermissions(){
-    location = starexecRoot+"secure/edit/spacePermissions.jsp?id=" + spaceId;
+	location = starexecRoot+"secure/edit/spacePermissions.jsp?id=" + spaceId;
 }
 /**
  * Wraps up a permission and it's value for display in a table. Includes onclicks for the images.
@@ -1735,9 +1730,9 @@ function editPermissions(){
  * @returns HTML representing a row in a table display the type and it's permission values
  */
 function wrapPermRow(perm, add, remove){
-    var yes = $('<span>').css('margin', 'auto').addClass('ui-icon ui-icon-check').toHTMLString();
-    var no = $('<span>').css('margin', 'auto').addClass('ui-icon ui-icon-closethick').toHTMLString();
-    return "<tr><td>" + perm + "</td><td class='add'>" + (add ? yes : no) + "</td><td class='remove'>" + (remove ? yes : no) + "</td></tr>";
+	var yes = $('<span>').css('margin', 'auto').addClass('ui-icon ui-icon-check').toHTMLString();
+	var no = $('<span>').css('margin', 'auto').addClass('ui-icon ui-icon-closethick').toHTMLString();
+	return "<tr><td>" + perm + "</td><td class='add'>" + (add ? yes : no) + "</td><td class='remove'>" + (remove ? yes : no) + "</td></tr>";
 }
 
 
@@ -1756,7 +1751,7 @@ function getTooltipConfig(type, message){
 				text: getProcessingMessage(),
 				title: '<center><a>permissions</a></center>'
 			},
-			position: {			// Place right middle portion of the tooltip to the left middle portion of the row element
+			position: {  // Place right middle portion of the tooltip to the left middle portion of the row element
 				target: "mouse",
 				my: "right center",
 				at: "left center",
@@ -1769,18 +1764,18 @@ function getTooltipConfig(type, message){
 				fixed: true
 			},
 			show: {
-				ready: true,	// Ensures the tooltip is shown the first time it's moused over
-				solo: false,	// When this is false, all tooltip commands are applied only to the corresponding tooltip (what we want) instead of to all tooltips on the page (which causes weird artifacts to occur)
-				delay: 1000,	// Every mouseover that occurs, after the first mouseover, will have to wait a second before the tooltip is triggered
+				ready: true, // Ensures the tooltip is shown the first time it's moused over
+				solo: false, // When this is false, all tooltip commands are applied only to the corresponding tooltip (what we want) instead of to all tooltips on the page (which causes weird artifacts to occur)
+				delay: 1000, // Every mouseover that occurs, after the first mouseover, will have to wait a second before the tooltip is triggered
 				event: "mouseover"
 
 			},
 			style: {
-				classes: "userTooltip",		// Load custom color scheme
-				tip: 'rightMiddle'			// Add a tip to the right middle portion of the tooltip
+				classes: "userTooltip",  // Load custom color scheme
+				tip: 'rightMiddle'   // Add a tip to the right middle portion of the tooltip
 			},
 			events:{
-				render: function(){	// Before rendering the tooltip, get the user's permissions for the given space
+				render: function(){ // Before rendering the tooltip, get the user's permissions for the given space
 					var tooltip = this;
 					api=$(this).qtip("api");
 					var userId = $(api.elements.target).children('td:first').children('input').val();
@@ -1806,7 +1801,7 @@ function getTooltipConfig(type, message){
 					});
 
 				},
-				hide: function(){			// If a user modifies a tooltip but does not press the 'save' or 'cancel' button then this resets the tooltip once it loses focus and fades from view
+				hide: function(){   // If a user modifies a tooltip but does not press the 'save' or 'cancel' button then this resets the tooltip once it loses focus and fades from view
 					var tooltip = this;
 					api=$(this).qtip("api");
 					if('p' != $(api.elements.title).text()[0]){
@@ -1849,7 +1844,7 @@ function getTooltipConfig(type, message){
 		return {
 			content: {
 				text: message,
-				title:  '<center>permissions</center>'
+				title: '<center>permissions</center>'
 
 			},
 			position: {
