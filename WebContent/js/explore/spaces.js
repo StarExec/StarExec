@@ -21,7 +21,7 @@ var spaceChainInterval;
 var usingSpaceChain=false;
 var isLeafSpace=false;
 var userIsDeveloper=false;
-$(document).ready(function(){
+$(document).ready(function() {
 	currentUserId=parseInt($("#userId").attr("value"));
 	usingSpaceChain=(getSpaceChain("#spaceChain").length>1); //check whether to turn off cookies
 
@@ -55,25 +55,22 @@ function determineIfUserIsDeveloper() {
  * @returns {Boolean} true iff the given fieldset has been expanded
  * @author Todd Elvers
  */
-function isFieldsetOpen(fieldset){
+function isFieldsetOpen(fieldset) {
 	return $(fieldset + ' span:last-child').text() != ' (+)';
 }
 
 /**
  * Sets up the 'space details' that consumes the right-hand side of the page
  */
-function initSpaceDetails(){
-
+function initSpaceDetails() {
 	// builds the DataTable objects and enables multi-select on them
 	initDataTables();
 
 	// Set up jQuery button UI
 	initButtonUI();
 
-
-
 	// This hides the action list if the space is root space or we aren't looking at a space
-	if (spaceId == 1 || spaceId == undefined){
+	if (spaceId == 1 || spaceId == undefined) {
 		$('.actionList').hide();
 	}
 
@@ -126,9 +123,6 @@ function initButtonUI() {
 			secondary: "ui-icon-closethick"
 		}});
 	attachSortButtonFunctions();
-
-
-
 	log('jQuery UI buttons initialized');
 }
 
@@ -146,10 +140,9 @@ function initDraggable(table) {
 		hoverClass  : 'hover',  // Class applied to the space element when something is being dragged over it
 		activeClass : 'active'  // Class applied to the space element when something is being dragged
 	});
-	$("#trashcan").click(function(){
+	$("#trashcan").click(function() {
 		window.location.href=starexecRoot+"secure/details/recycleBin.jsp";
 	});
-
 	//log($(table).attr('id') + ' table initialized as draggable');
 }
 
@@ -173,7 +166,7 @@ function onDragStart(event, ui) {
  * Called when a draggable item (primitive) is dropped on the trash can
  * @author Todd Elvers
  */
-function onTrashDrop(event, ui){
+function onTrashDrop(event, ui) {
 	// Collect the selected elements from the table being dragged from
 	var ids = getSelectedRows($(ui.draggable).parents('table:first'));
 	ownsAll=userCanDeleteAll($(ui.draggable).parents('table:first'));
@@ -183,12 +176,12 @@ function onTrashDrop(event, ui){
 	}
 
 	// Call the appropriate primitive removal function
-	switch(ui.draggable.data('type')[0]){
+	switch(ui.draggable.data('type')[0]) {
 	case 'u':
 		removeUsers(ids);
 		break;
 	case 's':
-		if(ui.draggable.data('type')[1] == 'o'){
+		if(ui.draggable.data('type')[1] == 'o') {
 			removeSolvers(ids,ownsAll);
 		} else {
 			removeSubspaces(ids);//actual Remove called within here
@@ -200,7 +193,6 @@ function onTrashDrop(event, ui){
 	case 'j':
 		removeJobs(ids,ownsAll);
 		break;
-
 	}
 }
 
@@ -209,8 +201,6 @@ function onTrashDrop(event, ui){
  * Called when a draggable item (primitive) is dropped on a space
  */
 function onSpaceDrop(event, ui) {
-
-
 	// Collect the selected elements from the table being dragged from
 	var ids = getSelectedRows($(ui.draggable).parents('table:first'));
 
@@ -230,7 +220,7 @@ function onSpaceDrop(event, ui) {
 		// Customize the confirmation message for the copy operation to the primitives/spaces involved
 		log("ui.draggable.data('type')[0]="+ui.draggable.data('type')[0]+" , ui.draggable.data('type')[1]="+ui.draggable.data('type')[1]);
 		// If they're trying to copy a space.
-		if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p'){
+		if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p') {
 			allSpacesBeingCopiedAreLeaves = ids.every(function(idOfSpaceBeingCopied) {
 				return spaceIsLeaf(idOfSpaceBeingCopied);
 			});
@@ -245,7 +235,7 @@ function onSpaceDrop(event, ui) {
 			}
 		}
 		// If they're trying to copy a solver.
-		else if(ui.draggable.data('type')[0] == 's'){
+		else if(ui.draggable.data('type')[0] == 's') {
 			if (destIsLeafSpace) {
 				$('#dialog-confirm-copy-txt').text('do you want to copy or link ' + ui.draggable.data('name') + ' to' + destName+'?');
 
@@ -272,7 +262,7 @@ function onSpaceDrop(event, ui) {
 		}
 	} else {
 		// If they're trying to copy a space.
-		if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p'){
+		if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p') {
 			$('#copy-primitives-options').removeClass('copy-options-hidden');
 			allSpacesBeingCopiedAreLeaves = ids.every(function(idOfSpaceBeingCopied) {
 				return spaceIsLeaf(idOfSpaceBeingCopied);
@@ -286,7 +276,7 @@ function onSpaceDrop(event, ui) {
 			}
 		}
 		// If they're trying to copy a solver or a user.
-		else if(ui.draggable.data('type')[0] == 's' || ui.draggable.data('type')[0] == 'u'){
+		else if(ui.draggable.data('type')[0] == 's' || ui.draggable.data('type')[0] == 'u') {
 			$('#dialog-confirm-copy-txt').text('do you want to copy the ' + ids.length + ' selected '+ ui.draggable.data('type') + 's to' + destName + ' and all of its subspaces or just to' + destName +'?');
 
 		// If they're trying to copy a job or a user.
@@ -299,9 +289,9 @@ function onSpaceDrop(event, ui) {
 	}
 
 	// If primitive being copied to another space is a solver...
-	if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] != 'p'){
+	if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] != 'p') {
 		var solverCopyDialogButtons = {
-			'link in space': function(){
+			'link in space': function() {
 				$('#dialog-confirm-copy').dialog('close');
 				doSolverCopyPost(ids,destSpace,spaceId,false,false);
 			},
@@ -312,7 +302,6 @@ function onSpaceDrop(event, ui) {
 			"cancel": function() {
 				$(this).dialog("close");
 			}
-
 		};
 		if (!spaceIsLeaf(destSpace)) {
 			solverCopyDialogButtons['link in space hierarchy'] = function() {
@@ -335,12 +324,12 @@ function onSpaceDrop(event, ui) {
 		});
 	}
 	// If primitive being copied to another space is a user...
-	else if(ui.draggable.data('type')[0] == 'u'){
+	else if(ui.draggable.data('type')[0] == 'u') {
 		setupUserCopyDialog(ids, destSpace, destName, ui, destIsLeafSpace);
 	}
 
 	// If copying subspaces to other spaces
-	else if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p'){
+	else if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p') {
 		setupSpaceCopyDialog(ids, destSpace, destName);
 	}
 
@@ -354,7 +343,6 @@ function onSpaceDrop(event, ui) {
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-copy').dialog('close');
 					doBenchmarkCopyPost(ids,destSpace,spaceId,true,destName);
-
 				},
 				'link':function() {
 					$('#dialog-confirm-copy').dialog('close');
@@ -365,7 +353,6 @@ function onSpaceDrop(event, ui) {
 				}
 			}
 		});
-
 	}
 
 	// Otherwise, if the primitive being copied to another space is a job
@@ -390,7 +377,7 @@ function onSpaceDrop(event, ui) {
 								parseReturnCode(returnCode);
 							},
 							"json"
-					).error(function(){
+					).error(function() {
 						showMessage('error',"Internal error copying jobs",5000);
 					});
 				},
@@ -400,7 +387,6 @@ function onSpaceDrop(event, ui) {
 				}
 			}
 		});
-
 	}
 }
 
@@ -475,14 +461,13 @@ function setupUserCopyDialog(ids, destSpace, destName, ui, destIsLeafSpace) {
 			// Make the request to the server
 			doUserCopyPost(ids,destSpace,true,destName,ui);
 		};
-		userCopyDialogButtons['space'] = function(){
+		userCopyDialogButtons['space'] = function() {
 			// If the user actually confirms, close the dialog right away
 			$('#dialog-confirm-copy').dialog('close');
 			doUserCopyPost(ids,destSpace,false,destName,ui);
-
 		};
 	} else {
-		userCopyDialogButtons['confirm'] = function(){
+		userCopyDialogButtons['confirm'] = function() {
 			// If the user actually confirms, close the dialog right away
 			$('#dialog-confirm-copy').dialog('close');
 			doUserCopyPost(ids,destSpace,false,destName,ui);
@@ -518,12 +503,12 @@ function doSpaceCopyPost(ids,destSpace,copyHierarchy,destName) {
 				}
 			},
 			"json"
-	).error(function(){
+	).error(function() {
 		showMessage('error',"Internal error copying spaces",5000);
 	});
 }
 
-function doUserCopyPost(ids,destSpace,copyToSubspaces,destName,ui){
+function doUserCopyPost(ids,destSpace,copyToSubspaces,destName,ui) {
 	$.post(
 			starexecRoot+'services/spaces/' + destSpace + '/add/user',
 			{selectedIds : ids, copyToSubspaces: copyToSubspaces},
@@ -531,7 +516,7 @@ function doUserCopyPost(ids,destSpace,copyToSubspaces,destName,ui){
 				parseReturnCode(returnCode);
 			},
 			"json"
-	).error(function(){
+	).error(function() {
 		showMessage('error',"Internal error copying users",5000);
 	});
 }
@@ -564,7 +549,7 @@ function doBenchmarkCopyPost(ids,destSpace,spaceId,copy,destName) {
 				parseReturnCode(returnCode);
 			},
 			"json"
-	).error(function(){
+	).error(function() {
 		showMessage('error',"Internal error copying benchmarks",5000);
 	});
 }
@@ -580,7 +565,6 @@ function doBenchmarkCopyPost(ids,destSpace,spaceId,copy,destName) {
 
 function doSolverCopyPost(ids,destSpace,spaceId,hierarchy,copy) {
 	// Make the request to the server
-
 	$.post(
 			starexecRoot+'services/spaces/' + destSpace + '/add/solver',
 			{selectedIds : ids, fromSpace : spaceId, copyToSubspaces: hierarchy, copy : copy},
@@ -588,7 +572,7 @@ function doSolverCopyPost(ids,destSpace,spaceId,hierarchy,copy) {
 				parseReturnCode(returnCode);
 			},
 			"json"
-	).error(function(){
+	).error(function() {
 		showMessage('error',"Internal error copying solvers",5000);
 	});
 }
@@ -598,13 +582,12 @@ function spaceIsLeaf(spaceId) {
 }
 
 
-
 /**
  * Creates the space explorer tree for the left-hand side of the page, also
  * creates tooltips for the space explorer, .expd class, and userTable (if applicable)
  * @author Tyler Jensen & Todd Elvers & Skylar Stark
  */
-function initSpaceExplorer(){
+function initSpaceExplorer() {
 	// Initialize the jstree plugin for the explorer list
 	// Bug: This is creating a global variable. Intentional?
 	jsTree=makeSpaceTree("#exploreList",!usingSpaceChain);
@@ -642,7 +625,6 @@ function initSpaceExplorer(){
 		// Update global variable `openDone`
 		window.openDone=true;
 	});
-
 	log('Space explorer node list initialized');
 }
 
@@ -650,7 +632,7 @@ function initSpaceExplorer(){
  * Handles removal of benchmark(s) from a space
  * @author Todd Elvers
  */
-function removeBenchmarks(selectedBenches,ownsAll){
+function removeBenchmarks(selectedBenches,ownsAll) {
 	if (ownsAll) {
 		$('#dialog-confirm-delete-txt').text('Do you want to remove the selected benchmark(s) from ' + spaceName + ', or would you like  to send them to the recycle bin?');
 
@@ -674,7 +656,7 @@ function removeBenchmarks(selectedBenches,ownsAll){
 								}
 							},
 							"json"
-					).error(function(){
+					).error(function() {
 						showMessage('error',"Internal error removing benchmarks",5000);
 					});
 				},
@@ -692,7 +674,7 @@ function removeBenchmarks(selectedBenches,ownsAll){
 								}
 							},
 							"json"
-					).error(function(){
+					).error(function() {
 						showMessage('error',"Internal error removing benchmarks",5000);
 					});
 				},
@@ -725,7 +707,7 @@ function removeBenchmarks(selectedBenches,ownsAll){
 								}
 							},
 							"json"
-					).error(function(){
+					).error(function() {
 						showMessage('error',"Internal error removing benchmarks",5000);
 					});
 				},
@@ -736,7 +718,6 @@ function removeBenchmarks(selectedBenches,ownsAll){
 			}
 		});
 	}
-
 }
 
 function cancelRemoveUsers() {
@@ -759,7 +740,7 @@ function removeUsersFromSpace(selectedUsers) {
 				}
 			},
 			"json"
-	).error(function(){
+	).error(function() {
 		showMessage('error',"Internal error removing users",5000);
 	});
 }
@@ -768,7 +749,7 @@ function removeUsersFromSpace(selectedUsers) {
  * Handles removal of user(s) from a space
  * @author Todd Elvers & Skylar Stark
  */
-function removeUsers(selectedUsers){
+function removeUsers(selectedUsers) {
 	var dialogButtons = null;
 	if (isLeafSpace) {
 		$('#dialog-confirm-delete-txt').text('Are you sure you want to remove the user(s)?');
@@ -799,7 +780,7 @@ function removeUsers(selectedUsers){
 							}
 						},
 						"json"
-				).error(function(){
+				).error(function() {
 					showMessage('error',"Internal error removing users",5000);
 				});
 			},
@@ -836,7 +817,7 @@ function removeSolversFromSpaceHierarchy(selectedSolvers) {
 				}
 			},
 			"json"
-	).error(function(){
+	).error(function() {
 		showMessage('error',"Internal error removing solvers",5000);
 	});
 }
@@ -856,7 +837,7 @@ function removeSolversFromSpace(selectedSolvers) {
 				}
 			},
 			"json"
-	).error(function(){
+	).error(function() {
 		showMessage('error',"Internal error removing solvers",5000);
 	});
 }
@@ -875,7 +856,7 @@ function moveSolversToRecycleBin(selectedSolvers) {
 				}
 			},
 			"json"
-	).error(function(){
+	).error(function() {
 		showMessage('error',"Internal error removing solvers",5000);
 	});
 }
@@ -884,7 +865,7 @@ function moveSolversToRecycleBin(selectedSolvers) {
  * Handles removal of solver(s) from a space
  * @author Todd Elvers & Skylar Stark
  */
-function removeSolvers(selectedSolvers,ownsAll){
+function removeSolvers(selectedSolvers,ownsAll) {
 	var removeSolverButtons = {
 		// The remove from space button and cancel button will be in the dialog no matter what.
 		'remove from space': function() {
@@ -922,7 +903,6 @@ function removeSolvers(selectedSolvers,ownsAll){
 		$(this).dialog("close");
 	};
 
-
 	$('#dialog-confirm-delete-txt').text(dialogText);
 
 	// Display the confirmation dialog
@@ -938,7 +918,7 @@ function removeSolvers(selectedSolvers,ownsAll){
  * Handles removal of job(s) from a space
  * @author Todd Elvers
  */
-function removeJobs(selectedJobs,ownsAll){
+function removeJobs(selectedJobs,ownsAll) {
 	if (ownsAll) {
 		$('#dialog-confirm-delete-txt').text('do you want to remove the selected job(s) from ' + spaceName + ', or do you want to delete them permanently?');
 
@@ -964,7 +944,7 @@ function removeJobs(selectedJobs,ownsAll){
 								jobTable.fnProcessingIndicator(false);
 							},
 							"json"
-					).error(function(){
+					).error(function() {
 						showMessage('error',"Internal error removing jobs",5000);
 					});
 				},
@@ -985,7 +965,7 @@ function removeJobs(selectedJobs,ownsAll){
 								jobTable.fnProcessingIndicator(false);
 							},
 							"json"
-					).error(function(){
+					).error(function() {
 						showMessage('error',"Internal error removing jobs",5000);
 					});
 				},
@@ -1008,7 +988,6 @@ function removeJobs(selectedJobs,ownsAll){
 					log('user confirmed job deletion');
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-delete').dialog('close');
-
 					$.post(
 							starexecRoot+"services/remove/job/" + spaceId,
 							{selectedIds : selectedJobs},
@@ -1020,7 +999,7 @@ function removeJobs(selectedJobs,ownsAll){
 								jobTable.fnProcessingIndicator(false);
 							},
 							"json"
-					).error(function(){
+					).error(function() {
 						showMessage('error',"Internal error removing jobs",5000);
 					});
 				},
@@ -1031,14 +1010,13 @@ function removeJobs(selectedJobs,ownsAll){
 			}
 		});
 	}
-
 }
 
 /**
  * Handles removal of subspace(s) from a space
  * @author Todd Elvers
  */
-function removeSubspaces(selectedSubspaces){
+function removeSubspaces(selectedSubspaces) {
 	$('#dialog-confirm-delete-txt').text('Do you want to recycle the solvers and benchmarks, and delete the jobs in the selected subspace(s), and all their subspaces, or do you only want to remove the selected subspace(s) from ' + spaceName + '?'); // Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
@@ -1064,7 +1042,6 @@ function removeSubspaces(selectedSubspaces){
 					$('#exploreList').jstree("remove", "#"+subspace);
 				});
 				$('#exploreList').jstree("refresh");
-
 			},
 			"cancel": function() {
 				log('user canceled subspace deletion');
@@ -1075,16 +1052,13 @@ function removeSubspaces(selectedSubspaces){
 }
 
 
-
 function makeRemoveSubspacesPost(selectedSubspaces, recyclePrims) {
-	$.post(  starexecRoot+"services/remove/subspace",
+	$.post(
+			starexecRoot+"services/remove/subspace",
 			{selectedIds : selectedSubspaces, recyclePrims : recyclePrims},
-			function(returnCode) {
-				parseReturnCode(returnCode);
-
-			},
+			parseReturnCode,
 			"json"
-	).error(function(){
+	).error(function() {
 		log('remove subspace error');
 	});
 }
@@ -1104,10 +1078,10 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	var idOfSelectedSpace = $('#exploreList').find('.jstree-clicked').parent().attr("id");
 
 	// If we can't find the id of the space selected from the DOM, get it from the cookie instead
-	if(idOfSelectedSpace == null || typeof idOfSelectedSpace == 'undefined'){
+	if(idOfSelectedSpace == null || typeof idOfSelectedSpace == 'undefined') {
 		idOfSelectedSpace = $.cookie("jstree_select");
 		// If we also can't find the cookie, then just set the space selected to be the root space
-		if(idOfSelectedSpace == null || typeof idOfSelectedSpace == 'undefined'){
+		if(idOfSelectedSpace == null || typeof idOfSelectedSpace == 'undefined') {
 			$('#exploreList').jstree('select_node', '#1', true);
 			idOfSelectedSpace = 1;
 		} else {
@@ -1136,7 +1110,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			fnCallback(nextDataTablePage);
 
 			// If the primitive type is 'job', then color code the results appropriately
-			if('j' == tableName[0]){
+			if('j' == tableName[0]) {
 				colorizeJobStatistics();
 			}
 
@@ -1166,8 +1140,8 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
  * @param primCount the new value to update the fieldset with
  * @author Todd Elvers
  */
-function updateFieldsetCount(tableName, value){
-	switch(tableName[0]){
+function updateFieldsetCount(tableName, value) {
+	switch(tableName[0]) {
 	case 'j':
 		$('#jobExpd').children('span:first-child').text(value);
 		break;
@@ -1190,7 +1164,7 @@ function updateFieldsetCount(tableName, value){
 /**
  * Colorize the job statistics in the jobTable
  */
-function colorizeJobStatistics(){
+function colorizeJobStatistics() {
 	// Colorize the statistics in the job table for completed pairs
 	$("#jobs p.asc").heatcolor(
 			function() {
@@ -1238,7 +1212,7 @@ function colorizeJobStatistics(){
 /**
  * Initializes the DataTable objects and adds multi-select to them
  */
-function initDataTables(){
+function initDataTables() {
 
 	// Extend the DataTables api and add our custom features
 	extendDataTableFunctions();
@@ -1265,7 +1239,7 @@ function initDataTables(){
 
 	setSortTable(benchTable);
 
-	$("#benchmarks thead").click(function(){
+	$("#benchmarks thead").click(function() {
 		resetSortButtons();
 	});
 
@@ -1274,7 +1248,6 @@ function initDataTables(){
 	function unselectAll(except) {
 		var tables=["#users","#solvers","#benchmarks","#jobs","#spaces"];
 		for (x=0;x<6;x++) {
-
 			if (except==tables[x]) {
 				continue;
 			}
@@ -1284,13 +1257,13 @@ function initDataTables(){
 
 
 	for (x=0;x<6;x++) {
-		$(tables[x]).on("mousedown","tr", function(){
+		$(tables[x]).on("mousedown","tr", function() {
 			unselectAll("#"+$(this).parent().parent().attr("id"));
 			$(this).toggleClass("row_selected");
 		});
 	}
 		// Setup user permission tooltip
-	$('#users tbody').on( 'hover', 'tr', function(){
+	$('#users tbody').on( 'hover', 'tr', function() {
 		$(this).toggleClass('hovered');
 	});
 
@@ -1299,7 +1272,6 @@ function initDataTables(){
 	$('#solverField div.selectWrap').detach().prependTo('#solverField div.bottom');
 	$('#benchField div.selectWrap').detach().prependTo('#benchField div.bottom');
 	$('#userField div.selectWrap').detach().prependTo('#userField div.bottom');
-
 
 	//Hook up select all/ none buttons
 	$('.selectAllJobs, .selectAllSolvers, .selectAllBenchmarks, .selectAllUsers').click(function() {
@@ -1324,14 +1296,13 @@ function initDataTables(){
 	benchTable.fnFilterOnDoneTyping();
 	userTable.fnFilterOnDoneTyping();
 	spaceTable.fnFilterOnDoneTyping();
-
 	log('all datatables initialized');
 }
 
 /**
  * Adds fnProcessingIndicator and fnFilterOnDoneTyping to dataTables api
  */
-function extendDataTableFunctions(){
+function extendDataTableFunctions() {
 	// Allows manually turning on and off of the processing indicator (used for jobs table)
 	addProcessingIndicator();
 	addFilterOnDoneTyping();
@@ -1341,7 +1312,7 @@ function extendDataTableFunctions(){
  * Returns the 'processing...' image with the loading gif which is used
  * on the jobs table when deleting/paginating
  */
-function getProcessingMessage(){
+function getProcessingMessage() {
 	return "processing request";
 }
 
@@ -1357,47 +1328,43 @@ function redrawAllTables() {
  * Creates either a leader tooltip, a personal tooltip, a space tooltip, or a expd tooltip for a given element
  * @author Todd Elvers
  */
-function createTooltip(element, selector, type, message){
+function createTooltip(element, selector, type, message) {
 	/**
 	 * Tooltips for displaying to a leader what a particular user's permissions are in a given space;
 	 * these persist until a new space is selected in the space explorer
 	 */
-	if(type[0] == 'l'){
-
-		$(element).on('mouseenter mouseleave',selector, function(){
+	if(type[0] == 'l') {
+		$(element).on('mouseenter mouseleave',selector, function() {
 			// Check and see if a qtip object already exists
-			if(!$(this).data("qtip")){
+			if(!$(this).data("qtip")) {
 				// If not, create one with the relevant configuration
 				configuration=getTooltipConfig(type,message);
 				$(this).qtip(configuration);
 			}
 		});
 	}
-	/**
-	 * Tooltips for displaying to a user what their permission are for a given space in the space explorer;
+	/* Tooltips for displaying to a user what their permission are for a given space in the space explorer;
 	 * these persist forever and are never removed from the page
 	 */
-	else if(type[0] == 'p'){
-		$(element).on('mouseenter mouseleave',selector,  function(){
+	else if(type[0] == 'p') {
+		$(element).on('mouseenter mouseleave',selector,  function() {
 			//only add this to the row for the current user
 			if ($(this).find("td input[name=\"currentUser\"]").size()>0) {
-				if(!$(this).data("qtip")){
+				if(!$(this).data("qtip")) {
 					$(this).qtip(getTooltipConfig(type, message));
 				}
 			}
 
 		});
 	}
-	/**
-	 * Tooltips for displaying to the user what their permissions are in a given fieldset, shown from
+	/* Tooltips for displaying to the user what their permissions are in a given fieldset, shown from
 	 * the expd class; these are removed from the page when a new space in the space explorer is selected
 	 */
-	else if(type[0] == 'e'){
-		if(!$(element).data("qtip")){
+	else if(type[0] == 'e') {
+		if(!$(element).data("qtip")) {
 			$(element).qtip(getTooltipConfig(type, message));
 		}
 	}
-
 	log('tooltip created of type ' + type);
 }
 
@@ -1421,7 +1388,7 @@ function checkPermissions(perms, id) {
 		$('.actionList').show();
 	}
 
-	if(perms.isLeader){
+	if(perms.isLeader) {
 		// attach leader tooltips to every entry
 		createTooltip($('#users tbody'), 'tr', 'leader');
 
@@ -1460,19 +1427,16 @@ function checkPermissions(perms, id) {
 		$('#addJob').fadeIn('fast');
 		$("#addQuickJob").fadeIn('fast');
 		$('#uploadJobXML').fadeIn('fast');
-
 	} else {
 		$('#addJob').fadeOut('fast');
 		$('#uploadJobXML').fadeOut('fast');
 		$("#addQuickJob").fadeOut('fast');
 	}
 
-
 	// Create tooltips for the expd class
 	createTooltip($("#userExpd"), null, 'expd', getSinglePermTable('user', perms.addUser, perms.removeUser));
 	log('permissions checked and processed');
 }
-
 
 
 /**
@@ -1487,17 +1451,10 @@ function updateButtonIds(id) {
 	$('#uploadSolver').attr('href', starexecRoot+"secure/add/solver.jsp?sid=" + id);
 	$('#addJob').attr('href', starexecRoot+"secure/add/job.jsp?sid=" + id);
 	$('#addQuickJob').attr('href', starexecRoot+"secure/add/quickJob.jsp?sid=" + id);
-
 	$("#processBenchmarks").attr("href",starexecRoot+"secure/edit/processBenchmarks.jsp?sid="+id);
-
-
-
-
-		$("#downloadXML").unbind("click");
-		$('#downloadXML').click(function (e) {
+	$("#downloadXML").unbind("click");
+	$('#downloadXML').click(function (e) {
 		$('#dialog-spacexml-attributes-txt').text('Do you want benchmark attributes included in the XML?');
-
-
 		$('#dialog-spacexml').dialog({
 		modal: true,
 		width: 380,
@@ -1506,7 +1463,6 @@ function updateButtonIds(id) {
 			"download": function () {
 			var attVal = $('input[name=att]:checked').val();
 			attBool = attVal == "true";
-
 			createDownloadSpaceXMLRequest(attBool, false,-1, id);
 			$(this).dialog("close");
 			},
@@ -1517,7 +1473,7 @@ function updateButtonIds(id) {
 		});
 	});
 
-	$('#showUpdateDialog').click(function(){
+	$('#showUpdateDialog').click(function() {
 		$("#dialog-spaceUpdateXml").dialog();
 		$('#dialog-spacexml').dialog("close");
 		$('#dialog-spacexml-updates-txt').text('Enter default update processor id');
@@ -1541,7 +1497,7 @@ function updateButtonIds(id) {
 	$('#uploadJobXML').attr('href', starexecRoot+"secure/add/batchJob.jsp?sid=" + id);
 	$('#uploadXML').attr('href', starexecRoot+"secure/add/batchSpace.jsp?sid=" + id);
 	$("#downloadSpace").unbind("click");
-	$("#downloadSpace").click(function(){
+	$("#downloadSpace").click(function() {
 		// Display the confirmation dialog
 		$("#downloadBoth").prop("checked","checked");
 		$('#noIdDirectories').prop('checked','checked');
@@ -1558,7 +1514,7 @@ function updateButtonIds(id) {
 			width: 380,
 			height: dialogHeight,
 			buttons: {
-				'submit': function(){
+				'submit': function() {
 					createDownloadSpacePost(id);
 					$(this).dialog("close");
 				}
@@ -1570,18 +1526,16 @@ function updateButtonIds(id) {
 
 
 function createDownloadSpaceXMLRequest(includeAttrs,updates,upid,id) {
-  createDialog("Processing your download request, please wait. This will take some time for large spaces.");
-  token=Math.floor(Math.random()*100000000);
-  myhref = starexecRoot+"secure/download?token=" +token+ "&type=spaceXML&id="+id+"&includeattrs="+includeAttrs+"&updates="+updates+"&upid="+upid;
-  destroyOnReturn(token);
-  window.location.href = myhref;
-
+	createDialog("Processing your download request, please wait. This will take some time for large spaces.");
+	token=Math.floor(Math.random()*100000000);
+	myhref = starexecRoot+"secure/download?token=" +token+ "&type=spaceXML&id="+id+"&includeattrs="+includeAttrs+"&updates="+updates+"&upid="+upid;
+	destroyOnReturn(token);
+	window.location.href = myhref;
 }
 
 function createDownloadSpacePost(id) {
 	var hierarchy = $('#downloadSpaceHierarchy').prop("checked");
 	var downloadSolvers=($("#downloadSolvers").prop("checked") || $("#downloadBoth").prop("checked"));
-
 	var downloadBenchmarks=($("#downloadBenchmarks").prop("checked") || $("#downloadBoth").prop("checked"));
 	var useIdDirectories = $('#yesIdDirectories').prop('checked');
 	log('hierarchy: ' + hierarchy);
@@ -1605,7 +1559,7 @@ function createDownloadSpacePost(id) {
  * @param dataTable the particular dataTable the selections are in
  * @author Eric Burns
  */
-function userCanDeleteAll(dataTable){
+function userCanDeleteAll(dataTable) {
 	allMatch=true;
 	var rows = $(dataTable).children('tbody').children('tr.row_selected');
 	$.each(rows, function(i, row) {
@@ -1615,9 +1569,7 @@ function userCanDeleteAll(dataTable){
 		input=$(this).children('td:first').children("input");
 		if(parseInt(input.attr("userId"))!=currentUserId) {
 			allMatch=false;
-		}
-
-		if (parseBoolean(input.attr("recycled")) || parseBoolean(input.attr("deleted"))) {
+		} else if (parseBoolean(input.attr("recycled")) || parseBoolean(input.attr("deleted"))) {
 			allMatch=false;
 		}
 	});
@@ -1630,7 +1582,7 @@ function userCanDeleteAll(dataTable){
  * @param dataTable the dataTable to update
  * @author Todd Elvers
  */
-function updateTable(dataTable){
+function updateTable(dataTable) {
 	var rowsToRemove = $(dataTable).children('tbody').children('tr.row_selected');
 	var rowsRemaining = $(dataTable).children('tbody').children(':not(tr.row_selected)');
 	$.each(rowsToRemove, function(i, row) {
@@ -1653,7 +1605,7 @@ function getPermTable(tooltip, perms, type, isCommunity) {
 	$(table).append('<tr><th>property</th><th>add</th><th>remove</th></tr>');
 
 	// Resolves bug where tooltip is empty
-	if('undefined' == typeof perms || null == perms){
+	if('undefined' == typeof perms || null == perms) {
 		perms = {
 				isLeader        : false,
 				addJob          : false,
@@ -1690,15 +1642,11 @@ function getPermTable(tooltip, perms, type, isCommunity) {
 	if(perms.isLeader) {
 		// If this person is a leader, add the leader div to the wrapper
 		$(permWrap).append(leaderDiv);
-
 	}
-
-
 
 	// Return the resulting DOM element to be inserted
 	return permWrap;
 }
-
 
 /**
  * Gives back HTML for a table containing only one permission
@@ -1717,11 +1665,11 @@ function getSinglePermTable(name, add, remove) {
 
 /**
  * used in tooltip, links to edit permissions page
- *
- **/
-function editPermissions(){
+ */
+function editPermissions() {
 	location = starexecRoot+"secure/edit/spacePermissions.jsp?id=" + spaceId;
 }
+
 /**
  * Wraps up a permission and it's value for display in a table. Includes onclicks for the images.
  * @param perm The permission type to display (job, user, solver, bench, space)
@@ -1729,12 +1677,11 @@ function editPermissions(){
  * @param remove The value for the remove permission for the type
  * @returns HTML representing a row in a table display the type and it's permission values
  */
-function wrapPermRow(perm, add, remove){
+function wrapPermRow(perm, add, remove) {
 	var yes = $('<span>').css('margin', 'auto').addClass('ui-icon ui-icon-check').toHTMLString();
 	var no = $('<span>').css('margin', 'auto').addClass('ui-icon ui-icon-closethick').toHTMLString();
 	return "<tr><td>" + perm + "</td><td class='add'>" + (add ? yes : no) + "</td><td class='remove'>" + (remove ? yes : no) + "</td></tr>";
 }
-
 
 
 /**
@@ -1743,9 +1690,9 @@ function wrapPermRow(perm, add, remove){
  * @param type users/benchmarks/solvers/subspaces
  * @author Todd Elvers
  */
-function getTooltipConfig(type, message){
+function getTooltipConfig(type, message) {
 	// Leader tooltips
-	if(type[0] == 'l'){
+	if(type[0] == 'l') {
 		return {
 			content: {
 				text: getProcessingMessage(),
@@ -1758,7 +1705,6 @@ function getTooltipConfig(type, message){
 				adjust: {
 					mouse: false
 				}
-
 			},
 			hide :{
 				fixed: true
@@ -1768,20 +1714,19 @@ function getTooltipConfig(type, message){
 				solo: false, // When this is false, all tooltip commands are applied only to the corresponding tooltip (what we want) instead of to all tooltips on the page (which causes weird artifacts to occur)
 				delay: 1000, // Every mouseover that occurs, after the first mouseover, will have to wait a second before the tooltip is triggered
 				event: "mouseover"
-
 			},
 			style: {
 				classes: "userTooltip",  // Load custom color scheme
 				tip: 'rightMiddle'   // Add a tip to the right middle portion of the tooltip
 			},
 			events:{
-				render: function(){ // Before rendering the tooltip, get the user's permissions for the given space
+				render: function() { // Before rendering the tooltip, get the user's permissions for the given space
 					var tooltip = this;
 					api=$(this).qtip("api");
 					var userId = $(api.elements.target).children('td:first').children('input').val();
 					$.get(
 							starexecRoot+'services/permissions/details/' + userId + '/' + spaceId,
-							function(theResponse){
+							function(theResponse) {
 								s=parseReturnCode(theResponse);
 								if (s) {
 									// Replace current content (current = loader.gif)
@@ -1796,21 +1741,20 @@ function getTooltipConfig(type, message){
 								}
 								return true;
 							}
-					).error(function(){
+					).error(function() {
 						//showMessage('error',"Internal error getting user permissions",5000); bother the user for a tooltip problem?
 					});
-
 				},
-				hide: function(){   // If a user modifies a tooltip but does not press the 'save' or 'cancel' button then this resets the tooltip once it loses focus and fades from view
+				hide: function() {   // If a user modifies a tooltip but does not press the 'save' or 'cancel' button then this resets the tooltip once it loses focus and fades from view
 					var tooltip = this;
 					api=$(this).qtip("api");
-					if('p' != $(api.elements.title).text()[0]){
+					if('p' != $(api.elements.title).text()[0]) {
 						$(tooltip).qtip('option', 'content.title', '<center><a>permissions</a></center>');
 
 						var userId = $(api.elements.target).children('td:first').children('input').val();
 						$.post(
 								starexecRoot+'services/permissions/details/' + userId + '/' + spaceId,
-								function(theResponse){
+								function(theResponse) {
 									log('AJAX response for permission tooltip received');
 									$(tooltip).qtip('option', 'content.text', ' ');
 									if (theResponse.requester.role == "admin") {
@@ -1818,14 +1762,12 @@ function getTooltipConfig(type, message){
 
 									} else {
 										$(tooltip).qtip('option', 'content.text', getPermTable(tooltip, theResponse.perm, 'leader'));
-
 									}
 									$(tooltip).qtip('option', 'content.title', '<center><a>permissions</a></center>');
-
 									tooltip.hide();
 									return true;
 								}
-						).error(function(){
+						).error(function() {
 							//showMessage('error',"Internal error getting space details",5000);
 						});
 					}
@@ -1834,18 +1776,16 @@ function getTooltipConfig(type, message){
 					var userId = $(api.elements.target).children('td:first').children('input').val();
 					$('#uid'+userId).parent().parent().removeClass('hovered');
 				}
-
 			}
 		};
 	}
 
 	// Expd tooltips
-	else if (type[0] == 'e'){
+	else if (type[0] == 'e') {
 		return {
 			content: {
 				text: message,
 				title: '<center>permissions</center>'
-
 			},
 			position: {
 				target: "mouse",
@@ -1872,12 +1812,11 @@ function getTooltipConfig(type, message){
 		};
 	}
 	// Personal tooltips
-	else if (type[0] == 'p'){
+	else if (type[0] == 'p') {
 		return {
 			content: {
 				text: getProcessingMessage(),
 				title: '<center><a>permissions</a></center>'
-
 			},
 			position: {
 				target: "mouse",
@@ -1892,9 +1831,8 @@ function getTooltipConfig(type, message){
 				solo: false,
 				delay: 1000,
 				event: "mouseover"
-
 			},
-			hide:{
+			hide: {
 				effect: {
 					type: 'fade',
 					length: 100
@@ -1905,20 +1843,19 @@ function getTooltipConfig(type, message){
 				tip: 'rightMiddle'
 			},
 			events:{
-				render: function(){
+				render: function() {
 					var tooltip = this;
 					api=$(this).qtip("api");
 					var userId =  $("#users tbody tr").find('td:first input[name="currentUser"]').val();
-					if(typeof userId != 'undefined' && $(api.elements.target).children('td:first').children('input').val() == userId){
+					if(typeof userId != 'undefined' && $(api.elements.target).children('td:first').children('input').val() == userId) {
 						var url = starexecRoot+'services/space/' + spaceId + '/perm/' + userId;
 						$.post(
 								url,
-								function(theResponse){
+								function(theResponse) {
 									log('AJAX response for permission tooltip received');
 									$(tooltip).qtip('option', 'content.text', ' ');
 									$(tooltip).qtip('option', 'content.text', getPermTable(tooltip, theResponse));
 									$(".permButton").button();
-
 									return true;
 								}
 						)
@@ -1928,8 +1865,3 @@ function getTooltipConfig(type, message){
 		};
 	}
 }
-
-
-
-
-
