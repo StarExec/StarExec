@@ -1358,19 +1358,7 @@ public class Spaces {
 			procedure.setInt("userId", userId);
 			procedure.setString("query", query.getSearchQuery());
 			results = procedure.executeQuery();
-			List<Space> spaces = new LinkedList<>();
-
-			while (results.next()) {
-				Space s = new Space();
-				s.setId(results.getInt("id"));
-				s.setName(results.getString("name"));
-				s.setDescription(results.getString("description"));
-				s.setParentSpace(results.getInt("parent"));
-				spaces.add(s);
-			}
-
-
-			return spaces;
+			return resultsToSpaces(results);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
@@ -1628,18 +1616,7 @@ public class Spaces {
 			procedure = con.prepareCall("{CALL GetSubSpaceHierarchyAdmin(?)}");
 			procedure.setInt(1, spaceId);
 			results = procedure.executeQuery();
-			List<Space> subSpaces = new LinkedList<>();
-
-			while (results.next()) {
-				Space s = new Space();
-				s.setName(results.getString("name"));
-				s.setId(results.getInt("id"));
-				s.setDescription(results.getString("description"));
-				s.setLocked(results.getBoolean("locked"));
-				subSpaces.add(s);
-			}
-			log.debug("now returning this many subspaces = " + subSpaces.size());
-			return subSpaces;
+			return resultsToSpaces(results);
 		} catch (Exception e) {
 			log.debug(e.getMessage(), e);
 		} finally {
@@ -1737,20 +1714,7 @@ public class Spaces {
 			procedure = con.prepareCall("{CALL GetSubSpacesAdmin(?)}");
 			procedure.setInt(1, spaceId);
 			results = procedure.executeQuery();
-
-			results = procedure.executeQuery();
-			List<Space> subSpaces = new LinkedList<>();
-
-			while (results.next()) {
-				Space s = new Space();
-				s.setName(results.getString("name"));
-				s.setId(results.getInt("id"));
-				s.setDescription(results.getString("description"));
-				s.setLocked(results.getBoolean("locked"));
-				subSpaces.add(s);
-			}
-
-			return subSpaces;
+			return resultsToSpaces(results);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
