@@ -576,13 +576,17 @@ public class Spaces {
 
 	protected static List<Space> resultsToSpaces(ResultSet results) throws SQLException {
 		List<Space> spaces = new ArrayList<>();
-
 		while (results.next()) {
 			Space s = new Space();
 			s.setName(results.getString("name"));
 			s.setId(results.getInt("id"));
 			s.setDescription(results.getString("description"));
-			s.setLocked(results.getBoolean("locked"));
+			try {
+				s.setLocked(results.getBoolean("locked"));
+			} catch (SQLException e) {}
+			try {
+				s.setParentSpace(results.getInt("parent"));
+			} catch (SQLException e) {}
 			spaces.add(s);
 		}
 		return spaces;
