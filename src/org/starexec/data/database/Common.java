@@ -407,23 +407,13 @@ public class Common {
 		}
 	}
 
-	protected static void safeClose(CallableStatement statement) {
+	protected static synchronized void safeClose(Statement statement) {
 		try {
-			if (statement!=null) {
+			if (statement!=null && !statement.isClosed()) {
 				statement.close();
 			}
 		} catch (Exception e) {
-			log.error("safeClose statement says "+e.getMessage(),e);
-		}
-	}
-
-	protected static void safeClose(Statement statement) {
-		try {
-			if (statement!=null) {
-				statement.close();
-			}
-		} catch (Exception e) {
-			log.error("safeClose statement says "+e.getMessage(),e);
+			log.error("safeClose", e);
 		}
 	}
 
@@ -451,22 +441,6 @@ public class Common {
 				//String methodName1=Thread.currentThread().getStackTrace()[2].getMethodName();
 				//String methodName2=Thread.currentThread().getStackTrace()[2].getMethodName();
 				//log.info("stack trace info for the closed connection is "+methodName1+ " "+methodName2);
-			}
-		} catch (Exception e){
-			// Do nothing
-			log.error("Safe Close says " + e.getMessage(),e);
-		}
-	}
-
-	/**
-	 * Method which safely closes a prepared Statement
-	 * and doesn't raise any errors
-	 * @param p the prepared statement to close
-	 */
-	protected static synchronized void safeClose(PreparedStatement p) {
-		try {
-			if(p != null && !p.isClosed()) {
-				p.close();
 			}
 		} catch (Exception e){
 			// Do nothing
