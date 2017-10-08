@@ -393,29 +393,21 @@ function setupSpaceCopyDialog(ids, destSpace, destName) {
 	// True if every space in ids is a leaf.
 	var allSpacesBeingCopiedAreLeaves = ids.every(spaceIsLeaf);
 
-	var singleSpaceCopy = function() {
-		// If the user actually confirms, close the dialog right away
-		$(EXP_SP.copySpaceDialog).dialog('close');
-
-		// Making the request
-		doSpaceCopyPost(ids,destSpace,false,destName);
-	};
-
 	var spaceCopyDialogButtons = {};
 
-	log('Deciding whether to copy hierarchy or space');
-	if (allSpacesBeingCopiedAreLeaves) {
-		log('Copying single space');
-		spaceCopyDialogButtons['confirm'] = singleSpaceCopy;
-	} else {
-		spaceCopyDialogButtons['confirm'] = function() {
-			var copyHierOption = $("#hier-copy-options").find(":selected").val();
+	spaceCopyDialogButtons['confirm'] = function() {
+		var copyHierOption;
+		$(EXP_SP.copySpaceDialog).dialog('close');
+		if (allSpacesBeingCopiedAreLeaves) {
+			copyHierOption = false;
+			log('Copying single space');
+		} else {
+			copyHierOption = $("#hier-copy-options").find(":selected").val();
 			log('copyHierOption: ' + copyHierOption);
-			$(EXP_SP.copySpaceDialog).dialog('close');
-			doSpaceCopyPost(ids,destSpace,copyHierOption,destName);
 			$('#hier-copy-options').addClass('copy-options-hidden');
 		}
-	}
+		doSpaceCopyPost(ids,destSpace,copyHierOption,destName);
+	};
 
 	spaceCopyDialogButtons['cancel'] = function() {
 		log('user canceled copy action');
