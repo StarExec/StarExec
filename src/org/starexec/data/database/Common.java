@@ -22,14 +22,14 @@ public class Common {
 	// calls this class and this class logs an error then that error will be saved to the database via ErrorLogs (if we
 	// were using StarLogger instead of NonSavingStarLogger). This could cause infinite recursion.
 	private static final NonSavingStarLogger log = NonSavingStarLogger.getLogger(Common.class);
-	private static DataSource dataPool = null;		
-	
+	private static DataSource dataPool = null;
+
 	private static Integer connectionsOpened = 0;
 	private static Integer connectionsClosed = 0;
-	
+
 	//args to append to the mysql URL.
 	private static final String MYSQL_URL_ARGUMENTS = "?autoReconnect=true&zeroDateTimeBehavior=convertToNull&rewriteBatchedStatements=true";
-	
+
 	/**
 	 * Creates a new historical record in the logins table which keeps track of all user logins.
 	 * @param userId The user that has logged in
@@ -37,23 +37,23 @@ public class Common {
 	 * @param browser The browser/agent information about the browser the user logged in with
 	 */
 	public static void addLoginRecord(int userId, String ipAddress, String browser) {
-		Connection con = null;	
+		Connection con = null;
 		CallableStatement procedure= null;
 		try {
-			con = Common.getConnection();		
+			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL LoginRecord(?, ?, ?)}");
 			procedure.setInt(1, userId);
 			procedure.setString(2, ipAddress);
-			procedure.setString(3, browser);			
-			procedure.executeUpdate();		
-		} catch (Exception e){			
-			log.error(e.getMessage(), e);		
+			procedure.setString(3, browser);
+			procedure.executeUpdate();
+		} catch (Exception e){
+			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
-		}				
+		}
 	}
-	
+
 	/**
 	 * Begins a transaction by turning off auto-commit
 	 */
@@ -64,7 +64,7 @@ public class Common {
 			// Ignore any errors
 		}
 	}
-	
+
 	/**
 	 * Rolls back any actions not committed to the database
 	 */
@@ -78,8 +78,6 @@ public class Common {
 		}
 	}
 
-
-	
 	/**
 	 * Turns on auto-commit
 	 */
@@ -89,8 +87,8 @@ public class Common {
 		} catch (Exception e) {
 			// Ignore any errors
 		}
-	}		
-	
+	}
+
 	/**
 	 * Logs the total number of connections idle and active at the time this is called
 	 */
@@ -98,7 +96,7 @@ public class Common {
 		log.debug("connection counts  = "+dataPool.getIdle()+" "+dataPool.getActive());
 		log.debug(String.valueOf(connectionsOpened-connectionsClosed));
 	}
-	
+
 	/**
 	 * Ends a transaction by committing any changes and re-enabling auto-commit
 	 */
@@ -109,8 +107,8 @@ public class Common {
 		} catch (Exception e) {
 			Common.doRollback(con);
 		}
-	}	
-	
+	}
+
 	/**
 	 * @return a new connection to the database from the connection pool
 	 * @author Tyler Jensen
@@ -128,9 +126,8 @@ public class Common {
 			log.error(e.getMessage(),e);
 		}
 		return null;
-
 	}
-	
+
 	/**
 	 * Gets information on the data pool.  Used to track down connection leak.
 	 * @return Returns true if not nearing max active connections
@@ -142,13 +139,13 @@ public class Common {
 		}
 		return dataPool.getActive() <= .5 * R.MYSQL_POOL_MAX_SIZE;
 	}
-	
+
 	/**
 	 * Configures and sets up the Tomcat JDBC connection pool. This method can only be called once in the
 	 * lifetime of the application.
 	 * @author Tyler Jensen
 	 */
-	public static void initialize() {						
+	public static void initialize() {
 		try {
 			if(Util.isNullOrEmpty(R.MYSQL_USERNAME)) {
 				log.warn("Attempted to initialize datapool without MYSQL properties being set");
@@ -157,7 +154,7 @@ public class Common {
 				log.warn("Attempted to initialize datapool when it was already initialized");
 				return;
 			}
-		
+
 			log.debug("Setting up data connection pool properties");
 			PoolProperties poolProp = new PoolProperties();				// Set up the Tomcat JDBC connection pool with the following properties
 			log.info("Setting up data connection pool with these properties:");
@@ -179,10 +176,10 @@ public class Common {
 			poolProp.setJmxEnabled(false);								// Turn JMX off (we don't use it so we don't need it)
 			poolProp.setRemoveAbandonedTimeout(3600);						// How int to wait (seconds) before reclaiming an open connection (should be the time of intest query)
 			poolProp.setRemoveAbandoned(true);							// Enable removing connections that are open too int
-			
-			log.debug("Creating new datapool with supplied properties");		
+
+			log.debug("Creating new datapool with supplied properties");
 			dataPool = new DataSource(poolProp);						// Create the connection pool with the supplied properties
-		
+
 			log.debug("Datapool successfully created!");
 		} catch (Exception e) {
 			log.fatal(e.getMessage(), e);
@@ -236,7 +233,6 @@ public class Common {
 			Common.safeClose(con);
 		}
 	}
-
 
 	/**
 	 * Runs an update that produces some output.
@@ -352,17 +348,17 @@ public class Common {
 		}
 	}
 
-		/**
-         * IMPORTANT: This method must only be used for queries and not updates. No transaction will be started and no rollback will
-         * occur on failure.
-         * This function accepts a ResultsConsumer lambda and queries the database. It handles the opening and closing
-         * of the connection and closing other resources.
-		 * @param setParameters lambda responsible for setting arguments to the procedure. (prepareCall is already done for you)
-         * @param resultsConsumer lambda responsible for converting the results to the desired type.
-         * @param <T> The type parameter that determines what exactly we are querying for and returning.
-         * @return Whatever we queried for and assembled from our ResultSet.
-         * @throws SQLException
-         */
+	/**
+	 * IMPORTANT: This method must only be used for queries and not updates. No transaction will be started and no rollback will
+	 * occur on failure.
+	 * This function accepts a ResultsConsumer lambda and queries the database. It handles the opening and closing
+	 * of the connection and closing other resources.
+	 * @param setParameters lambda responsible for setting arguments to the procedure. (prepareCall is already done for you)
+	 * @param resultsConsumer lambda responsible for converting the results to the desired type.
+	 * @param <T> The type parameter that determines what exactly we are querying for and returning.
+	 * @return Whatever we queried for and assembled from our ResultSet.
+	 * @throws SQLException
+	 */
 	protected static <T> T queryUsingConnection(Connection con, String callPreparationSql, ThrowingConsumer<CallableStatement,SQLException> setParameters, ResultsConsumer<T> resultsConsumer) throws SQLException {
 		CallableStatement procedure=null;
 		ResultSet results = null;
@@ -402,25 +398,23 @@ public class Common {
 		}
 	}
 
-
 	/**
-	 * Cleans up the database connection pool. This class must be reinitialized after this is called. 
+	 * Cleans up the database connection pool. This class must be reinitialized after this is called.
 	 */
 	public static void release() {
 		if(dataPool != null) {
 			dataPool.close();
 		}
 	}
-	
+
 	protected static void safeClose(CallableStatement statement) {
 		try {
 			if (statement!=null) {
 				statement.close();
 			}
-		
 		} catch (Exception e) {
 			log.error("safeClose statement says "+e.getMessage(),e);
-		}	
+		}
 	}
 
 	protected static void safeClose(Statement statement) {
@@ -428,23 +422,21 @@ public class Common {
 			if (statement!=null) {
 				statement.close();
 			}
-		
 		} catch (Exception e) {
 			log.error("safeClose statement says "+e.getMessage(),e);
-		}	
+		}
 	}
-	
+
 	protected static void safeClose(NamedParameterStatement statement) {
 		try {
 			if (statement!=null) {
 				statement.close();
 			}
-		
 		} catch (Exception e) {
 			log.error("safeClose statement says "+e.getMessage(),e);
-		}	
+		}
 	}
-	
+
 	/**
 	 * Method which safely closes a connection pool connection
 	 * and doesn't raise any errors
@@ -454,7 +446,6 @@ public class Common {
 		try {
 			if(c != null && !c.isClosed()) {
 				c.close();
-
 				connectionsClosed++;
 				//log.info("Connection Closed, Net connections opened = " + (connectionsOpened-connectionsClosed));
 				//String methodName1=Thread.currentThread().getStackTrace()[2].getMethodName();
@@ -465,9 +456,8 @@ public class Common {
 			// Do nothing
 			log.error("Safe Close says " + e.getMessage(),e);
 		}
-
 	}
-	
+
 	/**
 	 * Method which safely closes a prepared Statement
 	 * and doesn't raise any errors
@@ -476,15 +466,14 @@ public class Common {
 	protected static synchronized void safeClose(PreparedStatement p) {
 		try {
 			if(p != null && !p.isClosed()) {
-				p.close();				
+				p.close();
 			}
 		} catch (Exception e){
 			// Do nothing
 			log.error("Safe Close says " + e.getMessage(),e);
 		}
-
 	}
-	
+
 	/**
 	 * Method which closes a result set
 	 * @param r The result set close
