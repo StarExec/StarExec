@@ -828,6 +828,42 @@ public class Spaces {
 	}
 
 	/**
+	 * Move an existing space into a new parent space
+	 *
+	 * @param srcId The Id of the space which is being copied.
+	 * @param desId The Id of the destination space which is copied into.
+	 */
+	public static void moveSpace(int srcId, int desId) throws SQLException {
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			Common.updateUsingConnection(con, "{CALL MoveSpace(?,?)}",
+				procedure -> {
+					procedure.setInt(1, desId);
+					procedure.setInt(2, srcId);
+				}
+			);
+			rebuildSpaceClosures(srcId, con);
+		} catch (SQLException e) {
+			Common.doRollback(con);
+			throw e;
+		} finally {
+			Common.safeClose(con);
+		}
+	}
+
+	private static void rebuildSpaceClosures(int srcId, Connection con) throws SQLException {
+		for (Integer spaceId : getSubSpaceIds(srcId)) {
+			Common.updateUsingConnection(con, "{CALL RebuildSpaceClosures(?)}",
+				procedure -> {
+					procedure.setInt(1, spaceId);
+				}
+			);
+			rebuildSpaceClosures(spaceId, con);
+		}
+	}
+
+	/**
 	 * Copy a space into another space
 	 *
 	 * @param srcId The Id of the space which is being copied.

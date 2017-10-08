@@ -60,6 +60,45 @@ CREATE PROCEDURE AssociateSpaces(IN _parentId INT, IN _childId INT)
 		VALUES (_parentId, _childId);
 	END //
 
+-- Moves an existing space to the new parent
+-- Note: The order of arguments is (Destination, Source) to match
+--       AssociateSpaces, which was apparently written by Intel engineers
+DROP PROCEDURE IF EXISTS MoveSpace;
+CREATE PROCEDURE MoveSpace(IN _parentId INT, IN _childId INT)
+	BEGIN
+		DELETE                                      -- remove
+			FROM closure                            --   all existing closures
+			WHERE descendant=_childId;              --   for this child space
+		UPDATE set_assoc
+			SET space_id=_parentId
+			WHERE child_id=_childId;
+		INSERT INTO closure (ancestor, descendant)
+			SELECT ancestor, _childId AS descendant -- all ancestors of parent space
+			FROM closure
+			WHERE descendant=_parentId
+			UNION ALL SELECT _parentId, _childId    -- parent space
+			UNION SELECT _childId, _childId;        -- child space
+	END //
+
+-- Rebuild closure entries for a space, assuming its parent has fully correct
+-- closure entries. When moving a space, we must call this for each child space,
+-- using a pre-order traversal of the tree.
+DROP PROCEDURE IF EXISTS RebuildSpaceClosures;
+CREATE PROCEDURE RebuildSpaceClosures(IN _childId INT)
+	BEGIN
+		DECLARE _parentId INT;
+		SELECT space_id INTO _parentId FROM set_assoc WHERE child_id=_childId;
+		DELETE                                      -- remove
+			FROM closure                            --   all existing closures
+			WHERE descendant=_childId;              --   for this child space
+		INSERT INTO closure (ancestor, descendant)  -- insert as ancestors
+			SELECT ancestor, _childId AS descendant --   all ancestors of parent space
+			FROM closure
+			WHERE descendant=_parentId
+			UNION ALL SELECT _parentId, _childId    --   parent space
+			UNION SELECT _childId, _childId;        --   this space
+	END //
+
 -- Adds an association between two job spaces
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS AssociateJobSpaces;

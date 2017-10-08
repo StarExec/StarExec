@@ -211,6 +211,14 @@ function onSpaceDrop(event, ui) {
 
 	log(ids.length + ' rows dropped onto ' + destName);
 
+	$("#hier-copy-options").change(function() {
+		if ($(this).val() === "move") {
+			$('.copy-primitives-options').hide();
+		} else {
+			$('.copy-primitives-options').show();
+		}
+	});
+
 	if(ids.length < 2) {
 		log ("ids.length was < 2");
 		// If 0 or 1 things are selected in the table, just use the element that is being dragged
@@ -396,13 +404,14 @@ function setupSpaceCopyDialog(ids, destSpace, destName) {
 	var spaceCopyDialogButtons = {};
 
 	spaceCopyDialogButtons['confirm'] = function() {
-		var copyHierOption;
+		var copyHierOption = $("#hier-copy-options").find(":selected").val();
 		$(EXP_SP.copySpaceDialog).dialog('close');
-		if (allSpacesBeingCopiedAreLeaves) {
+		if (copyHierOption === "move") {
+			return doSpaceMovePost(ids, destSpace);
+		} else if (allSpacesBeingCopiedAreLeaves) {
 			copyHierOption = false;
 			log('Copying single space');
 		} else {
-			copyHierOption = $("#hier-copy-options").find(":selected").val();
 			log('copyHierOption: ' + copyHierOption);
 			$('#hier-copy-options').addClass('copy-options-hidden');
 		}
@@ -478,6 +487,21 @@ function doSpaceCopyPost(ids,destSpace,copyHierarchy,destName) {
 			"json"
 	).error(function() {
 		showMessage('error',"Internal error copying spaces",5000);
+	});
+}
+
+function doSpaceMovePost(ids, destSpace) {
+	$.post(
+			starexecRoot+"services/move/space",
+			{"selectedIds": ids, "parent": destSpace},
+			function(returnCode) {
+				if (parseReturnCode(returnCode)) {
+					$("#exploreList").jstree("refresh");
+				}
+			},
+			"json"
+	).error(function() {
+		showMessage("error", "Internal error moving spaces", 5000);
 	});
 }
 

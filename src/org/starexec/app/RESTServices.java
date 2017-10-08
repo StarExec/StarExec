@@ -4052,6 +4052,44 @@ public class RESTServices {
 	}
 
 	/**
+	 * Move an subspace into a different parent space
+	 * @param spaceId The Id of the space which is copied into.
+	 * @param request The HttpRequestServlet object containing the list of the space's Id
+	 * @param response Will set "New_ID" cookie with ids of new spaces
+	 * @return 0: Success.
+	 */
+	@POST
+	@Path("/move/space")
+	@Consumes("application/x-www-form-urlencoded")
+	@Produces("application/json")
+	public String moveSubSpaceToSpace(@FormParam("selectedIds[]") List<Integer> srcId, @FormParam("parent") int desId, @Context HttpServletRequest request) {
+		log.error("moveSubSpaceToSpace", "srcId: " + srcId + "    desId: " + desId);
+		// Get the id of the user who initiated the request
+		int userId = SessionUtil.getUserId(request);
+		if (srcId.isEmpty()) {
+			return gson.toJson(new ValidatorStatusCode(false, "No spaceId provided"));
+		}
+		ValidatorStatusCode status;
+		status = SpaceSecurity.canCopySpace(desId, userId, srcId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		status = SpaceSecurity.canUserRemoveSpace(userId, srcId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		try {
+			for (int i : srcId) {
+				Spaces.moveSpace(i, desId);
+			}
+			return gson.toJson(new ValidatorStatusCode(true, "Space moved successfully"));
+		} catch (Exception e) {
+			log.error("moveSubSpaceToSpace", e);
+			throw RESTException.INTERNAL_SERVER_ERROR;
+		}
+	}
+
+	/**
 	 * Handling the copy of subspaces for both single space copy and hierachy
 	 * @param spaceId The Id of the space which is copied into.
 	 * @param request The HttpRequestServlet object containing the list of the space's Id

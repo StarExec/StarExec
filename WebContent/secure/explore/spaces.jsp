@@ -176,6 +176,7 @@
 		<select id="hier-copy-options" class="copy-options-hidden" name="copySpace">
 			<option value="false">copy space</option>
 			<option value="true">copy hierarchy</option>
+			<option value="move">move hierarchy</option>
 		</select>
 		<br class="clear" />
 		<div id="copy-primitives-options" class="copy-options-hidden">
