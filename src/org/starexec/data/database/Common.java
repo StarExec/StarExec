@@ -423,7 +423,21 @@ public class Common {
 				statement.close();
 			}
 		} catch (Exception e) {
-			log.error("safeClose statement says "+e.getMessage(),e);
+			log.error("safeClose", e);
+		}
+	}
+
+	/**
+	 * Closes a result set
+	 * @param r The result set close
+	 */
+	protected static void safeClose(ResultSet r) {
+		try {
+			if (r!=null && !r.isClosed()) {
+				r.close();
+			}
+		} catch (Exception e) {
+			log.error("safeClose", e);
 		}
 	}
 
@@ -445,20 +459,6 @@ public class Common {
 		} catch (Exception e){
 			// Do nothing
 			log.error("Safe Close says " + e.getMessage(),e);
-		}
-	}
-
-	/**
-	 * Method which closes a result set
-	 * @param r The result set close
-	 */
-	protected static void safeClose(ResultSet r) {
-		try {
-			if(r != null && !r.isClosed()) {
-				r.close();
-			}
-		} catch (Exception e){
-			log.error("Close Result set says " + e);
 		}
 	}
 }
