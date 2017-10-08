@@ -218,9 +218,8 @@ function onSpaceDrop(event, ui) {
 		ids = [ui.draggable.data('id')];
 
 		// Customize the confirmation message for the copy operation to the primitives/spaces involved
-		log("ui.draggable.data('type')[0]="+ui.draggable.data('type')[0]+" , ui.draggable.data('type')[1]="+ui.draggable.data('type')[1]);
-		// If they're trying to copy a space.
-		if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p') {
+		switch (ui.draggable.data('type')) {
+		case "space":
 			allSpacesBeingCopiedAreLeaves = ids.every(function(idOfSpaceBeingCopied) {
 				return spaceIsLeaf(idOfSpaceBeingCopied);
 			});
@@ -233,9 +232,8 @@ function onSpaceDrop(event, ui) {
 						'would you like to copy ' + ui.draggable.data('name') + ' only or the hierarchy to' + destName +'?');
 				$('#hier-copy-options').removeClass('copy-options-hidden');
 			}
-		}
-		// If they're trying to copy a solver.
-		else if(ui.draggable.data('type')[0] == 's') {
+			break;
+		case "solver":
 			if (destIsLeafSpace) {
 				$('#dialog-confirm-copy-txt').text('do you want to copy or link ' + ui.draggable.data('name') + ' to' + destName+'?');
 
@@ -244,7 +242,8 @@ function onSpaceDrop(event, ui) {
 						'do you want to copy ' + ui.draggable.data('name') + ' to' + destName +
 						' and all of its subspaces or just to' + destName +'?');
 			}
-		} else if (ui.draggable.data('type')[0] == 'u') {
+			break;
+		case "user":
 			if (destIsLeafSpace) {
 				$('#dialog-confirm-copy-txt').text('do you want to copy ' + ui.draggable.data('name') + ' to' + destName+'?');
 
@@ -253,16 +252,16 @@ function onSpaceDrop(event, ui) {
 						'do you want to copy ' + ui.draggable.data('name') + ' to' + destName +
 						' and all of its subspaces or just to' + destName +'?');
 			}
-		} else if (ui.draggable.data('type')[0]=='j') {
-
+			break;
+		case "job":
 			$('#dialog-confirm-copy-txt').text('do you want to link ' + ui.draggable.data('name') + ' in' + destName + '?');
-		}
-		else {
+			break;
+		default:
 			$('#dialog-confirm-copy-txt').text('do you want to copy or link ' + ui.draggable.data('name') + ' to' + destName + '?');
 		}
 	} else {
-		// If they're trying to copy a space.
-		if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p') {
+		switch (ui.draggable.data('type')) {
+		case "space":
 			$('#copy-primitives-options').removeClass('copy-options-hidden');
 			allSpacesBeingCopiedAreLeaves = ids.every(function(idOfSpaceBeingCopied) {
 				return spaceIsLeaf(idOfSpaceBeingCopied);
@@ -274,22 +273,21 @@ function onSpaceDrop(event, ui) {
 				$(EXP_SP.copySpaceDialogText).text(
 						'do you want to copy the ' + ids.length + ' selected spaces only or the hierarchy to' + destName +'?');
 			}
-		}
-		// If they're trying to copy a solver or a user.
-		else if(ui.draggable.data('type')[0] == 's' || ui.draggable.data('type')[0] == 'u') {
+			break;
+		case "solver":
+		case "user":
 			$('#dialog-confirm-copy-txt').text('do you want to copy the ' + ids.length + ' selected '+ ui.draggable.data('type') + 's to' + destName + ' and all of its subspaces or just to' + destName +'?');
-
-		// If they're trying to copy a job or a user.
-		} else if (ui.draggable.data('type')[0]=='j') {
+			break;
+		case "job":
 			$('#dialog-confirm-copy-txt').text('do you want to link the ' + ids.length + ' selected ' + ui.draggable.data('type') + 's in' + destName + '?');
-
-		}else {
+			break;
+		default:
 			$('#dialog-confirm-copy-txt').text('do you want to copy or link the ' + ids.length + ' selected ' + ui.draggable.data('type') + 's to' + destName + '?');
 		}
 	}
 
-	// If primitive being copied to another space is a solver...
-	if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] != 'p') {
+	switch (ui.draggable.data('type')) {
+	case "solver":
 		var solverCopyDialogButtons = {
 			'link in space': function() {
 				$('#dialog-confirm-copy').dialog('close');
@@ -318,23 +316,17 @@ function onSpaceDrop(event, ui) {
 			modal: true,
 			width: 600,
 			height: 400,
-
 			//depending on what the user
 			buttons: solverCopyDialogButtons
 		});
-	}
-	// If primitive being copied to another space is a user...
-	else if(ui.draggable.data('type')[0] == 'u') {
+		break;
+	case "user":
 		setupUserCopyDialog(ids, destSpace, destName, ui, destIsLeafSpace);
-	}
-
-	// If copying subspaces to other spaces
-	else if(ui.draggable.data('type')[0] == 's' && ui.draggable.data('type')[1] == 'p') {
+		break;
+	case "space":
 		setupSpaceCopyDialog(ids, destSpace, destName);
-	}
-
-	// Otherwise, if the primitive being copied to another space is a benchmark
-	else if(ui.draggable.data('type')[0] == 'b') {
+		break;
+	case "benchmark":
 		// Display the confirmation dialog
 		$('#dialog-confirm-copy').dialog({
 			modal: true,
@@ -353,10 +345,8 @@ function onSpaceDrop(event, ui) {
 				}
 			}
 		});
-	}
-
-	// Otherwise, if the primitive being copied to another space is a job
-	else {
+		break;
+	default:
 		// Display the confirmation dialog
 		$('#dialog-confirm-copy').dialog({
 			modal: true,
@@ -365,10 +355,8 @@ function onSpaceDrop(event, ui) {
 			buttons: {
 				'yes': function() {
 					log('user confirmed copy action');
-
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-copy').dialog('close');
-
 					// Make the request to the server
 					$.post(
 							starexecRoot+'services/spaces/' + destSpace + '/add/job',
