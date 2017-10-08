@@ -702,11 +702,6 @@ function removeBenchmarks(selectedBenches,ownsAll) {
 	}
 }
 
-function cancelRemoveUsers() {
-	log('user canceled user deletion');
-	$('#dialog-confirm-delete').dialog('close');
-}
-
 function removeUsersFromSpace(selectedUsers) {
 	log('user confirmed user deletion');
 	// If the user actually confirms, close the dialog right away
@@ -740,7 +735,7 @@ function removeUsers(selectedUsers) {
 				removeUsersFromSpace(selectedUsers)
 			},
 			'cancel': function() {
-				cancelRemoveUsers()
+				$('#dialog-confirm-delete').dialog('close');
 			}
 		};
 	} else {
@@ -770,7 +765,7 @@ function removeUsers(selectedUsers) {
 				removeUsersFromSpace(selectedUsers)
 			},
 			'cancel': function() {
-				cancelRemoveUsers()
+				$('#dialog-confirm-delete').dialog('close');
 			}
 		};
 	}
