@@ -176,21 +176,20 @@ function onTrashDrop(event, ui) {
 	}
 
 	// Call the appropriate primitive removal function
-	switch(ui.draggable.data('type')[0]) {
-	case 'u':
+	switch (ui.draggable.data('type')) {
+	case "user":
 		removeUsers(ids);
 		break;
-	case 's':
-		if(ui.draggable.data('type')[1] == 'o') {
-			removeSolvers(ids,ownsAll);
-		} else {
-			removeSubspaces(ids);//actual Remove called within here
-		}
+	case "solver":
+		removeSolvers(ids,ownsAll);
 		break;
-	case 'b':
+	case "space":
+		removeSubspaces(ids);//actual Remove called within here
+		break;
+	case "benchmark":
 		removeBenchmarks(ids,ownsAll);
 		break;
-	case 'j':
+	case "job":
 		removeJobs(ids,ownsAll);
 		break;
 	}
@@ -1118,21 +1117,20 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
  * @author Todd Elvers
  */
 function updateFieldsetCount(tableName, value) {
-	switch(tableName[0]) {
-	case 'j':
+	switch (tableName) {
+	case "jobs":
 		$('#jobExpd').children('span:first-child').text(value);
 		break;
-	case 'u':
+	case "users":
 		$('#userExpd').children('span:first-child').text(value);
 		break;
-	case 's':
-		if('o' == tableName[1]) {
-			$('#solverExpd').children('span:first-child').text(value);
-		} else {
-			$('#spaceExpd').children('span:first-child').text(value);
-		}
+	case "solvers":
+		$('#solverExpd').children('span:first-child').text(value);
 		break;
-	case 'b':
+	case "spaces":
+		$('#spaceExpd').children('span:first-child').text(value);
+		break;
+	case "benchmarks":
 		$('#benchExpd').children('span:first-child').text(value);
 		break;
 	}
