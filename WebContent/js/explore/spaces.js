@@ -220,9 +220,7 @@ function onSpaceDrop(event, ui) {
 		// Customize the confirmation message for the copy operation to the primitives/spaces involved
 		switch (ui.draggable.data('type')) {
 		case "space":
-			allSpacesBeingCopiedAreLeaves = ids.every(function(idOfSpaceBeingCopied) {
-				return spaceIsLeaf(idOfSpaceBeingCopied);
-			});
+			allSpacesBeingCopiedAreLeaves = ids.every(spaceIsLeaf);
 			$('#copy-primitives-options').removeClass('copy-options-hidden');
 			if (allSpacesBeingCopiedAreLeaves) {
 				$(EXP_SP.copySpaceDialogText).text(
@@ -263,9 +261,7 @@ function onSpaceDrop(event, ui) {
 		switch (ui.draggable.data('type')) {
 		case "space":
 			$('#copy-primitives-options').removeClass('copy-options-hidden');
-			allSpacesBeingCopiedAreLeaves = ids.every(function(idOfSpaceBeingCopied) {
-				return spaceIsLeaf(idOfSpaceBeingCopied);
-			});
+			allSpacesBeingCopiedAreLeaves = ids.every(spaceIsLeaf);
 			if (allSpacesBeingCopiedAreLeaves) {
 				$(EXP_SP.copySpaceDialogText).text('do you want to copy the '+ ids.length + ' selected spaces to' + destName + '?');
 			} else {
@@ -396,9 +392,7 @@ function setupSpaceCopyDialog(ids, destSpace, destName) {
 	});
 
 	// True if every space in ids is a leaf.
-	var allSpacesBeingCopiedAreLeaves = ids.every(function(idOfSpaceBeingCopied) {
-		return spaceIsLeaf(idOfSpaceBeingCopied);
-	});
+	var allSpacesBeingCopiedAreLeaves = ids.every(spaceIsLeaf);
 
 	var singleSpaceCopy = function() {
 		// If the user actually confirms, close the dialog right away
