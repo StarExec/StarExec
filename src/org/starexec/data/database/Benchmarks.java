@@ -1467,11 +1467,12 @@ public class Benchmarks {
 	}
 
 	private static String getBenchmarkOrderColumn(int indexOfColumn) {
-		if (indexOfColumn == 0) {
+		switch (indexOfColumn) {
+		case 0:
 			return "benchmarks.name";
-		} else if (indexOfColumn == 1) {
+		case 1:
 			return "processors.name";
-		} else if (indexOfColumn == 2) {
+		case 2:
 			return "bench_assoc.order_id";
 		}
 		return "benchmarks.name";

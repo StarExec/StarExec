@@ -98,7 +98,8 @@ public class UploadSolver extends HttpServlet {
 				UploadSolverResult result = handleSolver(userId, form);
 
 				// Redirect based on success/failure
-				if (result.status == UploadSolverStatus.SUCCESS) {
+				switch (result.status) {
+				case SUCCESS:
 					if (result.isBuildJob) {
 						log.debug("Submitting job to build solver.");
 						int job_return = JobManager.addBuildJob(result.solverId, spaceId);
@@ -112,13 +113,15 @@ public class UploadSolver extends HttpServlet {
 					response.addCookie(new Cookie("New_ID", String.valueOf(result.solverId)));
 					if (result.isBuildJob && !runTestJob) {
 						response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId +
-								                                   "&buildmsg=Building Solver On Starexec"));
-					} else if (!result.hadConfigs) { //If there are no configs. We do not attempt to run a test job in
+																   "&buildmsg=Building Solver On Starexec"));
+					} else if (!result.hadConfigs) { //If there are no configs. We do not attempt to run a test
+						// job in
 						// this case
 						response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId +
-								                                   "&msg=No configurations for the new solver"));
+																   "&msg=No configurations for the new solver"));
 					} else {
-						//if this solver has some configurations, we should check to see if the user wanted a test job
+						//if this solver has some configurations, we should check to see if the user wanted a test
+						// job
 						if (runTestJob) {
 							log.debug("attempting to run test job");
 
@@ -131,15 +134,17 @@ public class UploadSolver extends HttpServlet {
 
 							int jobId = CreateJob.buildSolverTestJob(result.solverId, spaceId, userId, settingsId);
 							if (result.isBuildJob && jobId > 0) {
-								response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId +
-										                                   "&buildmsg=Building Solver On Starexec-- " +
-										                                   "test job will be run after build"));
+								response.sendRedirect(Util.docRoot(
+										"secure/details/solver.jsp?id=" + result.solverId +
+												"&buildmsg=Building Solver On Starexec-- " +
+												"test job will be run after build"));
 							} else if (jobId > 0) {
 								response.sendRedirect(Util.docRoot("secure/details/job.jsp?id=" + jobId));
 							} else {
-								response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId +
-										                                   "&msg=Internal error creating test job-- " +
-										                                   "solver uploaded successfully"));
+								response.sendRedirect(Util.docRoot(
+										"secure/details/solver.jsp?id=" + result.solverId +
+												"&msg=Internal error creating test job-- " +
+												"solver uploaded successfully"));
 							}
 						} else if (result.optionalMessage.isPresent()) {
 							String url = "secure/details/solver.jsp?id=" + result.solverId + "&msg=" +
@@ -149,10 +154,13 @@ public class UploadSolver extends HttpServlet {
 							response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId));
 						}
 					}
-				} else if (result.status == UploadSolverStatus.EXTRACTING_ERROR) {
+					break;
+				case EXTRACTING_ERROR:
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result.status.message);
-				} else {
+					break;
+				default:
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, result.status.message);
+					break;
 				}
 			} else {
 				// Got a non multi-part request, invalid

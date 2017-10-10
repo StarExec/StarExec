@@ -2206,35 +2206,48 @@ public class RESTServices {
 
 			boolean success = false;
 			// Go through all the cases, depending on what attribute we are changing.
-			if (defaultSettingAttribute == DefaultSettingAttribute.PostProcess) {
+			switch (defaultSettingAttribute) {
+			case PostProcess:
 				success = Settings.updateSettingsProfile(id, 1, Integer.parseInt(newValue));
-			} else if (defaultSettingAttribute == DefaultSettingAttribute.BenchProcess) {
-				success = Settings.updateSettingsProfile(id,8,Integer.parseInt(newValue));
-			}else if (defaultSettingAttribute == DefaultSettingAttribute.CpuTimeout) {
+				break;
+			case BenchProcess:
+				success = Settings.updateSettingsProfile(id, 8, Integer.parseInt(newValue));
+				break;
+			case CpuTimeout:
 				success = Settings.updateSettingsProfile(id, 2, Integer.parseInt(newValue));
-			}else if (defaultSettingAttribute == DefaultSettingAttribute.ClockTimeout) {
+				break;
+			case ClockTimeout:
 				success = Settings.updateSettingsProfile(id, 3, Integer.parseInt(newValue));
-			} else if (defaultSettingAttribute == DefaultSettingAttribute.DependenciesEnabled) {
+				break;
+			case DependenciesEnabled:
 				success = Settings.updateSettingsProfile(id, 4, Integer.parseInt(newValue));
-			} else if (defaultSettingAttribute == DefaultSettingAttribute.defaultbenchmark) {
+				break;
+			case defaultbenchmark: {
 				DefaultSettings settings = Settings.getProfileById(id);
 				Integer benchId = Integer.parseInt(newValue);
 				settings.addBenchId(benchId);
 				Settings.updateDefaultSettings(settings);
 				success = true;
-			} else if (defaultSettingAttribute == DefaultSettingAttribute.defaultsolver) {
-				success=Settings.updateSettingsProfile(id, 7, Integer.parseInt(newValue));
-			} else if(defaultSettingAttribute == DefaultSettingAttribute.MaxMem) {
-				double gigabytes=Double.parseDouble(newValue);
+				break;
+			}
+			case defaultsolver:
+				success = Settings.updateSettingsProfile(id, 7, Integer.parseInt(newValue));
+				break;
+			case MaxMem:
+				double gigabytes = Double.parseDouble(newValue);
 				long bytes = Util.gigabytesToBytes(gigabytes);
-				success=Settings.setDefaultMaxMemory(id, bytes);
-			} else if (defaultSettingAttribute == DefaultSettingAttribute.PreProcess) {
-				success=Settings.updateSettingsProfile(id, 6, Integer.parseInt(newValue));
-			} else if (defaultSettingAttribute == DefaultSettingAttribute.BENCHMARKING_FRAMEWORK) {
+				success = Settings.setDefaultMaxMemory(id, bytes);
+				break;
+			case PreProcess:
+				success = Settings.updateSettingsProfile(id, 6, Integer.parseInt(newValue));
+				break;
+			case BENCHMARKING_FRAMEWORK: {
 				// Update the benchmarking framework and save it.
 				DefaultSettings settings = Settings.getProfileById(id);
 				settings.setBenchmarkingFramework(BenchmarkingFramework.valueOf(newValue));
 				success = Settings.updateDefaultSettings(settings);
+				break;
+			}
 			}
 
 			// Passed validation AND Database update successful

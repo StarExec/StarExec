@@ -647,11 +647,12 @@ public class Users {
 	}
 
 	private static String getUserOrderColumn(int columnIndex) {
-		if (columnIndex == 0) {
+		switch (columnIndex) {
+		case 0:
 			return "full_name";
-		} else if (columnIndex == 1) {
+		case 1:
 			return "institution";
-		} else if (columnIndex == 2) {
+		case 2:
 			return "email";
 		}
 

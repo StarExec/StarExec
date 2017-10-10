@@ -1943,25 +1943,26 @@ public class Jobs {
 	 * @return The SQL column name
 	 */
 	private static String getJobPairOrderColumn(int orderIndex, boolean wallclock) {
-		if (orderIndex == 0) {
+		switch (orderIndex) {
+		case 0:
 			return "job_pairs.bench_name";
-		} else if (orderIndex == 1) {
+		case 1:
 			return "jobpair_stage_data.solver_name";
-		} else if (orderIndex == 2) {
+		case 2:
 			return "jobpair_stage_data.config_name";
-		} else if (orderIndex == 3) {
+		case 3:
 			return "jobpair_stage_data.status_code";
-		} else if (orderIndex == 4) {
+		case 4:
 			if (wallclock) {
 				return "jobpair_stage_data.wallclock";
 			} else {
 				return "jobpair_stage_data.cpu";
 			}
-		} else if (orderIndex == 5) {
+		case 5:
 			return "result";
-		} else if (orderIndex == 6) {
+		case 6:
 			return "job_pairs.id";
-		} else if (orderIndex == 7) {
+		case 7:
 			// the - sign is because we want null values last, so we reverse the ASC/ DESC sign and add a -
 			return "-completion_id";
 		}
@@ -2504,20 +2505,21 @@ public class Jobs {
 	 * @return
 	 */
 	private static String getJobOrderColumn(int orderIndex) {
-		if (orderIndex == 0) {
+		switch (orderIndex) {
+		case 0:
 			return "jobs.name";
-		} else if (orderIndex == 1) {
-			return "pendingPairs"; // this is the same as ordering by status, as the status is determined by whether a
-			// job has pending pairs
-		} else if (orderIndex == 2) {
+		case 1:
+			 // this is the same as ordering by status, as the status is determined by whether a job has pending pairs
+			return "pendingPairs";
+		case 2:
 			return "completePairs";
-		} else if (orderIndex == 3) {
+		case 3:
 			return "totalPairs";
-		} else if (orderIndex == 4) {
+		case 4:
 			return "errorPairs";
-		} else if (orderIndex == 5) {
+		case 5:
 			return "created";
-		} else if (orderIndex == 6) {
+		case 6:
 			return "disk_size";
 		}
 		return "jobs.name";

@@ -87,11 +87,12 @@ public class WebsiteSecurity {
 		if (w == null) {
 			return new ValidatorStatusCode(false, "The given website could not be found");
 		}
-		if (w.getType() == WebsiteType.USER) {
+		switch (w.getType()) {
+		case USER:
 			return canDeleteUserWebsite(w, userId);
-		} else if (w.getType() == WebsiteType.SOLVER) {
+		case SOLVER:
 			return canDeleteSolverWebsite(w, userId);
-		} else {
+		default:
 			return canDeleteSpaceWebsite(w, userId);
 		}
 	}

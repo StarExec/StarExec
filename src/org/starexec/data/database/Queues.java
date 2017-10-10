@@ -361,19 +361,20 @@ public class Queues {
 	}
 
 	private static String getPairOrderColumnForClusterPage(int indexOrder) {
-		if (indexOrder == 0) {
+		switch (indexOrder) {
+		case 0:
 			return "queuesub_time";
-		} else if (indexOrder == 1) {
+		case 1:
 			return "jobs.name";
-		} else if (indexOrder == 2) {
+		case 2:
 			return "users.first_name, users.last_name";
-		} else if (indexOrder == 3) {
+		case 3:
 			return "bench_name";
-		} else if (indexOrder == 4) {
+		case 4:
 			return "solver_name";
-		} else if (indexOrder == 5) {
+		case 5:
 			return "config_name";
-		} else if (indexOrder == 6) {
+		case 6:
 			return "path";
 		}
 
@@ -635,15 +636,19 @@ public class Queues {
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();
-			if (userId == 0) {
+			switch (userId) {
+			case 0:
 				//only gets the queues that have status "ACTIVE"
 				procedure = con.prepareCall("{CALL GetAllQueues}");
-			} else if (userId == -2) {
+				break;
+			case -2:
 				//includes inactive queues
 				procedure = con.prepareCall("{CALL GetAllQueuesAdmin}");
-			} else {
+				break;
+			default:
 				procedure = con.prepareCall("{CALL GetQueuesForUser(?)}");
 				procedure.setInt(1, userId);
+				break;
 			}
 
 			results = procedure.executeQuery();
