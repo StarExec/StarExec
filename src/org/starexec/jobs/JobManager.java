@@ -192,8 +192,9 @@ public abstract class JobManager {
 			logMessage.append("\t");
 		}
 
-		logMessage.append("( jobId: " + s.job.getId() + ", userId: " + s.job.getUserId() + ", isHighPriority: " +
-		                  s.job.isHighPriority() + ", hasNext: " + s.pairIter.hasNext() + " )");
+		logMessage.append("( jobId: ").append(s.job.getId()).append(", userId: ").append(s.job.getUserId())
+		          .append(", isHighPriority: ").append(s.job.isHighPriority()).append(", hasNext: ")
+		          .append(s.pairIter.hasNext()).append(" )");
 
 		log.debug(methodName, logMessage.toString());
 	}

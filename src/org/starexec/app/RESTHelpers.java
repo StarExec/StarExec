@@ -1339,11 +1339,11 @@ public class RESTHelpers {
 	private static String getConfigLink(int configId, String configName, PrimitivesToAnonymize primitivesToAnonymize) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<a class=\"configLink\" title=\"");
-		sb.append(configName + "\"");
+		sb.append(configName).append("\"");
 		// Add the link to the solver if we don't need to be an anoymous config.
 		if (!AnonymousLinks.areSolversAnonymized(primitivesToAnonymize)) {
-			sb.append(" href=\"" + Util.docRoot("secure/details/configuration.jsp?id="));
-			sb.append(configId + "\" target=\"_blank\"");
+			sb.append(" href=\"").append(Util.docRoot("secure/details/configuration.jsp?id="));
+			sb.append(configId).append("\" target=\"_blank\"");
 		}
 		sb.append(" id=\"");
 		sb.append(configId);
@@ -1376,7 +1376,7 @@ public class RESTHelpers {
 			sb.append(" title=\"");
 			sb.append(bench.getDescription());
 			sb.append("\" ");
-			sb.append("href=\"" + Util.docRoot("secure/details/benchmark.jsp?id="));
+			sb.append("href=\"").append(Util.docRoot("secure/details/benchmark.jsp?id="));
 			sb.append(bench.getId());
 			sb.append("\" target=\"_blank\"");
 		}
@@ -1429,7 +1429,7 @@ public class RESTHelpers {
 		sb.append("\" ");
 
 		if (!AnonymousLinks.areSolversAnonymized(primitivesToAnonymize)) {
-			sb.append("href=\"" + Util.docRoot("secure/details/solver.jsp?id="));
+			sb.append("href=\"").append(Util.docRoot("secure/details/solver.jsp?id="));
 			sb.append(solverId);
 			sb.append("\" target=\"_blank\"");
 		}
@@ -1453,16 +1453,16 @@ public class RESTHelpers {
 		sb.append("<input type=\"hidden\" value=\"");
 		sb.append(userId);
 		if (userId == callerId) {
-			sb.append("\" name=\"currentUser\" id=\"uid" + userId + "\" prim=\"user\"/>");
+			sb.append("\" name=\"currentUser\" id=\"uid").append(userId).append("\" prim=\"user\"/>");
 		} else {
-			sb.append("\" id=\"uid" + userId + "\" prim=\"user\"/>");
+			sb.append("\" id=\"uid").append(userId).append("\" prim=\"user\"/>");
 		}
 		hiddenUserId = sb.toString();
 
 		// Create the user "details" link and append the hidden input
 		// element
 		sb = new StringBuilder();
-		sb.append("<a href=\"" + Util.docRoot("secure/details/user.jsp?id="));
+		sb.append("<a href=\"").append(Util.docRoot("secure/details/user.jsp?id="));
 		sb.append(userId);
 		sb.append("\" target=\"_blank\">");
 		sb.append(name);
@@ -1553,12 +1553,13 @@ public class RESTHelpers {
 			// Create the hidden input tag containing the job id
 			sb.append("<input type=\"hidden\" value=\"");
 			sb.append(job.getId());
-			sb.append("\" prim=\"job\" userId=\"" + job.getUserId() + "\"  deleted=\"" + job.isDeleted() + "\"/>");
+			sb.append("\" prim=\"job\" userId=\"").append(job.getUserId()).append("\"  deleted=\"")
+			  .append(job.isDeleted()).append("\"/>");
 			hiddenJobId = sb.toString();
 
 			// Create the job "details" link and append the hidden input element
 			sb = new StringBuilder();
-			sb.append("<a href=\"" + Util.docRoot("secure/details/job.jsp?id="));
+			sb.append("<a href=\"").append(Util.docRoot("secure/details/job.jsp?id="));
 			sb.append(job.getId());
 			sb.append("\" target=\"_blank\">");
 			sb.append(job.getName());
@@ -1681,7 +1682,8 @@ public class RESTHelpers {
 			String emailLink = sb.toString();
 
 			sb = new StringBuilder();
-			sb.append("<input type=\"button\" onclick=\"editPermissions(" + user.getId() + ")\" value=\"Edit\"/>");
+			sb.append("<input type=\"button\" onclick=\"editPermissions(").append(user.getId())
+			  .append(")\" value=\"Edit\"/>");
 			String permissionButton = sb.toString();
 
 			// Create an object, and inject the above HTML, to represent an
@@ -1697,11 +1699,13 @@ public class RESTHelpers {
 				suspendButton = "N/A";
 			} else if (Users.isSuspended(user.getId())) {
 				sb = new StringBuilder();
-				sb.append("<input type=\"button\" onclick=\"reinstateUser(" + user.getId() + ")\" value=\"Reinstate\"/>");
+				sb.append("<input type=\"button\" onclick=\"reinstateUser(").append(user.getId())
+				  .append(")\" value=\"Reinstate\"/>");
 				suspendButton = sb.toString();
 			} else if (Users.isNormalUser(user.getId())) {
 				sb = new StringBuilder();
-				sb.append("<input type=\"button\" onclick=\"suspendUser(" + user.getId() + ")\" value=\"Suspend\"/>");
+				sb.append("<input type=\"button\" onclick=\"suspendUser(").append(user.getId())
+				  .append(")\" value=\"Suspend\"/>");
 				suspendButton = sb.toString();
 			}
 			entry.add(new JsonPrimitive(suspendButton));
@@ -1752,7 +1756,8 @@ public class RESTHelpers {
 			// entry in the DataTable
 			JsonArray entry = new JsonArray();
 			StringBuilder sb = new StringBuilder();
-			sb.append("<a name=\"" + test.getName() + "\" href=\"" + Util.docRoot("secure/admin/testResults.jsp?sequenceName="));
+			sb.append("<a name=\"").append(test.getName()).append("\" href=\"")
+			  .append(Util.docRoot("secure/admin/testResults.jsp?sequenceName="));
 			sb.append(test.getName());
 			sb.append("\" target=\"_blank\">");
 			sb.append(test.getName());
@@ -1848,7 +1853,8 @@ public class RESTHelpers {
 			// Create the hidden input tag containing the solver id
 			sb.append("<input type=\"hidden\" value=\"");
 			sb.append(solver.getId());
-			sb.append("\" prim=\"solver\" userId=\"" + solver.getUserId() + "\" deleted=\"" + solver.isDeleted() + "\" recycled=\"" + solver.isRecycled() + "\"/>");
+			sb.append("\" prim=\"solver\" userId=\"").append(solver.getUserId()).append("\" deleted=\"")
+			  .append(solver.isDeleted()).append("\" recycled=\"").append(solver.isRecycled()).append("\"/>");
 			String hiddenSolverId = sb.toString();
 
 			// Create the solver "details" link and append the hidden input
@@ -1903,7 +1909,9 @@ public class RESTHelpers {
 
 	private static StringBuilder getPairsInSpaceLink(String type, int spaceId, int configId, int stageNumber) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("<a href=\"" + Util.docRoot("secure/details/pairsInSpace.jsp?type=" + type + "&sid=" + spaceId + "&configid=" + configId + "&stagenum=" + stageNumber));
+		sb.append("<a href=\"").append(Util.docRoot(
+				"secure/details/pairsInSpace.jsp?type=" + type + "&sid=" + spaceId + "&configid=" + configId +
+						"&stagenum=" + stageNumber));
 		sb.append("\" target=\"_blank\" >");
 		return sb;
 	}
@@ -2153,11 +2161,13 @@ public class RESTHelpers {
 			String spaceLink = getSpaceLink(Spaces.get(req.getCommunityId()));
 
 			StringBuilder sb = new StringBuilder();
-			sb.append("<input class=\"acceptRequestButton\" type=\"button\" data-code=\"" + req.getCode() + "\" value=\"Approve\" />");
+			sb.append("<input class=\"acceptRequestButton\" type=\"button\" data-code=\"").append(req.getCode())
+			  .append("\" value=\"Approve\" />");
 			String approveButton = sb.toString();
 
 			sb = new StringBuilder();
-			sb.append("<input type=\"button\" class=\"declineRequestButton\"" + "data-code=\"" + req.getCode() + "\" value=\"Decline\"/>");
+			sb.append("<input type=\"button\" class=\"declineRequestButton\"" + "data-code=\"").append(req.getCode())
+			  .append("\" value=\"Decline\"/>");
 			String declineButton = sb.toString();
 
 			// Create an object, and inject the above HTML, to represent an

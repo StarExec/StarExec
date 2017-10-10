@@ -322,7 +322,7 @@ public class Mail {
 
 		// build the main reports string
 		for (Report report : mainReports) {
-			reportBuilder.append(report.getEventName() + ": " + report.getOccurrences() + "\n");
+			reportBuilder.append(report.getEventName()).append(": ").append(report.getOccurrences()).append("\n");
 		}
 
 		// clear the report builder
@@ -331,9 +331,10 @@ public class Mail {
 		// build the queue reports string
 		for (List<Report> reportsForOneQueue : reportsByQueue) {
 			String currentQueueName = reportsForOneQueue.get(0).getQueueName();
-			reportBuilder.append("queue: " + currentQueueName + "\n");
+			reportBuilder.append("queue: ").append(currentQueueName).append("\n");
 			for (Report report : reportsForOneQueue) {
-				reportBuilder.append("  " + report.getEventName() + ": " + report.getOccurrences() + "\n");
+				reportBuilder.append("  ").append(report.getEventName()).append(": ").append(report.getOccurrences())
+				             .append("\n");
 			}
 			reportBuilder.append("\n");
 		}

@@ -49,7 +49,7 @@ public class TestResult {
 		}
 		StringBuilder sb=new StringBuilder();
 		for (String s : messages) {
-			sb.append("--"+s+"\n");
+			sb.append("--").append(s).append("\n");
 		}
 		return sb.toString();
 	}

@@ -457,7 +457,7 @@ public class Util {
 		try {
 			while ((line = reader.readLine()) != null) {
 				readsomething = true;
-				sb.append(line + System.getProperty("line.separator"));
+				sb.append(line).append(System.getProperty("line.separator"));
 			}
 			reader.close();
 		} catch (IOException e) {

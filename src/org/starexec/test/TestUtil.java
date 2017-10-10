@@ -67,7 +67,7 @@ public class TestUtil {
 		StringBuilder sb=new StringBuilder();
 		StackTraceElement[] trace=error.getStackTrace();
 		for (StackTraceElement te : trace) {
-			sb.append(te.toString()+"\n");
+			sb.append(te.toString()).append("\n");
 		}
 		return sb.toString();
 	}

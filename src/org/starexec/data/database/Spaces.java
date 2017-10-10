@@ -1021,9 +1021,9 @@ public class Spaces {
 
 	private static void logSpaceTreeHelper(TreeNode<Space> tree, String indent) {
 		StringBuilder childrenMessage = new StringBuilder();
-		childrenMessage.append(tree.getData().getName() + ": ");
+		childrenMessage.append(tree.getData().getName()).append(": ");
 		for (TreeNode<Space> child : tree) {
-			childrenMessage.append(child.getData().getName() + " ");
+			childrenMessage.append(child.getData().getName()).append(" ");
 		}
 
 		log.debug(indent + "Descendants of space " + childrenMessage.toString());

@@ -27,8 +27,8 @@ public class LocalBackend implements Backend {
 	@Override
 	public String toString() {
 			StringBuilder sb = new StringBuilder();
-			sb.append(scriptPath + " ");
-			sb.append(execId+" ");
+			sb.append(scriptPath).append(" ");
+			sb.append(execId).append(" ");
 			if (process!=null) {
 				sb.append("running");
 			} else {

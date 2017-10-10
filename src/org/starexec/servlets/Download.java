@@ -344,7 +344,7 @@ public class Download extends HttpServlet {
 	private static String CreateJobCSV(Job job, Boolean returnIds, Boolean getOnlyCompleted) throws IOException {
 		log.debug("CreateJobCSV called with returnIds set to " + returnIds);
 		StringBuilder sb = new StringBuilder();
-		sb.append(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR);
+		sb.append(R.STAREXEC_ROOT).append(R.DOWNLOAD_FILE_DIR);
 		sb.append(File.separator);
 		int maxStageNumbers = 0;
 		for (JobPair jp : job) {
@@ -421,7 +421,7 @@ public class Download extends HttpServlet {
 					sb.append(",");
 				}
 				if (pair.getPath() != null) {
-					sb.append(pair.getPath() + "/" + pair.getBench().getName());
+					sb.append(pair.getPath()).append("/").append(pair.getBench().getName());
 				} else {
 					sb.append(pair.getBench().getName());
 				}
@@ -529,7 +529,7 @@ public class Download extends HttpServlet {
 							//means this is adjacent to a stdout file
 							if (files.size() > 1) {
 								singleFileName.append(File.separator);
-								singleFileName.append(p.getId() + "_output");
+								singleFileName.append(p.getId()).append("_output");
 							}
 							if (!running || earlyDate == null) {
 								modified = ArchiveUtil.addDirToArchive(stream, file, singleFileName.toString());

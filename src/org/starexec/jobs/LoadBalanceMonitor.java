@@ -306,7 +306,7 @@ public class LoadBalanceMonitor {
 		if (!d.active()) {
 			sb.append("(inactive) ");
 		}
-		sb.append(": load = " + loadDecay);
+		sb.append(": load = ").append(loadDecay);
 		return sb.toString();
 	}
 	
@@ -324,7 +324,7 @@ public class LoadBalanceMonitor {
 	 */
 	public void setUserLoadDataFormattedString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("minimum = "+this.getMin());
+		sb.append("minimum = ").append(this.getMin());
 		sb.append("\n\n");
 		// updates user load values to take into account actual job pair runtimes.
 		
