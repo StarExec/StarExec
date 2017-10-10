@@ -18,17 +18,17 @@ public class IntroStateTests extends TestSequence {
 	protected String getTestName() {
 		return "IntroStateTests";
 	}
-	
+
 	@StarexecTest
 	private void NoDefaultLeadersTest() {
 		List<Space> spaces=Spaces.GetAllSpaces();
-		
+
 		for (Space s : spaces) {
 			Assert.assertFalse(Permissions.getSpaceDefault(s.getId()).isLeader());
 		}
 	}
-	
-	@StarexecTest 
+
+	@StarexecTest
 	private void UniqueSubspaceNamesTest() {
 		List<Space> spaces=Spaces.GetAllSpaces();
 		for (Space s : spaces) {
@@ -48,12 +48,12 @@ public class IntroStateTests extends TestSequence {
 	@Override
 	protected void setup() throws Exception {
 		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
-		
+
 	}
 
 	@Override
 	protected void teardown() throws Exception {
-		
+
 	}
 
 }
