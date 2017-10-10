@@ -43,20 +43,24 @@ public class WebsiteSecurity {
 							"format"
 			);
 		}
-		if (type == R.SOLVER) {
+		switch (type) {
+		case R.SOLVER:
 			if (Solvers.get(primId) == null) {
 				return new ValidatorStatusCode(false, "The given solver could not be found");
 			}
 			if (!SolverSecurity.userOwnsSolverOrIsAdmin(primId, userId)) {
-				return new ValidatorStatusCode(false, "You do not have permission to add a website to this solver");
+				return new ValidatorStatusCode(false, "You do not have permission to add a website to this " +
+						"solver");
 			}
-		} else if (type == R.SPACE) {
+			break;
+		case R.SPACE:
 			Permission p = Permissions.get(userId, primId);
 			if (p == null || !p.isLeader()) {
 				return new ValidatorStatusCode(
 						false, "You do not have permission to associate websites with this space");
 			}
-		} else if (type == R.USER) {
+			break;
+		case R.USER:
 			boolean visitingUserIsOwner = (primId == userId);
 			if (!(visitingUserIsOwner || GeneralSecurity.hasAdminWritePrivileges(userId))) {
 				return new ValidatorStatusCode(false, "You do not have permission to add a website here.");
@@ -64,7 +68,8 @@ public class WebsiteSecurity {
 			if (Users.isPublicUser(primId)) {
 				return new ValidatorStatusCode(false, "The guest user profile cannot be updated");
 			}
-		} else {
+			break;
+		default:
 			return new ValidatorStatusCode(false, "The given type is not valid");
 		}
 		return new ValidatorStatusCode(true);
