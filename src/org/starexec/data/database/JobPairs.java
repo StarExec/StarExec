@@ -251,7 +251,7 @@ public class JobPairs {
 						procedure.setNull(2, java.sql.Types.INTEGER);
 					}
 					procedure.setInt(3, stage.getStageNumber());
-					procedure.setBoolean(4, pair.getPrimaryStageNumber() == stage.getStageNumber());
+					procedure.setBoolean(4, Objects.equals(pair.getPrimaryStageNumber(), stage.getStageNumber()));
 					procedure.setInt(5, stage.getSolver().getId());
 					procedure.setString(6, stage.getSolver().getName());
 					procedure.setInt(7, stage.getConfiguration().getId());

@@ -10,6 +10,7 @@ import java.io.File;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 
 /**
@@ -300,7 +301,7 @@ public class JobPair extends Identifiable {
 		if (primaryStageNumber != null && primaryStageNumber > 0) {
 
 			for (JoblineStage stage : this.getStages()) {
-				if (stage.getStageNumber() == primaryStageNumber) {
+				if (Objects.equals(stage.getStageNumber(), primaryStageNumber)) {
 					return stage;
 				}
 			}

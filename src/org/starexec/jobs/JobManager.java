@@ -705,7 +705,7 @@ public abstract class JobManager {
 			} else {
 				preProcessorTimeLimits.add(String.valueOf(p.getTimeLimit()));
 				preProcessorPaths.add(p.getFilePath());
-				if (stage.getStageNumber() == pair.getPrimaryStageNumber()) {
+				if (Objects.equals(stage.getStageNumber(), pair.getPrimaryStageNumber())) {
 					primaryPreprocessorPath = p.getFilePath();
 				}
 			}

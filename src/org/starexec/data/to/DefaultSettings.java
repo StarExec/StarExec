@@ -299,7 +299,7 @@ public class DefaultSettings extends Identifiable {
 
 		// If we make it past this loop we've established that the default bench ids are the same.
 		for (int i = 0; i < thisBenchIds.size(); i++) {
-			if (thisBenchIds.get(i) != setBenchIds.get(i)) {
+			if (!Objects.equals(thisBenchIds.get(i), setBenchIds.get(i))) {
 				return false;
 			}
 		}
