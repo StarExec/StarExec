@@ -635,7 +635,9 @@ public class ResourceLoader implements AutoCloseable {
 			}
 			
 			boolean success = Queues.updateQueueCpuTimeout(queueId, wallTimeout);
-			success = success && Queues.updateQueueWallclockTimeout(queueId, cpuTimeout);
+			if (success) {
+				Queues.updateQueueWallclockTimeout(queueId, cpuTimeout);
+			}
 			createdQueueIds.add(queueId);
 			return Queues.get(queueId);
 		} catch (Exception e) {

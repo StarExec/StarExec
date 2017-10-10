@@ -838,7 +838,6 @@ public class CommandValidator {
 			try {
 				if (zipfile != null) {
 					zipfile.close();
-					zipfile = null;
 				}
 			} catch (IOException e) {
 			}

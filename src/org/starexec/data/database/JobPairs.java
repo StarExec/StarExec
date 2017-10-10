@@ -301,7 +301,7 @@ public class JobPairs {
 				return;
 			}
 			log.debug("addJobPairs two");
-			success = addJobPairs(con, jobId, pairs);
+			addJobPairs(con, jobId, pairs);
 			log.debug("addJobPairs three");
 		} finally {
 			Common.endTransaction(con);
