@@ -47,7 +47,7 @@ function isAdmin(){
  * community
  **/
 function getCommunityIdList(){
-    list = new Array();
+    list = [];
     spaces = $("#communityIdList").attr("value").split(",");
     for(i=0;i < spaces.length; i++){
 		if(spaces[i].trim().length > 0){

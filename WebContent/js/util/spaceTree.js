@@ -60,7 +60,7 @@ function openSpace(curSp,childId) {
 	});	
 }
 function getSpaceChain(selector) {
-	chain=new Array();
+	chain=[];
 	spaceString=$(selector).attr("value");
 	if (spaceString.length==0) {
 		return spaceString;

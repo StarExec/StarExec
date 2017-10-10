@@ -61,7 +61,7 @@ function populateDetails(jsonData) {
 }
 
 function removeUser(userid, id) {
-	var idArray = new Array();
+	var idArray = [];
 	idArray.push(userid);
 	$.post(
 			starexecRoot+"services/remove/user/" + id,
@@ -77,7 +77,7 @@ function removeUser(userid, id) {
 }
 
 function promoteUser(userid, id) {
-	var idArray = new Array();
+	var idArray = [];
 	idArray.push(userid);
 	$.post(
 			starexecRoot+"services/makeLeader/" + id ,

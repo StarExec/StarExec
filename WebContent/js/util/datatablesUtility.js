@@ -8,7 +8,7 @@
  * @author Todd Elvers
  */
 function getSelectedRows(dataTable){
-	var idArray = new Array();
+	var idArray = [];
 	var rows = $(dataTable).children('tbody').children('tr.row_selected');
 	$.each(rows, function(i, row) {
 		idArray.push($(this).children('td:first').children('input').val());

@@ -88,7 +88,6 @@ function registerSolverConfigTableRowSelectionEventHandler() {
 	    }
 		if (numCheck == 0) {
 			$(this).removeClass("row_selected");
-	    };
-	    
+		}
 	});
 }

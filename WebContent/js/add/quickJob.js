@@ -209,8 +209,7 @@ function attachFormValidation(){
 		useSelectedSolver();
 		e.preventDefault();
 	});
-};
-
+}
 /**
  * Sets up the jQuery button style and attaches click handlers to those buttons.
  */

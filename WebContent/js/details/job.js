@@ -123,8 +123,7 @@ function refreshStats(id){
 				    option.text = solverName + "/" + configName;
 
 				solverOptions.appendChild(option);
-			};
-
+			}
 			/* We need to make a deep clone of `solverOptions` if we want to add
 			 * this fragment to multiple places in our document. So, we will clone
 			 * when we append to `solverChoice`` and `solverChoice2`, and we will
