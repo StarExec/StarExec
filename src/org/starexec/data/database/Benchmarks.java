@@ -6,6 +6,7 @@ import org.starexec.constants.R;
 import org.starexec.data.to.*;
 import org.starexec.data.to.compare.BenchmarkComparator;
 import org.starexec.exceptions.StarExecException;
+import org.starexec.exceptions.StarExecValidationException;
 import org.starexec.logger.StarLogger;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.*;
@@ -308,7 +309,7 @@ public class Benchmarks {
 				                              con
 				);
 			}
-			Common.endTransaction(con);// benchmarks should be in db now	
+			Common.endTransaction(con);// benchmarks should be in db now
 			return benchmark;
 		} catch (Exception e) {
 			log.error("addBench says " + e.getMessage(), e);
@@ -339,13 +340,11 @@ public class Benchmarks {
 
 				// Add benchmark to database
 				int benchId = Benchmarks.add(benchmark, statusId, con).getId();
-
 				if (benchId >= 0) {
 					if (spaceId != null) {
 						Benchmarks.associate(benchId, spaceId, con);
 					}
 					log.debug("bench successfully added");
-
 					return benchId;
 				}
 			} catch (Exception e) {
@@ -384,7 +383,7 @@ public class Benchmarks {
 				String message = ("failed to add bench " + b.getName());
 				Uploads.setBenchmarkErrorMessage(statusId, message);
 				//Note - this does not occur when Benchmark fails validation even though those benchmarks not added
-				throw new Exception(String.format("Failed to add benchmark [%s] to space [%d]", b.getName(), spaceId));
+				throw new StarExecValidationException(String.format("Failed to add benchmark [%s] to space [%d]", b.getName(), spaceId));
 			}
 
 			benchmarkIds.add(id);
@@ -439,11 +438,9 @@ public class Benchmarks {
 	) {
 		if (benchmarks.size() > 0) {
 			try {
-
 				log.info("Adding (with deps) " + benchmarks.size() + " to Space " + spaceId);
 				// Get the processor of the first benchmark (they should all have the same processor)
 				Processor p = Processors.get(benchmarks.get(0).getType().getId());
-
 
 				log.info("About to attach attributes to " + benchmarks.size());
 
@@ -462,6 +459,8 @@ public class Benchmarks {
 				// Next add them to the database (must happen AFTER they are processed and have dependencies
 				// validated);
 				return Benchmarks.addAndAssociate(benchmarks, spaceId, statusId);
+			} catch (StarExecValidationException e) {
+				log.debug("processAndAdd", e);
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);
 			}
@@ -633,7 +632,7 @@ public class Benchmarks {
 					}
 					Uploads.addFailedBenchmark(statusId, b.getName(), propstr);
 					String message = b.getName() + " failed validation";
-					log.warn(message);
+					log.debug(message);
 					Uploads.setBenchmarkErrorMessage(statusId, message);
 				} else {
 					String message = "Major Benchmark Validation Errors - examine your validator";
@@ -791,7 +790,7 @@ public class Benchmarks {
 				newBenchmark.setAttributes(new HashMap<>());
 			}
 
-			//this benchmark must be valid, since it is just a copy of 
+			//this benchmark must be valid, since it is just a copy of
 			//an old benchmark that already passed validation
 			newBenchmark.getAttributes().put(R.VALID_BENCHMARK_ATTRIBUTE, "true");
 			File benchmarkFile = new File(b.getPath());
@@ -883,7 +882,7 @@ public class Benchmarks {
 	public static Space extractSpacesAndBenchmarks(
 			File directory, int typeId, int userId, boolean downloadable, Permission perm, Integer statusId
 	) throws IOException, StarExecException {
-		// Create a space for the current directory and set it's name		
+		// Create a space for the current directory and set it's name
 		log.info("Extracting Spaces and Benchmarks for " + userId);
 		Space space = new Space();
 		space.setName(directory.getName());
@@ -902,7 +901,7 @@ public class Benchmarks {
 		Timer spaceTimer = new Timer();
 		Timer benchTimer = new Timer();
 		for (File f : directory.listFiles()) {
-			// If it's a sub-directory			
+			// If it's a sub-directory
 			if (f.isDirectory()) {
 				// Recursively extract spaces/benchmarks from that directory
 				space.getSubspaces()
