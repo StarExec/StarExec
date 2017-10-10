@@ -693,13 +693,9 @@ public class Spaces {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
-
-
 		try {
 			con = Common.getConnection();
-
 			procedure = con.prepareCall("{CALL GetTotalSubspaceCountBySpaceIdInHierarchy(?)}");
-
 			procedure.setInt(1, spaceId);
 			results = procedure.executeQuery();
 
@@ -761,12 +757,9 @@ public class Spaces {
 			}
 			return getCountInSpace(spaceId);
 		}
-
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
-
-
 		try {
 			con = Common.getConnection();
 			if (!hierarchy) {
@@ -2021,11 +2014,8 @@ public class Spaces {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
-
 		try {
 			con = Common.getConnection();
-
-
 			//If the type of the primitive is subspace.
 			procedure = con.prepareCall("{CALL countSubspacesByName(?, ?)}");
 			procedure.setString(1, prim);
@@ -2366,8 +2356,6 @@ public class Spaces {
 
 			// Commit changes to database
 			Common.endTransaction(con);
-
-
 			return true;
 		} catch (Exception e) {
 			log.error("removeSubspaces", e);
@@ -2376,8 +2364,6 @@ public class Spaces {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-
-
 		return false;
 	}
 
@@ -2526,13 +2512,10 @@ public class Spaces {
 	 * @author Ruoyu Zhang
 	 */
 	public static boolean setPublicSpace(int spaceId, int usrId, boolean pbc, boolean hierarchy) {
-
-
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-
 			procedure = con.prepareCall("{CALL setPublicSpace(?, ?)}");
 			procedure.setInt(1, spaceId);
 			procedure.setBoolean(2, pbc);
@@ -2706,14 +2689,9 @@ public class Spaces {
 		boolean success = false;
 		try {
 			con = Common.getConnection();
-
 			Common.beginTransaction(con);
-
 			success = Spaces.updateDetails(s, con);
-
 			Common.endTransaction(con);
-
-
 			log.info(String.format("Space with name [%s] successfully edited by user [%d].", s.getName(), userId));
 			return success;
 		} catch (Exception e) {
@@ -2722,7 +2700,6 @@ public class Spaces {
 			Common.doRollback(con);
 			Common.safeClose(con);
 		}
-
 		return false;
 	}
 
@@ -2788,7 +2765,6 @@ public class Spaces {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-
 		return false;
 	}
 
@@ -2809,15 +2785,12 @@ public class Spaces {
 			results = procedure.executeQuery();
 
 			List<Space> spaces = new LinkedList<>();
-
 			while (results.next()) {
 				Space s = new Space();
 				s.setId(results.getInt("id"));
 				s.setName(results.getString("name"));
-
 				spaces.add(s);
 			}
-
 			return spaces;
 		} catch (Exception e) {
 			log.error("getNonAttachedCommunities", e);
@@ -2826,7 +2799,6 @@ public class Spaces {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-
 		return null;
 	}
 
