@@ -55,7 +55,7 @@ public class SolverComparison {
 	 *
 	 * @return
 	 */
-
+	@SuppressWarnings("StringEquality")
 	public boolean doResultsMatch(int stageNumber) {
 		String result1 = pair1.getStageFromNumber(stageNumber).getAttributes().getProperty(R.STAREXEC_RESULT);
 		String result2 = pair2.getStageFromNumber(stageNumber).getAttributes().getProperty(R.STAREXEC_RESULT);
