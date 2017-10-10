@@ -848,9 +848,7 @@ public class Spaces {
 	private static void rebuildSpaceClosures(int srcId, Connection con) throws SQLException {
 		for (Integer spaceId : getSubSpaceIds(srcId)) {
 			Common.updateUsingConnection(con, "{CALL RebuildSpaceClosures(?)}",
-				procedure -> {
-					procedure.setInt(1, spaceId);
-				}
+				procedure -> procedure.setInt(1, spaceId)
 			);
 			rebuildSpaceClosures(spaceId, con);
 		}
