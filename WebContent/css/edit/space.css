@@ -31,7 +31,7 @@
 		text-align: left;
 	}
 	#wrapper #tblDefaultPerm tr td {
-		padding-right: 0px;
+		padding-right: 0;
 	}
 
 	#editSpaceForm table tr > *:first-child {

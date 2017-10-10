@@ -12,10 +12,10 @@ fieldset {
 
 #pairTblField #pairActions {
 	width:97%;
-    border: 0px none black;
+    border: 0 none black;
     border-bottom: 5px solid;
-    margin-top:0px;
-	padding-top:0px;
+    margin-top:0;
+	padding-top:0;
 }
 
 #pairActions > select {

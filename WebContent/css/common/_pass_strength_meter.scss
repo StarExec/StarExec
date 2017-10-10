@@ -42,7 +42,7 @@
 .password-meter-bg {
 	.password-meter-illegal, .password-meter-too-short, .password-meter-too-long, .password-meter-very-weak {
 		background: #aa0000;
-		width: 0px;
+		width: 0;
 	}
 
 	.password-meter-weak {

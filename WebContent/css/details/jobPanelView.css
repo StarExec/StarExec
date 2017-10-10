@@ -23,16 +23,16 @@
 	margin-bottom:2px;
 	margin-right:5px;
 	margin-top:5px;
-	border-radius:0px;
-	padding-left:0px;
+	border-radius:0;
+	padding-left:0;
 }
 
 #subspaceSummaryField #panelActions {
 	width:97%;
-	border: 0px none black;
+	border: 0 none black;
 	border-bottom: 5px solid;
-	margin-top:0px;
-	padding-top:0px;
+	margin-top:0;
+	padding-top:0;
 }
 
 tr.viewSubspace {
