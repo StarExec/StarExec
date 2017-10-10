@@ -554,7 +554,7 @@ public class Spaces {
 	 * @return A list of all spaces
 	 * @author Wyatt Kaiser
 	 */
-	public static List<Space> GetAllSpaces() {
+	public static List<Space> getAllSpaces() {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -564,7 +564,7 @@ public class Spaces {
 			results = procedure.executeQuery();
 			return resultsToSpaces(results);
 		} catch (Exception e) {
-			log.error("GetAllSpaces", e);
+			log.error("getAllSpaces", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);

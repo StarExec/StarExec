@@ -152,7 +152,7 @@ public class SpaceTests extends TestSequence {
 
 	@StarexecTest
 	private void getAllSpacesTest() {
-		List<Space> spaces=Spaces.GetAllSpaces();
+		List<Space> spaces=Spaces.getAllSpaces();
 		Assert.assertNotNull(spaces);
 		//add two because the root space itself and the public space are not counted otherwise
 		Assert.assertEquals(Spaces.getSubSpaceHierarchy(1, admin.getId()).size()+2, spaces.size());

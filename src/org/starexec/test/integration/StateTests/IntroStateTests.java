@@ -21,7 +21,7 @@ public class IntroStateTests extends TestSequence {
 
 	@StarexecTest
 	private void NoDefaultLeadersTest() {
-		List<Space> spaces=Spaces.GetAllSpaces();
+		List<Space> spaces=Spaces.getAllSpaces();
 
 		for (Space s : spaces) {
 			Assert.assertFalse(Permissions.getSpaceDefault(s.getId()).isLeader());
@@ -30,7 +30,7 @@ public class IntroStateTests extends TestSequence {
 
 	@StarexecTest
 	private void UniqueSubspaceNamesTest() {
-		List<Space> spaces=Spaces.GetAllSpaces();
+		List<Space> spaces=Spaces.getAllSpaces();
 		for (Space s : spaces) {
 			List<Space> subspaces=Spaces.getSubSpaces(s.getId());
 			HashSet<String> names= new HashSet<>();
