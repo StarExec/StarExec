@@ -80,7 +80,7 @@ public class Spaces {
 			));
 			return newSpaceId;
 		} catch (Exception e) {
-			log.error("Spaces.add says " + e.getMessage(), e);
+			log.error("add", e);
 		} finally {
 			Common.safeClose(procAddUser);
 			Common.safeClose(procSubspace);
@@ -141,7 +141,7 @@ public class Spaces {
 			Common.endTransaction(con);
 			return newSpaceId;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("add", e);
 		} finally {
 			Common.doRollback(con);
 			Common.safeClose(con);
@@ -167,7 +167,7 @@ public class Spaces {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("setJobSpaceMaxStages", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -187,7 +187,7 @@ public class Spaces {
 			con = Common.getConnection();
 			return setJobSpaceMaxStages(jobSpaceId, maxStages, con);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("setJobSpaceMaxStages", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -209,7 +209,7 @@ public class Spaces {
 			con = Common.getConnection();
 			return addJobSpace(name, jobId, con);
 		} catch (Exception e) {
-			log.error("addJobSpace says " + e.getMessage(), e);
+			log.error("addJobSpace", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -235,7 +235,7 @@ public class Spaces {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("clearJobClosureEntries", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -264,7 +264,7 @@ public class Spaces {
 
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("addToJobSpaceClosure", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -295,7 +295,7 @@ public class Spaces {
 				return results.getInt("count") > 0;
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("jobSpaceAncestorExists", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -333,7 +333,7 @@ public class Spaces {
 			log.debug("ending successfully updateJobSpaceClosureTable " + callID);
 		} catch (Exception e) {
 			Common.doRollback(con);
-			log.error(e.getMessage(), e);
+			log.error("updateJobSpaceClosureTable", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -360,7 +360,7 @@ public class Spaces {
 			}
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("updateJobSpaceClosureTable", e);
 		}
 		return false;
 	}
@@ -385,7 +385,7 @@ public class Spaces {
 			procedure.executeUpdate();
 			return procedure.getInt(3);
 		} catch (Exception e) {
-			log.error("addJobSpace says " + e.getMessage(), e);
+			log.error("addJobSpace", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -433,7 +433,7 @@ public class Spaces {
 			// We're done (notice that 'parent' is never added because it should already exist)
 			return ids;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("addWithBenchmarks", e);
 		}
 
 		return null;
@@ -454,7 +454,7 @@ public class Spaces {
 			con = Common.getConnection();
 			return associateJobSpaces(parentId, childId, con);
 		} catch (Exception e) {
-			log.error("associateJobSpaces says " + e.getMessage(), e);
+			log.error("associateJobSpaces", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -481,7 +481,7 @@ public class Spaces {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error("associateJobSpaces says " + e.getMessage(), e);
+			log.error("associateJobSpaces", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -517,7 +517,7 @@ public class Spaces {
 				return s;
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("get", e);
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
@@ -540,7 +540,7 @@ public class Spaces {
 			con = Common.getConnection();
 			return get(spaceId, con);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("get", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -564,7 +564,7 @@ public class Spaces {
 			results = procedure.executeQuery();
 			return resultsToSpaces(results);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("GetAllSpaces", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -612,7 +612,7 @@ public class Spaces {
 			}
 			return -1;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getCommunityOfSpace", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -643,7 +643,7 @@ public class Spaces {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("leave", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -673,7 +673,7 @@ public class Spaces {
 				return results.getInt("spaceCount");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getCountInJobSpace", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -707,7 +707,7 @@ public class Spaces {
 				return results.getInt("spaceCount");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getCountInSpaceHierarchy", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -735,7 +735,7 @@ public class Spaces {
 				return results.getInt("spaceCount");
 			}
 		} catch (Exception e) {
-			log.error("getCountInSpace says " + e.getMessage(), e);
+			log.error("getCountInSpace", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -782,7 +782,7 @@ public class Spaces {
 				return results.getInt("spaceCount");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getCountInSpace", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -818,7 +818,7 @@ public class Spaces {
 				return results.getInt("spaceCount");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getCountInSpace", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1154,7 +1154,7 @@ public class Spaces {
 			s.setPermission(Permissions.getSpaceDefault(spaceId));
 			return s;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getDetails", e);
 		}
 
 		return null;
@@ -1186,7 +1186,7 @@ public class Spaces {
 				return s;
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getJobSpace", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1228,7 +1228,7 @@ public class Spaces {
 
 			return leaders;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getLeaders", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1262,7 +1262,7 @@ public class Spaces {
 
 			return name;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getName", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1287,7 +1287,7 @@ public class Spaces {
 			con = Common.getConnection();
 			return Spaces.getParentSpace(spaceId, con);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getParentSpace", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -1315,7 +1315,7 @@ public class Spaces {
 				return results.getInt("id");
 			}
 		} catch (Exception e) {
-			log.error("getParentSpace says " + e.getMessage(), e);
+			log.error("getParentSpace", e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -1352,7 +1352,7 @@ public class Spaces {
 			}
 			return spaces;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getSpacesByUser", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -1400,7 +1400,7 @@ public class Spaces {
 			results = procedure.executeQuery();
 			return resultsToSpaces(results);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getSpacesForNextPage", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -1435,7 +1435,7 @@ public class Spaces {
 
 			return returnId;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getSubSpaceIDByPath", e);
 		}
 
 		return null;
@@ -1457,7 +1457,7 @@ public class Spaces {
 			con = Common.getConnection();
 			return getSubSpaceIDByPath(rootSpaceId, path, con);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getSubSpaceIDByPath", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -1503,7 +1503,7 @@ public class Spaces {
 			}
 			return subSpaceId;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getSubSpaceIDbyName", e);
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
@@ -1527,7 +1527,7 @@ public class Spaces {
 			con = Common.getConnection();
 			return getSubSpaceIDbyName(spaceId, userId, subSpaceName, con);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getSubSpaceIDbyName", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -1576,7 +1576,7 @@ public class Spaces {
 			con = Common.getConnection();
 			return Spaces.getSubSpaceIds(spaceId, con);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getSubSpaceIds", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -1608,7 +1608,7 @@ public class Spaces {
 
 			return ids;
 		} catch (Exception e) {
-			log.error("getSubSpaceIds says " + e.getMessage(), e);
+			log.error("getSubSpaceIds", e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -1633,7 +1633,7 @@ public class Spaces {
 			con = Common.getConnection();
 			return Spaces.getSubSpaceHierarchy(spaceId, userId, con);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getSubSpaceHierarchy", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -1658,7 +1658,7 @@ public class Spaces {
 			results = procedure.executeQuery();
 			return resultsToSpaces(results);
 		} catch (Exception e) {
-			log.debug(e.getMessage(), e);
+			log.debug("getSubSpaceHierarchy", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1689,7 +1689,7 @@ public class Spaces {
 			results = procedure.executeQuery();
 			return resultsToSpaces(results);
 		} catch (Exception e) {
-			log.error("getSubSpaces says " + e.getMessage(), e);
+			log.error("getSubSpaces", e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -1713,7 +1713,7 @@ public class Spaces {
 			con = Common.getConnection();
 			return Spaces.getSubSpaces(spaceId, userId, con);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getSubSpaces", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -1733,7 +1733,7 @@ public class Spaces {
 			con = Common.getConnection();
 			return getSubSpaces(spaceId, con);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getSubSpaces", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -1756,7 +1756,7 @@ public class Spaces {
 			results = procedure.executeQuery();
 			return resultsToSpaces(results);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getSubSpaces", e);
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
@@ -1791,7 +1791,7 @@ public class Spaces {
 
 			return resultsToSpaces(results);
 		} catch (Exception e) {
-			log.error("getSubSpaces says " + e.getMessage(), e);
+			log.error("getSubSpaces", e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -1831,7 +1831,7 @@ public class Spaces {
 				return subspaces;
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getSubSpacesForJob", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -1868,7 +1868,7 @@ public class Spaces {
 
 			return subSpaces;
 		} catch (Exception e) {
-			log.error("getSubSpacesForJob says " + e.getMessage(), e);
+			log.error("getSubSpacesForJob", e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -1906,7 +1906,7 @@ public class Spaces {
 
 			return users;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getUsers", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1925,7 +1925,7 @@ public class Spaces {
 	 */
 	public static boolean isLeaf(int spaceId) {
 		final String method = "isLeaf";
-		log.debug(method + " - Entering method " + method);
+		log.entry(method);
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -1935,10 +1935,10 @@ public class Spaces {
 			procedure.setInt(1, spaceId);
 			results = procedure.executeQuery();
 
-			log.debug(method + " - Successfully called GetDescendantsOfSpace(" + spaceId + ")");
+			log.debug(method, "Successfully called GetDescendantsOfSpace(" + spaceId + ")");
 			return !results.next();
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(method, e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1968,7 +1968,7 @@ public class Spaces {
 				return results.getBoolean("public");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("isPublicHierarchy", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1998,7 +1998,7 @@ public class Spaces {
 				return (results.getInt(1) > 0);
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("isPublicSpace", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -2037,7 +2037,7 @@ public class Spaces {
 				return results.getInt(1) != 0;
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("notUniquePrimitiveName", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -2070,7 +2070,7 @@ public class Spaces {
 			Common.endTransaction(con);
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("removeBenches", e);
 			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
@@ -2102,7 +2102,7 @@ public class Spaces {
 			}
 			log.info(benchIds.size() + " benchmark(s) were successfully removed from space " + spaceId);
 		} catch (Exception e) {
-			log.error("removeBenches says " + e.getMessage(), e);
+			log.error("removeBenches", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -2146,7 +2146,7 @@ public class Spaces {
 
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("removeJobs", e);
 			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
@@ -2179,7 +2179,7 @@ public class Spaces {
 
 			log.info(jobIds.size() + " job(s) were successfully removed from space " + spaceId);
 		} catch (Exception e) {
-			log.error("removeJobs says " + e.getMessage(), e);
+			log.error("removeJobs", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -2205,7 +2205,7 @@ public class Spaces {
 			Common.endTransaction(con);
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("removeSolvers", e);
 			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
@@ -2239,7 +2239,7 @@ public class Spaces {
 			}
 			log.info(solverIds.size() + " solver(s) were successfully removed from space " + spaceId);
 		} catch (Exception e) {
-			log.error("removeSolvers says " + e.getMessage(), e);
+			log.error("removeSolvers", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -2290,7 +2290,7 @@ public class Spaces {
 
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("removeSolversFromHierarchy", e);
 			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
@@ -2370,7 +2370,7 @@ public class Spaces {
 
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("removeSubspaces", e);
 			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
@@ -2400,7 +2400,7 @@ public class Spaces {
 				procedure.executeUpdate();
 			}
 		} catch (Exception e) {
-			log.error("removeUsers says " + e.getMessage(), e);
+			log.error("removeUsers", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -2429,7 +2429,7 @@ public class Spaces {
 			log.info(userIds.size() + " user(s) were successfully removed from community " + commId);
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("removeUsers", e);
 			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
@@ -2463,7 +2463,7 @@ public class Spaces {
 
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("removeUsersFromHierarchy", e);
 			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
@@ -2538,7 +2538,7 @@ public class Spaces {
 			procedure.setBoolean(2, pbc);
 			procedure.executeUpdate();
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("setPublicSpace", e);
 			return false;
 		} finally {
 			Common.safeClose(con);
@@ -2551,7 +2551,7 @@ public class Spaces {
 				try {
 					success = success && setPublicSpace(space.getId(), usrId, pbc, false);
 				} catch (Exception e) {
-					log.error(e.getMessage(), e);
+					log.error("setPublicSpace", e);
 				}
 			}
 			return success;
@@ -2634,7 +2634,7 @@ public class Spaces {
 			Uploads.incrementCompletedSpaces(statusId, 1);
 			return ids;
 		} catch (Exception e) {
-			log.error("traverse says " + e.getMessage(), e);
+			log.error("traverse", e);
 		}
 		return null;
 	}
@@ -2683,7 +2683,7 @@ public class Spaces {
 			log.info(String.format("Space [%d] updated description to [%s]", spaceId, newDesc));
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("updateDescription", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -2717,7 +2717,7 @@ public class Spaces {
 			log.info(String.format("Space with name [%s] successfully edited by user [%d].", s.getName(), userId));
 			return success;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("updateDetails", e);
 		} finally {
 			Common.doRollback(con);
 			Common.safeClose(con);
@@ -2755,7 +2755,7 @@ public class Spaces {
 
 			return true;
 		} catch (Exception e) {
-			log.error("updateDetails says " + e.getMessage(), e);
+			log.error("updateDetails", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -2783,7 +2783,7 @@ public class Spaces {
 			log.info(String.format("Space [%d] updated name to [%s]", spaceId, newName));
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("updateName", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -2820,7 +2820,7 @@ public class Spaces {
 
 			return spaces;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getNonAttachedCommunities", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -2896,7 +2896,7 @@ public class Spaces {
 
 			return success;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("addOrphanedPrimitivesToSpace", e);
 		}
 
 		return false;
