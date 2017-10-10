@@ -1,5 +1,6 @@
 package org.starexec.servlets;
 
+import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.io.FileUtils;
 import org.starexec.constants.R;
 import org.starexec.constants.Web;
@@ -1168,6 +1169,16 @@ public class Download extends HttpServlet {
 				response.sendError(
 						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");
 			}
+		} catch (ClientAbortException e) {
+			/* The client has closed the connection, either intentionally or due
+			 * to a connection timeout. This is not serious, and not worth a
+			 * full stack trace. No need to send any message to client, because
+			 * connection has been closed. */
+			log.warn("doGet",
+					"Caught ClientAbortException in Download.doGet\n" +
+					"URL: " + request.getRequestURL()
+			);
+			response.getOutputStream().close();
 		} catch (Exception e) {
 			log.warn("Caught Exception in Download.doGet", e);
 			response.getOutputStream().close();
