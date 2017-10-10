@@ -36,13 +36,13 @@ public class Analytics extends HttpServlet {
 			try {
 				startDate = Date.valueOf(start);
 			} catch (IllegalArgumentException e) {
-				startDate = new Date(116, 4, 1); // 2017-04-01
+				startDate = new Date(1491022800); // 2017-04-01
 			}
 
 			try {
 				endDate = Date.valueOf(end);
 			} catch (IllegalArgumentException e) {
-				endDate = new Date(130, 4, 1); // 2030-04-01
+				endDate = new Date(1901250000); // 2030-04-01
 			}
 
 			org.starexec.data.database.Analytics.saveToDB();
