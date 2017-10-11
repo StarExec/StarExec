@@ -28,7 +28,6 @@ public class Validator {
 	private static Pattern patternPrimDesc;
 	private static Pattern patternPassword;
 	private static Pattern patternRequestMsg;
-	private static Pattern patternDate;
 	public static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
 
 	public static void initialize() {
@@ -46,7 +45,6 @@ public class Validator {
 			patternPrimDesc = Pattern.compile(R.PRIMITIVE_DESC_PATTERN, Pattern.DOTALL);
 			patternPassword = Pattern.compile(R.PASSWORD_PATTERN);
 			patternRequestMsg = Pattern.compile(R.REQUEST_MESSAGE, Pattern.CASE_INSENSITIVE);
-			patternDate = Pattern.compile(R.DATE_PATTERN);
 			log.debug("Validator patterns successfully compiled");
 		}
 	}
