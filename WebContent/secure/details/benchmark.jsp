@@ -28,7 +28,7 @@
 	<c:if test="${!isAnonymousPage}">
 		<span style="display:none;" id="benchId" value="${bench.id}"></span>
 		<star:primitiveIdentifier primId="${bench.id}" primType="${primitiveType.toString()}"/>
-		<span style="hidden" class="benchProcessorId" value="${bench.type.id}"></span>
+		<span style="visibility: hidden" class="benchProcessorId" value="${bench.type.id}"></span>
 	</c:if>
 	<c:if test="${!isAnonymousPage}">
         <c:if test="${not empty brokenBenchDeps}">
