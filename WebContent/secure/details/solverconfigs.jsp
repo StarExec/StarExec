@@ -20,17 +20,18 @@ currently only used in StarexecCommand --%>
 
 			List<Configuration> cs = Solvers.getConfigsForSolver(solverid);
 			
-			String str = "";
+			StringBuilder str = new StringBuilder();
 			int count = 0;
 
 			for(Configuration c : cs){
-			   str = str + "id=" + c.getId() + " : name=" + c.getName() + "\n";
+			   str.append("id=").append(c.getId()).append(" : name=")
+			      .append(c.getName()).append("\n");
 			   count++;
 			   if(count == limit){break;}
 			}
 
 			OutputStreamWriter writer = new OutputStreamWriter(response.getOutputStream());
-	    	writer.write(str);
+	    	writer.write(str.toString());
 	    	writer.flush();
 	    	writer.close();
 		}
