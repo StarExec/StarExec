@@ -13,11 +13,7 @@ import org.starexec.util.Util;
 
 import java.io.File;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-
+import java.util.*;
 
 /**
  * Tests for org.starexec.data.database.Users.java
@@ -296,7 +292,7 @@ public class UserTests extends TestSequence {
 	private void DeleteUserDeletesUsersJobsTest() {
 		User tempUser = loader.loadUserIntoDatabase();
 		Solver tempSolver = loader.loadSolverIntoDatabase(space.getId(), tempUser.getId()); 
-		List<Integer> tempSolverIds = Arrays.asList(tempSolver.getId());
+		List<Integer> tempSolverIds = Collections.singletonList(tempSolver.getId());
 		List<Integer> tempBenchmarkIds = loader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
 
 		Job tempJob = loader.loadJobIntoDatabase(
@@ -317,7 +313,7 @@ public class UserTests extends TestSequence {
 	private void DeleteUserDeletesJobPairsTest() {
 		User tempUser = loader.loadUserIntoDatabase();
 		Solver tempSolver = loader.loadSolverIntoDatabase(space.getId(), tempUser.getId()); 
-		List<Integer> tempSolverIds = Arrays.asList(tempSolver.getId());
+		List<Integer> tempSolverIds = Collections.singletonList(tempSolver.getId());
 		List<Integer> tempBenchmarkIds = loader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
 
 		Job tempJob = loader.loadJobIntoDatabase(
@@ -342,7 +338,7 @@ public class UserTests extends TestSequence {
 	private void DeleteUserDeletesJobDirectoriesTest() {
 		User tempUser = loader.loadUserIntoDatabase();
 		Solver tempSolver = loader.loadSolverIntoDatabase(space.getId(), tempUser.getId()); 
-		List<Integer> tempSolverIds = Arrays.asList(tempSolver.getId());
+		List<Integer> tempSolverIds = Collections.singletonList(tempSolver.getId());
 		List<Integer> tempBenchmarkIds = loader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
 
 		Job tempJob = loader.loadJobIntoDatabase(

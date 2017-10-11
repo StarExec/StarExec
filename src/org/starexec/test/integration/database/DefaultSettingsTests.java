@@ -130,7 +130,7 @@ public class DefaultSettingsTests extends TestSequence {
         newSettings.setCpuTimeout(newSettings.getCpuTimeout()+1);
         newSettings.setWallclockTimeout(newSettings.getWallclockTimeout()+1);
         newSettings.setDependenciesEnabled(!newSettings.isDependenciesEnabled());
-        newSettings.setBenchIds(new ArrayList<>(Arrays.asList(newSettings.getBenchIds().get(0))));
+        newSettings.setBenchIds(new ArrayList<>(Collections.singletonList(newSettings.getBenchIds().get(0))));
 
         // TODO: need to change all other fields of setting except name, primId, and type (these are immutable)
 
