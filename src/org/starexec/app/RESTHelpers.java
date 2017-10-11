@@ -407,7 +407,7 @@ public class RESTHelpers {
 			query.setSortASC(Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR)));
 		}
 
-		List<JobPair> jobPairsToDisplay = new LinkedList<>();
+		List<JobPair> jobPairsToDisplay;
 		// Retrieves the relevant Job objects to use in constructing the JSON to
 		// send to the client
 		int[] totals = new int[2];
@@ -761,12 +761,10 @@ public class RESTHelpers {
 				return null;
 			}
 
-			List<SolverComparison> solverComparisonsToDisplay = new LinkedList<>();
-
 			// Retrieves the relevant Job objects to use in constructing the JSON to
 			// send to the client
 			int[] totals = new int[2];
-			solverComparisonsToDisplay = Jobs.getSolverComparisonsForNextPageByConfigInJobSpaceHierarchy(query, jobSpaceId, configId1, configId2, totals, wallclock, stageNumber);
+			List<SolverComparison> solverComparisonsToDisplay = Jobs.getSolverComparisonsForNextPageByConfigInJobSpaceHierarchy(query, jobSpaceId, configId1, configId2, totals, wallclock, stageNumber);
 
 			query.setTotalRecords(totals[0]);
 
@@ -787,7 +785,6 @@ public class RESTHelpers {
 			return null;
 		}
 
-		List<JobPair> jobPairsToDisplay = new LinkedList<>();
 		String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
 		if (sortOverride != null) {
 			query.setSortColumn(Integer.parseInt(sortOverride));
@@ -796,7 +793,7 @@ public class RESTHelpers {
 
 		// Retrieves the relevant Job objects to use in constructing the JSON to
 		// send to the client
-		jobPairsToDisplay = Jobs.getJobPairsForNextPageByConfigInJobSpaceHierarchy(query, jobSpaceId, configId, type, stageNumber);
+		List<JobPair> jobPairsToDisplay = Jobs.getJobPairsForNextPageByConfigInJobSpaceHierarchy(query, jobSpaceId, configId, type, stageNumber);
 
 		query.setTotalRecords(Jobs.getCountOfJobPairsByConfigInJobSpaceHierarchy(jobSpaceId, configId, type, stageNumber));
 
@@ -825,24 +822,18 @@ public class RESTHelpers {
 				return null;
 			}
 
-			List<JobPair> jobPairsToDisplay = new LinkedList<>();
-
 			if (type.equals("queue")) {
 				// Retrieves the relevant Job objects to use in constructing the
 				// JSON to send to the client
-				jobPairsToDisplay = Queues.getJobPairsForNextClusterPage(query, id);
-
-
+				List<JobPair> jobPairsToDisplay = Queues.getJobPairsForNextClusterPage(query, id);
 				query.setTotalRecords(Queues.getCountOfEnqueuedPairsByQueue(id));
 				// there is no filter function on this table, so this is always equal to the above
 				query.setTotalRecordsAfterQuery(query.getTotalRecords());
-
 				return convertJobPairsToJsonObjectCluster(jobPairsToDisplay, query, userId);
-
 			} else if (type.equals("node")) {
 				// Retrieves the relevant Job objects to use in constructing the
 				// JSON to send to the client
-				jobPairsToDisplay = Queues.getPairsRunningOnNode(id);
+				List<JobPair> jobPairsToDisplay = Queues.getPairsRunningOnNode(id);
 				query.setTotalRecords(jobPairsToDisplay.size());
 				// there is no filter function on this table, so this is always equal to the above
 				query.setTotalRecordsAfterQuery(query.getTotalRecords());
@@ -875,11 +866,10 @@ public class RESTHelpers {
 		if (query == null) {
 			return null;
 		}
-		List<User> usersToDisplay = new LinkedList<>();
 		query.setTotalRecords(Users.getCount());
 		// Retrieves the relevant User objects to use in constructing the
 		// JSON to send to the client
-		usersToDisplay = Users.getUsersForNextPageAdmin(query);
+		List<User> usersToDisplay = Users.getUsersForNextPageAdmin(query);
 
 		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY =
 		// TOTAL_RECORDS
@@ -901,7 +891,6 @@ public class RESTHelpers {
 			return null;
 		}
 
-		List<Benchmark> benchmarksToDisplay = new LinkedList<>();
 		String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
 		if (sortOverride != null) {
 			query.setSortColumn(Integer.parseInt(sortOverride));
@@ -909,7 +898,7 @@ public class RESTHelpers {
 
 		}
 		// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
-		benchmarksToDisplay = Benchmarks.getBenchmarksForNextPage(query, id);
+		List<Benchmark> benchmarksToDisplay = Benchmarks.getBenchmarksForNextPage(query, id);
 
 		query.setTotalRecords(Benchmarks.getCountInSpace(id));
 		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
@@ -931,11 +920,9 @@ public class RESTHelpers {
 			return null;
 		}
 
-		List<Job> jobsToDisplay = new LinkedList<>();
-
 		// Retrieves the relevant Job objects to use in constructing the
 		// JSON to send to the client
-		jobsToDisplay = Jobs.getJobsForNextPage(query, id);
+		List<Job> jobsToDisplay = Jobs.getJobsForNextPage(query, id);
 		query.setTotalRecords(Jobs.getCountInSpace(id));
 		if (!query.hasSearchQuery()) {
 			query.setTotalRecordsAfterQuery(query.getTotalRecords());
@@ -955,11 +942,10 @@ public class RESTHelpers {
 		if (query == null) {
 			return null;
 		}
-		List<User> usersToDisplay = new LinkedList<>();
 		query.setTotalRecords(Users.getCountInSpace(id));
 
 		// Retrieves the relevant User objects to use in constructing the JSON to send to the client
-		usersToDisplay = Users.getUsersForNextPage(query, id);
+		List<User> usersToDisplay = Users.getUsersForNextPage(query, id);
 
 		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 		if (!query.hasSearchQuery()) {
@@ -980,10 +966,9 @@ public class RESTHelpers {
 		if (query == null) {
 			return null;
 		}
-		List<Solver> solversToDisplay = new LinkedList<>();
 
 		// Retrieves the relevant Solver objects to use in constructing the JSON to send to the client
-		solversToDisplay = Solvers.getSolversForNextPage(query, id);
+		List<Solver> solversToDisplay = Solvers.getSolversForNextPage(query, id);
 		query.setTotalRecords(Solvers.getCountInSpace(id));
 		if (!query.hasSearchQuery()) {
 			query.setTotalRecordsAfterQuery(query.getTotalRecords());
@@ -1002,13 +987,12 @@ public class RESTHelpers {
 		if (query == null) {
 			return null;
 		}
-		List<Space> spacesToDisplay = new LinkedList<>();
 
 		int userId = SessionUtil.getUserId(request);
 		query.setTotalRecords(Spaces.getCountInSpace(id, userId, false));
 
 		// Retrieves the relevant Benchmark objects to use in constructing the JSON to send to the client
-		spacesToDisplay = Spaces.getSpacesForNextPage(query, id, userId);
+		List<Space> spacesToDisplay = Spaces.getSpacesForNextPage(query, id, userId);
 
 		// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 		if (!query.hasSearchQuery()) {
@@ -1156,12 +1140,10 @@ public class RESTHelpers {
 		}
 		switch (type) {
 			case JOB:
-				List<Job> jobsToDisplay = new LinkedList<>();
-
 				// Retrieves the relevant Job objects to use in constructing the
 				// JSON to send to the client
 
-				jobsToDisplay = Jobs.getJobsByUserForNextPage(query, id);
+				List<Job> jobsToDisplay = Jobs.getJobsByUserForNextPage(query, id);
 				query.setTotalRecords(Jobs.getJobCountByUser(id));
 				if (!query.hasSearchQuery()) {
 					query.setTotalRecordsAfterQuery(query.getTotalRecords());
@@ -1403,7 +1385,6 @@ public class RESTHelpers {
 
 	private static String getSpaceLink(Space space) {
 		StringBuilder sb = new StringBuilder();
-		sb = new StringBuilder();
 		sb.append("<input type=\"hidden\" value=\"");
 		sb.append(space.getId());
 		sb.append("\" prim=\"space\" />");

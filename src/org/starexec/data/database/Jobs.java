@@ -1879,10 +1879,9 @@ public class Jobs {
 				new HashSet<>(); // will store all the solver/configuration pairs so we know how many there are
 		HashMap<Integer, Integer> benchmarksCount = new HashMap<>(); //will store the number of pairs every benchmark
 		// has
-		List<JobPair> pairs = new ArrayList<>();
 		try {
 			//first, get all the completed pairs in the space
-			pairs = Jobs.getJobPairsInJobSpace(jobSpaceId, stageNumber, primitivesToAnonymize);
+			List<JobPair> pairs = Jobs.getJobPairsInJobSpace(jobSpaceId, stageNumber, primitivesToAnonymize);
 			pairs = JobPairs.filterPairsByType(pairs, "complete", 1); //1 because we get only one stage above
 
 			//then, filter them down to the synced pairs
@@ -4121,8 +4120,7 @@ public class Jobs {
 			procedure.executeUpdate();
 			log.debug("Pause of system was successful");
 			R.BACKEND.killAll();
-			List<Integer> jobs = new LinkedList<>();
-			jobs = Jobs.getRunningJobs();
+			List<Integer> jobs = Jobs.getRunningJobs();
 			if (jobs != null) {
 				for (Integer jobId : jobs) {
 					//Get the enqueued job pairs and remove them

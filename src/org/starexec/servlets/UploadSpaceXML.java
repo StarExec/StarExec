@@ -126,14 +126,13 @@ public class UploadSpaceXML extends HttpServlet {
 					File archiveLocation = new File(archivePath);
 					//Typically there will just be 1 file, but might as well allow more
 					for (File file : archiveLocation.listFiles()) {
-						List<Integer> current = new ArrayList<>();
 						if (!file.isFile()) {
 							Uploads.setXMLErrorMessage(
 									statusId, "The file " + file.getName() +
 											" is not a regular file.  Only regular files containing space XML are " +
 											"allowed in the uploaded archive.");
 						}
-						current = batchUtil.createSpacesFromFile(file, userId, spaceId, statusId);
+						List<Integer> current = batchUtil.createSpacesFromFile(file, userId, spaceId, statusId);
 						if (current == null) {
 							Uploads.setXMLErrorMessage(statusId, batchUtil.getErrorMessage());
 						}

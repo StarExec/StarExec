@@ -1188,13 +1188,9 @@ public abstract class JobManager {
 	public static List<JobPair> addJobPairsFromSpace(int spaceId, String path, List<Integer> configIds) {
 		try {
 			List<Solver> solvers = Solvers.getWithConfig(configIds);
-
-			List<Benchmark> benchmarks = new ArrayList<>();
-
+			List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
 
 			// Pair up the solvers and benchmarks
-
-			benchmarks = Benchmarks.getBySpace(spaceId);
 			List<JobPair> curPairs = new ArrayList<>();
 			for (Benchmark bench : benchmarks) {
 				for (Solver solver : solvers) {
@@ -1287,18 +1283,13 @@ public abstract class JobManager {
 			configIds, HashMap<Integer, String> SP) {
 		try {
 			Map<Integer, List<JobPair>> spaceToPairs = new HashMap<>();
-
 			List<Solver> solvers = Solvers.getWithConfig(configIds);
-
-			List<Benchmark> benchmarks = new ArrayList<>();
 			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(spaceId, userId));
 			spaces.add(Spaces.get(spaceId));
 
-
 			// Pair up the solvers and benchmarks
-
 			for (Space s : spaces) {
-				benchmarks = Benchmarks.getBySpace(s.getId());
+				List<Benchmark> benchmarks = Benchmarks.getBySpace(s.getId());
 				log.debug("found this many benchmarks for space id = " + s.getId() + " " + benchmarks.size());
 				List<JobPair> curPairs = new ArrayList<>();
 				for (Benchmark bench : benchmarks) {
@@ -1313,23 +1304,18 @@ public abstract class JobManager {
 						stage.setNoOp(false);
 
 						pair.addStage(stage);
-
 						pair.setPath(SP.get(s.getId()));
 						pair.setSpace(Spaces.get(s.getId()));
 						curPairs.add(pair);
-
 					}
 				}
 				spaceToPairs.put(s.getId(), curPairs);
-
 			}
-
 			return spaceToPairs;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
 		return null;
-
 	}
 
 	/**

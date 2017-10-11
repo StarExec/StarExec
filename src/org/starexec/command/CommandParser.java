@@ -443,7 +443,7 @@ class CommandParser {
 
 	protected int handleLSCommand(String c, Map<String, String> commandParams) {
 		try {
-			Map<Integer, String> answer = new HashMap<>();
+			Map<Integer, String> answer;
 			String type = "";
 			switch (c) {
 			case C.COMMAND_LISTSOLVERS:

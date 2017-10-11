@@ -570,8 +570,7 @@ public class BenchmarkTests extends TestSequence {
 		space2=loader.loadSpaceIntoDatabase(user2.getId(), Communities.getTestCommunity().getId());
 		scratchSpace = loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
 
-		List<Integer> ids= new ArrayList<>();
-		ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
+		List<Integer> ids = loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
 		benchmarks=Benchmarks.get(ids,true);
 		benchProcessor = loader.loadBenchProcessorIntoDatabase(Communities.getTestCommunity().getId());
 		List<Integer> solverIds= new ArrayList<>();
