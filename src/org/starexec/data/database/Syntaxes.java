@@ -21,6 +21,7 @@ public class Syntaxes {
 	 * @return Syntax represented by id, or default Syntax
 	 */
 	public static Syntax get(int id) {
+		if (id == 0) id=1; // I don't know why the default isn't being set properly
 		setAll();
 		Syntax s = all.get(id);
 		if (s == null) {
