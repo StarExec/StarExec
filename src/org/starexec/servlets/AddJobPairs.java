@@ -23,7 +23,7 @@ import java.util.Set;
 
 public class AddJobPairs extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(AddJobPairs.class);
-	private final String jobIdParam = "jobId";
+	private static final String jobIdParam = "jobId";
 	final JsonParser parser = new JsonParser();
 
 	/**

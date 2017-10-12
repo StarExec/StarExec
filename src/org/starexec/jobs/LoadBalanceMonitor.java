@@ -119,7 +119,7 @@ public class LoadBalanceMonitor {
 
 
 	// thirty minutes in seconds
-	private final Long loadDifferenceThreshold = 1800L;
+	private static final Long loadDifferenceThreshold = 1800L;
 
 	/**
 	 * Gets the minimum load value among all active users. Inactive users
