@@ -10,8 +10,6 @@ import org.starexec.jobs.JobManager;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
-import org.starexec.util.Util;
 
 import java.sql.SQLException;
 import java.util.ArrayList;

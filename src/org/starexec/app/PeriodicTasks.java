@@ -6,7 +6,6 @@ import org.starexec.constants.R;
 import org.starexec.data.database.*;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.to.ErrorLog;
-import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.User;
 import org.starexec.data.to.tuples.PairIdJobId;

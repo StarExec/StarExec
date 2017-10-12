@@ -27,7 +27,6 @@ import org.starexec.constants.R;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.enums.CopyPrimitivesOption;
 import org.starexec.data.to.tuples.HtmlStatusCodePair;
-import org.starexec.util.ArchiveUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 

@@ -7,7 +7,6 @@ import org.starexec.data.database.Users;
 import org.starexec.data.database.Websites;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.Website;
-import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.util.Validator;
 
 /**

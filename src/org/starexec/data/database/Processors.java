@@ -3,7 +3,6 @@ package org.starexec.data.database;
 import org.apache.commons.io.FileUtils;
 import org.starexec.constants.R;
 import org.starexec.data.to.Processor;
-import org.starexec.data.to.Syntax;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.Util;

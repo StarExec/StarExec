@@ -13,7 +13,6 @@ import org.starexec.data.security.ProcessorSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.*;
 import org.starexec.data.to.enums.ProcessorType;
-import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.Validator;
 
 import static org.junit.Assert.assertFalse;
