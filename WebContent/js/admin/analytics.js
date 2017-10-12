@@ -32,12 +32,17 @@ jQuery(function($) {
 	};
 
 	$("#dateselector").on("submit", function(event) {
+		var payload = {};
+		if ($startField.val().trim().length != 0) {
+			paylad["start"] = $startField.val();
+		}
+		if ($endField.val().trim().length != 0) {
+			paylad["end"] = $endField.val();
+		}
+
 		$.get(
 			starexecRoot+"services/analytics",
-			{
-				"start": $startField.val(),
-				"end": $endField.val()
-			},
+			payload,
 			resultsTableRefresh
 		);
 
