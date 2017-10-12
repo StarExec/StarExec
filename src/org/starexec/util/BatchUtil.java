@@ -896,7 +896,7 @@ public class BatchUtil {
 	/**
 	 * Basic struct class to store all the id's needed for an update.
 	 */
-	private class Update {
+	private static class Update {
 		public String name = "";
 		public int id; //Benchmark ID
 		public int pid; //Processor ID

@@ -8,7 +8,7 @@ import java.util.*;
 
 public class LoadBalanceMonitor {
 	private static final StarLogger log = StarLogger.getLogger(LoadBalanceMonitor.class);
-	class UserLoadData implements Comparable<UserLoadData> {
+	static class UserLoadData implements Comparable<UserLoadData> {
 		final int userId;
 		
 		/* Whenever a user is added to the LoadBalanceMonitor, they are initialized

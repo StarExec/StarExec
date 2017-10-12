@@ -741,7 +741,7 @@ public class RESTServices {
 	}
 
 	// Simplified matrix element so we can send less data via JSON.
-	private class SimpleMatrixElement {
+	private static class SimpleMatrixElement {
 		@Expose final String status;
 		@Expose final String cpuTime;
 		@Expose final String memUsage;
@@ -754,7 +754,7 @@ public class RESTServices {
 		}
 	}
 
-	private class MatrixJson {
+	private static class MatrixJson {
 		@Expose final boolean done;
 		@Expose final Map<String, SimpleMatrixElement> benchSolverConfigElementMap;
 
