@@ -239,13 +239,6 @@ public class Util {
 	}
 
 	/**
-	 * @return The platform-dependent line separator
-	 */
-	public static String getLineSeparator() {
-		return System.getProperty("line.separator");
-	}
-
-	/**
 	 * @param name
 	 * @param request
 	 * @return True if the value of the param given by name is not null in the given request
