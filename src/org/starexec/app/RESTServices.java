@@ -2876,8 +2876,7 @@ public class RESTServices {
 			}
 			if (copy) {
 				List<Solver> oldSolvers=Solvers.get(selectedSolvers);
-				List<Integer> newSolverIds = Solvers.copySolvers(oldSolvers, requestUserId, spaceId);
-				selectedSolvers=newSolverIds;
+				selectedSolvers= Solvers.copySolvers(oldSolvers, requestUserId, spaceId);
 				response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(selectedSolvers)));
 			}
 
