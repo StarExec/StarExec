@@ -12,9 +12,9 @@ import org.starexec.logger.StarLogger;
 import java.io.*;
 import java.nio.file.attribute.FileTime;
 import java.util.*;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 
 /**
  * Contains helper methods for dealing with .zip files
@@ -109,7 +109,7 @@ public class ArchiveUtil {
 	private static long getTarGzSize(String fileName) {
 		try {
 			FileInputStream instream = new FileInputStream(fileName);
-			GZIPInputStream ginstream = new GZIPInputStream(instream);
+			GzipCompressorInputStream ginstream = new GzipCompressorInputStream(instream);
 			long answer = 0;
 			long temp = 0;
 			while (true) {
@@ -352,13 +352,12 @@ public class ArchiveUtil {
 	 * @param zipFileName
 	 * @throws Exception
 	 */
-	public static void addStringToArchive(ZipOutputStream zos, String str, String zipFileName) throws Exception {
-		ZipEntry entry = new ZipEntry(zipFileName);
-		zos.putNextEntry(entry);
-		PrintWriter writer = new PrintWriter(zos);
-		writer.write(str);
-		writer.flush();
-		zos.closeEntry();
+	public static void addStringToArchive(ZipArchiveOutputStream zos, String str, String zipFileName) throws Exception {
+		ZipArchiveEntry entry = new ZipArchiveEntry(zipFileName);
+		zos.putArchiveEntry(entry);
+		byte[] data = str.getBytes(zos.getEncoding());
+		zos.write(data, 0, data.length);
+		zos.closeArchiveEntry();
 	}
 
 	/**
@@ -371,7 +370,7 @@ public class ArchiveUtil {
 	 * @return max of timestamp and earlyDate
 	 * @throws IOException
 	 */
-	public static long addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName, long earlyDate) throws
+	public static long addFileToArchive(ZipArchiveOutputStream zos, File srcFile, String zipFileName, long earlyDate) throws
 			IOException {
 		long timestamp = srcFile.lastModified();
 		if (timestamp > earlyDate) {
@@ -390,15 +389,15 @@ public class ArchiveUtil {
 	 * @return timestamp of file added
 	 * @throws IOException
 	 */
-	public static long addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {
-		ZipEntry entry = new ZipEntry(zipFileName);
+	public static long addFileToArchive(ZipArchiveOutputStream zos, File srcFile, String zipFileName) throws IOException {
+		ZipArchiveEntry entry = new ZipArchiveEntry(srcFile, zipFileName);
 		try {
 			long timestamp = srcFile.lastModified();
-			zos.putNextEntry(entry);
+			zos.putArchiveEntry(entry);
 			FileInputStream input = new FileInputStream(srcFile);
-			entry.setLastModifiedTime(FileTime.fromMillis(timestamp));
+			entry.setUnixMode(0100700);
 			IOUtils.copy(input, zos);
-			zos.closeEntry();
+			zos.closeArchiveEntry();
 			input.close();
 			return timestamp;
 		} catch (java.io.FileNotFoundException e) {
@@ -422,7 +421,7 @@ public class ArchiveUtil {
 	 * @return max of earlyDate and timestamp of most recently modified file
 	 * @throws IOException
 	 */
-	public static long addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName, long earlyDate) throws
+	public static long addDirToArchive(ZipArchiveOutputStream zos, File srcFile, String zipFileName, long earlyDate) throws
 			IOException {
 		long maxTime = earlyDate;
 		final File[] files = srcFile.listFiles();
@@ -450,7 +449,7 @@ public class ArchiveUtil {
 	 * @param zipFileName
 	 * @throws IOException
 	 */
-	public static long addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {
+	public static long addDirToArchive(ZipArchiveOutputStream zos, File srcFile, String zipFileName) throws IOException {
 		return addDirToArchive(zos, srcFile, zipFileName, -1);
 	}
 
@@ -464,7 +463,7 @@ public class ArchiveUtil {
 	 */
 	public static void createAndOutputZip(List<File> paths, OutputStream output, String baseName) throws IOException {
 		String newFileName = baseName;
-		ZipOutputStream stream = new ZipOutputStream(output);
+		ZipArchiveOutputStream stream = new ZipArchiveOutputStream(output);
 		Set<String> pathsSeen = new HashSet<>();
 		for (File f : paths) {
 			log.debug("adding new file to zip = " + f.getAbsolutePath());
@@ -511,7 +510,7 @@ public class ArchiveUtil {
 			createAndOutputZip(f, output, "");
 			return;
 		}
-		ZipOutputStream stream = new ZipOutputStream(output);
+		ZipArchiveOutputStream stream = new ZipArchiveOutputStream(output);
 		boolean dir = path.isDirectory();
 		if (baseName == null || baseName.length() > 0) {
 			if (dir) {

@@ -27,7 +27,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.zip.ZipOutputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 
 /**
  * Handles requests to download files from starexec
@@ -502,7 +502,7 @@ public class Download extends HttpServlet {
 			lastModified = -1;
 		}
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		ZipOutputStream stream = new ZipOutputStream(buffer);
+		ZipArchiveOutputStream stream = new ZipArchiveOutputStream(buffer);
 		try {
 			for (JobPair p : pairs) {
 				String zipFileNameParent = null;
@@ -1211,7 +1211,7 @@ public class Download extends HttpServlet {
 		// If we can see this space AND the space is downloadable...
 		try {
 			//String baseFileName=space.getName();
-			ZipOutputStream stream = new ZipOutputStream(response.getOutputStream());
+			ZipArchiveOutputStream stream = new ZipArchiveOutputStream(response.getOutputStream());
 
 			storeSpaceHierarchy(
 					space, uid, space.getName(), includeBenchmarks, includeSolvers, hierarchy, stream,
@@ -1243,7 +1243,7 @@ public class Download extends HttpServlet {
 	 */
 	private void storeSpaceHierarchy(
 			Space space, int uid, String dest, boolean includeBenchmarks, boolean includeSolvers, boolean recursive,
-			ZipOutputStream stream, boolean useIdDirectories
+			ZipArchiveOutputStream stream, boolean useIdDirectories
 	) throws Exception {
 		final String method = "storeSpaceHierarchy";
 		log.info("storing space " + space.getName() + "to" + dest);
