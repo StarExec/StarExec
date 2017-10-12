@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.*;
+
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 
 /**
@@ -1174,10 +1175,7 @@ public class Download extends HttpServlet {
 			 * to a connection timeout. This is not serious, and not worth a
 			 * full stack trace. No need to send any message to client, because
 			 * connection has been closed. */
-			log.warn("doGet",
-					"Caught ClientAbortException in Download.doGet\n" +
-					"URL: " + request.getRequestURL()
-			);
+			log.warn("doGet", "Caught ClientAbortException in Download.doGet\n" + "URL: " + request.getRequestURL());
 			response.getOutputStream().close();
 		} catch (Exception e) {
 			log.warn("Caught Exception in Download.doGet", e);
@@ -1213,9 +1211,8 @@ public class Download extends HttpServlet {
 			//String baseFileName=space.getName();
 			ZipArchiveOutputStream stream = new ZipArchiveOutputStream(response.getOutputStream());
 
-			storeSpaceHierarchy(
-					space, uid, space.getName(), includeBenchmarks, includeSolvers, hierarchy, stream,
-					useIdDirectories
+			storeSpaceHierarchy(space, uid, space.getName(), includeBenchmarks, includeSolvers, hierarchy, stream,
+			                    useIdDirectories
 			);
 			stream.close();
 
