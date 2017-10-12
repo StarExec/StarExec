@@ -143,10 +143,10 @@ public class ProcessorManager extends HttpServlet {
 			if (f.isDirectory()) {
 				setAllFilesExecutable(f);
 			} else {
-				if (!f.setExecutable(true, false)) {
-					log.warn("Could not set processor as executable: " + f.getAbsolutePath());
-				} else {
+				if (f.setExecutable(true, false)) {
 					log.debug("successfully set processor as executable: " + f.getAbsolutePath());
+				} else {
+					log.warn("Could not set processor as executable: " + f.getAbsolutePath());
 				}
 			}
 		}

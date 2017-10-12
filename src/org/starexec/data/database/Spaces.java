@@ -762,10 +762,10 @@ public class Spaces {
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();
-			if (!hierarchy) {
-				procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceId(?, ?)}");
-			} else {
+			if (hierarchy) {
 				procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceIdInHierarchy(?, ?)}");
+			} else {
+				procedure = con.prepareCall("{CALL GetSubspaceCountBySpaceId(?, ?)}");
 			}
 			procedure.setInt(1, spaceId);
 			procedure.setInt(2, userId);

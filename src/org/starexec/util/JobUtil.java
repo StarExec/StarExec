@@ -681,15 +681,15 @@ public class JobUtil {
 					}
 
 					Benchmark b = null;
-					if (!accessibleCachedBenchmarks.containsKey(benchmarkId)) {
+					if (accessibleCachedBenchmarks.containsKey(benchmarkId)) {
+						b = accessibleCachedBenchmarks.get(benchmarkId);
+					} else {
 						b = Benchmarks.get(benchmarkId);
 						if (!Permissions.canUserSeeBench(benchmarkId, userId)) {
 							errorMessage = "You do not have permission to see benchmark " + benchmarkId;
 							return -1;
 						}
 						accessibleCachedBenchmarks.put(benchmarkId, b);
-					} else {
-						b = accessibleCachedBenchmarks.get(benchmarkId);
 					}
 					jobPair.setBench(b);
 

@@ -104,8 +104,16 @@ public class Registration extends HttpServlet {
 
 		boolean adminCreated = GeneralSecurity.hasAdminWritePrivileges(userIdOfRequest);
 
-		if (!adminCreated) {
-
+		if (adminCreated) {
+			int id = Users.add(user);
+			boolean success = Users.associate(id, communityId);
+			if (success) {
+				Mail.sendPassword(user, request.getParameter(Registration.USER_PASSWORD));
+				return new ValidatorStatusCode(true);
+			} else {
+				return new ValidatorStatusCode(false, "Internal database error registering user");
+			}
+		} else {
 			// Generate unique code to safely reference this user's entry in verification hyperlinks
 			String code = UUID.randomUUID().toString();
 
@@ -120,15 +128,6 @@ public class Registration extends HttpServlet {
 				return new ValidatorStatusCode(true);
 			} else {
 				log.info(String.format("Registration was unsuccessfully started for user [%s].", user.getFullName()));
-				return new ValidatorStatusCode(false, "Internal database error registering user");
-			}
-		} else {
-			int id = Users.add(user);
-			boolean success = Users.associate(id, communityId);
-			if (success) {
-				Mail.sendPassword(user, request.getParameter(Registration.USER_PASSWORD));
-				return new ValidatorStatusCode(true);
-			} else {
 				return new ValidatorStatusCode(false, "Internal database error registering user");
 			}
 		}

@@ -316,13 +316,13 @@ public class Util {
 		for (Part p : request.getParts()) {
 			PartWrapper wrapper = new PartWrapper(p);
 			// If we're dealing with a regular form field...
-			if (!wrapper.isFile()) {
-				// Add the field name and field value to the hashmap
-				form.put(p.getName(), IOUtils.toString(p.getInputStream()));
-			} else {
+			if (wrapper.isFile()) {
 				// Else we've encountered a file, so add the entire wrapper to the HashMap.
 				// The wrapper provides all the relevant interface of a FileItem
 				form.put(p.getName(), wrapper);
+			} else {
+				// Add the field name and field value to the hashmap
+				form.put(p.getName(), IOUtils.toString(p.getInputStream()));
 			}
 		}
 
@@ -613,13 +613,12 @@ public class Util {
 		IOFileFilter dateFilter = FileFilterUtils.ageFileFilter(calendar.getTime());
 		Collection<File> outdatedFiles;
 		// Get all of the outdated files
-		if (!includeDirs) {
-			outdatedFiles = FileUtils.listFiles(dir, dateFilter, null);
-
-		} else {
+		if (includeDirs) {
 			File[] files = dir.listFiles((FileFilter) dateFilter);
 			outdatedFiles = new ArrayList<>();
 			Collections.addAll(outdatedFiles, files);
+		} else {
+			outdatedFiles = FileUtils.listFiles(dir, dateFilter, null);
 		}
 		return outdatedFiles;
 	}

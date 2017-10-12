@@ -110,7 +110,9 @@ public class JobPairs {
 
 					Benchmark b = null;
 					//permissions check on the benchmark for this job pair
-					if (!accessibleCachedBenchmarks.containsKey(benchmarkId)) {
+					if (accessibleCachedBenchmarks.containsKey(benchmarkId)) {
+						b = accessibleCachedBenchmarks.get(benchmarkId);
+					} else {
 						b = Benchmarks.get(con, benchmarkId, false);
 						if (b == null) {
 							Benchmark errorBench = Benchmarks.get(con, benchmarkId, true, true);
@@ -130,8 +132,6 @@ public class JobPairs {
 
 						// Cache the benchmark
 						accessibleCachedBenchmarks.put(benchmarkId, b);
-					} else {
-						b = accessibleCachedBenchmarks.get(benchmarkId);
 					}
 					jobPair.setBench(b);
 					if (!configIdsToSolvers.containsKey(configId)) {

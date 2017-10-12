@@ -364,12 +364,12 @@ public class Download extends HttpServlet {
 		if (maxStageNumbers > 1) {
 			sb.append("stage number,");
 		}
-		if (!returnIds) {
-			sb.append("benchmark,solver,configuration,status,cpu time,wallclock time,memory usage,result");
-		} else {
+		if (returnIds) {
 			sb.append(
 					"pair id,benchmark,benchmark id,solver,solver id,configuration,configuration id,status,cpu time," +
 							"wallclock time,memory usage,result");
+		} else {
+			sb.append("benchmark,solver,configuration,status,cpu time,wallclock time,memory usage,result");
 		}
 
 		HashMap<Integer, String> expectedValues = Jobs.getAllAttrsOfNameForJob(job.getId(), R.EXPECTED_RESULT);
@@ -793,17 +793,7 @@ public class Download extends HttpServlet {
 			}
 
 
-			if (!type.equals(R.JOB_OUTPUTS)) {
-				String universallyUniqueId = request.getParameter(PARAM_ANON_ID);
-				if (universallyUniqueId == null) {
-					int userId = SessionUtil.getUserId(request);
-					log.debug(methodName, "Validating download request for user: " + userId);
-					return validateForUser(userId, type, request);
-				} else {
-					log.debug(methodName, "Validating download request for anonymous link: " + universallyUniqueId);
-					return validateForAnonymousLink(universallyUniqueId, type, request);
-				}
-			} else {
+			if (type.equals(R.JOB_OUTPUTS)) {
 				//expecting a comma-separated list
 				final String idArrayParam = "id[]";
 				String ids = request.getParameter(idArrayParam);
@@ -812,6 +802,16 @@ public class Download extends HttpServlet {
 					log.debug(methodName, idArrayParam + " was not a valid integer list.");
 					return new ValidatorStatusCode(
 							false, "The given list of ids contained one or more invalid integers");
+				}
+			} else {
+				String universallyUniqueId = request.getParameter(PARAM_ANON_ID);
+				if (universallyUniqueId == null) {
+					int userId = SessionUtil.getUserId(request);
+					log.debug(methodName, "Validating download request for user: " + userId);
+					return validateForUser(userId, type, request);
+				} else {
+					log.debug(methodName, "Validating download request for anonymous link: " + universallyUniqueId);
+					return validateForAnonymousLink(universallyUniqueId, type, request);
 				}
 			}
 			return new ValidatorStatusCode(true);

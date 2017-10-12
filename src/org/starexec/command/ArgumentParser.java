@@ -49,13 +49,12 @@ class ArgumentParser {
 		if (commandParams.containsKey(C.PARAM_BASEURL)) {
 			base = commandParams.get(C.PARAM_BASEURL);
 		}
-		if (!commandParams.get(C.PARAM_USER).equals(C.PARAM_GUEST)) {
-			username = commandParams.get(C.PARAM_USER);
-
-			password = commandParams.get(C.PARAM_PASSWORD);
-		} else {
+		if (commandParams.get(C.PARAM_USER).equals(C.PARAM_GUEST)) {
 			username = "public";
 			password = "public";
+		} else {
+			username = commandParams.get(C.PARAM_USER);
+			password = commandParams.get(C.PARAM_PASSWORD);
 		}
 		if (base == null) {
 			con = new Connection(username, password);

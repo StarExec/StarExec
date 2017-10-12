@@ -189,14 +189,13 @@ public class CommandValidator {
 			return Status.ERROR_INVALID_FILEPATH;
 		}
 
-		if (!type.equals(R.JOB_OUTPUTS)) {
-			if (!Validator.isValidLong(commandParams.get(C.PARAM_ID))) {
+		if (type.equals(R.JOB_OUTPUTS)) {
+			if (!Validator.isValidPosIntegerList(commandParams.get(C.PARAM_ID))) {
 				return Status.ERROR_INVALID_ID;
 			}
 		} else {
-			if (!Validator.isValidPosIntegerList(commandParams.get(C.PARAM_ID))) {
+			if (!Validator.isValidLong(commandParams.get(C.PARAM_ID))) {
 				return Status.ERROR_INVALID_ID;
-
 			}
 		}
 		if (commandParams.containsKey(C.PARAM_PROCID)) {

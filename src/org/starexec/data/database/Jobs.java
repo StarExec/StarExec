@@ -1060,10 +1060,10 @@ public class Jobs {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			if (!includeDeleted) {
-				procedure = con.prepareCall("{CALL GetJobById(?)}");
-			} else {
+			if (includeDeleted) {
 				procedure = con.prepareCall("{CALL GetJobByIdIncludeDeleted(?)}");
+			} else {
+				procedure = con.prepareCall("{CALL GetJobById(?)}");
 			}
 
 			procedure.setInt(1, jobId);
@@ -1887,10 +1887,10 @@ public class Jobs {
 			//then, filter them down to the synced pairs
 			for (JobPair p : pairs) {
 				solverConfigPairs.add(p.getPrimarySolver().getId() + ":" + p.getPrimaryConfiguration().getId());
-				if (!benchmarksCount.containsKey(p.getBench().getId())) {
-					benchmarksCount.put(p.getBench().getId(), 1);
-				} else {
+				if (benchmarksCount.containsKey(p.getBench().getId())) {
 					benchmarksCount.put(p.getBench().getId(), 1 + benchmarksCount.get(p.getBench().getId()));
+				} else {
+					benchmarksCount.put(p.getBench().getId(), 1);
 				}
 			}
 

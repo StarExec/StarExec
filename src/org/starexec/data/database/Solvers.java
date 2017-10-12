@@ -637,10 +637,10 @@ public class Solvers {
 		ResultSet results = null;
 
 		try {
-			if (!includeDeleted) {
-				procedure = con.prepareCall("{CALL GetSolverById(?)}");
-			} else {
+			if (includeDeleted) {
 				procedure = con.prepareCall("{CALL GetSolverByIdIncludeDeleted(?)}");
+			} else {
+				procedure = con.prepareCall("{CALL GetSolverById(?)}");
 			}
 			procedure.setInt(1, solverId);
 			results = procedure.executeQuery();

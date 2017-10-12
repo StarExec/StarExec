@@ -333,11 +333,10 @@ public class ArchiveUtil {
 	 */
 	private static void removeArchive(String fileName) {
 		if (R.REMOVE_ARCHIVES) {
-			if (!new File(fileName).delete()) {
-
-				log.warn("Failed to cleanup archive file: " + fileName);
-			} else {
+			if (new File(fileName).delete()) {
 				log.debug("Cleaned up archive file: " + fileName);
+			} else {
+				log.warn("Failed to cleanup archive file: " + fileName);
 			}
 		}
 	}

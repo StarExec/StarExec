@@ -608,10 +608,10 @@ public class BatchUtil {
 					}
 					u.pid = Integer.parseInt(childElement.getAttribute("pid"));
 
-					if (!childElement.hasAttribute("bid")) {
-						u.bid = R.NO_TYPE_PROC_ID;
-					} else {
+					if (childElement.hasAttribute("bid")) {
 						u.bid = Integer.parseInt(childElement.getAttribute("bid"));
+					} else {
+						u.bid = R.NO_TYPE_PROC_ID;
 					}
 
 					// Make sure that a benchmark with the given ID exists.

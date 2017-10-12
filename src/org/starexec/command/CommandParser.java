@@ -828,11 +828,10 @@ class CommandParser {
 				commandParams.put(C.PARAM_OUTPUT_FILE, nextName);
 				since = parser.getJobInfoCompletion(Integer.parseInt(commandParams.get(C.PARAM_ID)));
 				status = parser.downloadArchive(R.JOB, since, null, null, null, commandParams);
-				if (status != C.SUCCESS_NOFILE) {
-					infoCounter += 1;
-				} else {
+				if (status == C.SUCCESS_NOFILE) {
 					System.out.println(C.successMessages.get(C.SUCCESS_NOFILE));
-
+				} else {
+					infoCounter += 1;
 				}
 				if (status == C.SUCCESS_JOBDONE) {
 
@@ -848,10 +847,10 @@ class CommandParser {
 				since = data.since;
 				long lastModified = data.lastModified;
 				status = parser.downloadArchive(R.JOB_OUTPUT, since, lastModified, null, null, commandParams);
-				if (status != C.SUCCESS_NOFILE) {
-					outputCounter += 1;
-				} else {
+				if (status == C.SUCCESS_NOFILE) {
 					System.out.println(C.successMessages.get(C.SUCCESS_NOFILE));
+				} else {
+					outputCounter += 1;
 				}
 
 				if (status == C.SUCCESS_JOBDONE) {

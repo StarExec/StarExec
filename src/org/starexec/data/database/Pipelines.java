@@ -199,10 +199,10 @@ public class Pipelines {
 		try {
 			procedure = con.prepareCall("{CALL AddPipelineStage(?,?,?,?,?)}");
 			procedure.setInt(1, stage.getPipelineId());
-			if (!stage.isNoOp()) {
-				procedure.setInt(2, stage.getConfigId());
-			} else {
+			if (stage.isNoOp()) {
 				procedure.setNull(2, java.sql.Types.INTEGER);
+			} else {
+				procedure.setInt(2, stage.getConfigId());
 			}
 			procedure.setBoolean(3, stage.isPrimary());
 			procedure.setBoolean(4, stage.isNoOp());

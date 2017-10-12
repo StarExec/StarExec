@@ -483,10 +483,10 @@ public abstract class JobManager {
 
 							int execId = R.BACKEND.submitScript(scriptPath, R.BACKEND_WORKING_DIR, logPath);
 
-							if (!R.BACKEND.isError(execId)) {
-								JobPairs.updateBackendExecId(pair.getId(), execId);
-							} else {
+							if (R.BACKEND.isError(execId)) {
 								JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());
+							} else {
+								JobPairs.updateBackendExecId(pair.getId(), execId);
 							}
 							queueSize++;
 						} catch (BenchmarkDependencyMissingException e) {

@@ -986,10 +986,10 @@ public class Benchmarks {
 		ResultSet results = null;
 
 		try {
-			if (!includeDeleted) {
-				procedure = con.prepareCall("{CALL GetBenchmarkById(?)}");
-			} else {
+			if (includeDeleted) {
 				procedure = con.prepareCall("{CALL GetBenchmarkByIdIncludeDeletedAndRecycled(?)}");
+			} else {
+				procedure = con.prepareCall("{CALL GetBenchmarkById(?)}");
 			}
 			procedure.setInt(1, benchId);
 			results = procedure.executeQuery();
