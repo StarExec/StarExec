@@ -239,8 +239,6 @@ public class ResourceLoader implements AutoCloseable {
 		for (Integer i : solverIds) {
 			configIds.add(Solvers.getConfigsForSolver(i).get(0).getId());
 		}
-		List<Space> spaces= new ArrayList<>();
-		spaces.add(Spaces.get(spaceId));
 
 		JobManager.buildJob(job, benchmarkIds, configIds, spaceId);
 		
