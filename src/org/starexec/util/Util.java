@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -495,16 +497,9 @@ public class Util {
 	 */
 	public static List<Integer> toIntegerList(String[] stringList) {
 		if (nonNull(stringList)) {
-			ArrayList<Integer> retList = new ArrayList<>(stringList.length);
-
-			for (String s : stringList) {
-				retList.add(Integer.parseInt(s));
-			}
-
-			return retList;
+			return Arrays.stream(stringList).map(Integer::parseInt).collect(Collectors.toList());
 		}
-
-		return new ArrayList<>();
+		return new LinkedList<>();
 	}
 
 	/**
@@ -569,11 +564,11 @@ public class Util {
 	 */
 	public static String makeCommaSeparatedList(List<Integer> nums) {
 		StringBuilder sb = new StringBuilder();
-		for (Integer id : nums) {
+		nums.forEach(id -> {
 			sb.append(id);
 			sb.append(",");
-		}
-		sb.delete(sb.length() - 1, sb.length());
+		});
+		sb.deleteCharAt(sb.length() - 1);
 		return sb.toString();
 
 	}
@@ -690,10 +685,7 @@ public class Util {
 			Collection<File> outdatedFiles = getOldFiles(directory, daysAgo, includeDirs);
 			log.debug("found a total of " + outdatedFiles.size() + " outdated files to delete in " + directory);
 			// Remove them all
-			for (File f : outdatedFiles) {
-
-				FileUtils.deleteQuietly(f);
-			}
+			outdatedFiles.forEach(FileUtils::deleteQuietly);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
@@ -1054,10 +1046,10 @@ public class Util {
 		// Initially contains the ? necessary for the query string.
 		StringBuilder queryStringBuilder = new StringBuilder("?");
 
-		for (String parameter : queryParameters.keySet()) {
+		queryParameters.keySet().forEach(parameter -> {
 			String value = queryParameters.get(parameter);
 			queryStringBuilder.append(parameter).append("=").append(value).append("&");
-		}
+		});
 		// delete the last & character
 		queryStringBuilder.deleteCharAt(queryStringBuilder.length() - 1);
 
@@ -1097,9 +1089,7 @@ public class Util {
 	private static String buildCookieString(List<Cookie> cookies) {
 		//StringJoiner cookieStringJoiner = new StringJoiner("; ");
 		StringBuilder cookieStringBuilder = new StringBuilder();
-		for (Cookie cookie : cookies) {
-			cookieStringBuilder.append(cookie.getName()).append("=").append(cookie.getValue()).append(";");
-		}
+		cookies.forEach(cookie -> cookieStringBuilder.append(cookie.getName()).append("=").append(cookie.getValue()).append(";"));
 		if (!cookies.isEmpty()) {
 			cookieStringBuilder.deleteCharAt(cookieStringBuilder.length() - 1);
 		}
