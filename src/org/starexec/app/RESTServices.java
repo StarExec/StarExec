@@ -157,8 +157,8 @@ public class RESTServices {
 	@Produces("application/json")
 	public String isLeafSpace(@PathParam("spaceId") int spaceId) {
 		final String method = "isLeafSpace";
-		log.debug(method+" - Entering method "+method);
-		log.debug(method+" - Attempting to determine if space with id="+spaceId+" is a leaf space.");
+		log.entry(method);
+		log.debug(method, "Attempting to determine if space with id="+spaceId+" is a leaf space.");
 		return gson.toJson(Spaces.isLeaf(spaceId));
 	}
 
@@ -217,7 +217,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String clearErrorStates(@Context HttpServletRequest request) {
 		final String method = "clearErrorStates";
-		log.debug("Entering method "+method);
+		log.entry(method);
 		int userId = SessionUtil.getUserId(request);
 		ValidatorStatusCode status=QueueSecurity.canUserClearErrorStates(userId);
 		if (!status.isSuccess()) {

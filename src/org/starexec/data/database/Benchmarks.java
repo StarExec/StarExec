@@ -653,7 +653,7 @@ public class Benchmarks {
 	 */
 	private static void checkProcessorOutput(String processorOutput) throws StarExecException {
 		final String method = "checkProcessorOutput";
-		log.debug("Entering method " + method);
+		log.entry(method);
 		if (processorOutput.contains("command not found")) {
 			throw new StarExecException(
 					String.format("Processor used a command that StarExec does not recognize.%nProcessor Output:%s",
