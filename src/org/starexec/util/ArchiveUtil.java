@@ -381,6 +381,19 @@ public class ArchiveUtil {
 	}
 
 	/**
+	 * Calculate Unix file permissions for file f
+	 * @param f File to calculate permissions for
+	 * @return Unix file permissions
+	 */
+	private static int getUnixMode(File f) {
+		int mode = 0100000;
+		if (f.canRead()) mode |= 0400;
+		if (f.canWrite()) mode |= 0200;
+		if (f.canExecute()) mode |= 0100;
+		return mode;
+	}
+
+	/**
 	 * Adds the given source file to the given zip output stream using the given name
 	 *
 	 * @param zos
@@ -395,7 +408,7 @@ public class ArchiveUtil {
 			long timestamp = srcFile.lastModified();
 			zos.putArchiveEntry(entry);
 			FileInputStream input = new FileInputStream(srcFile);
-			entry.setUnixMode(0100700);
+			entry.setUnixMode(getUnixMode(srcFile));
 			IOUtils.copy(input, zos);
 			zos.closeArchiveEntry();
 			input.close();
