@@ -515,7 +515,6 @@ public class GridEngineBackend implements Backend{
     		log.info("moveNodes begins, for queue "+queueName);
     		String[] split = queueName.split("\\.");
     		String shortQueueName = split[0];
-    		StringBuilder sb = new StringBuilder();
 
 
     		if ((nodeNames == null) || (nodeNames.length == 0)) {
@@ -524,10 +523,6 @@ public class GridEngineBackend implements Backend{
     		    for(int i=0;i<nodeNames.length;i++){
 	    			//String fullName = n.getName();
 	    		    String nodeFullName = nodeNames[i];
-	    			String[] split2 = nodeFullName.split("\\.");
-	    			String shortName = split2[0];
-	    			sb.append(shortName);
-	    			sb.append(" ");
 	    			log.debug("moving node "+nodeFullName);
 					//remove the association with this node and the queue it is currently associated with and add it to the queue
 					if (sourceQueueNames[i] != null) {
