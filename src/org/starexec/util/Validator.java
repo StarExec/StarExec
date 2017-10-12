@@ -4,7 +4,6 @@ import org.starexec.constants.R;
 import org.starexec.logger.StarLogger;
 
 import java.util.Arrays;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -279,7 +278,7 @@ public class Validator {
 	public static boolean isValidIntegerList(String[] list) {
 		return
 			(list != null)
-			&& Arrays.stream(list).allMatch(s->(isValidInteger(s)));
+			&& Arrays.stream(list).allMatch(Validator::isValidInteger);
 	}
 
 	/**
@@ -323,10 +322,6 @@ public class Validator {
 
 	public static List<Integer> convertToIntList(String str) {
 		String[] ids = str.split(",");
-		List<Integer> answer = new ArrayList<>();
-		for (String s : ids) {
-			answer.add(Integer.parseInt(s));
-		}
-		return answer;
+		return Util.toIntegerList(ids);
 	}
 }
