@@ -184,22 +184,16 @@ public class Util {
 	}
 
 	/**
-	 * Clamps the given value to within the given range
+	 * Ensures a number is within a given range
 	 *
-	 * @param min The min of the range, inclusive
-	 * @param max The max of the range, inclusive
-	 * @param value The value to clamp.
-	 * @return min, if the value is lower, and max if the value is larger.
-	 * The value itself otherwise
+	 * @param min The minimum value the given value can be
+	 * @param max The maximum value the given value can be
+	 * @param value The actual value to clamp
+	 * @return min if value is less than min, max if value is
+	 * greater than max, or value if it is between min and max
 	 */
 	public static long clamp(long min, long max, long value) {
-		if (value < min) {
-			return min;
-		}
-		if (value > max) {
-			return max;
-		}
-		return value;
+		return Math.max(Math.min(value, max), min);
 	}
 
 	/**
