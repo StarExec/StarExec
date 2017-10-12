@@ -5131,4 +5131,15 @@ public class RESTServices {
 		Notifications.unsubscribeUserToJob(userId, jobId);
 		return "{}";
 	}
+
+	/**
+	 * Analytics
+	 */
+	@GET
+	@Path("/analytics")
+	@Produces("application/json")
+	public String analytics(@QueryParam("start") @DefaultValue("2017-04-01") java.sql.Date startDate, @QueryParam("end") @DefaultValue("2030-04-01") java.sql.Date endDate) {
+			org.starexec.data.database.Analytics.saveToDB();
+			return gson.toJson(org.starexec.data.to.AnalyticsResults.getAllEvents(startDate, endDate));
+	}
 }
