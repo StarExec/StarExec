@@ -12,19 +12,16 @@
 		List<Space> communities = Communities.getAll();
 		StringBuilder communityIdList = new StringBuilder();
 
-
-		if(!communities.isEmpty()){
-		        for(Space c : communities){
-			        communityIdList.append(c.getId());
+		if (!communities.isEmpty()) {
+			for(Space c : communities) {
+				communityIdList.append(c.getId());
 				communityIdList.append(",");
 			}
 			communityIdList.delete(communityIdList.length() -1,communityIdList.length());
 			request.setAttribute("communityIdList",communityIdList.toString());
-
-		}
-		else{
+		} else {
 			request.setAttribute("communityIdList","1");
-			}
+		}
 
 		if (SpaceSecurity.canUserSeeSpace(spaceId,userId).isSuccess() && spaceId > 0) {
 			List<Integer> idChain=Spaces.getChainToRoot(spaceId);
