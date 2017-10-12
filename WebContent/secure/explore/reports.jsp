@@ -36,7 +36,7 @@ import="org.apache.commons.io.FileUtils,
 
 		// Only add "since" to the title suffix if their is a last report.
 		String titleSuffix = "";
-		if (!lastReportDay.equals("")) {
+		if (!lastReportDay.isEmpty()) {
 			titleSuffix = "since " + lastReportDay;
 		}
 
