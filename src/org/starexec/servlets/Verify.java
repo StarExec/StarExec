@@ -269,11 +269,11 @@ public class Verify extends HttpServlet {
 	 */
 	public static boolean createPersonalSubspace(int parentSpaceId, User user) {
 		// Generate space name (e.g. IF name = Todd Elvers, THEN personal space name = todd_elvers)
-		String sb = user.getFirstName().toLowerCase() + "_" + user.getLastName().toLowerCase();
+		final String name = user.getFirstName().toLowerCase() + "_" + user.getLastName().toLowerCase();
 
 		// Set the space's attributes
 		Space s = new Space();
-		s.setName(sb);
+		s.setName(name);
 		s.setDescription(R.PERSONAL_SPACE_DESCRIPTION);
 		s.setLocked(false);
 		s.setPermission(new Permission(true));
