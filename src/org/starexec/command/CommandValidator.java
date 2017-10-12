@@ -29,37 +29,48 @@ public class CommandValidator {
 	the following lists specify the parameters, either required or optional,
 	that are accepted by a certain command or set of commands
 	*/
-	private static final String[] allowedRemoveParams = new String[]{C.PARAM_ID, C.PARAM_FROM};
-	private static final String[] allowedRemoveSubspaceParams = new String[]{C.PARAM_ID, C.PARAM_RECYCLE_PRIMS};
-	private static final String[] allowedDownloadParams = new String[]{C.PARAM_ID, C.PARAM_OUTPUT_FILE, C.PARAM_OVERWRITE, C.PARAM_LONG_PATH};
-	private static final String[] allowedDownloadSpaceXMLParams = new String[]{C.PARAM_ID, C.PARAM_OUTPUT_FILE, C.PARAM_OVERWRITE, C.PARAM_GET_ATTRIBUTES, C.PARAM_PROCID};
-	private static final String[] allowedNewDownloadParams = new String[]{C.PARAM_ID, C.PARAM_OUTPUT_FILE, C.PARAM_OVERWRITE, C.PARAM_SINCE};
-	private static final String[] allowedDownloadSpaceParams = new String[]{C.PARAM_ID, C.PARAM_OUTPUT_FILE, C.PARAM_OVERWRITE, C.PARAM_EXCLUDE_BENCHMARKS, C.PARAM_EXCLUDE_SOLVERS};
-	private static final String[] allowedDownloadCSVParams = new String[]{C.PARAM_ID, C.PARAM_OUTPUT_FILE, C.PARAM_OVERWRITE, C.PARAM_INCLUDE_IDS, C.PARAM_ONLY_COMPLETED};
-	private static final String[] allowedSetUserSettingParams = new String[]{C.PARAM_VAL};
-	private static final String[] allowedSetSpaceVisibilityParams = new String[]{C.PARAM_ID, C.PARAM_HIERARCHY};
-	private static final String[] allowedLoginParams = new String[]{C.PARAM_USER, C.PARAM_PASSWORD, C.PARAM_BASEURL};
-	private static final String[] allowedDeleteParams = new String[]{C.PARAM_ID};
-	private static final String[] allowedCopyUserParams = new String[]{C.PARAM_TO, C.PARAM_ID, C.PARAM_HIERARCHY};
-	private static final String[] allowedCopySpaceParams = new String[]{C.PARAM_TO, C.PARAM_ID, C.PARAM_FROM, C.PARAM_COPY_PRIMITIVES};
-	private static final String[] allowedCopySolverParams = new String[]{C.PARAM_ID, C.PARAM_FROM, C.PARAM_TO, C.PARAM_HIERARCHY};
-	private static final String[] allowedCopyBenchmarkParams = new String[]{C.PARAM_ID, C.PARAM_FROM, C.PARAM_TO};
-	private static final String[] allowedPollJobParams = new String[]{C.PARAM_OUTPUT_FILE, C.PARAM_ID, C.PARAM_TIME, C.PARAM_OVERWRITE};
-	private static final String[] allowedRunFileParams = new String[]{C.PARAM_FILE, C.PARAM_VERBOSE};
-	private static final String[] allowedSleepParams = new String[]{C.PARAM_TIME};
-	private static final String[] allowedPrintParams = new String[]{C.PARAM_MESSAGE};
-	private static final String[] allowedPauseOrResumeParams = new String[]{C.PARAM_ID};
-	private static final String[] allowedRerunParams = new String[]{C.PARAM_ID};
-	private static final String[] allowedCreateSubspaceParams = new String[]{C.PARAM_ID, C.PARAM_NAME, C.PARAM_DESC, C.PARAM_ENABLE_ALL_PERMISSIONS, "addSolver", "addUser", "addSpace", "addJob", "addBench", "removeSolver", "removeUser", "removeSpace", "removeJob", "removeBench"};
-	private static final String[] allowedCreateJobParams = new String[]{C.PARAM_ID, C.PARAM_NAME, C.PARAM_DESC, C.PARAM_WALLCLOCKTIMEOUT, C.PARAM_RESULTS_INTERVAL, C.PARAM_CPUTIMEOUT, C.PARAM_QUEUEID, C.PARAM_PROCID, C.PARAM_TRAVERSAL, C.PARAM_MEMORY, C.PARAM_PAUSED, C.PARAM_SEED, C.PARAM_SUPPRESS_TIMESTAMPS};
-	private static final String[] allowedUploadSolverParams = new String[]{C.PARAM_ID, C.PARAM_TYPE, C.PARAM_PREPROCID, C.PARAM_FILE, C.PARAM_URL, C.PARAM_NAME, C.PARAM_DESC, C.PARAM_DESCRIPTION_FILE, C.PARAM_DOWNLOADABLE, C.PARAM_RUN, C.PARAM_SETTING};
-	private static final String[] allowedUploadBenchmarksParams = new String[]{C.PARAM_ID, C.PARAM_BENCHTYPE, C.PARAM_FILE, C.PARAM_URL, C.PARAM_DESC, C.PARAM_DESCRIPTION_FILE, C.PARAM_DEPENDENCY, C.PARAM_DOWNLOADABLE, C.PARAM_HIERARCHY, C.PARAM_LINKED, C.PARAM_ENABLE_ALL_PERMISSIONS, "addSolver", "addUser", "addSpace", "addJob", "addBench", "removeSolver", "removeUser", "removeSpace", "removeJob", "removeBench"};
-	private static final String[] allowedUploadProcessorParams = new String[]{C.PARAM_ID, C.PARAM_NAME, C.PARAM_DESC, C.PARAM_FILE};
-	private static final String[] allowedUploadConfigParams = new String[]{C.PARAM_FILE, C.PARAM_ID, C.PARAM_FILE, C.PARAM_DESC};
-	private static final String[] allowedUploadXMLParams = new String[]{C.PARAM_ID, C.PARAM_FILE};
-	private static final String[] allowedPrintStatusParams = new String[]{C.PARAM_ID};
-	private static final String[] allowedGetPrimitiveAttributesParams = new String[]{C.PARAM_ID};
-	private static final String[] allowedLSParams = new String[]{C.PARAM_ID, C.PARAM_LIMIT, C.PARAM_USER};
+	private static final String[] allowedRemoveParams = {C.PARAM_ID, C.PARAM_FROM};
+	private static final String[] allowedRemoveSubspaceParams = {C.PARAM_ID, C.PARAM_RECYCLE_PRIMS};
+	private static final String[] allowedDownloadParams =
+			{C.PARAM_ID, C.PARAM_OUTPUT_FILE, C.PARAM_OVERWRITE, C.PARAM_LONG_PATH};
+	private static final String[] allowedDownloadSpaceXMLParams =
+			{C.PARAM_ID, C.PARAM_OUTPUT_FILE, C.PARAM_OVERWRITE, C.PARAM_GET_ATTRIBUTES, C.PARAM_PROCID};
+	private static final String[] allowedNewDownloadParams =
+			{C.PARAM_ID, C.PARAM_OUTPUT_FILE, C.PARAM_OVERWRITE, C.PARAM_SINCE};
+	private static final String[] allowedDownloadSpaceParams =
+			{C.PARAM_ID, C.PARAM_OUTPUT_FILE, C.PARAM_OVERWRITE, C.PARAM_EXCLUDE_BENCHMARKS, C.PARAM_EXCLUDE_SOLVERS};
+	private static final String[] allowedDownloadCSVParams =
+			{C.PARAM_ID, C.PARAM_OUTPUT_FILE, C.PARAM_OVERWRITE, C.PARAM_INCLUDE_IDS, C.PARAM_ONLY_COMPLETED};
+	private static final String[] allowedSetUserSettingParams = {C.PARAM_VAL};
+	private static final String[] allowedSetSpaceVisibilityParams = {C.PARAM_ID, C.PARAM_HIERARCHY};
+	private static final String[] allowedLoginParams = {C.PARAM_USER, C.PARAM_PASSWORD, C.PARAM_BASEURL};
+	private static final String[] allowedDeleteParams = {C.PARAM_ID};
+	private static final String[] allowedCopyUserParams = {C.PARAM_TO, C.PARAM_ID, C.PARAM_HIERARCHY};
+	private static final String[] allowedCopySpaceParams =
+			{C.PARAM_TO, C.PARAM_ID, C.PARAM_FROM, C.PARAM_COPY_PRIMITIVES};
+	private static final String[] allowedCopySolverParams = {C.PARAM_ID, C.PARAM_FROM, C.PARAM_TO, C.PARAM_HIERARCHY};
+	private static final String[] allowedCopyBenchmarkParams = {C.PARAM_ID, C.PARAM_FROM, C.PARAM_TO};
+	private static final String[] allowedPollJobParams =
+			{C.PARAM_OUTPUT_FILE, C.PARAM_ID, C.PARAM_TIME, C.PARAM_OVERWRITE};
+	private static final String[] allowedRunFileParams = {C.PARAM_FILE, C.PARAM_VERBOSE};
+	private static final String[] allowedSleepParams = {C.PARAM_TIME};
+	private static final String[] allowedPrintParams = {C.PARAM_MESSAGE};
+	private static final String[] allowedPauseOrResumeParams = {C.PARAM_ID};
+	private static final String[] allowedRerunParams = {C.PARAM_ID};
+	private static final String[] allowedCreateSubspaceParams =
+			{C.PARAM_ID, C.PARAM_NAME, C.PARAM_DESC, C.PARAM_ENABLE_ALL_PERMISSIONS, "addSolver", "addUser", "addSpace", "addJob", "addBench", "removeSolver", "removeUser", "removeSpace", "removeJob", "removeBench"};
+	private static final String[] allowedCreateJobParams =
+			{C.PARAM_ID, C.PARAM_NAME, C.PARAM_DESC, C.PARAM_WALLCLOCKTIMEOUT, C.PARAM_RESULTS_INTERVAL, C.PARAM_CPUTIMEOUT, C.PARAM_QUEUEID, C.PARAM_PROCID, C.PARAM_TRAVERSAL, C.PARAM_MEMORY, C.PARAM_PAUSED, C.PARAM_SEED, C.PARAM_SUPPRESS_TIMESTAMPS};
+	private static final String[] allowedUploadSolverParams =
+			{C.PARAM_ID, C.PARAM_TYPE, C.PARAM_PREPROCID, C.PARAM_FILE, C.PARAM_URL, C.PARAM_NAME, C.PARAM_DESC, C.PARAM_DESCRIPTION_FILE, C.PARAM_DOWNLOADABLE, C.PARAM_RUN, C.PARAM_SETTING};
+	private static final String[] allowedUploadBenchmarksParams =
+			{C.PARAM_ID, C.PARAM_BENCHTYPE, C.PARAM_FILE, C.PARAM_URL, C.PARAM_DESC, C.PARAM_DESCRIPTION_FILE, C.PARAM_DEPENDENCY, C.PARAM_DOWNLOADABLE, C.PARAM_HIERARCHY, C.PARAM_LINKED, C.PARAM_ENABLE_ALL_PERMISSIONS, "addSolver", "addUser", "addSpace", "addJob", "addBench", "removeSolver", "removeUser", "removeSpace", "removeJob", "removeBench"};
+	private static final String[] allowedUploadProcessorParams = {C.PARAM_ID, C.PARAM_NAME, C.PARAM_DESC, C.PARAM_FILE};
+	private static final String[] allowedUploadConfigParams = {C.PARAM_FILE, C.PARAM_ID, C.PARAM_FILE, C.PARAM_DESC};
+	private static final String[] allowedUploadXMLParams = {C.PARAM_ID, C.PARAM_FILE};
+	private static final String[] allowedPrintStatusParams = {C.PARAM_ID};
+	private static final String[] allowedGetPrimitiveAttributesParams = {C.PARAM_ID};
+	private static final String[] allowedLSParams = {C.PARAM_ID, C.PARAM_LIMIT, C.PARAM_USER};
 
 	/**
 	 * Gets the missing paramter that was last seen. If none has been seen yet,

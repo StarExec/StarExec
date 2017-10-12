@@ -787,7 +787,7 @@ public class Util {
 	 * @author Eric Burns
 	 */
 	public static String byteCountToDisplaySize(long bytes) {
-		String[] suffix = new String[]{"Bytes", "KB", "MB", "GB", "TB", "PB", "EB"};
+		final String[] suffix = {"Bytes", "KB", "MB", "GB", "TB", "PB", "EB"};
 		int suffixIndex = 0;
 		double b = (double) bytes;
 		while (b > 1024) {
