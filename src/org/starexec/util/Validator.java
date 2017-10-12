@@ -1,6 +1,5 @@
 package org.starexec.util;
 
-
 import org.starexec.constants.R;
 import org.starexec.logger.StarLogger;
 
@@ -306,7 +305,8 @@ public class Validator {
 	 * @return true iff the format is of supported type
 	 */
 	public static boolean isValidArchiveType(String format) {
-		return Arrays.stream(extensions).anyMatch(s->s.equals(format));
+		return (format != null)
+				&& Arrays.stream(extensions).anyMatch(s->format.endsWith(s));
 	}
 
 	/**

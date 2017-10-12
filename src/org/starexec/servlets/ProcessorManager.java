@@ -37,7 +37,6 @@ public class ProcessorManager extends HttpServlet {
 
 	// The unique date stamped file name format (for saving processor files)
 	private static final DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
-	private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
 
 	// Request attributes
 	private static final String PROCESSOR_NAME = "name";
@@ -284,7 +283,6 @@ public class ProcessorManager extends HttpServlet {
 
 			String uploadMethod = (String) form.get(UPLOAD_METHOD);
 
-			boolean goodExtension = false;
 			String fileName;
 
 			if (uploadMethod.equals(LOCAL_UPLOAD_METHOD)) {
@@ -295,14 +293,7 @@ public class ProcessorManager extends HttpServlet {
 
 			log.debug(method + " - Name of processor file=" + fileName);
 
-			for (String ext : ProcessorManager.extensions) {
-				if (fileName.endsWith(ext)) {
-					goodExtension = true;
-				}
-			}
-
-
-			if (!goodExtension) {
+			if (!Validator.isValidArchiveType(fileName)) {
 				return new ValidatorStatusCode(false, "Uploaded archives must be a .zip, .tar, or .tgz");
 			}
 

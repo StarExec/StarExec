@@ -39,7 +39,6 @@ public class UploadJobXML extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(UploadJobXML.class);
 	private static final String UPLOAD_FILE = "f";
 	private static final DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
-	private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
 	private static final String SPACE_ID = R.SPACE;
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -194,15 +193,8 @@ public class UploadJobXML extends HttpServlet {
 				return new ValidatorStatusCode(false, "The supplied space ID was not a valid integer");
 			}
 
-			boolean goodExtension = false;
 			String fileName = FilenameUtils.getName(((PartWrapper) form.get(UploadJobXML.UPLOAD_FILE)).getName());
-			for (String ext : UploadJobXML.extensions) {
-				if (fileName.endsWith(ext)) {
-					goodExtension = true;
-					break;
-				}
-			}
-			if (!goodExtension) {
+			if (!Validator.isValidArchiveType(fileName)) {
 				return new ValidatorStatusCode(false, "Uploaded files must be .zip, .tar, or .tgz");
 			}
 			return new ValidatorStatusCode(true);

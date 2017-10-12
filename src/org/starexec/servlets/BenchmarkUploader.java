@@ -32,9 +32,6 @@ public class BenchmarkUploader extends HttpServlet {
 	// The unique date stamped file name format
 	private static final DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
 
-	// Valid file types for uploads
-	private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
-
 	// Request attributes
 	private static final String SPACE_ID = R.SPACE;
 	private static final String UPLOAD_METHOD = "upMethod";
@@ -433,23 +430,15 @@ public class BenchmarkUploader extends HttpServlet {
 			} else {
 				fileName = (String) form.get(FILE_URL);
 			}
-			boolean goodExtension = false;
-			for (String ext : BenchmarkUploader.extensions) {
-				if (fileName.endsWith(ext)) {
-					goodExtension = true;
-				}
-			}
 
-			if (!goodExtension) {
+			if (!Validator.isValidArchiveType(fileName)) {
 				return new ValidatorStatusCode(false, "Uploaded archives need to be either .zip, .tar, or .tgz");
 			}
-
 
 			Permission perm = SessionUtil.getPermission(request, Integer.parseInt((String) form.get(R.SPACE)));
 
 			log.trace(method, "perm=" + perm);
 			log.trace(method, "uploadMethod=" + uploadMethod);
-
 
 			if (perm == null || (!perm.canAddBenchmark() && uploadMethod.equals("dump"))) {
 				// They don't have permissions, send forbidden error

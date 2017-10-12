@@ -51,7 +51,6 @@ import java.util.Optional;
 public class UploadSolver extends HttpServlet {
 
 	private static final StarLogger log = StarLogger.getLogger(UploadSolver.class);
-	private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
 	// Some param constants to process the form
 	private static final String SOLVER_DESC = "desc";
 	private static final String SOLVER_DESC_FILE = "d";
@@ -508,19 +507,13 @@ public class UploadSolver extends HttpServlet {
 				);
 			}
 
-			boolean goodExtension = false;
 			String fileName = null;
 			if (form.get(UploadSolver.UPLOAD_METHOD).equals("local")) {
 				fileName = FilenameUtils.getName(((PartWrapper) form.get(UploadSolver.UPLOAD_FILE)).getName());
 			} else {
 				fileName = (String) form.get(UploadSolver.FILE_URL);
 			}
-			for (String ext : UploadSolver.extensions) {
-				if (fileName.endsWith(ext)) {
-					goodExtension = true;
-				}
-			}
-			if (!goodExtension) {
+			if (!Validator.isValidArchiveType(fileName)) {
 				return new ValidatorStatusCode(false, "Archives need to have an extension of .zip, .tar, or .tgz");
 			}
 
