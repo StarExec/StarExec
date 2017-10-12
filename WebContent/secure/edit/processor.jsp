@@ -34,7 +34,7 @@ try {
 			for (Syntax s : Syntaxes.getAll()) {
 				syntaxes
 					.append("<option value='")
-					.append(""+s.getId())
+					.append(s.getId())
 					.append("'")
 				;
 				if (thisSyntax == s.getId()) {
