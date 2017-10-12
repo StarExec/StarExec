@@ -103,9 +103,7 @@ public class SettingSecurity {
 	) throws SQLException {
 		boolean isInt = Validator.isValidPosInteger(newValue);
 
-		switch (attribute) {
-		case CpuTimeout:
-		case ClockTimeout:
+		if (attribute == R.DefaultSettingAttribute.CpuTimeout || attribute == DefaultSettingAttribute.ClockTimeout) {
 			if (!Validator.isValidPosInteger(newValue)) {
 				return new ValidatorStatusCode(false, "The new limit needs to be a valid integer");
 			}
@@ -113,8 +111,7 @@ public class SettingSecurity {
 			if (timeout <= 0) {
 				return new ValidatorStatusCode(false, "The new limit needs to be greater than 0");
 			}
-			break;
-		case MaxMem:
+		} else if (attribute == DefaultSettingAttribute.MaxMem) {
 			if (!Validator.isValidPosDouble(newValue)) {
 				return new ValidatorStatusCode(false, "The new limit needs to be a valid double");
 			}
@@ -123,8 +120,7 @@ public class SettingSecurity {
 			if (limit <= 0) {
 				return new ValidatorStatusCode(false, "The new limit needs to be greater than 0");
 			}
-			break;
-		case PostProcess: {
+		} else if (attribute == DefaultSettingAttribute.PostProcess) {
 			if (!isInt) {
 				return new ValidatorStatusCode(false, "The given processor ID is not valid");
 			}
@@ -141,9 +137,7 @@ public class SettingSecurity {
 					return new ValidatorStatusCode(false, "The given processor is not a preprocessor");
 				}
 			}
-			break;
-		}
-		case BenchProcess: {
+		} else if (attribute == DefaultSettingAttribute.BenchProcess) {
 			if (!isInt) {
 				return new ValidatorStatusCode(false, "The given processor ID is not valid");
 			}
@@ -160,9 +154,7 @@ public class SettingSecurity {
 					return new ValidatorStatusCode(false, "The given processor is not a preprocessor");
 				}
 			}
-			break;
-		}
-		case defaultbenchmark:
+		} else if (attribute == DefaultSettingAttribute.defaultbenchmark) {
 			if (!isInt) {
 				return new ValidatorStatusCode(false, "The given benchmark ID is not valid");
 			}
@@ -172,8 +164,7 @@ public class SettingSecurity {
 						"You do not have permission to see the given benchmark, or the given solver does not exist"
 				);
 			}
-			break;
-		case defaultsolver:
+		} else if (attribute == DefaultSettingAttribute.defaultsolver) {
 			if (!isInt) {
 				return new ValidatorStatusCode(false, "The given solver ID is not valid");
 			}
@@ -183,8 +174,7 @@ public class SettingSecurity {
 						"You do not have permission to see the given solver, or the given solver does not exist"
 				);
 			}
-			break;
-		case PreProcess: {
+		} else if (attribute == DefaultSettingAttribute.PreProcess) {
 			if (!isInt) {
 				return new ValidatorStatusCode(false, "The given processor ID is not valid");
 			}
@@ -201,16 +191,13 @@ public class SettingSecurity {
 					return new ValidatorStatusCode(false, "The given processor is not a preprocessor");
 				}
 			}
-			break;
-		}
-		case BENCHMARKING_FRAMEWORK:
+		} else if (attribute == DefaultSettingAttribute.BENCHMARKING_FRAMEWORK) {
 			boolean isLegalFrameworkName = EnumSet.allOf(BenchmarkingFramework.class).stream()
 			                                      .anyMatch(framework -> framework.toString().equals(newValue));
 
 			if (!isLegalFrameworkName) {
 				return new ValidatorStatusCode(false, newValue + " is not a legal benchmarking framework name.");
 			}
-			break;
 		}
 
 		return canModifySettings(id, userId);
