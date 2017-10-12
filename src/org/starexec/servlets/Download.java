@@ -834,7 +834,7 @@ public class Download extends HttpServlet {
 		if (!Validator.isValidPosInteger(request.getParameter(PARAM_ID))) {
 			final String message = "The given id was not a valid integer";
 			log.debug(methodName, "Download request validation failed: " + message);
-			new ValidatorStatusCode(false, message);
+			return new ValidatorStatusCode(false, message);
 		}
 
 		int id = Integer.parseInt(request.getParameter(PARAM_ID));
