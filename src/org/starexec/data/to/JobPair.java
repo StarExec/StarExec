@@ -308,7 +308,7 @@ public class JobPair extends Identifiable {
 		}
 
 		// if the primary stage isn't set for some reason, we simply return the first stage.
-		if (stages.size() > 0) {
+		if (!stages.isEmpty()) {
 
 			return stages.get(0);
 		}

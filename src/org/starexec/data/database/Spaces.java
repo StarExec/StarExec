@@ -424,7 +424,7 @@ public class Spaces {
 			}
 
 			// Add any new benchmarks in the space to the database
-			if (parent.getBenchmarks().size() > 0) {
+			if (!parent.getBenchmarks().isEmpty()) {
 				ids.addAll(Benchmarks.processAndAdd(parent.getBenchmarks(), parent.getId(), depRootSpaceId, linked,
 				                                    statusId, usesDeps
 				));
@@ -2882,7 +2882,7 @@ public class Spaces {
 	 */
 	public static boolean configBenchPairExistsInHierarchy(int spaceId, int usrId) {
 		Space space = Spaces.getDetails(spaceId, usrId);
-		if (space.getSolvers().size() == 0 || space.getBenchmarks().size() == 0) {
+		if (space.getSolvers().isEmpty() || space.getBenchmarks().isEmpty()) {
 			List<Space> subspaces = space.getSubspaces();
 			for (Space subspace : subspaces) {
 				if (configBenchPairExistsInHierarchy(subspace.getId(), usrId)) {

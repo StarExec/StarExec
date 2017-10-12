@@ -103,7 +103,7 @@ public abstract class JobManager {
 						joblist = Queues.getPendingJobs(qId);
 					}
 					log.debug("about to submit this many jobs " + joblist.size());
-					if (joblist.size() > 0) {
+					if (!joblist.isEmpty()) {
 						submitJobs(joblist, q, queueSize, nodeCount);
 					} else {
 						// If we have no jobs to submit, reset the queue monitor
@@ -371,7 +371,7 @@ public abstract class JobManager {
 						// Replace the high priority states with the filtered ones.
 						userToHighPriorityStates.put(currentStateUserId, highPriorityStates);
 
-						if (highPriorityStates.size() == 0) {
+						if (highPriorityStates.isEmpty()) {
 							log.trace(methodName, "No high priority states with pairs left.");
 							// Remove the user from the map if they don't have any high priority jobs left to look at.
 							userToHighPriorityStates.remove(currentStateUserId);
@@ -387,7 +387,7 @@ public abstract class JobManager {
 									Map<Integer, Integer> highPriorityJobBalanceForUser =
 											highPriorityJobBalance.get(s.job.getUserId());
 
-									if (highPriorityJobBalanceForUser.entrySet().size() == 0) {
+									if (highPriorityJobBalanceForUser.entrySet().isEmpty()) {
 										throw new StarExecException(
 												"There should be high priority jobs for this user in the high" +
 												"priority job balance but there isn't!, userId=" + s.job.getUserId());
@@ -439,7 +439,7 @@ public abstract class JobManager {
 							log.debug("Checking bench dependencies for bench with id: " + benchId);
 							List<Benchmark> brokenDependencies = Benchmarks.getBrokenBenchDependencies(benchId);
 							log.debug("Found " + brokenDependencies.size() + " missing dependencies.");
-							if (brokenDependencies.size() > 0) {
+							if (!brokenDependencies.isEmpty()) {
 								log.debug("Skipping pair with broken bench dependency...");
 								JobPairs.setStatusForPairAndStages(pair
 										.getId(), StatusCode.ERROR_BENCH_DEPENDENCY_MISSING.getVal());
@@ -595,7 +595,7 @@ public abstract class JobManager {
 			final List<JobPair> pairs = Jobs.getPendingPairsDetailed(job, limit);
 			log.trace("finished call to getPendingPairsDetailed");
 
-			if (pairs.size() > 0) {
+			if (!pairs.isEmpty()) {
 				final Iterator<JobPair> pairIter = pairs.iterator();
 				final SchedulingState s = new SchedulingState(job, jobTemplate, pairIter);
 				schedule.add(s);
@@ -840,7 +840,7 @@ public abstract class JobManager {
 	 * @return The argument string.
 	 */
 	public static String pipelineDependenciesToArgumentString(List<PipelineDependency> deps) {
-		if (deps == null || deps.size() == 0) {
+		if (deps == null || deps.isEmpty()) {
 			return "";
 		}
 		log.debug("creating a dependency argument string with this many deps = " + deps.size());
@@ -873,7 +873,7 @@ public abstract class JobManager {
 	 * @return The array as a String that can be embedded directly into the jobscript.
 	 */
 	public static String toBashArray(String arrayName, List<String> strs, boolean base64) {
-		if (strs.size() == 0) {
+		if (strs.isEmpty()) {
 			return "";
 		}
 		int index = 0;
@@ -1243,7 +1243,7 @@ public abstract class JobManager {
 	public static void addJobPairsRoundRobin(Job j, Map<Integer, List<JobPair>> spaceToPairs) {
 		try {
 			int index = 0;
-			while (spaceToPairs.size() > 0) {
+			while (!spaceToPairs.isEmpty()) {
 				Set<Integer> keys = spaceToPairs.keySet();
 				Set<Integer> keysToRemove = new HashSet<>();
 				for (Integer spaceId : keys) {

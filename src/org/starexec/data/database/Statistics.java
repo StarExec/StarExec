@@ -327,7 +327,7 @@ public class Statistics {
 		try {
 
 			//there are no points if either list of pairs is empty
-			if (pairs1.size() == 0 || pairs2.size() == 0) {
+			if (pairs1.isEmpty() || pairs2.isEmpty()) {
 				log.debug("An input list has no jobpairs, returning null");
 				return null;
 			}
@@ -500,7 +500,7 @@ public class Statistics {
 	) {
 
 		try {
-			if (configIds.size() == 0) {
+			if (configIds.isEmpty()) {
 				return null;
 			}
 

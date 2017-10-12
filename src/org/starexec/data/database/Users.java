@@ -298,7 +298,7 @@ public class Users {
 			results = procedure.executeQuery();
 
 			List<User> users = resultsToUsers(results);
-			if (users.size() > 0) {
+			if (!users.isEmpty()) {
 				return users.get(0);
 			}
 			log.debug("Could not find user with id = " + id);
@@ -329,7 +329,7 @@ public class Users {
 			results = procedure.executeQuery();
 
 			List<User> users = resultsToUsers(results);
-			if (users.size() > 0) {
+			if (!users.isEmpty()) {
 				return users.get(0);
 			}
 		} catch (Exception e) {
@@ -577,7 +577,7 @@ public class Users {
 			results = procedure.executeQuery();
 
 			List<User> users = resultsToUsers(results);
-			if (users.size() > 0) {
+			if (!users.isEmpty()) {
 				return users.get(0);
 			}
 		} catch (Exception e) {

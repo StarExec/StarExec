@@ -320,7 +320,7 @@ public class Communities {
 				List<DefaultSettings> settings =
 						Settings.getDefaultSettingsByPrimIdAndType(community, SettingType.COMMUNITY);
 
-				if (settings.size() > 0) {
+				if (!settings.isEmpty()) {
 					return settings.get(0);
 				} else {
 					//no settings existed, so create one for this community and return that

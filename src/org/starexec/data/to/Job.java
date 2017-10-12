@@ -191,7 +191,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	 * @return all the attribute names for every completed job pair in this job
 	 */
 	public Set<String> attributeNames() {
-		if (jobPairs == null || jobPairs.size() == 0) {
+		if (jobPairs == null || jobPairs.isEmpty()) {
 			return null;
 		}
 		Set<String> attrs = new HashSet<>();
@@ -415,7 +415,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	 * @return the root space name, or null if it cannot be found
 	 */
 	public String getRootSpaceName() {
-		if (getJobPairs().size() == 0) {
+		if (getJobPairs().isEmpty()) {
 			return null;
 		}
 		String rootName = getJobPairs().get(0).getPath();

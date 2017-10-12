@@ -203,7 +203,7 @@ class CommandParser {
 			case C.COMMAND_PUSHJOBXML:
 				boolean isJobXML = c.equals(C.COMMAND_PUSHJOBXML);
 				ids = parser.uploadXML(commandParams, isJobXML);
-				if (ids.size() == 0) {
+				if (ids.isEmpty()) {
 					serverStatus = Status.ERROR_INTERNAL;
 				} else {
 					// if the first value is positive, it is an id and we were

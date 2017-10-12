@@ -1061,7 +1061,7 @@ public class Util {
 	 */
 	public static String getWebPage(String url, Map<String, String> queryParameters, List<Cookie> cookiesToSend)
 			throws IOException {
-		if (queryParameters.keySet().size() == 0) {
+		if (queryParameters.keySet().isEmpty()) {
 			return url;
 		}
 
@@ -1114,7 +1114,7 @@ public class Util {
 		for (Cookie cookie : cookies) {
 			cookieStringBuilder.append(cookie.getName()).append("=").append(cookie.getValue()).append(";");
 		}
-		if (cookies.size() > 0) {
+		if (!cookies.isEmpty()) {
 			cookieStringBuilder.deleteCharAt(cookieStringBuilder.length() - 1);
 		}
 		return cookieStringBuilder.toString();

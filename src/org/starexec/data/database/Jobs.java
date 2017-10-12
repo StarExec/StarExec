@@ -107,7 +107,7 @@ public class Jobs {
 					// note that it is assumed that there are no name conflicts here. The security check is done
 					// outside this function
 					int parentId = 0;
-					if (parentPath.length() > 0) {
+					if (!parentPath.isEmpty()) {
 						parentId = pathsToIds.get(parentPath);
 					} else {
 						parentId = parent.getId();
@@ -159,7 +159,7 @@ public class Jobs {
 					idsToMaxStages.put(id, pair.getStages().size());
 					//associate the new space to its parent
 
-					if (parentPath.length() > 0) {
+					if (!parentPath.isEmpty()) {
 						int parentId = pathsToIds.get(parentPath);
 						Spaces.associateJobSpaces(parentId, pathsToIds.get(curPathBuilder.toString()), con);
 					}
@@ -1117,7 +1117,7 @@ public class Jobs {
 		stats = Jobs.getCachedJobStatsInJobSpaceHierarchy(spaceId, stageNumber, primitivesToAnonymize);
 		//if the size is greater than 0, then this job is done and its stats have already been
 		//computed and stored
-		if (stats != null && stats.size() > 0) {
+		if (stats != null && !stats.isEmpty()) {
 			log.debug("stats already cached in database");
 			return stats;
 		}

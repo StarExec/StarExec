@@ -387,15 +387,15 @@ public class CreateJob extends HttpServlet {
 			}
 
 			int pairCount = j.getJobPairs().size();
-			if (j.getJobPairs().size() == 0) {
+			if (j.getJobPairs().isEmpty()) {
 				String message = "Error: no job pairs created for the job. Could not proceed with job submission.";
 				Space jobSpace = Spaces.getDetails(space, userId);
-				if (jobSpace.getSubspaces().size() == 0) {
-					if (jobSpace.getSolvers().size() == 0) {
+				if (jobSpace.getSubspaces().isEmpty()) {
+					if (jobSpace.getSolvers().isEmpty()) {
 						message =
 								"Error: no job pairs created for the job. There are no solvers in this space. Could " +
 										"not proceed with job submission.";
-					} else if (jobSpace.getBenchmarks().size() == 0) {
+					} else if (jobSpace.getBenchmarks().isEmpty()) {
 						message = "Error: no job pairs created for the job. There are no benchmarks in this space. " +
 								"Could" + " not proceed with job submission.";
 					}
@@ -607,7 +607,7 @@ public class CreateJob extends HttpServlet {
 					return new ValidatorStatusCode(false, "You do not have permission to see the given solver ID");
 				}
 
-				if (Solvers.getConfigsForSolver(solverId).size() == 0) {
+				if (Solvers.getConfigsForSolver(solverId).isEmpty()) {
 					return new ValidatorStatusCode(false, "The given solver does not have any configurations");
 				}
 			}
@@ -625,7 +625,7 @@ public class CreateJob extends HttpServlet {
 					}
 				}
 				List<Integer> benchmarkIds = Util.toIntegerList(request.getParameterValues(R.BENCHMARK));
-				if (request.getParameter(benchChoice).equals("runChosenFromSpace") && benchmarkIds.size() == 0) {
+				if (request.getParameter(benchChoice).equals("runChosenFromSpace") && benchmarkIds.isEmpty()) {
 					return new ValidatorStatusCode(false, "You need to chose at least one benchmark to run a job");
 				}
 				// Make sure the user is using benchmarks they can see
@@ -643,7 +643,7 @@ public class CreateJob extends HttpServlet {
 				for (Integer cid : Util.toIntegerList(request.getParameterValues(configs))) {
 					solverIds.add(Solvers.getSolverByConfig(cid, false).getId());
 				}
-				if (solverIds.size() == 0) {
+				if (solverIds.isEmpty()) {
 					return new ValidatorStatusCode(false,
 					                               "You need to select at least one configuration to run a " + "job"
 					);

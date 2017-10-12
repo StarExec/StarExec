@@ -13,7 +13,7 @@
 		StringBuilder communityIdList = new StringBuilder();
 
 
-		if(communities.size() > 0){
+		if(!communities.isEmpty()){
 		        for(Space c : communities){
 			        communityIdList.append(c.getId());
 				communityIdList.append(",");

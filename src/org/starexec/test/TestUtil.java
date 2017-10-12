@@ -78,7 +78,7 @@ public class TestUtil {
 	 * @return True if the driver is on an error page and false otherwise
 	 */
 	public static boolean isOnErrorPage(WebDriver driver) {
-		return driver.findElements(By.className("starexecErrorPage")).size()!=0;
+		return !driver.findElements(By.className("starexecErrorPage")).isEmpty();
 	}
 	
 	public static Processor getFakeProcessor(ProcessorType type) {

@@ -133,7 +133,7 @@ public class Download extends HttpServlet {
 				log.warn(methodName, "processor with id = " + x.getId() + " exists in the database but not on disk");
 			}
 		}
-		if (files.size() > 0) {
+		if (!files.isEmpty()) {
 			log.debug(methodName, "Outputting zip of processors.");
 			ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), "processors");
 			return true;
@@ -1114,7 +1114,7 @@ public class Download extends HttpServlet {
 					log.debug(methodName, "download request is for " + type.toString());
 					proc = Processors.getByCommunity(id, type);
 
-					if (proc.size() > 0) {
+					if (!proc.isEmpty()) {
 						success = handleProc(proc, response);
 					} else {
 						log.debug(methodName, "Could not find any processors to download.");

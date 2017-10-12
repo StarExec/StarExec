@@ -412,7 +412,7 @@ public class Requests {
 
 	private static CommunityRequest resultsToCommunityRequest(ResultSet results) throws SQLException {
 		List<CommunityRequest> requests = processGetCommunityRequestResults(results);
-		return requests.size() > 0 ? requests.get(0) : null;
+		return !requests.isEmpty() ? requests.get(0) : null;
 	}
 
 	/**

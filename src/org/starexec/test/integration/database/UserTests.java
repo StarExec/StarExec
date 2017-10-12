@@ -62,7 +62,7 @@ public class UserTests extends TestSequence {
 		List<Integer> commIds=Users.getCommunities(user1.getId());
 		Assert.assertEquals(0,commIds.size());
 		commIds=Users.getCommunities(admin.getId());
-		Assert.assertTrue(commIds.size()>0);
+		Assert.assertTrue(!commIds.isEmpty());
 		boolean found=false;
 		for (Integer i : commIds) {
 			found=found || comm.getId()==i;
@@ -321,7 +321,7 @@ public class UserTests extends TestSequence {
 		Assert.assertNotNull(tempJob);	
 
 		Assert.assertNotNull(tempJob.getJobPairs());
-		Assert.assertTrue(tempJob.getJobPairs().size() > 0);
+		Assert.assertTrue(!tempJob.getJobPairs().isEmpty());
 
 		for (JobPair pair : tempJob.getJobPairs()) {
 			Assert.assertNotNull(pair);

@@ -436,7 +436,7 @@ public class Benchmarks {
 			List<Benchmark> benchmarks, Integer spaceId, Integer depRootSpaceId, Boolean linked, Integer statusId,
 			Boolean usesDeps
 	) {
-		if (benchmarks.size() > 0) {
+		if (!benchmarks.isEmpty()) {
 			try {
 				log.info("Adding (with deps) " + benchmarks.size() + " to Space " + spaceId);
 				// Get the processor of the first benchmark (they should all have the same processor)
@@ -2188,7 +2188,7 @@ public class Benchmarks {
 			for (int i = 1; i <= numberDependencies; i++) {
 				includePath = atts.getOrDefault("starexec-dependency-" + i, "");
 				log.debug("Dependency Path of Dependency " + i + " is " + includePath);
-				if (includePath.length() > 0) {
+				if (!includePath.isEmpty()) {
 					//checkMap first
 					if (foundDependencies.get(includePath) != null) {
 						log.info("Already found this one before, its id is " +

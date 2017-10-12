@@ -35,7 +35,7 @@ public class TestResult {
 		this.messages= new ArrayList<>();
 	}
 	public String getMostRecentMessage() {
-		if (messages.size()>0) {
+		if (!messages.isEmpty()) {
 			return messages.get(0);
 		} else {
 			return "no message";
@@ -44,7 +44,7 @@ public class TestResult {
 	}
 	
 	public String getAllMessages() {
-		if (messages.size()==0) {
+		if (messages.isEmpty()) {
 			return "no message";
 		}
 		StringBuilder sb=new StringBuilder();

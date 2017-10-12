@@ -426,7 +426,7 @@ public class Settings {
 	public static boolean canUserSeeBenchmarkInSettings(int userId, int benchId) {
 		List<DefaultSettings> settings = Settings.getDefaultSettingsVisibleByUser(userId);
 		for (DefaultSettings s : settings) {
-			if (s.getBenchIds().size() == 0) {
+			if (s.getBenchIds().isEmpty()) {
 				continue;
 			}
 			if (s.getBenchIds().contains(benchId)) {
@@ -439,7 +439,7 @@ public class Settings {
 	public static boolean canUserSeeBenchmarkInSettings(Connection con, int userId, int benchId) {
 		List<DefaultSettings> settings = Settings.getDefaultSettingsVisibleByUser(con, userId);
 		for (DefaultSettings s : settings) {
-			if (s.getBenchIds().size() == 0) {
+			if (s.getBenchIds().isEmpty()) {
 				continue;
 			}
 			if (s.getBenchIds().contains(benchId)) {

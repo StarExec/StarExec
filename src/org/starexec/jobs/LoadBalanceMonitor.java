@@ -133,7 +133,7 @@ public class LoadBalanceMonitor {
 				activeUsers.add(d);
 			}
 		}
-		if (activeUsers.size()>0) {
+		if (!activeUsers.isEmpty()) {
 			return Collections.min(activeUsers).load;
 		}
 		return null;

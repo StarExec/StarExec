@@ -439,7 +439,7 @@ public class JobSecurity {
 		}
 		try {
 			DefaultSettings settings = Settings.getProfileById(statusId);
-			if (settings.getBenchIds().size() == 0 || Benchmarks.get(settings.getBenchIds().get(0)) == null) {
+			if (settings.getBenchIds().isEmpty() || Benchmarks.get(settings.getBenchIds().get(0)) == null) {
 				return new ValidatorStatusCode(false, "The selected community has no default benchmark selected");
 			}
 		} catch (SQLException e) {

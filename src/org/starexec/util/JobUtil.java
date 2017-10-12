@@ -309,7 +309,7 @@ public class JobUtil {
 		}
 		//ensure that benchmark inputs are ordered correctly. Benchmark inputs must be ordered from
 		//1 to n, where n is the total number of inputs.
-		if (benchmarkInputs.size() > 0) {
+		if (!benchmarkInputs.isEmpty()) {
 			int maxSeen = Collections.max(benchmarkInputs);
 			if (maxSeen != benchmarkInputs.size()) {
 				errorMessage = "Invalid benchmark inputs for pipeline = " + pipeline.getName() +
@@ -760,7 +760,7 @@ public class JobUtil {
 
 			log.info("job pairs set");
 
-			if (job.getJobPairs().size() == 0) {
+			if (job.getJobPairs().isEmpty()) {
 				// No pairs in the job means something is wrong; error out
 				errorMessage = "Error: no job pairs created for the job. Could not proceed with job submission.";
 				return -1;

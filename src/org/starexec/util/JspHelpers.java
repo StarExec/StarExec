@@ -76,7 +76,7 @@ public class JspHelpers {
 			} else {
 				Queue q = j.getQueue();
 				List<WorkerNode> nodes = Cluster.getNodesForQueue(q.getId());
-				if (nodes.size() == 0) {
+				if (nodes.isEmpty()) {
 					queueIsEmpty = true;
 				}
 

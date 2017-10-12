@@ -257,7 +257,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertTrue(stat.isEverythingComplete());
 		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
 
-		Assert.assertTrue(t.getBenchmarks().size()>0);
+		Assert.assertTrue(!t.getBenchmarks().isEmpty());
 
 		for (Benchmark b : t.getBenchmarks()) {
 			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(b.getId()));
@@ -277,7 +277,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertTrue(Uploads.getBenchmarkStatus(result).isEverythingComplete());
 
 		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
-		Assert.assertTrue(t.getBenchmarks().size()>0);
+		Assert.assertTrue(!t.getBenchmarks().isEmpty());
 		for (Benchmark b : t.getBenchmarks()) {
 			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(b.getId()));
 		}

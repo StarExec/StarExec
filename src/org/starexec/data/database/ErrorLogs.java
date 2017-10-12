@@ -108,7 +108,7 @@ public class ErrorLogs {
 	 */
 	private static Optional<ErrorLog> getFirst(ResultSet results) throws SQLException {
 		List<ErrorLog> logs = resultsToErrorLogs(results);
-		return logs.size() > 0 ? Optional.of(logs.get(0)) : Optional.empty();
+		return !logs.isEmpty() ? Optional.of(logs.get(0)) : Optional.empty();
 	}
 
 	/**

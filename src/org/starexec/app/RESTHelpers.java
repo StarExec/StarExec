@@ -139,7 +139,7 @@ public class RESTHelpers {
 			if (status == null) {
 				status = "";
 			}
-			String isOpen = Queues.getNodes(q.getId()).size() > 0 ? "closed" : "leaf";
+			String isOpen = !Queues.getNodes(q.getId()).isEmpty() ? "closed" : "leaf";
 			list.add(new JSTreeItem(q.getName(), q.getId(), isOpen, status.equals("ACTIVE") ? "active_queue" : "inactive_queue"));
 		}
 
