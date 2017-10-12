@@ -7,7 +7,7 @@
 		if (reference==null) {
 			//there was no ref parameter, so try and use the actual referer
 			reference=request.getHeader("referer");
-			int argIndex=reference.indexOf("?");
+			int argIndex=reference.indexOf('?');
 			//first, get the referring URL down to just the path without any arguments
 			if (argIndex>=0) {
 				reference=reference.substring(0,argIndex);
