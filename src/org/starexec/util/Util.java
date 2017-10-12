@@ -597,8 +597,7 @@ public class Util {
 		// Get all of the outdated files
 		if (includeDirs) {
 			File[] files = dir.listFiles((FileFilter) dateFilter);
-			outdatedFiles = new ArrayList<>();
-			Collections.addAll(outdatedFiles, files);
+			outdatedFiles = Arrays.asList(files);
 		} else {
 			outdatedFiles = FileUtils.listFiles(dir, dateFilter, null);
 		}
