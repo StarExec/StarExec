@@ -1245,6 +1245,8 @@ public class Download extends HttpServlet {
 		final String method = "storeSpaceHierarchy";
 		log.info("storing space " + space.getName() + "to" + dest);
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {
+			ArchiveUtil.addStringToArchive(stream, space.getDescription(), dest + File.separator + R.DESC_PATH);
+
 			if (includeBenchmarks) {
 				List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
 
@@ -1319,8 +1321,6 @@ public class Download extends HttpServlet {
 					}
 				}
 			}
-
-			ArchiveUtil.addStringToArchive(stream, space.getDescription(), dest + File.separator + R.DESC_PATH);
 
 			//if we aren't getting subspaces, we're done
 			if (!recursive) {
