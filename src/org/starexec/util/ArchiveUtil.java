@@ -62,7 +62,7 @@ public class ArchiveUtil {
 			temp.close();
 			return answer;
 		} catch (Exception e) {
-			log.error("Archive Util says " + e.getMessage(), e);
+			log.error("getZipSize", e);
 			return -1;
 		}
 	}
@@ -91,7 +91,7 @@ public class ArchiveUtil {
 			is.close();
 			return answer;
 		} catch (Exception e) {
-			log.error("Archive Util says " + e.getMessage(), e);
+			log.error("getTarSize", e);
 			return -1;
 		}
 	}
@@ -120,7 +120,7 @@ public class ArchiveUtil {
 			ginstream.close();
 			return answer;
 		} catch (Exception e) {
-			log.error("Archive Util says " + e.getMessage(), e);
+			log.error("getTarGzSize", e);
 			return -1;
 		}
 	}
@@ -177,7 +177,7 @@ public class ArchiveUtil {
 			log.debug(String.format("Successfully extracted [%s] to [%s]", fileName, destination));
 			return true;
 		} catch (Exception e) {
-			log.error("Archive Util says " + e.getMessage(), e);
+			log.error("extractArchiveAsSandbox", e);
 		}
 
 		return false;
@@ -251,7 +251,7 @@ public class ArchiveUtil {
 			log.debug(String.format("Successfully extracted [%s] to [%s]", fileName, destination));
 			return true;
 		} catch (Exception e) {
-			log.error("Archive Util says " + e.getMessage(), e);
+			log.error("extractArchive", e);
 		}
 
 		return false;
@@ -270,7 +270,7 @@ public class ArchiveUtil {
 			String parent = new File(fileName).getParentFile().getCanonicalPath() + File.separator;
 			ArchiveUtil.extractArchive(fileName, parent);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("extractArchive", e);
 		}
 	}
 
