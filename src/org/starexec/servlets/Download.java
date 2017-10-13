@@ -469,7 +469,7 @@ public class Download extends HttpServlet {
 					for (String attr : attrNames) {
 						if (!attr.equals(R.STAREXEC_RESULT) && !attr.equals(R.EXPECTED_RESULT)) {
 							/* we skip printing the starexec-result, and starexec-expected-result attributes,
-					   because we printed them already */
+							   because we printed them already */
 							sb.append(",");
 							sb.append(props.getProperty(attr, "-"));
 						}
