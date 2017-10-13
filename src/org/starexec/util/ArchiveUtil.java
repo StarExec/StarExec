@@ -387,21 +387,7 @@ public class ArchiveUtil {
 	 * @return Unix file permissions
 	 */
 	private static int getUnixMode(File f) throws IOException {
-		int mode = 0100000;
-		for (PosixFilePermission p : Files.getPosixFilePermissions(f.toPath())) {
-			switch (p) {
-			case OWNER_EXECUTE:  mode |= 0100; break;
-			case OWNER_READ:     mode |= 0400; break;
-			case OWNER_WRITE:    mode |= 0200; break;
-			case GROUP_EXECUTE:  mode |= 0010; break;
-			case GROUP_READ:     mode |= 0040; break;
-			case GROUP_WRITE:    mode |= 0020; break;
-			case OTHERS_EXECUTE: mode |= 0001; break;
-			case OTHERS_READ:    mode |= 0004; break;
-			case OTHERS_WRITE:   mode |= 0002; break;
-			}
-		}
-		return mode;
+		return Files.getAttribute(f.toPath(), "unix:mode");
 	}
 
 	/**
