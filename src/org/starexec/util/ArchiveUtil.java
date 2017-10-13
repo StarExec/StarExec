@@ -350,9 +350,14 @@ public class ArchiveUtil {
 	 * @throws Exception
 	 */
 	public static void addStringToArchive(ZipArchiveOutputStream zos, String str, String zipFileName) throws Exception {
+		final byte[] data = str.getBytes(zos.getEncoding());
+		java.util.zip.CRC32 crc = new java.util.zip.CRC32();
+		crc.update(data);
 		ZipArchiveEntry entry = new ZipArchiveEntry(zipFileName);
+		entry.setSize(data.length);
+		entry.setCrc(crc.getValue());
+		entry.setMethod(ZipArchiveEntry.STORED);
 		zos.putArchiveEntry(entry);
-		byte[] data = str.getBytes(zos.getEncoding());
 		zos.write(data, 0, data.length);
 		zos.closeArchiveEntry();
 	}
@@ -406,6 +411,7 @@ public class ArchiveUtil {
 			zos.putArchiveEntry(entry);
 			FileInputStream input = new FileInputStream(srcFile);
 			entry.setUnixMode(getUnixMode(srcFile));
+			entry.setSize(srcFile.length());
 			IOUtils.copy(input, zos);
 			zos.closeArchiveEntry();
 			input.close();
