@@ -506,7 +506,7 @@ public class Download extends HttpServlet {
 		ZipArchiveOutputStream stream = new ZipArchiveOutputStream(buffer);
 		try {
 			for (JobPair p : pairs) {
-				String zipFileNameParent = null;
+				String zipFileNameParent = "";
 				StringBuilder zipFileName = new StringBuilder(baseName);
 				zipFileName.append(File.separator);
 				if (useSpacePath) {
@@ -561,7 +561,7 @@ public class Download extends HttpServlet {
 					}
 				}
 			}
-			if (lastModified == -1 || lastModified == earlyDate) {
+			if (lastModified == -1 || earlyDate == Long.valueOf(lastModified)) {
 				response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 			} else {
 				response.setDateHeader("Last-Modified", lastModified);
