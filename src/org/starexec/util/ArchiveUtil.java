@@ -485,10 +485,10 @@ public class ArchiveUtil {
 	 * @param baseName If not null or empty, all files will be in one directory with this name
 	 * @throws IOException
 	 */
-	public static void createAndOutputZip(List<File> paths, OutputStream output, String baseName) throws IOException {
+	public static void createAndOutputZip(Iterable<File> paths, OutputStream output, String baseName) throws IOException {
 		String newFileName = baseName;
 		ZipArchiveOutputStream stream = new ZipArchiveOutputStream(output);
-		Set<String> pathsSeen = new HashSet<>();
+		Collection<String> pathsSeen = new HashSet<>();
 		for (File f : paths) {
 			log.debug("adding new file to zip = " + f.getAbsolutePath());
 			log.debug("directory status = " + f.isDirectory());
