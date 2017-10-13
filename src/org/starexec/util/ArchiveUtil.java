@@ -111,15 +111,11 @@ public class ArchiveUtil {
 			FileInputStream instream = new FileInputStream(fileName);
 			GzipCompressorInputStream ginstream = new GzipCompressorInputStream(instream);
 			long answer = 0;
-			long temp = 0;
-			while (true) {
+			long temp;
+			do {
 				temp = ginstream.skip(100000000);
-				if (temp == 0) {
-					break;
-				}
-
 				answer += temp;
-			}
+			} while (temp != 0);
 			instream.close();
 			ginstream.close();
 			return answer;
