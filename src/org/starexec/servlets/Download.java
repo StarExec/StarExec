@@ -329,7 +329,7 @@ public class Download extends HttpServlet {
 		Jobs.loadPropertiesIntoPairs(job.getJobPairs(), props);
 		log.debug("about to create a job CSV with " + job.getJobPairs().size() + " pairs");
 		String jobFile = CreateJobCSV(job, returnIds, onlyCompleted);
-		ArchiveUtil.createAndOutputZip(new File(jobFile), response.getOutputStream(), "", false);
+		ArchiveUtil.createAndOutputZip(new File(jobFile), response.getOutputStream(), "Job"+jobId, false);
 
 		return true;
 	}

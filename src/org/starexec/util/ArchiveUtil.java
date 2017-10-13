@@ -524,7 +524,7 @@ public class ArchiveUtil {
 		}
 		ZipArchiveOutputStream stream = new ZipArchiveOutputStream(output);
 		boolean dir = path.isDirectory();
-		if (Util.isNullOrEmpty(baseName)) {
+		if (!Util.isNullOrEmpty(baseName)) {
 			if (dir) {
 				addDirToArchive(stream, path, baseName);
 			} else {
