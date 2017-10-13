@@ -387,7 +387,7 @@ public class ArchiveUtil {
 	 * @return Unix file permissions
 	 */
 	private static int getUnixMode(File f) throws IOException {
-		return Files.getAttribute(f.toPath(), "unix:mode");
+		return (Integer) Files.getAttribute(f.toPath(), "unix:mode");
 	}
 
 	/**
