@@ -86,15 +86,8 @@ public class Download extends HttpServlet {
 	 * @author Skylar Stark & Wyatt Kaiser
 	 */
 	private static boolean handleSolver(Solver s, HttpServletResponse response, boolean reupload) throws Exception {
-
 		String baseName = s.getName();
-		// If we can see this solver AND the solver is downloadable...
-
-		if (reupload) {
-			ArchiveUtil.createAndOutputZip(new File(s.getPath()), response.getOutputStream(), "", true);
-		} else {
-			ArchiveUtil.createAndOutputZip(new File(s.getPath()), response.getOutputStream(), baseName, false);
-		}
+		ArchiveUtil.createAndOutputZip(new File(s.getPath()), response.getOutputStream(), baseName, reupload);
 		return true;
 	}
 
@@ -107,9 +100,7 @@ public class Download extends HttpServlet {
 	 * @author Skylar Stark & Wyatt Kaiser & Andrew Lubinus
 	 */
 	private static boolean handleSolverSource(Solver s, HttpServletResponse response) throws Exception {
-
 		String baseName = s.getName();
-		// If we can see this solver AND the solver is downloadable...
 		ArchiveUtil.createAndOutputZip(new File(s.getPath() + "_src"), response.getOutputStream(), baseName, false);
 		return true;
 	}
@@ -140,7 +131,6 @@ public class Download extends HttpServlet {
 			return true;
 		}
 
-
 		log.warn(methodName, "Didn't find any files on disk.");
 		return false;
 	}
@@ -154,8 +144,6 @@ public class Download extends HttpServlet {
 	 * @author Skylar Stark
 	 */
 	private static boolean handleBenchmark(Benchmark b, HttpServletResponse response) throws Exception {
-		// If we can see this benchmark AND the benchmark is downloadable...
-
 		ArchiveUtil.createAndOutputZip(new File(b.getPath()), response.getOutputStream(), "", false);
 		return true;
 	}
