@@ -120,19 +120,19 @@ public class Download extends HttpServlet {
 		for (Processor x : procs) {
 			File newProc = new File(x.getFilePath());
 			if (newProc.exists()) {
-				files.add(new File(x.getFilePath()));
+				files.add(newProc);
 			} else {
 				log.warn(methodName, "processor with id = " + x.getId() + " exists in the database but not on disk");
 			}
 		}
-		if (!files.isEmpty()) {
-			log.debug(methodName, "Outputting zip of processors.");
-			ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), "processors");
-			return true;
+		if (files.isEmpty()) {
+			log.warn(methodName, "Didn't find any files on disk.");
+			return false;
 		}
 
-		log.warn(methodName, "Didn't find any files on disk.");
-		return false;
+		log.debug(methodName, "Outputting zip of processors.");
+		ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), "processors");
+		return true;
 	}
 
 	/**
