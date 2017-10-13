@@ -355,6 +355,7 @@ public class ArchiveUtil {
 		entry.setSize(data.length);
 		entry.setCrc(crc.getValue());
 		entry.setMethod(ZipArchiveEntry.STORED);
+		entry.setInternalAttributes(1);
 		zos.putArchiveEntry(entry);
 		zos.write(data, 0, data.length);
 		zos.closeArchiveEntry();
@@ -420,6 +421,7 @@ public class ArchiveUtil {
 			FileInputStream input = new FileInputStream(srcFile);
 			entry.setUnixMode(getUnixMode(srcFile));
 			entry.setSize(srcFile.length());
+			entry.setInternalAttributes(Util.isBinaryFile(srcFile)?0:1);
 			IOUtils.copy(input, zos);
 			zos.closeArchiveEntry();
 			input.close();
