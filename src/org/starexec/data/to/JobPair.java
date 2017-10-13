@@ -27,7 +27,7 @@ public class JobPair extends Identifiable {
 	private String jobSpaceName = "";
 	private WorkerNode node = null;
 	private Benchmark bench = null;    //this is the input benchmark to the jobline
-	private Status status = null;
+	private Status status;
 	private Timestamp queueSubmitTime = null;
 	private Timestamp startTime = null;
 	private Timestamp endTime = null;
