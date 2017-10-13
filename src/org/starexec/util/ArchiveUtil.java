@@ -13,6 +13,8 @@ import org.starexec.logger.StarLogger;
 
 import java.io.*;
 import java.util.*;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.Files;
 
 /**
  * Contains helper methods for dealing with .zip files
@@ -387,11 +389,21 @@ public class ArchiveUtil {
 	 * @param f File to calculate permissions for
 	 * @return Unix file permissions
 	 */
-	private static int getUnixMode(File f) {
+	private static int getUnixMode(File f) throws IOException {
 		int mode = 0100000;
-		if (f.canRead()) mode |= 0400;
-		if (f.canWrite()) mode |= 0200;
-		if (f.canExecute()) mode |= 0100;
+		for (PosixFilePermission p : Files.getPosixFilePermissions(f.toPath())) {
+			switch (p) {
+			case OWNER_EXECUTE:  mode |= 0100; break;
+			case OWNER_READ:     mode |= 0400; break;
+			case OWNER_WRITE:    mode |= 0200; break;
+			case GROUP_EXECUTE:  mode |= 0010; break;
+			case GROUP_READ:     mode |= 0040; break;
+			case GROUP_WRITE:    mode |= 0020; break;
+			case OTHERS_EXECUTE: mode |= 0001; break;
+			case OTHERS_READ:    mode |= 0004; break;
+			case OTHERS_WRITE:   mode |= 0002; break;
+			}
+		}
 		return mode;
 	}
 
