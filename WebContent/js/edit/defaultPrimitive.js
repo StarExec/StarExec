@@ -1,28 +1,27 @@
 var primType;
-$(document).ready(function(){
-	primType=$("#primType").attr("value");
+$(document).ready(function() {
+	primType = $("#primType").attr("value");
 
 	initUI();
 	attachFormValidation();
 });
 
-
 /**
  * Initializes the user-interface
  */
-function initUI(){
+function initUI() {
 	//initialize primitive table
-	primTable = $('#prims').dataTable( {
-		"sDom"			: getDataTablesDom(),
-		"iDisplayStart"	: 0,
+	primTable = $('#prims').dataTable({
+		"sDom": getDataTablesDom(),
+		"iDisplayStart": 0,
 		"iDisplayLength": defaultPageSize,
-		"bServerSide"	: true,
-		"sAjaxSource"	: starexecRoot+"services/space/",
-		"sServerMethod" : "POST",
-		"fnServerData"	: fnPaginationHandler
+		"bServerSide": true,
+		"sAjaxSource": starexecRoot + "services/space/",
+		"sServerMethod": "POST",
+		"fnServerData": fnPaginationHandler
 	});
-	
-	$("#prims").on("mousedown", "tr",function() {
+
+	$("#prims").on("mousedown", "tr", function() {
 		if ($(this).hasClass("row_selected")) {
 			$(this).removeClass("row_selected");
 		} else {
@@ -30,7 +29,7 @@ function initUI(){
 			$(this).addClass("row_selected");
 		}
 	});
-	
+
 	// Attach icons
 	$('#cancel').button({
 		icons: {
@@ -42,19 +41,20 @@ function initUI(){
 			secondary: "ui-icon-check"
 		}
 	});
-	
-	
+
 	$("#cancel").click(function() {
 		navBack();
 	});
-	
+
 }
 
 function navBack() {
 	if (isSpaceSetting()) {
-		window.location = starexecRoot+'secure/edit/community.jsp?cid=' + $("#primId").attr("value");
+		window.location = starexecRoot + 'secure/edit/community.jsp?cid=' + $(
+			"#primId").attr("value");
 	} else {
-		window.location = starexecRoot+'secure/edit/account.jsp?id='+$("#primId").attr("value");
+		window.location = starexecRoot + 'secure/edit/account.jsp?id=' + $(
+			"#primId").attr("value");
 	}
 }
 
@@ -63,12 +63,12 @@ function navBack() {
  * @author Eric Burns
  */
 function primSelected() {
-	row=$("#prims").find(".row_selected");
-	if (row.length==0) { //means no primitive is selected
+	row = $("#prims").find(".row_selected");
+	if (row.length == 0) { //means no primitive is selected
 		return -1;
 	}
-	input=row.find("input");
-	id=input.attr("value");
+	input = row.find("input");
+	id = input.attr("value");
 	return id;
 }
 
@@ -77,38 +77,38 @@ function primSelected() {
  * @returns {Boolean}
  */
 function isSpaceSetting() {
-	return $("#settingType").attr("value")=="comm";
+	return $("#settingType").attr("value") == "comm";
 }
 
 /**
  * Validates that a user has selected a primitive when update is clicked
  */
-function attachFormValidation(){
-	
-	$("#update").click(function(){
-		var selectedPrim = primSelected();
-		
-		if(selectedPrim>=0){
-			createDialog("Updating default "+primType+", please wait");
-			$.post(
-					starexecRoot+"services/edit/defaultSettings/" + "default"+primType + "/" + $("#settingId").attr("value"),
-					{val : selectedPrim},
-					function(returnCode) {
-						s=parseReturnCode(returnCode);
-						if (s) {
-							navBack();
-						}
+function attachFormValidation() {
 
-					},
-					"json"
+	$("#update").click(function() {
+		var selectedPrim = primSelected();
+
+		if (selectedPrim >= 0) {
+			createDialog("Updating default " + primType + ", please wait");
+			$.post(
+				starexecRoot + "services/edit/defaultSettings/" + "default" + primType + "/" + $(
+				"#settingId").attr("value"),
+				{val: selectedPrim},
+				function(returnCode) {
+					s = parseReturnCode(returnCode);
+					if (s) {
+						navBack();
+					}
+
+				},
+				"json"
 			);
 		} else {
-			showMessage('error',"Select a "+primType+" to proceed","5000");
+			showMessage('error', "Select a " + primType + " to proceed",
+				"5000");
 		}
 	});
 }
-
-
 
 function unselectAll() {
 	$("#prims").find("tr").removeClass("row_selected");
@@ -116,7 +116,7 @@ function unselectAll() {
 
 /**
  * Handles querying for pages in a given DataTable object
- * 
+ *
  * @param sSource the "sAjaxSource" of the calling table
  * @param aoData the parameters of the DataTable object to send to the server
  * @param fnCallback the function that actually maps the returned page to the DataTable object
@@ -127,19 +127,18 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	if (isSpaceSetting()) {
 		var idOfSelectedSpace = $("#primId").attr("value");
 		// Request the next page of primitives from the server via AJAX
-		$.post(  
-				
-				sSource + idOfSelectedSpace + "/" + primType+"s" + "/pagination",
-				aoData,
-				function(nextDataTablePage){
-					s=parseReturnCode(nextDataTablePage);
-					if (s) {
-						// Replace the current page with the newly received page
-						fnCallback(nextDataTablePage);
-					}
-				},  
-				"json"
+		$.post(
+			sSource + idOfSelectedSpace + "/" + primType + "s" + "/pagination",
+			aoData,
+			function(nextDataTablePage) {
+				s = parseReturnCode(nextDataTablePage);
+				if (s) {
+					// Replace the current page with the newly received page
+					fnCallback(nextDataTablePage);
+				}
+			},
+			"json"
 		);
-	} 
-	
+	}
+
 }

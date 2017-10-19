@@ -1,7 +1,9 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page contentType="text/html" pageEncoding="UTF-8" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 
-<star:template title="Compute Cluster" js="common/format, lib/jquery.dataTables.min, lib/jquery.jstree, shared/sharedFunctions, explore/cluster, lib/jquery.progressbar.min, lib/jquery.heatcolor.0.0.1.min" css="explore/cluster, common/table, explore/common, shared/cluster">
+<star:template title="Compute Cluster"
+               js="common/format, lib/jquery.dataTables.min, lib/jquery.jstree, shared/sharedFunctions, explore/cluster, lib/jquery.progressbar.min, lib/jquery.heatcolor.0.0.1.min"
+               css="explore/cluster, common/table, explore/common, shared/cluster">
 	<div id="explorer">
 		<h3>Active Queues</h3>
 		<ul id="exploreList">
@@ -23,15 +25,15 @@
 			<legend class="expd" id="clusterExpd">Job Pairs</legend>
 			<table id="details" class="shaded">
 				<thead>
-					<tr>
-						<th>Submit Time</th>
-						<th>Job</th>
-						<th>User</th>
-						<th id="benchHead">Benchmark</th>
-						<th>Solver</th>
-						<th>Config</th>
-						<th>Path</th>
-					</tr>
+				<tr>
+					<th>Submit Time</th>
+					<th>Job</th>
+					<th>User</th>
+					<th id="benchHead">Benchmark</th>
+					<th>Solver</th>
+					<th>Config</th>
+					<th>Path</th>
+				</tr>
 				</thead>
 				<tbody>
 					<%-- This will be populated by the job pair pagination feature --%>

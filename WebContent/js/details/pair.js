@@ -1,18 +1,18 @@
 jQuery(function($) {
 	PR.prettyPrint();
 
-	$('#pairTbl').dataTable( {
+	$('#pairTbl').dataTable({
 		"sDom": getDataTablesDom()
 	});
 
-	$('#detailTable').dataTable( {
+	$('#detailTable').dataTable({
 		"sDom": 'rt<"bottom"f><"clear">',
 		"aaSorting": [],
 		"bPaginate": false,
 		"bSort": true
 	});
 
-	$('#pairAttrs').dataTable( {
+	$('#pairAttrs').dataTable({
 		"sDom": 'rt<"bottom"f><"clear">',
 		"bPaginate": false
 	});
@@ -20,16 +20,19 @@ jQuery(function($) {
 	$('#downLink').button({
 		icons: {
 			secondary: "ui-icon-arrowthick-1-s"
-	}});
+		}
+	});
 
-	$("#rerunPair").button( {
+	$("#rerunPair").button({
 		icons: {
 			primary: "ui-icon-arrowrefresh-1-e"
-	}});
+		}
+	});
 
 	$("#rerunPair").click(function() {
 		$.post(
-			starexecRoot+"services/jobs/pairs/rerun/" + $("#pairId").attr("value"),
+			starexecRoot + "services/jobs/pairs/rerun/" + $("#pairId")
+			.attr("value"),
 			parseReturnCode,
 			"json"
 		);

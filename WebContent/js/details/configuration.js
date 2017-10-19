@@ -9,7 +9,8 @@ jQuery(function($) {
 
 	// Handles the deletion of this configuration file
 	$("#deleteConfig").click(function() {
-		$('#dialog-confirm-delete-txt').text('are you sure you want to delete this configuration?');
+		$('#dialog-confirm-delete-txt')
+		.text('are you sure you want to delete this configuration?');
 
 		// Display the confirmation dialog
 		$('#dialog-confirm-delete').dialog({
@@ -20,17 +21,20 @@ jQuery(function($) {
 					$('#dialog-confirm-delete').dialog('close');
 
 					$.post(
-						starexecRoot+"services/delete/configuration",
+						starexecRoot + "services/delete/configuration",
 						{selectedIds: [getParameterByName("id")]},
 						function(returnCode) {
 							var s = parseReturnCode(returnCode);
 							if (s) {
-								window.location = starexecRoot+"secure/details/solver.jsp?id=" + $('#solverId').val();
+								window.location = starexecRoot + "secure/details/solver.jsp?id=" + $(
+									'#solverId').val();
 							}
 						},
 						"json"
-					).error(function(){
-						showMessage('error',"Internal error deleting configuration.",5000);
+					).error(function() {
+						showMessage('error',
+							"Internal error deleting configuration.",
+							5000);
 					});
 				},
 				"cancel": function() {

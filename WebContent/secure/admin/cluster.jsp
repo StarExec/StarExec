@@ -1,12 +1,16 @@
 <%@page contentType="text/html" pageEncoding="UTF-8" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
-<star:template title="Cluster Admin" js="admin/cluster, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, shared/sharedFunctions" css="common/table, details/shared, explore/common, explore/spaces, admin/admin, shared/cluster">
+<star:template title="Cluster Admin"
+               js="admin/cluster, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min, shared/sharedFunctions"
+               css="common/table, details/shared, explore/common, explore/spaces, admin/admin, shared/cluster">
 	<div id="explorer">
 		<h3>queues</h3>
 		<ul id="exploreList"></ul>
 		<div id="explorerAction">
 			<ul id="exploreActions">
-				<li><a type="btnRun" id="newQueue" href="${starexecRoot}/secure/admin/queue.jsp">Add New Queue</a></li>
+				<li><a type="btnRun" id="newQueue"
+				       href="${starexecRoot}/secure/admin/queue.jsp">Add New
+					Queue</a></li>
 			</ul>
 		</div>
 	</div>

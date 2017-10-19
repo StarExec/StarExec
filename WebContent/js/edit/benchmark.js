@@ -1,20 +1,19 @@
-$(document).ready(function(){
+$(document).ready(function() {
 	initUI();
 	attachFormValidation();
 	attachButtonActions();
 });
 
-
 /**
  * Initializes the user-interface
  */
-function initUI(){
+function initUI() {
 	$('#delete').button({
 		icons: {
 			secondary: "ui-icon-minus"
 		}
 	});
-	
+
 	$('#update').button({
 		icons: {
 			secondary: "ui-icon-check"
@@ -22,48 +21,48 @@ function initUI(){
 	});
 }
 
-
 /**
  * Attaches form validation to the 'edit benchmark' fields
  */
-function attachFormValidation(){
+function attachFormValidation() {
 	// Pressing the enter key on an input field triggers a submit,
 	// and this special validation process doesn't use submit, so
 	// the following code prevents that trigger
-	$("#editBenchmarkForm").submit(function(e){
+	$("#editBenchmarkForm").submit(function(e) {
 		e.preventDefault();
 	});
-	
+
 	// Adds regular expression handling to validator
 	$.validator.addMethod(
-			"regex", 
-			function(value, element, regexp) {
-				var re = new RegExp(regexp);
-				return this.optional(element) || re.test(value);
-	});
-	
+		"regex",
+		function(value, element, regexp) {
+			var re = new RegExp(regexp);
+			return this.optional(element) || re.test(value);
+		});
+
 	// Form validation rules/messages
 	$("#editBenchmarkForm").validate({
-		rules : {
-			name : {
-				required : true,
+		rules: {
+			name: {
+				required: true,
 				maxlength: $("#name").attr("maxlength"),
-				regex : getPrimNameRegex()
+				regex: getPrimNameRegex()
 			},
-			description : {
+			description: {
 				maxlength: $("#description").attr("length"),
 				regex: getPrimDescRegex()
 			}
 		},
-		messages : {
-			name : {
-				required : "name required",
+		messages: {
+			name: {
+				required: "name required",
 				maxlength: $("#name").attr("maxlength") + " characters maximum",
-				regex 	 : "invalid character(s)"
+				regex: "invalid character(s)"
 			},
-			description : {
-				maxlength: $("#description").attr("length") + " characters maximum",
-				regex	 : "invalid character(s)"
+			description: {
+				maxlength: $("#description")
+				.attr("length") + " characters maximum",
+				regex: "invalid character(s)"
 			}
 		}
 	});
@@ -72,12 +71,13 @@ function attachFormValidation(){
 /**
  * Attaches actions to the 'update' and 'delete' buttons
  */
-function attachButtonActions(){
+function attachButtonActions() {
 	// Prompts user to confirm deletion and, if they confirm,
 	// deletes the solver via AJAX, then redirects to explore/spaces.jsp
-	$("#delete").click(function(){
-		$('#dialog-confirm-delete-txt').text('are you sure you want to recycle this benchmark?');
-		
+	$("#delete").click(function() {
+		$('#dialog-confirm-delete-txt')
+		.text('are you sure you want to recycle this benchmark?');
+
 		$('#dialog-confirm-delete').dialog({
 			modal: true,
 			width: 380,
@@ -86,17 +86,17 @@ function attachButtonActions(){
 				'OK': function() {
 					log('user confirmed benchmark deletion.');
 					$('#dialog-confirm-delete').dialog('close');
-					
+
 					$.post(
-							starexecRoot+"services/recycle/benchmark",
-							{selectedIds: [getParameterByName("id")]},
-							function(returnCode) {
-								s=parseReturnCode(returnCode);
-								if (s) {
-									window.location = starexecRoot+'secure/explore/spaces.jsp';
-								}
-							},
-							"json"
+						starexecRoot + "services/recycle/benchmark",
+						{selectedIds: [getParameterByName("id")]},
+						function(returnCode) {
+							s = parseReturnCode(returnCode);
+							if (s) {
+								window.location = starexecRoot + 'secure/explore/spaces.jsp';
+							}
+						},
+						"json"
 					);
 				},
 				"cancel": function() {
@@ -106,29 +106,35 @@ function attachButtonActions(){
 			}
 		});
 	});
-	
 
 	// If the 'update' button is pressed then trigger validation and, if that passes,
 	// update the benchmark details via AJAX and redirect to /details/benchmark.jsp 
-	$("#update").click(function(){
+	$("#update").click(function() {
 		var isFormValid = $("#editBenchmarkForm").valid();
-		if(isFormValid == true){
+		if (isFormValid == true) {
 			var name = $("#name").val();
 			var description = $("#description").val();
 			var isDownloadable = $("#downloadable").is(':checked');
 			var type = $("#benchType").val();
-			var data = {name: name, description: description, downloadable: isDownloadable, type: type};
+			var data = {
+				name: name,
+				description: description,
+				downloadable: isDownloadable,
+				type: type
+			};
 			$.post(
-					starexecRoot+"services/edit/benchmark/" + getParameterByName("id"),
-					data,
-					function(returnCode) {
-						s=parseReturnCode(returnCode);
-						if (s) {
-							window.location = starexecRoot+'secure/details/benchmark.jsp?id=' + getParameterByName("id");
-						}
+				starexecRoot + "services/edit/benchmark/" + getParameterByName(
+				"id"),
+				data,
+				function(returnCode) {
+					s = parseReturnCode(returnCode);
+					if (s) {
+						window.location = starexecRoot + 'secure/details/benchmark.jsp?id=' + getParameterByName(
+							"id");
+					}
 
-					},
-					"json"
+				},
+				"json"
 			);
 		}
 	});

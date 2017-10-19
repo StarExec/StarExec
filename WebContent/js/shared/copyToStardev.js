@@ -1,9 +1,8 @@
 "use strict";
 
-
-
 $(document).ready(function() {
-	log('root: '+starexecRoot);
+	log('root: ' + starexecRoot);
+
 	function makeCopyPost(url, username, password, spaceId, procId) {
 		$.post(
 			url,
@@ -29,8 +28,10 @@ $(document).ready(function() {
 			parseReturnCode(sc);
 		});
 	}
+
 	$('.uploadProcessorWithBenchmarkCheckbox').click(function() {
-		var boxChecked = $('.uploadProcessorWithBenchmarkCheckbox').is(':checked');
+		var boxChecked = $('.uploadProcessorWithBenchmarkCheckbox')
+		.is(':checked');
 		if (boxChecked) {
 			$('.stardevProcIdDiv').hide();
 		} else {
@@ -44,11 +45,11 @@ $(document).ready(function() {
 		}
 	}).click(function() {
 		var type = $('.thisPrimitivesType').attr('value');
-		log('Type was: '+type);
+		log('Type was: ' + type);
 		var processorType = $('.processorPrimitiveType').attr('value');
 		var benchmarkType = $('.benchmarkPrimitiveType').attr('value');
 		var solverType = $('.solverPrimitiveType').attr('value');
-		if ( type ===  processorType) {
+		if (type === processorType) {
 			$('.stardevSpaceIdText').text('stardev community id');
 			$('.instanceNameText').removeClass('stardevInstanceNameText');
 			$('.instanceNameText').addClass('stardevInstanceNameTextProcessor');
@@ -59,12 +60,12 @@ $(document).ready(function() {
 		} else {
 			$('.stardevSpaceIdText').text('stardev space id');
 		}
-		if ( type === benchmarkType ) {
+		if (type === benchmarkType) {
 			$('.spaceIdText').removeClass('stardevSpaceIdText');
 			$('.spaceIdText').addClass('stardevSpaceIdTextBenchmark');
 			$('.uploadProcessorWithBenchmarkDiv').show();
 		}
-		if ( type === solverType ) {
+		if (type === solverType) {
 			$('.spaceIdText').removeClass('stardevSpaceIdText');
 			$('.spaceIdText').addClass('stardevSpaceIdTextSolver');
 		}
@@ -80,18 +81,24 @@ $(document).ready(function() {
 					var password = $('.stardevPassword').val();
 					var spaceId = $('.stardevSpaceId').val();
 					var primId = $('.thisPrimitivesId').attr('value');
-					var copyWithProcessor = $('.uploadProcessorWithBenchmarkCheckbox').is(':checked');
-					log('Id was: '+primId);
+					var copyWithProcessor = $(
+						'.uploadProcessorWithBenchmarkCheckbox').is(':checked');
+					log('Id was: ' + primId);
 					if (copyWithProcessor && type === benchmarkType) {
 						log('uploading benchmark with processor');
-						var url = starexecRoot+'services/copy-bench-with-proc-to-stardev/'+instance+'/'+primId;
+						var url = starexecRoot + 'services/copy-bench-with-proc-to-stardev/' + instance + '/' + primId;
 						makeCopyPost(url, username, password, spaceId, 1);
 					} else {
 						log('copying to stardev');
 						// by default use the no type proc ID, this won't matter for anything other than benchmark uploads.
-						var benchProcessorId = $('.benchProcessorId').attr('value');
-						var url = starexecRoot+'services/copy-to-stardev/'+instance+'/'+type+'/'+primId;
-						makeCopyPost(url, username, password, spaceId, benchProcessorId);
+						var benchProcessorId = $('.benchProcessorId')
+						.attr('value');
+						var url = starexecRoot + 'services/copy-to-stardev/' + instance + '/' + type + '/' + primId;
+						makeCopyPost(url,
+							username,
+							password,
+							spaceId,
+							benchProcessorId);
 					}
 				},
 				'cancel': function() {

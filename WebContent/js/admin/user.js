@@ -6,12 +6,14 @@ jQuery(function($) {
 		$.post(
 			sSource,
 			aoData,
-			function(nextDataTablePage){
+			function(nextDataTablePage) {
 				if (parseReturnCode(nextDataTablePage)) {
 					// Update the number displayed in this DataTable's fieldset
-					$('#userExpd').children('span:first-child').text(nextDataTablePage.iTotalRecords);
-				// Replace the current page with the newly received page
-				fnCallback(nextDataTablePage);
+					$('#userExpd')
+					.children('span:first-child')
+					.text(nextDataTablePage.iTotalRecords);
+					// Replace the current page with the newly received page
+					fnCallback(nextDataTablePage);
 				}
 			},
 			"json"
@@ -20,17 +22,17 @@ jQuery(function($) {
 
 	// Setup the DataTable objects
 	$('#users').dataTable(new window.star.DataTableConfig({
-		"sAjaxSource"  : starexecRoot+"services/users/admin/pagination",
-		"bServerSide"  : true,
-		"fnServerData" : fnPaginationHandler,
-		"columns"      : [
+		"sAjaxSource": starexecRoot + "services/users/admin/pagination",
+		"bServerSide": true,
+		"fnServerData": fnPaginationHandler,
+		"columns": [
 			null,
 			null,
 			null,
-			{ "searchable": false, "orderable": false },
-			{ "searchable": false, "orderable": false },
-			{ "searchable": false, "orderable": false },
-			{ "searchable": false, "orderable": false }
+			{"searchable": false, "orderable": false},
+			{"searchable": false, "orderable": false},
+			{"searchable": false, "orderable": false},
+			{"searchable": false, "orderable": false}
 		]
 	}));
 
@@ -48,9 +50,9 @@ function editPermissions(userId) {
 function postAndReloadPageIfSuccessful(postPath) {
 	$.post(
 		postPath,
-		function(returnCode){
+		function(returnCode) {
 			if (parseReturnCode(returnCode)) {
-				setTimeout(function(){document.location.reload(true);}, 1000);
+				setTimeout(function() {document.location.reload(true);}, 1000);
 			}
 		},
 		"json"
@@ -58,27 +60,27 @@ function postAndReloadPageIfSuccessful(postPath) {
 }
 
 function suspendUser(userId) {
-	postAndReloadPageIfSuccessful(starexecRoot+"services/suspend/user/"+userId);
+	postAndReloadPageIfSuccessful(starexecRoot + "services/suspend/user/" + userId);
 }
 
 function reinstateUser(userId) {
-	postAndReloadPageIfSuccessful(starexecRoot+"services/reinstate/user/"+userId);
+	postAndReloadPageIfSuccessful(starexecRoot + "services/reinstate/user/" + userId);
 }
 
 function subscribeUserToReports(userId) {
-	postAndReloadPageIfSuccessful(starexecRoot+"services/subscribe/user/"+userId);
+	postAndReloadPageIfSuccessful(starexecRoot + "services/subscribe/user/" + userId);
 }
 
 function unsubscribeUserFromReports(userId) {
-	postAndReloadPageIfSuccessful(starexecRoot+"services/unsubscribe/user/"+userId);
+	postAndReloadPageIfSuccessful(starexecRoot + "services/unsubscribe/user/" + userId);
 }
 
 function grantDeveloperStatus(userId) {
 	log("grantDeveloperStatus clicked.");
-	postAndReloadPageIfSuccessful(starexecRoot+"services/grantDeveloperStatus/user/"+userId);
+	postAndReloadPageIfSuccessful(starexecRoot + "services/grantDeveloperStatus/user/" + userId);
 }
 
 function suspendDeveloperStatus(userId) {
 	log("suspendDeveloperStatus clicked.");
-	postAndReloadPageIfSuccessful(starexecRoot+"services/suspendDeveloperStatus/user/"+userId);
+	postAndReloadPageIfSuccessful(starexecRoot + "services/suspendDeveloperStatus/user/" + userId);
 }

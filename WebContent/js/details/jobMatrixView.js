@@ -1,10 +1,14 @@
 // All the classes given to a checkbox
-var orderedCheckboxClasses = ['.cpuTimeCheckbox','.memUsageCheckbox','.wallclockCheckbox'];
+var orderedCheckboxClasses = [
+	'.cpuTimeCheckbox',
+	'.memUsageCheckbox',
+	'.wallclockCheckbox'
+];
 
 // A mapping of each checkbox class to the class it controls the visibility of
 var classControlledByCheckbox = {
-	'.cpuTimeCheckbox'  : '.cpuTime',
-	'.memUsageCheckbox' : '.memUsage',
+	'.cpuTimeCheckbox': '.cpuTime',
+	'.memUsageCheckbox': '.memUsage',
 	'.wallclockCheckbox': '.wallclock'
 };
 
@@ -30,7 +34,6 @@ $(document).ready(function() {
 	registerCheckboxEventHandlers();
 	removeHeader();
 
-
 	var table = $('#jobMatrix').dataTable({
 		/*
 		'columnDefs': [
@@ -44,8 +47,7 @@ $(document).ready(function() {
 		'paging': false
 	});
 
-		/*table.fnAdjustColumnSizing();*/
-
+	/*table.fnAdjustColumnSizing();*/
 
 	new $.fn.dataTable.FixedColumns(table);
 
@@ -53,15 +55,14 @@ $(document).ready(function() {
 		table.fnDraw();
 	});
 
-
 	$('#selectStageButton').click(function() {
 		log('Select stage button clicked.');
 		var stageToRedirectTo = $('#selectStageInput').val();
-		log('Input value is '+stageToRedirectTo);
+		log('Input value is ' + stageToRedirectTo);
 		if (isInt(stageToRedirectTo)) {
 			log('Input value is an integer, redirecting.');
 			var jobId = $('#jobId').text();
-			window.location.replace(starexecRoot + '/secure/details/jobMatrixView.jsp?id='+jobId+'&stage='+stageToRedirectTo);
+			window.location.replace(starexecRoot + '/secure/details/jobMatrixView.jsp?id=' + jobId + '&stage=' + stageToRedirectTo);
 		} else {
 			log('Input value is not an integer, showing error message.');
 			$('#selectStageError').show();
@@ -77,9 +78,9 @@ function getFinishedJobPairsFromServer(done, dataTable) {
 		$.get(
 			starexecRoot + 'services/matrix/finished/' + jobSpaceId + '/' + stageNumber,
 			'',
-			function (data) {
+			function(data) {
 				log(data);
-				setTimeout(function () {
+				setTimeout(function() {
 					updateMatrix(data.benchSolverConfigElementMap, dataTable);
 					getFinishedJobPairsFromServer(data.done, dataTable);
 				}, 5000);
@@ -93,11 +94,11 @@ function updateMatrix(jobPairData, dataTable) {
 	'use strict';
 	for (var key in jobPairData) {
 		if (jobPairData.hasOwnProperty(key)) {
-			var selector = '#'+key;
+			var selector = '#' + key;
 			/*log('Number of elements selected with selector='+selector+': '+$(selector).length);*/
-			$(selector+' '+'.wallclock').text(jobPairData[key].wallclock);
-			$(selector+' '+'.memUsage').text(jobPairData[key].memUsage);
-			$(selector+' '+'.cpuTime').text(jobPairData[key].cpuTime);
+			$(selector + ' ' + '.wallclock').text(jobPairData[key].wallclock);
+			$(selector + ' ' + '.memUsage').text(jobPairData[key].memUsage);
+			$(selector + ' ' + '.cpuTime').text(jobPairData[key].cpuTime);
 			$(selector).removeClass('incomplete');
 			$(selector).addClass(jobPairData[key].status);
 		}

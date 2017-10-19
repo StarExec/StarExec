@@ -5,12 +5,13 @@
  * Author: Eric Burns
  */
 var delayToken;
-var delayInterval=null;
-var creatingDelaySpinner=false;
+var delayInterval = null;
+var creatingDelaySpinner = false;
 
 //Requests img resource needed for the dialog
 $(document).ready(function() {
-	$("body").append("<img style=\"display:none;\" alt=\"spinner\" id=\"spinnerImage\" src=\""+starexecRoot+"images/ajaxloader.gif\"/>");
+	$("body")
+	.append("<img style=\"display:none;\" alt=\"spinner\" id=\"spinnerImage\" src=\"" + starexecRoot + "images/ajaxloader.gif\"/>");
 });
 
 $(window).unload(function() {
@@ -20,14 +21,15 @@ $(window).unload(function() {
 //Creates a new delay dialog. If one already exists, does nothing.
 function createDialog(message) {
 	//indicate that we're in the middle of creating the delay
-	creatingDelaySpinner=true;
+	creatingDelaySpinner = true;
 	setTimeout(function() {
-		if ($("#delaySpinner").length==0) {
-			$("body").append("<div id=delaySpinner><p id=\"delayMessage\">" +message+ "</p><p id=\"imageContainer\"></p></p>");
+		if ($("#delaySpinner").length == 0) {
+			$("body")
+			.append("<div id=delaySpinner><p id=\"delayMessage\">" + message + "</p><p id=\"imageContainer\"></p></p>");
 			$("#imageContainer").prepend($("#spinnerImage"));
 			$("#spinnerImage").css("display", "block");
 			$("#delaySpinner").dialog({
-				modal:true,
+				modal: true,
 				dialogClass: "delaySpinner",
 				title: "Processing Request",
 				draggable: false,
@@ -36,34 +38,34 @@ function createDialog(message) {
 			});
 		}
 		//indicate we're done with the delay
-		creatingDelaySpinner=false;
-	},0);
+		creatingDelaySpinner = false;
+	}, 0);
 }
 
 //Completely removes dialog if it exists. If we're in the middle of creating a dialog, waits for the creation to finish before deleting
 function destroyDialog() {
-	
+
 	//if we're in the middle of creating a spinner, just wait a small amount of time and then call this again
 	if (creatingDelaySpinner) {
 		setTimeout(function() {
 			destroyDialog();
-		},30);
+		}, 30);
 		return;
 	}
-	if ($("#delaySpinner").length>=1) {
+	if ($("#delaySpinner").length >= 1) {
 		$("#delaySpinner").dialog("destroy");
-		$("#spinnerImage").css("display","none");
+		$("#spinnerImage").css("display", "none");
 		$("body").append($("#spinnerImage"));
 		$("#delaySpinner").remove();
 	}
-	
+
 }
 
 function checkCookie() {
-	if ($.cookie('fileDownloadToken')==delayToken) {
-		window.clearInterval(delayInterval);	
-		delayInterval=null;
-		delayToken=null;
+	if ($.cookie('fileDownloadToken') == delayToken) {
+		window.clearInterval(delayInterval);
+		delayInterval = null;
+		delayToken = null;
 		destroyDialog();
 	}
 }
@@ -73,11 +75,10 @@ function checkCookie() {
 //is still working, does nothing.
 
 function destroyOnReturn(curToken) {
-	if (delayInterval==null) {
-		delayToken=curToken;
-		
-		delayInterval=setInterval(checkCookie,50);
-	} 
-	
-	
+	if (delayInterval == null) {
+		delayToken = curToken;
+
+		delayInterval = setInterval(checkCookie, 50);
+	}
+
 }

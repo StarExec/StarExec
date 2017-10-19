@@ -1,15 +1,14 @@
-$(document).ready(function(){
+$(document).ready(function() {
 	initUI();
 	attachFormValidation();
 });
-
 
 /**
  * Setup the user interface buttons & actions
  */
 function initUI() {
 	$('.submitBtn').button({
-		icons:{
+		icons: {
 			secondary: "ui-icon-disk"
 		}
 	});
@@ -18,10 +17,10 @@ function initUI() {
 			secondary: "ui-icon-closethick"
 		}
 	});
-	
+
 	//redirect to the testing page on cancel
-	$('.cancelBtn').click(function(){
-		window.location = starexecRoot+"secure/admin/testing.jsp";
+	$('.cancelBtn').click(function() {
+		window.location = starexecRoot + "secure/admin/testing.jsp";
 	});
 }
 
@@ -29,7 +28,7 @@ function initUI() {
  * Attaches validation to the stress test form
  */
 function attachFormValidation() {
-	
+
 	// Add validation to the configuration save form
 	$("#saveConfigForm").validate({
 		rules: {
@@ -76,45 +75,45 @@ function attachFormValidation() {
 		},
 		messages: {
 			spaceCount: {
-			required: "field required",
-			min: "minimum value of 0"
-		},
-		jobCount: {
-			required: "field required",
-			min: "minimum value of 0"
-		},
-		userCount: {
-			required: "field required",
-			min: "minimum value of 0"
-		},
-		minUsersPer: {
-			required: "field required",
-			min: "minimum value of 0"
-		},
-		maxUsersPer: {
-			required: "field required",
-			min: "minimum value of 0"
-		},
-		minSolversPer: {
-			required: "field required",
-			min: "minimum value of 0"
-		},
-		maxSolversPer: {
-			required: "field required",
-			min: "minimum value of 0"
-		},
-		minBenchmarksPer: {
-			required: "field required",
-			min: "minimum value of 0"
-		},
-		maxBenchmarksPer: {
-			required: "field required",
-			min: "minimum value of 0"
-		},
-		spacesPerJob: {
-			required: "field required",
-			min: "minimum value of 0"
-		}
+				required: "field required",
+				min: "minimum value of 0"
+			},
+			jobCount: {
+				required: "field required",
+				min: "minimum value of 0"
+			},
+			userCount: {
+				required: "field required",
+				min: "minimum value of 0"
+			},
+			minUsersPer: {
+				required: "field required",
+				min: "minimum value of 0"
+			},
+			maxUsersPer: {
+				required: "field required",
+				min: "minimum value of 0"
+			},
+			minSolversPer: {
+				required: "field required",
+				min: "minimum value of 0"
+			},
+			maxSolversPer: {
+				required: "field required",
+				min: "minimum value of 0"
+			},
+			minBenchmarksPer: {
+				required: "field required",
+				min: "minimum value of 0"
+			},
+			maxBenchmarksPer: {
+				required: "field required",
+				min: "minimum value of 0"
+			},
+			spacesPerJob: {
+				required: "field required",
+				min: "minimum value of 0"
+			}
 		}
 	});
 }

@@ -5,18 +5,18 @@ var pairTable;
 var curSpaceId; //stores the ID of the job space that is currently selected from the space viewer
 var jobId; //the ID of the job being viewed
 var lastValidSelectOption;
-var panelArray=[];
-var useWallclock=true;
-var syncResults=false;
+var panelArray = [];
+var useWallclock = true;
+var syncResults = false;
 var DETAILS_JOB = {};
-var selectedJobSpaceId=null;
+var selectedJobSpaceId = null;
 var getPanelTableInitializer;
 // contains requests that have been sent to the server to update pairs, stats, or graphs that
 // have not yet returned. If the user clicks on a new job space, these requests will all
 // be aborted, as they will no longer be useful.
 var openAjaxRequests = [];
 
-$(document).ready(function(){
+$(document).ready(function() {
 	initializeGlobalPageVariables();
 	initUI();
 	initSpaceExplorer();
@@ -26,7 +26,7 @@ $(document).ready(function(){
 		//update the tables every 30 seconds
 		setInterval(function() {
 			pairTable.fnDraw(false);
-		},30000);
+		}, 30000);
 	}
 
 	//puts data into the data tables
@@ -36,19 +36,21 @@ $(document).ready(function(){
 // Initializes the fields of the global DETAILS_JOB object.
 function initializeGlobalPageVariables() {
 	// Set these first since get functions may depend no them
-	DETAILS_JOB.isAnonymousPage = $('#isAnonymousPage').attr('value') === 'true';
-	jobId=$('#jobId').attr('value');
+	DETAILS_JOB.isAnonymousPage = $('#isAnonymousPage')
+	.attr('value') === 'true';
+	jobId = $('#jobId').attr('value');
 	DETAILS_JOB.starexecUrl = $('#starexecUrl').attr('value');
 	DETAILS_JOB.rootJobSpaceId = $('#spaceId').attr('value');
-	DETAILS_JOB.primitivesToAnonymize = $('#primitivesToAnonymize').attr('value');
+	DETAILS_JOB.primitivesToAnonymize = $('#primitivesToAnonymize')
+	.attr('value');
 	DETAILS_JOB.anonymousLinkUuid = getParameterByName('anonId');
 	DETAILS_JOB.spaceExplorerJsonData = getSpaceExplorerJsonData();
 
 	log("starexecUrl: " + DETAILS_JOB.starexecUrl);
 	log("isLocalJobPage: " + isLocalJobPage);
 	log("starexecRoot: " + starexecRoot);
-	log("isAnonymousPage: " + DETAILS_JOB.isAnonymousPage );
-	log("primitivesToAnonymize: " + DETAILS_JOB.primitivesToAnonymize );
+	log("isAnonymousPage: " + DETAILS_JOB.isAnonymousPage);
+	log("primitivesToAnonymize: " + DETAILS_JOB.primitivesToAnonymize);
 }
 
 // Gets the JSON representation of the space explorer from the hidden <span> containing it.
@@ -61,22 +63,22 @@ function getSpaceExplorerJsonData() {
 				"data": JSON.parse(jobSpaceTreeJsonText)
 			};
 		} catch (syntaxError) {
-			log("Caught syntax error when trying to call JSON.parse on: "+jobSpaceTreeJsonText);
+			log("Caught syntax error when trying to call JSON.parse on: " + jobSpaceTreeJsonText);
 			return {};
 		}
 	} else {
 		var url;
-		if ( DETAILS_JOB.isAnonymousPage ) {
-			url = starexecRoot+"services/space/anonymousLink/" +DETAILS_JOB.anonymousLinkUuid+ "/jobspaces/true/"+DETAILS_JOB.primitivesToAnonymize;
+		if (DETAILS_JOB.isAnonymousPage) {
+			url = starexecRoot + "services/space/anonymousLink/" + DETAILS_JOB.anonymousLinkUuid + "/jobspaces/true/" + DETAILS_JOB.primitivesToAnonymize;
 		} else {
-			url = starexecRoot+"services/space/" +jobId+ "/jobspaces/true";
+			url = starexecRoot + "services/space/" + jobId + "/jobspaces/true";
 		}
 		spaceExplorerJsonData = {
-			"ajax" : {
-				"url" : url, // Where we will be getting json data from
-				"data" : function (n) {
+			"ajax": {
+				"url": url, // Where we will be getting json data from
+				"data": function(n) {
 					return {
-						id : (n.attr ? n.attr("id") : 0)
+						id: (n.attr ? n.attr("id") : 0)
 					}; // What the default space id should be
 				}
 			}
@@ -93,15 +95,15 @@ function setSyncResultsText() {
 	}
 }
 
-function refreshPanels(){
-	for (var i=0;i<panelArray.length;i++) {
-		panelArray[i].api().ajax.reload(null,true);
+function refreshPanels() {
+	for (var i = 0; i < panelArray.length; i++) {
+		panelArray[i].api().ajax.reload(null, true);
 	}
 }
 
-function refreshStats(id){
+function refreshStats(id) {
 	var updateGraphs = function() {
-		if (summaryTable.fnSettings().fnRecordsTotal()==0) {
+		if (summaryTable.fnSettings().fnRecordsTotal() == 0) {
 			$("#graphField").hide();
 		} else {
 			/* This is can be one of the most intense loops on this page,
@@ -110,17 +112,17 @@ function refreshStats(id){
 			 * code more difficult to read.
 			 */
 			var $spaceOverviewSelections = $("#spaceOverviewSelections"),
-			    solverOptions = document.createDocumentFragment(),
-			    rows = summaryTable.fnGetData();
-			for (var i=0; i<rows.length; ++i) {
+				solverOptions = document.createDocumentFragment(),
+				rows = summaryTable.fnGetData();
+			for (var i = 0; i < rows.length; ++i) {
 				var row = rows[i],
-				    solverName = row[2],
-				    configName = row[3],
-				    configId   = row[1];
+					solverName = row[2],
+					configName = row[3],
+					configId = row[1];
 
 				var option = document.createElement("option");
-				    option.value = configId;
-				    option.text = solverName + "/" + configName;
+				option.value = configId;
+				option.text = solverName + "/" + configName;
 
 				solverOptions.appendChild(option);
 			}
@@ -131,23 +133,28 @@ function refreshStats(id){
 			 * not need it anymore
 			 */
 			document.getElementById("solverChoice1")
-			        .appendChild( solverOptions.cloneNode(true) );
+			.appendChild(solverOptions.cloneNode(true));
 
 			document.getElementById("solverChoice2")
-			        .appendChild( solverOptions.cloneNode(true) );
+			.appendChild(solverOptions.cloneNode(true));
 
 			$spaceOverviewSelections.empty().append(solverOptions);
 			$("#graphField").show();
 
 			//select first five solver/ configuration pairs
-			$spaceOverviewSelections.children("option:lt(5)").prop("selected",true);
+			$spaceOverviewSelections.children("option:lt(5)")
+			.prop("selected", true);
 			lastValidSelectOption = $spaceOverviewSelections.val();
 			updateSpaceOverviewGraph();
-			if (summaryTable.fnSettings().fnRecordsTotal()>1) {
+			if (summaryTable.fnSettings().fnRecordsTotal() > 1) {
 				$("#solverComparison").show();
 				$("#solverComparisonOptionField").show();
-				$("#solverChoice1").children("option:first").prop("selected",true);
-				$("#solverChoice2").children("option:nth-child(2)").prop("selected",true);
+				$("#solverChoice1")
+				.children("option:first")
+				.prop("selected", true);
+				$("#solverChoice2")
+				.children("option:nth-child(2)")
+				.prop("selected", true);
 				updateSolverComparison(300, "white");
 			} else {
 				$("#solverComparison").hide();
@@ -158,56 +165,57 @@ function refreshStats(id){
 	summaryTable.api().ajax.reload(updateGraphs, true);
 }
 
-function createDownloadRequest(item,type,returnIds,getCompleted) {
-	createDialog("Processing your download request, please wait. This will take some time for large jobs.");
-	var token=Math.floor(Math.random()*100000000);
-	var href = DETAILS_JOB.starexecUrl+"secure/download?token=" +token+ "&type="+ type +"&id="+$("#jobId").attr("value");
-	if (typeof returnIds!= 'undefined' ) {
-		href=href+"&returnids="+returnIds;
+function createDownloadRequest(item, type, returnIds, getCompleted) {
+	createDialog(
+		"Processing your download request, please wait. This will take some time for large jobs.");
+	var token = Math.floor(Math.random() * 100000000);
+	var href = DETAILS_JOB.starexecUrl + "secure/download?token=" + token + "&type=" + type + "&id=" + $(
+		"#jobId").attr("value");
+	if (typeof returnIds != 'undefined') {
+		href = href + "&returnids=" + returnIds;
 	}
-	if (typeof getCompleted!='undefined') {
-		href=href+"&getcompleted="+getCompleted;
+	if (typeof getCompleted != 'undefined') {
+		href = href + "&getcompleted=" + getCompleted;
 	}
 	$(item).attr('href', href);
 	destroyOnReturn(token);		//when we see the download token as a cookie, destroy the dialog box
 	window.location.href = href;
 }
 
-
 function initSpaceExplorer() {
 	// Set the path to the css theme for the jstree plugin
 
-	$.jstree._themes = starexecRoot+"css/jstree/";
+	$.jstree._themes = starexecRoot + "css/jstree/";
 	var id;
 
 	$("#exploreList").jstree({
-		"json_data" : DETAILS_JOB.spaceExplorerJsonData,
-		"themes" : {
-			"theme" : "default",
-			"dots" : true,
-			"icons" : true
+		"json_data": DETAILS_JOB.spaceExplorerJsonData,
+		"themes": {
+			"theme": "default",
+			"dots": true,
+			"icons": true
 		},
-		"types" : {
-			"max_depth" : -2,
-			"max_children" : -2,
-			"valid_children" : [ "space" ],
-			"types" : {
-				"space" : {
-					"valid_children" : [ "space" ],
-					"icon" : {
-						"image" : starexecRoot+"images/jstree/db.png"
+		"types": {
+			"max_depth": -2,
+			"max_children": -2,
+			"valid_children": ["space"],
+			"types": {
+				"space": {
+					"valid_children": ["space"],
+					"icon": {
+						"image": starexecRoot + "images/jstree/db.png"
 					}
 				}
 			}
 		},
-		"ui" : {
-			"select_limit" : 1,
-			"selected_parent_close" : "select_parent",
-			"initially_select" : [ "#"+DETAILS_JOB.rootJobSpaceId ]
+		"ui": {
+			"select_limit": 1,
+			"selected_parent_close": "select_parent",
+			"initially_select": ["#" + DETAILS_JOB.rootJobSpaceId]
 		},
-		"plugins" : [ "types", "themes", "json_data", "ui", "cookies"] ,
-		"core" : { animation : 200 }
-	}).bind("select_node.jstree", function (event, data) {
+		"plugins": ["types", "themes", "json_data", "ui", "cookies"],
+		"core": {animation: 200}
+	}).bind("select_node.jstree", function(event, data) {
 		// When a node is clicked, get its ID and display the info in the details pane
 		id = data.rslt.obj.attr("id");
 		if (selectedJobSpaceId == null) {
@@ -221,12 +229,12 @@ function initSpaceExplorer() {
 			var maxStages = data.rslt.obj.attr("maxStages");
 			setMaxStagesDropdown(parseInt(maxStages));
 			$(".spaceName").text($('.jstree-clicked').text());
-			$("#displayJobSpaceID").text("job space id  = "+id);
+			$("#displayJobSpaceID").text("job space id  = " + id);
 			//no solvers will be selected when a space changes, so hide this button
 			$("#compareSolvers").hide();
 			reloadTables(id);
 		}
-	}).on( "click", "a", function (event, data) {
+	}).on("click", "a", function(event, data) {
 		event.preventDefault();  // This just disable's links in the node title
 	});
 	log("Initialized exploreList tree.");
@@ -241,7 +249,7 @@ function killAjaxRequests() {
 }
 
 function clearPanels() {
-	for (var i=0; i<panelArray.length; ++i) {
+	for (var i = 0; i < panelArray.length; ++i) {
 		var panel = panelArray[i];
 		if (panel.data("panelRefreshInterval") !== undefined) {
 			window.clearInterval(panel.data("panelRefreshInterval"));
@@ -255,8 +263,8 @@ function clearPanels() {
 
 function reloadTables(id) {
 	//we only need to update if we've actually selected a new space
-	if (curSpaceId!=id) {
-		curSpaceId=id;
+	if (curSpaceId != id) {
+		curSpaceId = id;
 		clearPanels();
 		if (!isLocalJobPage) {
 			// summaryTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
@@ -266,8 +274,10 @@ function reloadTables(id) {
 			$("#solverChoice1").empty();
 			$("#solverChoice2").empty();
 			$("#spaceOverviewSelections").empty();
-			$("#spaceOverview").attr("src",starexecRoot+"/images/loadingGraph.png");
-			$("#solverComparison").attr("src",starexecRoot+"/images/loadingGraph.png");
+			$("#spaceOverview")
+			.attr("src", starexecRoot + "/images/loadingGraph.png");
+			$("#solverComparison")
+			.attr("src", starexecRoot + "/images/loadingGraph.png");
 
 			//tell the tables to display a "loading" indicator
 			summaryTable.fnProcessingIndicator(true);
@@ -278,10 +288,10 @@ function reloadTables(id) {
 		} else {
 			$('[id$=pairTbl_wrapper]').hide();
 			$('#pairTblField').show();
-			$('#'+id+'pairTbl_wrapper').show();
+			$('#' + id + 'pairTbl_wrapper').show();
 			$('[id$=solveTbl_wrapper]').hide();
-			$('#'+id+'solveTbl_wrapper').show();
-			log('showing id: '+id);
+			$('#' + id + 'solveTbl_wrapper').show();
+			log('showing id: ' + id);
 		}
 		initializePanels();
 	}
@@ -301,251 +311,258 @@ function makeJobDescriptionUneditable() {
 //
 //  Initializes the user-interface
 //
-function initUI(){
+function initUI() {
 	$("#errorField").hide();
 	$("#statsErrorField").hide();
 	$(".cpuTime").hide();
 
 	//for aesthetics, make the heights of the two option fields identical
-	$("#solverComparisonOptionField").height($("#spaceOverviewOptionField").height());
+	$("#solverComparisonOptionField")
+	.height($("#spaceOverviewOptionField").height());
 
 	$("#addJobPairs")
-		.button({
-			icons: {
-				primary: "ui-icon-arrowthick-1-n"
-			}
-		});
+	.button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-n"
+		}
+	});
 
 	$("#rerunPairs")
-		.button({
-			icons: {
-				primary: "ui-icon-arrowreturnthick-1-e"
-			}
-		});
+	.button({
+		icons: {
+			primary: "ui-icon-arrowreturnthick-1-e"
+		}
+	});
 
 	$("#compareSolvers")
-		.button({
-			icons: {
-				primary: "ui-icon-arrowthick-1-s"
-			}
-		}).hide().click(function(){
-			var c1=$(".first_selected").find(".configLink").attr("id");
-			var c2=$(".second_selected").find(".configLink").attr("id");
-			window.open(DETAILS_JOB.starexecUrl+"secure/details/solverComparison.jsp?sid="+curSpaceId+"&c1="+c1+"&c2="+c2);
-		});
+	.button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-s"
+		}
+	}).hide().click(function() {
+		var c1 = $(".first_selected").find(".configLink").attr("id");
+		var c2 = $(".second_selected").find(".configLink").attr("id");
+		window.open(DETAILS_JOB.starexecUrl + "secure/details/solverComparison.jsp?sid=" + curSpaceId + "&c1=" + c1 + "&c2=" + c2);
+	});
 
 	$('#clearCache')
-		.button( {
-			icons: {
-				secondary: "ui-icon-arrowrefresh-1-e"
-			}
-		}).click(function(){
-			$("#dialog-warning-txt").text('Are you sure you want to clear the cache for this primitive?');
-			$("#dialog-warning").dialog({
-				modal: true,
-				width: 380,
-				height: 165,
-				buttons: {
-					'clear cache': function() {
-						$(this).dialog("close");
-						$.post(
-							starexecRoot+"services/cache/clear/stats/"+jobId+"/",
-							parseReturnCode
-						);
-					},
-					"cancel": function() {
-						$(this).dialog("close");
-					}
+	.button({
+		icons: {
+			secondary: "ui-icon-arrowrefresh-1-e"
+		}
+	}).click(function() {
+		$("#dialog-warning-txt")
+		.text('Are you sure you want to clear the cache for this primitive?');
+		$("#dialog-warning").dialog({
+			modal: true,
+			width: 380,
+			height: 165,
+			buttons: {
+				'clear cache': function() {
+					$(this).dialog("close");
+					$.post(
+						starexecRoot + "services/cache/clear/stats/" + jobId + "/",
+						parseReturnCode
+					);
+				},
+				"cancel": function() {
+					$(this).dialog("close");
 				}
-			});
+			}
 		});
+	});
 
 	$('#recompileSpaces')
-		.button( {
-			icons: {
-				secondary: "ui-icon-arrowrefresh-1-e"
-			}
-		}).click(function() {
-			$.get(
-					starexecRoot+"services/recompile/"+jobId,
-					parseReturnCode
-			);
-		});
+	.button({
+		icons: {
+			secondary: "ui-icon-arrowrefresh-1-e"
+		}
+	}).click(function() {
+		$.get(
+			starexecRoot + "services/recompile/" + jobId,
+			parseReturnCode
+		);
+	});
 
 	$("#downloadJobPageButton")
-		.button({
-			icons: {
-				primary: "ui-icon-arrowthick-1-s"
-			}
-		}).click(function() {
-			createDownloadRequest("#downloadJobPageButton", "job_page");
-		});
+	.button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-s"
+		}
+	}).click(function() {
+		createDownloadRequest("#downloadJobPageButton", "job_page");
+	});
 
 	// I think this code can be removed
 	$('#setLowPriority')
-		.button({
-			icons: {
-				primary: "ui-icon-gear"
-			}
-		});
+	.button({
+		icons: {
+			primary: "ui-icon-gear"
+		}
+	});
 
 	$("#matrixViewButton")
-		.button({
-			icons: {
-				primary: "ui-icon-newwin"
-			}
-		}).click(function() {
-			var url = DETAILS_JOB.starexecUrl+'secure/details/jobMatrixView.jsp?stage=1&jobSpaceId='+curSpaceId;
-			if (isLocalJobPage) {
-				window.location.href = url;
-			} else {
-				popup(url);
-			}
-		});
+	.button({
+		icons: {
+			primary: "ui-icon-newwin"
+		}
+	}).click(function() {
+		var url = DETAILS_JOB.starexecUrl + 'secure/details/jobMatrixView.jsp?stage=1&jobSpaceId=' + curSpaceId;
+		if (isLocalJobPage) {
+			window.location.href = url;
+		} else {
+			popup(url);
+		}
+	});
 
 	$("#jobPairAttributes")
-		.button({
-			icons: {
-				primary: "ui-icon-newwin"
-			}
-		}).click(function() {
-			var url = DETAILS_JOB.starexecUrl+'secure/details/jobAttributes.jsp?id='+curSpaceId;
-			if (isLocalJobPage) {
-				window.location.href = url;
-			} else {
-				popup(url);
-			}
-		});
+	.button({
+		icons: {
+			primary: "ui-icon-newwin"
+		}
+	}).click(function() {
+		var url = DETAILS_JOB.starexecUrl + 'secure/details/jobAttributes.jsp?id=' + curSpaceId;
+		if (isLocalJobPage) {
+			window.location.href = url;
+		} else {
+			popup(url);
+		}
+	});
 
 	$("#solverNameKeyButton")
-		.button({
-			icons: {
-				primary: "ui-icon-newwin"
-			}
-		}).click(function() {
-			var url = DETAILS_JOB.starexecUrl+'secure/details/anonymousJobPageKey.jsp?anonId='+DETAILS_JOB.anonymousLinkUuid;
-			popup(url);
-		});
+	.button({
+		icons: {
+			primary: "ui-icon-newwin"
+		}
+	}).click(function() {
+		var url = DETAILS_JOB.starexecUrl + 'secure/details/anonymousJobPageKey.jsp?anonId=' + DETAILS_JOB.anonymousLinkUuid;
+		popup(url);
+	});
 
 	$("#syncResults")
-		.button({
-			icons: {
-				primary: "ui-icon-gear"
-			}
-		}).click(function() {
-			//just change the sync results boolean and update the button text.
-			syncResults=!syncResults;
-			setSyncResultsText();
-			pairTable.fnDraw(false);
-		});
+	.button({
+		icons: {
+			primary: "ui-icon-gear"
+		}
+	}).click(function() {
+		//just change the sync results boolean and update the button text.
+		syncResults = !syncResults;
+		setSyncResultsText();
+		pairTable.fnDraw(false);
+	});
 
 	$("#popoutPanels")
-		.button({
-			icons: {
-				primary: "ui-icon-extlink"
-			}
-		}).click(function() {
-			// default to primary stage
-			window.open(DETAILS_JOB.starexecUrl+"secure/details/jobPanelView.jsp?spaceid="+curSpaceId+"&stage=1");
-		});
+	.button({
+		icons: {
+			primary: "ui-icon-extlink"
+		}
+	}).click(function() {
+		// default to primary stage
+		window.open(DETAILS_JOB.starexecUrl + "secure/details/jobPanelView.jsp?spaceid=" + curSpaceId + "&stage=1");
+	});
 
 	$("#collapsePanels")
-		.button( {
-			icons: {
-				primary: "ui-icon-folder-collapsed"
+	.button({
+		icons: {
+			primary: "ui-icon-folder-collapsed"
+		}
+	}).click(function() {
+		$(".panelField").each(function() {
+			var legend = $(this).children('legend:first');
+			var isOpen = $(legend).data('open');
+			if (isOpen) {
+				$(legend).trigger("click");
 			}
-		}).click(function() {
-			$(".panelField").each(function() {
-				var legend = $(this).children('legend:first');
-				var isOpen = $(legend).data('open');
-				if (isOpen) {
-					$(legend).trigger("click");
-				}
-			});
 		});
+	});
 
 	$("#openPanels")
-		.button( {
-			icons: {
-				primary: "ui-icon-folder-open"
-			}
-		}).click(function() {
-			$(".panelField").each(function() {
-				var legend = $(this).children('legend:first');
-				var isOpen = $(legend).data('open');
+	.button({
+		icons: {
+			primary: "ui-icon-folder-open"
+		}
+	}).click(function() {
+		$(".panelField").each(function() {
+			var legend = $(this).children('legend:first');
+			var isOpen = $(legend).data('open');
 
-				if (!isOpen) {
-					$(legend).trigger("click");
-				}
-			});
+			if (!isOpen) {
+				$(legend).trigger("click");
+			}
 		});
+	});
 
 	$(".changeTime")
-		.button({
-			icons: {
-				primary: "ui-icon-refresh"
-			}
-		}).click(function() {
-			useWallclock=!useWallclock;
-			if (useWallclock) {
-				$('.cpuTime').hide();
-				$('.wallclockTime').show();
-			} else {
-				$('.cpuTime').show();
-				$('.wallclockTime').hide();
-			}
-			setTimeButtonText();
-			if (!isLocalJobPage) {
-				refreshPanels();
-				refreshStats(curSpaceId);
-				pairTable.fnDraw(false);
-			}
-		});
+	.button({
+		icons: {
+			primary: "ui-icon-refresh"
+		}
+	}).click(function() {
+		useWallclock = !useWallclock;
+		if (useWallclock) {
+			$('.cpuTime').hide();
+			$('.wallclockTime').show();
+		} else {
+			$('.cpuTime').show();
+			$('.wallclockTime').hide();
+		}
+		setTimeButtonText();
+		if (!isLocalJobPage) {
+			refreshPanels();
+			refreshStats(curSpaceId);
+			pairTable.fnDraw(false);
+		}
+	});
 
 	$("#jobDownload")
-		.button({
-			icons: {
-				primary: "ui-icon-arrowthick-1-s"
-			}
-		}).unbind("click").click(function(e) {
-			e.preventDefault();
-			$('#dialog-return-ids-txt').text('do you want ids for job pairs, solvers, and benchmarks to be included in the CSV?');
+	.button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-s"
+		}
+	}).unbind("click").click(function(e) {
+		e.preventDefault();
+		$('#dialog-return-ids-txt')
+		.text(
+			'do you want ids for job pairs, solvers, and benchmarks to be included in the CSV?');
 
-			$('#dialog-return-ids').dialog({
-				modal: true,
-				width: 380,
-				height: 200,
-				buttons: {
-					'download': function() {
-						$('#dialog-return-ids').dialog('close');
-						createDownloadRequest("#jobDownload","job",$("#includeids").prop("checked"),$("#getcompleted").prop("checked"));
-					},
-					"cancel": function() {
-						$(this).dialog("close");
-					}
+		$('#dialog-return-ids').dialog({
+			modal: true,
+			width: 380,
+			height: 200,
+			buttons: {
+				'download': function() {
+					$('#dialog-return-ids').dialog('close');
+					createDownloadRequest("#jobDownload",
+						"job",
+						$("#includeids").prop("checked"),
+						$("#getcompleted").prop("checked"));
+				},
+				"cancel": function() {
+					$(this).dialog("close");
 				}
-			});
+			}
 		});
+	});
 
 	$("#jobXMLDownload")
-		.button({
-			icons: {
-				primary: "ui-icon-arrowthick-1-s"
-			}
-		}).unbind("click").click(function(e) {
-			e.preventDefault();
-			createDownloadRequest("#jobXMLDownload","jobXML");
-		});
+	.button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-s"
+		}
+	}).unbind("click").click(function(e) {
+		e.preventDefault();
+		createDownloadRequest("#jobXMLDownload", "jobXML");
+	});
 
 	$("#jobOutputDownload")
-		.button({
-			icons: {
-				primary: "ui-icon-arrowthick-1-s"
-			}
-		}).unbind("click").click(function(e) {
-			e.preventDefault();
-			createDownloadRequest("#jobOutputDownload","j_outputs");
-		});
+	.button({
+		icons: {
+			primary: "ui-icon-arrowthick-1-s"
+		}
+	}).unbind("click").click(function(e) {
+		e.preventDefault();
+		createDownloadRequest("#jobOutputDownload", "j_outputs");
+	});
 
 	if (isLocalJobPage) {
 		$('#actionField').hide();
@@ -557,85 +574,95 @@ function initUI(){
 		makeJobNameUneditable();
 		makeJobDescriptionUneditable();
 	} else {
-		setupJobNameAndDescriptionEditing('#jobNameText', '#editJobName', '#editJobNameButton', '#editJobNameWrapper', 'name');
-		setupJobNameAndDescriptionEditing('#jobDescriptionText', '#editJobDescription', '#editJobDescriptionButton', '#editJobDescriptionWrapper', 'description');
+		setupJobNameAndDescriptionEditing('#jobNameText',
+			'#editJobName',
+			'#editJobNameButton',
+			'#editJobNameWrapper',
+			'name');
+		setupJobNameAndDescriptionEditing('#jobDescriptionText',
+			'#editJobDescription',
+			'#editJobDescriptionButton',
+			'#editJobDescriptionWrapper',
+			'description');
 		registerAnonymousLinkButtonEventHandler();
 		$(".stageSelector")
-			.change(function() {
-				//set the value of all .stageSelectors to this one to sync them.
-				//this does not trigger the change event, which is good because it would loop forever
-				$(".stageSelector").val($(this).val());
-				pairTable.fnDraw(false);
-				refreshPanels();
-				refreshStats(curSpaceId);
-			});
+		.change(function() {
+			//set the value of all .stageSelectors to this one to sync them.
+			//this does not trigger the change event, which is good because it would loop forever
+			$(".stageSelector").val($(this).val());
+			pairTable.fnDraw(false);
+			refreshPanels();
+			refreshStats(curSpaceId);
+		});
 		$("#spaceOverviewUpdate")
-			.button({
-				icons: {
-					primary: "ui-icon-arrowrefresh-1-e"
-				}
-			}).click(function() {
-				updateSpaceOverviewGraph();
-			});
+		.button({
+			icons: {
+				primary: "ui-icon-arrowrefresh-1-e"
+			}
+		}).click(function() {
+			updateSpaceOverviewGraph();
+		});
 		$("#solverComparisonUpdate")
-			.button({
-				icons: {
-					primary: "ui-icon-arrowrefresh-1-e"
-				}
-			}).click(function() {
-				updateSolverComparison(300, "white");
-			});
+		.button({
+			icons: {
+				primary: "ui-icon-arrowrefresh-1-e"
+			}
+		}).click(function() {
+			updateSolverComparison(300, "white");
+		});
 
-		if (star.isUserSubscribedToJob !== undefined) (function() {
-			var $notificationButton = $("<a href='#'>")
-				.button({
-					icons: {primary: "ui-icon-mail-closed"},
-				})
-			;
-			var toggleSubscribe = function() {
-				var url = starexecRoot + (
-					star.isUserSubscribedToJob?
-					"services/jobs/notifications/unsubscribe":
-					"services/jobs/notifications/subscribe"
-				);
-				var status = !star.isUserSubscribedToJob;
-				$.ajax({
-					type: "POST",
-					url: url,
-					data: {"id": jobId},
-					dataType: "json",
-					success: function() {
-						window.star.isUserSubscribedToJob = status;
-						updateLabel();
-						$notificationButton.button("enable");
-					},
-					error: function() {
-						var message = "Unable to " +
-							$notificationButton.button("option", "label");
-						showMessage("error", message, 5000);
-					}
-				});
-			};
-			var updateLabel = function() {
-				var label = star.isUserSubscribedToJob?
-					"unsubscribe from email updates":
-					"subscribe to email updates";
-				$notificationButton.button("option", "label", label);
-			};
-			var notificationClick = function(e) {
-				e.preventDefault();
-				$notificationButton.button("disable");
-				toggleSubscribe();
-			};
+		if (star.isUserSubscribedToJob !== undefined) {
+			(function() {
+				var $notificationButton = $("<a href='#'>")
+					.button({
+						icons: {primary: "ui-icon-mail-closed"},
+					})
+				;
+				var toggleSubscribe = function() {
+					var url = starexecRoot + (
+						star.isUserSubscribedToJob ?
+						"services/jobs/notifications/unsubscribe" :
+						"services/jobs/notifications/subscribe"
+					);
+					var status = !star.isUserSubscribedToJob;
+					$.ajax({
+						type: "POST",
+						url: url,
+						data: {"id": jobId},
+						dataType: "json",
+						success: function() {
+							window.star.isUserSubscribedToJob = status;
+							updateLabel();
+							$notificationButton.button("enable");
+						},
+						error: function() {
+							var message = "Unable to " +
+								$notificationButton.button("option", "label");
+							showMessage("error", message, 5000);
+						}
+					});
+				};
+				var updateLabel = function() {
+					var label = star.isUserSubscribedToJob ?
+					            "unsubscribe from email updates" :
+					            "subscribe to email updates";
+					$notificationButton.button("option", "label", label);
+				};
+				var notificationClick = function(e) {
+					e.preventDefault();
+					$notificationButton.button("disable");
+					toggleSubscribe();
+				};
 
-			updateLabel();
-			$notificationButton
+				updateLabel();
+				$notificationButton
 				.click(notificationClick)
 				.wrapAll("<li>")
 				.parent()
 				.appendTo("#actionList")
-			;
-		})();
+				;
+			})();
+		}
 	}
 
 	setupSetHighPriorityButton();
@@ -649,10 +676,12 @@ function initUI(){
 
 	//set the two default solvers to compare
 	var defaultSolver1 = $('#solverChoice1').attr('default');
-	$('#solverChoice1 option[value=' + defaultSolver1 + ']').prop('selected', true);
+	$('#solverChoice1 option[value=' + defaultSolver1 + ']')
+	.prop('selected', true);
 
 	var defaultSolver2 = $('#solverChoice2').attr('default');
-	$('#solverChoice2 option[value=' + defaultSolver2 + ']').prop('selected', true);
+	$('#solverChoice2 option[value=' + defaultSolver2 + ']')
+	.prop('selected', true);
 
 	//set all fieldsets as expandable
 	$('#solverSummaryField').expandable(false);
@@ -663,10 +692,15 @@ function initUI(){
 	$("#optionField").expandable(true);
 	$("#detailField").expandable(true);
 
-	var advancedJobActionsCollapsed = $.cookie('advancedJobActions')!='false';
-	$('#advancedActionField').expandable(advancedJobActionsCollapsed).children('legend:first').click(function() {
+	var advancedJobActionsCollapsed = $.cookie('advancedJobActions') != 'false';
+	$('#advancedActionField')
+	.expandable(advancedJobActionsCollapsed)
+	.children('legend:first')
+	.click(function() {
 		var advancedJobActionsCollapsed = !$(this).data('open');
-		$.cookie('advancedJobActions', advancedJobActionsCollapsed, {expires: 10000, path: '/'});
+		$.cookie('advancedJobActions',
+			advancedJobActionsCollapsed,
+			{expires: 10000, path: '/'});
 	});
 
 	$("#subspaceSummaryField").expandable(false);
@@ -675,7 +709,9 @@ function initUI(){
 
 	$("#spaceOverviewSelections").change(function() {
 		if ($(this).val().length > 5) {
-			showMessage('error',"You may only choose a maximum of 5 solver / configuration pairs to display at one time",5000);
+			showMessage('error',
+				"You may only choose a maximum of 5 solver / configuration pairs to display at one time",
+				5000);
 			$(this).val(lastValidSelectOption);
 		} else {
 			lastValidSelectOption = $(this).val();
@@ -706,8 +742,9 @@ function setupDeleteJobButton() {
 		icons: {
 			secondary: "ui-icon-minus"
 		}
-	}).click(function(){
-		$('#dialog-confirm-delete-txt').text('are you sure you want to delete this job?');
+	}).click(function() {
+		$('#dialog-confirm-delete-txt')
+		.text('are you sure you want to delete this job?');
 
 		$('#dialog-confirm-delete').dialog({
 			modal: true,
@@ -721,12 +758,12 @@ function setupDeleteJobButton() {
 					killAjaxRequests();
 					window.stop();
 					$.post(
-						starexecRoot+"services/delete/job",
+						starexecRoot + "services/delete/job",
 						{selectedIds: [getParameterByName("id")]},
 						function(returnCode) {
-							var s=parseReturnCode(returnCode);
+							var s = parseReturnCode(returnCode);
 							if (s) {
-								window.location = starexecRoot+'secure/explore/spaces.jsp';
+								window.location = starexecRoot + 'secure/explore/spaces.jsp';
 							}
 						},
 						"json"
@@ -752,7 +789,7 @@ function setupSetHighPriorityButton() {
 	$(setHighPrioritySelector).click(function() {
 		log('set high priority button clicked.');
 		$.post(
-			starexecRoot+'services/jobs/setHighPriority/'+jobId,
+			starexecRoot + 'services/jobs/setHighPriority/' + jobId,
 			'',
 			function(statusCode) {
 				log('got something back.');
@@ -779,7 +816,7 @@ function setupSetLowPriorityButton() {
 	$(setLowPrioritySelector).click(function() {
 		log('set low priority button clicked.');
 		$.post(
-			starexecRoot+'services/jobs/setLowPriority/'+jobId,
+			starexecRoot + 'services/jobs/setLowPriority/' + jobId,
 			'',
 			function(statusCode) {
 				if (statusCode.success) {
@@ -804,7 +841,7 @@ function setupPauseJobButton() {
 		killAjaxRequests(); // Since we are reloading the page anyway...
 		window.stop();
 		$.post(
-			starexecRoot+"services/pause/job/" + getParameterByName("id"),
+			starexecRoot + "services/pause/job/" + getParameterByName("id"),
 			function(returnCode) {
 				var s = parseReturnCode(returnCode);
 				if (s) {
@@ -821,12 +858,12 @@ function setupResumeJobButton() {
 		icons: {
 			secondary: "ui-icon-play"
 		}
-	}).click(function(){
+	}).click(function() {
 		createDialog("Resuming Job");
 		killAjaxRequests(); // Since we are reloading the page anyway...
 		window.stop();
 		$.post(
-			starexecRoot+"services/resume/job/" + getParameterByName("id"),
+			starexecRoot + "services/resume/job/" + getParameterByName("id"),
 			function(returnCode) {
 				var s = parseReturnCode(returnCode);
 				if (s) {
@@ -843,8 +880,9 @@ function setupChangeQueueButton() {
 		icons: {
 			secondary: "ui-icon-transferthick-e-w"
 		}
-	}).click(function(){
-		$('#dialog-changeQueue-txt').text('Please select a new queue to use for this job.');
+	}).click(function() {
+		$('#dialog-changeQueue-txt')
+		.text('Please select a new queue to use for this job.');
 
 		$('#dialog-changeQueue').dialog({
 			modal: true,
@@ -856,17 +894,18 @@ function setupChangeQueueButton() {
 					killAjaxRequests();
 					window.stop();
 					$.post(
-							starexecRoot+"services/changeQueue/job/" + getParameterByName("id")+"/"+$("#changeQueueSelection").val(),
-							function(returnCode) {
-								var s = parseReturnCode(returnCode);
-								if (s) {
-									setTimeout(
-										function() {document.location.reload(true)},
-										1000
-									);
-								}
-							},
-							"json"
+						starexecRoot + "services/changeQueue/job/" + getParameterByName(
+						"id") + "/" + $("#changeQueueSelection").val(),
+						function(returnCode) {
+							var s = parseReturnCode(returnCode);
+							if (s) {
+								setTimeout(
+									function() {document.location.reload(true)},
+									1000
+								);
+							}
+						},
+						"json"
 					);
 				},
 				"cancel": function() {
@@ -882,8 +921,9 @@ function setupPostProcessButton() {
 		icons: {
 			primary: "ui-icon-arrowthick-1-n"
 		}
-	}).click(function(){
-		$('#dialog-postProcess-txt').text('Please select a post-processor to use for this job.');
+	}).click(function() {
+		$('#dialog-postProcess-txt')
+		.text('Please select a post-processor to use for this job.');
 
 		$('#dialog-postProcess').dialog({
 			modal: true,
@@ -892,9 +932,13 @@ function setupPostProcessButton() {
 			buttons: {
 				'OK': function() {
 					$('#dialog-postProcess').dialog('close');
-					showMessage("info","Beginning job pair processing. ",3000);
+					showMessage("info",
+						"Beginning job pair processing. ",
+						3000);
 					$.post(
-						starexecRoot+"services/postprocess/job/" + getParameterByName("id")+"/"+$("#postProcessorSelection").val()+"/"+getSelectedStage(),
+						starexecRoot + "services/postprocess/job/" + getParameterByName(
+						"id") + "/" + $("#postProcessorSelection")
+						.val() + "/" + getSelectedStage(),
 						parseReturnCode,
 						"json"
 					);
@@ -918,17 +962,17 @@ function updateSpaceOverviewGraph() {
 	}
 
 	var postUrl = null;
-	if ( DETAILS_JOB.isAnonymousPage ) {
-		postUrl = starexecRoot+'services/jobs/anonymousLink/'+ DETAILS_JOB.anonymousLinkUuid +'/' + curSpaceId +
-				'/graphs/spaceOverview/'+getSelectedStage()+'/'+DETAILS_JOB.primitivesToAnonymize;
+	if (DETAILS_JOB.isAnonymousPage) {
+		postUrl = starexecRoot + 'services/jobs/anonymousLink/' + DETAILS_JOB.anonymousLinkUuid + '/' + curSpaceId +
+			'/graphs/spaceOverview/' + getSelectedStage() + '/' + DETAILS_JOB.primitivesToAnonymize;
 	} else {
-		postUrl = starexecRoot+'services/jobs/' + curSpaceId+'/graphs/spaceOverview/'+getSelectedStage();
+		postUrl = starexecRoot + 'services/jobs/' + curSpaceId + '/graphs/spaceOverview/' + getSelectedStage();
 	}
 	log('updateSpaceOverviewGraph postUrl: ' + postUrl);
 
 	var xhr = $.post(
 		postUrl,
-		{logY : logY, selectedIds: configs},
+		{logY: logY, selectedIds: configs},
 		function(returnCode) {
 			var s = parseReturnCode(returnCode);
 			if (s) {
@@ -939,12 +983,13 @@ function updateSpaceOverviewGraph() {
 				//we only want to update the graph if the request we made still matches what the user has put in
 				//it is possible the user changed their selections and sent out a new request which has returned already
 				//also, equality checking doesn't work on arrays, but less than and greater than do
-				if (!(currentConfigs>configs) && !(currentConfigs<configs)) {
-					$("#spaceOverview").attr("src",returnCode);
-					$("#bigSpaceOverview").attr("src",returnCode+"800");
+				if (!(currentConfigs > configs) && !(currentConfigs < configs)) {
+					$("#spaceOverview").attr("src", returnCode);
+					$("#bigSpaceOverview").attr("src", returnCode + "800");
 				}
 			} else {
-				$("#spaceOverview").attr("src",starexecRoot+"/images/noDisplayGraph.png");
+				$("#spaceOverview")
+				.attr("src", starexecRoot + "/images/noDisplayGraph.png");
 			}
 		},
 		"text"
@@ -954,15 +999,15 @@ function updateSpaceOverviewGraph() {
 
 //size is in pixels and color is a string
 function updateSolverComparison(size, color) {
-	var config1=$("#solverChoice1 option:selected").attr("value");
-	var config2=$("#solverChoice2 option:selected").attr("value");
+	var config1 = $("#solverChoice1 option:selected").attr("value");
+	var config2 = $("#solverChoice2 option:selected").attr("value");
 
 	var postUrl = '';
-	if ( DETAILS_JOB.isAnonymousPage ) {
-		postUrl = starexecRoot+"services/jobs/anonymousLink/"+DETAILS_JOB.anonymousLinkUuid+"/"+curSpaceId+"/graphs/solverComparison/"+config1+
-			"/"+config2+"/"+size+"/"+color+"/"+getSelectedStage()+"/"+DETAILS_JOB.primitivesToAnonymize;
+	if (DETAILS_JOB.isAnonymousPage) {
+		postUrl = starexecRoot + "services/jobs/anonymousLink/" + DETAILS_JOB.anonymousLinkUuid + "/" + curSpaceId + "/graphs/solverComparison/" + config1 +
+			"/" + config2 + "/" + size + "/" + color + "/" + getSelectedStage() + "/" + DETAILS_JOB.primitivesToAnonymize;
 	} else {
-		postUrl = starexecRoot+"services/jobs/"+curSpaceId+"/graphs/solverComparison/"+config1+"/"+config2+"/"+size+"/"+color+"/"+getSelectedStage();
+		postUrl = starexecRoot + "services/jobs/" + curSpaceId + "/graphs/solverComparison/" + config1 + "/" + config2 + "/" + size + "/" + color + "/" + getSelectedStage();
 	}
 
 	var xhr = $.post(
@@ -974,16 +1019,17 @@ function updateSolverComparison(size, color) {
 				var jsonObject = $.parseJSON(returnCode);
 				var src = jsonObject.src;
 				var map = jsonObject.map;
-				$("#solverComparison"+size).attr("src",src);
-				$("#solverComparisonMap"+size).remove();
-				if (size==800) {
+				$("#solverComparison" + size).attr("src", src);
+				$("#solverComparisonMap" + size).remove();
+				if (size == 800) {
 					$("#dialog-solverComparison").append(map);
 				} else {
 					$("#graphField").append(map);
 					updateSolverComparison(800, "black");
 				}
 			} else {
-				$("#solverComparison300").attr("src",starexecRoot+"/images/noDisplayGraph.png");
+				$("#solverComparison300")
+				.attr("src", starexecRoot + "/images/noDisplayGraph.png");
 			}
 		},
 		"text"
@@ -992,7 +1038,9 @@ function updateSolverComparison(size, color) {
 	openAjaxRequests.push(xhr);
 }
 
-function setupJobNameAndDescriptionEditing(textSelector, inputSelector, buttonSelector, wrapperSelector, nameOrDescription) {
+function setupJobNameAndDescriptionEditing(
+	textSelector, inputSelector, buttonSelector, wrapperSelector,
+	nameOrDescription) {
 	// Hide the wrapper when the page loads.
 	$(wrapperSelector).hide();
 	// Setup the button when the page loads.
@@ -1016,11 +1064,12 @@ function setupJobNameAndDescriptionEditing(textSelector, inputSelector, buttonSe
 			primRegex = new RegExp(getPrimDescRegex());
 		}
 		if (!primRegex.test(name)) {
-			showMessage("error", "The given "+nameOrDescription+" contains illegal characters.", 5000);
+			showMessage("error", "The given " + nameOrDescription + " contains illegal characters.",
+				5000);
 			return;
 		}
 		$.post(
-			starexecRoot+'services/job/edit/'+nameOrDescription+'/'+jobId+'/'+name,
+			starexecRoot + 'services/job/edit/' + nameOrDescription + '/' + jobId + '/' + name,
 			{},
 			function(returnCode) {
 				success = parseReturnCode(returnCode);
@@ -1053,37 +1102,40 @@ function openSpace(childId) {
 }
 
 function getPanelTable(space) {
-	var spaceName=space.attr("name");
-	var spaceId=parseInt(space.attr("id"));
+	var spaceName = space.attr("name");
+	var spaceId = parseInt(space.attr("id"));
 
 	return "<fieldset class=\"panelField\">" +
-			"<legend class=\"panelHeader\">"+spaceName+"</legend>" +
-			"<table id=panel"+spaceId+" spaceId=\""+spaceId+"\" class=\"panel\"><thead>" +
-					"<tr class=\"viewSubspace\"><th colspan=\"4\" >Go To Subspace</th></tr>" +
-			"<tr><th class=\"solverHead\">solver</th><th class=\"configHead\">config</th> " +
-			"<th class=\"solvedHead\" title=\"Number of job pairs for which the result matched the expected result, or those attributes are undefined, over the number of job pairs that completed without any system errors\">solved</th> " +
-			"<th class=\"timeHead\" title=\"total wallclock or cpu time for all job pairs run that were solved correctly\">time</th> </tr>" +
-			"</thead>" +
-			"<tbody></tbody> </table></fieldset>";
+		"<legend class=\"panelHeader\">" + spaceName + "</legend>" +
+		"<table id=panel" + spaceId + " spaceId=\"" + spaceId + "\" class=\"panel\"><thead>" +
+		"<tr class=\"viewSubspace\"><th colspan=\"4\" >Go To Subspace</th></tr>" +
+		"<tr><th class=\"solverHead\">solver</th><th class=\"configHead\">config</th> " +
+		"<th class=\"solvedHead\" title=\"Number of job pairs for which the result matched the expected result, or those attributes are undefined, over the number of job pairs that completed without any system errors\">solved</th> " +
+		"<th class=\"timeHead\" title=\"total wallclock or cpu time for all job pairs run that were solved correctly\">time</th> </tr>" +
+		"</thead>" +
+		"<tbody></tbody> </table></fieldset>";
 }
 
 function initializePanels() {
-	DETAILS_JOB.sentSpaceId=curSpaceId;
+	DETAILS_JOB.sentSpaceId = curSpaceId;
 	if (isLocalJobPage) {
-		var panelJson = $.parseJSON($("#subspacePanelJson"+DETAILS_JOB.sentSpaceId).attr("value"));
+		var panelJson = $.parseJSON($("#subspacePanelJson" + DETAILS_JOB.sentSpaceId)
+		.attr("value"));
 		handleSpacesData(panelJson);
-		$("#subspacePanelJson"+DETAILS_JOB.sentSpaceId).remove();
-	} else if ( DETAILS_JOB.isAnonymousPage ) {
-		$.getJSON(starexecRoot+"services/space/anonymousLink/"+DETAILS_JOB.anonymousLinkUuid + "/jobspaces/false/"+DETAILS_JOB.primitivesToAnonymize+"?id="+DETAILS_JOB.sentSpaceId, handleSpacesData);
+		$("#subspacePanelJson" + DETAILS_JOB.sentSpaceId).remove();
+	} else if (DETAILS_JOB.isAnonymousPage) {
+		$.getJSON(starexecRoot + "services/space/anonymousLink/" + DETAILS_JOB.anonymousLinkUuid + "/jobspaces/false/" + DETAILS_JOB.primitivesToAnonymize + "?id=" + DETAILS_JOB.sentSpaceId,
+			handleSpacesData);
 	} else {
-		$.getJSON(starexecRoot+"services/space/" +jobId+ "/jobspaces/false?id="+DETAILS_JOB.sentSpaceId, handleSpacesData);
+		$.getJSON(starexecRoot + "services/space/" + jobId + "/jobspaces/false?id=" + DETAILS_JOB.sentSpaceId,
+			handleSpacesData);
 	}
 }
 
 function handleSpacesData(spaces) {
-	log( "SPACES JSON: " + spaces );
+	log("SPACES JSON: " + spaces);
 	panelArray = [];
-	if (spaces.length==0) {
+	if (spaces.length == 0) {
 		$("#subspaceSummaryField").hide();
 	} else {
 		$("#subspaceSummaryField").show();
@@ -1094,49 +1146,52 @@ function handleSpacesData(spaces) {
 	 * the variables we create are limited to the body of the loop.
 	 * Yay for JavaScript!
 	 */
-	for (var i=0; i<spaces.length; ++i) (function () {
-		var space = $(spaces[i]),
-		    spaceId = parseInt(space.attr("id")),
-		    child = getPanelTable(space);
+	for (var i = 0; i < spaces.length; ++i) {
+		(function() {
+			var space = $(spaces[i]),
+				spaceId = parseInt(space.attr("id")),
+				child = getPanelTable(space);
 
-		//if the user has changed spaces since this request was sent, we don't want to continue
-		//generating panels for the old space.
-		if (DETAILS_JOB.sentSpaceId!=curSpaceId) {
-			return;
-		}
-		$("#panelActions").after(child); //put the table after the panelActions fieldset
+			//if the user has changed spaces since this request was sent, we don't want to continue
+			//generating panels for the old space.
+			if (DETAILS_JOB.sentSpaceId != curSpaceId) {
+				return;
+			}
+			$("#panelActions").after(child); //put the table after the panelActions fieldset
 
-		var panelTableInitializer = getPanelTableInitializer(jobId, spaceId);
-		var $panel = $("#panel"+spaceId);
+			var panelTableInitializer = getPanelTableInitializer(jobId,
+				spaceId);
+			var $panel = $("#panel" + spaceId);
 
-		$panel.parents(".panelField").one("open.expandable", function() {
-			var $this = $(this);
-			panelArray.push( $panel.dataTable(panelTableInitializer) );
+			$panel.parents(".panelField").one("open.expandable", function() {
+				var $this = $(this);
+				panelArray.push($panel.dataTable(panelTableInitializer));
 
-			/* We want each panel to reload its contents every 30 seconds while
-		 	 * it is open. If it is closed, it should not reload its contents. Upon
-		 	 * being opened, it should immediately refresh its contents because we
-		 	 * don't know how long it has been closed and we do not want to show
-		 	 * stale data for 30 seconds.
-		 	 * We can keep track of the interval handle internally as
-		 	 * `panelRefreshInterval`, but we must also expose it to `clearPanels`.
-		 	 * For this reason, we will let jQuery save the handle also so that we
-		 	 * can clear the interval if the panel is cleared.
-		 	 */
-			var panelRefreshInterval;
-			var reload = $panel.dataTable().api().ajax.reload;
-			$this.on("open.expandable", function() {
-				reload();
-				panelRefreshInterval = window.setInterval(reload, 30000);
-				$panel.data("panelRefreshInterval", panelRefreshInterval);
-			}).on("close.expandable", function() {
-				window.clearInterval(panelRefreshInterval);
+				/* We want each panel to reload its contents every 30 seconds while
+				  * it is open. If it is closed, it should not reload its contents. Upon
+				  * being opened, it should immediately refresh its contents because we
+				  * don't know how long it has been closed and we do not want to show
+				  * stale data for 30 seconds.
+				  * We can keep track of the interval handle internally as
+				  * `panelRefreshInterval`, but we must also expose it to `clearPanels`.
+				  * For this reason, we will let jQuery save the handle also so that we
+				  * can clear the interval if the panel is cleared.
+				  */
+				var panelRefreshInterval;
+				var reload = $panel.dataTable().api().ajax.reload;
+				$this.on("open.expandable", function() {
+					reload();
+					panelRefreshInterval = window.setInterval(reload, 30000);
+					$panel.data("panelRefreshInterval", panelRefreshInterval);
+				}).on("close.expandable", function() {
+					window.clearInterval(panelRefreshInterval);
+				});
 			});
-		});
-	})();
+		})();
+	}
 
 	$(".viewSubspace").click(function() {
-		var spaceId=$(this).parents("table.panel").attr("spaceId");
+		var spaceId = $(this).parents("table.panel").attr("spaceId");
 		openSpace(spaceId);
 	});
 
@@ -1146,33 +1201,38 @@ function handleSpacesData(spaces) {
 //
 //  Initializes the DataTable objects
 //
-function initDataTables(){
+function initDataTables() {
 	extendDataTableFunctions();
 	//summary table
 
-	var $pairTbl        = $('#pairTbl'),
-	    $solveTbl       = $("#solveTbl"),
-	    $compareSolvers = $("#compareSolvers");
+	var $pairTbl = $('#pairTbl'),
+		$solveTbl = $("#solveTbl"),
+		$compareSolvers = $("#compareSolvers");
 
 	if (isLocalJobPage) {
 		$('[id$=solveTbl]').dataTable(getSolverTableInitializer());
 	} else {
-		summaryTable=$solveTbl.dataTable(getSolverTableInitializer());
+		summaryTable = $solveTbl.dataTable(getSolverTableInitializer());
 	}
 
-	$solveTbl.on("mousedown", "tr", function(){
+	$solveTbl.on("mousedown", "tr", function() {
 		var $this = $(this);
 
 		if (!$this.hasClass("row_selected")) {
-			$solveTbl.find(".second_selected").removeClass("second_selected row_selected");
-			$solveTbl.find(".first_selected" ).removeClass("first_selected").addClass("second_selected");
+			$solveTbl.find(".second_selected")
+			.removeClass("second_selected row_selected");
+			$solveTbl.find(".first_selected")
+			.removeClass("first_selected")
+			.addClass("second_selected");
 			$this.addClass("first_selected row_selected");
 		} else {
 			$this.removeClass("row_selected first_selected second_selected");
-			$solveTbl.find(".second_selected").removeClass("second_selected").addClass("first_selected");
+			$solveTbl.find(".second_selected")
+			.removeClass("second_selected")
+			.addClass("first_selected");
 		}
 
-		if ($solveTbl.find(".second_selected").size()>0) {
+		if ($solveTbl.find(".second_selected").size() > 0) {
 			$compareSolvers.show();
 		} else {
 			$compareSolvers.hide();
@@ -1183,31 +1243,31 @@ function initDataTables(){
 	if (isLocalJobPage) {
 		$('[id$=pairTbl]').dataTable(getPairTableInitializer());
 	} else {
-		pairTable=$("#pairTbl").dataTable(getPairTableInitializer());
+		pairTable = $("#pairTbl").dataTable(getPairTableInitializer());
 	}
 
 	setSortTable(pairTable);
 
-	$pairTbl.find("thead").click(function(){
+	$pairTbl.find("thead").click(function() {
 		resetSortButtons();
 	});
 
-	$('#detailTbl').dataTable( {
-		"dom"       : 'rt<"bottom"f><"clear">',
-		"aaSorting" : [],
-		"paging"    : false,
-		"bSort"     : true
+	$('#detailTbl').dataTable({
+		"dom": 'rt<"bottom"f><"clear">',
+		"aaSorting": [],
+		"paging": false,
+		"bSort": true
 	});
 
-	$pairTbl.find("tbody").on( "click", "a", function(event) {
+	$pairTbl.find("tbody").on("click", "a", function(event) {
 		event.stopPropogation();
 	});
 
 	//Set up row click to send to pair details page
-	if ( !DETAILS_JOB.isAnonymousPage ) {
-		$pairTbl.find("tbody").on("click", "tr",  function(){
+	if (!DETAILS_JOB.isAnonymousPage) {
+		$pairTbl.find("tbody").on("click", "tr", function() {
 			var pairId = $(this).find('input').val();
-			window.location.assign(DETAILS_JOB.starexecUrl+"secure/details/pair.jsp?id=" + pairId);
+			window.location.assign(DETAILS_JOB.starexecUrl + "secure/details/pair.jsp?id=" + pairId);
 		});
 	}
 
@@ -1218,7 +1278,7 @@ function initDataTables(){
 //
 //Adds fnProcessingIndicator and fnFilterOnDoneTyping to dataTables api
 //
-function extendDataTableFunctions(){
+function extendDataTableFunctions() {
 	// Allows manually turning on and off of the processing indicator (used for jobs table)
 	addProcessingIndicator();
 	addFilterOnDoneTyping();
@@ -1228,27 +1288,27 @@ function getPairTableInitializer() {
 	var pairTableInitializer = new window.star.DataTableConfig();
 
 	if (!isLocalJobPage) {
-		pairTableInitializer["sAjaxSource"]  = starexecRoot+"services/jobs/";
-		pairTableInitializer["bServerSide"]  = true;
+		pairTableInitializer["sAjaxSource"] = starexecRoot + "services/jobs/";
+		pairTableInitializer["bServerSide"] = true;
 		pairTableInitializer["fnServerData"] = fnPaginationHandler;
 	}
 	return pairTableInitializer;
 }
 
 function getSolverTableInitializer() {
-	var SOLVER_ID   =  0,
-	    CONFIG_ID   =  1,
-	    SOLVER_NAME =  2,
-	    CONFIG_NAME =  3,
-	    SOLVED      =  4,
-	    TIME        =  5,
-	    STAGE       =  6,
-	    WRONG       =  7,
-	    RESOURCED   =  8,
-	    FAILED      =  9,
-	    UNKNOWN     = 10,
-	    INCOMPLETE  = 11,
-	    CONFLICTS   = 12;
+	var SOLVER_ID = 0,
+		CONFIG_ID = 1,
+		SOLVER_NAME = 2,
+		CONFIG_NAME = 3,
+		SOLVED = 4,
+		TIME = 5,
+		STAGE = 6,
+		WRONG = 7,
+		RESOURCED = 8,
+		FAILED = 9,
+		UNKNOWN = 10,
+		INCOMPLETE = 11,
+		CONFLICTS = 12;
 
 	var linkTemplate = document.createElement("a");
 	linkTemplate.target = "_blank";
@@ -1259,7 +1319,16 @@ function getSolverTableInitializer() {
 		return linkTemplate.outerHTML;
 	};
 
-	var pairsTemplate = ["pairsInSpace.jsp?type=",null,"&sid=",DETAILS_JOB.rootJobSpaceId,"&configid=",null,"&stagenum=",null];
+	var pairsTemplate = [
+		"pairsInSpace.jsp?type=",
+		null,
+		"&sid=",
+		DETAILS_JOB.rootJobSpaceId,
+		"&configid=",
+		null,
+		"&stagenum=",
+		null
+	];
 	var getPairsInSpaceLink = function(type, configId, stageNumber) {
 		pairsTemplate[1] = type;
 		pairsTemplate[5] = configId;
@@ -1267,7 +1336,14 @@ function getSolverTableInitializer() {
 		return pairsTemplate.join("");
 	};
 
-	var conflictsTemplate = ["conflictingBenchmarks.jsp?jobId=",null,"&configId=",null,"&stageNumber=",null];
+	var conflictsTemplate = [
+		"conflictingBenchmarks.jsp?jobId=",
+		null,
+		"&configId=",
+		null,
+		"&stageNumber=",
+		null
+	];
 	var getConflictingLink = function(configId, stageNumber) {
 		conflictsTemplate[1] = jobId;
 		conflictsTemplate[3] = configId;
@@ -1275,24 +1351,32 @@ function getSolverTableInitializer() {
 		return conflictsTemplate.join("");
 	};
 
-	var solverTemplate = ["solver.jsp?id=",null];
+	var solverTemplate = ["solver.jsp?id=", null];
 	var getSolverLink = function(solver) {
 		solverTemplate[1] = solver;
 		return solverTemplate.join("");
 	};
 
-	var configTemplate = ["<a target='_blank' class='configLink' href='configuration.jsp?id=",null,"' id='",null,"'>",null,"</a>"];
-	var formatConfig     = function(row, type, val) {
+	var configTemplate = [
+		"<a target='_blank' class='configLink' href='configuration.jsp?id=",
+		null,
+		"' id='",
+		null,
+		"'>",
+		null,
+		"</a>"
+	];
+	var formatConfig = function(row, type, val) {
 		configTemplate[1] = val[CONFIG_ID];
 		configTemplate[3] = val[CONFIG_ID];
 		configTemplate[5] = val[CONFIG_NAME];
 		return configTemplate.join("");
 	};
 
-	var hideLink = function(href, text){return text;};
-	var noOp = function(){}; // NOOP; no need to create URLs we won't use
+	var hideLink = function(href, text) {return text;};
+	var noOp = function() {}; // NOOP; no need to create URLs we won't use
 	if (DETAILS_JOB.primitivesToAnonymize === "all"
-	||  DETAILS_JOB.primitivesToAnonymize === "allButBench") {
+		|| DETAILS_JOB.primitivesToAnonymize === "allButBench") {
 		link = hideLink;
 		getSolverLink = noOp;
 		getPairsInSpaceLink = noOp;
@@ -1303,53 +1387,55 @@ function getSolverTableInitializer() {
 		}
 	}
 
-	var formatSolver     = function(row, type, val) {
+	var formatSolver = function(row, type, val) {
 		var href = getSolverLink(val[SOLVER_ID]);
 		return link(href, val[SOLVER_NAME]);
 	};
-	var formatSolved     = function(row, type, val) {
+	var formatSolved = function(row, type, val) {
 		var href = getPairsInSpaceLink("solved", val[CONFIG_ID], val[STAGE]);
 		return link(href, val[SOLVED]);
 	};
 	var formatSolvedText = function(row, type, val) {
 		return val[SOLVED];
 	};
-	var formatWrong      = function(row, type, val) {
+	var formatWrong = function(row, type, val) {
 		var href = getPairsInSpaceLink("wrong", val[CONFIG_ID], val[STAGE]);
 		return link(href, val[WRONG]);
 	};
-	var formatOut        = function(row, type, val) {
+	var formatOut = function(row, type, val) {
 		var href = getPairsInSpaceLink("resource", val[CONFIG_ID], val[STAGE]);
 		return link(href, val[RESOURCED]);
 	};
-	var formatFailed     = function(row, type, val) {
+	var formatFailed = function(row, type, val) {
 		var href = getPairsInSpaceLink("failed", val[CONFIG_ID], val[STAGE]);
 		return link(href, val[FAILED]);
 	};
-	var formatUnknown    = function(row, type, val) {
+	var formatUnknown = function(row, type, val) {
 		var href = getPairsInSpaceLink("unknown", val[CONFIG_ID], val[STAGE]);
 		return link(href, val[UNKNOWN]);
 	};
 	var formatIncomplete = function(row, type, val) {
-		var href = getPairsInSpaceLink("incomplete", val[CONFIG_ID], val[STAGE]);
+		var href = getPairsInSpaceLink("incomplete",
+			val[CONFIG_ID],
+			val[STAGE]);
 		return link(href, val[INCOMPLETE]);
 	};
-	var formatTime       = function(row, type, val) {
-		return (val[TIME]/100).toFixed(1);
+	var formatTime = function(row, type, val) {
+		return (val[TIME] / 100).toFixed(1);
 	};
-	var formatConflicts  = function(row, type, val) {
+	var formatConflicts = function(row, type, val) {
 		var href = getConflictingLink(val[CONFIG_ID], val[STAGE]);
 		return link(href, val[CONFLICTS]);
 	};
 
 	var panelTableInitializer = new window.star.DataTableConfig({
-		"dom"           : 'rt<"clear">',
-		"pageLength"    : 1000, // make sure we show every entry
-		"aoColumns"     : [
-			{"mRender"  : formatSolver},
-			{"mRender"  : formatConfig},
-			{"mRender"  : formatSolvedText},
-			{"mRender"  : formatTime},
+		"dom": 'rt<"clear">',
+		"pageLength": 1000, // make sure we show every entry
+		"aoColumns": [
+			{"mRender": formatSolver},
+			{"mRender": formatConfig},
+			{"mRender": formatSolvedText},
+			{"mRender": formatTime},
 		]
 	});
 
@@ -1358,28 +1444,30 @@ function getSolverTableInitializer() {
 			if (useWallclock) {
 				// get the JSON directly from the page if this is a local page.
 				return $.extend({},
-					$.parseJSON($('#jobSpaceWallclockTimeSolverStats'+spaceId).attr('value')),
+					$.parseJSON($('#jobSpaceWallclockTimeSolverStats' + spaceId)
+					.attr('value')),
 					panelTableInitializer
 				);
 			} else {
 				// get the JSON directly from the page if this is a local page.
 				return $.extend({},
-					$.parseJSON($('#jobSpaceCpuTimeSolverStats'+spaceId).attr('value')),
+					$.parseJSON($('#jobSpaceCpuTimeSolverStats' + spaceId)
+					.attr('value')),
 					panelTableInitializer
 				);
 			}
 		}
 	} else {
 		var paginationUrlTemplate;
-		if ( DETAILS_JOB.isAnonymousPage ) {
+		if (DETAILS_JOB.isAnonymousPage) {
 			paginationUrlTemplate = [
-				starexecRoot+'services/jobs/solvers/anonymousLink/pagination/',
+				starexecRoot + 'services/jobs/solvers/anonymousLink/pagination/',
 				null,
-				'/'+DETAILS_JOB.anonymousLinkUuid+'/'+DETAILS_JOB.primitivesToAnonymize+'/true/'
+				'/' + DETAILS_JOB.anonymousLinkUuid + '/' + DETAILS_JOB.primitivesToAnonymize + '/true/'
 			];
 		} else {
 			paginationUrlTemplate = [
-				starexecRoot+'services/jobs/solvers/pagination/',
+				starexecRoot + 'services/jobs/solvers/pagination/',
 				null,
 				'/true/'
 			];
@@ -1398,24 +1486,24 @@ function getSolverTableInitializer() {
 	}
 
 	var solverTableInitializer = new window.star.DataTableConfig({
-		"bSort"         : true,
-		"bPaginate"     : true,
-		"aoColumns"     : [
-			{"mRender"  : formatSolver},
-			{"mRender"  : formatConfig},
-			{"mRender"  : formatSolved},
-			{"mRender"  : formatWrong},
-			{"mRender"  : formatOut},
-			{"mRender"  : formatFailed},
-			{"mRender"  : formatUnknown},
-			{"mRender"  : formatIncomplete},
-			{"mRender"  : formatTime},
-			{"mRender"  : formatConflicts},
+		"bSort": true,
+		"bPaginate": true,
+		"aoColumns": [
+			{"mRender": formatSolver},
+			{"mRender": formatConfig},
+			{"mRender": formatSolved},
+			{"mRender": formatWrong},
+			{"mRender": formatOut},
+			{"mRender": formatFailed},
+			{"mRender": formatUnknown},
+			{"mRender": formatIncomplete},
+			{"mRender": formatTime},
+			{"mRender": formatConflicts},
 		]
 	});
 
-	if ( !isLocalJobPage ) {
-		solverTableInitializer["sAjaxSource"] = starexecRoot+"services/jobs/";
+	if (!isLocalJobPage) {
+		solverTableInitializer["sAjaxSource"] = starexecRoot + "services/jobs/";
 		solverTableInitializer["fnServerData"] = fnStatsPaginationHandler;
 	} else {
 		delete solverTableInitializer["aoColumns"];
@@ -1426,37 +1514,38 @@ function getSolverTableInitializer() {
 
 function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
 	$.post(
-			sSource+useWallclock+"/"+getSelectedStage(),
-			aoData,
-			function(nextDataTablePage){
-				//if the user has clicked on a different space since this was called, we want those results, not these
-				var s = parseReturnCode(nextDataTablePage);
-				if (s) {
-					fnCallback(nextDataTablePage);
-				}
-			},
-			"json"
-	).fail(function(code,textStatus){
+		sSource + useWallclock + "/" + getSelectedStage(),
+		aoData,
+		function(nextDataTablePage) {
+			//if the user has clicked on a different space since this was called, we want those results, not these
+			var s = parseReturnCode(nextDataTablePage);
+			if (s) {
+				fnCallback(nextDataTablePage);
+			}
+		},
+		"json"
+	).fail(function(code, textStatus) {
 		handleAjaxError(textStatus);
 	});
 }
 
 function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
-	if (typeof curSpaceId=='undefined') {
+	if (typeof curSpaceId == 'undefined') {
 		return;
 	}
 
 	var postUrl;
-	if ( DETAILS_JOB.isAnonymousPage ) {
-		postUrl = sSource +"solvers/anonymousLink/pagination/"+curSpaceId+ "/" + getParameterByName("anonId") +
-				"/" + DETAILS_JOB.primitivesToAnonymize+"/false/"+useWallclock+"/" + getSelectedStage();
+	if (DETAILS_JOB.isAnonymousPage) {
+		postUrl = sSource + "solvers/anonymousLink/pagination/" + curSpaceId + "/" + getParameterByName(
+			"anonId") +
+			"/" + DETAILS_JOB.primitivesToAnonymize + "/false/" + useWallclock + "/" + getSelectedStage();
 	} else {
-		postUrl = sSource +"solvers/pagination/"+curSpaceId+"/false/"+useWallclock+"/"+getSelectedStage();
+		postUrl = sSource + "solvers/pagination/" + curSpaceId + "/false/" + useWallclock + "/" + getSelectedStage();
 	}
 	var xhr = $.post(
 		postUrl,
 		aoData,
-		function(nextDataTablePage){
+		function(nextDataTablePage) {
 			//if the user has clicked on a different space since this was called, we want those results, not these
 			var s = parseReturnCode(nextDataTablePage);
 			if (s) {
@@ -1467,7 +1556,7 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 			}
 		},
 		"json"
-	).fail(function(code,textStatus){
+	).fail(function(code, textStatus) {
 		handleAjaxError(textStatus);
 	});
 
@@ -1482,47 +1571,47 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 //  @param fnCallback the function that actually maps the returned page to the DataTable object
 //
 function fnPaginationHandler(sSource, aoData, fnCallback) {
-	if (typeof curSpaceId=='undefined') {
+	if (typeof curSpaceId == 'undefined') {
 		return;
 	}
-	if (sortOverride!=null) {
-		aoData.push( { 'name': 'sort_by', 'value':getSelectedSort() } );
-		aoData.push( { 'name': 'sort_dir', 'value':isASC() } );
+	if (sortOverride != null) {
+		aoData.push({'name': 'sort_by', 'value': getSelectedSort()});
+		aoData.push({'name': 'sort_dir', 'value': isASC()});
 	}
 
 	var postUrl = null;
-	if ( DETAILS_JOB.isAnonymousPage ) {
-		postUrl = sSource + 'pairs/pagination/anonymousLink/' + DETAILS_JOB.anonymousLinkUuid  + '/' + curSpaceId +
-				'/'+useWallclock+'/'+syncResults+'/'+getSelectedStage() + '/' + DETAILS_JOB.primitivesToAnonymize;
+	if (DETAILS_JOB.isAnonymousPage) {
+		postUrl = sSource + 'pairs/pagination/anonymousLink/' + DETAILS_JOB.anonymousLinkUuid + '/' + curSpaceId +
+			'/' + useWallclock + '/' + syncResults + '/' + getSelectedStage() + '/' + DETAILS_JOB.primitivesToAnonymize;
 	} else {
-		postUrl = sSource + 'pairs/pagination/'+curSpaceId+'/'+useWallclock+'/'+syncResults+'/'+getSelectedStage();
+		postUrl = sSource + 'pairs/pagination/' + curSpaceId + '/' + useWallclock + '/' + syncResults + '/' + getSelectedStage();
 	}
 
 	var xhr = $.post(
 		postUrl,
 		aoData,
-		function(nextDataTablePage){
-			var s=parseReturnCode(nextDataTablePage);
+		function(nextDataTablePage) {
+			var s = parseReturnCode(nextDataTablePage);
 			if (s) {
 				pairTable.fnProcessingIndicator(false);
 				fnCallback(nextDataTablePage);
 				$("#errorField").hide();
-				if (pairTable.fnSettings().fnRecordsTotal()==0) {
+				if (pairTable.fnSettings().fnRecordsTotal() == 0) {
 					$("#pairTblField").hide();
 				} else {
 					$("#pairTblField").show();
 				}
 			} else {
 				//if we weren't successful, we need to check to see if it was because there are too many pairs
-				var code=getStatusCode(nextDataTablePage);
-				if (code==1) {
+				var code = getStatusCode(nextDataTablePage);
+				if (code == 1) {
 					$("#pairTblField").hide();
 					$("#errorField").show();
 				}
 			}
 		},
 		"json"
-	).fail(function(code, textStatus){
+	).fail(function(code, textStatus) {
 		handleAjaxError(textStatus);
 	});
 
@@ -1539,9 +1628,9 @@ function popup(url) {
 
 function registerAnonymousLinkButtonEventHandler() {
 	$('#anonymousLink').unbind('click');
-	$('#anonymousLink').click( function() {
+	$('#anonymousLink').click(function() {
 		$('#dialog-confirm-anonymous-link').text(
-				"Do you want the job, benchmark, solver, and configuration names to be hidden on the linked page?" );
+			"Do you want the job, benchmark, solver, and configuration names to be hidden on the linked page?");
 		$('#dialog-confirm-anonymous-link').dialog({
 			modal: true,
 			width: 600,
@@ -1553,7 +1642,7 @@ function registerAnonymousLinkButtonEventHandler() {
 				},
 				'everything except benchmarks': function() {
 					$(this).dialog('close');
-					makeAnonymousLinkPost( 'job', jobId, 'allButBench');
+					makeAnonymousLinkPost('job', jobId, 'allButBench');
 				},
 				'nothing': function() {
 					$(this).dialog('close');

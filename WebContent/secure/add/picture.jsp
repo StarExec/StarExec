@@ -1,43 +1,50 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" import="org.starexec.data.database.*, org.starexec.data.to.*, org.starexec.util.*"%>
+<%@page contentType="text/html" pageEncoding="UTF-8"
+        import="org.starexec.util.SessionUtil, org.starexec.util.Validator" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 	try {
 		int userId = SessionUtil.getUserId(request);
-		
+
 		String type = request.getParameter("type").toString();
-		String Id =  request.getParameter("Id").toString();
-		
-		if (Validator.isValidPictureType(type) && Validator.isValidInteger(Id)) {
+		String Id = request.getParameter("Id").toString();
+
+		if (Validator.isValidPictureType(type) &&
+				Validator.isValidInteger(Id)) {
 			request.setAttribute("userId", userId);
 			request.setAttribute("Id", Id);
 			request.setAttribute("type", type);
 		} else {
-			response.sendError(HttpServletResponse.SC_BAD_REQUEST, "The image parameters were invalid");
+			response.sendError(
+					HttpServletResponse.SC_BAD_REQUEST,
+					"The image parameters were invalid"
+			);
 		}
-		
-
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
 	}
 %>
 
-<star:template title="upload a picture" css="add/picture" js="lib/jquery.validate.min, add/picture, lib/jquery.qtip.min">
-	<form method="POST" enctype="multipart/form-data" action="${starexecRoot}/secure/upload/pictures" id="upForm">
-			<input type="hidden" name="type" value="${type}"/>
-	        <input type="hidden" name="Id" value="${Id}"/>
+<star:template title="upload a picture" css="add/picture"
+               js="lib/jquery.validate.min, add/picture, lib/jquery.qtip.min">
+	<form method="POST" enctype="multipart/form-data"
+	      action="${starexecRoot}/secure/upload/pictures" id="upForm">
+		<input type="hidden" name="type" value="${type}"/>
+		<input type="hidden" name="Id" value="${Id}"/>
 		<fieldset>
-			<legend>picture information</legend>		
+			<legend>picture information</legend>
 			<table id="tblSolver" class="shaded">
 				<tr></tr>
 				<tr>
 					<td>picture location</td>
-					<td><input id="uploadPic" name="f" type="file" /></td>
+					<td><input id="uploadPic" name="f" type="file"/></td>
 				</tr>
 				<tr>
-					<td colspan="2"><button id="btnUpload" type="submit">upload</button></td>
+					<td colspan="2">
+						<button id="btnUpload" type="submit">upload</button>
+					</td>
 				</tr>
-			</table>																	
+			</table>
 		</fieldset>
 	</form>
 </star:template>

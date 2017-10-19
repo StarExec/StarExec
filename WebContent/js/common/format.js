@@ -39,7 +39,9 @@ window.star.format = {};
 	};
 
 	format.timestamp = function(time) {
-		return (new Date(time)).toISOString().replace("T", " ").substring(0, 16);
+		return (new Date(time)).toISOString()
+		.replace("T", " ")
+		.substring(0, 16);
 	};
 
 	var heatcolorConfig = {
@@ -52,14 +54,14 @@ window.star.format = {};
 	format.heatcolor = function(percent) {
 		heatcolorTemplate[1] = parseInt(percent, 10);
 		return $(heatcolorTemplate.join(""))
-			.heatcolor(
-				function() {return percent},
-				heatcolorConfig
-			)
-			.wrapAll("<div>")
-			.parent()
-			.html()
-		;
+		.heatcolor(
+			function() {return percent},
+			heatcolorConfig
+		)
+		.wrapAll("<div>")
+		.parent()
+		.html()
+			;
 	}
 
 })(window.star.format);
