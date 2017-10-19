@@ -236,13 +236,17 @@ function onSpaceDrop(event, ui) {
 				$('#copy-primitives-options')
 				.removeClass('copy-options-hidden');
 				if (allSpacesBeingCopiedAreLeaves) {
+					$("#hier-copy-options option[value='true']").attr("disabled","disabled");
+					$("#hier-copy-options option[value='move']").text("move space");
 					$(EXP_SP.copySpaceDialogText).text(
 						'about to copy ' + ui.draggable.data('name') + ' to' + destName + '.');
 				} else {
+					$("#hier-copy-options option[value='true']").removeAttr("disabled");
+					$("#hier-copy-options option[value='move']").text("move hierarchy");
 					$(EXP_SP.copySpaceDialogText).text(
 						'would you like to copy ' + ui.draggable.data('name') + ' only or the hierarchy to' + destName + '?');
-					$('#hier-copy-options').removeClass('copy-options-hidden');
 				}
+				$('#hier-copy-options').removeClass('copy-options-hidden');
 				break;
 			case "solver":
 				if (destIsLeafSpace) {
