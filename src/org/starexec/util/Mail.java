@@ -311,6 +311,8 @@ public class Mail {
 		String todaysDate = yearMonthDay.format(today);
 		String lastWeeksDate = yearMonthDay.format(lastWeek);
 
+		List<Report> mainReports = Reports.getAllReportsNotRelatedToQueues();
+		List<List<Report>> reportsByQueue = Reports.getAllReportsForAllQueues();
 		if (mainReports == null || reportsByQueue == null) {
 			throw new NullPointerException("Reports are null.");
 		}
@@ -318,16 +320,16 @@ public class Mail {
 		StringBuilder reportBuilder = new StringBuilder();
 
 		// build the main reports string
-		for (Report report : Reports.getAllReportsNotRelatedToQueues()) {
+		for (Report report : mainReports) {
 			reportBuilder.append(report.getEventName()).append(": ").append(report.getOccurrences()).append("\n");
 		}
-		final String mainReports = reportBuilder.toString();
+		final String mainReportsString = reportBuilder.toString();
 
 		// clear the report builder
 		reportBuilder.delete(0, reportBuilder.length());
 
 		// build the queue reports string
-		for (List<Report> reportsForOneQueue : Reports.getAllReportsForAllQueues()) {
+		for (List<Report> reportsForOneQueue : reportsByQueue) {
 			String currentQueueName = reportsForOneQueue.get(0).getQueueName();
 			reportBuilder.append("queue: ").append(currentQueueName).append("\n");
 			for (Report report : reportsForOneQueue) {
@@ -335,11 +337,11 @@ public class Mail {
 				             .append("\n");
 			}
 		}
-		final String reportsByQueue = reportBuilder.toString();
+		final String reportsByQueueString = reportBuilder.toString();
 
 		return email.replace("$$DATE$$", lastWeeksDate + " to " + todaysDate)
-			.replace("$$MAIN_REPORTS$$", mainReports)
-			.replace("$$QUEUE_REPORTS$$", reportsByQueue)
+			.replace("$$MAIN_REPORTS$$", mainReportsString)
+			.replace("$$QUEUE_REPORTS$$", reportsByQueueString)
 		;
 	}
 
