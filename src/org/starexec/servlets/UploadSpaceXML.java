@@ -127,13 +127,14 @@ public class UploadSpaceXML extends HttpServlet {
 					for (File file : archiveLocation.listFiles()) {
 						if (!file.isFile()) {
 							Uploads.setXMLErrorMessage(
-									statusId, "The file " + file.getName() +
-											" is not a regular file.  Only regular files containing space XML are " +
+									statusId, "The file '" + file.getName() +
+											"' is not a regular file.  Only regular files containing space XML are " +
 											"allowed in the uploaded archive.");
-						}
-						List<Integer> current = batchUtil.createSpacesFromFile(file, userId, spaceId, statusId);
-						if (current == null) {
-							Uploads.setXMLErrorMessage(statusId, batchUtil.getErrorMessage());
+						} else {
+							List<Integer> current = batchUtil.createSpacesFromFile(file, userId, spaceId, statusId);
+							if (current == null) {
+								Uploads.setXMLErrorMessage(statusId, batchUtil.getErrorMessage());
+							}
 						}
 					}
 				} catch (Exception e) {
