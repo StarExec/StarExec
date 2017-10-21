@@ -55,8 +55,7 @@ public class JobUtil {
 		final String method = "createJobsFromFile";
 		List<Integer> jobIds = new ArrayList<>();
 		if (!validateAgainstSchema(file, xmlType)) {
-			log.debug(method, "File from User " + userId + " is not Schema valid.");
-			errorMessage = "File from User " + userId + " is not Schema valid.";
+			log.debug(method, "File '" + file.getName() + "' from User " + userId + " is not Schema valid.");
 			return null;
 		}
 

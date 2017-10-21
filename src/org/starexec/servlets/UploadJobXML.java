@@ -87,7 +87,7 @@ public class UploadJobXML extends HttpServlet {
 					response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(result)));
 					response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
 				} else {
-					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+					response.sendError(HttpServletResponse.SC_BAD_REQUEST,
 					                   "Failed to upload Job XML:\n" + jobUtil.getErrorMessage()
 					);
 				}
