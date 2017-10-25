@@ -665,6 +665,17 @@ function initSpaceExplorer() {
 		// Update global variable `openDone`
 		window.openDone = true;
 	});
+
+	var $copyPrimitivesOptions = $("#copy-primitives-options");
+	$("#hier-copy-options").change(function(e) {
+		switch (e.target.value) {
+		case "move":
+			$copyPrimitivesOptions.hide();
+			break;
+		default:
+			$copyPrimitivesOptions.show();
+		}
+	});
 	log('Space explorer node list initialized');
 }
 
