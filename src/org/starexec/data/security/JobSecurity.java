@@ -88,7 +88,7 @@ public class JobSecurity {
 	 *
 	 * @param pairId The ID of the pair
 	 * @param userId The ID of the user making the request
-	 * @return A ValidatorSTatusCode
+	 * @return A ValidatorStatusCode
 	 */
 	public static ValidatorStatusCode canUserSeeJobWithPair(int pairId, int userId) {
 		JobPair jp = JobPairs.getPair(pairId);
@@ -240,7 +240,7 @@ public class JobSecurity {
 
 		if (status == JobStatus.PAUSED) {
 			return new ValidatorStatusCode(
-					false, "This job is currently paused. Please unpause it before rerunning pairs");
+					false, "This job is currently paused. Please resume it before rerunning pairs");
 		}
 		if (status == JobStatus.KILLED) {
 			return new ValidatorStatusCode(false, "This job has been killed. It may no longer be run");
@@ -280,7 +280,7 @@ public class JobSecurity {
 	/**
 	 * @param jobId The id of the job to get an anonymous link for.
 	 * @param userId The id of the user trying to get the anonymous link.
-	 * @return A successful ValidatorStatusCode if the user can get an anonymous link for this job. An unsuccesful one
+	 * @return A successful ValidatorStatusCode if the user can get an anonymous link for this job. An unsuccessful one
 	 * otherwise.
 	 * @author Albert Giegerich
 	 */
@@ -402,10 +402,7 @@ public class JobSecurity {
 	 */
 	public static boolean userOwnsJobOrIsAdmin(int jobId, int userId) {
 		Job j = Jobs.get(jobId);
-		if (j == null) {
-			return false;
-		}
-		return GeneralSecurity.hasAdminWritePrivileges(userId) || j.getUserId() == userId;
+		return j != null && (GeneralSecurity.hasAdminWritePrivileges(userId) || j.getUserId() == userId);
 	}
 
 	/**
@@ -442,7 +439,7 @@ public class JobSecurity {
 		}
 		try {
 			DefaultSettings settings = Settings.getProfileById(statusId);
-			if (settings.getBenchIds().size() == 0 || Benchmarks.get(settings.getBenchIds().get(0)) == null) {
+			if (settings.getBenchIds().isEmpty() || Benchmarks.get(settings.getBenchIds().get(0)) == null) {
 				return new ValidatorStatusCode(false, "The selected community has no default benchmark selected");
 			}
 		} catch (SQLException e) {

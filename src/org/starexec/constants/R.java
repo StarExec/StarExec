@@ -89,14 +89,16 @@ public class R {
 	 * @throws StarExecException
 	 */
 	public static Backend getBackendFromType() throws StarExecException {
-		if (BACKEND_TYPE.equals(SGE_TYPE)) {
+		switch (BACKEND_TYPE) {
+		case SGE_TYPE:
 			return new GridEngineBackend();
-		} else if (BACKEND_TYPE.equals(OAR_TYPE)) {
+		case OAR_TYPE:
 			return new OARBackend();
-		} else if (BACKEND_TYPE.equals(LOCAL_TYPE)) {
+		case LOCAL_TYPE:
 			return new LocalBackend();
-		} else {
-			throw new StarExecException("BACKEND_TYPE was configured as "+BACKEND_TYPE+", but one of 'sge' 'oar' or 'local' is required");
+		default:
+			throw new StarExecException("BACKEND_TYPE was configured as " + BACKEND_TYPE +
+						                            ", but one of 'sge' 'oar' or 'local' is required");
 		}
 	}
 

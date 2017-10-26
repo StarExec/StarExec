@@ -7,12 +7,12 @@ package org.starexec.util.matrixView;
  * @author Albert Giegerich
  */
 public class MatrixElement {
-	private String status;
-	private String cpuTime;
-	private String memUsage;
-	private String wallclock;
-	private String jobPairId;
-	private String uniqueIdentifier;
+	private final String status;
+	private final String cpuTime;
+	private final String memUsage;
+	private final String wallclock;
+	private final String jobPairId;
+	private final String uniqueIdentifier;
 
 	public MatrixElement(String status, String cpuTime, String memUsage, String wallclock, Integer jobPairId, String uniqueIdentifier) {
 		this.status = status;

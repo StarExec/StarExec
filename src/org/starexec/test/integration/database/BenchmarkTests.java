@@ -40,8 +40,8 @@ public class BenchmarkTests extends TestSequence {
 	private Job job=null;
 	private Processor postProc=null; //post processor to use for the job
 	//private List<Integer> benchmarkIds=null; // benchmarks to use for the job
-	private int cpuTimeout=100;
-	private int gbMemory=1;
+	private final int cpuTimeout=100;
+	private final int gbMemory=1;
 
 	private Job job2=null;
 	private Random rand = new Random();
@@ -493,7 +493,7 @@ public class BenchmarkTests extends TestSequence {
 		Assert.assertTrue(Benchmarks.clearAttributes(benchmarks.get(0).getId()));
 		Assert.assertEquals(0, Benchmarks.getAttributes(benchmarks.get(0).getId()).size());
 		for (Object o : benchmarks.get(0).getAttributes().keySet()) {
-			Benchmarks.addBenchAttr(benchmarks.get(0).getId(),(String)o, (String) benchmarks.get(0).getAttributes().get(o));
+			Benchmarks.addBenchAttr(benchmarks.get(0).getId(), (String)o, benchmarks.get(0).getAttributes().get(o));
 		}
 	}
 	
@@ -570,8 +570,7 @@ public class BenchmarkTests extends TestSequence {
 		space2=loader.loadSpaceIntoDatabase(user2.getId(), Communities.getTestCommunity().getId());
 		scratchSpace = loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
 
-		List<Integer> ids= new ArrayList<>();
-		ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
+		List<Integer> ids = loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user.getId());
 		benchmarks=Benchmarks.get(ids,true);
 		benchProcessor = loader.loadBenchProcessorIntoDatabase(Communities.getTestCommunity().getId());
 		List<Integer> solverIds= new ArrayList<>();

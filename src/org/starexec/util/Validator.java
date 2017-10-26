@@ -1,11 +1,9 @@
 package org.starexec.util;
 
-
 import org.starexec.constants.R;
 import org.starexec.logger.StarLogger;
 
 import java.util.Arrays;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -28,7 +26,6 @@ public class Validator {
 	private static Pattern patternPrimDesc;
 	private static Pattern patternPassword;
 	private static Pattern patternRequestMsg;
-	private static Pattern patternDate;
 	public static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
 
 	public static void initialize() {
@@ -46,7 +43,6 @@ public class Validator {
 			patternPrimDesc = Pattern.compile(R.PRIMITIVE_DESC_PATTERN, Pattern.DOTALL);
 			patternPassword = Pattern.compile(R.PASSWORD_PATTERN);
 			patternRequestMsg = Pattern.compile(R.REQUEST_MESSAGE, Pattern.CASE_INSENSITIVE);
-			patternDate = Pattern.compile(R.DATE_PATTERN);
 			log.debug("Validator patterns successfully compiled");
 		}
 	}
@@ -282,7 +278,7 @@ public class Validator {
 	public static boolean isValidIntegerList(String[] list) {
 		return
 			(list != null)
-			&& Arrays.stream(list).allMatch(s->(isValidInteger(s)));
+			&& Arrays.stream(list).allMatch(Validator::isValidInteger);
 	}
 
 	/**
@@ -308,7 +304,8 @@ public class Validator {
 	 * @return true iff the format is of supported type
 	 */
 	public static boolean isValidArchiveType(String format) {
-		return Arrays.stream(extensions).anyMatch(s->s.equals(format));
+		return (format != null)
+				&& Arrays.stream(extensions).anyMatch(s->format.endsWith(s));
 	}
 
 	/**
@@ -325,10 +322,6 @@ public class Validator {
 
 	public static List<Integer> convertToIntList(String str) {
 		String[] ids = str.split(",");
-		List<Integer> answer = new ArrayList<>();
-		for (String s : ids) {
-			answer.add(Integer.parseInt(s));
-		}
-		return answer;
+		return Util.toIntegerList(ids);
 	}
 }

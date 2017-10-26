@@ -1,6 +1,6 @@
 package org.starexec.util;
 /**
- * This class encapuslates the fields set by a JS DataTables object to the server
+ * This class encapsulates the fields set by a JS DataTables object to the server
  * to request a new page
  * @author Eric
  *

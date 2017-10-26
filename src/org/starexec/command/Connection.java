@@ -27,7 +27,6 @@ import org.starexec.constants.R;
 import org.starexec.data.to.Permission;
 import org.starexec.data.to.enums.CopyPrimitivesOption;
 import org.starexec.data.to.tuples.HtmlStatusCodePair;
-import org.starexec.util.ArchiveUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
@@ -452,8 +451,7 @@ public class Connection {
 				setLastError(HTMLParser.extractCookie(response.getAllHeaders(), C.STATUS_MESSAGE_COOKIE));
 				return Status.ERROR_SERVER;
 			}
-			int id = Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(), "New_ID"));
-			return id;
+			return Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(), "New_ID"));
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
 		} finally {
@@ -1439,16 +1437,22 @@ public class Connection {
 		HttpResponse response = null;
 		try {
 			String urlExtension;
-			if (type.equals(R.SOLVER)) {
+			switch (type) {
+			case R.SOLVER:
 				urlExtension = C.URL_COPYSOLVER;
-			} else if (type.equals(R.SPACE)) {
+				break;
+			case R.SPACE:
 				urlExtension = C.URL_COPYSPACE;
-			} else if (type.equals(R.JOB)) {
+				break;
+			case R.JOB:
 				urlExtension = C.URL_COPYJOB;
-			} else if (type.equals("user")) {
+				break;
+			case "user":
 				urlExtension = C.URL_COPYUSER;
-			} else {
+				break;
+			default:
 				urlExtension = C.URL_COPYBENCH;
+				break;
 			}
 
 			urlExtension = urlExtension.replace("{spaceID}", newSpaceID.toString());
@@ -1544,8 +1548,7 @@ public class Connection {
 			if (response.getStatusLine().getStatusCode() != HttpServletResponse.SC_FOUND) {
 				return Status.ERROR_BAD_PARENT_SPACE;
 			}
-			int newID = Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(), "New_ID"));
-			return newID;
+			return Integer.valueOf(HTMLParser.extractCookie(response.getAllHeaders(), "New_ID"));
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
 		} finally {
@@ -1755,16 +1758,22 @@ public class Connection {
 			// GetNextPageOfPrimitives in RESTHelpers
 			// expects
 			String columns = "0";
-			if (type.equals("solvers")) {
+			switch (type) {
+			case "solvers":
 				columns = "2";
-			} else if (type.equals("users")) {
+				break;
+			case "users":
 				columns = "3";
-			} else if (type.equals("benchmarks")) {
+				break;
+			case "benchmarks":
 				columns = "2";
-			} else if (type.equals("jobs")) {
+				break;
+			case "jobs":
 				columns = "6";
-			} else if (type.equals("spaces")) {
+				break;
+			case "spaces":
 				columns = "2";
+				break;
 			}
 
 			URL = URL.replace("{id}", urlParams.get(C.PARAM_ID));

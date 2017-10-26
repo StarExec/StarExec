@@ -51,7 +51,7 @@ public class MessagePrinter {
 	 */
 	protected static void printWarningMessages() {
 		List<String> up = CommandValidator.getUnnecessaryParams();
-		if (up.size() > 0) {
+		if (!up.isEmpty()) {
 			System.out.print("WARNING: The following unnecessary parameters were ignored: ");
 			for (String x : up) {
 				System.out.print(x + " ");

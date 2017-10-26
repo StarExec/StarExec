@@ -10,9 +10,9 @@ import java.util.Comparator;
 public class JobPairComparator implements Comparator<JobPair> {
 	protected static final StarLogger log = StarLogger.getLogger(JobPairComparator.class);
 
-	private int column; //will specify which field we are using to sort the job pairs
-	private int stageNumber;
-	private boolean asc;
+	private final int column; //will specify which field we are using to sort the job pairs
+	private final int stageNumber;
+	private final boolean asc;
 
 	/**
 	 * Compares the solver names of jp1 and jp2
@@ -28,21 +28,27 @@ public class JobPairComparator implements Comparator<JobPair> {
 		try {
 			String str1 = null;
 			String str2 = null;
-			if (column == 3) {
+			switch (column) {
+			case 3:
 				str1 = stage1.getStatus().getStatus();
 				str2 = stage2.getStatus().getStatus();
-			} else if (column == 5) {
+				break;
+			case 5:
 				str1 = stage1.getAttributes().getProperty(R.STAREXEC_RESULT);
 				str2 = stage2.getAttributes().getProperty(R.STAREXEC_RESULT);
-			} else if (column == 0) {
+				break;
+			case 0:
 				str1 = jp1.getBench().getName();
 				str2 = jp2.getBench().getName();
-			} else if (column == 2) {
+				break;
+			case 2:
 				str1 = stage1.getConfiguration().getName();
 				str2 = stage2.getConfiguration().getName();
-			} else {
+				break;
+			default:
 				str1 = stage1.getSolver().getName();
 				str2 = stage2.getSolver().getName();
+				break;
 			}
 			//if str1 lexicographically follows str2, put str2 first
 			return str1.compareToIgnoreCase(str2);
@@ -67,18 +73,23 @@ public class JobPairComparator implements Comparator<JobPair> {
 			JoblineStage stage2 = jp2.getStageFromNumber(stageNumber);
 			double db1 = 0;
 			double db2 = 0;
-			if (column == 6) {
+			switch (column) {
+			case 6:
 				db1 = jp1.getId();
 				db2 = jp2.getId();
-			} else if (column == 7) {
+				break;
+			case 7:
 				db1 = jp1.getCompletionId();
 				db2 = jp2.getCompletionId();
-			} else if (column == 4) {
+				break;
+			case 4:
 				db1 = stage1.getWallclockTime();
 				db2 = stage2.getWallclockTime();
-			} else {
+				break;
+			default:
 				db1 = stage1.getCpuTime();
 				db2 = stage2.getCpuTime();
+				break;
 			}
 
 			return Double.compare(db1, db2);

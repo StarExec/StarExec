@@ -73,7 +73,7 @@ public class QueueSecurity {
 			return status;
 		}
 		List<WorkerNode> nodes = Queues.getNodes(queueId);
-		if (nodes == null || nodes.size() == 0) {
+		if (nodes == null || nodes.isEmpty()) {
 			return new ValidatorStatusCode(false, "The test queue should have some nodes");
 		}
 		return new ValidatorStatusCode(true);

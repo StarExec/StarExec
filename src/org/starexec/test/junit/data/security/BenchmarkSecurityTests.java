@@ -13,7 +13,6 @@ import org.starexec.data.security.ProcessorSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.*;
 import org.starexec.data.to.enums.ProcessorType;
-import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.Validator;
 
 import static org.junit.Assert.assertFalse;
@@ -558,7 +557,7 @@ public class BenchmarkSecurityTests {
         boolean success = BenchmarkSecurity.userOwnsBenchOrIsAdmin(bench, 1);
 
         // then
-        assertFalse("Bench is null so nobobody should own it.", success);
+        assertFalse("Bench is null so nobody should own it.", success);
     }
 
     @Test
@@ -658,13 +657,12 @@ public class BenchmarkSecurityTests {
 
         // user is owner
         int owner = 1;
-        int userId = owner;
-        given(Users.get(anyInt())).willReturn(mock(User.class));
+	    given(Users.get(anyInt())).willReturn(mock(User.class));
         // user is not admin
-        given(GeneralSecurity.hasAdminWritePrivileges(userId)).willReturn(false);
+        given(GeneralSecurity.hasAdminWritePrivileges(owner)).willReturn(false);
 
         // when
-        ValidatorStatusCode status = BenchmarkSecurity.canUserRecycleOrphanedBenchmarks(owner, userId);
+        ValidatorStatusCode status = BenchmarkSecurity.canUserRecycleOrphanedBenchmarks(owner, owner);
 
         // then
         assertTrue("User is owner so should be able to recycle orphaned benchmarks.", status.isSuccess());
@@ -755,9 +753,8 @@ public class BenchmarkSecurityTests {
     public void userCanSeeBenchmarkUploadStatusIfUserIsOwner() {
         // given
         int userId = 2;
-        int owner = userId;
-        BenchmarkUploadStatus uploadStatus = mock(BenchmarkUploadStatus.class);
-        given(uploadStatus.getUserId()).willReturn(owner);
+	    BenchmarkUploadStatus uploadStatus = mock(BenchmarkUploadStatus.class);
+        given(uploadStatus.getUserId()).willReturn(userId);
         given(Uploads.getBenchmarkStatus(anyInt())).willReturn(uploadStatus);
         // User is not admin.
         given(GeneralSecurity.hasAdminReadPrivileges(anyInt())).willReturn(false);

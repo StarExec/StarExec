@@ -23,7 +23,7 @@ public class Solver extends Identifiable implements Iterable<Configuration>, Nam
 
 		SOLVER(1), TRANSFORMER(2), RESULTCHECKER(3), OTHER(4);
 
-		private int val;
+		private final int val;
 
 		ExecutableType(int val) {
 			this.val = val;
@@ -56,7 +56,7 @@ public class Solver extends Identifiable implements Iterable<Configuration>, Nam
 	private String mostRecentUpdateString;
 	private transient String path;
 	private boolean isDownloadable;
-	private List<Configuration> configurations;
+	private final List<Configuration> configurations;
 	private long diskSize;
 	private boolean recycled;
 	private boolean deleted;

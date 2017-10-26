@@ -16,9 +16,9 @@ public class Queue extends Identifiable implements Iterable<WorkerNode>, Nameabl
 	@Expose private String name;
 	@Expose private String status;
 	@Expose private boolean global_access;
-	@Expose private List<WorkerNode> nodes;
-	@Expose private HashMap<String, String> attributes;
-	@Expose private HashMap<Integer, String[]> jobPairs;
+	@Expose private final List<WorkerNode> nodes;
+	@Expose private final HashMap<String, String> attributes;
+	@Expose private final HashMap<Integer, String[]> jobPairs;
 	@Expose private int cpuTimeout;
 	@Expose private int wallTimeout;
 

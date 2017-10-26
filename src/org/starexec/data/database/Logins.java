@@ -28,11 +28,8 @@ public class Logins {
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL GetNumberOfUniqueLogins()}");
 			results = procedure.executeQuery();
-
 			results.first();
-			int numberOfUniqueLogins = results.getInt(1);
-
-			return numberOfUniqueLogins;
+			return results.getInt(1);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {

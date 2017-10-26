@@ -17,7 +17,7 @@ public class ErrorLogs {
 	// We have to use NonSavingStarLogger here to prevent us from attempting to save errors that occur in this class.
 	// If we tried to save an error that occurred in this class to the error_logs table it would call us to recursively
 	// call the methods in this class again potentially leading to infinite recursion.
-	private static NonSavingStarLogger log = NonSavingStarLogger.getLogger(ErrorLogs.class);
+	private static final NonSavingStarLogger log = NonSavingStarLogger.getLogger(ErrorLogs.class);
 
 	/**
 	 * Adds an error reports to the error_reports table. This method must catch all exceptions so that another method
@@ -92,7 +92,7 @@ public class ErrorLogs {
 	 *
 	 * @param time the time to get logs since.
 	 * @return the logs since the given time as a list.
-	 * @throws SQLException on databse error.
+	 * @throws SQLException on database error.
 	 */
 	public static List<ErrorLog> getSince(Timestamp time) throws SQLException {
 		return Common.query("{CALL GetErrorLogsSince(?)}", procedure -> procedure.setTimestamp(1, time),
@@ -108,7 +108,7 @@ public class ErrorLogs {
 	 */
 	private static Optional<ErrorLog> getFirst(ResultSet results) throws SQLException {
 		List<ErrorLog> logs = resultsToErrorLogs(results);
-		return logs.size() > 0 ? Optional.of(logs.get(0)) : Optional.empty();
+		return !logs.isEmpty() ? Optional.of(logs.get(0)) : Optional.empty();
 	}
 
 	/**

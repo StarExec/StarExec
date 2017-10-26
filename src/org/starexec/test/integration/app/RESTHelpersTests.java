@@ -26,8 +26,8 @@ import static org.mockito.Mockito.when;
 
 
 public class RESTHelpersTests extends TestSequence {
-	private static String TOTAL_RECORDS = "iTotalRecords";
-	private static String DATA = "aaData";
+	private static final String TOTAL_RECORDS = "iTotalRecords";
+	private static final String DATA = "aaData";
 	private static final String TOTAL_RECORDS_AFTER_QUERY = "iTotalDisplayRecords";
 	private static final EnumSet<PrimitivesToAnonymize> allPrimitivesToAnonymize = EnumSet.allOf( PrimitivesToAnonymize.class );
 	// owner of the test data for these tests

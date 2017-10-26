@@ -327,7 +327,7 @@ public class Statistics {
 		try {
 
 			//there are no points if either list of pairs is empty
-			if (pairs1.size() == 0 || pairs2.size() == 0) {
+			if (pairs1.isEmpty() || pairs2.isEmpty()) {
 				log.debug("An input list has no jobpairs, returning null");
 				return null;
 			}
@@ -500,7 +500,7 @@ public class Statistics {
 	) {
 
 		try {
-			if (configIds.size() == 0) {
+			if (configIds.isEmpty()) {
 				return null;
 			}
 
@@ -532,7 +532,7 @@ public class Statistics {
 	 * @param pairs The pairs to plot results of
 	 * @param logX Whether to use a log scale for the X axis
 	 * @param logY Whether to use a log scale for the Y axis
-	 * @param stageNumber The stage number of analyze for al lthe job pairs
+	 * @param stageNumber The stage number of analyze for all the job pairs
 	 * @param primitivesToAnonymize an enum describing which (if any) primitives to anonymize.
 	 * @return The absolute filepath to the chart that was created
 	 */

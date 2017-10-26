@@ -50,15 +50,6 @@ public class Report {
 	}
 
 	/**
-	 * Gets the id of the queue related to the report.
-	 * @return the id of the queue related to the report, null if the report is not related to a queue.
-	 * @author Albert Giegerich
-	public int getQueueId() {
-	return queueId;
-	}
-	 */
-
-	/**
 	 * Gets the name of the queue related to the report.
 	 *
 	 * @return the name of the queue related to the report, null if the report is not related to a queue.

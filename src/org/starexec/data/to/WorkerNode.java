@@ -12,8 +12,8 @@ import java.util.HashMap;
 public class WorkerNode extends Identifiable implements Nameable {
 	@Expose private String name;
 	@Expose private String status;
-	@Expose private HashMap<String, String> attributes;
-	@Expose private HashMap<Integer, String[]> jobPairs;
+	@Expose private final HashMap<String, String> attributes;
+	@Expose private final HashMap<Integer, String[]> jobPairs;
 	@Expose private Queue queue;
 
 	public WorkerNode() {

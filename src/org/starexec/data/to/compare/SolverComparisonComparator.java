@@ -7,10 +7,10 @@ import org.starexec.data.to.pipelines.JoblineStage;
 import java.util.Comparator;
 
 public class SolverComparisonComparator implements Comparator<SolverComparison> {
-	private int column; //will specify which field we are using to sort the job pairs
-	private boolean asc;
-	private boolean isWallclock;
-	private int stageNumber;
+	private final int column; //will specify which field we are using to sort the job pairs
+	private final boolean asc;
+	private final boolean isWallclock;
+	private final int stageNumber;
 
 	/**
 	 * Creates a new object that will compare SolverComparisons on different fields based on the given parameters
@@ -39,13 +39,16 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 			JoblineStage stage21 = c1.getSecondPair().getStageFromNumber(stageNumber);
 			JoblineStage stage22 = c2.getSecondPair().getStageFromNumber(stageNumber);
 
-			if (column == 1) {
+			switch (column) {
+			case 1:
 				db1 = getTimeFromStage(isWallclock, stage11);
 				db2 = getTimeFromStage(isWallclock, stage12);
-			} else if (column == 2) {
+				break;
+			case 2:
 				db1 = getTimeFromStage(isWallclock, stage21);
 				db2 = getTimeFromStage(isWallclock, stage22);
-			} else if (column == 3) {
+				break;
+			case 3:
 				if (isWallclock) {
 					db1 = c1.getWallclockDifference(stageNumber);
 					db2 = c2.getWallclockDifference(stageNumber);
@@ -53,13 +56,15 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 					db1 = c1.getCpuDifference(stageNumber);
 					db2 = c2.getCpuDifference(stageNumber);
 				}
-			} else {
+				break;
+			default:
 				if (c1.doResultsMatch(stageNumber)) {
 					db1 = 1;
 				}
 				if (c2.doResultsMatch(stageNumber)) {
 					db2 = 1;
 				}
+				break;
 			}
 			return Double.compare(db1, db2);
 		} catch (Exception e) {
@@ -89,17 +94,21 @@ public class SolverComparisonComparator implements Comparator<SolverComparison> 
 			String str2 = null;
 
 
-			if (column == 5) {
+			switch (column) {
+			case 5:
 				str1 = c1.getSecondPair().getStageFromNumber(stageNumber).getAttributes()
 				         .getProperty(R.STAREXEC_RESULT);
 				str2 = c2.getSecondPair().getStageFromNumber(stageNumber).getAttributes()
 				         .getProperty(R.STAREXEC_RESULT);
-			} else if (column == 0) {
+				break;
+			case 0:
 				str1 = c1.getBenchmark().getName();
 				str2 = c2.getBenchmark().getName();
-			} else {
+				break;
+			default:
 				str1 = c1.getFirstPair().getStageFromNumber(stageNumber).getAttributes().getProperty(R.STAREXEC_RESULT);
 				str2 = c2.getFirstPair().getStageFromNumber(stageNumber).getAttributes().getProperty(R.STAREXEC_RESULT);
+				break;
 			}
 			//if str1 lexicographically follows str2, put str2 first
 			return str1.compareToIgnoreCase(str2);

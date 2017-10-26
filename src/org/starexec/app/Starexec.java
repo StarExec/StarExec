@@ -32,11 +32,11 @@ import java.util.concurrent.TimeUnit;
  */
 public class Starexec implements ServletContextListener {
 	private StarLogger log;
-	private ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(10);
+	private final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(10);
 	// private Session session; // GridEngine session
 
 	// Path of the starexec config and log4j files which are needed at compile time to load other resources
-	private static String LOG4J_PATH = "/WEB-INF/classes/org/starexec/config/log4j.properties";
+	private static final String LOG4J_PATH = "/WEB-INF/classes/org/starexec/config/log4j.properties";
 
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
@@ -46,7 +46,7 @@ public class Starexec implements ServletContextListener {
 			log.debug("Stopping starexec task scheduler...");
 			taskScheduler.shutdown();
 
-			// Save cached Anayltics events to DB
+			// Save cached Analytics events to DB
 			Analytics.saveToDB();
 
 			// Make sure to clean up database resources

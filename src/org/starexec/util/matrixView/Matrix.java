@@ -69,7 +69,7 @@ public class Matrix {
 			// Sort the benchmarks alphabetically by name ignoring case.
 			ArrayList<Benchmark> uniqueBenchmarkList = new ArrayList<>(uniqueBenchmarks);
 			uniqueBenchmarkList.sort(NameableComparators.getCaseInsensitiveAlphabeticalComparator());
-			
+
 			ArrayList<Pair<Solver,Configuration>> uniqueSolverConfigList =
                     new ArrayList<>(uniqueSolverConfigs);
 			// Names of solver config will be "solver (config)", sort the solverConfigs
@@ -85,7 +85,7 @@ public class Matrix {
 			});
 
 			// Populate the matrix.
-			populateRowAndColumnHeaders(uniqueBenchmarkList, uniqueSolverConfigList); 
+			populateRowAndColumnHeaders(uniqueBenchmarkList, uniqueSolverConfigList);
 			populateMatrixData(uniqueBenchmarkList, uniqueSolverConfigList, vectorIntersectionToCellDataMap);
 			log.exit(method);
 		} catch (Exception e) {
@@ -119,7 +119,7 @@ public class Matrix {
 		return matrixForJobSpace;
 	}
 
-	/** 
+	/**
 	 * Gets all the job pairs associated with a jobspace in a job.
 	 * @param job the job to get job pairs from
 	 * @param jobSpaceId the id of the jobspace to filter the jobpairs by
@@ -135,48 +135,20 @@ public class Matrix {
 			log.debug(method, "job space id="+pairJobSpaceId);
 			// Filter by jobSpaceId
 			if (pairJobSpaceId == jobSpaceId) {
-				jobPairsInJobSpace.add(pair);	
-			} 
+				jobPairsInJobSpace.add(pair);
+			}
 		}
 		return jobPairsInJobSpace;
 	}
 
 	/**
-	 * Takes a Job and creates a HashMap that maps all of the ids of the job Spaces in the map to a list
-	 * of the JobPairs in that job Space.
-	 * @param job the job to build a map from.
-	 * @return a HashMap that maps all the job pairs associated with a job space ID to a list in the map.
-	 * @author Albert Giegerich
-	 * 
-	private static HashMap<Integer, List<JobPair>> getJobPairsBySpaceIdMapFromJob(Job job) {
-		HashMap<Integer, List<JobPair>> jobPairsBySpaceIdMap = new HashMap<Integer, List<JobPair>>();
-		List<JobPair> jobPairs = job.getJobPairs();
-		for (JobPair pair : jobPairs) {
-			Integer jobSpaceId = pair.getJobSpaceId();
-			if (jobPairsBySpaceIdMap.containsKey(jobSpaceId)) {
-				// If the map already contains a list of job pairs associated with this id then add this
-				// pair to the list.
-				List<JobPair> jobPairsAssociatedWithJobSpaceId = jobPairsBySpaceIdMap.get(jobSpaceId);
-				jobPairsAssociatedWithJobSpaceId.add(pair);
-			} else {
-				// Otherwise add a new list associated with the id to the map containing the pair.
-				List<JobPair> newListOfJobPairs = new LinkedList<JobPair>();
-				newListOfJobPairs.add(pair);
-				jobPairsBySpaceIdMap.put(jobSpaceId, newListOfJobPairs);
-			}
-		}
-		return jobPairsBySpaceIdMap;
-	}
-	*/
-
-	/**
-	 * Gets the job space name associated with the matrix. 
+	 * Gets the job space name associated with the matrix.
 	 * @return the job space name associated with the matrix.
 	 * @author Albert Giegerich
 	 */
 	public String getJobSpaceName() {
 		return jobSpaceName;
-	}	
+	}
 
 	/**
 	 * Gets the job space id associated with the matrix.
@@ -200,7 +172,7 @@ public class Matrix {
 	/**
 	 * Gets a column header and truncates and adds an ellipsis to the end depending on the
 	 * max size of matrix headers in R.java
-	 * 
+	 *
 	 * @author Albert Giegerich
 	 */
 	public String getTruncatedColumnHeader(int column) {
@@ -286,7 +258,7 @@ public class Matrix {
 			truncatedName += "...";
 		}
 		return truncatedName;
-	}	
+	}
 
 	/**
 	 * Builds a Set of Benchmarks and a Set of solver-configs and a mapping form benchmark-solverConfig pairs
@@ -294,11 +266,11 @@ public class Matrix {
 	 * @author Albert Giegerich
 	 */
 	private static void addToUniqueVectorListsAndIntersectionMap(
-		Set<Benchmark> uniqueBenchmarks, 
-		Set<Pair<Solver,Configuration>> uniqueSolverConfigs, 
-		HashMap<Pair<Benchmark,Pair<Solver,Configuration>>,MatrixElement> vectorIntersectionToCellDataMap, 
+		Set<Benchmark> uniqueBenchmarks,
+		Set<Pair<Solver,Configuration>> uniqueSolverConfigs,
+		HashMap<Pair<Benchmark,Pair<Solver,Configuration>>,MatrixElement> vectorIntersectionToCellDataMap,
 		JobPair pair,
-		Integer stageNumber) 
+		Integer stageNumber)
 	{
 		// Will get the primary stage if stageNumber <= 0.
 		JoblineStage stage = pair.getStageFromNumber(stageNumber);
@@ -328,14 +300,14 @@ public class Matrix {
 
 	/**
 	 * Takes a JoblineStage and uses it's fields to build a matrix element.
-	 * @param stage the stage 
+	 * @param stage the stage
 	 * @author Albert Giegerich
 	 */
 	public static MatrixElement getCellDataFromStageAndJobPairId(Benchmark benchmark, JoblineStage stage, Integer jobPairId) {
 		// Replace spaces with _ to make the status usable as a css class.
 		String status = Jobs.getStatusFromStage(stage);
 		String cpuTime = String.valueOf(stage.getCpuTime());
-		String wallclock = String.valueOf(stage.getWallclockTime()); 
+		String wallclock = String.valueOf(stage.getWallclockTime());
 		String memUsage = String.valueOf(stage.getMaxVirtualMemory());
 
 		if (jobPairId == null) {
@@ -344,11 +316,10 @@ public class Matrix {
 
 		Solver solver = stage.getSolver();
 		Configuration config = stage.getConfiguration();
-		String uniqueIdentifier = String.format(R.MATRIX_ELEMENT_ID_FORMAT, benchmark.getName(), benchmark.getId(), solver.getName(),solver.getId(), 
+		String uniqueIdentifier = String.format(R.MATRIX_ELEMENT_ID_FORMAT, benchmark.getName(), benchmark.getId(), solver.getName(),solver.getId(),
 				config.getName(), config.getId());
-		MatrixElement displayData = new MatrixElement(status, cpuTime, memUsage, wallclock, jobPairId, uniqueIdentifier);
 
-		return displayData;
+		return new MatrixElement(status, cpuTime, memUsage, wallclock, jobPairId, uniqueIdentifier);
 	}
 
 
@@ -369,7 +340,7 @@ public class Matrix {
 	/**
 	 * Takes a job pair and returns true if it has more than one stage.
 	 * @author Albert Giegerich
-	 */ 
+	 */
 	private static boolean testForMultipleStages(JobPair pair) {
 		return pair.getStages().size() > 1;
 	}
@@ -377,11 +348,11 @@ public class Matrix {
 
 	/**
 	 * Populates the matrix by checking if each benchmark - solver-config intersection has cell data associated with it
-	 * and adding it to the matrix if it does. 
+	 * and adding it to the matrix if it does.
 	 * @author Albert Giegerich
 	 */
-	private void populateMatrixData(List<Benchmark> uniqueBenchmarkList, List<Pair<Solver,Configuration>> uniqueSolverConfigList, 
-			HashMap<Pair<Benchmark,Pair<Solver,Configuration>>, MatrixElement> vectorIntersectionToCellDataMap) 
+	private void populateMatrixData(List<Benchmark> uniqueBenchmarkList, List<Pair<Solver,Configuration>> uniqueSolverConfigList,
+			HashMap<Pair<Benchmark,Pair<Solver,Configuration>>, MatrixElement> vectorIntersectionToCellDataMap)
 	{
 		for (int i = 0; i < uniqueBenchmarkList.size(); i++) {
 			Benchmark bench = uniqueBenchmarkList.get(i);
@@ -402,7 +373,7 @@ public class Matrix {
 	 */
 	private static List<Pair<String, Integer>> getSpacesInJobOrderedAlphabetically(Job job) {
 		final String method = "getSpacesInJobOrderedAlphabetically";
-		log.debug("Entering method "+method);
+		log.entry(method);
 		List<JobPair> jobPairs = job.getJobPairs();
 
 		Set<Pair<String,Integer>> uniqueSpaces = new HashSet<>();
@@ -412,7 +383,7 @@ public class Matrix {
 			String jobSpaceName = pair.getJobSpaceName();
 			Integer jobSpaceId = pair.getJobSpaceId();
 			Pair<String,Integer> jobSpaceNameAndId = new ImmutablePair<>(jobSpaceName, jobSpaceId);
-			uniqueSpaces.add(jobSpaceNameAndId);	
+			uniqueSpaces.add(jobSpaceNameAndId);
 		}
 
 		List<Pair<String, Integer>> orderedSpaces = new ArrayList<>(uniqueSpaces);

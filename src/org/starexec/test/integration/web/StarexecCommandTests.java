@@ -18,7 +18,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.Assert.assertTrue;
 
@@ -258,7 +257,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertTrue(stat.isEverythingComplete());
 		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
 
-		Assert.assertTrue(t.getBenchmarks().size()>0);
+		Assert.assertTrue(!t.getBenchmarks().isEmpty());
 
 		for (Benchmark b : t.getBenchmarks()) {
 			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(b.getId()));
@@ -278,7 +277,7 @@ public class StarexecCommandTests extends TestSequence {
 		Assert.assertTrue(Uploads.getBenchmarkStatus(result).isEverythingComplete());
 
 		Space t=Spaces.getDetails(tempSpace.getId(), user.getId());
-		Assert.assertTrue(t.getBenchmarks().size()>0);
+		Assert.assertTrue(!t.getBenchmarks().isEmpty());
 		for (Benchmark b : t.getBenchmarks()) {
 			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(b.getId()));
 		}
@@ -484,7 +483,7 @@ public class StarexecCommandTests extends TestSequence {
 			Space testSpace=Spaces.get(newSpaceId);
 			Assert.assertNotNull(testSpace);
 			Assert.assertEquals(name, testSpace.getName());
-			Assert.assertEquals(testCommunity.getId(), (int)Spaces.getParentSpace(testSpace.getId()));
+			Assert.assertEquals(testCommunity.getId(), Spaces.getParentSpace(testSpace.getId()));
 
 			Assert.assertTrue(Spaces.removeSubspace(newSpaceId));
 		} else {

@@ -36,8 +36,7 @@ public class ProcessorManager extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(ProcessorManager.class);
 
 	// The unique date stamped file name format (for saving processor files)
-	private static DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
-	private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
+	private static final DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
 
 	// Request attributes
 	private static final String PROCESSOR_NAME = "name";
@@ -143,10 +142,10 @@ public class ProcessorManager extends HttpServlet {
 			if (f.isDirectory()) {
 				setAllFilesExecutable(f);
 			} else {
-				if (!f.setExecutable(true, false)) {
-					log.warn("Could not set processor as executable: " + f.getAbsolutePath());
-				} else {
+				if (f.setExecutable(true, false)) {
 					log.debug("successfully set processor as executable: " + f.getAbsolutePath());
+				} else {
+					log.warn("Could not set processor as executable: " + f.getAbsolutePath());
 				}
 			}
 		}
@@ -233,13 +232,14 @@ public class ProcessorManager extends HttpServlet {
 	 * @return The enum representation of the type
 	 */
 	private ProcessorType toProcessorEnum(String type) {
-		if (type.equals(POST_PROCESS_TYPE)) {
+		switch (type) {
+		case POST_PROCESS_TYPE:
 			return ProcessorType.POST;
-		} else if (type.equals(PRE_PROCESS_TYPE)) {
+		case PRE_PROCESS_TYPE:
 			return ProcessorType.PRE;
-		} else if (type.equals(R.BENCHMARK)) {
+		case R.BENCHMARK:
 			return ProcessorType.BENCH;
-		} else if (type.equals(UPDATE_PROCESS_TYPE)) {
+		case UPDATE_PROCESS_TYPE:
 			return ProcessorType.UPDATE;
 		}
 
@@ -283,7 +283,6 @@ public class ProcessorManager extends HttpServlet {
 
 			String uploadMethod = (String) form.get(UPLOAD_METHOD);
 
-			boolean goodExtension = false;
 			String fileName;
 
 			if (uploadMethod.equals(LOCAL_UPLOAD_METHOD)) {
@@ -294,14 +293,7 @@ public class ProcessorManager extends HttpServlet {
 
 			log.debug(method + " - Name of processor file=" + fileName);
 
-			for (String ext : ProcessorManager.extensions) {
-				if (fileName.endsWith(ext)) {
-					goodExtension = true;
-				}
-			}
-
-
-			if (!goodExtension) {
+			if (!Validator.isValidArchiveType(fileName)) {
 				return new ValidatorStatusCode(false, "Uploaded archives must be a .zip, .tar, or .tgz");
 			}
 

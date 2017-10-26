@@ -6,6 +6,7 @@ import org.starexec.constants.R;
 import org.starexec.data.to.*;
 import org.starexec.data.to.compare.BenchmarkComparator;
 import org.starexec.exceptions.StarExecException;
+import org.starexec.exceptions.StarExecValidationException;
 import org.starexec.logger.StarLogger;
 import org.starexec.servlets.BenchmarkUploader;
 import org.starexec.util.*;
@@ -84,20 +85,18 @@ public class Benchmarks {
 	 * @param attrs The attrs to add. Old attributes sharing keys will be overwritten
 	 * @param benchmark The benchmark to add attributes to
 	 * @param statusId The ID of a benchmark status upload object, or null if we aren't using one
-	 * @return True on success and false otherwise
 	 */
-	public static boolean addAttributeSetToDbIfValid(Map<String, String> attrs, Benchmark benchmark, Integer
+	public static void addAttributeSetToDbIfValid(Map<String, String> attrs, Benchmark benchmark, Integer
 			statusId) {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
-			return addAttributeSetToDbIfValid(con, attrs, benchmark, statusId);
+			addAttributeSetToDbIfValid(con, attrs, benchmark, statusId);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
-		return false;
 	}
 
 	/**
@@ -148,19 +147,17 @@ public class Benchmarks {
 	 * @param benchId The ID of the benchmark
 	 * @param key The attribute key. Will overwrite any other attribute with the same key.
 	 * @param val The attribute val
-	 * @return True on success and false otherwise.
 	 */
-	public static boolean addBenchAttr(int benchId, String key, String val) {
+	public static void addBenchAttr(int benchId, String key, String val) {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
-			return addBenchAttr(con, benchId, key, val);
+			addBenchAttr(con, benchId, key, val);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
-		return false;
 	}
 
 	/**
@@ -312,7 +309,7 @@ public class Benchmarks {
 				                              con
 				);
 			}
-			Common.endTransaction(con);// benchmarks should be in db now	
+			Common.endTransaction(con);// benchmarks should be in db now
 			return benchmark;
 		} catch (Exception e) {
 			log.error("addBench says " + e.getMessage(), e);
@@ -343,13 +340,11 @@ public class Benchmarks {
 
 				// Add benchmark to database
 				int benchId = Benchmarks.add(benchmark, statusId, con).getId();
-
 				if (benchId >= 0) {
 					if (spaceId != null) {
 						Benchmarks.associate(benchId, spaceId, con);
 					}
 					log.debug("bench successfully added");
-
 					return benchId;
 				}
 			} catch (Exception e) {
@@ -378,7 +373,7 @@ public class Benchmarks {
 	protected static List<Integer> addAndAssociate(List<Benchmark> benchmarks, Integer spaceId, Integer statusId)
 			throws Exception {
 		ArrayList<Integer> benchmarkIds = new ArrayList<>();
-		log.info("in add (list) method (no con paramter )- adding " + benchmarks.size() + " benchmarks to space " +
+		log.info("in add (list) method (no con parameter )- adding " + benchmarks.size() + " benchmarks to space " +
 				         spaceId);
 		int incrementCounter = 0;
 		Timer timer = new Timer();
@@ -388,7 +383,7 @@ public class Benchmarks {
 				String message = ("failed to add bench " + b.getName());
 				Uploads.setBenchmarkErrorMessage(statusId, message);
 				//Note - this does not occur when Benchmark fails validation even though those benchmarks not added
-				throw new Exception(String.format("Failed to add benchmark [%s] to space [%d]", b.getName(), spaceId));
+				throw new StarExecValidationException(String.format("Failed to add benchmark [%s] to space [%d]", b.getName(), spaceId));
 			}
 
 			benchmarkIds.add(id);
@@ -441,13 +436,11 @@ public class Benchmarks {
 			List<Benchmark> benchmarks, Integer spaceId, Integer depRootSpaceId, Boolean linked, Integer statusId,
 			Boolean usesDeps
 	) {
-		if (benchmarks.size() > 0) {
+		if (!benchmarks.isEmpty()) {
 			try {
-
 				log.info("Adding (with deps) " + benchmarks.size() + " to Space " + spaceId);
 				// Get the processor of the first benchmark (they should all have the same processor)
 				Processor p = Processors.get(benchmarks.get(0).getType().getId());
-
 
 				log.info("About to attach attributes to " + benchmarks.size());
 
@@ -465,8 +458,9 @@ public class Benchmarks {
 
 				// Next add them to the database (must happen AFTER they are processed and have dependencies
 				// validated);
-				List<Integer> ids = Benchmarks.addAndAssociate(benchmarks, spaceId, statusId);
-				return ids;
+				return Benchmarks.addAndAssociate(benchmarks, spaceId, statusId);
+			} catch (StarExecValidationException e) {
+				log.debug("processAndAdd", e);
 			} catch (Exception e) {
 				log.error(e.getMessage(), e);
 			}
@@ -638,7 +632,7 @@ public class Benchmarks {
 					}
 					Uploads.addFailedBenchmark(statusId, b.getName(), propstr);
 					String message = b.getName() + " failed validation";
-					log.warn(message);
+					log.debug(message);
 					Uploads.setBenchmarkErrorMessage(statusId, message);
 				} else {
 					String message = "Major Benchmark Validation Errors - examine your validator";
@@ -659,7 +653,7 @@ public class Benchmarks {
 	 */
 	private static void checkProcessorOutput(String processorOutput) throws StarExecException {
 		final String method = "checkProcessorOutput";
-		log.debug("Entering method " + method);
+		log.entry(method);
 		if (processorOutput.contains("command not found")) {
 			throw new StarExecException(
 					String.format("Processor used a command that StarExec does not recognize.%nProcessor Output:%s",
@@ -796,7 +790,7 @@ public class Benchmarks {
 				newBenchmark.setAttributes(new HashMap<>());
 			}
 
-			//this benchmark must be valid, since it is just a copy of 
+			//this benchmark must be valid, since it is just a copy of
 			//an old benchmark that already passed validation
 			newBenchmark.getAttributes().put(R.VALID_BENCHMARK_ATTRIBUTE, "true");
 			File benchmarkFile = new File(b.getPath());
@@ -806,7 +800,7 @@ public class Benchmarks {
 			newBenchmark.setPath(uniqueDir.getAbsolutePath() + File.separator + benchmarkFile.getName());
 
 			FileUtils.copyFileToDirectory(benchmarkFile, uniqueDir);
-			int benchId = Benchmarks.addAndAssociate(newBenchmark, spaceId, (Integer) null);
+			int benchId = Benchmarks.addAndAssociate(newBenchmark, spaceId, null);
 			if (benchId < 0) {
 				log.error("Benchmark being copied could not be successfully added to the database");
 				return benchId;
@@ -888,7 +882,7 @@ public class Benchmarks {
 	public static Space extractSpacesAndBenchmarks(
 			File directory, int typeId, int userId, boolean downloadable, Permission perm, Integer statusId
 	) throws IOException, StarExecException {
-		// Create a space for the current directory and set it's name		
+		// Create a space for the current directory and set it's name
 		log.info("Extracting Spaces and Benchmarks for " + userId);
 		Space space = new Space();
 		space.setName(directory.getName());
@@ -907,7 +901,7 @@ public class Benchmarks {
 		Timer spaceTimer = new Timer();
 		Timer benchTimer = new Timer();
 		for (File f : directory.listFiles()) {
-			// If it's a sub-directory			
+			// If it's a sub-directory
 			if (f.isDirectory()) {
 				// Recursively extract spaces/benchmarks from that directory
 				space.getSubspaces()
@@ -957,8 +951,7 @@ public class Benchmarks {
 		if (spaces.length == 0) {
 			return -1;
 		}
-		int startIndex = (linked) ? 1 : 0;//if linked, skip the first directory in path
-		int index = startIndex;
+		int index = (linked) ? 1 : 0;
 		log.debug("First Space(or Bench) to look for = " + spaces[index]);
 		//List<Space> subSpaces;
 		Integer currentSpaceId = spaceId;
@@ -993,10 +986,10 @@ public class Benchmarks {
 		ResultSet results = null;
 
 		try {
-			if (!includeDeleted) {
-				procedure = con.prepareCall("{CALL GetBenchmarkById(?)}");
-			} else {
+			if (includeDeleted) {
 				procedure = con.prepareCall("{CALL GetBenchmarkByIdIncludeDeletedAndRecycled(?)}");
+			} else {
+				procedure = con.prepareCall("{CALL GetBenchmarkById(?)}");
 			}
 			procedure.setInt(1, benchId);
 			results = procedure.executeQuery();
@@ -1474,11 +1467,12 @@ public class Benchmarks {
 	}
 
 	private static String getBenchmarkOrderColumn(int indexOfColumn) {
-		if (indexOfColumn == 0) {
+		switch (indexOfColumn) {
+		case 0:
 			return "benchmarks.name";
-		} else if (indexOfColumn == 1) {
+		case 1:
 			return "processors.name";
-		} else if (indexOfColumn == 2) {
+		case 2:
 			return "bench_assoc.order_id";
 		}
 		return "benchmarks.name";
@@ -2157,14 +2151,13 @@ public class Benchmarks {
 	 * @param benchmarks The list of benchmarks that might have dependencies
 	 * @param spaceId the id of the space where the axiom benchmarks lie
 	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
-	 * @return the data structure that has information about depedencies
+	 * @return the data structure that has information about dependencies
 	 * @author Eric Burns
 	 */
 	private static boolean validateDependencies(List<Benchmark> benchmarks, Integer spaceId, Boolean linked) {
 		HashMap<String, BenchmarkDependency> foundDependencies = new HashMap<>();
-		Benchmark benchmark = new Benchmark();
 		for (Benchmark benchmark1 : benchmarks) {
-			benchmark = benchmark1;
+			Benchmark benchmark = benchmark1;
 			if (!validateIndBenchDependencies(benchmark, spaceId, linked, foundDependencies)) {
 				log.warn("Dependent benchs not found for Bench " + benchmark.getName());
 				return false;
@@ -2195,7 +2188,7 @@ public class Benchmarks {
 			for (int i = 1; i <= numberDependencies; i++) {
 				includePath = atts.getOrDefault("starexec-dependency-" + i, "");
 				log.debug("Dependency Path of Dependency " + i + " is " + includePath);
-				if (includePath.length() > 0) {
+				if (!includePath.isEmpty()) {
 					//checkMap first
 					if (foundDependencies.get(includePath) != null) {
 						log.info("Already found this one before, its id is " +
@@ -2583,7 +2576,7 @@ public class Benchmarks {
 	 * Returns the Benchmarks needed to populate a DataTables page for a given user. Benchmarks include all Benchmarks
 	 * the user can see
 	 *
-	 * @param query DataTablesQuery object containing paramters for this search
+	 * @param query DataTablesQuery object containing parameters for this search
 	 * @param userId ID of user to get Benchmarks for
 	 * @param totals Size 2 array that, on return, will contain the total number of records as the first element and
 	 * the

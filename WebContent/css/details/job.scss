@@ -85,9 +85,7 @@ thead {
 }
 
 #graphField img {
-	border-style: solid;
-	border-width: 1px;
-	border-color: black;
+	border: 1px solid black;
 }
 
 #pairTbl tbody tr {
@@ -178,36 +176,31 @@ p.accent {
 		width: 47%;
 		float: left;
 		padding-right: 1px;
-		border: 1px;
-		border-color: #000000;
-		border-style: solid;
+		border: 1px solid #000000;
 		clear: none;
-		margin-right: 3px;
 		margin-bottom: 2px;
 		margin-right: 5px;
 		margin-top: 5px;
-		border-radius: 0px;
-		padding-left: 0px;
+		border-radius: 0;
+		padding-left: 0;
 		word-wrap: break-word;
 	}
 
 	#panelActions {
 		width: 97%;
-		border-color: black;
-		border-style: none none solid;
-		border-width: 0px 0px 5px;
-		margin-top: 0px;
-		padding-top: 0px;
+		border: 0 none black;
+		border-bottom: 5px solid;
+		margin-top: 0;
+		padding-top: 0;
 	}
 }
 
 #solverSummaryField #statActions, #pairTblField #pairActions {
 	width: 97%;
-	border-color: black;
-	border-style: none none solid;
-	border-width: 0px 0px 5px;
-	margin-top: 0px;
-	padding-top: 0px;
+	border: 0 none black;
+	border-bottom: 5px solid;
+	margin-top: 0;
+	padding-top: 0;
 }
 
 tr.viewSubspace {

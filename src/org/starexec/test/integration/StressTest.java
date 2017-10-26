@@ -18,11 +18,11 @@ import java.util.Random;
 public class StressTest {
 	private static final StarLogger log = StarLogger.getLogger(StressTest.class);
 
-	private static String SOLVER_NAME="smallsolver.zip";
-	private static String BENCHMARK_NAME="app12.zip"; //contains about 1500 benchmarks
-	private static ResourceLoader loader = new ResourceLoader();
+	private static final String SOLVER_NAME="smallsolver.zip";
+	private static final String BENCHMARK_NAME="app12.zip"; //contains about 1500 benchmarks
+	private static final ResourceLoader loader = new ResourceLoader();
 	
-	private static Random rand=new Random();
+	private static final Random rand=new Random();
 	
 	private static Job loadBigJob(int parentSpaceId, int ownerId, int spaceCount, String solverName, String benchmarkName,
 			int minSolversPerSpace, int maxSolversPerSpace, int minBenchmarksPerSpace, int maxBenchmarksPerSpace) {

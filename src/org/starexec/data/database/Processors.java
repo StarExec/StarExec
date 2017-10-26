@@ -3,7 +3,6 @@ package org.starexec.data.database;
 import org.apache.commons.io.FileUtils;
 import org.starexec.constants.R;
 import org.starexec.data.to.Processor;
-import org.starexec.data.to.Syntax;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.Util;
@@ -119,9 +118,7 @@ public class Processors {
 			final File processorFile = Common.updateWithOutput("{CALL DeleteProcessor(?,?)}", procedure -> {
 				procedure.setInt(1, processorId);
 				procedure.registerOutParameter(2, java.sql.Types.LONGNVARCHAR);
-			}, procedure -> {
-				return new File(procedure.getString(2));
-			});
+			}, procedure -> new File(procedure.getString(2)));
 			message = String.format("Removal of processor [id=%d] was successful.", processorId);
 			log.debug(method, message);
 
@@ -158,9 +155,7 @@ public class Processors {
 	public static Processor get(int processorId) {
 		if (processorId == 0) return null;
 		try {
-			return Common.query("{CALL GetProcessorById(?)}", procedure -> {
-				procedure.setInt(1, processorId);
-			}, Processors::resultSetToProcessor);
+			return Common.query("{CALL GetProcessorById(?)}", procedure -> procedure.setInt(1, processorId), Processors::resultSetToProcessor);
 		} catch (SQLException e) {
 			log.error("get", e.getMessage(), e);
 		}
@@ -176,9 +171,7 @@ public class Processors {
 	 */
 	public static List<Processor> getAll(ProcessorType type) {
 		try {
-			return Common.query("{CALL GetAllProcessors(?)}", procedure -> {
-				procedure.setInt(1, type.getVal());
-			}, Processors::resultSetToProcessors);
+			return Common.query("{CALL GetAllProcessors(?)}", procedure -> procedure.setInt(1, type.getVal()), Processors::resultSetToProcessors);
 		} catch (SQLException e) {
 			log.error("getAll", e.getMessage(), e);
 		}

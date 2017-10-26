@@ -15,9 +15,9 @@ import java.util.*;
  *
  */
 public class LocalBackend implements Backend {
-	private static StarLogger log = StarLogger.getLogger(LocalBackend.class);
+	private static final StarLogger log = StarLogger.getLogger(LocalBackend.class);
 
-	private class LocalJob {
+	private static class LocalJob {
 		public int execId = 0;
 		public String scriptPath = "";
 		public String workingDirectoryPath = "";
@@ -27,8 +27,8 @@ public class LocalBackend implements Backend {
 	@Override
 	public String toString() {
 			StringBuilder sb = new StringBuilder();
-			sb.append(scriptPath + " ");
-			sb.append(execId+" ");
+			sb.append(scriptPath).append(" ");
+			sb.append(execId).append(" ");
 			if (process!=null) {
 				sb.append("running");
 			} else {
@@ -37,7 +37,7 @@ public class LocalBackend implements Backend {
 			return sb.toString();
 		}
 	}	
-	private Map<Integer, LocalJob> activeIds = new HashMap<>();
+	private final Map<Integer, LocalJob> activeIds = new HashMap<>();
 	
 	private String NODE_NAME = "n001";
 	/**
@@ -45,7 +45,7 @@ public class LocalBackend implements Backend {
 	 * completed. Jobs are kept in this queue until they are finished executing, meaning
 	 * that the running job will be the head of the queue
 	 */
-	java.util.Queue<LocalJob> jobsToRun = new ArrayDeque<>();
+	final java.util.Queue<LocalJob> jobsToRun = new ArrayDeque<>();
 	
 	private int curID = 1;
 	/**
@@ -79,7 +79,7 @@ public class LocalBackend implements Backend {
 	private void runJob(LocalJob j){
 		try {
 			j.process = Util.executeCommandAndReturnProcess(new String[] {j.scriptPath}, null, new File(j.workingDirectoryPath));
-	    	ProcessBuilder builder = new ProcessBuilder(new String[] {j.scriptPath});
+	    	ProcessBuilder builder = new ProcessBuilder(j.scriptPath);
 	    	builder.redirectErrorStream(true);
 	    	builder.directory(new File(j.workingDirectoryPath));
 	    	builder.redirectOutput(new File(j.logPath));
@@ -99,6 +99,7 @@ public class LocalBackend implements Backend {
 	 * Loops forever, executing the jobs in jobsToRun. Sleeps for 20 seconds at a time if the queue is empty, and
 	 * runs a single job at a time when it is not empty.
 	 */
+	@SuppressWarnings("InfiniteLoopStatement")
 	private void runJobsForever() {
 		while (true) {
 			try {
@@ -220,8 +221,7 @@ public class LocalBackend implements Backend {
 	 * below simply return false.
 	 */
 	@Override
-	public boolean deleteQueue(String queueName) {
-		return false;
+	public void deleteQueue(String queueName) {
 	}
 
 	@Override
@@ -235,13 +235,11 @@ public class LocalBackend implements Backend {
     }
 
 	@Override
-	public boolean moveNodes(String destQueueName, String[] nodeNames, String[] sourceQueueNames) {
-		return true;
+	public void moveNodes(String destQueueName, String[] nodeNames, String[] sourceQueueNames) {
 	}
 
 	@Override
-	public boolean moveNode(String nodeName, String queueName) {
-		return false;
+	public void moveNode(String nodeName, String queueName) {
 	}
 	
 	@Override

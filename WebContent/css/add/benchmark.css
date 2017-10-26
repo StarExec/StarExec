@@ -29,8 +29,7 @@ button {
 }
 
 #tblDefaultPerm tr td {
-	padding: 0px;
-	padding-right: 40px;
+	padding: 0 40px 0 0;
 	background-color: transparent;	
 }
 
@@ -63,7 +62,7 @@ button {
 	}
 
 	#wrapper #tblDefaultPerm tr td {
-		padding-right: 0px;
+		padding-right: 0;
 	}
 	
 	#wrapper #btnPrev {

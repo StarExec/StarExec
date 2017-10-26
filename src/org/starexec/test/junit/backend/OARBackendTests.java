@@ -19,8 +19,8 @@ import java.util.Set;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({Util.class})
 public class OARBackendTests {
-	OARBackend backend = new OARBackend();
-	private static String oarnotifyTestString = "admin \n" +
+	final OARBackend backend = new OARBackend();
+	private static final String oarnotifyTestString = "admin \n" +
 	"priority = 10\n"+
 	"scheduler = oar_sched_gantt_with_timesharing_and_fairsharing_and_quotas\n"+
 	"state = Active\n"+
@@ -33,13 +33,13 @@ public class OARBackendTests {
 	"scheduler = oar_sched_gantt_with_timesharing_and_fairsharing_and_quotas\n"+
 	"state = Active";
 	
-	private static String oarnodesJSONResults = 
+	private static final String oarnodesJSONResults =
 "{\"4\" : {\"network_address\" : \"stardev.cs.uiowa.edu\","+"\"queue\" : \"all\" },\"1\" : {\"network_address\" : \"n001\",\"queue\" : \"test\"}}";
 	
 	
-	private static String submitScriptResults = "preline\nOAR_JOB_ID=23\npostline";
+	private static final String submitScriptResults = "preline\nOAR_JOB_ID=23\npostline";
 	
-	private static String oarstatJSONResults = "{ \"8\" : { \"types\" : [], \"Job_Id\" : \"8\" }, \"1\" : {\"Job_Id\" : \"1\"}}";
+	private static final String oarstatJSONResults = "{ \"8\" : { \"types\" : [], \"Job_Id\" : \"8\" }, \"1\" : {\"Job_Id\" : \"1\"}}";
 	@Before
 	public void initialize() {
 		PowerMockito.mockStatic(Util.class);

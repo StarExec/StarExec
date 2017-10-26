@@ -17,6 +17,7 @@ import org.starexec.data.to.enums.Primitive;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.exceptions.StarExecException;
+import org.starexec.exceptions.RESTException;
 import org.starexec.jobs.ClearCacheManager;
 import org.starexec.jobs.JobManager;
 import org.starexec.logger.StarLevel;
@@ -42,8 +43,8 @@ import java.util.*;
 @Path("")
 public class RESTServices {
 	private static final StarLogger log = StarLogger.getLogger(RESTServices.class);
-	private static Gson gson = new Gson();
-	private static Gson limitGson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+	private static final Gson gson = new Gson();
+	private static final Gson limitGson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
 	public static final ValidatorStatusCode ERROR_DATABASE=new ValidatorStatusCode(false, "There was an internal database error processing your request");
 	private static final ValidatorStatusCode ERROR_INTERNAL_SERVER=new ValidatorStatusCode(false, "There was an internal server error processing your request");
@@ -58,14 +59,14 @@ public class RESTServices {
 	private static final ValidatorStatusCode ERROR_CANT_PROMOTE_LEADER=new ValidatorStatusCode(false, "The user is already a leader");
 
 	protected static final ValidatorStatusCode ERROR_TOO_MANY_JOB_PAIRS=new ValidatorStatusCode(false, "There are too many job pairs to display",1);
-	protected static final ValidatorStatusCode  ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS=new ValidatorStatusCode(false, "There are too many solver / configuraiton pairs to display");
+	protected static final ValidatorStatusCode  ERROR_TOO_MANY_SOLVER_CONFIG_PAIRS=new ValidatorStatusCode(false, "There are too many solver / configuration pairs to display");
 
 	public static final ValidatorStatusCode ERROR_LOG_SUBSCRIPTION_SUCCESS = new ValidatorStatusCode(true, "User subscribed successfully.");
 
 	/**
 	 * Recompiles all the job spaces for the given job
 	 * @param jobId ID of the job to recompile
-	 * @param request
+	 * @param request HTTP Request
 	 * @return ValidatorStatusCode with true on success and false otherwise
 	 */
 	@GET
@@ -86,7 +87,7 @@ public class RESTServices {
 	 * @param parentId the ID of root job space
 	 * @param jobId The ID  of the job
 	 * @param makeSpaceTree ???
-	 * @param request
+	 * @param request HTTP Request
 	 * @return a json string representing all the subspaces of the job space
 	 * with the given id
 	 * @author Eric Burns
@@ -104,7 +105,7 @@ public class RESTServices {
 	 * @param anonymousLinkUuid Unique ID assigned to anonymous page
 	 * @param primitivesToAnonymizeName String representing which primitive types to anonymize
 	 * @param makeSpaceTree ???
-	 * @param request
+	 * @param request HTTP Request
 	 * @return a json string representing all the subspaces of the job space
 	 * with the given id
 	 * @author Eric Burns
@@ -156,15 +157,15 @@ public class RESTServices {
 	@Produces("application/json")
 	public String isLeafSpace(@PathParam("spaceId") int spaceId) {
 		final String method = "isLeafSpace";
-		log.debug(method+" - Entering method "+method);
-		log.debug(method+" - Attempting to determine if space with id="+spaceId+" is a leaf space.");
+		log.entry(method);
+		log.debug(method, "Attempting to determine if space with id="+spaceId+" is a leaf space.");
 		return gson.toJson(Spaces.isLeaf(spaceId));
 	}
 
 	/**
 	 * Retrieves a text description of a benchmark upload status object.
 	 * @param statusId The ID of the status object
-	 * @param request
+	 * @param request HTTP Request
 	 * @return a json ValidatorStatusCode with the description as the message on success
 	 */
 	@GET
@@ -180,7 +181,7 @@ public class RESTServices {
 
 	/**
 	 * @param parentId The ID of the space to get the children of
-	 * @param request
+	 * @param request HTTP Request
 	 * @return a json string representing all the subspaces of the space with
 	 * the given id. If the given id is <= 0, then the root space is returned
 	 * @author Tyler Jensen
@@ -216,7 +217,7 @@ public class RESTServices {
 	@Produces("application/json")
 	public String clearErrorStates(@Context HttpServletRequest request) {
 		final String method = "clearErrorStates";
-		log.debug("Entering method "+method);
+		log.entry(method);
 		int userId = SessionUtil.getUserId(request);
 		ValidatorStatusCode status=QueueSecurity.canUserClearErrorStates(userId);
 		if (!status.isSuccess()) {
@@ -258,15 +259,15 @@ public class RESTServices {
 	@Produces("text/plain")
 	public String getQstatOutput(@Context HttpServletRequest request) {
 		String qstat=R.BACKEND.getRunningJobsStatus();
-		if(!Util.isNullOrEmpty(qstat)) {
-			return qstat;
+		if(Util.isNullOrEmpty(qstat)) {
+			throw RESTException.NOT_FOUND;
 		}
-		return "not available";
+		return qstat;
 	}
 
 	/**
 	 * @param id The ID of the unvalidated benchmark object (from the unvalidated benchmarks table)
-	 * @param request
+	 * @param request HTTP Request
 	 * @return a text string that holds the result of running qstat -f
 	 * @author Tyler Jensen
 	 */
@@ -279,17 +280,16 @@ public class RESTServices {
 			return valid.getMessage();
 		}
 		String stdout=Uploads.getInvalidBenchmarkErrorMessage(id);
-		if(!Util.isNullOrEmpty(stdout)) {
-			return stdout;
+		if(Util.isNullOrEmpty(stdout)) {
+			throw RESTException.NOT_FOUND;
 		}
-
-		return "not available";
+		return stdout;
 	}
 
 	/**
 	 * @return a text string that shows the load values for the given queue.
 	 * @param queueId the ID of the queue to get data for.
-	 * @param request
+	 * @param request HTTP Request
 	 * @author Eric Burns
 	 */
 	@GET
@@ -297,16 +297,15 @@ public class RESTServices {
 	@Produces("text/plain")
 	public String getLoadsForQueue(@PathParam("queueId") int queueId, @Context HttpServletRequest request) {
 		String loads = JobManager.getLoadRepresentationForQueue(queueId);
-		if(!Util.isNullOrEmpty(loads)) {
-			return loads;
+		if(Util.isNullOrEmpty(loads)) {
+			throw RESTException.NOT_FOUND;
 		}
-
-		return "not available";
+		return loads;
 	}
 
 	/**
 	 * @param id the ID of the job pair
-	 * @param request
+	 * @param request HTTP Request
 	 * @return a text string that holds the log of job pair with the given id
 	 * @author Tyler Jensen
 	 */
@@ -317,21 +316,20 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		ValidatorStatusCode status=JobSecurity.canUserSeeJobWithPair(id, userId);
 		if (!status.isSuccess()) {
-		    return ("user "+ userId + " does not have access to see job " + id);
+			return ("user "+ userId + " does not have access to see job " + id);
 		}
 
-			String log = JobPairs.getJobLog(id);
-
-			if(!Util.isNullOrEmpty(log)) {
-				return log;
-			}
-		return "not available";
+		String log = JobPairs.getJobLog(id);
+		if(Util.isNullOrEmpty(log)) {
+			throw RESTException.NOT_FOUND;
+		}
+		return log;
 	}
 
 	/**
 	 * @param id The ID of the benchmark
 	 * @param limit The maximum number of characters to return
-	 * @param request
+	 * @param request HTTP Request
 	 * @return a string that is the plain text contents of a benchmark file
 	 * @author Tyler Jensen
 	 */
@@ -344,23 +342,23 @@ public class RESTServices {
 		log.entry(methodName);
 		int userId = SessionUtil.getUserId(request);
 
-		final String notAvailableMessage = "not available";
 		if (!BenchmarkSecurity.canUserSeeBenchmarkContents(id,userId).isSuccess()) {
-			return notAvailableMessage;
+			throw RESTException.FORBIDDEN;
 		}
 		Benchmark b=Benchmarks.get(id);
 		try {
-			Optional<String> contents = Benchmarks.getContents(b, limit);
-			return contents.orElse(notAvailableMessage);
+			return Benchmarks.getContents(b, limit).get();
+		} catch (NoSuchElementException e) {
+			throw RESTException.NOT_FOUND;
 		} catch (IOException e) {
 			log.warn(methodName, "Caught IOException.");
-			return "Internal Error: not available";
+			throw RESTException.INTERNAL_SERVER_ERROR;
 		}
 	}
 
 	/**
 	 * @param id the ID of the solver to get build output for
-	 * @param request
+	 * @param request HTTP Request
 	 * @return a string that holds the build log for a solver
 	 * @author Eric Burns
 	 */
@@ -372,24 +370,25 @@ public class RESTServices {
 
 		ValidatorStatusCode status=SolverSecurity.canUserSeeBuildLog(id, userId);
 		if (!status.isSuccess()) {
-			return "not available";
+			throw RESTException.FORBIDDEN;
 		}
 		try {
 			File output=Solvers.getSolverBuildOutput(id);
-			if(output.exists()) {
-				return FileUtils.readFileToString(output);
+			if(!output.exists()) {
+				throw RESTException.NOT_FOUND;
 			}
+			return FileUtils.readFileToString(output);
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
+			throw RESTException.INTERNAL_SERVER_ERROR;
 		}
-		return "not available";
 	}
 
 	/**
 	 * Reruns all the pairs in the given job that have the given status code
 	 * @param id The ID of the job to rerun pairs for
 	 * @param statusCode The status code that all the pairs to be rerun have currently
-	 * @param request
+	 * @param request HTTP Request
 	 * @return 0 on success or an error code on failure
 	 */
 	@POST
@@ -409,7 +408,7 @@ public class RESTServices {
 	/**
 	 * Reruns all the pairs in the given job
 	 * @param id The ID of the job to rerun pairs for
-	 * @param request
+	 * @param request HTTP Request
 	 * @return 0 on success or an error code on failure
 	 */
 	@POST
@@ -427,7 +426,7 @@ public class RESTServices {
 	/**
 	 * Reruns all the pairs in the given job that have 0 as their runtime
 	 * @param id The ID of the job to rerun pairs for
-	 * @param request
+	 * @param request HTTP Request
 	 * @return 0 on success or an error code on failure
 	 */
 	@POST
@@ -447,7 +446,7 @@ public class RESTServices {
 	 * @param id The ID of the pair to get output for
 	 * @param stageNumber the stage to get output for
 	 * @param limit The maximum number of characters to return
-	 * @param request
+	 * @param request HTTP Request
 	 * @return a string that holds the stdout of job pair with the given id
 	 * @author Tyler Jensen
 	 */
@@ -458,25 +457,26 @@ public class RESTServices {
 		final String methodName = "getJobPairStdout";
 		JobPair jp = JobPairs.getPair(id);
 		if (jp==null) {
-			return "not available";
+			throw RESTException.NOT_FOUND;
 		}
 		int userId = SessionUtil.getUserId(request);
 		ValidatorStatusCode status=JobSecurity.canUserSeeJob(jp.getJobId(), userId);
 		if (!status.isSuccess()) {
-			return "not available";
+			throw RESTException.FORBIDDEN;
 		}
 		try {
-			Optional<String> stdout = JobPairs.getStdOut(jp.getId(), stageNumber, limit);
-			return stdout.orElse("not available");
+			return JobPairs.getStdOut(jp.getId(), stageNumber, limit).get();
+		} catch (NoSuchElementException e) {
+			throw RESTException.NOT_FOUND;
 		} catch (IOException e) {
 			log.warn(methodName, "Caught IOException while trying to get jobpair stdout.");
-			return "not available";
+			throw RESTException.INTERNAL_SERVER_ERROR;
 		}
 	}
 
 	/**
 	 * @param id The ID of the node to get details for
-	 * @param request
+	 * @param request HTTP Request
 	 * @return a string representing all attributes of the node with the given id
 	 * @author Tyler Jensen
 	 */
@@ -489,7 +489,7 @@ public class RESTServices {
 
 	/**
 	 * @param id The ID of the queue to get jobs for
-	 * @param request
+	 * @param request HTTP Request
 	 * @return json object representing all Jobs running on the queue
 	 */
 	@GET
@@ -508,7 +508,7 @@ public class RESTServices {
 
 	/**
 	 * @param id The ID of the queue to get details for
-	 * @param request
+	 * @param request HTTP Request
 	 * @return a json string representing all attributes of the queue with the given id
 	 * @author Tyler Jensen
 	 */
@@ -523,7 +523,7 @@ public class RESTServices {
 	/**
 	 *
 	 * @param queueId ID of the queue to count nodes for
-	 * @param request
+	 * @param request HTTP Request
 	 * @return gson integer representing the number of nodes in the given queue
 	 */
 	@GET
@@ -536,7 +536,7 @@ public class RESTServices {
 
 	/**
 	 * @param id community ID
-	 * @param request
+	 * @param request HTTP Request
 	 * @return a json string representing all communities within starexec
 	 * @author Tyler Jensen
 	 */
@@ -561,8 +561,8 @@ public class RESTServices {
 
 	/**
 	 *
-	 * @param spaceId
-	 * @param request
+	 * @param spaceId ID of the space to query
+	 * @param request HTTP request
 	 * @return gson integer representing the ID of the community that owns the given space
 	 */
 	@GET
@@ -576,7 +576,7 @@ public class RESTServices {
 	 *
 	 * @param userid ID of the user to get permissions for
 	 * @param spaceId ID of the space to get permissions in
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json string representing permissions within a particular space for a user
 	 * @author Tyler Jensen
 	 */
@@ -597,7 +597,7 @@ public class RESTServices {
 
 	/**
 	 * @param spaceId ID of the space to get. If the given id is <= 0, then the root space is returned
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json string representing all the subspaces of the space with
 	 * the given id.
 	 * @author Tyler Jensen & Todd Elvers
@@ -623,7 +623,7 @@ public class RESTServices {
 	 * Handles a request to rerun a single job pair
 	 *
 	 * @param pairId The ID of the pair to rerun
-	 * @param request
+	 * @param request HTTP request
 	 * @return json ValidatorStatusCode
 	 */
 
@@ -686,7 +686,7 @@ public class RESTServices {
 	 *
 	 * @param jobSpaceId ID of the job space to get pairs for
 	 * @param stageNumber Number of stage to get pair data for
-	 * @param request
+	 * @param request HTTP request
 	 * @return json MatrixJson object
 	 */
 	@GET
@@ -741,15 +741,11 @@ public class RESTServices {
 	}
 
 	// Simplified matrix element so we can send less data via JSON.
-	private class SimpleMatrixElement {
-		@Expose
-		String status;
-		@Expose
-		String cpuTime;
-		@Expose
-		String memUsage;
-		@Expose
-		String wallclock;
+	private static class SimpleMatrixElement {
+		@Expose final String status;
+		@Expose final String cpuTime;
+		@Expose final String memUsage;
+		@Expose final String wallclock;
 		public SimpleMatrixElement(String status, String cpuTime, String memUsage, String wallclock) {
 			this.status = status;
 			this.cpuTime = cpuTime;
@@ -758,11 +754,9 @@ public class RESTServices {
 		}
 	}
 
-	private class MatrixJson {
-		@Expose
-		boolean done;
-		@Expose
-		Map<String, SimpleMatrixElement> benchSolverConfigElementMap;
+	private static class MatrixJson {
+		@Expose final boolean done;
+		@Expose final Map<String, SimpleMatrixElement> benchSolverConfigElementMap;
 
 		public MatrixJson(boolean done, Map<String, SimpleMatrixElement> benchSolverConfigElementMap) {
 			this.done = done;
@@ -802,7 +796,7 @@ public class RESTServices {
 	/**
 	 * Gets the next page of solvers that the requesting user can SEE. This includes solvers
 	 * they own along with public solvers
-	 * @param request
+	 * @param request HTTP request
 	 * @return json object for a DataTables page for solvers
 	 */
 	@POST
@@ -821,7 +815,7 @@ public class RESTServices {
 	/**
 	 * Gets the next page of benchmarks that a user can see. This includes benchmarks they own
 	 * along with public benchmarks
-	 * @param request
+	 * @param request HTTP request
 	 * @return json object for a DataTables page containing the next page of benchmarks
 	 */
 	@POST
@@ -843,7 +837,7 @@ public class RESTServices {
 	 * @param jobSpaceId The ID of the job space to get data for
 	 * @param config1 ID of the first config to compare
 	 * @param config2 ID of the second config to compare
-	 * @param request
+	 * @param request HTTP request
 	 * @return json DataTables object containing the next page of SolverComparisons
 	 */
 	@POST
@@ -865,13 +859,13 @@ public class RESTServices {
 
 	/**
 	 * Gets paginated fob pairs for an anonymized job page
-	 * @param anonymousLinkUuid
-	 * @param stageNumber
+	 * @param anonymousLinkUuid UUID of anonymous link
+	 * @param stageNumber Stage number to view
 	 * @param wallclock True to use wallclock time and false to use cpu time
 	 * @param jobSpaceId ID of the space to get pairs for
 	 * @param syncResults
 	 * @param primitivesToAnonymizeName
-	 * @param request
+	 * @param request HTTP request
 	 * @return json DataTables object with the next page of job pairs
 	 */
 	@POST
@@ -1034,7 +1028,7 @@ public class RESTServices {
 
     /**
      * Handles a request to get a community statistical overview
-     * @param request
+     * @param request HTTP request
      * @author Julio Cervantes
      * @return A json string containing the path to the newly created png chart as well as
      * an image map linking points to benchmarks
@@ -1197,7 +1191,7 @@ public class RESTServices {
 	 * @param shortFormat Whether to get the full stats for the stats table (true) or a truncated version for the
 	 * space overview table
 	 * @param wallclock True to use wallclock time and false to use cpu time
-	 * @param request
+	 * @param request HTTP request
 	 * @return json DataTables object containing the next page of SolverStats objects
 	 */
 	@POST
@@ -1237,7 +1231,7 @@ public class RESTServices {
 	 * @param stageNumber the stage number to get job pair data for
 	 * @param shortFormat Whether to retrieve the fields for the full stats table or the truncated stats for the space summary tables
 	 * @param wallclock True to use wallclock time and false to use cpu time
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json DataTables object containing the next page of stats.
 	 * @author Eric Burns
 	 */
@@ -1327,7 +1321,7 @@ public class RESTServices {
 	/**
 	 * Gets job pairs running on the given node
 	 * @param id The ID of the node to retrieve running pairs on
-	 * @param request
+	 * @param request HTTP request
 	 * @return json object containing the next page of job pairs running on this node
 	 * @author Wyatt Kaiser
 	 */
@@ -1343,7 +1337,7 @@ public class RESTServices {
 	}
 	/**
 	 * @param id ID of the queue to get pairs for
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json string representing all attributes of the queue with the given id
 	 * @author Wyatt Kaiser
 	 */
@@ -1365,7 +1359,7 @@ public class RESTServices {
 	/**
 	 * Returns all Jobs with enqueued pairs for display by DataTables
 	 *
-	 * @param request
+	 * @param request HTTP request
 	 * @return a JSON object
 	 */
 	@GET
@@ -1516,7 +1510,7 @@ public class RESTServices {
 	 * Update the name of an existing job
 	 * @param jobId ID of the job to change
 	 * @param newName New name to assign the job
-	 * @param request
+	 * @param request HTTP request
 	 * @return json ValidatorStatusCode
 	 */
 	@POST
@@ -1547,8 +1541,8 @@ public class RESTServices {
 	/**
 	 * Update the description of a job.
 	 * @param jobId ID of the job to impact.
-	 * @param newDescription
-	 * @param request
+	 * @param newDescription New description for this job
+	 * @param request HTTP request
 	 * @return  json ValidatorStatusCode
 	 */
 	@POST
@@ -1581,7 +1575,7 @@ public class RESTServices {
 	/**
 	 * Gets the next page of benchmarks that are in the given space
 	 * @param spaceId The ID of the space to get benchmarks for
-	 * @param request
+	 * @param request HTTP request
 	 * @return json object for a new DataTables page of benchmarks
 	 */
 	@POST
@@ -1653,7 +1647,7 @@ public class RESTServices {
 	 *
 	 * @param spaceId the id of the space to check a user's permissions in
 	 * @param userId the id of the user to check the permissions of
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json string representing the user's permissions in the given space
 	 * @author Todd Elvers
 	 */
@@ -1679,7 +1673,7 @@ public class RESTServices {
 	}
 
 	/**
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json string representing all the subspaces of the space with
 	 * the given id. If the given id is <= 0, then the root space is returned
 	 * @author Tyler Jensen
@@ -1706,7 +1700,7 @@ public class RESTServices {
 	 * space/solver id is also included in the POST path.
 	 * @param type The type of primitive (user, space, solver) to associate the site with
 	 * @param id The ID of the primitive given by type
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json string representing all the websites associated with
 	 * the current user/space/solver
 	 * @author Skylar Stark and Todd Elvers
@@ -1716,20 +1710,23 @@ public class RESTServices {
 	@Produces("application/json")
 	public String getWebsites(@PathParam("type") String type, @PathParam("id") int id, @Context HttpServletRequest request) {
 		int userId = SessionUtil.getUserId(request);
-		if(type.equals("user")){
-			return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.USER));
-		} else if(type.equals("space")){
-			ValidatorStatusCode status = SpaceSecurity.canUserSeeSpace(id, userId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
+		switch (type) {
+			case "user":
+				return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.USER));
+			case "space": {
+				ValidatorStatusCode status = SpaceSecurity.canUserSeeSpace(id, userId);
+				if (!status.isSuccess()) {
+					return gson.toJson(status);
+				}
+				return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.SPACE));
 			}
-			return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.SPACE));
-		} else if (type.equals(R.SOLVER)) {
-			ValidatorStatusCode status = SolverSecurity.canUserSeeSolver(id, userId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
+			case R.SOLVER: {
+				ValidatorStatusCode status = SolverSecurity.canUserSeeSolver(id, userId);
+				if (!status.isSuccess()) {
+					return gson.toJson(status);
+				}
+				return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.SOLVER));
 			}
-			return gson.toJson(Websites.getAllForJavascript(id, WebsiteType.SOLVER));
 		}
 		return gson.toJson(ERROR_INVALID_WEBSITE_TYPE);
 	}
@@ -1820,7 +1817,7 @@ public class RESTServices {
 	 * in the path
 	 * @param type The type of primitive we are adding the website to
 	 * @param id the ID of the primitive specified by type
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json string containing '0' if the add was successful, '1' otherwise
 	 */
 	@POST
@@ -1835,13 +1832,16 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		if (type.equals(R.USER)) {
-			success = Websites.add(id, url, name,WebsiteType.USER);
-		} else if (type.equals(R.SPACE)) {
+		switch (type) {
+		case R.USER:
+			success = Websites.add(id, url, name, WebsiteType.USER);
+			break;
+		case R.SPACE:
 			success = Websites.add(id, url, name, WebsiteType.SPACE);
-		} else if (type.equals(R.SOLVER)) {
+			break;
+		case R.SOLVER:
 			success = Websites.add(id, url, name, WebsiteType.SOLVER);
-
+			break;
 		}
 
 		// Passed validation AND Database update successful
@@ -1852,7 +1852,7 @@ public class RESTServices {
 	 * Deletes a website, which may be associated with a user, space, or solver
 	 *
 	 * @param websiteId the id of the website to remove
-	 * @param request
+	 * @param request HTTP request
 	 * @return json ValidatorStatusCode
 	 * @author Todd Elvers
 	 */
@@ -1870,13 +1870,13 @@ public class RESTServices {
 
 	/**
 	 * Runs TestSequences that are given by name
-	 * @param request
+	 * @param request HTTP request
 	 * @return json ValidatorStatusCode
 	 */
 
 	@POST
 	@Path("/test/runTests")
-	@Produces("appliation/json")
+	@Produces("application/json")
 	public String runTest(@Context HttpServletRequest request) {
 		int u=SessionUtil.getUserId(request);
 		ValidatorStatusCode status=GeneralSecurity.canUserRunTests(u,false);
@@ -1895,13 +1895,13 @@ public class RESTServices {
 
 	/**
 	 * Runs every TestSequence. This does NOT run a stress test!
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json ValidatorStatusCode
 	 */
 
 	@POST
 	@Path("/test/runAllTests")
-	@Produces("appliation/json")
+	@Produces("application/json")
 	public String runAllTests(@Context HttpServletRequest request) {
 		int u=SessionUtil.getUserId(request);
 
@@ -1919,7 +1919,7 @@ public class RESTServices {
 	/**
 	 * Handles a request to edit the non-SGE attributes (like timeouts) of an existing queue
 	 * @param id The ID of the queue being updated
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json ValidatorStatuscode
 	 */
 
@@ -1961,7 +1961,7 @@ public class RESTServices {
 	 * @param attribute Name of attribute to update
 	 * @param userId The ID of the user to update
 	 * @param newValue The new value to assign to the specified attribute
-	 * @param request
+	 * @param request HTTP request
 	 *
 	 * @return a json string containing '0' if the update was successful, else
 	 * a json string containing '1'
@@ -1985,27 +1985,30 @@ public class RESTServices {
 		// Go through all the cases, depending on what attribute we are changing.
 		// First, validate that it is in legal form. Then, try to update the database.
 		// Finally, update the current session data
-		if (attribute.equals("firstname")) {
-
+		switch (attribute) {
+		case "firstname":
 			success = Users.updateFirstName(userId, newValue);
 			if (success) {
 				SessionUtil.getUser(request).setFirstName(newValue);
 				messageToUser = "Edit successful.";
 			}
-		} else if (attribute.equals("lastname")) {
+			break;
+		case "lastname":
 			success = Users.updateLastName(userId, newValue);
 			if (success) {
 				SessionUtil.getUser(request).setLastName(newValue);
 				messageToUser = "Edit successful.";
 			}
-		} else if (attribute.equals("institution")) {
+			break;
+		case "institution":
 			success = Users.updateInstitution(userId, newValue);
 			if (success) {
 				SessionUtil.getUser(request).setInstitution(newValue);
 				messageToUser = "Edit successful.";
 			}
-		} else if (attribute.equals("email")) {
-			log.info("User with id="+userId+" has requested to change their email to "+newValue);
+			break;
+		case "email":
+			log.info("User with id=" + userId + " has requested to change their email to " + newValue);
 			success = true;
 			if (!Users.getUserByEmail(newValue)) {
 				try {
@@ -2015,10 +2018,15 @@ public class RESTServices {
 					// Send a validation email to the new email address. using a unique
 					// code to safely reference this user's entry in verification hyperlinks
 					Mail.sendEmailChangeValidation(newValue, code);
-					log.debug("Email sent to user with id="+userId+" at address "+newValue+" to validate email change request.");
+					log.debug("Email sent to user with id=" + userId + " at address " + newValue +
+									  " to validate email change request.");
 					messageToUser = "A verification email has been sent to the new email address.";
 				} catch (IOException e) {
-					log.warn("(editUserInfo) an error occurred while trying to send a change email verification email.", e);
+					log.warn(
+							"(editUserInfo) an error occurred while trying to send a change email verification " +
+									"email.",
+							e
+					);
 					messageToUser = "Could not send verification email.";
 					success = false;
 				} catch (StarExecDatabaseException e) {
@@ -2030,28 +2038,32 @@ public class RESTServices {
 				messageToUser = "A user with that email already exists.";
 				success = false;
 			}
-		} else if (attribute.equals("diskquota")) {
+			break;
+		case "diskquota":
 			log.debug("diskquota");
-			success=Users.setDiskQuota(userId, Long.parseLong(newValue));
+			success = Users.setDiskQuota(userId, Long.parseLong(newValue));
 			log.debug("success = " + success);
 			if (success) {
 				SessionUtil.getUser(request).setDiskQuota(Long.parseLong(newValue));
 				messageToUser = "Edit successful.";
 			}
-		} else if (attribute.equals("pairquota")) {
+			break;
+		case "pairquota":
 			log.debug("pairquota");
-			success=Users.setPairQuota(userId, Integer.parseInt(newValue));
+			success = Users.setPairQuota(userId, Integer.parseInt(newValue));
 			log.debug("success = " + success);
 			if (success) {
 				SessionUtil.getUser(request).setPairQuota(Integer.parseInt(newValue));
 				messageToUser = "Edit successful.";
 			}
-		} else if (attribute.equals("pagesize")) {
+			break;
+		case "pagesize":
 
-			success=Users.setDefaultPageSize(userId, Integer.parseInt(newValue));
+			success = Users.setDefaultPageSize(userId, Integer.parseInt(newValue));
 			if (success) {
 				messageToUser = "Edit successful.";
 			}
+			break;
 		}
 
 		String json = null;
@@ -2069,7 +2081,7 @@ public class RESTServices {
 	 * Sets a settings profile to be the default for the user making the request
 	 * @param id The ID of a settings profile
 	 * @param userIdOfOwner
-	 * @param request
+	 * @param request HTTP request
 	 * @return json ValidatorStatusCode
 	 */
 	@POST
@@ -2093,7 +2105,7 @@ public class RESTServices {
 	/**
 	 * Deletes a DefaultSettings profile
 	 * @param id The ID of the profile to delete
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json ValidatorStatuscode
 	 */
 	@POST
@@ -2156,7 +2168,7 @@ public class RESTServices {
 	 * is legal, then updates the database and session information accordingly.
 	 * @param attribute The string name of the attribute to update
 	 * @param id The ID of the DefaultSettings object to update
-	 * @param request
+	 * @param request HTTP request
 	 * @return 	0: successful,<br>
 	 * 			1: parameter validation failed,<br>
 	 * 			2: insufficient permissions
@@ -2194,35 +2206,48 @@ public class RESTServices {
 
 			boolean success = false;
 			// Go through all the cases, depending on what attribute we are changing.
-			if (defaultSettingAttribute == DefaultSettingAttribute.PostProcess) {
+			switch (defaultSettingAttribute) {
+			case PostProcess:
 				success = Settings.updateSettingsProfile(id, 1, Integer.parseInt(newValue));
-			} else if (defaultSettingAttribute == DefaultSettingAttribute.BenchProcess) {
-				success = Settings.updateSettingsProfile(id,8,Integer.parseInt(newValue));
-			}else if (defaultSettingAttribute == DefaultSettingAttribute.CpuTimeout) {
+				break;
+			case BenchProcess:
+				success = Settings.updateSettingsProfile(id, 8, Integer.parseInt(newValue));
+				break;
+			case CpuTimeout:
 				success = Settings.updateSettingsProfile(id, 2, Integer.parseInt(newValue));
-			}else if (defaultSettingAttribute == DefaultSettingAttribute.ClockTimeout) {
+				break;
+			case ClockTimeout:
 				success = Settings.updateSettingsProfile(id, 3, Integer.parseInt(newValue));
-			} else if (defaultSettingAttribute == DefaultSettingAttribute.DependenciesEnabled) {
+				break;
+			case DependenciesEnabled:
 				success = Settings.updateSettingsProfile(id, 4, Integer.parseInt(newValue));
-			} else if (defaultSettingAttribute == DefaultSettingAttribute.defaultbenchmark) {
+				break;
+			case defaultbenchmark: {
 				DefaultSettings settings = Settings.getProfileById(id);
 				Integer benchId = Integer.parseInt(newValue);
 				settings.addBenchId(benchId);
 				Settings.updateDefaultSettings(settings);
 				success = true;
-			} else if (defaultSettingAttribute == DefaultSettingAttribute.defaultsolver) {
-				success=Settings.updateSettingsProfile(id, 7, Integer.parseInt(newValue));
-			} else if(defaultSettingAttribute == DefaultSettingAttribute.MaxMem) {
-				double gigabytes=Double.parseDouble(newValue);
+				break;
+			}
+			case defaultsolver:
+				success = Settings.updateSettingsProfile(id, 7, Integer.parseInt(newValue));
+				break;
+			case MaxMem:
+				double gigabytes = Double.parseDouble(newValue);
 				long bytes = Util.gigabytesToBytes(gigabytes);
-				success=Settings.setDefaultMaxMemory(id, bytes);
-			} else if (defaultSettingAttribute == DefaultSettingAttribute.PreProcess) {
-				success=Settings.updateSettingsProfile(id, 6, Integer.parseInt(newValue));
-			} else if (defaultSettingAttribute == DefaultSettingAttribute.BENCHMARKING_FRAMEWORK) {
+				success = Settings.setDefaultMaxMemory(id, bytes);
+				break;
+			case PreProcess:
+				success = Settings.updateSettingsProfile(id, 6, Integer.parseInt(newValue));
+				break;
+			case BENCHMARKING_FRAMEWORK: {
 				// Update the benchmarking framework and save it.
 				DefaultSettings settings = Settings.getProfileById(id);
 				settings.setBenchmarkingFramework(BenchmarkingFramework.valueOf(newValue));
 				success = Settings.updateDefaultSettings(settings);
+				break;
+			}
 			}
 
 			// Passed validation AND Database update successful
@@ -2239,7 +2264,7 @@ public class RESTServices {
 	 * is legal, then updates the database and session information accordingly.
 	 * @param attribute The name of the attribute being updated
 	 * @param id The ID of the community being updated
-	 * @param request
+	 * @param request HTTP request
 	 * @return 	0: successful,<br>
 	 * 			1: parameter validation failed,<br>
 	 * 			2: insufficient permissions
@@ -2287,7 +2312,7 @@ public class RESTServices {
 	 * First makes sure all details exist and are valid, then checks if the user making
 	 * the request is a leader of the space, then updates the space accordingly.
 	 * @param id The ID of the space to update
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json string containing '0' if the update is successful, else a json string
 	 * containing '1' if it is unsuccessful or a json string containing '2' if the current
 	 * user doesn't have sufficient privileges.
@@ -2344,7 +2369,7 @@ public class RESTServices {
 	 * @param jid The ID of the job to process
 	 * @param stageNumber The stage number to process across all pairs
 	 * @param pid The ID of the new post processor to use.
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json string with result status (0 for success, otherwise 1)
 	 * @author Eric Burns
 	 */
@@ -2401,7 +2426,7 @@ public class RESTServices {
 
 	/**
 	 * Restores all recycled benchmarks a user has
-	 * @param request
+	 * @param request HTTP request
 	 * @return 	0: success,<br>
 	 * 			1: database level error,<br>
 	 * @author Eric Burns
@@ -2419,7 +2444,7 @@ public class RESTServices {
 
 	/**
 	 * Restores all recycled solvers a user has
-	 * @param request
+	 * @param request HTTP request
 	 * @return 	0: success,<br>
 	 * 			1: database level error,<br>
 	 * @author Eric Burns
@@ -2437,7 +2462,7 @@ public class RESTServices {
 
 	/**
 	 * Deletes all recycled benchmarks a user has
-	 * @param request
+	 * @param request HTTP request
 	 * @return 	0: success,<br>
 	 * 			1: database level error,<br>
 	 * @author Eric Burns
@@ -2455,7 +2480,7 @@ public class RESTServices {
 
 	/**
 	 * Deletes all recycled solvers a user has
-	 * @param request
+	 * @param request HTTP request
 	 * @return 	0: success,<br>
 	 * 			1: database level error,<br>
 	 * @author Eric Burns
@@ -2475,7 +2500,7 @@ public class RESTServices {
 	 * Handles an update request for a processor
 	 *
 	 * @param pid The ID of the processor to update
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json string containing 0 for success, 1 for a server error,
 	 *  2 for a permissions error, or 3 for a malformed request error.
 	 *
@@ -2544,7 +2569,7 @@ public class RESTServices {
 	/**
 	 * Removes a user's association to a space
 	 * @param spaceId The Id of the space to leave.
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json string containing '0' if the user successfully left the
 	 *         space, else a json string containing '1' if there was a failure,
 	 *         '2' for insufficient permissions
@@ -2571,7 +2596,7 @@ public class RESTServices {
 	/**
 	 * Removes one or more benchmarks from the given space
 	 * @param spaceId The ID of the space to remove benchmarks from
-	 * @param request should have a selectedIds parameter containing an array of benchmarks tor emove
+	 * @param request should have a selectedIds parameter containing an array of benchmarks to remove
 	 * @return	0: if the benchmark was successfully removed from the space,<br>
 	 * 			1: if there was a failure at the database level,<br>
 	 * 			2: insufficient permissions
@@ -2642,7 +2667,7 @@ public class RESTServices {
 
 	/**
 	 * Recycles a list of benchmarks
-	 * @param request
+	 * @param request HTTP request
 	 * @return	0: if the benchmarks were successfully recycled,<br>
 	 * 			1: if there was a failure at the database level,<br>
 	 * 			2: insufficient permissions
@@ -2681,7 +2706,7 @@ public class RESTServices {
 
 	/**
 	 * Deletes a list of benchmarks
-	 * @param request
+	 * @param request HTTP request
 	 * @return	0: if the benchmark was successfully removed from the space,<br>
 	 * 			1: if there was a failure at the database level,<br>
 	 * 			2: insufficient permissions
@@ -2851,9 +2876,7 @@ public class RESTServices {
 			}
 			if (copy) {
 				List<Solver> oldSolvers=Solvers.get(selectedSolvers);
-				List<Integer>newSolverIds= new ArrayList<>();
-				newSolverIds=Solvers.copySolvers(oldSolvers, requestUserId, spaceId);
-				selectedSolvers=newSolverIds;
+				selectedSolvers= Solvers.copySolvers(oldSolvers, requestUserId, spaceId);
 				response.addCookie(new Cookie("New_ID", Util.makeCommaSeparatedList(selectedSolvers)));
 			}
 
@@ -2973,7 +2996,7 @@ public class RESTServices {
 	 * space; this differs from leaveCommunity() in that the user is not allowed
 	 * to remove themselves from a space or remove other leaders from a space
 	 * @param spaceId The ID of the space to remove users from
-	 * @param request
+	 * @param request HTTP request
 	 * @return 	0: if the user(s) were successfully removed from the space,<br>
 	 * 			1: if there was an error on the database level,<br>
 	 * 			3: if the leader initiating the removal is in the list of users to remove,<br>
@@ -3108,7 +3131,7 @@ public class RESTServices {
 
 	/**
 	 * Restores a list of solvers
-	 * @param request
+	 * @param request HTTP request
 	 * @return 	0: success,<br>
 	 * 			1: invalid parameters or database level error,<br>
 	 * 			2: insufficient permissions
@@ -3153,7 +3176,7 @@ public class RESTServices {
 	/**
 	 * Permanently deletes a user from the system. This is an admin-only function
 	 * @param userToDeleteId The id of the user to be deleted.
-	 * @param request
+	 * @param request HTTP request
 	 * @return json ValidatorStatusCode
 	 * @author Albert Giegerich
 	 */
@@ -3181,7 +3204,7 @@ public class RESTServices {
 
 	/**
 	 * Deletes a list of solvers
-	 * @param request
+	 * @param request HTTP request
 	 * @return 	0: success,<br>
 	 * 			1: invalid parameters or database level error,<br>
 	 * 			2: insufficient permissions
@@ -3222,7 +3245,7 @@ public class RESTServices {
 	 * Links all of the given user's orphaned primitives to the given space
 	 * @param userId The ID of the user that will have their primitives affected
 	 * @param spaceId The ID of the space to put the primitives in
-	 * @param request
+	 * @param request HTTP request
 	 * @return json ValidatorStatuscode
 	 */
 	@POST
@@ -3242,7 +3265,7 @@ public class RESTServices {
 	 * Recycles all benchmarks that have been orphaned belonging to a specific user. Users have this option
 	 * from their account page
 	 * @param userId The Id of the user to recycle benchmarks for.
-	 * @param request
+	 * @param request HTTP request
 	 * @return json ValidatorStatusCode
 	 * @author Eric Burns
 	 */
@@ -3280,7 +3303,7 @@ public class RESTServices {
 	 * Recycles all benchmarks that have been orphaned belonging to a specific user. Users have this option
 	 * from their account page
 	 * @param userId The Id of the user to recycle benchmarks for.
-	 * @param request
+	 * @param request HTTP request
 	 * @return json ValidatorStatusCode
 	 * @author Eric Burns
 	 */
@@ -3300,7 +3323,7 @@ public class RESTServices {
 	/**
 	 * Recycles all solvers that have been orphaned belonging to a specific user
 	 * @param userId the ID of the user to recycle solvers for
-	 * @param request
+	 * @param request HTTP request
 	 * @return json ValidatorStatusCode
 	 * @author Eric Burns
 	 */
@@ -3320,7 +3343,7 @@ public class RESTServices {
 
 	/**
 	 * Recycles a list of solvers
-	 * @param request
+	 * @param request HTTP request
 	 * @return 	0: success,<br>
 	 * 			1: invalid parameters or database level error,<br>
 	 * 			2: insufficient permissions
@@ -3358,7 +3381,7 @@ public class RESTServices {
 
 	/**
 	 * Deletes a list of configurations
-	 * @param request
+	 * @param request HTTP request
 	 * @return 	0: success,<br>
 	 * 			1: invalid parameters or database level error,<br>
 	 * 			2: insufficient permissions
@@ -3400,7 +3423,7 @@ public class RESTServices {
 	 * Removes a job's association with a space, thereby removing the job from
 	 * the space
 	 * @param spaceId The ID of the space to remove jobs from
-	 * @param request
+	 * @param request HTTP request
 	 * @return 	0: success,<br>
 	 * 			1: invalid parameters or database level error,<br>
 	 * 			2: insufficient permissions
@@ -3434,7 +3457,7 @@ public class RESTServices {
 	/**
 	 * Deletes a list of jobs
 	 * @param spaceId The ID of the space containing the solvers to remove
-	 * @param request
+	 * @param request HTTP request
 	 * @return 	0: success,<br>
 	 * 			1: database level error,<br>
 	 * 			2: insufficient permissions
@@ -3494,7 +3517,7 @@ public class RESTServices {
 
 	/**
 	 * Deletes a list of jobs
-	 * @param request
+	 * @param request HTTP request
 	 * @return 	0: success,<br>
 	 * 			1: database level error,<br>
 	 * 			2: insufficient permissions
@@ -3616,7 +3639,7 @@ public class RESTServices {
 	 * update.
 	 *
 	 * @param solverId the id of the solver to update the details for
-	 * @param request
+	 * @param request HTTP request
 	 * @return 	0: success,<br>
 	 * 			1: error on the database level,<br>
 	 * 			2: insufficient permissions,<br>
@@ -3659,7 +3682,7 @@ public class RESTServices {
 	 * The id of the job to pause must be included in the path.
 	 *
 	 * @param jobId the id of the job to pause
-	 * @param request
+	 * @param request HTTP request
 	 * @return  0: success,<br>
 	 *          1: error on the database level,<br>
 	 *          2: insufficient permissions
@@ -3683,7 +3706,7 @@ public class RESTServices {
 	 * The id of the job to resume must be included in the path.
 	 *
 	 * @param jobId the id of the job to resume
-	 * @param request
+	 * @param request HTTP request
 	 * @return  0: success,<br>
 	 *          1: error on the database level,<br>
 	 *          2: insufficient permissions
@@ -3707,7 +3730,7 @@ public class RESTServices {
 	 *
 	 * @param jobId the id of the job to resume
 	 * @param queueId the id of the queue to change to
-	 * @param request
+	 * @param request HTTP request
 	 * @return 	0: success,<br>
 	 * 			1: error on the database level,<br>
 	 * 			2: insufficient permissions
@@ -3730,7 +3753,7 @@ public class RESTServices {
 	 * Edits the properties of the given benchmark
 	 *
 	 * @param benchId the id of the benchmark to delete
-	 * @param request
+	 * @param request HTTP request
 	 * @return 	0: success,<br>
 	 * 			1: error on the database level,<br>
 	 * 			2: insufficient permissions,<br>
@@ -3848,7 +3871,7 @@ public class RESTServices {
 
     /**
      * helper function for editing permissions
-     * @param request
+     * @param request HTTP request
      * @return Permission object generated from the http request.
      **/
     public Permission createPermissionFromRequest(HttpServletRequest request){
@@ -3871,7 +3894,7 @@ public class RESTServices {
      * Changes the permissions of a given user for a space hierarchy
      * @param spaceId The ID of the root space of the hierarchy
      * @param userId the ID of the user to update permissions for
-     * @param request
+     * @param request HTTP request
      * @return json ValidatorStatusCode
      *@author Julio Cervantes
      *
@@ -3901,7 +3924,7 @@ public class RESTServices {
 	 * Changes the permissions of a given user for a given space
 	 * @param spaceId The ID of the space to update permissions for
 	 * @param userId The ID of the user to update permissions for
-	 * @param request
+	 * @param request HTTP request
 	 * @return 0 if the permissions were successfully changed,<br>
 	 * 		1 if there was an error on the database level,<br>
 	 * 		2 if the user changing the permissions isn't a leader,<br>
@@ -4017,7 +4040,7 @@ public class RESTServices {
 	 * Demotes a user from a leader to only a member in a community. This is an admin only function.
 	 * @param spaceId The Id of the community
 	 * @param userIdBeingDemoted ID of user to remove leadership from
-	 * @param request
+	 * @param request HTTP request
 	 * @return 0: Success.
 	 *         1: Selected userId list is empty.
 	 *         2: User making this request is not a leader
@@ -4037,6 +4060,44 @@ public class RESTServices {
 		Permission p = Permissions.getFullPermission();
 		p.setLeader(false);
 		return Permissions.set(userIdBeingDemoted, spaceId, p) ? gson.toJson(new ValidatorStatusCode(true,"User demoted successfully")) : gson.toJson(ERROR_DATABASE);
+	}
+
+	/**
+	 * Move an subspace into a different parent space
+	 * @param spaceId The Id of the space which is copied into.
+	 * @param request The HttpRequestServlet object containing the list of the space's Id
+	 * @param response Will set "New_ID" cookie with ids of new spaces
+	 * @return 0: Success.
+	 */
+	@POST
+	@Path("/move/space")
+	@Consumes("application/x-www-form-urlencoded")
+	@Produces("application/json")
+	public String moveSubSpaceToSpace(@FormParam("selectedIds[]") List<Integer> srcId, @FormParam("parent") int desId, @Context HttpServletRequest request) {
+		log.error("moveSubSpaceToSpace", "srcId: " + srcId + "    desId: " + desId);
+		// Get the id of the user who initiated the request
+		int userId = SessionUtil.getUserId(request);
+		if (srcId.isEmpty()) {
+			return gson.toJson(new ValidatorStatusCode(false, "No spaceId provided"));
+		}
+		ValidatorStatusCode status;
+		status = SpaceSecurity.canCopySpace(desId, userId, srcId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		status = SpaceSecurity.canUserRemoveSpace(userId, srcId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		try {
+			for (int i : srcId) {
+				Spaces.moveSpace(i, desId);
+			}
+			return gson.toJson(new ValidatorStatusCode(true, "Space moved successfully"));
+		} catch (Exception e) {
+			log.error("moveSubSpaceToSpace", e);
+			throw RESTException.INTERNAL_SERVER_ERROR;
+		}
 	}
 
 	/**
@@ -4123,7 +4184,7 @@ public class RESTServices {
 
 	/**
 	 * Gets the ID of the user making this request
-	 * @param request
+	 * @param request HTTP request
 	 * @return The integer ID of the user as a Json string
 	 */
 	@GET
@@ -4179,7 +4240,7 @@ public class RESTServices {
 
 	/**
 	 * Gets pagination for all test sequences
-	 * @param request
+	 * @param request HTTP request
 	 * @return json object for a DataTables test sequence table
 	 */
 	@GET
@@ -4200,7 +4261,7 @@ public class RESTServices {
 	/**
 	 * Gets test results for all tests in a single TestSequence
 	 * @param name Name of the TestSequence to get results for
-	 * @param request
+	 * @param request HTTP request
 	 * @return json object for DataTables representing all tests in a test sequence
 	 */
 	@GET
@@ -4363,7 +4424,6 @@ public class RESTServices {
 	 * @return a JSON object representing the next page of entries if successful,<br>
 	 * 		1 if the request fails parameter validation, <br>
 	 * @author Wyatt kaiser
-	 * @throws Exception
 	 */
 	@GET
 	@Path("/community/pending/requests/")
@@ -4383,7 +4443,7 @@ public class RESTServices {
 	/**
 	 * Gets all requests that are pending to join a single community
 	 * @param communityId The ID of the community to get requests for
-	 * @param request
+	 * @param request HTTP request
 	 * @return json object for DataTables representing all community requests for the given community.
 	 */
 	@GET
@@ -4404,7 +4464,7 @@ public class RESTServices {
 	/**
 	 * Handles the removal of a queue by the administrator
 	 * @param queueId the id of the queue to remove
-	 * @param request
+	 * @param request HTTP request
 	 * @return json ValidatorStatusCode
 	 */
 	@POST
@@ -4425,9 +4485,8 @@ public class RESTServices {
 	 * Allows the administrator to set the current logging level for a specific class.
 	 * @param level Logging level to set
 	 * @param className fully qualified class name (org.starexec...) for the class
-	 * @param request
+	 * @param request HTTP request
 	 * @return json ValidatorStatusCode
-	 * @throws Exception
 	 */
 	@POST
 	@Path("/logging/{level}/{className}")
@@ -4467,9 +4526,8 @@ public class RESTServices {
 	 * Allows the administrator to set the current logging level for a specific class an turn off logging for all other classes.
 	 * @param inputLevel Level to set for the given class
 	 * @param className The fully qualified class name (org.starexec...)
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json ValidatorStatusCode
-	 * @throws Exception
 	 */
 	@POST
 	@Path("/logging/allOffExcept/{level}/{className}")
@@ -4519,9 +4577,8 @@ public class RESTServices {
 	/**
 	 * Sets the logging level across all of Starexec
 	 * @param level String represetning the new logging level to use
-	 * @param request
+	 * @param request HTTP request
 	 * @return json ValidatorStatusCode
-	 * @throws Exception
 	 */
 	@POST
 	@Path("/logging/{level}")
@@ -4554,9 +4611,8 @@ public class RESTServices {
 
 	/**
 	 * Restarts Tomcat, causing a restart of Starexec
-	 * @param request
+	 * @param request HTTP request
 	 * @return json ValidatorStatusCode object
-	 * @throws Exception
 	 */
 	@POST
 	@Path("/restart/starexec")
@@ -4574,9 +4630,8 @@ public class RESTServices {
 
 	/**
 	 * Deletes all data in all LoadBalanceMonitor objects. Admin function to allow a reset of this data
-	 * @param request
+	 * @param request HTTP request
 	 * @return json ValidatorStatusCode
-	 * @throws Exception
 	 */
 	@POST
 	@Path("/jobs/clearloadbalance")
@@ -4592,9 +4647,8 @@ public class RESTServices {
 
 	/**
 	 * Deletes all solvercache directories on all compute nodes
-	 * @param request
-	 * @return
-	 * @throws Exception
+	 * @param request HTTP request
+	 * @return Json ValidatorStatusCode representing success or failure
 	 */
 	@POST
 	@Path("/jobs/clearsolvercache")
@@ -4616,9 +4670,8 @@ public class RESTServices {
 	/**
 	 * Toggles debug mode on or off
 	 * @param value True to turn debug mode on and false to turn it off
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json ValidatorStatusCode
-	 * @throws Exception
 	 */
 	@POST
 	@Path("/starexec/debugmode/{value}")
@@ -4635,7 +4688,7 @@ public class RESTServices {
 	/**
 	 * Will make the given queue the new test queue
 	 * @param queueId The ID of the queue to set as the new test queue
-	 * @param request
+	 * @param request HTTP request
 	 * @return json ValidatorStatusCode object
 	 * @author Wyatt Kaiser
 	 */
@@ -4658,7 +4711,7 @@ public class RESTServices {
 	/**
 	 * Clears all stats from the cache for the given job
 	 * @param jobId The ID of the job
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json ValidatorStatusCode
 	 */
 	@POST
@@ -4674,7 +4727,7 @@ public class RESTServices {
 
 	/**
 	 * Clears every entry from the cache of job stats
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json ValidatorStatusCode
 	 */
 	@POST
@@ -4691,7 +4744,7 @@ public class RESTServices {
 	/**
 	 * Changes a user's role to 'suspended'
 	 * @param userId The ID of the user to update
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json ValidatorStatusCode
 	 */
 	@POST
@@ -4710,7 +4763,7 @@ public class RESTServices {
 	/**
 	 * Changes a user the suspended role back to the nornmal user role
 	 * @param userId The ID of the user to update
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json ValidatorStatusCode
 	 */
 	@POST
@@ -4824,7 +4877,7 @@ public class RESTServices {
 	/**
 	 * Grants the 'developer' role to a user
 	 * @param userId The ID of the user to update
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json ValidatorStatusCode
 	 */
 	@POST
@@ -4843,7 +4896,7 @@ public class RESTServices {
 	/**
 	 * Removes the 'developer' role from a user
 	 * @param userId The ID of the user to update
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json ValidatorStatuscode
 	 */
 	@POST
@@ -4872,8 +4925,7 @@ public class RESTServices {
 	public String getPastReport(@PathParam("reportName") String reportName, @Context HttpServletRequest request) {
 		try {
 			File pastReport = new File(R.STAREXEC_DATA_DIR, "/reports/" + reportName);
-			String pastReportContents = FileUtils.readFileToString(pastReport, "UTF8");
-			return pastReportContents;
+			return FileUtils.readFileToString(pastReport, "UTF8");
 		} catch (IOException e) {
 			return "Could not get file.";
 		}
@@ -4881,7 +4933,7 @@ public class RESTServices {
 
 	/**
 	 * Sets the global pause feature as active in the system
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json ValidatorStatusCode
 	 */
 	@POST
@@ -4899,7 +4951,7 @@ public class RESTServices {
 
 	/**
 	 * Removes the global pause from the system
-	 * @param request
+	 * @param request HTTP request
 	 * @return a json ValidatorStatusCode
 	 */
 	@POST
@@ -4918,7 +4970,7 @@ public class RESTServices {
 
 	/**
 	 * Marks a queue as being globally available
-	 * @param request
+	 * @param request HTTP request
 	 * @param queueId The ID of the queue to update
 	 * @return a json ValidatorStatusCode
 	 */
@@ -4936,7 +4988,7 @@ public class RESTServices {
 
 	/**
 	 * Removes a queue from the set of globally accessible queues
-	 * @param request
+	 * @param request HTTP request
 	 * @param queueId The ID of the queue to update
 	 * @return a json ValidatorStatusCode
 	 */
@@ -4955,7 +5007,7 @@ public class RESTServices {
 
 	/**
 	 * Gets a json representation of some primitive type (solver, benchmark, job, space, configuration, processor)
-	 * @param request
+	 * @param request HTTP request
 	 * @param id The ID of the primitive
 	 * @param type The type of the primitive
 	 * @return the json primitive, or a json ValidatorStatusCode on failure
@@ -4965,59 +5017,66 @@ public class RESTServices {
 	@Produces("application/json")
 	public String getGsonPrimitive(@PathParam("id") int id, @PathParam("type") String type, @Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
-		if (type.equals(R.SOLVER)) {
-			ValidatorStatusCode status=SolverSecurity.canGetJsonSolver(id, userId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
+		switch (type) {
+			case R.SOLVER: {
+				ValidatorStatusCode status = SolverSecurity.canGetJsonSolver(id, userId);
+				if (!status.isSuccess()) {
+					return gson.toJson(status);
+				}
+				return gson.toJson(Solvers.getIncludeDeleted(id));
 			}
-			return gson.toJson(Solvers.getIncludeDeleted(id));
-		} else if (type.equals("benchmark")) {
-			ValidatorStatusCode status=BenchmarkSecurity.canGetJsonBenchmark(id, userId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
+			case "benchmark": {
+				ValidatorStatusCode status = BenchmarkSecurity.canGetJsonBenchmark(id, userId);
+				if (!status.isSuccess()) {
+					return gson.toJson(status);
+				}
+				return gson.toJson(Benchmarks.getIncludeDeletedAndRecycled(id, false));
 			}
-			return gson.toJson(Benchmarks.getIncludeDeletedAndRecycled(id,false));
-		} else if (type.equals(R.JOB)) {
-			ValidatorStatusCode status=JobSecurity.canGetJsonJob(id, userId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
+			case R.JOB: {
+				ValidatorStatusCode status = JobSecurity.canGetJsonJob(id, userId);
+				if (!status.isSuccess()) {
+					return gson.toJson(status);
+				}
+				return gson.toJson(Jobs.getIncludeDeleted(id));
 			}
-			return gson.toJson(Jobs.getIncludeDeleted(id));
+			case R.SPACE: {
+				ValidatorStatusCode status = SpaceSecurity.canGetJsonSpace(id, userId);
+				if (!status.isSuccess()) {
+					return gson.toJson(status);
+				}
+				return gson.toJson(Spaces.get(id));
+			}
+			case "configuration": {
+				ValidatorStatusCode status = SolverSecurity.canGetJsonConfiguration(id, userId);
+				if (!status.isSuccess()) {
+					return gson.toJson(status);
+				}
 
- 		} else if (type.equals(R.SPACE)) {
- 			ValidatorStatusCode status=SpaceSecurity.canGetJsonSpace(id, userId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
+				return gson.toJson(Solvers.getConfiguration(id));
 			}
-			return gson.toJson(Spaces.get(id));
- 		} else if (type.equals("configuration")) {
- 			ValidatorStatusCode status=SolverSecurity.canGetJsonConfiguration(id, userId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
-			}
+			case "processor": {
+				ValidatorStatusCode status = ProcessorSecurity.canUserSeeProcessor(id, userId);
+				if (!status.isSuccess()) {
+					return gson.toJson(status);
+				}
 
- 			return gson.toJson(Solvers.getConfiguration(id));
- 		} else if (type.equals("processor")) {
- 			ValidatorStatusCode status=ProcessorSecurity.canUserSeeProcessor(id, userId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
+				return gson.toJson(Processors.get(id));
 			}
-
- 			return gson.toJson(Processors.get(id));
- 		} else if (type.equals("queue")) {
- 			ValidatorStatusCode status=QueueSecurity.canGetJsonQueue(id, userId);
-			if (!status.isSuccess()) {
-				return gson.toJson(status);
+			case "queue": {
+				ValidatorStatusCode status = QueueSecurity.canGetJsonQueue(id, userId);
+				if (!status.isSuccess()) {
+					return gson.toJson(status);
+				}
+				return gson.toJson(Queues.get(id));
 			}
- 			return gson.toJson(Queues.get(id));
- 		}
+		}
 		return gson.toJson(new ValidatorStatusCode(false,"Invalid type specified"));
 	}
 
 	/**
 	 * Gets headers of the table of starexec-result attributes summary
 	 * @param jobSpaceId The ID of the primitive
-	 * @param request
+	 * @param request HTTP request
 	 * @return json table headers
 	 */
     @POST
@@ -5071,5 +5130,16 @@ public class RESTServices {
 		int userId = SessionUtil.getUserId(request);
 		Notifications.unsubscribeUserToJob(userId, jobId);
 		return "{}";
+	}
+
+	/**
+	 * Analytics
+	 */
+	@GET
+	@Path("/analytics")
+	@Produces("application/json")
+	public String analytics(@QueryParam("start") @DefaultValue("2017-04-01") java.sql.Date startDate, @QueryParam("end") @DefaultValue("2030-04-01") java.sql.Date endDate) {
+			org.starexec.data.database.Analytics.saveToDB();
+			return gson.toJson(org.starexec.data.to.AnalyticsResults.getAllEvents(startDate, endDate));
 	}
 }

@@ -38,7 +38,7 @@ CREATE TABLE pipeline_stages (
 );
 -- Stores any dependencies that a particular stage has.
 CREATE TABLE pipeline_dependencies (
-	stage_id INT NOT NULL, -- ID of the stage that must recieve output from a previous stage
+	stage_id INT NOT NULL, -- ID of the stage that must receive output from a previous stage
 	
 	input_type TINYINT NOT NULL, -- ID of the stage that produces the output
 	input_id SMALLINT NOT NULL, -- if the type is an artifact, this is the the 1-indexed number of the stage that is needed

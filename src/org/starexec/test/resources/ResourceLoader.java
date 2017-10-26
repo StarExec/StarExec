@@ -19,7 +19,6 @@ import org.starexec.data.to.pipelines.PipelineDependency.PipelineInputType;
 import org.starexec.data.to.pipelines.PipelineStage;
 import org.starexec.data.to.pipelines.SolverPipeline;
 import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
-import org.starexec.exceptions.StarExecException;
 import org.starexec.jobs.JobManager;
 import org.starexec.logger.StarLogger;
 import org.starexec.servlets.BenchmarkUploader;
@@ -48,15 +47,15 @@ public class ResourceLoader implements AutoCloseable {
 	
 	// this class keeps track of all the primitives it creates. Calling deleteAllPrimitives
 	// will delete all of these objects
-	private List<Integer> createdUserIds = new ArrayList<>();
-	private List<Integer> createdJobIds = new ArrayList<>();
-	private List<Integer> createdBenchmarkIds = new ArrayList<>();
-	private List<Integer> createdSolverIds = new ArrayList<>();
-	private List<Integer> createdProcessorIds = new ArrayList<>();
-	private List<Integer> createdSettingsIds = new ArrayList<>();
-	private List<Integer> createdSpaceIds = new ArrayList<>();
-	private List<Integer> createdQueueIds = new ArrayList<>();
-	private List<Integer> createdPipelineIds = new ArrayList<>();
+	private final List<Integer> createdUserIds = new ArrayList<>();
+	private final List<Integer> createdJobIds = new ArrayList<>();
+	private final List<Integer> createdBenchmarkIds = new ArrayList<>();
+	private final List<Integer> createdSolverIds = new ArrayList<>();
+	private final List<Integer> createdProcessorIds = new ArrayList<>();
+	private final List<Integer> createdSettingsIds = new ArrayList<>();
+	private final List<Integer> createdSpaceIds = new ArrayList<>();
+	private final List<Integer> createdQueueIds = new ArrayList<>();
+	private final List<Integer> createdPipelineIds = new ArrayList<>();
 
 	@Override
 	public void close() {
@@ -239,8 +238,6 @@ public class ResourceLoader implements AutoCloseable {
 		for (Integer i : solverIds) {
 			configIds.add(Solvers.getConfigsForSolver(i).get(0).getId());
 		}
-		List<Space> spaces= new ArrayList<>();
-		spaces.add(Spaces.get(spaceId));
 
 		JobManager.buildJob(job, benchmarkIds, configIds, spaceId);
 		
@@ -635,7 +632,9 @@ public class ResourceLoader implements AutoCloseable {
 			}
 			
 			boolean success = Queues.updateQueueCpuTimeout(queueId, wallTimeout);
-			success = success && Queues.updateQueueWallclockTimeout(queueId, cpuTimeout);
+			if (success) {
+				Queues.updateQueueWallclockTimeout(queueId, cpuTimeout);
+			}
 			createdQueueIds.add(queueId);
 			return Queues.get(queueId);
 		} catch (Exception e) {

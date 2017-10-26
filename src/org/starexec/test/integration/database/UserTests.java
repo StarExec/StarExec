@@ -13,11 +13,7 @@ import org.starexec.util.Util;
 
 import java.io.File;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-
+import java.util.*;
 
 /**
  * Tests for org.starexec.data.database.Users.java
@@ -33,9 +29,9 @@ public class UserTests extends TestSequence {
 	private Space space=null;
 	private Space subspace=null;
 	private Space comm=null;
-	private int wallclockTimeout=100;
-	private int cpuTimeout=100;
-	private int gbMemory=1;
+	private final int wallclockTimeout=100;
+	private final int cpuTimeout=100;
+	private final int gbMemory=1;
 	private final String BENCH_ARCHIVE = "benchmarks.zip";
 	
 	private boolean removeUserFromSpace(User user, Space space) {
@@ -66,7 +62,7 @@ public class UserTests extends TestSequence {
 		List<Integer> commIds=Users.getCommunities(user1.getId());
 		Assert.assertEquals(0,commIds.size());
 		commIds=Users.getCommunities(admin.getId());
-		Assert.assertTrue(commIds.size()>0);
+		Assert.assertTrue(!commIds.isEmpty());
 		boolean found=false;
 		for (Integer i : commIds) {
 			found=found || comm.getId()==i;
@@ -296,7 +292,7 @@ public class UserTests extends TestSequence {
 	private void DeleteUserDeletesUsersJobsTest() {
 		User tempUser = loader.loadUserIntoDatabase();
 		Solver tempSolver = loader.loadSolverIntoDatabase(space.getId(), tempUser.getId()); 
-		List<Integer> tempSolverIds = Arrays.asList(new Integer[]{tempSolver.getId()}); 
+		List<Integer> tempSolverIds = Collections.singletonList(tempSolver.getId());
 		List<Integer> tempBenchmarkIds = loader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
 
 		Job tempJob = loader.loadJobIntoDatabase(
@@ -317,7 +313,7 @@ public class UserTests extends TestSequence {
 	private void DeleteUserDeletesJobPairsTest() {
 		User tempUser = loader.loadUserIntoDatabase();
 		Solver tempSolver = loader.loadSolverIntoDatabase(space.getId(), tempUser.getId()); 
-		List<Integer> tempSolverIds = Arrays.asList(new Integer[]{tempSolver.getId()}); 
+		List<Integer> tempSolverIds = Collections.singletonList(tempSolver.getId());
 		List<Integer> tempBenchmarkIds = loader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
 
 		Job tempJob = loader.loadJobIntoDatabase(
@@ -325,7 +321,7 @@ public class UserTests extends TestSequence {
 		Assert.assertNotNull(tempJob);	
 
 		Assert.assertNotNull(tempJob.getJobPairs());
-		Assert.assertTrue(tempJob.getJobPairs().size() > 0);
+		Assert.assertTrue(!tempJob.getJobPairs().isEmpty());
 
 		for (JobPair pair : tempJob.getJobPairs()) {
 			Assert.assertNotNull(pair);
@@ -342,7 +338,7 @@ public class UserTests extends TestSequence {
 	private void DeleteUserDeletesJobDirectoriesTest() {
 		User tempUser = loader.loadUserIntoDatabase();
 		Solver tempSolver = loader.loadSolverIntoDatabase(space.getId(), tempUser.getId()); 
-		List<Integer> tempSolverIds = Arrays.asList(new Integer[]{tempSolver.getId()}); 
+		List<Integer> tempSolverIds = Collections.singletonList(tempSolver.getId());
 		List<Integer> tempBenchmarkIds = loader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
 
 		Job tempJob = loader.loadJobIntoDatabase(

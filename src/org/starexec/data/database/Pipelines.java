@@ -170,9 +170,8 @@ public class Pipelines {
 	 *
 	 * @param dep The dependency to add
 	 * @param con An open SQL connection to make the call on
-	 * @return True on success and false on error
 	 */
-	public static boolean addDependencyToDatabase(PipelineDependency dep, Connection con) {
+	public static void addDependencyToDatabase(PipelineDependency dep, Connection con) {
 		CallableStatement procedure = null;
 		try {
 			procedure = con.prepareCall("{CALL AddPipelineDependency(?,?,?,?)}");
@@ -182,13 +181,11 @@ public class Pipelines {
 			procedure.setInt(3, dep.getType().getVal());
 			procedure.setInt(4, dep.getInputNumber());
 			procedure.executeUpdate();
-			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
 
 	/**
@@ -196,18 +193,16 @@ public class Pipelines {
 	 *
 	 * @param stage A fully populated solver pipeline object, including dependencies
 	 * @param con An open SQL connection to make this call on
-	 * @return The ID of the pipeline object, or -1 on failure. The ID will also be set in the given pipeline object on
-	 * success. All stage IDs will also be set
 	 */
-	public static int addPipelineStageToDatabase(PipelineStage stage, Connection con) {
+	public static void addPipelineStageToDatabase(PipelineStage stage, Connection con) {
 		CallableStatement procedure = null;
 		try {
 			procedure = con.prepareCall("{CALL AddPipelineStage(?,?,?,?,?)}");
 			procedure.setInt(1, stage.getPipelineId());
-			if (!stage.isNoOp()) {
-				procedure.setInt(2, stage.getConfigId());
-			} else {
+			if (stage.isNoOp()) {
 				procedure.setNull(2, java.sql.Types.INTEGER);
+			} else {
+				procedure.setInt(2, stage.getConfigId());
 			}
 			procedure.setBoolean(3, stage.isPrimary());
 			procedure.setBoolean(4, stage.isNoOp());
@@ -221,15 +216,11 @@ public class Pipelines {
 				dep.setStageId(stage.getId());
 				addDependencyToDatabase(dep, con);
 			}
-
-			return id;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(procedure);
 		}
-
-		return -1;
 	}
 
 	/**
@@ -315,9 +306,8 @@ public class Pipelines {
 	 * Deletes a pipeline from the database, including deletion of all stages and pipeline_dependencies entries
 	 *
 	 * @param pipelineId The ID of the pipeline being deleted
-	 * @return True on success and false otherwise
 	 */
-	public static boolean deletePipelineFromDatabase(int pipelineId) {
+	public static void deletePipelineFromDatabase(int pipelineId) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -325,13 +315,11 @@ public class Pipelines {
 			procedure = con.prepareCall("{CALL DeletePipeline(?)}");
 			procedure.setInt(1, pipelineId);
 			procedure.executeUpdate();
-			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
 }

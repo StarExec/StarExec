@@ -313,7 +313,6 @@ public class Mail {
 
 		List<Report> mainReports = Reports.getAllReportsNotRelatedToQueues();
 		List<List<Report>> reportsByQueue = Reports.getAllReportsForAllQueues();
-
 		if (mainReports == null || reportsByQueue == null) {
 			throw new NullPointerException("Reports are null.");
 		}
@@ -322,25 +321,27 @@ public class Mail {
 
 		// build the main reports string
 		for (Report report : mainReports) {
-			reportBuilder.append(report.getEventName() + ": " + report.getOccurrences() + "\n");
+			reportBuilder.append(report.getEventName()).append(": ").append(report.getOccurrences()).append("\n");
 		}
+		final String mainReportsString = reportBuilder.toString();
 
 		// clear the report builder
-		reportBuilder = reportBuilder.delete(0, reportBuilder.length());
+		reportBuilder.delete(0, reportBuilder.length());
 
 		// build the queue reports string
 		for (List<Report> reportsForOneQueue : reportsByQueue) {
 			String currentQueueName = reportsForOneQueue.get(0).getQueueName();
-			reportBuilder.append("queue: " + currentQueueName + "\n");
+			reportBuilder.append("queue: ").append(currentQueueName).append("\n");
 			for (Report report : reportsForOneQueue) {
-				reportBuilder.append("  " + report.getEventName() + ": " + report.getOccurrences() + "\n");
+				reportBuilder.append("  ").append(report.getEventName()).append(": ").append(report.getOccurrences())
+				             .append("\n");
 			}
-			reportBuilder.append("\n");
 		}
+		final String reportsByQueueString = reportBuilder.toString();
 
 		return email.replace("$$DATE$$", lastWeeksDate + " to " + todaysDate)
-			.replace("$$MAIN_REPORTS$$", reportBuilder.toString())
-			.replace("$$QUEUE_REPORTS$$", reportBuilder.toString())
+			.replace("$$MAIN_REPORTS$$", mainReportsString)
+			.replace("$$QUEUE_REPORTS$$", reportsByQueueString)
 		;
 	}
 
@@ -413,11 +414,7 @@ public class Mail {
 			.replace("$$JOBSTATUS$$", status.toString())
 			.replace("$$USER$$", user.toString());
 
-		final String subject = new StringBuilder("STAREXEC Job ")
-			.append(jobId)
-			.append(": ")
-			.append(status.toString())
-			.toString();
+		final String subject = "STAREXEC Job " + jobId + ": " + status.toString();
 
 		mail(message, subject, user.getEmail());
 	}

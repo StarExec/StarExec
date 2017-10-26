@@ -121,12 +121,12 @@ public class Communities {
 	public static HashMap<String, Long> initializeCommInfo() {
 		HashMap<String, Long> stats = new HashMap<>();
 
-		stats.put("users", 0l);
-		stats.put("jobs", 0l);
-		stats.put("benchmarks", 0l);
-		stats.put("solvers", 0l);
-		stats.put("job_pairs", 0l);
-		stats.put("disk_usage", 0l);
+		stats.put("users", 0L);
+		stats.put("jobs", 0L);
+		stats.put("benchmarks", 0L);
+		stats.put("solvers", 0L);
+		stats.put("job_pairs", 0L);
+		stats.put("disk_usage", 0L);
 
 		return stats;
 	}
@@ -320,7 +320,7 @@ public class Communities {
 				List<DefaultSettings> settings =
 						Settings.getDefaultSettingsByPrimIdAndType(community, SettingType.COMMUNITY);
 
-				if (settings.size() > 0) {
+				if (!settings.isEmpty()) {
 					return settings.get(0);
 				} else {
 					//no settings existed, so create one for this community and return that

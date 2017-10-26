@@ -30,7 +30,7 @@ public class Processor extends Identifiable implements Nameable, Locatable {
 	private Syntax syntax;
 
 	/**
-	 * @return the type of the processor (bench, pre or post proessor)
+	 * @return the type of the processor (bench, pre or post processor)
 	 */
 	public ProcessorType getType() {
 		return type;
@@ -85,7 +85,7 @@ public class Processor extends Identifiable implements Nameable, Locatable {
 	/**
 	 * Alias for getFilePath, needed for Locatable interface.
 	 *
-	 * @return
+	 * @return The physical path of the processor
 	 */
 	@Override
 	public String getPath() {

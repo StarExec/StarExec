@@ -9,11 +9,11 @@ var star = star || {};
  */
 
 // When the document is ready to be executed on
-$(document).ready(function(){
+$(document).ready(function() {
 	"use strict";
 
 	// If the JSP contains a single message to display to the user...
-	if ($(".message").length == 1){
+	if ($(".message").length == 1) {
 
 		// Extract the text from the message element
 		var messageText = $(".message").text();
@@ -33,9 +33,9 @@ $(document).ready(function(){
 	$("#pageHeader nav ul li").hover(function() {
 		// When we hover over a menu item...
 		// Find their submenu and slide it down
-		$(this).find("ul.subnav").stop(true,true);
+		$(this).find("ul.subnav").stop(true, true);
 		$(this).find("ul.subnav").slideDown('fast').show();
-	}, function(){
+	}, function() {
 		// When I'm hovered out of, slide up my submenu
 		$(this).find("ul.subnav").slideUp('fast');
 	});
@@ -56,7 +56,7 @@ $(document).ready(function(){
 				$legend.css('cursor', 'pointer');
 				$legend.data('open', isOpen);
 
-				if(closed) {
+				if (closed) {
 					$legend.append('<span> (+)</span>');
 					$legend.siblings().hide();
 				} else {
@@ -66,7 +66,8 @@ $(document).ready(function(){
 				$legend.click(function() {
 					isOpen = !isOpen;
 					$this.trigger(isOpen ? 'open.expandable' : 'close.expandable');
-					$legend.children('span:last-child').text(isOpen ? ' (-)' : ' (+)');
+					$legend.children('span:last-child')
+					.text(isOpen ? ' (-)' : ' (+)');
 					$legend.siblings().slideToggle('fast');
 					$legend.data('open', isOpen);
 				});
@@ -126,12 +127,13 @@ jQuery(function($) {
 	 * Only displays page numbers when there is more than one page
 	 *   otherwise, hide pagination
 	 */
-	$.extend( extpager, {
-		"only_when_necessary": function (page, pages) {
-			if (pages <= 1)
+	$.extend(extpager, {
+		"only_when_necessary": function(page, pages) {
+			if (pages <= 1) {
 				return [];
-			else
+			} else {
 				return extpager["full_numbers"](page, pages);
+			}
 		}
 	});
 
@@ -152,7 +154,7 @@ jQuery(function($) {
 	 */
 	$(document).on("draw.dt", function(e, settings) {
 		var that = $(e.target);
-		var info = new $.fn.dataTable.Api( settings ).page.info();
+		var info = new $.fn.dataTable.Api(settings).page.info();
 
 		/* This is a somewhat conservative approach to traversing the DOM
 		 * We might be able to get away with `.next()` instead, but this is
@@ -163,16 +165,18 @@ jQuery(function($) {
 		var selectAll = container.find(".selectWrap");
 
 		// Hide "Show 10 items" and search box if there are fewer than 10 items
-		if (info.recordsTotal <= defaultPageSize)
+		if (info.recordsTotal <= defaultPageSize) {
 			footer.hide();
-		else
+		} else {
 			footer.show();
+		}
 
 		// Hide "Select all/none" if there are not multiple records
-		if (info.recordsTotal <= 1)
+		if (info.recordsTotal <= 1) {
 			selectAll.hide();
-		else
+		} else {
 			selectAll.show();
+		}
 	});
 
 	/**
@@ -181,46 +185,44 @@ jQuery(function($) {
 	 * @dict
 	 * @param {object} overrides to default configuration
 	 */
-	star.DataTableConfig = function( overrides ) {
+	star.DataTableConfig = function(overrides) {
 		var config = {
-			"sDom"            : 'rt<"bottom"flpi><"clear">',
-			"iDisplayStart"   : 0,
-			"iDisplayLength"  : defaultPageSize,
-			"pagingType"      : "only_when_necessary",
-			"sServerMethod"   : "POST",
-			"language"        : {"sProcessing": "processing request"},
+			"sDom": 'rt<"bottom"flpi><"clear">',
+			"iDisplayStart": 0,
+			"iDisplayLength": defaultPageSize,
+			"pagingType": "only_when_necessary",
+			"sServerMethod": "POST",
+			"language": {"sProcessing": "processing request"},
 		};
 		$.extend(true, this, config, overrides);
 	};
 });
 
 function checkForHelpFile() {
-	reference=window.location.pathname;
+	reference = window.location.pathname;
 
-	if (reference.length<5
-	|| $("#uniqueLoginTag").length>0
-	|| reference.indexOf("j_security_check")>=0) {
+	if (reference.length < 5
+		|| $("#uniqueLoginTag").length > 0
+		|| reference.indexOf("j_security_check") >= 0) {
 		return;
 	}
 
-	argIndex=reference.indexOf("?");
-	if (argIndex>=0) {
-		reference=reference.substring(0,argIndex);
+	argIndex = reference.indexOf("?");
+	if (argIndex >= 0) {
+		reference = reference.substring(0, argIndex);
 	}
 
-	reference=reference.substring(0,reference.length-4)+".help";
+	reference = reference.substring(0, reference.length - 4) + ".help";
 
 	$.ajax({
-	    url:reference,
-	    type:'HEAD',
-	    error: function()
-	    {
+		url: reference,
+		type: 'HEAD',
+		error: function() {
 
-	    },
-	    success: function()
-	    {
-	        $("#helpTag").addClass("pageFound");
-	    }
+		},
+		success: function() {
+			$("#helpTag").addClass("pageFound");
+		}
 	});
 }
 
@@ -228,7 +230,7 @@ function checkForHelpFile() {
  * Enable logging if debugMode is enabled
  * Otherwise, create a dummy function to silently drop log messages
  */
-var log = debugMode ? console.log.bind(console) : function(){};
+var log = debugMode ? console.log.bind(console) : function() {};
 
 /**
  * Function to display a message to the user. We can call this from other javascript
@@ -243,7 +245,7 @@ function showMessage(type, message, duration) {
 	var messageSpan = $("<div></div>").html(message);
 
 	// Create a new DOM element to insert to display the message, and inject its classes and message
-        var tmp="<div><img src='"+starexecRoot+"images/icons/exclaim.png' /></div>";
+	var tmp = "<div><img src='" + starexecRoot + "images/icons/exclaim.png' /></div>";
 	log(starexecRoot);
 	var msg = $(tmp).attr('class', type + " message");
 	$(msg).append(messageSpan);
@@ -254,20 +256,20 @@ function showMessage(type, message, duration) {
 		// If the X is clicked before the message's duration runs out,
 		// stop the duration timer and close the element immediately
 		clearTimeout($(msg).stop().data('timer'));
-		$(msg).slideUp(500, function(){
+		$(msg).slideUp(500, function() {
 			$(msg).remove();
 		});
 	});
 
 	// Hide the message, then put it at the top of the page and slide it down, ya dig?
-	$(msg).hide().prependTo($('body')).slideDown(500, function(){
-		if(duration > 0) {
+	$(msg).hide().prependTo($('body')).slideDown(500, function() {
+		if (duration > 0) {
 			// After the specified duration, slide it up and remove it from the DOM
-		    $.data(this, 'timer', setTimeout(function() {
-		    	$(msg).slideUp(500, function(){
+			$.data(this, 'timer', setTimeout(function() {
+				$(msg).slideUp(500, function() {
 					$(msg).remove();
 				});
-		    }, duration));
+			}, duration));
 		}
 	});
 }
@@ -278,16 +280,16 @@ function showMessage(type, message, duration) {
  */
 function logout() {
 	$.post(
-	    starexecRoot+"services/session/logout",
-	    function(returnData){
-       	        window.location.href = starexecRoot+"secure/index.jsp";
-	     },
-	     "json"
-	).error(function(){
-		showMessage("There was an error logging you out. Please try refreshing this page or restarting your browser");
+		starexecRoot + "services/session/logout",
+		function(returnData) {
+			window.location.href = starexecRoot + "secure/index.jsp";
+		},
+		"json"
+	).error(function() {
+		showMessage(
+			"There was an error logging you out. Please try refreshing this page or restarting your browser");
 	});
 }
-
 
 /**
  * Extracts parameters from the URL by name
@@ -295,8 +297,8 @@ function logout() {
  * @param name the name of the variable to extract from the URL
  */
 function getParameterByName(name) {
-    var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
-    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+	var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+	return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
 }
 
 /**
@@ -314,28 +316,28 @@ function HtmlEncode(s) {
 /**
  * Returns the regular expression used to validate primitive names
  */
-function getPrimNameRegex(){
+function getPrimNameRegex() {
 	return "^[\\w\\-\\.\\+\\^\\s]+$";
 }
 
 /**
  * Returns the regular expression used to validate primitive descriptions
  */
-function getPrimDescRegex(){
+function getPrimDescRegex() {
 	return "^[^<>\"\'%;)(&\\+-]+$";
 }
 
 /**
  * Returns the regular expression used to validate user names
  */
-function getUserNameRegex(){
+function getUserNameRegex() {
 	return "^[a-zA-Z\\-'\\s]+$";
 }
 
 /**
  * Returns the regexp for validating names of GridEngine queues.
  */
-function getQueueNameRegex(){
+function getQueueNameRegex() {
 	return "^[\\w]+$";
 }
 
@@ -358,11 +360,11 @@ function parseBoolean(string) {
  * @returns {Boolean}
  */
 function stringExists(string) {
-	return (typeof string != 'undefined' && string!=null && string.length>0);
+	return (typeof string != 'undefined' && string != null && string.length > 0);
 }
 
 function getStatusCode(code) {
-	sc=code.statusCode;
+	sc = code.statusCode;
 	if (typeof sc == 'undefined') {
 		return null;
 	}
@@ -378,15 +380,15 @@ function setInputToValue(inputSelector, value) {
  * true or false depending on whether it was a success status.
  * If the "code" object is not actually a status code, returns true
  */
-function parseReturnCode(code,printMessage) {
+function parseReturnCode(code, printMessage) {
 	if (typeof printMessage == 'undefined') {
-		printMessage=true;
+		printMessage = true;
 	}
 
 	s = code.success;
 
 	//we didn't get back a status code
-	if (typeof s =='undefined' || s==null) {
+	if (typeof s == 'undefined' || s == null) {
 		return true;
 	}
 
@@ -399,28 +401,28 @@ function parseReturnCode(code,printMessage) {
 	if (printMessage) {
 		if (s) {
 			if (stringExists(m)) {
-				showMessage("success", m , 5000);
+				showMessage("success", m, 5000);
 			}
 		} else {
 			if (stringExists(m)) {
-				showMessage("error",m,5000);
+				showMessage("error", m, 5000);
 			}
 		}
 	}
 
-
 	return s;
 }
 
-function setJqueryButtonText(buttonSelector,txt) {
-	$(buttonSelector+" .ui-button-text").html(txt);
+function setJqueryButtonText(buttonSelector, txt) {
+	$(buttonSelector + " .ui-button-text").html(txt);
 }
 
 function handleAjaxError(textStatus) {
-	if (textStatus!="abort") {
-		showMessage('error',"Internal error populating data table",5000);
+	if (textStatus != "abort") {
+		showMessage('error', "Internal error populating data table", 5000);
 	}
 }
+
 // returns the string we use throughout Starexec for the DataTables sDom argument,
 // which specifies the layout of the tables (pagination, sorting, filtering, and so on).
 function getDataTablesDom() {

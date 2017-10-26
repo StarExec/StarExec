@@ -11,7 +11,6 @@ import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.SolverSecurity;
 import org.starexec.data.to.*;
-import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.Queue;
 import org.starexec.data.to.Website.WebsiteType;
 import org.starexec.data.to.enums.ProcessorType;
@@ -77,7 +76,7 @@ public class JspHelpers {
 			} else {
 				Queue q = j.getQueue();
 				List<WorkerNode> nodes = Cluster.getNodesForQueue(q.getId());
-				if (nodes.size() == 0) {
+				if (nodes.isEmpty()) {
 					queueIsEmpty = true;
 				}
 

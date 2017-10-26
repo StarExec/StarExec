@@ -23,6 +23,7 @@ import java.util.Set;
  *
  * @author Tyler Jensen
  */
+@SuppressWarnings("JavadocReference")
 public class AddSpace extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(AddSpace.class);
 

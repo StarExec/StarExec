@@ -10,10 +10,8 @@ public class ProcessingManager {
 	/**
      * Checks to see which pairs need to be processed and runs the correct 
      * processors on them
-     * @return
      */
-    
-    public synchronized static boolean checkProcessingPairs(){
+    public synchronized static void checkProcessingPairs(){
     	List<PairStageProcessorTriple> triples=JobPairs.getAllPairsForProcessing();
     	int num_processed = 0;
     	
@@ -27,7 +25,5 @@ public class ProcessingManager {
 		    JobPairs.postProcessPair(triple.getPairId(),triple.getStageNumber(), triple.getProcessorId());
 		    num_processed++;
     	}
-    	
-    	return true;
     }
 }

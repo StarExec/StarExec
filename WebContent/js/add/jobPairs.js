@@ -1,5 +1,4 @@
-
-$(document).ready(function(){
+$(document).ready(function() {
 	'use strict';
 	initUI();
 
@@ -7,29 +6,31 @@ $(document).ready(function(){
 
 function initUI() {
 	'use strict';
-    $('#btnDone').button({
+	$('#btnDone').button({
 		icons: {
 			secondary: 'ui-icon-check'
 		}
 	});
 	setupSolverConfigDataTable();
 
-	$('#addJobPairsForm').submit( function(e) {
-		var confirmationUrl = starexecRoot+'services/jobs/addJobPairs/confirmation';
-		createDialog("Getting number of pairs to be added/deleted. Please wait. (May take a minute or two for large jobs.)");
+	$('#addJobPairsForm').submit(function(e) {
+		var confirmationUrl = starexecRoot + 'services/jobs/addJobPairs/confirmation';
+		createDialog(
+			"Getting number of pairs to be added/deleted. Please wait. (May take a minute or two for large jobs.)");
 		$.ajax({
 			type: 'POST',
 			url: confirmationUrl,
 			data: $('#addJobPairsForm').serialize(),
 			success: function(data) {
-				if ( data.success ) {
+				if (data.success) {
 					destroyDialog();
 					var pairsAdded = data.pairsToBeAdded - data.pairsToBeDeleted;
 					log('Pairs to be added: ' + data.pairsToBeAdded);
 					log('Pairs to be deleted: ' + data.pairsToBeDeleted);
-					if (data.pairsToBeAdded > 0 && (data.remainingQuota -pairsAdded)<0) {
-						$('#dialog-confirm-add-delete-txt').text("Your are currently over your job pair quota, and so you may" +
-								" not add any new pairs without first deleting some old jobs or pairs");
+					if (data.pairsToBeAdded > 0 && (data.remainingQuota - pairsAdded) < 0) {
+						$('#dialog-confirm-add-delete-txt')
+						.text("Your are currently over your job pair quota, and so you may" +
+							" not add any new pairs without first deleting some old jobs or pairs");
 						$('#dialog-confirm-add-delete').dialog({
 							modal: true,
 							width: 500,
@@ -41,7 +42,9 @@ function initUI() {
 							}
 						});
 					} else if (data.pairsToBeDeleted === 0 && data.pairsToBeAdded === 0) {
-						$('#dialog-confirm-add-delete-txt').text( "You have not specified any configs to be added or removed." );
+						$('#dialog-confirm-add-delete-txt')
+						.text(
+							"You have not specified any configs to be added or removed.");
 						$('#dialog-confirm-add-delete').dialog({
 							modal: true,
 							width: 500,
@@ -53,8 +56,9 @@ function initUI() {
 							}
 						});
 					} else {
-						$('#dialog-confirm-add-delete-txt').text( data.pairsToBeDeleted + ' job pairs will be deleted.\n'+
-								data.pairsToBeAdded + ' job pairs will be added.\nWould you like to continue?' );
+						$('#dialog-confirm-add-delete-txt')
+						.text(data.pairsToBeDeleted + ' job pairs will be deleted.\n' +
+							data.pairsToBeAdded + ' job pairs will be added.\nWould you like to continue?');
 
 						$('#dialog-confirm-add-delete').dialog({
 							modal: true,
@@ -62,7 +66,8 @@ function initUI() {
 							height: 300,
 							buttons: {
 								'continue': function() {
-									createDialog("Adding/deleting job pairs. Please wait. (May take a minute or two for large jobs.)");
+									createDialog(
+										"Adding/deleting job pairs. Please wait. (May take a minute or two for large jobs.)");
 									$('#addJobPairsForm').unbind('submit');
 									$('#addJobPairsForm').submit();
 								},
@@ -74,7 +79,7 @@ function initUI() {
 					}
 
 				} else {
-					alert ( data.message );
+					alert(data.message);
 				}
 			}
 		});
@@ -86,9 +91,12 @@ function initUI() {
 		'use strict';
 		log('addToAllCheckbox clicked.');
 
-		if ( $(this).prop('checked') ) {
+		if ($(this).prop('checked')) {
 			// Check the other box if the user clicks it.
-			$(this).siblings('.addToPairedCheckbox').first().prop('checked', false);
+			$(this)
+			.siblings('.addToPairedCheckbox')
+			.first()
+			.prop('checked', false);
 		} else {
 			// Don't allow the user to uncheck a box.
 			$(this).prop('checked', true);
@@ -100,22 +108,24 @@ function initUI() {
 
 		log('addToPairedCheckbox clicked.');
 
-		if ( $(this).prop('checked') ) {
+		if ($(this).prop('checked')) {
 			// Check the other box if the user clicks it.
-			$(this).siblings('.addToAllCheckbox').first().prop('checked', false);
+			$(this)
+			.siblings('.addToAllCheckbox')
+			.first()
+			.prop('checked', false);
 		} else {
 			// Don't allow the user to uncheck a box.
 			$(this).prop('checked', true);
 		}
 	});
 
-
-    $('.selectAllSolvers').click(function() {
-    	$('.config').prop('checked', true);
-    });
-    $('.selectNoneSolvers').click(function() {
-    	$('.config').prop('checked', false);
-    });
+	$('.selectAllSolvers').click(function() {
+		$('.config').prop('checked', true);
+	});
+	$('.selectNoneSolvers').click(function() {
+		$('.config').prop('checked', false);
+	});
 	registerSelectAllConfigsEventHandler();
 	registerSelectNoneConfigsEventHandler();
 	registerSolverConfigTableRowSelectionEventHandler();

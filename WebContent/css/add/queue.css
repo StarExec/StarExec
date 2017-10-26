@@ -31,8 +31,8 @@ button {
 
 #actionBar {
 	position: absolute;
-	bottom: 0px;
-	right: 0px;
+	bottom: 0;
+	right: 0;
 	padding: 10px;	
 }
 

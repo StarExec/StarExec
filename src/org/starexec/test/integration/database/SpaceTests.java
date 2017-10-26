@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * @author Eric
  */
 public class SpaceTests extends TestSequence {
-	
+
 	private static final StarLogger log = StarLogger.getLogger(SpaceTests.class);
 	Space community=null;
 	Space subspace=null;  //subspace of community
@@ -37,11 +37,11 @@ public class SpaceTests extends TestSequence {
 	User member1=null;
 	User member2=null;
 	List<Integer> ids=null;
-	
-	
+
+
 	//all primitives owned by leader and placed into subspace
 	Solver solver = null;
-	List<Benchmark> benchmarks=null; 
+	List<Benchmark> benchmarks=null;
 	Job job = null;
 	@StarexecTest
 	private void getSpaceTest() {
@@ -49,7 +49,7 @@ public class SpaceTests extends TestSequence {
 		Assert.assertNotNull(test);
 		Assert.assertEquals(community.getId(), test.getId());
 	}
-	
+
 	@StarexecTest
 	private void removeSolversFromHierarchyTest() {
 		Assert.assertTrue(Solvers.associate(solver.getId(), subspace2.getId()));
@@ -73,9 +73,9 @@ public class SpaceTests extends TestSequence {
 			}
 		}
 	}
-	
-	
-	
+
+
+
 	@StarexecTest
 	private void getSpaceHierarchyTest() {
 		List<Space> spaces=Spaces.getSubSpaceHierarchy(community.getId(),leader.getId());
@@ -98,7 +98,7 @@ public class SpaceTests extends TestSequence {
 
 			String got = "[ ";
 			for (Integer spaceId : spacesAssociatedWithJob) {
-				got += spaceId + " ";	
+				got += spaceId + " ";
 			}
 			got += "]";
 
@@ -111,13 +111,13 @@ public class SpaceTests extends TestSequence {
 		}
 
 	}
-	
+
 	@StarexecTest
 	private void removeSolverTest() {
 		List<Integer> solverId= new ArrayList<>();
 		solverId.add(solver.getId());
 		Assert.assertTrue(Spaces.removeSolvers(solverId, subspace.getId()));
-		
+
 		List<Solver> spaceSolvers=Spaces.getDetails(subspace.getId(), admin.getId()).getSolvers();
 		boolean solverInSpace=false;
 		for (Solver s : spaceSolvers) {
@@ -129,13 +129,13 @@ public class SpaceTests extends TestSequence {
 		Assert.assertFalse(solverInSpace);
 		Assert.assertTrue(Solvers.associate(solverId, subspace.getId()));
 	}
-	
+
 	@StarexecTest
 	private void removeBenchmarkTest() {
 		List<Integer> benchId= new ArrayList<>();
 		benchId.add(benchmarks.get(0).getId());
 		Assert.assertTrue(Spaces.removeBenches(benchId, subspace.getId()));
-		
+
 		List<Benchmark> spaceBenchmarks=Spaces.getDetails(subspace.getId(), admin.getId()).getBenchmarks();
 		boolean benchmarkInSpace=false;
 		for (Benchmark b : spaceBenchmarks) {
@@ -144,20 +144,20 @@ public class SpaceTests extends TestSequence {
 				break;
 			}
 		}
-		
+
 		Assert.assertFalse(benchmarkInSpace);
 		Assert.assertTrue(Benchmarks.associate(benchId, subspace.getId()));
-		
+
 	}
-	
+
 	@StarexecTest
 	private void getAllSpacesTest() {
-		List<Space> spaces=Spaces.GetAllSpaces();
+		List<Space> spaces=Spaces.getAllSpaces();
 		Assert.assertNotNull(spaces);
 		//add two because the root space itself and the public space are not counted otherwise
 		Assert.assertEquals(Spaces.getSubSpaceHierarchy(1, admin.getId()).size()+2, spaces.size());
 	}
-	
+
 	@StarexecTest
 	private void leafTest() {
 		Assert.assertFalse(Spaces.isLeaf(community.getId()));
@@ -189,7 +189,7 @@ public class SpaceTests extends TestSequence {
 			Assert.fail("Caught Exception: " + e.getMessage() + "\n" + Util.getStackTrace(e));
 		}
 	}
-		
+
 	@StarexecTest
 	private void CopyHierarchyTest() {
 		TreeNode<Space> spaceTree;
@@ -224,7 +224,7 @@ public class SpaceTests extends TestSequence {
 	private static void assertSpacesAreCopies(Space space, Space otherSpace) {
 		Assert.assertEquals(space.getName(), otherSpace.getName());
 
-		// Assert that the benchmarks are copies 
+		// Assert that the benchmarks are copies
 		List<Benchmark> benchmarks = space.getBenchmarks();
 		List<Benchmark> otherBenchmarks = otherSpace.getBenchmarks();
 		assertUnorderedIdentifiableListsAreEqual(benchmarks, otherBenchmarks);
@@ -247,7 +247,7 @@ public class SpaceTests extends TestSequence {
 		assertUnorderedIdentifiableListsAreEqual(subspaces, otherSubspaces);
 	}
 
-	private static void assertUnorderedIdentifiableListsAreEqual(List<? extends Identifiable> identifiableList, 
+	private static void assertUnorderedIdentifiableListsAreEqual(List<? extends Identifiable> identifiableList,
 																 List<? extends Identifiable> otherIdentifiableList) {
 		List<Identifiable> identifiableListCopy = new ArrayList<>(identifiableList);
 		List<Identifiable> otherIdentifiableListCopy = new ArrayList<>(otherIdentifiableList);
@@ -279,7 +279,7 @@ public class SpaceTests extends TestSequence {
 		String space1Path=community.getName()+R.JOB_PAIR_PATH_DELIMITER+space1.getName();
 		Space space2=loader.loadSpaceIntoDatabase(leader.getId(), space1.getId());
 		String space2Path=space1Path+R.JOB_PAIR_PATH_DELIMITER+space2.getName();
-		
+
 		List<Space> spaceList= new ArrayList<>();
 		spaceList.add(space1);
 		spaceList.add(space2);
@@ -294,27 +294,27 @@ public class SpaceTests extends TestSequence {
 		SP=Spaces.spacePathCreate(leader.getId(), spaceList, community.getId());
 		Assert.assertEquals(space1Path, SP.get(space1.getId()));
 		Assert.assertEquals(space2Path, SP.get(space2.getId()));
-		
+
 		Spaces.removeSubspace(space1.getId());
 	}
-	
+
 	@StarexecTest
 	private void GetCommunityOfSpaceTest() {
 		Assert.assertEquals(community.getId(),Spaces.getCommunityOfSpace(subspace.getId()));
 		Assert.assertEquals(community.getId(),Spaces.getCommunityOfSpace(community.getId()));
 	}
-	
+
 	@StarexecTest
 	private void GetNameTest() {
 		Assert.assertEquals(community.getName(),Spaces.getName(community.getId()));
 		Assert.assertEquals(subspace.getName(),Spaces.getName(subspace.getId()));
 		Assert.assertNotEquals(community.getName(),Spaces.getName(subspace.getId()));
-	}	
+	}
 
-	@StarexecTest 
+	@StarexecTest
 	private void updateDefaultCpuTimeoutTest() {
 		int settingId=Communities.getDefaultSettings(community.getId()).getId();
-		
+
 		int timeout=Communities.getDefaultSettings(community.getId()).getCpuTimeout();
 		Assert.assertTrue(Settings.updateSettingsProfile(settingId, 2, timeout+1));
 		Assert.assertEquals(timeout+1, Communities.getDefaultSettings(community.getId()).getCpuTimeout());
@@ -330,16 +330,16 @@ public class SpaceTests extends TestSequence {
 		Assert.assertEquals(timeout+1, Communities.getDefaultSettings(community.getId()).getWallclockTimeout());
 		Assert.assertTrue(Settings.updateSettingsProfile(settingId, 3, timeout));
 	}
-	
+
 	@StarexecTest
 	private void getDefaultMemoryLimit() {
 		long limit=Communities.getDefaultSettings(community.getId()).getMaxMemory();
 		if (limit<=0) {
 			Assert.fail("Memory limit was not greater than 0");
 		}
-		
+
 	}
-	
+
 	@StarexecTest
 	private void nameUpdateTest() {
 		String currentName=community.getName();
@@ -359,9 +359,9 @@ public class SpaceTests extends TestSequence {
 		Assert.assertTrue(Spaces.updateDescription(community.getId(), newDesc));
 		Assert.assertEquals(newDesc,Spaces.get(community.getId()).getDescription());
 		community.setDescription(newDesc);
-		
+
 	}
-	
+
 	@StarexecTest
 	private void getChainToRootTest() {
 		List<Integer> path = Spaces.getChainToRoot(subspace3.getId());
@@ -371,14 +371,14 @@ public class SpaceTests extends TestSequence {
 		Assert.assertEquals((Integer)subspace2.getId(), path.get(2));
 		Assert.assertEquals((Integer)subspace3.getId(), path.get(3));
 	}
-	
+
 	@StarexecTest
 	private void getChainToRootWithRootTest() {
 		List<Integer> path = Spaces.getChainToRoot(1);
 		Assert.assertEquals(1, path.size());
 		Assert.assertEquals((Integer)1, path.get(0));
 	}
-	
+
 	@StarexecTest
 	private void setJobSpaceMaxStagesTest() {
 		JobSpace s = Spaces.getJobSpace(job.getPrimarySpace());
@@ -388,8 +388,8 @@ public class SpaceTests extends TestSequence {
 		Assert.assertTrue(Spaces.setJobSpaceMaxStages(s.getId(), maxStages));
 
 	}
-	
-	
+
+
 	@Override
 	protected void setup() {
 		final String methodName="setup";
@@ -397,7 +397,7 @@ public class SpaceTests extends TestSequence {
 		member1=loader.loadUserIntoDatabase();
 		member2=loader.loadUserIntoDatabase();
 		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
-		community = loader.loadSpaceIntoDatabase(leader.getId(), 1);	
+		community = loader.loadSpaceIntoDatabase(leader.getId(), 1);
 		subspace=loader.loadSpaceIntoDatabase(leader.getId(), community.getId());
 		log.debug(methodName, "subspace id="+subspace.getId());
 		subspace2=loader.loadSpaceIntoDatabase(leader.getId(), community.getId());
@@ -412,9 +412,9 @@ public class SpaceTests extends TestSequence {
 		Users.associate(member2.getId(), subspace.getId());
 		Users.associate(member1.getId(), subspace2.getId());
 		Users.associate(member2.getId(), subspace2.getId());
-		
-		
-		
+
+
+
 		solver=loader.loadSolverIntoDatabase("CVC4.zip", subspace.getId(), leader.getId());
 
 		ids=loader.loadBenchmarksIntoDatabase("benchmarks.zip", subspace.getId(), leader.getId());
@@ -423,7 +423,7 @@ public class SpaceTests extends TestSequence {
 			benchmarks.add(Benchmarks.get(id));
 		}
 		job = loader.loadJobIntoDatabase(subspace.getId(), leader.getId(), solver.getId(), ids);
-		
+
 	}
 
 	private String getTestSubSpacesIds() {
@@ -439,7 +439,7 @@ public class SpaceTests extends TestSequence {
 		// Join all the ids.
 		return joiner.join(spaces.stream().map(Space::getId).collect(Collectors.toList()));
 	}
-	
+
 	@Override
 	protected void teardown() {
 		loader.deleteAllPrimitives();

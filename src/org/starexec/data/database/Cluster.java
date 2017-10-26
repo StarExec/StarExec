@@ -78,17 +78,15 @@ public class Cluster {
 	/**
 	 * Extracts queue-node association from BACKEND and puts it into the db.
 	 *
-	 * @return true if successful
 	 * @author Benton McCune
 	 */
-	public static Boolean setQueueAssociationsInDb() {
+	public static void setQueueAssociationsInDb() {
 		Queues.clearQueueAssociations();
 		Map<String, String> assoc = R.BACKEND.getNodeQueueAssociations();
 
 		for (String node : assoc.keySet()) {
 			Queues.associate(assoc.get(node), node);
 		}
-		return true;
 	}
 
 	/**
@@ -233,9 +231,8 @@ public class Cluster {
 	 * Removes a node from the database. This does not do anything to the backend.
 	 *
 	 * @param nodeId The ID of the node to remove
-	 * @return true on success and false otherwise
 	 */
-	public static boolean deleteNode(int nodeId) {
+	public static void deleteNode(int nodeId) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -248,25 +245,21 @@ public class Cluster {
 			procedure.executeUpdate();
 
 			// Done, commit the changes
-			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-
-		return false;
 	}
 
 	/**
-	 * Takes in a node name and adds it to the database if it doesn't aleady exist
+	 * Takes in a node name and adds it to the database if it doesn't already exist
 	 *
 	 * @param name The name of the worker node to update/add
-	 * @return True if the operation was a success, false otherwise.
 	 * @author Tyler Jensen
 	 */
-	public static boolean addNodeIfNotExists(String name) {
+	public static void addNodeIfNotExists(String name) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -279,7 +272,7 @@ public class Cluster {
 			procedure.executeUpdate();
 
 			// Done, commit the changes
-			return true;
+			return;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
@@ -288,7 +281,6 @@ public class Cluster {
 		}
 
 		log.debug(String.format("Node [%s] failed to be updated.", name));
-		return false;
 	}
 
 	/**

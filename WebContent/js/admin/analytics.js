@@ -3,20 +3,24 @@
 jQuery(function($) {
 	var resultsTableConfig = new window.star.DataTableConfig({
 		"paging": false,
-		"columns" : [
-			{"title"     : "Event"},
-			{"title"     : "Users",
-			 "width"     : "120px",
-			 "className" : "dt-right"},
-			{"title"     : "Count",
-			 "width"     : "120px",
-			 "className" : "dt-right"},
+		"columns": [
+			{"title": "Event"},
+			{
+				"title": "Users",
+				"width": "120px",
+				"className": "dt-right"
+			},
+			{
+				"title": "Count",
+				"width": "120px",
+				"className": "dt-right"
+			},
 		],
 	});
 	var resultsTable = $("#analytics_results").DataTable(resultsTableConfig);
 
 	var $startField = $("#dateselector [name='start']");
-	var $endField   = $("#dateselector [name='end']"  );
+	var $endField = $("#dateselector [name='end']");
 
 	var resultsTableRefresh = function(data, textStatus, jqXHR) {
 		resultsTable.clear();
@@ -32,12 +36,17 @@ jQuery(function($) {
 	};
 
 	$("#dateselector").on("submit", function(event) {
+		var payload = {};
+		if ($startField.val().trim().length != 0) {
+			paylad["start"] = $startField.val();
+		}
+		if ($endField.val().trim().length != 0) {
+			paylad["end"] = $endField.val();
+		}
+
 		$.get(
-			starexecRoot+"services/analytics",
-			{
-				"start": $startField.val(),
-				"end": $endField.val()
-			},
+			starexecRoot + "services/analytics",
+			payload,
 			resultsTableRefresh
 		);
 

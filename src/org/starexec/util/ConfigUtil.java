@@ -23,15 +23,15 @@ public class ConfigUtil {
 	private static final StarLogger log = StarLogger.getLogger(ConfigUtil.class);
 
 	// XML Metadata to parse starexec's config file	
-	private static String NODE_CLASS = "class";
-	private static String NODE_PROP = "property";
-	private static String NODE_CONFIG = "configuration";
-	private static String NODE_VALUE = "value";
-	private static String ATTR_KEY = "key";
-	private static String ATTR_VALUE = "value";
-	private static String ATTR_NAME = "name";
-	private static String ATTR_DEFAULT = "default";
-	private static String ATTR_INHERIT = "inherit";
+	private static final String NODE_CLASS = "class";
+	private static final String NODE_PROP = "property";
+	private static final String NODE_CONFIG = "configuration";
+	private static final String NODE_VALUE = "value";
+	private static final String ATTR_KEY = "key";
+	private static final String ATTR_VALUE = "value";
+	private static final String ATTR_NAME = "name";
+	private static final String ATTR_DEFAULT = "default";
+	private static final String ATTR_INHERIT = "inherit";
 
 	// Build property information
 	private static String buildVersion = null;

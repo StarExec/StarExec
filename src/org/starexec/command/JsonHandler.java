@@ -84,8 +84,7 @@ public class JsonHandler {
 
 			JsonElement jsonE = JsonHandler.getJsonString(response);
 
-			JsonObject obj = jsonE.getAsJsonObject();
-			return obj;
+			return jsonE.getAsJsonObject();
 		} catch (Exception e) {
 			return null;
 		}

@@ -55,8 +55,7 @@ public class JobUtil {
 		final String method = "createJobsFromFile";
 		List<Integer> jobIds = new ArrayList<>();
 		if (!validateAgainstSchema(file, xmlType)) {
-			log.debug(method, "File from User " + userId + " is not Schema valid.");
-			errorMessage = "File from User " + userId + " is not Schema valid.";
+			log.debug(method, "File '" + file.getName() + "' from User " + userId + " is not Schema valid.");
 			return null;
 		}
 
@@ -130,7 +129,7 @@ public class JobUtil {
 				// the call to createPipelineFromElement
 			}
 			if (pipelineNames.containsKey(pipe.getName())) {
-				errorMessage = " Duplicate pipline name = " + pipe.getName() +
+				errorMessage = " Duplicate pipeline name = " + pipe.getName() +
 				               ". All pipelines in this upload must have unique names";
 				return null;
 			}
@@ -309,7 +308,7 @@ public class JobUtil {
 		}
 		//ensure that benchmark inputs are ordered correctly. Benchmark inputs must be ordered from
 		//1 to n, where n is the total number of inputs.
-		if (benchmarkInputs.size() > 0) {
+		if (!benchmarkInputs.isEmpty()) {
 			int maxSeen = Collections.max(benchmarkInputs);
 			if (maxSeen != benchmarkInputs.size()) {
 				errorMessage = "Invalid benchmark inputs for pipeline = " + pipeline.getName() +
@@ -681,15 +680,15 @@ public class JobUtil {
 					}
 
 					Benchmark b = null;
-					if (!accessibleCachedBenchmarks.containsKey(benchmarkId)) {
+					if (accessibleCachedBenchmarks.containsKey(benchmarkId)) {
+						b = accessibleCachedBenchmarks.get(benchmarkId);
+					} else {
 						b = Benchmarks.get(benchmarkId);
 						if (!Permissions.canUserSeeBench(benchmarkId, userId)) {
 							errorMessage = "You do not have permission to see benchmark " + benchmarkId;
 							return -1;
 						}
 						accessibleCachedBenchmarks.put(benchmarkId, b);
-					} else {
-						b = accessibleCachedBenchmarks.get(benchmarkId);
 					}
 					jobPair.setBench(b);
 
@@ -760,7 +759,7 @@ public class JobUtil {
 
 			log.info("job pairs set");
 
-			if (job.getJobPairs().size() == 0) {
+			if (job.getJobPairs().isEmpty()) {
 				// No pairs in the job means something is wrong; error out
 				errorMessage = "Error: no job pairs created for the job. Could not proceed with job submission.";
 				return -1;

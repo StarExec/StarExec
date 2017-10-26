@@ -32,7 +32,7 @@ import java.io.IOException;
  */
 public class Verify extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(Verify.class);
-	private static Gson gson = new Gson();
+	private static final Gson gson = new Gson();
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -269,15 +269,11 @@ public class Verify extends HttpServlet {
 	 */
 	public static boolean createPersonalSubspace(int parentSpaceId, User user) {
 		// Generate space name (e.g. IF name = Todd Elvers, THEN personal space name = todd_elvers)
-		StringBuilder sb = new StringBuilder();
-		sb.append(user.getFirstName().toLowerCase());
-		sb.append("_");
-		sb.append(user.getLastName().toLowerCase());
-		sb.toString();
+		final String name = user.getFirstName().toLowerCase() + "_" + user.getLastName().toLowerCase();
 
 		// Set the space's attributes
 		Space s = new Space();
-		s.setName(sb.toString());
+		s.setName(name);
 		s.setDescription(R.PERSONAL_SPACE_DESCRIPTION);
 		s.setLocked(false);
 		s.setPermission(new Permission(true));

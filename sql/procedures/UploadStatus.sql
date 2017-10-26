@@ -61,7 +61,7 @@ CREATE PROCEDURE ProcessingBegun(IN _id INT)
 		WHERE id = _id;
 	END //
 	
--- Updates status when the entire upload benchmark process has comploeted
+-- Updates status when the entire upload benchmark process has completed
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS XMLEverythingComplete;
 CREATE PROCEDURE XMLEverythingComplete(IN _id INT)

@@ -67,7 +67,7 @@ public class Queues {
 		boolean success = true;
 
 
-		/***** DELETE THE QUEUE *****/
+		/* DELETE THE QUEUE */
 
 		success = success && Queues.delete(queueId);
 		R.BACKEND.deleteQueue(q.getName());
@@ -81,7 +81,7 @@ public class Queues {
 	 * Will pause jobs associated with queues if the number of nodes being removed from them is equal to the number of
 	 * nodes they have. used by MoveNodes
 	 *
-	 * @param queueIdsToNodesRemoved A mapping from queueID to the number of ndoes being removed from that queue
+	 * @param queueIdsToNodesRemoved A mapping from queueID to the number of nodes being removed from that queue
 	 **/
 	public static void pauseJobsIfNoRemainingNodes(Map<Integer, Integer> queueIdsToNodesRemoved) {
 		//if this is going to make the queue empty...... need to pause all jobs first
@@ -151,8 +151,7 @@ public class Queues {
 
 		try {
 			con = Common.getConnection();
-			int newQueueId = Queues.add(con, queueName, cpuTimeout, wallTimeout);
-			return newQueueId;
+			return Queues.add(con, queueName, cpuTimeout, wallTimeout);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
@@ -194,25 +193,21 @@ public class Queues {
 	/**
 	 * Removes all associations between queues and nodes in db so that only up to date data will be stored.
 	 *
-	 * @return True if the operation was a success, false otherwise.
 	 * @author Benton McCune
 	 */
-	public static boolean clearQueueAssociations() {
+	public static void clearQueueAssociations() {
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL clearQueueAssociations()}");
 			procedure.executeUpdate();
-			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-
-		return false;
 	}
 
 	/**
@@ -366,19 +361,20 @@ public class Queues {
 	}
 
 	private static String getPairOrderColumnForClusterPage(int indexOrder) {
-		if (indexOrder == 0) {
+		switch (indexOrder) {
+		case 0:
 			return "queuesub_time";
-		} else if (indexOrder == 1) {
+		case 1:
 			return "jobs.name";
-		} else if (indexOrder == 2) {
+		case 2:
 			return "users.first_name, users.last_name";
-		} else if (indexOrder == 3) {
+		case 3:
 			return "bench_name";
-		} else if (indexOrder == 4) {
+		case 4:
 			return "solver_name";
-		} else if (indexOrder == 5) {
+		case 5:
 			return "config_name";
-		} else if (indexOrder == 6) {
+		case 6:
 			return "path";
 		}
 
@@ -640,15 +636,19 @@ public class Queues {
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();
-			if (userId == 0) {
+			switch (userId) {
+			case 0:
 				//only gets the queues that have status "ACTIVE"
 				procedure = con.prepareCall("{CALL GetAllQueues}");
-			} else if (userId == -2) {
+				break;
+			case -2:
 				//includes inactive queues
 				procedure = con.prepareCall("{CALL GetAllQueuesAdmin}");
-			} else {
+				break;
+			default:
 				procedure = con.prepareCall("{CALL GetQueuesForUser(?)}");
 				procedure.setInt(1, userId);
+				break;
 			}
 
 			results = procedure.executeQuery();
@@ -756,10 +756,9 @@ public class Queues {
 	 * Updates the status of ALL queues with the given status
 	 *
 	 * @param status The status to set for all queues
-	 * @return True if the operation was a success, false otherwise.
 	 */
-	public static boolean setStatus(String status) {
-		return Queues.setStatus(null, status);
+	public static void setStatus(String status) {
+		Queues.setStatus(null, status);
 	}
 
 	/**

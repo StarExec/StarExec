@@ -34,8 +34,7 @@ import java.util.List;
 public class UploadSpaceXML extends HttpServlet {
 
 	private static final StarLogger log = StarLogger.getLogger(UploadSpaceXML.class);
-	private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
-	private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
+	private final DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
 	private static final String SPACE_ID = R.SPACE;
 	private static final String UPLOAD_FILE = "f";
 
@@ -126,16 +125,16 @@ public class UploadSpaceXML extends HttpServlet {
 					File archiveLocation = new File(archivePath);
 					//Typically there will just be 1 file, but might as well allow more
 					for (File file : archiveLocation.listFiles()) {
-						List<Integer> current = new ArrayList<>();
 						if (!file.isFile()) {
 							Uploads.setXMLErrorMessage(
-									statusId, "The file " + file.getName() +
-											" is not a regular file.  Only regular files containing space XML are " +
+									statusId, "The file '" + file.getName() +
+											"' is not a regular file.  Only regular files containing space XML are " +
 											"allowed in the uploaded archive.");
-						}
-						current = batchUtil.createSpacesFromFile(file, userId, spaceId, statusId);
-						if (current == null) {
-							Uploads.setXMLErrorMessage(statusId, batchUtil.getErrorMessage());
+						} else {
+							List<Integer> current = batchUtil.createSpacesFromFile(file, userId, spaceId, statusId);
+							if (current == null) {
+								Uploads.setXMLErrorMessage(statusId, batchUtil.getErrorMessage());
+							}
 						}
 					}
 				} catch (Exception e) {
@@ -165,15 +164,8 @@ public class UploadSpaceXML extends HttpServlet {
 			}
 			Integer.parseInt((String) form.get(SPACE_ID));
 
-			boolean goodExtension = false;
 			String fileName = FilenameUtils.getName(((PartWrapper) form.get(UploadSpaceXML.UPLOAD_FILE)).getName());
-			for (String ext : UploadSpaceXML.extensions) {
-				if (fileName.endsWith(ext)) {
-					goodExtension = true;
-					break;
-				}
-			}
-			if (!goodExtension) {
+			if (!Validator.isValidArchiveType(fileName)) {
 				return new ValidatorStatusCode(false, "Uploaded archives must be .zip, .tar, or .tgz");
 			}
 			return new ValidatorStatusCode(true);

@@ -13,7 +13,7 @@ import java.util.List;
 
 /**
  * Analytics keeps a record of how often events happen.
- * A count is kept of how many times an events occured per day.
+ * A count is kept of how many times an events occurred per day.
  * Actions must be added both here and in the `analytics_events` table.
  */
 public class AnalyticsResults {
@@ -50,8 +50,8 @@ public class AnalyticsResults {
 
 	/**
 	 * Gets results for all events between `start` and `end`
-	 * @param start
-	 * @param end
+	 * @param start date
+	 * @param end date
 	 * @return AnalyticsResults
 	 */
 	public static Iterable<AnalyticsResults> getAllEvents(Date start, Date end) {
@@ -66,7 +66,7 @@ public class AnalyticsResults {
 			);
 		} catch (SQLException e) {
 			log.error("GetAnalyticsForDateRange");
-			return Collections.<AnalyticsResults>emptyList();
+			return Collections.emptyList();
 		}
 	}
 }

@@ -11,13 +11,13 @@ public class PipelineDependency {
 	/**
 	 * Type of pipeline dependency is either a benchmark or an 'artifact,' the output of some previous stage.
 	 */
-	public static enum PipelineInputType {
+	public enum PipelineInputType {
 
 		BENCHMARK(1), ARTIFACT(2);  //type for the output from a previous stage
 
-		private int val;
+		private final int val;
 
-		private PipelineInputType(int val) {
+		PipelineInputType(int val) {
 			this.val = val;
 		}
 

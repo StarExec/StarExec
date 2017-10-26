@@ -44,7 +44,7 @@ CREATE TABLE logins (
 	CONSTRAINT logins_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE NO ACTION
 );
 
--- A convienience table, this contains a specific set of
+-- A convenience table, this contains a specific set of
 -- permissions that can be associated with a user (or set as
 -- the default of a space so when a new user is ed, they take on
 -- these permissions)
@@ -83,7 +83,7 @@ CREATE TABLE spaces (
 );
 
 -- The set of all associations between each node and it's descendants
--- (see the hierarchical data represendation PDF on the wiki for more details)
+-- (see the hierarchical data representation PDF on the wiki for more details)
 CREATE TABLE closure (
 	ancestor INT NOT NULL,
 	descendant INT NOT NULL,
@@ -276,7 +276,7 @@ CREATE TABLE pipeline_stages (
 
 -- Stores any dependencies that a particular stage has.
 CREATE TABLE pipeline_dependencies (
-	stage_id INT NOT NULL, -- ID of the stage that must recieve output from a previous stage
+	stage_id INT NOT NULL, -- ID of the stage that must receive output from a previous stage
 
 	input_type TINYINT NOT NULL, -- ID of the stage that produces the output
 	input_id SMALLINT NOT NULL, -- if the type is an artifact, this is the the 1-indexed number of the stage that is needed
@@ -462,7 +462,7 @@ CREATE TABLE verify (
 
 -- Websites which are associated with either a space, solver or user.
 -- It only makes sense to have one of the three id's set to a value,
--- they're all included for convienience though so we don't have to
+-- they're all included for convenience though so we don't have to
 -- have 3 redundant tables
 CREATE TABLE website (
 	id INT NOT NULL AUTO_INCREMENT,
@@ -709,7 +709,7 @@ CREATE TABLE job_space_closure (
 );
 
 
--- Saves associations between spaces relevent to a particular job
+-- Saves associations between spaces relevant to a particular job
 -- Author: Eric Burns
 CREATE TABLE job_space_assoc (
 	space_id INT NOT NULL,

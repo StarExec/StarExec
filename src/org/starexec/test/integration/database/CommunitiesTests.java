@@ -57,7 +57,7 @@ public class CommunitiesTests extends TestSequence {
 	private void communityMapDiskUsageTest() {
 		Communities.updateCommunityMap();
 
-		Long disk = 0l;
+		Long disk = 0L;
 		for (Integer i : benchmarkIds) {
 			disk+= Benchmarks.get(i).getDiskSize();
 		}

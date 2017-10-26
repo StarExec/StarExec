@@ -106,13 +106,15 @@ public class UploadPicture extends HttpServlet {
 			String id = (String) form.get(UploadPicture.ID);
 			StringBuilder sb = new StringBuilder();
 
-			if (type.equals("user")) {
+			switch (type) {
+			case "user":
 				sb.delete(0, sb.length());
 				sb.append("/users/Pic");
 				sb.append(id);
 				fileName = sb.toString();
 				redir = Util.docRoot("secure/edit/account.jsp");
-			} else if (type.equals(R.SOLVER)) {
+				break;
+			case R.SOLVER:
 				sb.delete(0, sb.length());
 				sb.append("/solvers/Pic");
 				sb.append(id);
@@ -122,7 +124,8 @@ public class UploadPicture extends HttpServlet {
 				sb.append(Util.docRoot("secure/details/solver.jsp?id="));
 				sb.append(id);
 				redir = sb.toString();
-			} else if (type.equals("benchmark")) {
+				break;
+			case "benchmark":
 				sb.delete(0, sb.length());
 				sb.append("/benchmarks/Pic");
 				sb.append(id);
@@ -132,6 +135,7 @@ public class UploadPicture extends HttpServlet {
 				sb.append(Util.docRoot("secure/details/benchmark.jsp?id="));
 				sb.append(id);
 				redir = sb.toString();
+				break;
 			}
 
 			sb.delete(0, sb.length());

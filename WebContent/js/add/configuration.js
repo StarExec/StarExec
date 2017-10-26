@@ -1,8 +1,7 @@
-$(document).ready(function(){
+$(document).ready(function() {
 	initUI();
 	attachFormValidation();
 });
-
 
 /**
  * Setup the user interface buttons & actions
@@ -12,22 +11,25 @@ function initUI() {
 	$('.uploadBtn').button({
 		icons: {
 			secondary: "ui-icon-arrowthick-1-n"
-    }});
+		}
+	});
 	$('.cancelBtn').button({
 		icons: {
 			secondary: "ui-icon-closethick"
-    }});
+		}
+	});
 	$('.saveBtn').button({
-		icons:{
+		icons: {
 			secondary: "ui-icon-disk"
 		}
 	});
-	
+
 	// If user clicks 'cancel', redirect to solver's details page
-	$('.cancelBtn').click(function(){
-		window.location = starexecRoot+"secure/details/solver.jsp?id=" + getParameterByName("sid");
+	$('.cancelBtn').click(function() {
+		window.location = starexecRoot + "secure/details/solver.jsp?id=" + getParameterByName(
+			"sid");
 	});
-	
+
 	$('#upload').expandable(false);
 	$('#save').expandable(true);
 }
@@ -36,20 +38,20 @@ function initUI() {
  * Attaches validation to the configuration upload form
  */
 function attachFormValidation() {
-	
+
 	// Add regular expression handling to the JQuery validator
 	$.validator.addMethod(
-			"regex", 
-			function(value, element, regexp) {
-				var re = new RegExp(regexp);
-				return this.optional(element) || re.test(value);
-	});
-	
+		"regex",
+		function(value, element, regexp) {
+			var re = new RegExp(regexp);
+			return this.optional(element) || re.test(value);
+		});
+
 	// Re-validate the 'file location' field when it loses focus
-	$("#configFile").change(function(){
-		 $("#configFile").blur().focus(); 
-    });
-	
+	$("#configFile").change(function() {
+		$("#configFile").blur().focus();
+	});
+
 	// Form validation rules/messages
 	$("#uploadConfigForm").validate({
 		rules: {
@@ -60,7 +62,7 @@ function attachFormValidation() {
 				required: true,
 				regex: getPrimNameRegex()
 			},
-			uploadConfigDesc: { 
+			uploadConfigDesc: {
 				maxlength: $("#uploadConfigDesc").attr("maxlength"),
 				regex: getPrimDescRegex()
 			}
@@ -71,16 +73,17 @@ function attachFormValidation() {
 			},
 			uploadConfigName: {
 				required: "name required",
-				regex	: "invalid character(s)"
+				regex: "invalid character(s)"
 			},
 			uploadConfigDesc: {
 				required: "description required",
-				maxlength: "max length is " + $("#uploadConfigDesc").attr("maxlength"),
+				maxlength: "max length is " + $("#uploadConfigDesc")
+				.attr("maxlength"),
 				regex: "invalid character(s)"
 			}
 		}
 	});
-	
+
 	// Add validation to the configuration save form
 	$("#saveConfigForm").validate({
 		rules: {
@@ -88,7 +91,7 @@ function attachFormValidation() {
 				required: true,
 				regex: getPrimNameRegex()
 			},
-			saveConfigDesc: { 
+			saveConfigDesc: {
 				maxlength: $("#saveConfigDesc").attr("maxlength"),
 				regex: getPrimDescRegex()
 			},
@@ -103,7 +106,8 @@ function attachFormValidation() {
 			},
 			saveConfigDesc: {
 				required: "description required",
-				maxlength: "max length is " + $("#saveConfigDesc").attr("maxlength"),
+				maxlength: "max length is " + $("#saveConfigDesc")
+				.attr("maxlength"),
 				regex: "invalid characters"
 			},
 			saveConfigContents: {

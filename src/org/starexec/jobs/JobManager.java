@@ -69,7 +69,7 @@ public abstract class JobManager {
 		JobPairs.getAndClearTimeDeltas(-1);
 	}
 
-	public synchronized static boolean checkPendingJobs() {
+	public synchronized static void checkPendingJobs() {
 		try {
 			Boolean devJobsOnly = false;
 			log.debug("about to check if the system is paused");
@@ -79,7 +79,7 @@ public abstract class JobManager {
 					devJobsOnly = true;
 				} else {
 					log.info("Not adding more job pairs to any queues, as the system is paused");
-					return false;
+					return;
 				}
 			}
 			Common.logConnectionsOpen();
@@ -103,7 +103,7 @@ public abstract class JobManager {
 						joblist = Queues.getPendingJobs(qId);
 					}
 					log.debug("about to submit this many jobs " + joblist.size());
-					if (joblist.size() > 0) {
+					if (!joblist.isEmpty()) {
 						submitJobs(joblist, q, queueSize, nodeCount);
 					} else {
 						// If we have no jobs to submit, reset the queue monitor
@@ -124,8 +124,6 @@ public abstract class JobManager {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
-
-		return false;
 	}
 
 
@@ -194,8 +192,9 @@ public abstract class JobManager {
 			logMessage.append("\t");
 		}
 
-		logMessage.append("( jobId: " + s.job.getId() + ", userId: " + s.job.getUserId() + ", isHighPriority: " +
-		                  s.job.isHighPriority() + ", hasNext: " + s.pairIter.hasNext() + " )");
+		logMessage.append("( jobId: ").append(s.job.getId()).append(", userId: ").append(s.job.getUserId())
+		          .append(", isHighPriority: ").append(s.job.isHighPriority()).append(", hasNext: ")
+		          .append(s.pairIter.hasNext()).append(" )");
 
 		log.debug(methodName, logMessage.toString());
 	}
@@ -372,7 +371,7 @@ public abstract class JobManager {
 						// Replace the high priority states with the filtered ones.
 						userToHighPriorityStates.put(currentStateUserId, highPriorityStates);
 
-						if (highPriorityStates.size() == 0) {
+						if (highPriorityStates.isEmpty()) {
 							log.trace(methodName, "No high priority states with pairs left.");
 							// Remove the user from the map if they don't have any high priority jobs left to look at.
 							userToHighPriorityStates.remove(currentStateUserId);
@@ -388,7 +387,7 @@ public abstract class JobManager {
 									Map<Integer, Integer> highPriorityJobBalanceForUser =
 											highPriorityJobBalance.get(s.job.getUserId());
 
-									if (highPriorityJobBalanceForUser.entrySet().size() == 0) {
+									if (highPriorityJobBalanceForUser.entrySet().isEmpty()) {
 										throw new StarExecException(
 												"There should be high priority jobs for this user in the high" +
 												"priority job balance but there isn't!, userId=" + s.job.getUserId());
@@ -415,7 +414,7 @@ public abstract class JobManager {
 							          s.job.getUserId());
 							Long min = monitor.getMin();
 							if (min == null) {
-								min = -1l;
+								min = -1L;
 							}
 							log.debug("user had already submitted " + i + " pairs in this iteration. Load = " +
 							          monitor.getLoad(s.job.getUserId()) + " Min = " + min);
@@ -440,7 +439,7 @@ public abstract class JobManager {
 							log.debug("Checking bench dependencies for bench with id: " + benchId);
 							List<Benchmark> brokenDependencies = Benchmarks.getBrokenBenchDependencies(benchId);
 							log.debug("Found " + brokenDependencies.size() + " missing dependencies.");
-							if (brokenDependencies.size() > 0) {
+							if (!brokenDependencies.isEmpty()) {
 								log.debug("Skipping pair with broken bench dependency...");
 								JobPairs.setStatusForPairAndStages(pair
 										.getId(), StatusCode.ERROR_BENCH_DEPENDENCY_MISSING.getVal());
@@ -484,10 +483,10 @@ public abstract class JobManager {
 
 							int execId = R.BACKEND.submitScript(scriptPath, R.BACKEND_WORKING_DIR, logPath);
 
-							if (!R.BACKEND.isError(execId)) {
-								JobPairs.updateBackendExecId(pair.getId(), execId);
-							} else {
+							if (R.BACKEND.isError(execId)) {
 								JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());
+							} else {
+								JobPairs.updateBackendExecId(pair.getId(), execId);
 							}
 							queueSize++;
 						} catch (BenchmarkDependencyMissingException e) {
@@ -596,7 +595,7 @@ public abstract class JobManager {
 			final List<JobPair> pairs = Jobs.getPendingPairsDetailed(job, limit);
 			log.trace("finished call to getPendingPairsDetailed");
 
-			if (pairs.size() > 0) {
+			if (!pairs.isEmpty()) {
 				final Iterator<JobPair> pairIter = pairs.iterator();
 				final SchedulingState s = new SchedulingState(job, jobTemplate, pairIter);
 				schedule.add(s);
@@ -706,7 +705,7 @@ public abstract class JobManager {
 			} else {
 				preProcessorTimeLimits.add(String.valueOf(p.getTimeLimit()));
 				preProcessorPaths.add(p.getFilePath());
-				if (stage.getStageNumber() == pair.getPrimaryStageNumber()) {
+				if (Objects.equals(stage.getStageNumber(), pair.getPrimaryStageNumber())) {
 					primaryPreprocessorPath = p.getFilePath();
 				}
 			}
@@ -841,7 +840,7 @@ public abstract class JobManager {
 	 * @return The argument string.
 	 */
 	public static String pipelineDependenciesToArgumentString(List<PipelineDependency> deps) {
-		if (deps == null || deps.size() == 0) {
+		if (deps == null || deps.isEmpty()) {
 			return "";
 		}
 		log.debug("creating a dependency argument string with this many deps = " + deps.size());
@@ -874,7 +873,7 @@ public abstract class JobManager {
 	 * @return The array as a String that can be embedded directly into the jobscript.
 	 */
 	public static String toBashArray(String arrayName, List<String> strs, boolean base64) {
-		if (strs.size() == 0) {
+		if (strs.isEmpty()) {
 			return "";
 		}
 		int index = 0;
@@ -928,10 +927,9 @@ public abstract class JobManager {
 	 *
 	 * @param pairId
 	 * @param dependencies
-	 * @return
 	 * @throws Exception
 	 */
-	public static Boolean writeDependencyFile(Integer pairId, List<BenchmarkDependency> dependencies) throws
+	public static void writeDependencyFile(Integer pairId, List<BenchmarkDependency> dependencies) throws
 			Exception {
 		StringBuilder sb = new StringBuilder();
 		String separator = ",,,";
@@ -951,14 +949,13 @@ public abstract class JobManager {
 					"Can't change owner permissions on job dependencies file. This will prevent the grid engine from" +
 					" " +
 					"being able to open the file. File path: " + dependFilePath);
-			return false;
+			return;
 		}
 		log.debug("dependencies file = " + sb.toString());
 		FileWriter out = new FileWriter(f);
 		out.write(sb.toString());
 		out.close();
 		log.debug("done writing dependency file");
-		return true;
 	}
 
 	/**
@@ -1191,13 +1188,9 @@ public abstract class JobManager {
 	public static List<JobPair> addJobPairsFromSpace(int spaceId, String path, List<Integer> configIds) {
 		try {
 			List<Solver> solvers = Solvers.getWithConfig(configIds);
-
-			List<Benchmark> benchmarks = new ArrayList<>();
-
+			List<Benchmark> benchmarks = Benchmarks.getBySpace(spaceId);
 
 			// Pair up the solvers and benchmarks
-
-			benchmarks = Benchmarks.getBySpace(spaceId);
 			List<JobPair> curPairs = new ArrayList<>();
 			for (Benchmark bench : benchmarks) {
 				for (Solver solver : solvers) {
@@ -1250,7 +1243,7 @@ public abstract class JobManager {
 	public static void addJobPairsRoundRobin(Job j, Map<Integer, List<JobPair>> spaceToPairs) {
 		try {
 			int index = 0;
-			while (spaceToPairs.size() > 0) {
+			while (!spaceToPairs.isEmpty()) {
 				Set<Integer> keys = spaceToPairs.keySet();
 				Set<Integer> keysToRemove = new HashSet<>();
 				for (Integer spaceId : keys) {
@@ -1290,18 +1283,13 @@ public abstract class JobManager {
 			configIds, HashMap<Integer, String> SP) {
 		try {
 			Map<Integer, List<JobPair>> spaceToPairs = new HashMap<>();
-
 			List<Solver> solvers = Solvers.getWithConfig(configIds);
-
-			List<Benchmark> benchmarks = new ArrayList<>();
 			List<Space> spaces = Spaces.trimSubSpaces(userId, Spaces.getSubSpaceHierarchy(spaceId, userId));
 			spaces.add(Spaces.get(spaceId));
 
-
 			// Pair up the solvers and benchmarks
-
 			for (Space s : spaces) {
-				benchmarks = Benchmarks.getBySpace(s.getId());
+				List<Benchmark> benchmarks = Benchmarks.getBySpace(s.getId());
 				log.debug("found this many benchmarks for space id = " + s.getId() + " " + benchmarks.size());
 				List<JobPair> curPairs = new ArrayList<>();
 				for (Benchmark bench : benchmarks) {
@@ -1316,23 +1304,18 @@ public abstract class JobManager {
 						stage.setNoOp(false);
 
 						pair.addStage(stage);
-
 						pair.setPath(SP.get(s.getId()));
 						pair.setSpace(Spaces.get(s.getId()));
 						curPairs.add(pair);
-
 					}
 				}
 				spaceToPairs.put(s.getId(), curPairs);
-
 			}
-
 			return spaceToPairs;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
 		return null;
-
 	}
 
 	/**
@@ -1354,9 +1337,9 @@ public abstract class JobManager {
 	}
 
 	static class SchedulingState {
-		Job job;
-		String jobTemplate;
-		Iterator<JobPair> pairIter;
+		final Job job;
+		final String jobTemplate;
+		final Iterator<JobPair> pairIter;
 
 		SchedulingState(Job _job, String _jobTemplate, Iterator<JobPair> _pairIter) {
 			job = _job;

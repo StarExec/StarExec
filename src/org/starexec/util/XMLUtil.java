@@ -28,7 +28,7 @@ import java.io.IOException;
  * @author Eric
  */
 public class XMLUtil {
-	private static StarLogger log = StarLogger.getLogger(XMLUtil.class);
+	private static final StarLogger log = StarLogger.getLogger(XMLUtil.class);
 
 	/**
 	 * Validates an XML document using a schema
@@ -59,8 +59,9 @@ public class XMLUtil {
 			log.debug("XML File has been validated against the schema.");
 			return new ValidatorStatusCode(true);
 		} catch (SAXException ex) {
-			log.warn("File is not valid because: \"" + ex.getMessage() + "\"");
-			return new ValidatorStatusCode(false, "File is not valid because: \"" + ex.getMessage() + "\"");
+			final String message = "File '" + file.getName() + "' is not valid because: \"" + ex.getMessage() + "\"";
+			log.warn(message);
+			return new ValidatorStatusCode(false, message);
 		}
 
 	}

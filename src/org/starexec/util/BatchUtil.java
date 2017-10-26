@@ -355,7 +355,7 @@ public class BatchUtil {
 
 				int spaceId = createSpaceFromElement(spaceElement, parentSpaceId, userId, statusId);
 
-				// Check if an error occured in createSpaceFromElement
+				// Check if an error occurred in createSpaceFromElement
 				if (spaceId == -1) {
 					return null;
 				}
@@ -579,17 +579,19 @@ public class BatchUtil {
 				log.debug("found a new element = " + childNode.toString());
 				Element childElement = (Element) childNode;
 				String elementType = childElement.getTagName();
-				if (elementType.equals("Benchmark")) {
+				switch (elementType) {
+				case "Benchmark":
 					id = Integer.parseInt(childElement.getAttribute("id"));
 					benchmarks.add(id);
-				} else if (elementType.equals("Solver")) {
+					break;
+				case "Solver":
 					id = Integer.parseInt(childElement.getAttribute("id"));
 					solvers.add(id);
-
-				} else if (elementType.equals("Space")) {
+					break;
+				case "Space":
 					childSpaces.add(childElement);
-
-				} else if (elementType.equals("Update")) {
+					break;
+				case "Update":
 					//Grab information and store it into temp structure.
 					Update u = new Update();
 
@@ -601,21 +603,21 @@ public class BatchUtil {
 
 					if (!childElement.hasAttribute("pid")) {
 						errorMessage = ("The update element for benchmark id " + u.id +
-						                " is missing the required pid element.");
+								" is missing the required pid element.");
 						return -1;
 					}
 					u.pid = Integer.parseInt(childElement.getAttribute("pid"));
 
-					if (!childElement.hasAttribute("bid")) {
-						u.bid = R.NO_TYPE_PROC_ID;
-					} else {
+					if (childElement.hasAttribute("bid")) {
 						u.bid = Integer.parseInt(childElement.getAttribute("bid"));
+					} else {
+						u.bid = R.NO_TYPE_PROC_ID;
 					}
 
 					// Make sure that a benchmark with the given ID exists.
 					if (!Benchmarks.benchmarkExists(u.id)) {
 						log.debug("User attempted to provide a nonexistent benchmark id " + u.id +
-						          " in a space XML Update element.");
+										  " in a space XML Update element.");
 						errorMessage = "A benchmark with id " + u.id + " does not exist.";
 						return -1;
 					}
@@ -623,7 +625,7 @@ public class BatchUtil {
 					// Make sure that an update processor with the given ID exists.
 					if (!Processors.processorExists(u.pid)) {
 						log.debug("User attempted to provide a nonexistent update processor id " + u.pid +
-						          " in a space XML Update element.");
+										  " in a space XML Update element.");
 						errorMessage = "An update processor with id " + u.pid + " does not exist.";
 						return -1;
 					}
@@ -633,7 +635,7 @@ public class BatchUtil {
 					// provided by the user.
 					if (u.bid != R.NO_TYPE_PROC_ID && !Processors.processorExists(u.bid)) {
 						log.debug("User attempted to provide a nonexistent benchmark processor id " + u.bid +
-						          " in a space XML Update element.");
+										  " in a space XML Update element.");
 						errorMessage = "A benchmark processor with id " + u.bid + " does not exist.";
 						return -1;
 					}
@@ -662,6 +664,7 @@ public class BatchUtil {
 
 					log.debug("Adding update " + u);
 					updates.add(u);
+					break;
 				}
 
 			} else {
@@ -893,7 +896,7 @@ public class BatchUtil {
 	/**
 	 * Basic struct class to store all the id's needed for an update.
 	 */
-	private class Update {
+	private static class Update {
 		public String name = "";
 		public int id; //Benchmark ID
 		public int pid; //Processor ID

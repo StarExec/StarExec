@@ -7,8 +7,6 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.starexec.constants.R;
-import org.starexec.data.database.Jobs;
-import org.starexec.data.to.enums.Primitive;
 import org.starexec.logger.StarLogger;
 import org.starexec.test.TestUtil;
 
@@ -29,6 +27,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
@@ -186,22 +186,16 @@ public class Util {
 	}
 
 	/**
-	 * Clamps the given value to within the given range
+	 * Ensures a number is within a given range
 	 *
-	 * @param min The min of the range, inclusive
-	 * @param max The max of the range, inclusive
-	 * @param value The valu to clamp.
-	 * @return min, if the value is lower, and max if the value is larger.
-	 * The value itself otherwise
+	 * @param min The minimum value the given value can be
+	 * @param max The maximum value the given value can be
+	 * @param value The actual value to clamp
+	 * @return min if value is less than min, max if value is
+	 * greater than max, or value if it is between min and max
 	 */
 	public static long clamp(long min, long max, long value) {
-		if (value < min) {
-			return min;
-		}
-		if (value > max) {
-			return max;
-		}
-		return value;
+		return Math.max(Math.min(value, max), min);
 	}
 
 	/**
@@ -237,20 +231,13 @@ public class Util {
 	}
 
 	/**
-	 * Extracts the file extesion from a file path
+	 * Extracts the file extension from a file path
 	 *
 	 * @param s The file path
 	 * @return The extension of the file
 	 */
 	public static String getFileExtension(String s) {
 		return s.substring(s.lastIndexOf('.') + 1);
-	}
-
-	/**
-	 * @return The platform-dependent line separator
-	 */
-	public static String getLineSeparator() {
-		return System.getProperty("line.separator");
 	}
 
 	/**
@@ -318,13 +305,13 @@ public class Util {
 		for (Part p : request.getParts()) {
 			PartWrapper wrapper = new PartWrapper(p);
 			// If we're dealing with a regular form field...
-			if (!wrapper.isFile()) {
-				// Add the field name and field value to the hashmap
-				form.put(p.getName(), IOUtils.toString(p.getInputStream()));
-			} else {
+			if (wrapper.isFile()) {
 				// Else we've encountered a file, so add the entire wrapper to the HashMap.
 				// The wrapper provides all the relevant interface of a FileItem
 				form.put(p.getName(), wrapper);
+			} else {
+				// Add the field name and field value to the hashmap
+				form.put(p.getName(), IOUtils.toString(p.getInputStream()));
 			}
 		}
 
@@ -371,11 +358,10 @@ public class Util {
 	 * Calls executeSandboxCommand with a null environment and working directory
 	 *
 	 * @param command
-	 * @return See full executeCommand documentation
 	 * @throws IOException
 	 */
-	public static String executeSandboxCommand(String[] command) throws IOException {
-		return executeSandboxCommand(command, null, null);
+	public static void executeSandboxCommand(String[] command) throws IOException {
+		executeSandboxCommand(command, null, null);
 	}
 
 	/**
@@ -460,7 +446,7 @@ public class Util {
 		try {
 			while ((line = reader.readLine()) != null) {
 				readsomething = true;
-				sb.append(line + System.getProperty("line.separator"));
+				sb.append(line).append(System.getProperty("line.separator"));
 			}
 			reader.close();
 		} catch (IOException e) {
@@ -511,16 +497,9 @@ public class Util {
 	 */
 	public static List<Integer> toIntegerList(String[] stringList) {
 		if (nonNull(stringList)) {
-			ArrayList<Integer> retList = new ArrayList<>(stringList.length);
-
-			for (String s : stringList) {
-				retList.add(Integer.parseInt(s));
-			}
-
-			return retList;
+			return Arrays.stream(stringList).map(Integer::parseInt).collect(Collectors.toList());
 		}
-
-		return new ArrayList<>();
+		return new LinkedList<>();
 	}
 
 	/**
@@ -585,11 +564,11 @@ public class Util {
 	 */
 	public static String makeCommaSeparatedList(List<Integer> nums) {
 		StringBuilder sb = new StringBuilder();
-		for (Integer id : nums) {
+		nums.forEach(id -> {
 			sb.append(id);
 			sb.append(",");
-		}
-		sb.delete(sb.length() - 1, sb.length());
+		});
+		sb.deleteCharAt(sb.length() - 1);
 		return sb.toString();
 
 	}
@@ -616,13 +595,11 @@ public class Util {
 		IOFileFilter dateFilter = FileFilterUtils.ageFileFilter(calendar.getTime());
 		Collection<File> outdatedFiles;
 		// Get all of the outdated files
-		if (!includeDirs) {
-			outdatedFiles = FileUtils.listFiles(dir, dateFilter, null);
-
-		} else {
+		if (includeDirs) {
 			File[] files = dir.listFiles((FileFilter) dateFilter);
-			outdatedFiles = new ArrayList<>();
-			Collections.addAll(outdatedFiles, files);
+			outdatedFiles = Arrays.asList(files);
+		} else {
+			outdatedFiles = FileUtils.listFiles(dir, dateFilter, null);
 		}
 		return outdatedFiles;
 	}
@@ -652,7 +629,7 @@ public class Util {
 		}
 	}
 
-	/**
+	/*
 	 * THIS IS NOT SAFE TO RUN ON STAREXEC
 	 * <p>
 	 * This code is designed to be used for single uses on Stardev to clear the job directory in a smart way after
@@ -707,10 +684,7 @@ public class Util {
 			Collection<File> outdatedFiles = getOldFiles(directory, daysAgo, includeDirs);
 			log.debug("found a total of " + outdatedFiles.size() + " outdated files to delete in " + directory);
 			// Remove them all
-			for (File f : outdatedFiles) {
-
-				FileUtils.deleteQuietly(f);
-			}
+			outdatedFiles.forEach(FileUtils::deleteQuietly);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
@@ -790,7 +764,7 @@ public class Util {
 	 * @author Eric Burns
 	 */
 	public static String byteCountToDisplaySize(long bytes) {
-		String[] suffix = new String[]{"Bytes", "KB", "MB", "GB", "TB", "PB", "EB"};
+		final String[] suffix = {"Bytes", "KB", "MB", "GB", "TB", "PB", "EB"};
 		int suffixIndex = 0;
 		double b = (double) bytes;
 		while (b > 1024) {
@@ -809,8 +783,7 @@ public class Util {
 	 * @return Number of bytes representing the given gigabytes
 	 */
 	public static long gigabytesToBytes(double gigabytes) {
-		long bytes = (long) (1073741824 * gigabytes);
-		return bytes;
+		return (long) (1073741824 * gigabytes);
 	}
 
 	/**
@@ -985,7 +958,7 @@ public class Util {
 	/**
 	 * Copies all of the given files to a single, newly created sandbox directory
 	 * and returns the sandbox directory. The sandbox user will be the owner and
-	 * have full permissions over everthing in the sandbox directory.
+	 * have full permissions over everything in the sandbox directory.
 	 *
 	 * @param files
 	 * @return The sandbox directory that contains all the copied files
@@ -1065,17 +1038,17 @@ public class Util {
 	 */
 	public static String getWebPage(String url, Map<String, String> queryParameters, List<Cookie> cookiesToSend)
 			throws IOException {
-		if (queryParameters.keySet().size() == 0) {
+		if (queryParameters.keySet().isEmpty()) {
 			return url;
 		}
 
 		// Initially contains the ? necessary for the query string.
 		StringBuilder queryStringBuilder = new StringBuilder("?");
 
-		for (String parameter : queryParameters.keySet()) {
+		queryParameters.keySet().forEach(parameter -> {
 			String value = queryParameters.get(parameter);
 			queryStringBuilder.append(parameter).append("=").append(value).append("&");
-		}
+		});
 		// delete the last & character
 		queryStringBuilder.deleteCharAt(queryStringBuilder.length() - 1);
 
@@ -1109,16 +1082,14 @@ public class Util {
 	}
 
 	/**
-	 * Builds a String representing a list of Cookies that we can pass to URLConnection.setRequestPropery to send
+	 * Builds a String representing a list of Cookies that we can pass to URLConnection.setRequestProperty to send
 	 * cookies.
 	 */
 	private static String buildCookieString(List<Cookie> cookies) {
 		//StringJoiner cookieStringJoiner = new StringJoiner("; ");
 		StringBuilder cookieStringBuilder = new StringBuilder();
-		for (Cookie cookie : cookies) {
-			cookieStringBuilder.append(cookie.getName()).append("=").append(cookie.getValue()).append(";");
-		}
-		if (cookies.size() > 0) {
+		cookies.forEach(cookie -> cookieStringBuilder.append(cookie.getName()).append("=").append(cookie.getValue()).append(";"));
+		if (!cookies.isEmpty()) {
 			cookieStringBuilder.deleteCharAt(cookieStringBuilder.length() - 1);
 		}
 		return cookieStringBuilder.toString();
@@ -1158,7 +1129,7 @@ public class Util {
 	 * Try to detect if a file is binary.
 	 * For example, if a file is an execuatable binary instead of a text shell
 	 * script, this function will return true
-	 * @param file to check
+	 * @param f file to check
 	 * @return true if file is binary, false otherwise
 	 */
 	public static boolean isBinaryFile(File f) throws IOException {

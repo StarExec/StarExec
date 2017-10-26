@@ -16,7 +16,7 @@ import static org.junit.Assert.fail;
 
 public class BenchmarkUploaderTests extends TestSequence {
 
-    class BenchmarkUploaderWrapper {
+    static class BenchmarkUploaderWrapper {
         public File getDirectoryForBenchmarkUpload(int userId, String name) throws FileNotFoundException {
             return BenchmarkUploader.getDirectoryForBenchmarkUpload(userId, name);
         }

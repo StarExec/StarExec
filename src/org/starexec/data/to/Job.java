@@ -191,7 +191,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	 * @return all the attribute names for every completed job pair in this job
 	 */
 	public Set<String> attributeNames() {
-		if (jobPairs == null || jobPairs.size() == 0) {
+		if (jobPairs == null || jobPairs.isEmpty()) {
 			return null;
 		}
 		Set<String> attrs = new HashSet<>();
@@ -412,10 +412,10 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	 * Gets the name of the root space for this job. Doing this requires that at least one job pair is populated and
 	 * that it has the correct path info set.
 	 *
-	 * @Return the root space name, or null if it cannot be found
+	 * @return the root space name, or null if it cannot be found
 	 */
 	public String getRootSpaceName() {
-		if (getJobPairs().size() == 0) {
+		if (getJobPairs().isEmpty()) {
 			return null;
 		}
 		String rootName = getJobPairs().get(0).getPath();
@@ -484,7 +484,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 	}
 
 	/**
-	 * If non-zero, process will recieve SIGTERM, and then SIGKILL after the delay specified. Note that this option
+	 * If non-zero, process will receive SIGTERM, and then SIGKILL after the delay specified. Note that this option
 	 * only
 	 * applies to RunSolver
 	 *

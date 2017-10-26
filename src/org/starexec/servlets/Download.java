@@ -1,5 +1,6 @@
 package org.starexec.servlets;
 
+import org.apache.catalina.connector.ClientAbortException;
 import org.apache.commons.io.FileUtils;
 import org.starexec.constants.R;
 import org.starexec.constants.Web;
@@ -26,7 +27,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.zip.ZipOutputStream;
+
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 
 /**
  * Handles requests to download files from starexec
@@ -41,10 +43,10 @@ public class Download extends HttpServlet {
 	private static final String GIF_FILE_TYPE = "gif";
 	private static final String ICO_FILE_TYPE = "ico";
 	private static final String IMAGES_DIRECTORY_NAME = "images";
-	private static String PARAM_TYPE = "type";
-	private static String PARAM_ID = "id";
-	private static String PARAM_ANON_ID = "anonId";
-	private static String PARAM_REUPLOAD = "reupload";
+	private static final String PARAM_TYPE = "type";
+	private static final String PARAM_ID = "id";
+	private static final String PARAM_ANON_ID = "anonId";
+	private static final String PARAM_REUPLOAD = "reupload";
 
 	private static Optional<Solver> handleSolverAndSolverSrc(HttpServletRequest request, HttpServletResponse response)
 			throws IOException, SQLException {
@@ -84,15 +86,8 @@ public class Download extends HttpServlet {
 	 * @author Skylar Stark & Wyatt Kaiser
 	 */
 	private static boolean handleSolver(Solver s, HttpServletResponse response, boolean reupload) throws Exception {
-
 		String baseName = s.getName();
-		// If we can see this solver AND the solver is downloadable...
-
-		if (reupload) {
-			ArchiveUtil.createAndOutputZip(new File(s.getPath()), response.getOutputStream(), "", true);
-		} else {
-			ArchiveUtil.createAndOutputZip(new File(s.getPath()), response.getOutputStream(), baseName, false);
-		}
+		ArchiveUtil.createAndOutputZip(new File(s.getPath()), response.getOutputStream(), baseName, reupload);
 		return true;
 	}
 
@@ -105,9 +100,7 @@ public class Download extends HttpServlet {
 	 * @author Skylar Stark & Wyatt Kaiser & Andrew Lubinus
 	 */
 	private static boolean handleSolverSource(Solver s, HttpServletResponse response) throws Exception {
-
 		String baseName = s.getName();
-		// If we can see this solver AND the solver is downloadable...
 		ArchiveUtil.createAndOutputZip(new File(s.getPath() + "_src"), response.getOutputStream(), baseName, false);
 		return true;
 	}
@@ -127,20 +120,19 @@ public class Download extends HttpServlet {
 		for (Processor x : procs) {
 			File newProc = new File(x.getFilePath());
 			if (newProc.exists()) {
-				files.add(new File(x.getFilePath()));
+				files.add(newProc);
 			} else {
 				log.warn(methodName, "processor with id = " + x.getId() + " exists in the database but not on disk");
 			}
 		}
-		if (files.size() > 0) {
-			log.debug(methodName, "Outputting zip of processors.");
-			ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), "processors");
-			return true;
+		if (files.isEmpty()) {
+			log.warn(methodName, "Didn't find any files on disk.");
+			return false;
 		}
 
-
-		log.warn(methodName, "Didn't find any files on disk.");
-		return false;
+		log.debug(methodName, "Outputting zip of processors.");
+		ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), "processors");
+		return true;
 	}
 
 	/**
@@ -152,8 +144,6 @@ public class Download extends HttpServlet {
 	 * @author Skylar Stark
 	 */
 	private static boolean handleBenchmark(Benchmark b, HttpServletResponse response) throws Exception {
-		// If we can see this benchmark AND the benchmark is downloadable...
-
 		ArchiveUtil.createAndOutputZip(new File(b.getPath()), response.getOutputStream(), "", false);
 		return true;
 	}
@@ -327,7 +317,7 @@ public class Download extends HttpServlet {
 		Jobs.loadPropertiesIntoPairs(job.getJobPairs(), props);
 		log.debug("about to create a job CSV with " + job.getJobPairs().size() + " pairs");
 		String jobFile = CreateJobCSV(job, returnIds, onlyCompleted);
-		ArchiveUtil.createAndOutputZip(new File(jobFile), response.getOutputStream(), "", false);
+		ArchiveUtil.createAndOutputZip(new File(jobFile), response.getOutputStream(), "Job"+jobId, false);
 
 		return true;
 	}
@@ -343,7 +333,7 @@ public class Download extends HttpServlet {
 	private static String CreateJobCSV(Job job, Boolean returnIds, Boolean getOnlyCompleted) throws IOException {
 		log.debug("CreateJobCSV called with returnIds set to " + returnIds);
 		StringBuilder sb = new StringBuilder();
-		sb.append(R.STAREXEC_ROOT + R.DOWNLOAD_FILE_DIR);
+		sb.append(R.STAREXEC_ROOT).append(R.DOWNLOAD_FILE_DIR);
 		sb.append(File.separator);
 		int maxStageNumbers = 0;
 		for (JobPair jp : job) {
@@ -363,12 +353,12 @@ public class Download extends HttpServlet {
 		if (maxStageNumbers > 1) {
 			sb.append("stage number,");
 		}
-		if (!returnIds) {
-			sb.append("benchmark,solver,configuration,status,cpu time,wallclock time,memory usage,result");
-		} else {
+		if (returnIds) {
 			sb.append(
 					"pair id,benchmark,benchmark id,solver,solver id,configuration,configuration id,status,cpu time," +
 							"wallclock time,memory usage,result");
+		} else {
+			sb.append("benchmark,solver,configuration,status,cpu time,wallclock time,memory usage,result");
 		}
 
 		HashMap<Integer, String> expectedValues = Jobs.getAllAttrsOfNameForJob(job.getId(), R.EXPECTED_RESULT);
@@ -420,7 +410,7 @@ public class Download extends HttpServlet {
 					sb.append(",");
 				}
 				if (pair.getPath() != null) {
-					sb.append(pair.getPath() + "/" + pair.getBench().getName());
+					sb.append(pair.getPath()).append("/").append(pair.getBench().getName());
 				} else {
 					sb.append(pair.getBench().getName());
 				}
@@ -467,7 +457,7 @@ public class Download extends HttpServlet {
 					for (String attr : attrNames) {
 						if (!attr.equals(R.STAREXEC_RESULT) && !attr.equals(R.EXPECTED_RESULT)) {
 							/* we skip printing the starexec-result, and starexec-expected-result attributes,
-					   because we printed them already */
+							   because we printed them already */
 							sb.append(",");
 							sb.append(props.getProperty(attr, "-"));
 						}
@@ -501,10 +491,10 @@ public class Download extends HttpServlet {
 			lastModified = -1;
 		}
 		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		ZipOutputStream stream = new ZipOutputStream(buffer);
+		ZipArchiveOutputStream stream = new ZipArchiveOutputStream(buffer);
 		try {
 			for (JobPair p : pairs) {
-				String zipFileNameParent = null;
+				String zipFileNameParent = "";
 				StringBuilder zipFileName = new StringBuilder(baseName);
 				zipFileName.append(File.separator);
 				if (useSpacePath) {
@@ -528,7 +518,7 @@ public class Download extends HttpServlet {
 							//means this is adjacent to a stdout file
 							if (files.size() > 1) {
 								singleFileName.append(File.separator);
-								singleFileName.append(p.getId() + "_output");
+								singleFileName.append(p.getId()).append("_output");
 							}
 							if (!running || earlyDate == null) {
 								modified = ArchiveUtil.addDirToArchive(stream, file, singleFileName.toString());
@@ -559,7 +549,7 @@ public class Download extends HttpServlet {
 					}
 				}
 			}
-			if (lastModified == -1 || lastModified == earlyDate) {
+			if (lastModified == -1 || earlyDate == Long.valueOf(lastModified)) {
 				response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
 			} else {
 				response.setDateHeader("Last-Modified", lastModified);
@@ -709,12 +699,17 @@ public class Download extends HttpServlet {
 			throws IOException {
 		// Create a new directory named after the filetype such as /js or /css
 		String filetypeDirectoryName = null;
-		if (filetype.equals(CSS_FILE_TYPE) || filetype.equals(JS_FILE_TYPE)) {
+		switch (filetype) {
+		case CSS_FILE_TYPE:
+		case JS_FILE_TYPE:
 			filetypeDirectoryName = filetype;
-		} else if (filetype.equals(PNG_FILE_TYPE) || filetype.equals(GIF_FILE_TYPE) || filetype.equals
-				(ICO_FILE_TYPE)) {
+			break;
+		case PNG_FILE_TYPE:
+		case GIF_FILE_TYPE:
+		case ICO_FILE_TYPE:
 			filetypeDirectoryName = IMAGES_DIRECTORY_NAME;
-		} else {
+			break;
+		default:
 			throw new IOException("Attempted to copy unsupported file type: " + filetype);
 		}
 
@@ -728,8 +723,7 @@ public class Download extends HttpServlet {
 
 			File parentDirectory = filetypeDirectory;
 			for (String directory : filesInHierarchy) {
-				File childDirectory = new File(parentDirectory, directory);
-				parentDirectory = childDirectory;
+				parentDirectory = new File(parentDirectory, directory);
 			}
 			parentDirectory.mkdirs();
 			File fileOnServer = new File(R.STAREXEC_ROOT + filetypeDirectoryName + "/" + filePath + "." + filetype);
@@ -788,17 +782,7 @@ public class Download extends HttpServlet {
 			}
 
 
-			if (!type.equals(R.JOB_OUTPUTS)) {
-				String universallyUniqueId = request.getParameter(PARAM_ANON_ID);
-				if (universallyUniqueId == null) {
-					int userId = SessionUtil.getUserId(request);
-					log.debug(methodName, "Validating download request for user: " + userId);
-					return validateForUser(userId, type, request);
-				} else {
-					log.debug(methodName, "Validating download request for anonymous link: " + universallyUniqueId);
-					return validateForAnonymousLink(universallyUniqueId, type, request);
-				}
-			} else {
+			if (type.equals(R.JOB_OUTPUTS)) {
 				//expecting a comma-separated list
 				final String idArrayParam = "id[]";
 				String ids = request.getParameter(idArrayParam);
@@ -807,6 +791,16 @@ public class Download extends HttpServlet {
 					log.debug(methodName, idArrayParam + " was not a valid integer list.");
 					return new ValidatorStatusCode(
 							false, "The given list of ids contained one or more invalid integers");
+				}
+			} else {
+				String universallyUniqueId = request.getParameter(PARAM_ANON_ID);
+				if (universallyUniqueId == null) {
+					int userId = SessionUtil.getUserId(request);
+					log.debug(methodName, "Validating download request for user: " + userId);
+					return validateForUser(userId, type, request);
+				} else {
+					log.debug(methodName, "Validating download request for anonymous link: " + universallyUniqueId);
+					return validateForAnonymousLink(universallyUniqueId, type, request);
 				}
 			}
 			return new ValidatorStatusCode(true);
@@ -828,44 +822,58 @@ public class Download extends HttpServlet {
 		if (!Validator.isValidPosInteger(request.getParameter(PARAM_ID))) {
 			final String message = "The given id was not a valid integer";
 			log.debug(methodName, "Download request validation failed: " + message);
-			new ValidatorStatusCode(false, message);
+			return new ValidatorStatusCode(false, message);
 		}
 
 		int id = Integer.parseInt(request.getParameter(PARAM_ID));
 		log.debug(methodName, PARAM_ID + " = " + id);
 
 		ValidatorStatusCode status = null;
-		if (type.equals(R.SOLVER) || type.equals(R.SOLVER_SOURCE)) {
+		switch (type) {
+		case R.SOLVER:
+		case R.SOLVER_SOURCE:
 			status = SolverSecurity.canUserDownloadSolver(id, userId);
 			if (!status.isSuccess()) {
 				return status;
 			}
-		} else if (type.equals(R.SPACE_XML) || type.equals(R.SPACE) || type.equals(R.PROCESSOR)) {
+			break;
+		case R.SPACE_XML:
+		case R.SPACE:
+		case R.PROCESSOR:
 			if (!Permissions.canUserSeeSpace(id, userId)) {
 				return new ValidatorStatusCode(false, "You do not have permission to see this space");
 			}
-		} else if (type.equals(R.JOB) || type.equals(R.JOB_XML) || type.equals(R.JOB_OUTPUT)) {
+			break;
+		case R.JOB:
+		case R.JOB_XML:
+		case R.JOB_OUTPUT: {
 			ValidatorStatusCode canSeeJobStatus = Permissions.canUserSeeJob(id, userId);
 			if (!canSeeJobStatus.isSuccess()) {
 				log.debug(methodName, "User could not see job, returning failure status.");
 				return canSeeJobStatus;
 			}
-		} else if (type.equals(R.PAIR_OUTPUT)) {
+			break;
+		}
+		case R.PAIR_OUTPUT: {
 			int jobId = JobPairs.getPair(id).getJobId();
 			ValidatorStatusCode canSeeJobStatus = Permissions.canUserSeeJob(jobId, userId);
 			if (!canSeeJobStatus.isSuccess()) {
 				return canSeeJobStatus;
 			}
-		} else if (type.equals(R.BENCHMARK)) {
+			break;
+		}
+		case R.BENCHMARK:
 			status = BenchmarkSecurity.canUserDownloadBenchmark(id, userId);
 			if (!status.isSuccess()) {
 				return status;
 			}
-		} else if (type.equals(R.JOB_PAGE_DOWNLOAD_TYPE)) {
+			break;
+		case R.JOB_PAGE_DOWNLOAD_TYPE:
 			status = JobSecurity.canUserSeeJob(id, userId);
 			if (!status.isSuccess()) {
 				return status;
 			}
+			break;
 		}
 		return new ValidatorStatusCode(true);
 	}
@@ -1095,7 +1103,7 @@ public class Download extends HttpServlet {
 					log.debug(methodName, "download request is for " + type.toString());
 					proc = Processors.getByCommunity(id, type);
 
-					if (proc.size() > 0) {
+					if (!proc.isEmpty()) {
 						success = handleProc(proc, response);
 					} else {
 						log.debug(methodName, "Could not find any processors to download.");
@@ -1150,6 +1158,13 @@ public class Download extends HttpServlet {
 				response.sendError(
 						HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "failed to process file for download.");
 			}
+		} catch (ClientAbortException e) {
+			/* The client has closed the connection, either intentionally or due
+			 * to a connection timeout. This is not serious, and not worth a
+			 * full stack trace. No need to send any message to client, because
+			 * connection has been closed. */
+			log.warn("doGet", "Caught ClientAbortException in Download.doGet\n" + "URL: " + request.getRequestURL());
+			response.getOutputStream().close();
 		} catch (Exception e) {
 			log.warn("Caught Exception in Download.doGet", e);
 			response.getOutputStream().close();
@@ -1182,11 +1197,10 @@ public class Download extends HttpServlet {
 		// If we can see this space AND the space is downloadable...
 		try {
 			//String baseFileName=space.getName();
-			ZipOutputStream stream = new ZipOutputStream(response.getOutputStream());
+			ZipArchiveOutputStream stream = new ZipArchiveOutputStream(response.getOutputStream());
 
-			storeSpaceHierarchy(
-					space, uid, space.getName(), includeBenchmarks, includeSolvers, hierarchy, stream,
-					useIdDirectories
+			storeSpaceHierarchy(space, uid, space.getName(), includeBenchmarks, includeSolvers, hierarchy, stream,
+			                    useIdDirectories
 			);
 			stream.close();
 
@@ -1214,11 +1228,13 @@ public class Download extends HttpServlet {
 	 */
 	private void storeSpaceHierarchy(
 			Space space, int uid, String dest, boolean includeBenchmarks, boolean includeSolvers, boolean recursive,
-			ZipOutputStream stream, boolean useIdDirectories
+			ZipArchiveOutputStream stream, boolean useIdDirectories
 	) throws Exception {
 		final String method = "storeSpaceHierarchy";
 		log.info("storing space " + space.getName() + "to" + dest);
 		if (Permissions.canUserSeeSpace(space.getId(), uid)) {
+			ArchiveUtil.addStringToArchive(stream, space.getDescription(), dest + File.separator + R.DESC_PATH);
+
 			if (includeBenchmarks) {
 				List<Benchmark> benchList = Benchmarks.getBySpace(space.getId());
 
@@ -1293,8 +1309,6 @@ public class Download extends HttpServlet {
 					}
 				}
 			}
-
-			ArchiveUtil.addStringToArchive(stream, space.getDescription(), dest + File.separator + R.DESC_PATH);
 
 			//if we aren't getting subspaces, we're done
 			if (!recursive) {

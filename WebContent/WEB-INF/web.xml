@@ -293,15 +293,6 @@
     <url-pattern>/secure/add/stressTest</url-pattern>
   </servlet-mapping>
 
-  <servlet>
-    <servlet-name>Analytics</servlet-name>
-    <servlet-class>org.starexec.servlets.Analytics</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>Analytics</servlet-name>
-    <url-pattern>/services/analytics</url-pattern>
-  </servlet-mapping>
-
   <!-- RESTEasy webservice framework configuration -->
   <servlet>
     <servlet-name>Resteasy</servlet-name>

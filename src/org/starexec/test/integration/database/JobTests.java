@@ -10,8 +10,6 @@ import org.starexec.jobs.JobManager;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
-import org.starexec.test.resources.ResourceLoader;
-import org.starexec.util.Util;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -30,9 +28,9 @@ public class JobTests extends TestSequence {
 	private Processor postProc=null; //post processor to use for the job
 	private List<Integer> benchmarkIds=null; // benchmarks to use for the job
 	private User user=null;                  //owner of all the test primitives
-	private int wallclockTimeout=100;
-	private int cpuTimeout=100;
-	private int gbMemory=1;
+	private final int wallclockTimeout=100;
+	private final int cpuTimeout=100;
+	private final int gbMemory=1;
 	private User user2=null;
 	private Job job2=null;
 
@@ -367,8 +365,6 @@ public class JobTests extends TestSequence {
 			Jobs.kill(jobId);
 			assertJobHasStatus(job, JobStatus.KILLED);
 			Assert.assertEquals("killed", job.getStatus());
-		} catch (Exception e) {
-			throw e;
 		} finally {
 			Jobs.deleteAndRemove(jobId);
 		}

@@ -4,8 +4,7 @@
 }
 
 #tblDefaultPerm tr td {
-	padding: 0px;
-	padding-right: 40px;	
+	padding: 0 40px 0 0;
 }
 
 #tblDefaultPerm tr th {
@@ -32,7 +31,7 @@
 		text-align: left;
 	}
 	#wrapper #tblDefaultPerm tr td {
-		padding-right: 0px;
+		padding-right: 0;
 	}
 
 	#editSpaceForm table tr > *:first-child {

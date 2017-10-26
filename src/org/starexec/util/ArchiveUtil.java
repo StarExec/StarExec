@@ -4,17 +4,17 @@ import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipFile;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.utils.IOUtils;
 import org.starexec.constants.R;
 import org.starexec.logger.StarLogger;
 
 import java.io.*;
-import java.nio.file.attribute.FileTime;
 import java.util.*;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.Files;
 
 /**
  * Contains helper methods for dealing with .zip files
@@ -62,7 +62,7 @@ public class ArchiveUtil {
 			temp.close();
 			return answer;
 		} catch (Exception e) {
-			log.error("Archive Util says " + e.getMessage(), e);
+			log.error("getZipSize", e);
 			return -1;
 		}
 	}
@@ -91,7 +91,7 @@ public class ArchiveUtil {
 			is.close();
 			return answer;
 		} catch (Exception e) {
-			log.error("Archive Util says " + e.getMessage(), e);
+			log.error("getTarSize", e);
 			return -1;
 		}
 	}
@@ -109,22 +109,18 @@ public class ArchiveUtil {
 	private static long getTarGzSize(String fileName) {
 		try {
 			FileInputStream instream = new FileInputStream(fileName);
-			GZIPInputStream ginstream = new GZIPInputStream(instream);
+			GzipCompressorInputStream ginstream = new GzipCompressorInputStream(instream);
 			long answer = 0;
-			long temp = 0;
-			while (true) {
+			long temp;
+			do {
 				temp = ginstream.skip(100000000);
-				if (temp == 0) {
-					break;
-				}
-
 				answer += temp;
-			}
+			} while (temp != 0);
 			instream.close();
 			ginstream.close();
 			return answer;
 		} catch (Exception e) {
-			log.error("Archive Util says " + e.getMessage(), e);
+			log.error("getTarGzSize", e);
 			return -1;
 		}
 	}
@@ -181,7 +177,7 @@ public class ArchiveUtil {
 			log.debug(String.format("Successfully extracted [%s] to [%s]", fileName, destination));
 			return true;
 		} catch (Exception e) {
-			log.error("Archive Util says " + e.getMessage(), e);
+			log.error("extractArchiveAsSandbox", e);
 		}
 
 		return false;
@@ -255,7 +251,7 @@ public class ArchiveUtil {
 			log.debug(String.format("Successfully extracted [%s] to [%s]", fileName, destination));
 			return true;
 		} catch (Exception e) {
-			log.error("Archive Util says " + e.getMessage(), e);
+			log.error("extractArchive", e);
 		}
 
 		return false;
@@ -267,18 +263,15 @@ public class ArchiveUtil {
 	 * is deleted. Note if the extraction failed, some files/folders may have been partially created.
 	 *
 	 * @param fileName The full file path to the archive file
-	 * @return True if extraction was successful, false otherwise.
 	 * @author Tyler Jensen
 	 */
-	public static Boolean extractArchive(String fileName) {
+	public static void extractArchive(String fileName) {
 		try {
 			String parent = new File(fileName).getParentFile().getCanonicalPath() + File.separator;
-			return ArchiveUtil.extractArchive(fileName, parent);
+			ArchiveUtil.extractArchive(fileName, parent);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("extractArchive", e);
 		}
-
-		return true;
 	}
 
 	/**
@@ -338,11 +331,10 @@ public class ArchiveUtil {
 	 */
 	private static void removeArchive(String fileName) {
 		if (R.REMOVE_ARCHIVES) {
-			if (!new File(fileName).delete()) {
-
-				log.warn("Failed to cleanup archive file: " + fileName);
-			} else {
+			if (new File(fileName).delete()) {
 				log.debug("Cleaned up archive file: " + fileName);
+			} else {
+				log.warn("Failed to cleanup archive file: " + fileName);
 			}
 		}
 	}
@@ -355,13 +347,18 @@ public class ArchiveUtil {
 	 * @param zipFileName
 	 * @throws Exception
 	 */
-	public static void addStringToArchive(ZipOutputStream zos, String str, String zipFileName) throws Exception {
-		ZipEntry entry = new ZipEntry(zipFileName);
-		zos.putNextEntry(entry);
-		PrintWriter writer = new PrintWriter(zos);
-		writer.write(str);
-		writer.flush();
-		zos.closeEntry();
+	public static void addStringToArchive(ZipArchiveOutputStream zos, String str, String zipFileName) throws Exception {
+		final byte[] data = str.getBytes(zos.getEncoding());
+		java.util.zip.CRC32 crc = new java.util.zip.CRC32();
+		crc.update(data);
+		ZipArchiveEntry entry = new ZipArchiveEntry(zipFileName);
+		entry.setSize(data.length);
+		entry.setCrc(crc.getValue());
+		entry.setMethod(ZipArchiveEntry.STORED);
+		entry.setInternalAttributes(1);
+		zos.putArchiveEntry(entry);
+		zos.write(data, 0, data.length);
+		zos.closeArchiveEntry();
 	}
 
 	/**
@@ -374,7 +371,7 @@ public class ArchiveUtil {
 	 * @return max of timestamp and earlyDate
 	 * @throws IOException
 	 */
-	public static long addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName, long earlyDate) throws
+	public static long addFileToArchive(ZipArchiveOutputStream zos, File srcFile, String zipFileName, long earlyDate) throws
 			IOException {
 		long timestamp = srcFile.lastModified();
 		if (timestamp > earlyDate) {
@@ -382,6 +379,15 @@ public class ArchiveUtil {
 			return timestamp;
 		}
 		return earlyDate;
+	}
+
+	/**
+	 * Calculate Unix file permissions for file f
+	 * @param f File to calculate permissions for
+	 * @return Unix file permissions
+	 */
+	private static int getUnixMode(File f) throws IOException {
+		return (Integer) Files.getAttribute(f.toPath(), "unix:mode");
 	}
 
 	/**
@@ -393,15 +399,17 @@ public class ArchiveUtil {
 	 * @return timestamp of file added
 	 * @throws IOException
 	 */
-	public static long addFileToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {
-		ZipEntry entry = new ZipEntry(zipFileName);
+	public static long addFileToArchive(ZipArchiveOutputStream zos, File srcFile, String zipFileName) throws IOException {
+		ZipArchiveEntry entry = new ZipArchiveEntry(srcFile, zipFileName);
 		try {
 			long timestamp = srcFile.lastModified();
-			zos.putNextEntry(entry);
+			zos.putArchiveEntry(entry);
 			FileInputStream input = new FileInputStream(srcFile);
-			entry.setLastModifiedTime(FileTime.fromMillis(timestamp));
+			entry.setUnixMode(getUnixMode(srcFile));
+			entry.setSize(srcFile.length());
+			entry.setInternalAttributes(Util.isBinaryFile(srcFile)?0:1);
 			IOUtils.copy(input, zos);
-			zos.closeEntry();
+			zos.closeArchiveEntry();
 			input.close();
 			return timestamp;
 		} catch (java.io.FileNotFoundException e) {
@@ -425,7 +433,7 @@ public class ArchiveUtil {
 	 * @return max of earlyDate and timestamp of most recently modified file
 	 * @throws IOException
 	 */
-	public static long addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName, long earlyDate) throws
+	public static long addDirToArchive(ZipArchiveOutputStream zos, File srcFile, String zipFileName, long earlyDate) throws
 			IOException {
 		long maxTime = earlyDate;
 		final File[] files = srcFile.listFiles();
@@ -453,7 +461,7 @@ public class ArchiveUtil {
 	 * @param zipFileName
 	 * @throws IOException
 	 */
-	public static long addDirToArchive(ZipOutputStream zos, File srcFile, String zipFileName) throws IOException {
+	public static long addDirToArchive(ZipArchiveOutputStream zos, File srcFile, String zipFileName) throws IOException {
 		return addDirToArchive(zos, srcFile, zipFileName, -1);
 	}
 
@@ -465,10 +473,10 @@ public class ArchiveUtil {
 	 * @param baseName If not null or empty, all files will be in one directory with this name
 	 * @throws IOException
 	 */
-	public static void createAndOutputZip(List<File> paths, OutputStream output, String baseName) throws IOException {
+	public static void createAndOutputZip(Iterable<File> paths, OutputStream output, String baseName) throws IOException {
 		String newFileName = baseName;
-		ZipOutputStream stream = new ZipOutputStream(output);
-		Set<String> pathsSeen = new HashSet<>();
+		ZipArchiveOutputStream stream = new ZipArchiveOutputStream(output);
+		Collection<String> pathsSeen = new HashSet<>();
 		for (File f : paths) {
 			log.debug("adding new file to zip = " + f.getAbsolutePath());
 			log.debug("directory status = " + f.isDirectory());
@@ -514,9 +522,9 @@ public class ArchiveUtil {
 			createAndOutputZip(f, output, "");
 			return;
 		}
-		ZipOutputStream stream = new ZipOutputStream(output);
+		ZipArchiveOutputStream stream = new ZipArchiveOutputStream(output);
 		boolean dir = path.isDirectory();
-		if (baseName == null || baseName.length() > 0) {
+		if (!Util.isNullOrEmpty(baseName)) {
 			if (dir) {
 				addDirToArchive(stream, path, baseName);
 			} else {

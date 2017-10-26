@@ -55,7 +55,8 @@ public class SolverTests extends TestSequence {
 			for (Solver s : solvers) {
 				Assert.assertTrue(
 						"Solver had no configurations. This method must return detailed solvers.",
-						s.getConfigurations().size() > 0);
+						!s.getConfigurations().isEmpty()
+				);
 			}
 		} catch (SQLException e) {
 			Assert.fail("Caught SQLException: "+ Util.getStackTrace(e));

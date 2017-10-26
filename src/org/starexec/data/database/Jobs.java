@@ -107,7 +107,7 @@ public class Jobs {
 					// note that it is assumed that there are no name conflicts here. The security check is done
 					// outside this function
 					int parentId = 0;
-					if (parentPath.length() > 0) {
+					if (!parentPath.isEmpty()) {
 						parentId = pathsToIds.get(parentPath);
 					} else {
 						parentId = parent.getId();
@@ -159,7 +159,7 @@ public class Jobs {
 					idsToMaxStages.put(id, pair.getStages().size());
 					//associate the new space to its parent
 
-					if (parentPath.length() > 0) {
+					if (!parentPath.isEmpty()) {
 						int parentId = pathsToIds.get(parentPath);
 						Spaces.associateJobSpaces(parentId, pathsToIds.get(curPathBuilder.toString()), con);
 					}
@@ -435,7 +435,6 @@ public class Jobs {
 						pair.getPrimaryStage().getSolver().getId() == solver.getId() &&
 						!benchmarksAlreadySeen.contains(pair.getBench().getId())) {
 					// Modify the current pair by changing the configuration then add the new job pair to the job.
-					JobPair pairToAdd = pair;
 					pair.getPrimaryStage().setConfiguration(Solvers.getConfiguration(configId));
 					jobPairsToAdd.add(pair);
 					benchmarksAlreadySeen.add(pair.getBench().getId());
@@ -597,10 +596,9 @@ public class Jobs {
 	 * @param con The connection to make the association on
 	 * @param jobId the id of the job we are associating to the space
 	 * @param spaceId the ID of the space we are making the association to
-	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	protected static boolean associate(Connection con, int jobId, int spaceId) {
+	protected static void associate(Connection con, int jobId, int spaceId) {
 
 		CallableStatement procedure = null;
 		try {
@@ -608,14 +606,11 @@ public class Jobs {
 			procedure.setInt(1, jobId);
 			procedure.setInt(2, spaceId);
 			procedure.executeUpdate();
-
-			return true;
 		} catch (Exception e) {
 			log.error("Jobs.associate says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
 
 	/**
@@ -1065,10 +1060,10 @@ public class Jobs {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			if (!includeDeleted) {
-				procedure = con.prepareCall("{CALL GetJobById(?)}");
-			} else {
+			if (includeDeleted) {
 				procedure = con.prepareCall("{CALL GetJobByIdIncludeDeleted(?)}");
+			} else {
+				procedure = con.prepareCall("{CALL GetJobById(?)}");
 			}
 
 			procedure.setInt(1, jobId);
@@ -1122,7 +1117,7 @@ public class Jobs {
 		stats = Jobs.getCachedJobStatsInJobSpaceHierarchy(spaceId, stageNumber, primitivesToAnonymize);
 		//if the size is greater than 0, then this job is done and its stats have already been
 		//computed and stored
-		if (stats != null && stats.size() > 0) {
+		if (stats != null && !stats.isEmpty()) {
 			log.debug("stats already cached in database");
 			return stats;
 		}
@@ -1698,7 +1693,7 @@ public class Jobs {
 	 * @param query A DataTablesQuery object
 	 * @param jobSpaceId The ID of the root job space of the job space hierarchy to get data for
 	 * @param configId1 The ID of the first configuration of the comparision
-	 * @param configId2 The ID of the second configuraiton of the comparison
+	 * @param configId2 The ID of the second configuration of the comparison
 	 * @param wallclock True to use wallclock time and false to use CPU time
 	 * @param stageNumber The stage number ot use for the comparison
 	 * @param totals A size 2 int array that, upon return, will contain in the first slot the total number of pairs and
@@ -1778,10 +1773,7 @@ public class Jobs {
 			indexOfColumnSortedBy = 8;
 		}
 		JobPairComparator compare = new JobPairComparator(indexOfColumnSortedBy, stageNumber, query.isSortASC());
-		List<JobPair> finalPairs =
-				Util.handlePagination(pairs, compare, query.getStartingRecord(), query.getNumRecords());
-
-		return finalPairs;
+		return Util.handlePagination(pairs, compare, query.getStartingRecord(), query.getNumRecords());
 	}
 
 	/**
@@ -1887,19 +1879,18 @@ public class Jobs {
 				new HashSet<>(); // will store all the solver/configuration pairs so we know how many there are
 		HashMap<Integer, Integer> benchmarksCount = new HashMap<>(); //will store the number of pairs every benchmark
 		// has
-		List<JobPair> pairs = new ArrayList<>();
 		try {
 			//first, get all the completed pairs in the space
-			pairs = Jobs.getJobPairsInJobSpace(jobSpaceId, stageNumber, primitivesToAnonymize);
+			List<JobPair> pairs = Jobs.getJobPairsInJobSpace(jobSpaceId, stageNumber, primitivesToAnonymize);
 			pairs = JobPairs.filterPairsByType(pairs, "complete", 1); //1 because we get only one stage above
 
 			//then, filter them down to the synced pairs
 			for (JobPair p : pairs) {
 				solverConfigPairs.add(p.getPrimarySolver().getId() + ":" + p.getPrimaryConfiguration().getId());
-				if (!benchmarksCount.containsKey(p.getBench().getId())) {
-					benchmarksCount.put(p.getBench().getId(), 1);
-				} else {
+				if (benchmarksCount.containsKey(p.getBench().getId())) {
 					benchmarksCount.put(p.getBench().getId(), 1 + benchmarksCount.get(p.getBench().getId()));
+				} else {
+					benchmarksCount.put(p.getBench().getId(), 1);
 				}
 			}
 
@@ -1951,25 +1942,26 @@ public class Jobs {
 	 * @return The SQL column name
 	 */
 	private static String getJobPairOrderColumn(int orderIndex, boolean wallclock) {
-		if (orderIndex == 0) {
+		switch (orderIndex) {
+		case 0:
 			return "job_pairs.bench_name";
-		} else if (orderIndex == 1) {
+		case 1:
 			return "jobpair_stage_data.solver_name";
-		} else if (orderIndex == 2) {
+		case 2:
 			return "jobpair_stage_data.config_name";
-		} else if (orderIndex == 3) {
+		case 3:
 			return "jobpair_stage_data.status_code";
-		} else if (orderIndex == 4) {
+		case 4:
 			if (wallclock) {
 				return "jobpair_stage_data.wallclock";
 			} else {
 				return "jobpair_stage_data.cpu";
 			}
-		} else if (orderIndex == 5) {
+		case 5:
 			return "result";
-		} else if (orderIndex == 6) {
+		case 6:
 			return "job_pairs.id";
-		} else if (orderIndex == 7) {
+		case 7:
 			// the - sign is because we want null values last, so we reverse the ASC/ DESC sign and add a -
 			return "-completion_id";
 		}
@@ -2418,9 +2410,7 @@ public class Jobs {
 			procedure.setInt("configId", configId);
 			procedure.setString("pairType", type);
 			results = procedure.executeQuery();
-			List<JobPair> jobPairs = getJobPairsForDataTable(jobId, results, false, false, PrimitivesToAnonymize.NONE);
-
-			return jobPairs;
+			return getJobPairsForDataTable(jobId, results, false, false, PrimitivesToAnonymize.NONE);
 		} catch (Exception e) {
 			log.error("get JobPairs for Next Page of Job " + jobId + " says " + e.getMessage(), e);
 		} finally {
@@ -2514,20 +2504,21 @@ public class Jobs {
 	 * @return
 	 */
 	private static String getJobOrderColumn(int orderIndex) {
-		if (orderIndex == 0) {
+		switch (orderIndex) {
+		case 0:
 			return "jobs.name";
-		} else if (orderIndex == 1) {
-			return "pendingPairs"; // this is the same as ordering by status, as the status is determined by whether a
-			// job has pending pairs
-		} else if (orderIndex == 2) {
+		case 1:
+			 // this is the same as ordering by status, as the status is determined by whether a job has pending pairs
+			return "pendingPairs";
+		case 2:
 			return "completePairs";
-		} else if (orderIndex == 3) {
+		case 3:
 			return "totalPairs";
-		} else if (orderIndex == 4) {
+		case 4:
 			return "errorPairs";
-		} else if (orderIndex == 5) {
+		case 5:
 			return "created";
-		} else if (orderIndex == 6) {
+		case 6:
 			return "disk_size";
 		}
 		return "jobs.name";
@@ -2766,9 +2757,7 @@ public class Jobs {
 			procedure = con.prepareCall("{CALL GetAllJobPairsByJob(?)}");
 			procedure.setInt(1, jobId);
 			results = procedure.executeQuery();
-			List<JobPair> jobPairs = getPairsDetailed(jobId, results, false);
-
-			return jobPairs;
+			return getPairsDetailed(jobId, results, false);
 		} catch (Exception e) {
 			log.error("getNewCompletedPairsDetailed says " + e.getMessage(), e);
 		} finally {
@@ -3849,7 +3838,7 @@ public class Jobs {
 	}
 
 	/**
-	 * Determines whether the job with the given ID has either the paused or killed column set to ttrue
+	 * Determines whether the job with the given ID has either the paused or killed column set to true
 	 *
 	 * @param jobId The ID of the job in question
 	 * @return 0 if the job is neither paused nor killed (or error) 1 if the job is paused (i.e. the paused flag is set
@@ -3949,21 +3938,18 @@ public class Jobs {
 	 * kills a running/paused job, and also sets the killed property to true in the database.
 	 *
 	 * @param jobId The ID of the job to kill
-	 * @return True on success, false otherwise
 	 * @author Wyatt Kaiser
 	 */
-	public static boolean kill(int jobId) {
+	public static void kill(int jobId) {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
-			return kill(jobId, con);
+			kill(jobId, con);
 		} catch (Exception e) {
 			log.error("Jobs.kill says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 		}
-
-		return false;
 	}
 
 	/**
@@ -4085,7 +4071,7 @@ public class Jobs {
 			timer.stop();
 			log.info("Pause job with " + numPairs + " pairs took " + timer.getTime() + " milliseconds");
 
-			log.debug("Deletion of paused job pairs from queue was succesful");
+			log.debug("Deletion of paused job pairs from queue was successful");
 			Analytics.JOB_PAUSE.record();
 			return true;
 		} catch (Exception e) {
@@ -4109,14 +4095,12 @@ public class Jobs {
 	 * Pauses all jobs owned by the given user
 	 *
 	 * @param userId
-	 * @return True on success and false on error
 	 */
-	public static boolean pauseAllUserJobs(int userId) {
+	public static void pauseAllUserJobs(int userId) {
 		boolean success = true;
 		for (Integer i : Jobs.getRunningJobs(userId)) {
 			success = success && Jobs.pause(i);
 		}
-		return success;
 	}
 
 	/**
@@ -4134,10 +4118,9 @@ public class Jobs {
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL PauseAll()}");
 			procedure.executeUpdate();
-			log.debug("Pausation of system was successful");
+			log.debug("Pause of system was successful");
 			R.BACKEND.killAll();
-			List<Integer> jobs = new LinkedList<>();
-			jobs = Jobs.getRunningJobs();
+			List<Integer> jobs = Jobs.getRunningJobs();
 			if (jobs != null) {
 				for (Integer jobId : jobs) {
 					//Get the enqueued job pairs and remove them
@@ -4159,7 +4142,7 @@ public class Jobs {
 							JobPairs.UpdateStatus(jp.getId(), 1);
 						}
 					}
-					log.debug("Deletion of paused job pairs from queue was succesful");
+					log.debug("Deletion of paused job pairs from queue was successful");
 				}
 			}
 
@@ -4716,14 +4699,13 @@ public class Jobs {
 	 *
 	 * @param jobId The ID of the job we are storing stats for
 	 * @param stats The stats, which should have been compiled already
-	 * @return True if the call was successful, false otherwise
 	 * @author Eric Burns
 	 */
-	public static boolean saveStats(int jobId, Collection<SolverStats> stats) {
+	public static void saveStats(int jobId, Collection<SolverStats> stats) {
 
 		if (!isJobComplete(jobId)) {
 			log.debug("stats for job with id = " + jobId + " were not saved because the job is incomplete");
-			return false; //don't save stats if the job is not complete
+			return; //don't save stats if the job is not complete
 		}
 		Connection con = null;
 		try {
@@ -4735,7 +4717,6 @@ public class Jobs {
 					throw new Exception("saving stats failed, rolling back connection");
 				}
 			}
-			return true;
 		} catch (Exception e) {
 			log.error("saveStats says " + e.getMessage(), e);
 			Common.doRollback(con);
@@ -4743,8 +4724,6 @@ public class Jobs {
 			Common.endTransaction(con);
 			Common.safeClose(con);
 		}
-
-		return false;
 	}
 
 	/**
@@ -4792,24 +4771,20 @@ public class Jobs {
 	 * @param jobId The ID of the job in question
 	 * @param jobSpaceId The new job space ID
 	 * @param con the open connection to make the call on
-	 * @return true on success, false otherwise
 	 * @author Eric Burns
 	 */
-
-	private static boolean updatePrimarySpace(int jobId, int jobSpaceId, Connection con) {
+	private static void updatePrimarySpace(int jobId, int jobSpaceId, Connection con) {
 		CallableStatement procedure = null;
 		try {
 			procedure = con.prepareCall("{CALL UpdatePrimarySpace(?, ?)}");
 			procedure.setInt(1, jobId);
 			procedure.setInt(2, jobSpaceId);
 			procedure.executeUpdate();
-			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
 
 	/**
@@ -5345,7 +5320,7 @@ public class Jobs {
 			} catch (StarExecException e) {
 				log.error(
 						methodName, "Could not get number of slots from backend.getSlotsInQueue. " +
-								"SGE may not have returned an integer when queryed.", e);
+								"SGE may not have returned an integer when queried.", e);
 			}
 		}
 		return R.DEFAULT_QUEUE_SLOTS;

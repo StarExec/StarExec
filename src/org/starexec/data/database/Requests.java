@@ -412,7 +412,7 @@ public class Requests {
 
 	private static CommunityRequest resultsToCommunityRequest(ResultSet results) throws SQLException {
 		List<CommunityRequest> requests = processGetCommunityRequestResults(results);
-		return requests.size() > 0 ? requests.get(0) : null;
+		return !requests.isEmpty() ? requests.get(0) : null;
 	}
 
 	/**
@@ -542,9 +542,7 @@ public class Requests {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-
-		Pair<String, String> emailAndCode = new ImmutablePair<>(newEmail, emailChangeCodeAssociatedWithUser);
-		return emailAndCode;
+		return new ImmutablePair<>(newEmail, emailChangeCodeAssociatedWithUser);
 	}
 
 	/**

@@ -148,7 +148,6 @@ public class Solvers {
 	 * @param con the database connection associated with the whole process of adding the solver
 	 * @param spaceId the ID of the space we are making the association to
 	 * @param solverId the ID of the solver we are associating to the space
-	 * @return True if the operation was a success, false otherwise
 	 * @author Skylar Stark
 	 */
 	protected static void associate(Connection con, int spaceId, int solverId) throws SQLException {
@@ -174,8 +173,6 @@ public class Solvers {
 	 * @param con the database transaction to use
 	 * @param solverIds the ids of the solvers to add to a space
 	 * @param spaceId the id of the space to add the solvers to
-	 * @return true iff all solvers in solverIds are successfully added to the space represented by spaceId,<br> false
-	 * otherwise
 	 * @throws Exception
 	 * @author Todd Elvers
 	 */
@@ -242,7 +239,7 @@ public class Solvers {
 	 * @param rootSpaceId
 	 * @param linkInSubspaces Whether to link solvers recursively or not
 	 * @param userId ID of user making the request
-	 * @param includeRoot If linking recursivley, whether to include the space given by rootSpaceId
+	 * @param includeRoot If linking recursively, whether to include the space given by rootSpaceId
 	 * @return True on success and false otherwise
 	 */
 	public static boolean associate(
@@ -640,10 +637,10 @@ public class Solvers {
 		ResultSet results = null;
 
 		try {
-			if (!includeDeleted) {
-				procedure = con.prepareCall("{CALL GetSolverById(?)}");
-			} else {
+			if (includeDeleted) {
 				procedure = con.prepareCall("{CALL GetSolverByIdIncludeDeleted(?)}");
+			} else {
+				procedure = con.prepareCall("{CALL GetSolverById(?)}");
 			}
 			procedure.setInt(1, solverId);
 			results = procedure.executeQuery();
@@ -1206,7 +1203,7 @@ public class Solvers {
 	}
 
 	/**
-	 * @param jobId The job id to get conflic
+	 * @param jobId The job id to get conflict
 	 * @param stageId
 	 * @return
 	 * @throws SQLException
@@ -1997,7 +1994,6 @@ public class Solvers {
 	 * Sets every file in a hierarchy to be executable
 	 *
 	 * @param rootDir the directory that we wish to have executable files in
-	 * @return Boolean true if successful
 	 */
 	public static void setHierarchyExecutable(File rootDir) {
 		for (File f : rootDir.listFiles()) {
@@ -2207,7 +2203,6 @@ public class Solvers {
 	 *
 	 * @param con the database transaction to use while updating the solver's disk size
 	 * @param s the solver object containing the new disk size to set
-	 * @return true iff the solver's size was successfully updated, false otherwise
 	 * @author Todd Elvers
 	 */
 	private static void updateSolverDiskSize(Connection con, Solver s) {
@@ -2472,7 +2467,7 @@ public class Solvers {
 	 * @param status the integer status code to be set
 	 * @author Andrew Lubinus
 	 */
-	public static boolean setSolverBuildStatus(Solver s, int status) {
+	public static void setSolverBuildStatus(Solver s, int status) {
 		final String methodName = "setSolverBuildStatus";
 		Connection con = null;
 		CallableStatement procedure = null;
@@ -2482,10 +2477,8 @@ public class Solvers {
 			procedure.setInt(1, s.getId());
 			procedure.setInt(2, status);
 			procedure.executeUpdate();
-			return true;
 		} catch (Exception e) {
 			log.error(methodName, e.getMessage(), e);
-			return false;
 		} finally {
 			Common.safeClose(con);
 		}

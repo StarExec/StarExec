@@ -83,7 +83,7 @@ public class SolverPipeline extends Identifiable implements Nameable {
 
 	public boolean usesDependencies() {
 		for (PipelineStage stage : stages) {
-			if (stage.getDependencies().size() > 0) {
+			if (!stage.getDependencies().isEmpty()) {
 				return true;
 			}
 		}

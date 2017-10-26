@@ -29,9 +29,9 @@ public class MatrixTests extends TestSequence {
 	private User user=null;                  //owner of all the test primitives
 	private User nonOwner=null;
 	private User admin=null;
-	private int wallclockTimeout=100;
-	private int cpuTimeout=100;
-	private int gbMemory=1;
+	private final int wallclockTimeout=100;
+	private final int cpuTimeout=100;
+	private final int gbMemory=1;
 	
 	private User user2=null;
 	private Job job2=null;

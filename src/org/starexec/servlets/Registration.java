@@ -28,13 +28,13 @@ public class Registration extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(Registration.class);
 
 	// Param strings for processing
-	public static String USER_COMMUNITY = "cm";
-	public static String USER_PASSWORD = "pwd";
-	public static String USER_INSTITUTION = "inst";
-	public static String USER_EMAIL = "em";
-	public static String USER_FIRSTNAME = "fn";
-	public static String USER_LASTNAME = "ln";
-	public static String USER_MESSAGE = "msg";
+	public static final String USER_COMMUNITY = "cm";
+	public static final String USER_PASSWORD = "pwd";
+	public static final String USER_INSTITUTION = "inst";
+	public static final String USER_EMAIL = "em";
+	public static final String USER_FIRSTNAME = "fn";
+	public static final String USER_LASTNAME = "ln";
+	public static final String USER_MESSAGE = "msg";
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -104,8 +104,16 @@ public class Registration extends HttpServlet {
 
 		boolean adminCreated = GeneralSecurity.hasAdminWritePrivileges(userIdOfRequest);
 
-		if (!adminCreated) {
-
+		if (adminCreated) {
+			int id = Users.add(user);
+			boolean success = Users.associate(id, communityId);
+			if (success) {
+				Mail.sendPassword(user, request.getParameter(Registration.USER_PASSWORD));
+				return new ValidatorStatusCode(true);
+			} else {
+				return new ValidatorStatusCode(false, "Internal database error registering user");
+			}
+		} else {
 			// Generate unique code to safely reference this user's entry in verification hyperlinks
 			String code = UUID.randomUUID().toString();
 
@@ -120,15 +128,6 @@ public class Registration extends HttpServlet {
 				return new ValidatorStatusCode(true);
 			} else {
 				log.info(String.format("Registration was unsuccessfully started for user [%s].", user.getFullName()));
-				return new ValidatorStatusCode(false, "Internal database error registering user");
-			}
-		} else {
-			int id = Users.add(user);
-			boolean success = Users.associate(id, communityId);
-			if (success) {
-				Mail.sendPassword(user, request.getParameter(Registration.USER_PASSWORD));
-				return new ValidatorStatusCode(true);
-			} else {
 				return new ValidatorStatusCode(false, "Internal database error registering user");
 			}
 		}

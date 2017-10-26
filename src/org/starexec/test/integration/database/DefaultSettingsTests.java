@@ -4,20 +4,14 @@ import org.junit.Assert;
 import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Settings;
-import org.starexec.data.to.Benchmark;
-import org.starexec.data.to.DefaultSettings;
-import org.starexec.data.to.Space;
-import org.starexec.data.to.User;
+import org.starexec.data.to.*;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.util.Util;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Tests for org.starexec.data.database.Settings.java
@@ -94,7 +88,7 @@ public class DefaultSettingsTests extends TestSequence {
         int settingsId = settingsWithDefaultBenchmarks.getId();
         try {
             List<Benchmark> dbBenchmarks = Settings.getDefaultBenchmarks(settingsId);
-            dbBenchmarks.sort((a, b) -> ((Integer) a.getId()).compareTo(b.getId()));
+            dbBenchmarks.sort(Comparator.comparingInt(Identifiable::getId));
             List<Integer> settingsBenchmarks = settingsWithDefaultBenchmarks.getBenchIds();
             Collections.sort(settingsBenchmarks);
 
@@ -136,9 +130,7 @@ public class DefaultSettingsTests extends TestSequence {
         newSettings.setCpuTimeout(newSettings.getCpuTimeout()+1);
         newSettings.setWallclockTimeout(newSettings.getWallclockTimeout()+1);
         newSettings.setDependenciesEnabled(!newSettings.isDependenciesEnabled());
-        newSettings.setBenchIds(new ArrayList<>(Arrays.asList(
-                new Integer[] {newSettings.getBenchIds().get(0)}
-        )));
+        newSettings.setBenchIds(new ArrayList<>(Collections.singletonList(newSettings.getBenchIds().get(0))));
 
         // TODO: need to change all other fields of setting except name, primId, and type (these are immutable)
 

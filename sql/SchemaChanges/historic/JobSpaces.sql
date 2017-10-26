@@ -9,7 +9,7 @@ CREATE TABLE job_spaces (
 );
 
 
--- Saves associations between spaces relevent to a particular job
+-- Saves associations between spaces relevant to a particular job
 -- Author: Eric Burns
 CREATE TABLE job_space_assoc (
 	parent INT NOT NULL,

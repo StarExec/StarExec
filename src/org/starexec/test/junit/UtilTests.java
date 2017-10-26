@@ -18,7 +18,7 @@ public class UtilTests {
 	}
 
 	@Test
-	public void GetExtenstionTest() {
+	public void GetExtensionTest() {
 		Assert.assertEquals("zip",Util.getFileExtension("this/is/a/fake.zip"));
 		Assert.assertEquals("test",Util.getFileExtension("fake.test"));
 	}

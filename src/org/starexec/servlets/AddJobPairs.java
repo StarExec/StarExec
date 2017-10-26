@@ -23,11 +23,8 @@ import java.util.Set;
 
 public class AddJobPairs extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(AddJobPairs.class);
-	private final String jobIdParam = "jobId";
-	private final String configsParam = "configs";
-	private final String addToAllParam = "addToAll";
-	private final String addToPairedParam = "addToPaired";
-	JsonParser parser = new JsonParser();
+	private static final String jobIdParam = "jobId";
+	final JsonParser parser = new JsonParser();
 
 	/**
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
@@ -93,8 +90,10 @@ public class AddJobPairs extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_FORBIDDEN, securityStatus.getMessage());
 				return;
 			}
+			String addToAllParam = "addToAll";
 			Set<Integer> solverIdsToAddToAll =
 					new HashSet<>(Util.toIntegerList(request.getParameterValues(addToAllParam)));
+			String addToPairedParam = "addToPaired";
 			Set<Integer> solverIdsToAddToPaired =
 					new HashSet<>(Util.toIntegerList(request.getParameterValues(addToPairedParam)));
 
@@ -107,6 +106,7 @@ public class AddJobPairs extends HttpServlet {
 				log.debug(methodName, "\t" + sid);
 			}
 
+			String configsParam = "configs";
 			Set<Integer> selectedConfigIds =
 					new HashSet<>(Util.toIntegerList(request.getParameterValues(configsParam)));
 			Set<Integer> allConfigIdsInJob = Solvers.getConfigIdSetByJob(jobId);

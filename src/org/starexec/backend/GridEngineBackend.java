@@ -21,14 +21,14 @@ import java.util.regex.Pattern;
 
 public class GridEngineBackend implements Backend{
     // SGE Configurations, see GridEngineBackend
-    private static String QUEUE_LIST_COMMAND = "qconf -sql";					// The SGE command to execute to get a list of all job queues
-    private static String QUEUE_STATS_COMMAND = "qstat -f";				// The SGE command to get stats about all the queues
-    private static String NODE_LIST_COMMAND = "qconf -sel";					// The SGE command to execute to get a list of all worker nodes
-    private static String QUEUE_ASSOC_PATTERN = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,16}\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
-	public static String QUEUE_NAME_PATTERN = "QUEUE_NAME";
-	public static String QUEUE_GET_SLOTS_PATTERN = "qconf -sq " + QUEUE_NAME_PATTERN;// + " | grep 'slots' | grep -o '[0-9]\\{1,\\}'";
+    private static final String QUEUE_LIST_COMMAND = "qconf -sql";					// The SGE command to execute to get a list of all job queues
+    private static final String QUEUE_STATS_COMMAND = "qstat -f";				// The SGE command to get stats about all the queues
+    private static final String NODE_LIST_COMMAND = "qconf -sel";					// The SGE command to execute to get a list of all worker nodes
+    private static final String QUEUE_ASSOC_PATTERN = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,16}\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
+	public static final String QUEUE_NAME_PATTERN = "QUEUE_NAME";
+	public static final String QUEUE_GET_SLOTS_PATTERN = "qconf -sq " + QUEUE_NAME_PATTERN;// + " | grep 'slots' | grep -o '[0-9]\\{1,\\}'";
 
-    private static String GRID_ENGINE_PATH = "/cluster/gridengine-8.1.8/bin/lx-amd64/";
+    private static final String GRID_ENGINE_PATH = "/cluster/gridengine-8.1.8/bin/lx-amd64/";
 
 
     private Session session = null;
@@ -36,7 +36,7 @@ public class GridEngineBackend implements Backend{
     private String BACKEND_ROOT = null;
 
     // The regex patterns used to parse SGE output
- 	private static Pattern queueAssocPattern;
+ 	private static final Pattern queueAssocPattern;
 
  	static {
  		// Compile the SGE output parsing patterns when this class is loaded
@@ -339,9 +339,8 @@ public class GridEngineBackend implements Backend{
      * deletes a queue that no longer has nodes associated with it
 
      * @param queueName the name of the queue to be removed
-     * @return true if successful, false otherwise
      */
-    public boolean deleteQueue(String queueName){
+    public void deleteQueue(String queueName){
     	try {
     		String[] split = queueName.split("\\.");
     		String shortQueueName = split[0];
@@ -353,12 +352,10 @@ public class GridEngineBackend implements Backend{
 
     		//Delete the host group:
     		Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -dhgrp @"+ shortQueueName +"hosts", getSGEEnv());
-    		return true;
-    	} catch (Exception e) {
+
+	    } catch (Exception e) {
     		log.error(e.getMessage(),e);
     	}
-    	return false;
-
     }
 
 
@@ -420,7 +417,7 @@ public class GridEngineBackend implements Backend{
 
 			String hostList = sb.toString();
 
-			/***** CREATE A QUEUE *****/
+			/* CREATE A QUEUE */
 			// Create newHost.hgrp
 			String newHost;
 
@@ -507,20 +504,17 @@ public class GridEngineBackend implements Backend{
 
 
     /**
-
-     *@param queueName the name of the destination queue
-     *@param nodeNames the names of the nodes to be moved
-     *@param sourceQueueNames the names of the source queues
-     * moves nodes from source queues to the destination queue <queueName>
-     * the ith element of nodeNames corresponds to the ith element of sourceQueueNames for every i
-     * if node is an orphaned node, the corresponding queue name in sourceQueueNames will be null
+     * @param queueName the name of the destination queue
+     * @param nodeNames the names of the nodes to be moved
+     * @param sourceQueueNames the names of the source queues
+* moves nodes from source queues to the destination queue <queueName>
+* the ith element of nodeNames corresponds to the ith element of sourceQueueNames for every i
      */
-    public boolean moveNodes(String queueName,String[] nodeNames,String[] sourceQueueNames){
+    public void moveNodes(String queueName,String[] nodeNames,String[] sourceQueueNames){
     	try {
     		log.info("moveNodes begins, for queue "+queueName);
     		String[] split = queueName.split("\\.");
     		String shortQueueName = split[0];
-    		StringBuilder sb = new StringBuilder();
 
 
     		if ((nodeNames == null) || (nodeNames.length == 0)) {
@@ -529,10 +523,6 @@ public class GridEngineBackend implements Backend{
     		    for(int i=0;i<nodeNames.length;i++){
 	    			//String fullName = n.getName();
 	    		    String nodeFullName = nodeNames[i];
-	    			String[] split2 = nodeFullName.split("\\.");
-	    			String shortName = split2[0];
-	    			sb.append(shortName);
-	    			sb.append(" ");
 	    			log.debug("moving node "+nodeFullName);
 					//remove the association with this node and the queue it is currently associated with and add it to the queue
 					if (sourceQueueNames[i] != null) {
@@ -549,13 +539,9 @@ public class GridEngineBackend implements Backend{
     		}
 
 	    	log.debug("Move nodes ending.");
-	    	return true;
-    	} catch (Exception e) {
+	    } catch (Exception e) {
     		log.error(e.getMessage(),e);
     	}
-    	return false;
-
-
     }
 
     /**
@@ -563,16 +549,14 @@ public class GridEngineBackend implements Backend{
 
      * @param nodeName the name of a node
      * @param queueName the name of a queue
-     * @return true if successful, false otherwise
      */
-    public boolean moveNode(String nodeName, String queueName){
+    public void moveNode(String nodeName, String queueName){
     	try {
     		Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -dattr hostgroup hostlist " + nodeName + " @" + queueName + "hosts", getSGEEnv());
-    	    return true;
-    	} catch (Exception e) {
+
+	    } catch (Exception e) {
     		log.error(e.getMessage(),e);
     	}
-    	return false;
     }
 
 	@Override

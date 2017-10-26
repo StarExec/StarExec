@@ -14,8 +14,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.util.*;
 public class TestUtil {
-	private static String[] letters={"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"};
-	private static Random rnd=new Random();
+	private static final String[] letters={"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"};
+	private static final Random rnd=new Random();
 	
 	/**
 	 * produces a random name of the maximum length for a new space. Useful for testing
@@ -67,7 +67,7 @@ public class TestUtil {
 		StringBuilder sb=new StringBuilder();
 		StackTraceElement[] trace=error.getStackTrace();
 		for (StackTraceElement te : trace) {
-			sb.append(te.toString()+"\n");
+			sb.append(te.toString()).append("\n");
 		}
 		return sb.toString();
 	}
@@ -78,7 +78,7 @@ public class TestUtil {
 	 * @return True if the driver is on an error page and false otherwise
 	 */
 	public static boolean isOnErrorPage(WebDriver driver) {
-		return driver.findElements(By.className("starexecErrorPage")).size()!=0;
+		return !driver.findElements(By.className("starexecErrorPage")).isEmpty();
 	}
 	
 	public static Processor getFakeProcessor(ProcessorType type) {

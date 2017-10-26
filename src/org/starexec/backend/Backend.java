@@ -10,7 +10,7 @@ import java.util.Set;
  *
  */
 public interface Backend{
-    /**
+    /*
      * NOTES:
      * 
      * BACKEND_ROOT
@@ -31,14 +31,14 @@ public interface Backend{
      * use to initialize fields and prepare backend for tasks
      * @param BACKEND_ROOT the path to the backend root, for sge found in R.SGE_ROOT
      **/
-    public void initialize(String BACKEND_ROOT);
+    void initialize(String BACKEND_ROOT);
 
     /**
      * release resources that Backend might not need anymore
      * there's a chance that initialize is never called, so always try dealing with that case
 
      **/
-    public void destroyIf();
+    void destroyIf();
 
 
     /**
@@ -46,7 +46,7 @@ public interface Backend{
      * @return false if the execution code represents an error, true otherwise
      *
      **/
-    public boolean isError(int execCode);
+    boolean isError(int execCode);
 
     /**
      * @param scriptPath : the full path to the jobscript file
@@ -54,7 +54,7 @@ public interface Backend{
      * @param logPath  :  path to a directory that should be used to store jobscript logs
      * @return an identifier for the task that submitScript starts, should allow a user to identify which task/script to kill
      **/
-    public int submitScript(String scriptPath, String workingDirectoryPath, String logPath);
+    int submitScript(String scriptPath, String workingDirectoryPath, String logPath);
     
 
     /**
@@ -62,57 +62,56 @@ public interface Backend{
      * @return true if successful, false otherwise
      * kills a jobpair
      */
-    public boolean killPair(int execId);
+    boolean killPair(int execId);
 
     /**
      * kills all pairs
      * @return true on success and false on error.
      */
-    public boolean killAll();
+    boolean killAll();
 
 
     
     /**
      * @return a string representing the status of jobs running on the system
      */
-    public String getRunningJobsStatus();
+    String getRunningJobsStatus();
     
     /**
      * Gets execution codes for all jobs currently active (enqueued or running)
      * @return array of active execution codes
      * @throws IOException 
      */
-    public Set<Integer> getActiveExecutionIds() throws IOException;
+    Set<Integer> getActiveExecutionIds() throws IOException;
 
     /**
      * @return returns a list of names of all active worker nodes
      */
-    public String[] getWorkerNodes();
+    String[] getWorkerNodes();
 
     
     /**
      * @return returns a list of all active queue names
      */
-    public String[] getQueues();
+    String[] getQueues();
 
 
     /**
      * @return a map from node name to queue name
      */
-    public Map<String, String> getNodeQueueAssociations();
+    Map<String, String> getNodeQueueAssociations();
 
     /**
      * @return true if sucessful, false otherwise
      * should clear any states caused by errors on both queues and nodes
      */
-    public boolean clearNodeErrorStates();
+    boolean clearNodeErrorStates();
 
    /**
      * deletes a queue that no longer has nodes associated with it
      * @param queueName the name of the queue to be removed
-     * @return true if successful, false otherwise
      */
-    public boolean deleteQueue(String queueName);
+   void deleteQueue(String queueName);
 
     /**
      * creates a new queue
@@ -121,7 +120,7 @@ public interface Backend{
      *@param sourceQueueNames the names of the source queues
      *@return true if successful, false otherwise
      */
-    public boolean createQueue(String newQueueName, String[] nodeNames, String[] sourceQueueNames);
+    boolean createQueue(String newQueueName, String[] nodeNames, String[] sourceQueueNames);
 
 
     /**
@@ -132,26 +131,24 @@ public interface Backend{
      *@param slots the number of jobs run per queue node
      *@return true if successful, false otherwise
      */
-    public boolean createQueueWithSlots(String newQueueName, String[] nodeNames, String[] sourceQueueNames, Integer slots);
+    boolean createQueueWithSlots(String newQueueName, String[] nodeNames, String[] sourceQueueNames, Integer slots);
 
     /**
-     *@param destQueueName the name of the destination queue
-     *@param nodeNames the names of the nodes to be moved 
-     *@param sourceQueueNames the names of the source queues
-     * moves nodes from source queues to the destination queue <queueName>
-     * the ith element of nodeNames corresponds to the ith element of sourceQueueNames for every i
-     * if node is an orphaned node, the corresponding queue name in sourceQueueNames will be null
-     * @return True on success and false on failure.
+     * @param destQueueName the name of the destination queue
+     * @param nodeNames the names of the nodes to be moved
+     * @param sourceQueueNames the names of the source queues
+* moves nodes from source queues to the destination queue <queueName>
+* the ith element of nodeNames corresponds to the ith element of sourceQueueNames for every i
+* if node is an orphaned node, the corresponding queue name in sourceQueueNames will be null
      */
-    public boolean moveNodes(String destQueueName,String[] nodeNames,String[] sourceQueueNames);
+    void moveNodes(String destQueueName, String[] nodeNames, String[] sourceQueueNames);
 
     /**
      * moves the given node to the given queue
      * @param nodeName the name of a node
      * @param queueName the name of a queue
-     * @return true if successful, false otherwise
      */
-    public boolean moveNode(String nodeName, String queueName);
+    void moveNode(String nodeName, String queueName);
 
 
 }

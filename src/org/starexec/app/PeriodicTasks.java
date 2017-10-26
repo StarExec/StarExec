@@ -6,7 +6,6 @@ import org.starexec.constants.R;
 import org.starexec.data.database.*;
 import org.starexec.data.security.GeneralSecurity;
 import org.starexec.data.to.ErrorLog;
-import org.starexec.data.to.JobStatus;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.User;
 import org.starexec.data.to.tuples.PairIdJobId;
@@ -38,7 +37,7 @@ import java.util.stream.Collectors;
  */
 class PeriodicTasks {
 
-    private static StarLogger log = StarLogger.getLogger(PeriodicTasks.class);
+    private static final StarLogger log = StarLogger.getLogger(PeriodicTasks.class);
 
     // Enum constants of all the periodic tasks.
     enum PeriodicTask {
@@ -267,7 +266,7 @@ class PeriodicTasks {
             try {
                 AnonymousLinks.deleteOldLinks(R.MAX_AGE_OF_ANONYMOUS_LINKS_IN_DAYS);
             } catch (SQLException e) {
-                log.error( "Caught SQLExcpetion: Failed to delete old anonymous links.", e);
+                log.error( "Caught SQLException: Failed to delete old anonymous links.", e);
             }
         }
     };

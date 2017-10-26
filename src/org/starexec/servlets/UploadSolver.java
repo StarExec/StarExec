@@ -51,7 +51,6 @@ import java.util.Optional;
 public class UploadSolver extends HttpServlet {
 
 	private static final StarLogger log = StarLogger.getLogger(UploadSolver.class);
-	private static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
 	// Some param constants to process the form
 	private static final String SOLVER_DESC = "desc";
 	private static final String SOLVER_DESC_FILE = "d";
@@ -65,7 +64,7 @@ public class UploadSolver extends HttpServlet {
 	private static final String RUN_TEST_JOB = "runTestJob";
 	private static final String SETTING_ID = "setting";
 	private static final String SOLVER_TYPE = "type";
-	private DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
+	private final DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
@@ -98,7 +97,8 @@ public class UploadSolver extends HttpServlet {
 				UploadSolverResult result = handleSolver(userId, form);
 
 				// Redirect based on success/failure
-				if (result.status == UploadSolverStatus.SUCCESS) {
+				switch (result.status) {
+				case SUCCESS:
 					if (result.isBuildJob) {
 						log.debug("Submitting job to build solver.");
 						int job_return = JobManager.addBuildJob(result.solverId, spaceId);
@@ -112,13 +112,15 @@ public class UploadSolver extends HttpServlet {
 					response.addCookie(new Cookie("New_ID", String.valueOf(result.solverId)));
 					if (result.isBuildJob && !runTestJob) {
 						response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId +
-								                                   "&buildmsg=Building Solver On Starexec"));
-					} else if (!result.hadConfigs) { //If there are no configs. We do not attempt to run a test job in
+																   "&buildmsg=Building Solver On Starexec"));
+					} else if (!result.hadConfigs) { //If there are no configs. We do not attempt to run a test
+						// job in
 						// this case
 						response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId +
-								                                   "&msg=No configurations for the new solver"));
+																   "&msg=No configurations for the new solver"));
 					} else {
-						//if this solver has some configurations, we should check to see if the user wanted a test job
+						//if this solver has some configurations, we should check to see if the user wanted a test
+						// job
 						if (runTestJob) {
 							log.debug("attempting to run test job");
 
@@ -131,15 +133,17 @@ public class UploadSolver extends HttpServlet {
 
 							int jobId = CreateJob.buildSolverTestJob(result.solverId, spaceId, userId, settingsId);
 							if (result.isBuildJob && jobId > 0) {
-								response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId +
-										                                   "&buildmsg=Building Solver On Starexec-- " +
-										                                   "test job will be run after build"));
+								response.sendRedirect(Util.docRoot(
+										"secure/details/solver.jsp?id=" + result.solverId +
+												"&buildmsg=Building Solver On Starexec-- " +
+												"test job will be run after build"));
 							} else if (jobId > 0) {
 								response.sendRedirect(Util.docRoot("secure/details/job.jsp?id=" + jobId));
 							} else {
-								response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId +
-										                                   "&msg=Internal error creating test job-- " +
-										                                   "solver uploaded successfully"));
+								response.sendRedirect(Util.docRoot(
+										"secure/details/solver.jsp?id=" + result.solverId +
+												"&msg=Internal error creating test job-- " +
+												"solver uploaded successfully"));
 							}
 						} else if (result.optionalMessage.isPresent()) {
 							String url = "secure/details/solver.jsp?id=" + result.solverId + "&msg=" +
@@ -149,10 +153,13 @@ public class UploadSolver extends HttpServlet {
 							response.sendRedirect(Util.docRoot("secure/details/solver.jsp?id=" + result.solverId));
 						}
 					}
-				} else if (result.status == UploadSolverStatus.EXTRACTING_ERROR) {
+					break;
+				case EXTRACTING_ERROR:
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result.status.message);
-				} else {
+					break;
+				default:
 					response.sendError(HttpServletResponse.SC_BAD_REQUEST, result.status.message);
+					break;
 				}
 			} else {
 				// Got a non multi-part request, invalid
@@ -330,12 +337,15 @@ public class UploadSolver extends HttpServlet {
 
 
 			String DescMethod = (String) form.get(UploadSolver.DESC_METHOD);
-			if (DescMethod.equals("text")) {
+			switch (DescMethod) {
+			case "text":
 				newSolver.setDescription((String) form.get(UploadSolver.SOLVER_DESC));
-			} else if (DescMethod.equals("file")) {
+				break;
+			case "file":
 				PartWrapper item_desc = (PartWrapper) form.get(UploadSolver.SOLVER_DESC_FILE);
 				newSolver.setDescription(item_desc.getString());
-			} else {    //Upload starexec_description.txt
+				break;
+			default:     //Upload starexec_description.txt
 				try {
 					File descriptionFile = new File(uniqueDir, R.SOLVER_DESC_PATH);
 					if (descriptionFile.exists()) {
@@ -351,6 +361,7 @@ public class UploadSolver extends HttpServlet {
 				} catch (Exception e) {
 					log.error(e.getMessage(), e);
 				}
+				break;
 			}
 
 
@@ -496,19 +507,13 @@ public class UploadSolver extends HttpServlet {
 				);
 			}
 
-			boolean goodExtension = false;
 			String fileName = null;
 			if (form.get(UploadSolver.UPLOAD_METHOD).equals("local")) {
 				fileName = FilenameUtils.getName(((PartWrapper) form.get(UploadSolver.UPLOAD_FILE)).getName());
 			} else {
 				fileName = (String) form.get(UploadSolver.FILE_URL);
 			}
-			for (String ext : UploadSolver.extensions) {
-				if (fileName.endsWith(ext)) {
-					goodExtension = true;
-				}
-			}
-			if (!goodExtension) {
+			if (!Validator.isValidArchiveType(fileName)) {
 				return new ValidatorStatusCode(false, "Archives need to have an extension of .zip, .tar, or .tgz");
 			}
 

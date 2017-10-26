@@ -35,17 +35,17 @@ public class AddSettingProfile extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(AddSettingProfile.class);
 
 	// Param strings for processing
-	private static String POST_PROCESSOR = "postp";
-	private static String PRE_PROCESSOR = "prep";
-	private static String BENCH_PROCESSOR = "benchp";
-	private static String NAME = "name";
-	private static String CPU_TIMEOUT = "cpu";
-	private static String WALLCLOCK_TIMEOUT = "wall";
-	private static String DEPENDENCIES = "dep";
-	private static String MAX_MEMORY = "mem";
-	private static String SETTING_ID = "settingId"; //this is set if we are doing an update only
-	private static String USER_ID_OF_OWNER = "userIdOfOwner";
-	private static String BENCHMARKING_FRAMEWORK = "benchmarkingFramework";
+	private static final String POST_PROCESSOR = "postp";
+	private static final String PRE_PROCESSOR = "prep";
+	private static final String BENCH_PROCESSOR = "benchp";
+	private static final String NAME = "name";
+	private static final String CPU_TIMEOUT = "cpu";
+	private static final String WALLCLOCK_TIMEOUT = "wall";
+	private static final String DEPENDENCIES = "dep";
+	private static final String MAX_MEMORY = "mem";
+	private static final String SETTING_ID = "settingId"; //this is set if we are doing an update only
+	private static final String USER_ID_OF_OWNER = "userIdOfOwner";
+	private static final String BENCHMARKING_FRAMEWORK = "benchmarkingFramework";
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)

@@ -1,5 +1,13 @@
 package org.starexec.command;
 
+import org.starexec.constants.R;
+import org.starexec.data.to.Permission;
+import org.starexec.util.Util;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+
 /**
  * This class is responsible for taking in the shell arguments from users, formatted as
  * Maps of keys to values, and using those arguments to make calls in the Connection
@@ -10,15 +18,6 @@ package org.starexec.command;
  * This class also makes calls to a validator to ensure that shell arguments are appropriate for the desired
  * calls
  */
-
-import org.starexec.constants.R;
-import org.starexec.data.to.Permission;
-import org.starexec.util.Util;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
 class ArgumentParser {
 
 	final private CommandLogger log = CommandLogger.getLogger(ArgumentParser.class);
@@ -50,13 +49,12 @@ class ArgumentParser {
 		if (commandParams.containsKey(C.PARAM_BASEURL)) {
 			base = commandParams.get(C.PARAM_BASEURL);
 		}
-		if (!commandParams.get(C.PARAM_USER).equals(C.PARAM_GUEST)) {
-			username = commandParams.get(C.PARAM_USER);
-
-			password = commandParams.get(C.PARAM_PASSWORD);
-		} else {
+		if (commandParams.get(C.PARAM_USER).equals(C.PARAM_GUEST)) {
 			username = "public";
 			password = "public";
+		} else {
+			username = commandParams.get(C.PARAM_USER);
+			password = commandParams.get(C.PARAM_PASSWORD);
 		}
 		if (base == null) {
 			con = new Connection(username, password);
@@ -109,13 +107,10 @@ class ArgumentParser {
 	/**
 	 * Ends the current Starexec session
 	 *
-	 * @return True on success, false otherwise
 	 * @author Eric Burns
 	 */
-
-	protected boolean logout() {
-		return con.logout();
-
+	protected void logout() {
+		con.logout();
 	}
 
 	/**

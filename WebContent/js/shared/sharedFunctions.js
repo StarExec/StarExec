@@ -11,12 +11,13 @@ function addNodeCountsToTree() {
 		// Set that to this so we can use it in the callback.
 		var that = this;
 		$.get(
-			starexecRoot+'services/cluster/queues/details/nodeCount/'+queueId,
+			starexecRoot + 'services/cluster/queues/details/nodeCount/' + queueId,
 			'',
 			function(numberOfNodes) {
-				log('numberOfNodes: '+numberOfNodes);
+				log('numberOfNodes: ' + numberOfNodes);
 				// Insert the node count span inside the node list.
-				$(that).prepend('<span class="nodeCount">('+numberOfNodes+')</span>');
+				$(that)
+				.prepend('<span class="nodeCount">(' + numberOfNodes + ')</span>');
 			},
 			'json'
 		);
@@ -24,7 +25,6 @@ function addNodeCountsToTree() {
 }
 
 /*-------------------------------END SHARED BETWEEN admin/cluster AND explore/cluster--------------------------------------*/
-
 
 /*-------------------------------BEGIN SHARED BETWEEN admin/community AND explore/communities------------------------------*/
 
@@ -44,7 +44,8 @@ function setupHandlersForCommunityRequestAcceptDeclineButtons() {
 
 // Shared by explore/communities and admin/community
 // Returns the new data table
-function initCommunityRequestsTable(tableSelector, getAllCommunities, communityId) {
+function initCommunityRequestsTable(
+	tableSelector, getAllCommunities, communityId) {
 	"use strict";
 
 	var getUrl = starexecRoot + "services/community/pending/requests/";
@@ -57,11 +58,13 @@ function initCommunityRequestsTable(tableSelector, getAllCommunities, communityI
 		$.get(
 			sSource,
 			aoData,
-			function(nextDataTablePage){
+			function(nextDataTablePage) {
 				var s = parseReturnCode(nextDataTablePage, false);
 				if (s) {
 					// Update the number displayed in this DataTable's fieldset
-					$('#communityExpd').children('span:first-child').text(nextDataTablePage.iTotalRecords);
+					$('#communityExpd')
+					.children('span:first-child')
+					.text(nextDataTablePage.iTotalRecords);
 					// Replace the current page with the newly received page
 					fnCallback(nextDataTablePage);
 				}
@@ -71,15 +74,15 @@ function initCommunityRequestsTable(tableSelector, getAllCommunities, communityI
 	};
 
 	return $(tableSelector).dataTable(new star.DataTableConfig({
-		"bServerSide"  : true,
-		"sAjaxSource"  : getUrl,
-		"fnServerData" : paginator,
-		"columns"      : [
+		"bServerSide": true,
+		"sAjaxSource": getUrl,
+		"fnServerData": paginator,
+		"columns": [
 			null,
 			null,
 			null,
-			{ "searchable": false, "orderable": false },
-			{ "searchable": false, "orderable": false }
+			{"searchable": false, "orderable": false},
+			{"searchable": false, "orderable": false}
 		]
 	}));
 }
@@ -87,12 +90,12 @@ function initCommunityRequestsTable(tableSelector, getAllCommunities, communityI
 function handleRequest(code, isApproved) {
 	'use strict';
 	var constants = getCommunityRequestConstants();
-	log('leaderResponseParameter: '+constants.leaderResponseParameter+'\nemailCodeParameter: '+constants.emailCodeParameter
-			+'\napproveCommunityRequest: '+constants.approveCommunityRequest+'\ndeclineCommunityRequest: '+constants.declineCommunityRequest);
+	log('leaderResponseParameter: ' + constants.leaderResponseParameter + '\nemailCodeParameter: ' + constants.emailCodeParameter
+		+ '\napproveCommunityRequest: ' + constants.approveCommunityRequest + '\ndeclineCommunityRequest: ' + constants.declineCommunityRequest);
 
 	var approveOrDeclineCode = (isApproved ? constants.approveCommunityRequest : constants.declineCommunityRequest);
 
-	log('approveOrDeclineCode: '+approveOrDeclineCode);
+	log('approveOrDeclineCode: ' + approveOrDeclineCode);
 
 	var requestData = {};
 	requestData[constants.leaderResponseParameter] = approveOrDeclineCode;
@@ -100,7 +103,7 @@ function handleRequest(code, isApproved) {
 	requestData[constants.sentFromCommunityPage] = true;
 
 	$.get(
-		starexecRoot+'public/verification/email',
+		starexecRoot + 'public/verification/email',
 		requestData,
 		function(data) {
 			parseReturnCode(data);
@@ -115,14 +118,19 @@ function handleRequest(code, isApproved) {
 function getCommunityRequestConstants() {
 	'use strict';
 
-	log('emailCode: '+$('#emailCode').attr('value'));
+	log('emailCode: ' + $('#emailCode').attr('value'));
 
 	var communityRequestConstants = {};
-	communityRequestConstants.emailCodeParameter = $('#emailCode').attr('value');
-	communityRequestConstants.leaderResponseParameter = $('#leaderResponse').attr('value');
-	communityRequestConstants.approveCommunityRequest = $('#approveRequest').attr('value');
-	communityRequestConstants.declineCommunityRequest = $('#declineRequest').attr('value');
-	communityRequestConstants.sentFromCommunityPage = $('#communityPage').attr('value');
+	communityRequestConstants.emailCodeParameter = $('#emailCode')
+	.attr('value');
+	communityRequestConstants.leaderResponseParameter = $('#leaderResponse')
+	.attr('value');
+	communityRequestConstants.approveCommunityRequest = $('#approveRequest')
+	.attr('value');
+	communityRequestConstants.declineCommunityRequest = $('#declineRequest')
+	.attr('value');
+	communityRequestConstants.sentFromCommunityPage = $('#communityPage')
+	.attr('value');
 
 	return communityRequestConstants;
 
@@ -139,17 +147,20 @@ function getCommunityRequestConstants() {
  */
 function populateSpaceDetails(jsonData, id) {
 	// If the space is null, the user can see the space but is not a member
-	if(jsonData.space == null) {
+	if (jsonData.space == null) {
 		// Go ahead and show the space's name
-		$('.spaceName').fadeOut('fast', function(){
+		$('.spaceName').fadeOut('fast', function() {
 			var spaceName = $('.jstree-clicked').text();
 			$('.spaceName').text(spaceName).fadeIn('fast');
 			document.title = spaceName + " - StarExec";
 		});
 
 		// Show a message why they can't see the space's details
-		$('#spaceDesc').fadeOut('fast', function(){
-			$('#spaceDesc').text('you cannot view this space\'s details since you are not a member. you can see this space exists because you are a member of one of its descendants.').fadeIn('fast');
+		$('#spaceDesc').fadeOut('fast', function() {
+			$('#spaceDesc')
+			.text(
+				'you cannot view this space\'s details since you are not a member. you can see this space exists because you are a member of one of its descendants.')
+			.fadeIn('fast');
 		});
 		$('#spaceID').fadeOut('fast');
 		// Hide all the info table fieldsets
@@ -168,7 +179,6 @@ function populateSpaceDetails(jsonData, id) {
 	spaceId = jsonData.space.id;
 	spaceName = jsonData.space.name;
 
-
 	// Populate space defaults
 	$('.spaceName').fadeOut('fast', function() {
 		$('.spaceName').text(spaceName).fadeIn('fast');
@@ -178,19 +188,18 @@ function populateSpaceDetails(jsonData, id) {
 		$('#spaceDesc').text(jsonData.space.description).fadeIn('fast');
 	});
 	$('#spaceID').fadeOut('fast', function() {
-		$('#spaceID').text("id = "+spaceId).fadeIn('fast');
+		$('#spaceID').text("id = " + spaceId).fadeIn('fast');
 	});
 
-
 	// on the space permissions page, we display when the user is the space leader
-	if(spaceId != "1"){
-	    curIsLeader = jsonData.perm.isLeader;
+	if (spaceId != "1") {
+		curIsLeader = jsonData.perm.isLeader;
 	} else {
 		curIsLeader = false;
 	}
-	$('#spaceLeader').fadeOut('fast', function(){
-		if(curIsLeader){
-		    $('#spaceLeader').text("leader of current space").fadeIn('fast');
+	$('#spaceLeader').fadeOut('fast', function() {
+		if (curIsLeader) {
+			$('#spaceLeader').text("leader of current space").fadeIn('fast');
 		}
 	});
 	/*
@@ -217,14 +226,14 @@ function populateSpaceDetails(jsonData, id) {
 function getSpaceDetails(id) {
 	$('#loader').show();
 	$.post(
-			starexecRoot+"services/space/" + id,
-			function(data){
-				log('AJAX response received for details of space ' + id);
-				populateSpaceDetails(data, id);
-			},
-			"json"
-	).error(function(){
-		showMessage('error',"Internal error getting space details",5000);
+		starexecRoot + "services/space/" + id,
+		function(data) {
+			log('AJAX response received for details of space ' + id);
+			populateSpaceDetails(data, id);
+		},
+		"json"
+	).error(function() {
+		showMessage('error', "Internal error getting space details", 5000);
 	});
 }
 
@@ -232,17 +241,19 @@ function getSpaceDetails(id) {
 
 /*-------------------------------BEGIN SHARED BETWEEN admin/permissions AND edit/spacePermissions------------------------*/
 
-
 function getPermissionDetails(user_id, space_id) {
 	$.get(
-		starexecRoot+"services/permissions/details/" + user_id + "/" + space_id,
-		function(data){
-		    populatePermissionDetails(data, user_id);
+		starexecRoot + "services/permissions/details/" + user_id + "/" + space_id,
+		function(data) {
+			populatePermissionDetails(data, user_id);
 		},
 		"json"
-	).error(function(){
-		showMessage('error',"Internal error getting selectd user's permission details",5000);
+	).error(function() {
+		showMessage('error',
+			"Internal error getting selectd user's permission details",
+			5000);
 	});
 }
+
 /*-------------------------------END SHARED BETWEEN admin/permissions AND edit/spacePermissions-------------------------*/
 

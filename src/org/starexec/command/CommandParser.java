@@ -1,11 +1,5 @@
 package org.starexec.command;
 
-/**
- * This class is responsible for taking in a String command given by the user through the shell interface
- * (or in a file), generating a Map of the arguments, and passing off the command to the correct function
- * in the ArgumentParser class.
- */
-
 import org.starexec.constants.R;
 import org.starexec.util.Util;
 
@@ -14,6 +8,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * This class is responsible for taking in a String command given by the user through the shell interface
+ * (or in a file), generating a Map of the arguments, and passing off the command to the correct function
+ * in the ArgumentParser class.
+ */
 class CommandParser {
 	final private CommandLogger log = CommandLogger.getLogger(CommandParser.class);
 	final private Map<String, String> variables;
@@ -93,21 +92,29 @@ class CommandParser {
 	protected int handleViewCommand(String c, Map<String, String> commandParams) {
 		try {
 			Map<String, String> attrs = null;
-			if (c.equals(C.COMMAND_VIEWJOB)) {
+			switch (c) {
+			case C.COMMAND_VIEWJOB:
 				attrs = parser.getPrimitiveAttributes(commandParams, R.JOB);
-			} else if (c.equals(C.COMMAND_VIEWSOLVER)) {
+				break;
+			case C.COMMAND_VIEWSOLVER:
 				attrs = parser.getPrimitiveAttributes(commandParams, R.SOLVER);
-			} else if (c.equals(C.COMMAND_VIEWSPACE)) {
+				break;
+			case C.COMMAND_VIEWSPACE:
 				attrs = parser.getPrimitiveAttributes(commandParams, R.SPACE);
-			} else if (c.equals(C.COMMAND_VIEWBENCH)) {
+				break;
+			case C.COMMAND_VIEWBENCH:
 				attrs = parser.getPrimitiveAttributes(commandParams, "benchmark");
-			} else if (c.equals(C.COMMAND_VIEWPROCESSOR)) {
+				break;
+			case C.COMMAND_VIEWPROCESSOR:
 				attrs = parser.getPrimitiveAttributes(commandParams, "processor");
-			} else if (c.equals(C.COMMAND_VIEWCONFIGURATION)) {
+				break;
+			case C.COMMAND_VIEWCONFIGURATION:
 				attrs = parser.getPrimitiveAttributes(commandParams, "configuration");
-			} else if (c.equals(C.COMMAND_VIEWQUEUE)) {
+				break;
+			case C.COMMAND_VIEWQUEUE:
 				attrs = parser.getPrimitiveAttributes(commandParams, "queue");
-			} else {
+				break;
+			default:
 				return Status.ERROR_BAD_COMMAND;
 			}
 			// if there was an error
@@ -137,22 +144,20 @@ class CommandParser {
 	 */
 	protected int handleSetCommand(String c, Map<String, String> commandParams) {
 		try {
-			int serverStatus = 0;
-
-			if (c.equals(C.COMMAND_SETFIRSTNAME)) {
-				serverStatus = parser.setUserSetting("firstname", commandParams);
-			} else if (c.equals(C.COMMAND_SETLASTNAME)) {
-				serverStatus = parser.setUserSetting("lastname", commandParams);
-			} else if (c.equals(C.COMMAND_SETINSTITUTION)) {
-				serverStatus = parser.setUserSetting("institution", commandParams);
-			} else if (c.equals(C.COMMAND_SETSPACEPUBLIC)) {
-				serverStatus = parser.setSpaceVisibility(commandParams, true);
-			} else if (c.equals(C.COMMAND_SETSPACEPRIVATE)) {
-				serverStatus = parser.setSpaceVisibility(commandParams, false);
-			} else {
-				return Status.ERROR_BAD_COMMAND;
+			switch (c) {
+			case C.COMMAND_SETFIRSTNAME:
+					return parser.setUserSetting("firstname", commandParams);
+				case C.COMMAND_SETLASTNAME:
+					return parser.setUserSetting("lastname", commandParams);
+				case C.COMMAND_SETINSTITUTION:
+					return parser.setUserSetting("institution", commandParams);
+				case C.COMMAND_SETSPACEPUBLIC:
+					return parser.setSpaceVisibility(commandParams, true);
+				case C.COMMAND_SETSPACEPRIVATE:
+					return parser.setSpaceVisibility(commandParams, false);
+				default:
+					return Status.ERROR_BAD_COMMAND;
 			}
-			return serverStatus;
 		} catch (Exception e) {
 			// likely a null pointer because we are missing an important
 			// argument
@@ -178,29 +183,38 @@ class CommandParser {
 			List<Integer> ids = null;
 			int serverStatus;
 
-			if (c.equals(C.COMMAND_PUSHBENCHMARKS)) {
+			switch (c) {
+			case C.COMMAND_PUSHBENCHMARKS:
 				serverStatus = parser.uploadBenchmarks(commandParams);
-			} else if (c.equals(C.COMMAND_PUSHBENCHPROC)) {
+				break;
+			case C.COMMAND_PUSHBENCHPROC:
 				serverStatus = parser.uploadBenchProc(commandParams);
-			} else if (c.equals(C.COMMAND_PUSHPOSTPROC)) {
+				break;
+			case C.COMMAND_PUSHPOSTPROC:
 				serverStatus = parser.uploadPostProc(commandParams);
-			} else if (c.equals(C.COMMAND_PUSHPREPROC)) {
+				break;
+			case C.COMMAND_PUSHPREPROC:
 				serverStatus = parser.uploadPreProc(commandParams);
-			} else if (c.equals(C.COMMAND_PUSHSOLVER)) {
+				break;
+			case C.COMMAND_PUSHSOLVER:
 				serverStatus = parser.uploadSolver(commandParams);
-			} else if (c.equals(C.COMMAND_PUSHSPACEXML) || c.equals(C.COMMAND_PUSHJOBXML)) {
+				break;
+			case C.COMMAND_PUSHSPACEXML:
+			case C.COMMAND_PUSHJOBXML:
 				boolean isJobXML = c.equals(C.COMMAND_PUSHJOBXML);
 				ids = parser.uploadXML(commandParams, isJobXML);
-				if (ids.size() == 0) {
+				if (ids.isEmpty()) {
 					serverStatus = Status.ERROR_INTERNAL;
 				} else {
 					// if the first value is positive, it is an id and we were
 					// successful. Otherwise, it is an error code
 					serverStatus = Math.min(0, ids.get(0));
 				}
-			} else if (c.equals(C.COMMAND_PUSHCONFIGRUATION)) {
+				break;
+			case C.COMMAND_PUSHCONFIGRUATION:
 				serverStatus = parser.uploadConfiguration(commandParams);
-			} else {
+				break;
+			default:
 				return Status.ERROR_BAD_COMMAND;
 			}
 			if (serverStatus > 0) {
@@ -235,7 +249,8 @@ class CommandParser {
 			int serverStatus = 0;
 
 			boolean isPollJob = false;
-			if (c.equals(C.COMMAND_CREATEJOB)) {
+			switch (c) {
+			case C.COMMAND_CREATEJOB:
 				if (commandParams.containsKey(C.PARAM_TIME) || commandParams.containsKey(C.PARAM_OUTPUT_FILE)) {
 					Map<String, String> pollParams = new HashMap<>();
 					isPollJob = true;
@@ -264,9 +279,11 @@ class CommandParser {
 					serverStatus = parser.createJob(commandParams);
 				}
 
-			} else if (c.equals(C.COMMAND_CREATESUBSPACE)) {
+				break;
+			case C.COMMAND_CREATESUBSPACE:
 				serverStatus = parser.createSubspace(commandParams);
-			} else {
+				break;
+			default:
 				return Status.ERROR_BAD_COMMAND;
 			}
 
@@ -295,25 +312,32 @@ class CommandParser {
 		try {
 			int serverStatus = 0;
 			List<Integer> ids = null;
-			if (c.equals(C.COMMAND_COPYSOLVER)) {
+			switch (c) {
+			case C.COMMAND_COPYSOLVER:
 				ids = parser.copyPrimitives(commandParams, R.SOLVER);
 				serverStatus = Math.min(0, ids.get(0));
-			} else if (c.equals(C.COMMAND_LINKSOLVER)) {
+				break;
+			case C.COMMAND_LINKSOLVER:
 				serverStatus = parser.linkPrimitives(commandParams, R.SOLVER);
-			} else if (c.equals(C.COMMAND_COPYBENCH)) {
+				break;
+			case C.COMMAND_COPYBENCH:
 				ids = parser.copyPrimitives(commandParams, "benchmark");
 				serverStatus = Math.min(0, ids.get(0));
-			} else if (c.equals(C.COMMAND_LINKBENCH)) {
+				break;
+			case C.COMMAND_LINKBENCH:
 				serverStatus = parser.linkPrimitives(commandParams, "benchmark");
-			} else if (c.equals(C.COMMAND_COPYSPACE)) {
+				break;
+			case C.COMMAND_COPYSPACE:
 				ids = parser.copyPrimitives(commandParams, R.SPACE);
 				serverStatus = Math.min(0, ids.get(0));
-			} else if (c.equals(C.COMMAND_LINKJOB)) {
+				break;
+			case C.COMMAND_LINKJOB:
 				serverStatus = parser.linkPrimitives(commandParams, R.JOB);
-			} else if (c.equals(C.COMMAND_LINKUSER)) {
+				break;
+			case C.COMMAND_LINKUSER:
 				serverStatus = parser.linkPrimitives(commandParams, "user");
-			} else {
-
+				break;
+			default:
 				return Status.ERROR_BAD_COMMAND;
 			}
 			if (serverStatus == 0 && ids != null && returnIDsOnUpload) {
@@ -339,26 +363,23 @@ class CommandParser {
 	 */
 	protected int handleRemoveCommand(String c, Map<String, String> commandParams) {
 		try {
-			int serverStatus = 0;
-
 			// the types specified below must match the types given in
 			// RESTServices.java
-			if (c.equals(C.COMMAND_REMOVEBENCHMARK)) {
-				serverStatus = parser.removePrimitive(commandParams, "benchmark");
-			} else if (c.equals(C.COMMAND_REMOVESOLVER) || c.equals(C.COMMAND_DELETEPOSTPROC)) {
-				serverStatus = parser.removePrimitive(commandParams, R.SOLVER);
-			} else if (c.equals(C.COMMAND_REMOVEUSER)) {
-				serverStatus = parser.removePrimitive(commandParams, "user");
-			} else if (c.equals(C.COMMAND_REMOVEJOB)) {
-				serverStatus = parser.removePrimitive(commandParams, R.JOB);
-			} else if (c.equals(C.COMMAND_REMOVESUBSPACE)) {
-				serverStatus = parser.removePrimitive(commandParams, "subspace");
-
-			} else {
-				return Status.ERROR_BAD_COMMAND;
+			switch (c) {
+			case C.COMMAND_REMOVEBENCHMARK:
+				return parser.removePrimitive(commandParams, "benchmark");
+			case C.COMMAND_REMOVESOLVER:
+			case C.COMMAND_DELETEPOSTPROC:
+				return parser.removePrimitive(commandParams, R.SOLVER);
+			case C.COMMAND_REMOVEUSER:
+				return parser.removePrimitive(commandParams, "user");
+			case C.COMMAND_REMOVEJOB:
+				return parser.removePrimitive(commandParams, R.JOB);
+			case C.COMMAND_REMOVESUBSPACE:
+				return parser.removePrimitive(commandParams, "subspace");
+			default:
+					return Status.ERROR_BAD_COMMAND;
 			}
-
-			return serverStatus;
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
 		}
@@ -375,23 +396,21 @@ class CommandParser {
 	 */
 	protected int handleDeleteCommand(String c, Map<String, String> commandParams) {
 		try {
-			int serverStatus = 0;
-
-			if (c.equals(C.COMMAND_DELETEBENCH)) {
-				serverStatus = parser.deletePrimitive(commandParams, "benchmark");
-			} else if (c.equals(C.COMMAND_DELETEBENCHPROC) || c.equals(C.COMMAND_DELETEPOSTPROC)) {
-				serverStatus = parser.deletePrimitive(commandParams, "processor");
-			} else if (c.equals(C.COMMAND_DELETESOLVER)) {
-				serverStatus = parser.deletePrimitive(commandParams, R.SOLVER);
-			} else if (c.equals(C.COMMAND_DELETECONFIG)) {
-				serverStatus = parser.deletePrimitive(commandParams, "configuration");
-			} else if (c.equals(C.COMMAND_DELETEJOB)) {
-				serverStatus = parser.deletePrimitive(commandParams, R.JOB);
-			} else {
+			switch (c) {
+			case C.COMMAND_DELETEBENCH:
+				return parser.deletePrimitive(commandParams, "benchmark");
+			case C.COMMAND_DELETEBENCHPROC:
+			case C.COMMAND_DELETEPOSTPROC:
+				return parser.deletePrimitive(commandParams, "processor");
+			case C.COMMAND_DELETESOLVER:
+				return parser.deletePrimitive(commandParams, R.SOLVER);
+			case C.COMMAND_DELETECONFIG:
+				return parser.deletePrimitive(commandParams, "configuration");
+			case C.COMMAND_DELETEJOB:
+				return parser.deletePrimitive(commandParams, R.JOB);
+			default:
 				return Status.ERROR_BAD_COMMAND;
 			}
-
-			return serverStatus;
 		} catch (Exception e) {
 			return Status.ERROR_INTERNAL;
 		}
@@ -424,30 +443,33 @@ class CommandParser {
 
 	protected int handleLSCommand(String c, Map<String, String> commandParams) {
 		try {
-			Map<Integer, String> answer = new HashMap<>();
+			Map<Integer, String> answer;
 			String type = "";
-			if (c.equals(C.COMMAND_LISTSOLVERS)) {
+			switch (c) {
+			case C.COMMAND_LISTSOLVERS:
 				type = "solvers";
-
-			} else if (c.equals(C.COMMAND_LISTBENCHMARKS)) {
+				break;
+			case C.COMMAND_LISTBENCHMARKS:
 				type = "benchmarks";
-
-			} else if (c.equals(C.COMMAND_LISTSOLVERCONFIGS)) {
+				break;
+			case C.COMMAND_LISTSOLVERCONFIGS:
 				type = "solverconfigs";
-			} else if (c.equals(C.COMMAND_LISTJOBS)) {
+				break;
+			case C.COMMAND_LISTJOBS:
 				type = "jobs";
-
-			} else if (c.equals(C.COMMAND_LISTUSERS)) {
+				break;
+			case C.COMMAND_LISTUSERS:
 				type = "users";
-
-			} else if (c.equals(C.COMMAND_LISTSUBSPACES)) {
+				break;
+			case C.COMMAND_LISTSUBSPACES:
 				type = "spaces";
-			} else if (c.equals(C.COMMAND_LISTPRIMITIVES)) {
+				break;
+			case C.COMMAND_LISTPRIMITIVES:
 				String[] types;
 				if (commandParams.containsKey(C.PARAM_USER)) {
-					types = new String[] { "solvers", "benchmarks", "jobs" };
+					types = new String[]{"solvers", "benchmarks", "jobs"};
 				} else {
-					types = new String[] { "solvers", "benchmarks", "jobs", "users", "spaces" };
+					types = new String[]{"solvers", "benchmarks", "jobs", "users", "spaces"};
 				}
 				for (String x : types) {
 					System.out.println(x.toUpperCase() + "\n");
@@ -467,7 +489,7 @@ class CommandParser {
 				}
 
 				return 0;
-			} else {
+			default:
 				return Status.ERROR_BAD_COMMAND;
 			}
 			answer = parser.listPrimsBySpaceOrUser(type, commandParams);
@@ -806,11 +828,10 @@ class CommandParser {
 				commandParams.put(C.PARAM_OUTPUT_FILE, nextName);
 				since = parser.getJobInfoCompletion(Integer.parseInt(commandParams.get(C.PARAM_ID)));
 				status = parser.downloadArchive(R.JOB, since, null, null, null, commandParams);
-				if (status != C.SUCCESS_NOFILE) {
-					infoCounter += 1;
-				} else {
+				if (status == C.SUCCESS_NOFILE) {
 					System.out.println(C.successMessages.get(C.SUCCESS_NOFILE));
-
+				} else {
+					infoCounter += 1;
 				}
 				if (status == C.SUCCESS_JOBDONE) {
 
@@ -826,10 +847,10 @@ class CommandParser {
 				since = data.since;
 				long lastModified = data.lastModified;
 				status = parser.downloadArchive(R.JOB_OUTPUT, since, lastModified, null, null, commandParams);
-				if (status != C.SUCCESS_NOFILE) {
-					outputCounter += 1;
-				} else {
+				if (status == C.SUCCESS_NOFILE) {
 					System.out.println(C.successMessages.get(C.SUCCESS_NOFILE));
+				} else {
+					outputCounter += 1;
 				}
 
 				if (status == C.SUCCESS_JOBDONE) {
@@ -876,49 +897,53 @@ class CommandParser {
 			String type = null;
 			Boolean hierarchy = null;
 			Integer since = null;
-			Long lastModified = 0l;
-			if (c.equals(C.COMMAND_GETJOBOUT)) {
+			Long lastModified = 0L;
+			switch (c) {
+			case C.COMMAND_GETJOBOUT:
 				type = R.JOB_OUTPUT;
-			} else if (c.equals(C.COMMAND_GETJOBINFO)) {
+				break;
+			case C.COMMAND_GETJOBINFO:
 				type = R.JOB;
-			} else if (c.equals(C.COMMAND_GETSPACEXML)) {
+				break;
+			case C.COMMAND_GETSPACEXML:
 				type = R.SPACE_XML;
-
-			} else if (c.equals(C.COMMAND_GETJOBXML)) {
+				break;
+			case C.COMMAND_GETJOBXML:
 				type = R.JOB_XML;
-
-			} else if (c.equals(C.COMMAND_GETSPACE)) {
+				break;
+			case C.COMMAND_GETSPACE:
 				hierarchy = false;
 				type = R.SPACE;
-
-			} else if (c.equals(C.COMMAND_GETSPACEHIERARCHY)) {
+				break;
+			case C.COMMAND_GETSPACEHIERARCHY:
 				hierarchy = true;
 				type = R.SPACE;
-
-			} else if (c.equals(C.COMMAND_GETPOSTPROC)) {
+				break;
+			case C.COMMAND_GETPOSTPROC:
 				type = R.PROCESSOR;
 				procClass = "post";
-
-			} else if (c.equals(C.COMMAND_GETBENCHPROC)) {
+				break;
+			case C.COMMAND_GETBENCHPROC:
 				type = R.PROCESSOR;
 				procClass = R.BENCHMARK;
-
-			} else if (c.equals(C.COMMAND_GETPREPROC)) {
+				break;
+			case C.COMMAND_GETPREPROC:
 				type = R.PROCESSOR;
 				procClass = "pre";
-
-			} else if (c.equals(C.COMMAND_GETBENCH)) {
+				break;
+			case C.COMMAND_GETBENCH:
 				type = R.BENCHMARK;
-
-			} else if (c.equals(C.COMMAND_GETSOLVER)) {
+				break;
+			case C.COMMAND_GETSOLVER:
 				type = R.SOLVER;
-
-			} else if (c.equals(C.COMMAND_GETJOBPAIR)) {
+				break;
+			case C.COMMAND_GETJOBPAIR:
 				type = R.PAIR_OUTPUT;
-
-			} else if (c.equals(C.COMMAND_GETJOBPAIRS)) {
+				break;
+			case C.COMMAND_GETJOBPAIRS:
 				type = R.JOB_OUTPUTS;
-			} else if (c.equals(C.COMMAND_GETNEWJOBINFO)) {
+				break;
+			case C.COMMAND_GETNEWJOBINFO:
 				type = R.JOB;
 				// Note: The reason the parameter "since" is not being taken
 				// from R.PARAM_SINCE
@@ -930,18 +955,19 @@ class CommandParser {
 				} else {
 					since = parser.getJobInfoCompletion(Integer.parseInt(commandParams.get(C.PARAM_ID)));
 				}
-			} else if (c.equals(C.COMMAND_GETNEWJOBOUT)) {
+				break;
+			case C.COMMAND_GETNEWJOBOUT:
 				type = R.JOB_OUTPUT;
 				if (commandParams.containsKey(C.PARAM_SINCE)) {
 					since = Integer.parseInt(commandParams.get(C.PARAM_SINCE));
-
 				} else {
 					PollJobData data = parser.getJobOutCompletion(Integer.parseInt(commandParams.get(C.PARAM_ID)));
 					since = data.since;
 					lastModified = data.lastModified;
 				}
 
-			} else {
+				break;
+			default:
 				return Status.ERROR_BAD_COMMAND;
 			}
 			System.out

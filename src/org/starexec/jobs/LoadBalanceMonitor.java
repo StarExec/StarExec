@@ -8,10 +8,10 @@ import java.util.*;
 
 public class LoadBalanceMonitor {
 	private static final StarLogger log = StarLogger.getLogger(LoadBalanceMonitor.class);
-	class UserLoadData implements Comparable<UserLoadData> {
-		int userId;
+	static class UserLoadData implements Comparable<UserLoadData> {
+		final int userId;
 		
-		/* Whenever a user is added to the LoadBalanceMonitor, they are intialized
+		/* Whenever a user is added to the LoadBalanceMonitor, they are initialized
 		 * with a 'basis' equal to the minimum value at the time they were added.
 		 * From then on, if the minimum value in the monitor ever drops below the basis
 		 * for a user, that user's load is decreased by the value (user-basis - new-min),
@@ -117,10 +117,10 @@ public class LoadBalanceMonitor {
 	// such as a combination HashMap / PriorityQueue structure.
 	private HashMap<Integer, UserLoadData> loads = new HashMap<>();
 
-	
+
 	// thirty minutes in seconds
-	private Long loadDifferenceThreshold = 1800l;
-	
+	private static final Long loadDifferenceThreshold = 1800L;
+
 	/**
 	 * Gets the minimum load value among all active users. Inactive users
 	 * are excluded.
@@ -133,7 +133,7 @@ public class LoadBalanceMonitor {
 				activeUsers.add(d);
 			}
 		}
-		if (activeUsers.size()>0) {
+		if (!activeUsers.isEmpty()) {
 			return Collections.min(activeUsers).load;
 		}
 		return null;
@@ -239,7 +239,7 @@ public class LoadBalanceMonitor {
 		loads.get(userId).load = loads.get(userId).load + load;
 		if (loads.get(userId).load < 0) {
 			log.warn("User "+userId +" has load value set to less than 0!");
-			loads.get(userId).load = 0l;
+			loads.get(userId).load = 0L;
 		}
 	}
 	
@@ -284,7 +284,7 @@ public class LoadBalanceMonitor {
 	 */
 	public boolean skipUser(int userId) {
 		Long userLoad = this.getLoad(userId);
-		return userLoad - getMin() > loadDifferenceThreshold;	
+		return userLoad - getMin() > loadDifferenceThreshold;
 	}
 	
 	private String stringRepresentation = null;
@@ -306,7 +306,7 @@ public class LoadBalanceMonitor {
 		if (!d.active()) {
 			sb.append("(inactive) ");
 		}
-		sb.append(": load = " + loadDecay);
+		sb.append(": load = ").append(loadDecay);
 		return sb.toString();
 	}
 	
@@ -324,7 +324,7 @@ public class LoadBalanceMonitor {
 	 */
 	public void setUserLoadDataFormattedString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("minimum = "+this.getMin());
+		sb.append("minimum = ").append(this.getMin());
 		sb.append("\n\n");
 		// updates user load values to take into account actual job pair runtimes.
 		

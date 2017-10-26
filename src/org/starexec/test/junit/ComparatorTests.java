@@ -16,7 +16,7 @@ import java.util.Random;
 // by checking to see if they sort correctly on all their relevant columns
 
 public class ComparatorTests {
-	Random rand=new Random();
+	final Random rand=new Random();
 	@Test
 	public void benchmarkComparatorTest() {
 		BenchmarkComparator comp=new BenchmarkComparator(0,true);
@@ -86,7 +86,7 @@ public class ComparatorTests {
 			Solver s2=new Solver();
 			s1.setId(a);
 			s2.setId(b);
-			Assert.assertTrue(comp.compare(s1, s2)==Integer.valueOf(a).compareTo(b));
+			Assert.assertTrue(comp.compare(s1, s2)== Integer.compare(a, b));
 
 		}
 	}

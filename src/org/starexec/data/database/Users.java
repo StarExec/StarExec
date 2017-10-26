@@ -32,10 +32,9 @@ public class Users {
 	 * @param con The connection to perform the database operation on
 	 * @param userId The id of the user to add to the space
 	 * @param spaceId The space to add the user to
-	 * @return True if the operation was a success, false otherwise
 	 * @author Tyler Jensen
 	 */
-	private static boolean associate(Connection con, int userId, int spaceId) {
+	private static void associate(Connection con, int userId, int spaceId) {
 		CallableStatement procedure = null;
 		try {
 			procedure = con.prepareCall("{CALL AddUserToSpace(?, ?)}");
@@ -45,13 +44,11 @@ public class Users {
 
 			procedure.executeUpdate();
 			log.info(String.format("User [%d] added to space [%d]", userId, spaceId));
-			return true;
 		} catch (Exception e) {
 			log.error("Users.associate says " + e.getMessage(), e);
 		} finally {
 			Common.safeClose(procedure);
 		}
-		return false;
 	}
 
 	/**
@@ -130,16 +127,13 @@ public class Users {
 	 * @param con the database transaction to use
 	 * @param userIds the ids of the users to add to a space
 	 * @param spaceId the id of the space to add the users to
-	 * @return true iff all users in userIds are successfully added to the space represented by spaceId, false
-	 * otherwise
 	 * @throws Exception
 	 * @author Todd Elvers
 	 */
-	private static boolean associate(Connection con, List<Integer> userIds, int spaceId) {
+	private static void associate(Connection con, List<Integer> userIds, int spaceId) {
 		for (int uid : userIds) {
 			Users.associate(con, uid, spaceId);
 		}
-		return true;
 	}
 
 	/**
@@ -304,7 +298,7 @@ public class Users {
 			results = procedure.executeQuery();
 
 			List<User> users = resultsToUsers(results);
-			if (users.size() > 0) {
+			if (!users.isEmpty()) {
 				return users.get(0);
 			}
 			log.debug("Could not find user with id = " + id);
@@ -335,7 +329,7 @@ public class Users {
 			results = procedure.executeQuery();
 
 			List<User> users = resultsToUsers(results);
-			if (users.size() > 0) {
+			if (!users.isEmpty()) {
 				return users.get(0);
 			}
 		} catch (Exception e) {
@@ -583,7 +577,7 @@ public class Users {
 			results = procedure.executeQuery();
 
 			List<User> users = resultsToUsers(results);
-			if (users.size() > 0) {
+			if (!users.isEmpty()) {
 				return users.get(0);
 			}
 		} catch (Exception e) {
@@ -653,11 +647,12 @@ public class Users {
 	}
 
 	private static String getUserOrderColumn(int columnIndex) {
-		if (columnIndex == 0) {
+		switch (columnIndex) {
+		case 0:
 			return "full_name";
-		} else if (columnIndex == 1) {
+		case 1:
 			return "institution";
-		} else if (columnIndex == 2) {
+		case 2:
 			return "email";
 		}
 
@@ -975,10 +970,9 @@ public class Users {
 	 *
 	 * @param userId the user ID of the user we want to update
 	 * @param newValue what the email address will be updated to
-	 * @return True if the operation was a success, false otherwise
 	 * @author Skylar Stark
 	 */
-	public static boolean updateEmail(int userId, String newValue) {
+	public static void updateEmail(int userId, String newValue) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -989,15 +983,12 @@ public class Users {
 
 			procedure.executeUpdate();
 			log.info(String.format("User [%d] updated e-mail address to [%s]", userId, newValue));
-			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-
-		return false;
 	}
 
 	/**

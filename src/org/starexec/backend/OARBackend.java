@@ -16,14 +16,14 @@ import java.util.regex.Pattern;
  * Implementation of the Backend interface depending on the OAR scheduler (https://oar.imag.fr/)
  */
 public class OARBackend implements Backend {    
-	private static StarLogger log = StarLogger.getLogger(OARBackend.class);
+	private static final StarLogger log = StarLogger.getLogger(OARBackend.class);
 	
-	private static String JOB_ID_PATTERN = "OAR_JOB_ID=(-?\\d+)";
+	private static final String JOB_ID_PATTERN = "OAR_JOB_ID=(-?\\d+)";
 	
 	
 	
     // The regex patterns used to parse SGE output
- 	private static Pattern jobIdPattern;
+ 	private static final Pattern jobIdPattern;
 
  	static {
  		// Compile the SGE output parsing patterns when this class is loaded
@@ -154,16 +154,14 @@ public class OARBackend implements Backend {
 
 	
 	@Override
-	public boolean deleteQueue(String queueName) {
+	public void deleteQueue(String queueName) {
 		try {
 			//Unassign all the nodes that were in this queue, making sure they are assigned to nothing.
 			Util.executeCommand(new String[] {"oarnodesetting","--sql","queue='"+queueName+"'","-p","queue=null"});
 			Util.executeCommand("oarnotify --remove_queue "+queueName);
-			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
-		return false;
 	}
 
 	@Override
@@ -185,22 +183,20 @@ public class OARBackend implements Backend {
 	
 	
 	@Override
-	public boolean moveNodes(String destQueueName, String[] nodeNames, String[] sourceQueueNames) {
+	public void moveNodes(String destQueueName, String[] nodeNames, String[] sourceQueueNames) {
 		for (String nodeName : nodeNames) {
 			moveNode(nodeName, destQueueName);
 		}
-		return false;
 	}
 	
 	@Override
-	public boolean moveNode(String nodeName, String queueName) {
+	public void moveNode(String nodeName, String queueName) {
 		try {
 			Util.executeCommand(new String [] {"oarnodesetting","--sql","network_address='"+nodeName+"'","-p","queue="+queueName});
-			return true;
+
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
-		return false;
 	}
 
 	@Override

@@ -21,7 +21,7 @@ public class PaginationQueryBuilder {
 		return "DESC";
 	}
 	DataTablesQuery query = null;
-	String orderColumn;
+	final String orderColumn;
 	/**
 	 * This is the SQL query without any order by statement or limit statement, and also without a 
 	 * closing semicolon
@@ -35,9 +35,8 @@ public class PaginationQueryBuilder {
 	}
 	
 	public String getSQL() {
-		String sb = baseSQL + "\n" + "ORDER BY " + orderColumn + " " + getOrderDirectionString() + "\n" + "LIMIT " +
-		            query.getStartingRecord() + ", " + query.getNumRecords() + ";";
 
-		return sb;
+		return baseSQL + "\n" + "ORDER BY " + orderColumn + " " + getOrderDirectionString() + "\n" + "LIMIT " +
+		            query.getStartingRecord() + ", " + query.getNumRecords() + ";";
 	}
 }
