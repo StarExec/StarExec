@@ -19,7 +19,7 @@
 				detailed description of StarExec features and functionality
 			</li>
 			<li>
-				<a href="http://starexec.lefora.com">StarExec Forum</a>,
+				<a href="https://www.tapatalk.com/groups/starexec/">StarExec Forum</a>,
 				for questions, bug reports, feature requests
 			</li>
 			<li>

@@ -2,6 +2,6 @@
 <star:template title="StarExecCommand" css="about">
 	<p>
 		We are replacing this information with a <a
-			href="http://starexec.lefora.com/">StarExec Forum</a>.
+			href="https://www.tapatalk.com/groups/starexec/">StarExec Forum</a>.
 	</p>
 </star:template>
