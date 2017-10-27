@@ -57,7 +57,7 @@
 					href="${starexecRoot}/secure/add/benchmarks.help">Adding
 				benchmarks</a></li>
 			<li class="subject"><a
-					href="${starexecRoot}/secure/details/benchmark.help">Accessing
+					href="${starexecRoot}/secure/details/benchmark.help">Viewing
 				benchmarks</a></li>
 			<li class="subject"><a
 					href="${starexecRoot}/secure/edit/benchmark.help">Editing
