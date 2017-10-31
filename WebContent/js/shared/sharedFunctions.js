@@ -32,12 +32,10 @@ function setupHandlersForCommunityRequestAcceptDeclineButtons() {
 	'use strict';
 	// Delegate the event handling to the commRequests table because the table is paginated.
 	$('#commRequests').on('click', '.declineRequestButton', function() {
-		log('Decline button clicked');
 		handleRequest($(this).attr('data-code'), false);
 	});
 
 	$('#commRequests').on('click', '.acceptRequestButton', function() {
-		log('Decline button clicked');
 		handleRequest($(this).attr('data-code'), true);
 	});
 }
@@ -90,8 +88,7 @@ function initCommunityRequestsTable(
 function handleRequest(code, isApproved) {
 	'use strict';
 	var constants = getCommunityRequestConstants();
-	log('leaderResponseParameter: ' + constants.leaderResponseParameter + '\nemailCodeParameter: ' + constants.emailCodeParameter
-		+ '\napproveCommunityRequest: ' + constants.approveCommunityRequest + '\ndeclineCommunityRequest: ' + constants.declineCommunityRequest);
+	log(constants);
 
 	var approveOrDeclineCode = (isApproved ? constants.approveCommunityRequest : constants.declineCommunityRequest);
 
@@ -107,9 +104,7 @@ function handleRequest(code, isApproved) {
 		requestData,
 		function(data) {
 			parseReturnCode(data);
-			setTimeout(function() {
-				location.reload();
-			}, 1000);
+			$("#commRequests").DataTable().ajax.reload();
 		},
 		'json'
 	);
@@ -117,23 +112,13 @@ function handleRequest(code, isApproved) {
 
 function getCommunityRequestConstants() {
 	'use strict';
-
-	log('emailCode: ' + $('#emailCode').attr('value'));
-
-	var communityRequestConstants = {};
-	communityRequestConstants.emailCodeParameter = $('#emailCode')
-	.attr('value');
-	communityRequestConstants.leaderResponseParameter = $('#leaderResponse')
-	.attr('value');
-	communityRequestConstants.approveCommunityRequest = $('#approveRequest')
-	.attr('value');
-	communityRequestConstants.declineCommunityRequest = $('#declineRequest')
-	.attr('value');
-	communityRequestConstants.sentFromCommunityPage = $('#communityPage')
-	.attr('value');
-
-	return communityRequestConstants;
-
+	return {
+		"emailCodeParameter":      $('#emailCode'     ).attr('value'),
+		"leaderResponseParameter": $('#leaderResponse').attr('value'),
+		"approveCommunityRequest": $('#approveRequest').attr('value'),
+		"declineCommunityRequest": $('#declineRequest').attr('value'),
+		"sentFromCommunityPage":   $('#communityPage' ).attr('value')
+	};
 }
 
 /*-------------------------------END SHARED BETWEEN admin/community AND explore/communities------------------------------*/
