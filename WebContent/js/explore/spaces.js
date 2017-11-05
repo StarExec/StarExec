@@ -281,7 +281,12 @@ function onSpaceDrop(event, ui) {
 			case "space":
 				$('#copy-primitives-options').removeClass('copy-options-hidden');
 				allSpacesBeingCopiedAreLeaves = ids.every(spaceIsLeaf);
-				if (!allSpacesBeingCopiedAreLeaves) {
+				if (allSpacesBeingCopiedAreLeaves) {
+					$("#hier-copy-options option[value='true']").attr("disabled","disabled");
+					$("#hier-copy-options option[value='move']").text("move spaces");
+				} else {
+					$("#hier-copy-options option[value='true']").removeAttr("disabled");
+					$("#hier-copy-options option[value='move']").text("move hierarchies");
 					$('#hier-copy-options').removeClass('copy-options-hidden');
 				}
 				$(EXP_SP.copySpaceDialogText).text(ids.length + ' spaces ⇒ ' + destName);
