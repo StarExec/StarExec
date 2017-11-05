@@ -1164,8 +1164,8 @@ public class Download extends HttpServlet {
 			 * full stack trace. No need to send any message to client, because
 			 * connection has been closed. */
 			log.warn("doGet",
-					"Caught ClientAbortException\n" +
-					"URL: " + request.getRequestURL() + "?" + request.getQueryString() + "\n" +
+					"Caught ClientAbortException\n\t" +
+					"URL: " + request.getRequestURL() + "?" + request.getQueryString() + "\n\t" +
 					"User Agent: " + request.getHeader("User-Agent")
 			);
 			response.getOutputStream().close();
