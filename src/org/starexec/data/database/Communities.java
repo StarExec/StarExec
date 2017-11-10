@@ -140,96 +140,79 @@ public class Communities {
 		ResultSet results = null;
 		try {
 			List<Space> communities = Communities.getAll();
-
-
 			HashMap<Integer, HashMap<String, Long>> commInfo = new HashMap<>();
+			HashMap<String, Long> community;
+			Integer commId;
+			Long infoCount, infoExtra;
 
 			for (Space c : communities) {
 				commInfo.put(c.getId(), initializeCommInfo());
 			}
 
-			Integer commId;
-			Long infoCount, infoExtra;
-
-
 			con = Common.getConnection();
-
 			procedure = con.prepareCall("{CALL GetCommunityStatsUsers()}");
 			results = procedure.executeQuery();
 
 			while (results.next()) {
-
 				commId = results.getInt("comm_id");
 				infoCount = results.getLong("userCount");
+				community = commInfo.get(commId);
 
-				commInfo.get(commId).put("users", infoCount);
+				community.put("users", infoCount);
 
 				log.info("commId: " + commId + " | userCount: " + infoCount);
 			}
 
-			Common.safeClose(con);
 			Common.safeClose(results);
 			Common.safeClose(procedure);
-
-
-			con = Common.getConnection();
 
 			procedure = con.prepareCall("{CALL GetCommunityStatsSolvers()}");
 			results = procedure.executeQuery();
 
 			while (results.next()) {
-
 				commId = results.getInt("comm_id");
 				infoCount = results.getLong("solverCount");
 				infoExtra = results.getLong("solverDiskUsage");
+				community = commInfo.get(commId);
 
-				commInfo.get(commId).put("solvers", infoCount);
-				commInfo.get(commId).put("disk_usage", commInfo.get(commId).get("disk_usage") + infoExtra);
+				community.put("solvers", infoCount);
+				community.put("disk_usage", community.get("disk_usage") + infoExtra);
 
 				log.info("commId: " + commId + " | solverCount: " + infoCount + " | solverDisk: " + infoExtra);
 			}
 
-			Common.safeClose(con);
 			Common.safeClose(results);
 			Common.safeClose(procedure);
-
-
-			con = Common.getConnection();
 
 			procedure = con.prepareCall("{CALL GetCommunityStatsBenches()}");
 			results = procedure.executeQuery();
 
 			while (results.next()) {
-
 				commId = results.getInt("comm_id");
 				infoCount = results.getLong("benchCount");
 				infoExtra = results.getLong("benchDiskUsage");
+				community = commInfo.get(commId);
 
-				commInfo.get(commId).put("benchmarks", infoCount);
-				commInfo.get(commId).put("disk_usage", commInfo.get(commId).get("disk_usage") + infoExtra);
-
+				community.put("benchmarks", infoCount);
+				community.put("disk_usage", community.get("disk_usage") + infoExtra);
 
 				log.info("commId: " + commId + " | benchCount: " + infoCount + " | benchDisk: " + infoExtra);
 			}
 
-			Common.safeClose(con);
 			Common.safeClose(results);
 			Common.safeClose(procedure);
-
-
-			con = Common.getConnection();
 
 			procedure = con.prepareCall("{CALL GetCommunityStatsJobs()}");
 			results = procedure.executeQuery();
 
 			while (results.next()) {
-
 				commId = results.getInt("comm_id");
 				infoCount = results.getLong("jobCount");
 				infoExtra = results.getLong("jobPairCount");
+				community = commInfo.get(commId);
 
-				commInfo.get(commId).put("jobs", infoCount);
-				commInfo.get(commId).put("job_pairs", infoExtra);
+				community.put("jobs", infoCount);
+				community.put("job_pairs", infoExtra);
 
 				log.info("commId: " + commId + " | jobCount: " + infoCount + " | jobPairCount: " + infoExtra);
 			}
