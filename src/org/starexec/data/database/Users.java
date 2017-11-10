@@ -43,9 +43,9 @@ public class Users {
 
 
 			procedure.executeUpdate();
-			log.info(String.format("User [%d] added to space [%d]", userId, spaceId));
+			log.info("User [" + userId + "] added to space [" + spaceId + "]");
 		} catch (Exception e) {
-			log.error("Users.associate says " + e.getMessage(), e);
+			log.error("associate", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -879,11 +879,11 @@ public class Users {
 
 			if (successfulRegistration) {
 				Common.endTransaction(con);
-				log.info(String.format("New user [%s] successfully registered", user));
+				log.info("New user [" + user + "] successfully registered");
 				return true;
 			} else {
 				Common.doRollback(con);
-				log.info(String.format("New user [%s] failed to register", user));
+				log.info("New user [" + user + "] failed to register");
 				return false;
 			}
 		} catch (Exception e) {
@@ -944,21 +944,23 @@ public class Users {
 
 			procedure.executeUpdate();
 
-			log.info(String.format("Disk quota changed to [%s] for user [%d]",
-			                       FileUtils.byteCountToDisplaySize(newDiskQuota), userId
-			));
+			log.info("Disk quota changed to [" +
+					FileUtils.byteCountToDisplaySize(newDiskQuota) +
+					"] for user [" + userId + "]"
+			);
 
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("setDiskQuota", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 
-		log.warn(String.format("Failed to change disk quota to [%s] for user [%d]",
-		                       FileUtils.byteCountToDisplaySize(newDiskQuota), userId
-		));
+		log.warn("Failed to change disk quota to [" +
+				FileUtils.byteCountToDisplaySize(newDiskQuota) +
+				"] for user [" + userId + "]"
+		);
 		return false;
 	}
 
@@ -982,7 +984,7 @@ public class Users {
 			procedure.setString(2, newValue);
 
 			procedure.executeUpdate();
-			log.info(String.format("User [%d] updated e-mail address to [%s]", userId, newValue));
+			log.info("User [" + userId + "] updated e-mail address to [" + newValue + "]");
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		} finally {
@@ -1009,7 +1011,7 @@ public class Users {
 			procedure.setString(2, newValue);
 
 			procedure.executeUpdate();
-			log.info(String.format("User [%d] updated first name to [%s]", userId, newValue));
+			log.info("User [" + userId + "] updated first name to [" + newValue + "]");
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -1039,7 +1041,7 @@ public class Users {
 			procedure.setString(2, newValue);
 
 			procedure.executeUpdate();
-			log.info(String.format("User [%d] updated institution to [%s]", userId, newValue));
+			log.info("User [" + userId + "] updated institution to [" + newValue + "]");
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -1069,7 +1071,7 @@ public class Users {
 			procedure.setString(2, newValue);
 
 			procedure.executeUpdate();
-			log.info(String.format("User [%d] updated last name to [%s]", userId, newValue));
+			log.info("User [" + userId + "] updated last name to [" + newValue + "]");
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
@@ -1101,7 +1103,7 @@ public class Users {
 			procedure.setString(2, hashedPassword);
 
 			procedure.executeUpdate();
-			log.info(String.format("User [%d] updated password", userId));
+			log.info("User [" + userId + "] updated password");
 			return true;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
