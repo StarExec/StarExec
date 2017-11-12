@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import org.apache.commons.lang3.tuple.Pair;
 import org.starexec.constants.R;
 import org.starexec.constants.Web;
+import org.starexec.data.database.Communities;
 import org.starexec.data.database.Requests;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -179,13 +180,7 @@ public class Verify extends HttpServlet {
 		Mail.sendRequestResults(user, communityName, successfullyApproved, false);
 
 		// Create a personal subspace for the user in the space they were admitted to
-		if (createPersonalSubspace(comRequest.getCommunityId(), user)) {
-			log.info("Personal space successfully created for user [" + user.getFullName() + "]");
-		} else {
-			log.error("handleApproveCommunityRequest",
-			          "Personal space NOT successfully created for user [" + user.getFullName() +
-			          "] in community " + comRequest.getCommunityId());
-		}
+		Communities.createPersonalSubspace(comRequest.getCommunityId(), user);
 
 		log.info("User [" + user.getFullName() +
 		         "] has finished the approval process and now apart of the " +
@@ -204,15 +199,7 @@ public class Verify extends HttpServlet {
 			HttpServletResponse response, User user, CommunityRequest comRequest, boolean isRegistered,
 			String communityName, boolean sentFromCommunityPage
 	) throws IOException {
-		// Remove their entry from INVITES
-		Requests.declineCommunityRequest(comRequest.getUserId(), comRequest.getCommunityId());
 
-		// Notify user they've been declined
-		Mail.sendRequestResults(user, communityName, false, !isRegistered);
-
-		log.info("User [" + user.getFullName() + "]'s request to join the " +
-		         communityName + " community was declined."
-		);
 		if (sentFromCommunityPage) {
 			response.setContentType("application/json");
 			response.getWriter()
@@ -258,28 +245,5 @@ public class Verify extends HttpServlet {
 
 		// Send the invite to the leaders of the community
 		Mail.sendCommunityRequest(newUser, comReq);
-	}
-
-	/**
-	 * Creates a new personal space as a subspace of the space the user was admitted to
-	 *
-	 * @param parentSpaceId the id of the space this new personal space will be a subspace of
-	 * @param user the user for whom this new personal space is being created
-	 * @return true if the personal subspace was successfully created, false otherwise
-	 */
-	public static boolean createPersonalSubspace(int parentSpaceId, User user) {
-		// Generate space name (e.g. IF name = Todd Elvers, THEN personal space name = todd_elvers)
-		final String name = user.getFirstName().toLowerCase() + "_" + user.getLastName().toLowerCase();
-
-		// Set the space's attributes
-		Space s = new Space();
-		s.setName(name);
-		s.setDescription(R.PERSONAL_SPACE_DESCRIPTION);
-		s.setLocked(false);
-		s.setPermission(new Permission(true));
-
-		// Return true if the subspace is successfully created, false otherwise
-		s.setParentSpace(parentSpaceId);
-		return Spaces.add(s, user.getId()) > 0;
 	}
 }

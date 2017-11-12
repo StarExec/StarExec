@@ -3,7 +3,9 @@ package org.starexec.data.database;
 import org.starexec.constants.R;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
+import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
 import org.starexec.logger.StarLogger;
 
 import java.sql.CallableStatement;
@@ -96,16 +98,13 @@ public class Communities {
 		long timeNow = System.currentTimeMillis();
 
 		if (R.COMM_ASSOC_LAST_UPDATE == null) {
-
 			return true;
 		}
-
 
 		Long timeElapsed = timeNow - R.COMM_ASSOC_LAST_UPDATE;
 
 		log.info("timeElapsed since last comm_assoc update: " + timeElapsed);
 		if (timeElapsed > R.COMM_ASSOC_UPDATE_PERIOD) {
-
 			return true;
 		}
 
@@ -416,5 +415,35 @@ public class Communities {
 			log.warn("getTestCommunity could not retrieve the test community--please set one up in the configuration");
 		}
 		return s;
+	}
+
+	/**
+	 * Creates a new personal space as a subspace of the space the user was admitted to
+	 *
+	 * @param parentSpaceId the id of the space this new personal space will be a subspace of
+	 * @param user the user for whom this new personal space is being created
+	 * @return true if the personal subspace was successfully created, false otherwise
+	 */
+	public static void createPersonalSubspace(int parentSpaceId, User user) {
+		// Generate space name (e.g. IF name = Todd Elvers, THEN personal space name = todd_elvers)
+		final String name = user.getFirstName().toLowerCase() + "_" + user.getLastName().toLowerCase();
+
+		// Set the space's attributes
+		Space s = new Space();
+		s.setName(name);
+		s.setDescription(R.PERSONAL_SPACE_DESCRIPTION);
+		s.setLocked(false);
+		s.setPermission(new Permission(true));
+
+		// Return true if the subspace is successfully created, false otherwise
+		s.setParentSpace(parentSpaceId);
+		if (Spaces.add(s, user.getId()) > 0) {
+			log.info("createPersonalSubspace",
+			         "Personal space successfully created for user [" + user.getFullName() + "]");
+		} else {
+			log.error("createPersonalSubspace",
+			          "Personal space NOT successfully created for user [" + user.getFullName() +
+			          "] in community " + parentSpaceId);
+		}
 	}
 }
