@@ -121,25 +121,26 @@ public class Verify extends HttpServlet {
 			return;
 		}
 
-
-		boolean isRegistered = false;
-
-		// See if the user is registered or not
-		User user = Users.getUnregistered(comRequest.getUserId());
-		if (user == null) {
-			user = Users.get(comRequest.getUserId());
-			isRegistered = true;
+		String status = "";
+		switch (verdict) {
+		case Web.APPROVE_COMMUNITY_REQUEST:
+			comRequest.approve();
+			status = "The user has been successfully approved.";
+			break;
+		case Web.DECLINE_COMMUNITY_REQUEST:
+			comRequest.decline();
+			status = "The user has been successfully declined.";
+			break;
 		}
 
-		// Get name of community user is trying to join
-		String communityName = Spaces.getName(comRequest.getCommunityId());
-
-		if (verdict.equals(Web.APPROVE_COMMUNITY_REQUEST)) {
-			handleApproveCommunityRequest(response, user, comRequest, communityName, sentFromCommunityPage);
-		} else if (verdict.equals(Web.DECLINE_COMMUNITY_REQUEST)) {
-			handleDeclineCommunityRequest(
-					response, user, comRequest, isRegistered, communityName, sentFromCommunityPage);
+		if (sentFromCommunityPage) {
+			response.setContentType("application/json");
+			response.getWriter()
+			        .write(gson.toJson(new ValidatorStatusCode(true, status)));
+		} else {
+			response.sendRedirect(Util.docRoot("public/messages/leader_response.jsp"));
 		}
+
 		log.debug("Finished handling community request.");
 	}
 
@@ -159,35 +160,6 @@ public class Verify extends HttpServlet {
 			return true;
 		} else {
 			return false;
-		}
-	}
-
-	private static void handleApproveCommunityRequest(
-			HttpServletResponse response, User user, CommunityRequest comRequest, String communityName,
-			boolean sentFromCommunityPage
-	) throws IOException {
-		// Add them to the community & remove the request from the database
-		comRequest.approve();
-		if (sentFromCommunityPage) {
-			response.setContentType("application/json");
-			response.getWriter()
-			        .write(gson.toJson(new ValidatorStatusCode(true, "The user has been successfully approved.")));
-		} else {
-			response.sendRedirect(Util.docRoot("public/messages/leader_response.jsp"));
-		}
-	}
-
-	private static void handleDeclineCommunityRequest(
-			HttpServletResponse response, User user, CommunityRequest comRequest, boolean isRegistered,
-			String communityName, boolean sentFromCommunityPage
-	) throws IOException {
-		comRequest.decline();
-		if (sentFromCommunityPage) {
-			response.setContentType("application/json");
-			response.getWriter()
-			        .write(gson.toJson(new ValidatorStatusCode(true, "The user has been successfully declined.")));
-		} else {
-			response.sendRedirect(Util.docRoot("public/messages/leader_response.jsp"));
 		}
 	}
 
