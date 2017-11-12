@@ -167,25 +167,7 @@ public class Verify extends HttpServlet {
 			boolean sentFromCommunityPage
 	) throws IOException {
 		// Add them to the community & remove the request from the database
-		boolean successfullyApproved =
-				Requests.approveCommunityRequest(comRequest.getUserId(), comRequest.getCommunityId());
-
-		if (!successfullyApproved) {
-			log.error("Did not successfully approve user community request for user with id=" + comRequest.getUserId() +
-			          " even though an admin or community leader approved them.");
-			return;
-		}
-
-		// Notify user they've been approved
-		Mail.sendRequestResults(user, communityName, successfullyApproved, false);
-
-		// Create a personal subspace for the user in the space they were admitted to
-		Communities.createPersonalSubspace(comRequest.getCommunityId(), user);
-
-		log.info("User [" + user.getFullName() +
-		         "] has finished the approval process and now apart of the " +
-		         communityName + " community."
-		);
+		comRequest.approve();
 		if (sentFromCommunityPage) {
 			response.setContentType("application/json");
 			response.getWriter()
@@ -199,7 +181,7 @@ public class Verify extends HttpServlet {
 			HttpServletResponse response, User user, CommunityRequest comRequest, boolean isRegistered,
 			String communityName, boolean sentFromCommunityPage
 	) throws IOException {
-
+		comRequest.decline();
 		if (sentFromCommunityPage) {
 			response.setContentType("application/json");
 			response.getWriter()
