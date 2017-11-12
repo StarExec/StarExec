@@ -170,9 +170,8 @@ public class Verify extends HttpServlet {
 				Requests.approveCommunityRequest(comRequest.getUserId(), comRequest.getCommunityId());
 
 		if (!successfullyApproved) {
-			log.error("Did not successfully approve user community request for user with id=" + comRequest.getUserId
-					() +
-					          " even though an admin or community leader approved them.");
+			log.error("Did not successfully approve user community request for user with id=" + comRequest.getUserId() +
+			          " even though an admin or community leader approved them.");
 			return;
 		}
 
@@ -181,12 +180,17 @@ public class Verify extends HttpServlet {
 
 		// Create a personal subspace for the user in the space they were admitted to
 		if (createPersonalSubspace(comRequest.getCommunityId(), user)) {
-			log.info(String.format("Personal space successfully created for user [%s]", user.getFullName()));
+			log.info("Personal space successfully created for user [" + user.getFullName() + "]");
+		} else {
+			log.error("handleApproveCommunityRequest",
+			          "Personal space NOT successfully created for user [" + user.getFullName() +
+			          "] in community " + comRequest.getCommunityId());
 		}
 
-		log.info(String.format("User [%s] has finished the approval process and now apart of the %s community.",
-		                       user.getFullName(), communityName
-		));
+		log.info("User [" + user.getFullName() +
+		         "] has finished the approval process and now apart of the " +
+		         communityName + " community."
+		);
 		if (sentFromCommunityPage) {
 			response.setContentType("application/json");
 			response.getWriter()
@@ -204,15 +208,11 @@ public class Verify extends HttpServlet {
 		Requests.declineCommunityRequest(comRequest.getUserId(), comRequest.getCommunityId());
 
 		// Notify user they've been declined
-		if (isRegistered) {
-			Mail.sendRequestResults(user, communityName, false, false);
-		} else {
-			Mail.sendRequestResults(user, communityName, false, true);
-		}
+		Mail.sendRequestResults(user, communityName, false, !isRegistered);
 
-		log.info(String.format("User [%s]'s request to join the %s community was declined.", user.getFullName(),
-		                       communityName
-		));
+		log.info("User [" + user.getFullName() + "]'s request to join the " +
+		         communityName + " community was declined."
+		);
 		if (sentFromCommunityPage) {
 			response.setContentType("application/json");
 			response.getWriter()
@@ -246,13 +246,13 @@ public class Verify extends HttpServlet {
 			return;
 		} else {
 			newUser = Users.getUnregistered(userId);
-			log.info(String.format("User [%s] has been activated.", newUser.getFullName()));
+			log.info("User [" + newUser.getFullName() + "] has been activated.");
 			response.sendRedirect(Util.docRoot("public/messages/email_activated.jsp"));
 		}
 
 		CommunityRequest comReq = Requests.getCommunityRequest(userId);
 		if (comReq == null) {
-			log.warn(String.format("No community request exists for user [%s].", newUser.getFullName()));
+			log.warn("No community request exists for user [" + newUser.getFullName() + "].");
 			return;
 		}
 
