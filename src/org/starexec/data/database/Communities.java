@@ -11,6 +11,7 @@ import org.starexec.logger.StarLogger;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -420,13 +421,13 @@ public class Communities {
 	/**
 	 * Creates a new personal space as a subspace of the space the user was admitted to
 	 *
-	 * @param parentSpaceId the id of the space this new personal space will be a subspace of
+	 * @param communityId the id of the space this new personal space will be a subspace of
 	 * @param user the user for whom this new personal space is being created
 	 * @return true if the personal subspace was successfully created, false otherwise
 	 */
-	public static void createPersonalSubspace(int parentSpaceId, User user) {
+	public static void createPersonalSubspace(int communityId, User user) {
 		// Generate space name (e.g. IF name = Todd Elvers, THEN personal space name = todd_elvers)
-		final String name = user.getFirstName().toLowerCase() + "_" + user.getLastName().toLowerCase();
+		final String name = (user.getFirstName() + "_" + user.getLastName()).toLowerCase();
 
 		// Set the space's attributes
 		Space s = new Space();
@@ -434,16 +435,36 @@ public class Communities {
 		s.setDescription(R.PERSONAL_SPACE_DESCRIPTION);
 		s.setLocked(false);
 		s.setPermission(new Permission(true));
+		s.setParentSpace(getUsersSpace(communityId));
 
-		// Return true if the subspace is successfully created, false otherwise
-		s.setParentSpace(parentSpaceId);
+		// If Spaces.add returns -1 it means there was a problem
+		// TODO: Just throw an exception
 		if (Spaces.add(s, user.getId()) > 0) {
 			log.info("createPersonalSubspace",
 			         "Personal space successfully created for user [" + user.getFullName() + "]");
 		} else {
 			log.error("createPersonalSubspace",
 			          "Personal space NOT successfully created for user [" + user.getFullName() +
-			          "] in community " + parentSpaceId);
+			          "] in community " + communityId);
+		}
+	}
+
+	/**
+	 * Looks up the "Users" subspace for a given Community
+	 * @param communityId
+	 * @return ID of Users subspace, or communityId if no subspace exists
+	 */
+	private static int getUsersSpace(int communityId) {
+		try {
+			return Common.query("{CALL GetUsersSpace(?)}", p -> p.setInt(1, communityId), r -> {
+				if (r.next()) {
+					return r.getInt("id");
+				} else {
+					return communityId;
+				}
+			});
+		} catch (SQLException e) {
+			return communityId;
 		}
 	}
 }

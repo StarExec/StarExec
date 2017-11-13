@@ -602,4 +602,15 @@ CREATE PROCEDURE GetNonAttachedCommunities(IN _queueId INT)
 			(SELECT space_id FROM comm_queue WHERE queue_id = _queueId );
 	END //
 
+-- Get the "Users" subspace for a given Community
+DROP PROCEDURE IF EXISTS GetUsersSpace;
+CREATE PROCEDURE GetUsersSpace(IN _id INT)
+	BEGIN
+		SELECT id
+		FROM spaces
+		WHERE name = "Users"
+		AND id IN
+			(SELECT child_id FROM set_assoc WHERE space_id = _id);
+	END //
+
 DELIMITER ; -- This should always be at the end of this file
