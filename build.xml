@@ -3,12 +3,15 @@
 <!-- This build file must be configured for local use, using a file
      called local.properties, in this directory.
 
-     See example.local.properties in this directory for an example.
+     See example.properties in this directory for an example.
 -->
 
 <!-- Starexec production build script. Author: Tyler Jensen, changes by Aaron Stump, Eric Burns -->
 <project name="starexec" default="epilog-test" basedir=".">
 
+	<!-- Properties are read-only, so anything in this file will take precedence
+	     over anything declared below
+	-->
 	<loadproperties srcFile="local.properties"/>
 
 	<!-- Set up path information for use throughout this script -->
