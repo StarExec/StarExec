@@ -300,7 +300,6 @@ CREATE PROCEDURE GetSubSpaceByName(IN _spaceId INT, IN _userId INT, IN _name VAR
 				SELECT child_id AS id FROM spaces
 				JOIN set_assoc ON set_assoc.child_id =spaces.id
 				WHERE space_id=_spaceId AND spaces.name=_name;
-
 			END IF;
 		END IF;
 	END //
@@ -341,7 +340,6 @@ CREATE PROCEDURE GetSubSpaceIds(IN _spaceId INT)
 
 -- Returns the recursive number of subspaces a user can see in a given space
 -- Author: Eric Burns
-
 DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceIdInHierarchy;
 CREATE PROCEDURE GetSubspaceCountBySpaceIdInHierarchy(IN _spaceId INT, IN _userId INT)
 	BEGIN
@@ -363,7 +361,6 @@ CREATE PROCEDURE GetTotalSubspaceCountBySpaceIdInHierarchy(IN _spaceId INT)
 
 -- Returns the number of subspaces in a given space without checking membership
 -- Author: Eric Burns
-
 DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceIdAdmin;
 CREATE PROCEDURE GetSubspaceCountBySpaceIdAdmin(IN _spaceId INT)
 	BEGIN
@@ -371,9 +368,9 @@ CREATE PROCEDURE GetSubspaceCountBySpaceIdAdmin(IN _spaceId INT)
 		FROM set_assoc
 		WHERE set_assoc.space_id=_spaceId;
 	END //
+
 -- Returns the number of subspaces in a given space
 -- Author: Todd Elvers + Eric Burns
-
 DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceId;
 CREATE PROCEDURE GetSubspaceCountBySpaceId(IN _spaceId INT, IN _userId INT)
 	BEGIN
@@ -384,6 +381,7 @@ CREATE PROCEDURE GetSubspaceCountBySpaceId(IN _spaceId INT, IN _userId INT)
 		WHERE	set_assoc.space_id = _spaceId
 		AND		(user_assoc.user_id = _userId OR spaces.public_access);
 	END //
+
 -- Returns the number of subspaces in a given space that match a given query
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceIdWithQuery;
@@ -424,7 +422,6 @@ CREATE PROCEDURE RemoveSubspace(IN _subspaceId INT)
 		-- Remove the space
 		DELETE FROM spaces
 		WHERE id = _subspaceId;
-
 	END //
 
 -- Updates the name of the space with the given id
@@ -466,9 +463,6 @@ CREATE PROCEDURE UpdateSpaceDetails(IN _spaceId INT, IN _name VARCHAR(255), IN _
 	END //
 
 
-
-
-
 -- Get the id of the community where the space belongs to
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS GetCommunityOfSpace;
@@ -497,7 +491,6 @@ CREATE PROCEDURE IsPublicHierarchy(IN _spaceId INT)
 		SELECT COUNT(*) FROM closure
 			JOIN spaces AS space ON space.id=descendant
 		WHERE ancestor=_spaceId AND space.public_access=FALSE) =0 ,1,0) AS public;
-
 	END //
 
 
@@ -611,6 +604,27 @@ CREATE PROCEDURE GetUsersSpace(IN _id INT)
 		WHERE name = "Users"
 		AND id IN
 			(SELECT child_id FROM set_assoc WHERE space_id = _id);
+	END //
+
+-- Create the "Users" subspace for a given Community
+DROP PROCEDURE IF EXISTS CreateUsersSpace;
+CREATE PROCEDURE CreateUsersSpace(IN _id INT)
+	BEGIN
+		DECLARE _name VARCHAR(255) DEFAULT "Users";
+		DECLARE _permission  INT   DEFAULT 1; -- default for root space
+		DECLARE _description TEXT  DEFAULT "Holding personal spaces for users";
+		DECLARE _newSpaceId  INT;
+
+		CALL AddSpace(
+			_name,        -- name
+			_description, -- description
+			0,            -- locked
+			_permission,  -- permission
+			_id,          -- parent
+			0,            -- sticky
+			_newSpaceId
+		);
+		CALL AssociateSpaces(_id, _newSpaceId);
 	END //
 
 DELIMITER ; -- This should always be at the end of this file

@@ -468,4 +468,16 @@ public class Communities {
 			return communityId;
 		}
 	}
+
+	/**
+	 * Creates a "Users" subspace for a given Community.
+	 * @param communityId
+	 */
+	public static void createUsersSpace(int communityId) throws SQLException {
+		/* Bail if a Users space already exists in this Community */
+		if (getUsersSpace(communityId) != communityId) {
+			return;
+		}
+		Common.update("{CALL CreateUsersSpace(?)}", p -> p.setInt(1, communityId) );
+	}
 }
