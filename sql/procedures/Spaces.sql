@@ -608,23 +608,25 @@ CREATE PROCEDURE GetUsersSpace(IN _id INT)
 
 -- Create the "Users" subspace for a given Community
 DROP PROCEDURE IF EXISTS CreateUsersSpace;
-CREATE PROCEDURE CreateUsersSpace(IN _id INT)
+CREATE PROCEDURE CreateUsersSpace(IN _communityId INT)
 	BEGIN
 		DECLARE _name VARCHAR(255) DEFAULT "Users";
 		DECLARE _permission  INT   DEFAULT 1; -- default for root space
+		DECLARE _locked      INT   DEFAULT 0;
+		DECLARE _sticky      INT   DEFAULT 0;
 		DECLARE _description TEXT  DEFAULT "Holding personal spaces for users";
 		DECLARE _newSpaceId  INT;
 
 		CALL AddSpace(
-			_name,        -- name
-			_description, -- description
-			0,            -- locked
-			_permission,  -- permission
-			_id,          -- parent
-			0,            -- sticky
+			_name,
+			_description,
+			_locked,
+			_permission,
+			_communityId,
+			_sticky,
 			_newSpaceId
 		);
-		CALL AssociateSpaces(_id, _newSpaceId);
+		CALL AssociateSpaces(_communityId, _newSpaceId);
 	END //
 
 DELIMITER ; -- This should always be at the end of this file
