@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="compile" basedir=".">
+	<!-- Action for compiling the project and building the WAR file.
+		1. we first compile the Java sources and copy over scripts and
+		     configurations to ${build-dir}.
+		2. then we rewrite some of the configurations, using information
+		     from local.properties.
+	-->
+
+	<target name="compilestarexec" depends="register-commands">
+		<!-- Clear the build directory if it exists and re-make the dir -->
+		<delete dir="${build-dir}" />
+		<mkdir dir="${build-dir}" />
+		<mkdir dir="${class-dir}" />
+		<!-- Compile the source code to get the java classes -->
+		<javac debug="true" debuglevel="lines,vars,source" srcdir="src" destdir="${class-dir}" classpathref="classpath" nowarn="on">
+			<compilerarg value="-Xlint:unchecked"/>
+		</javac>
+		<property name="starexec-already-compiled" value="true" />
+	</target>
+
+	<target name="war" depends="register-commands, css">
+		<!-- Copy over the org.starexec.config folder from source to classes -->
+		<mkdir dir="${class-dir}/org/starexec/config" />
+		<copy todir="${class-dir}/org/starexec/config">
+			<fileset dir="${source-dir}/org/starexec/config">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+
+		<!--Copy over the resources directory from source to classes -->
+		<mkdir dir="${resource-dir}" />
+		<copy todir="${resource-dir}">
+			<fileset dir="${source-dir}/org/starexec/test/resources">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+
+		<mkdir dir="${esapi-dir}" />
+		<copy todir="${esapi-dir}">
+			<fileset dir="${source-dir}/esapi">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+
+		<!-- Copy the soft-deploy template and fill it in -->
+		<delete file="soft-deploy.sh" />
+		<copy file="${scripts-dir}/soft-deploy.template" tofile="soft-deploy.sh"/>
+		<replace file="soft-deploy.sh">
+			<replacefilter token="${bash-header}" value="${generated-bash-header}" />
+			<replacefilter token="the_appname" value="${appname}" />
+			<replacefilter token="the_data_dir" value="${data_dir}" />
+			<replacefilter token="the_web_home" value="${web-home}" />
+		</replace>
+		<chmod file="soft-deploy.sh" perm="774"/>
+
+		<!-- Fill in the createDistroArchive.sh template -->
+		<delete file="createDistroArchive.sh" />
+		<copy file="${scripts-dir}/createDistroArchiveTemplate.sh" tofile="createDistroArchive.sh"/>
+		<replace file="createDistroArchive.sh">
+			<replacefilter token="${bash-header}" value="${generated-bash-header}" />
+			<replacefilter token="current_checkout_dir" value="${basedir}" />
+			<replacefilter token="current_starexec_version" value="${svnversion}" />
+		</replace>
+		<chmod file="createDistroArchive.sh" perm="774"/>
+
+		<!-- Copy the context template and fill it in -->
+		<delete file="${meta-inf}/context.xml" />
+		<copy file="context.template" tofile="${meta-inf}/context.xml"/>
+		<replaceregexp file="${meta-inf}/context.xml"
+		               match="&lt;!\-\- (.+) \-\->"
+		               replace="&lt;!-- ${generated-message} -->" />
+		<replace file="${meta-inf}/context.xml">
+			<replacefilter token="the_appname" value="${appname}" />
+			<replacefilter token="the_db_name" value="${db_name}" />
+			<replacefilter token="the_connection_name" value="${connection-name}" />
+			<replacefilter token="the_connection_password" value="${connection-password}" />
+		</replace>
+
+		<!-- Create/update the build property file -->
+		<propertyfile file="${config-dir}/build.properties"
+		              comment="${generated-message}">
+			<entry key="buildtime" value="${builtat}"/>
+			<entry key="build" value="${svnversion}"/>
+			<entry key="builder" value="${whoami}"/>
+		</propertyfile>
+
+		<!-- Update the starexec-config file to use the production configuration -->
+		<replaceregexp file="${config-dir}/starexec-config.xml"
+		               match="default=(.+)"
+		               replace="default=&quot;${configuration}&quot;&gt;"
+		               byline="false"
+		/>
+
+		<!-- Copy over SQL files to the deployed-sql directory.  They are there for updating the
+					 deployment.  They do not need to go in the WAR file. -->
+		<delete dir="deployed-sql" />
+		<mkdir dir="deployed-sql" />
+		<mkdir dir="${data_dir}" />
+		<copy todir="deployed-sql">
+			<fileset dir="sql">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+
+		<!-- Update the sql scripts to use the correct database -->
+		<replaceregexp match="USE (.+);" replace="USE ${db_name};" byline="false">
+			<fileset dir="deployed-sql" includes="**/*.sql"/>
+		</replaceregexp>
+
+		<!-- Update the sql schema to use the correct database -->
+		<replaceregexp file="deployed-sql/NewInstall.sql" match="DROP DATABASE IF EXISTS (.+);" replace="DROP DATABASE IF EXISTS ${db_name};" byline="false" />
+		<replaceregexp file="deployed-sql/NewInstall.sql" match="CREATE DATABASE (.+);" replace="CREATE DATABASE ${db_name};" byline="false" />
+
+		<!-- Copy over files to upload for testing purposes. -->
+		<delete dir="deployed-upload-test" />
+		<mkdir dir="deployed-upload-test" />
+		<copy todir="deployed-upload-test">
+			<fileset dir="upload-test">
+				<include name="**/*" />
+			</fileset>
+			<fileset dir="${starcom-build}">
+				<include name="StarexecCommand.jar" />
+			</fileset>
+		</copy>
+
+		<!-- Update the upload commands to use the correct app -->
+		<replaceregexp file="deployed-upload-test/testDataCommands.txt"
+		               match="login addr=https://stardev.cs.uiowa.edu/(.+)/"
+		               replace="login addr=https://${server-name}/${appname}/"
+		               flags="g"
+		               byline="false" />
+		<chmod file="deployed-upload-test/uploadTestData.sh" perm="774" />
+
+		<!-- Update the schemas to use the currect server and app -->
+		<delete>
+			<fileset dir= "WebContent/public">
+				<include name="**/*.xsd"/>
+				<include name="**/*.xml"/>
+			</fileset>
+		</delete>
+
+		<copy todir="WebContent/public/">
+			<fileset dir="schemas">
+				<include name="**/*.xsd"/>
+				<include name="**/*.xml"/>
+			</fileset>
+		</copy>
+
+		<replace dir="WebContent/public/">
+			<replacefilter token="www.starexec.org/starexec/"
+			               value="${server-name}/${appname}/" />
+			<include name="**/*.xsd"/>
+			<include name="**/*.xml"/>
+		</replace>
+
+		<!-- Update the log4j config file to only record INFO level events	-->
+		<propertyfile file="${config-dir}/log4j.properties" comment="${generated-message}">
+			<entry key="log4j.rootLogger" value="${logging_levels}"/>
+			<entry key="log4j.appender.STAREXEC.File" value="${catalina.base}/logs/${logfile_name}.log" />
+		</propertyfile>
+
+		<!-- Create the war file! -->
+		<war compress="${compression-enabled}" level="9" warfile="${war-file-name}" webxml="${web-inf}/web.xml">
+			<classes dir="${class-dir}" />
+			<fileset dir="WebContent" excludes="**/*.scss"/>
+			<lib dir="${web-inf}/lib"/>
+		</war>
+	</target>
+</project>

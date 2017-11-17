@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="css" basedir=".">
+	<target name="css-check-properties-exists">
+		<available file="${css-properties}" property="css-properties-exists"/>
+	</target>
+
+	<target name="css-properties" depends="css-check-properties-exists" unless="css-properties-exists">
+		<echo message="Creating ${css-properties}" level="info"/>
+		<echo file="${css-properties}">
+			/* ${generated-message} */
+			$rootUrl: "/${appname}/"
+		</echo>
+	</target>
+
+	<target name="css" depends="css-properties">
+		<exec executable="sass" failonerror="true">
+			<arg line="--style compressed" />
+			<arg line="--update ${css-input-dir}:${css-output-dir}" />
+		</exec>
+	</target>
+
+	<target name="format-css" depends="css-properties">
+		<!-- autoformat all SCSS files -->
+		<exec executable="sass-convert" failonerror="true">
+			<arg line="--indent t" />
+			<arg value="-i" />
+			<arg value="-R" />
+			<arg line="-F scss" />
+			<arg line="-T scss" />
+			<arg value="${css-input-dir}" />
+		</exec>
+	</target>
+</project>
