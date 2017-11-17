@@ -153,6 +153,14 @@ public class AddSpace extends HttpServlet {
 				Permissions.set(id, newSpaceId, perm);
 			}
 
+			try {
+				if (Communities.isCommunity(newSpaceId)) {
+					Communities.createUsersSpace(newSpaceId);
+				}
+			} catch (Exception e) {
+				log.error("doPost", "Error creating Users subspace", e);
+			}
+
 			if (newSpaceId <= 0) {
 				// If it failed, notify an error
 				response.sendError(
