@@ -458,12 +458,13 @@ public class Communities {
 		try {
 			return Common.query("{CALL GetUsersSpace(?)}", p -> p.setInt(1, communityId), r -> {
 				if (r.next()) {
-					return r.getInt("id");
+					return r.getInt("id"); // The "Users" Space for this Community
 				} else {
-					return communityId;
+					return communityId; // The root Space for this Community
 				}
 			});
 		} catch (SQLException e) {
+			log.error("getUsersSpace", e);
 			return communityId;
 		}
 	}
