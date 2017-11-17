@@ -238,14 +238,11 @@ function onSpaceDrop(event, ui) {
 				if (allSpacesBeingCopiedAreLeaves) {
 					$("#hier-copy-options option[value='true']").attr("disabled","disabled");
 					$("#hier-copy-options option[value='move']").text("move space");
-					$(EXP_SP.copySpaceDialogText).text(
-						'about to copy ' + ui.draggable.data('name') + ' to' + destName + '.');
 				} else {
 					$("#hier-copy-options option[value='true']").removeAttr("disabled");
 					$("#hier-copy-options option[value='move']").text("move hierarchy");
-					$(EXP_SP.copySpaceDialogText).text(
-						'would you like to copy ' + ui.draggable.data('name') + ' only or the hierarchy to' + destName + '?');
 				}
+				$(EXP_SP.copySpaceDialogText).text(ui.draggable.data('name') + ' ⇒ ' + destName);
 				$('#hier-copy-options').removeClass('copy-options-hidden');
 				break;
 			case "solver":
@@ -282,17 +279,17 @@ function onSpaceDrop(event, ui) {
 	} else {
 		switch (ui.draggable.data('type')) {
 			case "space":
-				$('#copy-primitives-options')
-				.removeClass('copy-options-hidden');
+				$('#copy-primitives-options').removeClass('copy-options-hidden');
 				allSpacesBeingCopiedAreLeaves = ids.every(spaceIsLeaf);
 				if (allSpacesBeingCopiedAreLeaves) {
-					$(EXP_SP.copySpaceDialogText)
-					.text('do you want to copy the ' + ids.length + ' selected spaces to' + destName + '?');
+					$("#hier-copy-options option[value='true']").attr("disabled","disabled");
+					$("#hier-copy-options option[value='move']").text("move spaces");
 				} else {
+					$("#hier-copy-options option[value='true']").removeAttr("disabled");
+					$("#hier-copy-options option[value='move']").text("move hierarchies");
 					$('#hier-copy-options').removeClass('copy-options-hidden');
-					$(EXP_SP.copySpaceDialogText).text(
-						'do you want to copy the ' + ids.length + ' selected spaces only or the hierarchy to' + destName + '?');
 				}
+				$(EXP_SP.copySpaceDialogText).text(ids.length + ' spaces ⇒ ' + destName);
 				break;
 			case "solver":
 			case "user":

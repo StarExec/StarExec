@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import org.apache.commons.lang3.tuple.Pair;
 import org.starexec.constants.R;
 import org.starexec.constants.Web;
+import org.starexec.data.database.Communities;
 import org.starexec.data.database.Requests;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.database.Users;
@@ -120,25 +121,26 @@ public class Verify extends HttpServlet {
 			return;
 		}
 
-
-		boolean isRegistered = false;
-
-		// See if the user is registered or not
-		User user = Users.getUnregistered(comRequest.getUserId());
-		if (user == null) {
-			user = Users.get(comRequest.getUserId());
-			isRegistered = true;
+		String status = "";
+		switch (verdict) {
+		case Web.APPROVE_COMMUNITY_REQUEST:
+			comRequest.approve();
+			status = "The user has been successfully approved.";
+			break;
+		case Web.DECLINE_COMMUNITY_REQUEST:
+			comRequest.decline();
+			status = "The user has been successfully declined.";
+			break;
 		}
 
-		// Get name of community user is trying to join
-		String communityName = Spaces.getName(comRequest.getCommunityId());
-
-		if (verdict.equals(Web.APPROVE_COMMUNITY_REQUEST)) {
-			handleApproveCommunityRequest(response, user, comRequest, communityName, sentFromCommunityPage);
-		} else if (verdict.equals(Web.DECLINE_COMMUNITY_REQUEST)) {
-			handleDeclineCommunityRequest(
-					response, user, comRequest, isRegistered, communityName, sentFromCommunityPage);
+		if (sentFromCommunityPage) {
+			response.setContentType("application/json");
+			response.getWriter()
+			        .write(gson.toJson(new ValidatorStatusCode(true, status)));
+		} else {
+			response.sendRedirect(Util.docRoot("public/messages/leader_response.jsp"));
 		}
+
 		log.debug("Finished handling community request.");
 	}
 
@@ -158,67 +160,6 @@ public class Verify extends HttpServlet {
 			return true;
 		} else {
 			return false;
-		}
-	}
-
-	private static void handleApproveCommunityRequest(
-			HttpServletResponse response, User user, CommunityRequest comRequest, String communityName,
-			boolean sentFromCommunityPage
-	) throws IOException {
-		// Add them to the community & remove the request from the database
-		boolean successfullyApproved =
-				Requests.approveCommunityRequest(comRequest.getUserId(), comRequest.getCommunityId());
-
-		if (!successfullyApproved) {
-			log.error("Did not successfully approve user community request for user with id=" + comRequest.getUserId
-					() +
-					          " even though an admin or community leader approved them.");
-			return;
-		}
-
-		// Notify user they've been approved
-		Mail.sendRequestResults(user, communityName, successfullyApproved, false);
-
-		// Create a personal subspace for the user in the space they were admitted to
-		if (createPersonalSubspace(comRequest.getCommunityId(), user)) {
-			log.info(String.format("Personal space successfully created for user [%s]", user.getFullName()));
-		}
-
-		log.info(String.format("User [%s] has finished the approval process and now apart of the %s community.",
-		                       user.getFullName(), communityName
-		));
-		if (sentFromCommunityPage) {
-			response.setContentType("application/json");
-			response.getWriter()
-			        .write(gson.toJson(new ValidatorStatusCode(true, "The user has been successfully approved.")));
-		} else {
-			response.sendRedirect(Util.docRoot("public/messages/leader_response.jsp"));
-		}
-	}
-
-	private static void handleDeclineCommunityRequest(
-			HttpServletResponse response, User user, CommunityRequest comRequest, boolean isRegistered,
-			String communityName, boolean sentFromCommunityPage
-	) throws IOException {
-		// Remove their entry from INVITES
-		Requests.declineCommunityRequest(comRequest.getUserId(), comRequest.getCommunityId());
-
-		// Notify user they've been declined
-		if (isRegistered) {
-			Mail.sendRequestResults(user, communityName, false, false);
-		} else {
-			Mail.sendRequestResults(user, communityName, false, true);
-		}
-
-		log.info(String.format("User [%s]'s request to join the %s community was declined.", user.getFullName(),
-		                       communityName
-		));
-		if (sentFromCommunityPage) {
-			response.setContentType("application/json");
-			response.getWriter()
-			        .write(gson.toJson(new ValidatorStatusCode(true, "The user has been successfully declined.")));
-		} else {
-			response.sendRedirect(Util.docRoot("public/messages/leader_response.jsp"));
 		}
 	}
 
@@ -246,40 +187,17 @@ public class Verify extends HttpServlet {
 			return;
 		} else {
 			newUser = Users.getUnregistered(userId);
-			log.info(String.format("User [%s] has been activated.", newUser.getFullName()));
+			log.info("User [" + newUser.getFullName() + "] has been activated.");
 			response.sendRedirect(Util.docRoot("public/messages/email_activated.jsp"));
 		}
 
 		CommunityRequest comReq = Requests.getCommunityRequest(userId);
 		if (comReq == null) {
-			log.warn(String.format("No community request exists for user [%s].", newUser.getFullName()));
+			log.warn("No community request exists for user [" + newUser.getFullName() + "].");
 			return;
 		}
 
 		// Send the invite to the leaders of the community
 		Mail.sendCommunityRequest(newUser, comReq);
-	}
-
-	/**
-	 * Creates a new personal space as a subspace of the space the user was admitted to
-	 *
-	 * @param parentSpaceId the id of the space this new personal space will be a subspace of
-	 * @param user the user for whom this new personal space is being created
-	 * @return true if the personal subspace was successfully created, false otherwise
-	 */
-	public static boolean createPersonalSubspace(int parentSpaceId, User user) {
-		// Generate space name (e.g. IF name = Todd Elvers, THEN personal space name = todd_elvers)
-		final String name = user.getFirstName().toLowerCase() + "_" + user.getLastName().toLowerCase();
-
-		// Set the space's attributes
-		Space s = new Space();
-		s.setName(name);
-		s.setDescription(R.PERSONAL_SPACE_DESCRIPTION);
-		s.setLocked(false);
-		s.setPermission(new Permission(true));
-
-		// Return true if the subspace is successfully created, false otherwise
-		s.setParentSpace(parentSpaceId);
-		return Spaces.add(s, user.getId()) > 0;
 	}
 }

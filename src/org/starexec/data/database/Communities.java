@@ -3,12 +3,15 @@ package org.starexec.data.database;
 import org.starexec.constants.R;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
+import org.starexec.data.to.Permission;
 import org.starexec.data.to.Space;
+import org.starexec.data.to.User;
 import org.starexec.logger.StarLogger;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -96,16 +99,13 @@ public class Communities {
 		long timeNow = System.currentTimeMillis();
 
 		if (R.COMM_ASSOC_LAST_UPDATE == null) {
-
 			return true;
 		}
-
 
 		Long timeElapsed = timeNow - R.COMM_ASSOC_LAST_UPDATE;
 
 		log.info("timeElapsed since last comm_assoc update: " + timeElapsed);
 		if (timeElapsed > R.COMM_ASSOC_UPDATE_PERIOD) {
-
 			return true;
 		}
 
@@ -140,96 +140,79 @@ public class Communities {
 		ResultSet results = null;
 		try {
 			List<Space> communities = Communities.getAll();
-
-
 			HashMap<Integer, HashMap<String, Long>> commInfo = new HashMap<>();
+			HashMap<String, Long> community;
+			Integer commId;
+			Long infoCount, infoExtra;
 
 			for (Space c : communities) {
 				commInfo.put(c.getId(), initializeCommInfo());
 			}
 
-			Integer commId;
-			Long infoCount, infoExtra;
-
-
 			con = Common.getConnection();
-
 			procedure = con.prepareCall("{CALL GetCommunityStatsUsers()}");
 			results = procedure.executeQuery();
 
 			while (results.next()) {
-
 				commId = results.getInt("comm_id");
 				infoCount = results.getLong("userCount");
+				community = commInfo.get(commId);
 
-				commInfo.get(commId).put("users", infoCount);
+				community.put("users", infoCount);
 
 				log.info("commId: " + commId + " | userCount: " + infoCount);
 			}
 
-			Common.safeClose(con);
 			Common.safeClose(results);
 			Common.safeClose(procedure);
-
-
-			con = Common.getConnection();
 
 			procedure = con.prepareCall("{CALL GetCommunityStatsSolvers()}");
 			results = procedure.executeQuery();
 
 			while (results.next()) {
-
 				commId = results.getInt("comm_id");
 				infoCount = results.getLong("solverCount");
 				infoExtra = results.getLong("solverDiskUsage");
+				community = commInfo.get(commId);
 
-				commInfo.get(commId).put("solvers", infoCount);
-				commInfo.get(commId).put("disk_usage", commInfo.get(commId).get("disk_usage") + infoExtra);
+				community.put("solvers", infoCount);
+				community.put("disk_usage", community.get("disk_usage") + infoExtra);
 
 				log.info("commId: " + commId + " | solverCount: " + infoCount + " | solverDisk: " + infoExtra);
 			}
 
-			Common.safeClose(con);
 			Common.safeClose(results);
 			Common.safeClose(procedure);
-
-
-			con = Common.getConnection();
 
 			procedure = con.prepareCall("{CALL GetCommunityStatsBenches()}");
 			results = procedure.executeQuery();
 
 			while (results.next()) {
-
 				commId = results.getInt("comm_id");
 				infoCount = results.getLong("benchCount");
 				infoExtra = results.getLong("benchDiskUsage");
+				community = commInfo.get(commId);
 
-				commInfo.get(commId).put("benchmarks", infoCount);
-				commInfo.get(commId).put("disk_usage", commInfo.get(commId).get("disk_usage") + infoExtra);
-
+				community.put("benchmarks", infoCount);
+				community.put("disk_usage", community.get("disk_usage") + infoExtra);
 
 				log.info("commId: " + commId + " | benchCount: " + infoCount + " | benchDisk: " + infoExtra);
 			}
 
-			Common.safeClose(con);
 			Common.safeClose(results);
 			Common.safeClose(procedure);
-
-
-			con = Common.getConnection();
 
 			procedure = con.prepareCall("{CALL GetCommunityStatsJobs()}");
 			results = procedure.executeQuery();
 
 			while (results.next()) {
-
 				commId = results.getInt("comm_id");
 				infoCount = results.getLong("jobCount");
 				infoExtra = results.getLong("jobPairCount");
+				community = commInfo.get(commId);
 
-				commInfo.get(commId).put("jobs", infoCount);
-				commInfo.get(commId).put("job_pairs", infoExtra);
+				community.put("jobs", infoCount);
+				community.put("job_pairs", infoExtra);
 
 				log.info("commId: " + commId + " | jobCount: " + infoCount + " | jobPairCount: " + infoExtra);
 			}
@@ -433,5 +416,68 @@ public class Communities {
 			log.warn("getTestCommunity could not retrieve the test community--please set one up in the configuration");
 		}
 		return s;
+	}
+
+	/**
+	 * Creates a new personal space as a subspace of the space the user was admitted to
+	 *
+	 * @param communityId the id of the space this new personal space will be a subspace of
+	 * @param user the user for whom this new personal space is being created
+	 * @return true if the personal subspace was successfully created, false otherwise
+	 */
+	public static void createPersonalSubspace(int communityId, User user) {
+		// Generate space name (e.g. IF name = Todd Elvers, THEN personal space name = todd_elvers)
+		final String name = (user.getFirstName() + "_" + user.getLastName()).toLowerCase();
+
+		// Set the space's attributes
+		Space s = new Space();
+		s.setName(name);
+		s.setDescription(R.PERSONAL_SPACE_DESCRIPTION);
+		s.setLocked(false);
+		s.setPermission(new Permission(true));
+		s.setParentSpace(getUsersSpace(communityId));
+
+		// If Spaces.add returns -1 it means there was a problem
+		// TODO: Just throw an exception
+		if (Spaces.add(s, user.getId()) > 0) {
+			log.info("createPersonalSubspace",
+			         "Personal space successfully created for user [" + user.getFullName() + "]");
+		} else {
+			log.error("createPersonalSubspace",
+			          "Personal space NOT successfully created for user [" + user.getFullName() +
+			          "] in community " + communityId);
+		}
+	}
+
+	/**
+	 * Looks up the "Users" subspace for a given Community
+	 * @param communityId
+	 * @return ID of Users subspace, or communityId if no subspace exists
+	 */
+	private static int getUsersSpace(int communityId) {
+		try {
+			return Common.query("{CALL GetUsersSpace(?)}", p -> p.setInt(1, communityId), r -> {
+				if (r.next()) {
+					return r.getInt("id"); // The "Users" Space for this Community
+				} else {
+					return communityId; // The root Space for this Community
+				}
+			});
+		} catch (SQLException e) {
+			log.error("getUsersSpace", e);
+			return communityId;
+		}
+	}
+
+	/**
+	 * Creates a "Users" subspace for a given Community.
+	 * @param communityId
+	 */
+	public static void createUsersSpace(int communityId) throws SQLException {
+		/* Bail if a Users space already exists in this Community */
+		if (getUsersSpace(communityId) != communityId) {
+			return;
+		}
+		Common.update("{CALL CreateUsersSpace(?)}", p -> p.setInt(1, communityId) );
 	}
 }
