@@ -218,8 +218,8 @@ public class R {
 	public static String DEFAULT_QUEUE_NAME = "all.q";                 //The name of the default queue
 	public static int DEFAULT_QUEUE_ID=1;
 	//Test info
-	public static int TEST_COMMUNITY_ID=-1;
-	public static boolean ALLOW_TESTING=false;                         // whether tests should be allowed to run on this instance. False for production.
+	public static int TEST_COMMUNITY_ID=@TEST_COMMUNITY_ID@;
+	public static boolean ALLOW_TESTING=@ALLOW_TESTING@;               // whether tests should be allowed to run on this instance. False for production.
 	//Public user info
 	public static int PUBLIC_USER_ID = 0;                              //user id to use when writing benchmarks, submitting jobs without login
 	public static int PUBLIC_CPU_LIMIT = 30;
@@ -238,17 +238,17 @@ public class R {
 	public static String PWD_HASH_ALGORITHM = "SHA-512";               // Which algorithm to use to hash user passwords
 	public static String PATH_DATE_FORMAT = "yyyyMMdd-kk.mm.ss.SSS";   // Which datetime format is used to create unique directory names
 	public static boolean REMOVE_ARCHIVES = true;                      // Whether or not to delete archive files after they're extracted
-	public static String CONTACT_EMAIL = "";                           // The default e-mail address to use for users to contact for support
+	public static String CONTACT_EMAIL = "@CONTACT_EMAIL@";            // The default e-mail address to use for users to contact for support
 	public static boolean IS_FULL_STAREXEC_INSTANCE = true;            // should we run job tasks (see app/Starexec.java)
 	public static int CLEAR_JOB_LOG_PERIOD = 14;                       // How often (in days) to clear job logs
-	public static int JOB_SUBMISSION_PERIOD = 60;                      // How often (in seconds) to write job scripts and submit to the backend
+	public static int JOB_SUBMISSION_PERIOD = @Job.SubmissionPeriod@;  // How often (in seconds) to write job scripts and submit to the backend
 	public static final int MAX_NUMBER_OF_REPORTS_TO_SEND = 30;        // Maximum number of StarExec report emails to send every period
 	public static final int WAIT_TIME_BETWEEN_EMAILING_REPORTS = 2;    // Number of seconds to wait between reports being sent
 	public static final int EMAIL_REPORTS_DAY = Calendar.THURSDAY;     // Day of the week to email reports
 	public static HashMap<Integer,HashMap<String,Long>> COMM_INFO_MAP = null;
 	public static Long COMM_ASSOC_LAST_UPDATE = null;    //last time community_assoc table was updated (milliseconds)
 	public static long COMM_ASSOC_UPDATE_PERIOD = 21600000;  //how much time we should wait before requerying for community_assoc table, currentely set to a 10 seconds (milliseconds)
-	public static long DEFAULT_DISK_QUOTA = 52428800;                            // The default user disk quota to assign new users; currently 50MB
+	public static long DEFAULT_DISK_QUOTA = @User.DefaultDiskQuota@L;          // The default user disk quota to assign new users; currently 50MB
 	public static int DEFAULT_PAIR_QUOTA = 750000;                            // The default max number of pairs a user should be able to own
 	public static String PERSONAL_SPACE_DESCRIPTION =                            // The default text that appears at the top of a user's personal space
 			"this is your personal space";
@@ -287,9 +287,9 @@ public class R {
 	}
 
 	// BACKEND configurations
-	public static String BACKEND_ROOT = null; // root directory for the backend executable
-	public static String BACKEND_WORKING_DIR = null;
-	public static long MAX_PAIR_FILE_WRITE = 2097152;                              // The largest possible amount disk space (in kilobytes) a job pair is allowed to use
+	public static String BACKEND_ROOT = "@Backend.Root@"; // root directory for the backend executable
+	public static String BACKEND_WORKING_DIR = "@Backend.WorkingDir@";
+	public static long MAX_PAIR_FILE_WRITE = @JobPair.MaxFileWrite@;      // The largest possible amount disk space (in kilobytes) a job pair is allowed to use
 	public static long DEFAULT_PAIR_VMEM = 17179869184L;                              // The default limit on memory (in bytes) for job pairs
 	public static int NODE_MULTIPLIER = 8;                                  // The number of job scripts to submit is the number of nodes in the queue times this
 
