@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!-- This build file must be configured for local use, using a file
-     called local.properties, in this directory.
+     called deploy.properties, in this directory.
 
      See example.properties in this directory for an example.
 -->
@@ -41,6 +41,7 @@
 	<property name="starcomsrc" value="${starcom-base}"/>
 	<property name="bash-header" value="#!/bin/bash${line.separator}" />
 	<property name="compression-enabled" value="true" />
+	<property name="tomcat-dir" value="" />
 
 	<!-- Tell java where to look for JAR files while compiling (our application lib and the apache lib) -->
 	<path id="classpath">
