@@ -12,10 +12,12 @@
 	<!-- Properties are read-only, so anything in this file will take precedence
 	     over anything declared below
 	-->
-	<loadproperties srcFile="local.properties"/>
+	<loadproperties srcFile="deploy.properties"/>
 
 	<!-- Set up path information for use throughout this script -->
-	<property name="project-name" value="${appname}" />
+	<property name="STAREXEC_APPNAME" value="starexec" />
+	<property name="appname" value="${STAREXEC_APPNAME}" />
+	<property name="project-name" value="${STAREXEC_APPNAME}" />
 	<property name="war-file-name" value="${project-name}.war" />
 	<property name="source-dir" value="src" />
 	<property name="data-to-source-dir" value="${source-dir}/org/starexec/data/to"/>
@@ -23,6 +25,7 @@
 	<property name="build-dir" value="bin" />
 	<property name="class-dir" value="${build-dir}/classes" />
 	<property name="config-dir" value="${class-dir}/org/starexec/config" />
+	<property name="data_dir" value="" />
 	<property name="esapi-dir" value="${class-dir}/esapi"/>
 	<property name="resource-dir" value="${class-dir}/org/starexec/test/resources" />
 	<property name="web-inf" value="WebContent/WEB-INF" />
@@ -62,10 +65,16 @@
 		          value="This file generated during build: ${builtat}" />
 		<property name="generated-bash-header"
 		          value="${bash-header}# ${generated-message}${line.separator}" />
+
+		<!-- Clear the build directory if it exists and re-make the dir -->
+		<delete dir="${build-dir}" />
+		<mkdir dir="${build-dir}" />
+		<mkdir dir="${class-dir}" />
 	</target>
 
 	<import file="build/build-css.xml"/>
 	<import file="build/build-compile.xml"/>
+	<import file="build/build-config.xml"/>
 	<import file="build/build-test.xml"/>
 	<import file="build/build-starexeccommand.xml"/>
 

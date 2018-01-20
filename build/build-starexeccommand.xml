@@ -9,8 +9,17 @@
 		<delete dir="${starcomzip}" />
 	</target>
 
-	<target name="compilestarcom" depends="cleanstarcom" unless="starexec-already-compiled">
-		<javac debug="true" debuglevel="lines,vars,source" srcdir="${source-dir}" includes="org/starexec/command/*.java,org/starexec/data/to/Permission.java,org/starexec/data/to/Identifiable.java,org/starexec/constants/R.java,org/starexec/util/Validator.java,org/starexec/backend/Backend.java, org/starexec/util/ArchiveUtil.java" destdir="${starcom-comp}" classpathref="starcomclasspath">
+	<target name="compilestarcom" depends="config,cleanstarcom" unless="starexec-already-compiled">
+		<javac debug="true" debuglevel="lines,vars,source" destdir="${starcom-comp}" classpathref="starcomclasspath" nowarn="on">
+			<src path="${source-dir}"/>
+			<src path="${java.io.tmpdir}"/>
+			<include name="R.java"/>
+			<include name="org/starexec/command/*.java"/>
+			<include name="org/starexec/data/to/Permission.java"/>
+			<include name="org/starexec/data/to/Identifiable.java"/>
+			<include name="org/starexec/util/Validator.java"/>
+			<include name="org/starexec/backend/Backend.java"/>
+			<include name="org/starexec/util/ArchiveUtil.java"/>
 		</javac>
 	</target>
 

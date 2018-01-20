@@ -81,6 +81,9 @@ public class Starexec implements ServletContextListener {
 
 		log = StarLogger.getLogger(Starexec.class);
 
+		// Initialize the datapool after properties are loaded
+		Common.initialize();
+
 		log.info(String.format("StarExec started at [%s]", R.STAREXEC_ROOT));
 		try {
 			log.info("Starexec running as " + Util.executeCommand("whoami"));
@@ -91,7 +94,7 @@ public class Starexec implements ServletContextListener {
 		R.CONFIG_PATH = new File(R.STAREXEC_ROOT, "/WEB-INF/classes/org/starexec/config/").getAbsolutePath();
 
 		// Load all properties from the starexec-config file
-		ConfigUtil.loadProperties(new File(R.CONFIG_PATH, "starexec-config.xml"));
+//		ConfigUtil.loadProperties(new File(R.CONFIG_PATH, "starexec-config.xml"));
 
 		R.RUNSOLVER_PATH = new File(R.getSolverPath(), "runsolver").getAbsolutePath();
 
@@ -101,16 +104,6 @@ public class Starexec implements ServletContextListener {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
-
-		try {
-			R.BACKEND = R.getBackendFromType();
-			log.info("backend = " + R.BACKEND.getClass());
-		} catch (StarExecException e) {
-			log.error(e.getMessage(), e);
-		}
-
-		// Initialize the datapool after properties are loaded
-		Common.initialize();
 
 		// Initialize the validator (compile regexes) after properties are loaded
 		Validator.initialize();
@@ -128,9 +121,9 @@ public class Starexec implements ServletContextListener {
 		this.scheduleRecurringTasks();
 
 		// Set any application variables to be used on JSP's with EL
-		event.getServletContext().setAttribute("buildVersion", ConfigUtil.getBuildVersion());
-		event.getServletContext().setAttribute("buildDate", ConfigUtil.getBuildDate());
-		event.getServletContext().setAttribute("buildUser", ConfigUtil.getBuildUser());
+		event.getServletContext().setAttribute("buildVersion", R.buildVersion);
+		event.getServletContext().setAttribute("buildDate", R.buildDate);
+		event.getServletContext().setAttribute("buildUser", R.buildUser);
 		event.getServletContext().setAttribute("contactEmail", R.CONTACT_EMAIL);
 
 		Analytics.STAREXEC_DEPLOY.record();

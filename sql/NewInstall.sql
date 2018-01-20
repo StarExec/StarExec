@@ -1,8 +1,8 @@
 -- Drop and recreate the database to get a fresh slate
-DROP DATABASE IF EXISTS starexec;
-CREATE DATABASE starexec;
+DROP DATABASE IF EXISTS @DB.Name@;
+CREATE DATABASE @DB.Name@;
 
-USE starexec;
+USE @DB.Name@;
 
 source new-install/StarSchema.sql
 source new-install/MinimalData.sql
