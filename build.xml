@@ -12,7 +12,7 @@
 	<!-- Properties are read-only, so anything in this file will take precedence
 	     over anything declared below
 	-->
-	<loadproperties srcFile="deploy.properties"/>
+	<property file="deploy.properties"/>
 
 	<!-- Set up path information for use throughout this script -->
 	<property name="STAREXEC_APPNAME" value="starexec" />
