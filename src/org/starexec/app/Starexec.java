@@ -81,9 +81,6 @@ public class Starexec implements ServletContextListener {
 
 		log = StarLogger.getLogger(Starexec.class);
 
-		// Initialize the datapool after properties are loaded
-		Common.initialize();
-
 		log.info(String.format("StarExec started at [%s]", R.STAREXEC_ROOT));
 		try {
 			log.info("Starexec running as " + Util.executeCommand("whoami"));
@@ -104,6 +101,9 @@ public class Starexec implements ServletContextListener {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
+
+		// Initialize the datapool after properties are loaded
+		Common.initialize();
 
 		// Initialize the validator (compile regexes) after properties are loaded
 		Validator.initialize();

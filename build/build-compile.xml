@@ -20,7 +20,7 @@
 		<property name="starexec-already-compiled" value="true" />
 	</target>
 
-	<target name="war" depends="register-commands, css">
+	<target name="war" depends="register-commands,css">
 		<!-- Copy over the org.starexec.config folder from source to classes -->
 		<mkdir dir="${class-dir}/org/starexec/config" />
 		<copy todir="${class-dir}/org/starexec/config">
@@ -55,6 +55,16 @@
 		</replace>
 		<chmod file="soft-deploy.sh" perm="774"/>
 
+		<!-- Copy the soft-deploy template and fill it in -->
+		<delete file="updateSQL" />
+		<copy file="${scripts-dir}/updateSQL.template" tofile="updateSQL">
+			<filterset>
+				<filter token="DB.User" value="${DB.User}"/>
+				<filter token="DB.Pass" value="${DB.Pass}"/>
+			</filterset>
+		</copy>
+		<chmod file="updateSQL" perm="774"/>
+
 		<!-- Fill in the createDistroArchive.sh template -->
 		<delete file="createDistroArchive.sh" />
 		<copy file="${scripts-dir}/createDistroArchiveTemplate.sh" tofile="createDistroArchive.sh"/>
@@ -67,16 +77,18 @@
 
 		<!-- Copy the context template and fill it in -->
 		<delete file="${meta-inf}/context.xml" />
-		<copy file="context.template" tofile="${meta-inf}/context.xml"/>
+		<copy file="context.template" tofile="${meta-inf}/context.xml">
+			<filterset>
+				<filter token="STAREXEC_APPNAME" value="${STAREXEC_APPNAME}"/>
+				<filter token="DB.Name"          value="${DB.Name}"/>
+				<filter token="DB.User"          value="${DB.User}"/>
+				<filter token="DB.Pass"          value="${DB.Pass}"/>
+				<filter token="DB.Url"           value="${DB.Url}"/>
+			</filterset>
+		</copy>
 		<replaceregexp file="${meta-inf}/context.xml"
 		               match="&lt;!\-\- (.+) \-\->"
 		               replace="&lt;!-- ${generated-message} -->" />
-		<replace file="${meta-inf}/context.xml">
-			<replacefilter token="the_appname" value="${appname}" />
-			<replacefilter token="the_db_name" value="${db_name}" />
-			<replacefilter token="the_connection_name" value="${connection-name}" />
-			<replacefilter token="the_connection_password" value="${connection-password}" />
-		</replace>
 
 		<!-- Copy over SQL files to the deployed-sql directory.  They are there for updating the
 					 deployment.  They do not need to go in the WAR file. -->
