@@ -77,6 +77,7 @@
 	<import file="build/build-compile.xml"/>
 	<import file="build/build-config.xml"/>
 	<import file="build/build-test.xml"/>
+	<import file="build/build-sql.xml"/>
 	<import file="build/build-starexeccommand.xml"/>
 
 	<target name="format-source" depends="format-css" description="Reformat source" />
