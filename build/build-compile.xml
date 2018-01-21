@@ -67,7 +67,7 @@
 
 		<!-- Copy the context template and fill it in -->
 		<delete file="${meta-inf}/context.xml" />
-		<copy file="context.template" tofile="${meta-inf}/context.xml">
+		<copy file="${meta-inf}/context.template" tofile="${meta-inf}/context.xml">
 			<filterset>
 				<filter token="STAREXEC_APPNAME" value="${STAREXEC_APPNAME}"/>
 				<filter token="DB.Name"          value="${DB.Name}"/>
@@ -131,7 +131,7 @@
 		<!-- Create the war file! -->
 		<war compress="${compression-enabled}" level="9" warfile="${war-file-name}" webxml="${web-inf}/web.xml">
 			<classes dir="${class-dir}" />
-			<fileset dir="WebContent" excludes="**/*.scss"/>
+			<fileset dir="WebContent" excludes="**/*.scss,**/context.template"/>
 			<lib dir="${web-inf}/lib"/>
 		</war>
 	</target>

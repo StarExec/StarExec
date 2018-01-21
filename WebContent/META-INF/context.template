@@ -1,6 +1,6 @@
 <!-- The build script is going to place a modified version of this in WebContent/META-INF -->
 
-	<Context reloadable="true" source="org.eclipse.jst.jee.server:@STAREXEC_APPNAME@">
+	<Context source="org.eclipse.jst.jee.server:@STAREXEC_APPNAME@">
 	  <!-- Disable persistent sessions -->
 	  <Manager className="org.apache.catalina.session.StandardManager" pathname=""/>
 	  <!-- logins for the starexec web app will use the MySql starexec database -->
