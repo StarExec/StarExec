@@ -67,6 +67,19 @@
 		</copy>
 		<chmod file="newInstallWithTestData.sh" perm="700"/>
 
+		<!-- Copy the newInstallWithTestData.template template -->
+		<copy file="${scripts-dir}/starsql.template"
+		      tofile="utility-scripts/starsql"
+		      overwrite="true">
+			<filterset>
+				<filter token="DB.Name" value="${DB.Name}"/>
+				<filter token="DB.User" value="${DB.User}"/>
+				<filter token="DB.Pass" value="${DB.Pass}"/>
+			</filterset>
+		</copy>
+		<chmod file="utility-scripts/starsql" perm="700"/>
+
+
 		<!-- Fill in the createDistroArchive.sh template -->
 		<delete file="createDistroArchive.sh" />
 		<copy file="${scripts-dir}/createDistroArchiveTemplate.sh" tofile="createDistroArchive.sh"/>

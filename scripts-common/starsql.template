@@ -1,0 +1,3 @@
+#!/bin/bash
+
+mysql -u"@DB.User@" -p"@DB.Pass@" "@DB.Name@"
