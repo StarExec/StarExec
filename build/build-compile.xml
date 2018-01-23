@@ -7,7 +7,7 @@
 		     from local.properties.
 	-->
 
-	<target name="compilestarexec" depends="register-commands,config,compile-sql">
+	<target name="compilestarexec" depends="register-commands,config,compile-sql,scripts">
 		<!-- Compile the source code to get the java classes -->
 		<javac debug="true" debuglevel="lines,vars,source" destdir="${class-dir}" classpathref="classpath" nowarn="on">
 			<src path="src" />
@@ -43,54 +43,6 @@
 				<include name="**/*"/>
 			</fileset>
 		</copy>
-
-		<!-- Copy the soft-deploy template and fill it in -->
-		<copy file="script/soft-deploy.template"
-		      tofile="${scripts-dir}/soft-deploy.sh"
-		      overwrite="true" />
-		<replace file="${scripts-dir}/soft-deploy.sh">
-			<replacefilter token="${bash-header}" value="${generated-bash-header}" />
-			<replacefilter token="the_appname" value="${appname}" />
-			<replacefilter token="the_data_dir" value="${data_dir}" />
-			<replacefilter token="the_web_home" value="${web-home}" />
-		</replace>
-		<chmod file="${scripts-dir}/soft-deploy.sh" perm="700"/>
-
-		<!-- Copy the newInstallWithTestData.template template -->
-		<copy file="script/newInstallWithTestData.template"
-		      tofile="${scripts-dir}/newInstallWithTestData.sh"
-		      overwrite="true">
-			<filterset>
-				<filter token="DB.Name" value="${DB.Name}"/>
-				<filter token="DB.User" value="${DB.User}"/>
-				<filter token="DB.Pass" value="${DB.Pass}"/>
-			</filterset>
-		</copy>
-		<chmod file="${scripts-dir}/newInstallWithTestData.sh" perm="700"/>
-
-		<!-- Copy the newInstallWithTestData.template template -->
-		<copy file="script/starsql.template"
-		      tofile="${scripts-dir}/starsql"
-		      overwrite="true">
-			<filterset>
-				<filter token="DB.Name" value="${DB.Name}"/>
-				<filter token="DB.User" value="${DB.User}"/>
-				<filter token="DB.Pass" value="${DB.Pass}"/>
-			</filterset>
-		</copy>
-		<chmod file="${scripts-dir}/starsql" perm="700"/>
-
-		<!-- Copy the newInstallWithTestData.template template -->
-		<copy file="script/update-sql.template"
-		      tofile="${scripts-dir}/update-sql"
-		      overwrite="true">
-			<filterset>
-				<filter token="DB.Name" value="${DB.Name}"/>
-				<filter token="DB.User" value="${DB.User}"/>
-				<filter token="DB.Pass" value="${DB.Pass}"/>
-			</filterset>
-		</copy>
-		<chmod file="${scripts-dir}/update-sql" perm="700"/>
 
 		<!-- Copy the context template and fill it in -->
 		<copy file="${meta-inf}/context.template"

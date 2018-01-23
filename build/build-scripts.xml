@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="scripts" basedir=".">
+	<target name="scripts" depends="register-commands"
+	        description="Generates scripts to help with admin tasks">
+
+		<filterset id="DB">
+			<filter token="DB.Name" value="${DB.Name}"/>
+			<filter token="DB.Pass" value="${DB.Pass}"/>
+			<filter token="DB.User" value="${DB.User}"/>
+		</filterset>
+
+		<!-- Copy the soft-deploy template and fill it in -->
+		<copy file="script/soft-deploy.template" overwrite="true"
+		      tofile="${scripts-dir}/soft-deploy.sh">
+			<filterset refid="DB"/>
+		</copy>
+		<chmod file="${scripts-dir}/soft-deploy.sh" perm="700"/>
+
+		<!-- Copy the newInstallWithTestData.template template -->
+		<copy file="script/newInstallWithTestData.template" overwrite="true"
+		      tofile="${scripts-dir}/newInstallWithTestData.sh">
+			<filterset refid="DB"/>
+		</copy>
+		<chmod file="${scripts-dir}/newInstallWithTestData.sh" perm="700"/>
+
+		<!-- Copy the newInstallWithTestData.template template -->
+		<copy file="script/starsql.template" overwrite="true"
+		      tofile="${scripts-dir}/starsql.sh">
+			<filterset refid="DB"/>
+		</copy>
+		<chmod file="${scripts-dir}/starsql.sh" perm="700"/>
+
+		<!-- Copy the newInstallWithTestData.template template -->
+		<copy file="script/update-sql.template" overwrite="true"
+		      tofile="${scripts-dir}/update-sql.sh">
+			<filterset refid="DB"/>
+		</copy>
+		<chmod file="${scripts-dir}/update-sql.sh" perm="700"/>
+
+		<replace dir="${scripts-dir}" token="${bash-header}" value="${generated-bash-header}">
+			<include name="*.sh" />
+		</replace>
+	</target>
+</project>

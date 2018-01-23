@@ -1,4 +1,5 @@
-#! /bin/bash
+#!/bin/bash
+#
 # A script to be run in the top level directory of a stardev instance.
 # Runs NewInstall.sql and uploadTestData.sh
 
