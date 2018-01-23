@@ -21,7 +21,7 @@
 	<property name="war-file-name" value="${project-name}.war" />
 	<property name="source-dir" value="src" />
 	<property name="data-to-source-dir" value="${source-dir}/org/starexec/data/to"/>
-	<property name="scripts-dir" value="scripts-common" />
+	<property name="scripts-dir" value="script" />
 	<property name="build-dir" value="bin" />
 	<property name="class-dir" value="${build-dir}/classes" />
 	<property name="config-dir" value="${class-dir}/org/starexec/config" />
