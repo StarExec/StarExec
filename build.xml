@@ -32,12 +32,12 @@
 	<target name="register-commands">
 		<!-- Register commands and create build timestamp for build properties file -->
 		<tstamp>
-			<format property="builtat" pattern="MM/dd/yyyy hh:mm:ss aa" />
+			<format property="Build.Date" pattern="MM/dd/yyyy hh:mm:ss aa" />
 		</tstamp>
-		<exec executable="svnversion" outputproperty="svnversion"/>
-		<exec executable="whoami" outputproperty="whoami"/>
+		<exec outputproperty="Build.Version" executable="svnversion" />
+		<exec outputproperty="Build.User" executable="whoami" />
 		<property name="generated-message"
-		          value="This file generated during build: ${builtat}" />
+		          value="This file generated during build: ${Build.Date}" />
 		<property name="generated-bash-header"
 		          value="${bash-header}# ${generated-message}${line.separator}" />
 

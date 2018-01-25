@@ -10,32 +10,12 @@
 		</filterset>
 
 		<!-- Copy the soft-deploy template and fill it in -->
-		<copy file="script/soft-deploy.template" overwrite="true"
-		      tofile="${scripts-dir}/soft-deploy.sh">
+		<copy overwrite="true" todir="${scripts-dir}">
 			<filterset refid="DB"/>
+			<fileset dir="${scripts-dir}" includes="*.template"/>
+			<globmapper from="*.template" to="*.sh"/>
 		</copy>
-		<chmod file="${scripts-dir}/soft-deploy.sh" perm="700"/>
-
-		<!-- Copy the newInstallWithTestData.template template -->
-		<copy file="script/newInstallWithTestData.template" overwrite="true"
-		      tofile="${scripts-dir}/newInstallWithTestData.sh">
-			<filterset refid="DB"/>
-		</copy>
-		<chmod file="${scripts-dir}/newInstallWithTestData.sh" perm="700"/>
-
-		<!-- Copy the newInstallWithTestData.template template -->
-		<copy file="script/starsql.template" overwrite="true"
-		      tofile="${scripts-dir}/starsql.sh">
-			<filterset refid="DB"/>
-		</copy>
-		<chmod file="${scripts-dir}/starsql.sh" perm="700"/>
-
-		<!-- Copy the newInstallWithTestData.template template -->
-		<copy file="script/update-sql.template" overwrite="true"
-		      tofile="${scripts-dir}/update-sql.sh">
-			<filterset refid="DB"/>
-		</copy>
-		<chmod file="${scripts-dir}/update-sql.sh" perm="700"/>
+		<chmod dir="${scripts-dir}" includes="*.sh" perm="700"/>
 
 		<replace dir="${scripts-dir}" token="${bash-header}" value="${generated-bash-header}">
 			<include name="*.sh" />

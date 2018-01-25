@@ -8,7 +8,7 @@
 		<echo message="Creating ${css-properties}" level="info"/>
 		<echo file="${css-properties}">
 			/* ${generated-message} */
-			$rootUrl: "/${appname}/"
+			$rootUrl: "/${STAREXEC_APPNAME}/"
 		</echo>
 	</target>
 

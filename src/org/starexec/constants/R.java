@@ -201,7 +201,7 @@ public class R {
 
 	// Global path information
 	public static String SOLVER_BUILD_OUTPUT = "starexec_build_log";           // The name of the file in which we're storing build output
-	public static String STAREXEC_ROOT = "@STAREXEC_ROOT@";                    // The directory of the starexec webapp
+	public static String STAREXEC_ROOT = "@Web.BaseDirectory@";                // The directory of the starexec webapp
 	public static String CONFIG_PATH = "@Config.Path@";                        // The directory of starexec's configuration and template files relative to the root path
 	public static String RUNSOLVER_PATH = "@Runsolver.Path@";                  // The absolute filepath to the runsolver executable
 	public static String STAREXEC_DATA_DIR = "@data_dir@";                     // the root of the data directory (where jobin/, jobout/, and dirs for primitive are)
@@ -230,10 +230,10 @@ public class R {
 	public static String JOBFILE_FORMAT = "job_%d.bash";               // The filename format (with standard java string formatting) for generated jobscript files
 	public static String DEPENDFILE_FORMAT = "depend_%d.txt";          // The filename format for dependencies
 	public static String SOLVER_BIN_DIR = "/bin";                      // The path to the bin directory to look for runscripts (relative to the solver's toplevel directory)
-	public static String SANDBOX_USER_ONE = "@SANDBOX_USER_ONE@";      // name of user that executes jobs in sandbox one
-	public static String SANDBOX_USER_TWO = "@SANDBOX_USER_TWO@";      // name of user that executes jobs in sandbox two
+	public static String SANDBOX_USER_ONE = "@Cluster.UserOne@";       // name of user that executes jobs in sandbox one
+	public static String SANDBOX_USER_TWO = "@Cluster.UserTwo@";       // name of user that executes jobs in sandbox two
 	// Misc application properties
-	public static String STAREXEC_SERVERNAME = "@STAREXEC_SERVERNAME@";
+	public static String STAREXEC_SERVERNAME = "@Web.Address@";
 	public static String STAREXEC_APPNAME = "@STAREXEC_APPNAME@";
 	public static String PWD_HASH_ALGORITHM = "SHA-512";               // Which algorithm to use to hash user passwords
 	public static String PATH_DATE_FORMAT = "yyyyMMdd-kk.mm.ss.SSS";   // Which datetime format is used to create unique directory names
@@ -274,14 +274,14 @@ public class R {
 	public static String NODE_STATUS_ACTIVE = "ACTIVE";                            // Active status for a backend node (indicates the node is live)
 	public static String NODE_STATUS_INACTIVE = "INACTIVE";                            // Inactive status for a backend node (indicates the node is not currently live)
 
-	public static final String buildVersion = "@buildVersion@";
-	public static final String buildUser = "@buildUser@";
+	public static final String buildVersion = "@Build.Version@";
+	public static final String buildUser = "@Build.User@";
 	public static final Date buildDate;
 	static {
 		Date d = null;
 		try {
 			SimpleDateFormat fmt = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss aa");
-			d = fmt.parse("@buildDate@");
+			d = fmt.parse("@Build.Date@");
 		} catch (Exception e) {}
 		buildDate = d;
 	}

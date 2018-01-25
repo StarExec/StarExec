@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project name="config" basedir=".">
-	<target name="config-check">
-	</target>
-
-	<target name="config" depends="config-check,register-commands">
-		<echo>${java.io.tmpdir}</echo>
+	<target name="config" depends="register-commands">
 		<delete file="${java.io.tmpdir}/R.java" quiet="true" />
 		<copy file="src/org/starexec/constants/R.java" tofile="${java.io.tmpdir}/R.java">
 			<filterset>
 				<filter token="Backend.Root"         value="${Backend.Root}"/>
 				<filter token="Backend.WorkingDir"   value="${Backend.WorkingDir}"/>
 
-				<filter token="Cluster.UpdatePeriod" value="${Cluster.UpdatePeriod}"/>
+				<filter token="Build.Date"           value="${Build.Date}"/>
+				<filter token="Build.User"           value="${Build.User}"/>
+				<filter token="Build.Version"        value="${Build.Version}"/>
+
 				<filter token="Cluster.DB.User"      value="${Cluster.DB.User}"/>
 				<filter token="Cluster.DB.Pass"      value="${Cluster.DB.Pass}"/>
 				<filter token="Cluster.DB.Url"       value="${Cluster.DB.Url}"/>
+				<filter token="Cluster.UpdatePeriod" value="${Cluster.UpdatePeriod}"/>
+				<filter token="Cluster.UserOne"      value="${Cluster.UserOne}"/>
+				<filter token="Cluster.UserTwo"      value="${Cluster.UserTwo}"/>
 
 				<filter token="Config.Path" value="${Config.Path}"/>
 
@@ -69,6 +71,7 @@
 
 				<filter token="User.DefaultDiskQuota"  value="${User.DefaultDiskQuota}" />
 
+				<filter token="Web.Address"            value="${Web.Address}"/>
 				<filter token="Web.BaseDirectory"      value="${Web.BaseDirectory}" />
 				<filter token="Web.Download.Directory" value="${Web.Download.Directory}" />
 				<filter token="Web.JobGraph.Path"      value="${Web.JobGraph.Path}" />
@@ -76,16 +79,10 @@
 				<filter token="Web.Schema.Space"       value="${Web.Schema.Space}" />
 				<filter token="Web.Schema.Job"         value="${Web.Schema.Job}" />
 
-				<filter token="buildVersion"        value="${svnversion}"/>
-				<filter token="buildUser"           value="${whoami}"/>
-				<filter token="buildDate"           value="${builtat}"/>
 				<filter token="data_dir"            value="${data_dir}"/>
 				<filter token="BACKEND_TYPE"        value="sge"/>
 				<filter token="STAREXEC_APPNAME"    value="${STAREXEC_APPNAME}"/>
-				<filter token="STAREXEC_SERVERNAME" value="${STAREXEC_SERVERNAME}"/>
 				<filter token="SANDBOX_DIRECTORY"   value="/local/sandbox"/>
-				<filter token="SANDBOX_USER_ONE"    value="${SANDBOX_USER_ONE}"/>
-				<filter token="SANDBOX_USER_TWO"    value="${SANDBOX_USER_TWO}"/>
 				<filter token="CONTACT_EMAIL"       value="${CONTACT_EMAIL}"/>
 				<filter token="TEST_COMMUNITY_ID"   value="${TEST_COMMUNITY_ID}"/>
 				<filter token="ALLOW_TESTING"       value="${ALLOW_TESTING}"/>

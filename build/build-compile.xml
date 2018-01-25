@@ -75,7 +75,7 @@
 		<!-- Update the upload commands to use the correct app -->
 		<replaceregexp file="deployed-upload-test/testDataCommands.txt"
 		               match="login addr=https://stardev.cs.uiowa.edu/(.+)/"
-		               replace="login addr=https://${server-name}/${appname}/"
+		               replace="login addr=https://${STAREXEC_SERVERNAME}/${STAREXEC_APPNAME}/"
 		               flags="g"
 		               byline="false" />
 		<chmod file="deployed-upload-test/uploadTestData.sh" perm="774" />
@@ -112,7 +112,7 @@
 		<war compress="${compression-enabled}" level="9" warfile="${war-file-name}" webxml="${web-inf}/web.xml">
 			<classes dir="${class-dir}" />
 			<fileset dir="WebContent" excludes="**/*.scss,**/context.template"/>
-			<lib dir="${web-inf}/lib"/>
+			<lib dir="${starcomlib}"/>
 		</war>
 	</target>
 </project>

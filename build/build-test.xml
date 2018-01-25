@@ -4,7 +4,7 @@
 		<!-- Execute JUnit tests -->
 		<path id="testpath">
 			<pathelement path="${class-dir}"/>
-			<fileset dir="${web-inf}/lib" includes="**/*.jar"/>
+			<fileset dir="${starcomlib}" includes="**/*.jar"/>
 			<fileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
 			<fileset dir="local-lib" includes="**/*.jar"/>
 		</path>
