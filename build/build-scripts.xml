@@ -1,24 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<project name="scripts" basedir=".">
+<project basedir=".">
 	<target name="scripts" depends="register-commands"
 	        description="Generates scripts to help with admin tasks">
 
-		<filterset id="DB">
-			<filter token="DB.Name" value="${DB.Name}"/>
-			<filter token="DB.Pass" value="${DB.Pass}"/>
-			<filter token="DB.User" value="${DB.User}"/>
-		</filterset>
-
-		<!-- Copy the soft-deploy template and fill it in -->
+		<!-- Copy the script templates and fill them in -->
 		<copy overwrite="true" todir="${scripts-dir}">
-			<filterset refid="DB"/>
+			<filterset>
+				<filter token="DB.Name" value="${DB.Name}"/>
+				<filter token="DB.Pass" value="${DB.Pass}"/>
+				<filter token="DB.User" value="${DB.User}"/>
+			</filterset>
 			<fileset dir="${scripts-dir}" includes="*.template"/>
 			<globmapper from="*.template" to="*.sh"/>
 		</copy>
-		<chmod dir="${scripts-dir}" includes="*.sh" perm="700"/>
-
 		<replace dir="${scripts-dir}" token="${bash-header}" value="${generated-bash-header}">
 			<include name="*.sh" />
 		</replace>
+		<chmod dir="${scripts-dir}" includes="*.sh" perm="700"/>
 	</target>
 </project>
