@@ -1,8 +1,4 @@
-USE starexec;
-
 START TRANSACTION;
-
-
 
 -- Step 1: Change the ID of jobpair_stage_data to a simple stage number
 ALTER TABLE jobpair_stage_data MODIFY id INT NOT NULL;
@@ -62,12 +58,12 @@ ALTER TABLE pipeline_stages DROP COLUMN solver_id, DROP COLUMN solver_name, DROP
 -- Set 6: Add name columns to jobpair_stage_data;
 
 ALTER TABLE jobpair_stage_data ADD COLUMN solver_id INT,
-ADD COLUMN config_id INT, 
+ADD COLUMN config_id INT,
 ADD COLUMN config_name VARCHAR(255),
 ADD COLUMN solver_name VARCHAR(255),
 ADD COLUMN job_space_id INT;
 
-UPDATE jobpair_stage_data JOIN job_pairs ON job_pairs.id=jobpair_stage_data.jobpair_id 
+UPDATE jobpair_stage_data JOIN job_pairs ON job_pairs.id=jobpair_stage_data.jobpair_id
 SET jobpair_stage_data.solver_id = job_pairs.solver_id, jobpair_stage_data.solver_name=job_pairs.solver_name,
 jobpair_stage_data.config_name=job_pairs.config_name, jobpair_stage_data.config_id=job_pairs.config_id,
 jobpair_stage_data.job_space_id=job_pairs.job_space_id,

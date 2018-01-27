@@ -1,5 +1,3 @@
-USE starexec;
-
 ALTER TABLE queue_reserved
 ADD COLUMN message TEXT NOT NULL;
 
@@ -22,4 +20,3 @@ CREATE TABLE system_flags (
 	paused BOOLEAN DEFAULT FALSE,
 	PRIMARY KEY (integrity_keeper)
 );
-

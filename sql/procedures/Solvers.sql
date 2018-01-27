@@ -3,8 +3,6 @@
 
 DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 
-
-
 -- Adds a solver and returns the solver ID
 -- Author: Skylar Stark
 DROP PROCEDURE IF EXISTS AddSolver;
@@ -13,7 +11,7 @@ CREATE PROCEDURE AddSolver(IN _userId INT, IN _name VARCHAR(128), IN _downloadab
 		UPDATE users SET disk_size=disk_size+_diskSize WHERE id = _userId;
 		INSERT INTO solvers (user_id, name, uploaded, path, description, downloadable, disk_size, executable_type, build_status)
 		VALUES (_userId, _name, SYSDATE(), _path, _description, _downloadable, _diskSize, _type, _build_status);
-		
+
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 
@@ -38,7 +36,7 @@ CREATE PROCEDURE GetConflictsForConfigInJob(IN _jobId INT, IN _configId INT, IN 
 	FROM jobs j_o JOIN job_pairs jp_o ON j_o.id=jp_o.job_id
 		JOIN jobpair_stage_data jpsd_o ON jpsd_o.jobpair_id=jp_o.id
 		JOIN job_attributes ja_o ON ja_o.pair_id=jp_o.id
-		JOIN 
+		JOIN
 			(SELECT jp.bench_id
 			FROM jobs j join job_pairs jp ON j.id=jp.job_id
 				JOIN jobpair_stage_data jpsd ON jpsd.jobpair_id=jp.id
@@ -116,16 +114,16 @@ CREATE PROCEDURE GetSolverConfigResultsForBenchmarkInJob(IN _jobId INT, IN _benc
 		;
 	END //
 
-	
-	
+
+
 -- Adds a Space/Solver association
 -- Author: Skylar Stark
 DROP PROCEDURE IF EXISTS AddSolverAssociation;
 CREATE PROCEDURE AddSolverAssociation(IN _spaceId INT, IN _solverId INT)
 	BEGIN
 		INSERT IGNORE INTO solver_assoc VALUES (_spaceId, _solverId);
-	END // 
-	
+	END //
+
 -- Adds a run configuration to the specified solver
 -- Author: Skylar Stark
 DROP PROCEDURE IF EXISTS AddConfiguration;
@@ -133,46 +131,46 @@ CREATE PROCEDURE AddConfiguration(IN _solverId INT, IN _name VARCHAR(128), IN _d
 	BEGIN
 		INSERT INTO configurations (solver_id, name, description, updated)
 		VALUES (_solverId, _name, _description, _time);
-		
+
 		SELECT LAST_INSERT_ID() INTO configId;
 	END //
-	
+
 
 -- Deletes a configuration given that configuration's id
--- Author: Todd Elvers	
+-- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS DeleteConfigurationById;
 CREATE PROCEDURE DeleteConfigurationById(IN _configId INT)
 	BEGIN
 		DELETE FROM configurations
 		WHERE id = _configId;
-	END //	
-	
-	
+	END //
+
+
 -- Deletes a solver given that solver's id
 -- Author: Todd Elvers + Eric Burns
 DROP PROCEDURE IF EXISTS SetSolverToDeletedById;
 CREATE PROCEDURE SetSolverToDeletedById(IN _solverId INT, OUT _path TEXT)
 	BEGIN
 		UPDATE users JOIN solvers ON solvers.user_id=users.id
-		SET users.disk_size=users.disk_size-solvers.disk_size 
+		SET users.disk_size=users.disk_size-solvers.disk_size
 		WHERE solvers.id = _solverId;
-		
+
 		SELECT path INTO _path FROM solvers WHERE id = _solverId;
 		UPDATE solvers
 		SET deleted=true, disk_size=0
 		WHERE id = _solverId;
-	END //	
-	
+	END //
+
 -- Gets the IDs of all the spaces associated with the given solver
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetAssociatedSpaceIdsBySolver;
-CREATE PROCEDURE GetAssociatedSpaceIdsBySolver(IN _solverId INT) 
+CREATE PROCEDURE GetAssociatedSpaceIdsBySolver(IN _solverId INT)
 	BEGIN
 		SELECT space_id
 		FROM solver_assoc
 		WHERE solver_id=_solverId;
 	END //
-	
+
 -- Retrieves the configurations with the given id
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetConfiguration;
@@ -209,8 +207,8 @@ CREATE PROCEDURE GetAllConfigIdsInJob( IN _jobId INT)
 		INNER JOIN job_pairs ON jobpair_stage_data.jobpair_id=job_pairs.id
 		WHERE job_pairs.job_id=_jobId;
 	END //
-	
-	
+
+
 -- Retrieves the configurations that belong to a solver with the given id
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetConfigsForSolver;
@@ -224,7 +222,7 @@ CREATE PROCEDURE GetConfigsForSolver(IN _id INT)
 
 
 
-	
+
 -- Retrieves all solvers belonging to a space
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetSpaceSolversById;
@@ -234,8 +232,8 @@ CREATE PROCEDURE GetSpaceSolversById(IN _id INT)
 		FROM solvers
 		JOIN solver_assoc ON solver_assoc.solver_id=solvers.id
 		WHERE deleted=false AND recycled=false AND solver_assoc.space_id=_id;
-	END //	
-	
+	END //
+
 -- Retrieves the solver associated with the configuration with the given id
 -- Author: Skylar Stark
 DROP PROCEDURE IF EXISTS GetSolverIdByConfigId;
@@ -245,7 +243,7 @@ CREATE PROCEDURE GetSolverIdByConfigId(IN _id INT)
 		FROM configurations
 		WHERE id=_id;
 	END //
-	
+
 -- Retrieves the solver with the given id
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetSolverById;
@@ -255,7 +253,7 @@ CREATE PROCEDURE GetSolverById(IN _id INT)
 		FROM solvers
 		WHERE id = _id and deleted=false AND recycled=false;
 	END //
-	
+
 -- Retrieves the solver with the given id
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS GetSolverByIdIncludeDeleted;
@@ -265,9 +263,9 @@ CREATE PROCEDURE GetSolverByIdIncludeDeleted(IN _id INT)
 		FROM solvers
 		WHERE id = _id;
 	END //
-	
+
 -- Returns the number of solvers in a given space that match a given query
--- Author: Eric Burns	
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetSolverCountInSpaceWithQuery;
 CREATE PROCEDURE GetSolverCountInSpaceWithQuery(IN _spaceId INT, IN _query TEXT)
 	BEGIN
@@ -278,9 +276,9 @@ CREATE PROCEDURE GetSolverCountInSpaceWithQuery(IN _spaceId INT, IN _query TEXT)
 				(solvers.name 	LIKE	CONCAT('%', _query, '%')
 				OR		solvers.description	LIKE 	CONCAT('%', _query, '%'));
 	END //
-	
-	
-	
+
+
+
 -- Retrieves the solvers owned by a given user id
 -- Todd Elvers
 DROP PROCEDURE IF EXISTS GetSolversByOwner;
@@ -301,7 +299,7 @@ CREATE PROCEDURE IsSolverPublic(IN _solverId INT)
 		WHERE solver_id = _solverId
 		AND IsPublic(space_id);
 	END //
-	
+
 DROP PROCEDURE IF EXISTS IsSolverDeleted;
 CREATE PROCEDURE IsSolverDeleted(IN _solverId INT)
 	BEGIN
@@ -319,7 +317,7 @@ CREATE PROCEDURE RemoveSolverFromSpace(IN _solverId INT, IN _spaceId INT)
 			WHERE solver_id = _solverId
 			AND space_id = _spaceId;
 		END IF;
-	END // 
+	END //
 
 -- Updates the disk_size attribute of a given solver
 -- Author: Todd Elvers
@@ -345,8 +343,8 @@ CREATE PROCEDURE UpdateConfigurationDetails(IN _configId INT, IN _name VARCHAR(1
 		updated = _time
 		WHERE id = _configId;
 	END //
-	
-	
+
+
 -- Updates the details associated with a given solver
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS UpdateSolverDetails;
@@ -358,7 +356,7 @@ CREATE PROCEDURE UpdateSolverDetails(IN _solverId INT, IN _name VARCHAR(128), IN
 		downloadable = _downloadable
 		WHERE id = _solverId;
 	END //
-	
+
 -- Get the total count of the solvers belong to a specific user
 -- Author: Wyatt Kaiser
 DROP PROCEDURE IF EXISTS GetSolverCountByUser;
@@ -368,7 +366,7 @@ CREATE PROCEDURE GetSolverCountByUser(IN _userId INT)
 		FROM solvers
 		WHERE user_id = _userId AND deleted=false AND recycled=false;
 	END //
-	
+
 -- Returns the number of solvers in a given space that match a given query
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetSolverCountByUserWithQuery;
@@ -390,7 +388,7 @@ CREATE PROCEDURE SetSolverRecycledValue(IN _solverId INT, IN _recycled BOOLEAN)
 		SET recycled=_recycled
 		WHERE id=_solverId;
 	END //
-	
+
 -- Checks to see whether the "recycled" flag is set for the given solver
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS IsSolverRecycled;
@@ -399,9 +397,9 @@ CREATE PROCEDURE IsSolverRecycled(IN _solverId INT)
 		SELECT recycled FROM solvers
 		WHERE id=_solverId;
 	END //
-	
+
 -- Returns the number of solvers in a given space that match a given query
--- Author: Eric Burns	
+-- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetRecycledSolverCountByUser;
 CREATE PROCEDURE GetRecycledSolverCountByUser(IN _userId INT, IN _query TEXT)
 	BEGIN
@@ -411,7 +409,7 @@ CREATE PROCEDURE GetRecycledSolverCountByUser(IN _userId INT, IN _query TEXT)
 				(solvers.name 	LIKE	CONCAT('%', _query, '%')
 				OR		solvers.description	LIKE 	CONCAT('%', _query, '%'));
 	END //
-	
+
 -- Gets the path to every recycled solver a user has
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetRecycledSolverPaths;
@@ -424,7 +422,7 @@ CREATE PROCEDURE GetRecycledSolverPaths(IN _userId INT)
 -- Sets all the solvers the user has in the database to "deleted"
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS SetRecycledSolversToDeleted;
-CREATE PROCEDURE SetRecycledSolversToDeleted(IN _userId INT) 
+CREATE PROCEDURE SetRecycledSolversToDeleted(IN _userId INT)
 	BEGIN
 		UPDATE users
 		SET users.disk_size=users.disk_size-(SELECT COALESCE(SUM(disk_size),0) FROM solvers WHERE user_id=_userId AND recycled=true AND deleted=false)
@@ -433,16 +431,16 @@ CREATE PROCEDURE SetRecycledSolversToDeleted(IN _userId INT)
 		SET deleted=true, disk_size=0
 		WHERE user_id = _userId AND recycled=true AND deleted=false;
 	END //
-	
+
 -- Gets all recycled solver ids a user has in the database
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetRecycledSolverIds;
-CREATE PROCEDURE GetRecycledSolverIds(IN _userId INT) 
+CREATE PROCEDURE GetRecycledSolverIds(IN _userId INT)
 	BEGIN
 		SELECT id FROM solvers
 		WHERE user_id=_userId AND recycled=true;
 	END //
-	
+
 -- Permanently removes a solver from the database
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS RemoveSolverFromDatabase;
@@ -451,7 +449,7 @@ CREATE PROCEDURE RemoveSolverFromDatabase(IN _id INT)
 		DELETE FROM solvers
 		WHERE id=_id;
 	END //
-	
+
 -- Gets all the solver ids of solvers that are in at least one space
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetSolversAssociatedWithSpaces;
@@ -467,12 +465,12 @@ CREATE PROCEDURE GetSolversAssociatedWithPairs()
 	BEGIN
 		SELECT DISTINCT solver_id AS id from jobpair_stage_data;
 	END //
-	
+
 -- Gets the solver ids of all deleted solvers
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetDeletedSolvers;
 CREATE PROCEDURE GetDeletedSolvers()
-	BEGIN	
+	BEGIN
 		SELECT * FROM solvers WHERE deleted=true;
 	END //
 -- Sets the recycled flag for a single solver back to false
@@ -495,7 +493,7 @@ CREATE PROCEDURE GetMaxConfigTimestamp(IN _solverId INT)
 		FROM configurations
 		WHERE configurations.solver_id=_solverId;
 	END //
-	
+
 -- Gets the ids of every orphaned solver a user owns (orphaned meaning the solver is in no spaces
 DROP PROCEDURE IF EXISTS GetOrphanedSolverIds;
 CREATE PROCEDURE GetOrphanedSolverIds(IN _userId INT)
@@ -508,7 +506,7 @@ CREATE PROCEDURE GetOrphanedSolverIds(IN _userId INT)
 -- returns every solver that shares a space with the given user
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetSolversInSharedSpaces;
-CREATE PROCEDURE GetSolversInSharedSpaces(IN _userId INT) 
+CREATE PROCEDURE GetSolversInSharedSpaces(IN _userId INT)
 	BEGIN
 		SELECT * FROM solvers
 		JOIN solver_assoc ON solver_assoc.solver_id = solvers.id

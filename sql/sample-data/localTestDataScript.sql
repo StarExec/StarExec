@@ -1,4 +1,3 @@
-USE starexec; 
 -- This file inserts a bit of fake data into the database, making it possible to create jobs.
 -- Intended for local test builds where uploads do not work
 

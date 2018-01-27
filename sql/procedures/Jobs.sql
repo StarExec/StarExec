@@ -3,7 +3,6 @@
 
 DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 
-
 -- Adds an association between the given job and space
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AssociateJob;

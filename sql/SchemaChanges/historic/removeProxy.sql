@@ -1,5 +1,3 @@
-USE starexec;
-
 ALTER TABLE user_assoc
 DROP FOREIGN KEY user_assoc_ibfk_4;
 

@@ -1,5 +1,3 @@
-USE starexec;
-
 DROP TABLE node_reserved;
 DROP TABLE queue_request;
 DROP TABLE queue_reserved;
@@ -15,10 +13,9 @@ CREATE TABLE queue_request (
 	reserve_date DATE NOT NULL,
 	message TEXT NOT NULL,
 	code VARCHAR(36) NOT NULL,
-	created TIMESTAMP NOT NULL,	
+	created TIMESTAMP NOT NULL,
 	PRIMARY KEY (user_id, space_id, queue_name, reserve_date)
 );
-
 
 -- The history of queue_reservations (i.e. reservations that happened in the past)
 -- Author: Wyatt Kaiser

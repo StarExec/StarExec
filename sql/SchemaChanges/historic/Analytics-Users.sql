@@ -1,7 +1,5 @@
 -- Description: Create table to keep track of how many Users trigger an Event
 
-USE starexec;
-
 CREATE TABLE analytics_users (
 	event_id INT NOT NULL,
 	date_recorded DATE NOT NULL,

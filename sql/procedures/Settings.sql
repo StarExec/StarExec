@@ -24,7 +24,7 @@ CREATE PROCEDURE IsBenchACommunityDefault(IN _benchId INT)
 		FROM default_settings
 		WHERE default_benchmark = _benchId AND setting_type=1;
 	END //
-	
+
 -- Checks to see whether the given solver is a community default for any community
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS IsSolverACommunityDefault;
@@ -54,45 +54,45 @@ CREATE PROCEDURE SetDefaultSettingsById(IN _id INT, IN _num INT, IN _setting INT
 		UPDATE default_settings
 		SET post_processor = _setting
 		WHERE id = _id;
-		
+
 		WHEN 2 THEN
 		UPDATE default_settings
 		SET cpu_timeout = _setting
 		WHERE id = _id;
-		
+
 		WHEN 3 THEN
 		UPDATE default_settings
 		SET clock_timeout = _setting
 		WHERE id = _id;
-		
+
 		WHEN 4 THEN
 		UPDATE default_settings
 		SET dependencies_enabled=_setting
 		WHERE id=_id;
-		
+
 		WHEN 5 THEN
 		UPDATE default_settings
 		SET default_benchmark=_setting
 		WHERE id=_id;
-		
+
 		WHEN 6 THEN
 		UPDATE default_settings
 		SET pre_processor=_setting
 		WHERE id=_id;
-		
+
 		WHEN 7 THEN
 		UPDATE default_settings
 		SET default_solver=_setting
 		WHERE id=_id;
-		
+
 		WHEN 8 THEN
 		UPDATE default_settings
 		SET bench_processor=_setting
 		WHERE id=_id;
-		
+
     END CASE;
 	END //
-	
+
 -- Insert a default setting of a space given by id when it's initiated.
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS CreateDefaultSettings;
@@ -104,8 +104,8 @@ CREATE PROCEDURE CreateDefaultSettings(IN _prim_id INT, IN _pp INT, IN _cto INT,
 	END //
 
 
-	
-	
+
+
 -- Insert a default setting of a space given by id when it's initiated.
 -- Author: Ruoyu Zhang
 DROP PROCEDURE IF EXISTS UpdateDefaultSettings;
@@ -124,8 +124,8 @@ CREATE PROCEDURE UpdateDefaultSettings(IN _pp INT, IN _cto INT, IN _clto INT, IN
 		WHERE id=_id;
 
 	END //
-	
-	
+
+
 -- deletes a DefaultSettings profile
 -- Author: Eric Burns
 DROP  PROCEDURE IF EXISTS DeleteDefaultSettings;
@@ -141,14 +141,14 @@ CREATE PROCEDURE DeleteAllDefaultBenchmarks(IN _settingId INT)
 	END //
 
 DROP PROCEDURE IF EXISTS SetDefaultProfileForUser;
-CREATE PROCEDURE SetDefaultProfileForUser(IN _uid INT, IN _sid INT) 
+CREATE PROCEDURE SetDefaultProfileForUser(IN _uid INT, IN _sid INT)
 	BEGIN
 		UPDATE users SET default_settings_profile=_sid WHERE id=_uid;
 	END //
-	
+
 
 DROP PROCEDURE IF EXISTS GetDefaultProfileForUser;
-CREATE PROCEDURE GetDefaultProfileForUser(IN _uid INT) 
+CREATE PROCEDURE GetDefaultProfileForUser(IN _uid INT)
 	BEGIN
 		SELECT default_settings_profile FROM users WHERE id=_uid;
 	END //
@@ -185,5 +185,5 @@ CREATE PROCEDURE DeleteDefaultBenchmark(IN _settingId INT, _benchId INT)
     DELETE FROM default_bench_assoc
     WHERE setting_id=_settingID AND bench_id=_benchid;
   END //
-	
+
 DELIMITER ; -- This should always be at the end of this file

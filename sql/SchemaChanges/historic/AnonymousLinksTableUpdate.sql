@@ -1,5 +1,3 @@
-USE starexec;
-
 DROP TABLE anonymous_links;
 
 CREATE TABLE anonymous_links (

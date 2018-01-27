@@ -1,7 +1,5 @@
 -- Users can subscribe to be notified when a Job status changes
 
-USE starexec;
-
 -- Here we record the Job, User, and the last seen status
 -- A periodic task will check the Job current status against the status recorded
 -- here, and alert the User if status has changed

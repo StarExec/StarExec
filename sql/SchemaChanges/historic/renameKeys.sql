@@ -1,9 +1,7 @@
-USE starexec;
-
 drop table benchmark_uploads;
 
 CREATE TABLE benchmark_uploads (
-	id INT NOT NULL AUTO_INCREMENT, 
+	id INT NOT NULL AUTO_INCREMENT,
     space_id INT NOT NULL,
     user_id INT NOT NULL,
     upload_time TIMESTAMP NOT NULL,

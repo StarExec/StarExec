@@ -1,5 +1,3 @@
-USE starexec;
-
 CREATE TABLE anonymous_links (
 	unique_id VARCHAR(36) NOT NULL,
 	primitive_id INT NOT NULL,

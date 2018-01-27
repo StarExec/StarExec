@@ -1,9 +1,7 @@
-USE starexec;
-
 -- For Status Updates on a Benchmark upload
 -- Author: Benton McCune
 CREATE TABLE benchmark_uploads (
-	id INT NOT NULL AUTO_INCREMENT, 
+	id INT NOT NULL AUTO_INCREMENT,
     space_id INT REFERENCES spaces(id) ON DELETE CASCADE,
     user_id INT REFERENCES users(id) ON DELETE CASCADE,
     upload_time TIMESTAMP NOT NULL,

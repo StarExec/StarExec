@@ -1,20 +1,10 @@
-USE starexec;
-
 ALTER TABLE space_default_settings DROP FOREIGN KEY space_default_settings_space_id;
-
 ALTER TABLE space_default_settings CHANGE space_id prim_id INT;
-
 ALTER TABLE space_default_settings ADD COLUMN setting_type INT DEFAULT 1;
-
 ALTER TABLE space_default_settings ADD COLUMN name VARCHAR(32) DEFAULT "settings";
-
-
 ALTER TABLE space_default_settings DROP PRIMARY KEY, ADD COLUMN id INT NOT NULL AUTO_INCREMENT PRIMARY KEY;
 
-
 -- renaming all the foreign keys next to match our naming convention to the name of the table
-
-
 ALTER TABLE space_default_settings DROP FOREIGN KEY space_default_settings_post_processor, ADD CONSTRAINT default_settings_post_processor FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE SET NULL;
 
 ALTER TABLE space_default_settings DROP FOREIGN KEY space_default_settings_bench_processor, ADD CONSTRAINT default_settings_bench_processor FOREIGN KEY (bench_processor) REFERENCES processors(id) ON DELETE SET NULL;

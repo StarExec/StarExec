@@ -1,5 +1,3 @@
-USE starexec;
-
 -- Adds newly necessary columns to the job_stats table
 -- Author: Eric Burns
 

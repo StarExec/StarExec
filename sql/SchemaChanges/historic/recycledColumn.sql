@@ -1,5 +1,3 @@
-USE starexec;
-
 -- Adds the recycled columns to the solver and benchmark tables
 -- Author: Eric Burns
 

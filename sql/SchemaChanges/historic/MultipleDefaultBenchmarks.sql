@@ -1,5 +1,3 @@
-USE starexec;
-
 CREATE TABLE default_bench_assoc(
 	setting_id INT NOT NULL,
 	bench_id INT NOT NULL,
@@ -11,5 +9,5 @@ CREATE TABLE default_bench_assoc(
 INSERT INTO default_bench_assoc (setting_id, bench_id)
 SELECT id, default_benchmark
 FROM default_settings
-WHERE prim_id IS NOT NULL 
+WHERE prim_id IS NOT NULL
 AND default_benchmark IS NOT NULL;

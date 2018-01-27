@@ -1,5 +1,3 @@
-use starexec;
-
 ALTER TABLE benchmarks DROP FOREIGN KEY benchmarks_user_id;
 ALTER TABLE benchmarks ADD CONSTRAINT benchmarks_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 

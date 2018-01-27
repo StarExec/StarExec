@@ -3,10 +3,6 @@
 
 DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 
-
-
-
-
 -- Set the value of an event's occurrences not related to a queue.
 -- Author: Albert Giegerich
 DROP PROCEDURE IF EXISTS SetEventOccurrencesNotRelatedToQueue;
@@ -22,13 +18,13 @@ CREATE PROCEDURE SetEventOccurrencesNotRelatedToQueue(IN _eventName VARCHAR(64),
 DROP PROCEDURE IF EXISTS SetEventOccurrencesForQueue;
 CREATE PROCEDURE SetEventOccurrencesForQueue(IN _eventName VARCHAR(64), IN _eventOccurrences INT, IN _queueName VARCHAR(64))
 	BEGIN
-		-- check if the event already exists for this queue and set it if it does 
+		-- check if the event already exists for this queue and set it if it does
 		IF EXISTS (SELECT 1 FROM report_data WHERE queue_name=_queueName) AND EXISTS (SELECT 1 FROM report_data WHERE event_name=_eventName) THEN
 			UPDATE report_data
 			SET occurrences = _eventOccurrences
 			WHERE event_name = _eventName AND queue_name = _queueName;
 		-- otherwise create the event with the given number of occurrences
-		ELSE 
+		ELSE
 			INSERT INTO report_data (event_name, queue_name, occurrences)
 			VALUES (_eventName, _queueName, _eventOccurrences);
 		END IF;
@@ -37,7 +33,7 @@ CREATE PROCEDURE SetEventOccurrencesForQueue(IN _eventName VARCHAR(64), IN _even
 
 -- Adds to the value of an event's occurrences not related to a queue.
 -- Author: Albert Giegerich
-DROP PROCEDURE IF EXISTS AddToEventOccurrencesNotRelatedToQueue; 
+DROP PROCEDURE IF EXISTS AddToEventOccurrencesNotRelatedToQueue;
 CREATE PROCEDURE AddToEventOccurrencesNotRelatedToQueue(IN _eventName VARCHAR(64), IN _eventOccurrences INT)
 	BEGIN
 		UPDATE report_data
@@ -50,7 +46,7 @@ CREATE PROCEDURE AddToEventOccurrencesNotRelatedToQueue(IN _eventName VARCHAR(64
 DROP PROCEDURE IF EXISTS AddToEventOccurrencesForQueue;
 CREATE PROCEDURE AddToEventOccurrencesForQueue(IN _eventName VARCHAR(64), IN _eventOccurrences INT, IN _queueName VARCHAR(64))
 	BEGIN
-			
+
 		INSERT IGNORE INTO report_data (event_name, queue_name, occurrences) VALUES (_eventName, _queueName, 0);
 
 		UPDATE report_data
@@ -75,7 +71,7 @@ CREATE PROCEDURE AddToEventOccurrencesForJobPairsQueue(IN _eventName VARCHAR(64)
 			INSERT IGNORE INTO report_data (event_name, occurrences, queue_name) VALUES (_eventName, 0, @queueName);
 
 
-			CALL AddToEventOccurrencesForQueue(_eventName, _eventOccurrences, @queueName);	
+			CALL AddToEventOccurrencesForQueue(_eventName, _eventOccurrences, @queueName);
 		END IF;
 	END //
 
@@ -84,10 +80,10 @@ CREATE PROCEDURE AddToEventOccurrencesForJobPairsQueue(IN _eventName VARCHAR(64)
 DROP PROCEDURE IF EXISTS GetAllEventsAndOccurrencesNotRelatedToQueues;
 CREATE PROCEDURE GetAllEventsAndOccurrencesNotRelatedToQueues()
 	BEGIN
-		SELECT event_name, occurrences 
+		SELECT event_name, occurrences
 		FROM report_data
 		WHERE queue_name IS NULL;
-	END // 
+	END //
 
 -- Gets all event names and occurrences for every queue
 -- Author: Albert Giegerich
@@ -102,7 +98,7 @@ CREATE PROCEDURE GetAllEventsAndOccurrencesForAllQueues()
 DROP PROCEDURE IF EXISTS GetEventOccurrencesNotRelatedToQueues;
 CREATE PROCEDURE GetEventOccurrencesNotRelatedToQueues(IN _eventName VARCHAR(64))
 	BEGIN
-		SELECT occurrences 
+		SELECT occurrences
 		FROM report_data
 		WHERE event_name = _eventName AND queue_name IS NULL;
 	END //

@@ -2,10 +2,7 @@
 -- The procedures are stored by which table they're related to and roughly alphabetic order. Please try to keep this organized!
 -- Author: Todd Elvers
 
-USE starexec;
-
 DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
-
 
 -- Gets the number of completed job pairs for a given job id
 -- Author: Todd Elvers

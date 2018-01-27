@@ -1,6 +1,3 @@
-USE starexec;
-
-
 DROP TABLE IF EXISTS job_space_closure;
 -- The set of all associations between each job space and it's descendants
 CREATE TABLE job_space_closure (

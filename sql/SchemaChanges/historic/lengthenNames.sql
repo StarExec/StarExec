@@ -1,5 +1,3 @@
-USE starexec;
-
 alter table spaces
 modify name varchar(128);
 

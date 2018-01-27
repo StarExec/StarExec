@@ -1,5 +1,3 @@
-USE starexec;
-
 -- This table holds the names of executable types so that they are accessible for SQL sorts and filters.
 -- The contents in this table should match with the enum in Solver.java to ensure proper sorts!
 CREATE TABLE executable_types (
@@ -10,11 +8,8 @@ CREATE TABLE executable_types (
 
 INSERT INTO executable_types (type_id, type_name) VALUES (1,"solver"), (2,"transformer"),(3,"result checker"),(4,"other");
 
-
 ALTER TABLE solvers ADD COLUMN executable_type INT DEFAULT 1;
-
-ALTER TABLE solvers ADD CONSTRAINT solvers_executable_type FOREIGN KEY (executable_type) REFERENCES executable_types(type_id) ON DELETE SET NULL; 
-
+ALTER TABLE solvers ADD CONSTRAINT solvers_executable_type FOREIGN KEY (executable_type) REFERENCES executable_types(type_id) ON DELETE SET NULL;
 
 -- table for storing the top level of solver pipelines
 CREATE TABLE solver_pipelines (
@@ -39,7 +34,7 @@ CREATE TABLE pipeline_stages (
 -- Stores any dependencies that a particular stage has.
 CREATE TABLE pipeline_dependencies (
 	stage_id INT NOT NULL, -- ID of the stage that must receive output from a previous stage
-	
+
 	input_type TINYINT NOT NULL, -- ID of the stage that produces the output
 	input_id SMALLINT NOT NULL, -- if the type is an artifact, this is the the 1-indexed number of the stage that is needed
 						   -- if the type is a benchmark, this is the the 1-indexed number of the benchmark that is needed

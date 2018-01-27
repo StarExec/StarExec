@@ -1,4 +1,3 @@
-
 -- Description: This file contains all procedures related to the pairs_rerun table.
 
 DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
@@ -14,7 +13,7 @@ CREATE PROCEDURE HasPairBeenRerun(IN _pairId INT)
 DROP PROCEDURE IF EXISTS MarkPairAsRerun;
 CREATE PROCEDURE MarkPairAsRerun(IN _pairId INT)
 	BEGIN
-		INSERT INTO pairs_rerun (pair_id) 
+		INSERT INTO pairs_rerun (pair_id)
 		VALUES (_pairId);
 	END //
 

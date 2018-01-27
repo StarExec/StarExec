@@ -1,5 +1,3 @@
-USE starexec;
-
 -- Removes the space_id column from  the job pairs table, which has been replaced by a job_space_id column
 -- Author: Eric Burns
 

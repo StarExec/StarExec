@@ -1,5 +1,3 @@
-USE starexec;
-
 START TRANSACTION;
 -- step 1: port timeouts over to the jobs table, removing them from job_pairs
 
@@ -15,12 +13,12 @@ ALTER TABLE job_pairs DROP COLUMN maximum_memory;
 
 -- Step 2: Create a new table that will contain any stage-specific timeouts for jobs
 
--- This table stores timeouts for individual pipeline stages for this job. 
+-- This table stores timeouts for individual pipeline stages for this job.
 -- These are essentially overrides for the columns in the jobs table
 CREATE TABLE job_stage_params (
 	job_id INT,
 	stage_id INT,
-	cpuTimeout INT, 
+	cpuTimeout INT,
 	clockTimeout INT,
 	maximum_memory BIGINT DEFAULT 1073741824,
 	space_id INT, -- if we're keeping benchmarks from this stage, where should we be putting them?

@@ -1,5 +1,3 @@
-USE starexec;
-
 ALTER TABLE job_space_assoc
 DROP FOREIGN KEY job_space_assoc_ibfk_1;
 

@@ -1,5 +1,3 @@
-USE starexec;
-
 -- This file adds the cache tables to the database
 -- Author: Eric Burns
 

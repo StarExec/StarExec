@@ -1,4 +1,4 @@
--- we are changing our status codes a bit to distinguish between cpu timeout and memout 
+-- we are changing our status codes a bit to distinguish between cpu timeout and memout
 -- (these were not distinguished previously).
 
 UPDATE status_codes SET description = 'the job was terminated because it exceeded its cpu time limit' WHERE code=15;

@@ -1,9 +1,7 @@
-USE starexec;
-
 -- For Status Updates on a space XML upload
 -- Author: Eric Burns
 CREATE TABLE space_xml_uploads (
-	id INT NOT NULL AUTO_INCREMENT, 
+	id INT NOT NULL AUTO_INCREMENT,
     user_id INT NOT NULL,
     upload_time TIMESTAMP NOT NULL,
     file_upload_complete BOOLEAN DEFAULT 0,

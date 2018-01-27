@@ -1,5 +1,3 @@
-USE starexec;
-
 -- For keeping stats for solvers
 -- Author: Eric Burns
 CREATE TABLE job_stats (

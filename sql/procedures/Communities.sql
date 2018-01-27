@@ -3,7 +3,6 @@
 
 DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 
-
 -- Checks to see if the space with the given space ID is a community.
 -- Author: Skylar Stark
 DROP PROCEDURE IF EXISTS IsCommunity;
@@ -34,15 +33,15 @@ CREATE PROCEDURE LeaveSpace(IN _userId INT, IN _spaceId INT)
 		-- Remove the permission associated with this user/space
 		DELETE FROM permissions
 			WHERE id=(SELECT permission FROM user_assoc WHERE user_id = _userId	AND space_id = _spaceId);
-		
-		-- Delete the association	
+
+		-- Delete the association
 		DELETE FROM user_assoc
 		WHERE user_id = _userId
 		AND space_id = _spaceId;
 	END //
-	
 
-	
+
+
 -- Removes every association a user has with every space in the hierarchy rooted at the given space
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS LeaveHierarchy;
@@ -95,7 +94,7 @@ CREATE PROCEDURE GetCommunityStatsJobs()
 	BEGIN
 
 		   SELECT community_assoc.comm_id, COUNT(DISTINCT job_pairs.job_id) AS jobCount, COUNT(DISTINCT job_pairs.id) AS jobPairCount
-		   FROM community_assoc JOIN job_assoc ON job_assoc.space_id=community_assoc.space_id JOIN job_pairs ON job_pairs.job_id=job_assoc.job_id 
+		   FROM community_assoc JOIN job_assoc ON job_assoc.space_id=community_assoc.space_id JOIN job_pairs ON job_pairs.job_id=job_assoc.job_id
 		   WHERE job_pairs.status_code IN (7,14,15,16,17)
 		   GROUP BY community_assoc.comm_id;
 

@@ -1,8 +1,6 @@
 -- Author: Todd Elvers
 -- Description: This file loads all stored procedure files into the starexec database
 
-USE starexec;
-
 source procedures/Analytics.sql;
 source procedures/AnonymousLinks.sql;
 source procedures/Benchmarks.sql;

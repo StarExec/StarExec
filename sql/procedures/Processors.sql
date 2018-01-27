@@ -3,7 +3,6 @@
 
 DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
 
-
 -- Adds a new processor with the given information
 -- Author: Tyler Jensen
 DROP PROCEDURE IF EXISTS AddProcessor;

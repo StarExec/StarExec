@@ -1,7 +1,5 @@
 -- Description: Create tables for new Analytics feature
 
-USE starexec;
-
 -- Contains all events that can be logged as analytics
 CREATE TABLE analytics_events (
 	event_id INT NOT NULL AUTO_INCREMENT,

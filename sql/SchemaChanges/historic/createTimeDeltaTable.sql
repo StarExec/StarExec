@@ -1,5 +1,3 @@
-USE starexec;
-
 CREATE TABLE jobpair_time_delta (
 	user_id INT NOT NULL,
 	queue_id INT NOT NULL,

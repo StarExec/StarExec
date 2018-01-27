@@ -1,5 +1,3 @@
-USE starexec;
-
 CREATE TABLE pairs_rerun (
 	pair_id INT NOT NULL,
 	PRIMARY KEY (pair_id),

@@ -1,4 +1,3 @@
-
 -- Author: Tyler Jensen
 -- Description: This file is the schema used to create the starexec database in MySQL
 
@@ -139,7 +138,6 @@ CREATE TABLE processors (
 	CONSTRAINT processors_syntax FOREIGN KEY (syntax_id) REFERENCES syntax(id)
 );
 
-
 -- The record for an individual benchmark
 CREATE TABLE benchmarks (
 	id INT NOT NULL AUTO_INCREMENT,
@@ -248,9 +246,6 @@ CREATE TABLE comm_queue (
 	PRIMARY KEY (space_id, queue_id)
 );
 
-
-
-
 -- table for storing the top level of solver pipelines. These should generally not be deleted
 -- if there are jobs making use of them.
 CREATE TABLE solver_pipelines (
@@ -261,6 +256,7 @@ CREATE TABLE solver_pipelines (
 	primary_stage_id INT,
 	PRIMARY KEY(id)
 );
+
 -- Stages for solver pipelines. Stages are ordered by their stage_id primary key
 CREATE TABLE pipeline_stages (
 	stage_id INT NOT NULL AUTO_INCREMENT, -- orders the stages of this pipeline
@@ -273,11 +269,9 @@ CREATE TABLE pipeline_stages (
 	CONSTRAINT pipeline_stages_config_id FOREIGN KEY (config_id) REFERENCES configurations(id) ON DELETE SET NULL
 );
 
-
 -- Stores any dependencies that a particular stage has.
 CREATE TABLE pipeline_dependencies (
 	stage_id INT NOT NULL, -- ID of the stage that must receive output from a previous stage
-
 	input_type TINYINT NOT NULL, -- ID of the stage that produces the output
 	input_id SMALLINT NOT NULL, -- if the type is an artifact, this is the the 1-indexed number of the stage that is needed
 						   -- if the type is a benchmark, this is the the 1-indexed number of the benchmark that is needed
@@ -318,6 +312,7 @@ CREATE TABLE jobs (
 	CONSTRAINT jobs_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
 	CONSTRAINT jobs_queue_id FOREIGN KEY (queue_id) REFERENCES queues(id) ON DELETE SET NULL
 );
+
 -- This table stores timeouts for individual pipeline stages for this job.
 -- These are essentially overrides for the columns in the jobs table
 CREATE TABLE job_stage_params (
@@ -338,10 +333,7 @@ CREATE TABLE job_stage_params (
 	CONSTRAINT job_stage_params_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE SET NULL,
 	CONSTRAINT job_stage_params_post_processor FOREIGN KEY (post_processor) REFERENCES processors(id) ON DELETE SET NULL,
 	CONSTRAINT job_stage_params_pre_processor FOREIGN KEY (pre_processor) REFERENCES processors(id) ON DELETE SET NULL
-
 );
-
-
 
 -- Table which contains specific information about a job pair
 -- When changing to using runsolver, wallclock changed from bigint to double
@@ -372,7 +364,6 @@ CREATE TABLE job_pairs (
 	CONSTRAINT job_pairs_job_id FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE, -- not necessary as an index
 	CONSTRAINT job_pairs_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE NO ACTION -- not used as an index
 );
-
 
 CREATE TABLE jobpair_stage_data (
 	stage_number INT NOT NULL, -- this id orders the stages
@@ -594,16 +585,14 @@ CREATE TABLE bench_dependency (
 );
 
 
-
 -- Default settings for a community space.
 -- Author: Ruoyu Zhang + Eric Burns
-
 CREATE TABLE default_settings (
 	id INT NOT NULL AUTO_INCREMENT, -- unique ID
-    prim_id INT, -- either a user ID or community ID depending on what the setting_type is
-    post_processor INT,
-    pre_processor INT,
-    cpu_timeout INT DEFAULT 1,
+	prim_id INT, -- either a user ID or community ID depending on what the setting_type is
+	post_processor INT,
+	pre_processor INT,
+	cpu_timeout INT DEFAULT 1,
 	clock_timeout INT DEFAULT 1,
 	dependencies_enabled BOOLEAN DEFAULT FALSE,
 	maximum_memory BIGINT DEFAULT 1073741824,
@@ -621,7 +610,6 @@ CREATE TABLE default_settings (
 	CONSTRAINT default_settings_bench_processor FOREIGN KEY (bench_processor) REFERENCES processors(id) ON DELETE SET NULL
 );
 
-
 CREATE TABLE default_bench_assoc(
 	setting_id INT NOT NULL,
 	bench_id INT NOT NULL,
@@ -630,47 +618,45 @@ CREATE TABLE default_bench_assoc(
 	CONSTRAINT default_bench_id FOREIGN KEY (bench_id) REFERENCES benchmarks(id) ON DELETE CASCADE
 );
 
-
 -- For Status Updates on a space XML upload
 -- Author: Eric Burns
 CREATE TABLE space_xml_uploads (
 	id INT NOT NULL AUTO_INCREMENT,
-    user_id INT NOT NULL,
-    upload_time TIMESTAMP NOT NULL,
-    file_upload_complete BOOLEAN DEFAULT 0,
-    everything_complete BOOLEAN DEFAULT 0,
-    total_spaces INT DEFAULT 0,
-    completed_spaces INT DEFAULT 0,
-    total_benchmarks INT DEFAULT 0,
-    completed_benchmarks INT DEFAULT 0,
-    total_solvers INT DEFAULT 0,
-    completed_solvers INT DEFAULT 0,
-    total_updates INT DEFAULT 0,
-    completed_updates INT DEFAULT 0,
-    error_message TEXT,
+	user_id INT NOT NULL,
+	upload_time TIMESTAMP NOT NULL,
+	file_upload_complete BOOLEAN DEFAULT 0,
+	everything_complete BOOLEAN DEFAULT 0,
+	total_spaces INT DEFAULT 0,
+	completed_spaces INT DEFAULT 0,
+	total_benchmarks INT DEFAULT 0,
+	completed_benchmarks INT DEFAULT 0,
+	total_solvers INT DEFAULT 0,
+	completed_solvers INT DEFAULT 0,
+	total_updates INT DEFAULT 0,
+	completed_updates INT DEFAULT 0,
+	error_message TEXT,
 	PRIMARY KEY (id),
 	CONSTRAINT space_xml_uploads_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
-
 
 -- For Status Updates on a Benchmark upload
 -- Author: Benton McCune
 CREATE TABLE benchmark_uploads (
 	id INT NOT NULL AUTO_INCREMENT,
-    space_id INT NOT NULL,
-    user_id INT NOT NULL,
-    upload_time TIMESTAMP NOT NULL,
-    file_upload_complete BOOLEAN DEFAULT 0,
-    file_extraction_complete BOOLEAN DEFAULT 0,
-    processing_begun BOOLEAN DEFAULT 0,
-    everything_complete BOOLEAN DEFAULT 0,
-    total_spaces INT DEFAULT 0,
-    total_benchmarks INT DEFAULT 0,
-    validated_benchmarks INT DEFAULT 0,
-    failed_benchmarks INT DEFAULT 0,
-    completed_benchmarks INT DEFAULT 0,
-    completed_spaces INT DEFAULT 0,
-    error_message TEXT,
+	space_id INT NOT NULL,
+	user_id INT NOT NULL,
+	upload_time TIMESTAMP NOT NULL,
+	file_upload_complete BOOLEAN DEFAULT 0,
+	file_extraction_complete BOOLEAN DEFAULT 0,
+	processing_begun BOOLEAN DEFAULT 0,
+	everything_complete BOOLEAN DEFAULT 0,
+	total_spaces INT DEFAULT 0,
+	total_benchmarks INT DEFAULT 0,
+	validated_benchmarks INT DEFAULT 0,
+	failed_benchmarks INT DEFAULT 0,
+	completed_benchmarks INT DEFAULT 0,
+	completed_spaces INT DEFAULT 0,
+	error_message TEXT,
 	PRIMARY KEY (id),
 	CONSTRAINT benchmark_uploads_space_id FOREIGN KEY (space_id) REFERENCES spaces(id) ON DELETE CASCADE,
 	CONSTRAINT benchmark_uploads_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -680,9 +666,9 @@ CREATE TABLE benchmark_uploads (
 -- Author: Benton McCune
 CREATE TABLE unvalidated_benchmarks (
 	id INT NOT NULL AUTO_INCREMENT,
-    status_id INT REFERENCES benchmark_uploads(id) ON DELETE CASCADE,
-    bench_name VARCHAR(256) NOT NULL,
-    error_message TEXT,
+	status_id INT REFERENCES benchmark_uploads(id) ON DELETE CASCADE,
+	bench_name VARCHAR(256) NOT NULL,
+	error_message TEXT,
 	PRIMARY KEY (id)
 );
 
@@ -708,7 +694,6 @@ CREATE TABLE job_space_closure (
 	CONSTRAINT job_space_descendant FOREIGN KEY (descendant) REFERENCES job_spaces(id) ON DELETE CASCADE
 );
 
-
 -- Saves associations between spaces relevant to a particular job
 -- Author: Eric Burns
 CREATE TABLE job_space_assoc (
@@ -717,6 +702,7 @@ CREATE TABLE job_space_assoc (
 	CONSTRAINT job_space_assoc_space_id FOREIGN KEY (space_id) REFERENCES job_spaces(id) ON DELETE CASCADE,
 	CONSTRAINT job_space_assoc_child_id FOREIGN KEY (child_id) REFERENCES job_spaces(id) ON DELETE CASCADE
 );
+
 -- Stores a cache of stats for a particular job space. Incomplete pairs are not stored,
 -- as we only store complete jobs, so incomplete=failed. Stats are hierarchical,
 -- so stats at a particular job space include all pairs below that job space
@@ -755,7 +741,6 @@ CREATE TABLE report_data (
 	event_name VARCHAR(64),
 	queue_name VARCHAR(64), -- NULL if data is not associated with a queue
 	occurrences INT NOT NULL,
-
 	PRIMARY KEY(id),
 	UNIQUE KEY event_name_queue_name (event_name, queue_name)
 );
@@ -770,7 +755,6 @@ CREATE TABLE pairs_rerun (
 CREATE TABLE log_levels(
 	id INT NOT NULL AUTO_INCREMENT,
 	name VARCHAR(32) NOT NULL,
-
 	PRIMARY KEY(id),
 	UNIQUE KEY(name)
 );
@@ -787,7 +771,6 @@ CREATE TABLE error_logs(
 	CONSTRAINT error_level FOREIGN KEY (log_level_id) REFERENCES log_levels(id) ON DELETE SET NULL
 );
 
-
 -- Creates a view of the closure table that includes only communities as ancestors
 CREATE VIEW community_assoc AS
 SELECT ancestor AS comm_id, descendant AS space_id FROM closure
@@ -797,7 +780,6 @@ WHERE set_assoc.space_id=1;
 ALTER TABLE solver_pipelines ADD CONSTRAINT primary_stage_id FOREIGN KEY (primary_stage_id) REFERENCES pipeline_stages(stage_id) ON DELETE SET NULL;
 
 ALTER TABLE users ADD CONSTRAINT users_default_settings_profile FOREIGN KEY (default_settings_profile) REFERENCES default_settings(id) ON DELETE SET NULL;
-
 
 INSERT INTO report_data (event_name, queue_name, occurrences) VALUES ('unique logins', NULL, 0), ('jobs initiated', NULL, 0),
 	('job pairs run', NULL, 0), ('solvers uploaded', NULL, 0), ('benchmarks uploaded', NULL, 0), ('benchmark archives uploaded', NULL, 0);

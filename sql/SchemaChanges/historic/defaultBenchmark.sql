@@ -1,5 +1,3 @@
-USE starexec;
-
 -- For updating the space settings table to include a new int
 -- Author: Eric Burns
 -- ALTER TABLE space_default_settings

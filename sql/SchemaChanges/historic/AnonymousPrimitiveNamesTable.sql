@@ -1,5 +1,3 @@
-USE starexec;
-
 CREATE TABLE anonymous_primitive_names (
 	anonymous_name VARCHAR(36) NOT NULL,
 	primitive_id INT NOT NULL,

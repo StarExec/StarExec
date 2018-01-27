@@ -1,5 +1,3 @@
-USE starexec;
-
 -- Saves all job space information
 -- Author: Eric Burns
 CREATE TABLE job_spaces (
@@ -7,7 +5,6 @@ CREATE TABLE job_spaces (
 	name VARCHAR(128),
 	PRIMARY KEY (id)
 );
-
 
 -- Saves associations between spaces relevant to a particular job
 -- Author: Eric Burns
@@ -18,5 +15,5 @@ CREATE TABLE job_space_assoc (
 	FOREIGN KEY (child) REFERENCES job_spaces(id) ON DELETE CASCADE
 );
 
-ALTER TABLE job_pairs 
+ALTER TABLE job_pairs
 ADD job_space_id INT NOT NULL;

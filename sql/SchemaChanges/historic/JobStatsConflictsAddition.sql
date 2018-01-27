@@ -1,5 +1,3 @@
-USE starexec;
-
 DROP TABLE job_stats;
 
 CREATE TABLE job_stats (

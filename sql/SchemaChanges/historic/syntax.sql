@@ -1,7 +1,5 @@
 -- Support syntax highlighting of benchmarks
 
-USE starexec;
-
 -- A table where we can keep track of the different syntax highlighters we
 -- support for benchmarks
 --   name:  Human readable display name of the syntax
