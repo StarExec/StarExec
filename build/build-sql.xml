@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<project name="sql" basedir=".">
+<project basedir=".">
 	<!-- Action for compiling the project and building the WAR file.
 		1. we first compile the Java sources and copy over scripts and
 		     configurations to ${build-dir}.
@@ -8,33 +8,20 @@
 	-->
 
 	<target name="compile-sql">
-		<!-- Copy over SQL files to the deployed-sql directory.
-		     They are there for updating the deployment.
-		     They do not need to go in the WAR file. -->
-		<delete dir="deployed-sql" />
-		<mkdir dir="deployed-sql" />
 		<mkdir dir="${data_dir}" />
-		<copy todir="deployed-sql">
-			<fileset dir="sql">
-				<include name="**/*" />
-			</fileset>
+		<copy file="sql/NewInstall.template" tofile="sql/NewInstall.sql">
 			<filterset>
 				<filter token="DB.Name" value="${DB.Name}"/>
 			</filterset>
 		</copy>
-
-		<!-- Update the sql scripts to use the correct database -->
-		<replaceregexp match="USE (.+);" replace="USE ${DB.Name};" byline="false">
-			<fileset dir="deployed-sql" includes="**/*.sql"/>
-		</replaceregexp>
 	</target>
 
-	<target name="update-sql" depends="compile-sql">
+	<target name="update-sql">
 		<sql driver="com.mysql.jdbc.Driver" classpathref="classpath"
 		     delimiter="//" keepformat="true"
 		     url="${DB.Url}" userid="${DB.User}" password="${DB.Pass}">
 			<path>
-				<fileset dir="deployed-sql">
+				<fileset dir="sql">
 					<include name="StarFunctions.sql"/>
 					<include name="StarProcedures.sql"/>
 				</fileset>
