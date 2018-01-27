@@ -1,11 +1,9 @@
 -- Description: This file contains all permissions-related stored procedures for the starexec database
 -- The procedures are stored by which table they're related to and roughly alphabetic order. Please try to keep this organized!
 
-DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
-
 -- Adds a new permissions record with the given permissions
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS AddPermissions;
+DROP PROCEDURE IF EXISTS AddPermissions //
 CREATE PROCEDURE AddPermissions(IN _addSolver TINYINT(1), IN _addBench TINYINT(1), IN _addUser TINYINT(1),
 IN _addSpace TINYINT(1), IN _addJob TINYINT(1), IN _removeSolver TINYINT(1), IN _removeBench TINYINT(1), IN _removeSpace TINYINT(1),
 IN _removeUser TINYINT(1), IN _removeJob TINYINT(1), IN _isLeader TINYINT(1), OUT id INT)
@@ -21,7 +19,7 @@ IN _removeUser TINYINT(1), IN _removeJob TINYINT(1), IN _isLeader TINYINT(1), OU
 
 -- Returns 1 if the given user can somehow see the given solver, 0 otherwise
 -- Author: Tyler Jensen + Eric Burns
-DROP PROCEDURE IF EXISTS CanViewSolver;
+DROP PROCEDURE IF EXISTS CanViewSolver //
 CREATE PROCEDURE CanViewSolver(IN _solverId INT, IN _userId INT)
 	BEGIN
 		SELECT IF((
@@ -34,7 +32,7 @@ CREATE PROCEDURE CanViewSolver(IN _solverId INT, IN _userId INT)
 	END //
 
 -- Author: Tyler Jensen + Eric Burns
-DROP PROCEDURE IF EXISTS CanViewBenchmark;
+DROP PROCEDURE IF EXISTS CanViewBenchmark //
 CREATE PROCEDURE CanViewBenchmark(IN _benchId INT, IN _userId INT)
 	BEGIN
 		SELECT IF((
@@ -47,7 +45,7 @@ CREATE PROCEDURE CanViewBenchmark(IN _benchId INT, IN _userId INT)
 
 -- Returns 1 if the given user either shares a space with the job or owns it
 -- Author: Tyler Jensen	+ Eric Burns
-DROP PROCEDURE IF EXISTS CanViewJob;
+DROP PROCEDURE IF EXISTS CanViewJob //
 CREATE PROCEDURE CanViewJob(IN _jobId INT, IN _userId INT)
 	BEGIN
 		SELECT IF((
@@ -60,7 +58,7 @@ CREATE PROCEDURE CanViewJob(IN _jobId INT, IN _userId INT)
 
 -- Returns 1 if the given user can somehow see the given space, 0 otherwise
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS CanViewSpace;
+DROP PROCEDURE IF EXISTS CanViewSpace //
 CREATE PROCEDURE CanViewSpace(IN _spaceId INT, IN _userId INT)
 	BEGIN
 		SELECT COUNT(*) -- will return 1 if the user is in the space and 0 if they are not
@@ -71,7 +69,7 @@ CREATE PROCEDURE CanViewSpace(IN _spaceId INT, IN _userId INT)
 
 -- Finds the maximal set of permissions for the given user on the given space
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetUserPermissions;
+DROP PROCEDURE IF EXISTS GetUserPermissions //
 CREATE PROCEDURE GetUserPermissions(IN _userId INT, IN _spaceId INT)
 	BEGIN
 		SELECT MAX(add_solver) AS add_solver,
@@ -91,7 +89,7 @@ CREATE PROCEDURE GetUserPermissions(IN _userId INT, IN _spaceId INT)
 
 -- Finds the default user permissions for the given space
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetSpacePermissions;
+DROP PROCEDURE IF EXISTS GetSpacePermissions //
 CREATE PROCEDURE GetSpacePermissions(IN _spaceId INT)
 	BEGIN
 		SELECT permissions.*
@@ -101,7 +99,7 @@ CREATE PROCEDURE GetSpacePermissions(IN _spaceId INT)
 
 -- Copies one set of permissions into another with a new ID
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS CopyPermissions;
+DROP PROCEDURE IF EXISTS CopyPermissions //
 CREATE PROCEDURE CopyPermissions(IN _permId INT, OUT _newId INT)
 	BEGIN
 		INSERT INTO permissions (add_solver, add_bench, add_user, add_space, add_job, remove_solver, remove_bench, remove_user, remove_space, remove_job, is_leader)
@@ -114,7 +112,7 @@ CREATE PROCEDURE CopyPermissions(IN _permId INT, OUT _newId INT)
 
 -- Sets a user's permissions for a given space
 -- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS SetUserPermissions;
+DROP PROCEDURE IF EXISTS SetUserPermissions //
 CREATE PROCEDURE SetUserPermissions(IN _userId INT, IN _spaceId INT,IN _addSolver TINYINT(1), IN _addBench TINYINT(1), IN _addUser TINYINT(1),
 IN _addSpace TINYINT(1), IN _addJob TINYINT(1), IN _removeSolver TINYINT(1), IN _removeBench TINYINT(1), IN _removeSpace TINYINT(1),
 IN _removeUser TINYINT(1), IN _removeJob TINYINT(1), IN _isLeader TINYINT(1))
@@ -137,7 +135,7 @@ IN _removeUser TINYINT(1), IN _removeJob TINYINT(1), IN _isLeader TINYINT(1))
 
 -- Updates the permission set with the given id
 -- Author: Skylar Stark
-DROP PROCEDURE IF EXISTS UpdatePermissions;
+DROP PROCEDURE IF EXISTS UpdatePermissions //
 CREATE PROCEDURE UpdatePermissions(IN _id INT, IN _addSolver BOOLEAN, IN _addBench BOOLEAN, IN _addUser BOOLEAN,
 IN _addSpace BOOLEAN, IN _addJob BOOLEAN, IN _removeSolver BOOLEAN, IN _removeBench BOOLEAN, IN _removeSpace BOOLEAN,
 IN _removeUser BOOLEAN, IN _removeJob BOOLEAN)
@@ -159,14 +157,10 @@ IN _removeUser BOOLEAN, IN _removeJob BOOLEAN)
 
 -- Sets a user's permissions for a given space
 -- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS SetUserPermissions2;
+DROP PROCEDURE IF EXISTS SetUserPermissions2 //
 CREATE PROCEDURE SetUserPermissions2(IN _userId INT, IN _spaceId INT,IN _permissionId INT)
 	BEGIN
 		UPDATE user_assoc
 		SET	permission	= _permissionId
 		WHERE user_id = _userId && space_id = _spaceId;
 	END //
-
-
-
-DELIMITER ; -- This should always be at the end of this file

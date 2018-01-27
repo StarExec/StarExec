@@ -1,12 +1,10 @@
 -- Description: This file contains all user-related stored procedures for the starexec database
 -- The procedures are stored by which table they're related to and roughly alphabetic order. Please try to keep this organized!
 
-DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
-
 -- Begins the registration process by adding a user to the USERS table
 -- Makes their role "unauthorized"
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS AddUser;
+DROP PROCEDURE IF EXISTS AddUser //
 CREATE PROCEDURE AddUser(IN _firstName VARCHAR(32), IN _lastName VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128),  IN _diskQuota BIGINT(20), OUT _id INT)
 	BEGIN
 		INSERT INTO users(email, first_name, last_name, institution, created, password, disk_quota)
@@ -18,7 +16,7 @@ CREATE PROCEDURE AddUser(IN _firstName VARCHAR(32), IN _lastName VARCHAR(32), IN
 		VALUES (_email, 'unauthorized');
 	END //
 
-DROP PROCEDURE IF EXISTS AddUserAuthorized;
+DROP PROCEDURE IF EXISTS AddUserAuthorized //
 CREATE PROCEDURE AddUserAuthorized(IN _firstName VARCHAR(32), IN _lastName VARCHAR(32), IN _email VARCHAR(64), IN _institute VARCHAR(64), IN _password VARCHAR(128), IN _diskQuota BIGINT(20),IN _role VARCHAR(24), IN _pairQuota INT, OUT _id INT)
 	BEGIN
 		INSERT INTO users(email, first_name, last_name, institution, created, password, disk_quota, job_pair_quota)
@@ -33,7 +31,7 @@ CREATE PROCEDURE AddUserAuthorized(IN _firstName VARCHAR(32), IN _lastName VARCH
 
 -- Removes the user given by _userId from every space in the hierarchy rooted at _spaceId that _requestUserId can see
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS RemoveUserFromSpaceHierarchy;
+DROP PROCEDURE IF EXISTS RemoveUserFromSpaceHierarchy //
 CREATE PROCEDURE RemoveUserFromSpaceHierarchy(IN _userId INT, IN _spaceId INT, IN _requestUserId INT)
 	BEGIN
 		-- Remove the permission associated with this user/community
@@ -54,7 +52,7 @@ CREATE PROCEDURE RemoveUserFromSpaceHierarchy(IN _userId INT, IN _spaceId INT, I
 
 -- Adds the user given by _userId to every space in the hierarchy rooted at _spaceId that _requestUserId can see
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS AddUserToSpaceHierarchy;
+DROP PROCEDURE IF EXISTS AddUserToSpaceHierarchy //
 CREATE PROCEDURE AddUserToSpaceHierarchy(IN _userId INT, IN _spaceId INT, IN _requestUserId INT)
 	BEGIN
 		DECLARE _newPermId INT;
@@ -74,7 +72,7 @@ CREATE PROCEDURE AddUserToSpaceHierarchy(IN _userId INT, IN _spaceId INT, IN _re
 
 -- Adds an association between a user and a space
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS AddUserToSpace;
+DROP PROCEDURE IF EXISTS AddUserToSpace //
 CREATE PROCEDURE AddUserToSpace(IN _userId INT, IN _spaceId INT)
 	BEGIN
 		DECLARE _newPermId INT;
@@ -93,7 +91,7 @@ CREATE PROCEDURE AddUserToSpace(IN _userId INT, IN _spaceId INT)
 
 -- Returns the (hashed) password of the user with the given user id
 -- Author: Skylar Stark
-DROP PROCEDURE IF EXISTS GetPasswordById;
+DROP PROCEDURE IF EXISTS GetPasswordById //
 CREATE PROCEDURE GetPasswordById(IN _id INT)
 	BEGIN
 		SELECT password
@@ -104,7 +102,7 @@ CREATE PROCEDURE GetPasswordById(IN _id INT)
 
 -- Returns unregistered user corresponding to the given id
 -- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS GetUnregisteredUserById;
+DROP PROCEDURE IF EXISTS GetUnregisteredUserById //
 CREATE PROCEDURE GetUnregisteredUserById(IN _id INT)
 	BEGIN
 		SELECT *
@@ -115,7 +113,7 @@ CREATE PROCEDURE GetUnregisteredUserById(IN _id INT)
 
 -- Returns the number of users in the entire system
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetUserCount;
+DROP PROCEDURE IF EXISTS GetUserCount //
 CREATE PROCEDURE GetUserCount()
 	BEGIN
 		SELECT COUNT(*) as userCount
@@ -124,7 +122,7 @@ CREATE PROCEDURE GetUserCount()
 
 -- Returns the number of users in a given space that match a given query
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetUserCountInSpaceWithQuery;
+DROP PROCEDURE IF EXISTS GetUserCountInSpaceWithQuery //
 CREATE PROCEDURE GetUserCountInSpaceWithQuery(IN _spaceId INT, IN _query TEXT)
 	BEGIN
 		SELECT 	COUNT(*) AS userCount
@@ -138,7 +136,7 @@ CREATE PROCEDURE GetUserCountInSpaceWithQuery(IN _spaceId INT, IN _query TEXT)
 
 -- Returns the user record with the given email address
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetUserByEmail;
+DROP PROCEDURE IF EXISTS GetUserByEmail //
 CREATE PROCEDURE GetUserByEmail(IN _email VARCHAR(64))
 	BEGIN
 		SELECT *
@@ -149,7 +147,7 @@ CREATE PROCEDURE GetUserByEmail(IN _email VARCHAR(64))
 
 -- Returns the user record with the given id
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetUserById;
+DROP PROCEDURE IF EXISTS GetUserById //
 CREATE PROCEDURE GetUserById(IN _id INT)
 	BEGIN
 		SELECT *
@@ -157,7 +155,7 @@ CREATE PROCEDURE GetUserById(IN _id INT)
 		WHERE users.id = _id;
 	END //
 
-DROP PROCEDURE IF EXISTS UnsubscribeUserFromErrorLogs;
+DROP PROCEDURE IF EXISTS UnsubscribeUserFromErrorLogs //
 CREATE PROCEDURE UnsubscribeUserFromErrorLogs(IN _id INT)
 	BEGIN
 		UPDATE users
@@ -165,7 +163,7 @@ CREATE PROCEDURE UnsubscribeUserFromErrorLogs(IN _id INT)
 		WHERE id=_id;
 	END //
 
-DROP PROCEDURE IF EXISTS SubscribeUserToErrorLogs;
+DROP PROCEDURE IF EXISTS SubscribeUserToErrorLogs //
 CREATE PROCEDURE SubscribeUserToErrorLogs(IN _id INT)
 	BEGIN
 		UPDATE users
@@ -173,7 +171,7 @@ CREATE PROCEDURE SubscribeUserToErrorLogs(IN _id INT)
 		WHERE id=_id;
 	END //
 
-DROP PROCEDURE IF EXISTS GetAllUsersSubscribedToErrorLogs;
+DROP PROCEDURE IF EXISTS GetAllUsersSubscribedToErrorLogs //
 CREATE PROCEDURE GetAllUsersSubscribedToErrorLogs()
 	BEGIN
 		SELECT *
@@ -183,7 +181,7 @@ CREATE PROCEDURE GetAllUsersSubscribedToErrorLogs()
 
 -- Retrieves all users belonging to a space
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetSpaceUsersById;
+DROP PROCEDURE IF EXISTS GetSpaceUsersById //
 CREATE PROCEDURE GetSpaceUsersById(IN _id INT)
 	BEGIN
 		SELECT DISTINCT *
@@ -199,7 +197,7 @@ CREATE PROCEDURE GetSpaceUsersById(IN _id INT)
 -- Updates the email address of the user with the given user id to the
 -- given email address. The email address should already be validated
 -- Author: Skylar Stark
-DROP PROCEDURE IF EXISTS UpdateEmail;
+DROP PROCEDURE IF EXISTS UpdateEmail //
 CREATE PROCEDURE UpdateEmail(IN _id INT, IN _email VARCHAR(64))
 	BEGIN
 		UPDATE users
@@ -210,7 +208,7 @@ CREATE PROCEDURE UpdateEmail(IN _id INT, IN _email VARCHAR(64))
 -- Updates the first name of the user with the given user id to the
 -- given first name. The first name should already be validated.
 -- Author: Skylar Stark
-DROP PROCEDURE IF EXISTS UpdateFirstName;
+DROP PROCEDURE IF EXISTS UpdateFirstName //
 CREATE PROCEDURE UpdateFirstName(IN _id INT, IN _firstname VARCHAR(32))
 	BEGIN
 		UPDATE users
@@ -221,7 +219,7 @@ CREATE PROCEDURE UpdateFirstName(IN _id INT, IN _firstname VARCHAR(32))
 -- Updates the last name of the user with the given user id to the
 -- given last name. The last name should already be validated
 -- Author: Skylar Stark
-DROP PROCEDURE IF EXISTS UpdateLastName;
+DROP PROCEDURE IF EXISTS UpdateLastName //
 CREATE PROCEDURE UpdateLastName(IN _id INT, IN _lastname VARCHAR(32))
 	BEGIN
 		UPDATE users
@@ -232,7 +230,7 @@ CREATE PROCEDURE UpdateLastName(IN _id INT, IN _lastname VARCHAR(32))
 -- Updates the institution of the user with the given user id to the
 -- given institution. The institution should already be validated
 -- Author: Skylar Stark
-DROP PROCEDURE IF EXISTS UpdateInstitution;
+DROP PROCEDURE IF EXISTS UpdateInstitution //
 CREATE PROCEDURE UpdateInstitution(IN _id INT, IN _institution VARCHAR(64))
 	BEGIN
 		UPDATE users
@@ -243,7 +241,7 @@ CREATE PROCEDURE UpdateInstitution(IN _id INT, IN _institution VARCHAR(64))
 -- Updates the password of the user with the given user id to the
 -- given (already hashed and validated) password.
 -- Author: Skylar Stark
-DROP PROCEDURE IF EXISTS UpdatePassword;
+DROP PROCEDURE IF EXISTS UpdatePassword //
 CREATE PROCEDURE UpdatePassword(IN _id INT, IN _password VARCHAR(128))
 	BEGIN
 		UPDATE users
@@ -253,7 +251,7 @@ CREATE PROCEDURE UpdatePassword(IN _id INT, IN _password VARCHAR(128))
 
 -- Gets the default page size for a given user
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetDefaultPageSize;
+DROP PROCEDURE IF EXISTS GetDefaultPageSize //
 CREATE PROCEDURE GetDefaultPageSize(IN _id INT)
 	BEGIN
 		SELECT default_page_size AS pageSize
@@ -263,7 +261,7 @@ CREATE PROCEDURE GetDefaultPageSize(IN _id INT)
 
 -- Sets the default page size for a user, which is the number of rows per datatable they see by default
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS SetDefaultPageSize;
+DROP PROCEDURE IF EXISTS SetDefaultPageSize //
 CREATE PROCEDURE SetDefaultPageSize(IN _id INT, IN _size INT)
 	BEGIN
 		UPDATE users
@@ -274,7 +272,7 @@ CREATE PROCEDURE SetDefaultPageSize(IN _id INT, IN _size INT)
 -- Sets the user disk quota limit to the value of _newBytes
 -- for the given user
 -- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS UpdateUserDiskQuota;
+DROP PROCEDURE IF EXISTS UpdateUserDiskQuota //
 CREATE PROCEDURE UpdateUserDiskQuota(IN _userId INT, IN _newQuota BIGINT)
 	BEGIN
 		UPDATE users
@@ -283,7 +281,7 @@ CREATE PROCEDURE UpdateUserDiskQuota(IN _userId INT, IN _newQuota BIGINT)
 	END //
 
 -- Sets the user pair quota limit for the given user
-DROP PROCEDURE IF EXISTS UpdateUserPairQuota;
+DROP PROCEDURE IF EXISTS UpdateUserPairQuota //
 CREATE PROCEDURE UpdateUserPairQuota(IN _userId INT, IN _newQuota INT)
 	BEGIN
 		UPDATE users
@@ -292,7 +290,7 @@ CREATE PROCEDURE UpdateUserPairQuota(IN _userId INT, IN _newQuota INT)
 	END //
 
 -- Gets the total disk usage for a given user.
-DROP PROCEDURE IF EXISTS GetUserDiskUsage;
+DROP PROCEDURE IF EXISTS GetUserDiskUsage //
 CREATE PROCEDURE GetUserDiskUsage(IN _userID INT)
 	BEGIN
 		SELECT disk_size FROM users WHERE id=_userID;
@@ -300,7 +298,7 @@ CREATE PROCEDURE GetUserDiskUsage(IN _userID INT)
 
 -- Sums up the disk_size columns of solvers, benchmarks, and jobs and places that value in the
 -- the user disk_size column. Returns the difference between the old and new values in _sizeDelta
-DROP PROCEDURE IF EXISTS UpdateUserDiskUsage;
+DROP PROCEDURE IF EXISTS UpdateUserDiskUsage //
 CREATE PROCEDURE UpdateUserDiskUsage(IN _userID INT, OUT _sizeDelta BIGINT)
 	BEGIN
 		DECLARE _sumDiskSize BIGINT;
@@ -321,7 +319,7 @@ CREATE PROCEDURE UpdateUserDiskUsage(IN _userID INT, OUT _sizeDelta BIGINT)
 
 -- Returns the number of bytes a given user's benchmarks is consuming on disk
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetUserBenchmarkDiskUsage;
+DROP PROCEDURE IF EXISTS GetUserBenchmarkDiskUsage //
 CREATE PROCEDURE GetUserBenchmarkDiskUsage(IN _userID INT)
 	BEGIN
 		SELECT sum(benchmarks.disk_size) AS disk_usage
@@ -332,7 +330,7 @@ CREATE PROCEDURE GetUserBenchmarkDiskUsage(IN _userID INT)
 -- Returns the number of bytes a given user's benchmarks is consuming on disk
 -- Author: Eric Burns
 
-DROP PROCEDURE IF EXISTS GetUserSolverDiskUsage;
+DROP PROCEDURE IF EXISTS GetUserSolverDiskUsage //
 CREATE PROCEDURE GetUserSolverDiskUsage(IN _userID INT)
 	BEGIN
 		SELECT sum(solvers.disk_size) AS disk_usage
@@ -345,7 +343,7 @@ CREATE PROCEDURE GetUserSolverDiskUsage(IN _userID INT)
 -- Returns one record if a given user is a member of a particular space
 -- otherwise it returns an empty set
 -- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS IsMemberOfSpace;
+DROP PROCEDURE IF EXISTS IsMemberOfSpace //
 CREATE PROCEDURE IsMemberOfSpace(IN _userId INT, IN _spaceId INT)
 	BEGIN
 		SELECT *
@@ -356,7 +354,7 @@ CREATE PROCEDURE IsMemberOfSpace(IN _userId INT, IN _spaceId INT)
 
 -- Gets every user subscribed to the weekly reports
 -- Author: Albert Giegerich
-DROP PROCEDURE IF EXISTS GetAllUsersSubscribedToReports;
+DROP PROCEDURE IF EXISTS GetAllUsersSubscribedToReports //
 CREATE PROCEDURE GetAllUsersSubscribedToReports()
 	BEGIN
 		SELECT *
@@ -366,7 +364,7 @@ CREATE PROCEDURE GetAllUsersSubscribedToReports()
 	END //
 
 -- Gets every user whose role is 'admin'
-DROP PROCEDURE IF EXISTS GetAdmins;
+DROP PROCEDURE IF EXISTS GetAdmins //
 CREATE PROCEDURE GetAdmins()
 	BEGIN
 		SELECT *
@@ -377,7 +375,7 @@ CREATE PROCEDURE GetAdmins()
 
 -- Checks to see whether the given user is a member of the given community
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS IsMemberOfCommunity;
+DROP PROCEDURE IF EXISTS IsMemberOfCommunity //
 CREATE PROCEDURE IsMemberOfCommunity(IN _userId INT, IN communityId INT)
 	BEGIN
 		SELECT COUNT(*) AS spaceCount FROM closure
@@ -388,7 +386,7 @@ CREATE PROCEDURE IsMemberOfCommunity(IN _userId INT, IN communityId INT)
 
 -- Deletes a user from the database. Right now, this is only used to get rid of temporary test users
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS DeleteUser;
+DROP PROCEDURE IF EXISTS DeleteUser //
 CREATE PROCEDURE DeleteUser(IN _userId INT)
 	BEGIN
 		DELETE FROM logins WHERE user_id=_userId;
@@ -397,7 +395,7 @@ CREATE PROCEDURE DeleteUser(IN _userId INT)
 
 -- Sets the role of the given user to the given value
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS ChangeUserRole;
+DROP PROCEDURE IF EXISTS ChangeUserRole //
 CREATE PROCEDURE ChangeUserRole(IN _userId INT, IN _role VARCHAR(24))
 	BEGIN
 		UPDATE user_roles
@@ -406,14 +404,10 @@ CREATE PROCEDURE ChangeUserRole(IN _userId INT, IN _role VARCHAR(24))
 		WHERE id=_userId;
 	END //
 
-DROP PROCEDURE IF EXISTS SetUserReportSubscription;
+DROP PROCEDURE IF EXISTS SetUserReportSubscription //
 CREATE PROCEDURE SetUserReportSubscription(IN _userId INT, IN _willBeSubscribed BOOLEAN)
 	BEGIN
 		UPDATE users
 		SET subscribed_to_reports = _willBeSubscribed
 		WHERE id = _userId;
 	END //
-
-
-
-DELIMITER ; -- This should always be at the end of this file

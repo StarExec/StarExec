@@ -16,14 +16,14 @@
 		</copy>
 	</target>
 
-	<target name="update-sql">
+	<target name="reload-sql" description="Reload SQL functions and procedures">
 		<sql driver="com.mysql.jdbc.Driver" classpathref="classpath"
 		     delimiter="//" keepformat="true"
 		     url="${DB.Url}" userid="${DB.User}" password="${DB.Pass}">
 			<path>
 				<fileset dir="sql">
-					<include name="StarFunctions.sql"/>
-					<include name="StarProcedures.sql"/>
+					<include name="StarFunctions.sql" />
+					<include name="procedures/**/*" />
 				</fileset>
 			</path>
 		</sql>

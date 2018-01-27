@@ -1,11 +1,9 @@
 -- Description: This file contains all cluster stored procedures for the starexec database
 -- The procedures are stored by which table they're related to and roughly alphabetic order. Please try to keep this organized!
 
-DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
-
 -- Adds a worker node to the database and ignores duplicates
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS AssociateQueue;
+DROP PROCEDURE IF EXISTS AssociateQueue //
 CREATE PROCEDURE AssociateQueue(IN _queueName VARCHAR(64), IN _nodeName VARCHAR(64))
 	BEGIN
 		INSERT IGNORE INTO queue_assoc
@@ -16,7 +14,7 @@ CREATE PROCEDURE AssociateQueue(IN _queueName VARCHAR(64), IN _nodeName VARCHAR(
 
 -- Adds a worker node to the database and ignores duplicates
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS AddNode;
+DROP PROCEDURE IF EXISTS AddNode //
 CREATE PROCEDURE AddNode(IN _name VARCHAR(64))
 	BEGIN
 		INSERT IGNORE INTO nodes (name)
@@ -25,7 +23,7 @@ CREATE PROCEDURE AddNode(IN _name VARCHAR(64))
 
 -- Clear all Queue Associations from the db
 -- Author: Benton McCune
-DROP PROCEDURE IF EXISTS ClearQueueAssociations;
+DROP PROCEDURE IF EXISTS ClearQueueAssociations //
 CREATE PROCEDURE ClearQueueAssociations()
 	BEGIN
 		TRUNCATE queue_assoc;
@@ -33,7 +31,7 @@ CREATE PROCEDURE ClearQueueAssociations()
 
 -- Gets the id, name and status of all nodes in the cluster that are active
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetNodesForQueue;
+DROP PROCEDURE IF EXISTS GetNodesForQueue //
 CREATE PROCEDURE GetNodesForQueue(IN _id INT)
 	BEGIN
 		SELECT node.id, node.name, node.status
@@ -45,7 +43,7 @@ CREATE PROCEDURE GetNodesForQueue(IN _id INT)
 
 -- Gets the id, name and status of all queues in the cluster that are active
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetAllQueues;
+DROP PROCEDURE IF EXISTS GetAllQueues //
 CREATE PROCEDURE GetAllQueues()
 	BEGIN
 		SELECT id, name, status,global_access, cpuTimeout,clockTimeout
@@ -56,7 +54,7 @@ CREATE PROCEDURE GetAllQueues()
 
 -- Gets the id, name and status of all queues in the cluster
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetAllQueuesAdmin;
+DROP PROCEDURE IF EXISTS GetAllQueuesAdmin //
 CREATE PROCEDURE GetAllQueuesAdmin()
 	BEGIN
 		SELECT id, name, status,global_access, cpuTimeout, clockTimeout
@@ -66,7 +64,7 @@ CREATE PROCEDURE GetAllQueuesAdmin()
 
 -- Gets worker node with the given ID
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetNodeDetails;
+DROP PROCEDURE IF EXISTS GetNodeDetails //
 CREATE PROCEDURE GetNodeDetails(IN _id INT)
 	BEGIN
 		SELECT *
@@ -76,7 +74,7 @@ CREATE PROCEDURE GetNodeDetails(IN _id INT)
 
 -- Gets the queue with the given ID (excluding SGE attributes)
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetQueue;
+DROP PROCEDURE IF EXISTS GetQueue //
 CREATE PROCEDURE GetQueue(IN _id INT)
 	BEGIN
 		SELECT *
@@ -86,7 +84,7 @@ CREATE PROCEDURE GetQueue(IN _id INT)
 
 -- Updates all queues status'
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS UpdateAllQueueStatus;
+DROP PROCEDURE IF EXISTS UpdateAllQueueStatus //
 CREATE PROCEDURE UpdateAllQueueStatus(IN _status VARCHAR(32))
 	BEGIN
 		UPDATE queues
@@ -95,7 +93,7 @@ CREATE PROCEDURE UpdateAllQueueStatus(IN _status VARCHAR(32))
 
 -- Updates a specific queues status
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS UpdateQueueStatus;
+DROP PROCEDURE IF EXISTS UpdateQueueStatus //
 CREATE PROCEDURE UpdateQueueStatus(IN _name VARCHAR(64), IN _status VARCHAR(32))
 	BEGIN
 		UPDATE queues
@@ -105,7 +103,7 @@ CREATE PROCEDURE UpdateQueueStatus(IN _name VARCHAR(64), IN _status VARCHAR(32))
 
 -- Updates all nodes status'
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS UpdateAllNodeStatus;
+DROP PROCEDURE IF EXISTS UpdateAllNodeStatus //
 CREATE PROCEDURE UpdateAllNodeStatus(IN _status VARCHAR(32))
 	BEGIN
 		UPDATE nodes
@@ -114,7 +112,7 @@ CREATE PROCEDURE UpdateAllNodeStatus(IN _status VARCHAR(32))
 
 -- Updates a specific node's status
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS UpdateNodeStatus;
+DROP PROCEDURE IF EXISTS UpdateNodeStatus //
 CREATE PROCEDURE UpdateNodeStatus(IN _name VARCHAR(64), IN _status VARCHAR(32))
 	BEGIN
 		UPDATE nodes
@@ -124,7 +122,7 @@ CREATE PROCEDURE UpdateNodeStatus(IN _name VARCHAR(64), IN _status VARCHAR(32))
 
 -- Returns all the nodes in the system that are active
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetAllNodes;
+DROP PROCEDURE IF EXISTS GetAllNodes //
 CREATE PROCEDURE GetAllNodes ()
 	BEGIN
 		SELECT *
@@ -134,7 +132,7 @@ CREATE PROCEDURE GetAllNodes ()
 
 -- Returns all the nodes in the system that are active and not associated with the queue already
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetNonAttachedNodes;
+DROP PROCEDURE IF EXISTS GetNonAttachedNodes //
 CREATE PROCEDURE GetNonAttachedNodes(IN _queueId INT)
 	BEGIN
 		SELECT DISTINCT nodes.id, queues.id, nodes.name, queues.name, nodes.status
@@ -145,7 +143,7 @@ CREATE PROCEDURE GetNonAttachedNodes(IN _queueId INT)
 
 -- Returns the jobs that are currently running on a specific queue
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetJobsRunningOnQueue;
+DROP PROCEDURE IF EXISTS GetJobsRunningOnQueue //
 CREATE PROCEDURE GetJobsRunningOnQueue(IN _queueId INT)
 	BEGIN
 		SELECT DISTINCT
@@ -171,7 +169,7 @@ CREATE PROCEDURE GetJobsRunningOnQueue(IN _queueId INT)
 
 -- Returns the Queue that a specific node is associated with
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetQueueForNode;
+DROP PROCEDURE IF EXISTS GetQueueForNode //
 CREATE PROCEDURE GetQueueForNode(IN _nodeId INT)
 	BEGIN
 		SELECT queues.id, queues.name, queues.status
@@ -181,7 +179,7 @@ CREATE PROCEDURE GetQueueForNode(IN _nodeId INT)
 
 -- Return the node id given its name
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetNodeIdByName;
+DROP PROCEDURE IF EXISTS GetNodeIdByName //
 CREATE PROCEDURE GetNodeIdByName(IN _nodeName VARCHAR(128))
 	BEGIN
 		SELECT id
@@ -191,7 +189,7 @@ CREATE PROCEDURE GetNodeIdByName(IN _nodeName VARCHAR(128))
 
 -- Return the node name given its id
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetNodeNameById;
+DROP PROCEDURE IF EXISTS GetNodeNameById //
 CREATE PROCEDURE GetNodeNameById(IN _nodeId INT)
 	BEGIN
 		SELECT name
@@ -200,10 +198,8 @@ CREATE PROCEDURE GetNodeNameById(IN _nodeId INT)
 	END //
 
 -- deletes a node from the database
-DROP PROCEDURE IF EXISTS DeleteNode;
+DROP PROCEDURE IF EXISTS DeleteNode //
 CREATE PROCEDURE DeleteNode(IN _id INT)
 	BEGIN
 		DELETE FROM nodes WHERE id=_id;
 	END //
-
-DELIMITER ; -- This should always be at the end of this file

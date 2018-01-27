@@ -1,11 +1,9 @@
 -- Description: This file contains all processor-related stored procedures for the starexec database
 -- The procedures are stored by which table they're related to and roughly alphabetic order. Please try to keep this organized!
 
-DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
-
 -- Adds a new processor with the given information
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS AddProcessor;
+DROP PROCEDURE IF EXISTS AddProcessor //
 CREATE PROCEDURE AddProcessor(IN _name VARCHAR(64), IN _desc TEXT, IN _path TEXT, IN _comId INT, IN _type TINYINT, IN _diskSize BIGINT, IN _time_limit TINYINT, OUT _id INT)
 	BEGIN
 		INSERT INTO processors (name, description, path, community, processor_type, disk_size, time_limit)
@@ -18,7 +16,7 @@ CREATE PROCEDURE AddProcessor(IN _name VARCHAR(64), IN _desc TEXT, IN _path TEXT
 -- and inserts the processor_path into _path, so the physical file(s) can
 -- be removed from disk
 -- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS DeleteProcessor;
+DROP PROCEDURE IF EXISTS DeleteProcessor //
 CREATE PROCEDURE DeleteProcessor(IN _id INT, OUT _path TEXT)
 	BEGIN
 		SELECT path INTO _path FROM processors WHERE id = _id;
@@ -28,7 +26,7 @@ CREATE PROCEDURE DeleteProcessor(IN _id INT, OUT _path TEXT)
 
 -- Gets all processors of a given type
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetAllProcessors;
+DROP PROCEDURE IF EXISTS GetAllProcessors //
 CREATE PROCEDURE GetAllProcessors(IN _type TINYINT)
 	BEGIN
 		SELECT *
@@ -39,7 +37,7 @@ CREATE PROCEDURE GetAllProcessors(IN _type TINYINT)
 
 -- Retrieves all processor belonging to a community
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetProcessorsByCommunity;
+DROP PROCEDURE IF EXISTS GetProcessorsByCommunity //
 CREATE PROCEDURE GetProcessorsByCommunity(IN _id INT, IN _type TINYINT)
 	BEGIN
 		SELECT *
@@ -50,7 +48,7 @@ CREATE PROCEDURE GetProcessorsByCommunity(IN _id INT, IN _type TINYINT)
 
 -- Retrieves all processors in all communities a user is a part of
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetProcessorsByUser;
+DROP PROCEDURE IF EXISTS GetProcessorsByUser //
 CREATE PROCEDURE GetProcessorsByUser(IN _userId INT, IN _type TINYINT)
 	BEGIN
 		SELECT *
@@ -67,7 +65,7 @@ CREATE PROCEDURE GetProcessorsByUser(IN _userId INT, IN _type TINYINT)
 
 -- Gets the processor with the given ID
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetProcessorById;
+DROP PROCEDURE IF EXISTS GetProcessorById //
 CREATE PROCEDURE GetProcessorById(IN _id INT)
 	BEGIN
 		SELECT *
@@ -77,7 +75,7 @@ CREATE PROCEDURE GetProcessorById(IN _id INT)
 
 -- Updates a processor's description
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS UpdateProcessorDescription;
+DROP PROCEDURE IF EXISTS UpdateProcessorDescription //
 CREATE PROCEDURE UpdateProcessorDescription(IN _id INT, IN _desc TEXT)
 	BEGIN
 		UPDATE processors
@@ -87,7 +85,7 @@ CREATE PROCEDURE UpdateProcessorDescription(IN _id INT, IN _desc TEXT)
 
 -- Updates a processor's file path
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS UpdateProcessorFilePath;
+DROP PROCEDURE IF EXISTS UpdateProcessorFilePath //
 CREATE PROCEDURE UpdateProcessorFilePath(IN _id INT, IN _path TEXT)
 	BEGIN
 		UPDATE processors
@@ -97,7 +95,7 @@ CREATE PROCEDURE UpdateProcessorFilePath(IN _id INT, IN _path TEXT)
 
 -- Updates a processor's name
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS UpdateProcessorName;
+DROP PROCEDURE IF EXISTS UpdateProcessorName //
 CREATE PROCEDURE UpdateProcessorName(IN _id INT, IN _name VARCHAR(64))
 	BEGIN
 		UPDATE processors
@@ -107,7 +105,7 @@ CREATE PROCEDURE UpdateProcessorName(IN _id INT, IN _name VARCHAR(64))
 
 -- Updates a processor's processor path
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS UpdateProcessorPath;
+DROP PROCEDURE IF EXISTS UpdateProcessorPath //
 CREATE PROCEDURE UpdateProcessorPath(IN _id INT, IN _path TEXT, IN _diskSize BIGINT)
 	BEGIN
 		UPDATE processors
@@ -116,7 +114,7 @@ CREATE PROCEDURE UpdateProcessorPath(IN _id INT, IN _path TEXT, IN _diskSize BIG
 		WHERE id=_id;
 	END //
 
-DROP PROCEDURE IF EXISTS UpdateProcessorTimeLimit;
+DROP PROCEDURE IF EXISTS UpdateProcessorTimeLimit //
 CREATE PROCEDURE UpdateProcessorTimeLimit(IN _id INT, IN _timeLimit TINYINT)
 	BEGIN
 		UPDATE processors
@@ -124,7 +122,7 @@ CREATE PROCEDURE UpdateProcessorTimeLimit(IN _id INT, IN _timeLimit TINYINT)
 		WHERE id=_id;
 	END //
 
-DROP PROCEDURE IF EXISTS UpdateProcessorSyntax;
+DROP PROCEDURE IF EXISTS UpdateProcessorSyntax //
 CREATE PROCEDURE UpdateProcessorSyntax(IN _id INT, IN _syntax INT)
 	BEGIN
 		UPDATE processors
@@ -132,10 +130,8 @@ CREATE PROCEDURE UpdateProcessorSyntax(IN _id INT, IN _syntax INT)
 		WHERE id=_id;
 	END //
 
-DROP PROCEDURE IF EXISTS GetAllSyntaxes;
+DROP PROCEDURE IF EXISTS GetAllSyntaxes //
 CREATE PROCEDURE GetAllSyntaxes()
 	BEGIN
 		SELECT * FROM syntax;
 	END //
-
-DELIMITER ; -- This should always be at the end of this file

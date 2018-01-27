@@ -1,11 +1,9 @@
 -- Description: This file contains all benchmark stored procedures for the starexec database
 -- The procedures are stored by which table they're related to and roughly alphabetic order. Please try to keep this organized!
 
-DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
-
 -- Adds a benchmark into the system and associates it with a space
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS AddBenchmark;
+DROP PROCEDURE IF EXISTS AddBenchmark //
 CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(256), IN _path TEXT, IN _downloadable TINYINT(1), IN _userId INT, IN _typeId INT, IN _diskSize BIGINT, IN _description TEXT, OUT _benchId INT)
 	BEGIN
 		UPDATE users SET disk_size=disk_size+_diskSize WHERE id = _userId;
@@ -15,7 +13,7 @@ CREATE PROCEDURE AddBenchmark(IN _name VARCHAR(256), IN _path TEXT, IN _download
 		SELECT LAST_INSERT_ID() INTO _benchId;
 	END //
 
-DROP PROCEDURE IF EXISTS AddAndAssociateBenchmark;
+DROP PROCEDURE IF EXISTS AddAndAssociateBenchmark //
 CREATE PROCEDURE AddAndAssociateBenchmark(IN _name VARCHAR(256), IN _path TEXT, IN _downloadable TINYINT(1), IN _userId INT, IN _typeId INT, IN _diskSize BIGINT, IN _spaceId INT, OUT _benchId INT)
 	BEGIN
 		UPDATE users SET disk_size=disk_size+_diskSize WHERE id = _userId;
@@ -30,7 +28,7 @@ CREATE PROCEDURE AddAndAssociateBenchmark(IN _name VARCHAR(256), IN _path TEXT, 
 
 -- Gets all benchmarks that are in a job (in job pairs in that job)
 -- Author: Albert Giegerich
-DROP PROCEDURE IF EXISTS GetBenchmarksByJob;
+DROP PROCEDURE IF EXISTS GetBenchmarksByJob //
 CREATE PROCEDURE GetBenchmarksByJob(IN _jobId INT)
 	BEGIN
 		SELECT DISTINCT benchmarks.*
@@ -42,7 +40,7 @@ CREATE PROCEDURE GetBenchmarksByJob(IN _jobId INT)
 
 -- Adds a new attribute to a benchmark
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS AddBenchAttr;
+DROP PROCEDURE IF EXISTS AddBenchAttr //
 CREATE PROCEDURE AddBenchAttr(IN _benchmarkId INT, IN _key VARCHAR(128), IN _val VARCHAR(128))
 	BEGIN
 		REPLACE INTO bench_attributes VALUES (_benchmarkId, _key, _val);
@@ -51,7 +49,7 @@ CREATE PROCEDURE AddBenchAttr(IN _benchmarkId INT, IN _key VARCHAR(128), IN _val
 
 -- Adds a new dependency for a benchmark
 -- Author: Benton McCune
-DROP PROCEDURE IF EXISTS AddBenchDependency;
+DROP PROCEDURE IF EXISTS AddBenchDependency //
 CREATE PROCEDURE AddBenchDependency(IN _primary_bench_id INT, IN _secondary_benchId INT, IN _include_path TEXT)
 	BEGIN
 		INSERT INTO bench_dependency (primary_bench_id, secondary_bench_id, include_path) VALUES (_primary_bench_id, _secondary_benchId, _include_path);
@@ -59,7 +57,7 @@ CREATE PROCEDURE AddBenchDependency(IN _primary_bench_id INT, IN _secondary_benc
 
 -- Associates the given benchmark with the given space
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS AssociateBench;
+DROP PROCEDURE IF EXISTS AssociateBench //
 CREATE PROCEDURE AssociateBench(IN _benchId INT, IN _spaceId INT)
 	BEGIN
 		INSERT IGNORE INTO bench_assoc (space_id, bench_id) VALUES (_spaceId, _benchId);
@@ -67,7 +65,7 @@ CREATE PROCEDURE AssociateBench(IN _benchId INT, IN _spaceId INT)
 
 -- Retrieves all attributes for a benchmark
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetBenchAttrs;
+DROP PROCEDURE IF EXISTS GetBenchAttrs //
 CREATE PROCEDURE GetBenchAttrs(IN _benchmarkId INT)
 	BEGIN
 		SELECT *
@@ -76,7 +74,7 @@ CREATE PROCEDURE GetBenchAttrs(IN _benchmarkId INT)
 		ORDER BY attr_key ASC;
 	END //
 
-DROP PROCEDURE IF EXISTS GetBenchByName;
+DROP PROCEDURE IF EXISTS GetBenchByName //
 CREATE PROCEDURE GetBenchByName(IN _id INT, IN _name VARCHAR(256))
 	BEGIN
 		SELECT *
@@ -90,7 +88,7 @@ CREATE PROCEDURE GetBenchByName(IN _id INT, IN _name VARCHAR(256))
 
 -- Retrieves all benchmark dependencies for a given primary benchmark id
 -- Author: Benton McCune
-DROP PROCEDURE IF EXISTS GetBenchmarkDependencies;
+DROP PROCEDURE IF EXISTS GetBenchmarkDependencies //
 CREATE PROCEDURE GetBenchmarkDependencies(IN _pBenchId INT)
 	BEGIN
 		SELECT *
@@ -100,7 +98,7 @@ CREATE PROCEDURE GetBenchmarkDependencies(IN _pBenchId INT)
 
 -- Deletes a benchmark given that benchmark's id
 -- Author: Todd Elvers	+ Eric Burns
-DROP PROCEDURE IF EXISTS SetBenchmarkToDeletedById;
+DROP PROCEDURE IF EXISTS SetBenchmarkToDeletedById //
 CREATE PROCEDURE SetBenchmarkToDeletedById(IN _benchmarkId INT, OUT _path TEXT)
 	BEGIN
 		UPDATE users JOIN benchmarks on benchmarks.user_id=users.id
@@ -114,7 +112,7 @@ CREATE PROCEDURE SetBenchmarkToDeletedById(IN _benchmarkId INT, OUT _path TEXT)
 	END //
 -- Gets the IDs of all the spaces associated with the given benchmark
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetAssociatedSpaceIdsByBenchmark;
+DROP PROCEDURE IF EXISTS GetAssociatedSpaceIdsByBenchmark //
 CREATE PROCEDURE GetAssociatedSpaceIdsByBenchmark(IN _benchId INT)
 	BEGIN
 		SELECT space_id
@@ -124,7 +122,7 @@ CREATE PROCEDURE GetAssociatedSpaceIdsByBenchmark(IN _benchId INT)
 
 -- Retrieves the benchmark with the given id
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetBenchmarkById;
+DROP PROCEDURE IF EXISTS GetBenchmarkById //
 CREATE PROCEDURE GetBenchmarkById(IN _id INT)
 	BEGIN
 		SELECT *
@@ -136,7 +134,7 @@ CREATE PROCEDURE GetBenchmarkById(IN _id INT)
 
 -- Retrieves the benchmark with the given id, including deleted benchmarks
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetBenchmarkByIdIncludeDeletedAndRecycled;
+DROP PROCEDURE IF EXISTS GetBenchmarkByIdIncludeDeletedAndRecycled //
 CREATE PROCEDURE GetBenchmarkByIdIncludeDeletedAndRecycled(IN _id INT)
 	BEGIN
 		SELECT *
@@ -146,7 +144,7 @@ CREATE PROCEDURE GetBenchmarkByIdIncludeDeletedAndRecycled(IN _id INT)
 		WHERE bench.id = _id;
 	END //
 
-DROP PROCEDURE IF EXISTS GetXMLUploadStatusById;
+DROP PROCEDURE IF EXISTS GetXMLUploadStatusById //
 CREATE PROCEDURE GetXMLUploadStatusById(IN _id INT)
 	BEGIN
 		SELECT *
@@ -156,7 +154,7 @@ CREATE PROCEDURE GetXMLUploadStatusById(IN _id INT)
 
 -- Returns the number of benchmarks in a given space that match a given query
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetBenchmarkCountInSpaceWithQuery;
+DROP PROCEDURE IF EXISTS GetBenchmarkCountInSpaceWithQuery //
 CREATE PROCEDURE GetBenchmarkCountInSpaceWithQuery(IN _spaceId INT, IN _query TEXT)
 	BEGIN
 		SELECT 	COUNT(*) AS benchCount
@@ -171,7 +169,7 @@ CREATE PROCEDURE GetBenchmarkCountInSpaceWithQuery(IN _spaceId INT, IN _query TE
 -- Retrieves all benchmarks belonging to a space
 -- Author: Eric Burns
 
-DROP PROCEDURE IF EXISTS GetSpaceBenchmarksById;
+DROP PROCEDURE IF EXISTS GetSpaceBenchmarksById //
 CREATE PROCEDURE GetSpaceBenchmarksById(IN _id INT)
 	BEGIN
 		SELECT *
@@ -184,7 +182,7 @@ CREATE PROCEDURE GetSpaceBenchmarksById(IN _id INT)
 
 -- Returns the number of public spaces a benchmark is in
 -- Benton McCune
-DROP PROCEDURE IF EXISTS IsBenchPublic;
+DROP PROCEDURE IF EXISTS IsBenchPublic //
 CREATE PROCEDURE IsBenchPublic(IN _benchId INT)
 	BEGIN
 		SELECT count(*) as benchPublic
@@ -193,7 +191,7 @@ CREATE PROCEDURE IsBenchPublic(IN _benchId INT)
 		AND IsPublic(space_id);
 	END //
 
-DROP PROCEDURE IF EXISTS IsBenchmarkDeleted;
+DROP PROCEDURE IF EXISTS IsBenchmarkDeleted //
 CREATE PROCEDURE IsBenchmarkDeleted(IN _benchId INT)
 	BEGIN
 		SELECT count(*) AS benchDeleted
@@ -203,7 +201,7 @@ CREATE PROCEDURE IsBenchmarkDeleted(IN _benchId INT)
 
 -- Removes the association between a benchmark and a given space;
 -- Author: Todd Elvers + Eric Burns
-DROP PROCEDURE IF EXISTS RemoveBenchFromSpace;
+DROP PROCEDURE IF EXISTS RemoveBenchFromSpace //
 CREATE PROCEDURE RemoveBenchFromSpace(IN _benchId INT, IN _spaceId INT)
 	BEGIN
 		IF _spaceId >= 0 THEN
@@ -217,7 +215,7 @@ CREATE PROCEDURE RemoveBenchFromSpace(IN _benchId INT, IN _spaceId INT)
 
 -- Updates the details associated with a given benchmark
 -- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS UpdateBenchmarkDetails;
+DROP PROCEDURE IF EXISTS UpdateBenchmarkDetails //
 CREATE PROCEDURE UpdateBenchmarkDetails(IN _benchmarkId INT, IN _name VARCHAR(256), IN _description TEXT, IN _downloadable BOOLEAN, IN _type INT)
 	BEGIN
 		UPDATE benchmarks
@@ -230,7 +228,7 @@ CREATE PROCEDURE UpdateBenchmarkDetails(IN _benchmarkId INT, IN _name VARCHAR(25
 
 -- Get the total count of the benchmarks belong to a specific user
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetBenchmarkCountByUser;
+DROP PROCEDURE IF EXISTS GetBenchmarkCountByUser //
 CREATE PROCEDURE GetBenchmarkCountByUser(IN _userId INT)
 	BEGIN
 		SELECT COUNT(*) AS benchCount
@@ -239,7 +237,7 @@ CREATE PROCEDURE GetBenchmarkCountByUser(IN _userId INT)
 	END //
 -- Returns the number of benchmarks a given user has that match the query
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetBenchmarkCountByUserWithQuery;
+DROP PROCEDURE IF EXISTS GetBenchmarkCountByUserWithQuery //
 CREATE PROCEDURE GetBenchmarkCountByUserWithQuery(IN _userId INT, IN _query TEXT)
 	BEGIN
 		SELECT 	COUNT(*) AS benchCount
@@ -252,7 +250,7 @@ CREATE PROCEDURE GetBenchmarkCountByUserWithQuery(IN _userId INT, IN _query TEXT
 
 -- Sets the recycled attribute to the given value for the given benchmark
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS SetBenchmarkRecycledValue;
+DROP PROCEDURE IF EXISTS SetBenchmarkRecycledValue //
 CREATE PROCEDURE SetBenchmarkRecycledValue(IN _benchId INT, IN _recycled BOOLEAN)
 	BEGIN
 		UPDATE benchmarks
@@ -262,7 +260,7 @@ CREATE PROCEDURE SetBenchmarkRecycledValue(IN _benchId INT, IN _recycled BOOLEAN
 
 -- Checks to see whether the "recycled" flag is set for the given benchmark
 -- Author: Eric BUrns
-DROP PROCEDURE IF EXISTS IsBenchmarkRecycled;
+DROP PROCEDURE IF EXISTS IsBenchmarkRecycled //
 CREATE PROCEDURE IsBenchmarkRecycled(IN _benchId INT)
 	BEGIN
 		SELECT recycled FROM benchmarks
@@ -271,7 +269,7 @@ CREATE PROCEDURE IsBenchmarkRecycled(IN _benchId INT)
 
 -- Counts how many recycled benchmarks a user has that match the given query
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetRecycledBenchmarkCountByUser;
+DROP PROCEDURE IF EXISTS GetRecycledBenchmarkCountByUser //
 CREATE PROCEDURE GetRecycledBenchmarkCountByUser(IN _userId INT, IN _query TEXT)
 	BEGIN
 		SELECT 	COUNT(*) AS benchCount
@@ -284,7 +282,7 @@ CREATE PROCEDURE GetRecycledBenchmarkCountByUser(IN _userId INT, IN _query TEXT)
 
 -- Gets the path to every recycled benchmark a user has
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetRecycledBenchmarkPaths;
+DROP PROCEDURE IF EXISTS GetRecycledBenchmarkPaths //
 CREATE PROCEDURE GetRecycledBenchmarkPaths(IN _userId INT)
 	BEGIN
 		SELECT path FROM benchmarks
@@ -293,7 +291,7 @@ CREATE PROCEDURE GetRecycledBenchmarkPaths(IN _userId INT)
 
 -- Removes all recycled benchmarks a user has in the database
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS SetRecycledBenchmarksToDeleted;
+DROP PROCEDURE IF EXISTS SetRecycledBenchmarksToDeleted //
 CREATE PROCEDURE SetRecycledBenchmarksToDeleted(IN _userId INT)
 	BEGIN
 		UPDATE users
@@ -306,7 +304,7 @@ CREATE PROCEDURE SetRecycledBenchmarksToDeleted(IN _userId INT)
 
 -- Gets all recycled benchmark ids a user has
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetRecycledBenchmarkIds;
+DROP PROCEDURE IF EXISTS GetRecycledBenchmarkIds //
 CREATE PROCEDURE GetRecycledBenchmarkIds(IN _userId INT)
 	BEGIN
 		SELECT id from benchmarks
@@ -316,7 +314,7 @@ CREATE PROCEDURE GetRecycledBenchmarkIds(IN _userId INT)
 
 -- Sets the recycled flag for a single benchmark back to false
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS RestoreBenchmark;
+DROP PROCEDURE IF EXISTS RestoreBenchmark //
 CREATE PROCEDURE RestoreBenchmark(IN _benchId INT)
 	BEGIN
 		UPDATE benchmarks
@@ -325,7 +323,7 @@ CREATE PROCEDURE RestoreBenchmark(IN _benchId INT)
 	END //
 -- Gets rid of all the current attributes a benchmark has
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS ClearBenchAttributes;
+DROP PROCEDURE IF EXISTS ClearBenchAttributes //
 CREATE PROCEDURE ClearBenchAttributes(IN _benchId INT)
 	BEGIN
 		DELETE FROM bench_attributes
@@ -334,7 +332,7 @@ CREATE PROCEDURE ClearBenchAttributes(IN _benchId INT)
 
 -- Retrieves the benchmarks owned by a given user id
 -- Eric Burns
-DROP PROCEDURE IF EXISTS GetBenchmarksByOwner;
+DROP PROCEDURE IF EXISTS GetBenchmarksByOwner //
 CREATE PROCEDURE GetBenchmarksByOwner(IN _userId INT)
 	BEGIN
 		SELECT *
@@ -345,7 +343,7 @@ CREATE PROCEDURE GetBenchmarksByOwner(IN _userId INT)
 	END //
 
 -- Gets the ids of every orphaned benchmark a user owns
-DROP PROCEDURE IF EXISTS GetOrphanedBenchmarkIds;
+DROP PROCEDURE IF EXISTS GetOrphanedBenchmarkIds //
 CREATE PROCEDURE GetOrphanedBenchmarkIds(IN _userId INT)
 	BEGIN
 		SELECT benchmarks.id FROM benchmarks
@@ -355,7 +353,7 @@ CREATE PROCEDURE GetOrphanedBenchmarkIds(IN _userId INT)
 
 -- Permanently removes a benchmark from the database
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS RemoveBenchmarkFromDatabase;
+DROP PROCEDURE IF EXISTS RemoveBenchmarkFromDatabase //
 CREATE PROCEDURE RemoveBenchmarkFromDatabase(IN _id INT)
 	BEGIN
 		DELETE FROM benchmarks
@@ -365,7 +363,7 @@ CREATE PROCEDURE RemoveBenchmarkFromDatabase(IN _id INT)
 
 -- Gets all the benchmarks ids of benchmarks that are in at least one space
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetBenchmarksAssociatedWithSpaces;
+DROP PROCEDURE IF EXISTS GetBenchmarksAssociatedWithSpaces //
 CREATE PROCEDURE GetBenchmarksAssociatedWithSpaces()
 	BEGIN
 		SELECT DISTINCT bench_id AS id FROM bench_assoc;
@@ -373,7 +371,7 @@ CREATE PROCEDURE GetBenchmarksAssociatedWithSpaces()
 
 -- Gets the benchmarks ids of all benchmarks associated with at least one pair
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetBenchmarksAssociatedWithPairs;
+DROP PROCEDURE IF EXISTS GetBenchmarksAssociatedWithPairs //
 CREATE PROCEDURE GetBenchmarksAssociatedWithPairs()
 	BEGIN
 		SELECT DISTINCT bench_id AS id from job_pairs;
@@ -381,7 +379,7 @@ CREATE PROCEDURE GetBenchmarksAssociatedWithPairs()
 
 -- Gets the benchmark ids of all deleted benchmarks
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetDeletedBenchmarks;
+DROP PROCEDURE IF EXISTS GetDeletedBenchmarks //
 CREATE PROCEDURE GetDeletedBenchmarks()
 	BEGIN
 		SELECT * FROM benchmarks WHERE deleted=true;
@@ -390,7 +388,7 @@ CREATE PROCEDURE GetDeletedBenchmarks()
 
 -- returns every benchmark that shares a space with the given user
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetBenchmarksInSharedSpaces;
+DROP PROCEDURE IF EXISTS GetBenchmarksInSharedSpaces //
 CREATE PROCEDURE GetBenchmarksInSharedSpaces(IN _userId INT)
 	BEGIN
 		SELECT * FROM benchmarks
@@ -404,7 +402,7 @@ CREATE PROCEDURE GetBenchmarksInSharedSpaces(IN _userId INT)
 
 -- Gets all solvers that reside in public spaces
 -- Author: Benton McCune
-DROP PROCEDURE IF EXISTS GetPublicBenchmarks;
+DROP PROCEDURE IF EXISTS GetPublicBenchmarks //
 CREATE PROCEDURE GetPublicBenchmarks()
 	BEGIN
 		SELECT * from benchmarks
@@ -416,7 +414,7 @@ CREATE PROCEDURE GetPublicBenchmarks()
 		GROUP BY benchmarks.id;
 	END //
 
-DROP PROCEDURE IF EXISTS GetBrokenBenchDependencies;
+DROP PROCEDURE IF EXISTS GetBrokenBenchDependencies //
 CREATE PROCEDURE GetBrokenBenchDependencies(IN _benchId INT)
     BEGIN
         SELECT DISTINCT benchmarks.id
@@ -427,5 +425,3 @@ CREATE PROCEDURE GetBrokenBenchDependencies(IN _benchId INT)
             OR benchmarks.recycled = 1)
             AND primary_bench_id = _benchId;
     END //
-
-DELIMITER ; -- This should always be at the end of this file

@@ -1,9 +1,7 @@
 -- Description: This file contains all job-related stored procedures for the starexec database
 -- The procedures are stored by which table they're related to and roughly alphabetic order. Please try to keep this organized!
 
-DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
-
-DROP PROCEDURE IF EXISTS UpdateJobPairStatus;
+DROP PROCEDURE IF EXISTS UpdateJobPairStatus //
 CREATE PROCEDURE UpdateJobPairStatus(IN _pairId INT, IN _statusCode INT)
 	BEGIN
 		UPDATE job_pairs
@@ -11,7 +9,7 @@ CREATE PROCEDURE UpdateJobPairStatus(IN _pairId INT, IN _statusCode INT)
 		WHERE id = _pairId;
 	END //
 
-DROP PROCEDURE IF EXISTS UpdateJobSpaceId;
+DROP PROCEDURE IF EXISTS UpdateJobSpaceId //
 CREATE PROCEDURE UpdateJobSpaceId(IN _pairId INT, IN _jobSpaceId INT)
 	BEGIN
 		UPDATE job_pairs
@@ -19,7 +17,7 @@ CREATE PROCEDURE UpdateJobSpaceId(IN _pairId INT, IN _jobSpaceId INT)
 		WHERE id = _pairId;
 	END //
 
-DROP PROCEDURE IF EXISTS UpdatePairNodeId;
+DROP PROCEDURE IF EXISTS UpdatePairNodeId //
 CREATE PROCEDURE UpdatePairNodeId(IN _jobPairId INT, IN _nodeId INT)
 	BEGIN
 		UPDATE job_pairs SET node_id=_nodeId WHERE id=_jobPairId;
@@ -27,7 +25,7 @@ CREATE PROCEDURE UpdatePairNodeId(IN _jobPairId INT, IN _nodeId INT)
 
 -- Updates a job pair's statistics directly from the execution node
 -- Author: Benton McCune
-DROP PROCEDURE IF EXISTS UpdatePairRunSolverStats;
+DROP PROCEDURE IF EXISTS UpdatePairRunSolverStats //
 CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHAR(64), IN _wallClock DOUBLE, IN _cpu DOUBLE, IN _userTime DOUBLE, IN _systemTime DOUBLE, IN _maxVmem DOUBLE, IN _maxResSet BIGINT, IN _stageNumber INT, IN _diskSize BIGINT)
 	BEGIN
 		UPDATE job_pairs SET node_id=(SELECT id FROM nodes WHERE name=_nodeName) WHERE id=_jobPairId;
@@ -47,7 +45,7 @@ CREATE PROCEDURE UpdatePairRunSolverStats(IN _jobPairId INT, IN _nodeName VARCHA
 
 -- Updates a job pairs node Id
 -- Author: Wyatt
-DROP PROCEDURE IF EXISTS UpdateNodeId;
+DROP PROCEDURE IF EXISTS UpdateNodeId //
 CREATE PROCEDURE UpdateNodeId(IN _jobPairId INT, IN _nodeName VARCHAR(128), IN _sandbox INT)
 	BEGIN
 		DECLARE _nodeId INT;
@@ -65,7 +63,7 @@ CREATE PROCEDURE UpdateNodeId(IN _jobPairId INT, IN _nodeName VARCHAR(128), IN _
 	END //
 
 -- Sets a pair's disk_usage to 0, updating jobpair_stage_data, jobs, and users
-DROP PROCEDURE IF EXISTS RemoveJobPairDiskSize;
+DROP PROCEDURE IF EXISTS RemoveJobPairDiskSize //
 CREATE PROCEDURE RemoveJobPairDiskSize(IN _jobPairId INT)
 	BEGIN
 		DECLARE _sumDiskSize BIGINT;
@@ -82,7 +80,7 @@ CREATE PROCEDURE RemoveJobPairDiskSize(IN _jobPairId INT)
 -- have been enqueued longer than _timeThreshold and then returning all the nodes
 -- from that queue that have not run any pairs since the _timeThreshold (basically filtering out
 -- nodes that appear to be working).
-DROP PROCEDURE IF EXISTS GetNodesThatMayHavePairsEnqueuedLongerThan;
+DROP PROCEDURE IF EXISTS GetNodesThatMayHavePairsEnqueuedLongerThan //
 CREATE PROCEDURE GetNodesThatMayHavePairsEnqueuedLongerThan(IN _timeThreshold INT)
   BEGIN
 	SELECT DISTINCT qa.node_id as node_id
@@ -100,7 +98,7 @@ CREATE PROCEDURE GetNodesThatMayHavePairsEnqueuedLongerThan(IN _timeThreshold IN
 			  WHERE MINUTE(TIMEDIFF(NOW(), i_jp.start_time)) <= _timeThreshold);
   END //
 
-DROP PROCEDURE IF EXISTS GetPairsEnqueuedLongerThan;
+DROP PROCEDURE IF EXISTS GetPairsEnqueuedLongerThan //
 CREATE PROCEDURE GetPairsEnqueuedLongerThan(IN _timeThreshold INT)
   BEGIN
 	SELECT DISTINCT jp.id AS pair_id, j.id AS job_id
@@ -112,7 +110,7 @@ CREATE PROCEDURE GetPairsEnqueuedLongerThan(IN _timeThreshold INT)
 
 -- Updates a job pair's status
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS UpdatePairStatus;
+DROP PROCEDURE IF EXISTS UpdatePairStatus //
 CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
 	BEGIN
 		UPDATE job_pairs SET status_code=_statusCode WHERE id=_jobPairId ;
@@ -131,7 +129,7 @@ CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
 	END //
 
 -- Sets the status code for the given stage of the given pair
-DROP PROCEDURE IF EXISTS UpdatePairStageStatus;
+DROP PROCEDURE IF EXISTS UpdatePairStageStatus //
 CREATE PROCEDURE UpdatePairStageStatus(IN _jobPairId INT,IN _stageNumber INT, IN _statusCode TINYINT)
 	BEGIN
 		UPDATE jobpair_stage_data SET status_code=_statusCode WHERE jobpair_id=_jobPairId AND stage_number=_stageNumber;
@@ -139,7 +137,7 @@ CREATE PROCEDURE UpdatePairStageStatus(IN _jobPairId INT,IN _stageNumber INT, IN
 
 -- Sets the status code of every stage occurring after the given stage to the given status code.
 -- We do this, for example, when an early stage times out and so later stages are never run
-DROP PROCEDURE IF EXISTS UpdateLaterStageStatuses;
+DROP PROCEDURE IF EXISTS UpdateLaterStageStatuses //
 CREATE PROCEDURE UpdateLaterStageStatuses(IN _jobPairId INT, IN _stageNumber INT, IN _statusCode TINYINT)
 	BEGIN
 		UPDATE jobpair_stage_data SET status_code=_statusCode WHERE jobpair_id=_jobPairId AND stage_number>_stageNumber;
@@ -147,7 +145,7 @@ CREATE PROCEDURE UpdateLaterStageStatuses(IN _jobPairId INT, IN _stageNumber INT
 
 -- Sets all run stats to 0 for stages that come after the given stage. This is used for
 -- pipelines where an early stage fails, causing later stages to not run
-DROP PROCEDURE IF EXISTS SetRunStatsForLaterStagesToZero;
+DROP PROCEDURE IF EXISTS SetRunStatsForLaterStagesToZero //
 CREATE PROCEDURE SetRunStatsForLaterStagesToZero(IN _jobPairId INT, IN _stageNumber INT)
 	BEGIN
 		UPDATE jobpair_stage_data
@@ -161,7 +159,7 @@ CREATE PROCEDURE SetRunStatsForLaterStagesToZero(IN _jobPairId INT, IN _stageNum
 	END //
 
 -- Gets all the stages for the given job pair
-DROP PROCEDURE IF EXISTS GetJobPairStagesById;
+DROP PROCEDURE IF EXISTS GetJobPairStagesById //
 CREATE PROCEDURE GetJobPairStagesById( IN _id INT)
 	BEGIN
 		SELECT *
@@ -172,7 +170,7 @@ CREATE PROCEDURE GetJobPairStagesById( IN _id INT)
 	END //
 -- Gets the job pair with the given id. Only gets the primary stage!
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetJobPairById;
+DROP PROCEDURE IF EXISTS GetJobPairById //
 CREATE PROCEDURE GetJobPairById(IN _Id INT)
 	BEGIN
 		SELECT *
@@ -185,7 +183,7 @@ CREATE PROCEDURE GetJobPairById(IN _Id INT)
 
 -- Retrieves all attributes for a job pair
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetPairAttrs;
+DROP PROCEDURE IF EXISTS GetPairAttrs //
 CREATE PROCEDURE GetPairAttrs(IN _pairId INT)
 	BEGIN
 		SELECT *
@@ -196,7 +194,7 @@ CREATE PROCEDURE GetPairAttrs(IN _pairId INT)
 
 -- Updates a job pair's backend ID (SGE, OAR, or so on).
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS SetBackendExecId;
+DROP PROCEDURE IF EXISTS SetBackendExecId //
 CREATE PROCEDURE SetBackendExecId(IN _jobPairId INT, IN _execId INT)
 	BEGIN
 		UPDATE job_pairs
@@ -206,7 +204,7 @@ CREATE PROCEDURE SetBackendExecId(IN _jobPairId INT, IN _execId INT)
 
 -- Gets back only the fields of a job pair that are necessary to determine where it is stored on disk
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairFilePathInfo;
+DROP PROCEDURE IF EXISTS GetJobPairFilePathInfo //
 CREATE PROCEDURE GetJobPairFilePathInfo(IN _pairId INT)
 	BEGIN
 		SELECT job_id,job_pairs.job_space_id,path,jobpair_stage_data.solver_name,
@@ -216,7 +214,7 @@ CREATE PROCEDURE GetJobPairFilePathInfo(IN _pairId INT)
 	END //
 
 -- Gets every pair_id and processor_id for pairs awaiting processing
-DROP PROCEDURE IF EXISTS GetPairsToBeProcessed;
+DROP PROCEDURE IF EXISTS GetPairsToBeProcessed //
 CREATE PROCEDURE GetPairsToBeProcessed(IN _processingStatus INT)
 	BEGIN
 		SELECT post_processor ,job_pairs.id, jobpair_stage_data.stage_number AS stageNumber
@@ -226,7 +224,7 @@ CREATE PROCEDURE GetPairsToBeProcessed(IN _processingStatus INT)
 		WHERE jobpair_stage_data.status_code=_processingStatus;
 	END //
 
-DROP PROCEDURE IF EXISTS RemovePairFromCompletedTable;
+DROP PROCEDURE IF EXISTS RemovePairFromCompletedTable //
 CREATE PROCEDURE RemovePairFromCompletedTable(IN _id INT)
 	BEGIN
 		DELETE FROM job_pair_completion
@@ -234,7 +232,7 @@ CREATE PROCEDURE RemovePairFromCompletedTable(IN _id INT)
 	END //
 
 -- Sets the queue submission time to now (the moment this is called) for the pair with the given id
-DROP PROCEDURE IF EXISTS SetPairStartTime;
+DROP PROCEDURE IF EXISTS SetPairStartTime //
 CREATE PROCEDURE SetPairStartTime(IN _id INT)
 	BEGIN
 		UPDATE job_pairs SET start_time=NOW() WHERE id=_id;
@@ -243,7 +241,7 @@ CREATE PROCEDURE SetPairStartTime(IN _id INT)
 -- Deletes a job pair from the database. The _pairSize argument is in bytes, and it is only
 -- used in cases where the disk_size field is not set in the stages of the pair to be deleted.
 -- This is necessary only for old pairs with no disk_size set
-DROP PROCEDURE IF EXISTS DeleteJobPair;
+DROP PROCEDURE IF EXISTS DeleteJobPair //
 CREATE PROCEDURE DeleteJobPair( IN _pairId INT)
 	BEGIN
 		DECLARE pair_disk_size BIGINT DEFAULT 0;
@@ -266,7 +264,7 @@ CREATE PROCEDURE DeleteJobPair( IN _pairId INT)
 
 -- Gets all of the job pairs in a job that contain a given benchmark.
 -- Author: Albert Giegerich
-DROP PROCEDURE IF EXISTS GetJobPairsInJobContainingBenchmark;
+DROP PROCEDURE IF EXISTS GetJobPairsInJobContainingBenchmark //
 CREATE PROCEDURE GetJobPairsInJobContainingBenchmark(IN _jobId INT, IN _benchmarkId INT )
 	BEGIN
 		SELECT job_pairs.*
@@ -274,7 +272,7 @@ CREATE PROCEDURE GetJobPairsInJobContainingBenchmark(IN _jobId INT, IN _benchmar
 		WHERE job_id=_jobId AND bench_id=_benchmarkId;
 	END //
 
-DROP PROCEDURE IF EXISTS GetJobPairsInJobContainingSolver;
+DROP PROCEDURE IF EXISTS GetJobPairsInJobContainingSolver //
 CREATE PROCEDURE GetJobPairsInJobContainingSolver(IN _jobId INT, IN _solverId INT)
   BEGIN
     SELECT job_pairs.*
@@ -284,7 +282,7 @@ CREATE PROCEDURE GetJobPairsInJobContainingSolver(IN _jobId INT, IN _solverId IN
 
 -- Sets the completion time to now (the moment this is called) for the pair with the given id
 -- Also sets the time_delta for the pair in the jobpair_time_delta table.
-DROP PROCEDURE IF EXISTS SetPairEndTime;
+DROP PROCEDURE IF EXISTS SetPairEndTime //
 CREATE PROCEDURE SetPairEndTime(IN _id INT)
 	BEGIN
 		UPDATE job_pairs SET end_time=NOW() WHERE id=_id;
@@ -305,7 +303,7 @@ CREATE PROCEDURE SetPairEndTime(IN _id INT)
 
 -- Counts the number of pairs with the given status code that completed in within the given
 -- number of days
-DROP PROCEDURE IF EXISTS CountRecentPairsByStatus;
+DROP PROCEDURE IF EXISTS CountRecentPairsByStatus //
 CREATE PROCEDURE CountRecentPairsByStatus(IN _status INT, IN _days INT)
 	BEGIN
 		SELECT count(*) FROM job_pairs WHERE status_code=_status AND
@@ -314,13 +312,13 @@ CREATE PROCEDURE CountRecentPairsByStatus(IN _status INT, IN _days INT)
 	END //
 
 -- Adds a single job pair input to the database
-DROP PROCEDURE IF EXISTS AddJobPairInput;
+DROP PROCEDURE IF EXISTS AddJobPairInput //
 CREATE PROCEDURE AddJobPairInput(IN _pairId INT, IN _input INT, IN _benchId INT)
 	BEGIN
 		INSERT INTO jobpair_inputs (jobpair_id, input_number,bench_id) VALUES (_pairId,_input,_benchId);
 	END //
 
-DROP PROCEDURE IF EXISTS GetJobPairInputPaths;
+DROP PROCEDURE IF EXISTS GetJobPairInputPaths //
 CREATE PROCEDURE GetJobPairInputPaths(IN _pairId INT)
 	BEGIN
 		SELECT path,input_number FROM jobpair_inputs
@@ -330,7 +328,7 @@ CREATE PROCEDURE GetJobPairInputPaths(IN _pairId INT)
 
 -- Select all data from the jobpair_time_delta table for a specific
 -- queue. -1 means all queues
-DROP PROCEDURE IF EXISTS GetJobpairTimeDeltaData;
+DROP PROCEDURE IF EXISTS GetJobpairTimeDeltaData //
 CREATE PROCEDURE GetJobpairTimeDeltaData(IN _qid INT)
 	BEGIN
 		SELECT * FROM jobpair_time_delta WHERE queue_id=_qid OR _qid = -1;
@@ -339,20 +337,20 @@ CREATE PROCEDURE GetJobpairTimeDeltaData(IN _qid INT)
 
 -- Deletes all data from the jobpair_time_delta table for a specific
 -- queue. -1 means all queues
-DROP PROCEDURE IF EXISTS ClearJobpairTimeDeltaData;
+DROP PROCEDURE IF EXISTS ClearJobpairTimeDeltaData //
 CREATE PROCEDURE ClearJobpairTimeDeltaData(IN _qid INT)
 	BEGIN
 		DELETE FROM jobpair_time_delta WHERE queue_id=_qid OR _qid=-1;
 	END //
 
-DROP PROCEDURE IF EXISTS GetJobPairsWithStatus;
+DROP PROCEDURE IF EXISTS GetJobPairsWithStatus //
 CREATE PROCEDURE GetJobPairsWithStatus(IN _status INT)
 	BEGIN
 		SELECT * FROM job_pairs
 		WHERE status_code = _status;
 	END //
 
-DROP PROCEDURE IF EXISTS GetJobPairIdsWithStatusNotRerunAfterDate;
+DROP PROCEDURE IF EXISTS GetJobPairIdsWithStatusNotRerunAfterDate //
 CREATE PROCEDURE GetJobPairIdsWithStatusNotRerunAfterDate(IN _status INT, IN _earliestEndTime DATETIME)
 	BEGIN
 		SELECT id FROM job_pairs
@@ -361,7 +359,7 @@ CREATE PROCEDURE GetJobPairIdsWithStatusNotRerunAfterDate(IN _status INT, IN _ea
 		AND id NOT IN (SELECT pair_id FROM pairs_rerun);
 	END //
 
-DROP PROCEDURE IF EXISTS SetBrokenPairStatus;
+DROP PROCEDURE IF EXISTS SetBrokenPairStatus //
 CREATE PROCEDURE SetBrokenPairStatus(IN _pairId INT, IN _current_status INT, IN _new_status INT)
 	BEGIN
 		UPDATE jobpair_stage_data
@@ -376,7 +374,7 @@ CREATE PROCEDURE SetBrokenPairStatus(IN _pairId INT, IN _current_status INT, IN 
 
 
 -- Counts the total number of job pairs that satisfy GetNextPageOfJobPairsInJobSpaceHierarchy
-DROP PROCEDURE IF EXISTS CountJobPairsInJobSpaceHierarchyByType;
+DROP PROCEDURE IF EXISTS CountJobPairsInJobSpaceHierarchyByType //
 CREATE PROCEDURE CountJobPairsInJobSpaceHierarchyByType(IN _jobSpaceId INT,IN _configId INT, IN _type VARCHAR(16), IN _query TEXT, IN _stageNumber INT)
 
 	BEGIN
@@ -409,5 +407,3 @@ CREATE PROCEDURE CountJobPairsInJobSpaceHierarchyByType(IN _jobSpaceId INT,IN _c
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'));
 	END //
-
-DELIMITER ; -- this should always be at the end of the file
