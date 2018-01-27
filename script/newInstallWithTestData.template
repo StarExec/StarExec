@@ -5,8 +5,8 @@
 
 (
     echo "Running NewInstall.sql"
-    cd deployed-sql/
-    mysql -u'@DB.User@' -p'@DB.Pass@' < NewInstall.sql
+    cd sql/
+    mysql -u"@DB.User@" -p"@DB.Pass@" < NewInstall.sql
 )
 
 (
