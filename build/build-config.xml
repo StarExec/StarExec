@@ -4,36 +4,37 @@
 		<delete file="${java.io.tmpdir}/R.java" quiet="true" />
 		<copy file="src/org/starexec/constants/R.java" tofile="${java.io.tmpdir}/R.java">
 			<filterset>
-				<filter token="Backend.Root"         value="${Backend.Root}"/>
-				<filter token="Backend.WorkingDir"   value="${Backend.WorkingDir}"/>
+				<filter token="Backend.Root"          value="${Backend.Root}"/>
+				<filter token="Backend.WorkingDir"    value="${Backend.WorkingDir}"/>
 
-				<filter token="Build.Date"           value="${Build.Date}"/>
-				<filter token="Build.User"           value="${Build.User}"/>
-				<filter token="Build.Version"        value="${Build.Version}"/>
+				<filter token="Build.Date"            value="${Build.Date}"/>
+				<filter token="Build.User"            value="${Build.User}"/>
+				<filter token="Build.Version"         value="${Build.Version}"/>
 
-				<filter token="Cluster.DB.User"      value="${Cluster.DB.User}"/>
-				<filter token="Cluster.DB.Pass"      value="${Cluster.DB.Pass}"/>
-				<filter token="Cluster.DB.Url"       value="${Cluster.DB.Url}"/>
-				<filter token="Cluster.UpdatePeriod" value="${Cluster.UpdatePeriod}"/>
-				<filter token="Cluster.UserOne"      value="${Cluster.UserOne}"/>
-				<filter token="Cluster.UserTwo"      value="${Cluster.UserTwo}"/>
+				<filter token="Cluster.DB.User"       value="${Cluster.DB.User}"/>
+				<filter token="Cluster.DB.Pass"       value="${Cluster.DB.Pass}"/>
+				<filter token="Cluster.DB.Url"        value="${Cluster.DB.Url}"/>
+				<filter token="Cluster.UpdatePeriod"  value="${Cluster.UpdatePeriod}"/>
+				<filter token="Cluster.UserOne"       value="${Cluster.UserOne}"/>
+				<filter token="Cluster.UserTwo"       value="${Cluster.UserTwo}"/>
 
-				<filter token="Config.Path" value="${Config.Path}"/>
+				<filter token="Config.Path"           value="${Config.Path}"/>
 
-				<filter token="DB.Name"     value="${DB.Name}"/>
-				<filter token="DB.User"     value="${DB.User}"/>
-				<filter token="DB.Pass"     value="${DB.Pass}"/>
-				<filter token="DB.Url"      value="${DB.Url}"/>
-				<filter token="DB.Pool.Max" value="${DB.Pool.Max}"/>
-				<filter token="DB.Pool.Min" value="${DB.Pool.Min}"/>
+				<filter token="DB.Name"               value="${DB.Name}"/>
+				<filter token="DB.User"               value="${DB.User}"/>
+				<filter token="DB.Pass"               value="${DB.Pass}"/>
+				<filter token="DB.Url"                value="${DB.Url}"/>
+				<filter token="DB.Pool.Max"           value="${DB.Pool.Max}"/>
+				<filter token="DB.Pool.Min"           value="${DB.Pool.Min}"/>
 
-				<filter token="Email.Smtp"  value="${Email.Smtp}"/>
-				<filter token="Email.Port"  value="${Email.Port}"/>
-				<filter token="Email.User"  value="${Email.User}"/>
-				<filter token="Email.Pass"  value="${Email.Pass}"/>
+				<filter token="Email.Contact"         value="${Email.Contact}"/>
+				<filter token="Email.Smtp"            value="${Email.Smtp}"/>
+				<filter token="Email.Port"            value="${Email.Port}"/>
+				<filter token="Email.User"            value="${Email.User}"/>
+				<filter token="Email.Pass"            value="${Email.Pass}"/>
 
-				<filter token="Job.SubmissionPeriod" value="${Job.SubmissionPeriod}"/>
-				<filter token="JobPair.MaxFileWrite" value="${JobPair.MaxFileWrite}"/>
+				<filter token="Job.SubmissionPeriod"  value="${Job.SubmissionPeriod}"/>
+				<filter token="JobPair.MaxFileWrite"  value="${JobPair.MaxFileWrite}"/>
 
 				<filter token="MaxLength.Bench.Name"            value="${MaxLength.Bench.Name}" />
 				<filter token="MaxLength.Bench.Description"     value="${MaxLength.Bench.Description}" />
@@ -83,7 +84,6 @@
 				<filter token="BACKEND_TYPE"        value="sge"/>
 				<filter token="STAREXEC_APPNAME"    value="${STAREXEC_APPNAME}"/>
 				<filter token="SANDBOX_DIRECTORY"   value="/local/sandbox"/>
-				<filter token="CONTACT_EMAIL"       value="${CONTACT_EMAIL}"/>
 				<filter token="TEST_COMMUNITY_ID"   value="${TEST_COMMUNITY_ID}"/>
 				<filter token="ALLOW_TESTING"       value="${ALLOW_TESTING}"/>
 			</filterset>

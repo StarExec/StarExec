@@ -238,7 +238,7 @@ public class R {
 	public static String PWD_HASH_ALGORITHM = "SHA-512";               // Which algorithm to use to hash user passwords
 	public static String PATH_DATE_FORMAT = "yyyyMMdd-kk.mm.ss.SSS";   // Which datetime format is used to create unique directory names
 	public static boolean REMOVE_ARCHIVES = true;                      // Whether or not to delete archive files after they're extracted
-	public static String CONTACT_EMAIL = "@CONTACT_EMAIL@";            // The default e-mail address to use for users to contact for support
+	public static String CONTACT_EMAIL = "@Email.Contact@";            // The default e-mail address to use for users to contact for support
 	public static boolean IS_FULL_STAREXEC_INSTANCE = true;            // should we run job tasks (see app/Starexec.java)
 	public static int CLEAR_JOB_LOG_PERIOD = 14;                       // How often (in days) to clear job logs
 	public static int JOB_SUBMISSION_PERIOD = @Job.SubmissionPeriod@;  // How often (in seconds) to write job scripts and submit to the backend
