@@ -3,13 +3,12 @@
 # Run from the directory where you build starexec with ant (build.xml).
 
 # filled in by running ant with build.xml:
-APPNAME=the_appname
-STAREXEC_DATA_DIR=the_data_dir
-WEB_HOME=the_web_home
-
+APPNAME=@STAREXEC_APPNAME@
+STAREXEC_DATA_DIR=@data_dir@
+WEB_HOME=@web-home@
 
 SGE_SCRIPT_DIR=$STAREXEC_DATA_DIR/sge_scripts
-WAR=$APPNAME.war
+WAR=@war-file-name@
 APPDIR=$WEB_HOME/$APPNAME
 STAR_WAR=$WEB_HOME/$WAR
 
@@ -20,7 +19,7 @@ if [ ! -f $WAR ] ; then
 fi
 
 echo Moving existing war file: $STAR_WAR
-rm -f $STAR_WAR 
+rm -f $STAR_WAR
 
 # create the first argument to mkdirIf if it does not exist,
 # and set ownership and permissions.
@@ -46,7 +45,7 @@ for d in users solvers benchmarks ; do
  mkdirIf $STAREXEC_DATA_DIR/pictures/$d
  cp starexec_res/default-pics/$d/Pic0.jpg $STAREXEC_DATA_DIR/pictures/$d
  chmod -f 775 $STAREXEC_DATA_DIR/pictures/$d/Pic0.jpg
- chgrp -f star-web $STAREXEC_DATA_DIR/pictures/$d/Pic0.jpg 
+ chgrp -f star-web $STAREXEC_DATA_DIR/pictures/$d/Pic0.jpg
 done
 
 echo "Creating data directories if they are not present already"
@@ -66,7 +65,7 @@ if [ "$1" == "--remove" ] ; then
 fi
 
 echo Copying new WAR to $WEB_HOME
-cp $APPNAME.war $WEB_HOME/$WAR
+cp $WAR $WEB_HOME/$WAR
 
 #echo Changing permissions on $STAR_WAR
 chmod 775 $STAR_WAR
@@ -77,4 +76,4 @@ while [ ! -d $APPDIR ] ; do
 done
 
 echo Deployed $APPNAME without restarting Tomcat.
-echo "Update the database (schema and procedures) as needed." 
+echo "Update the database (schema and procedures) as needed."
