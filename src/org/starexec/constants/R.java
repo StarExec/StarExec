@@ -103,31 +103,32 @@ public class R {
 		BACKEND = b;
 	}
 
-	//maximum length properties
-	public static final int SPACE_NAME_LEN   = @MaxLength.Space.Name@;
-	public static int SPACE_DESC_LEN         = @MaxLength.Space.Description@;
-	public static int USER_FIRST_LEN         = @MaxLength.User.FirstName@;
-	public static int USER_LAST_LEN          = @MaxLength.User.LastName@;
-	public static int INSTITUTION_LEN        = @MaxLength.User.Institution@;
-	public static int EMAIL_LEN              = @MaxLength.User.Email@;
-	public static int PASSWORD_LEN           = @MaxLength.User.Password@;
-	public static int MSG_LEN                = @MaxLength.Message@;
-	public static int BENCH_NAME_LEN         = @MaxLength.Bench.Name@;
-	public static int BENCH_DESC_LEN         = @MaxLength.Bench.Description@;
-	public static int CONFIGURATION_NAME_LEN = @MaxLength.Config.Name@;
-	public static int CONFIGURATION_DESC_LEN = @MaxLength.Config.Description@;
-	public static int SOLVER_NAME_LEN        = @MaxLength.Solver.Name@;
-	public static int WEBSITE_NAME_LEN       = @MaxLength.Website.Name@;
-	public static int PIPELINE_NAME_LEN      = @MaxLength.Pipeline.Name@;
-	public static int SETTINGS_NAME_LEN      = @MaxLength.Settings.Name@;
-	public static int SOLVER_DESC_LEN        = @MaxLength.Solver.Description@;
-	public static int JOB_NAME_LEN           = @MaxLength.Job.Name@;
-	public static int JOB_DESC_LEN           = @MaxLength.Job.Description@;
-	public static int URL_LEN                = @MaxLength.URL@;
-	public static int PROCESSOR_NAME_LEN     = @MaxLength.Processor.Name@;
-	public static int PROCESSOR_DESC_LEN     = @MaxLength.Processor.Description@;
-	public static int QUEUE_NAME_LEN         = @MaxLength.Queue.Name@;
-	public static int TEXT_FIELD_LEN         = @MaxLength.TextField@;
+	// maximum length properties
+	// These are enforced in SQL, so changing requires schema update
+	public static final int SPACE_NAME_LEN   = 250;
+	public static int SPACE_DESC_LEN         = 1024;
+	public static int USER_FIRST_LEN         = 32;
+	public static int USER_LAST_LEN          = 32;
+	public static int INSTITUTION_LEN        = 64;
+	public static int EMAIL_LEN              = 64;
+	public static int PASSWORD_LEN           = 20;
+	public static int MSG_LEN                = 512;
+	public static int BENCH_NAME_LEN         = 250;
+	public static int BENCH_DESC_LEN         = 1024;
+	public static int CONFIGURATION_NAME_LEN = 128;
+	public static int CONFIGURATION_DESC_LEN = 1024;
+	public static int SOLVER_NAME_LEN        = 64;
+	public static int WEBSITE_NAME_LEN       = 64;
+	public static int PIPELINE_NAME_LEN      = 128;
+	public static int SETTINGS_NAME_LEN      = 32;
+	public static int SOLVER_DESC_LEN        = 1024;
+	public static int JOB_NAME_LEN           = 64;
+	public static int JOB_DESC_LEN           = 1024;
+	public static int URL_LEN                = 128;
+	public static int PROCESSOR_NAME_LEN     = 64;
+	public static int PROCESSOR_DESC_LEN     = 1024;
+	public static int QUEUE_NAME_LEN         = 64;
+	public static int TEXT_FIELD_LEN         = 65000;
 
 	public static int CLUSTER_UPDATE_PERIOD  = @Cluster.UpdatePeriod@;
 
