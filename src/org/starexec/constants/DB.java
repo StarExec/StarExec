@@ -6,6 +6,11 @@ package org.starexec.constants;
  * them at the database level as well.
  */
 public class DB {
+	/** Private constructor to make the class un-instantiable. */
+	private DB() throws UnsupportedOperationException {
+		throw new UnsupportedOperationException("Cannot instantiate class because it is static.");
+	}
+
 	public static final int SPACE_NAME_LEN         = 250;
 	public static final int SPACE_DESC_LEN         = 1024;
 	public static final int USER_FIRST_LEN         = 32;
