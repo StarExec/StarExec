@@ -2,6 +2,7 @@ package org.starexec.data.database;
 
 import org.apache.commons.io.FileUtils;
 import org.starexec.constants.PaginationQueries;
+import org.starexec.constants.DB;
 import org.starexec.constants.R;
 import org.starexec.data.to.*;
 import org.starexec.data.to.compare.BenchmarkComparator;
@@ -627,8 +628,8 @@ public class Benchmarks {
 				failedCounter++;
 				Uploads.incrementFailedBenchmarks(statusId, 1);
 				if (failedCounter < R.MAX_FAILED_VALIDATIONS) {
-					if (propstr.length() > R.TEXT_FIELD_LEN) {
-						propstr = propstr.substring(0, R.TEXT_FIELD_LEN);
+					if (propstr.length() > DB.TEXT_FIELD_LEN) {
+						propstr = propstr.substring(0, DB.TEXT_FIELD_LEN);
 					}
 					Uploads.addFailedBenchmark(statusId, b.getName(), propstr);
 					String message = b.getName() + " failed validation";

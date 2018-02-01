@@ -2,6 +2,7 @@ package org.starexec.test.integration.security;
 
 import org.junit.Assert;
 import org.starexec.constants.R;
+import org.starexec.constants.DB;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
@@ -15,9 +16,9 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertTrue(Validator.isValidPrimDescription("hello world"));
 		Assert.assertTrue(Validator.isValidPrimDescription("This is a sentence, and it has some punctuation."));
 		Assert.assertTrue(Validator.isValidPrimDescription("293md03 32idiu"));
-		Assert.assertTrue(Validator.isValidPrimDescription(TestUtil.getRandomAlphaString(R.BENCH_DESC_LEN)));
+		Assert.assertTrue(Validator.isValidPrimDescription(TestUtil.getRandomAlphaString(DB.BENCH_DESC_LEN)));
 		Assert.assertFalse(Validator.isValidPrimDescription("2017-05-22"));
-		Assert.assertFalse(Validator.isValidPrimDescription(TestUtil.getRandomAlphaString(R.BENCH_DESC_LEN+1)));
+		Assert.assertFalse(Validator.isValidPrimDescription(TestUtil.getRandomAlphaString(DB.BENCH_DESC_LEN+1)));
 		Assert.assertFalse(Validator.isValidPrimDescription(null));
 		Assert.assertFalse(Validator.isValidPrimDescription("\"\""));
 		Assert.assertFalse(Validator.isValidPrimDescription("<script>"));
@@ -41,9 +42,9 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertTrue(Validator.isValidQueueName("Mark"));
 		Assert.assertTrue(Validator.isValidQueueName("293md03 32idiu"));
 
-		Assert.assertTrue(Validator.isValidQueueName(TestUtil.getRandomAlphaString(R.QUEUE_NAME_LEN)));
+		Assert.assertTrue(Validator.isValidQueueName(TestUtil.getRandomAlphaString(DB.QUEUE_NAME_LEN)));
 
-		Assert.assertFalse(Validator.isValidQueueName(TestUtil.getRandomAlphaString(R.QUEUE_NAME_LEN+1)));
+		Assert.assertFalse(Validator.isValidQueueName(TestUtil.getRandomAlphaString(DB.QUEUE_NAME_LEN+1)));
 		Assert.assertFalse(Validator.isValidQueueName(""));
 		Assert.assertFalse(Validator.isValidQueueName(null));
 		Assert.assertFalse(Validator.isValidQueueName("\"\""));
@@ -55,9 +56,9 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertTrue(Validator.isValidJobName("hello world"));
 		Assert.assertTrue(Validator.isValidJobName("Mark"));
 		Assert.assertTrue(Validator.isValidJobName("293md03 32idiu"));
-		Assert.assertTrue(Validator.isValidJobName(TestUtil.getRandomAlphaString(R.JOB_NAME_LEN)));
+		Assert.assertTrue(Validator.isValidJobName(TestUtil.getRandomAlphaString(DB.JOB_NAME_LEN)));
 
-		Assert.assertFalse(Validator.isValidJobName(TestUtil.getRandomAlphaString(R.JOB_NAME_LEN+1)));
+		Assert.assertFalse(Validator.isValidJobName(TestUtil.getRandomAlphaString(DB.JOB_NAME_LEN+1)));
 		Assert.assertFalse(Validator.isValidJobName(""));
 		Assert.assertFalse(Validator.isValidJobName(null));
 		Assert.assertFalse(Validator.isValidJobName("\"\""));
@@ -69,8 +70,8 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertTrue(Validator.isValidConfigurationName("hello world"));
 		Assert.assertTrue(Validator.isValidConfigurationName("Mark"));
 		Assert.assertTrue(Validator.isValidConfigurationName("293md03 32idiu"));
-		Assert.assertTrue(Validator.isValidConfigurationName(TestUtil.getRandomAlphaString(R.CONFIGURATION_NAME_LEN)));
-		Assert.assertFalse(Validator.isValidConfigurationName(TestUtil.getRandomAlphaString(R.CONFIGURATION_NAME_LEN+1)));
+		Assert.assertTrue(Validator.isValidConfigurationName(TestUtil.getRandomAlphaString(DB.CONFIGURATION_NAME_LEN)));
+		Assert.assertFalse(Validator.isValidConfigurationName(TestUtil.getRandomAlphaString(DB.CONFIGURATION_NAME_LEN+1)));
 		Assert.assertFalse(Validator.isValidConfigurationName(""));
 		Assert.assertFalse(Validator.isValidConfigurationName(null));
 		Assert.assertFalse(Validator.isValidConfigurationName("\"\""));
@@ -82,8 +83,8 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertTrue(Validator.isValidProcessorName("hello world"));
 		Assert.assertTrue(Validator.isValidProcessorName("Mark"));
 		Assert.assertTrue(Validator.isValidProcessorName("293md03 32idiu"));
-		Assert.assertTrue(Validator.isValidProcessorName(TestUtil.getRandomAlphaString(R.PROCESSOR_NAME_LEN)));
-		Assert.assertFalse(Validator.isValidProcessorName(TestUtil.getRandomAlphaString(R.PROCESSOR_NAME_LEN+1)));
+		Assert.assertTrue(Validator.isValidProcessorName(TestUtil.getRandomAlphaString(DB.PROCESSOR_NAME_LEN)));
+		Assert.assertFalse(Validator.isValidProcessorName(TestUtil.getRandomAlphaString(DB.PROCESSOR_NAME_LEN+1)));
 		Assert.assertFalse(Validator.isValidProcessorName(""));
 		Assert.assertFalse(Validator.isValidProcessorName(null));
 		Assert.assertFalse(Validator.isValidProcessorName("\"\""));
@@ -95,9 +96,9 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertTrue(Validator.isValidBenchName("hello world"));
 		Assert.assertTrue(Validator.isValidBenchName("Mark"));
 		Assert.assertTrue(Validator.isValidBenchName("293md03 32idiu"));
-		Assert.assertTrue(Validator.isValidBenchName(TestUtil.getRandomAlphaString(R.BENCH_NAME_LEN)));
+		Assert.assertTrue(Validator.isValidBenchName(TestUtil.getRandomAlphaString(DB.BENCH_NAME_LEN)));
 
-		Assert.assertFalse(Validator.isValidBenchName(TestUtil.getRandomAlphaString(R.BENCH_NAME_LEN+1)));
+		Assert.assertFalse(Validator.isValidBenchName(TestUtil.getRandomAlphaString(DB.BENCH_NAME_LEN+1)));
 		Assert.assertFalse(Validator.isValidBenchName(""));
 		Assert.assertFalse(Validator.isValidBenchName(null));
 		Assert.assertFalse(Validator.isValidBenchName("\"\""));
@@ -109,9 +110,9 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertTrue(Validator.isValidSolverName("hello world"));
 		Assert.assertTrue(Validator.isValidSolverName("Mark"));
 		Assert.assertTrue(Validator.isValidSolverName("293md03 32idiu"));
-		Assert.assertTrue(Validator.isValidSolverName(TestUtil.getRandomAlphaString(R.SOLVER_NAME_LEN)));
+		Assert.assertTrue(Validator.isValidSolverName(TestUtil.getRandomAlphaString(DB.SOLVER_NAME_LEN)));
 
-		Assert.assertFalse(Validator.isValidSolverName(TestUtil.getRandomAlphaString(R.SOLVER_NAME_LEN+1)));
+		Assert.assertFalse(Validator.isValidSolverName(TestUtil.getRandomAlphaString(DB.SOLVER_NAME_LEN+1)));
 		Assert.assertFalse(Validator.isValidSolverName(""));
 		Assert.assertFalse(Validator.isValidSolverName(null));
 		Assert.assertFalse(Validator.isValidSolverName("\"\""));
@@ -139,7 +140,7 @@ public class ValidatorTests extends TestSequence {
 		Assert.assertTrue(Validator.isValidInstitution("test"));
 
 		StringBuilder sb=new StringBuilder();
-		for (int i=0; i<R.INSTITUTION_LEN+2;i++) {
+		for (int i=0; i<DB.INSTITUTION_LEN+2;i++) {
 			sb.append("a");
 		}
 		Assert.assertFalse(Validator.isValidInstitution(sb.toString()));

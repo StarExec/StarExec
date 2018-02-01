@@ -1,5 +1,6 @@
 package org.starexec.data.database;
 
+import org.starexec.constants.DB;
 import org.starexec.constants.R;
 import org.starexec.data.to.DefaultSettings;
 import org.starexec.data.to.DefaultSettings.SettingType;
@@ -310,8 +311,8 @@ public class Communities {
 					log.debug("unable to find any default settings for community id = " + community);
 					DefaultSettings d = new DefaultSettings();
 					String name = Spaces.getName(community);
-					if (name.length() > R.SETTINGS_NAME_LEN) {
-						name = name.substring(0, R.SETTINGS_NAME_LEN); //make sure it isn't too large
+					if (name.length() > DB.SETTINGS_NAME_LEN) {
+						name = name.substring(0, DB.SETTINGS_NAME_LEN); //make sure it isn't too large
 					}
 					d.setName(name);
 					d.setPrimId(community);

@@ -3,6 +3,7 @@ package org.starexec.test;
 import org.mockito.Mockito;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.starexec.constants.DB;
 import org.starexec.constants.R;
 import org.starexec.data.to.*;
 import org.starexec.data.to.Status.StatusCode;
@@ -16,7 +17,7 @@ import java.util.*;
 public class TestUtil {
 	private static final String[] letters={"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z"};
 	private static final Random rnd=new Random();
-	
+
 	/**
 	 * produces a random name of the maximum length for a new space. Useful for testing
 	 * @return
@@ -25,28 +26,28 @@ public class TestUtil {
 		return getRandomAlphaString(32); // longer space names are a bit harder to deal with
 	}
 	public static String getRandomQueueName() {
-		return getRandomAlphaString(R.QUEUE_NAME_LEN-5)+".q";
+		return getRandomAlphaString(DB.QUEUE_NAME_LEN-5)+".q";
 	}
 	public static String getRandomPassword() {
-		return getRandomAlphaString(R.PASSWORD_LEN-1);
+		return getRandomAlphaString(DB.PASSWORD_LEN-1);
 	}
-	
+
 	public static String getRandomSolverName() {
-		return getRandomAlphaString(R.SOLVER_NAME_LEN-1);
+		return getRandomAlphaString(DB.SOLVER_NAME_LEN-1);
 	}
-	
+
 	public static String getRandomJobName() {
-		return getRandomAlphaString(R.JOB_NAME_LEN-1);
+		return getRandomAlphaString(DB.JOB_NAME_LEN-1);
 	}
-	
+
 	public static String getRandomUserName() {
-		return getRandomAlphaString(R.USER_FIRST_LEN-1);
+		return getRandomAlphaString(DB.USER_FIRST_LEN-1);
 	}
-	
+
 	public static String getRandomEmail() {
-		return getRandomAlphaString(R.EMAIL_LEN-10)+"@test.edu";
+		return getRandomAlphaString(DB.EMAIL_LEN-10)+"@test.edu";
 	}
-	
+
 	/**
 	 * Gets a random string of lowercase letters of the given size
 	 * @param length
@@ -71,7 +72,7 @@ public class TestUtil {
 		}
 		return sb.toString();
 	}
-	
+
 	/**
 	 * Given a webdriver on a page, check if that page is one of our red error pages
 	 * @param driver
@@ -80,7 +81,7 @@ public class TestUtil {
 	public static boolean isOnErrorPage(WebDriver driver) {
 		return !driver.findElements(By.className("starexecErrorPage")).isEmpty();
 	}
-	
+
 	public static Processor getFakeProcessor(ProcessorType type) {
 		Processor p = new Processor();
 		p.setName(getRandomAlphaString(20));
@@ -91,7 +92,7 @@ public class TestUtil {
 		p.setType(type);
 		return p;
 	}
-	
+
 	public static Benchmark getFakeBenchmark() {
 		Benchmark b = new Benchmark();
 		b.setId(rnd.nextInt());
@@ -103,13 +104,13 @@ public class TestUtil {
 		b.setType(getFakeProcessor(ProcessorType.BENCH));
 		return b;
 	}
-	
+
 	public static Configuration getFakeConfig() {
 		Configuration c = new Configuration();
 		c.setName(getRandomAlphaString(20));
 		c.setDescription(getRandomAlphaString(20));
 		c.setId(rnd.nextInt());
-		
+
 		return c;
 	}
 	/**
@@ -129,7 +130,7 @@ public class TestUtil {
 		s.addConfiguration(c);
 		return s;
 	}
-	
+
 	/**
 	 * Returns a list of job pairs that are not in the database.
 	 * @param number The number of job pairs to get
@@ -161,7 +162,7 @@ public class TestUtil {
 			pairs.add(p);
 		}
 		return pairs;
-		
+
 	}
 	/**
 	 * Creates a mock HttpServletRequest object that SessionUtil will believe is from
@@ -182,7 +183,7 @@ public class TestUtil {
 	public static HttpServletRequest getMockHttpRequest(int userId, Map<String,String> parameters) {
 		return getMockHttpRequest(userId, parameters, new HashMap<>());
 	}
-	
+
 	/**
 	 * Creates a mock HttpServletRequest object that SessionUtil will believe is from
 	 * the given user
@@ -208,9 +209,9 @@ public class TestUtil {
 			}
 			Mockito.when(request.getParameterValues(s)).thenReturn(arr);
 		}
-		
+
 		Mockito.when(request.getSession()).thenReturn(session);
 		return request;
 	}
-	
+
 }

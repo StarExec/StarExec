@@ -1,6 +1,7 @@
 package org.starexec.test.integration.database;
 
 import org.junit.Assert;
+import org.starexec.constants.DB;
 import org.starexec.constants.R;
 import org.starexec.data.database.Communities;
 import org.starexec.data.database.Uploads;
@@ -26,9 +27,9 @@ public class UploadTests extends TestSequence {
 	protected String getTestName() {
 		return "UploadTests";
 	}
-	
 
-	
+
+
 	@StarexecTest
 	private void getBenchmarkUploadStatusSummaryTest() {
 		Assert.assertNotNull(Uploads.getUploadStatusSummary(bs.getId()));
@@ -48,7 +49,7 @@ public class UploadTests extends TestSequence {
 		}
 		Assert.assertTrue(found);
 	}
-	
+
 	@StarexecTest
 	private void xmlIncrementCompletedBenchmarkTest() {
 		int totalIncrement=0;
@@ -60,9 +61,9 @@ public class UploadTests extends TestSequence {
 		}
 		ss=Uploads.getSpaceXMLStatus(ss.getId());
 	}
-	
-	
-	
+
+
+
 	@StarexecTest
 	private void xmlIncrementCompletedSolverTest() {
 		int totalIncrement=0;
@@ -75,7 +76,7 @@ public class UploadTests extends TestSequence {
 		ss=Uploads.getSpaceXMLStatus(ss.getId());
 
 	}
-	
+
 	@StarexecTest
 	private void xmlIncrementCompletedUpdateTest() {
 		int totalIncrement=0;
@@ -88,7 +89,7 @@ public class UploadTests extends TestSequence {
 		ss=Uploads.getSpaceXMLStatus(ss.getId());
 
 	}
-	
+
 	@StarexecTest
 	private void xmlIncrementCompletedSpaceTest() {
 		int totalIncrement=0;
@@ -101,7 +102,7 @@ public class UploadTests extends TestSequence {
 		ss=Uploads.getSpaceXMLStatus(ss.getId());
 
 	}
-	
+
 	@StarexecTest
 	private void benchmarkIncrementCompletedBenchmarkTest() {
 		int totalIncrement=0;
@@ -112,9 +113,9 @@ public class UploadTests extends TestSequence {
 			Assert.assertEquals(bs.getCompletedBenchmarks()+totalIncrement, Uploads.getBenchmarkStatus(bs.getId()).getCompletedBenchmarks());
 		}
 		bs=Uploads.getBenchmarkStatus(bs.getId());
-		
+
 	}
-	
+
 	@StarexecTest
 	private void benchmarkIncrementCompletedSpacesTest() {
 		int totalIncrement=0;
@@ -126,7 +127,7 @@ public class UploadTests extends TestSequence {
 		}
 		bs=Uploads.getBenchmarkStatus(bs.getId());
 	}
-	
+
 	@StarexecTest
 	private void benchmarkIncrementFailedBenchmarkTest() {
 		int totalIncrement=0;
@@ -138,7 +139,7 @@ public class UploadTests extends TestSequence {
 		}
 		bs=Uploads.getBenchmarkStatus(bs.getId());
 	}
-	
+
 	@StarexecTest
 	private void benchmarkIncrementValidatedBenchmarkTest() {
 		int totalIncrement=0;
@@ -149,9 +150,9 @@ public class UploadTests extends TestSequence {
 			Assert.assertEquals(bs.getValidatedBenchmarks()+totalIncrement, Uploads.getBenchmarkStatus(bs.getId()).getValidatedBenchmarks());
 		}
 		bs=Uploads.getBenchmarkStatus(bs.getId());
-		
+
 	}
-	
+
 	@StarexecTest
 	private void benchmarkIncrementTotalBenchmarkTest() {
 		int totalIncrement=0;
@@ -162,9 +163,9 @@ public class UploadTests extends TestSequence {
 			Assert.assertEquals(bs.getTotalBenchmarks()+totalIncrement, Uploads.getBenchmarkStatus(bs.getId()).getTotalBenchmarks());
 		}
 		bs=Uploads.getBenchmarkStatus(bs.getId());
-		
+
 	}
-	
+
 	@StarexecTest
 	private void benchmarkIncrementTotalSpacesTest() {
 		int totalIncrement=0;
@@ -175,9 +176,9 @@ public class UploadTests extends TestSequence {
 			Assert.assertEquals(bs.getTotalSpaces()+totalIncrement, Uploads.getBenchmarkStatus(bs.getId()).getTotalSpaces());
 		}
 		bs=Uploads.getBenchmarkStatus(bs.getId());
-		
+
 	}
-	
+
 	@StarexecTest
 	private void setXMLTotalUpdatesTest() {
 		int num=rand.nextInt(20)+5;
@@ -192,7 +193,7 @@ public class UploadTests extends TestSequence {
 		Assert.assertEquals(num,Uploads.getSpaceXMLStatus(ss.getId()).getTotalSolvers());
 		ss.setTotalSolvers(num);
 	}
-	
+
 	@StarexecTest
 	private void setXMLTotalBenchmarksTest() {
 		int num=rand.nextInt(20)+5;
@@ -200,7 +201,7 @@ public class UploadTests extends TestSequence {
 		Assert.assertEquals(num,Uploads.getSpaceXMLStatus(ss.getId()).getTotalBenchmarks());
 		ss.setTotalBenchmarks(num);
 	}
-	
+
 	@StarexecTest
 	private void setXMLTotalSpacesTest() {
 		int num=rand.nextInt(20)+5;
@@ -208,23 +209,23 @@ public class UploadTests extends TestSequence {
 		Assert.assertEquals(num,Uploads.getSpaceXMLStatus(ss.getId()).getTotalSpaces());
 		ss.setTotalSpaces(num);
 	}
-	
+
 	@StarexecTest
 	private void setXMLErrorMessageTest() {
-		String msg=TestUtil.getRandomAlphaString(R.MSG_LEN);
+		String msg=TestUtil.getRandomAlphaString(DB.MSG_LEN);
 		Assert.assertTrue(Uploads.setXMLErrorMessage(ss.getId(), msg));
 		Assert.assertEquals(msg,Uploads.getSpaceXMLStatus(ss.getId()).getErrorMessage());
 		ss.setErrorMessage(msg);
 	}
 	@StarexecTest
 	private void setBenchmarkErrorMessageTest() {
-		String msg=TestUtil.getRandomAlphaString(R.MSG_LEN);
+		String msg=TestUtil.getRandomAlphaString(DB.MSG_LEN);
 		Assert.assertTrue(Uploads.setBenchmarkErrorMessage(bs.getId(), msg));
-		
+
 		Assert.assertEquals(msg,Uploads.getBenchmarkStatus(bs.getId()).getErrorMessage());
 		bs.setErrorMessage(msg);
 	}
-	
+
 	@StarexecTest
 	private void xmlEverythingCompleteTest() {
 		Assert.assertFalse(Uploads.getSpaceXMLStatus(ss.getId()).isEverythingComplete());
@@ -232,7 +233,7 @@ public class UploadTests extends TestSequence {
 		Assert.assertTrue(Uploads.getSpaceXMLStatus(ss.getId()).isEverythingComplete());
 		ss.setEverythingComplete(true);
 	}
-	
+
 	@StarexecTest
 	private void xmlFileUploadCompleteTest() {
 		Assert.assertFalse(Uploads.getSpaceXMLStatus(ss.getId()).isFileUploadComplete());
@@ -240,7 +241,7 @@ public class UploadTests extends TestSequence {
 		Assert.assertTrue(Uploads.getSpaceXMLStatus(ss.getId()).isFileUploadComplete());
 		ss.setFileUploadComplete(true);
 	}
-	
+
 	@StarexecTest
 	private void benchmarkEverythingCompleteTest() {
 		Assert.assertFalse(Uploads.getBenchmarkStatus(bs.getId()).isEverythingComplete());
@@ -248,7 +249,7 @@ public class UploadTests extends TestSequence {
 		Assert.assertTrue(Uploads.getBenchmarkStatus(bs.getId()).isEverythingComplete());
 		bs.setEverythingComplete(true);
 	}
-	
+
 	@StarexecTest
 	private void benchmarkFileUploadCompleteTest() {
 		Assert.assertFalse(Uploads.getBenchmarkStatus(bs.getId()).isFileUploadComplete());
@@ -256,7 +257,7 @@ public class UploadTests extends TestSequence {
 		Assert.assertTrue(Uploads.getBenchmarkStatus(bs.getId()).isFileUploadComplete());
 		bs.setFileUploadComplete(true);
 	}
-	
+
 	@StarexecTest
 	private void benchmarkFileExtractCompleteTest() {
 		Assert.assertFalse(Uploads.getBenchmarkStatus(bs.getId()).isFileExtractionComplete());
@@ -271,7 +272,7 @@ public class UploadTests extends TestSequence {
 		Assert.assertTrue(Uploads.getBenchmarkStatus(bs.getId()).isProcessingBegun());
 		bs.setProcessingBegun(true);
 	}
-	
+
 
 	@Override
 	protected void setup() throws Exception {
@@ -280,9 +281,9 @@ public class UploadTests extends TestSequence {
 		bs=Uploads.getBenchmarkStatus(Uploads.createBenchmarkUploadStatus(s.getId(), u.getId()));
 		Assert.assertNotNull(bs);
 		ss=Uploads.getSpaceXMLStatus(Uploads.createSpaceXMLUploadStatus(u.getId()));
-		
+
 	}
-	
+
 
 	@Override
 	protected void teardown() throws Exception {
