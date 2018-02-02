@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project basedir=".">
+	<target name="clean">
+		<delete>
+			<fileset dir=".">
+				<include name="sql/NewInstall.sql" />
+				<include name="WebContent/css/_properties.scss" />
+				<include name="WebContent/css/**/*.css.map" />
+				<include name="WebContent/public/starexeccommand.zip" />
+				<include name="script/*.sh" />
+				<include name=".sass-cache/" />
+				<include name="junittestoutput/" />
+			</fileset>
+		</delete>
+	</target>
+</project>

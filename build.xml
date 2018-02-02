@@ -48,6 +48,7 @@
 	</target>
 
 	<import file="build/build-css.xml"/>
+	<import file="build/build-clean.xml"/>
 	<import file="build/build-compile.xml"/>
 	<import file="build/build-config.xml"/>
 	<import file="build/build-test.xml"/>
