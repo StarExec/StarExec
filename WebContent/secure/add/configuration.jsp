@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.R,org.starexec.data.database.Solvers,org.starexec.data.security.GeneralSecurity, org.starexec.data.to.Solver, org.starexec.util.SessionUtil" %>
+        import="org.starexec.constants.DB,org.starexec.data.database.Solvers,org.starexec.data.security.GeneralSecurity, org.starexec.data.to.Solver, org.starexec.util.SessionUtil" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
@@ -8,8 +8,8 @@
 		int solverId = Integer.parseInt(request.getParameter("sid"));
 		int userId = SessionUtil.getUserId(request);
 		Solver solver = Solvers.get(solverId);
-		request.setAttribute("configNameLen", R.CONFIGURATION_NAME_LEN - 4);
-		request.setAttribute("configDescLen", R.CONFIGURATION_DESC_LEN);
+		request.setAttribute("configNameLen", DB.CONFIGURATION_NAME_LEN - 4);
+		request.setAttribute("configDescLen", DB.CONFIGURATION_DESC_LEN);
 		// Verify this user is the owner of the solver they are trying to upload configurations to
 		if (solver.getUserId() == userId ||
 				GeneralSecurity.hasAdminReadPrivileges(userId)) {

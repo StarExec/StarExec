@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.R,org.starexec.data.database.Benchmarks, org.starexec.data.database.Permissions, org.starexec.data.database.Processors, org.starexec.data.security.GeneralSecurity, org.starexec.data.to.Benchmark, org.starexec.data.to.enums.ProcessorType, org.starexec.util.SessionUtil" %>
+        import="org.starexec.constants.DB,org.starexec.data.database.Benchmarks, org.starexec.data.database.Permissions, org.starexec.data.database.Processors, org.starexec.data.security.GeneralSecurity, org.starexec.data.to.Benchmark, org.starexec.data.to.enums.ProcessorType, org.starexec.util.SessionUtil" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -7,8 +7,8 @@
 	try {
 		int userId = SessionUtil.getUserId(request);
 		int benchId = Integer.parseInt(request.getParameter("id"));
-		request.setAttribute("benchNameLen", R.BENCH_NAME_LEN);
-		request.setAttribute("benchDescLen", R.BENCH_DESC_LEN);
+		request.setAttribute("benchNameLen", DB.BENCH_NAME_LEN);
+		request.setAttribute("benchDescLen", DB.BENCH_DESC_LEN);
 		Benchmark b = null;
 		if (Permissions.canUserSeeBench(benchId, userId)) {
 			b = Benchmarks.get(benchId);

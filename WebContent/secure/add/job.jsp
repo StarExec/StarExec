@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.R,org.starexec.data.database.*,org.starexec.data.security.GeneralSecurity, org.starexec.data.to.*, org.starexec.data.to.enums.ProcessorType, org.starexec.util.SessionUtil, java.util.List" %>
+        import="org.starexec.constants.DB,org.starexec.constants.R,org.starexec.data.database.*,org.starexec.data.security.GeneralSecurity, org.starexec.data.to.*, org.starexec.data.to.enums.ProcessorType, org.starexec.util.SessionUtil, java.util.List" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -22,8 +22,8 @@
 			int pairsUsed = Jobs.countPairsByUser(userId);
 			int remainingQuota = Math.max(0, u.getPairQuota() - pairsUsed);
 			request.setAttribute("space", Spaces.get(spaceId));
-			request.setAttribute("jobNameLen", R.JOB_NAME_LEN);
-			request.setAttribute("jobDescLen", R.JOB_DESC_LEN);
+			request.setAttribute("jobNameLen", DB.JOB_NAME_LEN);
+			request.setAttribute("jobDescLen", DB.JOB_DESC_LEN);
 			int communityId = Spaces.getCommunityOfSpace(spaceId);
 
 			List<Processor> ListOfPostProcessors =

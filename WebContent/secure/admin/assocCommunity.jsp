@@ -1,15 +1,14 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.R, org.starexec.data.database.Queues, org.starexec.data.database.Spaces, org.starexec.data.to.Queue, org.starexec.data.to.Space, java.util.List" %>
+        import="org.starexec.constants.DB, org.starexec.data.database.Queues, org.starexec.data.database.Spaces, org.starexec.data.to.Queue, org.starexec.data.to.Space, java.util.List" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
-
 	try {
 		int id = Integer.parseInt(request.getParameter("id"));
 		Queue q = Queues.get(id);
 
 		List<Space> communities = Spaces.getNonAttachedCommunities(id);
-		request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);
+		request.setAttribute("queueNameLen", DB.QUEUE_NAME_LEN);
 		request.setAttribute("queueName", q.getName());
 		request.setAttribute("communities", communities);
 	} catch (NumberFormatException nfe) {
@@ -21,9 +20,7 @@
 		response.sendError(
 				HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
-
 %>
-
 <star:template title="give communities acces to queues"
                js="admin/assocCommunity, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min,lib/jquery.validate.min"
                css="common/table, details/shared, explore/common, explore/spaces, admin/admin">
@@ -63,7 +60,6 @@
 							<input type="hidden" name="community"
 							       value="${c.id}"/>
 							<p>${c.name}</p>
-
 						</td>
 					</tr>
 				</c:forEach>
@@ -80,6 +76,5 @@
 				</ul>
 			</fieldset>
 		</div>
-
 	</form>
 </star:template>

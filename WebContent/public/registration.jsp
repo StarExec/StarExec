@@ -1,16 +1,16 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.R, org.starexec.data.database.Communities"
+        import="org.starexec.constants.DB, org.starexec.data.database.Communities"
         session="false" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 	request.setAttribute("coms", Communities.getAll());
-	request.setAttribute("firstNameLen", R.USER_FIRST_LEN);
-	request.setAttribute("lastNameLen", R.USER_LAST_LEN);
-	request.setAttribute("institutionLen", R.INSTITUTION_LEN);
-	request.setAttribute("emailLen", R.EMAIL_LEN);
-	request.setAttribute("passwordLen", R.PASSWORD_LEN);
-	request.setAttribute("msgLen", R.MSG_LEN);
+	request.setAttribute("firstNameLen", DB.USER_FIRST_LEN);
+	request.setAttribute("lastNameLen", DB.USER_LAST_LEN);
+	request.setAttribute("institutionLen", DB.INSTITUTION_LEN);
+	request.setAttribute("emailLen", DB.EMAIL_LEN);
+	request.setAttribute("passwordLen", DB.PASSWORD_LEN);
+	request.setAttribute("msgLen", DB.MSG_LEN);
 %>
 
 <star:template title="User registration"

@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.R,org.starexec.data.database.Spaces, org.starexec.data.security.GeneralSecurity, org.starexec.data.to.Permission, org.starexec.util.SessionUtil" %>
+        import="org.starexec.constants.DB,org.starexec.data.database.Spaces, org.starexec.data.security.GeneralSecurity, org.starexec.data.to.Permission, org.starexec.util.SessionUtil" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
@@ -10,8 +10,8 @@
 		int userId = SessionUtil.getUserId(request);
 		request.setAttribute("isRoot", spaceId == 1);
 		request.setAttribute("space", Spaces.get(spaceId));
-		request.setAttribute("nameLength", R.SPACE_NAME_LEN);
-		request.setAttribute("descLength", R.SPACE_DESC_LEN);
+		request.setAttribute("nameLength", DB.SPACE_NAME_LEN);
+		request.setAttribute("descLength", DB.SPACE_DESC_LEN);
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
 		if ((p == null || !p.canAddSpace()) &&
