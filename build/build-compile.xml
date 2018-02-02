@@ -88,19 +88,15 @@
 			</fileset>
 		</delete>
 
-		<copy todir="WebContent/public/">
+		<copy overwrite="true" todir="WebContent/public/">
+			<filterset>
+				<filter token="Web.URL" value="${Web.URL}"/>
+			</filterset>
 			<fileset dir="schemas">
 				<include name="**/*.xsd"/>
 				<include name="**/*.xml"/>
 			</fileset>
 		</copy>
-
-		<replace dir="WebContent/public/">
-			<replacefilter token="www.starexec.org/starexec/"
-			               value="${server-name}/${appname}/" />
-			<include name="**/*.xsd"/>
-			<include name="**/*.xml"/>
-		</replace>
 
 		<!-- Update the log4j config file to only record INFO level events	-->
 		<propertyfile file="${config-dir}/log4j.properties" comment="${generated-message}">
