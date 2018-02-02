@@ -136,7 +136,8 @@ public class GetPicture extends HttpServlet {
 				java.io.OutputStream os = response.getOutputStream();
 				FileUtils.copyFile(file, os);
 			} catch (Exception e) {
-				log.warn("picture with path " + file.getPath() + "could not be found");
+				log.warn("User: " + System.getProperty("user.name") + "\nCan Read: " + file.canRead() + "\nExists: " + file.exists());
+				log.warn("picture with path " + file.getAbsolutePath() + " could not be found", e);
 			}
 		} catch (Exception e) {
 			log.warn("Caught Exception in GetPicture.doGet", e);
