@@ -17,7 +17,7 @@ public class DB {
 	public static final int USER_LAST_LEN          = 32;
 	public static final int INSTITUTION_LEN        = 64;
 	public static final int EMAIL_LEN              = 64;
-	public static final int PASSWORD_LEN           = 20;
+	public static final int PASSWORD_LEN           = 32;
 	public static final int MSG_LEN                = 512;
 	public static final int BENCH_NAME_LEN         = 250;
 	public static final int BENCH_DESC_LEN         = 1024;
