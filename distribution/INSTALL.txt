@@ -5,7 +5,7 @@ dependencies on a Linux system.
 
 ********************************** Java ***************************************
 
-Starexec depends on the Java 8 JDK and has been tested with version 1.8.0_u77.
+Starexec depends on the Java 8 JDK and has been tested with version 1.8.0_161.
 Java 8 can be found at the site below or can be installed through various
 package managers
 
