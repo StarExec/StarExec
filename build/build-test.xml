@@ -10,7 +10,7 @@
 		</path>
 		<delete dir="junittestoutput"/>
 		<mkdir dir="junittestoutput"/>
-		<junit printsummary="yes" haltonfailure="yes">
+		<junit printsummary="yes" haltonfailure="yes" dir="./" fork="on" forkmode="once">
 			<formatter type="plain"/>
 			<classpath refid="testpath"/>
 			<batchtest todir="junittestoutput">
