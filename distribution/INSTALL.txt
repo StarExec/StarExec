@@ -39,9 +39,8 @@ example, by using 'chmod 700 -R tomcat_directory'
 
 ********************************** MySQL and MariaDB **************************************
 
-StarExec depends on MariaDB 5.5.47. It is possible that newer
-versions, like 5.5.49, may also work, but this can't be guaranteed. MariaDB can
-be obtained at the following iste.
+StarExec depends on MariaDB 5.5.56. MariaDB can
+be obtained at the following site.
 
 https://downloads.mariadb.org/
 
