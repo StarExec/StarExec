@@ -75,7 +75,7 @@
 		<!-- Update the upload commands to use the correct app -->
 		<replaceregexp file="deployed-upload-test/testDataCommands.txt"
 		               match="login addr=https://stardev.cs.uiowa.edu/(.+)/"
-		               replace="login addr=https://${STAREXEC_SERVERNAME}/${STAREXEC_APPNAME}/"
+		               replace="login addr=https://${Web.Address}/${STAREXEC_APPNAME}/"
 		               flags="g"
 		               byline="false" />
 		<chmod file="deployed-upload-test/uploadTestData.sh" perm="774" />
