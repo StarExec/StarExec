@@ -731,9 +731,16 @@ CREATE TABLE system_flags (
 	integrity_keeper ENUM('') NOT NULL,
 	paused BOOLEAN DEFAULT FALSE,
 	test_queue INT,
+	major_version INT UNSIGNED,
+	minor_version INT UNSIGNED,
 	PRIMARY KEY (integrity_keeper),
 	CONSTRAINT system_flags_test_queue FOREIGN KEY (test_queue) REFERENCES queues(id) ON DELETE SET NULL
 );
+
+-- Minor version is incremented on each change
+-- Major version is only incremented when a change may require manual
+--     intervention and cannot be applied automatically
+UPDATE system_flags SET major_version=1, minor_version=1;
 
 -- table for storing statistics for the weekly report
 CREATE TABLE report_data (
