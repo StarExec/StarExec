@@ -79,6 +79,9 @@
 				<filter token="Web.Schema.Url"         value="${Web.Schema.Url}" />
 				<filter token="Web.Schema.Space"       value="${Web.Schema.Space}" />
 				<filter token="Web.Schema.Job"         value="${Web.Schema.Job}" />
+				<filter token="Web.DB.User"            value="${Web.DB.User}"/>
+				<filter token="Web.DB.Pass"            value="${Web.DB.Pass}"/>
+				<filter token="Web.DB.Url"             value="${Web.DB.Url}"/>
 
 				<filter token="data_dir"            value="${data_dir}"/>
 				<filter token="BACKEND_TYPE"        value="sge"/>

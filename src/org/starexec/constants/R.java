@@ -163,9 +163,9 @@ public class R {
 
 	// MySQL properties
 	public static String MYSQL_DATABASE              = "@DB.Name@";         // Name of the MySQL database
-	public static String MYSQL_URL                   = "@DB.Url@";          // MySQL connection string for JDBC
-	public static String MYSQL_USERNAME              = "@DB.User@";         // Starexec's username for the database
-	public static String MYSQL_PASSWORD              = "@DB.Pass@";         // Starexec database password
+	public static String MYSQL_URL                   = "@Web.DB.Url@";      // MySQL connection string for JDBC
+	public static String MYSQL_USERNAME              = "@Web.DB.User@";     // Starexec's username for the database
+	public static String MYSQL_PASSWORD              = "@Web.DB.Pass@";     // Starexec database password
 	public static int MYSQL_POOL_MAX_SIZE            =  @DB.Pool.Max@;      // The maximum number of connections in the database pool
 	public static int MYSQL_POOL_MIN_SIZE            =  @DB.Pool.Min@;      // The minimum number of connections to keep open to the database
 	public static String COMPUTE_NODE_MYSQL_USERNAME = "@Cluster.DB.User@"; // username for database to use from compute nodes
