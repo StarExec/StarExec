@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.R,org.starexec.data.database.Settings,org.starexec.data.database.Spaces, org.starexec.data.security.GeneralSecurity, org.starexec.data.to.DefaultSettings, org.starexec.data.to.Permission, org.starexec.util.SessionUtil, java.util.List" %>
+        import="org.starexec.constants.DB,org.starexec.data.database.Settings,org.starexec.data.database.Spaces, org.starexec.data.security.GeneralSecurity, org.starexec.data.to.DefaultSettings, org.starexec.data.to.Permission, org.starexec.util.SessionUtil, java.util.List" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
@@ -9,8 +9,8 @@
 		int userId = SessionUtil.getUserId(request);
 		request.setAttribute("space", Spaces.get(spaceId));
 
-		request.setAttribute("solverNameLen", R.SOLVER_NAME_LEN);
-		request.setAttribute("solverDescLen", R.SOLVER_DESC_LEN);
+		request.setAttribute("solverNameLen", DB.SOLVER_NAME_LEN);
+		request.setAttribute("solverDescLen", DB.SOLVER_DESC_LEN);
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
 		if (!GeneralSecurity.hasAdminReadPrivileges(userId) &&

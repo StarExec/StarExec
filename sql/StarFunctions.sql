@@ -2,14 +2,9 @@
 -- The procedures are stored by which table they're related to and roughly alphabetic order. Please try to keep this organized!
 -- Author: Todd Elvers
 
-USE starexec;
-
-DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
-
-
 -- Gets the number of completed job pairs for a given job id
 -- Author: Todd Elvers
-DROP FUNCTION IF EXISTS GetCompletePairs;
+DROP FUNCTION IF EXISTS GetCompletePairs //
 CREATE FUNCTION GetCompletePairs(_jobId INT)
 	RETURNS INT
 	BEGIN
@@ -23,10 +18,9 @@ CREATE FUNCTION GetCompletePairs(_jobId INT)
 		RETURN completePairs;
 	END //
 
-
 -- Gets the number of errored job pairs for a given job id
 -- Author: Todd Elvers
-DROP FUNCTION IF EXISTS GetErrorPairs;
+DROP FUNCTION IF EXISTS GetErrorPairs //
 CREATE FUNCTION GetErrorPairs(_jobId INT)
 	RETURNS INT
 	BEGIN
@@ -43,7 +37,7 @@ CREATE FUNCTION GetErrorPairs(_jobId INT)
 -- Returns "complete" if the job represented by the given id had no pending job pairs,
 -- and returns "incomplete" otherwise
 -- Author: Todd Elvers
-DROP FUNCTION IF EXISTS GetJobStatus;
+DROP FUNCTION IF EXISTS GetJobStatus //
 CREATE FUNCTION GetJobStatus(_jobId INT)
 	RETURNS ENUM("incomplete", "complete")
 	BEGIN
@@ -64,7 +58,7 @@ CREATE FUNCTION GetJobStatus(_jobId INT)
 
 -- Returns human readable description of this job's status
 -- This Function looks intimidating, but it is just a big IF ELSE IF chain
-DROP FUNCTION IF EXISTS GetJobStatusDetail;
+DROP FUNCTION IF EXISTS GetJobStatusDetail //
 CREATE FUNCTION GetJobStatusDetail(_jobId INT)
 	RETURNS ENUM("RUNNING", "PROCESSING", "COMPLETE", "DELETED", "KILLED", "PAUSED", "GLOBAL_PAUSE")
 	BEGIN
@@ -96,7 +90,7 @@ CREATE FUNCTION GetJobStatusDetail(_jobId INT)
 
 -- Gets the number of pending job pairs for a given job id
 -- Author: Todd Elvers
-DROP FUNCTION IF EXISTS GetPendingPairs;
+DROP FUNCTION IF EXISTS GetPendingPairs //
 CREATE FUNCTION GetPendingPairs(_jobId INT)
 	RETURNS INT
 	BEGIN
@@ -112,7 +106,7 @@ CREATE FUNCTION GetPendingPairs(_jobId INT)
 
 --  Tells you whether a space is public or not
 -- Author: Eric Burns
-DROP FUNCTION IF EXISTS IsPublic;
+DROP FUNCTION IF EXISTS IsPublic //
 CREATE FUNCTION IsPublic(_spaceId int)
 	RETURNS BOOLEAN
 	BEGIN
@@ -125,7 +119,7 @@ CREATE FUNCTION IsPublic(_spaceId int)
 
 --  Determines if User is Leader of Space
 --  Author: Benton McCune
-DROP FUNCTION IF EXISTS IsLeader;
+DROP FUNCTION IF EXISTS IsLeader //
 CREATE FUNCTION IsLeader(_spaceId int, _userId int)
 	RETURNS BOOLEAN
 	BEGIN
@@ -135,5 +129,3 @@ CREATE FUNCTION IsLeader(_spaceId int, _userId int)
 	  		where id = (select permission from user_assoc where space_id=_spaceId and user_id = _userId LIMIT 1);
 	  	RETURN isLeader;
 	END //
-
-DELIMITER ; -- This should always be at the end of this file

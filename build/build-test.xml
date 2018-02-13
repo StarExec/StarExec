@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="test" basedir=".">
+	<target name="test" depends="compilestarcom, compilestarexec, css" description="Run all tests">
+		<!-- Execute JUnit tests -->
+		<path id="testpath">
+			<pathelement path="${class-dir}"/>
+			<fileset dir="${starcomlib}" includes="**/*.jar"/>
+			<fileset dir="${tomcat-dir}/lib" includes="**/*.jar"/>
+			<fileset dir="local-lib" includes="**/*.jar"/>
+		</path>
+		<delete dir="junittestoutput"/>
+		<mkdir dir="junittestoutput"/>
+		<junit printsummary="yes" haltonfailure="yes" dir="./" fork="on" forkmode="once">
+			<formatter type="plain"/>
+			<classpath refid="testpath"/>
+			<batchtest todir="junittestoutput">
+				<fileset dir="${class-dir}" includes="**/junit/**/*.class"/>
+			</batchtest>
+		</junit>
+	</target>
+</project>

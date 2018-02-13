@@ -1,15 +1,14 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.R, org.starexec.data.database.Cluster, org.starexec.data.database.Queues, org.starexec.data.to.Queue, org.starexec.data.to.WorkerNode, java.util.List" %>
+        import="org.starexec.constants.DB, org.starexec.data.database.Cluster, org.starexec.data.database.Queues, org.starexec.data.to.Queue, org.starexec.data.to.WorkerNode, java.util.List" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
-
 	try {
 		int id = Integer.parseInt(request.getParameter("id"));
 		Queue q = Queues.get(id);
 
 		List<WorkerNode> nodes = Cluster.getNonAttachedNodes(id);
-		request.setAttribute("queueNameLen", R.QUEUE_NAME_LEN);
+		request.setAttribute("queueNameLen", DB.QUEUE_NAME_LEN);
 		request.setAttribute("queueName", q.getName());
 		request.setAttribute("nodes", nodes);
 	} catch (NumberFormatException nfe) {
@@ -21,9 +20,7 @@
 		response.sendError(
 				HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
 	}
-
 %>
-
 <star:template title="move nodes to queue"
                js="util/selectBetween, admin/moveNodes, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min,lib/jquery.validate.min"
                css="common/table, details/shared, explore/common, explore/spaces, admin/admin">

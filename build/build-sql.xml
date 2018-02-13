@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project basedir=".">
+	<!-- Action for compiling the project and building the WAR file.
+		1. we first compile the Java sources and copy over scripts and
+		     configurations to ${build-dir}.
+		2. then we rewrite some of the configurations, using information
+		     from local.properties.
+	-->
+
+	<target name="compile-sql">
+		<mkdir dir="${data_dir}" />
+		<copy file="sql/NewInstall.template" tofile="sql/NewInstall.sql">
+			<filterset>
+				<filter token="DB.Name" value="${DB.Name}"/>
+			</filterset>
+		</copy>
+	</target>
+
+	<target name="reload-sql" description="Reload SQL functions and procedures">
+		<sql driver="com.mysql.jdbc.Driver" classpathref="classpath"
+		     delimiter="//" keepformat="true"
+		     url="${DB.Url}" userid="${DB.User}" password="${DB.Pass}">
+			<path>
+				<fileset dir="sql">
+					<include name="StarFunctions.sql" />
+					<include name="procedures/**/*" />
+				</fileset>
+			</path>
+		</sql>
+	</target>
+
+	<target name="update-sql" description="Apply any new DB schema changes">
+		<sql driver="com.mysql.jdbc.Driver" classpathref="classpath"
+		     delimiter=";" keepformat="true"
+		     url="${DB.Url}" userid="${DB.User}" password="${DB.Pass}">
+			<path>
+				<fileset dir="sql/SchemaChanges">
+					<include name="*.sql" />
+				</fileset>
+			</path>
+		</sql>
+	</target>
+</project>

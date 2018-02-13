@@ -1,3 +1,0 @@
-#!/bin/bash
-
-mysql -u"root" -p"star3x3c2011!" prod_starexec

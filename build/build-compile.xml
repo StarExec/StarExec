@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="compile" basedir=".">
+	<!-- Action for compiling the project and building the WAR file.
+		1. we first compile the Java sources and copy over scripts and
+		     configurations to ${build-dir}.
+		2. then we rewrite some of the configurations, using information
+		     from local.properties.
+	-->
+
+	<target name="compilestarexec" depends="register-commands,config,compile-sql,scripts">
+		<!-- Compile the source code to get the java classes -->
+		<javac debug="true" debuglevel="lines,vars,source" destdir="${class-dir}" classpathref="classpath" nowarn="on">
+			<src path="src" />
+			<src path="${java.io.tmpdir}" />
+			<compilerarg value="-Xlint:unchecked"/>
+			<include name="org/starexec/**/*.java" />
+			<include name="R.java" />
+			<exclude name="**/constants/R.java" />
+		</javac>
+		<property name="starexec-already-compiled" value="true" />
+	</target>
+
+	<target name="war" depends="register-commands,css">
+		<!-- Copy over the org.starexec.config folder from source to classes -->
+		<mkdir dir="${class-dir}/org/starexec/config" />
+		<copy todir="${class-dir}/org/starexec/config">
+			<fileset dir="${source-dir}/org/starexec/config">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+
+		<!--Copy over the resources directory from source to classes -->
+		<mkdir dir="${resource-dir}" />
+		<copy todir="${resource-dir}">
+			<fileset dir="${source-dir}/org/starexec/test/resources">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+
+		<mkdir dir="${esapi-dir}" />
+		<copy todir="${esapi-dir}">
+			<fileset dir="${source-dir}/esapi">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+
+		<!-- Copy the context template and fill it in -->
+		<copy file="${meta-inf}/context.template"
+		      tofile="${meta-inf}/context.xml"
+		      overwrite="true">
+			<filterset>
+				<filter token="STAREXEC_APPNAME" value="${STAREXEC_APPNAME}"/>
+				<filter token="DB.Name"          value="${DB.Name}"/>
+				<filter token="DB.User"          value="${DB.User}"/>
+				<filter token="DB.Pass"          value="${DB.Pass}"/>
+				<filter token="DB.Url"           value="${DB.Url}"/>
+			</filterset>
+		</copy>
+		<replaceregexp file="${meta-inf}/context.xml"
+		               match="&lt;!\-\- (.+) \-\->"
+		               replace="&lt;!-- ${generated-message} -->" />
+
+		<!-- Copy over files to upload for testing purposes. -->
+		<delete dir="deployed-upload-test" />
+		<mkdir dir="deployed-upload-test" />
+		<copy todir="deployed-upload-test">
+			<fileset dir="upload-test">
+				<include name="**/*" />
+			</fileset>
+			<fileset dir="${starcom-build}">
+				<include name="StarexecCommand.jar" />
+			</fileset>
+		</copy>
+
+		<!-- Update the upload commands to use the correct app -->
+		<replaceregexp file="deployed-upload-test/testDataCommands.txt"
+		               match="login addr=https://stardev.cs.uiowa.edu/(.+)/"
+		               replace="login addr=https://${Web.Address}/${STAREXEC_APPNAME}/"
+		               flags="g"
+		               byline="false" />
+		<chmod file="deployed-upload-test/uploadTestData.sh" perm="774" />
+
+		<!-- Update the schemas to use the currect server and app -->
+		<delete>
+			<fileset dir= "WebContent/public">
+				<include name="**/*.xsd"/>
+				<include name="**/*.xml"/>
+			</fileset>
+		</delete>
+
+		<copy overwrite="true" todir="WebContent/public/">
+			<filterset>
+				<filter token="Web.URL" value="${Web.URL}"/>
+			</filterset>
+			<fileset dir="schemas">
+				<include name="**/*.xsd"/>
+				<include name="**/*.xml"/>
+			</fileset>
+		</copy>
+
+		<!-- Update the log4j config file to only record INFO level events	-->
+		<propertyfile file="${config-dir}/log4j.properties" comment="${generated-message}">
+			<entry key="log4j.rootLogger" value="${logging_levels}"/>
+			<entry key="log4j.appender.STAREXEC.File" value="${catalina.base}/logs/${logfile_name}.log" />
+		</propertyfile>
+
+		<!-- Create the war file! -->
+		<war compress="${compression-enabled}" level="9" warfile="${war-file-name}" webxml="${web-inf}/web.xml">
+			<classes dir="${class-dir}" />
+			<fileset dir="WebContent" excludes="**/*.scss,**/context.template"/>
+			<lib dir="${starcomlib}"/>
+		</war>
+	</target>
+</project>

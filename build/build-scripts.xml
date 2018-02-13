@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project basedir=".">
+	<target name="scripts" depends="register-commands"
+	        description="Generates scripts to help with admin tasks">
+
+		<!-- Copy the script templates and fill them in -->
+		<copy overwrite="true" todir="${scripts-dir}">
+			<filterset>
+				<filter token="DB.Name"           value="${DB.Name}"/>
+				<filter token="DB.Pass"           value="${DB.Pass}"/>
+				<filter token="DB.User"           value="${DB.User}"/>
+				<filter token="Web.BaseDirectory" value="${Web.BaseDirectory}"/>
+				<filter token="web-home"          value="${web-home}"/>
+				<filter token="STAREXEC_APPNAME"  value="${STAREXEC_APPNAME}"/>
+				<filter token="war-file-name"     value="${war-file-name}"/>
+				<filter token="data_dir"          value="${data_dir}"/>
+			</filterset>
+			<fileset dir="${scripts-dir}" includes="*.template"/>
+			<globmapper from="*.template" to="*.sh"/>
+		</copy>
+		<replace dir="${scripts-dir}" token="${bash-header}" value="${generated-bash-header}">
+			<include name="*.sh" />
+		</replace>
+		<chmod dir="${scripts-dir}" includes="*.sh" perm="700"/>
+	</target>
+</project>

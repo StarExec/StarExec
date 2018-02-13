@@ -14,10 +14,10 @@ INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, rem
 	(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0);
 INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, remove_solver, remove_bench, remove_user, remove_space, remove_job, is_leader) VALUES
 	(1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0);
-	
+
 -- Starts at 2 (the root space is defined in the schema)
 INSERT INTO spaces(name, created, description, locked, default_permission) VALUES
-	('Test', SYSDATE(), 'The Test community', 0, 3);	
+	('Test', SYSDATE(), 'The Test community', 0, 3);
 
 INSERT INTO set_assoc VALUES (1, 2);
 
@@ -28,4 +28,3 @@ INSERT INTO user_assoc VALUES (1, 1, 2);
 
 INSERT INTO queues(name, status, global_access) VALUES ("all.q", "ACTIVE", true);
 INSERT INTO system_flags (paused, test_queue) VALUES (false,1);
-

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="config" basedir=".">
+	<target name="config" depends="register-commands">
+		<delete file="${java.io.tmpdir}/R.java" quiet="true" />
+		<copy file="src/org/starexec/constants/R.java" tofile="${java.io.tmpdir}/R.java">
+			<filterset>
+				<filter token="Backend.Root"          value="${Backend.Root}"/>
+				<filter token="Backend.WorkingDir"    value="${Backend.WorkingDir}"/>
+
+				<filter token="Build.Date"            value="${Build.Date}"/>
+				<filter token="Build.User"            value="${Build.User}"/>
+				<filter token="Build.Version"         value="${Build.Version}"/>
+
+				<filter token="Cluster.DB.User"       value="${Cluster.DB.User}"/>
+				<filter token="Cluster.DB.Pass"       value="${Cluster.DB.Pass}"/>
+				<filter token="Cluster.DB.Url"        value="${Cluster.DB.Url}"/>
+				<filter token="Cluster.UpdatePeriod"  value="${Cluster.UpdatePeriod}"/>
+				<filter token="Cluster.UserOne"       value="${Cluster.UserOne}"/>
+				<filter token="Cluster.UserTwo"       value="${Cluster.UserTwo}"/>
+
+				<filter token="Config.Path"           value="${Config.Path}"/>
+
+				<filter token="DB.Name"               value="${DB.Name}"/>
+				<filter token="DB.User"               value="${DB.User}"/>
+				<filter token="DB.Pass"               value="${DB.Pass}"/>
+				<filter token="DB.Url"                value="${DB.Url}"/>
+				<filter token="DB.Pool.Max"           value="${DB.Pool.Max}"/>
+				<filter token="DB.Pool.Min"           value="${DB.Pool.Min}"/>
+
+				<filter token="Email.Contact"         value="${Email.Contact}"/>
+				<filter token="Email.Smtp"            value="${Email.Smtp}"/>
+				<filter token="Email.Port"            value="${Email.Port}"/>
+				<filter token="Email.User"            value="${Email.User}"/>
+				<filter token="Email.Pass"            value="${Email.Pass}"/>
+
+				<filter token="Job.SubmissionPeriod"  value="${Job.SubmissionPeriod}"/>
+				<filter token="JobPair.MaxFileWrite"  value="${JobPair.MaxFileWrite}"/>
+
+				<filter token="MaxLength.Bench.Name"            value="${MaxLength.Bench.Name}" />
+				<filter token="MaxLength.Bench.Description"     value="${MaxLength.Bench.Description}" />
+				<filter token="MaxLength.Config.Name"           value="${MaxLength.Config.Name}" />
+				<filter token="MaxLength.Config.Description"    value="${MaxLength.Config.Description}" />
+				<filter token="MaxLength.Job.Name"              value="${MaxLength.Job.Name}" />
+				<filter token="MaxLength.Job.Description"       value="${MaxLength.Job.Description}" />
+				<filter token="MaxLength.Message"               value="${MaxLength.Message}" />
+				<filter token="MaxLength.Pipeline.Name"         value="${MaxLength.Pipeline.Name}" />
+				<filter token="MaxLength.Processor.Name"        value="${MaxLength.Processor.Name}" />
+				<filter token="MaxLength.Processor.Description" value="${MaxLength.Processor.Description}" />
+				<filter token="MaxLength.Queue.Name"            value="${MaxLength.Queue.Name}" />
+				<filter token="MaxLength.Settings.Name"         value="${MaxLength.Settings.Name}" />
+				<filter token="MaxLength.Solver.Name"           value="${MaxLength.Solver.Name}" />
+				<filter token="MaxLength.Solver.Description"    value="${MaxLength.Solver.Description}" />
+				<filter token="MaxLength.Space.Name"            value="${MaxLength.Space.Name}" />
+				<filter token="MaxLength.Space.Description"     value="${MaxLength.Space.Description}" />
+				<filter token="MaxLength.TextField"             value="${MaxLength.TextField}" />
+				<filter token="MaxLength.URL"                   value="${MaxLength.URL}" />
+				<filter token="MaxLength.User.FirstName"        value="${MaxLength.User.FirstName}" />
+				<filter token="MaxLength.User.LastName"         value="${MaxLength.User.LastName}" />
+				<filter token="MaxLength.User.Institution"      value="${MaxLength.User.Institution}" />
+				<filter token="MaxLength.User.Email"            value="${MaxLength.User.Email}" />
+				<filter token="MaxLength.User.Password"         value="${MaxLength.User.Password}" />
+				<filter token="MaxLength.Website.Name"          value="${MaxLength.Website.Name}" />
+
+				<filter token="Proxy.Address" value="${Proxy.Address}" />
+				<filter token="Proxy.Port"    value="${Proxy.Port}" />
+				<filter token="Proxy.Scheme"  value="${Proxy.Scheme}" />
+				<filter token="Proxy.URL"     value="${Proxy.URL}" />
+
+				<filter token="Report.Host"   value="${Report.Host}" />
+
+				<filter token="Runsolver.Path"         value="${Runsolver.Path}" />
+
+				<filter token="User.DefaultDiskQuota"  value="${User.DefaultDiskQuota}" />
+
+				<filter token="Web.Address"            value="${Web.Address}"/>
+				<filter token="Web.BaseDirectory"      value="${Web.BaseDirectory}" />
+				<filter token="Web.Download.Directory" value="${Web.Download.Directory}" />
+				<filter token="Web.JobGraph.Path"      value="${Web.JobGraph.Path}" />
+				<filter token="Web.Schema.Url"         value="${Web.Schema.Url}" />
+				<filter token="Web.Schema.Space"       value="${Web.Schema.Space}" />
+				<filter token="Web.Schema.Job"         value="${Web.Schema.Job}" />
+				<filter token="Web.DB.User"            value="${Web.DB.User}"/>
+				<filter token="Web.DB.Pass"            value="${Web.DB.Pass}"/>
+				<filter token="Web.DB.Url"             value="${Web.DB.Url}"/>
+
+				<filter token="data_dir"            value="${data_dir}"/>
+				<filter token="BACKEND_TYPE"        value="sge"/>
+				<filter token="STAREXEC_APPNAME"    value="${STAREXEC_APPNAME}"/>
+				<filter token="SANDBOX_DIRECTORY"   value="/local/sandbox"/>
+				<filter token="TEST_COMMUNITY_ID"   value="${TEST_COMMUNITY_ID}"/>
+				<filter token="ALLOW_TESTING"       value="${ALLOW_TESTING}"/>
+			</filterset>
+		</copy>
+	</target>
+</project>

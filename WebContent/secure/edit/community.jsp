@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.R,org.starexec.data.database.*, org.starexec.data.security.GeneralSecurity,org.starexec.data.to.*, org.starexec.data.to.Website.WebsiteType, org.starexec.data.to.enums.BenchmarkingFramework, org.starexec.data.to.enums.ProcessorType, org.starexec.util.SessionUtil"
+        import="org.starexec.constants.DB,org.starexec.data.database.*, org.starexec.data.security.GeneralSecurity,org.starexec.data.to.*, org.starexec.data.to.Website.WebsiteType, org.starexec.data.to.enums.BenchmarkingFramework, org.starexec.data.to.enums.ProcessorType, org.starexec.util.SessionUtil"
         session="true" %>
 <%@ page import="org.starexec.util.Util, java.util.List" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
@@ -10,12 +10,12 @@
 		boolean admin = GeneralSecurity.hasAdminReadPrivileges(userId);
 
 		request.setAttribute("isAdmin", admin);
-		request.setAttribute("communityNameLen", R.SPACE_NAME_LEN);
-		request.setAttribute("communityDescLen", R.SPACE_DESC_LEN);
-		request.setAttribute("processorNameLen", R.PROCESSOR_NAME_LEN);
-		request.setAttribute("processorDescLen", R.PROCESSOR_DESC_LEN);
-		request.setAttribute("benchNameLen", R.BENCH_NAME_LEN);
-		request.setAttribute("benchDescLen", R.BENCH_DESC_LEN);
+		request.setAttribute("communityNameLen", DB.SPACE_NAME_LEN);
+		request.setAttribute("communityDescLen", DB.SPACE_DESC_LEN);
+		request.setAttribute("processorNameLen", DB.PROCESSOR_NAME_LEN);
+		request.setAttribute("processorDescLen", DB.PROCESSOR_DESC_LEN);
+		request.setAttribute("benchNameLen", DB.BENCH_NAME_LEN);
+		request.setAttribute("benchDescLen", DB.BENCH_DESC_LEN);
 
 		int id = Integer.parseInt((String) request.getParameter("cid"));
 		request.setAttribute(

@@ -1,12 +1,9 @@
 -- Description: This file contains all job-related stored procedures for the starexec database
 -- The procedures are stored by which table they're related to and roughly alphabetic order. Please try to keep this organized!
 
-DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
-
-
 -- Adds an association between the given job and space
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS AssociateJob;
+DROP PROCEDURE IF EXISTS AssociateJob //
 CREATE PROCEDURE AssociateJob(IN _jobId INT, IN _spaceId INT)
 	BEGIN
 		INSERT IGNORE INTO job_assoc VALUES (_spaceId, _jobId);
@@ -14,7 +11,7 @@ CREATE PROCEDURE AssociateJob(IN _jobId INT, IN _spaceId INT)
 
 -- 	Returns the number of public spaces the job is in
 --  Author: Benton McCune
-DROP PROCEDURE IF EXISTS JobInPublicSpace;
+DROP PROCEDURE IF EXISTS JobInPublicSpace //
 CREATE PROCEDURE JobInPublicSpace(IN _jobId INT)
 	BEGIN
 		SELECT COUNT(*) AS spaceCount FROM job_assoc
@@ -24,7 +21,7 @@ CREATE PROCEDURE JobInPublicSpace(IN _jobId INT)
 
 -- Adds a new attribute to a job pair for the given stage
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS AddJobAttr;
+DROP PROCEDURE IF EXISTS AddJobAttr //
 CREATE PROCEDURE AddJobAttr(IN _pairId INT, IN _key VARCHAR(128), IN _val VARCHAR(128), IN _stage INT)
 	BEGIN
 		REPLACE INTO job_attributes (pair_id,attr_key,attr_value,job_id,stage_number) VALUES (_pairId, _key, _val, (select job_id from job_pairs where id=_pairId),_stage);
@@ -32,7 +29,7 @@ CREATE PROCEDURE AddJobAttr(IN _pairId INT, IN _key VARCHAR(128), IN _val VARCHA
 
 -- Returns the number of jobs in a given space
 -- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS GetJobCountBySpace;
+DROP PROCEDURE IF EXISTS GetJobCountBySpace //
 CREATE PROCEDURE GetJobCountBySpace(IN _spaceId INT)
 	BEGIN
 		SELECT COUNT(*) AS jobCount
@@ -41,7 +38,7 @@ CREATE PROCEDURE GetJobCountBySpace(IN _spaceId INT)
 	END //
 -- Returns the number of jobs in a given space that match a given query
 -- Author: Eric burns
-DROP PROCEDURE IF EXISTS GetJobCountBySpaceWithQuery;
+DROP PROCEDURE IF EXISTS GetJobCountBySpaceWithQuery //
 CREATE PROCEDURE GetJobCountBySpaceWithQuery(IN _spaceId INT, IN _query TEXT)
 	BEGIN
 		SELECT COUNT(*) AS jobCount
@@ -54,7 +51,7 @@ CREATE PROCEDURE GetJobCountBySpaceWithQuery(IN _spaceId INT, IN _query TEXT)
 
 -- Returns the number of jobs pairs for a given job in the given job space
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairCountInJobSpace;
+DROP PROCEDURE IF EXISTS GetJobPairCountInJobSpace //
 CREATE PROCEDURE GetJobPairCountInJobSpace(IN _jobSpaceId INT, IN _stageNumber INT)
 	BEGIN
 		IF _stageNumber > 0 THEN
@@ -75,7 +72,7 @@ CREATE PROCEDURE GetJobPairCountInJobSpace(IN _jobSpaceId INT, IN _stageNumber I
 
 -- Counts the number of pairs in a job with a completion index <= the given
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS CountOlderPairs;
+DROP PROCEDURE IF EXISTS CountOlderPairs //
 CREATE PROCEDURE CountOlderPairs(IN _id INT, IN _since INT)
 	BEGIN
 		SELECT COUNT(*) AS count
@@ -85,7 +82,7 @@ CREATE PROCEDURE CountOlderPairs(IN _id INT, IN _since INT)
 
 -- Returns the number of jobs pairs for a given job that match a given query for the given stage
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairCountByJobInJobSpaceWithQuery;
+DROP PROCEDURE IF EXISTS GetJobPairCountByJobInJobSpaceWithQuery //
 CREATE PROCEDURE GetJobPairCountByJobInJobSpaceWithQuery(IN _jobSpaceId INT, IN _query TEXT, IN _stageNumber INT)
 	BEGIN
 		IF _stageNumber>0 THEN
@@ -116,7 +113,7 @@ CREATE PROCEDURE GetJobPairCountByJobInJobSpaceWithQuery(IN _jobSpaceId INT, IN 
 
 -- Gets attributes for every pair in a job
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobAttrs;
+DROP PROCEDURE IF EXISTS GetJobAttrs //
 CREATE PROCEDURE GetJobAttrs(IN _jobId INT)
 	BEGIN
 		SELECT pair.id, attr.attr_key, attr.attr_value, attr.stage_number
@@ -127,7 +124,7 @@ CREATE PROCEDURE GetJobAttrs(IN _jobId INT)
 
 -- Gets the attributes for every job pair of a job completed after the given completion id
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetNewJobAttrs;
+DROP PROCEDURE IF EXISTS GetNewJobAttrs //
 CREATE PROCEDURE GetNewJobAttrs(IN _jobId INT, IN _completionId INT)
 	BEGIN
 		SELECT pair.id, attr.attr_key, attr.attr_value, attr.stage_number
@@ -140,7 +137,7 @@ CREATE PROCEDURE GetNewJobAttrs(IN _jobId INT, IN _completionId INT)
 
 -- Adds a new job stats record to the database
 -- Author : Eric Burns
-DROP PROCEDURE IF EXISTS AddJobStats;
+DROP PROCEDURE IF EXISTS AddJobStats //
 CREATE PROCEDURE AddJobStats(IN _jobSpaceId INT, IN _configId INT, IN _complete INT, IN _correct INT, IN _incorrect INT, IN _failed INT, IN _conflicts INT, IN _wallclock DOUBLE, IN _cpu DOUBLE, IN _resource INT, IN _incomplete INT, IN _stage INT)
 	BEGIN
 		INSERT IGNORE INTO job_stats (job_space_id, config_id, complete, correct, incorrect, failed, conflicts, wallclock,cpu,resource_out, incomplete,stage_number)
@@ -150,7 +147,7 @@ CREATE PROCEDURE AddJobStats(IN _jobSpaceId INT, IN _configId INT, IN _complete 
 -- Gets the cached job results for the hierarchy rooted at the given job space
 -- Author: Eric Burns
 
-DROP PROCEDURE IF EXISTS GetJobStatsInJobSpace;
+DROP PROCEDURE IF EXISTS GetJobStatsInJobSpace //
 CREATE PROCEDURE GetJobStatsInJobSpace(IN _jobSpaceId INT, IN _jobId INT, IN _stageNumber INT)
 	BEGIN
 		SELECT *
@@ -167,7 +164,7 @@ CREATE PROCEDURE GetJobStatsInJobSpace(IN _jobSpaceId INT, IN _jobId INT, IN _st
 	END //
 -- Clears the entire cache of job stats
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS RemoveAllJobStats;
+DROP PROCEDURE IF EXISTS RemoveAllJobStats //
 CREATE PROCEDURE RemoveAllJobStats()
 	BEGIN
 		DELETE FROM job_stats;
@@ -176,14 +173,14 @@ CREATE PROCEDURE RemoveAllJobStats()
 -- Removes the cached job results for the hierarchy rooted at the given job space
 -- Author: Eric Burns
 
-DROP PROCEDURE IF EXISTS RemoveJobStatsInJobSpace;
+DROP PROCEDURE IF EXISTS RemoveJobStatsInJobSpace //
 CREATE PROCEDURE RemoveJobStatsInJobSpace(IN _jobSpaceId INT)
 	BEGIN
 		DELETE FROM job_stats
 		WHERE job_stats.job_space_id = _jobSpaceId;
 	END //
 
-DROP PROCEDURE IF EXISTS RemoveJobStatsInJobSpaceForConfig;
+DROP PROCEDURE IF EXISTS RemoveJobStatsInJobSpaceForConfig //
 CREATE PROCEDURE RemoveJobStatsInJobSpaceForConfig( IN _jobSpaceId INT, IN _configId INT )
 	BEGIN
 		DELETE FROM job_stats
@@ -193,7 +190,7 @@ CREATE PROCEDURE RemoveJobStatsInJobSpaceForConfig( IN _jobSpaceId INT, IN _conf
 
 -- Counts the number of pending pairs in a job
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS CountPendingPairs;
+DROP PROCEDURE IF EXISTS CountPendingPairs //
 CREATE PROCEDURE CountPendingPairs(IN _jobId INT)
 	BEGIN
 		SELECT count(*) AS pending FROM job_pairs
@@ -203,7 +200,7 @@ CREATE PROCEDURE CountPendingPairs(IN _jobId INT)
 -- Including the total number of pairs, how many are complete, pending or errored out
 -- as well as how long the pairs ran
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetJobPairOverview;
+DROP PROCEDURE IF EXISTS GetJobPairOverview //
 CREATE PROCEDURE GetJobPairOverview(IN _jobId INT)
 	BEGIN
 		-- This is messy in order to get back pretty column names.
@@ -221,7 +218,7 @@ CREATE PROCEDURE GetJobPairOverview(IN _jobId INT)
 
 -- Retrieves basic info about a job from the jobs table
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetJobById;
+DROP PROCEDURE IF EXISTS GetJobById //
 CREATE PROCEDURE GetJobById(IN _id INT)
 	BEGIN
 		SELECT *
@@ -229,7 +226,7 @@ CREATE PROCEDURE GetJobById(IN _id INT)
 		WHERE id = _id and deleted=false;
 	END //
 
-DROP PROCEDURE IF EXISTS SetHighPriority;
+DROP PROCEDURE IF EXISTS SetHighPriority //
 CREATE PROCEDURE SetHighPriority(IN _jobId INT, IN _isHighPriority BOOLEAN)
 	BEGIN
 		UPDATE jobs
@@ -238,7 +235,7 @@ CREATE PROCEDURE SetHighPriority(IN _jobId INT, IN _isHighPriority BOOLEAN)
 	END //
 
 
-DROP PROCEDURE IF EXISTS GetOutputBenchmarksPath;
+DROP PROCEDURE IF EXISTS GetOutputBenchmarksPath //
 CREATE PROCEDURE GetOutputBenchmarksPath(IN _jobId INT)
 	BEGIN
 		SELECT output_benchmarks_directory_path
@@ -246,7 +243,7 @@ CREATE PROCEDURE GetOutputBenchmarksPath(IN _jobId INT)
 		WHERE id=_jobId;
 	END //
 
-DROP PROCEDURE IF EXISTS SetOutputBenchmarksPath;
+DROP PROCEDURE IF EXISTS SetOutputBenchmarksPath //
 CREATE PROCEDURE SetOutputBenchmarksPath(IN _jobId INT, IN _path TEXT)
 	BEGIN
 		UPDATE jobs
@@ -256,7 +253,7 @@ CREATE PROCEDURE SetOutputBenchmarksPath(IN _jobId INT, IN _path TEXT)
 
 -- Retrieves basic info about a job from the jobs table
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetJobByIdIncludeDeleted;
+DROP PROCEDURE IF EXISTS GetJobByIdIncludeDeleted //
 CREATE PROCEDURE GetJobByIdIncludeDeleted(IN _id INT)
 	BEGIN
 		SELECT *
@@ -266,7 +263,7 @@ CREATE PROCEDURE GetJobByIdIncludeDeleted(IN _id INT)
 
 -- Retrieves basic info about job pairs for the given job id (simple version). Gets only the primary stage
 -- Author: Julio Cervantes
-DROP PROCEDURE IF EXISTS GetJobPairsByJobSimple;
+DROP PROCEDURE IF EXISTS GetJobPairsByJobSimple //
 CREATE PROCEDURE GetJobPairsByJobSimple(IN _id INT)
 	BEGIN
 		SELECT job_pairs.id, job_pairs.job_space_id, path, jobpair_stage_data.solver_name,jobpair_stage_data.solver_id,jobpair_stage_data.config_name,
@@ -282,7 +279,7 @@ CREATE PROCEDURE GetJobPairsByJobSimple(IN _id INT)
 
 -- Retrieves basic info about job pairs for the given job id
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetJobPairsPrimaryStageByJob;
+DROP PROCEDURE IF EXISTS GetJobPairsPrimaryStageByJob //
 CREATE PROCEDURE GetJobPairsPrimaryStageByJob(IN _id INT)
 	BEGIN
 		SELECT *
@@ -304,7 +301,7 @@ CREATE PROCEDURE GetJobPairsPrimaryStageByJob(IN _id INT)
 
 -- Counts the entries in the job space closure table with the given ancestor and updates their last_used time
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS RefreshEntriesByAncestor;
+DROP PROCEDURE IF EXISTS RefreshEntriesByAncestor //
 CREATE PROCEDURE RefreshEntriesByAncestor(IN _id INT, IN _time TIMESTAMP)
 	BEGIN
 		UPDATE job_space_closure
@@ -320,7 +317,7 @@ CREATE PROCEDURE RefreshEntriesByAncestor(IN _id INT, IN _time TIMESTAMP)
 
 -- Gets all the attribute values for benchmarks in the given job
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetAttrsOfNameForJob;
+DROP PROCEDURE IF EXISTS GetAttrsOfNameForJob //
 CREATE PROCEDURE GetAttrsOfNameForJob(IN _jobId INT, IN _attrName VARCHAR(128))
 	BEGIN
 		SELECT job_pairs.bench_id, attr_value
@@ -331,7 +328,7 @@ CREATE PROCEDURE GetAttrsOfNameForJob(IN _jobId INT, IN _attrName VARCHAR(128))
 
 -- Gets all the job pairs in a job space. No stages are retrieved
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairsInJobSpace;
+DROP PROCEDURE IF EXISTS GetJobPairsInJobSpace //
 CREATE PROCEDURE GetJobPairsInJobSpace(IN _jobSpaceId INT, IN _jobId INT, IN _stageNumber INT)
 	BEGIN
 			SELECT job_pairs.status_code,
@@ -364,7 +361,7 @@ CREATE PROCEDURE GetJobPairsInJobSpace(IN _jobSpaceId INT, IN _jobId INT, IN _st
 
 -- Gets all the job pairs in a job space hierarchy. No stages are retrieved
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairsInJobSpaceHierarchy;
+DROP PROCEDURE IF EXISTS GetJobPairsInJobSpaceHierarchy //
 CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT, IN _since INT)
 	BEGIN
 		SELECT
@@ -387,7 +384,7 @@ CREATE PROCEDURE GetJobPairsInJobSpaceHierarchy(IN _jobSpaceId INT, IN _since IN
 	END //
 
 -- Gets all the stages of job pairs in a particular job space
-DROP PROCEDURE IF EXISTS GetJobPairStagesInJobSpace;
+DROP PROCEDURE IF EXISTS GetJobPairStagesInJobSpace //
 CREATE PROCEDURE GetJobPairStagesInJobSpace(IN _jobSpaceId INT)
 	BEGIN
 		SELECT job_pairs.id AS pair_id,jobpair_stage_data.solver_id,jobpair_stage_data.solver_name, jobpair_stage_data.status_code,
@@ -401,7 +398,7 @@ CREATE PROCEDURE GetJobPairStagesInJobSpace(IN _jobSpaceId INT)
 	END //
 
 -- Gets all the stages of job pairs in a particular job space
-DROP PROCEDURE IF EXISTS GetJobPairStagesInJobSpaceHierarchy;
+DROP PROCEDURE IF EXISTS GetJobPairStagesInJobSpaceHierarchy //
 CREATE PROCEDURE GetJobPairStagesInJobSpaceHierarchy(IN _jobSpaceId INT, IN _since INT)
 	BEGIN
 		SELECT
@@ -440,7 +437,7 @@ CREATE PROCEDURE GetJobPairStagesInJobSpaceHierarchy(IN _jobSpaceId INT, IN _sin
 
 -- Counts the number of pairs in a job
 -- Author Eric Burns
-DROP PROCEDURE IF EXISTS countPairsForJob;
+DROP PROCEDURE IF EXISTS countPairsForJob //
 CREATE PROCEDURE countPairsForJob(IN _id INT)
 	BEGIN
 		SELECT COUNT(*) AS count
@@ -448,7 +445,7 @@ CREATE PROCEDURE countPairsForJob(IN _id INT)
 		WHERE job_id=_id;
 	END //
 
-DROP PROCEDURE IF EXISTS GetAllJobPairsByJob;
+DROP PROCEDURE IF EXISTS GetAllJobPairsByJob //
 CREATE PROCEDURE GetAllJobPairsByJob(IN _id INT)
 	BEGIN
 		SELECT *
@@ -465,7 +462,7 @@ CREATE PROCEDURE GetAllJobPairsByJob(IN _id INT)
 
 -- Retrieves basic info about job pairs for the given job id for pairs completed after _completionId
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetNewCompletedJobPairsByJob;
+DROP PROCEDURE IF EXISTS GetNewCompletedJobPairsByJob //
 CREATE PROCEDURE GetNewCompletedJobPairsByJob(IN _id INT, IN _completionId INT)
 	BEGIN
 		SELECT *
@@ -485,7 +482,7 @@ CREATE PROCEDURE GetNewCompletedJobPairsByJob(IN _id INT, IN _completionId INT)
 
 -- Retrieves ids for job pairs with a given status in a given job
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobPairsByStatus;
+DROP PROCEDURE IF EXISTS GetJobPairsByStatus //
 CREATE PROCEDURE GetJobPairsByStatus(IN _jobId INT, IN _statusCode INT)
 	BEGIN
 		SELECT id FROM job_pairs
@@ -494,7 +491,7 @@ CREATE PROCEDURE GetJobPairsByStatus(IN _jobId INT, IN _statusCode INT)
 
 -- Retrieves ids for job pairs in a given job where either cpu or wallclock is 0 for any stage that has the given status code
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetTimelessJobPairsByStatus;
+DROP PROCEDURE IF EXISTS GetTimelessJobPairsByStatus //
 CREATE PROCEDURE GetTimelessJobPairsByStatus(IN _jobId INT, IN _statusCode INT)
 	BEGIN
 		SELECT DISTINCT job_pairs.id FROM job_pairs
@@ -505,7 +502,7 @@ CREATE PROCEDURE GetTimelessJobPairsByStatus(IN _jobId INT, IN _statusCode INT)
 -- Retrieves information for pending job pairs with the given job id. Returns all stages for _limit pairs.
 -- Excludes any job pairs that are utilizing solvers that have still not been built
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetPendingJobPairsByJob;
+DROP PROCEDURE IF EXISTS GetPendingJobPairsByJob //
 CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT, IN _limit INT)
 	BEGIN
 		SELECT *,
@@ -527,7 +524,7 @@ CREATE PROCEDURE GetPendingJobPairsByJob(IN _id INT, IN _limit INT)
 
 -- Retrieves basic info about enqueued job pairs for the given job id
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetEnqueuedJobPairsByJob;
+DROP PROCEDURE IF EXISTS GetEnqueuedJobPairsByJob //
 CREATE PROCEDURE GetEnqueuedJobPairsByJob(IN _id INT)
 	BEGIN
 		SELECT job_pairs.id,job_pairs.sge_id
@@ -538,7 +535,7 @@ CREATE PROCEDURE GetEnqueuedJobPairsByJob(IN _id INT)
 
 -- Retrieves basic info about running job pairs for the given job id
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetRunningJobPairsByJob;
+DROP PROCEDURE IF EXISTS GetRunningJobPairsByJob //
 CREATE PROCEDURE GetRunningJobPairsByJob(IN _id INT)
 	BEGIN
 		SELECT job_pairs.id, job_pairs.sge_id
@@ -549,7 +546,7 @@ CREATE PROCEDURE GetRunningJobPairsByJob(IN _id INT)
 
 -- Returns true if the job in question has the deleted flag set as true
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS IsJobDeleted;
+DROP PROCEDURE IF EXISTS IsJobDeleted //
 CREATE PROCEDURE IsJobDeleted(IN _jobId INT)
 	BEGIN
 		SELECT count(*) AS jobDeleted
@@ -561,7 +558,7 @@ CREATE PROCEDURE IsJobDeleted(IN _jobId INT)
 
 -- Returns the paused and deleted columns for a job
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS IsJobPausedOrKilled;
+DROP PROCEDURE IF EXISTS IsJobPausedOrKilled //
 CREATE PROCEDURE IsJobPausedOrKilled(IN _jobId INT)
 	BEGIN
 		SELECT paused,killed
@@ -573,7 +570,7 @@ CREATE PROCEDURE IsJobPausedOrKilled(IN _jobId INT)
 -- Sets the "deleted" property of a job to true
 -- Also updates the total_pairs and disk_size columns to 0
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS DeleteJob;
+DROP PROCEDURE IF EXISTS DeleteJob //
 CREATE PROCEDURE DeleteJob(IN _jobId INT)
 	BEGIN
 		UPDATE users JOIN jobs ON jobs.user_id=users.id
@@ -585,7 +582,7 @@ CREATE PROCEDURE DeleteJob(IN _jobId INT)
 		WHERE id = _jobId;
 	END //
 
-DROP PROCEDURE IF EXISTS UpdateJobDiskSize;
+DROP PROCEDURE IF EXISTS UpdateJobDiskSize //
 CREATE PROCEDURE UpdateJobDiskSize(IN _jobId INT, IN _diskSize BIGINT)
 	BEGIN
 		UPDATE users JOIN jobs ON jobs.user_id=users.id
@@ -599,14 +596,14 @@ CREATE PROCEDURE UpdateJobDiskSize(IN _jobId INT, IN _diskSize BIGINT)
 	END //
 
 -- Deletes every job pair belonging to the given job
-DROP PROCEDURE IF EXISTS DeleteAllJobPairsInJob;
+DROP PROCEDURE IF EXISTS DeleteAllJobPairsInJob //
 CREATE PROCEDURE DeleteAllJobPairsInJob(IN _jobId INT)
 	BEGIN
 		DELETE FROM job_pairs
 		WHERE job_id=_jobId;
 	END //
 
-DROP PROCEDURE IF EXISTS GetOrphanedJobIds;
+DROP PROCEDURE IF EXISTS GetOrphanedJobIds //
 CREATE PROCEDURE GetOrphanedJobIds(IN _userId INT)
 	BEGIN
 		SELECT jobs.id FROM jobs
@@ -616,7 +613,7 @@ CREATE PROCEDURE GetOrphanedJobIds(IN _userId INT)
 
 -- Sets the "paused" property of a job to true
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS PauseJob;
+DROP PROCEDURE IF EXISTS PauseJob //
 CREATE PROCEDURE PauseJob(IN _jobId INT)
 	BEGIN
 		UPDATE jobs
@@ -630,7 +627,7 @@ CREATE PROCEDURE PauseJob(IN _jobId INT)
 
 -- Sets the global paused flag to true
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS PauseAll;
+DROP PROCEDURE IF EXISTS PauseAll //
 CREATE PROCEDURE PauseAll()
 	BEGIN
 		UPDATE system_flags SET paused = true;
@@ -638,7 +635,7 @@ CREATE PROCEDURE PauseAll()
 
 -- Sets the "paused" property of a job to false
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS ResumeJob;
+DROP PROCEDURE IF EXISTS ResumeJob //
 CREATE PROCEDURE ResumeJob(IN _jobId INT)
 	BEGIN
 		UPDATE jobs
@@ -653,7 +650,7 @@ CREATE PROCEDURE ResumeJob(IN _jobId INT)
 
 -- sets the global paused flag to false
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS ResumeAll;
+DROP PROCEDURE IF EXISTS ResumeAll //
 CREATE PROCEDURE ResumeAll()
 	BEGIN
 		UPDATE system_flags SET paused = false;
@@ -661,7 +658,7 @@ CREATE PROCEDURE ResumeAll()
 
 -- Sets the "killed" property of a job to true
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS KillJob;
+DROP PROCEDURE IF EXISTS KillJob //
 CREATE PROCEDURE KillJob(IN _jobId INT)
 	BEGIN
 		UPDATE jobs
@@ -680,7 +677,7 @@ CREATE PROCEDURE KillJob(IN _jobId INT)
 
 -- Changes the queueid in the jobs datatable
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS ChangeQueue;
+DROP PROCEDURE IF EXISTS ChangeQueue //
 CREATE PROCEDURE ChangeQueue(IN _jobId INT, IN _queueId INT)
 	BEGIN
 		UPDATE jobs
@@ -690,7 +687,7 @@ CREATE PROCEDURE ChangeQueue(IN _jobId INT, IN _queueId INT)
 
 -- Adds a new job pair record to the database
 -- Author: Tyler Jensen + Eric Burns
-DROP PROCEDURE IF EXISTS AddJobPair;
+DROP PROCEDURE IF EXISTS AddJobPair //
 CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _status TINYINT, IN _path VARCHAR(2048),IN _jobSpaceId INT, IN _benchName VARCHAR(256), IN _stageNumber INT, OUT _id INT)
 	BEGIN
 		INSERT INTO job_pairs (job_id, bench_id, status_code, path,job_space_id,bench_name,primary_jobpair_data)
@@ -698,7 +695,7 @@ CREATE PROCEDURE AddJobPair(IN _jobId INT, IN _benchId INT, IN _status TINYINT, 
 		SELECT LAST_INSERT_ID() INTO _id;
 	END //
 
-DROP PROCEDURE IF EXISTS AddJobPairStage;
+DROP PROCEDURE IF EXISTS AddJobPairStage //
 CREATE PROCEDURE AddJobPairStage(IN _pairId INT, IN _stageId INT,IN _stageNumber INT, IN _primary BOOLEAN, IN _solverId INT, IN _solverName VARCHAR(255), IN _configId INT, IN _configName VARCHAR (255), IN _jobSpace INT)
 	BEGIN
 		INSERT INTO jobpair_stage_data (jobpair_id, stage_id,stage_number,solver_id,solver_name,config_id,config_name,job_space_id,status_code, disk_size)
@@ -707,7 +704,7 @@ CREATE PROCEDURE AddJobPairStage(IN _pairId INT, IN _stageId INT,IN _stageNumber
 
 -- Adds a new job record to the database
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS AddJob;
+DROP PROCEDURE IF EXISTS AddJob //
 CREATE PROCEDURE AddJob(
 		IN _userId INT,
 		IN _name VARCHAR(64),
@@ -740,7 +737,7 @@ CREATE PROCEDURE AddJob(
 
 -- Retrieves all jobs belonging to a user (but not their job pairs)
 -- Author: Ruoyu Zhang
-DROP PROCEDURE IF EXISTS GetUserJobsById;
+DROP PROCEDURE IF EXISTS GetUserJobsById //
 CREATE PROCEDURE GetUserJobsById(IN _userId INT)
 	BEGIN
 		SELECT *
@@ -749,7 +746,7 @@ CREATE PROCEDURE GetUserJobsById(IN _userId INT)
 		ORDER BY created DESC;
 	END //
 
-DROP PROCEDURE IF EXISTS GetQueueJobsById;
+DROP PROCEDURE IF EXISTS GetQueueJobsById //
 CREATE PROCEDURE GetQueueJobsById(IN _queueId INT)
 	BEGIN
 		SELECT *,
@@ -768,7 +765,7 @@ CREATE PROCEDURE GetQueueJobsById(IN _queueId INT)
 
 -- Returns the number of jobs in the entire system
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetJobCount;
+DROP PROCEDURE IF EXISTS GetJobCount //
 CREATE PROCEDURE GetJobCount()
 	BEGIN
 		SELECT COUNT(*) as jobCount
@@ -777,7 +774,7 @@ CREATE PROCEDURE GetJobCount()
 
 -- Returns the number of running jobs in the entire system
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetRunningJobCount;
+DROP PROCEDURE IF EXISTS GetRunningJobCount //
 CREATE PROCEDURE GetRunningJobCount()
 	BEGIN
 		SELECT COUNT(distinct jobs.id) as jobCount
@@ -788,7 +785,7 @@ CREATE PROCEDURE GetRunningJobCount()
 
 -- Returns the number of paused jobs in the entire system
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetPausedJobCount;
+DROP PROCEDURE IF EXISTS GetPausedJobCount //
 CREATE PROCEDURE GetPausedJobCount()
 	BEGIN
 		SELECT COUNT(distinct jobs.id) as jobCount
@@ -799,7 +796,7 @@ CREATE PROCEDURE GetPausedJobCount()
 
 -- Get the total count of the jobs belong to a specific user
 -- Author: Ruoyu Zhang
-DROP PROCEDURE IF EXISTS GetJobCountByUser;
+DROP PROCEDURE IF EXISTS GetJobCountByUser //
 CREATE PROCEDURE GetJobCountByUser(IN _userId INT)
 	BEGIN
 		SELECT COUNT(*) AS jobCount
@@ -809,7 +806,7 @@ CREATE PROCEDURE GetJobCountByUser(IN _userId INT)
 
 -- Returns the number of jobs in a given space that match a given query
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobCountByUserWithQuery;
+DROP PROCEDURE IF EXISTS GetJobCountByUserWithQuery //
 CREATE PROCEDURE GetJobCountByUserWithQuery(IN _userId INT, IN _query TEXT)
 	BEGIN
 		SELECT COUNT(*) AS jobCount
@@ -818,7 +815,7 @@ CREATE PROCEDURE GetJobCountByUserWithQuery(IN _userId INT, IN _query TEXT)
 				(name				LIKE	CONCAT('%', _query, '%')
 				OR		GetJobStatus(id)	LIKE	CONCAT('%', _query, '%'));
 	END //
-DROP PROCEDURE IF EXISTS GetNameofJobById;
+DROP PROCEDURE IF EXISTS GetNameofJobById //
 CREATE PROCEDURE GetNameofJobById(IN _jobId INT)
 	BEGIN
 		SELECT name
@@ -828,7 +825,7 @@ CREATE PROCEDURE GetNameofJobById(IN _jobId INT)
 
 -- Sets the primary space of a job to a new space
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS UpdatePrimarySpace;
+DROP PROCEDURE IF EXISTS UpdatePrimarySpace //
 CREATE PROCEDURE UpdatePrimarySpace(IN _jobId INT, IN _jobSpaceId INT)
 	BEGIN
 		UPDATE jobs
@@ -839,7 +836,7 @@ CREATE PROCEDURE UpdatePrimarySpace(IN _jobId INT, IN _jobSpaceId INT)
 -- job_pair table. Should only need to be run once on Starexec and Stardev to get the table
 -- up to date
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS SetNewColumns;
+DROP PROCEDURE IF EXISTS SetNewColumns //
 CREATE PROCEDURE SetNewColumns()
 	BEGIN
 		UPDATE job_pairs
@@ -852,7 +849,7 @@ CREATE PROCEDURE SetNewColumns()
 -- Gets back only the fields of a job pair that are necessary to determine where it is stored on disk
 -- Gets pairs that have either completed after the given completionID or are still running
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetNewJobPairFilePathInfoByJob;
+DROP PROCEDURE IF EXISTS GetNewJobPairFilePathInfoByJob //
 CREATE PROCEDURE GetNewJobPairFilePathInfoByJob(IN _jobID INT, IN _completionID INT)
 	BEGIN
 		SELECT path,solver_name,config_name,bench_name,job_pairs.status_code,complete.completion_id, id, primary_jobpair_data FROM job_pairs
@@ -864,7 +861,7 @@ CREATE PROCEDURE GetNewJobPairFilePathInfoByJob(IN _jobID INT, IN _completionID 
 
 
 
-DROP PROCEDURE IF EXISTS RemovePairsFromComplete;
+DROP PROCEDURE IF EXISTS RemovePairsFromComplete //
 CREATE PROCEDURE RemovePairsFromComplete(IN _jobId INT)
 	BEGIN
 		DELETE job_pair_completion FROM job_pair_completion
@@ -874,7 +871,7 @@ CREATE PROCEDURE RemovePairsFromComplete(IN _jobId INT)
 
 -- Sets all the pairs of a given job to the given status
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS SetPairsToStatus;
+DROP PROCEDURE IF EXISTS SetPairsToStatus //
 CREATE PROCEDURE SetPairsToStatus(IN _jobId INT, In _statusCode INT)
 	BEGIN
 		UPDATE job_pairs
@@ -885,7 +882,7 @@ CREATE PROCEDURE SetPairsToStatus(IN _jobId INT, In _statusCode INT)
 
 -- Sets all the pairs of a given job and status to the given status
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS SetPairsOfStatusToStatus;
+DROP PROCEDURE IF EXISTS SetPairsOfStatusToStatus //
 CREATE PROCEDURE SetPairsOfStatusToStatus(IN _jobId INT, IN _newCode INT, IN _curCode INT)
 	BEGIN
 		UPDATE job_pairs
@@ -895,20 +892,20 @@ CREATE PROCEDURE SetPairsOfStatusToStatus(IN _jobId INT, IN _newCode INT, IN _cu
 
 -- Removes all jobs in the database that are deleted and also orphaned. Runs periodically.
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetDeletedJobs;
+DROP PROCEDURE IF EXISTS GetDeletedJobs //
 CREATE PROCEDURE GetDeletedJobs()
 	BEGIN
 		SELECT * FROM jobs WHERE deleted = true;
 	END //
 
-DROP PROCEDURE IF EXISTS GetJobsAssociatedWithSpaces;
+DROP PROCEDURE IF EXISTS GetJobsAssociatedWithSpaces //
 CREATE PROCEDURE GetJobsAssociatedWithSpaces()
 	BEGIN
 		SELECT DISTINCT job_id AS ID FROM job_assoc;
 	END //
 
 -- Gives back the number of pairs with the given status
-DROP PROCEDURE IF EXISTS CountPairsByStatusByJob;
+DROP PROCEDURE IF EXISTS CountPairsByStatusByJob //
 CREATE PROCEDURE CountPairsByStatusByJob(IN _jobId INT, IN _status INT)
 	BEGIN
 		SELECT COUNT(*) AS count
@@ -918,7 +915,7 @@ CREATE PROCEDURE CountPairsByStatusByJob(IN _jobId INT, IN _status INT)
 
 
 -- Gives back the number of pairs with the given status
-DROP PROCEDURE IF EXISTS CountTimelessPairsByStatusByJob;
+DROP PROCEDURE IF EXISTS CountTimelessPairsByStatusByJob //
 CREATE PROCEDURE CountTimelessPairsByStatusByJob(IN _jobId INT, IN _status INT)
 	BEGIN
 		SELECT COUNT(distinct job_pairs.id) AS count
@@ -930,7 +927,7 @@ CREATE PROCEDURE CountTimelessPairsByStatusByJob(IN _jobId INT, IN _status INT)
 -- For a given job, sets every pair at the complete status to the processing status, and also changes the post_processor
 -- of the job to the given one
 -- Choosing the primary stage is not allowed here-- an actual stage number must be supplied
-DROP PROCEDURE IF EXISTS PrepareJobForPostProcessing;
+DROP PROCEDURE IF EXISTS PrepareJobForPostProcessing //
 CREATE PROCEDURE PrepareJobForPostProcessing(IN _jobId INT, IN _procId INT, IN _completeStatus INT, IN _processingStatus INT, IN _stageNumber INT)
 	BEGIN
 
@@ -952,7 +949,7 @@ CREATE PROCEDURE PrepareJobForPostProcessing(IN _jobId INT, IN _procId INT, IN _
 
 	END //
 
-DROP PROCEDURE IF EXISTS SetJobStageParams;
+DROP PROCEDURE IF EXISTS SetJobStageParams //
 CREATE PROCEDURE SetJobStageParams(IN _jobId INT, IN _stage INT, IN _cpu INT, IN _clock INT, IN _mem BIGINT,
 IN _space INT, IN _postProc INT, IN _preProc INT, IN _suffix VARCHAR(64), IN _resultsInterval INT, IN _stdoutSave INT, IN _extraSave INT)
 	BEGIN
@@ -962,7 +959,7 @@ IN _space INT, IN _postProc INT, IN _preProc INT, IN _suffix VARCHAR(64), IN _re
 	END //
 
 -- Gets every incomplete Job
-DROP PROCEDURE IF EXISTS GetIncompleteJobs;
+DROP PROCEDURE IF EXISTS GetIncompleteJobs //
 CREATE PROCEDURE GetIncompleteJobs()
 	BEGIN
 		SELECT *,
@@ -977,7 +974,7 @@ CREATE PROCEDURE GetIncompleteJobs()
 
 -- Gets the ID of every job that is currently running (has incomplete pairs and
 -- is not already paused / killed)
-DROP PROCEDURE IF EXISTS GetRunningJobs;
+DROP PROCEDURE IF EXISTS GetRunningJobs //
 CREATE PROCEDURE GetRunningJobs()
 	BEGIN
 		SELECT id FROM (
@@ -987,7 +984,7 @@ CREATE PROCEDURE GetRunningJobs()
 		WHERE status="incomplete";
 	END //
 
-DROP PROCEDURE IF EXISTS GetRunningJobsByUser;
+DROP PROCEDURE IF EXISTS GetRunningJobsByUser //
 CREATE PROCEDURE GetRunningJobsByUser(IN _userId INT)
 	BEGIN
 		SELECT id FROM (
@@ -997,7 +994,7 @@ CREATE PROCEDURE GetRunningJobsByUser(IN _userId INT)
 		WHERE status="incomplete";
 	END //
 
-DROP PROCEDURE IF EXISTS SetJobName;
+DROP PROCEDURE IF EXISTS SetJobName //
 CREATE PROCEDURE SetJobName(IN _jobId INT, IN _newName VARCHAR(64))
 	BEGIN
 		UPDATE jobs
@@ -1005,7 +1002,7 @@ CREATE PROCEDURE SetJobName(IN _jobId INT, IN _newName VARCHAR(64))
 		WHERE id = _jobId;
 	END //
 
-DROP PROCEDURE IF EXISTS SetJobDescription;
+DROP PROCEDURE IF EXISTS SetJobDescription //
 CREATE PROCEDURE SetJobDescription(IN _jobId INT, IN _newDescription TEXT)
 	BEGIN
 		UPDATE jobs
@@ -1014,7 +1011,7 @@ CREATE PROCEDURE SetJobDescription(IN _jobId INT, IN _newDescription TEXT)
 	END //
 
 -- Checks to see if there is a global pause on all jobs
-DROP PROCEDURE IF EXISTS IsSystemPaused;
+DROP PROCEDURE IF EXISTS IsSystemPaused //
 CREATE PROCEDURE IsSystemPaused()
 	BEGIN
 		SELECT paused
@@ -1023,21 +1020,21 @@ CREATE PROCEDURE IsSystemPaused()
 
 -- Permanently removes a job from the database
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS RemoveJobFromDatabase;
+DROP PROCEDURE IF EXISTS RemoveJobFromDatabase //
 CREATE PROCEDURE RemoveJobFromDatabase(IN _jobId INT)
 	BEGIN
 		DELETE FROM jobs WHERE id=_jobId;
 	END //
 
 -- Gets all entries in the job_stage_params table referencing the given job
-DROP PROCEDURE IF EXISTS getStageParamsByJob;
+DROP PROCEDURE IF EXISTS getStageParamsByJob //
 CREATE PROCEDURE getStageParamsByJob(IN _jobId INT)
 	BEGIN
 		SELECT * FROM job_stage_params WHERE job_id=_jobId;
 	END //
 
 -- Gets all benchmark inputs for all pairs in the given job
-DROP PROCEDURE IF EXISTS GetAllJobPairBenchmarkInputsByJob;
+DROP PROCEDURE IF EXISTS GetAllJobPairBenchmarkInputsByJob //
 CREATE PROCEDURE GetAllJobPairBenchmarkInputsByJob(IN _jobId INT)
 	BEGIN
 		SELECT jobpair_inputs.jobpair_id,jobpair_inputs.bench_id
@@ -1045,25 +1042,25 @@ CREATE PROCEDURE GetAllJobPairBenchmarkInputsByJob(IN _jobId INT)
 		WHERE job_pairs.job_id=_jobId ORDER BY input_number ASC;
 	END //
 
-DROP PROCEDURE IF EXISTS GetAllJobIds;
+DROP PROCEDURE IF EXISTS GetAllJobIds //
 CREATE PROCEDURE GetAllJobIds()
 	BEGIN
 		SELECT id FROM jobs;
 	END //
 
-DROP PROCEDURE IF EXISTS CountPairsByUser;
+DROP PROCEDURE IF EXISTS CountPairsByUser //
 CREATE PROCEDURE CountPairsByUser(IN _userId INT)
 	BEGIN
 		SELECT SUM(total_pairs) AS total_pairs FROM jobs WHERE user_id=_userId AND deleted=false;
 	END //
 
-DROP PROCEDURE IF EXISTS IncrementTotalJobPairsForJob;
+DROP PROCEDURE IF EXISTS IncrementTotalJobPairsForJob //
 CREATE PROCEDURE IncrementTotalJobPairsForJob(IN _jobId INT, IN _increment INT)
 	BEGIN
 		UPDATE jobs SET total_pairs=total_pairs+_increment WHERE id=_jobId;
 	END //
 
-DROP PROCEDURE IF EXISTS DoesJobCopyBackIncrementally;
+DROP PROCEDURE IF EXISTS DoesJobCopyBackIncrementally //
 CREATE PROCEDURE DoesJobCopyBackIncrementally(IN _jobId INT, OUT _jobCopiesBackIncrementally BOOLEAN)
     BEGIN
         SELECT (COUNT(*) <> 0) INTO _jobCopiesBackIncrementally
@@ -1071,7 +1068,7 @@ CREATE PROCEDURE DoesJobCopyBackIncrementally(IN _jobId INT, OUT _jobCopiesBackI
         WHERE results_interval <> 0 and _jobId = job_id;
     END //
 
-DROP PROCEDURE IF EXISTS GetJobAttributesTableHeaders;
+DROP PROCEDURE IF EXISTS GetJobAttributesTableHeaders //
 CREATE PROCEDURE GetJobAttributesTableHeaders(IN _jobSpaceId INT)
     BEGIN
         SELECT ja.attr_value
@@ -1082,7 +1079,7 @@ CREATE PROCEDURE GetJobAttributesTableHeaders(IN _jobSpaceId INT)
 				ORDER BY attr_value;
     END //
 
-DROP PROCEDURE IF EXISTS GetJobAttributesTable;
+DROP PROCEDURE IF EXISTS GetJobAttributesTable //
 CREATE PROCEDURE GetJobAttributesTable(IN _jobSpaceId INT)
     BEGIN
         SELECT solver_id, solver_name, config_id, config_name, attr_value, COUNT(attr_value) attr_count,
@@ -1093,7 +1090,7 @@ CREATE PROCEDURE GetJobAttributesTable(IN _jobSpaceId INT)
         GROUP BY solver_id, config_id, attr_value;
     END //
 
-DROP PROCEDURE IF EXISTS GetSumOfJobAttributes;
+DROP PROCEDURE IF EXISTS GetSumOfJobAttributes //
 CREATE PROCEDURE GetSumOfJobAttributes(IN _jobSpaceId INT)
     BEGIN
         SELECT attr_value, COUNT(attr_value) attr_count, SUM(wallclock) wallclock, SUM(cpu) cpu
@@ -1103,5 +1100,3 @@ CREATE PROCEDURE GetSumOfJobAttributes(IN _jobSpaceId INT)
         GROUP BY attr_value
 				ORDER BY attr_value;
     END //
-
-DELIMITER ; -- this should always be at the end of the file

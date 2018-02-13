@@ -1,0 +1,8 @@
+#!/bin/bash
+# Prepares a minimal environment capable of compiling StarExec
+# Useful primarily for CI environments
+
+gem install sass
+mkdir data
+unzip distribution/apache-tomcat-*.zip apache-tomcat-*/lib/*.jar
+mv apache-tomcat-*/lib/*.jar local-lib/

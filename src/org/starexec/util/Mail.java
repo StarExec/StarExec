@@ -56,12 +56,12 @@ public class Mail {
 			email.setSubject(subject);
 			email.setMsg(message);
 
-			if (R.EMAIL_USER != null && R.EMAIL_PWD != null) {
+			if (!R.EMAIL_USER.isEmpty() && !R.EMAIL_PWD.isEmpty()) {
 				email.setAuthenticator(new DefaultAuthenticator(R.EMAIL_USER, R.EMAIL_PWD));
 				email.setTLS(true);
 			}
 
-			if (R.EMAIL_USER != null) {
+			if (!R.EMAIL_USER.isEmpty()) {
 				email.setFrom(R.EMAIL_USER);
 			}
 

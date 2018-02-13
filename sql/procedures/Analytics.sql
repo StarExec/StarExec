@@ -1,7 +1,5 @@
-DELIMITER //
-
 -- Retrieve the `id` of a given Event
-DROP PROCEDURE IF EXISTS GetEventId;
+DROP PROCEDURE IF EXISTS GetEventId //
 CREATE PROCEDURE GetEventId( IN _name CHAR(32) )
 	BEGIN
 		SELECT event_id FROM analytics_events WHERE name=_name;
@@ -11,7 +9,7 @@ CREATE PROCEDURE GetEventId( IN _name CHAR(32) )
 --   create a record and set its count to `1`
 -- otherwise
 --   increment the count of the existing record
-DROP PROCEDURE IF EXISTS RecordEvent;
+DROP PROCEDURE IF EXISTS RecordEvent //
 CREATE PROCEDURE RecordEvent(
 		IN _event_id INT,
 		IN _date_recorded DATE,
@@ -31,7 +29,7 @@ CREATE PROCEDURE RecordEvent(
 --   a particular day
 -- If we have already recorded this user/event/day, we can just ignore the
 -- DUPLICATE KEY warning
-DROP PROCEDURE IF EXISTS RecordEventUser;
+DROP PROCEDURE IF EXISTS RecordEventUser //
 CREATE PROCEDURE RecordEventUser(
 		IN _event_id INT,
 		IN _date_recorded DATE,
@@ -44,7 +42,7 @@ CREATE PROCEDURE RecordEventUser(
 		;
 	END //
 
-DROP PROCEDURE IF EXISTS GetAnalyticsForDateRange;
+DROP PROCEDURE IF EXISTS GetAnalyticsForDateRange //
 CREATE PROCEDURE GetAnalyticsForDateRange(
 		IN _start DATE,
 		IN _end DATE)
@@ -60,5 +58,3 @@ CREATE PROCEDURE GetAnalyticsForDateRange(
 		GROUP BY analytics_historical.event_id
 		;
 	END //
-
-DELIMITER ;

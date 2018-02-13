@@ -1,0 +1,36 @@
+-- Drop and recreate the database to get a fresh slate
+DROP DATABASE IF EXISTS @DB.Name@;
+CREATE DATABASE @DB.Name@;
+
+USE @DB.Name@;
+
+source new-install/StarSchema.sql
+source new-install/MinimalData.sql
+
+delimiter //
+source procedures/Analytics.sql
+source procedures/AnonymousLinks.sql
+source procedures/Benchmarks.sql
+source procedures/Cluster.sql
+source procedures/Communities.sql
+source procedures/ErrorLogs.sql
+source procedures/JobPairs.sql
+source procedures/Jobs.sql
+source procedures/Misc.sql
+source procedures/Notifications.sql
+source procedures/PairsRerun.sql
+source procedures/Permissions.sql
+source procedures/Pipelines.sql
+source procedures/Processors.sql
+source procedures/Queues.sql
+source procedures/Reports.sql
+source procedures/Requests.sql
+source procedures/Settings.sql
+source procedures/Solvers.sql
+source procedures/Spaces.sql
+source procedures/UploadStatus.sql
+source procedures/Users.sql
+source procedures/Websites.sql
+source procedures/pagination/RequestPagination.sql
+source StarFunctions.sql
+delimiter ;

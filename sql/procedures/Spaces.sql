@@ -1,13 +1,9 @@
 -- Description: This file contains all space-related stored procedures for the starexec database
 -- The procedures are stored by which table they're related to and roughly alphabetic order. Please try to keep this organized!
 
-DELIMITER // -- Tell MySQL how we will denote the end of each prepared statement
-
-
-
 -- Adds a new space with the given information
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS AddSpace;
+DROP PROCEDURE IF EXISTS AddSpace //
 CREATE PROCEDURE AddSpace(IN _name VARCHAR(255), IN _desc TEXT, IN _locked TINYINT(1), IN _permission INT, IN _parent INT, IN _sticky BOOLEAN, OUT id INT)
 	BEGIN
 		INSERT INTO spaces (name, created, description, locked, default_permission,sticky_leaders)
@@ -21,7 +17,7 @@ CREATE PROCEDURE AddSpace(IN _name VARCHAR(255), IN _desc TEXT, IN _locked TINYI
 
 -- Adds a new job space with the given information
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS AddJobSpace;
+DROP PROCEDURE IF EXISTS AddJobSpace //
 CREATE PROCEDURE AddJobSpace(IN _name VARCHAR(255), IN _job_id INT, OUT id INT)
 	BEGIN
 		INSERT INTO job_spaces (name, job_id)
@@ -29,7 +25,7 @@ CREATE PROCEDURE AddJobSpace(IN _name VARCHAR(255), IN _job_id INT, OUT id INT)
 		SELECT LAST_INSERT_ID() INTO id;
 	END //
 
-DROP PROCEDURE IF EXISTS SetJobSpaceMaxStages;
+DROP PROCEDURE IF EXISTS SetJobSpaceMaxStages //
 CREATE PROCEDURE SetJobSpaceMaxStages(IN _id INT, IN _max INT)
 	BEGIN
 		UPDATE job_spaces SET max_stages=_max WHERE id=_id;
@@ -37,7 +33,7 @@ CREATE PROCEDURE SetJobSpaceMaxStages(IN _id INT, IN _max INT)
 
 -- Clears entries from the job_space_closure table that are older than the given time
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS ClearOldJobClosureEntries;
+DROP PROCEDURE IF EXISTS ClearOldJobClosureEntries //
 CREATE PROCEDURE ClearOldJobClosureEntries(IN _cutoff TIMESTAMP)
 	BEGIN
 		DELETE FROM job_space_closure WHERE last_used<_cutoff;
@@ -45,7 +41,7 @@ CREATE PROCEDURE ClearOldJobClosureEntries(IN _cutoff TIMESTAMP)
 
 -- Insets a new ancestor/descendant pair into the job space closure table
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS InsertIntoJobSpaceClosure;
+DROP PROCEDURE IF EXISTS InsertIntoJobSpaceClosure //
 CREATE PROCEDURE InsertIntoJobSpaceClosure(IN _ancestor INT, IN _descendant INT, IN _time TIMESTAMP)
 	BEGIN
 		INSERT IGNORE INTO job_space_closure (ancestor, descendant, last_used) VALUES (_ancestor,_descendant, _time);
@@ -53,7 +49,7 @@ CREATE PROCEDURE InsertIntoJobSpaceClosure(IN _ancestor INT, IN _descendant INT,
 
 -- Adds an association between two spaces
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS AssociateSpaces;
+DROP PROCEDURE IF EXISTS AssociateSpaces //
 CREATE PROCEDURE AssociateSpaces(IN _parentId INT, IN _childId INT)
 	BEGIN
 		INSERT IGNORE INTO set_assoc
@@ -63,7 +59,7 @@ CREATE PROCEDURE AssociateSpaces(IN _parentId INT, IN _childId INT)
 -- Moves an existing space to the new parent
 -- Note: The order of arguments is (Destination, Source) to match
 --       AssociateSpaces, which was apparently written by Intel engineers
-DROP PROCEDURE IF EXISTS MoveSpace;
+DROP PROCEDURE IF EXISTS MoveSpace //
 CREATE PROCEDURE MoveSpace(IN _parentId INT, IN _childId INT)
 	BEGIN
 		DELETE                                      -- remove
@@ -83,7 +79,7 @@ CREATE PROCEDURE MoveSpace(IN _parentId INT, IN _childId INT)
 -- Rebuild closure entries for a space, assuming its parent has fully correct
 -- closure entries. When moving a space, we must call this for each child space,
 -- using a pre-order traversal of the tree.
-DROP PROCEDURE IF EXISTS RebuildSpaceClosures;
+DROP PROCEDURE IF EXISTS RebuildSpaceClosures //
 CREATE PROCEDURE RebuildSpaceClosures(IN _childId INT)
 	BEGIN
 		DECLARE _parentId INT;
@@ -101,7 +97,7 @@ CREATE PROCEDURE RebuildSpaceClosures(IN _childId INT)
 
 -- Adds an association between two job spaces
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS AssociateJobSpaces;
+DROP PROCEDURE IF EXISTS AssociateJobSpaces //
 CREATE PROCEDURE AssociateJobSpaces(IN _parentId INT, IN _childId INT)
 	BEGIN
 		INSERT IGNORE INTO job_space_assoc
@@ -110,7 +106,7 @@ CREATE PROCEDURE AssociateJobSpaces(IN _parentId INT, IN _childId INT)
 
 -- Gets all the descendants of a space
 -- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS GetDescendantsOfSpace;
+DROP PROCEDURE IF EXISTS GetDescendantsOfSpace //
 CREATE PROCEDURE GetDescendantsOfSpace(IN _spaceId INT)
 	BEGIN
 		SELECT descendant
@@ -120,7 +116,7 @@ CREATE PROCEDURE GetDescendantsOfSpace(IN _spaceId INT)
 
 -- Gets all the leaders of a space
 -- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS GetLeadersBySpaceId;
+DROP PROCEDURE IF EXISTS GetLeadersBySpaceId //
 CREATE PROCEDURE GetLeadersBySpaceId(IN _id INT)
 	BEGIN
 		SELECT *
@@ -136,7 +132,7 @@ CREATE PROCEDURE GetLeadersBySpaceId(IN _id INT)
 
 -- Returns basic space information for the space with the given id
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetSpaceById;
+DROP PROCEDURE IF EXISTS GetSpaceById //
 CREATE PROCEDURE GetSpaceById(IN _id INT)
 	BEGIN
 		SELECT *
@@ -146,7 +142,7 @@ CREATE PROCEDURE GetSpaceById(IN _id INT)
 
 -- Returns basic space information for the space with the given id
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobSpaceById;
+DROP PROCEDURE IF EXISTS GetJobSpaceById //
 CREATE PROCEDURE GetJobSpaceById(IN _id INT)
 	BEGIN
 		SELECT *
@@ -157,7 +153,7 @@ CREATE PROCEDURE GetJobSpaceById(IN _id INT)
 
 -- Gets all the spaces that a user has access to
 -- Author: Benton McCune
-DROP PROCEDURE IF EXISTS GetSpacesByUser;
+DROP PROCEDURE IF EXISTS GetSpacesByUser //
 CREATE PROCEDURE GetSpacesByUser(IN _userId INT)
 	BEGIN
 		SELECT space.name,space.id,space.locked,space.description,space.sticky_leaders
@@ -168,7 +164,7 @@ CREATE PROCEDURE GetSpacesByUser(IN _userId INT)
 
 -- Gets all the spaces
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetAllSpaces;
+DROP PROCEDURE IF EXISTS GetAllSpaces //
 CREATE PROCEDURE GetAllSpaces()
 	BEGIN
 		SELECT name, id, locked, description
@@ -177,7 +173,7 @@ CREATE PROCEDURE GetAllSpaces()
 
 -- Returns all spaces a user can see in the hierarchy rooted at the given space
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetSubSpaceHierarchyById;
+DROP PROCEDURE IF EXISTS GetSubSpaceHierarchyById //
 CREATE PROCEDURE GetSubSpaceHierarchyById(IN _spaceId INT, IN _userId INT)
 	BEGIN
 		IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the minimum ID)
@@ -197,7 +193,7 @@ CREATE PROCEDURE GetSubSpaceHierarchyById(IN _spaceId INT, IN _userId INT)
 
 -- Returns all spaces belonging to the space with the given id.
 -- Author: Tyler Jensen & Benton McCune & Eric Burns
-DROP PROCEDURE IF EXISTS GetSubSpacesById;
+DROP PROCEDURE IF EXISTS GetSubSpacesById //
 CREATE PROCEDURE GetSubSpacesById(IN _spaceId INT, IN _userId INT)
 	BEGIN
 		IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the minimum ID)
@@ -220,7 +216,7 @@ CREATE PROCEDURE GetSubSpacesById(IN _spaceId INT, IN _userId INT)
 
 -- Returns all the spaces belonging to the space (doesn't require user to be in user_assoc)
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetSubSpacesAdmin;
+DROP PROCEDURE IF EXISTS GetSubSpacesAdmin //
 CREATE PROCEDURE GetSubSpacesAdmin(IN _spaceId INT)
 	BEGIN
 		IF _spaceId <= 0 THEN -- If we get an invalid ID, return the root space (the space with the minimum ID)
@@ -240,7 +236,7 @@ CREATE PROCEDURE GetSubSpacesAdmin(IN _spaceId INT)
 
 -- Returns all the spaces in the hierarchy rooted at the given space (doesn't require user to be in user_assoc)
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetSubSpaceHierarchyAdmin;
+DROP PROCEDURE IF EXISTS GetSubSpaceHierarchyAdmin //
 CREATE PROCEDURE GetSubSpaceHierarchyAdmin(IN _spaceId INT)
 	BEGIN
 		IF _spaceId <= 0 THEN -- If we get an invalid ID, return the root space (the space with the minimum ID)
@@ -260,7 +256,7 @@ CREATE PROCEDURE GetSubSpaceHierarchyAdmin(IN _spaceId INT)
 
 -- Returns the parent space of a given space ID
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetParentSpaceById;
+DROP PROCEDURE IF EXISTS GetParentSpaceById //
 CREATE PROCEDURE GetParentSpaceById(IN _spaceId INT)
 	BEGIN
 		IF _spaceID <=0 THEN	-- Invalid ID => return root space
@@ -278,7 +274,7 @@ CREATE PROCEDURE GetParentSpaceById(IN _spaceId INT)
 
 -- Returns all subsspaces of a given name belonging to the space with the given id.
 -- Author: Benton McCune
-DROP PROCEDURE IF EXISTS GetSubSpaceByName;
+DROP PROCEDURE IF EXISTS GetSubSpaceByName //
 CREATE PROCEDURE GetSubSpaceByName(IN _spaceId INT, IN _userId INT, IN _name VARCHAR(255))
 	BEGIN
 		IF _spaceId <= 0 THEN	-- If we get an invalid ID, return the root space (the space with the minimum ID)
@@ -307,7 +303,7 @@ CREATE PROCEDURE GetSubSpaceByName(IN _spaceId INT, IN _userId INT, IN _name VAR
 
 -- Returns all spaces that are a subspace of the root
 -- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS GetSubSpacesOfRoot;
+DROP PROCEDURE IF EXISTS GetSubSpacesOfRoot //
 CREATE PROCEDURE GetSubSpacesOfRoot()
 	BEGIN
 		SELECT *
@@ -320,7 +316,7 @@ CREATE PROCEDURE GetSubSpacesOfRoot()
 
 -- Gets all the subspaces of a given space needed for a given job (non-recursive)
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetJobSubSpaces;
+DROP PROCEDURE IF EXISTS GetJobSubSpaces //
 CREATE PROCEDURE GetJobSubspaces(IN _spaceId INT)
 	BEGIN
 		SELECT *
@@ -332,7 +328,7 @@ CREATE PROCEDURE GetJobSubspaces(IN _spaceId INT)
 
 -- Gets the ids of the first level of subspaces of a given space (not recursive)
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetSubSpaceIds;
+DROP PROCEDURE IF EXISTS GetSubSpaceIds //
 CREATE PROCEDURE GetSubSpaceIds(IN _spaceId INT)
 	BEGIN
 		SELECT child_id AS id FROM set_assoc WHERE space_id=_spaceId;
@@ -340,7 +336,7 @@ CREATE PROCEDURE GetSubSpaceIds(IN _spaceId INT)
 
 -- Returns the recursive number of subspaces a user can see in a given space
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceIdInHierarchy;
+DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceIdInHierarchy //
 CREATE PROCEDURE GetSubspaceCountBySpaceIdInHierarchy(IN _spaceId INT, IN _userId INT)
 	BEGIN
 		SELECT COUNT(*) AS spaceCount
@@ -351,7 +347,7 @@ CREATE PROCEDURE GetSubspaceCountBySpaceIdInHierarchy(IN _spaceId INT, IN _userI
 		WHERE ancestor=_spaceId AND ancestor!=descendant;
 	END //
 
-DROP PROCEDURE IF EXISTS GetTotalSubspaceCountBySpaceIdInHierarchy;
+DROP PROCEDURE IF EXISTS GetTotalSubspaceCountBySpaceIdInHierarchy //
 CREATE PROCEDURE GetTotalSubspaceCountBySpaceIdInHierarchy(IN _spaceId INT)
 	BEGIN
 		SELECT COUNT(*) AS spaceCount
@@ -361,7 +357,7 @@ CREATE PROCEDURE GetTotalSubspaceCountBySpaceIdInHierarchy(IN _spaceId INT)
 
 -- Returns the number of subspaces in a given space without checking membership
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceIdAdmin;
+DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceIdAdmin //
 CREATE PROCEDURE GetSubspaceCountBySpaceIdAdmin(IN _spaceId INT)
 	BEGIN
 		SELECT COUNT(*) AS spaceCount
@@ -371,7 +367,7 @@ CREATE PROCEDURE GetSubspaceCountBySpaceIdAdmin(IN _spaceId INT)
 
 -- Returns the number of subspaces in a given space
 -- Author: Todd Elvers + Eric Burns
-DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceId;
+DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceId //
 CREATE PROCEDURE GetSubspaceCountBySpaceId(IN _spaceId INT, IN _userId INT)
 	BEGIN
 		SELECT	COUNT(DISTINCT child_id) AS spaceCount
@@ -384,7 +380,7 @@ CREATE PROCEDURE GetSubspaceCountBySpaceId(IN _spaceId INT, IN _userId INT)
 
 -- Returns the number of subspaces in a given space that match a given query
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceIdWithQuery;
+DROP PROCEDURE IF EXISTS GetSubspaceCountBySpaceIdWithQuery //
 CREATE PROCEDURE GetSubspaceCountBySpaceIdWithQuery(IN _spaceId INT, IN _userId INT, IN _query TEXT)
 	BEGIN
 		SELECT	COUNT(DISTINCT child_id) AS spaceCount
@@ -401,7 +397,7 @@ CREATE PROCEDURE GetSubspaceCountBySpaceIdWithQuery(IN _spaceId INT, IN _userId 
 
 -- Returns the number of subspaces in a given job space
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS GetSubspaceCountByJobSpaceId;
+DROP PROCEDURE IF EXISTS GetSubspaceCountByJobSpaceId //
 CREATE PROCEDURE GetSubspaceCountByJobSpaceId(IN _spaceId INT)
 	BEGIN
 		SELECT	COUNT(*) AS spaceCount
@@ -412,7 +408,7 @@ CREATE PROCEDURE GetSubspaceCountByJobSpaceId(IN _spaceId INT)
 
 -- Removes the association between a space and a subspace and deletes the subspace
 -- Author: Todd Elvers
-DROP PROCEDURE IF EXISTS RemoveSubspace;
+DROP PROCEDURE IF EXISTS RemoveSubspace //
 CREATE PROCEDURE RemoveSubspace(IN _subspaceId INT)
 	BEGIN
 		-- Remove that space's default permission
@@ -426,7 +422,7 @@ CREATE PROCEDURE RemoveSubspace(IN _subspaceId INT)
 
 -- Updates the name of the space with the given id
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS UpdateSpaceName;
+DROP PROCEDURE IF EXISTS UpdateSpaceName //
 CREATE PROCEDURE UpdateSpaceName(IN _id INT, IN _name VARCHAR(255))
 	BEGIN
 		UPDATE spaces
@@ -436,7 +432,7 @@ CREATE PROCEDURE UpdateSpaceName(IN _id INT, IN _name VARCHAR(255))
 
 -- Updates the name of the space with the given id
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS UpdateSpaceDescription;
+DROP PROCEDURE IF EXISTS UpdateSpaceDescription //
 CREATE PROCEDURE UpdateSpaceDescription(IN _id INT, IN _desc TEXT)
 	BEGIN
 		UPDATE spaces
@@ -447,7 +443,7 @@ CREATE PROCEDURE UpdateSpaceDescription(IN _id INT, IN _desc TEXT)
 -- Updates all details of the space with the given id, and returns the permission id to
 -- help update default permissions.
 -- Author: Skylar Stark
-DROP PROCEDURE IF EXISTS UpdateSpaceDetails;
+DROP PROCEDURE IF EXISTS UpdateSpaceDetails //
 CREATE PROCEDURE UpdateSpaceDetails(IN _spaceId INT, IN _name VARCHAR(255), IN _desc TEXT, IN _locked BOOLEAN, IN _sticky BOOLEAN, OUT _perm INT)
 	BEGIN
 		UPDATE spaces
@@ -465,7 +461,7 @@ CREATE PROCEDURE UpdateSpaceDetails(IN _spaceId INT, IN _name VARCHAR(255), IN _
 
 -- Get the id of the community where the space belongs to
 -- Author: Ruoyu Zhang
-DROP PROCEDURE IF EXISTS GetCommunityOfSpace;
+DROP PROCEDURE IF EXISTS GetCommunityOfSpace //
 CREATE PROCEDURE GetCommunityOfSpace(IN _id INT)
 	BEGIN
 		SELECT min(ancestor) AS community FROM closure WHERE descendant=_id AND ancestor != 1;
@@ -473,7 +469,7 @@ CREATE PROCEDURE GetCommunityOfSpace(IN _id INT)
 
 -- Query if a space is a public space
 -- Author: Ruoyu Zhang, edited by Benton McCune + Eric Burns
-DROP PROCEDURE IF EXISTS IsPublicSpace;
+DROP PROCEDURE IF EXISTS IsPublicSpace //
 CREATE PROCEDURE IsPublicSpace(IN _spaceId INT)
 	BEGIN
 		SELECT public_access
@@ -484,7 +480,7 @@ CREATE PROCEDURE IsPublicSpace(IN _spaceId INT)
 -- Determines whether a hierarchy is public, meaning every space rooted at the given one
 -- (including the given one) is public
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS IsPublicHierarchy;
+DROP PROCEDURE IF EXISTS IsPublicHierarchy //
 CREATE PROCEDURE IsPublicHierarchy(IN _spaceId INT)
 	BEGIN
 		SELECT IF((
@@ -496,7 +492,7 @@ CREATE PROCEDURE IsPublicHierarchy(IN _spaceId INT)
 
 -- Change a space to a public space or a private one
 -- Author: Ruoyu Zhang
-DROP PROCEDURE IF EXISTS setPublicSpace;
+DROP PROCEDURE IF EXISTS setPublicSpace //
 CREATE PROCEDURE setPublicSpace(IN _spaceId INT, IN _pbc BOOLEAN)
 	BEGIN
 		UPDATE spaces
@@ -506,7 +502,7 @@ CREATE PROCEDURE setPublicSpace(IN _spaceId INT, IN _pbc BOOLEAN)
 
 -- Count the number of solvers in a specific space
 -- Author: Ruoyu Zhang
-DROP PROCEDURE IF EXISTS countSpaceSolversByName;
+DROP PROCEDURE IF EXISTS countSpaceSolversByName //
 CREATE PROCEDURE countSpaceSolversByName(IN _name VARCHAR(255), IN _spaceId INT)
 	BEGIN
 		SELECT COUNT(*) FROM solvers JOIN solver_assoc ON id = solver_id WHERE name = _name AND space_id = _spaceId;
@@ -514,7 +510,7 @@ CREATE PROCEDURE countSpaceSolversByName(IN _name VARCHAR(255), IN _spaceId INT)
 
 -- Count the number of benchmarks in a specific space
 -- Author: Ruoyu Zhang
-DROP PROCEDURE IF EXISTS countSpaceBenchmarksByName;
+DROP PROCEDURE IF EXISTS countSpaceBenchmarksByName //
 CREATE PROCEDURE countSpaceBenchmarksByName(IN _name VARCHAR(256), IN _spaceId INT)
 	BEGIN
 		SELECT COUNT(*) FROM benchmarks JOIN bench_assoc ON id = bench_id WHERE name = _name AND space_id = _spaceId;
@@ -522,7 +518,7 @@ CREATE PROCEDURE countSpaceBenchmarksByName(IN _name VARCHAR(256), IN _spaceId I
 
 -- Count the number of jobs in a specific space
 -- Author: Ruoyu Zhang
-DROP PROCEDURE IF EXISTS countSpaceJobsByName;
+DROP PROCEDURE IF EXISTS countSpaceJobsByName //
 CREATE PROCEDURE countSpaceJobsByName(IN _name VARCHAR(255), IN _spaceId INT)
 	BEGIN
 		SELECT COUNT(*) FROM jobs JOIN job_assoc ON id = job_id WHERE name = _name AND space_id = _spaceId;
@@ -530,7 +526,7 @@ CREATE PROCEDURE countSpaceJobsByName(IN _name VARCHAR(255), IN _spaceId INT)
 
 -- Count the number of subspaces in a specific space
 -- Author: Ruoyu Zhang
-DROP PROCEDURE IF EXISTS countSubspacesByName;
+DROP PROCEDURE IF EXISTS countSubspacesByName //
 CREATE PROCEDURE countSubspacesByName(IN _name VARCHAR(255), IN _spaceId INT)
 	BEGIN
 		SELECT COUNT(*)
@@ -541,7 +537,7 @@ CREATE PROCEDURE countSubspacesByName(IN _name VARCHAR(255), IN _spaceId INT)
 		;
 	END //
 
-DROP PROCEDURE IF EXISTS GetSpacesByJob;
+DROP PROCEDURE IF EXISTS GetSpacesByJob //
 CREATE PROCEDURE GetSpacesByJob(IN _jobId INT)
   BEGIN
 	SELECT DISTINCT space_id
@@ -552,7 +548,7 @@ CREATE PROCEDURE GetSpacesByJob(IN _jobId INT)
 
 -- Retrieves all jobs belonging to a space (but not their job pairs)
 -- Author: Tyler Jensen
-DROP PROCEDURE IF EXISTS GetSpaceJobsById;
+DROP PROCEDURE IF EXISTS GetSpaceJobsById //
 CREATE PROCEDURE GetSpaceJobsById(IN _spaceId INT)
 	BEGIN
 		SELECT *
@@ -566,7 +562,7 @@ CREATE PROCEDURE GetSpaceJobsById(IN _spaceId INT)
 
 -- Removes the association between a job and a given space
 -- Author: Todd Elvers + Eric Burns
-DROP PROCEDURE IF EXISTS RemoveJobFromSpace;
+DROP PROCEDURE IF EXISTS RemoveJobFromSpace //
 CREATE PROCEDURE RemoveJobFromSpace(IN _jobId INT, IN _spaceId INT)
 BEGIN
 	DELETE FROM job_assoc
@@ -577,7 +573,7 @@ END //
 
 -- Sets the "sticky_leader" flag for a given space
 -- Author: Eric Burns
-DROP PROCEDURE IF EXISTS SetStickyLeader;
+DROP PROCEDURE IF EXISTS SetStickyLeader //
 CREATE PROCEDURE SetStickyLeader(IN _spaceID INT, IN _val BOOLEAN)
 BEGIN
 	UPDATE spaces SET sticky_leader =  _val WHERE id=_spaceID;
@@ -585,7 +581,7 @@ END //
 
 -- Get all the communities that are not already attached to a queue
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS GetNonAttachedCommunities;
+DROP PROCEDURE IF EXISTS GetNonAttachedCommunities //
 CREATE PROCEDURE GetNonAttachedCommunities(IN _queueId INT)
 	BEGIN
 		SELECT DISTINCT spaces.id, spaces.name
@@ -596,7 +592,7 @@ CREATE PROCEDURE GetNonAttachedCommunities(IN _queueId INT)
 	END //
 
 -- Get the "Users" subspace for a given Community
-DROP PROCEDURE IF EXISTS GetUsersSpace;
+DROP PROCEDURE IF EXISTS GetUsersSpace //
 CREATE PROCEDURE GetUsersSpace(IN _id INT)
 	BEGIN
 		SELECT id
@@ -607,7 +603,7 @@ CREATE PROCEDURE GetUsersSpace(IN _id INT)
 	END //
 
 -- Create the "Users" subspace for a given Community
-DROP PROCEDURE IF EXISTS CreateUsersSpace;
+DROP PROCEDURE IF EXISTS CreateUsersSpace //
 CREATE PROCEDURE CreateUsersSpace(IN _communityId INT)
 	BEGIN
 		DECLARE _name VARCHAR(255) DEFAULT "Users";
@@ -628,5 +624,3 @@ CREATE PROCEDURE CreateUsersSpace(IN _communityId INT)
 		);
 		CALL AssociateSpaces(_communityId, _newSpaceId);
 	END //
-
-DELIMITER ; -- This should always be at the end of this file

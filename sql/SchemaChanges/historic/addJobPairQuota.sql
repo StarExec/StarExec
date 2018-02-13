@@ -1,2 +1,0 @@
-USE starexec;
-ALTER TABLE users ADD COLUMN job_pair_quota INT DEFAULT 750000 NOT NULL;

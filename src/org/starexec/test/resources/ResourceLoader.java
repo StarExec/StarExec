@@ -6,6 +6,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.htmlunit.HtmlUnitDriver;
+import org.starexec.constants.DB;
 import org.starexec.constants.R;
 import org.starexec.data.database.*;
 import org.starexec.data.to.*;
@@ -44,7 +45,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ResourceLoader implements AutoCloseable {
 	private final StarLogger log = StarLogger.getLogger(ResourceLoader.class);
-	
+
 	// this class keeps track of all the primitives it creates. Calling deleteAllPrimitives
 	// will delete all of these objects
 	private final List<Integer> createdUserIds = new ArrayList<>();
@@ -99,7 +100,7 @@ public class ResourceLoader implements AutoCloseable {
 			Pipelines.deletePipelineFromDatabase(i);
 		}
 	}
-	
+
 	/**
 	 * Returns the path to the resource directory, which is where we are storing files like solvers
 	 * and benchmarks that are used during processing
@@ -108,17 +109,17 @@ public class ResourceLoader implements AutoCloseable {
 	public String getResourcePath() {
 		return ResourceLoader.class.getResource("/org/starexec/test/resources").getFile();
 	}
-	
+
 	/**
 	 * Returns a File object representing the file with the given name from the resource directory
 	 * @param name The name of the file, which must be present in the resource directory
-	 * @return 
+	 * @return
 	 */
 	public File getResource(String name) {
-		
+
 		return new File(ResourceLoader.class.getResource("/org/starexec/test/resources/"+name).getFile());
 	}
-	
+
 	/**
 	 * Returns a File object representing the directory where all downloads performed during testing
 	 * should be placed. For example, StarexecCommand tests use this downloads directory.
@@ -130,15 +131,15 @@ public class ResourceLoader implements AutoCloseable {
 		file.mkdir();
 		return file;
 	}
-	
+
 	public Processor loadBenchProcessorIntoDatabase(int communityId) {
 		return loadProcessorIntoDatabase("benchproc.zip", ProcessorType.BENCH, communityId);
 	}
-	
+
 	public Processor loadProcessorIntoDatabase(ProcessorType type, int communityId) {
 		return loadProcessorIntoDatabase("postproc.zip", type, communityId);
 	}
-	
+
 	/**
 	 * Loads a processor into the database
 	 * @param fileName The name of the file in the resource directory
@@ -152,17 +153,17 @@ public class ResourceLoader implements AutoCloseable {
 			p.setName(TestUtil.getRandomSolverName());
 			p.setCommunityId(communityId);
 			p.setType(type);
-			
+
 			File processorDir=ProcessorManager.getProcessorDirectory(communityId, p.getName());
 			File processorFile=getResource(fileName);
 			FileUtils.copyFileToDirectory(processorFile, processorDir);
 			ArchiveUtil.extractArchive(new File(processorDir,processorFile.getName()).getAbsolutePath());
 			File processorScript=new File(processorDir,R.PROCESSOR_RUN_SCRIPT);
 
-			if (!processorScript.setExecutable(true, false)) {			
+			if (!processorScript.setExecutable(true, false)) {
 				log.warn("Could not set processor as executable: " + processorScript.getAbsolutePath());
 			}
-			p.setFilePath(processorDir.getAbsolutePath());			
+			p.setFilePath(processorDir.getAbsolutePath());
 
 			int id=Processors.add(p);
 			if (id>0) {
@@ -170,28 +171,28 @@ public class ResourceLoader implements AutoCloseable {
 				createdProcessorIds.add(id);
 				return p;
 			}
-			
+
 		} catch (Exception e) {
 			log.error("loadProcessorIntoDatabase says "+e.getMessage(),e);
 		}
 		return null;
-		
+
 	}
-	
+
 	public Job loadJobIntoDatabase(int spaceId, int userId, int solverId, List<Integer> benchmarkIds) {
 		List<Integer> solvers= new ArrayList<>();
 		solvers.add(solverId);
 		return loadJobIntoDatabase(spaceId,userId, -1,-1, solvers,benchmarkIds,10,10,1);
 	}
-	
+
 	public Job loadJobIntoDatabase(int spaceId, int userId, int preProcessorId, int postProcessorId, int solverId, List<Integer> benchmarkIds,
 			int cpuTimeout, int wallclockTimeout, int memory) {
 		List<Integer> solvers= new ArrayList<>();
 		solvers.add(solverId);
 		return loadJobIntoDatabase(spaceId,userId,preProcessorId,postProcessorId,solvers,benchmarkIds,cpuTimeout,wallclockTimeout,memory);
 	}
-	
-	
+
+
 	/**
 	 * This will load a job with the given solvers and benchmarks into the database.
 	 * It is somewhat primitive right now-- for every solver
@@ -212,10 +213,10 @@ public class ResourceLoader implements AutoCloseable {
 	 */
 	public Job loadJobIntoDatabase(int spaceId, int userId, int preProcessorId, int postProcessorId, List<Integer> solverIds, List<Integer> benchmarkIds,
 			int cpuTimeout, int wallclockTimeout, int memory) {
-		
-		
+
+
 		String name=TestUtil.getRandomJobName();
-		
+
 		Queue q=Queues.getAllQ();
 		Job job=JobManager.setupJob(
 				userId,
@@ -232,15 +233,15 @@ public class ResourceLoader implements AutoCloseable {
 				0,
 				SaveResultsOption.SAVE,
 				R.DEFAULT_BENCHMARKING_FRAMEWORK);
-		
-		
+
+
 		List<Integer> configIds= new ArrayList<>();
 		for (Integer i : solverIds) {
 			configIds.add(Solvers.getConfigsForSolver(i).get(0).getId());
 		}
 
 		JobManager.buildJob(job, benchmarkIds, configIds, spaceId);
-		
+
 		Jobs.add(job, spaceId);
 		for (JobPair p : job.getJobPairs()) {
 			JobPairs.setStatusForPairAndStages(p.getId(), StatusCode.STATUS_COMPLETE.getVal());
@@ -250,7 +251,7 @@ public class ResourceLoader implements AutoCloseable {
 		return job;
 	}
 	/**
-	 * 
+	 *
 	 * @param rootSpaceId
 	 * @param userId
 	 * @param preProcessorId
@@ -258,7 +259,7 @@ public class ResourceLoader implements AutoCloseable {
 	 * @return
 	 */
 	public Job loadJobHierarchyIntoDatabase(int rootSpaceId, int userId, int preProcessorId, int postProcessorId) {
-		List<Space> spaces = Spaces.getSubSpaceHierarchy(rootSpaceId, userId); 
+		List<Space> spaces = Spaces.getSubSpaceHierarchy(rootSpaceId, userId);
 		spaces.add(Spaces.get(rootSpaceId));
 		log.debug("loading this number of spaces into the job ="+spaces.size());
 		String name=TestUtil.getRandomJobName();
@@ -295,7 +296,7 @@ public class ResourceLoader implements AutoCloseable {
 		createdJobIds.add(job.getId());
 		return job;
 	}
-	
+
 	/**
 	 * Creates a randomized DefaultSettings profile and inserts it into the database
 	 * @param userId The user that will be the owner of the new profile
@@ -304,7 +305,7 @@ public class ResourceLoader implements AutoCloseable {
 	public DefaultSettings loadDefaultSettingsProfileIntoDatabase(int userId) {
 		Random rand=new Random();
 		DefaultSettings settings=new DefaultSettings();
-		settings.setName(TestUtil.getRandomAlphaString(R.SETTINGS_NAME_LEN-1));
+		settings.setName(TestUtil.getRandomAlphaString(DB.SETTINGS_NAME_LEN-1));
 		settings.setPrimId(userId);
 		settings.setCpuTimeout(rand.nextInt(1000)+1);
 		settings.setWallclockTimeout(rand.nextInt(1000)+1);
@@ -324,14 +325,14 @@ public class ResourceLoader implements AutoCloseable {
 		settings.setBenchIds(new ArrayList<>(benchIds));
 		return settings;
 	}
-	
+
 	/**
 	 * Loads a configuration for a solver into the database
 	 * @param fileName The name of the file in the resource directory
 	 * @param solverId The ID of the solver to give the configuration to
 	 * @return The Configuration object with all of its fields set (name, ID, etc.)
 	 */
-	
+
 	public Configuration loadConfigurationFileIntoDatabase(String fileName, int solverId) {
 		try {
 			File file=getResource(fileName);
@@ -342,14 +343,14 @@ public class ResourceLoader implements AutoCloseable {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Loads a configuration for a solver into the database
 	 * @param contents The actual String configuration to give to the solver
 	 * @param solverId The ID of the solver to give the configuration to
 	 * @return The Configuration object with all of its fields set (name, ID, etc.)
 	 */
-	
+
 	public Configuration loadConfigurationIntoDatabase(String contents,int solverId) {
 		try {
 			Configuration c=new Configuration();
@@ -364,10 +365,10 @@ public class ResourceLoader implements AutoCloseable {
 				return null;
 			}
 			FileUtils.writeStringToFile(newConfigFile, contents);
-			
+
 			// Make sure the configuration has the right line endings
 			Util.normalizeFile(newConfigFile);
-			
+
 			//Makes executable
 			newConfigFile.setExecutable(true);
 			int id=Solvers.addConfiguration(solver, c);
@@ -375,14 +376,14 @@ public class ResourceLoader implements AutoCloseable {
 				c.setId(id);
 				return c;
 			}
-	 		
+
 			return null;
 		} catch (Exception e){
 			log.error("loadConfigurationIntoDatabase says "+e.getMessage(),e);
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Loads benchmarks.zip into the database
 	 * @param parentSpaceId
@@ -405,16 +406,16 @@ public class ResourceLoader implements AutoCloseable {
 	public List<Integer> loadBenchmarksIntoDatabase(String archiveName, int parentSpaceId, int userId) {
 		try {
 			File archive=getResource(archiveName);
-			
+
 			//make a copy of the archive, because the benchmark extraction function will delete the archive
 			File archiveCopy=new File(getDownloadDirectory(),UUID.randomUUID()+archive.getName());
 			FileUtils.copyFile(archive, archiveCopy);
 			Integer statusId = Uploads.createBenchmarkUploadStatus(parentSpaceId, userId);
 			Permission p=new Permission();
-			List<Integer> ids=BenchmarkUploader.addBenchmarksFromArchive(archiveCopy, userId, parentSpaceId, Processors.getNoTypeProcessor().getId(), false, p, 
+			List<Integer> ids=BenchmarkUploader.addBenchmarksFromArchive(archiveCopy, userId, parentSpaceId, Processors.getNoTypeProcessor().getId(), false, p,
 					"dump", statusId, false, false, null);
 			for (Integer i : ids) {
-				Benchmarks.updateDetails(i, TestUtil.getRandomAlphaString(R.BENCH_NAME_LEN-2), TestUtil.getRandomAlphaString(50),
+				Benchmarks.updateDetails(i, TestUtil.getRandomAlphaString(DB.BENCH_NAME_LEN-2), TestUtil.getRandomAlphaString(50),
 						false, Processors.getNoTypeProcessor().getId());
 				Benchmarks.addBenchAttr(i, TestUtil.getRandomAlphaString(10), TestUtil.getRandomAlphaString(10));
 			}
@@ -426,7 +427,7 @@ public class ResourceLoader implements AutoCloseable {
 		return null;
 
 	}
-	
+
 	public Solver loadSolverIntoDatabase(int parentSpaceId, int userId) {
 		return loadSolverIntoDatabase("CVC4.zip",parentSpaceId, userId);
 	}
@@ -455,12 +456,12 @@ public class ResourceLoader implements AutoCloseable {
 			File solverDir=new File(filePath);
 			solverDir.mkdirs();
 			ArchiveUtil.extractArchive(archiveCopy.getAbsolutePath(), solverDir.getAbsolutePath());
-			
+
 			//Find configurations from the top-level "bin" directory
 			for(Configuration c : Solvers.findConfigs(solverDir.getAbsolutePath())) {
 				s.addConfiguration(c);
 			}
-			
+
 			int id=Solvers.add(s, parentSpaceId);
 			if (id>0) {
 				createdSolverIds.add(id);
@@ -473,9 +474,9 @@ public class ResourceLoader implements AutoCloseable {
 		} catch (Exception e) {
 			log.error("loadSolverIntoDatabase says "+e.getMessage(),e);
 		}
-		return null;	
+		return null;
 	}
-	
+
 	public Space loadSpaceIntoDatabase(int userId, int parentSpaceId, String name) {
 		Space space=new Space();
 		space.setName(name);
@@ -489,9 +490,9 @@ public class ResourceLoader implements AutoCloseable {
 			return space;
 		}
 		return null;
-		
+
 	}
-	
+
 	/**
 	 * Loads a new space into the database
 	 * @param userId The ID of the user who is creating the space
@@ -500,9 +501,9 @@ public class ResourceLoader implements AutoCloseable {
 	 */
 	public Space loadSpaceIntoDatabase(int userId, int parentSpaceId) {
 		return loadSpaceIntoDatabase(userId, parentSpaceId,TestUtil.getRandomSpaceName() );
-		
+
 	}
-	
+
 	/**
 	 * Creates a new SolverPipeline for the given user, where a stage is created for each given
 	 * configuration. The stages will always depend on previous stages and also on another fake input,
@@ -523,7 +524,7 @@ public class ResourceLoader implements AutoCloseable {
 			dep.setType(PipelineInputType.ARTIFACT);
 			dep.setInputNumber(1);
 			dep.setDependencyId(1);
-			
+
 			stage.addDependency(dep);
 			dep = new PipelineDependency();
 			dep.setType(PipelineInputType.BENCHMARK);
@@ -537,9 +538,9 @@ public class ResourceLoader implements AutoCloseable {
 	 		return pipe;
 		}
 		return null;
-		
+
 	}
-	
+
 	/**
 	 * Loads a user into the database, without any particular name, email, password, and so on. Useful for testing.
 	 * @return The user, with their ID and all parameters set, or null on error
@@ -559,25 +560,25 @@ public class ResourceLoader implements AutoCloseable {
 	public User loadDevIntoDatabase() {
 		return loadUserIntoDatabase(TestUtil.getRandomPassword(), R.DEVELOPER_ROLE_NAME);
 	}
-	
+
 	public User loadUserIntoDatabase(String password, String role) {
 		return loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),password,password,"The University of Iowa",role);
 	}
-	
+
 	public CommunityRequest loadCommunityRequestIntoDatabase(int userId, int commId) {
 		CommunityRequest req=new CommunityRequest();
 		req.setCode(UUID.randomUUID().toString());
 		req.setCommunityId(commId);
 		req.setUserId(userId);
 		req.setMessage(TestUtil.getRandomAlphaString(30));
-		
+
 		boolean success=Requests.addCommunityRequest(Users.get(userId), commId, req.getCode(), req.getMessage());
 		if (!success) {
 			return null;
 		}
 		return req;
 	}
-	
+
 
 	/**
 	 * Creates a user with the given attributes and adds them to the database
@@ -609,19 +610,19 @@ public class ResourceLoader implements AutoCloseable {
 		log.debug("loadUserIntoDatabase could not generate a user, returning null");
 		return null;
 	}
-	
+
 	/**
 	 * Loads a queue with the given timeouts into the database.
 	 * @param wallTimeout
 	 * @param cpuTimeout
 	 * @return
 	 */
-	
+
 	public Queue loadQueueIntoDatabase(int wallTimeout, int cpuTimeout) {
 		try {
 			String queueName=TestUtil.getRandomQueueName();
 			R.BACKEND.createQueue(queueName, null,null);
-			
+
 			//reloads worker nodes and queues
 			Cluster.loadWorkerNodes();
 			Cluster.loadQueueDetails();
@@ -630,7 +631,7 @@ public class ResourceLoader implements AutoCloseable {
 				log.error("loadQueueIntoDatabase failed to create a queue!");
 				return null;
 			}
-			
+
 			boolean success = Queues.updateQueueCpuTimeout(queueId, wallTimeout);
 			if (success) {
 				Queues.updateQueueWallclockTimeout(queueId, cpuTimeout);
@@ -641,10 +642,10 @@ public class ResourceLoader implements AutoCloseable {
 			log.error(e.getMessage(),e);
 		}
 		return null;
-		
+
 	}
 	/**
-	 * Returns a WebDriver for selenium testing. The driver we be logged into the website 
+	 * Returns a WebDriver for selenium testing. The driver we be logged into the website
 	 * upon return
 	 * @param email The email address of the user to log in
 	 * @param password The password of the user to log in
@@ -658,23 +659,23 @@ public class ResourceLoader implements AutoCloseable {
 		} else {
 		  driver = new HtmlUnitDriver(false);
 		  HtmlUnitDriver test=(HtmlUnitDriver) driver;
-		  
+
 		}
-	    
+
 	    driver.get(Util.url("secure/index.jsp"));
 	    WebElement userName=driver.findElement(By.name("j_username"));
 	    userName.sendKeys(email);
 	    driver.findElement(By.name("j_password")).sendKeys(password);
 	    driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
 	    userName.submit();
-	    
+
 	    return driver;
 	}
-	
+
 	public WebDriver getFirefoxDriver(String email, String password) {
 	  return getWebDriver(email,password,true);
 	}
-	
+
 	/**
 	 * Retrieves an HTMLUnit WebDriver. This is the same as calling getWe
 	 * @param email
@@ -684,7 +685,7 @@ public class ResourceLoader implements AutoCloseable {
 	public WebDriver getWebDriver(String email, String password) {
 	  return getWebDriver(email,password,false);
 	}
-	
+
 	/**
 	 * Writes 1000 characters of output to the location this pairs output should be placed
 	 * @param pair
@@ -696,7 +697,7 @@ public class ResourceLoader implements AutoCloseable {
 			f.mkdirs();
 			String randomOutput=TestUtil.getRandomAlphaString(1000);
 			FileUtils.writeStringToFile(new File(f,pair.getId()+".txt"), randomOutput);
-			
+
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}
@@ -715,7 +716,7 @@ public class ResourceLoader implements AutoCloseable {
 		templateReplacements.put("$$BENCH_ONE$$", benchId+"");
 		return getTestXMLFile(TestXML.BASIC, templateReplacements);
 	}
-	
+
 	/**
 	 * Creates a test XML file that uses a solver pipeline and returns the file
 	 * @param configId1 First config to use
@@ -768,7 +769,7 @@ public class ResourceLoader implements AutoCloseable {
 	/**
 	 * Creates a directory with exactly two fake configurations in it.
 	 * @return A size-3 array containing the absolute path to the config directory and the two config names, in that order.
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public List<String> getTestConfigDirectory() throws IOException {
 		List<String> strs = new ArrayList<>();

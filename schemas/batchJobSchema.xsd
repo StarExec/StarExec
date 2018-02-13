@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schema xmlns="http://www.w3.org/2001/XMLSchema"
-		xmlns:tns="https://www.starexec.org/starexec/public/batchJobSchema.xsd"
-		xmlns:jst="https://www.starexec.org/starexec/public/jobSchemaTypes.xsd"
-		targetNamespace="https://www.starexec.org/starexec/public/batchJobSchema.xsd">
+		xmlns:tns="@Web.URL@public/batchJobSchema.xsd"
+		xmlns:jst="@Web.URL@public/jobSchemaTypes.xsd"
+		targetNamespace="@Web.URL@public/batchJobSchema.xsd">
 
-	<import namespace="https://www.starexec.org/starexec/public/jobSchemaTypes.xsd" schemaLocation="https://www.starexec.org/starexec/public/jobSchemaTypes.xsd"/>
-
+	<import namespace="@Web.URL@public/jobSchemaTypes.xsd" schemaLocation="@Web.URL@public/jobSchemaTypes.xsd"/>
 
 	<annotation>
 		<documentation>

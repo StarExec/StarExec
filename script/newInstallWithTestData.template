@@ -1,0 +1,18 @@
+#!/bin/bash
+#
+# A script to be run in the top level directory of a stardev instance.
+# Runs NewInstall.sql and uploadTestData.sh
+
+(
+    echo "Running NewInstall.sql"
+    cd sql/
+    mysql -u"@DB.User@" -p"@DB.Pass@" < NewInstall.sql
+)
+
+(
+    echo "Running uploadTestData.sh"
+    cd deployed-upload-test/
+    ./uploadTestData.sh
+)
+
+echo "Done!"

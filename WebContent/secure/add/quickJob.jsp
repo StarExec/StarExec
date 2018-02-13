@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.R,org.starexec.data.database.*,org.starexec.data.to.DefaultSettings, org.starexec.data.to.Permission,org.starexec.data.to.Processor, org.starexec.data.to.enums.ProcessorType, org.starexec.logger.StarLogger, org.starexec.servlets.CreateJob, org.starexec.util.SessionUtil" %>
+        import="org.starexec.constants.DB,org.starexec.data.database.*,org.starexec.data.to.DefaultSettings, org.starexec.data.to.Permission,org.starexec.data.to.Processor, org.starexec.data.to.enums.ProcessorType, org.starexec.logger.StarLogger, org.starexec.servlets.CreateJob, org.starexec.util.SessionUtil" %>
 <%@ page import="java.util.List" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -31,9 +31,9 @@
 				request.setAttribute("spaceName", "job space");
 			}
 			request.setAttribute("spaceId", spaceId);
-			request.setAttribute("jobNameLen", R.JOB_NAME_LEN);
-			request.setAttribute("jobDescLen", R.JOB_DESC_LEN);
-			request.setAttribute("benchNameLen", R.BENCH_NAME_LEN);
+			request.setAttribute("jobNameLen", DB.JOB_NAME_LEN);
+			request.setAttribute("jobDescLen", DB.JOB_DESC_LEN);
+			request.setAttribute("benchNameLen", DB.BENCH_NAME_LEN);
 			List<DefaultSettings> listOfDefaultSettings =
 					Settings.getDefaultSettingsVisibleByUser(userId);
 

@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.R,org.starexec.data.database.Permissions, org.starexec.data.database.Solvers,org.starexec.data.database.Websites, org.starexec.data.security.GeneralSecurity, org.starexec.data.to.Solver, org.starexec.data.to.Website.WebsiteType, org.starexec.util.SessionUtil" %>
+        import="org.starexec.constants.DB,org.starexec.data.database.Permissions, org.starexec.data.database.Solvers,org.starexec.data.database.Websites, org.starexec.data.security.GeneralSecurity, org.starexec.data.to.Solver, org.starexec.data.to.Website.WebsiteType, org.starexec.util.SessionUtil" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -7,8 +7,8 @@
 	try {
 		int userId = SessionUtil.getUserId(request);
 		int solverId = Integer.parseInt(request.getParameter("id"));
-		request.setAttribute("solverNameLen", R.SOLVER_NAME_LEN);
-		request.setAttribute("solverDescLen", R.SOLVER_DESC_LEN);
+		request.setAttribute("solverNameLen", DB.SOLVER_NAME_LEN);
+		request.setAttribute("solverDescLen", DB.SOLVER_DESC_LEN);
 		Solver s = null;
 		if (Permissions.canUserSeeSolver(solverId, userId)) {
 			s = Solvers.get(solverId);

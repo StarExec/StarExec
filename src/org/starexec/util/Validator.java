@@ -1,5 +1,6 @@
 package org.starexec.util;
 
+import org.starexec.constants.DB;
 import org.starexec.constants.R;
 import org.starexec.logger.StarLogger;
 
@@ -106,35 +107,35 @@ public class Validator {
 	}
 
 	public static boolean isValidSolverName(String name) {
-		return isValidPrimName(name, R.SOLVER_NAME_LEN);
+		return isValidPrimName(name, DB.SOLVER_NAME_LEN);
 	}
 
 	public static boolean isValidSettingsName(String name) {
-		return isValidPrimName(name, R.SETTINGS_NAME_LEN);
+		return isValidPrimName(name, DB.SETTINGS_NAME_LEN);
 	}
 
 	public static boolean isValidJobName(String name) {
-		return isValidPrimName(name, R.JOB_NAME_LEN);
+		return isValidPrimName(name, DB.JOB_NAME_LEN);
 	}
 
 	public static boolean isValidPipelineName(String name) {
-		return isValidPrimName(name, R.PIPELINE_NAME_LEN);
+		return isValidPrimName(name, DB.PIPELINE_NAME_LEN);
 	}
 
 	public static boolean isValidProcessorName(String name) {
-		return isValidPrimName(name, R.PROCESSOR_NAME_LEN);
+		return isValidPrimName(name, DB.PROCESSOR_NAME_LEN);
 	}
 
 	public static boolean isValidQueueName(String name) {
-		return isValidPrimName(name, R.QUEUE_NAME_LEN);
+		return isValidPrimName(name, DB.QUEUE_NAME_LEN);
 	}
 
 	public static boolean isValidWebsiteName(String name) {
-		return isValidPrimName(name, R.WEBSITE_NAME_LEN);
+		return isValidPrimName(name, DB.WEBSITE_NAME_LEN);
 	}
 
 	public static boolean isValidConfigurationName(String name) {
-		return isValidPrimName(name, R.CONFIGURATION_NAME_LEN);
+		return isValidPrimName(name, DB.CONFIGURATION_NAME_LEN);
 	}
 
 	/**
@@ -159,7 +160,7 @@ public class Validator {
 	 * contains only letters, numbers and dashes
 	 */
 	public static boolean isValidBenchName(String name) {
-		return isValidPrimName(name, R.BENCH_NAME_LEN);
+		return isValidPrimName(name, DB.BENCH_NAME_LEN);
 	}
 
 	/**

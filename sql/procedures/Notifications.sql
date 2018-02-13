@@ -1,10 +1,8 @@
 -- Description: This file contains stored procedures for sending notifications
 
-DELIMITER //
-
 -- Subscribe a User to status updates from a Job
 -- Record the current status of Job so we can see when it changes
-DROP PROCEDURE IF EXISTS SubscribeUserToJob;
+DROP PROCEDURE IF EXISTS SubscribeUserToJob //
 CREATE PROCEDURE SubscribeUserToJob(IN _userId INT, IN _jobId INT)
 	BEGIN
 		INSERT
@@ -14,7 +12,7 @@ CREATE PROCEDURE SubscribeUserToJob(IN _userId INT, IN _jobId INT)
 	END //
 
 -- Unsubscribe a User from status updates to a Job
-DROP PROCEDURE IF EXISTS UnsubscribeUserFromJob;
+DROP PROCEDURE IF EXISTS UnsubscribeUserFromJob //
 CREATE PROCEDURE UnsubscribeUserFromJob(IN _userId INT, IN _jobId INT)
 	BEGIN
 		DELETE
@@ -28,7 +26,7 @@ CREATE PROCEDURE UnsubscribeUserFromJob(IN _userId INT, IN _jobId INT)
 --   from last recorded status. Does NOT modify any data. Status must be updated
 --   if a notification is sent.
 -- Returns a list of Job ID and User emails for sending notifications
-DROP PROCEDURE IF EXISTS NotifyUsersOfJobs;
+DROP PROCEDURE IF EXISTS NotifyUsersOfJobs //
 CREATE PROCEDURE NotifyUsersOfJobs()
 	BEGIN
 		SELECT job_id AS "job", user_id as "user", first_name, last_name, users.email AS "email", GetJobStatusDetail(job_id) AS "status"
@@ -41,7 +39,7 @@ CREATE PROCEDURE NotifyUsersOfJobs()
 -- Update the last_seen_status of a Job-User notification to the current status
 --   of Job, then clean up the table deleting any notifications for Jobs with an
 --   immutable status
-DROP PROCEDURE IF EXISTS UpdateNotificationJobStatus;
+DROP PROCEDURE IF EXISTS UpdateNotificationJobStatus //
 CREATE PROCEDURE UpdateNotificationJobStatus(IN _userId INT, IN _jobId INT, IN _status CHAR(16))
 	BEGIN
 		UPDATE notifications_jobs_users
@@ -56,7 +54,7 @@ CREATE PROCEDURE UpdateNotificationJobStatus(IN _userId INT, IN _jobId INT, IN _
 		;
 	END //
 
-DROP PROCEDURE IF EXISTS UserSubscribedToJob;
+DROP PROCEDURE IF EXISTS UserSubscribedToJob //
 CREATE PROCEDURE UserSubscribedToJob(IN _userId INT, IN _jobId INT)
 	BEGIN
 		SELECT _jobId IN (
@@ -65,5 +63,3 @@ CREATE PROCEDURE UserSubscribedToJob(IN _userId INT, IN _jobId INT)
 			WHERE user_id=_userId
 		);
 	END //
-
-DELIMITER ; -- this should always be at the end of the file
