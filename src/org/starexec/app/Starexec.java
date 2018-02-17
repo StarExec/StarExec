@@ -10,7 +10,6 @@ import org.starexec.data.database.Users;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.logger.StarLogger;
 import org.starexec.test.integration.TestManager;
-import org.starexec.util.ConfigUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
