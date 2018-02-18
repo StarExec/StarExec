@@ -63,7 +63,7 @@ public class Notifications {
 	 * @param status
 	 */
 	private static void updateNotificationJobStatus(int userId, int job, JobStatus status) throws SQLException {
-		log.warn(
+		log.debug(
 				"updateNotificationJobStatus",
 				"user: " + userId + "    job: " + job + "   status " + status.toString()
 		);
