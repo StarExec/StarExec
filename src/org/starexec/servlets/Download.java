@@ -1163,7 +1163,7 @@ public class Download extends HttpServlet {
 			 * to a connection timeout. This is not serious, and not worth a
 			 * full stack trace. No need to send any message to client, because
 			 * connection has been closed. */
-			log.warn("doGet",
+			log.info("doGet",
 					"Caught ClientAbortException\n\t" +
 					"URL: " + request.getRequestURL() + "?" + request.getQueryString() + "\n\t" +
 					"User Agent: " + request.getHeader("User-Agent")
