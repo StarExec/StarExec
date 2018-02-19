@@ -51,10 +51,16 @@ public abstract class JobManager {
 	 * JobManager.submitJobs.
 	 */
 	public static String getLoadRepresentationForQueue(int queueId) {
-		log.debug("retrieving load data for queue = " + queueId);
+		log.debug("getLoadRepresentationForQueue", "retrieving load data for queue: " + queueId);
 		if (queueToMonitor.containsKey(queueId)) {
 			return queueToMonitor.get(queueId).toString();
 		}
+		String knownQueues = queueToMonitor.keySet().toString();
+		log.warn(
+				"getLoadRepresentationForQueue",
+				"queue not found: " + queueId
+				+ "\n\tknown queues:" + knownQueues
+		);
 		return null;
 	}
 
