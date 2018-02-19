@@ -112,13 +112,12 @@ public class Queues {
 	 * @author Tyler Jensen
 	 */
 	protected static int add(Connection con, String queueName, int cpuTimeout, int wallTimeout) {
-		log.debug("preparing to call sql procedures to add queue with name = " + queueName);
+		log.entry("add");
 		CallableStatement procedure = null;
 		try {
 
 			//Add the queue first
-			log.debug("Calling AddQueue");
-			log.debug("queueName = " + queueName);
+			log.debug("add", "queueName = " + queueName);
 			procedure = con.prepareCall("{CALL AddQueue(?,?,?,?)}");
 			procedure.setString(1, queueName);
 			procedure.setInt(2, wallTimeout);
@@ -127,10 +126,10 @@ public class Queues {
 			procedure.executeUpdate();
 			int newQueueId = procedure.getInt(4);
 
-			log.info(String.format("New queue with name [%s] was successfully created", queueName));
+			log.info("add", "New queue with name [" + queueName + "] was successfully created with id [" + newQueueId + "]");
 			return newQueueId;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("add", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -153,7 +152,7 @@ public class Queues {
 			con = Common.getConnection();
 			return Queues.add(con, queueName, cpuTimeout, wallTimeout);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("add", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -181,7 +180,7 @@ public class Queues {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("associate", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -203,7 +202,7 @@ public class Queues {
 			procedure = con.prepareCall("{CALL clearQueueAssociations()}");
 			procedure.executeUpdate();
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("clearQueueAssociations", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -233,7 +232,7 @@ public class Queues {
 				return resultSetToQueue(results);
 			}
 		} catch (Exception e) {
-			log.error("Queue.get says " + e.getMessage(), e);
+			log.error(methodName, e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -255,7 +254,7 @@ public class Queues {
 			con = Common.getConnection();
 			return Queues.get(con, qid);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("get", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -298,7 +297,7 @@ public class Queues {
 
 			return -1;
 		} catch (Exception e) {
-			log.error("getCountOfEnqueuedPairsShallow says " + e.getMessage(), e);
+			log.error("getCountOfEnqueuedPairsByQueue", e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -320,7 +319,7 @@ public class Queues {
 			con = Common.getConnection();
 			return getCountOfEnqueuedPairsByQueue(con, qId);
 		} catch (Exception e) {
-			log.error("getCountOfEnqueuedPairsShallow for queue " + qId + " says " + e.getMessage(), e);
+			log.error("getCountOfEnqueuedPairsShallow", "qid: " + qId, e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -351,7 +350,7 @@ public class Queues {
 				return results.getInt("id");
 			}
 		} catch (Exception e) {
-			log.error("getIdByName says " + e.getMessage(), e);
+			log.error("getIdByName", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -410,7 +409,7 @@ public class Queues {
 
 			jp.addStage(stage);
 
-			log.debug("attempting to get benchmark with ID = " + results.getInt("bench_id"));
+			log.debug("resultSetToClusterPagePairs", "attempting to get benchmark with ID = " + results.getInt("bench_id"));
 			Benchmark b = new Benchmark();
 			b.setId(results.getInt("job_pairs.bench_id"));
 			b.setName(results.getString("job_pairs.bench_name"));
@@ -463,7 +462,7 @@ public class Queues {
 			results = procedure.executeQuery();
 			return resultSetToClusterPagePairs(results);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getPairsRunningOnNode", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -498,7 +497,7 @@ public class Queues {
 
 			return resultSetToClusterPagePairs(results);
 		} catch (Exception e) {
-			log.error("getNextPageOfEnqueuedJobPairs for queue " + id + " says " + e.getMessage(), e);
+			log.error("getJobPairsForNextClusterPage","queue: " + id, e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -572,7 +571,7 @@ public class Queues {
 			}
 			return jobs;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getPendingJobsHelper", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -601,7 +600,7 @@ public class Queues {
 				results = procedure.executeQuery();
 				return results.next();
 			} catch (Exception e) {
-				log.error(e.getMessage(), e);
+				log.error("developerJobsExist", e);
 			} finally {
 				Common.safeClose(con);
 				Common.safeClose(procedure);
@@ -660,7 +659,7 @@ public class Queues {
 
 			return queues;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getQueues", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -694,7 +693,7 @@ public class Queues {
 				return results.getLong("queue_load");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getUserLoadOnQueue", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -727,7 +726,7 @@ public class Queues {
 			}
 			return qSize;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getSizeOfQueue", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -787,14 +786,14 @@ public class Queues {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("setStatus", e);
 			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
 
-		log.debug(String.format("Status for queue [%s] failed to be updated.", (name == null) ? "ALL" : name));
+		log.warn("setStatus", String.format("Status for queue [%s] failed to be updated.", (name == null) ? "ALL" : name));
 		return false;
 	}
 
@@ -831,7 +830,7 @@ public class Queues {
 				return results.getString("name");
 			}
 		} catch (Exception e) {
-			log.error("getIdByName says " + e.getMessage(), e);
+			log.error("getIdByName", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -859,7 +858,7 @@ public class Queues {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("updateQueueCpuTimeout", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -885,7 +884,7 @@ public class Queues {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("updateQueueWallclockTimeout", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -915,7 +914,7 @@ public class Queues {
 				return results.getBoolean("global_access");
 			}
 		} catch (Exception e) {
-			log.error("IsQueueGlobal says " + e.getMessage(), e);
+			log.error("isQueueGlobal", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -942,7 +941,7 @@ public class Queues {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error("RemoveQueue says " + e.getMessage(), e);
+			log.error("delete", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -968,7 +967,7 @@ public class Queues {
 
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("makeGlobal", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -993,7 +992,7 @@ public class Queues {
 
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("removeGlobal", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1018,7 +1017,7 @@ public class Queues {
 
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("setTestQueue", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1058,7 +1057,7 @@ public class Queues {
 				return id;
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getTestQueue", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1075,7 +1074,7 @@ public class Queues {
 	 * @return True on success and false on error.
 	 */
 	public static boolean setQueueCommunityAccess(List<Integer> community_ids, int queue_id) {
-		log.debug("SetQueueCommunityAccess beginning...");
+		log.entry("setQueueCommunityAccess");
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -1097,7 +1096,7 @@ public class Queues {
 
 			return true;
 		} catch (Exception e) {
-			log.error("SetQueueCommunityAccess says " + e.getMessage(), e);
+			log.error("setQueueCommunityAccess", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
