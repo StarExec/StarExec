@@ -88,11 +88,9 @@ public class Starexec implements ServletContextListener {
 		}
 		// Setup the path to starexec's configuration files
 		R.CONFIG_PATH = new File(R.STAREXEC_ROOT, "/WEB-INF/classes/org/starexec/config/").getAbsolutePath();
-
-		// Load all properties from the starexec-config file
-//		ConfigUtil.loadProperties(new File(R.CONFIG_PATH, "starexec-config.xml"));
-
 		R.RUNSOLVER_PATH = new File(R.getSolverPath(), "runsolver").getAbsolutePath();
+
+		R.logProperties();
 
 		try {
 			FileUtils.copyFile(new File(R.CONFIG_PATH, "sge/runsolver"), new File(R.RUNSOLVER_PATH));

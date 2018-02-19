@@ -6,6 +6,7 @@ import org.starexec.backend.LocalBackend;
 import org.starexec.backend.OARBackend;
 import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.exceptions.StarExecException;
+import org.starexec.logger.StarLogger;
 
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -22,6 +23,8 @@ import java.util.HashMap;
  * @author Tyler Jensen
  */
 public class R {
+	private static final StarLogger log = StarLogger.getLogger(R.class);
+
     /*
      * IMPORTANT: This class only supports string, int and boolean types.
      * DO NOT change field names without changing their corresponding keys
@@ -358,5 +361,18 @@ public class R {
 			// This should never happen.
 			return null;
 		}
+	}
+
+	public static void logProperties() {
+		StringBuilder sb = new StringBuilder();
+		for (java.lang.reflect.Field f : R.class.getDeclaredFields()) {
+			sb.append("\n\t").append(f.getName()).append(": ");
+			try {
+				sb.append(f.get(R.class));
+			} catch (IllegalAccessException e) {
+				// This should never happen
+			}
+		}
+		log.info("logProperties", sb.toString());
 	}
 }
