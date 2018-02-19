@@ -117,7 +117,6 @@ public class Queues {
 		try {
 
 			//Add the queue first
-			log.debug("add", "queueName = " + queueName);
 			procedure = con.prepareCall("{CALL AddQueue(?,?,?,?)}");
 			procedure.setString(1, queueName);
 			procedure.setInt(2, wallTimeout);
@@ -126,10 +125,15 @@ public class Queues {
 			procedure.executeUpdate();
 			int newQueueId = procedure.getInt(4);
 
-			log.info("add", "New queue with name [" + queueName + "] was successfully created with id [" + newQueueId + "]");
+			if (newQueueId == 0) {
+				log.info("add", "New queue with name [" + queueName + "] not created because it already exists");
+				return -1;
+			} else {
+				log.info("add", "New queue with name [" + queueName + "] was successfully created with id [" + newQueueId + "]");
+			}
 			return newQueueId;
 		} catch (Exception e) {
-			log.error("add", e);
+			log.debug("add", "queueName:\t" + queueName, e);
 		} finally {
 			Common.safeClose(procedure);
 		}
