@@ -298,6 +298,7 @@ public class RESTServices {
 	public String getLoadsForQueue(@PathParam("queueId") int queueId, @Context HttpServletRequest request) {
 		String loads = JobManager.getLoadRepresentationForQueue(queueId);
 		if(Util.isNullOrEmpty(loads)) {
+			log.warn("getLoadsForQueue", "Queue not found: " + queueId);
 			throw RESTException.NOT_FOUND;
 		}
 		return loads;
