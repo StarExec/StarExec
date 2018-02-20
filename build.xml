@@ -34,7 +34,11 @@
 		<tstamp>
 			<format property="Build.Date" pattern="MM/dd/yyyy hh:mm:ss aa" />
 		</tstamp>
-		<exec outputproperty="Build.Version" executable="git describe --always --tags" />
+		<exec outputproperty="Build.Version" executable="git">
+			<arg value="describe" />
+			<arg value="--always" />
+			<arg value="--tags" />
+		</exec>
 		<exec outputproperty="Build.User" executable="whoami" />
 		<property name="generated-message"
 		          value="This file generated during build: ${Build.Date}" />
