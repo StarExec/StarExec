@@ -1,24 +1,16 @@
-Installation Notes
+# Installation Notes
 
 This document describes how to describe Starexec and its
 dependencies on a Linux system.
 
-********************************** Java ***************************************
-
-Starexec depends on the Java 8 JDK and has been tested with version 1.8.0_161.
-Java 8 can be found at the site below or can be installed through various
-package managers
-
-http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
-
-********************************** Ant ****************************************
+## Java
 
 Starexec requires Ant to build, and has been tested with version 1.9.2. An
 installation guide for Ant is below, or you may use any applicable package manager.
 
 http://ant.apache.org/manual/install.html
 
-********************************** Apache Tomcat ******************************
+## Apache Tomcat
 
 Starexec depends on Apache Tomcat 7.0.64. While newer versions may work, we have
 frequently seen that even minor version releases of Tomcat can have breaking
@@ -37,7 +29,7 @@ on the install directory to make Tomcat's scripts executable. This can be done, 
 example, by using 'chmod 700 -R tomcat_directory'
 
 
-********************************** MySQL and MariaDB **************************************
+## MySQL and MariaDB
 
 StarExec depends on MariaDB 5.5.56. MariaDB can
 be obtained at the following site.
@@ -56,7 +48,7 @@ A description of MySQL permissions can be found at the link below.
 
 http://dev.mysql.com/doc/refman/5.7/en/privileges-provided.html
 
-********************************** BACKEND ************************************
+## Backend
 
 Starexec's backend refers to the utility that is responsible for accepting
 new jobs from the web app and distributing them over the available compute nodes.
@@ -78,7 +70,7 @@ The local backend is a primitive solution if you only want to run jobs on the sa
 machine that Starexec is running off of. The local backend does not support multiple
 queues or nodes, and only a single job will run at a time.
 
-********************************** Email **************************************
+## Email
 
 Starexec sends automated emails for several purposes, such as sending notifications
 when new users are registered or sending weekly status updates. To do this, Starexec
@@ -104,7 +96,7 @@ Starexec is also configured to use a CONTACT_EMAIL, which is intended to
 receive emails directed at Starexec admins. This email address will appear
 on the site for users who want to send bug reports or ask questions.
 
-********************************** Starexec Configuration **********************
+## Starexec Configuration
 
 After all of the above dependencies have been installed, you can take the following
 steps to configure and deploy Starexec.
