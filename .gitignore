@@ -1,0 +1,122 @@
+
+# /
+/.classpath
+/.project
+/.settings
+/.sass-cache
+/bin
+/soft-deploy.sh
+/newInstallWithTestData.sh
+/junittestoutput
+/*.war
+/data_dir
+/deployed-sql
+/deployed-upload-test
+
+# /WebContent/META-INF/
+/WebContent/META-INF/context.xml
+
+# /WebContent/WEB-INF/lib/
+/WebContent/WEB-INF/lib/drmaa.jar
+
+# /WebContent/WEB-INF/tags/
+
+# /WebContent/css/
+/WebContent/css/_properties.scss
+/WebContent/css/*.css.map
+/WebContent/css/about.css
+/WebContent/css/error.css
+/WebContent/css/global.css
+/WebContent/css/jobDetails.css
+
+# /WebContent/css/accounts/
+/WebContent/css/accounts/*.css.map
+/WebContent/css/accounts/login.css
+/WebContent/css/accounts/registration.css
+
+# /WebContent/css/add/
+/WebContent/css/add/*.css.map
+
+# /WebContent/css/admin/
+/WebContent/css/admin/*.css.map
+/WebContent/css/admin/admin.css
+/WebContent/css/admin/analytics.css
+/WebContent/css/admin/testing.css
+
+# /WebContent/css/common/
+/WebContent/css/common/*.css.map
+/WebContent/css/common/dataTable.css
+/WebContent/css/common/dataTables.fixedColumns.css
+/WebContent/css/common/delaySpinner.css
+/WebContent/css/common/table.css
+
+# /WebContent/css/details/
+/WebContent/css/details/*.css.map
+/WebContent/css/details/benchmark.css
+/WebContent/css/details/configuration.css
+/WebContent/css/details/job.css
+/WebContent/css/details/pair.css
+/WebContent/css/details/shared.css
+
+# /WebContent/css/edit/
+/WebContent/css/edit/*.css.map
+/WebContent/css/edit/account.css
+/WebContent/css/edit/shared.css
+
+# /WebContent/css/explore/
+/WebContent/css/explore/*.css.map
+/WebContent/css/explore/common.css
+/WebContent/css/explore/spaces.css
+/WebContent/css/explore/cluster.css
+
+# /WebContent/css/help/
+/WebContent/css/help/*.css.map
+
+# /WebContent/css/images/
+/WebContent/css/images/Thumbs.db
+
+# /WebContent/css/prettify/
+/WebContent/css/prettify/*.css.map
+/WebContent/css/prettify/prettify.css
+
+# /WebContent/css/shared/
+/WebContent/css/shared/*.css.map
+/WebContent/css/shared/copyToStardev.css
+
+# /WebContent/public/
+/WebContent/public/*.xsd
+/WebContent/public/*.xml
+/WebContent/public/starexeccommand.zip
+/WebContent/public/machine-specs.txt
+
+# /WebContent/public/resources/
+/WebContent/public/resources/postproc.sh
+/WebContent/public/resources/CVC4Config.txt
+/WebContent/public/resources/postproc.zip
+
+# /WebContent/secure/
+
+# /WebContent/secure/admin/
+
+# /build/
+/build/overrides.properties
+
+# /script/
+/script/newInstallWithTestData.sh
+/script/soft-deploy.sh
+/script/starsql.sh
+
+# /sql/
+/sql/NewInstall.sql
+
+# /src/org/starexec/command/
+/src/org/starexec/command/build
+/src/org/starexec/command/compile
+
+# /src/org/starexec/config/
+
+# /src/org/starexec/test/junit/
+/src/org/starexec/test/junit/test.java
+
+# /starexec_res/
+/starexec_res/*
