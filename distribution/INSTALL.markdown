@@ -1,25 +1,25 @@
 # Installation Notes
 
-This document describes how to describe Starexec and its
+This document describes how to describe StarExec and its
 dependencies on a Linux system.
 
 ## Java
 
-Starexec requires Ant to build, and has been tested with version 1.9.2. An
+StarExec requires Ant to build, and has been tested with version 1.9.2. An
 installation guide for Ant is below, or you may use any applicable package manager.
 
 http://ant.apache.org/manual/install.html
 
 ## Apache Tomcat
 
-Starexec depends on Apache Tomcat 7.0.64. While newer versions may work, we have
+StarExec depends on Apache Tomcat 7.0.64. While newer versions may work, we have
 frequently seen that even minor version releases of Tomcat can have breaking
-changes for Starexec, so using a different version of Tomcat is not recommended.
+changes for StarExec, so using a different version of Tomcat is not recommended.
 
 A full release of Tomcat is included in the starexec package under the `distribution/`
 directory. This is identical to a release that you can download from Apache,
 with the exception that the `mysql-connector-java-5.1.22-bin.jar` and
-`drmaa.jar` files are included in the `lib/` directory. These `.jar` files are required for Starexec
+`drmaa.jar` files are included in the `lib/` directory. These `.jar` files are required for StarExec
 to connect to its database and backend, and as such we recommend that you install
 Tomcat using the provided archive. If you would like to install a clean copy of
 Tomcat, you will need to copy the MySQL connector and DRMAA files to the new lib directory.
@@ -40,7 +40,7 @@ In starexec-config.xml, you must specify MYSQL_USERNAME and
 COMPUTE_NODE_MYSQL_USERNAME. These are MySQL users that must have access to the
 MySQL database. If desired, they can be the same user-- the only difference is that
 COMPUTE_NODE_MYSQL_USERNAME requires fewer permissions. The user set as
-MYSQL_USERNAME will require ALL permissions in the Starexec database, excluding
+MYSQL_USERNAME will require ALL permissions in the StarExec database, excluding
 server administration permissions. The user COMPUTE_NODE_MYSQL_USERNAME will
 require SELECT, INSERT, UPDATE, and EXECUTE permissions.
 
@@ -50,61 +50,61 @@ http://dev.mysql.com/doc/refman/5.7/en/privileges-provided.html
 
 ## Backend
 
-Starexec's backend refers to the utility that is responsible for accepting
+StarExec's backend refers to the utility that is responsible for accepting
 new jobs from the web app and distributing them over the available compute nodes.
-Starexec supports 3 different backend implementations, and which one you use
+StarExec supports 3 different backend implementations, and which one you use
 can be configured using the BACKEND_TYPE field in starexec-config.xml. You have
 the option to use SGE (https://arc.liv.ac.uk/trac/SGE), OAR (https://oar.imag.fr/),
-or a simple local backend implemented in Starexec itself.
+or a simple local backend implemented in StarExec itself.
 
 To install SGE or OAR, you will need to refer to their documentation. In the case
 of OAR, the document `OAR installation notes.txt` describes extra installation
-steps you should take to configure OAR for use with Starexec.
+steps you should take to configure OAR for use with StarExec.
 
-You will need to make sure that you have mapped the Starexec data directory,
+You will need to make sure that you have mapped the StarExec data directory,
 configured in starexec-config.xml, to a matching path on each compute node,
-as your compute nodes will need access to the Starexec data directory
+as your compute nodes will need access to the StarExec data directory
 that exists on the head node.
 
 The local backend is a primitive solution if you only want to run jobs on the same
-machine that Starexec is running off of. The local backend does not support multiple
+machine that StarExec is running off of. The local backend does not support multiple
 queues or nodes, and only a single job will run at a time.
 
 ## Email
 
-Starexec sends automated emails for several purposes, such as sending notifications
-when new users are registered or sending weekly status updates. To do this, Starexec
+StarExec sends automated emails for several purposes, such as sending notifications
+when new users are registered or sending weekly status updates. To do this, StarExec
 requires an email address that it can send emails from. In starexec-config.xml,
 the EMAIL_USER field should be set to the email address to send from, and EMAIL_PWD,
 EMAIL_SMTP, and EMAIL_SMTP_PORT should be set as decribed.
 
 Any email server that supports SMTP can be used, but the default settings included
 in the config file show how to use a Gmail account. The EMAIL_SMTP field is set
-correctly for Gmail, and the SMTP_PORT field is set to 587, as Starexec uses
+correctly for Gmail, and the SMTP_PORT field is set to 587, as StarExec uses
 TLS. You should be able to use any desired Gmail account by plugging in your own
-account and password. Note that Gmail may initially block the Starexec app from
+account and password. Note that Gmail may initially block the StarExec app from
 sending mail until you log onto your account and confirm the activity. Moreover,
 you may need to go into your Gmail account settings and allow access from less
-secure apps. Creating a fresh Gmail account for sole use by Starexec may be
+secure apps. Creating a fresh Gmail account for sole use by StarExec may be
 beneficial if you do not want to change your settings.
 
-Starexec has been tested using Gmail, but other email servers should also work
+StarExec has been tested using Gmail, but other email servers should also work
 provided you look up the correct SMTP server and port. Various settings may
 need to be changed in other email providers as well.
 
-Starexec is also configured to use a CONTACT_EMAIL, which is intended to
-receive emails directed at Starexec admins. This email address will appear
+StarExec is also configured to use a CONTACT_EMAIL, which is intended to
+receive emails directed at StarExec admins. This email address will appear
 on the site for users who want to send bug reports or ask questions.
 
-## Starexec Configuration
+## StarExec Configuration
 
 After all of the above dependencies have been installed, you can take the following
-steps to configure and deploy Starexec.
+steps to configure and deploy StarExec.
 
 1) Under src/org/starexec/config you will see the file starexec-config.xml. This file
-contains the bulk of Starexec configuration, including specifying Starexec data directories,
+contains the bulk of StarExec configuration, including specifying StarExec data directories,
 email settings, database connection settings, and several other items. You will need
-to go through this file and configure Starexec as you want, according to the documentation
+to go through this file and configure StarExec as you want, according to the documentation
 provided in that file.
 
 2) In the top-level file local.properties, you will need to provide several configurable values.
@@ -115,14 +115,14 @@ specified in build.xml.
 
 4) In the deployed-sql directory, which should have been created by the Ant build, you
 will need to execute the NewInstall.sql script in MySQL. This script will create the
-Starexec database and stored procedures, along with creating a few data entries that
-Starexec expects by default. For example, you can execute
+StarExec database and stored procedures, along with creating a few data entries that
+StarExec expects by default. For example, you can execute
 
 ```sh
 mysql -u"username" -p"password" < NewInstall.sql
 ```
 
-5) Certain users and groups will need to exist to give Starexec appropriate permissions.
+5) Certain users and groups will need to exist to give StarExec appropriate permissions.
 
 Ensure SANDBOX_USER_ONE and SANDBOX_USER_TWO have been created on your head node and
 all compute nodes.
@@ -135,9 +135,9 @@ to star-web. Tomcat is the user that you will need to use when starting up
 tomcat using startup.sh in the tomcat bin folder. You should also ensure
 that 'tomcat' is the owner of the entire tomcat installation directory
 
-Finally, any users that are going to be administering Starexec should
+Finally, any users that are going to be administering StarExec should
 also be added to the 'star-web' group. Being a member of star-web will
-be necessary for correctly executing the Starexec deploy scripts.
+be necessary for correctly executing the StarExec deploy scripts.
 
 Create the `sandbox` group, and add SANDBOX_USER_ONE to this group.
 Create another group `sandbox2` and add SANDBOX_USER_TWO to this group.
@@ -146,7 +146,7 @@ Add the `tomcat` user to both of these groups.
 If you are using SGE as a backend, you need to create the user `sgeadmin`
 and ensure this user does have administrator privileges in SGE.
 
-6) A sandbox directory will need to be created on the Starexec
+6) A sandbox directory will need to be created on the StarExec
 head node. This directory is used to execute user-provided scripts in a
 sandboxed environment, preventing them from affecting other parts of the
 system. You should create a directory named 'sandbox' at the location
@@ -165,7 +165,7 @@ should be the owner and star-web should be the group. Under this directory, crea
 two directories named `sandbox` and `sandbox2`. These should also use the tomcat
 user and the star-web group.
 
-8) Sudo permissions need to be configured. Starexec uses sudo in several locations
+8) Sudo permissions need to be configured. StarExec uses sudo in several locations
 to execute commands as other users, most often to execute commands using the
 SANDBOX_USER_ONE and SANDBOX_USER_TWO users. The 'tomcat' user will need all
 of the following sudo permissions.
