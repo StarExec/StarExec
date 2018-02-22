@@ -26,7 +26,7 @@ public class JobUtilTests extends TestSequence {
 	User admin = null;
 	Solver solver = null;
 	List<Integer> benchmarkIds = null;
-	
+
 	@StarexecTest
 	private void testJobXMLUpload() throws Exception {
 		int cId = solver.getConfigurations().get(0).getId();
@@ -48,24 +48,24 @@ public class JobUtilTests extends TestSequence {
 		Assert.assertEquals("test xml job", j.getName());
 		Assert.assertEquals("test job", j.getDescription());
 		Assert.assertEquals(1, j.getQueue().getId());
-		
+
 		StageAttributes attrs1 = j.getStageAttributesByStageNumber(1);
 		Assert.assertEquals(2000, attrs1.getCpuTimeout());
 		Assert.assertEquals(5, attrs1.getWallclockTimeout());
 		Assert.assertEquals(Util.gigabytesToBytes(3.0), attrs1.getMaxMemory());
-		
+
 		StageAttributes attrs2 = j.getStageAttributesByStageNumber(2);
 		Assert.assertEquals(12, attrs2.getCpuTimeout());
 		Assert.assertEquals(11, attrs2.getWallclockTimeout());
 		Assert.assertEquals(Util.gigabytesToBytes(2.0), attrs2.getMaxMemory());
-		
+
 		Assert.assertEquals(1, j.getJobPairs().size());
 		JobPair jp = j.getJobPairs().get(0);
 		Assert.assertEquals(3, jp.getStages().size());
-		
+
 		Jobs.deleteAndRemove(j.getId());
 	}
-	
+
 	@Override
 	protected String getTestName() {
 		return "JobUtilTests";
@@ -76,7 +76,7 @@ public class JobUtilTests extends TestSequence {
 		admin = loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 		solver = loader.loadSolverIntoDatabase(Communities.getTestCommunity().getId(), admin.getId());
 		benchmarkIds = loader.loadBenchmarksIntoDatabase(Communities.getTestCommunity().getId(), admin.getId());
-		
+
 	}
 
 	@Override

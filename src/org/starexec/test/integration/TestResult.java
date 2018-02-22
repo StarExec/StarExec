@@ -14,7 +14,7 @@ public class TestResult {
 	public TestResult() {
 		status.setCode(TestStatus.TestStatusCode.STATUS_NOT_RUN.getVal());
 	}
-	
+
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -29,7 +29,7 @@ public class TestResult {
 	}
 	public void addMessage(String message) {
 		this.messages.add(message);
-		
+
 	}
 	public void clearMessages() {
 		this.messages= new ArrayList<>();
@@ -40,9 +40,9 @@ public class TestResult {
 		} else {
 			return "no message";
 		}
-		
+
 	}
-	
+
 	public String getAllMessages() {
 		if (messages.isEmpty()) {
 			return "no message";
@@ -72,5 +72,5 @@ public class TestResult {
 	public double getTime() {
 		return time;
 	}
-	
+
 }

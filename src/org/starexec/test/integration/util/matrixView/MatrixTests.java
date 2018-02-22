@@ -23,7 +23,7 @@ public class MatrixTests extends TestSequence {
 
 	private Space space=null; //space to put the test job
 	private Solver solver=null; //solver to use for the job
-	private Job job=null;       
+	private Job job=null;
 	private Processor postProc=null; //post processor to use for the job
 	private List<Integer> benchmarkIds=null; // benchmarks to use for the job
 	private User user=null;                  //owner of all the test primitives
@@ -32,12 +32,12 @@ public class MatrixTests extends TestSequence {
 	private final int wallclockTimeout=100;
 	private final int cpuTimeout=100;
 	private final int gbMemory=1;
-	
+
 	private User user2=null;
 	private Job job2=null;
 
 
-	@Override 
+	@Override
 	protected String getTestName() {
 		return "MatrixTests";
 	}
@@ -49,16 +49,16 @@ public class MatrixTests extends TestSequence {
 		nonOwner=loader.loadUserIntoDatabase();
 		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 		space=loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
-		
+
 		solver=loader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
 		postProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Communities.getTestCommunity().getId());
 		benchmarkIds=loader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user.getId());
-		
+
 		List<Integer> solverIds= new ArrayList<>();
 		solverIds.add(solver.getId());
 		job=loader.loadJobIntoDatabase(space.getId(), user.getId(), -1, postProc.getId(), solverIds, benchmarkIds,
 											   cpuTimeout,wallclockTimeout,gbMemory);
-		job2=loader.loadJobIntoDatabase(space.getId(), user2.getId(), -1, postProc.getId(), solverIds, 
+		job2=loader.loadJobIntoDatabase(space.getId(), user2.getId(), -1, postProc.getId(), solverIds,
 												benchmarkIds, cpuTimeout, wallclockTimeout, gbMemory);
 		Spaces.addJobSpace(space.getName(), job.getId());
 		Assert.assertNotNull(Jobs.get(job.getId()));
@@ -75,8 +75,8 @@ public class MatrixTests extends TestSequence {
 		Matrix matrix;
 		String jobSpaceName = space.getName();
 		int jobSpaceId = space.getId();
-		
-		List<Benchmark> benchmarks = Benchmarks.get(benchmarkIds);	
+
+		List<Benchmark> benchmarks = Benchmarks.get(benchmarkIds);
 		// sort alphabetically case insensitive
 		benchmarks.sort(Comparator.comparing(b -> b.getName().toLowerCase()));
 

@@ -20,7 +20,7 @@ import java.util.List;
  */
 public class CommunitiesTests extends TestSequence {
 	User admin = null;
-	
+
 	User testUser = null;
 	User user1 = null;
 	User user2 = null;
@@ -45,14 +45,14 @@ public class CommunitiesTests extends TestSequence {
 		Communities.updateCommunityMap();
 		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("solvers"), new Long(3));
 	}
-	
+
 	@StarexecTest
 	private void communityMapBenchmarksTest() {
 		Communities.updateCommunityMap();
-		
+
 		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("benchmarks"), new Long(benchmarkIds.size()));
 	}
-	
+
 	@StarexecTest
 	private void communityMapDiskUsageTest() {
 		Communities.updateCommunityMap();
@@ -67,14 +67,14 @@ public class CommunitiesTests extends TestSequence {
 		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("disk_usage"), disk);
 
 	}
-	
+
 	@StarexecTest
 	private void communityMapJobsTest() {
 		Communities.updateCommunityMap();
 		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("jobs"), new Long(2));
 		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("job_pairs"), new Long(job1.getJobPairs().size() + job2.getJobPairs().size()));
 	}
-	
+
 	@StarexecTest
 	private void getDetailsTest() {
 		Space s = Communities.getDetails(community.getId());
@@ -83,19 +83,19 @@ public class CommunitiesTests extends TestSequence {
 		Assert.assertEquals(s.getDescription(), community.getDescription());
 		Assert.assertEquals(s.isLocked(), community.isLocked());
 	}
-	
+
 	@StarexecTest
 	private void isCommunityTest() {
 		Assert.assertTrue(Communities.isCommunity(community.getId()));
 		Assert.assertFalse(Communities.isCommunity(subspace1.getId()));
 		Assert.assertFalse(Communities.isCommunity(-1));
 	}
-	
+
 	@StarexecTest
 	private void getDetailsNonCommunityTest() {
 		Assert.assertNull(Communities.getDetails(subspace1.getId()));
 	}
-	
+
 	@StarexecTest
 	private void inListOfCommunities() {
 		List<Space> comms=Communities.getAll();
@@ -104,10 +104,10 @@ public class CommunitiesTests extends TestSequence {
 				return;
 			}
 		}
-		
+
 		Assert.fail("community was not found in the list of communities");
 	}
-	
+
 	@StarexecTest
 	private void getAllCommunitiesUserIsInTest() {
 		List<Space> comms=Communities.getAllCommunitiesUserIsIn(user2.getId());
@@ -116,10 +116,10 @@ public class CommunitiesTests extends TestSequence {
 				return;
 			}
 		}
-		
+
 		Assert.fail("community was not found in the list of communities");
 	}
-	
+
 	@StarexecTest
 	private void commAssocExpiredNullTest() {
 		Long temp = R.COMM_ASSOC_LAST_UPDATE;
@@ -134,7 +134,7 @@ public class CommunitiesTests extends TestSequence {
 		Assert.assertTrue(Communities.commAssocExpired());
 		R.COMM_ASSOC_LAST_UPDATE=temp;
 	}
-	
+
 	@StarexecTest
 	private void commAssocNotExpiredTest() {
 		Long temp = R.COMM_ASSOC_LAST_UPDATE;
@@ -142,7 +142,7 @@ public class CommunitiesTests extends TestSequence {
 		Assert.assertFalse(Communities.commAssocExpired());
 		R.COMM_ASSOC_LAST_UPDATE=temp;
 	}
-	
+
 	@Override
 	protected String getTestName() {
 		return "CommunitiesTests";

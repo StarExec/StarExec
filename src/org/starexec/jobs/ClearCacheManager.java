@@ -18,17 +18,17 @@ public class ClearCacheManager {
 			File f = new File(R.CONFIG_PATH, "sge/clearCacheScript");
 			try {
 				scriptTemplate = FileUtils.readFileToString(f);
-			} 
+			}
 			catch (IOException e) {
 				log.error("Error reading the jobscript at "+f,e);
 			}
 			scriptTemplate = scriptTemplate.replace("$$SANDBOX_USER_ONE$$", R.SANDBOX_USER_ONE);
 			scriptTemplate = scriptTemplate.replace("$$WORKING_DIR_BASE$$", R.BACKEND_WORKING_DIR);
-			scriptTemplate = scriptTemplate.replace("$$MAX_WRITE$$", String.valueOf(R.MAX_PAIR_FILE_WRITE));	
+			scriptTemplate = scriptTemplate.replace("$$MAX_WRITE$$", String.valueOf(R.MAX_PAIR_FILE_WRITE));
 
 		}
 	}
-	
+
 	/**
 	 * Submits one job per node to clear the solver cache in every node.
 	 * @throws IOException
@@ -37,7 +37,7 @@ public class ClearCacheManager {
 		log.info("calling clearSolverCacheOnAllNodes");
 		initScriptTemplateIf();
 		File logBase = new File(R.getSolverCacheClearLogDir());
-	
+
 		for (String node : R.BACKEND.getWorkerNodes()) {
 			String currentScript = scriptTemplate;
 			File logPath = new File(logBase,node);
@@ -49,7 +49,7 @@ public class ClearCacheManager {
 			String scriptPath = String.format("%s/%s", R.getJobInboxDir(), "cacheclear"+node+".bash");
 			File f = new File(scriptPath);
 
-			f.delete();		
+			f.delete();
 			f.getParentFile().mkdirs();
 			f.createNewFile();
 

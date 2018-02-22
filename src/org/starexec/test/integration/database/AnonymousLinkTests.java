@@ -19,11 +19,11 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class AnonymousLinkTests extends TestSequence {
-	private static final StarLogger log = StarLogger.getLogger(AnonymousLinkTests.class);	
+	private static final StarLogger log = StarLogger.getLogger(AnonymousLinkTests.class);
 	private User admin;
 	private User user;
 	private Space space;
-	private Job job=null;       
+	private Job job=null;
 	private List<Benchmark> benchmarks = null;
 	private Solver solver = null;
 	// Create a list of all PrimitivesToAnonymize enums. (Need a list rather than a set to guarantee iteration order )
@@ -78,7 +78,7 @@ public class AnonymousLinkTests extends TestSequence {
 
 					Assert.assertTrue( getUuid.isPresent() );
 
-					Assert.assertEquals( 
+					Assert.assertEquals(
 							getAnonymousLinkCodeTestMessage(uuid, getUuid.get(), primitivesToAnonymize ),
 							uuid,
 							getUuid.get());
@@ -93,7 +93,7 @@ public class AnonymousLinkTests extends TestSequence {
 
 				Assert.assertTrue( getUuid.isPresent() );
 
-				Assert.assertEquals( 
+				Assert.assertEquals(
 						getAnonymousLinkCodeTestMessage(uuid, getUuid.get(), primitivesToAnonymize ),
 						uuid,
 						getUuid.get());
@@ -107,7 +107,7 @@ public class AnonymousLinkTests extends TestSequence {
 				Optional<String> getUuid = AnonymousLinks.getAnonymousLinkCode( R.JOB, job.getId(), primitivesToAnonymize );
 				Assert.assertTrue( getUuid.isPresent() );
 
-				Assert.assertEquals( 
+				Assert.assertEquals(
 						getAnonymousLinkCodeTestMessage(uuid, getUuid.get(), primitivesToAnonymize ),
 						uuid,
 						getUuid.get());
@@ -123,8 +123,8 @@ public class AnonymousLinkTests extends TestSequence {
 		}
 	}
 
-	private String getAnonymousLinkCodeTestMessage( 
-			String uuid, 
+	private String getAnonymousLinkCodeTestMessage(
+			String uuid,
 			String getUuid,
 			PrimitivesToAnonymize primitivesToAnonymize) {
 			return uuid + " != " + getUuid + " for primType=" + R.JOB +",  primId="+job.getId()+", primitivesToAnonymize=" +
@@ -134,26 +134,26 @@ public class AnonymousLinkTests extends TestSequence {
 	@StarexecTest
 	private void getIdOfJobAssociatedWithLinkTest() {
 		final String methodName = "GetIdOfJobAssociatedWithLinkTest";
-		getIdOfPrimitiveAssociatedWithLinkHelper( R.JOB, job.getId(), methodName ); 
+		getIdOfPrimitiveAssociatedWithLinkHelper( R.JOB, job.getId(), methodName );
 	}
 
 	@StarexecTest
 	private void getIdOfBenchmarkAssociatedWithLinkTest() {
 		final String methodName = "GetIdOfBenchmarkAssociatedWithLinkTest";
 		for ( Benchmark bench : benchmarks ) {
-			getIdOfPrimitiveAssociatedWithLinkHelper( R.BENCHMARK, bench.getId(), methodName ); 
+			getIdOfPrimitiveAssociatedWithLinkHelper( R.BENCHMARK, bench.getId(), methodName );
 		}
 	}
 
 	@StarexecTest
 	private void getIdOfSolverAssociatedWithLinkTest() {
 		final String methodName = "GetIdOfSolverAssociatedWithLinkTest";
-		getIdOfPrimitiveAssociatedWithLinkHelper( R.SOLVER, solver.getId(), methodName ); 
+		getIdOfPrimitiveAssociatedWithLinkHelper( R.SOLVER, solver.getId(), methodName );
 	}
 
 	private void getIdOfPrimitiveAssociatedWithLinkHelper(
-			final String primitiveName, 
-			final int primitiveId, 
+			final String primitiveName,
+			final int primitiveId,
 			final String methodName) {
 		List<String> newUuids = new ArrayList<>();
 		try {
@@ -178,7 +178,7 @@ public class AnonymousLinkTests extends TestSequence {
 				}
 
 				Assert.assertTrue( primitiveIdFromDb.isPresent() );
-				Assert.assertEquals( 
+				Assert.assertEquals(
 					"The id retrieved from the database was not the same as the one given to the database for "
 							+ AnonymousLinks.getPrimitivesToAnonymizeName( primitivesToAnonymize),
 					(int)primitiveIdFromDb.get(), primitiveId
@@ -215,7 +215,7 @@ public class AnonymousLinkTests extends TestSequence {
 	}
 
 	private void getPrimitivesToAnonymizeHelper(
-			final String primitiveName, 
+			final String primitiveName,
 			final int primitiveId,
 			final String methodName) {
 		List<String> newUuids = new ArrayList<>();
@@ -241,8 +241,8 @@ public class AnonymousLinkTests extends TestSequence {
 				}
 
 				Assert.assertTrue( primitivesToAnonymizeFromDb.isPresent() );
-				Assert.assertEquals( 
-						"The PrimitivesToAnonymize retrieved from the database was not the same as the one given to the database.", 
+				Assert.assertEquals(
+						"The PrimitivesToAnonymize retrieved from the database was not the same as the one given to the database.",
 						primitivesToAnonymize,
 						primitivesToAnonymizeFromDb.get());
 
@@ -316,7 +316,7 @@ public class AnonymousLinkTests extends TestSequence {
 			}
 
 
-			// Reset the uuid list. 
+			// Reset the uuid list.
 			newUuids = new ArrayList<>();
 
 			for ( PrimitivesToAnonymize primitivesToAnonymize : primitivesToAnonymizeList ) {
@@ -356,8 +356,8 @@ public class AnonymousLinkTests extends TestSequence {
 			log.error( methodName, "An SQLException was thrown during the test", e);
 			Assert.fail( "An SQLException was thrown during the test: " + Util.getStackTrace(e) );
 		}
-		
-	}	
+
+	}
 
 
 	@Override
@@ -383,7 +383,7 @@ public class AnonymousLinkTests extends TestSequence {
 		benchmarks = new ArrayList<>();
 		for ( Integer id : benchmarkIds ) {
 			benchmarks.add( Benchmarks.get( id ) );
-		}		
+		}
 
 		// Setup test solver.
 		solver = loader.loadSolverIntoDatabase( "CVC4.zip", space.getId(), user.getId() );

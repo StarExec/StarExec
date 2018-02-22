@@ -24,9 +24,9 @@ public class PermissionsTests extends TestSequence {
 	User noPerms=null; 		// user does not share any space with prims
 	User admin=null;
 	User developer = null;
-	
+
 	Space space=null;
-	
+
 	Solver solver=null;
 	Solver solver2=null;
 	List<Integer> benchmarks=null;
@@ -43,7 +43,7 @@ public class PermissionsTests extends TestSequence {
 
 		Assert.assertFalse(Permissions.canUserSeeBench(benchId, noPerms.getId()));
 	}
-	
+
 	@StarexecTest
 	private void CanSeeBenchmarksTest() {
 		Assert.assertTrue(Permissions.canUserSeeBenchs(benchmarks, owner.getId()));
@@ -53,7 +53,7 @@ public class PermissionsTests extends TestSequence {
 
 		Assert.assertFalse(Permissions.canUserSeeBenchs(benchmarks, noPerms.getId()));
 	}
-	
+
 	@StarexecTest
 	private void CanSeeSolverTest() {
 		int solverId=solver.getId();
@@ -64,8 +64,8 @@ public class PermissionsTests extends TestSequence {
 
 		Assert.assertFalse(Permissions.canUserSeeSolver(solverId, noPerms.getId()));
 	}
-	
-	@StarexecTest 
+
+	@StarexecTest
 	private void CanSeeSolversTest() {
 		List<Integer> solvers= new ArrayList<>();
 		solvers.add(solver.getId());
@@ -77,7 +77,7 @@ public class PermissionsTests extends TestSequence {
 
 		Assert.assertFalse(Permissions.canUserSeeSolvers(solvers, noPerms.getId()));
 	}
-	
+
 	@StarexecTest
 	private void canSeeJobTest() {
 		Assert.assertTrue(Permissions.canUserSeeJob(job.getId(), owner.getId()).isSuccess());
@@ -87,30 +87,30 @@ public class PermissionsTests extends TestSequence {
 
 		Assert.assertFalse(Permissions.canUserSeeJob(job.getId(), noPerms.getId()).isSuccess());
 	}
-	
+
 	@StarexecTest
 	private void canSeeSpaceTest() {
 		Assert.assertTrue(Permissions.canUserSeeSpace(space.getId(), owner.getId()));
 		Assert.assertTrue(Permissions.canUserSeeSpace(space.getId(), spaceMember.getId()));
 		Assert.assertTrue(Permissions.canUserSeeSpace(space.getId(), admin.getId()));
 		Assert.assertTrue(Permissions.canUserSeeSpace(space.getId(), developer.getId()));
-		
+
 		Assert.assertFalse(Permissions.canUserSeeSpace(space.getId(), noPerms.getId()));
 	}
-	
+
 	@StarexecTest
 	private void canSeeRootTest() {
 		Assert.assertTrue(Permissions.canUserSeeSpace(1, noPerms.getId()));
 	}
-	
+
 	@StarexecTest
 	private void canSeePublicSpaceTest() {
 		Spaces.setPublicSpace(space.getId(), owner.getId(), true, false);
 		Assert.assertTrue(Permissions.canUserSeeSpace(space.getId(), noPerms.getId()));
 		Spaces.setPublicSpace(space.getId(), owner.getId(), false, false);
 	}
-	
-	
+
+
 	@StarexecTest
 	private void GetSpaceDefaultTest() {
 		space.getPermission().setAddSolver(true);
@@ -122,8 +122,8 @@ public class PermissionsTests extends TestSequence {
 		Assert.assertTrue(p.canAddSolver());
 		Assert.assertFalse(p.canAddSpace());
 	}
-	
-	
+
+
 	@StarexecTest
 	private void FullPermissionsTest() {
 		Permission p=Permissions.getFullPermission();
@@ -139,7 +139,7 @@ public class PermissionsTests extends TestSequence {
 		Assert.assertTrue(p.canRemoveUser());
 		Assert.assertTrue(p.isLeader());
 	}
-	
+
 	@StarexecTest
 	private void EmptyPermissionsTest() {
 		Permission p=Permissions.getEmptyPermission();
@@ -155,7 +155,7 @@ public class PermissionsTests extends TestSequence {
 		Assert.assertFalse(p.canRemoveUser());
 		Assert.assertFalse(p.isLeader());
 	}
-	
+
 	@StarexecTest
 	private void setPermissionsTest() {
 		Permission oldPerms = Permissions.get(spaceMember.getId(), space.getId());
@@ -185,7 +185,7 @@ public class PermissionsTests extends TestSequence {
 			assertTrue("User could not see public job.", Permissions.canUserSeeJob(tempJob.getId(), tempUser.getId()).isSuccess());
 		}
 	}
-	
+
 	@Override
 	protected String getTestName() {
 		return "PermissionsTests";
@@ -196,22 +196,22 @@ public class PermissionsTests extends TestSequence {
 		owner=loader.loadUserIntoDatabase();
 		spaceMember=loader.loadUserIntoDatabase();
 		noPerms=loader.loadUserIntoDatabase();
-		
+
 		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
-		
+
 		space=loader.loadSpaceIntoDatabase(owner.getId(), Communities.getTestCommunity().getId());
-		
+
 		Users.associate(spaceMember.getId(), space.getId());
-		
+
 		solver=loader.loadSolverIntoDatabase("CVC4.zip", space.getId(), owner.getId());
 		solver2=loader.loadSolverIntoDatabase("CVC4.zip", space.getId(), owner.getId());
 		benchmarks=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), owner.getId());
 		benchmarkDownloadable=Benchmarks.get(benchmarks.get(0));
-		Benchmarks.updateDetails(benchmarkDownloadable.getId(), benchmarkDownloadable.getName(), 
+		Benchmarks.updateDetails(benchmarkDownloadable.getId(), benchmarkDownloadable.getName(),
 				benchmarkDownloadable.getDescription(), true, benchmarkDownloadable.getType().getId());
-		
+
 		benchmarkNoDownload=Benchmarks.get(benchmarks.get(1));
-		Benchmarks.updateDetails(benchmarkNoDownload.getId(), benchmarkNoDownload.getName(), 
+		Benchmarks.updateDetails(benchmarkNoDownload.getId(), benchmarkNoDownload.getName(),
 				benchmarkNoDownload.getDescription(), false, benchmarkNoDownload.getType().getId());
 		job = loader.loadJobIntoDatabase(space.getId(), owner.getId(), solver.getId(), benchmarks);
 		developer = loader.loadUserIntoDatabase("test", "test-dev", "test-dev@uiowa.edu", "pass", "Iowa", R.DEVELOPER_ROLE_NAME);

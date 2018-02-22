@@ -20,16 +20,16 @@ import java.util.List;
  *
  */
 public class StatisticsTests extends TestSequence {
-	
+
 	List<JobPair> spaceOverviewPairs = null;
-	
+
 	User owner = null;
 	User admin = null;
 	Space space = null;
 	Solver solver = null;
 	List<Integer> benchmarkIds = null;
 	Job job = null;
-	
+
 	@StarexecTest
 	private void makeSpaceOverviewTest() {
 		String filepath = Statistics.makeSpaceOverviewChart(spaceOverviewPairs, false, false, 1, PrimitivesToAnonymize.NONE);
@@ -38,12 +38,12 @@ public class StatisticsTests extends TestSequence {
 	}
 	@StarexecTest
 	private void makeSolverComparisonTest() {
-		String filepath = Statistics.makeSolverComparisonChart(spaceOverviewPairs, spaceOverviewPairs, job.getPrimarySpace(), 
+		String filepath = Statistics.makeSolverComparisonChart(spaceOverviewPairs, spaceOverviewPairs, job.getPrimarySpace(),
 				100, Color.BLACK, 1, PrimitivesToAnonymize.NONE).get(0);
 		File f = new File(new File(R.STAREXEC_ROOT).getParent(), filepath);
 		Assert.assertTrue(f.exists());
 	}
-	
+
 	@StarexecTest
 	private void getJobPairOverviewTest() {
 		HashMap<String, String> stats = Statistics.getJobPairOverview(job.getId());
@@ -53,7 +53,7 @@ public class StatisticsTests extends TestSequence {
 		Assert.assertEquals("0", stats.get("errorPairs"));
 
 	}
-	
+
 	@Override
 	protected String getTestName() {
 		return "StatisticsTests";

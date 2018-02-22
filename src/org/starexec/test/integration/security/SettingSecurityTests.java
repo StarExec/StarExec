@@ -21,7 +21,7 @@ public class SettingSecurityTests extends TestSequence {
 	protected String getTestName() {
 		return "SettingSecurityTests";
 	}
-	
+
 	@StarexecTest
 	private void canModifySettingsTest() {
 		try {
@@ -33,7 +33,7 @@ public class SettingSecurityTests extends TestSequence {
 			Assert.fail("Caught SQLException: " + Util.getStackTrace(e));
 		}
 	}
-	
+
 	@StarexecTest
 	private void canUpdateSettingsTest() {
 		//SettingSecurity.canUpdateSettings(id, attribute, newValue, userId)

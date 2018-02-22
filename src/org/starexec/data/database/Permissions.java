@@ -418,7 +418,7 @@ public class Permissions {
 				Permission p = resultsToPermissionWithId(userId, results);
 				if (results.wasNull()) {
 					/* If the permission doesn't exist we always get a result
-					but all of it's values are null, so here we check for a 
+					but all of it's values are null, so here we check for a
 					null result and return null */
 
 					if (GeneralSecurity.hasAdminReadPrivileges(userId)) {

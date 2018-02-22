@@ -23,7 +23,7 @@ public class GridEngineBackendTests {
 "    998 0.55500 job_768.ba tomcat       qw    12/03/2015 13:18:55                                    1        \n" +
 "    999 0.55500 job_769.ba tomcat       qw    12/03/2015 13:18:55                                    1        \n" +
 "   1000 0.55500 job_770.ba tomcat       qw    12/03/2015 13:18:55                                    1        ";
- 
+
 	@Test
 	public void getActiveExecutionIdsTest() throws IOException {
 		PowerMockito.mockStatic(Util.class);

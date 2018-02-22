@@ -33,14 +33,14 @@ public class UserTests extends TestSequence {
 	private final int cpuTimeout=100;
 	private final int gbMemory=1;
 	private final String BENCH_ARCHIVE = "benchmarks.zip";
-	
+
 	private boolean removeUserFromSpace(User user, Space space) {
 		List<Integer> userId= new ArrayList<>();
 		userId.add(user.getId());
-		
+
 		return Spaces.removeUsers(userId, space.getId());
 	}
-	
+
 	@StarexecTest
 	private void getUserByEmailTest() {
 		Assert.assertFalse(Users.getUserByEmail(TestUtil.getRandomEmail()));
@@ -48,7 +48,7 @@ public class UserTests extends TestSequence {
 		Assert.assertTrue(Users.getUserByEmail(admin.getEmail()));
 
 	}
-	
+
 	@StarexecTest
 	private void setPasswordTest() {
 		String randomPass=TestUtil.getRandomPassword();
@@ -56,7 +56,7 @@ public class UserTests extends TestSequence {
 		Assert.assertEquals(Hash.hashPassword(randomPass), Users.getPassword(user1.getId()));
 		user1.setPassword(randomPass);
 	}
-	
+
 	@StarexecTest
 	private void getCommunitiesTest() {
 		List<Integer> commIds=Users.getCommunities(user1.getId());
@@ -107,7 +107,7 @@ public class UserTests extends TestSequence {
 			Assert.fail("Caught an SQLException: " + Util.getStackTrace(e));
 		}
 	}
-	
+
 	@StarexecTest
 	private void registerUserTest() {
 		User u=new User();
@@ -123,27 +123,27 @@ public class UserTests extends TestSequence {
 		Assert.assertTrue(Requests.declineCommunityRequest(u.getId(), comm.getId()));
 		Assert.assertNull(Users.get(u.getId()));
 	}
-	
+
 	@StarexecTest
 	private void AssociateOneUserOneSpace() {
 		Assert.assertFalse(Users.isMemberOfSpace(user1.getId(), space.getId()));
 		Assert.assertFalse(Users.isMemberOfSpace(user2.getId(), space.getId()));
 		Assert.assertFalse(Users.isMemberOfSpace(user3.getId(), space.getId()));
-		
+
 		Assert.assertTrue(Users.associate(user1.getId(), space.getId()));
-		
+
 		Assert.assertTrue(Users.isMemberOfSpace(user1.getId(), space.getId()));
 		Assert.assertFalse(Users.isMemberOfSpace(user2.getId(), space.getId()));
 		Assert.assertFalse(Users.isMemberOfSpace(user3.getId(), space.getId()));
 		Assert.assertTrue(removeUserFromSpace(user1,space));
 	}
-	
+
 	@StarexecTest
 	private void AssociateManyUsersOneSpace() {
 		Assert.assertFalse(Users.isMemberOfSpace(user1.getId(), space.getId()));
 		Assert.assertFalse(Users.isMemberOfSpace(user2.getId(), space.getId()));
 		Assert.assertFalse(Users.isMemberOfSpace(user3.getId(), space.getId()));
-		
+
 		List<Integer> ids= new ArrayList<>();
 		ids.add(user1.getId());
 		ids.add(user2.getId());
@@ -157,7 +157,7 @@ public class UserTests extends TestSequence {
 		Assert.assertTrue(removeUserFromSpace(user2,space));
 		Assert.assertTrue(removeUserFromSpace(user3,space));
 	}
-	
+
 	@StarexecTest
 	private void AssociateManyUsersSpaceHierarchy() {
 		Assert.assertFalse(Users.isMemberOfSpace(user1.getId(), space.getId()));
@@ -179,8 +179,8 @@ public class UserTests extends TestSequence {
 		Assert.assertTrue(removeUserFromSpace(user2,space));
 		Assert.assertTrue(removeUserFromSpace(user2,subspace));
 	}
-	
-	@StarexecTest 
+
+	@StarexecTest
 	private void AssociateManyUsersManySpaces() {
 		Assert.assertFalse(Users.isMemberOfSpace(user1.getId(), space.getId()));
 		Assert.assertFalse(Users.isMemberOfSpace(user1.getId(), subspace.getId()));
@@ -191,10 +191,10 @@ public class UserTests extends TestSequence {
 		List<Integer> spaceIds= new ArrayList<>();
 		ids.add(user1.getId());
 		ids.add(user2.getId());
-		
+
 		spaceIds.add(space.getId());
 		spaceIds.add(subspace.getId());
-		
+
 		Assert.assertTrue(Users.associate(ids, spaceIds));
 		Assert.assertTrue(Users.isMemberOfSpace(user1.getId(), space.getId()));
 		Assert.assertTrue(Users.isMemberOfSpace(user1.getId(), subspace.getId()));
@@ -205,16 +205,16 @@ public class UserTests extends TestSequence {
 		Assert.assertTrue(removeUserFromSpace(user1,subspace));
 		Assert.assertTrue(removeUserFromSpace(user2,space));
 		Assert.assertTrue(removeUserFromSpace(user2,subspace));
-		
+
 	}
-	
+
 	@StarexecTest
 	private void DeleteUserTest() {
 		User temp=loader.loadUserIntoDatabase();
 		Assert.assertNotNull(Users.get(temp.getId()));
-		
+
 		Assert.assertTrue(Users.deleteUser(temp.getId()));
-		
+
 		Assert.assertNull(Users.get(temp.getId()));
 	}
 
@@ -225,10 +225,10 @@ public class UserTests extends TestSequence {
 	@StarexecTest
 	private void DeleteUserDeletesUsersSolversTest() {
 		User tempUser = loader.loadUserIntoDatabase();
-		Solver tempSolver = loader.loadSolverIntoDatabase(space.getId(), tempUser.getId()); 
+		Solver tempSolver = loader.loadSolverIntoDatabase(space.getId(), tempUser.getId());
 
 		Users.deleteUser(tempUser.getId());
-		
+
 
 		Assert.assertNull(Solvers.get(tempSolver.getId()));
 	}
@@ -245,7 +245,7 @@ public class UserTests extends TestSequence {
 		Assert.assertTrue(tempUsersSolverDirectory.exists());
 
 		Users.deleteUser(tempUser.getId());
-		
+
 
 		Assert.assertFalse(tempUsersSolverDirectory.exists());
 	}
@@ -257,10 +257,10 @@ public class UserTests extends TestSequence {
 	@StarexecTest
 	private void DeleteUserDeletesUsersBenchmarkTest() {
 		User tempUser = loader.loadUserIntoDatabase();
-		List<Integer> tempBenchmarkIds = loader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
+		List<Integer> tempBenchmarkIds = loader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId());
 
 		Users.deleteUser(tempUser.getId());
-		
+
 
 		for (Integer benchmarkId : tempBenchmarkIds) {
 			Assert.assertNotNull(benchmarkId);
@@ -275,7 +275,7 @@ public class UserTests extends TestSequence {
 	@StarexecTest
 	private void DeleteUserDeletesUsersBenchmarkDirectoryTest() {
 		User tempUser = loader.loadUserIntoDatabase();
-		loader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
+		loader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId());
 		File tempUsersBenchmarkDirectory = new File(R.getBenchmarkPath()+"/"+tempUser.getId());
 		Assert.assertTrue(tempUsersBenchmarkDirectory.exists());
 
@@ -291,13 +291,13 @@ public class UserTests extends TestSequence {
 	@StarexecTest
 	private void DeleteUserDeletesUsersJobsTest() {
 		User tempUser = loader.loadUserIntoDatabase();
-		Solver tempSolver = loader.loadSolverIntoDatabase(space.getId(), tempUser.getId()); 
+		Solver tempSolver = loader.loadSolverIntoDatabase(space.getId(), tempUser.getId());
 		List<Integer> tempSolverIds = Collections.singletonList(tempSolver.getId());
-		List<Integer> tempBenchmarkIds = loader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
+		List<Integer> tempBenchmarkIds = loader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId());
 
 		Job tempJob = loader.loadJobIntoDatabase(
 				space.getId(), tempUser.getId(), -1, postProc.getId(), tempSolverIds, tempBenchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
-		Assert.assertNotNull(tempJob);	
+		Assert.assertNotNull(tempJob);
 
 		Users.deleteUser(tempUser.getId());
 
@@ -312,13 +312,13 @@ public class UserTests extends TestSequence {
 	@StarexecTest
 	private void DeleteUserDeletesJobPairsTest() {
 		User tempUser = loader.loadUserIntoDatabase();
-		Solver tempSolver = loader.loadSolverIntoDatabase(space.getId(), tempUser.getId()); 
+		Solver tempSolver = loader.loadSolverIntoDatabase(space.getId(), tempUser.getId());
 		List<Integer> tempSolverIds = Collections.singletonList(tempSolver.getId());
-		List<Integer> tempBenchmarkIds = loader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
+		List<Integer> tempBenchmarkIds = loader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId());
 
 		Job tempJob = loader.loadJobIntoDatabase(
 				space.getId(), tempUser.getId(), -1, postProc.getId(), tempSolverIds, tempBenchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
-		Assert.assertNotNull(tempJob);	
+		Assert.assertNotNull(tempJob);
 
 		Assert.assertNotNull(tempJob.getJobPairs());
 		Assert.assertTrue(!tempJob.getJobPairs().isEmpty());
@@ -337,13 +337,13 @@ public class UserTests extends TestSequence {
 	@StarexecTest
 	private void DeleteUserDeletesJobDirectoriesTest() {
 		User tempUser = loader.loadUserIntoDatabase();
-		Solver tempSolver = loader.loadSolverIntoDatabase(space.getId(), tempUser.getId()); 
+		Solver tempSolver = loader.loadSolverIntoDatabase(space.getId(), tempUser.getId());
 		List<Integer> tempSolverIds = Collections.singletonList(tempSolver.getId());
-		List<Integer> tempBenchmarkIds = loader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId()); 
+		List<Integer> tempBenchmarkIds = loader.loadBenchmarksIntoDatabase(BENCH_ARCHIVE, space.getId(), tempUser.getId());
 
 		Job tempJob = loader.loadJobIntoDatabase(
 				space.getId(), tempUser.getId(), -1, postProc.getId(), tempSolverIds, tempBenchmarkIds,cpuTimeout,wallclockTimeout,gbMemory);
-		Assert.assertNotNull(tempJob);	
+		Assert.assertNotNull(tempJob);
 
 		File jobDirectory = new File( Jobs.getDirectory( tempJob.getId() ) );
 
@@ -351,20 +351,20 @@ public class UserTests extends TestSequence {
 
 
 		Users.deleteUser(tempUser.getId());
-		
+
 		Assert.assertFalse("Job directory still exists.", jobDirectory.exists());
 
 	}
-	
+
 	@StarexecTest
 	private void GetUserTest() {
 		User temp=Users.get(user1.getId());
-		
+
 		Assert.assertNotNull(temp);
-		
+
 		Assert.assertEquals(user1.getId(),temp.getId());
 		Assert.assertEquals(user1.getFirstName(),temp.getFirstName());
-		
+
 		// should get null for a non-user
 		Assert.assertNull(Users.get(-1));
 	}
@@ -372,17 +372,17 @@ public class UserTests extends TestSequence {
 	@StarexecTest
 	private void GetUserByEmailTest() {
 		User temp=Users.get(user1.getEmail());
-		
+
 		Assert.assertNotNull(temp);
-		
+
 		Assert.assertEquals(user1.getId(),temp.getId());
 		Assert.assertEquals(user1.getFirstName(),temp.getFirstName());
-		
+
 		// should get null for a non-user
 		Assert.assertNull(Users.get(-1));
-		
+
 	}
-	
+
 	@StarexecTest
 	private void GetAdminsTest() {
 		List<User> admins=Users.getAdmins();
@@ -392,37 +392,37 @@ public class UserTests extends TestSequence {
 			Assert.assertFalse(Users.isNormalUser(u.getId()));
 		}
 	}
-	
+
 	@StarexecTest
 	private void GetCountTest() {
 		int count=Users.getCount();
 		Assert.assertNotEquals(0,count);
 		User temp=loader.loadUserIntoDatabase();
-		
+
 		//this might fail if another user is added to the system at exactly this time,
 		//but that would be atypical, and failure is not highly costly
 		Assert.assertEquals(count+1,Users.getCount());
 		Assert.assertTrue(Users.deleteUser(temp.getId()));
 
 	}
-	
-	
+
+
 	@StarexecTest
 	private void GetCountInSpaceTest() {
 		int count=Spaces.getUsers(space.getId()).size();
 		Assert.assertEquals(count, Users.getCountInSpace(space.getId()));
 	}
-	
+
 	@StarexecTest
 	private void GetCountInSpaceQueryTest() {
 		Assert.assertEquals(1, Users.getCountInSpace(space.getId(), testUser.getFirstName()));
 	}
-	
+
 	@StarexecTest
 	private void GetDiskUsageTest() {
 		Assert.assertEquals(0,Users.getDiskUsage(user1.getId()));
 		Solver solver=loader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user1.getId());
-		
+
 		long size=Solvers.get(solver.getId()).getDiskSize();
 		List<Integer> benchmarkIds=loader.loadBenchmarksIntoDatabase("benchmarks.zip",space.getId(),user1.getId());
 		for (Integer i : benchmarkIds) {
@@ -434,27 +434,27 @@ public class UserTests extends TestSequence {
 			Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(i));
 		}
 	}
-	
+
 	@StarexecTest
 	private void SetDiskQuotaTest() {
 		long quota=Users.get(user1.getId()).getDiskQuota();
 		Assert.assertTrue(Users.setDiskQuota(user1.getId(), quota+1));
 		Assert.assertEquals(quota+1,Users.get(user1.getId()).getDiskQuota());
-		
+
 	}
-	
+
 	@StarexecTest
 	private void SetAndGetDefaultPageSize() {
 		int pageSize=Users.getDefaultPageSize(user1.getId());
 		Assert.assertTrue(Users.setDefaultPageSize(user1.getId(), pageSize+1));
 		Assert.assertEquals(pageSize+1,Users.getDefaultPageSize(user1.getId()));
 	}
-	
+
 	@StarexecTest
 	private void GetPasswordTest() {
 		Assert.assertNotNull(Users.getPassword(user1.getId()));
 		Assert.assertEquals(Hash.hashPassword(user1.getPassword()), Users.getPassword(user1.getId()));
-		
+
 	}
 
 	@StarexecTest
@@ -468,7 +468,7 @@ public class UserTests extends TestSequence {
 			Assert.assertTrue(Users.isAdmin(i));
 		}
 	}
-	
+
 	@StarexecTest
 	private void updateFirstNameTest() {
 		String originalName=user1.getFirstName();
@@ -478,7 +478,7 @@ public class UserTests extends TestSequence {
 		Assert.assertEquals(newName, Users.get(user1.getId()).getFirstName());
 		user1.setFirstName(newName);
 	}
-	
+
 	@StarexecTest
 	private void updateLastNameTest() {
 		String originalName=user1.getLastName();
@@ -488,7 +488,7 @@ public class UserTests extends TestSequence {
 		Assert.assertEquals(newName, Users.get(user1.getId()).getLastName());
 		user1.setLastName(newName);
 	}
-	
+
 	@StarexecTest
 	private void updateInstitutionTest() {
 		String originalInst=user1.getInstitution();
@@ -505,9 +505,9 @@ public class UserTests extends TestSequence {
 		Assert.assertTrue(Users.suspend(user1.getId()));
 		Assert.assertTrue(Users.isSuspended(user1.getId()));
 		Assert.assertTrue(Users.reinstate(user1.getId()));
-		Assert.assertFalse(Users.isSuspended(user1.getId()));		
+		Assert.assertFalse(Users.isSuspended(user1.getId()));
 	}
-	
+
 	@StarexecTest
 	private void createNewDefaultSettingsTest() {
 		DefaultSettings d = new DefaultSettings();
@@ -520,7 +520,7 @@ public class UserTests extends TestSequence {
 			Assert.fail("Caught SQLException: " + Util.getStackTrace(e));
 		}
 	}
-	
+
 	@StarexecTest
 	private void subscribeAndUnsubscribeTest() {
 		Assert.assertTrue(Users.subscribeToReports(user1.getId()));
@@ -528,9 +528,9 @@ public class UserTests extends TestSequence {
 		for (User u : Users.getAllUsersSubscribedToReports()) {
 			found = found || u.getId()==user1.getId();
 		}
-		
+
 		Assert.assertTrue(found);
-		
+
 		Assert.assertTrue(Users.unsubscribeFromReports(user1.getId()));
 		found = false;
 		for (User u : Users.getAllUsersSubscribedToReports()) {
@@ -538,15 +538,15 @@ public class UserTests extends TestSequence {
 		}
 		Assert.assertFalse(found);
 	}
-	
+
 	@StarexecTest
 	private void getUnregisteredTest() {
 		Assert.assertNull(Users.getUnregistered(user1.getId()));
 		User unregisteredUser = loader.loadUserIntoDatabase("test", "user", "temp@fake.com", "abc", "Iowa", R.UNAUTHORIZED_ROLE_NAME);
 		Assert.assertEquals(unregisteredUser.getId(), Users.getUnregistered(unregisteredUser.getId()).getId());
 	}
-	
-	
+
+
 	@Override
 	protected String getTestName() {
 		return "UserTests";
@@ -570,6 +570,6 @@ public class UserTests extends TestSequence {
 	protected void teardown() throws Exception {
 		loader.deleteAllPrimitives();
 	}
-	
-	
+
+
 }

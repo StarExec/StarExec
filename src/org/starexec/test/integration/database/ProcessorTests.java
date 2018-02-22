@@ -27,14 +27,14 @@ public class ProcessorTests extends TestSequence {
 	protected String getTestName() {
 		return "ProcessorTests";
 	}
-	
+
 	@StarexecTest
 	private void getProcTest() {
 		Processor p=Processors.get(postProc.getId());
 		Assert.assertNotNull(p);
 		Assert.assertEquals(postProc.getName(),p.getName());
 	}
-	
+
 	@StarexecTest
 	private void updateProcName() {
 		String oldName=postProc.getName();
@@ -45,7 +45,7 @@ public class ProcessorTests extends TestSequence {
 		postProc.setName(newName);
 
 	}
-	
+
 	@StarexecTest
 	private void updateProcDesc() {
 		String oldDesc=postProc.getDescription();
@@ -55,7 +55,7 @@ public class ProcessorTests extends TestSequence {
 		Assert.assertEquals(newDesc,Processors.get(postProc.getId()).getDescription());
 		postProc.setDescription(newDesc);
 	}
-	
+
 	@StarexecTest
 	private void GetByCommunity() {
 		List<Processor> procs=Processors.getByCommunity(community.getId(), postProc.getType());
@@ -67,7 +67,7 @@ public class ProcessorTests extends TestSequence {
 		}
 		Assert.assertTrue(foundProc);
 	}
-	
+
 	@StarexecTest
 	private void getPostProcessByUserTest() {
 		boolean found = false;
@@ -76,7 +76,7 @@ public class ProcessorTests extends TestSequence {
 		}
 		Assert.assertTrue(found);
 	}
-	
+
 	@StarexecTest
 	private void getBenchProcessByUserTest() {
 		boolean found = false;
@@ -85,7 +85,7 @@ public class ProcessorTests extends TestSequence {
 		}
 		Assert.assertTrue(found);
 	}
-	
+
 	@StarexecTest
 	private void GetAllByType() {
 		List<Processor> procs=Processors.getAll(postProc.getType());
@@ -97,23 +97,23 @@ public class ProcessorTests extends TestSequence {
 		}
 		Assert.assertTrue(foundProc);
 	}
-	
+
 	@StarexecTest
 	private void getNoTypeProcessorTest() {
 		Processor p = Processors.getNoTypeProcessor();
 		Assert.assertNotNull(p);
 	}
-	
+
 	@StarexecTest
 	private void processorExistsTest() {
 		Assert.assertTrue(Processors.processorExists(postProc.getId()));
 	}
-	
+
 	@StarexecTest
 	private void processorDoesNotExistTest() {
 		Assert.assertFalse(Processors.processorExists(-1));
 	}
-	
+
 	@StarexecTest
 	private void updateFilePathTest() {
 		String newPath = "test path postproc";
@@ -130,13 +130,13 @@ public class ProcessorTests extends TestSequence {
 		community=Communities.getTestCommunity();
 		Users.associate(user.getId(), community.getId());
 		postProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, community.getId());
-		
+
 	}
 
 	@Override
 	protected void teardown() throws Exception {
 		loader.deleteAllPrimitives();
-		
+
 	}
-	
+
 }

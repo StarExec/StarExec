@@ -14,9 +14,9 @@ public class LocalBackendTests {
 	@Before
 	public void initialize() {
 		backend = new LocalBackend();
-		existingJobId = backend.submitScript("fake job", "/test", "/log"); 
+		existingJobId = backend.submitScript("fake job", "/test", "/log");
 	}
-	
+
 	@Test
 	public void testSubmitJob() {
 		int newId = backend.submitScript("new job", "/test", "/log");
@@ -24,31 +24,31 @@ public class LocalBackendTests {
 		Assert.assertTrue(backend.getRunningJobsStatus().contains("new job"));
 
 	}
-	
+
 	@Test
 	public void killJobTest() {
 		Assert.assertTrue(backend.killPair(existingJobId));
 		Assert.assertEquals(backend.getRunningJobsStatus(), "");
 	}
-	
+
 	@Test
 	public void killNonExistantJobTest() {
 		Assert.assertTrue(backend.killPair(-1));
 		Assert.assertNotEquals(backend.getRunningJobsStatus(), "");
 	}
-	
+
 	@Test
 	public void killAllJobsTest() {
 		backend.submitScript("new job", "/test", "/log");
 		Assert.assertTrue(backend.killAll());
 		Assert.assertEquals(backend.getRunningJobsStatus(), "");
 	}
-	
+
 	@Test
 	public void getRunningJobsStatusTest() {
 		Assert.assertEquals(backend.getRunningJobsStatus(), "fake job "+existingJobId+" pending\n");
 	}
-	
+
 	@Test
 	public void getQueuesTest() {
 		String[] queues = backend.getQueues();

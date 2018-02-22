@@ -9,7 +9,7 @@ import java.io.InputStreamReader;
  * This class is the entry point for StarexecCommand. It allows either the
  * execution of an interactive shell or the execution of a file with
  * line-separated commands.
- * 
+ *
  * @author Eric
  */
 
@@ -53,7 +53,7 @@ public class Shell {
 
 	/**
 	 * Either starts a shell or runs a file.
-	 * 
+	 *
 	 * @param args Either empty, in which case we should start a shell, or has a
 	 *        single argument, which should be the full path to a file to run.
 	 *        Any other arguments are not correct.
