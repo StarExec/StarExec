@@ -21,37 +21,37 @@ public class StressTest {
 	private static final String SOLVER_NAME="smallsolver.zip";
 	private static final String BENCHMARK_NAME="app12.zip"; //contains about 1500 benchmarks
 	private static final ResourceLoader loader = new ResourceLoader();
-	
+
 	private static final Random rand=new Random();
-	
+
 	private static Job loadBigJob(int parentSpaceId, int ownerId, int spaceCount, String solverName, String benchmarkName,
 			int minSolversPerSpace, int maxSolversPerSpace, int minBenchmarksPerSpace, int maxBenchmarksPerSpace) {
-		
+
 		Users.setDiskQuota(ownerId, Util.gigabytesToBytes(1000)); //make sure we have the quota
 		List<User> owner= new ArrayList<>();
 		owner.add(Users.get(ownerId));
 		List<Space> spaces=loadSpaces(owner,parentSpaceId,spaceCount);
-		
+
 		addSolvers(spaces,owner,minSolversPerSpace,maxSolversPerSpace,solverName);
 		addBenchmarks(spaces,owner,minBenchmarksPerSpace,maxBenchmarksPerSpace,benchmarkName);
-		
+
 		Processor postProc=loader.loadProcessorIntoDatabase("postproc.zip", ProcessorType.POST, Spaces.getCommunityOfSpace(parentSpaceId));
 		Job job=loader.loadJobHierarchyIntoDatabase(parentSpaceId, ownerId, 1, postProc.getId());
-		
+
 		Jobs.pause(job.getId()); //we don't want to actually run this job, as it will be too large
-		
+
 		for (JobPair pair : job.getJobPairs()) {
 			loader.writeFakeJobPairOutput(pair);
 			JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_COMPLETE.getVal());
 		}
 		Jobs.resume(job.getId());
-		
-		
-		
+
+
+
 		return job;
 	}
 
-	
+
 	/**
 	 * Loads the given number of new users into the database
 	 * @return The list of new test users
@@ -63,7 +63,7 @@ public class StressTest {
 		}
 		return users;
 	}
-	
+
 	/**
 	 * Populates the database with the given number of spaces, with a root at
 	 * root space id.  Non-leaf spaces will have between 1 and 5 subspaces.
@@ -77,7 +77,7 @@ public class StressTest {
 		spaces.add(Spaces.get(rootSpaceId));
 		int parentSpaceIndex=0;
 		while (count>0) {
-			
+
 			Space parentSpace=spaces.get(parentSpaceIndex);
 			int numSubspaces=rand.nextInt(5)+1; //adding this number of subspaces to the current parent
 			while (numSubspaces>0) {
@@ -94,9 +94,9 @@ public class StressTest {
 		}
 		return spaces;
 	}
-	
+
 	/**
-	 * Associates users randomly among the spaces. 
+	 * Associates users randomly among the spaces.
 	 * @param spaces Spaces to add users to
 	 * @param users Users to put in spaces
 	 * @param min Minimum number of users added to each space
@@ -132,7 +132,7 @@ public class StressTest {
 		}
 		return solvers;
 	}
-	
+
 	/**
 	 * Adds solvers with random owners to random spaces
 	 * @param spaces Spaces to add solvers too
@@ -152,7 +152,7 @@ public class StressTest {
 		}
 		return benchmarks;
 	}
-	
+
 	/**
 	 * Runs a stress test of a size determined by the given parameters
 	 * @param userCount
@@ -182,6 +182,6 @@ public class StressTest {
 			Space jobRootSpace=loader.loadSpaceIntoDatabase(users.get(0).getId(), jobParentSpace.getId());
 			StressTest.loadBigJob(jobRootSpace.getId(), users.get(0).getId(), spaceCountPerJob, SOLVER_NAME, BENCHMARK_NAME,minSolversPerSpace,maxSolversPerSpace, minBenchmarksPerSpace,maxBenchmarksPerSpace);
 		}
-		
+
 	}
 }

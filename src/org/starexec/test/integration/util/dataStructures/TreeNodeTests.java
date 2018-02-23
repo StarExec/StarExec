@@ -9,7 +9,7 @@ import org.starexec.util.dataStructures.TreeNode;
 public class TreeNodeTests extends TestSequence {
 	private static final StarLogger log = StarLogger.getLogger(TreeNodeTests.class);
 
-	@Override 
+	@Override
 	protected String getTestName() {
 		return "TreeNodeTests";
 	}
@@ -31,7 +31,7 @@ public class TreeNodeTests extends TestSequence {
 		Assert.assertEquals(tree.getNumberOfChildren(), 0);
 		tree.addChild(child);
 		Assert.assertEquals(tree.getNumberOfChildren(), 1);
-		Assert.assertEquals(tree.getChild(0), child);	
+		Assert.assertEquals(tree.getChild(0), child);
 		Assert.assertEquals(child.getParent(), tree);
 		Assert.assertNull(tree.getParent());
 		Assert.assertEquals(tree.removeChild(0), child);
@@ -59,7 +59,7 @@ public class TreeNodeTests extends TestSequence {
 			tree.addChild(null);
 			Assert.fail("addChild should have thrown a NullPointerException.");
 		} catch (NullPointerException e) {
-			// NullPointerException was thrown as expected.	
+			// NullPointerException was thrown as expected.
 		}
 	}
 

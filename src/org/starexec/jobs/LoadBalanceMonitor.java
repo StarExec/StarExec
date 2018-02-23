@@ -10,7 +10,7 @@ public class LoadBalanceMonitor {
 	private static final StarLogger log = StarLogger.getLogger(LoadBalanceMonitor.class);
 	static class UserLoadData implements Comparable<UserLoadData> {
 		final int userId;
-		
+
 		/* Whenever a user is added to the LoadBalanceMonitor, they are initialized
 		 * with a 'basis' equal to the minimum value at the time they were added.
 		 * From then on, if the minimum value in the monitor ever drops below the basis
@@ -21,7 +21,7 @@ public class LoadBalanceMonitor {
 		 **/
 		Long minBasis;
 		Long load;
-		
+
 		// If this is null, the user is active. Otherwise, it is the time
 		// at which the user became inactive.
 		private Date inactiveDateTime = null;
@@ -36,7 +36,7 @@ public class LoadBalanceMonitor {
 		public int compareTo(UserLoadData arg0) {
 			return load.compareTo(arg0.load);
 		}
-		
+
 		//equality and hashing are done based on userId only
 		@Override
 		public boolean equals(Object o) {
@@ -46,16 +46,16 @@ public class LoadBalanceMonitor {
 			UserLoadData that = (UserLoadData) o;
 			return this.userId==that.userId;
 		}
-		
+
 		@Override
 		public int hashCode() {
 			return userId;
 		}
-		
+
 		public boolean active() {
 			return inactiveDateTime == null;
 		}
-		
+
 		/**
 		 * If this user is active, inactivates them, setting the current time.
 		 */
@@ -65,9 +65,9 @@ public class LoadBalanceMonitor {
 				inactiveDateTime = new Date();
 			}
 		}
-		
+
 		/**
-		 * Calculates what a user's load would be right now if they were to 
+		 * Calculates what a user's load would be right now if they were to
 		 * be activated. If they are already active, this is just their load value.
 		 * Otherwise, it is their load value decayed in a linear fashion over time
 		 * since they were inactivated
@@ -91,9 +91,9 @@ public class LoadBalanceMonitor {
 				return 0;
 			}
 			return loadDecay;
-			
+
 		}
-		
+
 		/**
 		 * If this user is inactive, activates them and updates their
 		 * load accordingly
@@ -138,9 +138,9 @@ public class LoadBalanceMonitor {
 		}
 		return null;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * This function is only used by testing right now, and it is likely not useful for
 	 * production code, as the load values are manipulated internally by functions like
 	 * setUsers.
@@ -154,13 +154,13 @@ public class LoadBalanceMonitor {
 		}
 		return null;
 	}
-	
-	
-	
-	
+
+
+
+
 	/**
 	 * Adds a new user to the set of users being managed. The initial load
-	 * for the user is the minimum + defaultLoad. Nothing is done if the user is 
+	 * for the user is the minimum + defaultLoad. Nothing is done if the user is
 	 * already present.
 	 * @param userId
 	 * @param defaultLoad
@@ -179,7 +179,7 @@ public class LoadBalanceMonitor {
 		}
 		loads.put(userId, new UserLoadData(userId, basis, defaultLoad));
 	}
-	
+
 	/**
 	 * Completely removes a user from the monitor.
 	 * @param userId
@@ -197,7 +197,7 @@ public class LoadBalanceMonitor {
 	public void reset() {
 		loads = new HashMap<>();
 	}
-	
+
 	/**
 	 * Sets the list of users managed by this monitor to the given set
 	 * of users.
@@ -225,7 +225,7 @@ public class LoadBalanceMonitor {
 			addUser(i, userIdsToDefaults.get(i) + m, m);
 		}
 	}
-	
+
 	/**
 	 * Updates the load associated with a given user
 	 * @param userId ID of user to affect. Nothing happens if the user does not already exist.
@@ -242,9 +242,9 @@ public class LoadBalanceMonitor {
 			loads.get(userId).load = 0L;
 		}
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param newBasis
 	 */
 	private void setNewBasis(long newBasis) {
@@ -256,7 +256,7 @@ public class LoadBalanceMonitor {
 			}
 		}
 	}
-	
+
 	/**
 	 * Given a map from userids to loads, calls changeLoad once per entry
 	 * in the map.
@@ -266,7 +266,7 @@ public class LoadBalanceMonitor {
 		Long oldMin = getMin();
 		for (Integer i : users.keySet()) {
 			log.debug("user "+i+" is being credited "+users.get(i));
-			
+
 			changeLoad(i, -users.get(i));
 		}
 		Long newMin = getMin();
@@ -274,10 +274,10 @@ public class LoadBalanceMonitor {
 			setNewBasis(newMin);
 		}
 	}
-	
+
 	/**
 	 * Determines whether a given user should be skipped, meaning they should not
-	 * be allowed to enqueue any more job pairs for the time being. A user is 
+	 * be allowed to enqueue any more job pairs for the time being. A user is
 	 * skipped whenever their load is substantially greater than the minimum load.
 	 * @param userId The ID of the user to check
 	 * @return True if the user should be skipped and false if not.
@@ -286,10 +286,10 @@ public class LoadBalanceMonitor {
 		Long userLoad = this.getLoad(userId);
 		return userLoad - getMin() > loadDifferenceThreshold;
 	}
-	
+
 	private String stringRepresentation = null;
-	
-	
+
+
 	private String userLoadDataAsString(UserLoadData d) {
 		Long loadDecay = d.calculateLoadDecay();
 		if (loadDecay==0) {
@@ -309,7 +309,7 @@ public class LoadBalanceMonitor {
 		sb.append(": load = ").append(loadDecay);
 		return sb.toString();
 	}
-	
+
 	private List<UserLoadData> getSortedDataList() {
 		List<UserLoadData> data = new ArrayList<>();
 		data.addAll(loads.values());
@@ -317,7 +317,7 @@ public class LoadBalanceMonitor {
 
 		return data;
 	}
-	
+
 	/**
 	 * Gets all user load data for every queue as a single formatted string, which
 	 * can be displayed on the front end.
@@ -327,7 +327,7 @@ public class LoadBalanceMonitor {
 		sb.append("minimum = ").append(this.getMin());
 		sb.append("\n\n");
 		// updates user load values to take into account actual job pair runtimes.
-		
+
 		for (UserLoadData d : getSortedDataList()) {
 			String loadData = userLoadDataAsString(d);
 			if (!loadData.isEmpty()) {
@@ -335,12 +335,12 @@ public class LoadBalanceMonitor {
 				sb.append("\n");
 			}
 		}
-		sb.append("\n");		
+		sb.append("\n");
 		stringRepresentation = sb.toString();
 	}
-	
+
 	public String toString() {
 		return stringRepresentation;
 	}
-	
+
 }

@@ -15,7 +15,7 @@ public class PermissionTests {
 		p.setAddSolver(true);
 		p.setAddSpace(false);
 		p.setAddUser(true);
-		
+
 		p.setRemoveBench(false);
 		p.setRemoveJob(true);
 		p.setRemoveSolver(false);
@@ -23,7 +23,7 @@ public class PermissionTests {
 		p.setRemoveUser(false);
 		return p;
 	}
-	
+
 	@Test
 	public void getOffPermissionsTest() {
 		Permission p = getTestPermission();
@@ -33,7 +33,7 @@ public class PermissionTests {
 			Assert.assertTrue(perms.contains(s));
 		}
 	}
-	
+
 	@Test
 	public void getOnPermissionsTest() {
 		Permission p = getTestPermission();
@@ -43,9 +43,9 @@ public class PermissionTests {
 			Assert.assertTrue(perms.contains(s));
 		}
 	}
-	
+
 	@Test
 	public void setPermissionOnTest() {
-		
+
 	}
 }

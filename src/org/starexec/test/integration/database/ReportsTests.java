@@ -16,7 +16,7 @@ public class ReportsTests extends TestSequence {
 	private static final String pairsEvent = "job pairs run";
 	int uniqueLogins = 0;
 	int pairsRun = 0;
-	
+
 	Queue allQ = null;
 	private int getUniqueLoginsCount() {
 		List<Report> reports = Reports.getAllReportsNotRelatedToQueues();
@@ -38,10 +38,10 @@ public class ReportsTests extends TestSequence {
 				}
 			}
 		}
-		
+
 		return 0;
 	}
-	
+
 	@StarexecTest
 	private void setEventOccurrencesNotRelatedToQueueTest() {
 		Assert.assertTrue(Reports.setEventOccurrencesNotRelatedToQueue(loginsEvent, 1));
@@ -55,7 +55,7 @@ public class ReportsTests extends TestSequence {
 		Assert.assertEquals(3, getUniqueLoginsCount());
 		Assert.assertTrue(Reports.setEventOccurrencesNotRelatedToQueue(loginsEvent, 0));
 	}
-	
+
 	@StarexecTest
 	private void addToEventOccurrencesRelatedToQueueTest() {
 		try {
@@ -68,8 +68,8 @@ public class ReportsTests extends TestSequence {
 		}
 
 	}
-	
-	
+
+
 	@Override
 	protected String getTestName() {
 		return "ReportsTests";

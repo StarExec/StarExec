@@ -15,12 +15,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UtilTests extends TestSequence{
-	
+
 	User u=null;
 	Space s=null;
 	Solver s1=null;
 	Solver s2=null;
-	
+
 	@StarexecTest
 	public void URLTest() {
 		String random=TestUtil.getRandomSpaceName();
@@ -29,13 +29,13 @@ public class UtilTests extends TestSequence{
 		Assert.assertTrue(url.startsWith("http"));
 		Assert.assertTrue(url.endsWith(random));
 	}
-	
-	@StarexecTest 
+
+	@StarexecTest
 	private void copyToSandboxTest() throws IOException {
 		List<File> files= new ArrayList<>();
 		files.add(new File(s1.getPath()));
 		files.add(new File(s2.getPath()));
-		
+
 		File sandbox=Util.copyFilesToNewSandbox(files);
 		Assert.assertTrue(sandbox.exists());
 		for (File f : files) {
@@ -44,10 +44,10 @@ public class UtilTests extends TestSequence{
 		}
 		FileUtils.deleteQuietly(sandbox);
 	}
-	
-	
-	
-	
+
+
+
+
 	@Override
 	protected String getTestName() {
 		return "UtilTests";

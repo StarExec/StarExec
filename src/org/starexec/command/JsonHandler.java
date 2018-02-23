@@ -16,7 +16,7 @@ public class JsonHandler {
 	/**
 	 * Given an HttpRespone with a JsonElement in its content, returns the
 	 * JsonElement
-	 * 
+	 *
 	 * @param response The HttpResponse that should contain the JsonElement
 	 * @return The JsonElement
 	 * @throws Exception
@@ -36,7 +36,7 @@ public class JsonHandler {
 	/**
 	 * Gets back a status message from a ValidatorStatusCode sent back from the
 	 * server object attached
-	 * 
+	 *
 	 * @param obj The json ValidatorStatusCode object to get the string message
 	 *        from
 	 * @return The string message, or null if there is no ValidatorStatusCode
@@ -54,7 +54,7 @@ public class JsonHandler {
 	/**
 	 * Gets back whether a request is successful from a response that has a JSON
 	 * ValidatorStatusCode object attached
-	 * 
+	 *
 	 * @param obj The json ValidatorStatusCode object to get the boolean success
 	 *        value from
 	 * @return Whether the request was successful, or null if there is no
@@ -75,7 +75,7 @@ public class JsonHandler {
 	/**
 	 * Attempts to get a Json object given an HTTP response that has a Json
 	 * object in its content
-	 * 
+	 *
 	 * @param response
 	 * @return The object, or null if none existed
 	 */

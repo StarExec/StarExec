@@ -23,63 +23,63 @@ public class WebsiteTests extends TestSequence {
 	private User user=null;
 	private User admin=null;
 	private Space space=null;
-	
+
 	@StarexecTest
 	private void addAndRemoveSolverWebsite() {
 		String name=TestUtil.getRandomUserName();
 		Assert.assertTrue(Websites.add(solver.getId(), "http://www.uiowa.edu", name, WebsiteType.SOLVER));
 		List<Website> sites=Websites.getAll(solver.getId(), WebsiteType.SOLVER);
 		Integer id=websitesHaveName(sites,name);
-		
+
 		Assert.assertNotNull(id);
-		
+
 		Assert.assertTrue(Websites.delete(id));
 		sites=Websites.getAll(solver.getId(), WebsiteType.SOLVER);
 
 		id=websitesHaveName(sites,name);
 		Assert.assertNull(id);
 	}
-	
+
 	@StarexecTest
 	private void addAndRemoveUserWebsite() {
 		String name=TestUtil.getRandomUserName();
 		Assert.assertTrue(Websites.add(user.getId(), "http://www.uiowa.edu", name, WebsiteType.USER));
 		List<Website> sites=Websites.getAll(user.getId(), WebsiteType.USER);
 		Integer id=websitesHaveName(sites,name);
-		
+
 		Assert.assertNotNull(id);
-		
+
 		Assert.assertTrue(Websites.delete(id));
 		sites=Websites.getAll(user.getId(), WebsiteType.USER);
 
 		id=websitesHaveName(sites,name);
 		Assert.assertNull(id);
 	}
-	
+
 	@StarexecTest
 	private void getAllforHTMLTest() {
 		List<Website> sites=Websites.getAllForHTML(solver.getId(), WebsiteType.SOLVER);
 		Assert.assertNotNull(sites);
 	}
-	
+
 	@StarexecTest
 	private void addAndRemoveSpaceWebsite() {
 		String name=TestUtil.getRandomUserName();
 		Assert.assertTrue(Websites.add(space.getId(), "http://www.uiowa.edu", name, WebsiteType.SPACE));
 		List<Website> sites=Websites.getAll(space.getId(), WebsiteType.SPACE);
 		Integer id=websitesHaveName(sites,name);
-		
+
 		Assert.assertNotNull(id);
-		
+
 		Assert.assertTrue(Websites.delete(id));
 		sites=Websites.getAll(space.getId(), WebsiteType.SPACE);
 
 		id=websitesHaveName(sites,name);
 		Assert.assertNull(id);
-		
-		
+
+
 	}
-	
+
 	private Integer websitesHaveName(List<Website> sites, String name) {
 		for (Website s : sites) {
 			if (s.getName().equals(name)) {
@@ -88,7 +88,7 @@ public class WebsiteTests extends TestSequence {
 		}
 		return null;
 	}
-	
+
 	@Override
 	protected String getTestName() {
 		return "WebsiteTests";
@@ -100,7 +100,7 @@ public class WebsiteTests extends TestSequence {
 		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
 		space=loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
 		solver=loader.loadSolverIntoDatabase("CVC4.zip", space.getId(), user.getId());
-		
+
 	}
 
 	@Override

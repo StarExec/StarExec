@@ -39,7 +39,7 @@ public class PipelineDependency {
 	}
 
 	private int stageId; // the stage this dependency is for
-	private int dependencyId; // either a 1-indexed number of a stage in a pipeline if the type is "artifact" 
+	private int dependencyId; // either a 1-indexed number of a stage in a pipeline if the type is "artifact"
 	// or a 1-indexed number indicating which of the n benchmarks a user has uploaded
 	private PipelineInputType type; // whether this is a benchmark or artifact
 	private int inputNumber; // whether this is the first, second... etc. input to the stage
@@ -76,7 +76,7 @@ public class PipelineDependency {
 		this.inputNumber = inputNumber;
 	}
 }
-	
 
-	
-	
+
+
+

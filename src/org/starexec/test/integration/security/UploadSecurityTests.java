@@ -24,7 +24,7 @@ public class UploadSecurityTests extends TestSequence {
 	User nonOwner = null;
 	User admin = null;
 	BenchmarkUploadStatus status = null;
-	
+
 	@StarexecTest
 	private void canViewUnvalidatedBenchmarkOutputTest() {
 		int unvalidatedId = Uploads.getFailedBenches(status.getId()).get(0).getId();
@@ -33,7 +33,7 @@ public class UploadSecurityTests extends TestSequence {
 		Assert.assertFalse(UploadSecurity.canViewUnvalidatedBenchmarkOutput(nonOwner.getId(), unvalidatedId).isSuccess());
 
 	}
-	
+
 	@Override
 	protected String getTestName() {
 		return "UploadSecurityTests";
@@ -50,7 +50,7 @@ public class UploadSecurityTests extends TestSequence {
 	}
 
 	@Override
-	protected void teardown() throws Exception {	
+	protected void teardown() throws Exception {
 		loader.deleteAllPrimitives();
 	}
 

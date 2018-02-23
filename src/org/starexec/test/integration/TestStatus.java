@@ -14,24 +14,24 @@ public class TestStatus {
 		STATUS_SUCCESS(3),
 		STATUS_FAILED(4);
 		private final int val;
-		
+
 		TestStatusCode(int val) {
-			this.val = val;			
-		}				
-		
+			this.val = val;
+		}
+
 		public int getVal() {
-			return this.val;			
-		}				
-		
-		
+			return this.val;
+		}
+
+
 		public static TestStatusCode toStatusCode(int code) {
-			
+
 		    switch (code) {
 		    case 0:
 		    	return TestStatusCode.STATUS_UNKNOWN;
 		    case 1:
 		    	return TestStatusCode.STATUS_NOT_RUN;
-		    case 2: 
+		    case 2:
 		    	return TestStatusCode.STATUS_RUNNING;
 		    case 3:
 		    	return TestStatusCode.STATUS_SUCCESS;
@@ -53,7 +53,7 @@ public class TestStatus {
 			return "this test completed without any errors";
 		    case 4:
 			return "there was an error during the execution of this test: check the message and log for more information";
-		   
+
 	    }
 		return "the job status is not known or has not been set";
 	}
@@ -67,31 +67,31 @@ public class TestStatus {
 			return "success";
 		    case 4:
 			return "failure";
-		  
-		   
+
+
 	    }
 		return "unknown";
 	}
-	
+
 
 
 	@Expose private TestStatusCode code = TestStatusCode.STATUS_UNKNOWN;
 
-	
+
 	/**
 	 * @return the status code for this status
 	 */
 	public TestStatusCode getCode() {
 		return code;
 	}
-	
+
 	/**
 	 * @param code the status code to set for this status
 	 */
 	public void setCode(TestStatusCode code) {
 		this.code = code;
 	}
-	
+
 	/**
 	 * @param code the status code to set for this status
 	 */
@@ -105,7 +105,7 @@ public class TestStatus {
 	public String getStatus() {
 		return TestStatus.getStatus(this.code.getVal());
 	}
-	
+
 	/**
 	 * @return the description of what the status means
 	 */

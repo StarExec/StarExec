@@ -74,8 +74,8 @@ public class StarLogger extends BaseStarLogger {
 			messageAndTrace += "\nStack Trace:\n" + Util.getStackTrace(t);
 		}
 
-		
-		
+
+
 		Optional<Integer> logId = ErrorLogs.add(messageAndTrace, level);
 		if (!logId.isPresent()) {
 			// This log is just a basic log4j logger.

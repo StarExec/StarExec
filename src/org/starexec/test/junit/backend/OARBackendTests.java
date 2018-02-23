@@ -32,20 +32,20 @@ public class OARBackendTests {
 	"priority = 0\n"+
 	"scheduler = oar_sched_gantt_with_timesharing_and_fairsharing_and_quotas\n"+
 	"state = Active";
-	
+
 	private static final String oarnodesJSONResults =
 "{\"4\" : {\"network_address\" : \"stardev.cs.uiowa.edu\","+"\"queue\" : \"all\" },\"1\" : {\"network_address\" : \"n001\",\"queue\" : \"test\"}}";
-	
-	
+
+
 	private static final String submitScriptResults = "preline\nOAR_JOB_ID=23\npostline";
-	
+
 	private static final String oarstatJSONResults = "{ \"8\" : { \"types\" : [], \"Job_Id\" : \"8\" }, \"1\" : {\"Job_Id\" : \"1\"}}";
 	@Before
 	public void initialize() {
 		PowerMockito.mockStatic(Util.class);
 		System.setProperty("line.separator", "\n");
 	}
-	
+
 	@Test
 	public void getQueuesTest() throws IOException {
         BDDMockito.given(Util.executeCommand("oarnotify -l")).willReturn(oarnotifyTestString);
@@ -54,7 +54,7 @@ public class OARBackendTests {
         Assert.assertTrue(ArrayUtils.contains(queues, "admin"));
         Assert.assertTrue(ArrayUtils.contains(queues, "besteffort"));
 	}
-	
+
 	@Test
 	public void getNodeQueueAssocTest() throws IOException {
 		BDDMockito.given(Util.executeCommand("oarnodes -J")).willReturn(oarnodesJSONResults);
@@ -63,7 +63,7 @@ public class OARBackendTests {
 		Assert.assertEquals("all", nodesToQueues.get("stardev.cs.uiowa.edu"));
 		Assert.assertEquals("test", nodesToQueues.get("n001"));
 	}
-	
+
 	@Test
 	public void getActiveExecutionIdsTest() throws IOException {
 		BDDMockito.given(Util.executeCommand("oarstat -J")).willReturn(oarstatJSONResults);
@@ -72,7 +72,7 @@ public class OARBackendTests {
 		Assert.assertTrue(ans.contains(1));
 		Assert.assertTrue(ans.size()==2);
 	}
-	
+
 	@Test
 	public void submitScriptGetIdTest() throws IOException {
 		BDDMockito.given(Util.executeCommand(new String[] {"oarsub","-O", "","-E","","-d","",
