@@ -1,40 +1,6 @@
 # Installation Notes
 
-This document describes how to describe StarExec and its
-dependencies on a Linux system.
-
-## Java
-
-StarExec requires Ant to build, and has been tested with version 1.9.2. An
-installation guide for Ant is below, or you may use any applicable package manager.
-
-http://ant.apache.org/manual/install.html
-
-## Apache Tomcat
-
-StarExec depends on Apache Tomcat 7.0.64. While newer versions may work, we have
-frequently seen that even minor version releases of Tomcat can have breaking
-changes for StarExec, so using a different version of Tomcat is not recommended.
-
-A full release of Tomcat is included in the starexec package under the `distribution/`
-directory. This is identical to a release that you can download from Apache,
-with the exception that the `mysql-connector-java-5.1.22-bin.jar` and
-`drmaa.jar` files are included in the `lib/` directory. These `.jar` files are required for StarExec
-to connect to its database and backend, and as such we recommend that you install
-Tomcat using the provided archive. If you would like to install a clean copy of
-Tomcat, you will need to copy the MySQL connector and DRMAA files to the new lib directory.
-
-If you install Tomcat using the provided archive, you may need to update permissions
-on the install directory to make Tomcat's scripts executable. This can be done, for
-example, by using `chmod 700 -R tomcat_directory`
-
-
 ## MySQL and MariaDB
-
-StarExec depends on MariaDB 5.5.56. MariaDB can
-be obtained at the following site.
-
-https://downloads.mariadb.org/
 
 In starexec-config.xml, you must specify MYSQL_USERNAME and
 COMPUTE_NODE_MYSQL_USERNAME. These are MySQL users that must have access to the
@@ -47,28 +13,6 @@ require SELECT, INSERT, UPDATE, and EXECUTE permissions.
 A description of MySQL permissions can be found at the link below.
 
 http://dev.mysql.com/doc/refman/5.7/en/privileges-provided.html
-
-## Backend
-
-StarExec's backend refers to the utility that is responsible for accepting
-new jobs from the web app and distributing them over the available compute nodes.
-StarExec supports 3 different backend implementations, and which one you use
-can be configured using the BACKEND_TYPE field in starexec-config.xml. You have
-the option to use SGE (https://arc.liv.ac.uk/trac/SGE), OAR (https://oar.imag.fr/),
-or a simple local backend implemented in StarExec itself.
-
-To install SGE or OAR, you will need to refer to their documentation. In the case
-of OAR, the document `OAR installation notes.txt` describes extra installation
-steps you should take to configure OAR for use with StarExec.
-
-You will need to make sure that you have mapped the StarExec data directory,
-configured in starexec-config.xml, to a matching path on each compute node,
-as your compute nodes will need access to the StarExec data directory
-that exists on the head node.
-
-The local backend is a primitive solution if you only want to run jobs on the same
-machine that StarExec is running off of. The local backend does not support multiple
-queues or nodes, and only a single job will run at a time.
 
 ## Email
 
