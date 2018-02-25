@@ -75,7 +75,7 @@ or a simple local backend implemented in StarExec itself.
 
 To install SGE or OAR, you will need to refer to their documentation. In the
 case of OAR, the document
-[`distribution/OAR installation notes.txt`](distribution/OAR installation notes.txt)
+[`distribution/OAR installation notes.txt`](distribution/OAR%20installation%20notes.txt)
 describes extra installation steps you should take to configure OAR for use with
 StarExec.
 
