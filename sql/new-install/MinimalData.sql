@@ -16,7 +16,8 @@ INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, rem
 	(1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0);
 
 -- Starts at 2 (the root space is defined in the schema)
-CALL AddSpace('Test', 'The Test community', 0, 3, 1, 0, @_);
+CALL AddSpace('Test', 'The Test community', 0, 3, 1, 0, @newSpaceId);
+CALL AssociateSpaces(1, @newSpaceId);
 
 INSERT INTO user_assoc VALUES
 	(1, 1, 2);
