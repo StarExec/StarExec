@@ -192,10 +192,9 @@ User `tomcat` may run the following commands on this host:
     (root) NOPASSWD: /sbin/service tomcat7 restart, /sbin/service tomcat7 stop, /sbin/service tomcat7 start
 
 The following entries are needed only if you are using an SGE backend.
-Replace `/cluster/sge-6.2u5/bin/lx24-amd64/` in each path with your install directory
+Replace `/cluster/gridengine-8.1.8/bin/lx-amd64/` in each path with your install directory
 
-    (sgeadmin) NOPASSWD: /cluster/sge-6.2u5/bin/lx24-amd64/qconf, /cluster/sge-6.2u5/bin/lx24-amd64/qmod, /cluster/gridengine-8.1.8/bin/lx-amd64/qconf,
-    /cluster/gridengine-8.1.8/bin/lx-amd64/qmod
+    (sgeadmin) NOPASSWD: /cluster/gridengine-8.1.8/bin/lx-amd64/qconf, /cluster/gridengine-8.1.8/bin/lx-amd64/qmod
 
 
 ####  COMPUTE NODE (or head node if you are using a local backend)
