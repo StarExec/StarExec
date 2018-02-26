@@ -142,10 +142,9 @@ have appropriate permissions.
 
 Create the `star-web` group.
 
-Create the user `tomcat` and add this user to the `star-web` group.
-Add the `tomcat` user to the `star-web` group, and change the primary group for
-`tomcat` to `star-web`.
-Tomcat is the user that you will need to use when starting up **Tomcat** using
+Create the user `tomcat` and add this user to the `star-web` group, and change
+the primary group for `tomcat` to `star-web`.
+This is the user that you will need to use when starting up **Tomcat** using
 `startup.sh` in the **Tomcat** `bin/` folder.
 You should also ensure that `tomcat` is the owner of the entire
 **Tomcat** installation directory.
@@ -154,8 +153,8 @@ Finally, any users that are going to be administering StarExec should also be
 added to the `star-web` group. Being a member of `star-web` will be necessary
 for correctly executing the StarExec deploy scripts.
 
-Create the `sandbox` group, and add SANDBOX_USER_ONE to this group.
-Create another group `sandbox2` and add SANDBOX_USER_TWO to this group.
+Create the `sandbox` group, and add `Cluster.UserOne` to this group.
+Create another group `sandbox2` and add `Cluster.UserTwo` to this group.
 Add the `tomcat` user to both of these groups.
 
 If you are using SGE as a backend, you need to create the user `sgeadmin` and
@@ -164,8 +163,7 @@ ensure this user does have administrator privileges in SGE.
 A sandbox directory will need to be created on the StarExec head node.
 This directory is used to execute user-provided scripts in a sandboxed
 environment, preventing them from affecting other parts of the system.
-You should create a directory named `sandbox/` at the location specified by
-`data_dir`.
+You should create a directory at the location specified by `sandbox_dir`.
 Make the owner `Cluster.UserOne`, and make the group `sandbox`.
 Use `chmod` on the directory to make permissions `770`.
 Additionally, use `chmod g+s` to set the GID for the directory.
