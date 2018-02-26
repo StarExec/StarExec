@@ -84,9 +84,9 @@
 				<filter token="Web.DB.Url"             value="${Web.DB.Url}"/>
 
 				<filter token="data_dir"            value="${data_dir}"/>
+				<filter token="sandbox_dir"         value="${sandbox_dir}"/>
 				<filter token="BACKEND_TYPE"        value="sge"/>
 				<filter token="STAREXEC_APPNAME"    value="${STAREXEC_APPNAME}"/>
-				<filter token="SANDBOX_DIRECTORY"   value="/local/sandbox"/>
 				<filter token="TEST_COMMUNITY_ID"   value="${TEST_COMMUNITY_ID}"/>
 				<filter token="ALLOW_TESTING"       value="${ALLOW_TESTING}"/>
 			</filterset>

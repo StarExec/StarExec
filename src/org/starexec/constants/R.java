@@ -188,7 +188,7 @@ public class R {
 	public static String JOB_XML_SCHEMA_RELATIVE_LOC = "@Web.Schema.Job@";
 	public static String STAREXEC_URL_PREFIX = "@Web.Schema.Url@";             //either "https" or "http"
 	public static String JOBGRAPH_FILE_DIR = "@Web.JobGraph.Path@";            // Location to store job graph image files. Relative to webapp root.
-	public static String SANDBOX_DIRECTORY = "@SANDBOX_DIRECTORY@";            //the sandbox directory for doing processing / building on the head node
+	public static String SANDBOX_DIRECTORY = "@sandbox_dir@";                  //the sandbox directory for doing processing / building on the head node
 
 	//Admin user info
 	public static int ADMIN_USER_ID = 9;                               //user id to use when administrator
