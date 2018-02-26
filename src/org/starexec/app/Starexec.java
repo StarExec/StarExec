@@ -90,6 +90,9 @@ public class Starexec implements ServletContextListener {
 		R.CONFIG_PATH = new File(R.STAREXEC_ROOT, "/WEB-INF/classes/org/starexec/config/").getAbsolutePath();
 		R.RUNSOLVER_PATH = new File(R.getSolverPath(), "runsolver").getAbsolutePath();
 
+		// Initialize the datapool after properties are loaded
+		Common.initialize();
+
 		R.logProperties();
 
 		try {
@@ -98,9 +101,6 @@ public class Starexec implements ServletContextListener {
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
-
-		// Initialize the datapool after properties are loaded
-		Common.initialize();
 
 		// Initialize the validator (compile regexes) after properties are loaded
 		Validator.initialize();
