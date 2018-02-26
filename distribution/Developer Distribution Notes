@@ -1,7 +1,0 @@
-These are a few steps that should be taken before releasing a Starexec distribution. This mostly consists
-of deleting the few files that users do not need-- files that may contain Starexec passwords or which are
-used only to deploy Starexec on our specific systems.
-
-1) Under sql/new-install, delete the MinimalData.sql file and rename MinimalDataDistribute.sql to MinimalData.sql.
-
-2) Delete this file.
