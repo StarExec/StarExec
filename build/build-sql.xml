@@ -10,7 +10,10 @@
 	<target name="compile-sql">
 		<pathconvert property="sqlSchema" pathsep="${line.separator}source ">
 			<path>
-				<fileset dir="sql/new-install" includes="**/*.sql" />
+				<sort>
+					<fileset dir="sql/new-install" includes="**/*.sql" />
+					<reverse />
+				</sort>
 				<fileset file="${DB.Initialize}" />
 			</path>
 			<map from="${basedir}/sql/" to=""/>
