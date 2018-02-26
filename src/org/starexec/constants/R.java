@@ -101,6 +101,7 @@ public class R {
 			b = new LocalBackend();
 			break;
 		default:
+			log.error("BACKEND", "Not a valid BACKEND_TYPE: " + BACKEND_TYPE);
 			b = null;
 		}
 		BACKEND = b;
