@@ -202,18 +202,16 @@ Replace `/cluster/sge-6.2u5/bin/lx24-amd64/` in each path with your install dire
 
 User `tomcat` may run the following commands on this host:
 
-    (sandbox) NOPASSWD: ALL
+For all of the following, the prefix `/export/starexec` should be replaced with
+your configured value of `Backend.WorkingDir`, and `UserOne` and `UserTwo`
+should be replaced with the values of `Cluster.UserOne` and `Cluster.UserTwo`
+respectively.
 
-For all of the following commands, the prefix `/export/starexec` should be
-replaced with your configured value of `Backend.WorkingDir`.
-
-    (root) NOPASSWD: /bin/chown -R SANDBOX_USER_ONE /export/starexec/sandbox, /bin/chown -R tomcat /export/starexec/sandbox, /bin/chown -R SANDBOX_USER_ONE
-    /export/starexec/sandbox/benchmark/theBenchmark.cnf, /bin/chown -R tomcat /export/starexec/sandbox/benchmark/theBenchmark.cnf
-    (sandbox2) NOPASSWD: ALL
-    (root) NOPASSWD: /bin/chown -R SANDBOX_USER_TWO /export/starexec/sandbox2, /bin/chown -R tomcat /export/starexec/sandbox2, /bin/chown -R SANDBOX_USER_TWO
-    /export/starexec/sandbox2/benchmark/theBenchmark.cnf, /bin/chown -R tomcat /export/starexec/sandbox2/benchmark/theBenchmark.cnf
+    (UserOne) NOPASSWD: ALL
+    (root) NOPASSWD: /bin/chown -R UserOne /export/starexec/sandbox, /bin/chown -R tomcat /export/starexec/sandbox, /bin/chown -R tomcat /export/starexec/sandbox/benchmark, /bin/chown tomcat
+    (UserTwo) NOPASSWD: ALL
+    (root) NOPASSWD: /bin/chown -R UserTwo /export/starexec/sandbox2, /bin/chown -R tomcat /export/starexec/sandbox2, /bin/chown -R tomcat /export/starexec/sandbox2/benchmark, /bin/chown tomcat
 
 The same applies as on the head node for the following commands
 
-    (sgeadmin) NOPASSWD: /cluster/sge-6.2u5/bin/lx24-amd64/qconf, /cluster/sge-6.2u5/bin/lx24-amd64/qmod, /cluster/gridengine-8.1.8/bin/lx-amd64/qconf,
-    /cluster/gridengine-8.1.8/bin/lx-amd64/qmod
+    (sgeadmin) NOPASSWD: /cluster/sge-6.2u5/bin/lx24-amd64/qconf, /cluster/sge-6.2u5/bin/lx24-amd64/qmod, /cluster/gridengine-8.1.8/bin/lx-amd64/qconf, /cluster/gridengine-8.1.8/bin/lx-amd64/qmod
