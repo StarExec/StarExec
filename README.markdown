@@ -214,4 +214,4 @@ respectively.
 
 The same applies as on the head node for the following commands
 
-    (sgeadmin) NOPASSWD: /cluster/sge-6.2u5/bin/lx24-amd64/qconf, /cluster/sge-6.2u5/bin/lx24-amd64/qmod, /cluster/gridengine-8.1.8/bin/lx-amd64/qconf, /cluster/gridengine-8.1.8/bin/lx-amd64/qmod
+    (sgeadmin) NOPASSWD: /cluster/gridengine-8.1.8/bin/lx-amd64/qconf, /cluster/gridengine-8.1.8/bin/lx-amd64/qmod
