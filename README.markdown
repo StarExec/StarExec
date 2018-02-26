@@ -183,7 +183,8 @@ most often to execute commands using the `Cluster.UserOne` and `Cluster.UserTwo`
 users. The `tomcat` user will need all of the following `sudo` permissions.
 
 
-HEAD NODE
+#### HEAD NODE
+
 User `tomcat` may run the following commands on this host:
 
     (SANDBOX_USER_ONE) NOPASSWD: ALL
@@ -197,8 +198,7 @@ Replace `/cluster/sge-6.2u5/bin/lx24-amd64/` in each path with your install dire
     /cluster/gridengine-8.1.8/bin/lx-amd64/qmod
 
 
-COMPUTE NODE (or head node if you are using a local backend)
-
+####  COMPUTE NODE (or head node if you are using a local backend)
 
 User `tomcat` may run the following commands on this host:
 
