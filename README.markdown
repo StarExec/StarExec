@@ -105,3 +105,117 @@ An empty configuration file is provided as
 [`example.properties`](example.properties).
 This file also explains the properties that must be set for a particular
 StarExec instance.
+
+### Database
+
+`DB.User` must be set to the username of a MariaDB user that has full
+permissions for the database. `DB.Pass` must be set to the password for that
+user. This user will require _all_ permissions in the StarExec database,
+excluding server administration permissions.
+If desired, a user with fewer permissions may be used by the compute nodes to
+report results to the database. This user _only_ needs `EXECUTE` permission, and
+is configured via `Cluster.DB.User` and `Cluster.DB.Pass`. If unspecified, these
+will default to the values of `DB.User` and `DB.Pass`.
+
+### Email
+
+StarExec sends automated emails for several purposes, such as sending
+notifications when new users are registered or sending weekly status updates.
+To do this, StarExec requires an email account that it can send emails from.
+`Email.User` should be set to the username of the account to send from, and
+`Email.Pass`, `Email.Smtp` and `Email.Port` should be set as decribed.
+
+StarExec is also configured to use a `Email.Contact`, which is intended to
+receive emails directed at StarExec admins. This email address will appear
+on the site for users who want to send bug reports or ask questions.
+
+### Backend
+
+You will need to make sure that you have mapped the StarExec data directory,
+(`data_dir`), to a matching path on each compute node, as your compute nodes
+will need access to the StarExec data directory that exists on the head node.
+
+`Cluster.UserOne` and `Cluster.UserTwo` (by default, `sandbox` and `sandbox2`
+respectively) refer to users that will execute jobs on compute nodes.
+Ensure that these accounts exist on the head node and all compute nodes, and
+have appropriate permissions.
+
+Create the `star-web` group.
+
+Create the user `tomcat` and add this user to the `star-web` group.
+Add the `tomcat` user to the `star-web` group, and change the primary group for
+`tomcat` to `star-web`.
+Tomcat is the user that you will need to use when starting up **Tomcat** using
+`startup.sh` in the **Tomcat** `bin/` folder.
+You should also ensure that `tomcat` is the owner of the entire
+**Tomcat** installation directory.
+
+Finally, any users that are going to be administering StarExec should also be
+added to the `star-web` group. Being a member of `star-web` will be necessary
+for correctly executing the StarExec deploy scripts.
+
+Create the `sandbox` group, and add SANDBOX_USER_ONE to this group.
+Create another group `sandbox2` and add SANDBOX_USER_TWO to this group.
+Add the `tomcat` user to both of these groups.
+
+If you are using SGE as a backend, you need to create the user `sgeadmin` and
+ensure this user does have administrator privileges in SGE.
+
+A sandbox directory will need to be created on the StarExec head node.
+This directory is used to execute user-provided scripts in a sandboxed
+environment, preventing them from affecting other parts of the system.
+You should create a directory named `sandbox/` at the location specified by
+`data_dir`.
+Make the owner `Cluster.UserOne`, and make the group `sandbox`.
+Use `chmod` on the directory to make permissions `770`.
+Additionally, use `chmod g+s` to set the GID for the directory.
+Finally, use the following command to ensure that new directories in the sandbox
+have `g+rwx` permissions.
+
+    setfacl -d -m g::rwx sandbox
+
+The directory configured as `Backend.WorkingDir` needs to be created.
+`tomcat` should be the owner and `star-web` should be the group.
+Under this directory, create two directories named `sandbox/` and `sandbox2/`.
+These should also use the `tomcat` user and the `star-web` group.
+
+Sudo permissions need to be configured.
+StarExec uses `sudo` in several locations to execute commands as other users,
+most often to execute commands using the `Cluster.UserOne` and `Cluster.UserTwo`
+users. The `tomcat` user will need all of the following `sudo` permissions.
+
+
+HEAD NODE
+User `tomcat` may run the following commands on this host:
+
+    (SANDBOX_USER_ONE) NOPASSWD: ALL
+    (SANDBOX_USER_TWO) NOPASSWD: ALL
+    (root) NOPASSWD: /sbin/service tomcat7 restart, /sbin/service tomcat7 stop, /sbin/service tomcat7 start
+
+The following entries are needed only if you are using an SGE backend.
+Replace `/cluster/sge-6.2u5/bin/lx24-amd64/` in each path with your install directory
+
+    (sgeadmin) NOPASSWD: /cluster/sge-6.2u5/bin/lx24-amd64/qconf, /cluster/sge-6.2u5/bin/lx24-amd64/qmod, /cluster/gridengine-8.1.8/bin/lx-amd64/qconf,
+    /cluster/gridengine-8.1.8/bin/lx-amd64/qmod
+
+
+COMPUTE NODE (or head node if you are using a local backend)
+
+
+User `tomcat` may run the following commands on this host:
+
+    (sandbox) NOPASSWD: ALL
+
+For all of the following commands, the prefix `/export/starexec` should be
+replaced with your configured value of `Backend.WorkingDir`.
+
+    (root) NOPASSWD: /bin/chown -R SANDBOX_USER_ONE /export/starexec/sandbox, /bin/chown -R tomcat /export/starexec/sandbox, /bin/chown -R SANDBOX_USER_ONE
+    /export/starexec/sandbox/benchmark/theBenchmark.cnf, /bin/chown -R tomcat /export/starexec/sandbox/benchmark/theBenchmark.cnf
+    (sandbox2) NOPASSWD: ALL
+    (root) NOPASSWD: /bin/chown -R SANDBOX_USER_TWO /export/starexec/sandbox2, /bin/chown -R tomcat /export/starexec/sandbox2, /bin/chown -R SANDBOX_USER_TWO
+    /export/starexec/sandbox2/benchmark/theBenchmark.cnf, /bin/chown -R tomcat /export/starexec/sandbox2/benchmark/theBenchmark.cnf
+
+The same applies as on the head node for the following commands
+
+    (sgeadmin) NOPASSWD: /cluster/sge-6.2u5/bin/lx24-amd64/qconf, /cluster/sge-6.2u5/bin/lx24-amd64/qmod, /cluster/gridengine-8.1.8/bin/lx-amd64/qconf,
+    /cluster/gridengine-8.1.8/bin/lx-amd64/qmod
