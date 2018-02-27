@@ -339,7 +339,7 @@ public abstract class JobManager {
 
 				}
 				if (curLoops > maxLoops) {
-					log.warn("forcibly breaking out of JobManager.submitJobs()-- max loops exceeded");
+					log.warn("submitJobs" "forcibly breaking out of JobManager.submitJobs()-- max loops exceeded");
 					break;
 				}
 
@@ -453,7 +453,7 @@ public abstract class JobManager {
 								continue;
 							}
 						} catch (SQLException e) {
-							log.error("Database error while trying to get broken bench dependencies.", e);
+							log.error("submitJobs", "Database error while trying to get broken bench dependencies.", e);
 							// submit the pair anyway, if there are broken bench dependencies then we will get a
 							// submit_failed status.
 						}
@@ -464,7 +464,7 @@ public abstract class JobManager {
 							// twice.
 							StatusCode statusOfPair = JobPairs.getPair(pair.getId()).getStatus().getCode();
 							if (statusOfPair != StatusCode.STATUS_PENDING_SUBMIT) {
-								log.warn("Pair with id=" + pair.getId() +
+								log.warn("submitJobs", "Pair with id=" + pair.getId() +
 								         " was caught attempting to be submitted again.");
 								continue;
 							}
@@ -497,12 +497,10 @@ public abstract class JobManager {
 							}
 							queueSize++;
 						} catch (BenchmarkDependencyMissingException e) {
-							log.error("submitJobs() received exception " + e.getMessage());
-							log.error("setting pair with following ID to benchmark fail " + pair.getId());
+							log.error("submitJobs", "ERROR_BENCHMARK for pair: " + pair.getId(), e);
 							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_BENCHMARK.getVal());
 						} catch (Exception e) {
-							log.error("submitJobs() received exception " + e.getMessage(), e);
-							log.error("setting pair with following ID to submit_fail " + pair.getId());
+							log.error("submitJobs", "ERROR_SUBMIT_FAIL for pair: " + pair.getId(), e);
 							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
 						}
 					}
@@ -510,7 +508,7 @@ public abstract class JobManager {
 			} // end looping until schedule is empty or we have submitted enough job pairs
 
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("submitJobs", e);
 		}
 
 	} // end submitJobs()
