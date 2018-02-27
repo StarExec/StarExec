@@ -339,7 +339,8 @@ public abstract class JobManager {
 
 				}
 				if (curLoops > maxLoops) {
-					log.warn("submitJobs" "forcibly breaking out of JobManager.submitJobs()-- max loops exceeded");
+					log.warn("submitJobs",
+							"forcibly breaking out of JobManager.submitJobs()-- max loops exceeded");
 					break;
 				}
 
@@ -459,13 +460,20 @@ public abstract class JobManager {
 						}
 
 						try {
-
-							// Check to make sure the pair is still pending submit to prevent pairs being submitted
-							// twice.
-							StatusCode statusOfPair = JobPairs.getPair(pair.getId()).getStatus().getCode();
+							/* Check to make sure the pair is still pending submit
+							 * to prevent pairs being submitted twice. */
+							final JobPair jp = JobPairs.getPair(pair.getId());
+							if (jp == null) {
+								log.warn("submitJobs",
+										"Cannot get details for pair: " + pair.getId());
+								continue;
+							}
+							StatusCode statusOfPair = jp.getStatus().getCode();
 							if (statusOfPair != StatusCode.STATUS_PENDING_SUBMIT) {
-								log.warn("submitJobs", "Pair with id=" + pair.getId() +
-								         " was caught attempting to be submitted again.");
+								log.warn("submitJobs",
+										"Pair was caught attempting to be submitted again."
+										+ "\n\tJobPair: " + pair.getId()
+										+ "\n\tStatus:  " + statusOfPair);
 								continue;
 							}
 
