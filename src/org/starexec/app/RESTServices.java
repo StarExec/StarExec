@@ -4075,7 +4075,7 @@ public class RESTServices {
 	@Consumes("application/x-www-form-urlencoded")
 	@Produces("application/json")
 	public String moveSubSpaceToSpace(@FormParam("selectedIds[]") List<Integer> srcId, @FormParam("parent") int desId, @Context HttpServletRequest request) {
-		log.error("moveSubSpaceToSpace", "srcId: " + srcId + "    desId: " + desId);
+		log.trace("moveSubSpaceToSpace", "srcId: " + srcId + "    desId: " + desId);
 		// Get the id of the user who initiated the request
 		int userId = SessionUtil.getUserId(request);
 		if (srcId.isEmpty()) {
