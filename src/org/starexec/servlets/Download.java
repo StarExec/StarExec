@@ -1091,8 +1091,7 @@ public class Download extends HttpServlet {
 				success = handleSpace(space, u.getId(), response, hierarchy, includeBenchmarks, includeSolvers,
 				                      useIdDirectories
 				);
-			} else {
-				if (request.getParameter(PARAM_TYPE).equals(R.PROCESSOR)) {
+			} else if (request.getParameter(PARAM_TYPE).equals(R.PROCESSOR)) {
 					log.debug(methodName, "Handling " + R.PROCESSOR);
 					List<Processor> proc = null;
 					shortName = "Processor";
@@ -1148,7 +1147,6 @@ public class Download extends HttpServlet {
 					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, message);
 					return;
 				}
-			}
 
 			if (success) {
 				log.debug(methodName, "Successfully processed file for download.");
