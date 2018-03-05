@@ -7,6 +7,7 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.starexec.constants.R;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.logger.StarLogger;
 import org.starexec.test.TestUtil;
 
@@ -461,12 +462,6 @@ public class Util {
 		return readsomething;
 	}
 
-	private static class DrainStreams extends Exception {
-		public DrainStreams(String message) {
-			super(message);
-		}
-	}
-
 	/**
 	 * Drains both the stdout and stderr streams of a process and returns
 	 *
@@ -485,9 +480,9 @@ public class Util {
 			try {
 				if (drainInputStream(message, p.getErrorStream())) {
 					message.insert(0, "The process produced stderr output:\n");
-					throw new DrainStreams(message.toString());
+					throw new StarExecException(message.toString());
 				}
-			} catch (DrainStreams e) {
+			} catch (StarExecException e) {
 				log.error("drainStreams", e.getMessage(), e);
 			} catch (Exception e) {
 				log.error("drainStreams", "Error draining stderr from process: " + e.toString());
