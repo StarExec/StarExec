@@ -46,7 +46,7 @@ public class Common {
 			procedure.setString(2, ipAddress);
 			procedure.setString(3, browser);
 			procedure.executeUpdate();
-		} catch (Exception e){
+		} catch (SQLException e){
 			log.error("addLoginRecord", e);
 		} finally {
 			Common.safeClose(con);
@@ -60,7 +60,7 @@ public class Common {
 	protected static void beginTransaction(Connection con){
 		try {
 			con.setAutoCommit(false);
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			// Ignore any errors
 		}
 	}
@@ -73,7 +73,7 @@ public class Common {
 			con.rollback();
 			con.setAutoCommit(true);
 			log.warn("Database transaction rollback.");
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			// Ignore any errors
 		}
 	}
@@ -84,7 +84,7 @@ public class Common {
 	protected static void enableAutoCommit(Connection con){
 		try {
 			con.setAutoCommit(true);
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			// Ignore any errors
 		}
 	}
@@ -104,7 +104,7 @@ public class Common {
 		try {
 			con.commit();
 			enableAutoCommit(con);
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			Common.doRollback(con);
 		}
 	}
@@ -142,7 +142,7 @@ public class Common {
 	 */
 	public static void initialize() {
 		try {
-			if(Util.isNullOrEmpty(R.MYSQL_USERNAME)) {
+			if (Util.isNullOrEmpty(R.MYSQL_USERNAME)) {
 				log.warn("Attempted to initialize datapool without MYSQL properties being set");
 				return;
 			} else if (dataPool != null) {
@@ -199,9 +199,6 @@ public class Common {
 		try {
 			con = Common.getConnection();
 			return queryUsingConnectionKeepConnection(callPreparationSql, con, setParameters, connectionResultsFunction);
-		} catch (SQLException e) {
-			log.warn("queryKeepConnection", "Rethrowing SQLException", e);
-			throw e;
 		} finally {
 			Common.safeClose(con);
 		}
@@ -221,7 +218,7 @@ public class Common {
 			updateUsingConnection(con, callPreparationSql, setParameters);
 			Common.endTransaction(con);
 		} catch (SQLException e) {
-			log.warn("update", "Rethrowing SQLException", e);
+			log.warn("update", "Rolling back update & rethrowing SQLException", e);
 			Common.doRollback(con);
 			throw e;
 		} finally {
@@ -261,6 +258,7 @@ public class Common {
 			Common.endTransaction(con);
 			return output;
 		} catch (SQLException e) {
+			log.warn("updateWithOutput", "Rolling back update & rethrowing SQLException", e);
 			Common.doRollback(con);
 			throw e;
 		} finally {
@@ -284,6 +282,7 @@ public class Common {
 			statement.execute(sql);
 			Common.endTransaction(con);
 		} catch (SQLException e) {
+			log.warn("execute", "Rolling back execute & rethrowing SQLException", e);
 			Common.doRollback(con);
 			throw e;
 		} finally {
@@ -407,7 +406,7 @@ public class Common {
 			if (statement!=null && !statement.isClosed()) {
 				statement.close();
 			}
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			log.error("safeClose", e);
 		}
 	}
@@ -417,7 +416,7 @@ public class Common {
 			if (statement!=null) {
 				statement.close();
 			}
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			log.error("safeClose", e);
 		}
 	}
@@ -431,7 +430,7 @@ public class Common {
 			if (r!=null && !r.isClosed()) {
 				r.close();
 			}
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			log.error("safeClose", e);
 		}
 	}
@@ -447,7 +446,7 @@ public class Common {
 				c.close();
 				connectionsClosed++;
 			}
-		} catch (Exception e){
+		} catch (SQLException e){
 			// Do nothing
 			log.error("safeClose", e);
 		}
