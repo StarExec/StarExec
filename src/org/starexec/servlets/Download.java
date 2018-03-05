@@ -915,9 +915,8 @@ public class Download extends HttpServlet {
 			}
 
 
-			String paramType = request.getParameter(PARAM_TYPE);
-			log.debug(methodName, "Param type was: " + paramType);
-			if (paramType.equals(R.SOLVER)) {
+			switch (request.getParameter(PARAM_TYPE)) {
+			case R.SOLVER: {
 				log.debug(methodName, "Handling " + R.SOLVER);
 				Optional<Solver> os = handleSolverAndSolverSrc(request, response);
 				if (os.isPresent()) {
@@ -933,7 +932,8 @@ public class Download extends HttpServlet {
 					// handleSolverAndSolverSrc already sent the response.
 					return;
 				}
-			} else if (request.getParameter(PARAM_TYPE).equals(R.SOLVER_SOURCE)) {
+				break;
+			} case R.SOLVER_SOURCE: {
 				log.debug(methodName, "Handling solverSrc");
 				Optional<Solver> os = handleSolverAndSolverSrc(request, response);
 				if (os.isPresent()) {
@@ -943,7 +943,8 @@ public class Download extends HttpServlet {
 					// handleSolverAndSolverSrc already sent the response.
 					return;
 				}
-			} else if (request.getParameter(PARAM_TYPE).equals(R.BENCHMARK)) {
+				break;
+			} case R.BENCHMARK: {
 				log.debug(methodName, "Handling " + R.BENCHMARK);
 				Benchmark b = null;
 				String universallyUniqueId = request.getParameter(PARAM_ANON_ID);
@@ -968,7 +969,8 @@ public class Download extends HttpServlet {
 				shortName = shortName.replaceAll("\\s+", "");
 				response.addHeader("Content-Disposition", "attachment; filename=" + shortName + ".zip");
 				success = handleBenchmark(b, response);
-			} else if (request.getParameter(PARAM_TYPE).equals(R.PAIR_OUTPUT)) {
+				break;
+			} case R.PAIR_OUTPUT: {
 				log.debug(methodName, "Handling " + R.PAIR_OUTPUT);
 				Boolean longPath = Boolean.parseBoolean(request.getParameter("longpath"));
 				log.debug("Long path value = " + longPath);
@@ -976,14 +978,16 @@ public class Download extends HttpServlet {
 				shortName = "Pair_" + id;
 				response.addHeader("Content-Disposition", "attachment; filename=" + shortName + ".zip");
 				success = handlePairOutput(id, u.getId(), response, longPath);
-			} else if (request.getParameter(PARAM_TYPE).equals(R.JOB_OUTPUTS)) {
+				break;
+			} case R.JOB_OUTPUTS: {
 				log.debug(methodName, "Handling " + R.JOB_OUTPUTS);
 
 				List<Integer> ids = Validator.convertToIntList(request.getParameter("id[]"));
 				shortName = "Pair_Output";
 				response.addHeader("Content-Disposition", "attachment; filename=" + shortName + ".zip");
 				success = handlePairOutputs(ids, u.getId(), response, true);
-			} else if (request.getParameter(PARAM_TYPE).equals(R.SPACE_XML)) {
+				break;
+			} case R.SPACE_XML: {
 				log.debug(methodName, "Handling " + R.SPACE_XML);
 				Space space = Spaces.get(Integer.parseInt(request.getParameter(PARAM_ID)));
 				shortName = space.getName() + "_XML";
@@ -1007,7 +1011,8 @@ public class Download extends HttpServlet {
 				}
 
 				success = handleSpaceXML(space, u.getId(), response, includeAttributes, updates, upid);
-			} else if (request.getParameter(PARAM_TYPE).equals(R.JOB_XML)) {
+				break;
+			} case R.JOB_XML: {
 				log.debug(methodName, "Handling " + R.JOB_XML);
 				Job job = Jobs.get(Integer.parseInt(request.getParameter(PARAM_ID)));
 
@@ -1017,7 +1022,8 @@ public class Download extends HttpServlet {
 				success = handleJobXML(job, u.getId(), response);
 
 				// this next condition is for the CSV file
-			} else if (request.getParameter(PARAM_TYPE).equals(R.JOB)) {
+				break;
+			} case R.JOB: {
 				log.debug(methodName, "Handling " + R.JOB);
 				Integer jobId = Integer.parseInt(request.getParameter(PARAM_ID));
 
@@ -1051,7 +1057,8 @@ public class Download extends HttpServlet {
 				shortName = "Job" + jobId + "_info";
 				response.addHeader("Content-Disposition", "attachment; filename=" + shortName + ".zip");
 				success = handleJob(jobId, u.getId(), response, since, ids, complete);
-			} else if (request.getParameter(PARAM_TYPE).equals(R.SPACE)) {
+				break;
+			} case R.SPACE: {
 				log.debug(methodName, "Handling " + R.SPACE);
 				Space space = Spaces.getDetails(Integer.parseInt(request.getParameter(PARAM_ID)), u.getId());
 
@@ -1091,7 +1098,8 @@ public class Download extends HttpServlet {
 				success = handleSpace(space, u.getId(), response, hierarchy, includeBenchmarks, includeSolvers,
 				                      useIdDirectories
 				);
-			} else if (request.getParameter(PARAM_TYPE).equals(R.PROCESSOR)) {
+				break;
+			} case R.PROCESSOR: {
 				log.debug(methodName, "Handling " + R.PROCESSOR);
 				List<Processor> proc = null;
 				shortName = "Processor";
@@ -1109,7 +1117,8 @@ public class Download extends HttpServlet {
 					response.sendError(HttpServletResponse.SC_NO_CONTENT, "There are no processors to download");
 					return;
 				}
-			} else if (request.getParameter(PARAM_TYPE).equals(R.JOB_OUTPUT)) {
+				break;
+			} case R.JOB_OUTPUT: {
 				log.debug(methodName, "Handling " + R.JOB_OUTPUT);
 				int jobId = Integer.parseInt(request.getParameter(PARAM_ID));
 
@@ -1134,17 +1143,20 @@ public class Download extends HttpServlet {
 				shortName = "Job" + jobId + "_output";
 				response.addHeader("Content-Disposition", "attachment; filename=" + shortName + ".zip");
 				success = handleJobOutputs(jobId, response, since, lastModified);
-			} else if (request.getParameter(PARAM_TYPE).equals(R.JOB_PAGE_DOWNLOAD_TYPE)) {
+				break;
+			} case R.JOB_PAGE_DOWNLOAD_TYPE: {
 				log.debug(methodName, "Handling " + R.JOB_PAGE_DOWNLOAD_TYPE);
 				int jobId = Integer.parseInt(request.getParameter(PARAM_ID));
 				handleJobPage(jobId, request, response);
 				// Just set success to true, handleJobPage will throw an exception if it is unsuccessful.
 				success = true;
-			} else {
+				break;
+			} default: {
 				final String message = "invalid download type specified: " + request.getParameter(PARAM_TYPE);
 				log.debug(methodName, message);
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, message);
 				return;
+			}
 			}
 
 			if (success) {
