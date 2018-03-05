@@ -334,9 +334,6 @@ public class Common {
 		try {
 			con = Common.getConnection();
 			return queryUsingConnection(con, callPreparationSql, setParameters, resultsConsumer);
-		} catch (SQLException e) {
-			log.warn("query", "Rethrowing SQLException", e);
-			throw e;
 		} finally {
 			Common.safeClose(con);
 		}
@@ -361,9 +358,6 @@ public class Common {
 			setParameters.accept(procedure);
 			results = procedure.executeQuery();
 			return resultsConsumer.query(results);
-		} catch (SQLException e) {
-			log.error("queryUsingConnection", "Rethrowing SQLException", e);
-			throw e;
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
@@ -383,9 +377,6 @@ public class Common {
 			setParameters.accept(procedure);
 			results = procedure.executeQuery();
 			return connectionResultsFunction.accept(con, results);
-		} catch (SQLException e) {
-			log.error("queryUsingConnectionKeepConnection", "Rethrowing SQLException", e);
-			throw e;
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
