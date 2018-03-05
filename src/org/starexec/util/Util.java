@@ -461,6 +461,12 @@ public class Util {
 		return readsomething;
 	}
 
+	private static class DrainStreams extends Exception {
+		public DrainStreams(String message) {
+			super(message);
+		}
+	}
+
 	/**
 	 * Drains both the stdout and stderr streams of a process and returns
 	 *
@@ -479,8 +485,10 @@ public class Util {
 			try {
 				if (drainInputStream(message, p.getErrorStream())) {
 					message.insert(0, "The process produced stderr output:\n");
-					log.error("drainStreams", message.toString());
+					throw new DrainStreams(message.toString());
 				}
+			} catch (DrainStreams e) {
+				log.error("drainStreams", e.getMessage(), e);
 			} catch (Exception e) {
 				log.error("drainStreams", "Error draining stderr from process: " + e.toString());
 			}
