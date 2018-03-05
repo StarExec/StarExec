@@ -1165,10 +1165,12 @@ public class JobPairs {
 				jp.getPrimarySolver().getConfigurations().get(0).setName(results.getString("config_name"));
 				jp.getStages().get(0).setConfiguration(jp.getPrimarySolver().getConfigurations().get(0));
 				return jp;
+			} else {
+				log.warn("getPair", "Pair not found: " + pairId);
 			}
 			Common.safeClose(results);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getPair", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
