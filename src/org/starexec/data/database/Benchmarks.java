@@ -333,7 +333,7 @@ public class Benchmarks {
 	 * @throws Exception Any database error that gets thrown
 	 * @author Tyler Jensen
 	 */
-	public static int addAndAssociate(Benchmark benchmark, Integer spaceId, Integer statusId) {
+	public static int addAndAssociate(Benchmark benchmark, Integer spaceId, Integer statusId) throws SQLException {
 		if (Benchmarks.isBenchValid(benchmark.getAttributes())) {
 			Connection con = null;
 			try {
@@ -348,7 +348,7 @@ public class Benchmarks {
 					log.debug("bench successfully added");
 					return benchId;
 				}
-			} catch (Exception e) {
+			} catch (SQLException e) {
 				log.error(e.getMessage(), e);
 				throw e;
 			} finally {

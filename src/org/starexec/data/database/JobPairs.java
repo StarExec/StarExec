@@ -173,6 +173,8 @@ public class JobPairs {
 				}
 			}
 			return Optional.empty();
+		} catch (SQLException e) {
+			return Optional.empty();
 		} finally {
 			Common.safeClose(con);
 		}
@@ -303,6 +305,7 @@ public class JobPairs {
 			log.debug("addJobPairs two");
 			addJobPairs(con, jobId, pairs);
 			log.debug("addJobPairs three");
+		} catch (SQLException e) {
 		} finally {
 			Common.endTransaction(con);
 			Common.safeClose(con);
