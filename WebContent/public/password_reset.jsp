@@ -1,13 +1,11 @@
-<%@page import="org.starexec.constants.R" %>
+<%@page import="org.starexec.constants.DB" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
 <%
-	request.setAttribute("firstNameLen", R.USER_FIRST_LEN);
-	request.setAttribute("lastNameLen", R.USER_LAST_LEN);
-	request.setAttribute("emailLen", R.EMAIL_LEN);
+	request.setAttribute("firstNameLen", DB.USER_FIRST_LEN);
+	request.setAttribute("lastNameLen", DB.USER_LAST_LEN);
+	request.setAttribute("emailLen", DB.EMAIL_LEN);
 %>
-
 <star:template title="Password reset" css="accounts/password_reset"
                js="lib/jquery.validate.min, accounts/password_reset">
 	<p>Enter your credentials to reset your password</p>
