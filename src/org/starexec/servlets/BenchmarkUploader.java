@@ -367,7 +367,11 @@ public class BenchmarkUploader extends HttpServlet {
 					Reports.addToEventOccurrencesNotRelatedToQueue("benchmarks uploaded", totalBenchmarksUploaded);
 				}
 			} catch (Exception e) {
-				log.error("Error in upload benchmark.", e);
+				String msg = "userId:      " + userId
+					+ "\nspaceId:     " + spaceId
+					+ "\narchiveFile: " + archiveFile.getName()
+				;
+				log.error("handleUploadRequest", msg, e);
 			} finally {
 				Uploads.benchmarkEverythingComplete(statusId);
 			}
