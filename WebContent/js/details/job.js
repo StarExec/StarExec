@@ -1480,8 +1480,10 @@ function getSolverTableInitializer() {
 
 		panelTableInitializer["fnServerData"] = fnShortStatsPaginationHandler;
 		window.getPanelTableInitializer = function(jobId, spaceId) {
-			panelTableInitializer["sAjaxSource"] = getPaginationUrl(spaceId);
-			return panelTableInitializer;
+			var data = {};
+			$.extend(data, panelTableInitializer);
+			data["sAjaxSource"] = getPaginationUrl(spaceId);
+			return data;
 		}
 	}
 
