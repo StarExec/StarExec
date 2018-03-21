@@ -4,8 +4,8 @@ CREATE DATABASE @DB.Name@;
 
 USE @DB.Name@;
 
+source @schema@
+
 delimiter //
 source @procedures@
 delimiter ;
-
-source @schema@
