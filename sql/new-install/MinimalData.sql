@@ -16,8 +16,15 @@ INSERT INTO permissions(add_solver, add_bench, add_user, add_space, add_job, rem
 	(1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0);
 
 -- Starts at 2 (the root space is defined in the schema)
-CALL AddSpace('Test', 'The Test community', 0, 3, 1, 0, @newSpaceId);
-CALL AssociateSpaces(1, @newSpaceId);
+INSERT INTO spaces(name, created, description, locked, default_permission) VALUES
+	('Test', SYSDATE(), 'The Test community', 0, 3);
+
+INSERT INTO set_assoc VALUES
+	(1, 2);
+
+INSERT INTO closure VALUES
+	(1, 2),
+	(2, 2);
 
 INSERT INTO user_assoc VALUES
 	(1, 1, 2);
@@ -25,5 +32,5 @@ INSERT INTO user_assoc VALUES
 INSERT INTO queues(name, status, global_access) VALUES
 	("all.q", "ACTIVE", true);
 
-CALL SetTestQueue(1);
-CALL ResumeAll();
+INSERT INTO system_flags (paused, test_queue) VALUES
+	(false, 1);
