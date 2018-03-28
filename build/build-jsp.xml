@@ -7,13 +7,23 @@
 			 from local.properties.
 	-->
 
-	<import file="${tomcat-dir}/bin/catalina-tasks.xml"/>
 	<target name="jspc">
-		<jasper
-		        validateXml="false"
-				uriroot="${web-home}/${STAREXEC_APPNAME}"
-		        webXmlFragment="${web-inf}/generated_web.xml"
-		        outputDir="${web-inf}/src" />
+		<taskdef classname="org.apache.jasper.JspC" name="jasper2" >
+			<classpath id="jspc.classpath">
+				<pathelement location="${java.home}/../lib/tools.jar"/>
+				<fileset dir="${tomcat-dir}/bin">
+					<include name="*.jar"/>
+				</fileset>
+				<fileset dir="${tomcat-dir}/lib">
+					<include name="*.jar"/>
+				</fileset>
+			</classpath>
+		</taskdef>
+		<jasper2
+		         validateXml="false"
+		         uriroot="WebContent"
+		         webXmlFragment="${web-inf}/generated_web.xml"
+		         outputDir="${web-inf}/src" />
 	</target>
 
 	<target name="compile-jsp">
