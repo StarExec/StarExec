@@ -106,12 +106,13 @@
 
 		<!-- Create the war file! -->
 		<war compress="${compression-enabled}" level="9" warfile="${war-file-name}" webxml="${web-inf}/web.xml">
-			<classes dir="${class-dir}" />
-			<classes dir="${web-inf}/classes" />
-			<fileset dir="WebContent" excludes="**/*.jsp,**/*.scss,**/context.template,**/starlogo.png"/>
+			<fileset dir="WebContent" excludes="**/*.jsp,**/*.class,**/*.java,**/*.properties,**/*.scss,**/context.template,**/starlogo.png"/>
 			<lib dir="${starcomlib}"/>
+			<zipfileset dir="${web-inf}/classes" prefix="WEB-INF/classes/" />
+			<zipfileset dir="bin/classes" prefix="WEB-INF/classes/" />
 			<zipfileset file="${Web.Image.Banner}" fullpath="images/starlogo.png" />
 			<zipfileset file="${Cluster.MachineSpecs}" fullpath="public/machine-specs.txt" />
+			<zipfileset file="${web-inf}/classes/logging.properties" fullpath="WEB-INF/classes/logging.properties" />
 		</war>
 	</target>
 </project>
