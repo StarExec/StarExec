@@ -17,11 +17,11 @@
 				<fileset dir="${tomcat-dir}/lib">
 					<include name="*.jar"/>
 				</fileset>
+				<pathelement path="${class-dir}"/>
 			</classpath>
 		</taskdef>
-		<jasper2
+		<jasper2 uriroot="WebContent"
 		         validateXml="false"
-		         uriroot="WebContent"
 		         webXmlFragment="${web-inf}/generated_web.xml"
 		         outputDir="${web-inf}/src" />
 	</target>
