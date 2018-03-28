@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project>
+	<!-- Action for compiling the project and building the WAR file.
+		1. we first compile the Java sources and copy over scripts and
+			 configurations to ${build-dir}.
+		2. then we rewrite some of the configurations, using information
+			 from local.properties.
+	-->
+
+	<import file="${tomcat-dir}/bin/catalina-tasks.xml"/>
+	<target name="jspc">
+		<jasper
+		        validateXml="false"
+				uriroot="${web-home}/${STAREXEC_APPNAME}"
+		        webXmlFragment="${web-inf}/generated_web.xml"
+		        outputDir="${web-inf}/src" />
+	</target>
+
+	<target name="compile-jsp">
+		<mkdir dir="${web-inf}/classes"/>
+		<mkdir dir="${web-inf}/lib"/>
+		<javac destdir="${web-inf}/classes"
+		       optimize="off"
+		       debug="on" failonerror="false"
+		       srcdir="${web-inf}/src"
+		       excludes="**/*.smap">
+			<classpath>
+				<fileset dir="${web-inf}/lib">
+					<include name="*.jar"/>
+				</fileset>
+				<pathelement location="${tomcat-dir}/lib"/>
+				<fileset dir="${tomcat-dir}/lib">
+					<include name="*.jar"/>
+				</fileset>
+				<fileset dir="${tomcat-dir}/bin">
+					<include name="*.jar"/>
+				</fileset>
+				<pathelement location="${web-inf}/classes"/>
+				<pathelement location="${class-dir}"/>
+			</classpath>
+			<include name="**" />
+			<exclude name="tags/**" />
+		</javac>
+	</target>
+
+	<target name="cleanup">
+		<delete>
+			<fileset dir="${webapp.path}/WEB-INF/src"/>
+			<fileset dir="${webapp.path}/WEB-INF/classes/org/apache/jsp"/>
+		</delete>
+	</target>
+</project>
