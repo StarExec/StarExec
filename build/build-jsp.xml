@@ -1,12 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project>
-	<!-- Action for compiling the project and building the WAR file.
-		1. we first compile the Java sources and copy over scripts and
-			 configurations to ${build-dir}.
-		2. then we rewrite some of the configurations, using information
-			 from local.properties.
-	-->
-
 	<target name="jspc">
 		<taskdef classname="org.apache.jasper.JspC" name="jasper2" >
 			<classpath id="jspc.classpath">
@@ -41,12 +34,5 @@
 			<include name="**" />
 			<exclude name="tags/**" />
 		</javac>
-	</target>
-
-	<target name="cleanup">
-		<delete>
-			<fileset dir="${webapp.path}/WEB-INF/src"/>
-			<fileset dir="${webapp.path}/WEB-INF/classes/org/apache/jsp"/>
-		</delete>
 	</target>
 </project>
