@@ -20,7 +20,7 @@
 		<property name="starexec-already-compiled" value="true" />
 	</target>
 
-	<target name="war" depends="register-commands,css">
+	<target name="war" depends="register-commands,css,compile-jsp">
 		<!-- Copy over the org.starexec.config folder from source to classes -->
 		<mkdir dir="${class-dir}/org/starexec/config" />
 		<copy todir="${class-dir}/org/starexec/config">
