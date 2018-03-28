@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project>
-	<target name="jspc">
+	<target name="jspc" depends="compilestarexec">
 		<taskdef classname="org.apache.jasper.JspC" name="jasper2" >
 			<classpath id="jspc.classpath">
 				<pathelement location="${java.home}/../lib/tools.jar"/>
@@ -16,6 +16,7 @@
 		<jasper2 uriroot="WebContent"
 		         validateXml="false"
 		         webXmlFragment="${web-inf}/generated_web.xml"
+		         addWebXmlMappings="true"
 		         outputDir="${web-inf}/src" />
 	</target>
 
