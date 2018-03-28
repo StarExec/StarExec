@@ -33,20 +33,10 @@
 		       optimize="off"
 		       debug="on" failonerror="false"
 		       srcdir="${web-inf}/src"
-		       excludes="**/*.smap">
+		       excludes="**/*.smap"
+		       classpathref="classpath">
 			<classpath>
-				<fileset dir="${web-inf}/lib">
-					<include name="*.jar"/>
-				</fileset>
-				<pathelement location="${tomcat-dir}/lib"/>
-				<fileset dir="${tomcat-dir}/lib">
-					<include name="*.jar"/>
-				</fileset>
-				<fileset dir="${tomcat-dir}/bin">
-					<include name="*.jar"/>
-				</fileset>
-				<pathelement location="${web-inf}/classes"/>
-				<pathelement location="${class-dir}"/>
+				<pathelement path="${class-dir}"/>
 			</classpath>
 			<include name="**" />
 			<exclude name="tags/**" />
