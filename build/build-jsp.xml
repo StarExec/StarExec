@@ -20,7 +20,7 @@
 		         outputDir="${web-inf}/src" />
 	</target>
 
-	<target name="compile-jsp">
+	<target name="compile-jsp" depends="jspc">
 		<mkdir dir="${web-inf}/classes"/>
 		<mkdir dir="${web-inf}/lib"/>
 		<mkdir dir="${web-inf}/src"/>
