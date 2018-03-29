@@ -23,6 +23,7 @@
 	<target name="compile-jsp">
 		<mkdir dir="${web-inf}/classes"/>
 		<mkdir dir="${web-inf}/lib"/>
+		<mkdir dir="${web-inf}/src"/>
 		<javac destdir="${web-inf}/classes"
 		       optimize="off"
 		       debug="on" failonerror="false"
