@@ -26,7 +26,7 @@
 		<mkdir dir="${web-inf}/src"/>
 		<javac destdir="${web-inf}/classes"
 		       optimize="off"
-		       debug="on" failonerror="false"
+		       debug="on" failonerror="true"
 		       srcdir="${web-inf}/src"
 		       excludes="**/*.smap"
 		       classpathref="classpath">
