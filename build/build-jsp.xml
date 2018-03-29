@@ -24,12 +24,12 @@
 		<mkdir dir="${web-inf}/classes"/>
 		<mkdir dir="${web-inf}/lib"/>
 		<mkdir dir="${web-inf}/src"/>
-		<javac destdir="${web-inf}/classes"
-		       optimize="off"
-		       debug="on" failonerror="true"
+		<javac debug="on" debuglevel="lines,vars,source"
+		       classpathref="classpath"
+		       destdir="${web-inf}/classes"
+		       failonerror="true"
 		       srcdir="${web-inf}/src"
-		       excludes="**/*.smap"
-		       classpathref="classpath">
+		       excludes="**/*.smap">
 			<classpath>
 				<pathelement path="${class-dir}"/>
 			</classpath>
