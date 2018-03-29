@@ -99,8 +99,8 @@
 				<tr>
 					<td>configuration contents</td>
 					<td><textarea id="saveConfigContents"
-					              name="saveConfigContents" rows="6" cols="40"/>
-					</td>
+					              name="saveConfigContents" rows="6" cols="40">
+					</textarea></td>
 				</tr>
 				</tbody>
 			</table>
