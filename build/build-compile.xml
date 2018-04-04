@@ -20,7 +20,7 @@
 		<property name="starexec-already-compiled" value="true" />
 	</target>
 
-	<target name="war" depends="register-commands,css">
+	<target name="war" depends="register-commands,css,compile-jsp">
 		<!-- Copy over the org.starexec.config folder from source to classes -->
 		<mkdir dir="${class-dir}/org/starexec/config" />
 		<copy todir="${class-dir}/org/starexec/config">
@@ -107,7 +107,7 @@
 		<!-- Create the war file! -->
 		<war compress="${compression-enabled}" level="9" warfile="${war-file-name}" webxml="${web-inf}/web.xml">
 			<classes dir="${class-dir}" />
-			<fileset dir="WebContent" excludes="**/*.scss,**/context.template,**/starlogo.png"/>
+			<fileset dir="WebContent" excludes="WEB-INF/tags/*,**/*.jsp,,**/*.scss,**/context.template,**/starlogo.png"/>
 			<zipfileset file="${Web.Image.Banner}" fullpath="images/starlogo.png" />
 			<zipfileset file="${Cluster.MachineSpecs}" fullpath="public/machine-specs.txt" />
 		</war>

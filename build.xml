@@ -55,6 +55,7 @@
 	<import file="build/build-clean.xml"/>
 	<import file="build/build-compile.xml"/>
 	<import file="build/build-config.xml"/>
+	<import file="build/build-jsp.xml"/>
 	<import file="build/build-test.xml"/>
 	<import file="build/build-scripts.xml"/>
 	<import file="build/build-sql.xml"/>
