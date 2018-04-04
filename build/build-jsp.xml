@@ -17,18 +17,18 @@
 		         validateXml="false"
 		         webXmlFragment="${web-inf}/generated_web.xml"
 		         addWebXmlMappings="true"
-		         outputDir="${web-inf}/src" />
+		         outputDir="${jsp-java}" />
 	</target>
 
 	<target name="compile-jsp" depends="jspc">
-		<mkdir dir="${web-inf}/classes"/>
+		<mkdir dir="${jsp-class}"/>
 		<mkdir dir="${web-inf}/lib"/>
-		<mkdir dir="${web-inf}/src"/>
+		<mkdir dir="${jsp-java}"/>
 		<javac debug="on" debuglevel="lines,vars,source"
 		       classpathref="classpath"
-		       destdir="${web-inf}/classes"
+		       destdir="${jsp-class}"
 		       failonerror="true"
-		       srcdir="${web-inf}/src"
+		       srcdir="${jsp-java}"
 		       excludes="**/*.smap">
 			<classpath>
 				<pathelement path="${class-dir}"/>

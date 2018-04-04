@@ -110,7 +110,7 @@
 			<fileset dir="WebContent" excludes="**/*.jsp,**/*.java,**/*.properties,**/*.scss,**/context.template,**/starlogo.png"/>
 			<zipfileset file="${Web.Image.Banner}" fullpath="images/starlogo.png" />
 			<zipfileset file="${Cluster.MachineSpecs}" fullpath="public/machine-specs.txt" />
-			<zipfileset file="${web-inf}/classes/logging.properties" fullpath="WEB-INF/classes/logging.properties" />
+			<zipfileset file="${jsp-class}/logging.properties" fullpath="WEB-INF/classes/logging.properties" />
 		</war>
 	</target>
 </project>
