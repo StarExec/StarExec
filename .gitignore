@@ -15,7 +15,6 @@ Thumbs.db
 
 # /WebContent/META-INF/
 /WebContent/META-INF/context.xml
-/WebContent/WEB-INF/src/
 
 # /WebContent/WEB-INF/lib/
 /WebContent/WEB-INF/lib/drmaa.jar

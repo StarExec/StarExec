@@ -22,7 +22,6 @@
 
 	<target name="compile-jsp" depends="jspc">
 		<mkdir dir="${jsp-class-dir}"/>
-		<mkdir dir="${web-inf}/lib"/>
 		<mkdir dir="${jsp-java-dir}"/>
 		<javac debug="on" debuglevel="lines,vars,source"
 		       classpathref="classpath"
