@@ -226,9 +226,7 @@ function fillTableWithPaginatedPrimitives(
 			var s = parseReturnCode(nextDataTablePage);
 			if (s) {
 				// Update the number displayed in this DataTable's fieldset
-				updateFieldsetCount(tableName,
-					nextDataTablePage.iTotalRecords,
-					'user');
+				updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
 
 				// Replace the current page with the newly received page
 				fnCallback(nextDataTablePage);
@@ -252,29 +250,16 @@ function getIdOfSelectedSpace() {
  * @param primType the type of primitive the table holds
  * @author Todd Elvers
  */
-function updateFieldsetCount(tableName, value, primType) {
-	switch (primType[0]) {
-		case 'j':
-			$('#jobExpd').children('span:first-child').text(value);
+function updateFieldsetCount(tableName, value) {
+	switch (tableName) {
+		case 'usersTable':
+			$('#usersLegend').children('span:first-child').text(value);
 			break;
-		case 'u':
-			// Base selector on table's legend as well as userExpd class since there are
-			// multiple elements with userExpd class.
-			var legendSelector = '#' + tableName + 'Legend';
-			$(legendSelector + '.userExpd')
-			.children('span:first-child')
-			.text(value);
+		case 'addUsers':
+			$('#addUsersLegend').children('span:first-child').text(value);
 			break;
-		case 's':
-			if ('o' == tableName[1]) {
-				$('#solverExpd').children('span:first-child').text(value);
-			} else {
-				$('#spaceExpd').children('span:first-child').text(value);
-			}
-			break;
-		case 'b':
-			$('#benchExpd').children('span:first-child').text(value);
-			break;
+		default:
+			log("updateFieldsetCount: Unknown tableName '"+tableName+"'");
 	}
 }
 
