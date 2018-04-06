@@ -98,13 +98,11 @@ function getQueryString() {
  * Sets up the 'space details' that consumes the right-hand side of the page
  */
 function initSpaceDetails() {
-
 	// builds the DataTable objects and enables multi-select on them
 	initDataTables();
 
 	// Set up jQuery button UI
 	initButtonUI();
-
 }
 
 /**
@@ -291,7 +289,7 @@ function initDataTables() {
 		"fnServerData": addUsersPaginationHandler
 	});
 
-	var tables = ["#users", "#addUsers"];
+	var tables = ["#usersTable", "#addUsers"];
 
 	function unselectAll(except) {
 		var tables = ["#usersTable"];
