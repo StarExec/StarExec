@@ -269,25 +269,16 @@ function initDataTables() {
 	addFilterOnDoneTyping();
 
 	// Setup the DataTable objects
-	userTable = $('#usersTable').dataTable({
-		"sDom": getDataTablesDom(),
-		"iDisplayStart": 0,
-		"iDisplayLength": defaultPageSize,
+	userTable = $('#usersTable').dataTable(new window.star.DataTableConfig({
 		"bServerSide": true,
 		"sAjaxSource": starexecRoot + "services/space/",
-		"sServerMethod": 'POST',
-		"fnServerData": fnPaginationHandler
-	});
-
-	addUsersTable = $('#addUsers').dataTable({
-		"sDom": getDataTablesDom(),
-		"iDisplayStart": 0,
-		"iDisplayLength": defaultPageSize,
+		"fnServerData": fnPaginationHandler // included in this file
+	}));
+	addUsersTable = $('#addUsers').dataTable(new window.star.DataTableConfig({
 		"bServerSide": true,
 		"sAjaxSource": starexecRoot + "services/space/",
-		"sServerMethod": 'POST',
-		"fnServerData": addUsersPaginationHandler
-	});
+		"fnServerData": addUsersPaginationHandler // included in this file
+	}));
 
 	var tables = ["#usersTable", "#addUsers"];
 
