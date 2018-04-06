@@ -280,6 +280,9 @@ function initDataTables() {
 		"fnServerData": addUsersPaginationHandler // included in this file
 	}));
 
+	/* Only one user can be selected at a time */
+	$('#userField .selectWrap').hide();
+
 	var tables = ["#usersTable", "#addUsers"];
 
 	function unselectAll(except) {
