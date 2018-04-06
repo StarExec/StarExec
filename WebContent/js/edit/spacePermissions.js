@@ -1,8 +1,8 @@
 /** Global Variables */
 var userTable;
 var addUsersTable;
-var spaceId = 1;			// id of the current space
-var spaceName;			// name of the current space
+var spaceId = 1;            // id of the current space
+var spaceName;              // name of the current space
 var currentUserId;
 var lastSelectedUserId = null;
 
@@ -250,14 +250,14 @@ function getIdOfSelectedSpace() {
  */
 function updateFieldsetCount(tableName, value) {
 	switch (tableName) {
-		case 'usersTable':
-			$('#usersLegend').children('span:first-child').text(value);
-			break;
-		case 'addUsers':
-			$('#addUsersLegend').children('span:first-child').text(value);
-			break;
-		default:
-			log("updateFieldsetCount: Unknown tableName '"+tableName+"'");
+	case 'usersTable':
+		$('#usersLegend').children('span:first-child').text(value);
+		break;
+	case 'addUsers':
+		$('#addUsersLegend').children('span:first-child').text(value);
+		break;
+	default:
+		log("updateFieldsetCount: Unknown tableName '"+tableName+"'");
 	}
 }
 
@@ -285,7 +285,6 @@ function initDataTables() {
 	function unselectAll(except) {
 		var tables = ["#usersTable"];
 		for (x = 0; x < tables.length; x++) {
-
 			if (except == tables[x]) {
 				continue;
 			}
@@ -367,33 +366,21 @@ function populatePermissionDetails(data, user_id) {
 		var leaderStatus = data.perm.isLeader;
 
 		if (isCommunity(spaceId)) {
-
 			if (canChangePermissions(user_id) && (leaderStatus != true || isAdmin())) {
 				$('#permCheckboxes').show();
-
 				if (isAdmin()) {
 					$('#leaderStatusRow').show();
-
-				}
-				else {
+				} else {
 					$('#communityLeaderStatusRow').show();
 				}
 			} else {
 				$('#currentPerms').show();
-
 			}
-		}
-		else {
-
-			if (canChangePermissions(user_id)) {
-				$('#permCheckboxes').show();
-				$('#leaderStatusRow').show();
-
-			}
-			else {
-				$("#currentPerms").show();
-
-			}
+		} else if (canChangePermissions(user_id)) {
+			$('#permCheckboxes').show();
+			$('#leaderStatusRow').show();
+		} else {
+			$("#currentPerms").show();
 		}
 
 		var addSolver = data.perm.addSolver;
@@ -422,8 +409,7 @@ function populatePermissionDetails(data, user_id) {
 			$("#uleaderStatus").attr("class", "ui-icon ui-icon-check");
 			$("#leaderStatus").attr("value", "demote");
 			$("#communityLeaderStatus").attr("class", "ui-icon ui-icon-check");
-		}
-		else {
+		} else {
 			$("#uleaderStatus").attr("class", "ui-icon ui-icon-close");
 			$("#leaderStatus").attr("value", "promote");
 			$("#communityLeaderStatus").attr("class", "ui-icon ui-icon-close");
@@ -433,16 +419,13 @@ function populatePermissionDetails(data, user_id) {
 }
 
 function checkBoxes(name, value) {
-
 	if (value == true) {
 		$("#u" + name).attr('class', 'ui-icon ui-icon-check');
 		$("#" + name).attr('checked', 'checked');
 	} else {
 		$("#u" + name).attr('class', 'ui-icon ui-icon-close');
 		$("#" + name).removeAttr('checked');
-
 	}
-
 }
 
 /**
@@ -498,43 +481,38 @@ function changePermissions(hier, changingLeadership) {
 	var data = null;
 
 	if (!changingLeadership) {
-		data =
-			{
-				addBench: $("#addBench").is(':checked'),
-				addJob: $("#addJob").is(':checked'),
-				addSolver: $("#addSolver").is(':checked'),
-				addSpace: $("#addSpace").is(':checked'),
-				addUser: $("#addUser").is(':checked'),
-				removeBench: $("#removeBench").is(':checked'),
-				removeJob: $("#removeJob").is(':checked'),
-				removeSolver: $("#removeSolver").is(':checked'),
-				removeSpace: $("#removeSpace").is(':checked'),
-				removeUser: $("#removeUser").is(':checked'),
-				//isLeader 	: $("#leaderStatus").is(':checked'),
-				isLeader: ($("#leaderStatus").attr("value") == "demote")
-			};
+		data = {
+			addBench: $("#addBench").is(':checked'),
+			addJob: $("#addJob").is(':checked'),
+			addSolver: $("#addSolver").is(':checked'),
+			addSpace: $("#addSpace").is(':checked'),
+			addUser: $("#addUser").is(':checked'),
+			removeBench: $("#removeBench").is(':checked'),
+			removeJob: $("#removeJob").is(':checked'),
+			removeSolver: $("#removeSolver").is(':checked'),
+			removeSpace: $("#removeSpace").is(':checked'),
+			removeUser: $("#removeUser").is(':checked'),
+			//isLeader 	: $("#leaderStatus").is(':checked'),
+			isLeader: ($("#leaderStatus").attr("value") == "demote")
+		};
+	} else if ($("#leaderStatus").attr("value") == "demote") {
+		data = makeDemoteData();
+	} else {
+		data = makePromoteData();
 	}
-	else {
-		if ($("#leaderStatus").attr("value") == "demote") {
-			data = makeDemoteData();
-		}
-		else {
-			data = makePromoteData();
-		}
-	}
+
 	// Pass data to server via AJAX
 	$.post(
 		url,
 		data,
 		function(returnCode) {
-			s = parseReturnCode(returnCode);
+			var s = parseReturnCode(returnCode);
 			if (s) {
 				getPermissionDetails(lastSelectedUserId, spaceId);
 			}
 		},
 		"json"
 	);
-
 }
 
 /**
@@ -555,7 +533,6 @@ function setUpButtons() {
 				"yes": function() {changePermissions(true, false)},
 				"no": function() { changePermissions(false, false)},
 				"cancel": function() {
-
 					$(this).dialog("close");
 				}
 			}
@@ -567,8 +544,7 @@ function setUpButtons() {
 
 		if (lastSelectedUserId == null) {
 			showMessage('error', 'No user selected', 5000);
-		}
-		else {
+		} else {
 			getPermissionDetails(lastSelectedUserId, spaceId);
 		}
 
@@ -585,15 +561,12 @@ function setUpButtons() {
 			height: 265,
 			buttons: {
 				"change only this space": function() {
-					changePermissions(false,
-						true)
+					changePermissions(false, true)
 				},
 				"change this space's hierarchy": function() {
-					changePermissions(true,
-						true)
+					changePermissions(true, true)
 				},
 				"cancel": function() {
-
 					$(this).dialog("close");
 				}
 			}
@@ -706,9 +679,7 @@ function doUserCopyPost(ids, destSpace, spaceId, copyToSubspaces, callback) {
 			fromSpace: spaceId,
 			copyToSubspaces: copyToSubspaces
 		},
-		function(returnCode) {
-			parseReturnCode(returnCode);
-		},
+		parseReturnCode,
 		"json"
 	).done(function() {
 		if (callback) {
@@ -734,15 +705,14 @@ function checkPermissions(jsonData, id) {
 			function(returnCode) {
 				$("#makePublic").show(); //the button may be hidden if the user is coming from another space
 				switch (returnCode) {
-					case 0:
-
-						currentSpacePublic = false;
-						setJqueryButtonText("#makePublic", "make public");
-						break;
-					case 1:
-						currentSpacePublic = true;
-						setJqueryButtonText("#makePublic", "make private");
-						break;
+				case 0:
+					currentSpacePublic = false;
+					setJqueryButtonText("#makePublic", "make public");
+					break;
+				case 1:
+					currentSpacePublic = true;
+					setJqueryButtonText("#makePublic", "make private");
+					break;
 				}
 			},
 			"json"
