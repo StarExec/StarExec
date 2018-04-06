@@ -4,6 +4,7 @@ var addUsersTable;
 var spaceId = 1;			// id of the current space
 var spaceName;			// name of the current space
 var currentUserId;
+var lastSelectedUserId = null;
 
 // utility - space chain (spaces.js)
 var spaceChain;
@@ -14,7 +15,7 @@ var usingSpaceChain = false;
 
 var curIsLeader = false;
 
-var communityIdList = null;
+var communityIdList;
 var currentSpacePublic = false; // is the space we are currently in public (true) or private (false)
 
 $(document).ready(function() {
@@ -47,15 +48,14 @@ function isAdmin() {
  * community
  **/
 function getCommunityIdList() {
-	list = [];
-	spaces = $("#communityIdList").attr("value").split(",");
+	var list = [];
+	var spaces = $("#communityIdList").attr("value").split(",");
 	for (i = 0; i < spaces.length; i++) {
 		if (spaces[i].trim().length > 0) {
 			list[i] = spaces[i];
 		}
 	}
 	return list
-
 }
 
 /**
@@ -140,8 +140,6 @@ function initSpaceExplorer() {
 	// Set the path to the css theme for the jstreeplugin
 	jsTree = makeSpaceTree("#exploreList", !usingSpaceChain);
 	jsTree.bind("select_node.jstree", function(event, data) {
-
-
 		// When a node is clicked, get its ID and display the info in the details pane
 		id = data.rslt.obj.attr("id");
 
@@ -225,7 +223,7 @@ function fillTableWithPaginatedPrimitives(
 		sSource + spaceId + "/" + primitiveType + "/pagination",
 		aoData,
 		function(nextDataTablePage) {
-			s = parseReturnCode(nextDataTablePage);
+			var s = parseReturnCode(nextDataTablePage);
 			if (s) {
 				// Update the number displayed in this DataTable's fieldset
 				updateFieldsetCount(tableName,
@@ -284,7 +282,6 @@ function updateFieldsetCount(tableName, value, primType) {
  * Initializes the DataTable objects and adds multi-select to them
  */
 function initDataTables() {
-
 	// Extend the DataTables api and add our custom features
 	addFilterOnDoneTyping();
 
