@@ -420,11 +420,11 @@ function populatePermissionDetails(data, user_id) {
 
 function checkBoxes(name, value) {
 	if (value == true) {
-		$("#u" + name).attr('class', 'ui-icon ui-icon-check');
-		$("#" + name).attr('checked', 'checked');
+		$("#u" + name).prop('class', 'ui-icon ui-icon-check');
+		$("#" + name).prop('checked', true);
 	} else {
-		$("#u" + name).attr('class', 'ui-icon ui-icon-close');
-		$("#" + name).removeAttr('checked');
+		$("#u" + name).prop('class', 'ui-icon ui-icon-close');
+		$("#" + name).prop('checked', false);
 	}
 }
 
