@@ -479,11 +479,10 @@ public class Util {
 		threadPool.execute(() -> {
 			try {
 				if (drainInputStream(message, p.getErrorStream())) {
-					message.insert(0, "The process produced stderr output:\n");
 					throw new StarExecException(message.toString());
 				}
 			} catch (StarExecException e) {
-				log.error("drainStreams", e.getMessage(), e);
+				log.error("drainStreams", "The process produced stderr output", e);
 			} catch (Exception e) {
 				log.error("drainStreams", "Error draining stderr from process: " + e.toString());
 			}
