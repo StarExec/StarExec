@@ -209,12 +209,11 @@ public class RESTHelpers {
 			//Validates that the sort direction is specified and valid
 			if (Util.isNullOrEmpty(sDir)) {
 				query.setSortASC(false);
+			} else if (sDir.contains("asc") || sDir.contains("desc")) {
+				query.setSortASC(sDir.equals("asc"));
 			} else {
-				if (sDir.contains("asc") || sDir.contains("desc")) {
-					query.setSortASC(sDir.equals("asc"));
-				} else {
-					return null;
-				}
+				log.warn("getAttrMap", "sDir is not 'asc' or 'desc': "+sDir);
+				return null;
 			}
 
 			// Depending on if the search/filter is empty or not, this will be 0 or 1
