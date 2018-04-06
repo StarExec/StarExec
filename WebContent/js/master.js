@@ -351,7 +351,6 @@ function parseBoolean(string) {
 		return false;
 	}
 	return string.trim().toLowerCase() == "true";
-
 }
 
 /**
@@ -398,15 +397,11 @@ function parseReturnCode(code, printMessage) {
 		log(code.devMessage);
 	}
 
-	if (printMessage) {
+	if (printMessage && stringExists(m)) {
 		if (s) {
-			if (stringExists(m)) {
-				showMessage("success", m, 5000);
-			}
+			showMessage("success", m, 5000);
 		} else {
-			if (stringExists(m)) {
-				showMessage("error", m, 5000);
-			}
+			showMessage("error", m, 5000);
 		}
 	}
 
@@ -444,14 +439,11 @@ function getDataTablesDom() {
  *     );
  */
 star.reloadOnSucess = function(returnCode, printMessage) {
-	var s = parseReturnCode(returnCode, printMessage);
-	if (s) {
+	if (parseReturnCode(returnCode, printMessage)) {
 		window.location.reload(true);
+	} else if (this !== window) {
+		$(this).dialog("close");
 	} else {
-		if (this !== window) {
-			$(this).dialog("close");
-		} else {
-			log("reloadOnSucess called without .bind(this)");
-		}
+		log("reloadOnSucess called without .bind(this)");
 	}
 };
