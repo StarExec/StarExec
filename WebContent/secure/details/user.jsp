@@ -89,8 +89,7 @@
 
 
 	<div id="detailPanel" class="userDetailPanel">
-		<fieldset>
-			<legend>details</legend>
+		<star:panel title="details" expandable="false">
 			<table id="infoTable">
 				<tr>
 					<td id="picSection">
@@ -140,9 +139,8 @@
 					</td>
 				</tr>
 			</table>
-		</fieldset>
-		<fieldset class="expd">
-			<legend>communities</legend>
+		</star:panel>
+		<star:panel title="communities">
 			<table id="member of communities" class="shaded">
 				<thead>
 				<tr>
@@ -157,10 +155,8 @@
 				</c:forEach>
 				</tbody>
 			</table>
-		</fieldset>
-		<c:if test="${owner}">
-			<fieldset class="expd">
-				<legend>user quotas</legend>
+		</star:panel>
+		<star:panel test="${owner}" title="user quotas">
 				<table id="diskUsageTable" class="shaded">
 					<thead>
 					<tr>
@@ -187,10 +183,8 @@
 					</tr>
 					</tbody>
 				</table>
-			</fieldset>
-			<fieldset id="solverField" class="expd">
-				<legend class="expd" id="solverExpd"><span>0</span> solvers
-				</legend>
+		</star:panel>
+		<star:panel test="${owner}" title="solvers" withCount="true">
 				<ul class="actionList">
 					<li>
 						<button prim="solver" id="recycleSolver"
@@ -214,10 +208,8 @@
 					</tr>
 					</thead>
 				</table>
-			</fieldset>
-			<fieldset id="benchField" class="expd">
-				<legend class="expd" id="benchExpd"><span>0</span> benchmarks
-				</legend>
+		</star:panel>
+		<star:panel test="${owner}" title="benchmarks" withCount="true">
 				<ul class="actionList">
 					<li>
 						<button prim="benchmark" id="recycleBench"
@@ -242,9 +234,8 @@
 					</tr>
 					</thead>
 				</table>
-			</fieldset>
-			<fieldset id="jobField" class="expd">
-				<legend class="expd" id="jobExpd"><span>0</span> jobs</legend>
+		</star:panel>
+		<star:panel test="${owner}" title="jobs" withCount="true">
 				<ul class="actionList">
 					<li>
 						<button id="deleteJob"
@@ -273,10 +264,8 @@
 					</tr>
 					</thead>
 				</table>
-			</fieldset>
-
-			<fieldset id="actionField">
-				<legend>user actions</legend>
+		</star:panel>
+		<star:panel test="${owner}" title="user actions" id="actionField" expandable="false">
 				<ul class="actionList">
 					<li><a id="editButton"
 					       href="${starexecRoot}/secure/edit/account.jsp?id=${t_user.id}">edit</a>
@@ -301,8 +290,9 @@
 						associate orphaned primitives with space
 					</a></li>
 				</ul>
-			</fieldset>
+		</star:panel>
 
+		<c:if test="${owner}">
 			<div id="dialog-confirm-delete" title="confirm delete"
 			     class="hiddenDialog">
 				<p><span class="ui-icon ui-icon-alert"></span><span

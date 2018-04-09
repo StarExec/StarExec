@@ -6,8 +6,7 @@
 <star:template title="Users Admin"
                js="admin/user, lib/jquery-ui.min, lib/jquery.dataTables.min"
                css="admin/user, common/table, explore/common, admin/admin, jqueryui/jquery-ui">
-	<fieldset id="userField" class="expdContainer">
-		<legend class="expd" id="userExpd"><span>0</span> users</legend>
+	<star:panel title="users" withCount="true" expandable="false">
 		<ul id="actionList">
 			<li><a type="btnRun" id="addUser"
 			       href="${starexecRoot}/secure/admin/addUser.jsp">Create New
@@ -26,5 +25,5 @@
 			</tr>
 			</thead>
 		</table>
-	</fieldset>
+	</star:panel>
 </star:template>
