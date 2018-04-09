@@ -223,9 +223,6 @@ function fillTableWithPaginatedPrimitives(
 		function(nextDataTablePage) {
 			var s = parseReturnCode(nextDataTablePage);
 			if (s) {
-				// Update the number displayed in this DataTable's fieldset
-				updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
-
 				// Replace the current page with the newly received page
 				fnCallback(nextDataTablePage);
 			}
@@ -236,29 +233,6 @@ function fillTableWithPaginatedPrimitives(
 
 function getIdOfSelectedSpace() {
 	return $('#exploreList').find('.jstree-clicked').parent().attr("id");
-}
-
-/**
- * Helper function for the pagination handlers; since the proper fieldset to update
- * cannot be reliably found via jQuery DOM navigation from pagination handlers,
- * this method providemanually updates the appropriate fieldset to the new value
- *
- * @param tableName the name of the table whose fieldset we want to update (not in jQuery id format)
- * @param value the new value to update the fieldset with
- * @param primType the type of primitive the table holds
- * @author Todd Elvers
- */
-function updateFieldsetCount(tableName, value) {
-	switch (tableName) {
-	case 'usersTable':
-		$('#usersLegend').children('span:first-child').text(value);
-		break;
-	case 'addUsers':
-		$('#addUsersLegend').children('span:first-child').text(value);
-		break;
-	default:
-		log("updateFieldsetCount: Unknown tableName '"+tableName+"'");
-	}
 }
 
 /**
@@ -279,6 +253,16 @@ function initDataTables() {
 		"sAjaxSource": starexecRoot + "services/space/",
 		"fnServerData": addUsersPaginationHandler // included in this file
 	}));
+
+	/**
+	 * Update the count in the label for each table's panel
+	 */
+	$('#usersTable,#addUsers').on("draw.dt", function(e, settings) {
+		var info = new $.fn.dataTable.Api(settings).page.info();
+		$(settings.oInstance) // The DataTable being drawn
+			.parents('fieldset').find('legend>span:first-child') // Find the label
+			.text(info.recordsTotal); // Set the current count
+	});
 
 	/* Only one user can be selected at a time */
 	$('#userField .selectWrap').hide();

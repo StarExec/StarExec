@@ -96,6 +96,16 @@ jQuery(function($) {
 		})
 	);
 
+	/**
+	 * Update the count in the label for each table's panel
+	 */
+	$(document).on("draw.dt", function(e, settings) {
+		var info = new $.fn.dataTable.Api(settings).page.info();
+		$(settings.oInstance) // The DataTable being drawn
+			.parents('fieldset').find('.expd>span:first-child') // Find the label
+			.text(info.recordsTotal); // Set the current count
+	});
+
 	$("#rbenchmarks, #rsolvers")
 	.on("mousedown", "tr:not(:has(.dataTables_empty))", function() {
 		$(this).toggleClass("row_selected");
@@ -132,9 +142,8 @@ function fnRecycledPaginationHandler(sSource, aoData, fnCallback) {
 		sSource + usrId + "/" + tableName + "/pagination",
 		aoData,
 		function(nextDataTablePage) {
-			s = parseReturnCode(nextDataTablePage);
+			var s = parseReturnCode(nextDataTablePage);
 			if (s) {
-				updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
 				fnCallback(nextDataTablePage);
 			}
 		},
@@ -274,30 +283,6 @@ function restoreSelected(prim) {
 			}
 		}
 	}, message);
-}
-
-/**
- * Helper function for fnPaginationHandler; since the proper fieldset to update
- * cannot be reliably found via jQuery DOM navigation from fnPaginationHandler,
- * this method provides manually updates the appropriate fieldset to the new value
- *
- * @param tableName the name of the table whose fieldset we want to update (not in jQuery id format)
- * @param primCount the new value to update the fieldset with
- * @author Todd Elvers
- */
-function updateFieldsetCount(tableName, value) {
-	switch (tableName[0]) {
-		case 'r':
-			if ('s' == tableName[1]) {
-				$("#recycledSolverExpd")
-				.children('span:first-child')
-				.text(value);
-			} else {
-				$("#recycledBenchExpd")
-				.children('span:first-child')
-				.text(value);
-			}
-	}
 }
 
 /**
