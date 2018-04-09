@@ -189,7 +189,7 @@
 				</table>
 			</fieldset>
 			<fieldset id="solverField" class="expd">
-				<legend class="expd" id="solverExpd"><span>0</span> solvers
+				<legend class="expd" id="solverExpd"><span class="list-count"></span> solvers
 				</legend>
 				<ul class="actionList">
 					<li>
@@ -216,7 +216,7 @@
 				</table>
 			</fieldset>
 			<fieldset id="benchField" class="expd">
-				<legend class="expd" id="benchExpd"><span>0</span> benchmarks
+				<legend class="expd" id="benchExpd"><span class="list-count"></span> benchmarks
 				</legend>
 				<ul class="actionList">
 					<li>
@@ -244,7 +244,7 @@
 				</table>
 			</fieldset>
 			<fieldset id="jobField" class="expd">
-				<legend class="expd" id="jobExpd"><span>0</span> jobs</legend>
+				<legend class="expd" id="jobExpd"><span class="list-count"></span> jobs</legend>
 				<ul class="actionList">
 					<li>
 						<button id="deleteJob"

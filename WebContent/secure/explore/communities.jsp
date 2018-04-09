@@ -50,14 +50,14 @@
 		<p id="commDesc" class="accent"></p>
 
 		<!--<fieldset id="websiteField">
-			<legend><span>0</span> website(s)</legend>						
-			<div id="webDiv">				
+			<legend><span class="list-count"></span> website(s)</legend>
+			<div id="webDiv">
 				<ul id="websites" class="horizontal"></ul>
-			</div>		
+			</div>
 		</fieldset>-->
 
 		<fieldset id="leaderField">
-			<legend class="expd"><span>0</span> leaders</legend>
+			<legend class="expd"><span class="list-count"></span> leaders</legend>
 			<table id="leaders">
 				<thead>
 				<tr>
@@ -70,7 +70,7 @@
 		</fieldset>
 
 		<fieldset id="memberField">
-			<legend class="expd"><span>0</span> members</legend>
+			<legend class="expd"><span class="list-count"></span> members</legend>
 			<table id="members">
 				<thead>
 				<tr>
@@ -84,7 +84,7 @@
 
 		<c:if test="${!hideCommunityRequests}">
 			<fieldset id="communityField">
-				<legend class="expd" id="communityExpd"><span>0</span> pending
+				<legend class="expd" id="communityExpd"><span class="list-count"></span> pending
 					community requests
 				</legend>
 				<table id="commRequests">

@@ -1261,16 +1261,6 @@ function initDataTables() {
 		"aaSorting": [] // tells server to sort by 'created'
 	});
 
-	/**
-	 * Update the count in the label for each table's panel
-	 */
-	$(document).on("draw.dt", function(e, settings) {
-		var info = new $.fn.dataTable.Api(settings).page.info();
-		$(settings.oInstance) // The DataTable being drawn
-			.parents('fieldset').find('.expd>span:first-child') // Find the label
-			.text(info.recordsTotal); // Set the current count
-	});
-
 	// Setup the DataTable objects
 	userTable = $('#users').dataTable(dataTableConfig);
 	solverTable = $('#solvers').dataTable(dataTableConfig);

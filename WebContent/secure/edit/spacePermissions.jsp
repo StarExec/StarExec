@@ -62,7 +62,7 @@
 		<p id="spaceDesc" class="accent"></p>
 		<p id="spaceID" class="accent"></p>
 		<fieldset id="userField">
-			<legend id="usersLegend" class="userExpd"><span>0</span> users</legend>
+			<legend id="usersLegend" class="userExpd"><span class="list-count"></span> users</legend>
 			<table id="usersTable">
 				<thead>
 				<tr>
@@ -224,7 +224,7 @@
 
 		<h3 class="addUsersTitle">Add users to <span class="spaceName"></span></h3>
 		<fieldset id="addUsersField">
-			<legend id="addUsersLegend" class="userExpd"><span>0</span> users
+			<legend id="addUsersLegend" class="userExpd"><span class="list-count"></span> users
 			</legend>
 			<table id="addUsers">
 				<thead>
