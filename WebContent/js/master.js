@@ -177,6 +177,11 @@ jQuery(function($) {
 		} else {
 			selectAll.show();
 		}
+
+		/* Update the `list-count` of the container, if one exists */
+		$(settings.oInstance) // The DataTable being drawn
+			.parents('fieldset').find('.list-count') // Find the label
+			.text(info.recordsTotal); // Set the current count
 	});
 
 	/**

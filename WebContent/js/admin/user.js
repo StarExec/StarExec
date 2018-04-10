@@ -8,10 +8,6 @@ jQuery(function($) {
 			aoData,
 			function(nextDataTablePage) {
 				if (parseReturnCode(nextDataTablePage)) {
-					// Update the number displayed in this DataTable's fieldset
-					$('#userExpd')
-					.children('span:first-child')
-					.text(nextDataTablePage.iTotalRecords);
 					// Replace the current page with the newly received page
 					fnCallback(nextDataTablePage);
 				}

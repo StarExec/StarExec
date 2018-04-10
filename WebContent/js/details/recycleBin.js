@@ -96,16 +96,6 @@ jQuery(function($) {
 		})
 	);
 
-	/**
-	 * Update the count in the label for each table's panel
-	 */
-	$(document).on("draw.dt", function(e, settings) {
-		var info = new $.fn.dataTable.Api(settings).page.info();
-		$(settings.oInstance) // The DataTable being drawn
-			.parents('fieldset').find('.expd>span:first-child') // Find the label
-			.text(info.recordsTotal); // Set the current count
-	});
-
 	$("#rbenchmarks, #rsolvers")
 	.on("mousedown", "tr:not(:has(.dataTables_empty))", function() {
 		$(this).toggleClass("row_selected");

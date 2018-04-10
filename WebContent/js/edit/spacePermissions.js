@@ -254,16 +254,6 @@ function initDataTables() {
 		"fnServerData": addUsersPaginationHandler // included in this file
 	}));
 
-	/**
-	 * Update the count in the label for each table's panel
-	 */
-	$('#usersTable,#addUsers').on("draw.dt", function(e, settings) {
-		var info = new $.fn.dataTable.Api(settings).page.info();
-		$(settings.oInstance) // The DataTable being drawn
-			.parents('fieldset').find('legend>span:first-child') // Find the label
-			.text(info.recordsTotal); // Set the current count
-	});
-
 	/* Only one user can be selected at a time */
 	$('#userField .selectWrap').hide();
 

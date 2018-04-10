@@ -82,16 +82,6 @@ $(document).ready(function() {
 		"fnServerData": fnPaginationHandler
 	});
 
-	/**
-	 * Update the count in the label for each table's panel
-	 */
-	$(document).on("draw.dt", function(e, settings) {
-		var info = new $.fn.dataTable.Api(settings).page.info();
-		$(settings.oInstance) // The DataTable being drawn
-			.parents('fieldset').find('legend>span:first-child') // Find the label
-			.text(info.recordsTotal); // Set the current count
-	});
-
 	jTable = $('#jobs').dataTable(dataTableConfig);
 	solverTable = $('#solvers').dataTable(dataTableConfig);
 	benchTable = $('#benchmarks').dataTable(dataTableConfig);
