@@ -48,7 +48,7 @@
 			</ul>
 		</fieldset>
 		<fieldset id="communityField" class="expdContainer">
-			<legend class="expd" id="communityExpd"><span>0</span> pending
+			<legend class="expd" id="communityExpd"><span class="list-count"></span> pending
 				community requests
 			</legend>
 			<table id="commRequests">

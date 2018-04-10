@@ -263,7 +263,7 @@ function getDetails(id, type, parent_node) {
 	jobPairTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
 	if (type == 'active_queue' || type == 'inactive_queue') {
 		var $jobs = $("#jobs");
-		$("#clusterExpd").html("Enqueued Job Pairs <span> (+)</span>");
+		$("#clusterExpd").html("<span class='list-count'/> Enqueued Job Pairs <span>(+)</span>");
 		$("#jobsContainer").show();
 		url = starexecRoot + "services/cluster/queues/details/" + id;
 		qid = id;
@@ -279,7 +279,7 @@ function getDetails(id, type, parent_node) {
 		}
 		$("#detailField .expdContainer").css("display", "none");
 	} else if (type == 'enabled_node' || type == 'disabled_node') {
-		$("#clusterExpd").text("Running Job Pairs");
+		$("#clusterExpd").html("<span class='list-count'/> Running Job Pairs");
 		$("#jobsContainer").hide();
 		url = starexecRoot + "services/cluster/nodes/details/" + id;
 		qid = parent_node.attr("id");
