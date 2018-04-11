@@ -440,9 +440,9 @@ function dbExec {
 	done
 }
 
-# Will strip quotes from the first argument
+# Will strip quotes from arguments passed
 function dbEscape {
-	echo ${1//[\'\"]/}
+	echo ${@//[\'\"]/}
 }
 
 function sendStageStatus {
