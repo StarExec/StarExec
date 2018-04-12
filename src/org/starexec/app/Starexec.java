@@ -90,6 +90,9 @@ public class Starexec implements ServletContextListener {
 		R.CONFIG_PATH = new File(R.STAREXEC_ROOT, "/WEB-INF/classes/org/starexec/config/").getAbsolutePath();
 		R.RUNSOLVER_PATH = new File(R.getSolverPath(), "runsolver").getAbsolutePath();
 
+		// Initialize the datapool after properties are loaded
+		Common.initialize();
+
 		R.logProperties();
 
 		try {
@@ -99,9 +102,6 @@ public class Starexec implements ServletContextListener {
 			log.error(e.getMessage(), e);
 		}
 
-		// Initialize the datapool after properties are loaded
-		Common.initialize();
-
 		// Initialize the validator (compile regexes) after properties are loaded
 		Validator.initialize();
 
@@ -109,7 +109,13 @@ public class Starexec implements ServletContextListener {
 		if (R.IS_FULL_STAREXEC_INSTANCE) {
 			R.BACKEND.initialize(R.BACKEND_ROOT);
 		}
-		R.PUBLIC_USER_ID = Users.get("public").getId();
+
+		try {
+			R.PUBLIC_USER_ID = Users.get("public").getId();
+		} catch (Exception e) {
+			log.fatal("!!! No public user found !!! Cannot continue !!!", e);
+			throw e;
+		}
 
 		System.setProperty("http.proxyHost", R.HTTP_PROXY_HOST);
 		System.setProperty("http.proxyPort", R.HTTP_PROXY_PORT);

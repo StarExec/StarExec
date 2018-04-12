@@ -1166,9 +1166,6 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	}).done(function(nextDataTablePage) {
 		var s = parseReturnCode(nextDataTablePage, false);
 		if (s) {
-			// Update the number displayed in this DataTable's fieldset
-			updateFieldsetCount(tableName, nextDataTablePage.iTotalRecords);
-
 			// Replace the current page with the newly received page
 			fnCallback(nextDataTablePage);
 
@@ -1194,35 +1191,6 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 			}, 10000);
 		}
 	});
-}
-
-/**
- * Helper function for fnPaginationHandler; since the proper fieldset to update
- * cannot be reliably found via jQuery DOM navigation from fnPaginationHandler,
- * this method provides manually updates the appropriate fieldset to the new value
- *
- * @param tableName the name of the table whose fieldset we want to update (not in jQuery id format)
- * @param primCount the new value to update the fieldset with
- * @author Todd Elvers
- */
-function updateFieldsetCount(tableName, value) {
-	switch (tableName) {
-		case "jobs":
-			$('#jobExpd').children('span:first-child').text(value);
-			break;
-		case "users":
-			$('#userExpd').children('span:first-child').text(value);
-			break;
-		case "solvers":
-			$('#solverExpd').children('span:first-child').text(value);
-			break;
-		case "spaces":
-			$('#spaceExpd').children('span:first-child').text(value);
-			break;
-		case "benchmarks":
-			$('#benchExpd').children('span:first-child').text(value);
-			break;
-	}
 }
 
 /**

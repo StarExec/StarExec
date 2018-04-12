@@ -65,7 +65,7 @@ public class Validator {
 	 * Validates an institution field
 	 *
 	 * @param institute the institution to validate
-	 * @return true iff institute is less than R.INSTITUTION_LEN characters
+	 * @return true iff institute is less than DB.INSTITUTION_LEN characters
 	 * and not null or the empty string
 	 */
 	public static boolean isValidInstitution(String institute) {
@@ -76,7 +76,7 @@ public class Validator {
 	 * Validates an email address and checks if it is in proper email address format
 	 *
 	 * @param email the email address to validate
-	 * @return true iff the email address is less than R.EMAIL_LEN characters,
+	 * @return true iff the email address is less than DB.EMAIL_LEN characters,
 	 * not null or the empty string, and is in email address format
 	 */
 	public static boolean isValidEmail(String email) {

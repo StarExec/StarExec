@@ -14,7 +14,7 @@
                js="lib/jquery.heatcolor.0.0.1.min, common/format, admin/job, lib/jquery.dataTables.min"
                css="common/table, explore/common">
 	<fieldset id="jobField" class="expdContainer">
-		<legend class="expd" id="jobExpd">jobs</legend>
+		<legend class="expd" id="jobExpd"><span class="list-count"></span> jobs</legend>
 		<ul class="actionList">
 			<c:if test="${isSystemPaused}">
 				<li>

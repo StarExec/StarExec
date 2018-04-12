@@ -88,7 +88,10 @@ CREATE PROCEDURE GetAllEventsAndOccurrencesNotRelatedToQueues()
 DROP PROCEDURE IF EXISTS GetAllEventsAndOccurrencesForAllQueues //
 CREATE PROCEDURE GetAllEventsAndOccurrencesForAllQueues()
 	BEGIN
-		SELECT event_name, occurrences, queue_name FROM report_data WHERE queue_name IS NOT NULL;
+		SELECT event_name, occurrences, queue_name
+		FROM report_data
+		WHERE queue_name IS NOT NULL
+		ORDER BY queue_name, event_name;
 	END //
 
 -- Gets the number of occurrences for an event not related to a queue.

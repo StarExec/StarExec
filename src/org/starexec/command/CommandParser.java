@@ -531,10 +531,8 @@ class CommandParser {
 					System.out.println("Processing Command: " + line);
 				}
 				status = parseCommand(line);
-				if (verbose) {
-					MessagePrinter.printStatusMessage(status, this);
-					MessagePrinter.printWarningMessages();
-				}
+				MessagePrinter.printStatusMessage(status, this);
+				MessagePrinter.printWarningMessages();
 
 				// either of the following two statuses indicate that we should
 				// stop
