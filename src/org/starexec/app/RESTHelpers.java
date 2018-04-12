@@ -840,7 +840,7 @@ public class RESTHelpers {
 			}
 			return null;
 		} catch (Exception e) {
-			log.error("getNextDataTablesPageCluster says " + e.getMessage(), e);
+			log.error("getNextDataTablesPageCluster", e);
 		}
 		return null;
 

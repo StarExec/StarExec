@@ -113,7 +113,7 @@ public class Cluster {
 
 			return node;
 		} catch (Exception e) {
-			log.error("getNodeDetails says " + e.getMessage(), e);
+			log.error("getNodeDetails", e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -315,7 +315,7 @@ public class Cluster {
 
 			return jobs;
 		} catch (Exception e) {
-			log.error("GetJobsRunningOnQueue says " + e.getMessage(), e);
+			log.error("getJobsRunningOnQueue", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -349,7 +349,7 @@ public class Cluster {
 			}
 			return nodes;
 		} catch (Exception e) {
-			log.error("GetAllNodes says " + e.getMessage(), e);
+			log.error("getAllNodes", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -394,7 +394,7 @@ public class Cluster {
 			}
 			return nodes;
 		} catch (Exception e) {
-			log.error("GetAllNodes says " + e.getMessage(), e);
+			log.error("getNonAttachedNodes", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -427,7 +427,7 @@ public class Cluster {
 				return q;
 			}
 		} catch (Exception e) {
-			log.error("GetQueueForNode says " + e.getMessage(), e);
+			log.error("getQueueForNode", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -455,7 +455,7 @@ public class Cluster {
 				return results.getInt("id");
 			}
 		} catch (Exception e) {
-			log.error("GetNodeIdByName says " + e.getMessage(), e);
+			log.error("getNodeIdByName", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -483,7 +483,7 @@ public class Cluster {
 				return results.getString("name");
 			}
 		} catch (Exception e) {
-			log.error("GetNodeNameById says " + e.getMessage(), e);
+			log.error("getNodeNameById", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);

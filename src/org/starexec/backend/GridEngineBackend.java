@@ -130,11 +130,9 @@ public class GridEngineBackend implements Backend{
 			//log.info(String.format("Submitted SGE job #%s, job pair %s, script \"%s\".", id, pair.getId(), scriptPath));
 
 			return Integer.parseInt(id);
-		} catch (org.ggf.drmaa.DrmaaException drme) {
-			log.warn("script Path = " + scriptPath);
-			//log.warn("sgeTemplate = " +sgeTemplate.toString());
+		} catch (org.ggf.drmaa.DrmaaException e) {
 			//JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());
-			log.error("submitScript says " + drme.getMessage(), drme);
+			log.error("submitScript", "scriptPath: " + scriptPath, e);
 
 		} catch (Exception e) {
 		    //JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
