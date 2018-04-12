@@ -21,6 +21,7 @@
 						HttpServletResponse.SC_FORBIDDEN,
 						"Only the leaders of this space can edit details about it."
 				);
+				return;
 			} else {
 				request.setAttribute("space", s);
 				Permission dflt = Permissions.getSpaceDefault(s.getId());
@@ -75,15 +76,18 @@
 					HttpServletResponse.SC_NOT_FOUND,
 					"Space does not exist or is restricted"
 			);
+			return;
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(
 				HttpServletResponse.SC_BAD_REQUEST,
 				"The given space id was in an invalid format"
 		);
+		return;
 	} catch (Exception e) {
 		response.sendError(
 				HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+		return;
 	}
 %>
 <star:template title="edit ${space.name}"
