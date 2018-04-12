@@ -458,7 +458,7 @@ public class Common {
 			}
 		} catch (Exception e){
 			// Do nothing
-			log.error("Safe Close says " + e.getMessage(),e);
+			log.error("safeClose", e);
 		}
 	}
 }

@@ -44,7 +44,7 @@ public class Uploads {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error("addFailedBenchmark says " + e.getMessage(), e);
+			log.error("addFailedBenchmark", e);
 			return false;
 		} finally {
 			Common.safeClose(con);
