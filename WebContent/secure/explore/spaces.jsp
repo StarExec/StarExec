@@ -53,7 +53,7 @@
 		<p id="spaceDesc" class="accent"></p>
 		<p id="spaceID" class="accent"></p>
 		<fieldset id="jobField">
-			<legend class="expd" id="jobExpd"><span>0</span> jobs</legend>
+			<legend class="expd" id="jobExpd"><span class="list-count"></span> jobs</legend>
 			<ul class="actionList">
 				<li><a class="btnRun" id="addJob"
 				       href="${starexecRoot}/secure/add/job.jsp">create job</a>
@@ -93,7 +93,7 @@
 		</fieldset>
 
 		<fieldset id="solverField">
-			<legend class="expd" id="solverExpd"><span>0</span> solvers</legend>
+			<legend class="expd" id="solverExpd"><span class="list-count"></span> solvers</legend>
 			<ul class="actionList">
 				<li><a class="btnUp" id="uploadSolver"
 				       href="${starexecRoot}/secure/add/solver.jsp">upload
@@ -118,7 +118,7 @@
 		</fieldset>
 
 		<fieldset id="benchField">
-			<legend class="expd" id="benchExpd"><span>0</span> benchmarks
+			<legend class="expd" id="benchExpd"><span class="list-count"></span> benchmarks
 			</legend>
 			<ul class="actionList">
 				<li>
@@ -152,7 +152,7 @@
 		</fieldset>
 
 		<fieldset id="userField">
-			<legend class="expd" id="userExpd"><span>0</span> users</legend>
+			<legend class="expd" id="userExpd"><span class="list-count"></span> users</legend>
 			<table id="users">
 				<thead>
 				<tr>
@@ -172,7 +172,7 @@
 		</fieldset>
 
 		<fieldset id="spaceField">
-			<legend class="expd" id="spaceExpd"><span>0</span> subspaces
+			<legend class="expd" id="spaceExpd"><span class="list-count"></span> subspaces
 			</legend>
 			<ul class="actionList">
 				<li><a class="btnAdd" id="addSpace"

@@ -325,10 +325,6 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		aoData,
 		function(nextDataTablePage) {
 			if (parseReturnCode(nextDataTablePage)) {
-				// Update the number displayed in this DataTable's fieldset
-				$('#reservationExpd')
-				.children('span:first-child')
-				.text(nextDataTablePage.iTotalRecords);
 				// Replace the current page with the newly received page
 				fnCallback(nextDataTablePage);
 			}

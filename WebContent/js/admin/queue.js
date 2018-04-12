@@ -162,14 +162,8 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		sSource + "nodes/dates/reservation/" + id + "/pagination",
 		aoData,
 		function(nextDataTablePage) {
-			s = parseReturnCode(nextDataTablePage);
+			var s = parseReturnCode(nextDataTablePage);
 			if (s) {
-
-				// Update the number displayed in this DataTable's fieldset
-				$('#nodeExpd')
-				.children('span:first-child')
-				.text(nextDataTablePage.iTotalRecords);
-
 				// Replace the current page with the newly received page
 				fnCallback(nextDataTablePage);
 			}
