@@ -78,14 +78,12 @@ public class JobPairs {
 			final HashMap<Integer, Solver> configIdsToSolvers, final Job job, final int spaceId,
 			final HashSet<String> jobRootPaths, final ConfigAttrMapPair configAttrMapPair, final NodeList jobPairs
 	) {
-
 		final String methodName = "populateJobPairsForJobXMLUpload";
 		Connection con = null;
 
 		// Benchmarks the user can see that we've already seen.
 		try {
 			con = Common.getConnection();
-
 
 			//we now iterate through all the job pair elements and add them all to the job
 			final int jobPairsLength = jobPairs.getLength();
@@ -168,10 +166,12 @@ public class JobPairs {
 					jobPair.setPrimaryStageNumber(jobPair.getStages().size());
 					jobPair.setSpace(Spaces.get(spaceId, con));
 
-
 					job.addJobPair(jobPair);
 				}
 			}
+			return Optional.empty();
+		} catch (SQLException e) {
+			log.error(methodName, e);
 			return Optional.empty();
 		} finally {
 			Common.safeClose(con);
@@ -289,20 +289,22 @@ public class JobPairs {
 	}
 
 	public static void addJobPairs(int jobId, List<JobPair> pairs) {
-		final String methodName = "addJobPairs( int, List<JobPair> )";
+		final String methodName = "addJobPairs";
 
 		Connection con = null;
 		try {
 			con = Common.getConnection();
 			Common.beginTransaction(con);
-			log.debug("addJobPairs one");
+			log.entry(methodName);
 			boolean success = incrementTotalJobPairsForJob(jobId, pairs.size(), con);
 			if (!success) {
 				return;
 			}
-			log.debug("addJobPairs two");
+			log.trace(methodName, "two");
 			addJobPairs(con, jobId, pairs);
-			log.debug("addJobPairs three");
+			log.exit(methodName);
+		} catch (SQLException e) {
+			log.error(methodName, e);
 		} finally {
 			Common.endTransaction(con);
 			Common.safeClose(con);
