@@ -1033,26 +1033,6 @@
   </servlet-mapping>
 
   <servlet>
-  	<servlet-name>SpaceMakePublic</servlet-name>
-  	<servlet-class>org.starexec.servlets.SpaceMakePublic</servlet-class>
-  </servlet>
-  <servlet-mapping>
-  	<servlet-name>SpaceMakePublic</servlet-name>
-  	<url-pattern>/secure/makePublic</url-pattern>
-  </servlet-mapping>
-
-
-
-  <servlet>
-    <servlet-name>JobResults</servlet-name>
-    <servlet-class>org.starexec.servlets.Results</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>JobResults</servlet-name>
-    <url-pattern>/add/to_community.jsp</url-pattern>
-  </servlet-mapping>
-
-  <servlet>
     <servlet-name>Downloads</servlet-name>
     <servlet-class>org.starexec.servlets.Download</servlet-class>
   </servlet>
