@@ -557,8 +557,9 @@ CREATE PROCEDURE RebuildSolver(IN _solverId INT)
 		;
 		-- Set Solver status to Unbuilt
 		UPDATE solvers
-			SET build_status = 0 -- 0 = Unbuilt : SolverBuildStatus.java
+			SET build_status = 0, -- 0 = Unbuilt : SolverBuildStatus.java
+			    path = CONCAT(path, "_src")
 			WHERE id = _solverId
-			AND build_status = 2 -- 2 = Built by StarExec
+			AND build_status = 2  -- 2 = Built by StarExec
 		;
 	END //
