@@ -542,18 +542,33 @@ CREATE PROCEDURE DeleteBuildConfig(IN _solverId INT)
 DROP PROCEDURE IF EXISTS RebuildSolver //
 CREATE PROCEDURE RebuildSolver(IN _solverId INT)
 	BEGIN
+		-- Fetch all JobPairs containing solver
+		CREATE TEMPORARY TABLE JobPairsContainingSolver AS (
+			SELECT DISTINCT jobpair_id FROM (
+				SELECT jobpair_id, solver_id
+				FROM jobpair_stage_data
+				WHERE solver_id = _solverId
+			) AS JobPairStagesWithSolver
+		);
 		-- Pause all jobs containing solver
 		UPDATE jobs
-			SET paused = TRUE
-			WHERE killed = FALSE
-			AND deleted = FALSE
-			AND completed = 0
-			AND buildJob = FALSE
-			AND id IN (
-				SELECT job_id FROM job_pairs
-				JOIN jobpair_stage_data ON jobpair_id = job_pairs.id
-				WHERE jobpair_stage_data.solver_id = _solverId
-			)
+		SET paused = TRUE
+		WHERE killed = FALSE
+		AND deleted = FALSE
+		AND completed = 0
+		AND buildJob = FALSE
+		AND id IN (
+			SELECT job_id FROM (
+				SELECT job_id, id FROM job_pairs
+				WHERE id IN (SELECT * FROM JobPairsContainingSolver)
+			) AS jobPairsWithSolver
+		)
+		;
+		-- Pause all JobPairs containing solver
+		UPDATE job_pairs
+			SET status_code = 20 -- 20 = Paused : Status.java
+			WHERE status_code = 1
+			AND id IN (SELECT * FROM JobPairsContainingSolver)
 		;
 		-- Set Solver status to Unbuilt
 		UPDATE solvers
