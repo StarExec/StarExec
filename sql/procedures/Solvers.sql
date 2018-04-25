@@ -555,9 +555,6 @@ CREATE PROCEDURE RebuildSolver(IN _solverId INT)
 				WHERE jobpair_stage_data.solver_id = _solverId
 			)
 		;
-		-- Add build configuartion back into database
-		INSERT IGNORE INTO configurations(solver_id, name, updated)
-			VALUES(_solverId, "starexec_build", NOW());
 		-- Set Solver status to Unbuilt
 		UPDATE solvers
 			SET build_status = 0 -- 0 = Unbuilt : SolverBuildStatus.java

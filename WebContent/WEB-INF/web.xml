@@ -898,6 +898,15 @@
   </servlet-mapping>
 
   <servlet>
+    <servlet-name>RebuildSolver</servlet-name>
+    <servlet-class>org.starexec.servlets.RebuildSolver</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>RebuildSolver</servlet-name>
+    <url-pattern>/secure/solver/rebuild</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
     <servlet-name>Verify</servlet-name>
     <servlet-class>org.starexec.servlets.Verify</servlet-class>
   </servlet>

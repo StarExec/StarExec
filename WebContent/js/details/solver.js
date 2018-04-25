@@ -140,6 +140,21 @@ function attachButtonActions() {
 			}
 		});
 	});
+	$("#rebuildSolver")
+	.button({
+		icons: {
+			primary: "ui-icon-arrowrefresh-1-e"
+		}
+	})
+	.click(function(){
+		$.post(
+			starexecRoot + "secure/solver/rebuild",
+			{"id": getParameterByName("id")},
+			parseReturnCode,
+			"json"
+		);
+		return false;
+	});
 }
 
 function popUp(uri) {
