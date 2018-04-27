@@ -555,7 +555,6 @@ CREATE PROCEDURE RebuildSolver(IN _solverId INT)
 		SET paused = TRUE
 		WHERE killed = FALSE
 		AND deleted = FALSE
-		AND completed = 0
 		AND buildJob = FALSE
 		AND id IN (
 			SELECT job_id FROM (
@@ -565,11 +564,16 @@ CREATE PROCEDURE RebuildSolver(IN _solverId INT)
 		)
 		;
 		-- Pause all JobPairs containing solver
-		UPDATE job_pairs
-			SET status_code = 20 -- 20 = Paused : Status.java
-			WHERE status_code = 1
-			AND id IN (SELECT * FROM JobPairsContainingSolver)
-		;
+--         I think it makes sense to try to *only* pause *pairs* that use the
+--         solver in question, rather than the entire job. HOWEVER, our UI is
+--         not at all setup with paused jobpairs in mind, and it is actually
+--         nearly impossible to restart the paused jobs from the web interface.
+--         ugh.
+--		UPDATE job_pairs
+--			SET status_code = 20 -- 20 = Paused : Status.java
+--			WHERE status_code = 1
+--			AND id IN (SELECT * FROM JobPairsContainingSolver)
+--		;
 		-- Set Solver status to Unbuilt
 		UPDATE solvers
 			SET build_status = 0, -- 0 = Unbuilt : SolverBuildStatus.java
