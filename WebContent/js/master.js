@@ -162,10 +162,11 @@ jQuery(function($) {
 		 */
 		var container = that.parents(".expdContainer");
 		var footer = container.find(".dataTables_length, .dataTables_filter");
+		var searchTerm = container.find(".dataTables_filter input").val();
 		var selectAll = container.find(".selectWrap");
 
 		// Hide "Show 10 items" and search box if there are fewer than 10 items
-		if (info.recordsTotal <= defaultPageSize) {
+		if (info.recordsTotal <= defaultPageSize && !searchTerm) {
 			footer.hide();
 		} else {
 			footer.show();
