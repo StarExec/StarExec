@@ -158,7 +158,7 @@ function attachButtonActions() {
 				var s = parseReturnCode($.parseJSON(jqXHR.responseText));
 				if (s) {
 					var msg="Rebuilding solver";
-					window.location.href = "?id="+solverId+"&buildmsg="+encodeURIComponent(msg)+"#";
+					window.location.replace("?id="+solverId+"&buildmsg="+encodeURIComponent(msg));
 				}
 			},
 		});
