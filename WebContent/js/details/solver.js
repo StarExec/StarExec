@@ -147,12 +147,21 @@ function attachButtonActions() {
 		}
 	})
 	.click(function(){
-		$.post(
-			starexecRoot + "secure/solver/rebuild",
-			{"id": getParameterByName("id")},
-			window.location.reload.bind(window.location),
-			"text"
-		);
+		var solverId = getParameterByName("id");
+		$.ajax({
+			"accepts": "application/json",
+			"url": starexecRoot + "secure/solver/rebuild",
+			"method": "POST",
+			"data": {"id": solverId},
+			"dataType": "json",
+			"complete": function(jqXHR) {
+				var s = parseReturnCode($.parseJSON(jqXHR.responseText));
+				if (s) {
+					var msg="Rebuilding solver";
+					window.location.href = "?id="+solverId+"&buildmsg="+encodeURIComponent(msg)+"#";
+				}
+			},
+		});
 		return false;
 	});
 }
