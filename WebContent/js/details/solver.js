@@ -150,8 +150,8 @@ function attachButtonActions() {
 		$.post(
 			starexecRoot + "secure/solver/rebuild",
 			{"id": getParameterByName("id")},
-			parseReturnCode,
-			"json"
+			window.location.reload.bind(window.location),
+			"text"
 		);
 		return false;
 	});
