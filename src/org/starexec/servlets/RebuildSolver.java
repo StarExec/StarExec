@@ -74,5 +74,9 @@ public class RebuildSolver extends HttpServlet {
 		}
 
 		JobManager.addBuildJob(solverId, spaces.get(0));
+
+		response.setStatus(200);
+		response.setContentType("text/text;charset=UTF-8");
+		response.getWriter().write("");
 	}
 }
