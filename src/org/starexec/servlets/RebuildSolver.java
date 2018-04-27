@@ -57,7 +57,7 @@ public class RebuildSolver extends HttpServlet {
 		if (solver == null || solver.getUserId() != userId) {
 			response.setStatus(404);
 			response.getWriter().write(
-				gson.toJson(new ValidatorStatusCode(false, "Solver cannot be found"))
+				gson.toJson(new ValidatorStatusCode(false, "You are not allowed to modify this solver"))
 			);
 			return;
 		}
@@ -106,8 +106,8 @@ public class RebuildSolver extends HttpServlet {
 		JobManager.addBuildJob(solverId, spaces.get(0));
 
 		response.setStatus(200);
-			response.getWriter().write(
-				gson.toJson(new ValidatorStatusCode(true, ""))
-			);
+		response.getWriter().write(
+			gson.toJson(new ValidatorStatusCode(true, ""))
+		);
 	}
 }
