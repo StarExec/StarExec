@@ -4,6 +4,7 @@ import org.starexec.data.database.Common;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Solver;
+import org.starexec.data.to.SolverBuildStatus.SolverBuildStatusCode;
 import org.starexec.jobs.JobManager;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.*;
@@ -57,6 +58,22 @@ public class RebuildSolver extends HttpServlet {
 			response.setStatus(404);
 			response.getWriter().write(
 				gson.toJson(new ValidatorStatusCode(false, "Solver cannot be found"))
+			);
+			return;
+		}
+
+		if (solver.buildStatus().getCode() == SolverBuildStatusCode.UNBUILT) {
+			response.setStatus(400);
+			response.getWriter().write(
+				gson.toJson(new ValidatorStatusCode(false, "Solver is in process of being built"))
+			);
+			return;
+		}
+
+		if (solver.buildStatus().getCode() == SolverBuildStatusCode.BUILT) {
+			response.setStatus(400);
+			response.getWriter().write(
+				gson.toJson(new ValidatorStatusCode(false, "Solver cannot be built by StarExec"))
 			);
 			return;
 		}
