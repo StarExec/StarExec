@@ -560,6 +560,16 @@ CREATE PROCEDURE RebuildSolver(IN _solverId INT)
 			) AS jobPairsWithSolver
 		)
 		;
+		-- Pause all jobpairs containing solver
+		UPDATE job_pairs
+		SET status_code = 20
+		WHERE  status_code = 1
+		AND id IN (
+			SELECT jobpair_id
+			FROM jobpair_stage_data
+			WHERE solver_id = _solverId
+		)
+		;
 		-- Set Solver status to Unbuilt
 		UPDATE solvers
 			SET build_status = 0, -- 0 = Unbuilt : SolverBuildStatus.java
