@@ -1,38 +1,22 @@
 package org.starexec.servlets;
 
-import org.starexec.constants.R;
 import org.starexec.data.database.Common;
 import org.starexec.data.database.Solvers;
-import org.starexec.data.database.Users;
-import org.starexec.data.security.JobSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
-import org.starexec.data.to.*;
-import org.starexec.data.to.Solver.ExecutableType;
+import org.starexec.data.to.Solver;
 import org.starexec.jobs.JobManager;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.*;
 
 import com.google.gson.Gson;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.Integer;
-import java.net.URL;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.MultipartConfig;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.parsers.ParserConfigurationException;
-import org.xml.sax.SAXException;
+import javax.servlet.ServletException;
 
 /**
  * Rebuild an existing solver.
