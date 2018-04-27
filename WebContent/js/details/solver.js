@@ -146,22 +146,44 @@ function attachButtonActions() {
 			primary: "ui-icon-arrowrefresh-1-e"
 		}
 	})
-	.click(function(){
-		var solverId = getParameterByName("id");
-		$.ajax({
-			"accepts": "application/json",
-			"url": starexecRoot + "secure/solver/rebuild",
-			"method": "POST",
-			"data": {"id": solverId},
-			"dataType": "json",
-			"complete": function(jqXHR) {
-				var s = parseReturnCode($.parseJSON(jqXHR.responseText));
-				if (s) {
-					var msg="Rebuilding solver";
-					window.location.replace("?id="+solverId+"&buildmsg="+encodeURIComponent(msg));
-				}
+	.click(function() {
+		var $dialog = $("<div>");
+		$dialog
+		.text(
+			"Are you sure you want to recompile this solver from source?"
+		)
+		.dialog({
+			modal: true,
+			show: false,
+			title: "Rebuild this solver?",
+			close: function() {
+				$dialog.dialog('destroy').remove();
 			},
-		});
+			buttons: {
+				"Rebuild solver": function() {
+					var solverId = getParameterByName("id");
+					$.ajax({
+						"accepts": "application/json",
+						"url": starexecRoot + "secure/solver/rebuild",
+						"method": "POST",
+						"data": {"id": solverId},
+						"dataType": "json",
+						"complete": function(jqXHR) {
+							var s = parseReturnCode($.parseJSON(jqXHR.responseText));
+							if (s) {
+								var msg="Rebuilding solver";
+								window.location.replace("?id="+solverId+"&buildmsg="+encodeURIComponent(msg));
+							} else {
+								$dialog.dialog('close');
+							}
+						},
+					});
+				},
+				"cancel": function() {
+					$dialog.dialog('close');
+				}
+			}
+		})
 		return false;
 	});
 }
