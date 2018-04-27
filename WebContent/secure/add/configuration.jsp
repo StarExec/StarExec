@@ -19,17 +19,20 @@
 					HttpServletResponse.SC_FORBIDDEN,
 					"You do not have permission to add configurations here."
 			);
+			return;
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(
 				HttpServletResponse.SC_BAD_REQUEST,
 				"The parent solver id was not in the correct format."
 		);
+		return;
 	} catch (Exception e) {
 		response.sendError(
 				HttpServletResponse.SC_NOT_FOUND,
 				"You do not have permission to upload configurations to this solver or the solver does not exist"
 		);
+		return;
 	}
 %>
 <star:template title="add to ${solver.name}" css="add/configuration"

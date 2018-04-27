@@ -23,9 +23,11 @@
 					HttpServletResponse.SC_FORBIDDEN,
 					"You must be a member of the space in which you want to process benchmarks"
 			);
+			return;
 		}
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+		return;
 	}
 %>
 

@@ -18,17 +18,20 @@
 					HttpServletResponse.SC_FORBIDDEN,
 					"You do not have permission to add spaces here"
 			);
+			return;
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(
 				HttpServletResponse.SC_BAD_REQUEST,
 				"The parent space id was not in the correct format"
 		);
+		return;
 	} catch (Exception e) {
 		response.sendError(
 				HttpServletResponse.SC_NOT_FOUND,
 				"You do not have permission to upload spaces to this space or the space does not exist"
 		);
+		return;
 	}
 %>
 <star:template

@@ -34,9 +34,11 @@
 					HttpServletResponse.SC_NOT_ACCEPTABLE,
 					"The given type parameter was not correct-- it must be either solver or benchmark"
 			);
+			return;
 		}
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+		return;
 	}
 %>
 
