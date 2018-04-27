@@ -214,6 +214,7 @@
 				   id="editLink">edit</a>
 				<a href="${starexecRoot}/services/solvers/${solver.id}/buildoutput"
 				   target="_blank" id="downBuildInfo">see build info</a>
+				<a id="rebuildSolver">rebuild solver</a>
 			</c:if>
 		</c:if>
 		<c:if test="${isAnonymousPage || downloadable || hasAdminReadPrivileges}">
