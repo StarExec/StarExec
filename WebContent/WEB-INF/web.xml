@@ -326,11 +326,6 @@
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.jsp.public_.versionInfo_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.public_.versionInfo_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
         <servlet-name>org.apache.jsp.public_.help_jsp</servlet-name>
         <servlet-class>org.apache.jsp.public_.help_jsp</servlet-class>
     </servlet>
@@ -718,11 +713,6 @@
     <servlet-mapping>
         <servlet-name>org.apache.jsp.public_.login_jsp</servlet-name>
         <url-pattern>/public/login.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.public_.versionInfo_jsp</servlet-name>
-        <url-pattern>/public/versionInfo.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
