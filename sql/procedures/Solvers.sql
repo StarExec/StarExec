@@ -542,14 +542,6 @@ CREATE PROCEDURE DeleteBuildConfig(IN _solverId INT)
 DROP PROCEDURE IF EXISTS RebuildSolver //
 CREATE PROCEDURE RebuildSolver(IN _solverId INT)
 	BEGIN
-		-- Fetch all JobPairs containing solver
-		CREATE TEMPORARY TABLE JobPairsContainingSolver AS (
-			SELECT DISTINCT jobpair_id FROM (
-				SELECT jobpair_id, solver_id
-				FROM jobpair_stage_data
-				WHERE solver_id = _solverId
-			) AS JobPairStagesWithSolver
-		);
 		-- Pause all jobs containing solver
 		UPDATE jobs
 		SET paused = TRUE
@@ -558,22 +550,16 @@ CREATE PROCEDURE RebuildSolver(IN _solverId INT)
 		AND buildJob = FALSE
 		AND id IN (
 			SELECT job_id FROM (
-				SELECT job_id, id FROM job_pairs
-				WHERE id IN (SELECT * FROM JobPairsContainingSolver)
+				SELECT job_id, id
+				FROM job_pairs
+				WHERE id IN (
+					SELECT jobpair_id
+					FROM jobpair_stage_data
+					WHERE solver_id = _solverId
+				)
 			) AS jobPairsWithSolver
 		)
 		;
-		-- Pause all JobPairs containing solver
---         I think it makes sense to try to *only* pause *pairs* that use the
---         solver in question, rather than the entire job. HOWEVER, our UI is
---         not at all setup with paused jobpairs in mind, and it is actually
---         nearly impossible to restart the paused jobs from the web interface.
---         ugh.
---		UPDATE job_pairs
---			SET status_code = 20 -- 20 = Paused : Status.java
---			WHERE status_code = 1
---			AND id IN (SELECT * FROM JobPairsContainingSolver)
---		;
 		-- Set Solver status to Unbuilt
 		UPDATE solvers
 			SET build_status = 0, -- 0 = Unbuilt : SolverBuildStatus.java
