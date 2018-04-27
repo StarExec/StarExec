@@ -397,7 +397,7 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++STAGE_INDEX )); do
 		exit 0
 	fi
 
-	if [ ! -s "$WATCHFILE" ]; then
+	if [[ "$BENCHMARKING_FRAMEWORK" == "$RUNSOLVER" ]] && [[ ! -s "$WATCHFILE" ]]; then
 		log "Runsolver watchfile could not be found. Terminating job pair."
 		copyOutput "$CURRENT_STAGE_NUMBER" "$STDOUT_SAVE_OPTION" "$EXTRA_SAVE_OPTION" "$BENCHMARKING_FRAMEWORK"
 		markRunscriptError "${STAGE_NUMBERS[STAGE_INDEX]}"
