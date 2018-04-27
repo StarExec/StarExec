@@ -147,6 +147,7 @@ function attachButtonActions() {
 		}
 	})
 	.click(function() {
+		'use strict';
 		var $dialog = $("<div>");
 		$dialog
 		.text(
