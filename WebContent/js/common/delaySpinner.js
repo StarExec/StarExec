@@ -11,21 +11,19 @@ var creatingDelaySpinner = false;
 //Requests img resource needed for the dialog
 $(document).ready(function() {
 	$("body")
-	.append("<img style=\"display:none;\" alt=\"spinner\" id=\"spinnerImage\" src=\"" + starexecRoot + "images/ajaxloader.gif\"/>");
+	.append("<img style='display:none;' alt='spinner' id='spinnerImage' src='" + starexecRoot + "images/ajaxloader.gif' />");
 });
 
-$(window).unload(function() {
-	destroyDialog();
-});
+$(window).unload(destroyDialog);
 
-//Creates a new delay dialog. If one already exists, does nothing.
+/** Creates a new delay dialog. If one already exists, does nothing. */
 function createDialog(message) {
 	//indicate that we're in the middle of creating the delay
 	creatingDelaySpinner = true;
 	setTimeout(function() {
 		if ($("#delaySpinner").length == 0) {
 			$("body")
-			.append("<div id=delaySpinner><p id=\"delayMessage\">" + message + "</p><p id=\"imageContainer\"></p></p>");
+			.append("<div id='delaySpinner'><p id='delayMessage'>" + message + "</p><p id='imageContainer'></p></div>");
 			$("#imageContainer").prepend($("#spinnerImage"));
 			$("#spinnerImage").css("display", "block");
 			$("#delaySpinner").dialog({
@@ -42,14 +40,14 @@ function createDialog(message) {
 	}, 0);
 }
 
-//Completely removes dialog if it exists. If we're in the middle of creating a dialog, waits for the creation to finish before deleting
+/**
+ * Completely removes dialog if it exists. If we're in the middle of creating a
+ * dialog, waits for the creation to finish before deleting
+ */
 function destroyDialog() {
-
 	//if we're in the middle of creating a spinner, just wait a small amount of time and then call this again
 	if (creatingDelaySpinner) {
-		setTimeout(function() {
-			destroyDialog();
-		}, 30);
+		setTimeout(destroyDialog, 30);
 		return;
 	}
 	if ($("#delaySpinner").length >= 1) {
@@ -58,7 +56,6 @@ function destroyDialog() {
 		$("body").append($("#spinnerImage"));
 		$("#delaySpinner").remove();
 	}
-
 }
 
 function checkCookie() {
@@ -70,15 +67,14 @@ function checkCookie() {
 	}
 }
 
-//Destroys the dialog only when a cookie has been received from the server with the 
-//name "fileDownloadToken" and the value "curToken." If a previous call to this function
-//is still working, does nothing.
-
+/**
+ * Destroys the dialog only when a cookie has been received from the server with
+ * the name "fileDownloadToken" and the value "curToken." If a previous call to
+ * this function is still working, does nothing.
+ */
 function destroyOnReturn(curToken) {
 	if (delayInterval == null) {
 		delayToken = curToken;
-
 		delayInterval = setInterval(checkCookie, 50);
 	}
-
 }
