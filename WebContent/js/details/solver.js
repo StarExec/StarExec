@@ -163,6 +163,8 @@ function attachButtonActions() {
 			buttons: {
 				"Rebuild solver": function() {
 					var solverId = getParameterByName("id");
+					$dialog.dialog('close');
+					createDialog("Creating build job. Please wait.");
 					$.ajax({
 						"accepts": "application/json",
 						"url": starexecRoot + "secure/solver/rebuild",
@@ -171,11 +173,10 @@ function attachButtonActions() {
 						"dataType": "json",
 						"complete": function(jqXHR) {
 							var s = parseReturnCode($.parseJSON(jqXHR.responseText));
+							destroyDialog();
 							if (s) {
 								var msg="Rebuilding solver";
 								window.location.replace("?id="+solverId+"&buildmsg="+encodeURIComponent(msg));
-							} else {
-								$dialog.dialog('close');
 							}
 						},
 					});
