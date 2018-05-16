@@ -6,5 +6,9 @@ addons:
     packages:
     - ant-optional
 
+branches:
+  only:
+  - fb1
+
 before_script: script/ci
 script: ant test
