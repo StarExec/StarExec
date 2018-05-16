@@ -13,7 +13,7 @@ $(document).ready(function() {
 	var $dialog = null;
 
 	var createDialog = function() {
-		$dialog = $("<div id='delaySpinner'><p id='delayMessage'>no text</p><p id='imageContainer'><img style='display:block' alt='spinner' id='spinnerImage' src='" + starexecRoot + "images/ajaxloader.gif' /></p></div>");
+		$dialog = $("<div id='delaySpinner'><p id='delayMessage'></p><p id='imageContainer'><img style='display:block' alt='spinner' id='spinnerImage' src='" + starexecRoot + "images/ajaxloader.gif' /></p></div>");
 		$dialog.dialog({
 			modal: true,
 			dialogClass: "delaySpinner",
