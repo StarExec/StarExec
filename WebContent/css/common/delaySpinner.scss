@@ -1,42 +1,36 @@
-.delaySpinner {
-	.ui-dialog {
-		word-wrap: break-word;
-		max-height: 40%;
-		max-width: 40%;
-		border: 20px outset;
-	}
+@import "../global/helper";
 
-	.ui-dialog-content {
-		border: 2px outset;
-	}
+.delaySpinner {
+	text-align: center;
 
 	.ui-dialog-titlebar-close {
+		/* Hide the close button */
 		display: none;
 	}
 
-	.ui-dialog-titlebar {
-		text-align: center;
-	}
-
 	.ui-dialog-title {
-		float: none !important;
-		display: block;
-		text-align: center;
+		/* Since we are hiding the close button,
+		 * we do not need to make room for it */
+		float: none;
 	}
 
-	#delayMessage {
+	.ui-dialog-content {
+		border: 1px solid #333;
+
+		&::after {
+			/* The spinner image */
+			display: block;
+			margin: 0 auto 10px;
+			background-image: image-url("ajaxloader.gif");
+			background-size: 25px;
+			width: 25px;
+			height: 25px;
+			content: ""
+		}
+	}
+
+	p {
 		width: 95%;
-		text-align: center;
-		margin-top: 10px;
-		margin-bottom: 30px;
-	}
-
-	#spinnerImage {
-		display: block;
-		margin-left: auto;
-		margin-right: auto;
-		margin-bottom: 10px;
-		width: 25px;
-		height: 25px;
+		margin: 10px auto 30px;
 	}
 }

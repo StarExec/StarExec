@@ -13,7 +13,7 @@ $(document).ready(function() {
 	var $dialog = null;
 
 	var createDialog = function() {
-		$dialog = $("<div id='delaySpinner'><p id='delayMessage'></p><p id='imageContainer'><img style='display:block' alt='spinner' id='spinnerImage' src='" + starexecRoot + "images/ajaxloader.gif' /></p></div>");
+		$dialog = $("<div><p/></div>");
 		$dialog.dialog({
 			modal: true,
 			dialogClass: "delaySpinner",
@@ -30,8 +30,8 @@ $(document).ready(function() {
 		if ($dialog == null) {
 			createDialog();
 		}
+		$dialog.children("p").first().text(message);
 		$dialog.dialog("open");
-		$dialog.children("#delayMessage").text(message);
 		//indicate we're done with the delay
 		creatingDelaySpinner = false;
 	}
