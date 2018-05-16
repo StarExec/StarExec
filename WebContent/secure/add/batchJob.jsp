@@ -18,17 +18,20 @@
 					HttpServletResponse.SC_FORBIDDEN,
 					"You do not have permission to create jobs here"
 			);
+			return;
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(
 				HttpServletResponse.SC_BAD_REQUEST,
 				"The parent space id was not in the correct format"
 		);
+		return;
 	} catch (Exception e) {
 		response.sendError(
 				HttpServletResponse.SC_NOT_FOUND,
 				"You do not have permission to upload jobs to this space or the space does not exist"
 		);
+		return;
 	}
 %>
 <star:template title="upload XML configuration for a job in ${space.name}"

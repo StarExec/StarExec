@@ -17,6 +17,8 @@
 
 	<property name="bash-header" value="#!/bin/bash${line.separator}" />
 
+	<available property="Cluster.MachineSpecsExists" file="${Cluster.MachineSpecs}" type="file" />
+
 	<!-- Tell java where to look for JAR files while compiling (our application lib and the apache lib) -->
 	<path id="classpath">
 		<fileset dir="${web-inf}/lib" includes="**/*.jar"/>

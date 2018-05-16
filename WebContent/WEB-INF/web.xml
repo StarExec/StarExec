@@ -326,11 +326,6 @@
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.jsp.public_.versionInfo_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.public_.versionInfo_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
         <servlet-name>org.apache.jsp.public_.help_jsp</servlet-name>
         <servlet-class>org.apache.jsp.public_.help_jsp</servlet-class>
     </servlet>
@@ -721,11 +716,6 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>org.apache.jsp.public_.versionInfo_jsp</servlet-name>
-        <url-pattern>/public/versionInfo.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
         <servlet-name>org.apache.jsp.public_.help_jsp</servlet-name>
         <url-pattern>/public/help.jsp</url-pattern>
     </servlet-mapping>
@@ -895,6 +885,15 @@
   <servlet-mapping>
     <servlet-name>AssocCommunities</servlet-name>
     <url-pattern>/secure/assoc/communities</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+    <servlet-name>RebuildSolver</servlet-name>
+    <servlet-class>org.starexec.servlets.RebuildSolver</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>RebuildSolver</servlet-name>
+    <url-pattern>/secure/solver/rebuild</url-pattern>
   </servlet-mapping>
 
   <servlet>

@@ -38,10 +38,10 @@ jQuery(function($) {
 	$("#dateselector").on("submit", function(event) {
 		var payload = {};
 		if ($startField.val().trim().length != 0) {
-			paylad["start"] = $startField.val();
+			payload["start"] = $startField.val();
 		}
 		if ($endField.val().trim().length != 0) {
-			paylad["end"] = $endField.val();
+			payload["end"] = $endField.val();
 		}
 
 		$.get(

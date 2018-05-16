@@ -41,15 +41,18 @@
 						HttpServletResponse.SC_NOT_FOUND,
 						"the configuration file path points to a location that does not exist on disk"
 				);
+				return;
 			}
 		} else {
 			response.sendError(
 					HttpServletResponse.SC_NOT_FOUND,
 					"the configuration does not exist or is restricted"
 			);
+			return;
 		}
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+		return;
 	}
 %>
 

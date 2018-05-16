@@ -50,6 +50,7 @@
 							HttpServletResponse.SC_NOT_FOUND,
 							"Job does not exist or is restricted"
 					);
+					return;
 				}
 			}
 			boolean canSubscribeToErrorLogs =
@@ -62,15 +63,18 @@
 		} else {
 			response.sendError(
 					HttpServletResponse.SC_NOT_FOUND, "User does not exist");
+			return;
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(
 				HttpServletResponse.SC_BAD_REQUEST,
 				"The given user id was in an invalid format"
 		);
+		return;
 	} catch (Exception e) {
 		response.sendError(
 				HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+		return;
 	}
 %>
 

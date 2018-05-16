@@ -19,9 +19,11 @@
 					HttpServletResponse.SC_BAD_REQUEST,
 					"The image parameters were invalid"
 			);
+			return;
 		}
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+		return;
 	}
 %>
 

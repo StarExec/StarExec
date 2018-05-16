@@ -140,6 +140,54 @@ function attachButtonActions() {
 			}
 		});
 	});
+	$("#rebuildSolver")
+	.button({
+		icons: {
+			primary: "ui-icon-arrowrefresh-1-e"
+		}
+	})
+	.click(function() {
+		'use strict';
+		var $dialog = $("<div>");
+		$dialog
+		.text(
+			"Are you sure you want to recompile this solver from source?"
+		)
+		.dialog({
+			modal: true,
+			show: false,
+			title: "Rebuild this solver?",
+			close: function() {
+				$dialog.dialog('destroy').remove();
+			},
+			buttons: {
+				"Rebuild solver": function() {
+					var solverId = getParameterByName("id");
+					$dialog.dialog('close');
+					createDialog("Creating build job. Please wait.");
+					$.ajax({
+						"accepts": "application/json",
+						"url": starexecRoot + "secure/solver/rebuild",
+						"method": "POST",
+						"data": {"id": solverId},
+						"dataType": "json",
+						"complete": function(jqXHR) {
+							var s = parseReturnCode($.parseJSON(jqXHR.responseText));
+							destroyDialog();
+							if (s) {
+								var msg="Rebuilding solver";
+								window.location.replace("?id="+solverId+"&buildmsg="+encodeURIComponent(msg));
+							}
+						},
+					});
+				},
+				"cancel": function() {
+					$dialog.dialog('close');
+				}
+			}
+		})
+		return false;
+	});
 }
 
 function popUp(uri) {
@@ -187,28 +235,3 @@ function registerAnonymousLinkButtonEventHandler() {
 		});
 	});
 }
-
-/*
-function makeAnonymousLinkPost( hidePrimitiveName ) {
-	'use strict';
-	$.post(
-		starexecRoot + 'services/anonymousLink/solver/' + $('#solverId').attr('value') + '/' + hidePrimitiveName,
-		'',
-		function( returnCode ) {
-			log( 'Anonymous Link Return Code: ' + returnCode );
-			if ( returnCode.success ) {
-				$('#dialog-show-anonymous-link').html('<a href="'+returnCode.message+'">'+returnCode.message+'</a>');
-				$('#dialog-show-anonymous-link').dialog({
-					width: 750,
-					height: 200,
-				});
-			} else {
-				parseReturnCode( returnCode );
-			}
-		},
-		'json'
-	);
-}
-*/
-
-
