@@ -7,7 +7,7 @@
 	try {
 		int comId = Integer.parseInt((String) request.getParameter("cid"));
 		Space com = Communities.getDetails(comId);
-	
+
 	/*
 	*  If the user is attempting to join a community they are apart of, redirect them
 	*  back to the community explorer
@@ -19,11 +19,13 @@
 
 		if (com == null) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
+			return;
 		} else {
 			request.setAttribute("com", com);
 		}
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+		return;
 	}
 %>
 

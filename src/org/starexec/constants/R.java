@@ -268,6 +268,7 @@ public class R {
 	public static final String BACKEND_ROOT = "@Backend.Root@"; // root directory for the backend executable
 	public static final String BACKEND_WORKING_DIR = "@Backend.WorkingDir@";
 	public static final long MAX_PAIR_FILE_WRITE = @JobPair.MaxFileWrite@;      // The largest possible amount disk space (in kilobytes) a job pair is allowed to use
+	public static final String JOBPAIR_EXECUTION_PREFIX = "@JobPair.ExecutionPrefix@"; // Prefix to (ie) enable GCC 7 for Solver build jobs
 	public static final long DEFAULT_PAIR_VMEM = 17179869184L;                              // The default limit on memory (in bytes) for job pairs
 	public static final int NODE_MULTIPLIER = 8;                                  // The number of job scripts to submit is the number of nodes in the queue times this
 

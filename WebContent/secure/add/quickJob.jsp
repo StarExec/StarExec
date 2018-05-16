@@ -24,6 +24,7 @@
 					HttpServletResponse.SC_FORBIDDEN,
 					"You do not have permission to create a job here"
 			);
+			return;
 		} else {
 			if (spaceId > 0) {
 				request.setAttribute("spaceName", Spaces.getName(spaceId));
@@ -66,12 +67,14 @@
 				HttpServletResponse.SC_BAD_REQUEST,
 				"The space id was not in the correct format"
 		);
+		return;
 	} catch (Exception e) {
 		log.debug(e.getMessage(), e);
 		response.sendError(
 				HttpServletResponse.SC_NOT_FOUND,
 				"You do not have permission to add to this space or the space does not exist"
 		);
+		return;
 	}
 %>
 <jsp:useBean id="now" class="java.util.Date"/>

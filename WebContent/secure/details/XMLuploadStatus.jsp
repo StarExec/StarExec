@@ -25,11 +25,13 @@
 					HttpServletResponse.SC_NOT_FOUND,
 					"XML Upload Status does not exist or is restricted"
 			);
+			return;
 		}
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
 		                   e.getMessage()
 		);
+		return;
 	}
 %>
 

@@ -78,14 +78,12 @@ public class JobPairs {
 			final HashMap<Integer, Solver> configIdsToSolvers, final Job job, final int spaceId,
 			final HashSet<String> jobRootPaths, final ConfigAttrMapPair configAttrMapPair, final NodeList jobPairs
 	) {
-
 		final String methodName = "populateJobPairsForJobXMLUpload";
 		Connection con = null;
 
 		// Benchmarks the user can see that we've already seen.
 		try {
 			con = Common.getConnection();
-
 
 			//we now iterate through all the job pair elements and add them all to the job
 			final int jobPairsLength = jobPairs.getLength();
@@ -168,10 +166,12 @@ public class JobPairs {
 					jobPair.setPrimaryStageNumber(jobPair.getStages().size());
 					jobPair.setSpace(Spaces.get(spaceId, con));
 
-
 					job.addJobPair(jobPair);
 				}
 			}
+			return Optional.empty();
+		} catch (SQLException e) {
+			log.error(methodName, e);
 			return Optional.empty();
 		} finally {
 			Common.safeClose(con);
@@ -289,20 +289,22 @@ public class JobPairs {
 	}
 
 	public static void addJobPairs(int jobId, List<JobPair> pairs) {
-		final String methodName = "addJobPairs( int, List<JobPair> )";
+		final String methodName = "addJobPairs";
 
 		Connection con = null;
 		try {
 			con = Common.getConnection();
 			Common.beginTransaction(con);
-			log.debug("addJobPairs one");
+			log.entry(methodName);
 			boolean success = incrementTotalJobPairsForJob(jobId, pairs.size(), con);
 			if (!success) {
 				return;
 			}
-			log.debug("addJobPairs two");
+			log.trace(methodName, "two");
 			addJobPairs(con, jobId, pairs);
-			log.debug("addJobPairs three");
+			log.exit(methodName);
+		} catch (SQLException e) {
+			log.error(methodName, e);
 		} finally {
 			Common.endTransaction(con);
 			Common.safeClose(con);
@@ -354,7 +356,7 @@ public class JobPairs {
 			addJobPairInputs(pairs, con);
 			return true;
 		} catch (Exception e) {
-			log.error("addJobPair says " + e.getMessage(), e);
+			log.error(methodName, e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -400,7 +402,7 @@ public class JobPairs {
 			}
 			return list;
 		} catch (Exception e) {
-			log.error("getAllPairsForProcessing says " + e.getMessage(), e);
+			log.error("getAllPairsForProcessing", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -498,7 +500,7 @@ public class JobPairs {
 			Common.endTransaction(con);
 		} catch (Exception e) {
 			Common.doRollback(con);
-			log.error("postProcessPair says " + e.getMessage(), e);
+			log.error("postProcessPair", e);
 		} finally {
 			Common.endTransaction(con);
 			Common.safeClose(con);
@@ -543,7 +545,7 @@ public class JobPairs {
 
 			return prop;
 		} catch (Exception e) {
-			log.error("runPostProcessorOnPair says " + e.getMessage(), e);
+			log.error("runPostProcessorOnPair", e);
 		}
 		return null;
 	}
@@ -568,7 +570,7 @@ public class JobPairs {
 			procedure.setInt(4, stageId);
 			procedure.executeUpdate();
 		} catch (Exception e) {
-			log.error("addJobAttr says " + e.getMessage(), e);
+			log.error("addJobPairAttr", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -596,7 +598,7 @@ public class JobPairs {
 
 			return true;
 		} catch (Exception e) {
-			log.error("addJobPairAttributes says " + e.getMessage(), e);
+			log.error("addJobPairAttributes", e);
 		}
 		return false;
 	}
@@ -795,7 +797,7 @@ public class JobPairs {
 					filteredPairs.add(jp);
 				}
 			} catch (Exception e) {
-				log.warn("filterPairs says jp with id = " + jp.getId() + " threw a null pointer");
+				log.warn("filterPairs", "JobPair: " +  jp.getId(), e);
 			}
 		}
 
@@ -833,7 +835,7 @@ public class JobPairs {
 
 			return props;
 		} catch (Exception e) {
-			log.error("getAttributes says " + e.getMessage(), e);
+			log.error("getAttributes", e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -912,7 +914,7 @@ public class JobPairs {
 				return pair;
 			}
 		} catch (Exception e) {
-			log.debug("getFilePath says " + e.getMessage(), e);
+			log.debug("getFilePathInfo", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1056,7 +1058,7 @@ public class JobPairs {
 			log.trace("found this log path " + file.getAbsolutePath());
 			return file.getAbsolutePath();
 		} catch (Exception e) {
-			log.error("getFilePath says " + e.getMessage(), e);
+			log.error("getLogFilePath", e);
 		}
 		return null;
 	}
@@ -1127,7 +1129,7 @@ public class JobPairs {
 
 			return file.getAbsolutePath();
 		} catch (Exception e) {
-			log.error("getFilePath says " + e.getMessage(), e);
+			log.error("getPairStdout", e);
 		}
 		return null;
 	}
@@ -1217,7 +1219,7 @@ public class JobPairs {
 
 			return jp;
 		} catch (Exception e) {
-			log.error("Get JobPair says " + e.getMessage(), e);
+			log.error("getPairDetailed", e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -1407,7 +1409,7 @@ public class JobPairs {
 
 			return true;
 		} catch (Exception e) {
-			log.debug("setPairStatus says " + e.getMessage(), e);
+			log.debug("setPairStageStatus", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -1589,7 +1591,7 @@ public class JobPairs {
 
 			return true;
 		} catch (Exception e) {
-			log.debug("setPairStatus says " + e.getMessage(), e);
+			log.debug("setPairStatus", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -1732,7 +1734,7 @@ public class JobPairs {
 			procedure.setInt(2, jobSpaceId);
 			procedure.executeUpdate();
 		} catch (Exception e) {
-			log.error("updateJobSpaces says " + e.getMessage(), e);
+			log.error("UpdateJobSpaces", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -1873,7 +1875,7 @@ public class JobPairs {
 			}
 			return pairs;
 		} catch (Exception e) {
-			log.error("getPairsByStatus says " + e.getMessage(), e);
+			log.error("getPairsByStatus", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1926,7 +1928,7 @@ public class JobPairs {
 			procedure.setInt(3, Status.StatusCode.ERROR_SUBMIT_FAIL.getVal());
 			procedure.executeUpdate();
 		} catch (Exception e) {
-			log.error("getPairsByStatus says " + e.getMessage(), e);
+			log.error("setBrokenPairStatus", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);

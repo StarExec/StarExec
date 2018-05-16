@@ -181,7 +181,7 @@ public class Benchmarks {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error("addBenchAttr says " + e.getMessage(), e);
+			log.error("addBenchAttr", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -313,7 +313,7 @@ public class Benchmarks {
 			Common.endTransaction(con);// benchmarks should be in db now
 			return benchmark;
 		} catch (Exception e) {
-			log.error("addBench says " + e.getMessage(), e);
+			log.error("add", e);
 			Common.doRollback(con);
 			return null;
 		} finally {
@@ -333,7 +333,7 @@ public class Benchmarks {
 	 * @throws Exception Any database error that gets thrown
 	 * @author Tyler Jensen
 	 */
-	public static int addAndAssociate(Benchmark benchmark, Integer spaceId, Integer statusId) {
+	public static int addAndAssociate(Benchmark benchmark, Integer spaceId, Integer statusId) throws SQLException {
 		if (Benchmarks.isBenchValid(benchmark.getAttributes())) {
 			Connection con = null;
 			try {
@@ -348,7 +348,7 @@ public class Benchmarks {
 					log.debug("bench successfully added");
 					return benchId;
 				}
-			} catch (Exception e) {
+			} catch (SQLException e) {
 				log.error(e.getMessage(), e);
 				throw e;
 			} finally {
@@ -737,7 +737,7 @@ public class Benchmarks {
 			}
 			return true;
 		} catch (Exception e) {
-			log.error("cleanOrphanedDeletedBenchmarks says " + e.getMessage(), e);
+			log.error("cleanOrphanedDeletedBenchmarks", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -816,7 +816,7 @@ public class Benchmarks {
 			log.debug("Benchmark copied successfully, return new benchmark ID = " + benchId);
 			return benchId;
 		} catch (Exception e) {
-			log.error("copyBenchmark says " + e.getMessage());
+			log.error("copyBenchmark", e);
 			return -1;
 		}
 	}
@@ -1005,7 +1005,7 @@ public class Benchmarks {
 				return b;
 			}
 		} catch (Exception e) {
-			log.error("Benchmarks.get says " + e.getMessage(), e);
+			log.error("get", e);
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
@@ -1184,7 +1184,7 @@ public class Benchmarks {
 			}
 			return ids;
 		} catch (Exception e) {
-			log.error("Benchmarks.getAssociatedSpaceIds says " + e.getMessage(), e);
+			log.error("getAssociatedSpaceIds", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -1217,7 +1217,7 @@ public class Benchmarks {
 			}
 			return prop;
 		} catch (Exception e) {
-			log.error("getAttributes says " + e.getMessage(), e);
+			log.error("getAttributes", e);
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
@@ -1695,7 +1695,7 @@ public class Benchmarks {
 				return results.getInt("benchCount");
 			}
 		} catch (Exception e) {
-			log.error("getRecycledBenchmarkCountByUser says " + e.getMessage(), e);
+			log.error("getRecycledBenchmarkCountByUser", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -1728,7 +1728,7 @@ public class Benchmarks {
 			}
 			return sortedMap;
 		} catch (Exception e) {
-			log.error("getSortedAttributes says " + e.getMessage(), e);
+			log.error("getSortedAttributes", e);
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
@@ -1781,7 +1781,7 @@ public class Benchmarks {
 			}
 			return deleted;
 		} catch (Exception e) {
-			log.error("isBenchmarkDeleted says " + e.getMessage(), e);
+			log.error("isBenchmarkDeleted", e);
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
@@ -1802,7 +1802,7 @@ public class Benchmarks {
 			con = Common.getConnection();
 			return isBenchmarkDeleted(con, benchId);
 		} catch (Exception e) {
-			log.error("Is benchmark deleted says " + e.getMessage(), e);
+			log.error("isBenchmarkDeleted", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -1832,7 +1832,7 @@ public class Benchmarks {
 			}
 			return deleted;
 		} catch (Exception e) {
-			log.error("isBenchmarkRecycled says " + e.getMessage(), e);
+			log.error("isBenchmarkRecycled", e);
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
@@ -1853,7 +1853,7 @@ public class Benchmarks {
 			con = Common.getConnection();
 			return isBenchmarkRecycled(con, benchId);
 		} catch (Exception e) {
-			log.error("isBenchmarkRecycled says " + e.getMessage(), e);
+			log.error("isBenchmarkRecycled", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -1991,7 +1991,7 @@ public class Benchmarks {
 			}
 			return true;
 		} catch (Exception e) {
-			log.error("restoreRecycledBenchmarks says " + e.getMessage(), e);
+			log.error("restoreRecycledBenchmarks", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -2258,7 +2258,7 @@ public class Benchmarks {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error("clearAttributes says " + e.getMessage(), e);
+			log.error("clearAttributes", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -2383,7 +2383,7 @@ public class Benchmarks {
 			}
 			return success;
 		} catch (Exception e) {
-			log.error("process says " + e.getMessage(), e);
+			log.error("process", e);
 		} finally {
 			Common.safeClose(con);
 		}

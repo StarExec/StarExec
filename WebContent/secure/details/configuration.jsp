@@ -21,6 +21,7 @@
 					HttpServletResponse.SC_NOT_FOUND,
 					"the configuration does not exist or is restricted"
 			);
+			return;
 		}
 
 		// The solver is valid...
@@ -30,6 +31,7 @@
 					HttpServletResponse.SC_NOT_FOUND,
 					"the solver does not exist or is restricted"
 			);
+			return;
 		}
 
 		// Build the configuration file path
@@ -43,6 +45,7 @@
 					HttpServletResponse.SC_NOT_FOUND,
 					"the configuration file path points to a location that does not exist on disk"
 			);
+			return;
 		}
 
 		con.setDescription(GeneralSecurity.getHTMLSafeString(
@@ -58,6 +61,7 @@
 		log.error("Exception", e);
 		e.printStackTrace();
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+		return;
 	}
 %>
 <star:template title="${config.name}"

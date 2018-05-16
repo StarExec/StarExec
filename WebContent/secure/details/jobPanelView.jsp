@@ -21,20 +21,24 @@
 					HttpServletResponse.SC_NOT_FOUND,
 					"This job has been deleted. You likely want to remove it from your spaces"
 			);
+			return;
 		} else {
 			response.sendError(
 					HttpServletResponse.SC_NOT_FOUND,
 					"Job does not exist or is restricted"
 			);
+			return;
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(
 				HttpServletResponse.SC_BAD_REQUEST,
 				"The given job id was in an invalid format"
 		);
+		return;
 	} catch (Exception e) {
 		response.sendError(
 				HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+		return;
 	}
 %>
 <star:template title="${job.name}"
