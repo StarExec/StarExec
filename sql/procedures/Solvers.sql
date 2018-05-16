@@ -113,7 +113,6 @@ CREATE PROCEDURE GetSolverConfigResultsForBenchmarkInJob(IN _jobId INT, IN _benc
 	END //
 
 
-
 -- Adds a Space/Solver association
 -- Author: Skylar Stark
 DROP PROCEDURE IF EXISTS AddSolverAssociation //
@@ -218,9 +217,6 @@ CREATE PROCEDURE GetConfigsForSolver(IN _id INT)
 	END //
 
 
-
-
-
 -- Retrieves all solvers belonging to a space
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetSpaceSolversById //
@@ -276,7 +272,6 @@ CREATE PROCEDURE GetSolverCountInSpaceWithQuery(IN _spaceId INT, IN _query TEXT)
 	END //
 
 
-
 -- Retrieves the solvers owned by a given user id
 -- Todd Elvers
 DROP PROCEDURE IF EXISTS GetSolversByOwner //
@@ -305,6 +300,7 @@ CREATE PROCEDURE IsSolverDeleted(IN _solverId INT)
 		FROM solvers
 		WHERE deleted=true AND id=_solverId;
 	END //
+
 -- Removes the association between a solver and a given space;
 -- Author: Todd Elvers + Eric Burns
 DROP PROCEDURE IF EXISTS RemoveSolverFromSpace //
@@ -471,6 +467,7 @@ CREATE PROCEDURE GetDeletedSolvers()
 	BEGIN
 		SELECT * FROM solvers WHERE deleted=true;
 	END //
+
 -- Sets the recycled flag for a single solver back to false
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS RestoreSolver //
@@ -540,3 +537,44 @@ CREATE PROCEDURE DeleteBuildConfig(IN _solverId INT)
         DELETE FROM configurations
         WHERE solver_id=_solverId AND name="starexec_build";
     END //
+
+-- Pauses all JobPairs containing Solver and rebuilds Solver
+DROP PROCEDURE IF EXISTS RebuildSolver //
+CREATE PROCEDURE RebuildSolver(IN _solverId INT)
+	BEGIN
+		-- Pause all jobs containing solver
+		UPDATE jobs
+		SET paused = TRUE
+		WHERE killed = FALSE
+		AND deleted = FALSE
+		AND buildJob = FALSE
+		AND id IN (
+			SELECT job_id FROM (
+				SELECT job_id, id
+				FROM job_pairs
+				WHERE id IN (
+					SELECT jobpair_id
+					FROM jobpair_stage_data
+					WHERE solver_id = _solverId
+				)
+			) AS jobPairsWithSolver
+		)
+		;
+		-- Pause all jobpairs containing solver
+		UPDATE job_pairs
+		SET status_code = 20
+		WHERE  status_code = 1
+		AND id IN (
+			SELECT jobpair_id
+			FROM jobpair_stage_data
+			WHERE solver_id = _solverId
+		)
+		;
+		-- Set Solver status to Unbuilt
+		UPDATE solvers
+			SET build_status = 0, -- 0 = Unbuilt : SolverBuildStatus.java
+			    path = CONCAT(path, "_src")
+			WHERE id = _solverId
+			AND build_status = 2  -- 2 = Built by StarExec
+		;
+	END //

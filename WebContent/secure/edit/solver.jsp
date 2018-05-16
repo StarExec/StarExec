@@ -34,6 +34,7 @@
 						HttpServletResponse.SC_FORBIDDEN,
 						"Only the owner of this solver can edit details about it."
 				);
+				return;
 			}
 		} else {
 			if (Solvers.isSolverDeleted(solverId)) {
@@ -41,11 +42,13 @@
 						HttpServletResponse.SC_NOT_FOUND,
 						"This solver has been deleted. You likely want to remove it from your spaces."
 				);
+				return;
 			} else {
 				response.sendError(
 						HttpServletResponse.SC_NOT_FOUND,
 						"Solver does not exist or is restricted"
 				);
+				return;
 			}
 		}
 	} catch (NumberFormatException nfe) {
@@ -53,9 +56,11 @@
 				HttpServletResponse.SC_BAD_REQUEST,
 				"The given solver id was in an invalid format"
 		);
+		return;
 	} catch (Exception e) {
 		response.sendError(
 				HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+		return;
 	}
 %>
 

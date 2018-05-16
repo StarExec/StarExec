@@ -20,16 +20,16 @@ public abstract class TestSequence {
 	protected int testsPassed=0;
 	protected int testsFailed=0;
 	protected Throwable error = null;
-	protected ResourceLoader loader = null; 
+	protected ResourceLoader loader = null;
 	//maps the names of tests to some data about them. Every test gets an entry when the TestSequence object is created
 	final HashMap<String,TestResult> testResults= new HashMap<>();
-	
-	
+
+
 	public TestSequence() {
 		initTestResults();
 		sequenceName=getTestName(); //this method is implemented in every subclass
 	}
-	
+
 	private void initTestResults() {
 		List<Method> tests=this.getTests();
 		for (Method m : tests) {
@@ -42,7 +42,7 @@ public abstract class TestSequence {
 	 * Clears the results of every test and sets the status of this sequence to "not run"
 	 */
 	protected final void clearResults() {
-		error=null; 
+		error=null;
 		testsPassed=0;
 		testsFailed=0;
 		message="No Message";
@@ -51,25 +51,25 @@ public abstract class TestSequence {
 			r.clearMessages();
 			r.addMessage("test not started");
 			r.getStatus().setCode(TestStatus.TestStatusCode.STATUS_NOT_RUN.getVal());
-			r.setError(null); 
+			r.setError(null);
 			r.setTime(0);
 		}
 	}
-	
+
 	/**
 	 * Runs this test sequence by calling setup, then running the tests, then calling teardown. All previous results
 	 * are cleared and the status of the TestSequence is updated throughout
 	 * @return
 	 */
 	protected final boolean execute() {
-		
+
 		try {
 			testsPassed=0;
 			testsFailed=0;
 			loader = new ResourceLoader();
 			clearResults();
 			status.setCode(TestStatus.TestStatusCode.STATUS_RUNNING.getVal());
-			turnOffExternalLogging(); 
+			turnOffExternalLogging();
 			setup();
 			runTests();
 			teardown();
@@ -80,14 +80,14 @@ public abstract class TestSequence {
 				status.setCode(TestStatus.TestStatusCode.STATUS_FAILED.getVal());
 				setMessage("failed tests detected");
 			}
-			
+
 			return true;
 		} catch (Throwable e) {
 			status.setCode(TestStatus.TestStatusCode.STATUS_FAILED.getVal());
 			setMessage(e.getMessage());
 			log.error(e.getMessage(),e);
 			error=e;
-			
+
 		}
 		return false;
 	}
@@ -96,10 +96,10 @@ public abstract class TestSequence {
 	 * @return the name
 	 */
 	abstract protected String getTestName();
-	
-	
+
+
 	/**
-	 * Turns off logging in some 3rd part libraries used by testing. 3rd party logs 
+	 * Turns off logging in some 3rd part libraries used by testing. 3rd party logs
 	 * tend to be extremely verbose and drown out our logging
 	 */
 	private void turnOffExternalLogging() {
@@ -140,17 +140,17 @@ public abstract class TestSequence {
 
 		StarLogger.getLogger("netscape.javascript").setLevel(StarLevel.OFF);
 		StarLogger.getLogger("net.sourceforge").setLevel(StarLevel.OFF);
-		
+
 		StarLogger.getLogger("com.gargoylesoftware").setLevel(StarLevel.OFF);
 	}
-	
+
 	/**
 	 * This function is called before the tests belonging to this sequence are run.
 	 * All initialization should be done here (creating spaces, solvers, etc. that are
 	 * used by the tests in this sequence).
 	 * @throws Exception
 	 */
-	
+
 	abstract protected void setup() throws Exception;
 	protected final void runTests() {
 		for (TestResult r : testResults.values()) {
@@ -158,7 +158,7 @@ public abstract class TestSequence {
 			r.addMessage("test running");
 			r.getStatus().setCode(TestStatus.TestStatusCode.STATUS_RUNNING.getVal());
 		}
-		
+
 		try {
 			List<Method> tests=getTests();
 			List<Method> afters = getAfters();
@@ -173,7 +173,7 @@ public abstract class TestSequence {
 					t.setTime(System.currentTimeMillis()-a);
 					t.addMessage("test executed without errors");
 					testsPassed++;
-					
+
 				} catch (Throwable e) {
 					e.printStackTrace();
 					t.setTime(System.currentTimeMillis()-a);
@@ -194,26 +194,26 @@ public abstract class TestSequence {
 						log.error(e.getMessage(), e);
 					}
 				}
-				
+
 			}
 		} catch (Exception e) {
-			log.debug("runTests says "+e.getMessage(),e);
-		}	
+			log.debug("runTests", e);
+		}
 	}
 	/**
 	 * This function is called after all the tests have finished running
-	 * It will be called ONLY if setup ran successfully. 
+	 * It will be called ONLY if setup ran successfully.
 	 */
-	
+
 	abstract protected void teardown() throws Exception;
-	
+
 	public final String getName() {
 		return sequenceName;
 	}
 	public final TestStatus getStatus() {
-		return status;	
+		return status;
 	}
-	
+
 	public final String getMessage() {
 		if (message==null) {
 			return "no message";
@@ -229,9 +229,9 @@ public abstract class TestSequence {
 	protected final void setName(String newName) {
 		sequenceName=newName;
 	}
-	
-	
-	
+
+
+
 	/**
 	 * Gets the total number of tests in this sequence
 	 * @return the integer number
@@ -239,7 +239,7 @@ public abstract class TestSequence {
 	public final int getTestCount() {
 		return getTests().size();
 	}
-	
+
 	/**
 	 * Gets the number of tests that have passed in this sequence
 	 * @return the integer number
@@ -247,12 +247,12 @@ public abstract class TestSequence {
 	public final int getTestsPassed() {
 		return testsPassed;
 	}
-	
+
 	/**
 	 * Gets the number of tests that have failed in this sequence
 	 * @return the integer number
 	 */
-	
+
 	public final int getTestsFailed() {
 		return testsFailed;
 	}
@@ -265,12 +265,12 @@ public abstract class TestSequence {
 		tr.addAll(testResults.values());
 		return tr;
 	}
-	
+
 	public final TestResult getTestResult(String testName) {
 		return testResults.get(testName);
 	}
 	/**
-	 * Gets the trace for the most recent error that affected this 
+	 * Gets the trace for the most recent error that affected this
 	 * test sequence (in the setup-- errors in individual tests are reported there)
 	 * If there was no error, returns "no error"
 	 * @return The stack trace as a string
@@ -278,17 +278,17 @@ public abstract class TestSequence {
 	public final String getErrorTrace() {
 		return TestUtil.getErrorTrace(error);
 	}
-	
+
 	/**
 	 * Retrieves a list of all methods declared in the current class that have the
 	 * @StarexecTest annotation
 	 * @return
 	 */
-	
+
 	protected List<Method> getTests() {
 		return getMethodsWithAnnotation(StarexecTest.class);
 	}
-	
+
 	/**
 	 * Retrieves a list of all methods that have the @StarexecAfter annotation
 	 * @return
@@ -296,18 +296,18 @@ public abstract class TestSequence {
 	protected List<Method> getAfters() {
 		return getMethodsWithAnnotation(StarexecAfter.class);
 	}
-	
-	
+
+
 	private List<Method> getMethodsWithAnnotation(Class annotationClass) {
 		Method[] methods=this.getClass().getDeclaredMethods();
-		
+
 		List<Method> tests= new ArrayList<>();
 		for (Method m : methods) {
 			if (hasAnnotation(m, annotationClass)) {
 				tests.add(m);
 			}
 		}
-		
+
 		return tests;
 	}
 	/**
@@ -325,7 +325,7 @@ public abstract class TestSequence {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * This appends the given message to the log of an individual test. It uses
 	 * reflection to figure out which test called it.
@@ -336,9 +336,9 @@ public abstract class TestSequence {
 			String methodName=Thread.currentThread().getStackTrace()[2].getMethodName();
 			this.getTestResult(methodName).addMessage(message);
 		} catch (Exception e) {
-			log.error("addMessage says "+e.getMessage(),e);
+			log.error("addMessage", e);
 		}
-		
+
 	}
-	
+
 }

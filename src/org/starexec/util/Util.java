@@ -867,7 +867,7 @@ public class Util {
 			}
 			return true;
 		} catch (Exception e) {
-			log.error("safeDeleteDirectory says " + e.getMessage(), e);
+			log.error("safeDeleteDirectory", e);
 		}
 		return false;
 	}
