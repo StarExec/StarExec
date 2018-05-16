@@ -13,14 +13,13 @@
 						HttpServletResponse.SC_NOT_FOUND,
 						"This job has been deleted. You likely want to remove it from your spaces"
 				);
-				return;
 			} else {
 				response.sendError(
 						HttpServletResponse.SC_NOT_FOUND,
 						"Job does not exist or is restricted"
 				);
-				return;
 			}
+			return;
 		}
 		int benchId = Integer.parseInt(request.getParameter("benchId"));
 		request.setAttribute("benchmark", Benchmarks.get(benchId));
@@ -32,6 +31,7 @@
 	} catch (Exception e) {
 		response.sendError(
 				HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+		return;
 	}
 %>
 <star:template title="conflicting solvers for benchmark ${benchmark.name}"

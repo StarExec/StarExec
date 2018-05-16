@@ -49,7 +49,7 @@ public class Permissions {
 			procDefaultPerm.execute();
 			return procDefaultPerm.getInt(12);
 		} catch (Exception e) {
-			log.error("Permissions.add says " + e.getMessage(), e);
+			log.error("add", e);
 		} finally {
 			Common.safeClose(procDefaultPerm);
 		}
@@ -418,7 +418,7 @@ public class Permissions {
 				Permission p = resultsToPermissionWithId(userId, results);
 				if (results.wasNull()) {
 					/* If the permission doesn't exist we always get a result
-					but all of it's values are null, so here we check for a 
+					but all of it's values are null, so here we check for a
 					null result and return null */
 
 					if (GeneralSecurity.hasAdminReadPrivileges(userId)) {
@@ -587,7 +587,7 @@ public class Permissions {
 			log.debug(String.format("Permissions successfully changed for user [%d] in space [%d]", userId, spaceId));
 			return true;
 		} catch (Exception e) {
-			log.error("Permissions.set says " + e.getMessage(), e);
+			log.error("set", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -625,7 +625,7 @@ public class Permissions {
 			procedure.executeUpdate();
 			log.info(String.format("Permission [%d] successfully updated.", permId));
 		} catch (Exception e) {
-			log.error("updatePermission says " + e.getMessage(), e);
+			log.error("updatePermission", e);
 		} finally {
 			Common.safeClose(procedure);
 		}

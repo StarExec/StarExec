@@ -73,7 +73,7 @@ public class Statistics {
 
 			return null;
 		} catch (Exception e) {
-			log.error("getJobPairOverview says " + e.getMessage(), e);
+			log.error("getJobPairOverview", e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(procedure);
@@ -253,7 +253,7 @@ public class Statistics {
 
 			return graphs;
 		} catch (Exception e) {
-			log.error("makeTestChart says " + e.getMessage(), e);
+			log.error(methodName, e);
 		}
 		return null;
 	}
@@ -278,7 +278,7 @@ public class Statistics {
 			int configId1, int configId2, int jobSpaceId, int edgeLengthInPixels, Color axisColor, int stageNumber,
 			PrimitivesToAnonymize primitivesToAnonymize
 	) {
-		final String methodName = "makeSolverComparisonChart( int, int, int, int, boolean, int )";
+		final String methodName = "makeSolverComparisonChart";
 		log.entry(methodName);
 
 		try {
@@ -301,7 +301,7 @@ public class Statistics {
 			                                 primitivesToAnonymize
 			);
 		} catch (Exception e) {
-			log.error("makeSolverComparisonChart says " + e.getMessage(), e);
+			log.error(methodName+ e.getMessage(), e);
 		}
 		return null;
 	}
@@ -475,7 +475,7 @@ public class Statistics {
 			answer.add(map);
 			return answer;
 		} catch (Exception e) {
-			log.error("deprecated makeSolverComparisonChart says " + e.getMessage(), e);
+			log.error("makeSolverComparisonChart", e);
 		}
 		return null;
 	}
@@ -520,7 +520,7 @@ public class Statistics {
 					());
 			return makeSpaceOverviewChart(pairs, logX, logY, stageNumber, primitivesToAnonymize);
 		} catch (Exception e) {
-			log.error("makeSpaceOverviewChart says " + e.getMessage(), e);
+			log.error("makeSpaceOverviewChart", e);
 		}
 
 		return null;
@@ -617,7 +617,7 @@ public class Statistics {
 			log.debug("Chart created succesfully, returning filepath ");
 			return Util.docRoot(R.JOBGRAPH_FILE_DIR + "/" + filename);
 		} catch (IOException e) {
-			log.error("MakeSpaceOverviewChart says " + e.getMessage(), e);
+			log.error("makeSpaceOverviewChart", e);
 		}
 		return null;
 	}

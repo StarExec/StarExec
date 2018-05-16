@@ -559,7 +559,7 @@ public class Download extends HttpServlet {
 			response.getOutputStream().close();
 			stream.close();
 		} catch (Exception e) {
-			log.error("addJobPairsToZipOutput says " + e.getMessage(), e);
+			log.error("addJobPairsToZipOutput", e);
 		}
 	}
 
@@ -1190,14 +1190,15 @@ public class Download extends HttpServlet {
 	 * @param includeSolvers Whether to include solvers in the directory
 	 * @param useIdDirectories whether to put each primitive in a directory that has the name of it's id.
 	 * @return a file representing the archive to send back to the client
-	 * @throws IOException
+	 * @throws ClientAbortException
 	 * @author Ruoyu Zhang + Eric Burns + Albert Giegerich
 	 */
 
 	private boolean handleSpace(
 			Space space, int uid, HttpServletResponse response, boolean hierarchy, boolean includeBenchmarks,
 			boolean includeSolvers, boolean useIdDirectories
-	) {
+	) throws ClientAbortException {
+		final String methodName = "handleSpace";
 		// If we can see this space AND the space is downloadable...
 		try {
 			//String baseFileName=space.getName();
@@ -1209,8 +1210,10 @@ public class Download extends HttpServlet {
 			stream.close();
 
 			return true;
+		} catch (ClientAbortException e) {
+			throw e;
 		} catch (Exception e) {
-			log.error("unable to delete directory because " + e.getMessage(), e);
+			log.error(methodName, e);
 		}
 		return false;
 	}
@@ -1280,7 +1283,6 @@ public class Download extends HttpServlet {
 				} else {
 					solverList = Solvers.getBySpace(space.getId());
 				}
-
 
 				// Create a list of the names of the solvers in solverList
 				List<String> solverNames = new LinkedList<>();

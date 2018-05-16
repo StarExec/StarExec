@@ -33,8 +33,9 @@
 				<filter token="Email.User"            value="${Email.User}"/>
 				<filter token="Email.Pass"            value="${Email.Pass}"/>
 
-				<filter token="Job.SubmissionPeriod"  value="${Job.SubmissionPeriod}"/>
-				<filter token="JobPair.MaxFileWrite"  value="${JobPair.MaxFileWrite}"/>
+				<filter token="Job.SubmissionPeriod"            value="${Job.SubmissionPeriod}"/>
+				<filter token="JobPair.MaxFileWrite"            value="${JobPair.MaxFileWrite}"/>
+				<filter token="JobPair.ExecutionPrefix"         value="${JobPair.ExecutionPrefix}"/>
 
 				<filter token="MaxLength.Bench.Name"            value="${MaxLength.Bench.Name}" />
 				<filter token="MaxLength.Bench.Description"     value="${MaxLength.Bench.Description}" />
@@ -84,9 +85,9 @@
 				<filter token="Web.DB.Url"             value="${Web.DB.Url}"/>
 
 				<filter token="data_dir"            value="${data_dir}"/>
+				<filter token="sandbox_dir"         value="${sandbox_dir}"/>
 				<filter token="BACKEND_TYPE"        value="sge"/>
 				<filter token="STAREXEC_APPNAME"    value="${STAREXEC_APPNAME}"/>
-				<filter token="SANDBOX_DIRECTORY"   value="/local/sandbox"/>
 				<filter token="TEST_COMMUNITY_ID"   value="${TEST_COMMUNITY_ID}"/>
 				<filter token="ALLOW_TESTING"       value="${ALLOW_TESTING}"/>
 			</filterset>

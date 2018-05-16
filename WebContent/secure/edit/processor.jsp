@@ -35,6 +35,7 @@
 					HttpServletResponse.SC_NOT_FOUND,
 					"the processor does not exist or is restricted"
 			);
+			return;
 		} else {
 			request.setAttribute("proc", proc);
 
@@ -57,6 +58,7 @@
 		}
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+		return;
 	}
 %>
 <star:template title="edit ${proc.name}"

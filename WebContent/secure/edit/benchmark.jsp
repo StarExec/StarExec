@@ -23,6 +23,7 @@
 						HttpServletResponse.SC_FORBIDDEN,
 						"Only the owner of this benchmark can edit details about it."
 				);
+				return;
 			} else {
 				request.setAttribute("bench", b);
 				if (b.isDownloadable()) {
@@ -42,11 +43,13 @@
 						HttpServletResponse.SC_NOT_FOUND,
 						"This benchmark has been deleted. You likely want to remove it from your spaces"
 				);
+				return;
 			} else {
 				response.sendError(
 						HttpServletResponse.SC_NOT_FOUND,
 						"Benchmark does not exist or is restricted"
 				);
+				return;
 			}
 		}
 	} catch (NumberFormatException nfe) {
@@ -54,9 +57,11 @@
 				HttpServletResponse.SC_BAD_REQUEST,
 				"The given benchmark id was in an invalid format"
 		);
+		return;
 	} catch (Exception e) {
 		response.sendError(
 				HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+		return;
 	}
 %>
 

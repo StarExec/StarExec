@@ -49,7 +49,9 @@
 
 	<!-- Zips up the StarExecCommand folder with the readme and runnable jar  -->
 	<target name="zipstarcom" depends="command">
-		<copy file="WebContent/public/manual.txt" tofile="${starcom-build}/Manual.txt" />
-		<zip compress="${compression-enabled}" level="9" destfile="${starcomzip}" basedir="${starcom-build}"/>
+		<zip compress="${compression-enabled}" level="9" destfile="${starcomzip}">
+			<zipfileset file="WebContent/public/manual.txt" fullpath="manual.txt" />
+			<zipfileset file="${starcom-build}/StarexecCommand.jar" fullpath="StarexecCommand.jar" filemode="755" />
+		</zip>
 	</target>
 </project>

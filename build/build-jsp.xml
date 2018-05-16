@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project>
+	<target name="jspc" depends="compilestarexec">
+		<taskdef classname="org.apache.jasper.JspC" name="jasper2" >
+			<classpath id="jspc.classpath">
+				<pathelement location="${java.home}/../lib/tools.jar"/>
+				<fileset dir="${tomcat-dir}/bin">
+					<include name="*.jar"/>
+				</fileset>
+				<fileset dir="${tomcat-dir}/lib">
+					<include name="*.jar"/>
+				</fileset>
+				<pathelement path="${class-dir}"/>
+			</classpath>
+		</taskdef>
+		<jasper2 uriroot="WebContent"
+		         validateXml="false"
+		         webXmlFragment="${web-inf}/generated_web.xml"
+		         addWebXmlMappings="true"
+		         outputDir="${jsp-java-dir}" />
+	</target>
+
+	<target name="compile-jsp" depends="jspc">
+		<mkdir dir="${jsp-class-dir}"/>
+		<mkdir dir="${jsp-java-dir}"/>
+		<javac debug="on" debuglevel="lines,vars,source"
+		       classpathref="classpath"
+		       destdir="${jsp-class-dir}"
+		       failonerror="true"
+		       srcdir="${jsp-java-dir}"
+		       excludes="**/*.smap">
+			<classpath>
+				<pathelement path="${class-dir}"/>
+			</classpath>
+			<include name="**" />
+			<exclude name="tags/**" />
+		</javac>
+	</target>
+</project>

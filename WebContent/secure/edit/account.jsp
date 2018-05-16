@@ -35,6 +35,7 @@
 						HttpServletResponse.SC_NOT_FOUND,
 						"Must be the administrator to access this page"
 				);
+				return;
 			} else {
 				List<DefaultSettings> listOfDefaultSettings =
 						Settings.getDefaultSettingsVisibleByUser(userId);
@@ -87,6 +88,7 @@
 		}
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
+		return;
 	}
 %>
 <star:template title="edit account"

@@ -7,7 +7,7 @@
                js="admin/user, lib/jquery-ui.min, lib/jquery.dataTables.min"
                css="admin/user, common/table, explore/common, admin/admin, jqueryui/jquery-ui">
 	<fieldset id="userField" class="expdContainer">
-		<legend class="expd" id="userExpd"><span>0</span> users</legend>
+		<legend class="expd" id="userExpd"><span class="list-count"></span> users</legend>
 		<ul id="actionList">
 			<li><a type="btnRun" id="addUser"
 			       href="${starexecRoot}/secure/admin/addUser.jsp">Create New

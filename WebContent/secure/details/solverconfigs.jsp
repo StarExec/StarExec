@@ -4,7 +4,7 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-<%-- handles requests to print out solver configurations 
+<%-- handles requests to print out solver configurations
 currently only used in StarexecCommand --%>
 <%
 	try {
@@ -13,6 +13,7 @@ currently only used in StarexecCommand --%>
 		if (!Permissions.canUserSeeSolver(solverid, userId)) {
 			response.sendError(
 					HttpServletResponse.SC_FORBIDDEN, "Invalid Permissions");
+			return;
 		} else {
 			int limit = Integer.parseInt(request.getParameter("limit"));
 
@@ -44,11 +45,12 @@ currently only used in StarexecCommand --%>
 				HttpServletResponse.SC_BAD_REQUEST,
 				"The given solver id was in an invalid format"
 		);
+		return;
 	} catch (Exception e) {
 		response.sendError(
 				HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
 				"Life, Jim, but not as we know it"
 		);
+		return;
 	}
 %>
-

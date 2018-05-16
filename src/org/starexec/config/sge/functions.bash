@@ -25,19 +25,18 @@ function decodePathArrays {
 
 	#decode every solver name, solver path, and benchmark suffix in the arrays
 	for (( i = 0; i < NUM_STAGES; ++i )); do
-		SOLVER_NAMES[i]=$(     echo "${SOLVER_NAMES[i]}"      | base64 -d)
-		SOLVER_PATHS[i]=$(     echo "${SOLVER_PATHS[i]}"      | base64 -d)
-		BENCH_SUFFIXES[i]=$(   echo "${BENCH_SUFFIXES[i]}"    | base64 -d)
-		BENCH_INPUT_PATHS[i]=$(echo "${BENCH_INPUT_PATHS[i]}" | base64 -d)
+		SOLVER_NAMES[i]=$(     base64 -d <<< "${SOLVER_NAMES[i]}")
+		SOLVER_PATHS[i]=$(     base64 -d <<< "${SOLVER_PATHS[i]}")
+		BENCH_SUFFIXES[i]=$(   base64 -d <<< "${BENCH_SUFFIXES[i]}")
+		BENCH_INPUT_PATHS[i]=$(base64 -d <<< "${BENCH_INPUT_PATHS[i]}")
 
 		log "decoded the benchmark input ${BENCH_INPUT_PATHS[i]}"
 	done
 }
 
-
 function decodeBenchmarkName {
-	BENCH_PATH=$(echo "$BENCH_PATH" | base64 -d)
-	PAIR_OUTPUT_DIRECTORY=$(echo "$PAIR_OUTPUT_DIRECTORY" | base64 -d)
+	BENCH_PATH=$(base64 -d <<< "$BENCH_PATH")
+	PAIR_OUTPUT_DIRECTORY=$(base64 -d <<< "$PAIR_OUTPUT_DIRECTORY")
 }
 
 #need to make sure benchmark name is decoded in every file
@@ -441,9 +440,9 @@ function dbExec {
 	done
 }
 
-# Will strip quotes from the first argument
+# Will strip quotes from arguments passed
 function dbEscape {
-	echo ${1//[\'\"]/}
+	echo ${@//[\'\"]/}
 }
 
 function sendStageStatus {

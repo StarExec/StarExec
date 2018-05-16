@@ -1,9 +1,10 @@
 /** Global Variables */
 var userTable;
 var addUsersTable;
-var spaceId = 1;			// id of the current space
-var spaceName;			// name of the current space
+var spaceId = 1;            // id of the current space
+var spaceName;              // name of the current space
 var currentUserId;
+var lastSelectedUserId = null;
 
 // utility - space chain (spaces.js)
 var spaceChain;
@@ -14,7 +15,7 @@ var usingSpaceChain = false;
 
 var curIsLeader = false;
 
-var communityIdList = null;
+var communityIdList;
 var currentSpacePublic = false; // is the space we are currently in public (true) or private (false)
 
 $(document).ready(function() {
@@ -47,15 +48,14 @@ function isAdmin() {
  * community
  **/
 function getCommunityIdList() {
-	list = [];
-	spaces = $("#communityIdList").attr("value").split(",");
+	var list = [];
+	var spaces = $("#communityIdList").attr("value").split(",");
 	for (i = 0; i < spaces.length; i++) {
 		if (spaces[i].trim().length > 0) {
 			list[i] = spaces[i];
 		}
 	}
 	return list
-
 }
 
 /**
@@ -98,13 +98,11 @@ function getQueryString() {
  * Sets up the 'space details' that consumes the right-hand side of the page
  */
 function initSpaceDetails() {
-
 	// builds the DataTable objects and enables multi-select on them
 	initDataTables();
 
 	// Set up jQuery button UI
 	initButtonUI();
-
 }
 
 /**
@@ -140,8 +138,6 @@ function initSpaceExplorer() {
 	// Set the path to the css theme for the jstreeplugin
 	jsTree = makeSpaceTree("#exploreList", !usingSpaceChain);
 	jsTree.bind("select_node.jstree", function(event, data) {
-
-
 		// When a node is clicked, get its ID and display the info in the details pane
 		id = data.rslt.obj.attr("id");
 
@@ -225,13 +221,8 @@ function fillTableWithPaginatedPrimitives(
 		sSource + spaceId + "/" + primitiveType + "/pagination",
 		aoData,
 		function(nextDataTablePage) {
-			s = parseReturnCode(nextDataTablePage);
+			var s = parseReturnCode(nextDataTablePage);
 			if (s) {
-				// Update the number displayed in this DataTable's fieldset
-				updateFieldsetCount(tableName,
-					nextDataTablePage.iTotalRecords,
-					'user');
-
 				// Replace the current page with the newly received page
 				fnCallback(nextDataTablePage);
 			}
@@ -245,76 +236,32 @@ function getIdOfSelectedSpace() {
 }
 
 /**
- * Helper function for the pagination handlers; since the proper fieldset to update
- * cannot be reliably found via jQuery DOM navigation from pagination handlers,
- * this method providemanually updates the appropriate fieldset to the new value
- *
- * @param tableName the name of the table whose fieldset we want to update (not in jQuery id format)
- * @param value the new value to update the fieldset with
- * @param primType the type of primitive the table holds
- * @author Todd Elvers
- */
-function updateFieldsetCount(tableName, value, primType) {
-	switch (primType[0]) {
-		case 'j':
-			$('#jobExpd').children('span:first-child').text(value);
-			break;
-		case 'u':
-			// Base selector on table's legend as well as userExpd class since there are
-			// multiple elements with userExpd class.
-			var legendSelector = '#' + tableName + 'Legend';
-			$(legendSelector + '.userExpd')
-			.children('span:first-child')
-			.text(value);
-			break;
-		case 's':
-			if ('o' == tableName[1]) {
-				$('#solverExpd').children('span:first-child').text(value);
-			} else {
-				$('#spaceExpd').children('span:first-child').text(value);
-			}
-			break;
-		case 'b':
-			$('#benchExpd').children('span:first-child').text(value);
-			break;
-	}
-}
-
-/**
  * Initializes the DataTable objects and adds multi-select to them
  */
 function initDataTables() {
-
 	// Extend the DataTables api and add our custom features
 	addFilterOnDoneTyping();
 
 	// Setup the DataTable objects
-	userTable = $('#usersTable').dataTable({
-		"sDom": getDataTablesDom(),
-		"iDisplayStart": 0,
-		"iDisplayLength": defaultPageSize,
+	userTable = $('#usersTable').dataTable(new window.star.DataTableConfig({
 		"bServerSide": true,
 		"sAjaxSource": starexecRoot + "services/space/",
-		"sServerMethod": 'POST',
-		"fnServerData": fnPaginationHandler
-	});
-
-	addUsersTable = $('#addUsers').dataTable({
-		"sDom": getDataTablesDom(),
-		"iDisplayStart": 0,
-		"iDisplayLength": defaultPageSize,
+		"fnServerData": fnPaginationHandler // included in this file
+	}));
+	addUsersTable = $('#addUsers').dataTable(new window.star.DataTableConfig({
 		"bServerSide": true,
 		"sAjaxSource": starexecRoot + "services/space/",
-		"sServerMethod": 'POST',
-		"fnServerData": addUsersPaginationHandler
-	});
+		"fnServerData": addUsersPaginationHandler // included in this file
+	}));
 
-	var tables = ["#users", "#addUsers"];
+	/* Only one user can be selected at a time */
+	$('#userField .selectWrap').hide();
+
+	var tables = ["#usersTable", "#addUsers"];
 
 	function unselectAll(except) {
 		var tables = ["#usersTable"];
 		for (x = 0; x < tables.length; x++) {
-
 			if (except == tables[x]) {
 				continue;
 			}
@@ -396,33 +343,21 @@ function populatePermissionDetails(data, user_id) {
 		var leaderStatus = data.perm.isLeader;
 
 		if (isCommunity(spaceId)) {
-
 			if (canChangePermissions(user_id) && (leaderStatus != true || isAdmin())) {
 				$('#permCheckboxes').show();
-
 				if (isAdmin()) {
 					$('#leaderStatusRow').show();
-
-				}
-				else {
+				} else {
 					$('#communityLeaderStatusRow').show();
 				}
 			} else {
 				$('#currentPerms').show();
-
 			}
-		}
-		else {
-
-			if (canChangePermissions(user_id)) {
-				$('#permCheckboxes').show();
-				$('#leaderStatusRow').show();
-
-			}
-			else {
-				$("#currentPerms").show();
-
-			}
+		} else if (canChangePermissions(user_id)) {
+			$('#permCheckboxes').show();
+			$('#leaderStatusRow').show();
+		} else {
+			$("#currentPerms").show();
 		}
 
 		var addSolver = data.perm.addSolver;
@@ -451,8 +386,7 @@ function populatePermissionDetails(data, user_id) {
 			$("#uleaderStatus").attr("class", "ui-icon ui-icon-check");
 			$("#leaderStatus").attr("value", "demote");
 			$("#communityLeaderStatus").attr("class", "ui-icon ui-icon-check");
-		}
-		else {
+		} else {
 			$("#uleaderStatus").attr("class", "ui-icon ui-icon-close");
 			$("#leaderStatus").attr("value", "promote");
 			$("#communityLeaderStatus").attr("class", "ui-icon ui-icon-close");
@@ -462,16 +396,13 @@ function populatePermissionDetails(data, user_id) {
 }
 
 function checkBoxes(name, value) {
-
 	if (value == true) {
-		$("#u" + name).attr('class', 'ui-icon ui-icon-check');
-		$("#" + name).attr('checked', 'checked');
+		$("#u" + name).prop('class', 'ui-icon ui-icon-check');
+		$("#" + name).prop('checked', true);
 	} else {
-		$("#u" + name).attr('class', 'ui-icon ui-icon-close');
-		$("#" + name).removeAttr('checked');
-
+		$("#u" + name).prop('class', 'ui-icon ui-icon-close');
+		$("#" + name).prop('checked', false);
 	}
-
 }
 
 /**
@@ -527,43 +458,38 @@ function changePermissions(hier, changingLeadership) {
 	var data = null;
 
 	if (!changingLeadership) {
-		data =
-			{
-				addBench: $("#addBench").is(':checked'),
-				addJob: $("#addJob").is(':checked'),
-				addSolver: $("#addSolver").is(':checked'),
-				addSpace: $("#addSpace").is(':checked'),
-				addUser: $("#addUser").is(':checked'),
-				removeBench: $("#removeBench").is(':checked'),
-				removeJob: $("#removeJob").is(':checked'),
-				removeSolver: $("#removeSolver").is(':checked'),
-				removeSpace: $("#removeSpace").is(':checked'),
-				removeUser: $("#removeUser").is(':checked'),
-				//isLeader 	: $("#leaderStatus").is(':checked'),
-				isLeader: ($("#leaderStatus").attr("value") == "demote")
-			};
+		data = {
+			addBench: $("#addBench").is(':checked'),
+			addJob: $("#addJob").is(':checked'),
+			addSolver: $("#addSolver").is(':checked'),
+			addSpace: $("#addSpace").is(':checked'),
+			addUser: $("#addUser").is(':checked'),
+			removeBench: $("#removeBench").is(':checked'),
+			removeJob: $("#removeJob").is(':checked'),
+			removeSolver: $("#removeSolver").is(':checked'),
+			removeSpace: $("#removeSpace").is(':checked'),
+			removeUser: $("#removeUser").is(':checked'),
+			//isLeader 	: $("#leaderStatus").is(':checked'),
+			isLeader: ($("#leaderStatus").attr("value") == "demote")
+		};
+	} else if ($("#leaderStatus").attr("value") == "demote") {
+		data = makeDemoteData();
+	} else {
+		data = makePromoteData();
 	}
-	else {
-		if ($("#leaderStatus").attr("value") == "demote") {
-			data = makeDemoteData();
-		}
-		else {
-			data = makePromoteData();
-		}
-	}
+
 	// Pass data to server via AJAX
 	$.post(
 		url,
 		data,
 		function(returnCode) {
-			s = parseReturnCode(returnCode);
+			var s = parseReturnCode(returnCode);
 			if (s) {
 				getPermissionDetails(lastSelectedUserId, spaceId);
 			}
 		},
 		"json"
 	);
-
 }
 
 /**
@@ -584,7 +510,6 @@ function setUpButtons() {
 				"yes": function() {changePermissions(true, false)},
 				"no": function() { changePermissions(false, false)},
 				"cancel": function() {
-
 					$(this).dialog("close");
 				}
 			}
@@ -596,8 +521,7 @@ function setUpButtons() {
 
 		if (lastSelectedUserId == null) {
 			showMessage('error', 'No user selected', 5000);
-		}
-		else {
+		} else {
 			getPermissionDetails(lastSelectedUserId, spaceId);
 		}
 
@@ -614,15 +538,12 @@ function setUpButtons() {
 			height: 265,
 			buttons: {
 				"change only this space": function() {
-					changePermissions(false,
-						true)
+					changePermissions(false, true)
 				},
 				"change this space's hierarchy": function() {
-					changePermissions(true,
-						true)
+					changePermissions(true, true)
 				},
 				"cancel": function() {
-
 					$(this).dialog("close");
 				}
 			}
@@ -735,9 +656,7 @@ function doUserCopyPost(ids, destSpace, spaceId, copyToSubspaces, callback) {
 			fromSpace: spaceId,
 			copyToSubspaces: copyToSubspaces
 		},
-		function(returnCode) {
-			parseReturnCode(returnCode);
-		},
+		parseReturnCode,
 		"json"
 	).done(function() {
 		if (callback) {
@@ -763,15 +682,14 @@ function checkPermissions(jsonData, id) {
 			function(returnCode) {
 				$("#makePublic").show(); //the button may be hidden if the user is coming from another space
 				switch (returnCode) {
-					case 0:
-
-						currentSpacePublic = false;
-						setJqueryButtonText("#makePublic", "make public");
-						break;
-					case 1:
-						currentSpacePublic = true;
-						setJqueryButtonText("#makePublic", "make private");
-						break;
+				case 0:
+					currentSpacePublic = false;
+					setJqueryButtonText("#makePublic", "make public");
+					break;
+				case 1:
+					currentSpacePublic = true;
+					setJqueryButtonText("#makePublic", "make private");
+					break;
 				}
 			},
 			"json"

@@ -42,6 +42,7 @@
 	} catch (Exception e) {
 		response.sendError(
 				HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+		return;
 	}
 %>
 <star:template title="edit permissions"
@@ -53,9 +54,7 @@
 	<span id="communityIdList" value="${communityIdList}"></span>
 	<div id="explorer">
 		<h3>spaces</h3>
-
-		<ul id="exploreList">
-		</ul>
+		<ul id="exploreList"> </ul>
 	</div>
 
 	<div id="detailPanel">
@@ -64,8 +63,7 @@
 		<p id="spaceDesc" class="accent"></p>
 		<p id="spaceID" class="accent"></p>
 		<fieldset id="userField">
-			<legend id="usersLegend" class="userExpd"><span>0</span> users
-			</legend>
+			<legend id="usersLegend" class="userExpd"><span class="list-count"></span> users</legend>
 			<table id="usersTable">
 				<thead>
 				<tr>
@@ -82,7 +80,6 @@
 				<p class="unselectAllUsers">
 					<span class="ui-icon ui-icon-circlesmall-plus"></span>None
 			</div>
-
 		</fieldset>
 
 		<fieldset id="currentPerms" hidden>
@@ -208,7 +205,6 @@
 				</tr>
 			</table>
 
-
 			<hr>
 
 			<table id="permChangesButtons">
@@ -217,9 +213,9 @@
 					           value="save"></input></td>
 					<td><input class="resetButton" type="button"
 					           id="resetPermChanges" value="reset"></input></td>
-
 				</tr>
 			</table>
+
 			<div id="dialog-confirm-update" title="confirm update"
 			     class="hiddenDialog">
 				<p><span class="ui-icon ui-icon-alert"></span><span
@@ -227,10 +223,9 @@
 			</div>
 		</fieldset>
 
-		<h3 class="addUsersTitle">Add users to <span class="spaceName"></span>
-		</h3>
+		<h3 class="addUsersTitle">Add users to <span class="spaceName"></span></h3>
 		<fieldset id="addUsersField">
-			<legend id="addUsersLegend" class="userExpd"><span>0</span> users
+			<legend id="addUsersLegend" class="userExpd"><span class="list-count"></span> users
 			</legend>
 			<table id="addUsers">
 				<thead>
@@ -271,7 +266,4 @@
 				id="dialog-confirm-change-txt"></span></p>
 	</div>
 
-
 </star:template>
-
-

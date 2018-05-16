@@ -34,7 +34,7 @@ $(document).ready(function() {
 	jQuery("#exploreList").jstree({
 		"json_data": {
 			"ajax": {
-				"url": starexecRoot + "services/space/subspaces",  // Where we will be getting json data from 
+				"url": starexecRoot + "services/space/subspaces",  // Where we will be getting json data from
 				"data": function(n) {
 					return {id: n.attr ? n.attr("id") : -1};
 				}
@@ -62,7 +62,7 @@ $(document).ready(function() {
 		"plugins": ["types", "themes", "json_data", "ui", "cookies"],
 		"core": {animation: 200}
 	}).bind("select_node.jstree", function(event, data) {
-		// When a node is clicked, get its ID and display the info in the details pane		
+		// When a node is clicked, get its ID and display the info in the details pane
 		space_id = data.rslt.obj.attr("id");
 		//updateActionId(id);
 		getPermissionDetails(user_id, space_id);
@@ -107,12 +107,7 @@ function populateDetails(data) {
 }
 
 function checkBoxes(name, value) {
-	if (value == true) {
-		$("#" + name).attr('checked', 'checked');
-	} else {
-		$("#" + name).removeAttr('checked');
-
-	}
+	$("#" + name).prop('checked', value==true);
 }
 
 function initUI(userId, spaceId) {

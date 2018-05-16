@@ -26,8 +26,8 @@ $(document).ready(function() {
 	initUI();
 	attachFormValidation();
 
-	$('#radioDepth').attr('checked', 'checked');
-	$('#radioNoPause').attr('checked', 'checked');
+	$('#radioDepth').prop('checked', true);
+	$('#radioNoPause').prop('checked', true);
 
 	// Remove all unselected rows from the DOM before submitting
 	$('#addForm').submit(function() {
@@ -372,7 +372,7 @@ function initUI() {
 	$("#keepHierarchy").click(function() {
 		$("#tblBenchConfig tr").addClass("row_selected");
 		$("#tblSolverConfig tr").addClass("row_selected");
-		$("#tblSolverConfig tr").find('input').attr('checked', 'checked');
+		$("#tblSolverConfig tr").find('input').prop('checked', true);
 		$('#btnNext').fadeOut('fast');
 		$('#btnDone').fadeIn('fast');
 		addRowSelectedAndClearSiblings(this);
@@ -382,7 +382,7 @@ function initUI() {
 	$("#runChoose").click(function() {
 		$("#tblBenchConfig tr").removeClass("row_selected");
 		$("#tblSolverConfig tr").removeClass("row_selected");
-		$("#tblSolverConfig tr").find('input').removeAttr('checked');
+		$("#tblSolverConfig tr").find('input').prop('checked', false);
 		$('#btnDone').fadeOut('fast');
 		/*
 		$('#btnNext').fadeIn('fast');
@@ -434,7 +434,7 @@ function benchSelectionClick(benchMethod, row) {
 	benchMethodVal = benchMethod;
 	$("#tblBenchConfig tr").removeClass("row_selected");
 	$("#tblSolverConfig tr").removeClass("row_selected");
-	$("#tblSolverConfig tr").find('input').removeAttr('checked');
+	$("#tblSolverConfig tr").find('input').prop('checked', false);
 	addRowSelectedAndClearSiblings(row);
 	nextState();
 }

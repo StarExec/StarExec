@@ -26,11 +26,13 @@
 
 		if (com == null) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND);
+			return;
 		} else if ((perm == null || !perm.isLeader()) && !admin) {
 			response.sendError(
 					HttpServletResponse.SC_FORBIDDEN,
 					"Only community leaders can edit their communities"
 			);
+			return;
 		} else {
 			DefaultSettings settings = Communities.getDefaultSettings(id);
 			request.setAttribute("setting", settings);
@@ -85,6 +87,7 @@
 		}
 	} catch (Exception e) {
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+		return;
 	}
 %>
 
