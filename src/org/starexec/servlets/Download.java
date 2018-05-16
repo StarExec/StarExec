@@ -559,7 +559,7 @@ public class Download extends HttpServlet {
 			response.getOutputStream().close();
 			stream.close();
 		} catch (Exception e) {
-			log.error("addJobPairsToZipOutput says " + e.getMessage(), e);
+			log.error("addJobPairsToZipOutput", e);
 		}
 	}
 

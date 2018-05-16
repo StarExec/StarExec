@@ -17,7 +17,7 @@
 		<p class="accent" id="queueID"></p>
 
 		<fieldset id="jobsContainer" class="expdContainer">
-			<legend class="expd">Running Jobs</legend>
+			<legend class="expd"><span class="list-count"></span> Running Jobs</legend>
 			<table id="jobs"></table>
 		</fieldset>
 

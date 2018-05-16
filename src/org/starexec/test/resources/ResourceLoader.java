@@ -173,10 +173,9 @@ public class ResourceLoader implements AutoCloseable {
 			}
 
 		} catch (Exception e) {
-			log.error("loadProcessorIntoDatabase says "+e.getMessage(),e);
+			log.error("loadProcessorIntoDatabase", e);
 		}
 		return null;
-
 	}
 
 	public Job loadJobIntoDatabase(int spaceId, int userId, int solverId, List<Integer> benchmarkIds) {
@@ -339,7 +338,7 @@ public class ResourceLoader implements AutoCloseable {
 			return loadConfigurationIntoDatabase(FileUtils.readFileToString(file), solverId);
 
 		} catch(Exception e) {
-			log.error("loadConfigurationIntoDatabase says "+e.getMessage(),e);
+			log.error("loadConfigurationFileIntoDatabase", e);
 		}
 		return null;
 	}
@@ -379,7 +378,7 @@ public class ResourceLoader implements AutoCloseable {
 
 			return null;
 		} catch (Exception e){
-			log.error("loadConfigurationIntoDatabase says "+e.getMessage(),e);
+			log.error("loadConfigurationIntoDatabase", e);
 		}
 		return null;
 	}
@@ -422,10 +421,9 @@ public class ResourceLoader implements AutoCloseable {
 			createdBenchmarkIds.addAll(ids);
 			return ids;
 		} catch (Exception e) {
-			log.error("loadBenchmarksIntoDatabase says "+e.getMessage(),e);
+			log.error("loadBenchmarksIntoDatabase", e);
 		}
 		return null;
-
 	}
 
 	public Solver loadSolverIntoDatabase(int parentSpaceId, int userId) {
@@ -472,7 +470,7 @@ public class ResourceLoader implements AutoCloseable {
 				return null;
 			}
 		} catch (Exception e) {
-			log.error("loadSolverIntoDatabase says "+e.getMessage(),e);
+			log.error("loadSolverIntoDatabase", e);
 		}
 		return null;
 	}

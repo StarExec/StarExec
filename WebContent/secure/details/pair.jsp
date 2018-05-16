@@ -13,6 +13,7 @@
 		if (jp == null) {
 			response.sendError(
 					HttpServletResponse.SC_NOT_FOUND, "Job does not exist");
+			return;
 		} else if (Permissions.canUserSeeJob(jp.getJobId(), userId)
 		                      .isSuccess()) {
 			Job j = Jobs.get(jp.getJobId());
@@ -54,6 +55,7 @@
 					HttpServletResponse.SC_FORBIDDEN,
 					"You do not have permission to view this job pair"
 			);
+			return;
 		}
 	} catch (NumberFormatException nfe) {
 		log.error(nfe.getMessage(), nfe);
@@ -61,10 +63,12 @@
 				HttpServletResponse.SC_BAD_REQUEST,
 				"The given pair id was in an invalid format"
 		);
+		return;
 	} catch (Exception e) {
 		log.error(e.getMessage(), e);
 		response.sendError(
 				HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+		return;
 	}
 %>
 <star:template title="${job.name} pair #${pair.id}"

@@ -29,6 +29,8 @@ pushpostproc id=2 f=post-procs/smt2postproc.zip n=smt2 post processor
 pushpostproc id=2 f=post-procs/set-result-to-first-line-postproc.zip n=set-result-to-first-line-postproc
 print m=Uploading binary-config-solver
 pushsolver f=solvers/binary-config-solver.zip id=2 n=binary-config-solver
+print m=Uploading built-on-starexec
+pushsolver f=solvers/built-on-starexec.zip id=2 n=built-on-starexec
 print m=Uploading CVC4-SMT-COMP-2010 (solver)
 pushsolver f=solvers/CVC4-SMT-COMP-2010.zip id=2 n=CVC4-SMT-COMP-2010
 print m=Uploading catsolver

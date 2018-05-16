@@ -162,10 +162,11 @@ jQuery(function($) {
 		 */
 		var container = that.parents(".expdContainer");
 		var footer = container.find(".dataTables_length, .dataTables_filter");
+		var searchTerm = container.find(".dataTables_filter input").val();
 		var selectAll = container.find(".selectWrap");
 
 		// Hide "Show 10 items" and search box if there are fewer than 10 items
-		if (info.recordsTotal <= defaultPageSize) {
+		if (info.recordsTotal <= defaultPageSize && !searchTerm) {
 			footer.hide();
 		} else {
 			footer.show();
@@ -177,6 +178,11 @@ jQuery(function($) {
 		} else {
 			selectAll.show();
 		}
+
+		/* Update the `list-count` of the container, if one exists */
+		$(settings.oInstance) // The DataTable being drawn
+			.parents('fieldset').find('.list-count') // Find the label
+			.text(info.recordsTotal); // Set the current count
 	});
 
 	/**
@@ -351,7 +357,6 @@ function parseBoolean(string) {
 		return false;
 	}
 	return string.trim().toLowerCase() == "true";
-
 }
 
 /**
@@ -398,15 +403,11 @@ function parseReturnCode(code, printMessage) {
 		log(code.devMessage);
 	}
 
-	if (printMessage) {
+	if (printMessage && stringExists(m)) {
 		if (s) {
-			if (stringExists(m)) {
-				showMessage("success", m, 5000);
-			}
+			showMessage("success", m, 5000);
 		} else {
-			if (stringExists(m)) {
-				showMessage("error", m, 5000);
-			}
+			showMessage("error", m, 5000);
 		}
 	}
 
@@ -444,14 +445,11 @@ function getDataTablesDom() {
  *     );
  */
 star.reloadOnSucess = function(returnCode, printMessage) {
-	var s = parseReturnCode(returnCode, printMessage);
-	if (s) {
+	if (parseReturnCode(returnCode, printMessage)) {
 		window.location.reload(true);
+	} else if (this !== window) {
+		$(this).dialog("close");
 	} else {
-		if (this !== window) {
-			$(this).dialog("close");
-		} else {
-			log("reloadOnSucess called without .bind(this)");
-		}
+		log("reloadOnSucess called without .bind(this)");
 	}
 };

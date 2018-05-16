@@ -17,6 +17,7 @@
 					HttpServletResponse.SC_FORBIDDEN,
 					"You do not have permission to create a job here"
 			);
+			return;
 		} else {
 			User u = Users.get(userId);
 			int pairsUsed = Jobs.countPairsByUser(userId);
@@ -56,11 +57,13 @@
 				HttpServletResponse.SC_BAD_REQUEST,
 				"The space id was not in the correct format"
 		);
+		return;
 	} catch (Exception e) {
 		response.sendError(
 				HttpServletResponse.SC_NOT_FOUND,
 				"You do not have permission to add to this space or the space does not exist"
 		);
+		return;
 	}
 	request.setAttribute(
 			"MINIMUM_RESULTS_INTERVAL", R.MINIMUM_RESULTS_INTERVAL);

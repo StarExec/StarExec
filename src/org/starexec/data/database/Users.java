@@ -774,7 +774,7 @@ public class Users {
 			con = Common.getConnection();
 			return isMemberOfCommunity(con, userId, communityId);
 		} catch (Exception e) {
-			log.error("isMemberOfCommunity says " + e.getMessage(), e);
+			log.error("isMemberOfCommunity", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -793,7 +793,7 @@ public class Users {
 				return results.getInt("spaceCount") > 0;
 			}
 		} catch (Exception e) {
-			log.error("isMemberOfCommunity says " + e.getMessage(), e);
+			log.error("isMemberOfCommunity", e);
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
@@ -1143,7 +1143,7 @@ public class Users {
 			log.debug("Successfully deleted user with id=" + userToDeleteId);
 			return true;
 		} catch (Exception e) {
-			log.error("deleteUser says " + e.getMessage(), e);
+			log.error("deleteUse", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);

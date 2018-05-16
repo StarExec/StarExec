@@ -46,8 +46,8 @@ public class Common {
 			procedure.setString(2, ipAddress);
 			procedure.setString(3, browser);
 			procedure.executeUpdate();
-		} catch (Exception e){
-			log.error(e.getMessage(), e);
+		} catch (SQLException e){
+			log.error("addLoginRecord", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -60,7 +60,7 @@ public class Common {
 	protected static void beginTransaction(Connection con){
 		try {
 			con.setAutoCommit(false);
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			// Ignore any errors
 		}
 	}
@@ -73,7 +73,7 @@ public class Common {
 			con.rollback();
 			con.setAutoCommit(true);
 			log.warn("Database transaction rollback.");
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			// Ignore any errors
 		}
 	}
@@ -84,7 +84,7 @@ public class Common {
 	protected static void enableAutoCommit(Connection con){
 		try {
 			con.setAutoCommit(true);
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			// Ignore any errors
 		}
 	}
@@ -104,7 +104,7 @@ public class Common {
 		try {
 			con.commit();
 			enableAutoCommit(con);
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			Common.doRollback(con);
 		}
 	}
@@ -113,19 +113,14 @@ public class Common {
 	 * @return a new connection to the database from the connection pool
 	 * @author Tyler Jensen
 	 */
-	protected synchronized static Connection getConnection() {
+	protected synchronized static Connection getConnection() throws SQLException {
 		try {
-			connectionsOpened++;
-			/*log.info("Connection Opened, Net Connections Opened = " + (connectionsOpened-connectionsClosed));
-			StackTraceElement m1=Thread.currentThread().getStackTrace()[1];
-			StackTraceElement m2=Thread.currentThread().getStackTrace()[2];
-			log.info("stack trace info for the open connection is "+m1.getClassName()+"."+m1.getMethodName()+ " "+m2.getClassName()+"."+m2.getMethodName());
-			*/
+			++connectionsOpened;
 			return dataPool.getConnection();
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
+		} catch (SQLException e) {
+			log.error("getConnection", "connectionsOpened: "+connectionsOpened, e);
+			throw e;
 		}
-		return null;
 	}
 
 	/**
@@ -134,8 +129,8 @@ public class Common {
 	 */
 	public static Boolean getDataPoolData(){
 		log.info("Data Pool has " + dataPool.getActive() + " active connections.  ");
-		if (dataPool.getWaitCount()>0){
-		log.info("# of threads waiting for a connection = " + dataPool.getWaitCount());
+		if (dataPool.getWaitCount() > 0) {
+			log.info("# of threads waiting for a connection = " + dataPool.getWaitCount());
 		}
 		return dataPool.getActive() <= .5 * R.MYSQL_POOL_MAX_SIZE;
 	}
@@ -147,10 +142,10 @@ public class Common {
 	 */
 	public static void initialize() {
 		try {
-			if(Util.isNullOrEmpty(R.MYSQL_USERNAME)) {
+			if (Util.isNullOrEmpty(R.MYSQL_USERNAME)) {
 				log.warn("Attempted to initialize datapool without MYSQL properties being set");
 				return;
-			} else if(dataPool != null) {
+			} else if (dataPool != null) {
 				log.warn("Attempted to initialize datapool when it was already initialized");
 				return;
 			}
@@ -182,7 +177,7 @@ public class Common {
 
 			log.debug("Datapool successfully created!");
 		} catch (Exception e) {
-			log.fatal(e.getMessage(), e);
+			log.fatal("initialize", e);
 		}
 	}
 
@@ -204,9 +199,6 @@ public class Common {
 		try {
 			con = Common.getConnection();
 			return queryUsingConnectionKeepConnection(callPreparationSql, con, setParameters, connectionResultsFunction);
-		} catch (SQLException e) {
-			log.warn("Caught SQLException in Common.queryKeepConnect. Throwing exception...");
-			throw e;
 		} finally {
 			Common.safeClose(con);
 		}
@@ -226,7 +218,7 @@ public class Common {
 			updateUsingConnection(con, callPreparationSql, setParameters);
 			Common.endTransaction(con);
 		} catch (SQLException e) {
-			log.warn("Caught an SQLException.", e);
+			log.warn("update", "Rolling back update & rethrowing SQLException", e);
 			Common.doRollback(con);
 			throw e;
 		} finally {
@@ -266,6 +258,7 @@ public class Common {
 			Common.endTransaction(con);
 			return output;
 		} catch (SQLException e) {
+			log.warn("updateWithOutput", "Rolling back update & rethrowing SQLException", e);
 			Common.doRollback(con);
 			throw e;
 		} finally {
@@ -289,6 +282,7 @@ public class Common {
 			statement.execute(sql);
 			Common.endTransaction(con);
 		} catch (SQLException e) {
+			log.warn("execute", "Rolling back execute & rethrowing SQLException", e);
 			Common.doRollback(con);
 			throw e;
 		} finally {
@@ -340,9 +334,6 @@ public class Common {
 		try {
 			con = Common.getConnection();
 			return queryUsingConnection(con, callPreparationSql, setParameters, resultsConsumer);
-		} catch (SQLException e) {
-			log.warn("Caught SQLException in Common.query. Throwing exception...");
-			throw e;
 		} finally {
 			Common.safeClose(con);
 		}
@@ -367,9 +358,6 @@ public class Common {
 			setParameters.accept(procedure);
 			results = procedure.executeQuery();
 			return resultsConsumer.query(results);
-		} catch (SQLException e) {
-			log.error("Caught SQLException: " + e.getMessage(), e);
-			throw e;
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
@@ -389,9 +377,6 @@ public class Common {
 			setParameters.accept(procedure);
 			results = procedure.executeQuery();
 			return connectionResultsFunction.accept(con, results);
-		} catch (SQLException e) {
-			log.error("Caught SQLException: " + e.getMessage(), e);
-			throw e;
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
@@ -412,7 +397,7 @@ public class Common {
 			if (statement!=null && !statement.isClosed()) {
 				statement.close();
 			}
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			log.error("safeClose", e);
 		}
 	}
@@ -422,7 +407,7 @@ public class Common {
 			if (statement!=null) {
 				statement.close();
 			}
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			log.error("safeClose", e);
 		}
 	}
@@ -436,7 +421,7 @@ public class Common {
 			if (r!=null && !r.isClosed()) {
 				r.close();
 			}
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			log.error("safeClose", e);
 		}
 	}
@@ -451,14 +436,10 @@ public class Common {
 			if(c != null && !c.isClosed()) {
 				c.close();
 				connectionsClosed++;
-				//log.info("Connection Closed, Net connections opened = " + (connectionsOpened-connectionsClosed));
-				//String methodName1=Thread.currentThread().getStackTrace()[2].getMethodName();
-				//String methodName2=Thread.currentThread().getStackTrace()[2].getMethodName();
-				//log.info("stack trace info for the closed connection is "+methodName1+ " "+methodName2);
 			}
-		} catch (Exception e){
+		} catch (SQLException e){
 			// Do nothing
-			log.error("Safe Close says " + e.getMessage(),e);
+			log.error("safeClose", e);
 		}
 	}
 }

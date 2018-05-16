@@ -59,10 +59,6 @@ function initCommunityRequestsTable(
 			function(nextDataTablePage) {
 				var s = parseReturnCode(nextDataTablePage, false);
 				if (s) {
-					// Update the number displayed in this DataTable's fieldset
-					$('#communityExpd')
-					.children('span:first-child')
-					.text(nextDataTablePage.iTotalRecords);
 					// Replace the current page with the newly received page
 					fnCallback(nextDataTablePage);
 				}

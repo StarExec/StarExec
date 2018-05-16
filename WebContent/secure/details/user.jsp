@@ -50,6 +50,7 @@
 							HttpServletResponse.SC_NOT_FOUND,
 							"Job does not exist or is restricted"
 					);
+					return;
 				}
 			}
 			boolean canSubscribeToErrorLogs =
@@ -62,15 +63,18 @@
 		} else {
 			response.sendError(
 					HttpServletResponse.SC_NOT_FOUND, "User does not exist");
+			return;
 		}
 	} catch (NumberFormatException nfe) {
 		response.sendError(
 				HttpServletResponse.SC_BAD_REQUEST,
 				"The given user id was in an invalid format"
 		);
+		return;
 	} catch (Exception e) {
 		response.sendError(
 				HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());
+		return;
 	}
 %>
 
@@ -189,7 +193,7 @@
 				</table>
 			</fieldset>
 			<fieldset id="solverField" class="expd">
-				<legend class="expd" id="solverExpd"><span>0</span> solvers
+				<legend class="expd" id="solverExpd"><span class="list-count"></span> solvers
 				</legend>
 				<ul class="actionList">
 					<li>
@@ -216,7 +220,7 @@
 				</table>
 			</fieldset>
 			<fieldset id="benchField" class="expd">
-				<legend class="expd" id="benchExpd"><span>0</span> benchmarks
+				<legend class="expd" id="benchExpd"><span class="list-count"></span> benchmarks
 				</legend>
 				<ul class="actionList">
 					<li>
@@ -244,7 +248,7 @@
 				</table>
 			</fieldset>
 			<fieldset id="jobField" class="expd">
-				<legend class="expd" id="jobExpd"><span>0</span> jobs</legend>
+				<legend class="expd" id="jobExpd"><span class="list-count"></span> jobs</legend>
 				<ul class="actionList">
 					<li>
 						<button id="deleteJob"

@@ -7,6 +7,7 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.starexec.constants.R;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.logger.StarLogger;
 import org.starexec.test.TestUtil;
 
@@ -478,9 +479,10 @@ public class Util {
 		threadPool.execute(() -> {
 			try {
 				if (drainInputStream(message, p.getErrorStream())) {
-					message.insert(0, "The process produced stderr output:\n");
-					log.error("drainStreams", message.toString());
+					throw new StarExecException(message.toString());
 				}
+			} catch (StarExecException e) {
+				log.error("drainStreams", "The process produced stderr output", e);
 			} catch (Exception e) {
 				log.error("drainStreams", "Error draining stderr from process: " + e.toString());
 			}
@@ -861,7 +863,7 @@ public class Util {
 			}
 			return true;
 		} catch (Exception e) {
-			log.error("safeDeleteDirectory says " + e.getMessage(), e);
+			log.error("safeDeleteDirectory", e);
 		}
 		return false;
 	}
