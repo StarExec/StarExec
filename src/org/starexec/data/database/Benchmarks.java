@@ -59,7 +59,6 @@ public class Benchmarks {
 		} finally {
 			Common.safeClose(con);
 		}
-
 		return false;
 	}
 
@@ -134,11 +133,9 @@ public class Benchmarks {
 				Uploads.setBenchmarkErrorMessage(
 						statusId, "Problem adding the following attribute-value pair to the db, for benchmark " +
 								benchmark.getId() + ": " + key + ", " + val);
-
 				return false;
 			}
 		}
-
 		return true;
 	}
 
@@ -541,12 +538,11 @@ public class Benchmarks {
 			Common.endTransaction(con);
 			return true;
 		} catch (Exception e) {
-			log.error("associate", e);
+			log.error("associate", "Rolling back transaction", e);
 			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
 		}
-
 		return false;
 	}
 
@@ -573,7 +569,6 @@ public class Benchmarks {
 			Uploads.incrementValidatedBenchmarks(statusId, benchmarks.size());
 			return true;
 		}
-
 
 		log.info("Beginning processing for " + benchmarks.size() + " benchmarks");
 		int count = benchmarks.size();
@@ -699,6 +694,7 @@ public class Benchmarks {
 		HashSet<Integer> parentedBenchmarks = new HashSet<>();
 		try {
 			con = Common.getConnection();
+
 			procedure = con.prepareCall("{CALL GetBenchmarksAssociatedWithSpaces()}");
 			results = procedure.executeQuery();
 			while (results.next()) {
@@ -707,13 +703,11 @@ public class Benchmarks {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 
-
 			procedure = con.prepareCall("{CALL GetBenchmarksAssociatedWithPairs()}");
 			results = procedure.executeQuery();
 			while (results.next()) {
 				parentedBenchmarks.add(results.getInt("id"));
 			}
-
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 
@@ -1039,7 +1033,6 @@ public class Benchmarks {
 		} finally {
 			Common.safeClose(con);
 		}
-
 		return null;
 	}
 
@@ -1050,16 +1043,13 @@ public class Benchmarks {
 			if (b == null) {
 				return null;
 			}
-
 			if (includeAttrs) {
 				b.setAttributes(Benchmarks.getAttributes(con, benchId));
 			}
-
 			return b;
 		} catch (Exception e) {
 			log.error("get", e);
 		}
-
 		return null;
 	}
 
@@ -1093,7 +1083,6 @@ public class Benchmarks {
 					benchList.get(benchList.size() - 1).setAttributes(Benchmarks.getAttributes(con, id));
 				}
 			}
-
 			return benchList;
 		} catch (Exception e) {
 			log.error("get", e);
@@ -1229,7 +1218,6 @@ public class Benchmarks {
 	 */
 	public static Map<String, String> getAttributes(int benchId) {
 		Connection con = null;
-
 		try {
 			con = Common.getConnection();
 			return Benchmarks.getAttributes(con, benchId);
@@ -1238,7 +1226,6 @@ public class Benchmarks {
 		} finally {
 			Common.safeClose(con);
 		}
-
 		return null;
 	}
 
@@ -1263,7 +1250,6 @@ public class Benchmarks {
 
 			while (results.next()) {
 				// Build benchmark dependency object
-
 				BenchmarkDependency benchD = new BenchmarkDependency();
 				benchD.setId(results.getInt("id"));
 				benchD.setPrimaryBench(Benchmarks.get(results.getInt("primary_bench_id")));
@@ -1301,7 +1287,6 @@ public class Benchmarks {
 	 * @author Benton McCune
 	 */
 	public static Integer getBenchIdByName(Integer spaceId, String benchName) {
-
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -1363,7 +1348,6 @@ public class Benchmarks {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 		}
-
 		return 0;
 	}
 
@@ -1420,7 +1404,6 @@ public class Benchmarks {
 			);
 
 			procedure = new NamedParameterStatement(con, builder.getSQL());
-
 			procedure.setInt("userId", userId);
 			procedure.setString("query", query.getSearchQuery());
 			procedure.setBoolean("recycled", recycled);
@@ -1430,7 +1413,6 @@ public class Benchmarks {
 
 			while (results.next()) {
 				//don't include deleted benchmarks in the results if getDeleted is false
-
 				Benchmark b = new Benchmark();
 				b.setId(results.getInt("id"));
 				b.setName(results.getString("name"));
@@ -1448,7 +1430,6 @@ public class Benchmarks {
 				b.setType(t);
 				benchmarks.add(b);
 			}
-
 			return benchmarks;
 		} catch (Exception e) {
 			log.error("getBenchmarksByUserForNextPage", e);
@@ -1554,7 +1535,6 @@ public class Benchmarks {
 				b.setType(t);
 				benchmarks.add(b);
 			}
-
 			return benchmarks;
 		} catch (Exception e) {
 			log.error("getBySpace", e);
@@ -1730,7 +1710,6 @@ public class Benchmarks {
 	 */
 	public static TreeMap<String, String> getSortedAttributes(int benchId) {
 		Connection con = null;
-
 		try {
 			con = Common.getConnection();
 			return Benchmarks.getSortedAttributes(con, benchId);
@@ -1739,7 +1718,6 @@ public class Benchmarks {
 		} finally {
 			Common.safeClose(con);
 		}
-
 		return null;
 	}
 
@@ -1754,7 +1732,6 @@ public class Benchmarks {
 	protected static boolean isBenchmarkDeleted(Connection con, int benchId) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
-
 		try {
 			procedure = con.prepareCall("{CALL IsBenchmarkDeleted(?)}");
 			procedure.setInt(1, benchId);
@@ -1804,7 +1781,6 @@ public class Benchmarks {
 	protected static boolean isBenchmarkRecycled(Connection con, int benchId) {
 		CallableStatement procedure = null;
 		ResultSet results = null;
-
 		try {
 			procedure = con.prepareCall("{CALL IsBenchmarkRecycled(?)}");
 			procedure.setInt(1, benchId);
@@ -1883,7 +1859,6 @@ public class Benchmarks {
 		} finally {
 			Common.safeClose(con);
 		}
-
 		return false;
 	}
 
@@ -2604,5 +2579,3 @@ public class Benchmarks {
 		return null;
 	}
 }
-
-
