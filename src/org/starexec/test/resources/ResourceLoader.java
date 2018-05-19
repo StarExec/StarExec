@@ -22,7 +22,7 @@ import org.starexec.data.to.pipelines.SolverPipeline;
 import org.starexec.data.to.pipelines.StageAttributes.SaveResultsOption;
 import org.starexec.jobs.JobManager;
 import org.starexec.logger.StarLogger;
-import org.starexec.servlets.BenchmarkUploader;
+import org.starexec.servlets.UploadBenchmark;
 import org.starexec.servlets.ProcessorManager;
 import org.starexec.test.TestUtil;
 import org.starexec.util.ArchiveUtil;
@@ -411,7 +411,7 @@ public class ResourceLoader implements AutoCloseable {
 			FileUtils.copyFile(archive, archiveCopy);
 			Integer statusId = Uploads.createBenchmarkUploadStatus(parentSpaceId, userId);
 			Permission p=new Permission();
-			List<Integer> ids=BenchmarkUploader.addBenchmarksFromArchive(archiveCopy, userId, parentSpaceId, Processors.getNoTypeProcessor().getId(), false, p,
+			List<Integer> ids=UploadBenchmark.addBenchmarksFromArchive(archiveCopy, userId, parentSpaceId, Processors.getNoTypeProcessor().getId(), false, p,
 					"dump", statusId, false, false, null);
 			for (Integer i : ids) {
 				Benchmarks.updateDetails(i, TestUtil.getRandomAlphaString(DB.BENCH_NAME_LEN-2), TestUtil.getRandomAlphaString(50),

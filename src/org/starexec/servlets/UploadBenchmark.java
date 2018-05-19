@@ -26,8 +26,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 @MultipartConfig
-public class BenchmarkUploader extends HttpServlet {
-	private static final StarLogger log = StarLogger.getLogger(BenchmarkUploader.class);
+public class UploadBenchmark extends HttpServlet {
+	private static final StarLogger log = StarLogger.getLogger(UploadBenchmark.class);
 
 	// The unique date stamped file name format
 	private static final DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
@@ -68,8 +68,6 @@ public class BenchmarkUploader extends HttpServlet {
 			ValidatorStatusCode status = isRequestValid(form, request);
 			// If the request is valid to act on...
 			if (status.isSuccess()) {
-
-
 				// create status object
 				Integer spaceId = Integer.parseInt((String) form.get(SPACE_ID));
 				Integer userId = SessionUtil.getUserId(request);
@@ -89,7 +87,7 @@ public class BenchmarkUploader extends HttpServlet {
 				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
 			}
 		} catch (Exception e) {
-			log.warn("Caught Exception in BenchmarkUploader.doPost.", e);
+			log.warn("doPost", e);
 			response.sendError(
 					HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There was an error uploading the benchmarks.");
 		}

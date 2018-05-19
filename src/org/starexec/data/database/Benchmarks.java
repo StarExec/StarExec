@@ -9,7 +9,7 @@ import org.starexec.data.to.compare.BenchmarkComparator;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.exceptions.StarExecValidationException;
 import org.starexec.logger.StarLogger;
-import org.starexec.servlets.BenchmarkUploader;
+import org.starexec.servlets.UploadBenchmark;
 import org.starexec.util.*;
 import org.starexec.util.Timer;
 
@@ -800,7 +800,7 @@ public class Benchmarks {
 			newBenchmark.getAttributes().put(R.VALID_BENCHMARK_ATTRIBUTE, "true");
 			File benchmarkFile = new File(b.getPath());
 
-			File uniqueDir = BenchmarkUploader.getDirectoryForBenchmarkUpload(userId, String.valueOf(b.getId()));
+			File uniqueDir = UploadBenchmark.getDirectoryForBenchmarkUpload(userId, String.valueOf(b.getId()));
 			uniqueDir.mkdirs();
 			newBenchmark.setPath(uniqueDir.getAbsolutePath() + File.separator + benchmarkFile.getName());
 

@@ -2,7 +2,7 @@ package org.starexec.test.integration.servlets;
 
 
 import org.starexec.data.to.User;
-import org.starexec.servlets.BenchmarkUploader;
+import org.starexec.servlets.UploadBenchmark;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.test.resources.ResourceLoader;
@@ -18,7 +18,7 @@ public class BenchmarkUploaderTests extends TestSequence {
 
     static class BenchmarkUploaderWrapper {
         public File getDirectoryForBenchmarkUpload(int userId, String name) throws FileNotFoundException {
-            return BenchmarkUploader.getDirectoryForBenchmarkUpload(userId, name);
+            return UploadBenchmark.getDirectoryForBenchmarkUpload(userId, name);
         }
     }
 
@@ -30,7 +30,7 @@ public class BenchmarkUploaderTests extends TestSequence {
     public void getBenchmarkDirectoryTest() {
         try (ResourceLoader loader = new ResourceLoader()) {
             User user = loader.loadUserIntoDatabase();
-            File dir = BenchmarkUploader.getDirectoryForBenchmarkUpload(user.getId(), null);
+            File dir = UploadBenchmark.getDirectoryForBenchmarkUpload(user.getId(), null);
 
             assertTrue("Directory could not be deleted.", dir.delete());
 
