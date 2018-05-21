@@ -382,7 +382,7 @@ public class Benchmarks {
 	 * @throws Exception
 	 */
 	protected static List<Integer> addAndAssociate(List<Benchmark> benchmarks, Integer spaceId, Integer statusId)
-			throws Exception {
+	throws SQLException, StarExecException {
 		ArrayList<Integer> benchmarkIds = new ArrayList<>();
 		log.info("in add (list) method (no con parameter )- adding " + benchmarks.size() + " benchmarks to space " +
 				         spaceId);
@@ -440,46 +440,70 @@ public class Benchmarks {
 	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
 	 * @param statusId statusId The ID of an upload status if one exists for this operation, null otherwise
 	 * @param usesDeps if set to true check dependencies, otherwise ignore dependency related messages
-	 * @return True if the operation was a success, false otherwise
-	 * @author Benton McCune
 	 */
 	public static List<Integer> processAndAdd(
 			List<Benchmark> benchmarks, Integer spaceId, Integer depRootSpaceId, Boolean linked, Integer statusId,
 			Boolean usesDeps
 	) {
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			return processAndAdd(benchmarks, spaceId, depRootSpaceId, linked, statusId, usesDeps, con);
+		} catch (StarExecException e) {
+			log.debug("processAndAdd", e);
+			return null;
+		} catch (Exception e) {
+			log.error("processAndAdd", e);
+			return null;
+		} finally {
+			Common.safeClose(con);
+		}
+	}
+
+	/**
+	 * Runs the given benchmark processor on the list of benchmarks before adding them to the database and associates
+	 * them with the given spaceId. The benchmark types are also processed based on the type of the first benchmark
+	 * only. This method will also introduced dependencies if the benchmark processor produces the right attributes.
+	 *
+	 * @param benchmarks The list of benchmarks to add
+	 * @param spaceId The space the benchmarks will belong to. If null, it is not added to a space
+	 * @param depRootSpaceId the id of the space where the axiom benchmarks lie
+	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
+	 * @param statusId statusId The ID of an upload status if one exists for this operation, null otherwise
+	 * @param usesDeps if set to true check dependencies, otherwise ignore dependency related messages
+	 * @return True if the operation was a success, false otherwise
+	 * @author Benton McCune
+	 */
+	public static List<Integer> processAndAdd(
+			List<Benchmark> benchmarks, Integer spaceId, Integer depRootSpaceId, Boolean linked, Integer statusId,
+			Boolean usesDeps, Connection con
+	) throws IOException, SQLException, StarExecException {
 		if (!benchmarks.isEmpty()) {
-			try {
-				log.info("Adding (with deps) " + benchmarks.size() + " to Space " + spaceId);
-				// Get the processor of the first benchmark (they should all have the same processor)
-				Processor p = Processors.get(benchmarks.get(0).getType().getId());
+			log.info("Adding (with deps) " + benchmarks.size() + " to Space " + spaceId);
+			// Get the processor of the first benchmark (they should all have the same processor)
+			Processor p = Processors.get(benchmarks.get(0).getType().getId());
 
-				log.info("About to attach attributes to " + benchmarks.size());
+			log.info("About to attach attributes to " + benchmarks.size());
 
-				Benchmarks.attachBenchAttrs(benchmarks, p, statusId);
-				if (usesDeps) {
-					boolean success = Benchmarks.validateDependencies(benchmarks, depRootSpaceId, linked);
-					if (!success) {
-						Uploads.setBenchmarkErrorMessage(
-								statusId,
-								"Benchmark dependencies failed to validate. Please check your processor output"
-						);
-						return null;
-					}
+			Benchmarks.attachBenchAttrs(benchmarks, p, statusId);
+			if (usesDeps) {
+				boolean success = Benchmarks.validateDependencies(benchmarks, depRootSpaceId, linked);
+				if (!success) {
+					Uploads.setBenchmarkErrorMessage(
+							statusId,
+							"Benchmark dependencies failed to validate. Please check your processor output"
+					);
+					return null;
 				}
-
-				// Next add them to the database (must happen AFTER they are processed and have dependencies
-				// validated);
-				return Benchmarks.addAndAssociate(benchmarks, spaceId, statusId);
-			} catch (StarExecValidationException e) {
-				log.debug("processAndAdd", e);
-			} catch (Exception e) {
-				log.error("processAndAdd", e);
 			}
+
+			// Next add them to the database (must happen AFTER they are processed and have dependencies
+			// validated);
+			return Benchmarks.addAndAssociate(benchmarks, spaceId, statusId);
 		} else {
 			log.info("No benches to add with this call to addWithDeps from space " + spaceId);
 			return new ArrayList<>();
 		}
-		return null;
 	}
 
 	/**
