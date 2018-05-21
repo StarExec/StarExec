@@ -55,14 +55,14 @@ public class Spaces {
 			procAddSpace.executeUpdate();
 			int newSpaceId = procAddSpace.getInt(7);
 
-			log.debug("Calling AssociateSpace");
+			log.trace("Calling AssociateSpace");
 			// Add the new space as a child space of the parent space
 			procSubspace = con.prepareCall("{CALL AssociateSpaces(?, ?)}");
 			procSubspace.setInt(1, s.getParentSpace());
 			procSubspace.setInt(2, newSpaceId);
 			procSubspace.executeUpdate();
 
-			log.debug("Calling AddUserToSpace");
+			log.trace("Calling AddUserToSpace");
 			// Add the adding user to the space with the maximal permissions
 			procAddUser = con.prepareCall("{CALL AddUserToSpace(?, ?)}");
 			procAddUser.setInt(1, userId);
@@ -289,7 +289,7 @@ public class Spaces {
 				return results.getInt("count") > 0;
 			}
 		} catch (Exception e) {
-			log.error("jobSpaceAncestorExists", e);
+			log.error("jobSpaceAncestorExists", "jobSpaceId="+jobSpaceId, e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -407,7 +407,7 @@ public class Spaces {
 			Space parent, int userId, Integer depRootSpaceId, boolean linked, Integer statusId, Boolean usesDeps
 	) {
 		ArrayList<Integer> ids = new ArrayList<>();
-		log.info("addWithBenchmarksAndDeps called on space " + parent.getName());
+		log.trace("addWithBenchmarksAndDeps called on space " + parent.getName());
 		try {
 			// For each subspace...
 			for (Space sub : parent.getSubspaces()) {
