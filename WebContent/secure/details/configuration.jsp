@@ -57,6 +57,11 @@
 		request.setAttribute("solver", solver);
 		request.setAttribute("contents", contents);
 		request.setAttribute("isBinary", Util.isBinaryFile(configFile));
+	} catch (NumberFormatException e) {
+		// id is not a number. Possibly a bot looking for SQL injection
+		log.debug("Cannot parse id");
+		response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+		return;
 	} catch (Exception e) {
 		log.error("Exception", e);
 		e.printStackTrace();
