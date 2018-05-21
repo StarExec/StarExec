@@ -21,6 +21,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Supplier;
 
 /**
  * Handles all database interaction for benchmarks.
@@ -170,7 +171,18 @@ public class Benchmarks {
 	 */
 	private static boolean addBenchAttr(Connection con, int benchId, String key, String val) {
 		CallableStatement procedure = null;
+		Supplier<String> trace = ()->
+			  "\n\tbenchId :" + benchId
+			+ "\n\tkey:     " + key
+			+ "\n\tval:     " + val
+		;
 		try {
+			if (key.length() > 128) {
+				log.warn("addBenchAttr", "key exceeds max length" + trace.get());
+			}
+			if (val.length() > 128) {
+				log.warn("addBenchAttr", "val exceeds max length" + trace.get());
+			}
 			procedure = con.prepareCall("{CALL AddBenchAttr(?, ?, ?)}");
 			procedure.setInt(1, benchId);
 			procedure.setString(2, key);
@@ -200,10 +212,6 @@ public class Benchmarks {
 	) {
 		CallableStatement procedure = null;
 		try {
-			log.debug("Adding dependency");
-			log.debug("primaryBenchId = " + primaryBenchId);
-			log.debug("secondaryBenchId = " + secondaryBenchId);
-			log.debug("includePath = " + includePath);
 			// Setup normal information for the benchmark dependency
 			procedure = con.prepareCall("{CALL AddBenchDependency(?, ?, ?)}");
 			procedure.setInt(1, primaryBenchId);
@@ -214,7 +222,12 @@ public class Benchmarks {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error("addBenchDependency", e);
+			log.error("addBenchDependency",
+				    "\tprimaryBenchId:   " + primaryBenchId
+				+ "\n\tsecondaryBenchId: " + secondaryBenchId
+				+ "\n\tincludePath:      " + includePath,
+				e
+			);
 		} finally {
 			Common.safeClose(procedure);
 		}
