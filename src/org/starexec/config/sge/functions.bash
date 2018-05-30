@@ -1075,6 +1075,8 @@ function verifyWorkspace {
 # Marks this pair as having had a runscript error
 # $1 The current stage number
 function markRunscriptError {
+	local MESSAGE="RUNSCRIPT ERROR\n\tNode: $HOSTNAME\n\tSolver IDs: ${SOLVER_IDS[*]}\n\tBench ID: $BENCH_ID"
+	dbExec "CALL AddErrorLog('$MESSAGE','ERROR',@)"
 	sendStatus $ERROR_RUNSCRIPT
 	sendStatusToLaterStages $ERROR_RUNSCRIPT $(($1-1))
 	setRunStatsToZeroForLaterStages $(($1-1))
