@@ -726,6 +726,9 @@ CREATE TABLE job_stats (
 );
 
 -- Table that contains some global flags
+--  * Minor version is incremented on each change
+--  * Major version is only incremented when a change may require manual
+--      intervention and cannot be applied automatically
 -- Author: Wyatt Kaiser
 CREATE TABLE system_flags (
 	integrity_keeper ENUM('') NOT NULL,
@@ -736,11 +739,6 @@ CREATE TABLE system_flags (
 	PRIMARY KEY (integrity_keeper),
 	CONSTRAINT system_flags_test_queue FOREIGN KEY (test_queue) REFERENCES queues(id) ON DELETE SET NULL
 );
-
--- Minor version is incremented on each change
--- Major version is only incremented when a change may require manual
---     intervention and cannot be applied automatically
-UPDATE system_flags SET major_version=1, minor_version=1;
 
 -- table for storing statistics for the weekly report
 CREATE TABLE report_data (
