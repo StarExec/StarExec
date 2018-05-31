@@ -32,5 +32,5 @@ INSERT INTO user_assoc VALUES
 INSERT INTO queues(name, status, global_access) VALUES
 	("all.q", "ACTIVE", true);
 
-INSERT INTO system_flags (paused, test_queue) VALUES
-	(false, 1);
+INSERT INTO system_flags (paused, test_queue, major_version, minor_version) VALUES
+	(false, 1, 1, 1);
