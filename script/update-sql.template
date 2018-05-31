@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -e
+
+for UPDATE in $(ls -1v @basedir@/sql/SchemaChanges/*.sql); do
+	echo "Applying update $(realpath --relative-to=@basedir@ $UPDATE)"
+	mysql -u"@DB.User@" -p"@DB.Pass@" "@DB.Name@" < "$UPDATE"
+done
