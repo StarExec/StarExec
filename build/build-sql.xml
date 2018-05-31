@@ -54,13 +54,14 @@
 
 	<target name="update-sql" description="Apply any new DB schema changes">
 		<sql driver="com.mysql.jdbc.Driver" classpathref="classpath"
-		     delimiter=";" keepformat="true"
+		     delimiter="//" keepformat="true"
 		     url="${DB.Url}" userid="${DB.User}" password="${DB.Pass}">
-			<path>
+			<sort>
 				<fileset dir="sql/SchemaChanges">
-					<include name="*.sql" />
+					<filename regex="\d{8}\.sql" />
 				</fileset>
-			</path>
+				<name/>
+			</sort>
 		</sql>
 	</target>
 </project>
