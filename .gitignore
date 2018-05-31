@@ -83,6 +83,7 @@ Thumbs.db
 /script/newInstallWithTestData.sh
 /script/soft-deploy.sh
 /script/starsql.sh
+/script/update-sql.sh
 
 # /sql/
 /sql/NewInstall.sql

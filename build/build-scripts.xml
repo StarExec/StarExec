@@ -14,6 +14,7 @@
 				<filter token="STAREXEC_APPNAME"  value="${STAREXEC_APPNAME}"/>
 				<filter token="war-file-name"     value="${war-file-name}"/>
 				<filter token="data_dir"          value="${data_dir}"/>
+				<filter token="basedir"           value="${basedir}"/>
 			</filterset>
 			<fileset dir="${scripts-dir}" includes="*.template"/>
 			<globmapper from="*.template" to="*.sh"/>
