@@ -1,9 +1,11 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.data.database.Requests, org.starexec.data.database.Communities, org.starexec.data.database.Users, org.starexec.data.to.Space, org.starexec.util.SessionUtil, org.starexec.util.Util"
+        import="org.starexec.data.database.Requests, org.starexec.data.database.Communities, org.starexec.data.database.Users, org.starexec.data.to.Space, org.starexec.util.SessionUtil, org.starexec.util.Util, org.starexec.logger.StarLogger"
         session="true" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
+	final StarLogger log = StarLogger.getLogger(getClass());
+
 	try {
 		int comId = Integer.parseInt((String) request.getParameter("cid"));
 		Space com = Communities.getDetails(comId);
@@ -28,6 +30,7 @@
 			request.setAttribute("com", com);
 		}
 	} catch (Exception e) {
+		log.error("Exception", e);
 		response.sendError(HttpServletResponse.SC_BAD_REQUEST);
 		return;
 	}
