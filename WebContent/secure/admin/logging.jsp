@@ -1,11 +1,9 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"
-%>
+<%@page contentType="text/html" pageEncoding="UTF-8" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <star:template title="Logging"
                js="admin/logging, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min,lib/jquery.validate.min"
                css="common/table, details/shared, explore/common, explore/spaces, admin/admin">
-	<fieldset id="fieldTable" class="expdContainer">
-		<legend>Logging Levels</legend>
+	<star:panel title="Logging Levels" withCount="false" expandable="false">
 		<table id="tableLevels" class="shaded contentTbl">
 			<thead>
 			<tr>
@@ -39,15 +37,14 @@
 			</tr>
 			</tbody>
 		</table>
-	</fieldset>
+	</star:panel>
 
-	<fieldset id="actionField">
-		<legend>actions</legend>
+	<star:panel title="actions" withCount="false" expandable="false">
 		<input id="className" type="text"/>
 		<button id="applyAll">Apply Level</button>
 		<button id="applyToClass">Apply Level to Class</button>
 		<button id="applyToClassAllOthersOff">Apply Level to Class And Turn Off
 			All Other Classes
 		</button>
-	</fieldset>
+	</star:panel>
 </star:template>
