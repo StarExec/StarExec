@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.data.database.Requests, org.starexec.data.database.Communities, org.starexec.data.database.Users, org.starexec.data.to.Space, org.starexec.util.SessionUtil, org.starexec.util.Util, java.util.Objects"
+        import="org.starexec.data.database.Requests, org.starexec.data.database.Communities, org.starexec.data.database.Users, org.starexec.data.to.Space, org.starexec.util.SessionUtil, org.starexec.util.Util"
         session="true" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
