@@ -237,6 +237,20 @@ public class Requests {
 	}
 
 	/**
+	 * Retrieves a community request from the database given the user id
+	 *
+	 * @param userId the user id of the request to retrieve
+	 * @return The request associated with the user id
+	 * @author Todd Elvers
+	 */
+	public static boolean communityRequestExistsForUser(int userId, int community) throws SQLException {
+		return Common.query("{CALL GetCommunityRequestForUser(?,?)}", procedure -> {
+			procedure.setInt(1, userId);
+			procedure.setInt(2, community);
+		}, ResultSet::next);
+	}
+
+	/**
 	 * Retrieves a community request from the database given a code
 	 *
 	 * @param code the code of the request to retrieve

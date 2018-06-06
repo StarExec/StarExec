@@ -12,14 +12,13 @@
 	*  If the user is attempting to join a community they are apart of, redirect them
 	*  back to the community explorer
 	*/
-		Integer userId = SessionUtil.getUserId(request);
+		int userId = SessionUtil.getUserId(request);
 		if (Users.isMemberOfSpace(userId, comId)) {
 			response.sendRedirect(Util.docRoot(
 					"secure/explore/communities.jsp?result=alreadyMember"));
-		} else if (Objects.isNull(Requests.getCommunityRequest(userId))) {
-			request.setAttribute("requestExists", false);
 		} else {
-			request.setAttribute("requestExists", true);
+			request.setAttribute("requestExists",
+					Requests.communityRequestExistsForUser(userId, comId));
 		}
 
 		if (com == null) {
