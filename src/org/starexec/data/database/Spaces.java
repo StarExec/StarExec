@@ -32,10 +32,11 @@ public class Spaces {
 	 * @param con The connection to perform the operation on
 	 * @param s The space to add (should have default permissions set)
 	 * @param userId The user who is adding the space
-	 * @return The ID of the newly inserted space, -1 if the operation failed
+	 * @return The ID of the newly inserted space
 	 * @author Tyler Jensen
 	 */
-	protected static int add(Connection con, Space s, int userId) {
+	protected static int add(Connection con, Space s, int userId) throws SQLException {
+		final String method = "add";
 		CallableStatement procAddSpace = null;
 		CallableStatement procSubspace = null;
 		CallableStatement procAddUser = null;
@@ -55,14 +56,14 @@ public class Spaces {
 			procAddSpace.executeUpdate();
 			int newSpaceId = procAddSpace.getInt(7);
 
-			log.trace("Calling AssociateSpace");
+			log.trace(method, "Calling AssociateSpace");
 			// Add the new space as a child space of the parent space
 			procSubspace = con.prepareCall("{CALL AssociateSpaces(?, ?)}");
 			procSubspace.setInt(1, s.getParentSpace());
 			procSubspace.setInt(2, newSpaceId);
 			procSubspace.executeUpdate();
 
-			log.trace("Calling AddUserToSpace");
+			log.trace(method, "Calling AddUserToSpace");
 			// Add the adding user to the space with the maximal permissions
 			procAddUser = con.prepareCall("{CALL AddUserToSpace(?, ?)}");
 			procAddUser.setInt(1, userId);
@@ -74,18 +75,18 @@ public class Spaces {
 			// Set maximal permissions for the user who added the space
 			Permissions.set(userId, newSpaceId, perm, con);
 
-			log.info(String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId,
+			log.info(method, String.format("New space with name [%s] added by user [%d] to space [%d]", s.getName(), userId,
 			                       s.getParentSpace()
 			));
 			return newSpaceId;
-		} catch (Exception e) {
-			log.error("add", e);
+		} catch (SQLException e) {
+			log.error(method, e);
+			return -1;
 		} finally {
 			Common.safeClose(procAddUser);
 			Common.safeClose(procSubspace);
 			Common.safeClose(procAddSpace);
 		}
-		return -1;
 	}
 
 	/**
@@ -405,29 +406,33 @@ public class Spaces {
 	 */
 	public static List<Integer> addWithBenchmarks(
 			Space parent, int userId, Integer depRootSpaceId, boolean linked, Integer statusId, Boolean usesDeps
-	) {
+	) throws StarExecException {
+		Connection con = null;
 		ArrayList<Integer> ids = new ArrayList<>();
-		log.trace("addWithBenchmarksAndDeps called on space " + parent.getName());
+		log.trace("addWithBenchmarks", "called on space " + parent.getName());
 		try {
+			con = Common.getConnection();
 			// For each subspace...
 			for (Space sub : parent.getSubspaces()) {
 				// Apply the recursive algorithm to add each subspace
 				sub.setParentSpace(parent.getId());
-				Spaces.traverse(sub, userId, depRootSpaceId, linked, statusId);
+				Spaces.traverse(sub, userId, depRootSpaceId, linked, statusId, con);
 			}
 
 			// Add any new benchmarks in the space to the database
 			if (!parent.getBenchmarks().isEmpty()) {
 				ids.addAll(Benchmarks.processAndAdd(parent.getBenchmarks(), parent.getId(), depRootSpaceId, linked,
-				                                    statusId, usesDeps
+				                                    statusId, usesDeps, con
 				));
 			}
 			// We're done (notice that 'parent' is never added because it should already exist)
-			return ids;
-		} catch (Exception e) {
+		} catch (SQLException | IOException e) {
 			log.error("addWithBenchmarks", e);
+			throw new StarExecException("Error adding Benchmarks", e);
+		} finally {
+			Common.safeClose(con);
 		}
-		return null;
+		return ids;
 	}
 
 	/**
@@ -2503,6 +2508,28 @@ public class Spaces {
 		}
 		return paths;
 	}
+	/**
+	 * Internal recursive method that adds a space and it's benchmarks to the database
+	 *
+	 * @param space The space to add to the database
+	 * @param depRootSpaceId the id of the space where the axiom benchmarks lie. If no dependencies exist, this is
+	 * ignored.
+	 * @param userId The user id of the owner of the new space and its benchmarks
+	 */
+	protected static List<Integer> traverse(
+			Space space, int userId, Integer depRootSpaceId, Boolean linked, Integer statusId
+	) {
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			return traverse(space, userId, depRootSpaceId, linked, statusId);
+		} catch (Exception e) {
+			log.error("traverse", e);
+			return null;
+		} finally {
+			Common.safeClose(con);
+		}
+	}
 
 	/**
 	 * Internal recursive method that adds a space and it's benchmarks to the database
@@ -2514,27 +2541,26 @@ public class Spaces {
 	 * @author Benton McCune
 	 */
 	protected static List<Integer> traverse(
-			Space space, int userId, Integer depRootSpaceId, Boolean linked, Integer statusId
-	) {
+			Space space, int userId, Integer depRootSpaceId, Boolean linked, Integer statusId, Connection con
+	) throws IOException, SQLException, StarExecException {
 		ArrayList<Integer> ids = new ArrayList<>();
-		try {
-			// Add the new space to the database and get it's ID
-			int spaceId = Spaces.add(space, userId);
+		// Add the new space to the database and get it's ID
+		int spaceId = Spaces.add(con, space, userId);
 
-			log.info("traversing (with deps) space " + space.getName());
-			for (Space sub : space.getSubspaces()) {
-				sub.setParentSpace(spaceId);
-				// Recursively go through and add all of it's subspaces with itself as the parent
-				ids.addAll(Spaces.traverse(sub, userId, depRootSpaceId, linked, statusId));
-			}
-			// Finally, add the benchmarks in the space to the database
-			ids.addAll(Benchmarks.processAndAdd(space.getBenchmarks(), spaceId, depRootSpaceId, linked, statusId));
-			Uploads.incrementCompletedSpaces(statusId, 1);
-			return ids;
-		} catch (Exception e) {
-			log.error("traverse", e);
+		log.info("traversing (with deps) space " + space.getName());
+		for (Space sub : space.getSubspaces()) {
+			sub.setParentSpace(spaceId);
+			// Recursively go through and add all of it's subspaces with itself as the parent
+			ids.addAll(Spaces.traverse(sub, userId, depRootSpaceId, linked, statusId, con));
 		}
-		return null;
+		// Finally, add the benchmarks in the space to the database
+		ids.addAll(Benchmarks.processAndAdd(space.getBenchmarks(), spaceId, depRootSpaceId, linked, statusId, true, con));
+
+		/* `incrementCompletedSpaces` will use its own connection so it is not
+		 * part of this transaction This is to ensure the count is updated
+		 * immediately, instead of only once after everything is finished.    */
+		Uploads.incrementCompletedSpaces(statusId, 1);
+		return ids;
 	}
 
 	/**

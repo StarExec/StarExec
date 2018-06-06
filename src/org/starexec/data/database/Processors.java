@@ -8,6 +8,8 @@ import org.starexec.logger.StarLogger;
 import org.starexec.util.Util;
 
 import java.io.File;
+import java.lang.NumberFormatException;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedList;
@@ -153,13 +155,28 @@ public class Processors {
 	 * @author Tyler Jensen
 	 */
 	public static Processor get(int processorId) {
-		if (processorId == 0) return null;
+		Connection con = null;
 		try {
-			return Common.query("{CALL GetProcessorById(?)}", procedure -> procedure.setInt(1, processorId), Processors::resultSetToProcessor);
-		} catch (SQLException e) {
+			con = Common.getConnection();
+			return get(processorId, con);
+		} catch (Exception e) {
 			log.error("get", e.getMessage(), e);
+			return null;
+		} finally {
+			Common.safeClose(con);
 		}
-		return null;
+	}
+
+	/**
+	 * @param processorId The id of the bench processor to retrieve
+	 * @return The corresponding processor
+	 * @author Tyler Jensen
+	 */
+	public static Processor get(int processorId, Connection con) throws NumberFormatException, SQLException {
+		if (processorId == 0) {
+			throw new NumberFormatException("No Processor 0");
+		}
+		return Common.queryUsingConnection(con, "{CALL GetProcessorById(?)}", procedure -> procedure.setInt(1, processorId), Processors::resultSetToProcessor);
 	}
 
 	/**
