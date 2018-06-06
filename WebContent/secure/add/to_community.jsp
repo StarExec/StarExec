@@ -38,6 +38,7 @@
                js="lib/jquery.validate.min, lib/jquery.qtip.min, add/to_community">
 	<c:if test="${requestExists}">
 		<h2>Request is pending</h2>
+		<p>You already have a community request pending.</p>
 	</c:if>
 	<c:if test="${not requestExists}">
 	<form method="POST" action="to_community/request" id="inviteForm">
