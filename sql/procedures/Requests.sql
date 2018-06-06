@@ -91,6 +91,16 @@ CREATE PROCEDURE GetCommunityRequestById(IN _id INT)
 		WHERE user_id = _id;
 	END //
 
+-- See if a request already exists from this user to this community
+DROP PROCEDURE IF EXISTS GetCommunityRequestForUser //
+CREATE PROCEDURE GetCommunityRequestForUser(IN _user INT, IN _community INT)
+	BEGIN
+		SELECT 1
+		FROM community_requests
+		WHERE community = _community
+		  AND user_id = _user;
+	END //
+
 -- Returns the community request associated with the given activation code
 -- Author: Todd Elvers
 DROP PROCEDURE IF EXISTS GetCommunityRequestByCode //
