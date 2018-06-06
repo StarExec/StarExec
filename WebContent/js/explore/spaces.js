@@ -1297,16 +1297,6 @@ function initDataTables() {
 		$(this).toggleClass('hovered');
 	});
 
-	//Move to the footer of the Table
-	$('#jobField div.selectWrap').detach().prependTo('#jobField div.bottom');
-	$('#solverField div.selectWrap')
-	.detach()
-	.prependTo('#solverField div.bottom');
-	$('#benchField div.selectWrap')
-	.detach()
-	.prependTo('#benchField div.bottom');
-	$('#userField div.selectWrap').detach().prependTo('#userField div.bottom');
-
 	//Hook up select all/ none buttons
 	$('.selectAllJobs, .selectAllSolvers, .selectAllBenchmarks, .selectAllUsers')
 	.click(function() {
@@ -1324,7 +1314,7 @@ function initDataTables() {
 	});
 
 	// Set all fieldsets as expandable (except for action fieldset)
-	$('fieldset:not(.actions)').expandable(true);
+	$('fieldset.expd').expandable(true);
 
 	var advancedActionsCollapsed = $.cookie('advancedActions') != 'false';
 	$('fieldset.advancedActions')
