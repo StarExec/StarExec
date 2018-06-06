@@ -14,8 +14,7 @@
 <star:template title="Jobs Admin"
                js="lib/jquery.heatcolor.0.0.1.min, common/format, admin/job, lib/jquery.dataTables.min"
                css="common/table, explore/common">
-	<fieldset id="jobField" class="expdContainer">
-		<legend class="expd" id="jobExpd"><span class="list-count"></span> jobs</legend>
+	<star:panel title="jobs" withCount="true" expandable="false">
 		<ul class="actionList">
 			<c:if test="${isSystemPaused}">
 				<li>
@@ -28,5 +27,5 @@
 		</c:if>
 		</ul>
 		<table id="jobs"></table>
-	</fieldset>
+	</star:panel>
 </star:template>

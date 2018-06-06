@@ -1,9 +1,10 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.data.database.Spaces,org.starexec.data.database.Users,org.starexec.data.security.SpaceSecurity, org.starexec.util.SessionUtil, java.util.List" %>
+        import="org.starexec.data.database.Spaces,org.starexec.data.database.Users,org.starexec.data.security.SpaceSecurity, org.starexec.util.SessionUtil, org.starexec.logger.StarLogger, java.util.List" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%
+	final StarLogger log = StarLogger.getLogger(getClass());
 	int uid = SessionUtil.getUserId(request);
 	String pageTitle = "Space Explorer";
 
@@ -23,8 +24,10 @@
 		} else {
 			request.setAttribute("spaceChain", "1");
 		}
-	} catch (Exception e) {
+	} catch (NumberFormatException e) {
 		// we don't need the id, so we can just ignore errors here. It may not exist
+	} catch (Exception e) {
+		log.error("Exception", e);
 	}
 
 	request.setAttribute("userId", uid);
@@ -38,9 +41,7 @@
 	<span id="spaceChain" value="${spaceChain}"></span>
 	<div id="explorer">
 		<h3>Spaces</h3>
-
-		<ul id="exploreList">
-		</ul>
+		<ul id="exploreList"></ul>
 	</div>
 
 	<div id="detailPanel">
@@ -52,8 +53,7 @@
 
 		<p id="spaceDesc" class="accent"></p>
 		<p id="spaceID" class="accent"></p>
-		<fieldset id="jobField">
-			<legend class="expd" id="jobExpd"><span class="list-count"></span> jobs</legend>
+		<star:panel title="jobs" withCount="true" expandable="true">
 			<ul class="actionList">
 				<li><a class="btnRun" id="addJob"
 				       href="${starexecRoot}/secure/add/job.jsp">create job</a>
@@ -90,10 +90,9 @@
 				<p class="unselectAllJobs">
 					<span class="ui-icon ui-icon-circlesmall-plus"></span>None
 			</div>
-		</fieldset>
+		</star:panel>
 
-		<fieldset id="solverField">
-			<legend class="expd" id="solverExpd"><span class="list-count"></span> solvers</legend>
+		<star:panel title="solvers" withCount="true" expandable="true">
 			<ul class="actionList">
 				<li><a class="btnUp" id="uploadSolver"
 				       href="${starexecRoot}/secure/add/solver.jsp">upload
@@ -115,11 +114,9 @@
 				<p class="unselectAllSolvers">
 					<span class="ui-icon ui-icon-circlesmall-plus"></span>None
 			</div>
-		</fieldset>
+		</star:panel>
 
-		<fieldset id="benchField">
-			<legend class="expd" id="benchExpd"><span class="list-count"></span> benchmarks
-			</legend>
+		<star:panel title="benchmarks" withCount="true" expandable="true">
 			<ul class="actionList">
 				<li>
 					<button title="sorts benchmarks in the order they were added to this space"
@@ -149,10 +146,9 @@
 				<p class="unselectAllBenchmarks">
 					<span class="ui-icon ui-icon-circlesmall-plus"></span>None
 			</div>
-		</fieldset>
+		</star:panel>
 
-		<fieldset id="userField">
-			<legend class="expd" id="userExpd"><span class="list-count"></span> users</legend>
+		<star:panel title="users" withCount="true" expandable="true">
 			<table id="users">
 				<thead>
 				<tr>
@@ -169,11 +165,9 @@
 				<p class="unselectAllUsers">
 					<span class="ui-icon ui-icon-circlesmall-plus"></span>None
 			</div>
-		</fieldset>
+		</star:panel>
 
-		<fieldset id="spaceField">
-			<legend class="expd" id="spaceExpd"><span class="list-count"></span> subspaces
-			</legend>
+		<star:panel title="subspaces" withCount="true" expandable="true">
 			<ul class="actionList">
 				<li><a class="btnAdd" id="addSpace"
 				       href="${starexecRoot}/secure/add/space.jsp">add
@@ -190,10 +184,9 @@
 				</tr>
 				</thead>
 			</table>
-		</fieldset>
+		</star:panel>
 
-		<fieldset class="actions">
-			<legend>space actions</legend>
+		<star:panel title="space actions" withCount="false" expandable="false">
 			<ul class="actionList">
 				<li><a class="btnEdit" id="editSpace"
 				       href="${starexecRoot}/secure/edit/space.jsp">edit
@@ -206,7 +199,7 @@
 				<li><a class="btnDown" id="downloadSpace">download space</a>
 				</li>
 			</ul>
-		</fieldset>
+		</star:panel>
 
 	</div>
 	<br class="clear"/>
@@ -290,6 +283,4 @@
 		<p><span class="ui-icon ui-icon-alert"></span><span
 				id="dialog-warning-txt"></span></p>
 	</div>
-
-
 </star:template>

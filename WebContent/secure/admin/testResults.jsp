@@ -18,8 +18,7 @@
                js="admin/testResults, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min,lib/jquery.validate.min"
                css="common/table, admin/testing">
 	<span id="sequenceName" value="${sequenceName}"></span>
-	<fieldset id="fieldTable">
-		<legend>Existing Tests</legend>
+	<star:panel title="Existing Tests" withCount="false" expandable="false">
 		<table id="tableTests" class="shaded contentTbl">
 			<thead>
 			<tr>
@@ -31,5 +30,5 @@
 			</tr>
 			</thead>
 		</table>
-	</fieldset>
+	</star:panel>
 </star:template>

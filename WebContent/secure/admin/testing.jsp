@@ -11,8 +11,7 @@
 <star:template title="Integration Tests"
                js="lib/jquery.dataTables.min, admin/testing"
                css="common/table, admin/testing">
-	<fieldset id="fieldTable">
-		<legend>Existing Tests</legend>
+	<star:panel title="Existing Tests" withCount="false" expandable="false">
 		<c:if test="${canUserRunTests}">
 			<ul class="actionList">
 				<li><a id="runAll">Run All Tests</a></li>
@@ -32,5 +31,5 @@
 			</tr>
 			</thead>
 		</table>
-	</fieldset>
+	</star:panel>
 </star:template>
