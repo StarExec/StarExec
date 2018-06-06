@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.data.database.Communities, org.starexec.data.database.Users, org.starexec.data.to.Space, org.starexec.util.SessionUtil, org.starexec.util.Util"
+        import="org.starexec.data.database.Requests, org.starexec.data.database.Communities, org.starexec.data.database.Users, org.starexec.data.to.Space, org.starexec.util.SessionUtil, org.starexec.util.Util, java.util.Objects"
         session="true" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -12,9 +12,14 @@
 	*  If the user is attempting to join a community they are apart of, redirect them
 	*  back to the community explorer
 	*/
-		if (Users.isMemberOfSpace(SessionUtil.getUserId(request), comId)) {
+		Integer userId = SessionUtil.getUserId(request);
+		if (Users.isMemberOfSpace(userId, comId)) {
 			response.sendRedirect(Util.docRoot(
 					"secure/explore/communities.jsp?result=alreadyMember"));
+		} else if (Objects.isNull(Requests.getCommunityRequest(userId))) {
+			request.setAttribute("requestExists", false);
+		} else {
+			request.setAttribute("requestExists", true);
 		}
 
 		if (com == null) {
@@ -31,6 +36,10 @@
 
 <star:template title="join ${com.name}" css="add/to_community"
                js="lib/jquery.validate.min, lib/jquery.qtip.min, add/to_community">
+	<c:if test="${requestExists}">
+		<h2>Request is pending</h2>
+	</c:if>
+	<c:if test="${not requestExists}">
 	<form method="POST" action="to_community/request" id="inviteForm">
 		<fieldset>
 			<legend>community information</legend>
@@ -69,6 +78,7 @@
 			</table>
 		</fieldset>
 	</form>
+	</c:if>
 	<c:if test="${not empty param.result and param.result == 'requestSent'}">
 		<div class='success message'>request sent successfully - you will
 			receive an email when a leader of that community approves/declines
