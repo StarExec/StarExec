@@ -20,7 +20,7 @@ import org.starexec.data.to.tuples.JobCount;
 import org.starexec.exceptions.BenchmarkDependencyMissingException;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.logger.StarLogger;
-import org.starexec.servlets.BenchmarkUploader;
+import org.starexec.servlets.UploadBenchmark;
 import org.starexec.util.Util;
 
 import java.io.File;
@@ -754,8 +754,8 @@ public abstract class JobManager {
 					} else {
 						// Make a new directory for this job if it hasn't been done yet.
 						benchDirPath =
-								BenchmarkUploader.getDirectoryForBenchmarkUpload(job.getUserId(), null)
-								                 .getAbsolutePath();
+								UploadBenchmark.getDirectoryForBenchmarkUpload(job.getUserId(), null)
+								.getAbsolutePath();
 						Jobs.setOutputBenchmarksPath(job.getId(), benchDirPath);
 					}
 				}
@@ -988,8 +988,8 @@ public abstract class JobManager {
 	 * @return the new job object with the specified properties
 	 */
 	public static Job setupJob(int userId, String name, String description, int preProcessorId, int postProcessorId,
-	                           int queueId, long randomSeed, int cpuLimit, int wallclockLimit, long memLimit, boolean
-			                           suppressTimestamp, int resultsInterval, SaveResultsOption otherOutputOption, BenchmarkingFramework framework) {
+	                           int queueId, long randomSeed, int cpuLimit, int wallclockLimit, long memLimit,
+	                           boolean suppressTimestamp, int resultsInterval, SaveResultsOption otherOutputOption, BenchmarkingFramework framework) {
 		log.debug("Setting up job " + name);
 		Job j = new Job();
 
@@ -1171,7 +1171,7 @@ public abstract class JobManager {
 		stage.setNoOp(false);
 		stage.setSolver(s);
 		stage.setConfiguration(c);
-		int bench = BenchmarkUploader
+		int bench = UploadBenchmark
 				.addBenchmarkFromText("dummy benchmark", "starexec_build", s.getUserId(), R.NO_TYPE_PROC_ID, true);
 		pair.addStage(stage);
 		pair.setBench(Benchmarks.get(bench)); //This hard coded value should be changed before feature is used.

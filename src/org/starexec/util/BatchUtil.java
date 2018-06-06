@@ -6,7 +6,7 @@ import org.starexec.data.database.*;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.*;
 import org.starexec.logger.StarLogger;
-import org.starexec.servlets.BenchmarkUploader;
+import org.starexec.servlets.UploadBenchmark;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -827,7 +827,7 @@ public class BatchUtil {
 				int benchmarkProcessorId = bp.getId();
 				log.debug("addUpdates - Benchmark processor ID of original benchmark: " + b.getType().getId());
 				log.debug("addUpdates - Benchmark processor ID of updated benchmark: " + benchmarkProcessorId);
-				int newBenchID = BenchmarkUploader
+				int newBenchID = UploadBenchmark
 						.addBenchmarkFromFile(renamedFile, b.getUserId(), benchmarkProcessorId, b.isDownloadable());
 
 

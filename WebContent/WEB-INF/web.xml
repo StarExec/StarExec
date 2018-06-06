@@ -987,11 +987,11 @@
   </servlet-mapping>
 
   <servlet>
-    <servlet-name>BenchmarkUploader</servlet-name>
-    <servlet-class>org.starexec.servlets.BenchmarkUploader</servlet-class>
+    <servlet-name>UploadBenchmark</servlet-name>
+    <servlet-class>org.starexec.servlets.UploadBenchmark</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>BenchmarkUploader</servlet-name>
+    <servlet-name>UploadBenchmark</servlet-name>
     <url-pattern>/secure/upload/benchmarks</url-pattern>
   </servlet-mapping>
 

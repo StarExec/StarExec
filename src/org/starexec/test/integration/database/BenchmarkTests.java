@@ -8,7 +8,7 @@ import org.starexec.data.database.*;
 import org.starexec.data.to.*;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.logger.StarLogger;
-import org.starexec.servlets.BenchmarkUploader;
+import org.starexec.servlets.UploadBenchmark;
 import org.starexec.test.TestUtil;
 import org.starexec.test.integration.StarexecTest;
 import org.starexec.test.integration.TestSequence;
@@ -271,7 +271,7 @@ public class BenchmarkTests extends TestSequence {
 
 	@StarexecTest
 	private void addBenchmarkFromTextTest() throws Exception {
-		Integer id = BenchmarkUploader.addBenchmarkFromText("new benchmark", "test bench", user.getId(), Processors.getNoTypeProcessor().getId(), false);
+		Integer id = UploadBenchmark.addBenchmarkFromText("new benchmark", "test bench", user.getId(), Processors.getNoTypeProcessor().getId(), false);
 		Benchmark b = Benchmarks.get(id);
 		Assert.assertEquals("new benchmark", FileUtils.readFileToString(new File(b.getPath())));
 		Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(id));
@@ -283,7 +283,7 @@ public class BenchmarkTests extends TestSequence {
 		File f = Util.getSandboxDirectory();
 		File benchFile = new File(f, "benchmark.txt");
 		FileUtils.writeStringToFile(benchFile, "new benchmark");
-		int benchId = BenchmarkUploader.addBenchmarkFromFile(benchFile, user.getId(), Processors.getNoTypeProcessor().getId(), false);
+		int benchId = UploadBenchmark.addBenchmarkFromFile(benchFile, user.getId(), Processors.getNoTypeProcessor().getId(), false);
 		Benchmark b = Benchmarks.get(benchId);
 		Assert.assertEquals("new benchmark", FileUtils.readFileToString(new File(b.getPath())));
 		Assert.assertTrue(Benchmarks.deleteAndRemoveBenchmark(benchId));

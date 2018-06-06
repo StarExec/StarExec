@@ -311,7 +311,7 @@ public class CreateJob extends HttpServlet {
 					String benchText = request.getParameter(R.BENCHMARK);
 					String bName = request.getParameter(benchName);
 					int benchProc = Integer.parseInt(request.getParameter(benchProcessor));
-					int benchId = BenchmarkUploader.addBenchmarkFromText(benchText, bName, userId, benchProc, false);
+					int benchId = UploadBenchmark.addBenchmarkFromText(benchText, bName, userId, benchProc, false);
 					log.debug(method, "new benchmark created for quickJob with id = " + benchId);
 					buildQuickJob(j, solverId, benchId, space);
 					break;
