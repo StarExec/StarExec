@@ -97,8 +97,8 @@ CREATE PROCEDURE GetCommunityRequestForUser(IN _user INT, IN _community INT)
 	BEGIN
 		SELECT 1
 		FROM community_requests
-		WHERE user_id = _user
-		  AND community = _community;
+		WHERE community = _community
+		  AND user_id = _user;
 	END //
 
 -- Returns the community request associated with the given activation code
