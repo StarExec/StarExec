@@ -407,37 +407,3 @@ CREATE PROCEDURE CountJobPairsInJobSpaceHierarchyByType(IN _jobSpaceId INT,IN _c
 				OR		cpu				LIKE	CONCAT('%', _query, '%')
 				OR      job_attributes.attr_value 			LIKE 	CONCAT('%', _query, '%'));
 	END //
-
-DROP PROCEDURE IF EXISTS RunscriptError //
-CREATE PROCEDURE RunscriptError(IN node VARCHAR(32), IN jobPairId INT, IN stage INT)
-	BEGIN
-		SET @node_id := (
-			SELECT id
-			FROM nodes
-			WHERE name=node
-		);
-
-		INSERT INTO runscript_errors (node_id, job_pair_id)
-		VALUES (@node_id, jobPairId);
-
-		CALL UpdatePairStatus(jobPairId, 11);
-		CALL UpdateLaterStageStatuses(jobPairId, stage, 11);
-		CALL SetRunStatsForLaterStagesToZero(jobPairId, stage);
-	END //
-
-DROP PROCEDURE IF EXISTS DeleteOldRunscriptErrors //
-CREATE PROCEDURE DeleteOldRunscriptErrors(IN _time TIMESTAMP)
-	BEGIN
-		DELETE FROM runscript_errors
-		WHERE time <= _time;
-	END //
-
-DROP PROCEDURE IF EXISTS GetNodesWithManyRunscriptErrors //
-CREATE PROCEDURE GetNodesWithManyRunscriptErrors(IN many INT)
-	BEGIN
-		SELECT name AS node, COUNT(node_id) AS count, MAX(time) AS recent
-		FROM runscript_errors
-		JOIN nodes on nodes.id=node_id
-		GROUP BY node_id
-		HAVING COUNT(node_id) >= many;
-	END //
