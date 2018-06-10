@@ -22,13 +22,22 @@ jQuery(function($) {
 	var $startField = $("#dateselector [name='start']");
 	var $endField = $("#dateselector [name='end']");
 
+	var jobpairTemplate = [starexecRoot + "secure/details/pair.jsp?id=", null];
+	var formatJobpair = function(jobpairId) {
+		jobpairTemplate[1] = jobpairId;
+		return star.format.link(
+			jobpairTemplate.join(""),
+			jobpairId
+		);
+	}
+
 	var resultsTableRefresh = function(data, textStatus, jqXHR) {
 		resultsTable.clear();
 		var row = data.length;
 		while (--row != -1) {
 			resultsTable.row.add([
 				data[row]["node"]["name"],
-				data[row]["jobPair"]["id"],
+				formatJobpair(data[row]["jobPair"]["id"]),
 				star.format.timestamp(data[row]["time"]),
 			]);
 		}
