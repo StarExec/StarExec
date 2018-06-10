@@ -1,7 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
 %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
-<star:template title="Analytics"
+<star:template title="JobPair Errors"
                js=" common/format, lib/jquery.dataTables.min, lib/jquery.jstree, admin/jobpairErrors"
                css="common/table">
 
@@ -14,7 +14,7 @@
 		<input type="submit" value="Update"/>
 	</form>
 
-	<fieldset>
+	<fieldset class="expdContainer">
 		<legend>Event Totals</legend>
 		<table id="jobpairErrors"></table>
 	</fieldset>
