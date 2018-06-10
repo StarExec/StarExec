@@ -35,7 +35,6 @@ import javax.ws.rs.core.Context;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.text.DateFormat;
 import java.util.*;
 
 /**
@@ -5151,7 +5150,12 @@ public class RESTServices {
 	@GET
 	@Path("/jobpairErrors")
 	@Produces("application/json")
-	public String jobpairErrors(@QueryParam("start") @DefaultValue("2017-04-01") java.sql.Date startDate, @QueryParam("end") @DefaultValue("2030-04-01") java.sql.Date endDate) {
+	public String jobpairErrors(@QueryParam("start") java.sql.Date startDate, @QueryParam("end") @DefaultValue("2030-04-01") java.sql.Date endDate) {
+		if (startDate == null) {
+			final Calendar cal = Calendar.getInstance();
+			cal.add(Calendar.DATE, -1);
+			startDate = new java.sql.Date(cal.getTimeInMillis());
+		}
 		try {
 			return gson.toJson(org.starexec.data.database.RunscriptErrors.getInRange(startDate, endDate));
 		} catch (SQLException e) {
