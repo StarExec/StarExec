@@ -16,6 +16,7 @@
 								<li class="round"><a href="${starexecRoot}/secure/admin/user.jsp">Users</a></li>
 								<li class="round"><a href="${starexecRoot}/secure/admin/cluster.jsp">Cluster</a></li>
 								<li class="round"><a href="${starexecRoot}/secure/admin/job.jsp">Jobs</a></li>
+								<li class="round"><a href="${starexecRoot}/secure/admin/jobpairErrors.jsp">JobPair Errors</a></li>
 								<li class="round"><a href="${starexecRoot}/secure/admin/community.jsp">Communities</a></li>
 								<li class="round"><a href="${starexecRoot}/secure/admin/testing.jsp">Testing</a></li>
 								<li class="round"><a href="${starexecRoot}/secure/admin/analytics.jsp">Analytics</a></li>

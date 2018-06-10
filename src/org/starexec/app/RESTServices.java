@@ -5143,4 +5143,19 @@ public class RESTServices {
 			org.starexec.data.database.Analytics.saveToDB();
 			return gson.toJson(org.starexec.data.to.AnalyticsResults.getAllEvents(startDate, endDate));
 	}
+
+	/**
+	 * JobPair Errors
+	 */
+	@GET
+	@Path("/jobpairErrors")
+	@Produces("application/json")
+	public String jobpairErrors(@QueryParam("start") @DefaultValue("2017-04-01") java.sql.Date startDate, @QueryParam("end") @DefaultValue("2030-04-01") java.sql.Date endDate) {
+		try {
+			return gson.toJson(org.starexec.data.database.RunscriptErrors.getInRange(startDate, endDate));
+		} catch (SQLException e) {
+			log.error("jobpairErrors", e);
+			throw RESTException.INTERNAL_SERVER_ERROR;
+		}
+	}
 }

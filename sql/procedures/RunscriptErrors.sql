@@ -22,8 +22,8 @@ CREATE PROCEDURE GetRunscriptErrorsCount(IN _begin TIMESTAMP, IN _end TIMESTAMP)
 	BEGIN
 		SELECT COUNT(*) as 'count'
 		FROM runscript_errors
-		WHERE time <= _begin
-		  AND time >= _end;
+		WHERE time >= _begin
+		  AND time <= _end;
 	END //
 
 DROP PROCEDURE IF EXISTS GetRunscriptErrors //
@@ -32,6 +32,6 @@ CREATE PROCEDURE GetRunscriptErrors(IN _begin TIMESTAMP, IN _end TIMESTAMP)
 		SELECT name AS node, job_pair_id, time
 		FROM runscript_errors
 		JOIN nodes on nodes.id=node_id
-		WHERE time <= _begin
-		  AND time >= _end;
+		WHERE time >= _begin
+		  AND time <= _end;
 	END //
