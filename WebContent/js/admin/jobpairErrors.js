@@ -2,7 +2,6 @@
 
 jQuery(function($) {
 	var resultsTableConfig = new window.star.DataTableConfig({
-//		"paging": false,
 		"columns": [
 			{"title": "Node"},
 			{
@@ -16,6 +15,7 @@ jQuery(function($) {
 				"className": "dt-right"
 			},
 		],
+		"order": [[2, 'desc']]
 	});
 	var resultsTable = $("#jobpairErrors").DataTable(resultsTableConfig);
 

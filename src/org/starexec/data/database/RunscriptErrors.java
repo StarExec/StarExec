@@ -16,8 +16,6 @@ public class RunscriptErrors {
 
 	private static final StarLogger log = StarLogger.getLogger(Analytics.class);
 
-	//public RunscriptError(Date time, String node, int jobPairId) {
-
 	public static int getCount(Date begin, Date end) throws SQLException {
 		return Common.query(
 				"{CALL GetRunscriptErrorsCount(?,?)}",
@@ -42,7 +40,7 @@ public class RunscriptErrors {
 				results -> {
 					final List<RunscriptError> l = new ArrayList<>();
 					while (results.next()) {
-						Date time = results.getDate("time");
+						java.util.Date time = results.getTimestamp("time");
 						String node = results.getString("node");
 						int jobPair = results.getInt("job_pair_id");
 						l.add(new RunscriptError(time, node, jobPair));
