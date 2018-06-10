@@ -29,7 +29,7 @@ jQuery(function($) {
 			resultsTable.row.add([
 				data[row]["node"]["name"],
 				data[row]["jobPair"]["id"],
-				data[row]["time"],
+				star.format.timestamp(data[row]["time"]),
 			]);
 		}
 		resultsTable.draw();

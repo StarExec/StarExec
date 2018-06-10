@@ -9,7 +9,7 @@ import java.sql.Date;
  *
  */
 public class RunscriptError {
-	public final Date time;
+	public final java.util.Date time;
 	public final WorkerNode node;
 	public final JobPair jobPair;
 

@@ -35,6 +35,7 @@ import javax.ws.rs.core.Context;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.DateFormat;
 import java.util.*;
 
 /**
@@ -43,7 +44,7 @@ import java.util.*;
 @Path("")
 public class RESTServices {
 	private static final StarLogger log = StarLogger.getLogger(RESTServices.class);
-	private static final Gson gson = new Gson();
+	private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss").create();
 	private static final Gson limitGson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
 	public static final ValidatorStatusCode ERROR_DATABASE=new ValidatorStatusCode(false, "There was an internal database error processing your request");

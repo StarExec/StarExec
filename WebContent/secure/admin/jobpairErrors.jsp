@@ -2,7 +2,7 @@
 %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <star:template title="Analytics"
-               js="lib/jquery.dataTables.min, lib/jquery.jstree, admin/jobpairErrors"
+               js=" common/format, lib/jquery.dataTables.min, lib/jquery.jstree, admin/jobpairErrors"
                css="common/table">
 
 	<form id="dateselector">
