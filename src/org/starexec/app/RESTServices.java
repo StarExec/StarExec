@@ -43,7 +43,7 @@ import java.util.*;
 @Path("")
 public class RESTServices {
 	private static final StarLogger log = StarLogger.getLogger(RESTServices.class);
-	private static final Gson gson = new Gson();
+	private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss").create();
 	private static final Gson limitGson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
 	public static final ValidatorStatusCode ERROR_DATABASE=new ValidatorStatusCode(false, "There was an internal database error processing your request");
@@ -5142,5 +5142,25 @@ public class RESTServices {
 	public String analytics(@QueryParam("start") @DefaultValue("2017-04-01") java.sql.Date startDate, @QueryParam("end") @DefaultValue("2030-04-01") java.sql.Date endDate) {
 			org.starexec.data.database.Analytics.saveToDB();
 			return gson.toJson(org.starexec.data.to.AnalyticsResults.getAllEvents(startDate, endDate));
+	}
+
+	/**
+	 * JobPair Errors
+	 */
+	@GET
+	@Path("/jobpairErrors")
+	@Produces("application/json")
+	public String jobpairErrors(@QueryParam("start") java.sql.Date startDate, @QueryParam("end") @DefaultValue("2030-04-01") java.sql.Date endDate) {
+		if (startDate == null) {
+			final Calendar cal = Calendar.getInstance();
+			cal.add(Calendar.DATE, -1);
+			startDate = new java.sql.Date(cal.getTimeInMillis());
+		}
+		try {
+			return gson.toJson(org.starexec.data.database.RunscriptErrors.getInRange(startDate, endDate));
+		} catch (SQLException e) {
+			log.error("jobpairErrors", e);
+			throw RESTException.INTERNAL_SERVER_ERROR;
+		}
 	}
 }

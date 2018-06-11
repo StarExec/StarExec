@@ -6,6 +6,7 @@ import org.apache.commons.mail.Email;
 import org.apache.commons.mail.SimpleEmail;
 import org.starexec.constants.R;
 import org.starexec.data.database.Reports;
+import org.starexec.data.database.RunscriptErrors;
 import org.starexec.data.database.Spaces;
 import org.starexec.data.to.CommunityRequest;
 import org.starexec.data.to.ErrorLog;
@@ -348,6 +349,9 @@ public class Mail {
 
 	public static void sendErrorLogEmails(List<ErrorLog> errorLogs, List<User> usersToEmail) {
 		StringBuilder message = new StringBuilder();
+
+		message.append(getYesterdayRunscriptErrors());
+
 		for (ErrorLog log : errorLogs) {
 			message.append("Time: ");
 			message.append(log.getTime());
@@ -364,6 +368,24 @@ public class Mail {
 		}
 
 		Mail.mail(message.toString(), "Error Reports", emails);
+	}
+
+	private static String getYesterdayRunscriptErrors() {
+		try {
+			final Calendar cal = Calendar.getInstance();
+			cal.add(Calendar.DATE, -1);
+			java.sql.Date yesterday = new java.sql.Date(cal.getTime().getTime());
+			int count = RunscriptErrors.getCount(yesterday, yesterday);
+			if (count > 0) {
+				return "Yesterday there were " + count + "RunscriptErrors\n"
+					+ RunscriptErrors.getUrl(yesterday, yesterday)
+					+ "\n-------\n\n";
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		} finally {
+			return "";
+		}
 	}
 
 	/**

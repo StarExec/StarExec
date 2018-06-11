@@ -146,6 +146,11 @@
     </servlet>
 
     <servlet>
+        <servlet-name>org.apache.jsp.secure.admin.jobpairErrors_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.secure.admin.jobpairErrors_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>org.apache.jsp.secure.admin.logging_jsp</servlet-name>
         <servlet-class>org.apache.jsp.secure.admin.logging_jsp</servlet-class>
     </servlet>
@@ -533,6 +538,11 @@
     <servlet-mapping>
         <servlet-name>org.apache.jsp.secure.admin.user_jsp</servlet-name>
         <url-pattern>/secure/admin/user.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.secure.admin.jobpairErrors_jsp</servlet-name>
+        <url-pattern>/secure/admin/jobpairErrors.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
@@ -1175,6 +1185,7 @@
       <web-resource-name>Developers Only</web-resource-name>
       <url-pattern>/services/analytics</url-pattern>
       <url-pattern>/secure/admin/analytics.jsp</url-pattern>
+      <url-pattern>/secure/admin/jobpairErrors.jsp</url-pattern>
     </web-resource-collection>
     <auth-constraint>
       <role-name>admin</role-name>

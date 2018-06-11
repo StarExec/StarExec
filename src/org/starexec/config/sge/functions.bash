@@ -460,9 +460,9 @@ function sendStatusToLaterStages {
 }
 
 function setRunStatsToZeroForLaterStages {
-	local STATUS=$(($1))
-	log "setting all stats to 0 for stages greater than $STATUS"
-	dbExec "CALL SetRunStatsForLaterStagesToZero($PAIR_ID, $STATUS)"
+	local STAGE=$(($1))
+	log "setting all stats to 0 for stages greater than $STAGE"
+	dbExec "CALL SetRunStatsForLaterStagesToZero($PAIR_ID, $STAGE)"
 }
 
 function sendStatus {
@@ -1075,9 +1075,8 @@ function verifyWorkspace {
 # Marks this pair as having had a runscript error
 # $1 The current stage number
 function markRunscriptError {
-	sendStatus $ERROR_RUNSCRIPT
-	sendStatusToLaterStages $ERROR_RUNSCRIPT $(($1-1))
-	setRunStatsToZeroForLaterStages $(($1-1))
+	local STAGE=$(($1-1))
+	dbExec "CALL RunscriptError('$HOSTNAME', $PAIR_ID, $STAGE)"
 }
 
 # this function checks to make sure that runsolver output was generated correctly.
