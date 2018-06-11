@@ -1,6 +1,7 @@
 package org.starexec.data.database;
 
 import org.starexec.logger.StarLogger;
+import org.starexec.constants.R;
 import org.starexec.data.to.RunscriptError;
 
 import java.sql.Date;
@@ -48,5 +49,13 @@ public class RunscriptErrors {
 					return l;
 				}
 		);
+	}
+
+	public static String getUrl(Date begin, Date end) {
+		return R.STAREXEC_ROOT
+			+ "secure/admin/jobpairErrors.jsp?start="
+			+ begin.toString()
+			+ "&end="
+			+ end.toString();
 	}
 }
