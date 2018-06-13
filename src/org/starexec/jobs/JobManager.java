@@ -712,7 +712,6 @@ public abstract class JobManager {
 				postProcessorPaths.add(p.getFilePath());
 			}
 			p = attrs.getPreProcessor();
-			preProcessorTimeLimits.add("1");
 			if (p == null) {
 				preProcessorTimeLimits.add("");
 				preProcessorPaths.add("");
