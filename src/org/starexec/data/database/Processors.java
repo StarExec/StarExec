@@ -174,7 +174,7 @@ public class Processors {
 	 */
 	public static Processor get(int processorId, Connection con) throws NumberFormatException, SQLException {
 		if (processorId == 0) {
-			throw new NumberFormatException("No Processor 0");
+			return null;
 		}
 		return Common.queryUsingConnection(con, "{CALL GetProcessorById(?)}", procedure -> procedure.setInt(1, processorId), Processors::resultSetToProcessor);
 	}
