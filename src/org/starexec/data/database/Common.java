@@ -93,8 +93,11 @@ public class Common {
 	 * Logs the total number of connections idle and active at the time this is called
 	 */
 	public static void logConnectionsOpen() {
-		log.debug("connection counts  = "+dataPool.getIdle()+" "+dataPool.getActive());
-		log.debug(String.valueOf(connectionsOpened-connectionsClosed));
+		log.info("logConnectionsOpen",
+				"idle=" + dataPool.getIdle()
+				+ "\tactive=" + dataPool.getActive()
+				+ "\tinternal count=" + String.valueOf(connectionsOpened-connectionsClosed)
+		);
 	}
 
 	/**
