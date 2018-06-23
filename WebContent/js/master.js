@@ -199,6 +199,7 @@ jQuery(function($) {
 			"pagingType": "only_when_necessary",
 			"sServerMethod": "POST",
 			"language": {"sProcessing": "processing request"},
+			"processing": true,
 		};
 		$.extend(true, this, config, overrides);
 	};
