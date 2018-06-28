@@ -83,6 +83,8 @@ public class StatusTests {
 					|| status == StatusCode.ERROR_RESULTS
 					|| status == StatusCode.ERROR_RUNSCRIPT
 					|| status == StatusCode.ERROR_BENCHMARK
+					|| status == StatusCode.ERROR_PRE_PROCESSOR
+					|| status == StatusCode.ERROR_POST_PROCESSOR
 					|| status == StatusCode.ERROR_DISK_QUOTA_EXCEEDED) {
 				assertTrue("The "+status.toString()+" status should be a \"failed\" status.", status.failed());
 			} else {

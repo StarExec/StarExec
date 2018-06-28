@@ -140,7 +140,7 @@ public class Status {
 		}
 
 		public boolean failed() {
-			return ((val >= 8 && val <= 13) || val == 18 || val == 24);
+			return ((val >= 8 && val <= 13) || val == 18 || (val >= 24 && val <= 26));
 		}
 
 		public boolean incomplete() {
