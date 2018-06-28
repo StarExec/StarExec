@@ -1113,3 +1113,7 @@ function isOutputValid {
 		return 1
 	fi
 }
+
+function exitJobscript {
+	echo "Jobscript ending."
+}

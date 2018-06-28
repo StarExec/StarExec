@@ -129,6 +129,7 @@ NUM_STAGES=${#STAGE_NUMBERS[@]}
 
 trap "limitExceeded 'file write' $EXCEED_FILE_WRITE" SIGXFSZ
 trap 'echo "Jobscript received USR2."' USR2
+trap exitJobscript EXIT
 
 
 #==========================================================================
@@ -496,5 +497,3 @@ done
 setEndTime
 
 cleanWorkspace 0 $SANDBOX_PARAM
-
-echo "Jobscript ending."
