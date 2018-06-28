@@ -32,6 +32,8 @@ public class StatusTests {
 					|| status == StatusCode.EXCEED_RUNTIME
 					|| status == StatusCode.EXCEED_CPU
 					|| status == StatusCode.EXCEED_FILE_WRITE
+					|| status == StatusCode.ERROR_PRE_PROCESSOR
+					|| status == StatusCode.ERROR_POST_PROCESSOR
 					|| status == StatusCode.EXCEED_MEM) {
 				assertTrue("The "+status.toString()+" status should be complete.", status.statComplete());
 			} else {
@@ -47,6 +49,8 @@ public class StatusTests {
 					|| status == StatusCode.EXCEED_RUNTIME
 					|| status == StatusCode.EXCEED_CPU
 					|| status == StatusCode.EXCEED_FILE_WRITE
+					|| status == StatusCode.ERROR_PRE_PROCESSOR
+					|| status == StatusCode.ERROR_POST_PROCESSOR
 					|| status == StatusCode.EXCEED_MEM) {
 				assertFalse("The "+status.toString()+" status should be complete.", status.statIncomplete());
 			} else {
@@ -99,6 +103,8 @@ public class StatusTests {
 					|| status == StatusCode.STATUS_KILLED
 					|| status == StatusCode.STATUS_PROCESSING
 					|| status == StatusCode.STATUS_NOT_REACHED
+					|| status == StatusCode.ERROR_PRE_PROCESSOR
+					|| status == StatusCode.ERROR_POST_PROCESSOR
 					|| status == StatusCode.ERROR_BENCH_DEPENDENCY_MISSING) {
 				assertTrue("The "+status.toString()+" status should be an \"incomplete\" status.", status.incomplete());
 			} else {

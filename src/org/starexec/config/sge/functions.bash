@@ -698,6 +698,11 @@ function copyOutput {
 		log "executing post processor"
 		log "time limit: $POST_PROCESSOR_TIME_LIMIT"
 		timeout --signal=SIGKILL $((POST_PROCESSOR_TIME_LIMIT))m ./process "$STDOUT_FILE" $LOCAL_BENCH_PATH "$OUT_DIR/output_files" > "$OUT_DIR"/attributes.txt
+		if (( $? != 0 )); then
+			log "post processor timeout"
+			sendStatus $ERROR_POST_PROCESSOR
+		fi
+
 		log "processing attributes"
 		processAttributes $OUT_DIR/attributes.txt $1
 	fi
@@ -917,6 +922,11 @@ function copyDependencies {
 		log "time limit: $PRE_PROCESSOR_TIME_LIMIT"
 
 		timeout --signal=SIGKILL $((PRE_PROCESSOR_TIME_LIMIT))m ./process "$LOCAL_BENCH_PATH" $RAND_SEED > "$PROCESSED_BENCH_PATH"
+		if (( $? != 0 )); then
+			log "pre processor timeout"
+			sendStatus $ERROR_PRE_PROCESSOR
+		fi
+
 		#use the processed benchmark in subsequent steps
 		rm "$LOCAL_BENCH_PATH"
 		mv "$PROCESSED_BENCH_PATH" "$LOCAL_BENCH_PATH"
