@@ -2,10 +2,6 @@ package org.starexec.data.database;
 
 import org.starexec.logger.StarLogger;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.ResultSet;
-
 /**
  * Class for accessing the logins table.
  */
@@ -20,22 +16,17 @@ public class Logins {
 	 * @author Albert Giegerich
 	 */
 	public static Integer getNumberOfUniqueLogins() {
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-
 		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetNumberOfUniqueLogins()}");
-			results = procedure.executeQuery();
-			results.first();
-			return results.getInt(1);
+			Common.query(
+					"{CALL GetNumberOfUniqueLogins()}",
+					p -> {},
+					results -> {
+						results.first();
+						return results.getInt(1);
+					}
+			);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
 		}
 		return null;
 	}
@@ -46,18 +37,10 @@ public class Logins {
 	 * @author Albert Giegerich
 	 */
 	public static void resetLogins() {
-		Connection con = null;
-		CallableStatement procedure = null;
-
 		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL ResetLogins()}");
-			procedure.executeQuery();
+			Common.update("{CALL ResetLogins()}", p -> {});
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
 		}
 	}
 }
