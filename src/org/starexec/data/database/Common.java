@@ -118,8 +118,9 @@ public class Common {
 	 */
 	protected synchronized static Connection getConnection() throws SQLException {
 		try {
+			Connection c = dataPool.getConnection();
 			++connectionsOpened;
-			return dataPool.getConnection();
+			return c;
 		} catch (SQLException e) {
 			log.error("getConnection", "connectionsOpened: "+connectionsOpened, e);
 			throw e;
