@@ -24,8 +24,7 @@ public class Common {
 	private static final NonSavingStarLogger log = NonSavingStarLogger.getLogger(Common.class);
 	private static DataSource dataPool = null;
 
-	private static Integer connectionsOpened = 0;
-	private static Integer connectionsClosed = 0;
+	private static int connectionsOpened = 0;
 
 	//args to append to the mysql URL.
 	private static final String MYSQL_URL_ARGUMENTS = "?autoReconnect=true&zeroDateTimeBehavior=convertToNull&rewriteBatchedStatements=true";
@@ -96,7 +95,7 @@ public class Common {
 		log.info("logConnectionsOpen",
 				"idle=" + dataPool.getIdle()
 				+ "\tactive=" + dataPool.getActive()
-				+ "\tinternal count=" + String.valueOf(connectionsOpened-connectionsClosed)
+				+ "\tinternal count=" + String.valueOf(connectionsOpened)
 		);
 	}
 
@@ -439,7 +438,7 @@ public class Common {
 		try {
 			if(c != null && !c.isClosed()) {
 				c.close();
-				connectionsClosed++;
+				--connectionsOpened;
 			}
 		} catch (SQLException e){
 			// Do nothing
