@@ -30,26 +30,19 @@ public class Uploads {
 		if (statusId == null) {
 			return false;
 		}
-		Connection con = null;
-		CallableStatement procedure = null;
-
 		try {
-			con = Common.getConnection();
-
-			procedure = con.prepareCall("{CALL AddUnvalidatedBenchmark(?,?, ?)}");
-
-			procedure.setInt(1, statusId);
-			procedure.setString(2, name);
-			procedure.setString(3, errorMessage);
-			procedure.executeUpdate();
+			Common.update("{CALL AddUnvalidatedBenchmark(?,?, ?)}",
+					procedure -> {
+						procedure.setInt(1, statusId);
+						procedure.setString(2, name);
+						procedure.setString(3, errorMessage);
+					}
+			);
 			return true;
 		} catch (Exception e) {
 			log.error("addFailedBenchmark", e);
-			return false;
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
 		}
+		return false;
 	}
 
 	/**
@@ -122,22 +115,17 @@ public class Uploads {
 		if (statusId == null) {
 			return false;
 		}
-		Connection con = null;
-		CallableStatement procedure = null;
 		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL XMLEverythingComplete(?)}");
-
-			procedure.setInt(1, statusId);
-			procedure.executeUpdate();
+			Common.update("{CALL XMLEverythingComplete(?)}",
+					procedure -> {
+						procedure.setInt(1, statusId);
+					}
+			);
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			return false;
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
+			log.error("XMLEverythingComplete", e);
 		}
+		return false;
 	}
 
 	/**
@@ -151,22 +139,17 @@ public class Uploads {
 		if (statusId == null) {
 			return false;
 		}
-		Connection con = null;
-		CallableStatement procedure = null;
 		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL BenchmarkEverythingComplete(?)}");
-
-			procedure.setInt(1, statusId);
-			procedure.executeUpdate();
+			Common.update("{CALL BenchmarkEverythingComplete(?)}",
+					procedure -> {
+						procedure.setInt(1, statusId);
+					}
+			);
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			return false;
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
+			log.error("benchmarkEverythingComplete", e);
 		}
+		return false;
 	}
 
 	/**
@@ -179,23 +162,17 @@ public class Uploads {
 		if (statusId == null) {
 			return false;
 		}
-		Connection con = null;
-		CallableStatement procedure = null;
 		try {
-			con = Common.getConnection();
-
-			procedure = con.prepareCall("{CALL FileExtractComplete(?)}");
-
-			procedure.setInt(1, statusId);
-			procedure.executeUpdate();
+			Common.update("{CALL FileExtractComplete(?)}",
+					procedure -> {
+						procedure.setInt(1, statusId);
+					}
+			);
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			return false;
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
+			log.error("fileExtractComplete", e);
 		}
+		return false;
 	}
 
 	/**
@@ -208,23 +185,17 @@ public class Uploads {
 		if (statusId == null) {
 			return false;
 		}
-		Connection con = null;
-		CallableStatement procedure = null;
 		try {
-			con = Common.getConnection();
-
-			procedure = con.prepareCall("{CALL XMLFileUploadComplete(?)}");
-
-			procedure.setInt(1, statusId);
-			procedure.executeUpdate();
+			Common.update("{CALL XMLFileUploadComplete(?)}",
+					procedure -> {
+						procedure.setInt(1, statusId);
+					}
+			);
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			return false;
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
+			log.error("XMLFileUploadComplete", e);
 		}
+		return false;
 	}
 
 	/**
@@ -237,23 +208,17 @@ public class Uploads {
 		if (statusId == null) {
 			return false;
 		}
-		Connection con = null;
-		CallableStatement procedure = null;
 		try {
-			con = Common.getConnection();
-
-			procedure = con.prepareCall("{CALL BenchmarkFileUploadComplete(?)}");
-
-			procedure.setInt(1, statusId);
-			procedure.executeUpdate();
+			Common.update("{CALL BenchmarkFileUploadComplete(?)}",
+					procedure -> {
+						procedure.setInt(1, statusId);
+					}
+			);
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
-			return false;
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
+			log.error("benchmarkFileUploadComplete", e);
 		}
+		return false;
 	}
 
 	/**
