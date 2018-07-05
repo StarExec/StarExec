@@ -298,6 +298,7 @@ public abstract class JobManager {
 	public static void submitJobs(final List<Job> joblist, final Queue q, int queueSize, final int nodeCount) {
 		final String methodName = "submitJobs";
 		final LoadBalanceMonitor monitor = getMonitor(q.getId());
+		Timer timer = new Timer();
 
 		try {
 			log.entry(methodName);
@@ -520,8 +521,10 @@ public abstract class JobManager {
 				} // end iterating once through the schedule
 			} // end looping until schedule is empty or we have submitted enough job pairs
 
+			log.info(methodName, "Finished in " + timer.getTime() + " milliseconds");
+
 		} catch (Exception e) {
-			log.error("submitJobs", e);
+			log.error(methodName, "Running for" + timer.getTime() + " milliseconds", e);
 		}
 
 	} // end submitJobs()
