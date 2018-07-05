@@ -93,14 +93,6 @@ public class Common {
 	 * Logs the total number of connections idle and active at the time this is called
 	 */
 	public static void logConnectionsOpen() {
-		if (connectionsOpened-dataPool.getActive() != connectionsDrift) {
-			log.info("logConnectionsOpen",
-			         "Number of active connections reported by dataPool differs from internal count."+
-			         "\n\tconnectionsOpened: "+connectionsOpened+
-			         "\n\tdataPool.getActive(): "+dataPool.getActive()
-			);
-			connectionsDrift = connectionsOpened-dataPool.getActive();
-		}
 		log.info("logConnectionsOpen",
 				"idle=" + dataPool.getIdle()
 				+ "\tactive=" + dataPool.getActive()
@@ -128,6 +120,14 @@ public class Common {
 		try {
 			Connection c = dataPool.getConnection();
 			++connectionsOpened;
+			if (connectionsOpened-dataPool.getActive() != connectionsDrift) {
+				log.info("logConnectionsOpen",
+				         "Number of active connections reported by dataPool differs from internal count." +
+				         "\n\tconnectionsOpened:    " + connectionsOpened +
+				         "\n\tdataPool.getActive(): " + dataPool.getActive()
+				);
+				connectionsDrift = connectionsOpened-dataPool.getActive();
+			}
 			return c;
 		} catch (SQLException e) {
 			log.error("getConnection", "connectionsOpened: "+connectionsOpened, e);
