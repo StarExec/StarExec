@@ -45,7 +45,7 @@ public class Common {
 			procedure.setString(2, ipAddress);
 			procedure.setString(3, browser);
 			procedure.executeUpdate();
-		} catch (SQLException e){
+		} catch (SQLException e) {
 			log.error("addLoginRecord", e);
 		} finally {
 			Common.safeClose(con);
@@ -56,7 +56,7 @@ public class Common {
 	/**
 	 * Begins a transaction by turning off auto-commit
 	 */
-	protected static void beginTransaction(Connection con){
+	protected static void beginTransaction(Connection con) {
 		try {
 			con.setAutoCommit(false);
 		} catch (SQLException e) {
@@ -67,7 +67,7 @@ public class Common {
 	/**
 	 * Rolls back any actions not committed to the database
 	 */
-	protected static void doRollback(Connection con){
+	protected static void doRollback(Connection con) {
 		try {
 			con.rollback();
 			con.setAutoCommit(true);
@@ -80,7 +80,7 @@ public class Common {
 	/**
 	 * Turns on auto-commit
 	 */
-	protected static void enableAutoCommit(Connection con){
+	protected static void enableAutoCommit(Connection con) {
 		try {
 			con.setAutoCommit(true);
 		} catch (SQLException e) {
@@ -102,7 +102,7 @@ public class Common {
 	/**
 	 * Ends a transaction by committing any changes and re-enabling auto-commit
 	 */
-	protected static void endTransaction(Connection con){
+	protected static void endTransaction(Connection con) {
 		try {
 			con.commit();
 			enableAutoCommit(con);
@@ -130,7 +130,7 @@ public class Common {
 	 * Gets information on the data pool.  Used to track down connection leak.
 	 * @return Returns true if not nearing max active connections
 	 */
-	public static Boolean getDataPoolData(){
+	public static Boolean getDataPoolData() {
 		log.info("Data Pool has " + dataPool.getActive() + " active connections.  ");
 		if (dataPool.getWaitCount() > 0) {
 			log.info("# of threads waiting for a connection = " + dataPool.getWaitCount());
@@ -160,23 +160,23 @@ public class Common {
 			log.info(R.MYSQL_DRIVER);
 			log.info(R.MYSQL_USERNAME);
 
-			poolProp.setUrl(R.MYSQL_URL+MYSQL_URL_ARGUMENTS);			// URL to the database we want to use
-			poolProp.setDriverClassName(R.MYSQL_DRIVER);				// We're using the JDBC driver
-			poolProp.setUsername(R.MYSQL_USERNAME);						// Database username
-			poolProp.setPassword(R.MYSQL_PASSWORD);						// Database password for the given username
-			poolProp.setTestOnBorrow(true);								// True to check if a connection is live every time we take one from the pool
-			poolProp.setValidationQuery("SELECT 1");					// The query to execute to check if a connection is live
-			poolProp.setValidationInterval(20000);						// Only check live connection every so often when borrowing (milliseconds)
-			poolProp.setMaxActive(R.MYSQL_POOL_MAX_SIZE);				// How many active connections can we have in the pool
-			poolProp.setInitialSize(R.MYSQL_POOL_MIN_SIZE);				// How many connections the pool will start out with
-			poolProp.setMinIdle(R.MYSQL_POOL_MIN_SIZE);					// The minimum number of connections to keep "ready to go"
-			poolProp.setDefaultAutoCommit(true);						// Turn autocommit on (turn transactions off by default)
-			poolProp.setJmxEnabled(false);								// Turn JMX off (we don't use it so we don't need it)
-			poolProp.setRemoveAbandonedTimeout(3600);						// How long to wait (seconds) before reclaiming an open connection (should be the time of longest query)
-			poolProp.setRemoveAbandoned(true);							// Enable removing connections that are open too long
+			poolProp.setUrl(R.MYSQL_URL+MYSQL_URL_ARGUMENTS); // URL to the database we want to use
+			poolProp.setDriverClassName(R.MYSQL_DRIVER);      // We're using the JDBC driver
+			poolProp.setUsername(R.MYSQL_USERNAME);           // Database username
+			poolProp.setPassword(R.MYSQL_PASSWORD);           // Database password for the given username
+			poolProp.setTestOnBorrow(true);                   // True to check if a connection is live every time we take one from the pool
+			poolProp.setValidationQuery("SELECT 1");          // The query to execute to check if a connection is live
+			poolProp.setValidationInterval(20000);            // Only check live connection every so often when borrowing (milliseconds)
+			poolProp.setMaxActive(R.MYSQL_POOL_MAX_SIZE);     // How many active connections can we have in the pool
+			poolProp.setInitialSize(R.MYSQL_POOL_MIN_SIZE);   // How many connections the pool will start out with
+			poolProp.setMinIdle(R.MYSQL_POOL_MIN_SIZE);       // The minimum number of connections to keep "ready to go"
+			poolProp.setDefaultAutoCommit(true);              // Turn autocommit on (turn transactions off by default)
+			poolProp.setJmxEnabled(false);                    // Turn JMX off (we don't use it so we don't need it)
+			poolProp.setRemoveAbandonedTimeout(3600);         // How long to wait (seconds) before reclaiming an open connection (should be the time of longest query)
+			poolProp.setRemoveAbandoned(true);                // Enable removing connections that are open too long
 
 			log.debug("Creating new datapool with supplied properties");
-			dataPool = new DataSource(poolProp);						// Create the connection pool with the supplied properties
+			dataPool = new DataSource(poolProp);              // Create the connection pool with the supplied properties
 
 			log.debug("Datapool successfully created!");
 		} catch (Exception e) {
@@ -440,7 +440,7 @@ public class Common {
 				c.close();
 				--connectionsOpened;
 			}
-		} catch (SQLException e){
+		} catch (SQLException e) {
 			// Do nothing
 			log.error("safeClose", e);
 		}
