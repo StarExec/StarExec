@@ -24,8 +24,7 @@ public class Common {
 	private static final NonSavingStarLogger log = NonSavingStarLogger.getLogger(Common.class);
 	private static DataSource dataPool = null;
 
-	private static Integer connectionsOpened = 0;
-	private static Integer connectionsClosed = 0;
+	private static int connectionsOpened = 0;
 
 	//args to append to the mysql URL.
 	private static final String MYSQL_URL_ARGUMENTS = "?autoReconnect=true&zeroDateTimeBehavior=convertToNull&rewriteBatchedStatements=true";
@@ -96,7 +95,7 @@ public class Common {
 		log.info("logConnectionsOpen",
 				"idle=" + dataPool.getIdle()
 				+ "\tactive=" + dataPool.getActive()
-				+ "\tinternal count=" + String.valueOf(connectionsOpened-connectionsClosed)
+				+ "\tinternal count=" + String.valueOf(connectionsOpened)
 		);
 	}
 
@@ -118,8 +117,9 @@ public class Common {
 	 */
 	protected synchronized static Connection getConnection() throws SQLException {
 		try {
+			Connection c = dataPool.getConnection();
 			++connectionsOpened;
-			return dataPool.getConnection();
+			return c;
 		} catch (SQLException e) {
 			log.error("getConnection", "connectionsOpened: "+connectionsOpened, e);
 			throw e;
@@ -172,8 +172,8 @@ public class Common {
 			poolProp.setMinIdle(R.MYSQL_POOL_MIN_SIZE);					// The minimum number of connections to keep "ready to go"
 			poolProp.setDefaultAutoCommit(true);						// Turn autocommit on (turn transactions off by default)
 			poolProp.setJmxEnabled(false);								// Turn JMX off (we don't use it so we don't need it)
-			poolProp.setRemoveAbandonedTimeout(3600);						// How int to wait (seconds) before reclaiming an open connection (should be the time of intest query)
-			poolProp.setRemoveAbandoned(true);							// Enable removing connections that are open too int
+			poolProp.setRemoveAbandonedTimeout(3600);						// How long to wait (seconds) before reclaiming an open connection (should be the time of longest query)
+			poolProp.setRemoveAbandoned(true);							// Enable removing connections that are open too long
 
 			log.debug("Creating new datapool with supplied properties");
 			dataPool = new DataSource(poolProp);						// Create the connection pool with the supplied properties
@@ -438,7 +438,7 @@ public class Common {
 		try {
 			if(c != null && !c.isClosed()) {
 				c.close();
-				connectionsClosed++;
+				--connectionsOpened;
 			}
 		} catch (SQLException e){
 			// Do nothing
