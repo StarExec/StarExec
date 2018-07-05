@@ -25,6 +25,7 @@ public class Common {
 	private static DataSource dataPool = null;
 
 	private static int connectionsOpened = 0;
+	private static int connectionsDrift  = 0;
 
 	//args to append to the mysql URL.
 	private static final String MYSQL_URL_ARGUMENTS = "?autoReconnect=true&zeroDateTimeBehavior=convertToNull&rewriteBatchedStatements=true";
@@ -92,6 +93,14 @@ public class Common {
 	 * Logs the total number of connections idle and active at the time this is called
 	 */
 	public static void logConnectionsOpen() {
+		if (connectionsOpened-dataPool.getActive() != connectionsDrift) {
+			log.info("logConnectionsOpen",
+			         "Number of active connections reported by dataPool differs from internal count."+
+			         "\n\tconnectionsOpened: "+connectionsOpened+
+			         "\n\tdataPool.getActive(): "+dataPool.getActive()
+			);
+			connectionsDrift = connectionsOpened-dataPool.getActive();
+		}
 		log.info("logConnectionsOpen",
 				"idle=" + dataPool.getIdle()
 				+ "\tactive=" + dataPool.getActive()
