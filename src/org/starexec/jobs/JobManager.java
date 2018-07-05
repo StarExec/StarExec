@@ -131,7 +131,7 @@ public abstract class JobManager {
 				}
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("checkPendingJobs", e);
 		} finally {
 			log.info("checkPendingJobs", "Finished in " + timer.getTime() + " milliseconds");
 		}
@@ -1230,7 +1230,7 @@ public abstract class JobManager {
 			}
 			return curPairs;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("addJobPairsFromSpace", e);
 		}
 		return null;
 
@@ -1279,7 +1279,7 @@ public abstract class JobManager {
 				index++;
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("addJobPairsRoundRobin", e);
 		}
 
 	}
@@ -1330,7 +1330,7 @@ public abstract class JobManager {
 			}
 			return spaceToPairs;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("addBenchmarksFromHierarchy", e);
 		}
 		return null;
 	}
