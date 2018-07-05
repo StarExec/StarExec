@@ -21,6 +21,7 @@ import org.starexec.exceptions.BenchmarkDependencyMissingException;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.logger.StarLogger;
 import org.starexec.servlets.UploadBenchmark;
+import org.starexec.util.Timer;
 import org.starexec.util.Util;
 
 import java.io.File;
@@ -77,6 +78,7 @@ public abstract class JobManager {
 	}
 
 	public synchronized static void checkPendingJobs() {
+		Timer timer = new Timer();
 		try {
 			Boolean devJobsOnly = false;
 			log.debug("about to check if the system is paused");
@@ -109,8 +111,8 @@ public abstract class JobManager {
 					} else {
 						joblist = Queues.getPendingJobs(qId);
 					}
-					log.debug("about to submit this many jobs " + joblist.size());
-					if (!joblist.isEmpty()) {
+					if (!joblist.isEmpty() || joblist != null) {
+						log.debug("about to submit this many jobs " + joblist.size());
 						submitJobs(joblist, q, queueSize, nodeCount);
 					} else {
 						// If we have no jobs to submit, reset the queue monitor
@@ -130,6 +132,8 @@ public abstract class JobManager {
 			}
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
+		} finally {
+			log.info("checkPendingJobs", "Finished in " + timer.getTime() + " milliseconds");
 		}
 	}
 
