@@ -25,6 +25,7 @@ public class Common {
 	private static DataSource dataPool = null;
 
 	private static int connectionsOpened = 0;
+	private static int connectionsDrift  = 0;
 
 	//args to append to the mysql URL.
 	private static final String MYSQL_URL_ARGUMENTS = "?autoReconnect=true&zeroDateTimeBehavior=convertToNull&rewriteBatchedStatements=true";
@@ -119,10 +120,22 @@ public class Common {
 		try {
 			Connection c = dataPool.getConnection();
 			++connectionsOpened;
+			checkConnectionsCount();
 			return c;
 		} catch (SQLException e) {
 			log.error("getConnection", "connectionsOpened: "+connectionsOpened, e);
 			throw e;
+		}
+	}
+
+	private synchronized static void checkConnectionsCount() {
+		if (connectionsOpened-dataPool.getActive() != connectionsDrift) {
+			log.info("logConnectionsOpen",
+			         "Number of active connections reported by dataPool differs from internal count." +
+			         "\n\tconnectionsOpened:    " + connectionsOpened +
+			         "\n\tdataPool.getActive(): " + dataPool.getActive()
+			);
+			connectionsDrift = connectionsOpened-dataPool.getActive();
 		}
 	}
 
@@ -444,5 +457,6 @@ public class Common {
 			// Do nothing
 			log.error("safeClose", e);
 		}
+		checkConnectionsCount();
 	}
 }
