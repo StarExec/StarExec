@@ -21,6 +21,7 @@ import org.starexec.exceptions.BenchmarkDependencyMissingException;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.logger.StarLogger;
 import org.starexec.servlets.UploadBenchmark;
+import org.starexec.util.Timer;
 import org.starexec.util.Util;
 
 import java.io.File;
@@ -77,6 +78,7 @@ public abstract class JobManager {
 	}
 
 	public synchronized static void checkPendingJobs() {
+		Timer timer = new Timer();
 		try {
 			Boolean devJobsOnly = false;
 			log.debug("about to check if the system is paused");
@@ -109,8 +111,8 @@ public abstract class JobManager {
 					} else {
 						joblist = Queues.getPendingJobs(qId);
 					}
-					log.debug("about to submit this many jobs " + joblist.size());
-					if (!joblist.isEmpty()) {
+					if (!joblist.isEmpty() || joblist != null) {
+						log.debug("about to submit this many jobs " + joblist.size());
 						submitJobs(joblist, q, queueSize, nodeCount);
 					} else {
 						// If we have no jobs to submit, reset the queue monitor
@@ -129,7 +131,9 @@ public abstract class JobManager {
 				}
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("checkPendingJobs", e);
+		} finally {
+			log.info("checkPendingJobs", "Finished in " + timer.getTime() + " milliseconds");
 		}
 	}
 
@@ -294,6 +298,7 @@ public abstract class JobManager {
 	public static void submitJobs(final List<Job> joblist, final Queue q, int queueSize, final int nodeCount) {
 		final String methodName = "submitJobs";
 		final LoadBalanceMonitor monitor = getMonitor(q.getId());
+		Timer timer = new Timer();
 
 		try {
 			log.entry(methodName);
@@ -516,8 +521,10 @@ public abstract class JobManager {
 				} // end iterating once through the schedule
 			} // end looping until schedule is empty or we have submitted enough job pairs
 
+			log.info(methodName, "Finished in " + timer.getTime() + " milliseconds");
+
 		} catch (Exception e) {
-			log.error("submitJobs", e);
+			log.error(methodName, "Running for" + timer.getTime() + " milliseconds", e);
 		}
 
 	} // end submitJobs()
@@ -1226,7 +1233,7 @@ public abstract class JobManager {
 			}
 			return curPairs;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("addJobPairsFromSpace", e);
 		}
 		return null;
 
@@ -1275,7 +1282,7 @@ public abstract class JobManager {
 				index++;
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("addJobPairsRoundRobin", e);
 		}
 
 	}
@@ -1326,7 +1333,7 @@ public abstract class JobManager {
 			}
 			return spaceToPairs;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("addBenchmarksFromHierarchy", e);
 		}
 		return null;
 	}
