@@ -650,7 +650,7 @@ public class SpaceSecurity {
 		} else {
 			for (Integer sid : solverIdsBeingCopied) {
 				Solver solver = Solvers.get(sid);
-				if (!SolverSecurity.userOwnsSolverOrIsAdmin(solver, userId)) {
+				if (!SolverSecurity.userOwnsSolverOrIsAdmin(solver, userId) && !Permissions.canUserSeeSolver(solver.getId(), userId)) {
 					return new ValidatorStatusCode(false,
 					                               "You are not the owner of all the solvers you are trying to move");
 				}
