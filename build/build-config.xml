@@ -5,6 +5,7 @@
 		<copy file="src/org/starexec/constants/R.java" tofile="${java.io.tmpdir}/R.java">
 			<filterset>
 				<filter token="Backend.Root"          value="${Backend.Root}"/>
+				<filter token="Backend.Type"          value="${Backend.Type}"/>
 				<filter token="Backend.WorkingDir"    value="${Backend.WorkingDir}"/>
 
 				<filter token="Build.Date"            value="${Build.Date}"/>
@@ -86,7 +87,6 @@
 
 				<filter token="data_dir"            value="${data_dir}"/>
 				<filter token="sandbox_dir"         value="${sandbox_dir}"/>
-				<filter token="BACKEND_TYPE"        value="sge"/>
 				<filter token="STAREXEC_APPNAME"    value="${STAREXEC_APPNAME}"/>
 				<filter token="TEST_COMMUNITY_ID"   value="${TEST_COMMUNITY_ID}"/>
 				<filter token="ALLOW_TESTING"       value="${ALLOW_TESTING}"/>
