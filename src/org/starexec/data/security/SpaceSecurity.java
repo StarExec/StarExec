@@ -649,10 +649,9 @@ public class SpaceSecurity {
 			}
 		} else {
 			for (Integer sid : solverIdsBeingCopied) {
-				Solver solver = Solvers.get(sid);
-				if (!SolverSecurity.userOwnsSolverOrIsAdmin(solver, userId) && !Permissions.canUserSeeSolver(solver.getId(), userId)) {
+				if (!SolverSecurity.canUserDownloadSolver(sid, userId)) {
 					return new ValidatorStatusCode(false,
-					                               "You are not the owner of all the solvers you are trying to move");
+					                               "You do not have permission to download all the solvers you are trying to copy.");
 				}
 			}
 		}
