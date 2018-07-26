@@ -29,7 +29,7 @@ CREATE FUNCTION GetErrorPairs(_jobId INT)
 		SELECT COUNT(*) INTO errorPairs
 		FROM job_pairs
 		WHERE job_id=_jobId
-		AND (status_code BETWEEN 8 AND 17 OR status_code=0 OR status_code=24);
+		AND (status_code BETWEEN 8 AND 17 OR status_code=0 OR status_code BETWEEN 24 AND 26);
 
 		RETURN errorPairs;
 	END //
