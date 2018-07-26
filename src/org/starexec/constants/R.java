@@ -86,7 +86,7 @@ public class R {
 	public static final String OAR_TYPE = "oar";
 	public static final String LOCAL_TYPE = "local";
 
-	public static String BACKEND_TYPE = "@BACKEND_TYPE@";
+	public static String BACKEND_TYPE = "@Backend.Type@";
 	public static Backend BACKEND;
 	static {
 		Backend b;
