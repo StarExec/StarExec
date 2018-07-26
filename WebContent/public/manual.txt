@@ -511,13 +511,15 @@ REQUIRED: "id" "to"
 OPTIONAL: "from"
 EXAMPLE: 'linkbench id=6 from=63 to=124
 
---copysolver -Copies a solver and places it into a new space or hierarchy. If "from" is not given, you must own the solvers you want to copy.
+--copysolver -Copies a solver and places it into a new space or hierarchy.
+You may copy any solver that you have permission to view.
 If "from" is given, the solvers will be copied from the specified space, and you may copy solvers you do not own given you have permission to copy from the
 given space. "id" is a solver id, and "from" and "to" are space ids
 REQUIRED: "id" "to"
 OPTIONAL: "hier" "from"
 
---linksolver -links an existing solver and associates it with a new space or hierarchy. If "from" is not given, you must own the solvers you want to link.
+--linksolver -links an existing solver and associates it with a new space or hierarchy.
+You may link any solver that you have permission to view.
 If "from" is given, the solvers will be linked from the specified space, and you may copy solvers you do not own given you have permission to link from the
 given space. "id" is a solver id, and "from"
 and "to" are space ids
