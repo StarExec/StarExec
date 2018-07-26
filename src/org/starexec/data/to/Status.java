@@ -81,9 +81,9 @@ public class Status {
 		), ERROR_BENCH_DEPENDENCY_MISSING(24, "this job pair has a missing benchmark dependency.",
 		                                  "benchmark dependency missing", StatCompleteness.INCOMPLETE
 		), ERROR_PRE_PROCESSOR(25, "there was an issue with the benchmark pre-processor, and the solver was not run",
-		                      "error", StatCompleteness.COMPLETE
+		                      "pre-processor error", StatCompleteness.COMPLETE
 		), ERROR_POST_PROCESSOR(26, "there was an issue with the post-processor",
-		                      "error", StatCompleteness.COMPLETE
+		                      "post-processor error", StatCompleteness.COMPLETE
 		);
 
 		public final int val;
