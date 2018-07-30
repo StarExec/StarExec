@@ -85,12 +85,18 @@ public class R {
 	 * all new output to `JOB_OUTPUT_DIRECTORY`
 	 */
 	public static final String OLD_JOB_OUTPUT_DIRECTORY;
+	public static final String OLD_JOB_LOG_DIRECTORY;
 	static {
 		String oldJobOutputDirectory = "@Job.OldOutputDirectory@";
+		String oldJobLogDirectory    = "@Job.OldLogDirectory@";
 		if (oldJobOutputDirectory.isEmpty()) {
 			oldJobOutputDirectory = null;
 		}
+		if (oldJobLogDirectory.isEmpty() || oldJobLogDirectory.equals("/logs")) {
+			oldJobLogDirectory = null;
+		}
 		OLD_JOB_OUTPUT_DIRECTORY = oldJobOutputDirectory;
+		OLD_JOB_LOG_DIRECTORY = oldJobLogDirectory;
 	}
 
 	public static final String SGE_TYPE = "sge";

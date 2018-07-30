@@ -35,6 +35,8 @@
 				<filter token="Email.Pass"            value="${Email.Pass}"/>
 
 				<filter token="Job.LogDirectory"                value="${Job.LogDirectory}"/>
+
+				<filter token="Job.OldLogDirectory"             value="${Job.OldOutputDirectory}"/>
 				<filter token="Job.OldOutputDirectory"          value="${Job.OldOutputDirectory}"/>
 				<filter token="Job.OutputDirectory"             value="${Job.OutputDirectory}"/>
 				<filter token="Job.SolverCacheClearLogDir"      value="${Job.SolverCacheClearLogDir}"/>
