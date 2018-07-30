@@ -36,8 +36,8 @@ public class ClearCacheManager {
 	public static void clearSolverCacheOnAllNodes() throws IOException {
 		log.info("calling clearSolverCacheOnAllNodes");
 		initScriptTemplateIf();
-		File logBase = new File(R.getSolverCacheClearLogDir());
-	
+		File logBase = new File(R.JOB_SOLVER_CACHE_CLEAR_LOG_DIRECTORY);
+
 		for (String node : R.BACKEND.getWorkerNodes()) {
 			String currentScript = scriptTemplate;
 			File logPath = new File(logBase,node);

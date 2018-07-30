@@ -209,7 +209,7 @@ public class Util {
 
 		file = new File(R.getJobInboxDir());
 		file.mkdir();
-		file = new File(R.getJobLogDir());
+		file = new File(R.JOB_LOG_DIRECTORY);
 		file.mkdir();
 		file = new File(R.getBenchmarkPath());
 		file.mkdir();
@@ -223,7 +223,7 @@ public class Util {
 		file.mkdir();
 		file = new File(R.getPicturePath());
 		file.mkdir();
-		file = new File(R.getSolverCacheClearLogDir());
+		file = new File(R.JOB_SOLVER_CACHE_CLEAR_LOG_DIRECTORY);
 		file.mkdir();
 		File downloadDir = new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR);
 		downloadDir.mkdirs();
@@ -654,7 +654,7 @@ public class Util {
 		}
 		log.info("found this many job output subdirectories to consider " + filesToConsider.size());
 		// exclude the log directory from removal
-		filesToConsider.remove(new File(R.getJobLogDir()).getAbsolutePath());
+		filesToConsider.remove(new File(R.JOB_LOG_DIRECTORY).getAbsolutePath());
 
 		// exclude the directories of existing jobs from removal. This should be safe from race conditions
 		// because we are getting the list of jobs after getting the list of files. As such, jobs directories

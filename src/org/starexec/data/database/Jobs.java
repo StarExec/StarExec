@@ -1420,7 +1420,7 @@ public class Jobs {
 	 */
 	public static String getLogDirectory(int jobId) {
 		// The job's output is expected to be in NEW_JOB_OUTPUT_DIR/{job id}/
-		File file = new File(R.getJobLogDir(), String.valueOf(jobId));
+		File file = new File(R.JOB_LOG_DIRECTORY, String.valueOf(jobId));
 		return file.getAbsolutePath();
 	}
 
