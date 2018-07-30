@@ -82,6 +82,20 @@ public class R {
 	}
 
 
+	/*
+	 * Used during disk migration.
+	 * StarExec will first look for job output in this directory, while writing
+	 * all new output to `getJobOutputDirectory`
+	 */
+	public static final String OLD_JOB_OUTPUT_DIRECTORY;
+	static {
+		String oldJobOutputDirectory = "@Job.OldOutputDirectory@";
+		if (oldJobOutputDirectory.isEmpty()) {
+			oldJobOutputDirectory = null;
+		}
+		OLD_JOB_OUTPUT_DIRECTORY = oldJobOutputDirectory;
+	}
+
 	public static final String SGE_TYPE = "sge";
 	public static final String OAR_TYPE = "oar";
 	public static final String LOCAL_TYPE = "local";
