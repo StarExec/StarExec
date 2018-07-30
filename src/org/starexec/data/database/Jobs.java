@@ -1407,7 +1407,7 @@ public class Jobs {
 			}
 		}
 		/* We could not find this job in OLD_JOB_OUTPUT_DIRECTORY, so we will
-		 * return the standard JobOutputDirectory path */
+		 * return the default JOB_OUTPUT_DIRECTORY path */
 		file = new File(R.JOB_OUTPUT_DIRECTORY, job);
 		return file.getAbsolutePath();
 	}
@@ -1419,8 +1419,19 @@ public class Jobs {
 	 * @return The absolute path as a string
 	 */
 	public static String getLogDirectory(int jobId) {
-		// The job's output is expected to be in NEW_JOB_OUTPUT_DIR/{job id}/
-		File file = new File(R.JOB_LOG_DIRECTORY, String.valueOf(jobId));
+		File file;
+		String job = String.valueOf(jobId);
+		/* If there exists an OLD_JOB_LOG_DIRECTORY, we will check for jobs
+		 * there first. */
+		if (R.OLD_JOB_LOG_DIRECTORY != null) {
+			file = new File(R.OLD_JOB_LOG_DIRECTORY, job);
+			if (file.exists()) {
+				return file.getAbsolutePath();
+			}
+		}
+		/* We could not find this job in OLD_JOB_LOG_DIRECTORY, so we will
+		 * return the default JOB_LOG_DIRECTORY path */
+		file = new File(R.JOB_LOG_DIRECTORY, job);
 		return file.getAbsolutePath();
 	}
 
