@@ -73,6 +73,10 @@ public class R {
 
 	public static final String JOB_OUTPUT_DIRECTORY = "@Job.OutputDirectory@";
 	public static final String JOB_LOG_DIRECTORY = "@Job.LogDirectory@";
+
+	/* This is the directory where SGE writes output from
+	 * clearSolverCacheOnAllNodes jobs
+	 */
 	public static final String JOB_SOLVER_CACHE_CLEAR_LOG_DIRECTORY = "@Job.SolverCacheClearLogDir@";
 
 	/*
