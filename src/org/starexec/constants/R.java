@@ -62,13 +62,6 @@ public class R {
 		return getSolverPath()+"/buildoutput";
 	}
 
-	public static String getJobLogDir() {
-		return "@Job.OutputDirectory@/logs";
-	}
-	public static String getSolverCacheClearLogDir() {
-		return getJobLogDir()+"/solvercache";
-	}
-
 	public static String getBatchSpaceXMLDir() {
 		return STAREXEC_DATA_DIR + "/batchSpace/uploads";
 	}
@@ -79,6 +72,8 @@ public class R {
 
 
 	public static final String JOB_OUTPUT_DIRECTORY = "@Job.OutputDirectory@";
+	public static final String JOB_LOG_DIRECTORY = "@Job.LogDirectory@";
+	public static final String JOB_SOLVER_CACHE_CLEAR_LOG_DIRECTORY = "@Job.SolverCacheClearLogDir@";
 
 	/*
 	 * Used during disk migration.
