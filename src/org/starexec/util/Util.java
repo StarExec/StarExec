@@ -219,7 +219,7 @@ public class Util {
 		file.mkdir();
 		file = new File(R.getProcessorDir());
 		file.mkdir();
-		file = new File(R.getJobOutputDirectory());
+		file = new File(R.JOB_OUTPUT_DIRECTORY);
 		file.mkdir();
 		file = new File(R.getPicturePath());
 		file.mkdir();
@@ -646,7 +646,7 @@ public class Util {
 	/*
 	public static void clearOrphanedJobDirectories() {
 		log.info("calling clearOrphanedJobDirectories");
-		File outputDirectory = new File(R.getJobOutputDirectory());
+		File outputDirectory = new File(R.JOB_OUTPUT_DIRECTORY);
 		// we are going to consider removing all files / directories under the job output directory
 		HashSet<String> filesToConsider = new HashSet<>();
 		for (File f : outputDirectory.listFiles()) {
