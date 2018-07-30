@@ -49,10 +49,6 @@ public class R {
 		return STAREXEC_DATA_DIR + "/jobin";
 	}
 
-	public static String getJobOutputDirectory() {
-		return STAREXEC_DATA_DIR + "/joboutput";
-	}
-
 
 	public static String getProcessorDir() {
 		return STAREXEC_DATA_DIR +"/processor_scripts";
@@ -67,7 +63,7 @@ public class R {
 	}
 
 	public static String getJobLogDir() {
-		return getJobOutputDirectory()+"/logs";
+		return "@Job.OutputDirectory@/logs";
 	}
 	public static String getSolverCacheClearLogDir() {
 		return getJobLogDir()+"/solvercache";
@@ -82,10 +78,12 @@ public class R {
 	}
 
 
+	public static final String JOB_OUTPUT_DIRECTORY = "@Job.OutputDirectory@";
+
 	/*
 	 * Used during disk migration.
 	 * StarExec will first look for job output in this directory, while writing
-	 * all new output to `getJobOutputDirectory`
+	 * all new output to `JOB_OUTPUT_DIRECTORY`
 	 */
 	public static final String OLD_JOB_OUTPUT_DIRECTORY;
 	static {

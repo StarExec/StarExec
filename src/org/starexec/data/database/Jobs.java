@@ -1408,7 +1408,7 @@ public class Jobs {
 		}
 		/* We could not find this job in OLD_JOB_OUTPUT_DIRECTORY, so we will
 		 * return the standard JobOutputDirectory path */
-		file = new File(R.getJobOutputDirectory(), job);
+		file = new File(R.JOB_OUTPUT_DIRECTORY, job);
 		return file.getAbsolutePath();
 	}
 
