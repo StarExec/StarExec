@@ -1395,10 +1395,20 @@ public class Jobs {
 	 * @return A string representing the path to the output directory
 	 * @author Eric Burns
 	 */
-
 	public static String getDirectory(int jobId) {
-		// The job's output is expected to be in NEW_JOB_OUTPUT_DIR/{job id}/
-		File file = new File(R.getJobOutputDirectory(), String.valueOf(jobId));
+		File file;
+		String job = String.valueOf(jobId);
+		/* If there exists an OLD_JOB_OUTPUT_DIRECTORY, we will check for jobs
+		 * there first. */
+		if (R.OLD_JOB_OUTPUT_DIRECTORY != null) {
+			file = new File(R.OLD_JOB_OUTPUT_DIRECTORY, job);
+			if (file.exists()) {
+				return file.getAbsolutePath();
+			}
+		}
+		/* We could not find this job in OLD_JOB_OUTPUT_DIRECTORY, so we will
+		 * return the standard JobOutputDirectory path */
+		file = new File(R.getJobOutputDirectory(), job);
 		return file.getAbsolutePath();
 	}
 
