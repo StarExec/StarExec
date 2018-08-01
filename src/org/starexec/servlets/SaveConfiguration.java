@@ -4,6 +4,7 @@ import org.apache.commons.io.FileUtils;
 import org.starexec.constants.R;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.security.GeneralSecurity;
+import org.starexec.data.security.UploadSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
@@ -43,6 +44,13 @@ public class SaveConfiguration extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		try {
+			if (UploadSecurity.uploadsFrozen()) {
+				response.sendError(
+					HttpServletResponse.SC_SERVICE_UNAVAILABLE,
+					"Uploading solver configurations is currently disabled"
+				);
+			}
+
 			// Parameter validation
 			ValidatorStatusCode status = this.isValidRequest(request);
 			if (!status.isSuccess()) {
