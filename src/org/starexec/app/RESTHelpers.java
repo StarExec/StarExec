@@ -2204,6 +2204,31 @@ public class RESTHelpers {
 		return "<span class='wallclockSum'>" + formattedWallclock + "</span>" + "<span class='cpuSum hidden'>" + formattedCpu + "</span>";
 	}
 
+	public static boolean freezePrimitives() throws SQLException {
+		return Common.query(
+				"{CALL GetFreezePrimitives()}",
+				procedure -> {},
+				results -> {
+					results.next();
+					return results.getBoolean("freeze_primitives");
+				}
+		);
+	}
+
+	public static void setFreezePrimitives(boolean frozen) throws SQLException {
+		log.info("setFreezePrimitives",
+			frozen
+			? "!!! Freezing Primitives !!!\n\tUploading Benchmarks and Solvers will be disabled"
+			: "!!! Unfreezing Primitives !!!\n\tUploading Benchmarks and Solvers will be allowed"
+		);
+		Common.update(
+				"{CALL SetFreezePrimitives(?)}",
+				procedure -> {
+					procedure.setBoolean(1, frozen);
+				}
+		);
+	}
+
 	/**
 	 * Represents a node in jsTree tree with certain attributes used for
 	 * displaying the node and obtaining information about the node.

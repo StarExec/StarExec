@@ -9,3 +9,15 @@ CREATE PROCEDURE LoginRecord(IN _userId INT, IN _ipAddress VARCHAR(15), IN _agen
 		INSERT INTO logins (user_id, login_date, ip_address, browser_agent)
 		VALUES (_userId, SYSDATE(), _ipAddress, _agent);
 	END //
+
+DROP PROCEDURE IF EXISTS SetFreezePrimitives //
+CREATE PROCEDURE SetFreezePrimitives(IN frozen BOOLEAN)
+	BEGIN
+		UPDATE system_flags SET freeze_primitives=frozen;
+	END //
+
+DROP PROCEDURE IF EXISTS GetFreezePrimitives //
+CREATE PROCEDURE GetFreezePrimitives()
+	BEGIN
+		SELECT freeze_primitives FROM system_flags;
+	END //
