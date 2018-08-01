@@ -71,7 +71,7 @@
 			<ul id="actionList">
 				<li>
 					<button type="button" id="toggleFreezePrimitives">
-						${freezePrimitives ? "Freeze" : "Unfreeze"} Primitives
+						${freezePrimitives ? "Unfreeze" : "Freeze"} Primitives
 					</button>
 				</li>
 			</ul>
