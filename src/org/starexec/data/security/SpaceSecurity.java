@@ -1,6 +1,5 @@
 package org.starexec.data.security;
 
-import org.starexec.app.RESTHelpers;
 import org.starexec.data.database.*;
 import org.starexec.data.to.*;
 import org.starexec.data.to.SolverBuildStatus.SolverBuildStatusCode;
@@ -745,7 +744,7 @@ public class SpaceSecurity {
 		Permission perm = Permissions.get(userId, spaceId);
 		if (perm == null || !perm.canAddSolver()) {
 			return new ValidatorStatusCode(false, "You do not have permission to add a solver to this space");
-		} else if (RESTHelpers.freezePrimitives()) {
+		} else if (UploadSecurity.uploadsFrozen()) {
 			return new ValidatorStatusCode(false, "Copying solvers is currently disabled by the system administrator");
 		}
 		return new ValidatorStatusCode(true);
@@ -763,7 +762,7 @@ public class SpaceSecurity {
 		Permission perm = Permissions.get(userId, spaceId);
 		if (perm == null || !perm.canAddBenchmark()) {
 			return new ValidatorStatusCode(false, "You do not have permission to add a benchmark to this space");
-		} else if (RESTHelpers.freezePrimitives()) {
+		} else if (UploadSecurity.uploadsFrozen()) {
 			return new ValidatorStatusCode(false, "Copying benchmarks is currently disabled by the system administrator");
 		}
 		return new ValidatorStatusCode(true);
