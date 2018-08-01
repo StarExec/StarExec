@@ -7,7 +7,7 @@
 		if (RESTHelpers.freezePrimitives()) {
 			response.sendError(
 					HttpServletResponse.SC_SERVICE_UNAVAILABLE,
-					"Uploading benchmarks is temporarily disabled"
+					"Uploading new solver configurations is temporarily disabled"
 			);
 		}
 		// Gather solver and user information
