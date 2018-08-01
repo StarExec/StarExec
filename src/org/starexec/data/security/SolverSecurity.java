@@ -1,5 +1,6 @@
 package org.starexec.data.security;
 
+import org.starexec.app.RESTHelpers;
 import org.starexec.data.database.Permissions;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Spaces;
@@ -11,6 +12,7 @@ import org.starexec.util.Util;
 import org.starexec.util.Validator;
 
 import java.io.File;
+import java.sql.SQLException;
 import java.util.List;
 
 public class SolverSecurity {
@@ -66,6 +68,13 @@ public class SolverSecurity {
 		if (!GeneralSecurity.hasAdminWritePrivileges(userId) && !(s.getUserId() == userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to add a configuration to this solver");
 		}
+		try {
+			if (RESTHelpers.freezePrimitives()) {
+ 				return new ValidatorStatusCode(false, "Modifying solvers is currently disabled by the system administrator");
+ 			}
+ 		} catch (SQLException e) {
+ 				return new ValidatorStatusCode(false, "Internal server error");
+ 		}
 		return new ValidatorStatusCode(true);
 	}
 
