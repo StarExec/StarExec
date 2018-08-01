@@ -850,6 +850,10 @@
     <error-code>500</error-code>
     <location>/public/messages/error.jsp</location>
   </error-page>
+  <error-page>
+    <error-code>503</error-code>
+    <location>/public/messages/error.jsp</location>
+  </error-page>
 
   <!-- Servlet Definitions -->
   <servlet>
