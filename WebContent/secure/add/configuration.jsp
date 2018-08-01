@@ -1,9 +1,15 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.DB,org.starexec.data.database.Solvers,org.starexec.data.security.GeneralSecurity, org.starexec.data.to.Solver, org.starexec.util.SessionUtil" %>
+        import="org.starexec.constants.DB,org.starexec.data.database.Solvers,org.starexec.data.security.GeneralSecurity, org.starexec.data.to.Solver, org.starexec.util.SessionUtil, org.starexec.app.RESTHelpers" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 	try {
+		if (RESTHelpers.freezePrimitives()) {
+			response.sendError(
+					HttpServletResponse.SC_SERVICE_UNAVAILABLE,
+					"Uploading benchmarks is temporarily disabled"
+			);
+		}
 		// Gather solver and user information
 		int solverId = Integer.parseInt(request.getParameter("sid"));
 		int userId = SessionUtil.getUserId(request);
