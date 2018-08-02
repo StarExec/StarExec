@@ -670,10 +670,12 @@ public class Jobs {
 
 			while (results.next()) {
 				Job j = resultsToJob(results);
+				File jobDir = new File(Jobs.getDirectory(j.getId()));
 
-				if (new File(Jobs.getDirectory(j.getId())).exists()) {
+				Util.logForDeletionIfMigrationModeActive(jobDir);
+				if (jobDir.exists()) {
 					log.warn("a deleted job still exists on disk! id = " + j.getId());
-					if (!FileUtils.deleteQuietly(new File(Jobs.getDirectory(j.getId())))) {
+					if (!FileUtils.deleteQuietly(jobDir)) {
 						log.warn("the job could not be deleted! Not removing job from the database");
 						continue;
 					}
