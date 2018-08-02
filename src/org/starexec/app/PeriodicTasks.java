@@ -343,17 +343,20 @@ class PeriodicTasks {
 		protected void dorun() {
 			if (R.MIGRATION_MODE_ACTIVE) return; // DO NOT run in Migration Mode
 
-			Common.query("{CALL GetAllUsersSubscribedToErrorLogs()}",
-				procedure -> {}, // no parameters to set
-				results -> {
-					while (results.next()) {
-						String path = results.getString(1);
-						Util.safeDeleteDirectory(path);
+			try {
+				Common.query("{CALL GetDeletedPaths()}",
+					procedure -> {}, // no parameters to set
+					results -> {
+						while (results.next()) {
+							String path = results.getString(1);
+							Util.safeDeleteDirectory(path);
+						}
+						return null;
 					}
-				}
-			);
+				);
+			} catch (SQLException e) {}
 		}
-	}
+	};
 
 	// Create a task that notifies Users of status changes to Jobs they have
 	// subscribed to
