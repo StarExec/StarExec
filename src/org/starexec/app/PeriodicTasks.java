@@ -58,6 +58,7 @@ class PeriodicTasks {
         UPDATE_USER_DISK_SIZES(false, UPDATE_USER_DISK_SIZES_TASK, 0, () -> 1, TimeUnit.DAYS),
         UPDATE_COMMUNITY_STATS(false, UPDATE_COMMUNITY_STATS_TASK, 0, () -> 6, TimeUnit.HOURS),
         SAVE_ANALYTICS(false, SAVE_ANALYTICS_TASK, 10, () -> 10, TimeUnit.MINUTES),
+        ENSURE_FILES_ARE_DELETED_AFTER_MIGRATION(false, ENSURE_FILES_ARE_DELETED_AFTER_MIGRATION_TASK, 1, () -> 100, TimeUnit.DAYS),
         NOTIFY_USERS_OF_JOBS(false, NOTIFY_USERS_OF_JOBS_TASK, 0, () -> 5, TimeUnit.MINUTES);
 
         public final boolean fullInstanceOnly;
@@ -335,6 +336,24 @@ class PeriodicTasks {
 			Analytics.saveToDB();
 		}
 	};
+
+	private static final String ensureFilesAreDeletedAfterMigrationTask = "ensureFilesAreDeletedAfterMigrationTask";
+	private static final Runnable ENSURE_FILES_ARE_DELETED_AFTER_MIGRATION_TASK = new RobustRunnable(ensureFilesAreDeletedAfterMigrationTask) {
+		@Override
+		protected void dorun() {
+			if (R.MIGRATION_MODE_ACTIVE) return; // DO NOT run in Migration Mode
+
+			Common.query("{CALL GetAllUsersSubscribedToErrorLogs()}",
+				procedure -> {}, // no parameters to set
+				results -> {
+					while (results.next()) {
+						String path = results.getString(1);
+						Util.safeDeleteDirectory(path);
+					}
+				}
+			);
+		}
+	}
 
 	// Create a task that notifies Users of status changes to Jobs they have
 	// subscribed to

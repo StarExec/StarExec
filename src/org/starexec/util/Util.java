@@ -1131,6 +1131,9 @@ public class Util {
 	 */
 	public static void logForDeletionIfMigrationModeActive(String path) {
 		if (R.MIGRATION_MODE_ACTIVE) {
+			Common.update("{CALL LogDeletedPath(?)}", procedure -> {
+				procedure.setString(1, path);
+			});
 		}
 	}
 
