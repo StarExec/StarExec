@@ -35,12 +35,12 @@
 				<filter token="Email.Pass"            value="${Email.Pass}"/>
 
 				<filter token="Job.LogDirectory"                value="${Job.LogDirectory}"/>
-
-				<filter token="Job.OldLogDirectory"             value="${Job.OldOutputDirectory}"/>
+				<filter token="Job.OldLogDirectory"             value="${Job.OldLogDirectory}"/>
 				<filter token="Job.OldOutputDirectory"          value="${Job.OldOutputDirectory}"/>
 				<filter token="Job.OutputDirectory"             value="${Job.OutputDirectory}"/>
 				<filter token="Job.SolverCacheClearLogDir"      value="${Job.SolverCacheClearLogDir}"/>
 				<filter token="Job.SubmissionPeriod"            value="${Job.SubmissionPeriod}"/>
+
 				<filter token="JobPair.MaxFileWrite"            value="${JobPair.MaxFileWrite}"/>
 				<filter token="JobPair.ExecutionPrefix"         value="${JobPair.ExecutionPrefix}"/>
 

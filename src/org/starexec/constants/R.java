@@ -86,9 +86,11 @@ public class R {
 	 */
 	public static final String OLD_JOB_OUTPUT_DIRECTORY;
 	public static final String OLD_JOB_LOG_DIRECTORY;
+	public static final boolean MIGRATION_MODE_ACTIVE;
 	static {
 		String oldJobOutputDirectory = "@Job.OldOutputDirectory@";
 		String oldJobLogDirectory    = "@Job.OldLogDirectory@";
+		boolean migration            = false;
 		if (oldJobOutputDirectory.isEmpty()) {
 			oldJobOutputDirectory = null;
 		}
@@ -97,6 +99,7 @@ public class R {
 		}
 		OLD_JOB_OUTPUT_DIRECTORY = oldJobOutputDirectory;
 		OLD_JOB_LOG_DIRECTORY = oldJobLogDirectory;
+		MIGRATION_MODE_ACTIVE = migration;
 	}
 
 	public static final String SGE_TYPE = "sge";
