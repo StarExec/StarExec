@@ -551,6 +551,10 @@ public class SpaceSecurity {
 	public static ValidatorStatusCode canCopyOrLinkBenchmarksBetweenSpaces(
 			Integer fromSpaceId, int toSpaceId, int userId, List<Integer> benchmarkIdsBeingCopied, boolean copy
 	) {
+		if (copy && UploadSecurity.uploadsFrozen()) {
+ 			return new ValidatorStatusCode(false, "Copying benchmarks is currently disabled by the system administrator");
+ 		}
+
 		boolean isAdmin = GeneralSecurity.hasAdminWritePrivileges(userId);
 		ValidatorStatusCode status = null;
 		if (fromSpaceId != null) {
@@ -608,6 +612,10 @@ public class SpaceSecurity {
 	) {
 		//if we are copying, but not linking, make sure the user has enough disk space
 		if (copy) {
+			if (UploadSecurity.uploadsFrozen()) {
+ 				return new ValidatorStatusCode(false, "Copying solvers is currently disabled by the system administrator");
+ 			}
+
 			List<Solver> solvers = Solvers.get(solverIdsBeingCopied);
 			int index = 0;
 			for (Solver s : solvers) {
@@ -744,8 +752,6 @@ public class SpaceSecurity {
 		Permission perm = Permissions.get(userId, spaceId);
 		if (perm == null || !perm.canAddSolver()) {
 			return new ValidatorStatusCode(false, "You do not have permission to add a solver to this space");
-		} else if (UploadSecurity.uploadsFrozen()) {
-			return new ValidatorStatusCode(false, "Copying solvers is currently disabled by the system administrator");
 		}
 		return new ValidatorStatusCode(true);
 	}
@@ -762,8 +768,6 @@ public class SpaceSecurity {
 		Permission perm = Permissions.get(userId, spaceId);
 		if (perm == null || !perm.canAddBenchmark()) {
 			return new ValidatorStatusCode(false, "You do not have permission to add a benchmark to this space");
-		} else if (UploadSecurity.uploadsFrozen()) {
-			return new ValidatorStatusCode(false, "Copying benchmarks is currently disabled by the system administrator");
 		}
 		return new ValidatorStatusCode(true);
 	}
