@@ -90,9 +90,10 @@ public class R {
 	static {
 		String oldJobOutputDirectory = "@Job.OldOutputDirectory@";
 		String oldJobLogDirectory    = "@Job.OldLogDirectory@";
-		boolean migration            = false;
+		boolean migration            = true;
 		if (oldJobOutputDirectory.isEmpty()) {
 			oldJobOutputDirectory = null;
+			migration = false;
 		}
 		if (oldJobLogDirectory.isEmpty() || oldJobLogDirectory.equals("/logs")) {
 			oldJobLogDirectory = null;
