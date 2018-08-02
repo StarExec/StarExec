@@ -7,6 +7,7 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.starexec.constants.R;
+import org.starexec.data.database.Common;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.logger.StarLogger;
 import org.starexec.test.TestUtil;
@@ -22,6 +23,7 @@ import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.sql.Timestamp;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
@@ -1131,9 +1133,11 @@ public class Util {
 	 */
 	public static void logForDeletionIfMigrationModeActive(String path) {
 		if (R.MIGRATION_MODE_ACTIVE) {
-			Common.update("{CALL LogDeletedPath(?)}", procedure -> {
-				procedure.setString(1, path);
-			});
+			try {
+				Common.update("{CALL LogDeletedPath(?)}", procedure -> {
+					procedure.setString(1, path);
+				});
+			} catch (SQLException e) {}
 		}
 	}
 
@@ -1146,7 +1150,9 @@ public class Util {
 	 * @param path
 	 */
 	public static void logForDeletionIfMigrationModeActive(File path) {
-		logForDeletionIfMigrationModeActive(path.getCanonicalPath());
+		try {
+			logForDeletionIfMigrationModeActive(path.getCanonicalPath());
+		} catch (IOException e) {}
 	}
 
 	/**
