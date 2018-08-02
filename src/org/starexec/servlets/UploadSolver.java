@@ -79,6 +79,7 @@ public class UploadSolver extends HttpServlet {
 					HttpServletResponse.SC_SERVICE_UNAVAILABLE,
 					"Uploading solvers is currently disabled"
 				);
+				return;
 			}
 
 			if (ServletFileUpload.isMultipartContent(request)) {

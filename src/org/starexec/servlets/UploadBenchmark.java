@@ -69,6 +69,7 @@ public class UploadBenchmark extends HttpServlet {
 					HttpServletResponse.SC_SERVICE_UNAVAILABLE,
 					"Uploading benchmarks is currently disabled"
 				);
+				return;
 			}
 
 			// Extract data from the multipart request

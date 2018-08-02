@@ -53,6 +53,7 @@ public class UploadConfiguration extends HttpServlet {
 					HttpServletResponse.SC_SERVICE_UNAVAILABLE,
 					"Uploading solver configurations is currently disabled"
 				);
+				return;
 			}
 
 			// Ensure request is a file upload request (i.e. a multipart request)
