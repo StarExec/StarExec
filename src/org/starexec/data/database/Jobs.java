@@ -753,6 +753,18 @@ public class Jobs {
 	}
 
 	/**
+	 * Jobs are ReadOnly if we are in Migration Mode _and_ this job exists in the
+	 * OLD Job Output directory.
+	 *
+	 * @param jobId
+	 * @return true if job is readonly, false otherwise
+	 */
+	public static boolean isReadOnly(int jobId) {
+		return R.MIGRATION_MODE_ACTIVE
+		    && getDirectory(jobId).startsWith(R.OLD_JOB_OUTPUT_DIRECTORY);
+	}
+
+	/**
 	 * Sets the job's 'deleted' column to to true, indicating it has been deleted. Also updates the disk_size and
 	 * total_pairs columns to 0
 	 *
@@ -787,6 +799,9 @@ public class Jobs {
 	public static boolean delete(int jobId) throws SQLException {
 		Connection con = null;
 		CallableStatement procedure = null;
+
+		if (Jobs.isReadOnly(jobId)) return false;
+
 		try {
 			//we should kill jobs before deleting  them so no additional pairs are run
 			if (!Jobs.isJobComplete(jobId)) {
@@ -3223,6 +3238,7 @@ public class Jobs {
 	 * @return True on success and false otherwise
 	 */
 	public static boolean setAllPairsToPending(int jobId) {
+		if (Jobs.isReadOnly(jobId)) return false;
 		try {
 			List<JobPair> pairs = Jobs.getPairsSimple(jobId);
 			boolean success = true;
@@ -3249,6 +3265,7 @@ public class Jobs {
 			log.debug("got a request to rerun pair id = " + pairId);
 			boolean success = true;
 			JobPair p = JobPairs.getPair(pairId);
+			if (Jobs.isReadOnly(p.getJobId())) return false;
 			Status status = p.getStatus();
 			//no rerunning for pairs that are still pending
 			if (status.getCode().getVal() == StatusCode.STATUS_PENDING_SUBMIT.getVal()) {
@@ -3352,7 +3369,7 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	public static boolean setPairsToPending(int jobId, int statusCode) {
-
+		if (Jobs.isReadOnly(jobId)) return false;
 		try {
 			boolean success = true;
 			List<Integer> pairs = Jobs.getPairsByStatus(jobId, statusCode);
@@ -4184,6 +4201,7 @@ public class Jobs {
 	 * @return True on success and false otherwise
 	 */
 	public static boolean changeQueue(int jobId, int queueId) {
+		if (Jobs.isReadOnly(jobId)) return false;
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -4609,6 +4627,7 @@ public class Jobs {
 	 * @author Wyatt Kaiser
 	 */
 	public static boolean resume(int jobId) {
+		if (Jobs.isReadOnly(jobId)) return false;
 		Connection con = null;
 		try {
 			con = Common.getConnection();
@@ -4631,6 +4650,7 @@ public class Jobs {
 	 */
 
 	protected static boolean resume(int jobId, Connection con) {
+		if (Jobs.isReadOnly(jobId)) return false;
 		CallableStatement procedure = null;
 		try {
 			procedure = con.prepareCall("{CALL ResumeJob(?)}");
@@ -4682,6 +4702,7 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	public static boolean prepareJobForPostProcessing(int jobId, int processorId, int stageNumber) {
+		if (Jobs.isReadOnly(jobId)) return false;
 		if (!Jobs.canJobBePostProcessed(jobId)) {
 			return false;
 		}
