@@ -1402,7 +1402,7 @@ public class Jobs {
 		String job = String.valueOf(jobId);
 		/* If there exists an OLD_JOB_OUTPUT_DIRECTORY, we will check for jobs
 		 * there first. */
-		if (R.OLD_JOB_OUTPUT_DIRECTORY != null) {
+		if (R.MIGRATION_MODE_ACTIVE) {
 			file = new File(R.OLD_JOB_OUTPUT_DIRECTORY, job);
 			if (file.exists()) {
 				return file.getAbsolutePath();
