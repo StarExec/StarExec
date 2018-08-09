@@ -101,9 +101,7 @@ function initUI() {
 	$("#clearLoadData").click(function() {
 		$.post(
 			starexecRoot + "services/jobs/clearloadbalance/",
-			function(returnCode) {
-				parseReturnCode(returnCode);
-			},
+			parseReturnCode,
 			"json"
 		);
 	});
@@ -111,9 +109,7 @@ function initUI() {
 	$("#clearSolverCacheData").click(function() {
 		$.post(
 			starexecRoot + "services/jobs/clearsolvercache/",
-			function(returnCode) {
-				parseReturnCode(returnCode);
-			},
+			parseReturnCode,
 			"json"
 		);
 	});
@@ -126,6 +122,25 @@ function initUI() {
 
 					debugModeActive = !debugModeActive;
 					setDebugText();
+				}
+			},
+			"json"
+		);
+	});
+
+	$("#toggleFreezePrimitives")
+	.button({
+		icons: {
+			primary: "ui-icon-circle-close"
+		}
+	})
+	.click(function() {
+		$.post(
+			starexecRoot + "services/admin/freezePrimitives",
+			{"frozen": !star.freezePrimitives},
+			function(returnCode) {
+				if (parseReturnCode(returnCode)) {
+					setTimeout(function() {document.location.reload(true)}, 1000);
 				}
 			},
 			"json"

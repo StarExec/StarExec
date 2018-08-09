@@ -9,6 +9,7 @@ import org.starexec.data.database.Reports;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.database.Users;
 import org.starexec.data.security.JobSecurity;
+import org.starexec.data.security.UploadSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.*;
 import org.starexec.data.to.Solver.ExecutableType;
@@ -72,6 +73,14 @@ public class UploadSolver extends HttpServlet {
 		try {
 			// If we're dealing with an upload request...
 			log.info("doPost begins");
+
+			if (UploadSecurity.uploadsFrozen()) {
+				response.sendError(
+					HttpServletResponse.SC_SERVICE_UNAVAILABLE,
+					"Uploading solvers is currently disabled"
+				);
+				return;
+			}
 
 			if (ServletFileUpload.isMultipartContent(request)) {
 				HashMap<String, Object> form = Util.parseMultipartRequest(request);

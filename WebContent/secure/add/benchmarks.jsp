@@ -1,10 +1,16 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.data.database.Communities,org.starexec.data.database.Processors,org.starexec.data.database.Spaces,org.starexec.data.security.GeneralSecurity,org.starexec.data.to.DefaultSettings" %>
+        import="org.starexec.data.database.Communities,org.starexec.data.database.Processors,org.starexec.data.database.Spaces,org.starexec.data.security.GeneralSecurity,org.starexec.data.to.DefaultSettings, org.starexec.app.RESTHelpers" %>
 <%@page import="org.starexec.data.to.Permission, org.starexec.data.to.Processor, org.starexec.data.to.Space, org.starexec.data.to.enums.ProcessorType, org.starexec.util.SessionUtil, java.util.List" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 	try {
+		if (RESTHelpers.freezePrimitives()) {
+			response.sendError(
+					HttpServletResponse.SC_SERVICE_UNAVAILABLE,
+					"Uploading benchmarks is temporarily disabled"
+			);
+		}
 		// Get parent space info for display
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
 		DefaultSettings settings = Communities.getDefaultSettings(spaceId);

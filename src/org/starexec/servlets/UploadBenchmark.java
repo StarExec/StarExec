@@ -4,6 +4,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.starexec.constants.R;
 import org.starexec.data.database.*;
+import org.starexec.data.security.UploadSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.*;
 import org.starexec.exceptions.StarExecException;
@@ -63,6 +64,14 @@ public class UploadBenchmark extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		try {
+			if (UploadSecurity.uploadsFrozen()) {
+				response.sendError(
+					HttpServletResponse.SC_SERVICE_UNAVAILABLE,
+					"Uploading benchmarks is currently disabled"
+				);
+				return;
+			}
+
 			// Extract data from the multipart request
 			HashMap<String, Object> form = Util.parseMultipartRequest(request);
 			ValidatorStatusCode status = isRequestValid(form, request);

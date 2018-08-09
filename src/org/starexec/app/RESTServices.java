@@ -5163,4 +5163,26 @@ public class RESTServices {
 			throw RESTException.INTERNAL_SERVER_ERROR;
 		}
 	}
+
+	/**
+	 * @param frozen True to freeze primitives, false to unfreeze primitives
+	 * @param request HTTP request
+	 * @return a json string representing all the subspaces of the job space
+	 */
+	@POST
+	@Path("/admin/freezePrimitives")
+	@Produces("application/json")
+	public String freezePrimitives(@FormParam("frozen") boolean frozen, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+			return gson.toJson(new ValidatorStatusCode(true, "Only Admins can freeze or unfreeze primitives"));
+		}
+		try {
+			RESTHelpers.setFreezePrimitives(frozen);
+			return gson.toJson(new ValidatorStatusCode(true, "Uploading benchmarks and solvers is now " + (frozen ? "allowed" : "disallowed")));
+		} catch (SQLException e) {
+			log.error("freezePrimitives", e);
+			throw RESTException.INTERNAL_SERVER_ERROR;
+		}
+	}
 }

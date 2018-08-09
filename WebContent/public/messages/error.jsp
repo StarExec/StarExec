@@ -22,6 +22,9 @@
 		desc = "internal server error";
 		request.setAttribute("didLog", true);
 		break;
+	case 503:
+		desc = "service currently unavailable";
+		break;
 	default:
 		break;
 	}

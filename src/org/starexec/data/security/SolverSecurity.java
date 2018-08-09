@@ -66,6 +66,9 @@ public class SolverSecurity {
 		if (!GeneralSecurity.hasAdminWritePrivileges(userId) && !(s.getUserId() == userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to add a configuration to this solver");
 		}
+		if (UploadSecurity.uploadsFrozen()) {
+ 			return new ValidatorStatusCode(false, "Modifying solvers is currently disabled by the system administrator");
+ 		}
 		return new ValidatorStatusCode(true);
 	}
 

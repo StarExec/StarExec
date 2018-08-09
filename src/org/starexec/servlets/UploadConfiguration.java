@@ -4,6 +4,7 @@ import org.apache.tomcat.util.http.fileupload.servlet.ServletFileUpload;
 import org.starexec.constants.R;
 import org.starexec.data.database.Solvers;
 import org.starexec.data.security.SolverSecurity;
+import org.starexec.data.security.UploadSecurity;
 import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
@@ -47,6 +48,14 @@ public class UploadConfiguration extends HttpServlet {
 			throws ServletException, IOException {
 		int userId = SessionUtil.getUserId(request);
 		try {
+			if (UploadSecurity.uploadsFrozen()) {
+				response.sendError(
+					HttpServletResponse.SC_SERVICE_UNAVAILABLE,
+					"Uploading solver configurations is currently disabled"
+				);
+				return;
+			}
+
 			// Ensure request is a file upload request (i.e. a multipart request)
 			if (ServletFileUpload.isMultipartContent(request)) {
 

@@ -1,9 +1,10 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.R" %>
+        import="org.starexec.constants.R, org.starexec.app.RESTHelpers" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%
 	try {
 		request.setAttribute("debugModeActive", R.DEBUG_MODE_ACTIVE);
+		request.setAttribute("freezePrimitives", RESTHelpers.freezePrimitives());
 	} catch (NumberFormatException nfe) {
 		response.sendError(
 				HttpServletResponse.SC_BAD_REQUEST,
@@ -57,6 +58,27 @@
 						id="dialog-confirm-restart-txt"></span></p>
 			</div>
 			<p>Starexec revision ${buildVersion} built ${buildDate}</p>
+		</fieldset>
+		<fieldset>
+			<legend>freeze primitives</legend>
+			<p>
+				When frozen, no new solvers or benchmarks can be uploaded.
+				Solvers and benchmarks cannot be copied between spaces
+				(though they can still be <em>linked</em>).
+			</p><p>
+				This mode is designed to be used when migrating primitives to a new drive.
+			</p>
+			<ul id="actionList">
+				<li>
+					<button type="button" id="toggleFreezePrimitives">
+						${freezePrimitives ? "Unfreeze" : "Freeze"} Primitives
+					</button>
+				</li>
+			</ul>
+			<script>
+				var star = star || {};
+				star.freezePrimitives = ${freezePrimitives}
+			</script>
 		</fieldset>
 	</div>
 </star:template>
