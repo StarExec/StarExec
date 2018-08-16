@@ -670,19 +670,24 @@ public class Jobs {
 
 			while (results.next()) {
 				Job j = resultsToJob(results);
-				File jobDir = new File(Jobs.getDirectory(j.getId()));
+				int jobId = j.getId();
 
-				Util.logForDeletionIfMigrationModeActive(jobDir);
+				if (isReadOnly(jobId)) {
+					log.info("cleanOrphanedDeletedJobs", "Job "+jobId+" is readonly. Not cleaning.");
+					continue;
+				}
+
+				File jobDir = new File(Jobs.getDirectory(jobId));
 				if (jobDir.exists()) {
-					log.warn("a deleted job still exists on disk! id = " + j.getId());
+					log.warn("a deleted job still exists on disk! id = " + jobId);
 					if (!FileUtils.deleteQuietly(jobDir)) {
 						log.warn("the job could not be deleted! Not removing job from the database");
 						continue;
 					}
 				}
 				// the benchmark has been deleted AND it is not associated with any spaces or job pairs
-				if (!parentedJobs.contains(j.getId())) {
-					removeJobFromDatabase(j.getId());
+				if (!parentedJobs.contains(jobId)) {
+					removeJobFromDatabase(jobId);
 				}
 			}
 			return true;

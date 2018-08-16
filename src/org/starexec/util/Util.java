@@ -620,7 +620,6 @@ public class Util {
 			Collection<File> outdatedFiles = getOldFiles(directory, daysAgo, true);
 			log.debug("found a total of " + outdatedFiles.size() + " outdated files to delete in " + directory);
 			// Remove them all
-			outdatedFiles.forEach(Util::logForDeletionIfMigrationModeActive);
 			for (File f : outdatedFiles) {
 				sandboxChmodDirectory(f);
 				if (f.isDirectory()) {
@@ -689,7 +688,6 @@ public class Util {
 			Collection<File> outdatedFiles = getOldFiles(directory, daysAgo, includeDirs);
 			log.debug("found a total of " + outdatedFiles.size() + " outdated files to delete in " + directory);
 			// Remove them all
-			outdatedFiles.forEach(Util::logForDeletionIfMigrationModeActive);
 			outdatedFiles.forEach(FileUtils::deleteQuietly);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
@@ -837,7 +835,6 @@ public class Util {
 				break;
 			}
 			if (file.isDirectory()) {
-				logForDeletionIfMigrationModeActive(file);
 				if (!file.delete()) {
 					log.debug("terminating at non-empty directory");
 					// if the directory does not get deleted, that just means that it was not empty
@@ -861,7 +858,6 @@ public class Util {
 	public static boolean safeDeleteDirectory(String path) {
 		try {
 			File file = new File(path);
-			logForDeletionIfMigrationModeActive(file);
 			if (file.isDirectory()) {
 				FileUtils.deleteDirectory(file);
 			} else {
@@ -1121,38 +1117,6 @@ public class Util {
 			log.error(methodName, e.getMessage(), e);
 		}
 		return false;
-	}
-
-	/**
-	 * Log file for deletion if in Migration Mode.
-	 * If we are currently in Migration Mode, we will want to log all deletions
-	 * so that we can ensure the files are actually deleted once Migration Mode
-	 * is finished.
-	 *
-	 * @param path
-	 */
-	public static void logForDeletionIfMigrationModeActive(String path) {
-		if (R.MIGRATION_MODE_ACTIVE) {
-			try {
-				Common.update("{CALL LogDeletedPath(?)}", procedure -> {
-					procedure.setString(1, path);
-				});
-			} catch (SQLException e) {}
-		}
-	}
-
-	/**
-	 * Log file for deletion if in Migration Mode.
-	 * If we are currently in Migration Mode, we will want to log all deletions
-	 * so that we can ensure the files are actually deleted once Migration Mode
-	 * is finished.
-	 *
-	 * @param path
-	 */
-	public static void logForDeletionIfMigrationModeActive(File path) {
-		try {
-			logForDeletionIfMigrationModeActive(path.getCanonicalPath());
-		} catch (IOException e) {}
 	}
 
 	/**

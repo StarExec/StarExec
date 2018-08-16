@@ -1101,8 +1101,6 @@ public class JobPairs {
 			final String path = Util.normalizeFilePath(pair.getBenchPath());
 			File file = new File(Jobs.getDirectory(pair.getJobId()), path);
 
-			log.info("getPairStdout", "path: "+path+"\t dir: "+Jobs.getDirectory(pair.getJobId()));
-
 			if (!file.exists()) {        // if the job output could not be found
 				File testFile = new File(file, pair.getPrimarySolver().getName());
 				testFile = new File(testFile, pair.getPrimaryConfiguration().getName());
