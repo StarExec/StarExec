@@ -5209,4 +5209,14 @@ public class RESTServices {
 			throw RESTException.INTERNAL_SERVER_ERROR;
 		}
 	}
+
+	/**
+	 * @return JSON representation of current status
+	 */
+	@GET
+	@Path("/admin/getStatusMessage")
+	@Produces("application/json")
+	public String getStatusMessage() {
+		return StatusMessage.getAsJson();
+	}
 }
