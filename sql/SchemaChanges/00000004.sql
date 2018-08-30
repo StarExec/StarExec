@@ -11,10 +11,13 @@ BEGIN
 			integrity_keeper ENUM('') NOT NULL,
 			enabled BOOLEAN DEFAULT FALSE,
 			message TEXT,
-			url TEXT
+			url TEXT,
+			PRIMARY KEY (integrity_keeper)
 		);
+
+		INSERT INTO ui_status_message (enabled) VALUES (false);
 	END IF;
 END //
 
-CALL UpdateTo2_3() //
-DROP PROCEDURE IF EXISTS UpdateTo2_3 //
+CALL UpdateTo3_4() //
+DROP PROCEDURE IF EXISTS UpdateTo3_4 //

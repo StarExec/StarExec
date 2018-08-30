@@ -1,0 +1,19 @@
+// Status Message
+
+.status-message {
+	position: fixed;
+	left: 0; bottom: 0;
+	width: 100%;
+	background: #f00;
+	padding: 5px 0;
+
+	p {
+		width: 1024px;
+		margin: 0 auto;
+
+		a {
+			margin: 0 0 0 1em;
+			font-weight: bold;
+		}
+	}
+}
