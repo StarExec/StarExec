@@ -8,8 +8,8 @@
 			<table>
 				<tbody>
 					<tr>
-						<td><label for="message">Message</label></td>
-						<td><input  id="message" name="message" value="" /></td>
+						<td><label   for="message">Message</label></td>
+						<td><textarea id="message" name="message"></textarea></td>
 					</tr>
 					<tr>
 						<td><label for="url">More Info URL</label></td>
