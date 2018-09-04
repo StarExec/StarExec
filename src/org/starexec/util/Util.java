@@ -1135,6 +1135,11 @@ public class Util {
 	 * @return true if file is binary, false otherwise
 	 */
 	public static boolean isBinaryFile(File f) throws IOException {
-		return Util.executeCommand("file -bi "+f).contains("charset=binary");
+		final String[] command = {
+			"file",
+			"-bi",
+			f.getCanonicalPath()
+		};
+		return Util.executeCommand(command).contains("charset=binary");
 	}
 }
