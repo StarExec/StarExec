@@ -699,12 +699,16 @@ public class Util {
 		}
 
 		StringBuilder sb = new StringBuilder();
-		sb.append(solverPath);            // Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/
-		sb.append(R.SOLVER_BIN_DIR);    // Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin
-		sb.append(File.separator);        // Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin/
-		// Append 'run_' prefix to the configuration's filename if it isn't already there
-		if (!configName.startsWith(R.CONFIGURATION_PREFIX)) {
-			sb.append(R.CONFIGURATION_PREFIX);
+		sb.append(solverPath);            // Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}
+		if (configName.equals(R.SOLVER_BUILD_SCRIPT)) {
+			sb.append(File.separator);        // Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/
+		} else {
+			sb.append(R.SOLVER_BIN_DIR);    // Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin
+			sb.append(File.separator);        // Path = .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin/
+			// Append 'run_' prefix to the configuration's filename if it isn't already there
+			if (!configName.startsWith(R.CONFIGURATION_PREFIX)) {
+				sb.append(R.CONFIGURATION_PREFIX);
+			}
 		}
 		sb.append(configName);            // Path =
 		// .../solvers/{user_id}/{solver_name}/{unique_timestamp}/bin/{starexec_run_configName}
