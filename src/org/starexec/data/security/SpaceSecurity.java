@@ -649,7 +649,7 @@ public class SpaceSecurity {
 			}
 		} else {
 			for (Integer sid : solverIdsBeingCopied) {
-				if (!SolverSecurity.canUserDownloadSolver(sid, userId)) {
+				if (!SolverSecurity.canUserDownloadSolver(sid, userId).isSuccess()) {
 					return new ValidatorStatusCode(false,
 					                               "You do not have permission to download all the solvers you are trying to copy.");
 				}
