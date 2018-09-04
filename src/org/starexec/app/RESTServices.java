@@ -5185,4 +5185,38 @@ public class RESTServices {
 			throw RESTException.INTERNAL_SERVER_ERROR;
 		}
 	}
+
+	/**
+	 * @param enabled True to display status message, False to disable status message
+	 * @param message Description of status
+	 * @param url     Link to more information regarding current status
+	 * @param request HTTP request
+	 * @return JSON ValidatorStatusCode
+	 */
+	@POST
+	@Path("/admin/setStatusMessage")
+	@Produces("application/json")
+	public String setStatusMessage(@FormParam("enabled") boolean enabled, @FormParam("message") String message, @FormParam("url") String url, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+			return gson.toJson(new ValidatorStatusCode(false, "Only Admins can update status message"));
+		}
+		try {
+			StatusMessage.set(enabled, message, url);
+			return gson.toJson(new ValidatorStatusCode(true, "Status Message updated"));
+		} catch (SQLException e) {
+			log.error("setStatusMessage", e);
+			throw RESTException.INTERNAL_SERVER_ERROR;
+		}
+	}
+
+	/**
+	 * @return JSON representation of current status
+	 */
+	@GET
+	@Path("/admin/getStatusMessage")
+	@Produces("application/json")
+	public String getStatusMessage() {
+		return StatusMessage.getAsJson();
+	}
 }
