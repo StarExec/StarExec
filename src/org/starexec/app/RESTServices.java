@@ -2855,12 +2855,12 @@ public class RESTServices {
 			// Get the id of the user who initiated the request
 			int requestUserId = SessionUtil.getUserId(request);
 
-			// Get the space the solver is being copied from
 			String fromSpace = request.getParameter("fromSpace");
-			log.debug("fromSpace: " + fromSpace);
 			Integer fromSpaceId=null;
 			//if null, we are not copying from anywhere-- we are just putting a solver into a new space
 			if (fromSpace!=null) {
+				// Get the space the solver is being copied from
+				log.debug("fromSpace: " + fromSpace);
 				fromSpaceId=Integer.parseInt(fromSpace);
 			}
 			// Get the flag that indicates whether or not to copy this solver to all subspaces of 'fromSpace'
