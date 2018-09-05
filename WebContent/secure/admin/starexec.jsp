@@ -51,6 +51,10 @@
 						compute node solver cache
 					</button>
 				</li>
+				<li><a href="status.jsp">
+					<button type="button" id="manageStatus">manage status message
+					</button>
+				</a></li>
 			</ul>
 			<div id="dialog-confirm-restart" title="confirm restart"
 			     class="hiddenDialog">

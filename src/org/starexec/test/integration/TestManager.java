@@ -37,7 +37,7 @@ public class TestManager {
 	//this should never be modified outside of the initializeTests method
 	private final static List<TestSequence> tests= new ArrayList<>();
 	/**
-	 * all test sequences need to be initialized here. Simply add new TestSequences to the 
+	 * all test sequences need to be initialized here. Simply add new TestSequences to the
 	 * list of all tests. This is called once on Starexec startup.
 	 */
 	public static void initializeTests() {
@@ -84,29 +84,29 @@ public class TestManager {
 		tests.add(new XMLValidationTests());
 	}
 	/**
-	 * 
+	 *
 	 * @return Whether any tests are currently running. Only one sequence can run at once.
 	 */
 	public static boolean areTestsRunning() {
 		return isRunning.get();
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @return Whether a stress test is currently running, meaning whether things
 	 * are still being added to the database.
 	 */
-	
+
 	public static boolean isStressTestRunning() {
 		return isRunningStress.get();
 	}
-	
+
 	/**
 	 * Executes every test sequence in tests
 	 * @return True if the tests were started, and false if they were not for some reason
 	 */
 	public static boolean executeAllTestSequences() {
-		if (!Util.isTestingAllowed()) {
+		if (!R.ALLOW_TESTING) {
 			return false; //right now, don't run anything on production
 		}
 		//don't do anything if the tests are already running
@@ -114,7 +114,7 @@ public class TestManager {
 			return false;
 		}
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
-		
+
 		//we want to return here, not wait until all the tests finish, which is why we spin off a new threads
 		threadPool.execute(() -> {
 
@@ -153,14 +153,14 @@ public class TestManager {
 	 * @return True if the test could be found, false otherwise
 	 */
 	public static boolean executeTests(String[] testNames) {
-		if (!Util.isTestingAllowed()) {
+		if (!R.ALLOW_TESTING) {
 			return false; //right now, don't run anything on production
 		}
 		//don't run anything if we are already going
 		if (!isRunning.compareAndSet(false, true)) {
 			return false;
 		}
-		
+
 		final String[] t=testNames;
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
 		//we want to return here, not wait until all the tests finish, which is why we spin off a new thread
@@ -177,7 +177,7 @@ public class TestManager {
             }
             isRunning.set(false);
         });
-		
+
 		return true;
 	}
 	/**
@@ -194,16 +194,16 @@ public class TestManager {
 	 * @param spacesPerJobCount
 	 * @return True if the test was started and false if it was not
 	 */
-	public static boolean executeStressTest(final int userCount,final int spaceCount,final int jobCount, final int minUsersPerSpace, final int maxUsersPerSpace, final int minSolversPerSpace, 
+	public static boolean executeStressTest(final int userCount,final int spaceCount,final int jobCount, final int minUsersPerSpace, final int maxUsersPerSpace, final int minSolversPerSpace,
 			final int maxSolversPerSpace,final int minBenchmarksPerSpace,final int maxBenchmarksPerSpace,final int spacesPerJobCount) {
-		if (!Util.isTestingAllowed()) {
+		if (!R.ALLOW_TESTING) {
 			return false; //right now, don't run anything on production
 		}
 		//don't run anything if we are already going
 		if (!isRunningStress.compareAndSet(false, true)) {
 			return false;
 		}
-		
+
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
 		//we want to return here, not wait until all the tests finish, which is why we spin off a new thread
 		threadPool.execute(() -> {
@@ -211,10 +211,10 @@ public class TestManager {
                     minBenchmarksPerSpace, maxBenchmarksPerSpace,jobCount,spacesPerJobCount);
             isRunningStress.set(false);
         });
-		
+
 		return true;
 	}
-	
+
 	/**
 	 * Executes the given test sequence
 	 * @param test
@@ -222,7 +222,7 @@ public class TestManager {
 	public static void executeTest(TestSequence test) {
 		test.execute();
 	}
-	
+
 	/**
 	 * @return the names of all TestSequences known to the manager
 	 */
@@ -233,7 +233,7 @@ public class TestManager {
 		}
 		return names;
 	}
-	
+
 	/**
 	 * @param testName The name of the TestSequence of interest
 	 * @return the status of a TestSequence given its name
@@ -245,7 +245,7 @@ public class TestManager {
 		}
 		return t.getStatus();
 	}
-	
+
 	/**
 	 * @param testName
 	 * @return the message contained by a given TestSequence
@@ -257,13 +257,13 @@ public class TestManager {
 		}
 		return t.getMessage();
 	}
-	
+
 	/**
-	 * Returns a TestSequence object 
+	 * Returns a TestSequence object
 	 * @param name
 	 * @return
 	 */
-	private static TestSequence getTestSequence(String name) {		
+	private static TestSequence getTestSequence(String name) {
 		for (TestSequence t : tests) {
 			if (t.getName().equals(name)) {
 				return t;
@@ -271,13 +271,13 @@ public class TestManager {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Completely deletes all job output. This is ONLY for use on Stardev-- we should NEVER
 	 * be running this on production!
 	 */
 	public static void emptyJobOutputDirectory() {
-		if (!Util.isTestingAllowed()) {
+		if (!R.ALLOW_TESTING) {
 			return;
 		}
 		final ExecutorService threadPool = Executors.newCachedThreadPool();

@@ -1,5 +1,5 @@
 <%@tag description="Standard footer for all starexec pages"%>
-<%@tag import="org.starexec.data.to.*, org.starexec.constants.*"%>
+<%@tag import="org.starexec.data.database.StatusMessage"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 
@@ -25,3 +25,4 @@
 		2012-18 The University of Iowa</a>
 </footer>
 
+<%= StatusMessage.getAsHtml() %>

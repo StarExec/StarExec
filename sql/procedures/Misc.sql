@@ -21,3 +21,15 @@ CREATE PROCEDURE GetFreezePrimitives()
 	BEGIN
 		SELECT freeze_primitives FROM system_flags;
 	END //
+
+DROP PROCEDURE IF EXISTS SetStatusMessage //
+CREATE PROCEDURE SetStatusMessage(IN _enabled BOOLEAN, IN _message TEXT, IN _url TEXT)
+	BEGIN
+		UPDATE ui_status_message SET enabled=_enabled, message=_message, url=_url;
+	END //
+
+DROP PROCEDURE IF EXISTS GetStatusMessage //
+CREATE PROCEDURE GetStatusMessage()
+	BEGIN
+		SELECT enabled, message, url FROM ui_status_message;
+	END //

@@ -2855,12 +2855,12 @@ public class RESTServices {
 			// Get the id of the user who initiated the request
 			int requestUserId = SessionUtil.getUserId(request);
 
-			// Get the space the solver is being copied from
 			String fromSpace = request.getParameter("fromSpace");
-			log.debug("fromSpace: " + fromSpace);
 			Integer fromSpaceId=null;
 			//if null, we are not copying from anywhere-- we are just putting a solver into a new space
 			if (fromSpace!=null) {
+				// Get the space the solver is being copied from
+				log.debug("fromSpace: " + fromSpace);
 				fromSpaceId=Integer.parseInt(fromSpace);
 			}
 			// Get the flag that indicates whether or not to copy this solver to all subspaces of 'fromSpace'
@@ -5184,5 +5184,39 @@ public class RESTServices {
 			log.error("freezePrimitives", e);
 			throw RESTException.INTERNAL_SERVER_ERROR;
 		}
+	}
+
+	/**
+	 * @param enabled True to display status message, False to disable status message
+	 * @param message Description of status
+	 * @param url     Link to more information regarding current status
+	 * @param request HTTP request
+	 * @return JSON ValidatorStatusCode
+	 */
+	@POST
+	@Path("/admin/setStatusMessage")
+	@Produces("application/json")
+	public String setStatusMessage(@FormParam("enabled") boolean enabled, @FormParam("message") String message, @FormParam("url") String url, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+			return gson.toJson(new ValidatorStatusCode(false, "Only Admins can update status message"));
+		}
+		try {
+			StatusMessage.set(enabled, message, url);
+			return gson.toJson(new ValidatorStatusCode(true, "Status Message updated"));
+		} catch (SQLException e) {
+			log.error("setStatusMessage", e);
+			throw RESTException.INTERNAL_SERVER_ERROR;
+		}
+	}
+
+	/**
+	 * @return JSON representation of current status
+	 */
+	@GET
+	@Path("/admin/getStatusMessage")
+	@Produces("application/json")
+	public String getStatusMessage() {
+		return StatusMessage.getAsJson();
 	}
 }

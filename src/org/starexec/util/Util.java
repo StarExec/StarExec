@@ -136,15 +136,6 @@ public class Util {
 	}
 
 	/**
-	 * Determines whether we are currently running on production.
-	 *
-	 * @return True if this is production and false if it is a test instance
-	 */
-	public static boolean isTestingAllowed() {
-		return R.ALLOW_TESTING;
-	}
-
-	/**
 	 * execute the following Runnable using a thread from our cached thread pool
 	 *
 	 * @param c the Runnable to execute
@@ -1137,6 +1128,11 @@ public class Util {
 	 * @return true if file is binary, false otherwise
 	 */
 	public static boolean isBinaryFile(File f) throws IOException {
-		return Util.executeCommand("file -bi "+f).contains("charset=binary");
+		final String[] command = {
+			"file",
+			"-bi",
+			f.getCanonicalPath()
+		};
+		return Util.executeCommand(command).contains("charset=binary");
 	}
 }

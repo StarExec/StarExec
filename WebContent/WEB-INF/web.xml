@@ -136,6 +136,11 @@
     </servlet>
 
     <servlet>
+        <servlet-name>org.apache.jsp.secure.admin.status_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.secure.admin.status_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>org.apache.jsp.secure.admin.job_jsp</servlet-name>
         <servlet-class>org.apache.jsp.secure.admin.job_jsp</servlet-class>
     </servlet>
@@ -528,6 +533,11 @@
     <servlet-mapping>
         <servlet-name>org.apache.jsp.secure.admin.queue_jsp</servlet-name>
         <url-pattern>/secure/admin/queue.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.secure.admin.status_jsp</servlet-name>
+        <url-pattern>/secure/admin/status.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
