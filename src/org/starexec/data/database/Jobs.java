@@ -295,6 +295,11 @@ public class Jobs {
 	 * @author Albert Giegerich
 	 */
 	public static void addJobPairsFromConfigIdsForAllBenchmarks(int jobId, Set<Integer> configIds) {
+		if (isReadOnly(jobId)) {
+			log.warn("addJobPairsFromConfigIdsForAllBenchmarks", "Job is readonly: "+jobId);
+			return;
+		}
+
 		List<JobPair> jobPairsToAdd = new ArrayList<>();
 		// Maintain this hashmap that keeps track of which benchmark-solver-config triples we've seen.
 		Map<Integer, Map<Integer, Set<Integer>>> jobMap = Jobs.getJobMapForPrimaryStage(jobId);
