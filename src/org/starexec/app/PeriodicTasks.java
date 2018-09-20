@@ -194,7 +194,7 @@ class PeriodicTasks {
     private static final Runnable CLEAR_JOB_LOG_TASK = new RobustRunnable(clearJobLogTaskName) {
         @Override
         protected void dorun() {
-            Util.clearOldFiles(R.getJobLogDir(), R.CLEAR_JOB_LOG_PERIOD,true);
+            Util.clearOldFiles(R.JOB_LOG_DIRECTORY, R.CLEAR_JOB_LOG_PERIOD, true);
         }
     };
     /*  Create a task that deletes job scripts older than 3 days */

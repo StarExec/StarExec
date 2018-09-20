@@ -7,6 +7,7 @@ import org.apache.commons.io.filefilter.FileFilterUtils;
 import org.apache.commons.io.filefilter.IOFileFilter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.starexec.constants.R;
+import org.starexec.data.database.Common;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.logger.StarLogger;
 import org.starexec.test.TestUtil;
@@ -22,6 +23,7 @@ import java.net.Proxy;
 import java.net.URL;
 import java.net.URLConnection;
 import java.sql.Timestamp;
+import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
@@ -200,7 +202,7 @@ public class Util {
 
 		file = new File(R.getJobInboxDir());
 		file.mkdir();
-		file = new File(R.getJobLogDir());
+		file = new File(R.JOB_LOG_DIRECTORY);
 		file.mkdir();
 		file = new File(R.getBenchmarkPath());
 		file.mkdir();
@@ -210,11 +212,11 @@ public class Util {
 		file.mkdir();
 		file = new File(R.getProcessorDir());
 		file.mkdir();
-		file = new File(R.getJobOutputDirectory());
+		file = new File(R.JOB_OUTPUT_DIRECTORY);
 		file.mkdir();
 		file = new File(R.getPicturePath());
 		file.mkdir();
-		file = new File(R.getSolverCacheClearLogDir());
+		file = new File(R.JOB_SOLVER_CACHE_CLEAR_LOG_DIRECTORY);
 		file.mkdir();
 		File downloadDir = new File(R.STAREXEC_ROOT, R.DOWNLOAD_FILE_DIR);
 		downloadDir.mkdirs();
@@ -637,7 +639,7 @@ public class Util {
 	/*
 	public static void clearOrphanedJobDirectories() {
 		log.info("calling clearOrphanedJobDirectories");
-		File outputDirectory = new File(R.getJobOutputDirectory());
+		File outputDirectory = new File(R.JOB_OUTPUT_DIRECTORY);
 		// we are going to consider removing all files / directories under the job output directory
 		HashSet<String> filesToConsider = new HashSet<>();
 		for (File f : outputDirectory.listFiles()) {
@@ -645,7 +647,7 @@ public class Util {
 		}
 		log.info("found this many job output subdirectories to consider " + filesToConsider.size());
 		// exclude the log directory from removal
-		filesToConsider.remove(new File(R.getJobLogDir()).getAbsolutePath());
+		filesToConsider.remove(new File(R.JOB_LOG_DIRECTORY).getAbsolutePath());
 
 		// exclude the directories of existing jobs from removal. This should be safe from race conditions
 		// because we are getting the list of jobs after getting the list of files. As such, jobs directories

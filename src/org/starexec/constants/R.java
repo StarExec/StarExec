@@ -49,10 +49,6 @@ public class R {
 		return STAREXEC_DATA_DIR + "/jobin";
 	}
 
-	public static String getJobOutputDirectory() {
-		return STAREXEC_DATA_DIR + "/joboutput";
-	}
-
 
 	public static String getProcessorDir() {
 		return STAREXEC_DATA_DIR +"/processor_scripts";
@@ -66,13 +62,6 @@ public class R {
 		return getSolverPath()+"/buildoutput";
 	}
 
-	public static String getJobLogDir() {
-		return getJobOutputDirectory()+"/logs";
-	}
-	public static String getSolverCacheClearLogDir() {
-		return getJobLogDir()+"/solvercache";
-	}
-
 	public static String getBatchSpaceXMLDir() {
 		return STAREXEC_DATA_DIR + "/batchSpace/uploads";
 	}
@@ -81,6 +70,38 @@ public class R {
 		return STAREXEC_DATA_DIR+"/sge_scripts";
 	}
 
+
+	public static final String JOB_OUTPUT_DIRECTORY = "@Job.OutputDirectory@";
+	public static final String JOB_LOG_DIRECTORY = "@Job.LogDirectory@";
+
+	/* This is the directory where SGE writes output from
+	 * clearSolverCacheOnAllNodes jobs
+	 */
+	public static final String JOB_SOLVER_CACHE_CLEAR_LOG_DIRECTORY = "@Job.SolverCacheClearLogDir@";
+
+	/*
+	 * Used during disk migration.
+	 * StarExec will first look for job output in this directory, while writing
+	 * all new output to `JOB_OUTPUT_DIRECTORY`
+	 */
+	public static final String OLD_JOB_OUTPUT_DIRECTORY;
+	public static final String OLD_JOB_LOG_DIRECTORY;
+	public static final boolean MIGRATION_MODE_ACTIVE;
+	static {
+		String oldJobOutputDirectory = "@Job.OldOutputDirectory@";
+		String oldJobLogDirectory    = "@Job.OldLogDirectory@";
+		boolean migration            = true;
+		if (oldJobOutputDirectory.isEmpty()) {
+			oldJobOutputDirectory = null;
+			migration = false;
+		}
+		if (oldJobLogDirectory.isEmpty() || oldJobLogDirectory.equals("/logs")) {
+			oldJobLogDirectory = null;
+		}
+		OLD_JOB_OUTPUT_DIRECTORY = oldJobOutputDirectory;
+		OLD_JOB_LOG_DIRECTORY = oldJobLogDirectory;
+		MIGRATION_MODE_ACTIVE = migration;
+	}
 
 	public static final String SGE_TYPE = "sge";
 	public static final String OAR_TYPE = "oar";

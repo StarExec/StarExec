@@ -283,15 +283,14 @@ public class TestManager {
 		final ExecutorService threadPool = Executors.newCachedThreadPool();
 		log.debug("trying to empty the job output directory");
 		threadPool.execute(() -> {
-            File file=new File(R.getJobOutputDirectory());
-            log.debug("calling deleteQuietly on job output");
+			File file=new File(R.JOB_OUTPUT_DIRECTORY);
+			log.debug("calling deleteQuietly on job output");
 
-            FileUtils.deleteQuietly(file);
-            log.debug("finished calling deleteQuietly on job output");
+			FileUtils.deleteQuietly(file);
+			log.debug("finished calling deleteQuietly on job output");
 
-
-            file.mkdir();
-        });
+			file.mkdir();
+		});
 	}
 
 }
