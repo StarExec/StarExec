@@ -26,8 +26,6 @@ rm -f $STAR_WAR
 mkdirIf() {
 if [ ! -d $1 ] ; then
   mkdir -p $1
-  chmod 775 $1
-  chgrp star-web $1
 fi
 }
 
@@ -53,6 +51,9 @@ echo "Creating data directories if they are not present already"
 for d in Benchmarks Solvers processor_scripts jobin jobxml jobout joboutput joboutput/logs batchSpace/uploads ; do
   mkdirIf $STAREXEC_DATA_DIR/$d
 done
+
+chgrp -fR star-web $STAREXEC_DATA_DIR
+chmod -fR g+rwx    $STAREXEC_DATA_DIR
 
 while [ -d $APPDIR ] ; do
   echo "waiting for tomcat to remove the app directory"
