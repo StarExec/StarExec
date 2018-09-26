@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project name="config" basedir=".">
 	<target name="config" depends="register-commands">
-		<delete file="${java.io.tmpdir}/R.java" quiet="true" />
-		<copy file="src/org/starexec/constants/R.java" tofile="${java.io.tmpdir}/R.java">
+		<delete file="${java.io.tmpdir}/${STAREXEC_APPNAME}/R.java" quiet="true" />
+		<mkdir dir="${java.io.tmpdir}/${STAREXEC_APPNAME}" />
+		<copy file="src/org/starexec/constants/R.java" tofile="${java.io.tmpdir}/${STAREXEC_APPNAME}/R.java">
 			<filterset>
 				<filter token="Backend.Root"          value="${Backend.Root}"/>
 				<filter token="Backend.Type"          value="${Backend.Type}"/>
@@ -34,7 +35,13 @@
 				<filter token="Email.User"            value="${Email.User}"/>
 				<filter token="Email.Pass"            value="${Email.Pass}"/>
 
+				<filter token="Job.LogDirectory"                value="${Job.LogDirectory}"/>
+				<filter token="Job.OldLogDirectory"             value="${Job.OldLogDirectory}"/>
+				<filter token="Job.OldOutputDirectory"          value="${Job.OldOutputDirectory}"/>
+				<filter token="Job.OutputDirectory"             value="${Job.OutputDirectory}"/>
+				<filter token="Job.SolverCacheClearLogDir"      value="${Job.SolverCacheClearLogDir}"/>
 				<filter token="Job.SubmissionPeriod"            value="${Job.SubmissionPeriod}"/>
+
 				<filter token="JobPair.MaxFileWrite"            value="${JobPair.MaxFileWrite}"/>
 				<filter token="JobPair.ExecutionPrefix"         value="${JobPair.ExecutionPrefix}"/>
 

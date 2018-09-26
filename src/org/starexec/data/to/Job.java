@@ -8,6 +8,7 @@ import org.starexec.data.to.Status.StatusCode;
 import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.data.to.pipelines.JoblineStage;
 import org.starexec.data.to.pipelines.StageAttributes;
+import org.starexec.logger.StarLogger;
 import org.starexec.util.Util;
 
 import java.sql.SQLException;
@@ -20,6 +21,8 @@ import java.util.*;
  * @author Tyler Jensen
  */
 public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
+	private static final StarLogger log = StarLogger.getLogger(Jobs.class);
+
 	private int userId = -1;
 	private User user = null; // this is populated for the JobManager
 	@Expose private String name;
@@ -46,6 +49,7 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 			// if true, this job has been deleted on disk and exists only in the database so we can see space
 			// associations
 	private boolean paused; // if true, this job is currently paused
+	private Boolean readOnly;
 
 	private boolean buildJob;
 	//a list of all the stage attributes for this job, in no particular order
@@ -258,6 +262,12 @@ public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
 
 	public boolean isDeleted() {
 		return deleted;
+	}
+
+	public boolean isReadOnly() {
+		if (readOnly == null) readOnly = Jobs.isReadOnly(this.getId());
+		log.info("isReadOnly", "Job: "+this.getId()+"     isReadOnly: "+readOnly);
+		return readOnly;
 	}
 
 	public void setPaused(boolean paused) {

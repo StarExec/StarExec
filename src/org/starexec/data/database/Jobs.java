@@ -196,7 +196,7 @@ public class Jobs {
 			return true;
 		} catch (Exception e) {
 			Common.doRollback(con);
-			log.error(e.getMessage(), e);
+			log.error("recompileJobSpaces", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -295,6 +295,11 @@ public class Jobs {
 	 * @author Albert Giegerich
 	 */
 	public static void addJobPairsFromConfigIdsForAllBenchmarks(int jobId, Set<Integer> configIds) {
+		if (isReadOnly(jobId)) {
+			log.warn("addJobPairsFromConfigIdsForAllBenchmarks", "Job is readonly: "+jobId);
+			return;
+		}
+
 		List<JobPair> jobPairsToAdd = new ArrayList<>();
 		// Maintain this hashmap that keeps track of which benchmark-solver-config triples we've seen.
 		Map<Integer, Map<Integer, Set<Integer>>> jobMap = Jobs.getJobMapForPrimaryStage(jobId);
@@ -584,7 +589,7 @@ public class Jobs {
 			// Update the job's ID so it can be used outside this method
 			job.setId(procedure.getInt(17));
 		} catch (Exception e) {
-			log.error("addJob", e.getMessage(), e);
+			log.error("addJob", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -635,7 +640,7 @@ public class Jobs {
 			Common.endTransaction(con);
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("associate", e);
 			Common.doRollback(con);
 		} finally {
 			Common.safeClose(con);
@@ -670,17 +675,24 @@ public class Jobs {
 
 			while (results.next()) {
 				Job j = resultsToJob(results);
+				int jobId = j.getId();
 
-				if (new File(Jobs.getDirectory(j.getId())).exists()) {
-					log.warn("a deleted job still exists on disk! id = " + j.getId());
-					if (!FileUtils.deleteQuietly(new File(Jobs.getDirectory(j.getId())))) {
+				if (isReadOnly(jobId)) {
+					log.info("cleanOrphanedDeletedJobs", "Job "+jobId+" is readonly. Not cleaning.");
+					continue;
+				}
+
+				File jobDir = new File(Jobs.getDirectory(jobId));
+				if (jobDir.exists()) {
+					log.warn("a deleted job still exists on disk! id = " + jobId);
+					if (!FileUtils.deleteQuietly(jobDir)) {
 						log.warn("the job could not be deleted! Not removing job from the database");
 						continue;
 					}
 				}
 				// the benchmark has been deleted AND it is not associated with any spaces or job pairs
-				if (!parentedJobs.contains(j.getId())) {
-					removeJobFromDatabase(j.getId());
+				if (!parentedJobs.contains(jobId)) {
+					removeJobFromDatabase(jobId);
 				}
 			}
 			return true;
@@ -716,7 +728,7 @@ public class Jobs {
 				return results.getInt("count");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("countOlderPairs", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -751,6 +763,18 @@ public class Jobs {
 	}
 
 	/**
+	 * Jobs are ReadOnly if we are in Migration Mode _and_ this job exists in the
+	 * OLD Job Output directory.
+	 *
+	 * @param jobId
+	 * @return true if job is readonly, false otherwise
+	 */
+	public static boolean isReadOnly(int jobId) {
+		return R.MIGRATION_MODE_ACTIVE
+		    && getDirectory(jobId).startsWith(R.OLD_JOB_OUTPUT_DIRECTORY);
+	}
+
+	/**
 	 * Sets the job's 'deleted' column to to true, indicating it has been deleted. Also updates the disk_size and
 	 * total_pairs columns to 0
 	 *
@@ -768,7 +792,7 @@ public class Jobs {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("setDeletedColumn", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -785,6 +809,9 @@ public class Jobs {
 	public static boolean delete(int jobId) throws SQLException {
 		Connection con = null;
 		CallableStatement procedure = null;
+
+		if (Jobs.isReadOnly(jobId)) return false;
+
 		try {
 			//we should kill jobs before deleting  them so no additional pairs are run
 			if (!Jobs.isJobComplete(jobId)) {
@@ -832,7 +859,7 @@ public class Jobs {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("removeJobFromDatabase", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -921,7 +948,7 @@ public class Jobs {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("addJobStageAttributes", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -941,7 +968,7 @@ public class Jobs {
 			con = Common.getConnection();
 			return addJobStageAttributes(attrs, con);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("addJobStageAttributes", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -1042,7 +1069,7 @@ public class Jobs {
 				return results.getInt("total_pairs");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("countPairsByUser", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1076,7 +1103,7 @@ public class Jobs {
 				return j;
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("get", e);
 		} finally {
 			Common.safeClose(results);
 			Common.safeClose(con);
@@ -1211,7 +1238,7 @@ public class Jobs {
 			}
 			return jobs;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getBySpace", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1256,7 +1283,7 @@ public class Jobs {
 
 			return jobs;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getByUserId", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1301,7 +1328,7 @@ public class Jobs {
 			}
 			return jobCount;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getCountInSpace", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1395,10 +1422,20 @@ public class Jobs {
 	 * @return A string representing the path to the output directory
 	 * @author Eric Burns
 	 */
-
 	public static String getDirectory(int jobId) {
-		// The job's output is expected to be in NEW_JOB_OUTPUT_DIR/{job id}/
-		File file = new File(R.getJobOutputDirectory(), String.valueOf(jobId));
+		File file;
+		String job = String.valueOf(jobId);
+		/* If there exists an OLD_JOB_OUTPUT_DIRECTORY, we will check for jobs
+		 * there first. */
+		if (R.MIGRATION_MODE_ACTIVE) {
+			file = new File(R.OLD_JOB_OUTPUT_DIRECTORY, job);
+			if (file.exists()) {
+				return file.getAbsolutePath();
+			}
+		}
+		/* We could not find this job in OLD_JOB_OUTPUT_DIRECTORY, so we will
+		 * return the default JOB_OUTPUT_DIRECTORY path */
+		file = new File(R.JOB_OUTPUT_DIRECTORY, job);
 		return file.getAbsolutePath();
 	}
 
@@ -1409,8 +1446,19 @@ public class Jobs {
 	 * @return The absolute path as a string
 	 */
 	public static String getLogDirectory(int jobId) {
-		// The job's output is expected to be in NEW_JOB_OUTPUT_DIR/{job id}/
-		File file = new File(R.getJobLogDir(), String.valueOf(jobId));
+		File file;
+		String job = String.valueOf(jobId);
+		/* If there exists an OLD_JOB_LOG_DIRECTORY, we will check for jobs
+		 * there first. */
+		if (R.OLD_JOB_LOG_DIRECTORY != null) {
+			file = new File(R.OLD_JOB_LOG_DIRECTORY, job);
+			if (file.exists()) {
+				return file.getAbsolutePath();
+			}
+		}
+		/* We could not find this job in OLD_JOB_LOG_DIRECTORY, so we will
+		 * return the default JOB_LOG_DIRECTORY path */
+		file = new File(R.JOB_LOG_DIRECTORY, job);
 		return file.getAbsolutePath();
 	}
 
@@ -1540,7 +1588,7 @@ public class Jobs {
 				return results.getInt("jobCount");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getJobCount", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -1570,7 +1618,7 @@ public class Jobs {
 				return results.getInt("jobCount");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getJobCountByUser", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -1603,7 +1651,7 @@ public class Jobs {
 				return results.getInt("jobCount");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getJobCountByUser", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -1637,7 +1685,7 @@ public class Jobs {
 				return results.getInt("jobPairCount");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getJobPairCountInJobSpaceByStage", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -1672,7 +1720,7 @@ public class Jobs {
 				jobPairCount = results.getInt("jobPairCount");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getJobPairCountInJobSpaceByStage", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -1728,7 +1776,7 @@ public class Jobs {
 				try {
 					comparisons.add(new SolverComparison(benchesToPairs.get(jp.getBench().getId()), jp));
 				} catch (Exception e) {
-					log.error(e.getMessage(), e);
+					log.error("getSolverComparisonsForNextPageByConfigInJobSpaceHierarchy", e);
 				}
 			}
 		}
@@ -1818,7 +1866,7 @@ public class Jobs {
 				return results.getInt("count");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getCountOfJobPairsByConfigInJobSpaceHierarchy", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1903,7 +1951,7 @@ public class Jobs {
 			}
 			return returnList;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getSynchronizedPairsInJobSpace", e);
 		}
 		return null;
 	}
@@ -2147,7 +2195,7 @@ public class Jobs {
 
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("populateJobPairStages", e);
 		}
 
 		return false;
@@ -2485,7 +2533,7 @@ public class Jobs {
 				return results.getInt("count");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getPairCount", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -2547,7 +2595,7 @@ public class Jobs {
 			results = procedure.executeQuery();
 			return getJobsForNextPage(results);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getJobsByUserForNextPage", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -2581,7 +2629,7 @@ public class Jobs {
 			results = procedure.executeQuery();
 			return getJobsForNextPage(results);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getJobsForNextPage", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -2651,7 +2699,7 @@ public class Jobs {
 			}
 			return jobs;
 		} catch (Exception e) {
-			log.error("getJobsForNextPageSays " + e.getMessage(), e);
+			log.error("getJobsForNextPageSays", e);
 		}
 		return null;
 	}
@@ -3188,7 +3236,7 @@ public class Jobs {
 
 			return success;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("setTimelessPairsToPending", e);
 		}
 		return false;
 	}
@@ -3200,6 +3248,7 @@ public class Jobs {
 	 * @return True on success and false otherwise
 	 */
 	public static boolean setAllPairsToPending(int jobId) {
+		if (Jobs.isReadOnly(jobId)) return false;
 		try {
 			List<JobPair> pairs = Jobs.getPairsSimple(jobId);
 			boolean success = true;
@@ -3226,6 +3275,7 @@ public class Jobs {
 			log.debug("got a request to rerun pair id = " + pairId);
 			boolean success = true;
 			JobPair p = JobPairs.getPair(pairId);
+			if (Jobs.isReadOnly(p.getJobId())) return false;
 			Status status = p.getStatus();
 			//no rerunning for pairs that are still pending
 			if (status.getCode().getVal() == StatusCode.STATUS_PENDING_SUBMIT.getVal()) {
@@ -3243,7 +3293,7 @@ public class Jobs {
 
 			return success;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("rerunPair", e);
 		}
 
 		return false;
@@ -3329,7 +3379,7 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	public static boolean setPairsToPending(int jobId, int statusCode) {
-
+		if (Jobs.isReadOnly(jobId)) return false;
 		try {
 			boolean success = true;
 			List<Integer> pairs = Jobs.getPairsByStatus(jobId, statusCode);
@@ -3414,8 +3464,7 @@ public class Jobs {
 						s.setMostRecentUpdate(solverIdsToTimestamps.get(s.getId()));
 					}
 				} catch (Exception e) {
-					log.error("there was an error making a single job pair object");
-					log.error(e.getMessage(), e);
+					log.error("getPendingPairsDetailed", "there was an error making a single job pair object", e);
 				}
 			}
 
@@ -3500,7 +3549,7 @@ public class Jobs {
 
 			return getAllBenchmarkInputsForJob(jobId, con);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getAllBenchmarkInputsForJob", e);
 		} finally {
 			Common.safeClose(con);
 		}
@@ -4161,6 +4210,7 @@ public class Jobs {
 	 * @return True on success and false otherwise
 	 */
 	public static boolean changeQueue(int jobId, int queueId) {
+		if (Jobs.isReadOnly(jobId)) return false;
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -4399,7 +4449,7 @@ public class Jobs {
 			);
 			return stats.values();
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("processPairsToSolverStats", e);
 		}
 		return null;
 	}
@@ -4573,7 +4623,7 @@ public class Jobs {
 
 			return returnList;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("processStatResults", e);
 		}
 		return null;
 	}
@@ -4586,6 +4636,7 @@ public class Jobs {
 	 * @author Wyatt Kaiser
 	 */
 	public static boolean resume(int jobId) {
+		if (Jobs.isReadOnly(jobId)) return false;
 		Connection con = null;
 		try {
 			con = Common.getConnection();
@@ -4608,6 +4659,7 @@ public class Jobs {
 	 */
 
 	protected static boolean resume(int jobId, Connection con) {
+		if (Jobs.isReadOnly(jobId)) return false;
 		CallableStatement procedure = null;
 		try {
 			procedure = con.prepareCall("{CALL ResumeJob(?)}");
@@ -4659,6 +4711,7 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	public static boolean prepareJobForPostProcessing(int jobId, int processorId, int stageNumber) {
+		if (Jobs.isReadOnly(jobId)) return false;
 		if (!Jobs.canJobBePostProcessed(jobId)) {
 			return false;
 		}
@@ -4777,7 +4830,7 @@ public class Jobs {
 			procedure.setInt(2, jobSpaceId);
 			procedure.executeUpdate();
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("updatePrimarySpace", e);
 		} finally {
 			Common.safeClose(procedure);
 		}
@@ -4938,7 +4991,7 @@ public class Jobs {
 				return results.getInt("jobCount");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getPausedJobCount", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -4967,7 +5020,7 @@ public class Jobs {
 				return results.getInt("jobCount");
 			}
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getRunningJobCount", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -4998,7 +5051,7 @@ public class Jobs {
 			}
 			return jobs;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getRunningJobs", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -5028,7 +5081,7 @@ public class Jobs {
 			}
 			return jobs;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getRunningJobs", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -5057,7 +5110,7 @@ public class Jobs {
 			//if no results exist, the system is not globally paused
 			return false;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("isSystemPaused", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(results);
@@ -5087,7 +5140,7 @@ public class Jobs {
 			}
 			return ids;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getOrphanedJobs", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -5104,7 +5157,6 @@ public class Jobs {
 	 * @return True on success and false otherwise
 	 */
 	public static boolean deleteOrphanedJobs(int userId) {
-
 		List<Integer> ids = getOrphanedJobs(userId);
 		try {
 			for (Integer id : ids) {
@@ -5112,9 +5164,8 @@ public class Jobs {
 			}
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("deleteOrphanedJobs", e);
 		}
-
 		return false;
 	}
 
@@ -5143,12 +5194,10 @@ public class Jobs {
 			attrs.setResultsInterval(results.getInt("results_interval"));
 			attrs.setStdoutSaveOption(SaveResultsOption.valueOf(results.getInt("stdout_save_option")));
 			attrs.setExtraOutputSaveOption(SaveResultsOption.valueOf(results.getInt("extra_output_save_option")));
-
 			return attrs;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("resultsToStageAttributes", e);
 		}
-
 		return null;
 	}
 
@@ -5178,7 +5227,7 @@ public class Jobs {
 
 			return attrs;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getStageAttrsForJob", e);
 		} finally {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
@@ -5228,7 +5277,7 @@ public class Jobs {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("setJobDiskSize", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -5249,7 +5298,7 @@ public class Jobs {
 			results = procedure.executeQuery();
 			jobCopiesBackResultsIncrementally = procedure.getBoolean(2);
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("doesJobCopyBackIncrementally", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -5348,7 +5397,7 @@ public class Jobs {
 			}
 			return tableEntries;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("getJobAttributesTable", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
