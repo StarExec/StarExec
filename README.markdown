@@ -36,6 +36,8 @@ http://ant.apache.org/manual/install.html
 StarExec requires [Sass](https://sass-lang.com) at build time to compile `.scss`
 stylesheets to `.css`. Sass depends on [Ruby](https://www.ruby-lang.org/en/).
 
+We are currently using Ruby Sass 3.4.24
+
 https://sass-lang.com/install
 
 ### Apache Tomcat
