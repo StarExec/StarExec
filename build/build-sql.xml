@@ -20,6 +20,7 @@
 		</pathconvert>
 		<pathconvert property="sqlProcedures" pathsep="${line.separator}source ">
 			<path>
+				<fileset dir="sql/SchemaChanges" includes="**/*.sql" />
 				<fileset dir="sql/procedures" includes="**/*.sql" />
 				<fileset dir="sql" includes="StarFunctions.sql" />
 			</path>
