@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <project name="config" basedir=".">
 	<target name="config" depends="register-commands">
-		<delete file="${java.io.tmpdir}/R.java" quiet="true" />
-		<copy file="src/org/starexec/constants/R.java" tofile="${java.io.tmpdir}/R.java">
+		<delete file="${java.io.tmpdir}/${STAREXEC_APPNAME}/R.java" quiet="true" />
+		<mkdir dir="${java.io.tmpdir}/${STAREXEC_APPNAME}" />
+		<copy file="src/org/starexec/constants/R.java" tofile="${java.io.tmpdir}/${STAREXEC_APPNAME}/R.java">
 			<filterset>
 				<filter token="Backend.Root"          value="${Backend.Root}"/>
 				<filter token="Backend.Type"          value="${Backend.Type}"/>

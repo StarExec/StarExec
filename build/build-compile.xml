@@ -11,11 +11,11 @@
 		<!-- Compile the source code to get the java classes -->
 		<javac debug="true" debuglevel="lines,vars,source" destdir="${class-dir}" classpathref="classpath" nowarn="on">
 			<src path="src" />
-			<src path="${java.io.tmpdir}" />
+			<src path="${java.io.tmpdir}/${STAREXEC_APPNAME}" />
 			<compilerarg value="-Xlint:unchecked"/>
 			<include name="org/starexec/**/*.java" />
 			<include name="R.java" />
-			<exclude name="**/constants/R.java" />
+			<exclude name="org/starexec/constants/R.java" />
 		</javac>
 		<property name="starexec-already-compiled" value="true" />
 	</target>

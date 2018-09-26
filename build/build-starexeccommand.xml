@@ -12,7 +12,7 @@
 	<target name="compilestarcom" depends="config,cleanstarcom" unless="starexec-already-compiled">
 		<javac debug="true" debuglevel="lines,vars,source" destdir="${starcom-comp}" classpathref="starcomclasspath" nowarn="on">
 			<src path="${source-dir}"/>
-			<src path="${java.io.tmpdir}"/>
+			<src path="${java.io.tmpdir}/${STAREXEC_APPNAME}"/>
 			<include name="R.java"/>
 			<include name="org/starexec/command/*.java"/>
 			<include name="org/starexec/data/to/Permission.java"/>
@@ -20,6 +20,7 @@
 			<include name="org/starexec/util/Validator.java"/>
 			<include name="org/starexec/backend/Backend.java"/>
 			<include name="org/starexec/util/ArchiveUtil.java"/>
+			<exclude name="org/starexec/constants/R.java" />
 		</javac>
 	</target>
 
