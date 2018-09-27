@@ -26,10 +26,15 @@ rm -f $STAR_WAR
 mkdirIf() {
 if [ ! -d $1 ] ; then
   mkdir -p $1
-  chmod 775 $1
   chgrp star-web $1
+  chmod 775 $1
 fi
 }
+
+# We must create the data dir first (even though we are using `mkdir -p` to
+# ensure that it has the proper permissions. Without this line, we cannot be
+# sure that the data dir is a member of *star-web*
+mkdirIf $STAREXEC_DATA_DIR
 
 echo "Copying the GridEngine scripts to $SGE_SCRIPT_DIR"
 mkdirIf $SGE_SCRIPT_DIR
