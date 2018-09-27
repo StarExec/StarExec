@@ -26,7 +26,6 @@
 			</path>
 			<map from="${basedir}/sql/" to=""/>
 		</pathconvert>
-		<mkdir dir="${data_dir}" />
 		<concat destfile="sql/NewInstall.sql">
 			<header>-- ${generated-message}${line.separator}</header>
 			<fileset file="sql/NewInstall.template" />
