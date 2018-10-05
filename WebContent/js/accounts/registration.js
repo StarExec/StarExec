@@ -93,6 +93,11 @@ function attachFormValidation() {
 				minlength: 2,
 				maxlength: $("#lastname").attr("maxlength")
 			},
+
+			uc: {
+				required: true,
+			},
+
 			em: {
 				required: true,
 				email: true
