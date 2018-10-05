@@ -11,4 +11,7 @@ branches:
   - fb1
 
 before_script: script/ci
-script: ant test
+
+script:
+- ant test
+- ant css jspc
