@@ -3,13 +3,7 @@
 	<target name="jspc" depends="compilestarexec">
 		<taskdef classname="org.apache.jasper.JspC" name="jasper2" >
 			<classpath id="jspc.classpath">
-				<pathelement location="${java.home}/../lib/tools.jar"/>
-				<fileset dir="${tomcat-dir}/bin">
-					<include name="*.jar"/>
-				</fileset>
-				<fileset dir="${tomcat-dir}/lib">
-					<include name="*.jar"/>
-				</fileset>
+				<fileset dir="local-lib" includes="**/*.jar"/>
 				<pathelement path="${class-dir}"/>
 			</classpath>
 		</taskdef>
