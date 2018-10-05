@@ -4,6 +4,7 @@ import org.apache.commons.io.FileUtils;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
+import org.starexec.constants.R;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.Util;
@@ -28,7 +29,7 @@ public class GridEngineBackend implements Backend{
 	public static final String QUEUE_NAME_PATTERN = "QUEUE_NAME";
 	public static final String QUEUE_GET_SLOTS_PATTERN = "qconf -sq " + QUEUE_NAME_PATTERN;// + " | grep 'slots' | grep -o '[0-9]\\{1,\\}'";
 
-    private static final String GRID_ENGINE_PATH = "/cluster/gridengine-8.1.8/bin/lx-amd64/";
+	private static final String GRID_ENGINE_PATH = R.BACKEND_ROOT+"/bin/lx-amd64/";
 
 
     private Session session = null;
