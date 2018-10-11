@@ -170,6 +170,9 @@ function attachFormValidation() {
 				maxlength: $("#reason").attr("length") + " characters maximum",
 				regex: "unsafe character(s)",
 				required: "enter your reason for joining"
+			},
+			uc: {
+				required: "Please go through password recovery"
 			}
 		},
 		// Don't display an error for passwords, the password strength meter takes care of that
