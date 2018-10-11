@@ -93,11 +93,6 @@ function attachFormValidation() {
 				minlength: 2,
 				maxlength: $("#lastname").attr("maxlength")
 			},
-
-			uc: {
-				required: true,
-			},
-
 			em: {
 				required: true,
 				email: true
@@ -125,6 +120,9 @@ function attachFormValidation() {
 				regex: getPrimDescRegex(),
 				minlength: 2,
 				maxlength: $("#reason").attr("length")
+			},
+			uc: {
+				required: true,
 			}
 		},
 		messages: {
@@ -172,7 +170,7 @@ function attachFormValidation() {
 				required: "enter your reason for joining"
 			},
 			uc: {
-				required: "Please go through password recovery"
+				required: "recover your password"
 			}
 		},
 		// Don't display an error for passwords, the password strength meter takes care of that
