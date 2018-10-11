@@ -17,7 +17,7 @@ public class Logins {
 	 */
 	public static Integer getNumberOfUniqueLogins() {
 		try {
-			Common.query(
+			return Common.query(
 					"{CALL GetNumberOfUniqueLogins()}",
 					p -> {},
 					results -> {
