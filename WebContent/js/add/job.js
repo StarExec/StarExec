@@ -94,9 +94,8 @@ function attachFormValidation() {
 	// Add regular expression capabilities to the validator
 	$.validator.addMethod(
 		"regex",
-		function(value, element, regexp) {
-			var re = new RegExp(regexp);
-			return this.optional(element) || re.test(value);
+		function(value, element, str) {
+			return element.validity.patternMismatch;
 		});
 	$.validator.addMethod(
 		"interval",
@@ -112,7 +111,7 @@ function attachFormValidation() {
 				required: true,
 				minlength: 2,
 				maxlength: $("#txtJobName").attr("length"),
-				regex: getPrimNameRegex()
+				regex: "DUMMY REGEX"
 			},
 			desc: {
 				required: false,

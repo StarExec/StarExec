@@ -111,7 +111,7 @@
 				<tr class="noHover"
 				    title="how do you want this job to be displayed in StarExec?">
 					<td class="label"><p>job name</p></td>
-					<td><input length="${jobNameLen}" id="txtJobName"
+					<td><input length="${jobNameLen}" id="txtJobName" pattern="^[\\w\\-\\. \\+\\^=,!?:$%#@]+$"
 					           name="name" type="text" maxlength="${JOB_NAME_LEN}"
 					           value="${space.name} <fmt:formatDate pattern="yyyy-MM-dd HH.mm" value="${now}" />"/>
 					</td>
