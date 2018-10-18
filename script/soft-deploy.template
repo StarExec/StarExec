@@ -2,6 +2,9 @@
 #
 # Run from the directory where you build starexec with ant (build.xml).
 
+# Files created by this script must be group read+write+execute
+umask -S g=rwx
+
 # filled in by running ant with build.xml:
 APPNAME=@STAREXEC_APPNAME@
 STAREXEC_DATA_DIR=@data_dir@
@@ -27,7 +30,6 @@ mkdirIf() {
 if [ ! -d $1 ] ; then
   mkdir -p $1
   chgrp star-web $1
-  chmod 775 $1
 fi
 }
 
