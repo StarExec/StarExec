@@ -120,6 +120,9 @@ function attachFormValidation() {
 				regex: getPrimDescRegex(),
 				minlength: 2,
 				maxlength: $("#reason").attr("length")
+			},
+			uc: {
+				required: true,
 			}
 		},
 		messages: {
@@ -165,6 +168,9 @@ function attachFormValidation() {
 				maxlength: $("#reason").attr("length") + " characters maximum",
 				regex: "unsafe character(s)",
 				required: "enter your reason for joining"
+			},
+			uc: {
+				required: "recover your password"
 			}
 		},
 		// Don't display an error for passwords, the password strength meter takes care of that

@@ -100,6 +100,10 @@
 					              length="${msgLen}"></textarea></td>
 				</tr>
 				<tr>
+					<td class="label">New user?</td>
+					<td><input type="checkbox" name="uc" value="uc"></td>
+				</tr>
+				<tr>
 					<td colspan="3">
 						<button type="submit" id="submit" value="Submit">
 							Register
