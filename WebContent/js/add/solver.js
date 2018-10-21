@@ -111,12 +111,16 @@ function attachFormValidation() {
 
 	// Add regular expression handler to jQuery validator
 	$.validator.addMethod(
-		"regex",
+		"jsregex",
 		function(value, element, regexp) {
 			var re = new RegExp(regexp);
 			return this.optional(element) || re.test(value);
 		});
-
+	$.validator.addMethod(
+		"regex",
+		function(value, element, str) {
+			return !element.validity.patternMismatch;	
+		});
 	// Re-validate the 'solver location' field when it loses focus
 	$("#fileLoc").change(function() {
 		$("#fileLoc").blur().focus();
@@ -127,33 +131,33 @@ function attachFormValidation() {
 		rules: {
 			f: {
 				required: "#radioLocal:checked",
-				regex: "(\.tgz$)|(\.zip$)|(\.tar(\.gz)?$)"
+				jsregex: "(\.tgz$)|(\.zip$)|(\.tar(\.gz)?$)"
 			},
 			url: {
 				required: "#radioURL:checked",
-				regex: "(\.tgz$)|(\.zip$)|(\.tar(\.gz)?$)"
+				jsregex: "(\.tgz$)|(\.zip$)|(\.tar(\.gz)?$)"
 			},
 			sn: {
 				required: true,
 				maxlength: $("#name").attr("length"),
-				regex: getPrimNameRegex()
+				regex: "DUMMY REGEX"
 			},
 			desc: {
 				maxlength: $("#description").attr("length"),
-				regex: getPrimDescRegex()
+				jsregex: getPrimDescRegex()
 			},
 			d: {
-				regex: "(\.txt$)"
+				jsregex: "(\.txt$)"
 			}
 		},
 		messages: {
 			f: {
 				required: "please select a file",
-				regex: ".zip, .tar and .tar.gz only"
+				jsregex: ".zip, .tar and .tar.gz only"
 			},
 			url: {
 				required: "please enter a URL",
-				regex: "URL must be .zip, .tar, or .tar.gz"
+				jsregex: "URL must be .zip, .tar, or .tar.gz"
 			},
 			sn: {
 				required: "solver name required",
@@ -163,10 +167,10 @@ function attachFormValidation() {
 			desc: {
 				maxlength: $("#description")
 				.attr("length") + " characters maximum",
-				regex: "invalid character(s)"
+				jsregex: "invalid character(s)"
 			},
 			d: {
-				regex: ".txt file only"
+				jsregex: ".txt file only"
 			}
 		},
 		submitHandler: function(form) {

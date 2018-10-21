@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.DB,org.starexec.data.database.Solvers,org.starexec.data.security.GeneralSecurity, org.starexec.data.to.Solver, org.starexec.util.SessionUtil, org.starexec.app.RESTHelpers" %>
+        import="org.starexec.constants.DB,org.starexec.constants.R,org.starexec.data.database.Solvers,org.starexec.data.security.GeneralSecurity, org.starexec.data.to.Solver, org.starexec.util.SessionUtil, org.starexec.app.RESTHelpers" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
@@ -16,6 +16,7 @@
 		Solver solver = Solvers.get(solverId);
 		request.setAttribute("configNameLen", DB.CONFIGURATION_NAME_LEN - 4);
 		request.setAttribute("configDescLen", DB.CONFIGURATION_DESC_LEN);
+		request.setAttribute("namePattern", R.PRIMITIVE_NAME_PATTERN);
 		// Verify this user is the owner of the solver they are trying to upload configurations to
 		if (solver.getUserId() == userId ||
 				GeneralSecurity.hasAdminReadPrivileges(userId)) {
@@ -65,7 +66,7 @@
 				<tr>
 					<td>configuration name</td>
 					<td><input id="uploadConfigName" name="uploadConfigName"
-					           type="text" size="64"
+					           type="text" size="64" pattern="${namePattern}"
 					           maxlength="${configNameLen}"/></td>
 				</tr>
 				<tr>
@@ -96,7 +97,7 @@
 				<tr>
 					<td>configuration name</td>
 					<td><input id="saveConfigName" name="saveConfigName"
-					           type="text" size="64"
+					           type="text" size="64" pattern="${namePattern}"
 					           maxlength="${configNameLen}"/></td>
 				</tr>
 				<tr>

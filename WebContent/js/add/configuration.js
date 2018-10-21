@@ -41,12 +41,16 @@ function attachFormValidation() {
 
 	// Add regular expression handling to the JQuery validator
 	$.validator.addMethod(
-		"regex",
+		"jsregex",
 		function(value, element, regexp) {
 			var re = new RegExp(regexp);
 			return this.optional(element) || re.test(value);
 		});
-
+	$.validator.addMethod(
+		"regex",
+		function(value, element, str) {
+			return !element.validity.patternMismatch;
+		});
 	// Re-validate the 'file location' field when it loses focus
 	$("#configFile").change(function() {
 		$("#configFile").blur().focus();
@@ -60,11 +64,11 @@ function attachFormValidation() {
 			},
 			uploadConfigName: {
 				required: true,
-				regex: getPrimNameRegex()
+				regex: "DUMMY REGEX"
 			},
 			uploadConfigDesc: {
 				maxlength: $("#uploadConfigDesc").attr("maxlength"),
-				regex: getPrimDescRegex()
+				jsregex: getPrimDescRegex()
 			}
 		},
 		messages: {
@@ -79,7 +83,7 @@ function attachFormValidation() {
 				required: "description required",
 				maxlength: "max length is " + $("#uploadConfigDesc")
 				.attr("maxlength"),
-				regex: "invalid character(s)"
+				jsregex: "invalid character(s)"
 			}
 		}
 	});
@@ -89,11 +93,11 @@ function attachFormValidation() {
 		rules: {
 			saveConfigName: {
 				required: true,
-				regex: getPrimNameRegex()
+				regex: "DUMMY REGEX"
 			},
 			saveConfigDesc: {
 				maxlength: $("#saveConfigDesc").attr("maxlength"),
-				regex: getPrimDescRegex()
+				jsregex: getPrimDescRegex()
 			},
 			saveConfigContents: {
 				required: true
@@ -108,7 +112,7 @@ function attachFormValidation() {
 				required: "description required",
 				maxlength: "max length is " + $("#saveConfigDesc")
 				.attr("maxlength"),
-				regex: "invalid characters"
+				jsregex: "invalid characters"
 			},
 			saveConfigContents: {
 				required: "file can't be empty"

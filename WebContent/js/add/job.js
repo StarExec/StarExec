@@ -93,9 +93,15 @@ function getClockTimeoutErrorMessage() {
 function attachFormValidation() {
 	// Add regular expression capabilities to the validator
 	$.validator.addMethod(
+		"jsregex",
+		function(value, element, str) {
+			var re = new RegExp(str);
+			return this.optional(element) || re.test(value);
+		});
+	$.validator.addMethod(
 		"regex",
 		function(value, element, str) {
-			return element.validity.patternMismatch;
+			return !element.validity.patternMismatch;
 		});
 	$.validator.addMethod(
 		"interval",
@@ -116,7 +122,7 @@ function attachFormValidation() {
 			desc: {
 				required: false,
 				maxlength: $("#txtDesc").attr("length"),
-				regex: getPrimDescRegex()
+				jsregex: getPrimDescRegex()
 			},
 			cpuTimeout: {
 				required: true,
@@ -151,7 +157,7 @@ function attachFormValidation() {
 			desc: {
 				required: "enter a job description",
 				maxlength: $("#txtDesc").attr("length") + " characters maximum",
-				regex: "invalid character(s)"
+				jsregex: "invalid character(s)"
 			},
 			cpuTimeout: {
 				required: "enter a timeout",

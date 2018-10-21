@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.DB,org.starexec.data.database.Settings,org.starexec.data.database.Spaces, org.starexec.data.security.GeneralSecurity, org.starexec.data.to.DefaultSettings, org.starexec.data.to.Permission, org.starexec.util.SessionUtil, java.util.List, org.starexec.app.RESTHelpers" %>
+        import="org.starexec.constants.DB,org.starexec.constants.R,org.starexec.data.database.Settings,org.starexec.data.database.Spaces, org.starexec.data.security.GeneralSecurity, org.starexec.data.to.DefaultSettings, org.starexec.data.to.Permission, org.starexec.util.SessionUtil, java.util.List, org.starexec.app.RESTHelpers" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
@@ -14,7 +14,7 @@
 		int spaceId = Integer.parseInt(request.getParameter("sid"));
 		int userId = SessionUtil.getUserId(request);
 		request.setAttribute("space", Spaces.get(spaceId));
-
+		request.setAttribute("namePattern", R.PRIMITIVE_NAME_PATTERN);
 		request.setAttribute("solverNameLen", DB.SOLVER_NAME_LEN);
 		request.setAttribute("solverDescLen", DB.SOLVER_DESC_LEN);
 		// Verify this user can add spaces to this space
@@ -91,7 +91,7 @@
 				<tr>
 					<td>solver name</td>
 					<td><input id="name" name="sn" type="text" size="42"
-					           length="${solverNameLen}"/></td>
+					           pattern="${namePattern}" length="${solverNameLen}"/></td>
 				</tr>
 
 				<tr>
