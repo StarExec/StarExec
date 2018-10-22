@@ -374,6 +374,10 @@ public class R {
 	public static final String COPY_TO_STARDEV_PROC_ID_PARAM = "procId";
 
 
+	public static final String ERROR_MESSAGE_READ_ONLY_JOB =
+		"This job is Read Only while StarExec is in Migration Mode";
+
+
 	public static Timestamp earliestDateToRerunFailedPairs(){
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		try {

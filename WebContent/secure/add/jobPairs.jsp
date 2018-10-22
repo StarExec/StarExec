@@ -23,6 +23,14 @@
 			return;
 		}
 
+		if (Jobs.isReadOnly(jobId)) {
+			response.sendError(
+					HttpServletResponse.SC_FORBIDDEN,
+					"Job is Read Only during StarExec storage migration, and pairs cannot be added or removed."
+			);
+			return;
+		}
+
 		Set<Integer> spacesAssociatedWithJob = Spaces.getByJob(jobId);
 		List<Solver> solvers = Solvers.getSolversInSpacesAndJob(jobId,
 		                                                        spacesAssociatedWithJob

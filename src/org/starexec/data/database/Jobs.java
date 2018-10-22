@@ -4636,7 +4636,10 @@ public class Jobs {
 	 * @author Wyatt Kaiser
 	 */
 	public static boolean resume(int jobId) {
-		if (Jobs.isReadOnly(jobId)) return false;
+		if (Jobs.isReadOnly(jobId)) {
+			log.info("resume", "Cannot resume Read Only job: " + jobId);
+			return false;
+		}
 		Connection con = null;
 		try {
 			con = Common.getConnection();
@@ -4659,7 +4662,10 @@ public class Jobs {
 	 */
 
 	protected static boolean resume(int jobId, Connection con) {
-		if (Jobs.isReadOnly(jobId)) return false;
+		if (Jobs.isReadOnly(jobId)) {
+			log.info("resume", "Cannot resume Read Only job: " + jobId);
+			return false;
+		}
 		CallableStatement procedure = null;
 		try {
 			procedure = con.prepareCall("{CALL ResumeJob(?)}");
