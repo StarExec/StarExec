@@ -75,6 +75,7 @@ function initCommunityRequestsTable(
 			null,
 			null,
 			null,
+			null,
 			{"searchable": false, "orderable": false},
 			{"searchable": false, "orderable": false}
 		]

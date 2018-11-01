@@ -57,6 +57,7 @@
 					<th>user</th>
 					<th>community</th>
 					<th>message</th>
+					<th>date created</th>
 					<th>approve</th>
 					<th>decline</th>
 				</tr>

@@ -2029,6 +2029,7 @@ public class RESTHelpers {
 			entry.add(new JsonPrimitive(userLink));
 			entry.add(new JsonPrimitive(spaceLink));
 			entry.add(new JsonPrimitive(req.getMessage()));
+			entry.add(new JsonPrimitive(req.getCreateDate().toString()));
 			entry.add(new JsonPrimitive(approveButton));
 			entry.add(new JsonPrimitive(declineButton));
 
