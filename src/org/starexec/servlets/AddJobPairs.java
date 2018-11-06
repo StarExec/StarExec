@@ -82,7 +82,7 @@ public class AddJobPairs extends HttpServlet {
 				return;
 			}
 
-			if (!(Jobs.isReadOnly(jobId))) {
+			if (Jobs.isReadOnly(jobId)) {
 				response.sendError(
 						HttpServletResponse.SC_FORBIDDEN, "Job is readonly while in Migration Mode");
 				return;
