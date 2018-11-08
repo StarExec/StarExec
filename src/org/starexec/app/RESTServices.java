@@ -3507,7 +3507,7 @@ public class RESTServices {
 				for (int id : selectedJobs) {
 					boolean success_delete = Jobs.delete(id);
 					if (!success_delete) {
-						log.error("there were one or more errors in deleting the list of jobs!");
+						log.error("deleteJobsOnSeparateThread", "Cannot delete job "+id);
 					}
 				}
 			} catch (Exception e) {
@@ -3519,9 +3519,9 @@ public class RESTServices {
 	/**
 	 * Deletes a list of jobs
 	 * @param request HTTP request
-	 * @return 	0: success,<br>
-	 * 			1: database level error,<br>
-	 * 			2: insufficient permissions
+	 * @return 0: success,<br>
+	 *         1: database level error,<br>
+	 *         2: insufficient permissions
 	 * @author Eric Burns
 	 */
 	@POST
