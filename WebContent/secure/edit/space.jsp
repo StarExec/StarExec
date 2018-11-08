@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.DB,org.starexec.data.database.Communities, org.starexec.data.database.Permissions, org.starexec.data.database.Spaces, org.starexec.data.security.GeneralSecurity, org.starexec.data.to.Permission, org.starexec.data.to.Space, org.starexec.util.SessionUtil" %>
+        import="org.starexec.constants.DB, org.starexec.constants.R, org.starexec.data.database.Communities, org.starexec.data.database.Permissions, org.starexec.data.database.Spaces, org.starexec.data.security.GeneralSecurity, org.starexec.data.to.Permission, org.starexec.data.to.Space, org.starexec.util.SessionUtil" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
@@ -8,6 +8,7 @@
 		int spaceId = Integer.parseInt(request.getParameter("id"));
 		request.setAttribute("nameLength", DB.SPACE_NAME_LEN);
 		request.setAttribute("descLength", DB.SPACE_DESC_LEN);
+		request.setAttribute("nameRegex", R.PRIMITIVE_NAME_PATTERN);
 		Space s = null;
 		if (Permissions.canUserSeeSpace(spaceId, userId)) {
 			s = Spaces.get(spaceId);
@@ -107,7 +108,7 @@
 				<tbody>
 				<tr>
 					<td class="label">space name</td>
-					<td><input id="name" type="text" name="name"
+					<td><input id="name" type="text" name="name" pattern="${nameRegex}"
 					           value="${space.name}" length="${nameLength}">
 					</td>
 				</tr>

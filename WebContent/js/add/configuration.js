@@ -40,17 +40,8 @@ function initUI() {
 function attachFormValidation() {
 
 	// Add regular expression handling to the JQuery validator
-	$.validator.addMethod(
-		"jsregex",
-		function(value, element, regexp) {
-			var re = new RegExp(regexp);
-			return this.optional(element) || re.test(value);
-		});
-	$.validator.addMethod(
-		"regex",
-		function(value, element, str) {
-			return !element.validity.patternMismatch;
-		});
+	addValidators();
+
 	// Re-validate the 'file location' field when it loses focus
 	$("#configFile").change(function() {
 		$("#configFile").blur().focus();
@@ -64,11 +55,11 @@ function attachFormValidation() {
 			},
 			uploadConfigName: {
 				required: true,
-				regex: "DUMMY REGEX"
+				jspregex: "DUMMY REGEX"
 			},
 			uploadConfigDesc: {
 				maxlength: $("#uploadConfigDesc").attr("maxlength"),
-				jsregex: getPrimDescRegex()
+				regex: getPrimDescRegex()
 			}
 		},
 		messages: {
@@ -77,13 +68,13 @@ function attachFormValidation() {
 			},
 			uploadConfigName: {
 				required: "name required",
-				regex: "invalid character(s)"
+				jspregex: "invalid character(s)"
 			},
 			uploadConfigDesc: {
 				required: "description required",
 				maxlength: "max length is " + $("#uploadConfigDesc")
 				.attr("maxlength"),
-				jsregex: "invalid character(s)"
+				regex: "invalid character(s)"
 			}
 		}
 	});

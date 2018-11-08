@@ -51,12 +51,7 @@ function attachFormValidation() {
 	});
 
 	// Adds regular expression handling to JQuery's validator
-	$.validator.addMethod(
-		"regex",
-		function(value, element, regexp) {
-			var re = new RegExp(regexp);
-			return this.optional(element) || re.test(value);
-		});
+	addValidators();
 
 	// Form validation rules/messages
 	$("#editSolverForm").validate({
@@ -64,7 +59,7 @@ function attachFormValidation() {
 			name: {
 				required: true,
 				maxlength: $("#name").attr("length"),
-				regex: getPrimNameRegex()
+				jspregex: getPrimNameRegex()
 			},
 			description: {
 				required: false,
@@ -76,7 +71,7 @@ function attachFormValidation() {
 			name: {
 				required: "name required",
 				maxlength: $("#name").attr("length") + " characters maximum",
-				regex: "invalid character(s)"
+				jspregex: "invalid character(s)"
 			},
 			description: {
 				required: "description required",

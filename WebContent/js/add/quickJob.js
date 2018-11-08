@@ -40,17 +40,9 @@ function getClockTimeoutErrorMessage() {
  */
 function attachFormValidation() {
 	// Add regular expression capabilities to the validator
-	$.validator.addMethod(
-		"jsregex",
-		function(value, element, regexp) {
-			var re = new RegExp(regexp);
-			return this.optional(element) || re.test(value);
-		});
-	$.validator.addMethod(
-		"regex",
-		function(value, element, str) {
-			return !element.validity.patternMismatch;
-		});
+	
+	addValidators();
+
 	// Set up form validation
 	$("#addForm").validate({
 		submitHandler: function(form) {
@@ -65,12 +57,12 @@ function attachFormValidation() {
 				required: true,
 				minlength: 1,
 				maxlength: $("#txtJobName").attr("length"),
-				regex: "DUMMY REGEX"
+				jspregex: "DUMMY REGEX"
 			},
 			desc: {
 				required: false,
 				maxlength: $("#txtDesc").attr("length"),
-				jsregex: getPrimDescRegex()
+				regex: getPrimDescRegex()
 			},
 			cpuTimeout: {
 				required: true,
@@ -93,7 +85,7 @@ function attachFormValidation() {
 				required: true,
 				minlength: 1,
 				maxlength: $("#txtBenchName").attr("length"),
-				regex: "DUMMY REGEX"
+				jspregex: "DUMMY REGEX"
 			},
 			bench: {
 				required: true,
@@ -121,14 +113,14 @@ function attachFormValidation() {
 				minlength: "1 character minimum",
 				maxlength: $("#txtJobName")
 				.attr("length") + " characters maximum",
-				regex: "invalid character(s)"
+				jspregex: "invalid character(s)"
 			},
 			benchName: {
 				required: "enter a benchmark name",
 				minlength: "1 character minimum",
 				maxlength: $("#txtBenchName")
 				.attr("length") + " characters maximum",
-				regex: "invalid character(s)"
+				jspregex: "invalid character(s)"
 			},
 			bench: {
 				required: "enter a benchmark",
@@ -137,7 +129,7 @@ function attachFormValidation() {
 			desc: {
 				required: "enter a job description",
 				maxlength: $("#txtDesc").attr("length") + " characters maximum",
-				jsregex: "invalid character(s)"
+				regex: "invalid character(s)"
 			},
 			cpuTimeout: {
 				required: "enter a timeout",

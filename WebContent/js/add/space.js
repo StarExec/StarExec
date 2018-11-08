@@ -9,42 +9,32 @@ $(document).ready(function() {
 function attachFormValidation() {
 
 	// Adds regular expression handling to validator
-	$.validator.addMethod(
-		"jsregex",
-		function(value, element, regexp) {
-			var re = new RegExp(regexp);
-			return this.optional(element) || re.test(value);
-		}
-	);
-	$.validator.addMethod(
-		"regex",
-		function(value, element, str) {
-			return !element.validity.patternMismatch;
-		});
+	addValidators();
+
 	// Form validation rules/messages
 	$("#addForm").validate({
 		rules: {
 			name: {
 				required: true,
 				maxlength: $("#txtName").attr("length"),
-				regex: "DUMMY REGEX"
+				jspregex: "DUMMY REGEX"
 			},
 			desc: {
 				required: false,
 				maxlength: $("#txtDesc").attr("length"),
-				jsregex: getPrimDescRegex()
+				regex: getPrimDescRegex()
 			}
 		},
 		messages: {
 			name: {
 				required: "a name is required",
 				maxlength: $("#txtName").attr("length") + " characters maximum",
-				regex: "invalid character(s)"
+				jspregex: "invalid character(s)"
 			},
 			desc: {
 				required: "description required",
 				maxlength: $("#txtDesc").attr("length") + " characters maximum",
-				jsregex: "invalid character(s)"
+				regex: "invalid character(s)"
 			}
 		}
 	});

@@ -110,17 +110,8 @@ function attachFormValidation() {
 	});
 
 	// Add regular expression handler to jQuery validator
-	$.validator.addMethod(
-		"jsregex",
-		function(value, element, regexp) {
-			var re = new RegExp(regexp);
-			return this.optional(element) || re.test(value);
-		});
-	$.validator.addMethod(
-		"regex",
-		function(value, element, str) {
-			return !element.validity.patternMismatch;	
-		});
+	addValidators();
+
 	// Re-validate the 'solver location' field when it loses focus
 	$("#fileLoc").change(function() {
 		$("#fileLoc").blur().focus();
@@ -131,46 +122,46 @@ function attachFormValidation() {
 		rules: {
 			f: {
 				required: "#radioLocal:checked",
-				jsregex: "(\.tgz$)|(\.zip$)|(\.tar(\.gz)?$)"
+				regex: "(\.tgz$)|(\.zip$)|(\.tar(\.gz)?$)"
 			},
 			url: {
 				required: "#radioURL:checked",
-				jsregex: "(\.tgz$)|(\.zip$)|(\.tar(\.gz)?$)"
+				regex: "(\.tgz$)|(\.zip$)|(\.tar(\.gz)?$)"
 			},
 			sn: {
 				required: true,
 				maxlength: $("#name").attr("length"),
-				regex: "DUMMY REGEX"
+				jspregex: "DUMMY REGEX"
 			},
 			desc: {
 				maxlength: $("#description").attr("length"),
-				jsregex: getPrimDescRegex()
+				regex: getPrimDescRegex()
 			},
 			d: {
-				jsregex: "(\.txt$)"
+				regex: "(\.txt$)"
 			}
 		},
 		messages: {
 			f: {
 				required: "please select a file",
-				jsregex: ".zip, .tar and .tar.gz only"
+				regex: ".zip, .tar and .tar.gz only"
 			},
 			url: {
 				required: "please enter a URL",
-				jsregex: "URL must be .zip, .tar, or .tar.gz"
+				regex: "URL must be .zip, .tar, or .tar.gz"
 			},
 			sn: {
 				required: "solver name required",
 				maxlength: $("#name").attr("length") + " characters maximum",
-				regex: "invalid character(s)"
+				jspregex: "invalid character(s)"
 			},
 			desc: {
 				maxlength: $("#description")
 				.attr("length") + " characters maximum",
-				jsregex: "invalid character(s)"
+				regex: "invalid character(s)"
 			},
 			d: {
-				jsregex: ".txt file only"
+				regex: ".txt file only"
 			}
 		},
 		submitHandler: function(form) {

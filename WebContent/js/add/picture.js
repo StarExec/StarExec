@@ -20,12 +20,7 @@ function initUI() {
 function attachFormValidation() {
 
 	// Add regular expressions to the validator
-	$.validator.addMethod(
-		"regex",
-		function(value, element, regexp) {
-			var re = new RegExp(regexp);
-			return this.optional(element) || re.test(value);
-		});
+	addValidators();
 
 	// Re-validate the 'picture location' field when it loses focus
 	$("#uploadPic").change(function() {

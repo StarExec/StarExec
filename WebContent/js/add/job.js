@@ -92,23 +92,7 @@ function getClockTimeoutErrorMessage() {
  */
 function attachFormValidation() {
 	// Add regular expression capabilities to the validator
-	$.validator.addMethod(
-		"jsregex",
-		function(value, element, str) {
-			var re = new RegExp(str);
-			return this.optional(element) || re.test(value);
-		});
-	$.validator.addMethod(
-		"regex",
-		function(value, element, str) {
-			return !element.validity.patternMismatch;
-		});
-	$.validator.addMethod(
-		"interval",
-		function(value, element, str) {
-			return value == 0 || value >= 10;
-		}
-	);
+	addValidators();
 
 	// Set up form validation
 	$("#addForm").validate({
@@ -117,12 +101,12 @@ function attachFormValidation() {
 				required: true,
 				minlength: 2,
 				maxlength: $("#txtJobName").attr("length"),
-				regex: "DUMMY REGEX"
+				jspregex: "DUMMY REGEX"
 			},
 			desc: {
 				required: false,
 				maxlength: $("#txtDesc").attr("length"),
-				jsregex: getPrimDescRegex()
+				regex: getPrimDescRegex()
 			},
 			cpuTimeout: {
 				required: true,
@@ -152,12 +136,12 @@ function attachFormValidation() {
 				minlength: "2 characters minimum",
 				maxlength: $("#txtJobName")
 				.attr("length") + " characters maximum",
-				regex: "invalid character(s)"
+				jspregex: "invalid character(s)"
 			},
 			desc: {
 				required: "enter a job description",
 				maxlength: $("#txtDesc").attr("length") + " characters maximum",
-				jsregex: "invalid character(s)"
+				regex: "invalid character(s)"
 			},
 			cpuTimeout: {
 				required: "enter a timeout",

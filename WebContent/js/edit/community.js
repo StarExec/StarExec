@@ -381,12 +381,7 @@ function attachFormValidation() {
 	});
 
 	// Adds regular expression handling to JQuery validator
-	$.validator.addMethod(
-		"regex",
-		function(value, element, regexp) {
-			var re = new RegExp(regexp);
-			return this.optional(element) || re.test(value);
-		});
+	addValidators();
 
 	var formsToValidate = [
 		'#addPostProcessorForm',
@@ -401,7 +396,7 @@ function attachFormValidation() {
 				name: {
 					required: true,
 					maxlength: $("#procName").attr("length"),
-					regex: getPrimNameRegex()
+					jspregex: "DUMMY REGEX"
 				},
 				desc: {
 					maxlength: $("#procDesc").attr("length"),
@@ -416,7 +411,7 @@ function attachFormValidation() {
 					required: "enter a processor name",
 					maxlength: $("#procName")
 					.attr("length") + " characters maximum",
-					regex: "invalid character(s)"
+					jspregex: "invalid character(s)"
 				},
 				desc: {
 					required: "enter a processor description",

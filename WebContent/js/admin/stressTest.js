@@ -29,6 +29,8 @@ function initUI() {
  */
 function attachFormValidation() {
 
+	addValidators();
+
 	// Add validation to the configuration save form
 	$("#saveConfigForm").validate({
 		rules: {

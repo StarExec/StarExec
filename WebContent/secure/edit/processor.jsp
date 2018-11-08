@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.DB, org.starexec.data.database.Communities, org.starexec.data.database.Processors, org.starexec.data.database.Syntaxes, org.starexec.data.security.GeneralSecurity, org.starexec.data.security.ProcessorSecurity, org.starexec.data.to.DefaultSettings, org.starexec.data.to.Processor, org.starexec.data.to.Syntax, org.starexec.data.to.enums.Primitive, org.starexec.data.to.enums.ProcessorType, org.starexec.util.SessionUtil"
+        import="org.starexec.constants.DB, org.starexec.constants.R, org.starexec.data.database.Communities, org.starexec.data.database.Processors, org.starexec.data.database.Syntaxes, org.starexec.data.security.GeneralSecurity, org.starexec.data.security.ProcessorSecurity, org.starexec.data.to.DefaultSettings, org.starexec.data.to.Processor, org.starexec.data.to.Syntax, org.starexec.data.to.enums.Primitive, org.starexec.data.to.enums.ProcessorType, org.starexec.util.SessionUtil"
         session="true" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -8,6 +8,7 @@
 		// Grab relevant user id & processor info
 		request.setAttribute("processorNameLen", DB.PROCESSOR_NAME_LEN);
 		request.setAttribute("processorDescLen", DB.PROCESSOR_DESC_LEN);
+		request.setAttribute("nameRegex", R.PRIMITIVE_NAME_PATTERN);
 		int procId = Integer.parseInt((String) request.getParameter("id"));
 		int userId = SessionUtil.getUserId(request);
 		Processor proc = Processors.get(procId);
@@ -84,7 +85,7 @@
 				<tr>
 					<td class="label">name</td>
 					<td><input id="name" type="text" name="name"
-					           maxlength="${processorNameLen}"
+					           maxlength="${processorNameLen}" pattern="${nameRegex}"
 					           value="${proc.name}"/></td>
 				</tr>
 				<tr>

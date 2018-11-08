@@ -35,12 +35,7 @@ function attachFormValidation() {
 	});
 
 	// Adds regular expression handling to validator
-	$.validator.addMethod(
-		"regex",
-		function(value, element, regexp) {
-			var re = new RegExp(regexp);
-			return this.optional(element) || re.test(value);
-		});
+	addValidators();
 
 	// Form validation rules/messages
 	$("#editSpaceForm").validate({
@@ -48,7 +43,7 @@ function attachFormValidation() {
 			name: {
 				required: true,
 				maxlength: $("#name").attr("length"),
-				regex: getPrimNameRegex()
+				jspregex: "DUMMY REGEX"
 			},
 			description: {
 				required: false,
@@ -61,7 +56,7 @@ function attachFormValidation() {
 			name: {
 				required: "enter a space name",
 				maxlength: $("#name").attr("length") + " characters maximum",
-				regex: "invalid character(s)"
+				jspregex: "invalid character(s)"
 			},
 			description: {
 				required: "enter a description",

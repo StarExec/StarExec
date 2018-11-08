@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.apache.commons.io.FileUtils,org.starexec.constants.DB, org.starexec.data.database.Solvers, org.starexec.data.security.GeneralSecurity, org.starexec.data.to.Configuration, org.starexec.data.to.Solver, org.starexec.util.SessionUtil, org.starexec.util.Util, java.io.File"
+        import="org.apache.commons.io.FileUtils,org.starexec.constants.R,org.starexec.constants.DB, org.starexec.data.database.Solvers, org.starexec.data.security.GeneralSecurity, org.starexec.data.to.Configuration, org.starexec.data.to.Solver, org.starexec.util.SessionUtil, org.starexec.util.Util, java.io.File"
         session="true" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -9,6 +9,7 @@
 		// Grab relevant user id & configuration info
 		request.setAttribute("configNameLen", DB.CONFIGURATION_NAME_LEN);
 		request.setAttribute("configDescLen", DB.CONFIGURATION_DESC_LEN);
+		request.setAttribute("nameRegex", R.PRIMITIVE_NAME_PATTERN);
 		int configId = Integer.parseInt((String) request.getParameter("id"));
 		int userId = SessionUtil.getUserId(request);
 		Configuration con = Solvers.getConfiguration(configId);
@@ -72,7 +73,7 @@
 				<tr>
 					<td>name</td>
 					<td><input id="name" type="text" name="name"
-					           maxlength="${configNameLen}"
+					           maxlength="${configNameLen}" pattern="${nameRegex}"
 					           value="${config.name}"/></td>
 				</tr>
 				<tr>

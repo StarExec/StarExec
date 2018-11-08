@@ -13,6 +13,8 @@ $(document).ready(function() {
  * Attaches form validation to the 'change password' fields
  */
 function attachFormValidation() {
+	addValidators();
+
 	// Hide the password strength meter initially and display it when a password's
 	// strength has been calculated
 	$.validator.passwordStrengthMeter("#pwd-meter");
