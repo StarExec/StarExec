@@ -345,6 +345,8 @@ public class JobSecurity {
 	public static ValidatorStatusCode canUserDeleteJob(int jobId, int userId) {
 		if (!userOwnsJobOrIsAdmin(jobId, userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to delete this job");
+		} else if (Jobs.isReadOnly(jobId)) {
+			return new ValidatorStatusCode(false, "This job is currently Read Only and cannot be deleted");
 		}
 		return new ValidatorStatusCode(true);
 	}
