@@ -181,6 +181,10 @@ public class JobSecurity {
 			return new ValidatorStatusCode(false, "Stage numbers must be greater than 0");
 		}
 
+		if (Jobs.isReadOnly(jobId)) {
+			return new ValidatorStatusCode(false, "This job is currently Read Only and cannot be processed");
+		}
+
 		return new ValidatorStatusCode(true);
 	}
 
@@ -203,6 +207,8 @@ public class JobSecurity {
 				statusCode == StatusCode.STATUS_RUNNING.getVal() ||
 				statusCode == StatusCode.STATUS_PENDING_SUBMIT.getVal()) {
 			return new ValidatorStatusCode(false, "This pair is not yet completed");
+		} else if (Jobs.isReadOnly(jobId)) {
+			return new ValidatorStatusCode(false, "This job is currently Read Only and no pairs can be rerun");
 		}
 		return new ValidatorStatusCode(true);
 	}
@@ -248,12 +254,17 @@ public class JobSecurity {
 		if (Jobs.isJobDeleted(jobId)) {
 			return new ValidatorStatusCode(false, "This job has been deleted already");
 		}
+		if (Jobs.isReadOnly(jobId)) {
+			return new ValidatorStatusCode(false, "This job is currently Read Only and no pairs can be rerun");
+		}
 		return new ValidatorStatusCode(true);
 	}
 
 	public static ValidatorStatusCode canUserRerunAllPairs(int jobId, int userId) {
 		if (!Jobs.isJobComplete(jobId)) {
 			return new ValidatorStatusCode(false, "This job is not yet completed");
+		} else if (Jobs.isReadOnly(jobId)) {
+			return new ValidatorStatusCode(false, "This job is currently Read Only and no pairs can be rerun");
 		}
 		return canUserRerunPairs(jobId, userId);
 	}
@@ -303,6 +314,8 @@ public class JobSecurity {
 	public static ValidatorStatusCode canUserResumeJob(int jobId, int userId) {
 		if (!userOwnsJobOrIsAdmin(jobId, userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to resume this job");
+		} else if (Jobs.isReadOnly(jobId)) {
+			return new ValidatorStatusCode(false, "This job is currently Read Only and cannot be resumed");
 		}
 
 		if (Users.isDiskQuotaExceeded(userId)) {
@@ -345,6 +358,8 @@ public class JobSecurity {
 	public static ValidatorStatusCode canUserDeleteJob(int jobId, int userId) {
 		if (!userOwnsJobOrIsAdmin(jobId, userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to delete this job");
+		} else if (Jobs.isReadOnly(jobId)) {
+			return new ValidatorStatusCode(false, "This job is currently Read Only and cannot be deleted");
 		}
 		return new ValidatorStatusCode(true);
 	}
@@ -386,6 +401,8 @@ public class JobSecurity {
 	public static ValidatorStatusCode canUserAddJobPairs(int jobId, int userId) {
 		if (!userOwnsJobOrIsAdmin(jobId, userId)) {
 			return new ValidatorStatusCode(false, "You do not have permission to add job pairs for this job.");
+		} else if (Jobs.isReadOnly(jobId)) {
+			return new ValidatorStatusCode(false, "This job is currently Read Only and no pairs can be added");
 		}
 		Job j = Jobs.get(jobId);
 		if (j.isBuildJob()) {
