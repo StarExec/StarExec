@@ -154,7 +154,7 @@ public class UploadPicture extends HttpServlet {
 			sb.append(fileName);
 			sb.append("_thn.jpg");
 			String fileNameThumbnail = sb.toString();
-			scale(filenameupload, 280, 320, fileNameThumbnail);
+			scale(filenameupload, 320, 320, fileNameThumbnail);
 			return redir;
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
