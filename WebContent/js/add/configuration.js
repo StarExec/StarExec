@@ -84,11 +84,11 @@ function attachFormValidation() {
 		rules: {
 			saveConfigName: {
 				required: true,
-				regex: "DUMMY REGEX"
+				jspregex: "DUMMY REGEX"
 			},
 			saveConfigDesc: {
 				maxlength: $("#saveConfigDesc").attr("maxlength"),
-				jsregex: getPrimDescRegex()
+				regex: getPrimDescRegex()
 			},
 			saveConfigContents: {
 				required: true
@@ -97,13 +97,13 @@ function attachFormValidation() {
 		messages: {
 			saveConfigName: {
 				required: "name required",
-				regex: "invalid characters"
+				jspregex: "invalid characters"
 			},
 			saveConfigDesc: {
 				required: "description required",
 				maxlength: "max length is " + $("#saveConfigDesc")
 				.attr("maxlength"),
-				jsregex: "invalid characters"
+				regex: "invalid characters"
 			},
 			saveConfigContents: {
 				required: "file can't be empty"
