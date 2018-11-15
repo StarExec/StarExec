@@ -104,4 +104,22 @@ public class UtilTests {
 		Assert.assertTrue(textFile.exists());
 		Assert.assertFalse(Util.isBinaryFile(textFile));
 	}
+
+	@Test
+	public void escapeForCSV() {
+		String escaped = "abc123";
+		String old;
+
+		old = "abc123";
+		Assert.assertTrue(Util.escapeForCSV(old).equals(escaped));
+
+		old = "abc,123";
+		Assert.assertTrue(Util.escapeForCSV(old).equals(escaped));
+
+		old = "abc\"123\"";
+		Assert.assertTrue(Util.escapeForCSV(old).equals(escaped));
+
+		old = ",,,,ab,c,12,,3,";
+		Assert.assertTrue(Util.escapeForCSV(old).equals(escaped));
+	}
 }
