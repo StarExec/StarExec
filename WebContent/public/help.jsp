@@ -19,8 +19,8 @@
 				detailed description of StarExec features and functionality
 			</li>
 			<li>
-				<a href="https://www.tapatalk.com/groups/starexec/">StarExec Forum</a>,
-				for questions, bug reports, feature requests
+				<a href="https://github.com/StarExec/StarExec">StarExec on GitHub</a>,
+				for bug reports and feature requests
 			</li>
 			<li>
 				<a href="http://wiki.uiowa.edu/display/stardev/Home">Public
