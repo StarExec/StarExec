@@ -38,10 +38,6 @@ function initUI() {
  * Attaches validation to the configuration upload form
  */
 function attachFormValidation() {
-
-	// Add regular expression handling to the JQuery validator
-	addValidators();
-
 	// Re-validate the 'file location' field when it loses focus
 	$("#configFile").change(function() {
 		$("#configFile").blur().focus();

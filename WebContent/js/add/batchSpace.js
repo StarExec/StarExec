@@ -31,10 +31,6 @@ function initUI() {
  * Attaches form validation to the file uploading field
  */
 function attachFormValidation() {
-
-	// Adds regular expression handling to the validator
-	addValidators();
-
 	// Re-validate the 'file location' field when it loses focus
 	$("#fileUpload").change(function() {
 		$("#fileUpload").blur().focus();

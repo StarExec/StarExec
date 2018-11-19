@@ -380,9 +380,6 @@ function attachFormValidation() {
 		$(".processorFile").blur().focus();
 	});
 
-	// Adds regular expression handling to JQuery validator
-	addValidators();
-
 	var formsToValidate = [
 		'#addPostProcessorForm',
 		'#addPreProcessorForm',

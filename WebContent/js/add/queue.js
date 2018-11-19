@@ -1,6 +1,5 @@
 $(document).ready(function() {
 	attachFormValidation();
-
 	initUI();
 
 	// Remove all unselected rows from the DOM before submitting
@@ -11,11 +10,9 @@ $(document).ready(function() {
 		.find('input')
 		.remove();
 	});
-
 });
 
 function initUI() {
-
 	$("#btnDone").button({
 		icons: {
 			primary: "ui-icon-locked"
@@ -36,10 +33,6 @@ function initUI() {
 }
 
 function attachFormValidation() {
-
-	// Add regular expression capabilities to the validator
-	addValidators();
-
 	// Set up form validation
 	$("#addForm").validate({
 		rules: {
@@ -69,10 +62,3 @@ function attachFormValidation() {
 		}
 	});
 }
-
-	
-
-
-
-
-

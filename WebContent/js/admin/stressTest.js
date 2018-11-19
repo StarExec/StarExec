@@ -28,9 +28,6 @@ function initUI() {
  * Attaches validation to the stress test form
  */
 function attachFormValidation() {
-
-	addValidators();
-
 	// Add validation to the configuration save form
 	$("#saveConfigForm").validate({
 		rules: {

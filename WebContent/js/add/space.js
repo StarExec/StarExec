@@ -7,10 +7,6 @@ $(document).ready(function() {
  * Attaches form validation to the name & description fields of add/space.jsp
  */
 function attachFormValidation() {
-
-	// Adds regular expression handling to validator
-	addValidators();
-
 	// Form validation rules/messages
 	$("#addForm").validate({
 		rules: {

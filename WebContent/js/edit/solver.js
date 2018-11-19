@@ -50,9 +50,6 @@ function attachFormValidation() {
 		e.preventDefault();
 	});
 
-	// Adds regular expression handling to JQuery's validator
-	addValidators();
-
 	// Form validation rules/messages
 	$("#editSolverForm").validate({
 		rules: {
@@ -180,7 +177,7 @@ function refreshSolverWebsites() {
  function processWebsiteData(jsonData) {
 	// Ensures the websites table is empty
 	$('#websites tbody tr').remove();
-	
+
 	// Injects the clickable delete button that's always present
 	$.each(jsonData, function(i, site) {
 		$('#websites tbody').append('<tr><td><a href="' + site.url + '">' + site.name + '<img class="extLink" src="'+starexecRoot+'images/external.png"/></a></td><td><a class="delWebsite" id="' + site.id + '">delete</a></td></tr>');

@@ -54,10 +54,6 @@ function monitorTextarea(textarea, defaultText) {
  * Attaches form validation to the community membership request form
  */
 function attachFormValidation() {
-
-	// Add regular expression method to JQuery validator
-	addValidators();
-
 	// Form validation
 	$("#inviteForm").validate({
 		rules: {

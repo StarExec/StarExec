@@ -21,9 +21,6 @@ function initUI() {
 }
 
 function attachFormValidation() {
-	
-	addValidators();
-
 	// Pressing the enter key on an input field triggers a submit,
 	// and this special validation process doesn't use submit, so
 	// the following code prevents that trigger

@@ -23,10 +23,6 @@ $(document).ready(function() {
  * Attach validation to the benchmark upload form
  */
 function attachFormValidation() {
-
-	// Add 'regex' method to JQuery validator
-	addValidators();
-
 	$("#radioLocal").change(function() {
 		if ($("#radioLocal").is(":checked")) {
 			$("#fileURL").stop(true, true, true);

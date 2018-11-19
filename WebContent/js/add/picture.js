@@ -18,10 +18,6 @@ function initUI() {
  * Attaches form validation to the picture upload field
  */
 function attachFormValidation() {
-
-	// Add regular expressions to the validator
-	addValidators();
-
 	// Re-validate the 'picture location' field when it loses focus
 	$("#uploadPic").change(function() {
 		$("#uploadPic").blur().focus();

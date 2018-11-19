@@ -48,10 +48,6 @@ function initUI() {
 }
 
 function attachFormValidation() {
-
-	// Add regular expression capabilities to the validator
-	addValidators();
-
 	// Set up form validation
 	$("#addForm").validate({
 		rules: {

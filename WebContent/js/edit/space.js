@@ -34,9 +34,6 @@ function attachFormValidation() {
 		e.preventDefault();
 	});
 
-	// Adds regular expression handling to validator
-	addValidators();
-
 	// Form validation rules/messages
 	$("#editSpaceForm").validate({
 		rules: {

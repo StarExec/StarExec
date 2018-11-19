@@ -32,9 +32,6 @@ function attachFormValidation() {
 		e.preventDefault();
 	});
 
-	// Adds regular expression handling to validator
-	addValidators();
-
 	// Form validation rules/messages
 	$("#editBenchmarkForm").validate({
 		rules: {

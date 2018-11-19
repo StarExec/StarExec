@@ -98,6 +98,25 @@ $(document).ready(function() {
 		d.dialog($.extend({}, defaultDialogConfig, config));
 		d.on("dialogclose", removeThis);
 	};
+
+	$.validator ||= {};
+	$.validator.addMethod(
+		"regex",
+		function(value, element, str) {
+			var re = new RegExp(str);
+			return this.optional(element) || re.test(value);
+		});
+	$.validator.addMethod(
+		"jspregex",
+		function(value, element, str) {
+			return !element.validity.patternMismatch;
+		});
+	$.validator.addMethod(
+		"interval",
+		function(value, element, str) {
+			return value == 0 || value >= 10;
+		}
+	);
 });
 
 /**
@@ -317,26 +336,6 @@ function HtmlEncode(s) {
 	el.innerText = el.textContent = s;
 	s = el.innerHTML;
 	return s;
-}
-
-function addValidators() {
-	$.validator.addMethod(
-		"regex",
-		function(value, element, str) {
-			var re = new RegExp(str);
-			return this.optional(element) || re.test(value);
-		});
-	$.validator.addMethod(
-		"jspregex",
-		function(value, element, str) {
-			return !element.validity.patternMismatch;
-		});
-	$.validator.addMethod(
-		"interval",
-		function(value, element, str) {
-			return value == 0 || value >= 10;
-		}
-	);
 }
 
 /**

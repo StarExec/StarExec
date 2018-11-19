@@ -18,9 +18,6 @@ function initUI() {
  * Attaches form validation to the password reset fields
  */
 function attachFormValidation() {
-	// Adds regular expression handling to the jQuery Validator
-	addValidators();
-
 	// Form validation rules/messages	
 	$("#resetForm").validate({
 		rules: {

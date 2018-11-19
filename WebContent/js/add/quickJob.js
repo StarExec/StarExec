@@ -39,10 +39,6 @@ function getClockTimeoutErrorMessage() {
  * Attach validation to the job creation form
  */
 function attachFormValidation() {
-	// Add regular expression capabilities to the validator
-	
-	addValidators();
-
 	// Set up form validation
 	$("#addForm").validate({
 		submitHandler: function(form) {

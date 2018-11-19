@@ -109,9 +109,6 @@ function attachFormValidation() {
 		}
 	});
 
-	// Add regular expression handler to jQuery validator
-	addValidators();
-
 	// Re-validate the 'solver location' field when it loses focus
 	$("#fileLoc").change(function() {
 		$("#fileLoc").blur().focus();

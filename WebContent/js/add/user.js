@@ -19,9 +19,6 @@ function initUI() {
  * Attaches form validation to the user registration fields
  */
 function attachFormValidation() {
-	// Adds regular expression handling to jQuery Validator
-	addValidators();
-
 	$("#regForm").validate({
 		rules: {
 			fn: {

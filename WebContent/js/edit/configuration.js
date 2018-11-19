@@ -58,9 +58,6 @@ function attachFormValidation() {
 		e.preventDefault();
 	});
 
-	// Adds regular expression 'regex' function to validator
-	addValidators();
-
 	// Form validation rules/messages
 	$("#editConfigForm").validate({
 		rules: {
