@@ -110,12 +110,7 @@ function attachFormValidation() {
 	});
 
 	// Add regular expression handler to jQuery validator
-	$.validator.addMethod(
-		"regex",
-		function(value, element, regexp) {
-			var re = new RegExp(regexp);
-			return this.optional(element) || re.test(value);
-		});
+	addValidators();
 
 	// Re-validate the 'solver location' field when it loses focus
 	$("#fileLoc").change(function() {
@@ -136,7 +131,7 @@ function attachFormValidation() {
 			sn: {
 				required: true,
 				maxlength: $("#name").attr("length"),
-				regex: getPrimNameRegex()
+				jspregex: "DUMMY REGEX"
 			},
 			desc: {
 				maxlength: $("#description").attr("length"),
@@ -158,7 +153,7 @@ function attachFormValidation() {
 			sn: {
 				required: "solver name required",
 				maxlength: $("#name").attr("length") + " characters maximum",
-				regex: "invalid character(s)"
+				jspregex: "invalid character(s)"
 			},
 			desc: {
 				maxlength: $("#description")

@@ -69,6 +69,7 @@
 	request.setAttribute("JOB_NAME_LEN", DB.JOB_NAME_LEN);
 	request.setAttribute(
 			"MINIMUM_RESULTS_INTERVAL", R.MINIMUM_RESULTS_INTERVAL);
+	request.setAttribute("namePattern", R.PRIMITIVE_NAME_PATTERN);
 %>
 
 <jsp:useBean id="now" class="java.util.Date"/>
@@ -111,7 +112,7 @@
 				<tr class="noHover"
 				    title="how do you want this job to be displayed in StarExec?">
 					<td class="label"><p>job name</p></td>
-					<td><input length="${jobNameLen}" id="txtJobName"
+					<td><input length="${jobNameLen}" id="txtJobName" pattern="${namePattern}"
 					           name="name" type="text" maxlength="${JOB_NAME_LEN}"
 					           value="${space.name} <fmt:formatDate pattern="yyyy-MM-dd HH.mm" value="${now}" />"/>
 					</td>

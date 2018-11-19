@@ -19,12 +19,7 @@ function initUI() {
  */
 function attachFormValidation() {
 	// Adds regular expression handling to the jQuery Validator
-	$.validator.addMethod(
-		"regex",
-		function(value, element, regexp) {
-			var re = new RegExp(regexp);
-			return this.optional(element) || re.test(value);
-		});
+	addValidators();
 
 	// Form validation rules/messages	
 	$("#resetForm").validate({

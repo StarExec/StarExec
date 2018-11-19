@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.DB, org.starexec.data.database.Cluster, org.starexec.data.database.Queues, org.starexec.data.to.Queue, org.starexec.data.to.WorkerNode, java.util.List" %>
+        import="org.starexec.constants.DB, org.starexec.constants.R, org.starexec.data.database.Cluster, org.starexec.data.database.Queues, org.starexec.data.to.Queue, org.starexec.data.to.WorkerNode, java.util.List" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
@@ -11,6 +11,7 @@
 		request.setAttribute("queueNameLen", DB.QUEUE_NAME_LEN);
 		request.setAttribute("queueName", q.getName());
 		request.setAttribute("nodes", nodes);
+		request.setAttribute("nameRegex", R.PRIMITIVE_NAME_PATTERN);
 	} catch (NumberFormatException nfe) {
 		response.sendError(
 				HttpServletResponse.SC_BAD_REQUEST,
@@ -42,7 +43,7 @@
 				    title="what would you like to name your queue?">
 					<td class="label"><p>queue name</p></td>
 					<td>
-						<input type="hidden" name="name" value="${queueName}"/>
+						<input type="hidden" name="name" value="${queueName}" pattern="${nameRegex}"/>
 						<p>${queueName}</p></td>
 				</tr>
 				</tbody>

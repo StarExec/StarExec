@@ -6,13 +6,7 @@ jQuery(function($) {
 	var $editProcForm = $("#editProcForm");
 
 	// Adds regular expression 'regex' function to validator
-	$.validator.addMethod(
-		"regex",
-		function(value, element, regexp) {
-			var re = new RegExp(regexp);
-			return this.optional(element) || re.test(value);
-		}
-	);
+	addValidators();
 
 	// Pressing the enter key on an input field triggers a submit,
 	// and this special validation process doesn't use submit, so
@@ -27,7 +21,7 @@ jQuery(function($) {
 			name: {
 				required: true,
 				maxlength: $name.attr("maxlength"),
-				regex: getPrimNameRegex()
+				jspregex: "DUMMY REGEX"
 			},
 			description: {
 				required: true,
@@ -39,7 +33,7 @@ jQuery(function($) {
 			name: {
 				required: "name required",
 				maxlength: $name.attr("maxlength") + " characters maximum",
-				regex: "invalid character(s)"
+				jspregex: "invalid character(s)"
 			},
 			description: {
 				required: "description required",

@@ -25,12 +25,7 @@ $(document).ready(function() {
 function attachFormValidation() {
 
 	// Add 'regex' method to JQuery validator
-	$.validator.addMethod(
-		"regex",
-		function(value, element, regexp) {
-			var re = new RegExp(regexp);
-			return this.optional(element) || re.test(value);
-		});
+	addValidators();
 
 	$("#radioLocal").change(function() {
 		if ($("#radioLocal").is(":checked")) {

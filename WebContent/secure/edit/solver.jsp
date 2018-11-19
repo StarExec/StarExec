@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.DB,org.starexec.data.database.Permissions, org.starexec.data.database.Solvers,org.starexec.data.database.Websites, org.starexec.data.security.GeneralSecurity, org.starexec.data.to.Solver, org.starexec.data.to.Website.WebsiteType, org.starexec.util.SessionUtil" %>
+        import="org.starexec.constants.DB,org.starexec.constants.R,org.starexec.data.database.Permissions, org.starexec.data.database.Solvers,org.starexec.data.database.Websites, org.starexec.data.security.GeneralSecurity, org.starexec.data.to.Solver, org.starexec.data.to.Website.WebsiteType, org.starexec.util.SessionUtil" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -9,6 +9,7 @@
 		int solverId = Integer.parseInt(request.getParameter("id"));
 		request.setAttribute("solverNameLen", DB.SOLVER_NAME_LEN);
 		request.setAttribute("solverDescLen", DB.SOLVER_DESC_LEN);
+		request.setAttribute("nameRegex", R.PRIMITIVE_NAME_PATTERN);
 		Solver s = null;
 		if (Permissions.canUserSeeSolver(solverId, userId)) {
 			s = Solvers.get(solverId);
@@ -82,7 +83,7 @@
 				<tr>
 					<td class="label">solver name</td>
 					<td>
-						<input id="name" type="text" name="name"
+						<input id="name" type="text" name="name" pattern="${nameRegex}"
 						       value="${solver.name}">
 
 					</td>

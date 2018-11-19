@@ -50,12 +50,7 @@ function initUI() {
 function attachFormValidation() {
 
 	// Add regular expression capabilities to the validator
-	$.validator.addMethod(
-		"regex",
-		function(value, element, regexp) {
-			var re = new RegExp(regexp);
-			return this.optional(element) || re.test(value);
-		});
+	addValidators();
 
 	// Set up form validation
 	$("#addForm").validate({
@@ -64,7 +59,7 @@ function attachFormValidation() {
 				required: true,
 				minlength: 2,
 				maxlength: $("#txtQueueName").attr("length"),
-				regex: getPrimNameRegex()
+				jspregex: "DUMMY REGEX"
 			}
 		},
 		messages: {
@@ -73,7 +68,7 @@ function attachFormValidation() {
 				minlength: "2 characters minimum",
 				maxlength: $("#txtQueueName")
 				.attr("length") + " characters maximum",
-				regex: "invalid character(s)"
+				jspregex: "invalid character(s)"
 			}
 		}
 	});

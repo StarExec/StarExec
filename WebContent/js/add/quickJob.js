@@ -40,12 +40,8 @@ function getClockTimeoutErrorMessage() {
  */
 function attachFormValidation() {
 	// Add regular expression capabilities to the validator
-	$.validator.addMethod(
-		"regex",
-		function(value, element, regexp) {
-			var re = new RegExp(regexp);
-			return this.optional(element) || re.test(value);
-		});
+	
+	addValidators();
 
 	// Set up form validation
 	$("#addForm").validate({
@@ -61,7 +57,7 @@ function attachFormValidation() {
 				required: true,
 				minlength: 1,
 				maxlength: $("#txtJobName").attr("length"),
-				regex: getPrimNameRegex()
+				jspregex: "DUMMY REGEX"
 			},
 			desc: {
 				required: false,
@@ -89,7 +85,7 @@ function attachFormValidation() {
 				required: true,
 				minlength: 1,
 				maxlength: $("#txtBenchName").attr("length"),
-				regex: getPrimNameRegex()
+				jspregex: "DUMMY REGEX"
 			},
 			bench: {
 				required: true,
@@ -117,14 +113,14 @@ function attachFormValidation() {
 				minlength: "1 character minimum",
 				maxlength: $("#txtJobName")
 				.attr("length") + " characters maximum",
-				regex: "invalid character(s)"
+				jspregex: "invalid character(s)"
 			},
 			benchName: {
 				required: "enter a benchmark name",
 				minlength: "1 character minimum",
 				maxlength: $("#txtBenchName")
 				.attr("length") + " characters maximum",
-				regex: "invalid character(s)"
+				jspregex: "invalid character(s)"
 			},
 			bench: {
 				required: "enter a benchmark",

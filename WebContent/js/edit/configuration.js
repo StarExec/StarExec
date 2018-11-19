@@ -59,12 +59,7 @@ function attachFormValidation() {
 	});
 
 	// Adds regular expression 'regex' function to validator
-	$.validator.addMethod(
-		"regex",
-		function(value, element, regexp) {
-			var re = new RegExp(regexp);
-			return this.optional(element) || re.test(value);
-		});
+	addValidators();
 
 	// Form validation rules/messages
 	$("#editConfigForm").validate({
@@ -72,7 +67,7 @@ function attachFormValidation() {
 			name: {
 				required: true,
 				maxlength: $("#name").attr("maxlength"),
-				regex: getPrimNameRegex()
+				jspregex: "DUMMY REGEX"
 			},
 			description: {
 				maxlength: $("#description").attr("length"),
@@ -86,7 +81,7 @@ function attachFormValidation() {
 			name: {
 				required: "name required",
 				maxlength: $("#name").attr("maxlength") + " characters maximum",
-				regex: "invalid character(s)"
+				jspregex: "invalid character(s)"
 			},
 			description: {
 				required: "description required",

@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.DB,org.starexec.data.database.*,org.starexec.data.to.DefaultSettings, org.starexec.data.to.Permission,org.starexec.data.to.Processor, org.starexec.data.to.enums.ProcessorType, org.starexec.logger.StarLogger, org.starexec.servlets.CreateJob, org.starexec.util.SessionUtil" %>
+        import="org.starexec.constants.DB,org.starexec.constants.R,org.starexec.data.database.*,org.starexec.data.to.DefaultSettings, org.starexec.data.to.Permission,org.starexec.data.to.Processor, org.starexec.data.to.enums.ProcessorType, org.starexec.logger.StarLogger, org.starexec.servlets.CreateJob, org.starexec.util.SessionUtil" %>
 <%@ page import="java.util.List" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -35,6 +35,7 @@
 			request.setAttribute("jobNameLen", DB.JOB_NAME_LEN);
 			request.setAttribute("jobDescLen", DB.JOB_DESC_LEN);
 			request.setAttribute("benchNameLen", DB.BENCH_NAME_LEN);
+			request.setAttribute("namePattern", R.PRIMITIVE_NAME_PATTERN);
 			List<DefaultSettings> listOfDefaultSettings =
 					Settings.getDefaultSettingsVisibleByUser(userId);
 
@@ -117,7 +118,7 @@
 				<tr class="noHover"
 				    title="how do you want this job to be displayed in StarExec?">
 					<td class="label"><p>job name</p></td>
-					<td><input length="${jobNameLen}" id="txtJobName"
+					<td><input length="${jobNameLen}" id="txtJobName" pattern="${namePattern}"
 					           name="name" type="text"
 					           value="${spaceName} <fmt:formatDate pattern="MM-dd-yyyy HH.mm" value="${now}" />"/>
 					</td>
@@ -150,7 +151,7 @@
 				<tr class="noHover"
 				    title="what name would you like to give this benchmark in StarExec?">
 					<td class="label"><p>benchmark name</p></td>
-					<td><input length="${benchNameLen}" id="txtBenchName"
+					<td><input length="${benchNameLen}" id="txtBenchName" pattern="${namePattern}"
 					           name="benchName" type="text"
 					           value="${spaceName} <fmt:formatDate pattern="MM-dd-yyyy HH.mm" value="${now}" />"/>
 					</td>

@@ -9,13 +9,7 @@ $(document).ready(function() {
 function attachFormValidation() {
 
 	// Adds regular expression handling to validator
-	$.validator.addMethod(
-		"regex",
-		function(value, element, regexp) {
-			var re = new RegExp(regexp);
-			return this.optional(element) || re.test(value);
-		}
-	);
+	addValidators();
 
 	// Form validation rules/messages
 	$("#addForm").validate({
@@ -23,7 +17,7 @@ function attachFormValidation() {
 			name: {
 				required: true,
 				maxlength: $("#txtName").attr("length"),
-				regex: getPrimNameRegex()
+				jspregex: "DUMMY REGEX"
 			},
 			desc: {
 				required: false,
@@ -35,7 +29,7 @@ function attachFormValidation() {
 			name: {
 				required: "a name is required",
 				maxlength: $("#txtName").attr("length") + " characters maximum",
-				regex: "invalid character(s)"
+				jspregex: "invalid character(s)"
 			},
 			desc: {
 				required: "description required",

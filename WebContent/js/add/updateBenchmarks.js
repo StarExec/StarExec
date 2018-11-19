@@ -33,12 +33,7 @@ function initUI() {
 function attachFormValidation() {
 
 	// Adds regular expression handling to the validator
-	$.validator.addMethod(
-		"regex",
-		function(value, element, regexp) {
-			var re = new RegExp(regexp);
-			return this.optional(element) || re.test(value);
-		});
+	addValidators();
 
 	// Re-validate the 'file location' field when it loses focus
 	$("#fileUpload").change(function() {
