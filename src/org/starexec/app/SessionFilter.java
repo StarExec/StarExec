@@ -48,6 +48,20 @@ public class SessionFilter implements Filter {
 		    && StarExecCommand.matcher(userAgent).find();
 	}
 
+	/** This RegEx is used to match known Python API User-Agent headers. */
+	private static final Pattern PythonUserAgent = Pattern.compile("starexec\\.py");
+
+	/**
+	 * Detects requests originating from StarExecCommand
+	 * @param request HTTP Request
+	 * @return true if request is from StarExecCommand, false otherwise
+	 */
+	private static boolean isFromPython(HttpServletRequest request) {
+		final String userAgent = request.getHeader("User-Agent");
+		return userAgent != null
+		    && PythonUserAgent.matcher(userAgent).find();
+	}
+
 	@Override
 	public void destroy() {
 		// Do nothing
@@ -68,6 +82,7 @@ public class SessionFilter implements Filter {
 
 			HttpSession session = httpRequest.getSession();
 			log.debug(method, "isRequestedSessionIdFromURL: "+httpRequest.isRequestedSessionIdFromURL());
+			log.debug(method, "User-Agent: "+httpRequest.getHeader("User-Agent"));
 			log.debug(method, "isRequestedSessionIdFromCookie: "+httpRequest.isRequestedSessionIdFromCookie());
 			log.debug(method, "isRequestedSessionIdValid: "+httpRequest.isRequestedSessionIdValid());
 			log.debug(method, "authType: "+httpRequest.getAuthType());
@@ -155,6 +170,10 @@ public class SessionFilter implements Filter {
 
 		if (isFromCommand(request)) {
 			Analytics.STAREXECCOMMAND_LOGIN.record(user.getId());
+		}
+
+		if (isFromPython(request)) {
+			Analytics.PYTHON_API_LOGIN.record(user.getId());
 		}
 
 		String ip = request.getRemoteAddr();
