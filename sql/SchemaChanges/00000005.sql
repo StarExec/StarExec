@@ -1,4 +1,5 @@
 -- Modify timestamp column so they are not updated automatically
+-- Add Python API event
 
 DROP PROCEDURE IF EXISTS UpdateTo4_5 //
 CREATE PROCEDURE UpdateTo4_5()
@@ -15,6 +16,9 @@ BEGIN
 		ALTER TABLE community_requests CHANGE COLUMN created     created     TIMESTAMP DEFAULT NOW();
 		ALTER TABLE pass_reset_request CHANGE COLUMN created     created     TIMESTAMP DEFAULT NOW();
 		ALTER TABLE benchmark_uploads  CHANGE COLUMN upload_time upload_time TIMESTAMP DEFAULT NOW();
+
+		INSERT INTO analytics_events (name) VALUES
+			('PYTHON_API_LOGIN');
 	END IF;
 END //
 
