@@ -290,7 +290,7 @@ public abstract class JobManager {
 	/**
 	 * Submits a job to the grid engine
 	 *
-	 * @param joblist The list of jobs for which we will be submitted new pairs
+	 * @param joblist The list of jobs for which we will be submitting new pairs
 	 * @param q The queue to submit on
 	 * @param queueSize The number of job pairs enqueued in the given queue
 	 * @param nodeCount The number of nodes in the given queue
@@ -308,7 +308,7 @@ public abstract class JobManager {
 			// updates user load values to take into account actual job pair runtimes.
 			monitor.subtractTimeDeltas(JobPairs.getAndClearTimeDeltas(q.getId()));
 
-			final LinkedList<SchedulingState> schedule = buildSchedule(joblist, q, queueSize, nodeCount);
+			final List<SchedulingState> schedule = buildSchedule(joblist, q, queueSize, nodeCount);
 
 			// Map from (user id) -> ( (high priority job id) -> (# of times job been selected) )
 			// Balances out the number of times a high priority job can be selected.
@@ -326,46 +326,42 @@ public abstract class JobManager {
 			populateCurrentQueueLoadAndHighPriorityMaps(schedule, q, highPriorityJobBalance, userToCurrentQueueLoad,
 					userToHighPriorityStates);
 
-			log.info("Beginning scheduling of " + schedule.size() + " jobs on queue " + q.getName());
+			log.info(methodName, "Beginning scheduling of " + schedule.size() + " jobs on queue " + q.getName());
 
 			/*
 			 * we are going to loop through the schedule adding a few job
 			 * pairs at a time to SGE.
+			 *
+			 * transient database errors can cause us to loop forever here,
+			 * and we need to make sure that does not happen
 			 */
-
-			//transient database errors can cause us to loop forever here, and we need to make sure that does not
-			// happen
 			final int maxLoops = 500;
 			int curLoops = 0;
 			while (!schedule.isEmpty()) {
+				++curLoops;
 
-				curLoops++;
 				if (queueSize >= R.NODE_MULTIPLIER * nodeCount) {
 					break; // out of while (!schedule.isEmpty())
-
 				}
+
 				if (curLoops > maxLoops) {
-					log.warn("submitJobs",
+					log.warn(methodName,
 							"forcibly breaking out of JobManager.submitJobs()-- max loops exceeded");
 					break;
 				}
 
-				Iterator<SchedulingState> it = schedule.iterator();
-
 				//add all of the users that still have pending entries to the list of users
-				final Map<Integer, Long> pendingUsers = new HashMap<>();
-				while (it.hasNext()) {
-					final SchedulingState s = it.next();
-					pendingUsers.put(s.job.getUserId(), userToCurrentQueueLoad.get(s.job.getUserId()));
-				}
+				final Map<Integer, Long> pendingUsers = schedule.stream().collect(Collectors.toMap(
+						s -> {return s.job.getUserId();},
+						s -> {return userToCurrentQueueLoad.get(s.job.getUserId());}
+				));
 
 				monitor.setUsers(pendingUsers);
 				monitor.setUserLoadDataFormattedString();
-				it = schedule.iterator();
 
+				Iterator<SchedulingState> it = schedule.iterator();
 				while (it.hasNext()) {
 					SchedulingState s = it.next();
-
 
 					if (!s.pairIter.hasNext()) {
 						// we will remove this SchedulingState from the schedule, since it is out of job pairs
@@ -379,7 +375,8 @@ public abstract class JobManager {
 
 
 						// Filter out all of the high priority states that have no more job pairs.
-						highPriorityStates = highPriorityStates.stream().filter(state -> state.pairIter.hasNext())
+						highPriorityStates = highPriorityStates.stream()
+						                                       .filter(state -> state.pairIter.hasNext())
 						                                       .collect(Collectors.toList());
 
 						// Replace the high priority states with the filtered ones.
@@ -393,22 +390,21 @@ public abstract class JobManager {
 							// Leave the current scheduling state as is.
 						} else {
 							try {
-								if (!highPriorityJobBalance.containsKey(s.job.getUserId())) {
+								if (!highPriorityJobBalance.containsKey(currentStateUserId)) {
 									throw new StarExecException(
 											"Being in this block means there must be a high priority job user with" +
 											"id=" + s.job.getUserId() + " but there was not.");
 								} else {
 									Map<Integer, Integer> highPriorityJobBalanceForUser =
-											highPriorityJobBalance.get(s.job.getUserId());
+											highPriorityJobBalance.get(currentStateUserId);
 
 									if (highPriorityJobBalanceForUser.entrySet().isEmpty()) {
 										throw new StarExecException(
 												"There should be high priority jobs for this user in the high" +
-												"priority job balance but there isn't!, userId=" + s.job.getUserId());
+												"priority job balance but there isn't!, userId=" + currentStateUserId);
 									} else {
 										// Change the state to a high priority one
-										s = selectHighPriorityJob(s.job
-												.getUserId(), highPriorityStates, highPriorityJobBalanceForUser);
+										s = selectHighPriorityJob(currentStateUserId, highPriorityStates, highPriorityJobBalanceForUser);
 									}
 								}
 							} catch (StarExecException e) {
@@ -418,20 +414,22 @@ public abstract class JobManager {
 						}
 					}
 
-					log.trace("About to submit " + R.NUM_JOB_PAIRS_AT_A_TIME + " pairs " + "for job " + s.job.getId() +
-					          ", queue = " + q.getName() + ", user = " + s.job.getUserId());
-					int i = 0;
-					while (i < R.NUM_JOB_PAIRS_AT_A_TIME && s.pairIter.hasNext()) {
+					log.trace("About to submit " + R.NUM_JOB_PAIRS_AT_A_TIME +
+					          " pairs for job " + s.job.getId() +
+					          ", queue = " + q.getName() + ", user = " + currentStateUserId);
+					int numPairsSubmitted = 0;
+					while (numPairsSubmitted < R.NUM_JOB_PAIRS_AT_A_TIME && s.pairIter.hasNext()) {
 						//skip if this user has many more pairs than some other user
-						if (monitor.skipUser(s.job.getUserId())) {
+						if (monitor.skipUser(currentStateUserId)) {
 							log.debug("excluding user with the following id from submitting more pairs " +
-							          s.job.getUserId());
+							          currentStateUserId);
 							Long min = monitor.getMin();
 							if (min == null) {
 								min = -1L;
 							}
-							log.debug("user had already submitted " + i + " pairs in this iteration. Load = " +
-							          monitor.getLoad(s.job.getUserId()) + " Min = " + min);
+							log.debug("user had already submitted " + numPairsSubmitted +
+							          " pairs in this iteration. Load = " +
+							          monitor.getLoad(currentStateUserId) + " Min = " + min);
 							break;
 						}
 
@@ -443,8 +441,8 @@ public abstract class JobManager {
 							JobPairs.UpdateStatus(pair.getId(), Status.StatusCode.ERROR_SUBMIT_FAIL.getVal());
 							continue;
 						}
-						monitor.changeLoad(s.job.getUserId(), s.job.getWallclockTimeout());
-						i++;
+						monitor.changeLoad(currentStateUserId, s.job.getWallclockTimeout());
+						++numPairsSubmitted;
 						log.trace("About to submit pair " + pair.getId());
 						// Check if the benchmark for this pair has any broken dependencies.
 						int benchId = pair.getBench().getId();
@@ -483,10 +481,8 @@ public abstract class JobManager {
 								continue;
 							}
 
-
 							// Write the script that will run this individual pair
 							final String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair, q);
-
 							final String logPath = JobPairs.getLogFilePath(pair);
 							final File file = new File(logPath);
 							file.getParentFile().mkdirs();
@@ -496,12 +492,10 @@ public abstract class JobManager {
 								file.delete();
 							}
 
-
 							// do this first, before we submit to grid engine, to avoid race conditions
 							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
+
 							// Submit to the grid engine
-
-
 							int execId = R.BACKEND.submitScript(scriptPath, R.BACKEND_WORKING_DIR, logPath);
 
 							if (R.BACKEND.isError(execId)) {
@@ -509,7 +503,7 @@ public abstract class JobManager {
 							} else {
 								JobPairs.updateBackendExecId(pair.getId(), execId);
 							}
-							queueSize++;
+							++queueSize;
 						} catch (BenchmarkDependencyMissingException e) {
 							log.error("submitJobs", "ERROR_BENCHMARK for pair: " + pair.getId(), e);
 							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_BENCHMARK.getVal());
