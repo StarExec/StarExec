@@ -297,7 +297,7 @@ public class R {
 	public static final int NUM_JOB_PAIRS_AT_A_TIME = 5;  // the number of job pairs from a job to submit at the same time, as we cycle through all jobs submitting pairs.
 	public static final int NUM_REPOSTPROCESS_AT_A_TIME = 200; // number of job pairs to re-postprocess at a time with our periodic task
 	public static final int DEFAULT_MAX_TIMEOUT = 259200;
-
+        public static final Long LOAD_DIFFERENCE_THRESHOLD = 5400L; // 90 minutes in seconds
 	/* Maximum Runsolver kill-delay */
 	public static final int MAX_KILL_DELAY = 120;
 

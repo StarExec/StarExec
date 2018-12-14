@@ -3,6 +3,7 @@ package org.starexec.jobs;
 import org.starexec.data.database.Users;
 import org.starexec.data.to.User;
 import org.starexec.logger.StarLogger;
+import org.starexec.constants.R;
 
 import java.util.*;
 
@@ -117,9 +118,6 @@ public class LoadBalanceMonitor {
 	// such as a combination HashMap / PriorityQueue structure.
 	private HashMap<Integer, UserLoadData> loads = new HashMap<>();
 
-
-	// thirty minutes in seconds
-	private static final Long loadDifferenceThreshold = 1800L;
 
 	/**
 	 * Gets the minimum load value among all active users. Inactive users
@@ -284,7 +282,7 @@ public class LoadBalanceMonitor {
 	 */
 	public boolean skipUser(int userId) {
 		Long userLoad = this.getLoad(userId);
-		return userLoad - getMin() > loadDifferenceThreshold;
+		return userLoad - getMin() > R.LOAD_DIFFERENCE_THRESHOLD;
 	}
 	
 	private String stringRepresentation = null;

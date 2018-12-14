@@ -341,7 +341,8 @@ public abstract class JobManager {
 
 				curLoops++;
 				if (queueSize >= R.NODE_MULTIPLIER * nodeCount) {
-					break; // out of while (!schedule.isEmpty())
+                                    log.info("Breaking out of submitJobs, with queueSize " + queueSize);
+                                    break; // out of while (!schedule.isEmpty())
 
 				}
 				if (curLoops > maxLoops) {
@@ -424,7 +425,7 @@ public abstract class JobManager {
 					while (i < R.NUM_JOB_PAIRS_AT_A_TIME && s.pairIter.hasNext()) {
 						//skip if this user has many more pairs than some other user
 						if (monitor.skipUser(s.job.getUserId())) {
-							log.debug("excluding user with the following id from submitting more pairs " +
+							log.debug("dampening work for user with the following id " +
 							          s.job.getUserId());
 							Long min = monitor.getMin();
 							if (min == null) {
@@ -432,7 +433,7 @@ public abstract class JobManager {
 							}
 							log.debug("user had already submitted " + i + " pairs in this iteration. Load = " +
 							          monitor.getLoad(s.job.getUserId()) + " Min = " + min);
-							break;
+							i = R.NUM_JOB_PAIRS_AT_A_TIME-1; // let them submit one pair at least
 						}
 
 						final JobPair pair = s.pairIter.next();
