@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.starexec.jobs.LoadBalanceMonitor;
+import org.starexec.constants.R;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -164,7 +165,7 @@ public class LoadBalanceMonitorTests {
 		monitor.changeLoad(1, 1);
 		Assert.assertFalse(monitor.skipUser(1));
 		Assert.assertFalse(monitor.skipUser(2));
-		monitor.changeLoad(1, 2000);
+		monitor.changeLoad(1, R.LOAD_DIFFERENCE_THRESHOLD + 10);
 		Assert.assertTrue(monitor.skipUser(1));
 		Assert.assertFalse(monitor.skipUser(2));
 	}
