@@ -502,8 +502,11 @@ public abstract class JobManager {
 							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 							// Submit to the grid engine
 
+							log.trace("About to submit pair " + pair.getId());
 
 							int execId = R.BACKEND.submitScript(scriptPath, R.BACKEND_WORKING_DIR, logPath);
+
+							log.trace("Just submitted pair " + pair.getId());
 
 							if (R.BACKEND.isError(execId)) {
 								JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());
@@ -833,6 +836,7 @@ public abstract class JobManager {
 		replacements.put("$$SCRIPT_PATH$$", scriptPath);
 		replacements.put("$$SUPPRESS_TIMESTAMP_OPTION$$", String.valueOf(job.timestampIsSuppressed()));
 		File f = new File(scriptPath);
+		log.trace("Adding parameters to jobscript for pair " + pair.getId());
 		jobScript = addParametersToJobscript(jobScript, replacements);
 
 		f.delete();
@@ -850,6 +854,7 @@ public abstract class JobManager {
 		out.write(jobScript);
 		out.close();
 
+		log.trace("writeJobScript finishes for pair " + pair.getId());
 		return scriptPath;
 	}
 
