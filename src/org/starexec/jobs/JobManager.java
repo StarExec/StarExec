@@ -785,6 +785,7 @@ public abstract class JobManager {
                 throw new BenchmarkDependencyMissingException(pairBenchId);
 		}*/
 			replacements.put("$$HAS_DEPENDS$$", "1");
+			log.trace("About to get bench dependencies and then write dependency file");
 			writeDependencyFile(pair.getId(), Benchmarks.getBenchDependencies(pairBenchId));
 		} else {
 			replacements.put("$$HAS_DEPENDS$$", "0");
@@ -959,6 +960,7 @@ public abstract class JobManager {
 			Exception {
 		StringBuilder sb = new StringBuilder();
 		String separator = ",,,";
+		log.trace("writeDependencyFile begins");
 		for (BenchmarkDependency bd : dependencies) {
 			sb.append(bd.getSecondaryBench().getPath());
 			sb.append(separator);
