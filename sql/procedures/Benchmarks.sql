@@ -132,6 +132,14 @@ CREATE PROCEDURE GetBenchmarkById(IN _id INT)
 		WHERE bench.id = _id and deleted=false AND recycled=false;
 	END //
 
+DROP PROCEDURE IF EXISTS GetBenchmarkPathById //
+CREATE PROCEDURE GetBenchmarkPathById(IN _id INT)
+	BEGIN
+		SELECT path
+		FROM benchmarks 
+		WHERE id = _id and deleted=false AND recycled=false;
+	END //
+
 -- Retrieves the benchmark with the given id, including deleted benchmarks
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS GetBenchmarkByIdIncludeDeletedAndRecycled //

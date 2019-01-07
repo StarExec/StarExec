@@ -1041,6 +1041,37 @@ public class Benchmarks {
 		return null;
 	}
 
+    /**
+     * @param con The connection to query with
+     * @param benchId The id of the benchmark to retrieve
+     * @return A Benchmark containing just the path to the benchmark
+     * @author Aaron Stump
+     */
+	protected static Benchmark getSkeletal(Connection con, int benchId) {
+		CallableStatement procedure = null;
+		ResultSet results = null;
+
+		try {
+		    procedure = con.prepareCall("{CALL GetBenchmarkPathById(?)}");
+		    procedure.setInt(1, benchId);
+		    results = procedure.executeQuery();
+
+		    if (results.next()) {
+			Benchmark b = new Benchmark();
+			b.setId(benchId);
+			b.setPath(results.getString("path"));
+			Common.safeClose(results);
+			return b;
+		    }
+		} catch (Exception e) {
+			log.error("getSkeletal", e);
+		} finally {
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+
 	/**
 	 * Retrieves a benchmark without attributes. Will not return a "deleted" benchmark
 	 *
@@ -1285,12 +1316,14 @@ public class Benchmarks {
 			results = procedure.executeQuery();
 			List<BenchmarkDependency> dependencies = new LinkedList<>();
 
+			Benchmark primary = Benchmarks.getSkeletal(con,benchmarkId);
+
 			while (results.next()) {
 				// Build benchmark dependency object
 				BenchmarkDependency benchD = new BenchmarkDependency();
 				benchD.setId(results.getInt("id"));
-				benchD.setPrimaryBench(Benchmarks.get(con,results.getInt("primary_bench_id"),false,false));
-				benchD.setSecondaryBench(Benchmarks.get(con,results.getInt("secondary_bench_id"),false,false));
+				benchD.setPrimaryBench(primary);
+				benchD.setSecondaryBench(Benchmarks.getSkeletal(con,results.getInt("secondary_bench_id")));
 				benchD.setDependencyPath(results.getString("include_path"));
 
 				// Add benchmark dependency object to list of dependencies
