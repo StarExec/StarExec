@@ -1059,6 +1059,7 @@ public class Benchmarks {
 		    if (results.next()) {
 			Benchmark b = new Benchmark();
 			b.setId(benchId);
+			b.setName(results.getString("name"));
 			b.setPath(results.getString("path"));
 			Common.safeClose(results);
 			return b;

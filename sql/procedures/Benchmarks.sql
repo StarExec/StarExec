@@ -135,7 +135,7 @@ CREATE PROCEDURE GetBenchmarkById(IN _id INT)
 DROP PROCEDURE IF EXISTS GetBenchmarkPathById //
 CREATE PROCEDURE GetBenchmarkPathById(IN _id INT)
 	BEGIN
-		SELECT path
+		SELECT name , path
 		FROM benchmarks 
 		WHERE id = _id and deleted=false AND recycled=false;
 	END //
