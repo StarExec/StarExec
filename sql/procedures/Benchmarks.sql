@@ -96,6 +96,17 @@ CREATE PROCEDURE GetBenchmarkDependencies(IN _pBenchId INT)
 		WHERE primary_bench_id = _pBenchId;
 	END //
 
+-- Just get the id, name, and path for the dependencies of the benchmark with the given id
+-- Author: Aaron Stump
+DROP PROCEDURE IF EXISTS GetPathsForBenchmarkDependencies //
+CREATE PROCEDURE GetPathsForBenchmarkDependencies(IN _pBenchId INT)
+	BEGIN
+                SELECT benchmarks.id , benchmarks.name , benchmarks.path , bench_dependency.include_path
+		FROM benchmarks JOIN bench_dependency
+		ON benchmarks.id = bench_dependency.secondary_bench_id 
+                WHERE primary_bench_id = _pBenchId;
+	END //
+
 -- Deletes a benchmark given that benchmark's id
 -- Author: Todd Elvers	+ Eric Burns
 DROP PROCEDURE IF EXISTS SetBenchmarkToDeletedById //

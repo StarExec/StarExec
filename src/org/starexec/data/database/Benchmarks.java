@@ -1312,7 +1312,7 @@ public class Benchmarks {
 
 		try {
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL getBenchmarkDependencies(?)}");
+			procedure = con.prepareCall("{CALL getPathsForBenchmarkDependencies(?)}");
 			procedure.setInt(1, benchmarkId);
 			results = procedure.executeQuery();
 			List<BenchmarkDependency> dependencies = new LinkedList<>();
@@ -1322,9 +1322,12 @@ public class Benchmarks {
 			while (results.next()) {
 				// Build benchmark dependency object
 				BenchmarkDependency benchD = new BenchmarkDependency();
-				benchD.setId(results.getInt("id"));
 				benchD.setPrimaryBench(primary);
-				benchD.setSecondaryBench(Benchmarks.getSkeletal(con,results.getInt("secondary_bench_id")));
+				Benchmark secondary = new Benchmark();
+				secondary.setId(results.getInt("id"));
+				secondary.setName(results.getString("name"));
+				secondary.setPath(results.getString("path"));
+				benchD.setSecondaryBench(secondary);
 				benchD.setDependencyPath(results.getString("include_path"));
 
 				// Add benchmark dependency object to list of dependencies
