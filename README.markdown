@@ -1,5 +1,4 @@
 # StarExec
-Author: Rahul Dass
 
 StarExec is a cross community logic solving service developed at the University
 of Iowa under the direction of principal investigators Aaron Stump (Iowa), Geoff
