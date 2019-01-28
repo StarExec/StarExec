@@ -252,16 +252,22 @@ function trySandbox {
 # figures out which sandbox the given job pair should run in.
 # If no sandbox can be secured, terminate this jobpair
 function initSandbox {
-	#try to get sandbox1 first
+	# try to get sandbox1 first
+  # Rahul edit: get number of cores from each CPU
+  x="$(lscpu | grep -E "^Core" | sed -e "s/^.* \([0-9][0-9]*\)/\1/")"
 	if (trySandbox 1); then
 		SANDBOX=1
 		SANDBOX_PARAM=$SANDBOX_USER_ONE
-		CORES="0-3"
+		core0_start=0
+    core0_end=$(($x-1))
+    CORES="$core0_start-$core0_end"
 		WORKING_DIR=$WORKING_DIR_BASE'/sandbox'
 	elif (trySandbox 2); then
 		SANDBOX=2
 		SANDBOX_PARAM=$SANDBOX_USER_TWO
-		CORES="4-7"
+    core1_start=$x
+    core1_end=$(($x * 2 - 1))
+		CORES="$core1_start-$core1_end"
 		WORKING_DIR=$WORKING_DIR_BASE'/sandbox2'
 	else #failed to get either sandbox
 		log "unable to secure any sandbox for this job!"
