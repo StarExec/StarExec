@@ -32,11 +32,17 @@
     </li>
   </ul>
 
-  <p>See <a href="https://www.starexec.org/starexec/public/machine-specs.txt">here</a> for the machine 
+  <p>See <a href="machine-specs.txt">here</a> for the machine 
        specifications for
     the compute nodes at the University of Iowa, and 
-        <a href="https://starexec.ccs.miami.edu/starexec/public/machine-specs.txt">here</a> for the compute nodes
-        at the University of Miami.</p>
+        <a href="http://starexec.ccs.miami.edu/starexec/public/machine-specs.txt">here</a> 
+        for the compute nodes at the University of Miami.</p>
+
+
+  <!-- 
+    For other institutions to reflect respective cluster specifications...
+    See <a href="machine-specs.txt">here</a> for the machine speficications for the compute nodes.
+   -->
 
   <p>A virtual machine for StarExec is <a
       href="https://www.starexec.org/vmimage/">here</a>. It is recommended
