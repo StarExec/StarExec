@@ -49,6 +49,11 @@
                css="edit/resubmitPairs, common/table">
 	<p id="displayJobID" class="accent">id = ${jobId}</p>
 	<span style="display:none" id="jobId" value="${jobId}"> </span>
+	<div id="dialog-confirm" title="confirm pairs rerun"
+		class="hiddenDialog">
+		<p><span class="ui-icon ui-icon-alert"></span><span
+		id="dialog-confirm-txt"></span></p>
+	</div>
 	<div id="detailPanel">
 		<fieldset id="detailField">
 			<legend>select status</legend>

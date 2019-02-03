@@ -16,21 +16,60 @@ jQuery(function($) {
 	};
 
 	$("#rerunPairs").click(function() {
-		if(confirm("are you sure you want to rerun the selected pairs?")) {
-			var statusCode = $('#statusCodeSelect').find(":selected").attr("value");
-			(postTo(starexecRoot + "services/jobs/rerunpairs/" + jobId + "/" + statusCode))();
-		}
+		$("#dialog-confirm-txt").text("are you sure you want to rerun the selected pairs?");
+
+		$("#dialog-confirm").dialog({
+			modal: true,
+			width: 380,
+			height: 265,
+			buttons: {
+				'YES': function() {
+					$('#dialog-confirm').dialog('close');
+					var statusCode = $('#statusCodeSelect').find(":selected").attr("value");
+			                (postTo(starexecRoot + "services/jobs/rerunpairs/" + jobId + "/" + statusCode))();
+				},
+				'cancel': function() {
+					$(this).dialog("close");
+				}
+			}
+		});
 	});
 
 	$("#rerunTimelessPairs").click(function() {
-		if(confirm("are you sure you want to rerun selected pairs with a time of 0?")){
-			(postTo(starexecRoot + "services/jobs/rerunpairs/" + jobId))();
-		}
+		$("#dialog-confirm-txt").text("are you sure you want to rerun the selected pairs with time zero?");
+
+                $("#dialog-confirm").dialog({
+                        modal: true,
+                        width: 380,
+                        height: 265,
+                        buttons: {
+                                'YES': function() {
+                                        $('#dialog-confirm').dialog('close');
+			                (postTo(starexecRoot + "services/jobs/rerunpairs/" + jobId))();
+                                },
+                                'cancel': function() {
+                                        $(this).dialog("close");
+                                }
+                        }
+                });
 	});
 
 	$("#rerunAllPairs").click(function() {
-		if(confirm("are you sure you ant to rerun all pairs?")) {
-			(postTo(starexecRoot + "services/jobs/rerunallpairs/" + jobId))();
-		}
+		$("#dialog-confirm-txt").text("are you sure you want to rerun all pairs?");
+
+                $("#dialog-confirm").dialog({
+                        modal: true,
+                        width: 380,
+                        height: 265,
+                        buttons: {
+                                'YES': function() {
+                                        $('#dialog-confirm').dialog('close');
+			                (postTo(starexecRoot + "services/jobs/rerunallpairs/" + jobId))();
+                                },
+                                'cancel': function() {
+                                        $(this).dialog("close");
+                                }
+                        }
+                });
 	});
 });
