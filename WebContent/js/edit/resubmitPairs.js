@@ -16,7 +16,8 @@ jQuery(function($) {
 	};
 
 	$("#rerunPairs").click(function() {
-		$("#dialog-confirm-txt").text("are you sure you want to rerun the selected pairs?");
+		var num = $('#statusCodeSelect').find(":selected").attr("n");
+		$("#dialog-confirm-txt").text("are you sure you want to rerun the selected pairs? this will rerun " + num + " job pairs.");
 
 		$("#dialog-confirm").dialog({
 			modal: true,
@@ -36,7 +37,8 @@ jQuery(function($) {
 	});
 
 	$("#rerunTimelessPairs").click(function() {
-		$("#dialog-confirm-txt").text("are you sure you want to rerun the selected pairs with time zero?");
+		var num = $("#rerunTimelessPairs").attr("n");
+		$("#dialog-confirm-txt").text("are you sure you want to rerun the selected pairs with time zero? this will rerun " + num + " job pairs.");
 
                 $("#dialog-confirm").dialog({
                         modal: true,
@@ -55,7 +57,8 @@ jQuery(function($) {
 	});
 
 	$("#rerunAllPairs").click(function() {
-		$("#dialog-confirm-txt").text("are you sure you want to rerun all pairs?");
+		var num = $("#rerunAllPairs").attr("n");
+		$("#dialog-confirm-txt").text("are you sure you want to rerun all pairs? this would rerun " + num + " job pairs.");
 
                 $("#dialog-confirm").dialog({
                         modal: true,

@@ -18,9 +18,8 @@
 			request.setAttribute("codes", filteredCodes);
 			request.setAttribute("jobId", jobId);
 			request.setAttribute("isComplete", isComplete);
-			request.setAttribute("timelessCount",
-			                     Jobs.countTimelessPairs(jobId)
-			);
+			request.setAttribute("timelessCount", Jobs.countTimelessPairs(jobId));
+			request.setAttribute("totalCount", Jobs.getPairCount(jobId));
 		} else if (Jobs.isJobDeleted(jobId)) {
 			response.sendError(
 					HttpServletResponse.SC_NOT_FOUND,
@@ -59,7 +58,7 @@
 			<legend>select status</legend>
 			<select id="statusCodeSelect">
 				<c:forEach var="code" items="${codes}">
-					<option value="${code.getVal()}">${code.getStatus()}
+					<option n="${code.getCount()}" value="${code.getVal()}">${code.getStatus()}
 						(${code.getVal()})-- ${code.getCount()}</option>
 				</c:forEach>
 			</select>
@@ -69,11 +68,11 @@
 			<ul id="actionList">
 				<li><a class="rerun" id="rerunPairs">rerun pairs with selected
 					status</a></li>
-				<li><a class="rerun" id="rerunTimelessPairs"
+				<li><a class="rerun" n="${timelessCount}" id="rerunTimelessPairs"
 				       title="reruns all completed pairs and resource-out pairs in this job that have a wallclock or cpu time of 0">rerun
 					pairs with time 0 (${timelessCount} pairs)</a></li>
 				<c:if test="${isComplete}">
-					<li><a class="rerun" id="rerunAllPairs"
+					<li><a class="rerun" n="${totalCount}" id="rerunAllPairs"
 					       title="reruns every pair in this job">rerun all
 						pairs</a></li>
 				</c:if>
