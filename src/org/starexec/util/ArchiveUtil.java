@@ -407,7 +407,7 @@ public class ArchiveUtil {
 			FileInputStream input = new FileInputStream(srcFile);
 			entry.setUnixMode(getUnixMode(srcFile));
 			entry.setSize(srcFile.length());
-			entry.setInternalAttributes(Util.isBinaryFile(srcFile)?0:1);
+			//entry.setInternalAttributes(Util.isBinaryFile(srcFile)?0:1);
 			IOUtils.copy(input, zos);
 			zos.closeArchiveEntry();
 			input.close();
@@ -516,6 +516,7 @@ public class ArchiveUtil {
 	 */
 	public static void createAndOutputZip(File path, OutputStream output, String baseName, boolean removeTopLevel)
 			throws IOException {
+		log.debug("Creating and outputting .zip file...");
 		if (removeTopLevel) {
 			File[] files = path.listFiles();
 			List<File> f = Arrays.asList(files);
@@ -537,9 +538,7 @@ public class ArchiveUtil {
 				addFileToArchive(stream, path, path.getName());
 			}
 		}
-
 		stream.close();
-
 	}
 
 	private enum ArchiveType {
