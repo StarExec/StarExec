@@ -487,13 +487,13 @@ public class Benchmarks {
 
 			Benchmarks.attachBenchAttrs(benchmarks, p, statusId);
 			if (usesDeps) {
-				boolean success = Benchmarks.validateDependencies(benchmarks, depRootSpaceId, linked);
+				boolean success = Benchmarks.validateDependencies(benchmarks, depRootSpaceId, linked, statusId);
 				if (!success) {
 					Uploads.setBenchmarkErrorMessage(
 							statusId,
 							"Benchmark dependencies failed to validate. Please check your processor output"
-					);
-					return null;
+					);	
+				return null;
 				}
 			}
 
@@ -2180,12 +2180,14 @@ public class Benchmarks {
 	 * @return the data structure that has information about dependencies
 	 * @author Eric Burns
 	 */
-	private static boolean validateDependencies(List<Benchmark> benchmarks, Integer spaceId, Boolean linked) {
+	private static boolean validateDependencies(List<Benchmark> benchmarks, Integer spaceId, Boolean linked, Integer statusID) {
 		HashMap<String, BenchmarkDependency> foundDependencies = new HashMap<>();
 		for (Benchmark benchmark1 : benchmarks) {
 			Benchmark benchmark = benchmark1;
-			if (!validateIndBenchDependencies(benchmark, spaceId, linked, foundDependencies)) {
+			String out = validateIndBenchDependencies(benchmark, spaceId, linked, foundDependencies);
+			if (out != "true") {
 				log.warn("Dependent benchs not found for Bench " + benchmark.getName());
+				Uploads.addFailedBenchmark(statusID, benchmark.getName(), "Dependancy check failed for this benchmark. Failed search for " + out + ".");
 				return false;
 			}
 		}
@@ -2198,10 +2200,10 @@ public class Benchmarks {
 	 * @param bench The benchmark that might have dependencies
 	 * @param spaceId the id of the space where the axiom benchmarks lie
 	 * @param linked true if the depRootSpace is the same as the first directory in the include statement
-	 * @return True if the dependencies are valid and false otherwise
+	 * @return "true" if the dependencies are valid, the name of the failed dependency if otherwise
 	 * @author Benton McCune
 	 */
-	private static boolean validateIndBenchDependencies(
+	private static String  validateIndBenchDependencies(
 			Benchmark bench, Integer spaceId, Boolean linked, HashMap<String, BenchmarkDependency> foundDependencies
 	) {
 		Map<String, String> atts = bench.getAttributes();
@@ -2232,15 +2234,15 @@ public class Benchmarks {
 
 				if (!foundDependencies.containsKey(includePath)) {
 					log.warn("validateIndBenchDependencies", "Dependent Bench not found for " + bench.getName());
-					return false;
+					return includePath;
 				}
 				bench.addDependency(foundDependencies.get(includePath));
 			}
 		} catch (Exception e) {
 			log.error("validateIndBenchDependencies", "validate dependency failed on bench " + bench.getName(), e);
-			return false;
+			return includePath;
 		}
-		return true;
+		return "true";
 	}
 
 	/**
