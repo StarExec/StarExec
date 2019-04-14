@@ -469,7 +469,9 @@ public abstract class JobManager {
 						try {
 							/* Check to make sure the pair is still pending submit
 							 * to prevent pairs being submitted twice. */
+							log.trace("About to get the pair from its id.");
 							final JobPair jp = JobPairs.getPair(pair.getId());
+							log.trace("Just got the pair " + pair.getId() + " from the database.");
 							if (jp == null) {
 								log.warn("submitJobs",
 										"Cannot get details for pair: " + pair.getId());
@@ -487,8 +489,9 @@ public abstract class JobManager {
 
 							// Write the script that will run this individual pair
 							final String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair, q);
-
+							log.trace("About to get the log path from the database...");
 							final String logPath = JobPairs.getLogFilePath(pair);
+							log.trace("Just got the log path from the database.");
 							final File file = new File(logPath);
 							file.getParentFile().mkdirs();
 
@@ -497,7 +500,8 @@ public abstract class JobManager {
 								file.delete();
 							}
 
-
+							
+							log.trace("About to set the pair and stage status...");
 							// do this first, before we submit to grid engine, to avoid race conditions
 							JobPairs.setStatusForPairAndStages(pair.getId(), StatusCode.STATUS_ENQUEUED.getVal());
 							// Submit to the grid engine
