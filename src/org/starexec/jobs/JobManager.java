@@ -452,13 +452,17 @@ public abstract class JobManager {
 						log.debug("Bench id for pair about to be submitted is: " + benchId);
 						try {
 							log.debug("Checking bench dependencies for bench with id: " + benchId);
-							List<Benchmark> brokenDependencies = Benchmarks.getBrokenBenchDependencies(benchId);
-							log.debug("Found " + brokenDependencies.size() + " missing dependencies.");
-							if (!brokenDependencies.isEmpty()) {
-								log.debug("Skipping pair with broken bench dependency...");
-								JobPairs.setStatusForPairAndStages(pair
-										.getId(), StatusCode.ERROR_BENCH_DEPENDENCY_MISSING.getVal());
-								continue;
+							if(!pair.getBenchInputs().isEmpty()) {
+								List<Benchmark> brokenDependencies = Benchmarks.getBrokenBenchDependencies(benchId);
+								log.debug("Found " + brokenDependencies.size() + " missing dependencies.");
+								if (!brokenDependencies.isEmpty()) {
+									log.debug("Skipping pair with broken bench dependency...");
+									JobPairs.setStatusForPairAndStages(pair
+											.getId(), StatusCode.ERROR_BENCH_DEPENDENCY_MISSING.getVal());
+									continue;
+								}
+							} else {
+								log.debug("bench had no dependencies-- skipping check");
 							}
 						} catch (SQLException e) {
 							log.error("submitJobs", "Database error while trying to get broken bench dependencies.", e);
@@ -467,26 +471,6 @@ public abstract class JobManager {
 						}
 
 						try {
-							/* Check to make sure the pair is still pending submit
-							 * to prevent pairs being submitted twice. */
-							log.trace("About to get the pair from its id.");
-							final JobPair jp = JobPairs.getPair(pair.getId());
-							log.trace("Just got the pair " + pair.getId() + " from the database.");
-							if (jp == null) {
-								log.warn("submitJobs",
-										"Cannot get details for pair: " + pair.getId());
-								continue;
-							}
-							StatusCode statusOfPair = jp.getStatus().getCode();
-							if (statusOfPair != StatusCode.STATUS_PENDING_SUBMIT) {
-								log.warn("submitJobs",
-										"Pair was caught attempting to be submitted again."
-										+ "\n\tJobPair: " + pair.getId()
-										+ "\n\tStatus:  " + statusOfPair);
-								continue;
-							}
-
-
 							// Write the script that will run this individual pair
 							final String scriptPath = JobManager.writeJobScript(s.jobTemplate, s.job, pair, q);
 							log.trace("About to get the log path from the database...");
