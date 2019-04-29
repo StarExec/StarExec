@@ -1255,9 +1255,12 @@ public class Jobs {
 	 * @return a list of Jobs on the Queue
 	 */
 	public static List<Job> getByQueueId(int queueId) throws SQLException {
-		return Common.query("{CALL GetQueueJobsById(?)}", procedure -> procedure.setInt(1, queueId),
-		                    Jobs::getJobsForNextPage
-		);
+            log.debug("getByQueueId begins " + queueId);
+            List<Job> r = Common.query("{CALL GetQueueJobsById(?)}", procedure -> procedure.setInt(1, queueId),
+                                       Jobs::getJobsForNextPage
+                                       );
+            log.debug("getByQueueId ends ");
+            return r;
 	}
 
 	/**
