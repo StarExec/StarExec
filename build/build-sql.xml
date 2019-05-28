@@ -34,6 +34,7 @@
 					<param type="token" name="DB.Name" value="${DB.Name}"/>
 					<param type="token" name="procedures" value="${sqlProcedures}"/>
 					<param type="token" name="schema" value="${sqlSchema}"/>
+					<param type="token" name="Cluster.DB.Pass" value="${Cluster.DB.Pass}"/>
 				</filterreader>
 			</filterchain>
 		</concat>
