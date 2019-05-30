@@ -35,6 +35,8 @@
 					<param type="token" name="procedures" value="${sqlProcedures}"/>
 					<param type="token" name="schema" value="${sqlSchema}"/>
 					<param type="token" name="Cluster.DB.Pass" value="${Cluster.DB.Pass}"/>
+					<param type="token" name="Cluster.DB.User" value="${Cluster.DB.User}"/>
+					<param type="token" name="Cluster.DB.Url" value="${Cluster.DB.Url}"/>
 				</filterreader>
 			</filterchain>
 		</concat>
