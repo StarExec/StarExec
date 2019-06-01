@@ -50,7 +50,8 @@ class PeriodicTasks {
         SEND_ERROR_LOGS(true, SEND_ERROR_LOGS_TASK, 0, () -> 1, TimeUnit.DAYS),
         CLEAR_TEMPORARY_FILES(false, CLEAR_TEMPORARY_FILES_TASK, 0, () -> 3, TimeUnit.HOURS),
         CLEAR_JOB_LOG(false, CLEAR_JOB_LOG_TASK, 0, () -> 7, TimeUnit.DAYS),
-        FIND_BROKEN_NODES(true, FIND_BROKEN_NODES_TASK, 0, () -> 6, TimeUnit.HOURS),
+        CLEAR_JOB_GRAPHS(false, CLEAR_JOB_GRAPHS_TASK, 0, () -> 7, TimeUnit.DAYS),
+	FIND_BROKEN_NODES(true, FIND_BROKEN_NODES_TASK, 0, () -> 6, TimeUnit.HOURS),
         CLEAR_JOB_SCRIPTS(false, CLEAR_JOB_SCRIPTS_TASK, 0, () -> 12, TimeUnit.HOURS),
         CLEAN_DATABASE(false, CLEAN_DATABASE_TASK, 0, () -> 7, TimeUnit.DAYS),
         CREATE_WEEKLY_REPORTS(false, CREATE_WEEKLY_REPORTS_TASK, 0, () -> 1, TimeUnit.DAYS),
@@ -195,6 +196,14 @@ class PeriodicTasks {
         @Override
         protected void dorun() {
             Util.clearOldFiles(R.JOB_LOG_DIRECTORY, R.CLEAR_JOB_LOG_PERIOD, true);
+        }
+    };
+     /*  Create a task that deletes job graphs older than 7 days */
+    private static final String clearJobGraphsTaskName = "clearJobGraphsTask";
+    private static final Runnable CLEAR_JOB_GRAPHS_TASK = new RobustRunnable(clearJobGraphsTaskName) {
+        @Override
+        protected void dorun() {
+            Util.clearOldFiles(R.JOBGRAPH_FILE_DIR, 7, true);
         }
     };
     /*  Create a task that deletes job scripts older than 3 days */
