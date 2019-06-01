@@ -85,6 +85,7 @@
 				<filter token="Web.BaseDirectory"      value="${Web.BaseDirectory}" />
 				<filter token="Web.Download.Directory" value="${Web.Download.Directory}" />
 				<filter token="Web.JobGraph.Path"      value="${Web.JobGraph.Path}" />
+				<filter token="Web.ClusterGraph.Path"  value="${Web.ClusterGraph.Path}" />
 				<filter token="Web.Schema.Url"         value="${Web.Schema.Url}" />
 				<filter token="Web.Schema.Space"       value="${Web.Schema.Space}" />
 				<filter token="Web.Schema.Job"         value="${Web.Schema.Job}" />

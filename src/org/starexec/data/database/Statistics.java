@@ -31,6 +31,7 @@ import org.starexec.logger.StarLogger;
 import org.starexec.util.BenchmarkTooltipGenerator;
 import org.starexec.util.BenchmarkURLGenerator;
 import org.starexec.util.Util;
+import org.starexec.data.to.Queue;
 
 import java.awt.*;
 import java.io.File;
@@ -52,6 +53,66 @@ public class Statistics {
 	 * This string is returned in place of a file path whenever there are too many pairs to render a graph.
 	 */
 	public static final String OVERSIZED_GRAPH_ERROR = "big";
+	private static ArrayList<Integer> queue_size = new ArrayList<>();
+	private static ArrayList<Long> queue_time = new ArrayList<>();
+	private static final int MAX_QUEUE_PLOT_POINTS = 5;
+
+	/**
+	*Adds a data point to the enqueued pairs dataset and generates a graph of the current dataset.
+	*@param num_enqueued The number of pairs enqueued at a time
+	*/
+	public static void addQueuePlotPoint(int num_enqueued) {
+		try {
+			queue_size.add(num_enqueued);
+			queue_time.add(System.currentTimeMillis());
+			if(queue_size.size() > MAX_QUEUE_PLOT_POINTS) {
+				queue_size.remove(0);
+				queue_time.remove(0);
+			}
+		
+			log.debug("Started chart making with " + queue_size.size() + " datapoints!");
+			XYSeries series = new XYSeries("Number of Enqueued Pairs");
+			for(int i = 0; i < queue_size.size(); i++) {
+				series.add(queue_time.get(i), queue_size.get(i));
+			}
+
+			XYSeriesCollection dataset = new XYSeriesCollection();
+			dataset.addSeries(series);
+
+			JFreeChart chart = ChartFactory.createXYLineChart("Enqueued Pairs vs. Time", "Time", "# of Enqueued Pairs", dataset, PlotOrientation.VERTICAL, false, false, false);
+			chart.setBackgroundPaint(new Color(0, 0, 0, 0));
+			chart.getTitle().setPaint(new Color(255, 255, 255));
+			XYPlot plot = (XYPlot) chart.getXYPlot();
+		
+			plot.getRangeAxis().setAutoRange(false);
+
+			int numNodes = 0;
+			for(Queue q : Queues.getQueues(-2)) {
+				numNodes += Queues.getNodes(q.getId()).size();
+			}
+			plot.getRangeAxis().setRange(new Range(0, R.NODE_MULTIPLIER * numNodes * 1.1));
+		
+			plot.getDomainAxis().setLabelPaint(new Color(255, 255, 255));
+			plot.getRangeAxis().setTickLabelPaint(new Color(255, 255, 255));
+			plot.getRangeAxis().setLabelPaint(new Color(255, 255, 255));
+			plot.getDomainAxis().setTickLabelsVisible(false);
+
+			XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+			renderer.setSeriesPaint(0, new Color(255, 0, 0));
+			renderer.setSeriesShapesVisible(0, false);
+			plot.setRenderer(renderer);
+
+			File path = new File(R.STAREXEC_ROOT, R.CLUSTER_GRAPH_DIR);
+			if(!path.exists()) {
+				path.mkdir();
+			}
+			File output = new File(path, "queuegraph.png");
+			ChartUtilities.saveChartAsPNG(output, chart, 400, 400);
+			log.debug("Finished chart making!");
+		} catch(Exception e) {
+			log.error("Error creating queue chart", e);
+		}
+	}
 
 	/**
 	 * @param con The connection to make the query on
