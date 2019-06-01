@@ -55,7 +55,7 @@ public class Statistics {
 	public static final String OVERSIZED_GRAPH_ERROR = "big";
 	private static ArrayList<Integer> queue_size = new ArrayList<>();
 	private static ArrayList<Long> queue_time = new ArrayList<>();
-	private static final int MAX_QUEUE_PLOT_POINTS = 5;
+	private static final int MAX_QUEUE_PLOT_POINTS = 50;
 
 	/**
 	*Adds a data point to the enqueued pairs dataset and generates a graph of the current dataset.

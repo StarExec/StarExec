@@ -144,7 +144,7 @@ class PeriodicTasks {
 	protected void dorun() {
 	    try {
 		int num_enqueued = Util.executeCommand("qstat -u tomcat -s p").split("\r\n|\r|\n").length - 2;
-		if(num_enqueued < 0) num_enqueued += 2; //Adjust for the top two lines being headings.
+		if(num_enqueued < 0) num_enqueued = 0; //Adjust for the top two lines being headings.
 		Statistics.addQueuePlotPoint(num_enqueued);
 	    } catch(IOException e) {
 		log.warn(e.getMessage());
