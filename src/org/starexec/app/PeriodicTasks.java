@@ -9,6 +9,8 @@ import org.starexec.data.to.ErrorLog;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.User;
 import org.starexec.data.to.tuples.PairIdJobId;
+import org.starexec.data.to.WorkerNode;
+import org.starexec.data.to.Queue;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.jobs.JobManager;
 import org.starexec.jobs.ProcessingManager;
@@ -59,7 +61,9 @@ class PeriodicTasks {
         UPDATE_USER_DISK_SIZES(false, UPDATE_USER_DISK_SIZES_TASK, 0, () -> 1, TimeUnit.DAYS),
         UPDATE_COMMUNITY_STATS(false, UPDATE_COMMUNITY_STATS_TASK, 0, () -> 6, TimeUnit.HOURS),
         SAVE_ANALYTICS(false, SAVE_ANALYTICS_TASK, 10, () -> 10, TimeUnit.MINUTES),
-        NOTIFY_USERS_OF_JOBS(false, NOTIFY_USERS_OF_JOBS_TASK, 0, () -> 5, TimeUnit.MINUTES);
+        NOTIFY_USERS_OF_JOBS(false, NOTIFY_USERS_OF_JOBS_TASK, 0, () -> 5, TimeUnit.MINUTES),
+	GENERATE_CLUSTER_GRAPH(true, GENERATE_CLUSTER_GRAPH_TASK, 5, () -> 5, TimeUnit.SECONDS);
+	//CLEAR_JOB_SCRIPTS(true, CLEAR_JOB_SCRIPTS_TASK, 0, () -> 7, TimeUnit.DAYS); 
 
         public final boolean fullInstanceOnly;
         public final Runnable task;
@@ -83,6 +87,7 @@ class PeriodicTasks {
             this.task = task;
         }
     }
+
 
     private static final String sendErrorLogsTaskName = "sendErrorReportsTask";
     private static final Runnable SEND_ERROR_LOGS_TASK = new RobustRunnable(sendErrorLogsTaskName) {
@@ -132,6 +137,20 @@ class PeriodicTasks {
             Cluster.loadWorkerNodes();
             Cluster.loadQueueDetails();
         }
+    };
+
+    private static final String generateClusterGraphTaskName = "generateClusterGraphTask";
+    private static final Runnable GENERATE_CLUSTER_GRAPH_TASK = new RobustRunnable(generateClusterGraphTaskName) {
+	@Override
+	protected void dorun() {
+	    try {
+		int num_enqueued = Util.executeCommand("qstat -u tomcat -s p").split("\r\n|\r|\n").length - 2;
+		if(num_enqueued < 0) num_enqueued = 0; //Adjust for the top two lines being headings.
+		Statistics.addQueuePlotPoint(num_enqueued);
+	    } catch(IOException e) {
+		log.warn(e.getMessage());
+	    }        
+	}
     };
 
     private static final String submitJobTasksName = "submitJobTasks";
@@ -214,6 +233,16 @@ class PeriodicTasks {
             Util.clearOldFiles(R.getJobInboxDir(),1,false);
         }
     };
+    /* Create a task that deletes job graphs older than 7 days old */
+    /*private static final String clearJobGraphsTaskName = "clearJobGraphsTask";
+    private static final runnable CLEAR_JOB_GRAPHS_TASK = new RobustRunnable(clearJobGraphsTaskName) {
+	@Override
+	protected void doRun() {
+	    File f = new File(R.STAREXEC_ROOT, R.JOBGRAPH_FILE_DIR);
+	    Util.clearOldFiles(f.getPath(), 7, false);	    
+	}
+    };*/
+
     /**
      * Removes solvers and benchmarks from the database that are both orphaned (unaffiliated
      * with any spaces or job pairs) AND have already been deleted on disk.
