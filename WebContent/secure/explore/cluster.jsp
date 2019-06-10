@@ -52,10 +52,5 @@
 			<button id="refreshQstat">refresh</button>
 			<textarea id="qstatOutput" readonly wrap="soft"></textarea>
 		</fieldset>
-
-		<fieldset id="graphs">
-			<legend>graphs</legend>
-			<img id="queuegraph" src="${starexecRoot}/secure/clustergraphs/queuegraph.png" width="400" height="400"/>
-		</fieldset>
 	</div>
 </star:template>

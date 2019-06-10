@@ -61,9 +61,7 @@ class PeriodicTasks {
         UPDATE_USER_DISK_SIZES(false, UPDATE_USER_DISK_SIZES_TASK, 0, () -> 1, TimeUnit.DAYS),
         UPDATE_COMMUNITY_STATS(false, UPDATE_COMMUNITY_STATS_TASK, 0, () -> 6, TimeUnit.HOURS),
         SAVE_ANALYTICS(false, SAVE_ANALYTICS_TASK, 10, () -> 10, TimeUnit.MINUTES),
-        NOTIFY_USERS_OF_JOBS(false, NOTIFY_USERS_OF_JOBS_TASK, 0, () -> 5, TimeUnit.MINUTES),
-	GENERATE_CLUSTER_GRAPH(true, GENERATE_CLUSTER_GRAPH_TASK, 5, () -> 5, TimeUnit.SECONDS);
-	//CLEAR_JOB_SCRIPTS(true, CLEAR_JOB_SCRIPTS_TASK, 0, () -> 7, TimeUnit.DAYS); 
+        NOTIFY_USERS_OF_JOBS(false, NOTIFY_USERS_OF_JOBS_TASK, 0, () -> 5, TimeUnit.MINUTES);
 
         public final boolean fullInstanceOnly;
         public final Runnable task;
@@ -137,20 +135,6 @@ class PeriodicTasks {
             Cluster.loadWorkerNodes();
             Cluster.loadQueueDetails();
         }
-    };
-
-    private static final String generateClusterGraphTaskName = "generateClusterGraphTask";
-    private static final Runnable GENERATE_CLUSTER_GRAPH_TASK = new RobustRunnable(generateClusterGraphTaskName) {
-	@Override
-	protected void dorun() {
-	    try {
-		int num_enqueued = Util.executeCommand("qstat -u tomcat -s p").split("\r\n|\r|\n").length - 2;
-		if(num_enqueued < 0) num_enqueued = 0; //Adjust for the top two lines being headings.
-		Statistics.addQueuePlotPoint(num_enqueued);
-	    } catch(IOException e) {
-		log.warn(e.getMessage());
-	    }        
-	}
     };
 
     private static final String submitJobTasksName = "submitJobTasks";
