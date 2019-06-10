@@ -295,7 +295,7 @@ function getDetails(id, type, parent_node) {
 	}
 	loadQueueLoads();
 
-	$('#loader').show();	
+	$('#loader').show();
 
 	jobPairTable.fnDraw();
 	$.get(

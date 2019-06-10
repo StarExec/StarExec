@@ -31,7 +31,6 @@ import org.starexec.logger.StarLogger;
 import org.starexec.util.BenchmarkTooltipGenerator;
 import org.starexec.util.BenchmarkURLGenerator;
 import org.starexec.util.Util;
-import org.starexec.data.to.Queue;
 
 import java.awt.*;
 import java.io.File;

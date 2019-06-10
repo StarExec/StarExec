@@ -9,8 +9,6 @@ import org.starexec.data.to.ErrorLog;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.User;
 import org.starexec.data.to.tuples.PairIdJobId;
-import org.starexec.data.to.WorkerNode;
-import org.starexec.data.to.Queue;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.jobs.JobManager;
 import org.starexec.jobs.ProcessingManager;
@@ -85,7 +83,6 @@ class PeriodicTasks {
             this.task = task;
         }
     }
-
 
     private static final String sendErrorLogsTaskName = "sendErrorReportsTask";
     private static final Runnable SEND_ERROR_LOGS_TASK = new RobustRunnable(sendErrorLogsTaskName) {
@@ -217,16 +214,6 @@ class PeriodicTasks {
             Util.clearOldFiles(R.getJobInboxDir(),1,false);
         }
     };
-    /* Create a task that deletes job graphs older than 7 days old */
-    /*private static final String clearJobGraphsTaskName = "clearJobGraphsTask";
-    private static final runnable CLEAR_JOB_GRAPHS_TASK = new RobustRunnable(clearJobGraphsTaskName) {
-	@Override
-	protected void doRun() {
-	    File f = new File(R.STAREXEC_ROOT, R.JOBGRAPH_FILE_DIR);
-	    Util.clearOldFiles(f.getPath(), 7, false);	    
-	}
-    };*/
-
     /**
      * Removes solvers and benchmarks from the database that are both orphaned (unaffiliated
      * with any spaces or job pairs) AND have already been deleted on disk.
