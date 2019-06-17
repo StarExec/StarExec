@@ -203,10 +203,10 @@ public class JobSecurity {
 		}
 
 		//can't rerun pairs that are not complete
-		if (statusCode > StatusCode.ERROR_GENERAL.getVal() || statusCode == StatusCode.STATUS_ENQUEUED.getVal() ||
+		if ((statusCode > StatusCode.ERROR_GENERAL.getVal() && statusCode != StatusCode.ERROR_PRE_PROCESSOR.getVal() && statusCode != StatusCode.ERROR_POST_PROCESSOR.getVal()) || statusCode == StatusCode.STATUS_ENQUEUED.getVal() ||
 				statusCode == StatusCode.STATUS_RUNNING.getVal() ||
 				statusCode == StatusCode.STATUS_PENDING_SUBMIT.getVal()) {
-			return new ValidatorStatusCode(false, "This pair is not yet completed");
+			return new ValidatorStatusCode(false, "This pair is not yet completed" + statusCode + "!");
 		} else if (Jobs.isReadOnly(jobId)) {
 			return new ValidatorStatusCode(false, "This job is currently Read Only and no pairs can be rerun");
 		}
