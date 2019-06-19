@@ -696,7 +696,7 @@ function copyOutput {
 		chmod -R gu+rwx $OUT_DIR/postProcessor
 		cd "$OUT_DIR"/postProcessor
 		log "executing post processor"
-		log "time limit: $POST_PROCESSOR_TIME_LIMIT"
+		log "time limit: $POST_PROCESSOR_TIME_LIMIT minutes"
 		timeout --signal=SIGKILL $((POST_PROCESSOR_TIME_LIMIT))m ./process "$STDOUT_FILE" $LOCAL_BENCH_PATH "$OUT_DIR/output_files" > "$OUT_DIR"/attributes.txt
 		if (( $? != 0 )); then
 			log "post processor timeout"
