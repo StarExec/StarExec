@@ -187,6 +187,7 @@ public class Common {
 			poolProp.setJmxEnabled(false);                    // Turn JMX off (we don't use it so we don't need it)
                         poolProp.setRemoveAbandonedTimeout(18000);         // How long to wait (seconds) before reclaiming an open connection (should be the time of longest query)
                         poolProp.setRemoveAbandoned(true);                // Enable removing connections that are open too long
+                        poolProp.setLogAbandoned(true);                   // supposed to log stack traces (where?) when an abandoned connection is removed
 
 			log.debug("Creating new datapool with supplied properties");
 			dataPool = new DataSource(poolProp);              // Create the connection pool with the supplied properties
