@@ -203,7 +203,7 @@ public class JobSecurity {
 		}
 
 		//can't rerun pairs that are not complete
-		if (statusCode > StatusCode.ERROR_GENERAL.getVal() || statusCode == StatusCode.STATUS_ENQUEUED.getVal() ||
+		if ((statusCode > StatusCode.ERROR_GENERAL.getVal() && statusCode != StatusCode.ERROR_PRE_PROCESSOR.getVal() && statusCode != StatusCode.ERROR_POST_PROCESSOR.getVal()) || statusCode == StatusCode.STATUS_ENQUEUED.getVal() ||
 				statusCode == StatusCode.STATUS_RUNNING.getVal() ||
 				statusCode == StatusCode.STATUS_PENDING_SUBMIT.getVal()) {
 			return new ValidatorStatusCode(false, "This pair is not yet completed");
