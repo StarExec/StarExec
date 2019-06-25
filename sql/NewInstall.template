@@ -1,6 +1,8 @@
 -- Drop and recreate the database to get a fresh slate
 DROP DATABASE IF EXISTS @DB.Name@;
 CREATE DATABASE @DB.Name@;
+GRANT ALL PRIVILEGES ON @DB.Name@.* TO @Cluster.DB.User@@"%.@Cluster.DB.Url@" IDENTIFIED BY "@Cluster.DB.Pass@";
+FLUSH PRIVILEGES;
 
 USE @DB.Name@;
 

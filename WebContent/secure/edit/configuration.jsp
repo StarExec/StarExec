@@ -35,6 +35,7 @@
 				String contents = GeneralSecurity.getHTMLSafeString(
 						FileUtils.readFileToString(configFile));
 				request.setAttribute("config-id", con);
+				request.setAttribute("configID", configId);
 				request.setAttribute("solver", solver);
 				request.setAttribute("contents", contents);
 			} else {
@@ -92,6 +93,6 @@
 		</fieldset>
 	</form>
 	<a type="button" id="cancelConfig"
-	   href="${starexecRoot}/secure/details/configuration.jsp?id=${config.id}">cancel</a>
+	   href="${starexecRoot}/secure/details/configuration.jsp?id=${configID}">cancel</a>
 	<a type="button" id="updateConfig" href="#">update</a>
 </star:template>
