@@ -611,6 +611,14 @@ function initUI() {
 		}).click(function() {
 			updateSolverComparison(300, "white");
 		});
+		$("#pairTimeUpdate")
+		.button({
+			icons: {
+				primary: "ui-icon-arrowrefresh-1-e"
+			}
+		}).click(function() {
+			updatePairJobTimeGraph();
+		});
 
 		if (star.isUserSubscribedToJob !== undefined) {
 			(function() {
@@ -729,6 +737,14 @@ function initUI() {
 
 	$("#spaceOverview").click(function() {
 		$('#dialog-spaceOverview').dialog({
+			modal: true,
+			width: 850,
+			height: 850
+		});
+	});
+
+	$("#pairTimeGraph").click(function() {
+		$('#dialog-pairTimeGraph').dialog({
 			modal: true,
 			width: 850,
 			height: 850

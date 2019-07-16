@@ -307,8 +307,8 @@ public class Statistics {
 			for(int i = 0; i < times.size(); i++) {
 				Date d = times.get(i);
 				if(d != null) {
-					series.add(d.getTime(), i+1);
-					log.info("time: " + d.getTime());
+					series.add(d.getTime() / 1000, i+1);
+
 				}
 			}
 			

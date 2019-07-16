@@ -255,6 +255,10 @@
 							Update
 						</button>
 					</fieldset>
+					<fieldset id="pairTimeOptionField">
+						<legend>pair vs time options</legend>
+						<button id="pairTimeUpdate" type="button">Update</button>
+					</fieldset>
 				</fieldset>
 			</fieldset>
 		</c:if>
@@ -612,6 +616,10 @@
 			<div id="dialog-spaceOverview" title="space overview chart"
 			     class="hiddenDialog">
 				<img src="" id="bigSpaceOverview"/>
+			</div>
+			<div id="dialog-pairTimeGraph" title="completed pairs vs time chart"
+			     class="hiddenDialog">
+				<img src="" id="bigPairTimeGraph"/>
 			</div>
 			<div id="dialog-show-anonymous-link" title="anonymous link"
 			     class="hiddenDialog">
