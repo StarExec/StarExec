@@ -232,6 +232,8 @@
 				<img id="solverComparison300" width="300" height="300"
 				     src="${starexecRoot}/images/loadingGraph.png"
 				     usemap="#solverComparisonMap300"/>
+				<img id="pairTimeGraph" width="300" height="300" 
+				     src="${starexecRoot}/images/loadingGraph.png"/>
 				<br>
 				<fieldset id="optionField">
 					<legend>options</legend>

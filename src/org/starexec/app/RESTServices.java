@@ -960,6 +960,32 @@ public class RESTServices {
 		return RESTHelpers.getSpaceOverviewGraphJson( stageNumber, jobSpaceId, request, primitivesToAnonymize );
 	}
 
+
+	/**
+ 	 * Handles an anonymous request to get an anonymous pair vs time graph
+	 * @param jobId The job the chart is for
+ 	 * @param anonymousLinkUuid The unique ID associated with this anonymous page
+  	 * @param request Object containing other request information
+  	 * @return A json string containing the path to the newly created png chart
+  	 */
+	@POST
+	@Path("/jobs/anonymousLink/{anonymousLinkUuid}/{jobId}/graphs/pairTime")
+	@Produces("application/json")
+	public String getAnonymousPairTimeGraph (
+			@PathParam("anonymousLinkUuid") String anonymousLinkUuid,
+			@PathParam("jobId") int jobId,
+			@Context HttpServletRequest request) {
+
+		log.debug("Got request to get anonymous job pair vs time graph");
+		ValidatorStatusCode status = JobSecurity.isAnonymousLinkAssociatedWithJob(anonymousLinkUuid, jobId);
+		if (!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+
+		return RESTHelpers.getPairTimeGraphJson(jobId);
+	}
+
+
 	/**
 	 * Handles a request to get a space overview graph for a job details page
 	 * @param jobSpaceId The job space the chart is for
@@ -980,6 +1006,25 @@ public class RESTServices {
 		}
 
 		return RESTHelpers.getSpaceOverviewGraphJson( stageNumber, jobSpaceId, request, PrimitivesToAnonymize.NONE );
+	}
+
+	/**
+	* Handles a request to get a job pair vs time graph for a job details page
+	* @param jobId The job id the chart is for
+	* @param request Object containing other request information
+	* @return A json string containing the path to the new chart
+ 	*/
+	@POST
+	@Path("/jobs/{jobId}/graphs/pairTime")
+	@Produces("application/json")
+	public String getPairTimeGraph(@PathParam("jobId") int jobId, @Context HttpServletRequest request) {
+		log.debug("Got a request to get pair vs time request.");
+		int userId = SessionUtil.getUserId(request);
+		ValidatorStatusCode status = JobSecurity.canUserSeeJob(jobId, userId);
+		if(!status.isSuccess()) {
+			return gson.toJson(status);
+		}
+		return RESTHelpers.getPairTimeGraphJson(jobId);
 	}
 
 	@POST

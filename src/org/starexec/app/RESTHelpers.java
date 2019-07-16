@@ -304,6 +304,21 @@ public class RESTHelpers {
 	}
 
 	/**
+ 	 * Gets the space overview graph for a given jobspace.
+ 	 *
+   	 * @param jobId the job to get the graph for.
+ 	 */
+	protected static String getPairTimeGraphJson(int jobId) {
+		String chartPath = Statistics.makeJobTimeGraph(jobId);
+		if (chartPath.equals(Statistics.OVERSIZED_GRAPH_ERROR)) {
+			return gson.toJson(RESTServices.ERROR_TOO_MANY_JOB_PAIRS);
+		}
+
+		log.debug("chartPath = " + chartPath);
+		return chartPath == null ? gson.toJson(RESTServices.ERROR_DATABASE) : chartPath;
+	}
+
+	/**
 	 * Gets the space overview graph for a given jobspace.
 	 *
 	 * @param stageNumber which stage to filter solvers by.

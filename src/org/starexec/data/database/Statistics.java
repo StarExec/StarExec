@@ -115,6 +115,34 @@ public class Statistics {
 	}
 
 	/**
+ 	 * @param jobId The job to get the pair times from
+ 	 * @return A list of end times for the job pairs
+ 	 */
+	public static List<Date> getPairTimes(int jobId) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetPairTimes(?)}");
+			procedure.setInt(1, jobId);
+			results = procedure.executeQuery();
+			List<Date> list = new ArrayList<>();
+			while(results.next()) {
+				list.add(results.getTimestamp("end_time"));
+			}
+			return list;
+		} catch(Exception e) {
+			log.error("getPairTimes", e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+
+	/**
 	 * @param con The connection to make the query on
 	 * @param jobId The job to get the pair overview for
 	 * @return A hashmap that contains the statistic's name to value mapping (this method includes completePairs,
@@ -247,6 +275,80 @@ public class Statistics {
 			return dataset;
 		}
 	}
+
+	public static String makeJobTimeGraph(int jobId) {
+		final String methodName = "makeJobTimeGraph";
+		try {
+			log.entry(methodName);
+			List<Date> times = getPairTimes(jobId);
+			Collections.sort(times, new Comparator<Date>() {
+				@Override
+				public int compare(Date d1, Date d2) {
+					if(d1 == null && d2 != null) {
+						return 1;
+					}
+					if(d1 != null && d2 == null) {
+						return -1;
+					}
+					if(d1 == null && d2 == null) {
+						return 0;
+					}
+					if(d1.getTime() < d2.getTime()) {
+						return -1;
+					} else if(d1.getTime() == d2.getTime()) {
+						return 0;
+					}
+					return 1;
+				}
+			});
+			
+			//Times is now a list of dates ordered from earliest to latest, with all nulls at the end of the list.	
+			XYSeries series = new XYSeries("Number of completed pairs");
+			for(int i = 0; i < times.size(); i++) {
+				Date d = times.get(i);
+				if(d != null) {
+					series.add(d.getTime(), i+1);
+					log.info("time: " + d.getTime());
+				}
+			}
+			
+			XYSeriesCollection dataset = new XYSeriesCollection();
+			dataset.addSeries(series);
+			JFreeChart chart = ChartFactory.createXYLineChart("# Pairs Completed vs Time", "Time", "# of Completed Pairs", dataset, PlotOrientation.VERTICAL, false, false, false);
+
+			chart.setBackgroundPaint(new Color(0, 0, 0, 0));
+			chart.getTitle().setPaint(new Color(255, 255, 255));
+			XYPlot plot = (XYPlot)chart.getXYPlot();
+			plot.getRangeAxis().setAutoRange(false);
+			plot.getRangeAxis().setRange(new Range(0, times.size()));
+			plot.getRangeAxis().setLabelPaint(new Color(255, 255, 255));
+			plot.getRangeAxis().setTickLabelPaint(new Color(255, 255, 255));
+			plot.getDomainAxis().setLabelPaint(new Color(255, 255, 255));
+			plot.getDomainAxis().setTickLabelsVisible(false);
+
+			XYLineAndShapeRenderer rend = new XYLineAndShapeRenderer();
+			rend.setSeriesShapesVisible(0, false);
+			plot.setRenderer(rend);
+
+			String fileName = UUID.randomUUID().toString() + ".png";
+			File output = new File(new File(R.STAREXEC_ROOT, R.CLUSTER_GRAPH_DIR), fileName);
+			ChartUtilities.saveChartAsPNG(output, chart, 300, 300);
+			
+			plot.getRangeAxis().setLabelPaint(new Color(0, 0, 0));
+                        plot.getRangeAxis().setTickLabelPaint(new Color(0, 0, 0));
+                        plot.getDomainAxis().setLabelPaint(new Color(0, 0, 0));
+                        plot.getDomainAxis().setTickLabelsVisible(false);
+
+			output = new File(new File(R.STAREXEC_ROOT, R.CLUSTER_GRAPH_DIR), fileName + "800");
+			ChartUtilities.saveChartAsPNG(output, chart, 800, 800);
+			
+			return Util.docRoot(R.CLUSTER_GRAPH_DIR + "/" + fileName);
+		} catch(Exception e) {
+			log.error("Error generating job pair chart for job_id=" + jobId, e);
+		}
+		return null;
+	}
+
 
 	/**
 	 * Creates graphs for analyzing community statistics on Starexec

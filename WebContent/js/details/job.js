@@ -146,6 +146,7 @@ function refreshStats(id) {
 			.prop("selected", true);
 			lastValidSelectOption = $spaceOverviewSelections.val();
 			updateSpaceOverviewGraph();
+			updatePairJobTimeGraph();
 			if (summaryTable.fnSettings().fnRecordsTotal() > 1) {
 				$("#solverComparison").show();
 				$("#solverComparisonOptionField").show();
@@ -950,6 +951,34 @@ function setupPostProcessButton() {
 		});
 	});
 }
+
+function updatePairJobTimeGraph() {
+	var postUrl = null;
+
+	if(DETAILS_JOB.isAnonymousPage) {
+		postUrl = starexecRoot + 'services/jobs/anonymousLink/' + DETAILS_JOB.anonymousLinkUuid + '/' + jobId + '/graphs/pairTime';
+	} else {
+		postUrl = starexecRoot + 'services/jobs/' + jobId + '/graphs/pairTime';
+	}
+	log('updatePairJobTimeGraph postUrl: ' + postUrl);
+
+	var xhr = $.post(
+			postUrl,
+			{},
+			function(returnCode) {
+				var s = parseReturnCode(returnCode);
+				if(s) {
+					$("#pairTimeGraph").attr("src", returnCode);
+					$("#bigPairTimeGraph").attr("src", returnCode + "800");
+				} else {
+					$("#pairTimeGraph").attr("src", starexecRoot + "/images/noDisplayGraph.png");
+				}
+			},
+			"text"
+		);
+		openAjaxRequests.push(xhr);
+}
+
 
 function updateSpaceOverviewGraph() {
 	var configs = [];
