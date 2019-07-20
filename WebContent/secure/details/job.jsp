@@ -226,14 +226,19 @@
 		<c:if test="${!isLocalJobPage}">
 			<fieldset id="graphField">
 				<legend>graphs</legend>
+				<br>
+				<button id="selectSpaceOverview" type="button">Show Space Overview</button>
+				<button id="selectSolverComparison" type="button">Show Solver Comparison</button>
+				<button id="selectPairTimeGraph" type="button">Show Pairs vs. Time</button>
+				<br>
 				<img id="spaceOverview"
-				     src="${starexecRoot}/images/loadingGraph.png" width="300"
-				     height="300"/>
+			     		src="${starexecRoot}/images/loadingGraph.png" width="300"
+			     		height="300"/>
 				<img id="solverComparison300" width="300" height="300"
-				     src="${starexecRoot}/images/loadingGraph.png"
-				     usemap="#solverComparisonMap300"/>
+			     		src="${starexecRoot}/images/loadingGraph.png"
+			     		usemap="#solverComparisonMap300"/>
 				<img id="pairTimeGraph" width="300" height="300" 
-				     src="${starexecRoot}/images/loadingGraph.png"/>
+			     		src="${starexecRoot}/images/loadingGraph.png"/>
 				<br>
 				<fieldset id="optionField">
 					<legend>options</legend>
@@ -242,8 +247,7 @@
 						<input type="checkbox" id="logScale"/> <span>use log scale</span>
 						<select multiple size="5" id="spaceOverviewSelections">
 						</select>
-						<button id="spaceOverviewUpdate" type="button">Update
-						</button>
+						<button id="spaceOverviewUpdate" type="button">Update</button>
 					</fieldset>
 					<fieldset id="solverComparisonOptionField">
 						<legend>solver comparison options</legend>
@@ -251,9 +255,7 @@
 						</select>
 						<select id="solverChoice2">
 						</select>
-						<button id="solverComparisonUpdate" type="button">
-							Update
-						</button>
+						<button id="solverComparisonUpdate" type="button">Update</button>
 					</fieldset>
 					<fieldset id="pairTimeOptionField">
 						<legend>pair vs time options</legend>
@@ -262,6 +264,7 @@
 				</fieldset>
 			</fieldset>
 		</c:if>
+
 		<fieldset id="errorField">
 			<legend>job pairs</legend>
 			<p>There are too many job pairs in this space to display. Please
