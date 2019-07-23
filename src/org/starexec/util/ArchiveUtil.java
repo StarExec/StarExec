@@ -486,10 +486,10 @@ public class ArchiveUtil {
 				newFileName = baseName + File.separator + f.getName();
 			}
 
-			if (pathsSeen.contains(newFileName)) {
+			if (pathsSeen.contains(f.getAbsolutePath())) {
 				continue;
 			} else {
-				pathsSeen.add(newFileName);
+				pathsSeen.add(f.getAbsolutePath());
 			}
 
 			if (f.isDirectory()) {
