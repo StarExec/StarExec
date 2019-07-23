@@ -103,6 +103,7 @@ thead {
 
 #detailPanel #optionField {
 	width: 95%;
+	margin-bottom: 0px;
 }
 
 #solverComparison {
@@ -148,6 +149,11 @@ p.accent {
 		margin-top: 10px;
 		margin-right: auto;
 		margin-left: auto;
+	}
+
+	#pairTimeOptionField {
+        	float: left;
+        	width: 290px;
 	}
 }
 
@@ -202,6 +208,15 @@ p.accent {
 	margin-top: 0;
 	padding-top: 0;
 }
+
+#graphActions {
+        width: 97%;
+        border: 0 none black;
+        border-bottom: 0 none;
+        margin-top: 0;
+        padding-top: 0;
+}
+
 
 tr.viewSubspace {
 	text-align: center;
@@ -270,6 +285,10 @@ table.panel {
 		}
 
 		#pairActions button {
+			margin: 0 5px 5px 0;
+		}
+
+		#graphActions button {
 			margin: 0 5px 5px 0;
 		}
 	}

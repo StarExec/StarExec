@@ -226,11 +226,11 @@
 		<c:if test="${!isLocalJobPage}">
 			<fieldset id="graphField">
 				<legend>graphs</legend>
-				<br>
-				<button id="selectSpaceOverview" type="button">Show Space Overview</button>
-				<button id="selectSolverComparison" type="button">Show Solver Comparison</button>
-				<button id="selectPairTimeGraph" type="button">Show Pairs vs. Time</button>
-				<br>
+				<fieldset id="graphActions" class="tableActions">
+					<button id="selectSpaceOverview" type="button">Show Space Overview</button>
+					<button id="selectSolverComparison" type="button">Show Solver Comparison</button>
+					<button id="selectPairTimeGraph" type="button">Show Pairs vs. Time</button>
+				</fieldset>
 				<img id="spaceOverview"
 			     		src="${starexecRoot}/images/loadingGraph.png" width="300"
 			     		height="300"/>
