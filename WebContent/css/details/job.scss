@@ -201,22 +201,13 @@ p.accent {
 	}
 }
 
-#solverSummaryField #statActions, #pairTblField #pairActions {
+#solverSummaryField #statActions, #pairTblField #pairActions #graphActions {
 	width: 97%;
 	border: 0 none black;
 	border-bottom: 5px solid;
 	margin-top: 0;
 	padding-top: 0;
 }
-
-#graphActions {
-        width: 97%;
-        border: 0 none black;
-        border-bottom: 0 none;
-        margin-top: 0;
-        padding-top: 0;
-}
-
 
 tr.viewSubspace {
 	text-align: center;
@@ -285,10 +276,6 @@ table.panel {
 		}
 
 		#pairActions button {
-			margin: 0 5px 5px 0;
-		}
-
-		#graphActions button {
 			margin: 0 5px 5px 0;
 		}
 	}
