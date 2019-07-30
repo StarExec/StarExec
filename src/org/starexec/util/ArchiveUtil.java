@@ -489,21 +489,13 @@ public class ArchiveUtil {
 			if (pathsSeen.containsKey(newFileName)) {
 				pathsSeen.put(newFileName, pathsSeen.get(newFileName) + 1);
 			} else {
-				pathsSeen.put(newFileName, 1);
+				pathsSeen.put(newFileName, 0);
 			}
 
 			if (f.isDirectory()) {
-				if(pathsSeen.get(newFileName) == 1) {
-					addDirToArchive(stream, f, newFileName);
-				} else {
-					addDirToArchive(stream, f, newFileName + "_" + pathsSeen.get(newFileName));
-				}
+				addDirToArchive(stream, f, newFileName + "_" + pathsSeen.get(newFileName));
 			} else {
-				if(pathsSeen.get(newFileName) == 1) {
-					addFileToArchive(stream, f, newFileName);
-				} else {
-					addFileToArchive(stream, f, newFileName + "_" +  pathsSeen.get(newFileName));
-				}
+				addFileToArchive(stream, f, newFileName + "_" +  pathsSeen.get(newFileName));
 			}
 		}
 		stream.finish();
