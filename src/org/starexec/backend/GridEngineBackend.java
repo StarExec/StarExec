@@ -25,7 +25,9 @@ public class GridEngineBackend implements Backend{
     private static final String QUEUE_LIST_COMMAND = "qconf -sql";					// The SGE command to execute to get a list of all job queues
     private static final String QUEUE_STATS_COMMAND = "qstat -f";				// The SGE command to get stats about all the queues
     private static final String NODE_LIST_COMMAND = "qconf -sel";					// The SGE command to execute to get a list of all worker nodes
-    private static final String QUEUE_ASSOC_PATTERN = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,16}\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
+   // private static final String QUEUE_ASSOC_PATTERN = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,16}\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
+    // UM edit: Update RE to make UM nodes fully qualified
+    private static final String QUEUE_ASSOC_PATTERN = "\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f 
 	public static final String QUEUE_NAME_PATTERN = "QUEUE_NAME";
 	public static final String QUEUE_GET_SLOTS_PATTERN = "qconf -sq " + QUEUE_NAME_PATTERN;// + " | grep 'slots' | grep -o '[0-9]\\{1,\\}'";
 
@@ -287,7 +289,8 @@ public class GridEngineBackend implements Backend{
 			log.trace(methodName, "Got result: '" + results + "'");
 
 			// Trim outer whitespace and replace all consecutive whitespace with a single space.
-			String condensedResults = results.trim().replaceAll("\\s+", " ");
+      // UM edit: replace ',' with space
+			String condensedResults = results.trim().replaceAll("\\s+", " ").replaceAll(","," ");
 			log.trace(methodName, "Condensed results: "+condensedResults);
 
 			List<String> resultsWords = Arrays.asList(condensedResults.split(" "));
