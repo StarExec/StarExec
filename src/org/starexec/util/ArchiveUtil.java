@@ -480,6 +480,7 @@ public class ArchiveUtil {
 		for (File f : paths) {
 			log.debug("adding new file to zip = " + f.getAbsolutePath());
 			log.debug("directory status = " + f.isDirectory());
+			
 			if (Util.isNullOrEmpty(baseName)) {
 				newFileName = f.getName();
 			} else {
@@ -495,7 +496,7 @@ public class ArchiveUtil {
 			if (f.isDirectory()) {
 				addDirToArchive(stream, f, newFileName + "_" + pathsSeen.get(newFileName));
 			} else {
-				addFileToArchive(stream, f, newFileName + "_" +  pathsSeen.get(newFileName));
+				addFileToArchive(stream, f, newFileName);
 			}
 		}
 		stream.finish();
