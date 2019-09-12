@@ -476,7 +476,6 @@ public class ArchiveUtil {
 	public static void createAndOutputZip(Iterable<File> paths, OutputStream output, String baseName) throws IOException {
 		String newFileName = baseName;
 		ZipArchiveOutputStream stream = new ZipArchiveOutputStream(output);
-		Map<String, Integer> pathsSeen = new HashMap<>();
 		for (File f : paths) {
 			log.debug("adding new file to zip = " + f.getAbsolutePath());
 			log.debug("directory status = " + f.isDirectory());
@@ -487,14 +486,8 @@ public class ArchiveUtil {
 				newFileName = baseName + File.separator + f.getName();
 			}
 
-			if (pathsSeen.containsKey(newFileName)) {
-				pathsSeen.put(newFileName, pathsSeen.get(newFileName) + 1);
-			} else {
-				pathsSeen.put(newFileName, 0);
-			}
-
 			if (f.isDirectory()) {
-				addDirToArchive(stream, f, newFileName + "_" + pathsSeen.get(newFileName));
+				addDirToArchive(stream, f, newFileName);
 			} else {
 				addFileToArchive(stream, f, newFileName);
 			}
