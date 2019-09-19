@@ -25,12 +25,16 @@ public class GridEngineBackend implements Backend{
     private static final String QUEUE_LIST_COMMAND = "qconf -sql";					// The SGE command to execute to get a list of all job queues
     private static final String QUEUE_STATS_COMMAND = "qstat -f";				// The SGE command to get stats about all the queues
     private static final String NODE_LIST_COMMAND = "qconf -sel";					// The SGE command to execute to get a list of all worker nodes
-    private static final String QUEUE_ASSOC_PATTERN = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,16}\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
-	public static final String QUEUE_NAME_PATTERN = "QUEUE_NAME";
+    //private static final String QUEUE_ASSOC_PATTERN = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,16}\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
+    
+    // UM edit
+    private static final String QUEUE_ASSOC_PATTERN = "\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
+	
+  public static final String QUEUE_NAME_PATTERN = "QUEUE_NAME";
 	public static final String QUEUE_GET_SLOTS_PATTERN = "qconf -sq " + QUEUE_NAME_PATTERN;// + " | grep 'slots' | grep -o '[0-9]\\{1,\\}'";
 
+//    private static final String GRID_ENGINE_PATH = "/cluster/gridengine-8.1.8/bin/lx-amd64/";
 	private static final String GRID_ENGINE_PATH = R.BACKEND_ROOT+"/bin/lx-amd64/";
-
 
     private Session session = null;
     private StarLogger log;
@@ -111,6 +115,16 @@ public class GridEngineBackend implements Backend{
     public int submitScript(String scriptPath, String workingDirectoryPath, String logPath){
     	synchronized(this){
     		JobTemplate sgeTemplate = null;
+        	log.info("UM_1: The current Working Directory is: " + workingDirectoryPath);
+
+ 	try {
+                // Execute the SGE command to get the node list
+                String uid = Util.executeCommand("id");
+        	log.info("UM_2: The uid is: " + uid);
+        } catch (Exception e) {
+                log.error(e.getMessage(),e);
+        }
+
 		try {
 			// Set up the grid engine template
 			sgeTemplate = session.createJobTemplate();
@@ -129,11 +143,15 @@ public class GridEngineBackend implements Backend{
 			// Actually submit the job to the grid engine
 			String id = session.runJob(sgeTemplate);
 			//log.info(String.format("Submitted SGE job #%s, job pair %s, script \"%s\".", id, pair.getId(), scriptPath));
+			log.info(String.format("UM_3 Submitted SGE job #%s, script \"%s\".", id, scriptPath));
+      log.info("UM_4: The current Working Directory is: " + workingDirectoryPath);
 
 			return Integer.parseInt(id);
 		} catch (org.ggf.drmaa.DrmaaException e) {
 			//JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());
 			log.error("submitScript", "scriptPath: " + scriptPath, e);
+
+      log.info("UM_5: The current Working Directory is: " + workingDirectoryPath);
 
 		} catch (Exception e) {
 		    //JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
@@ -162,6 +180,7 @@ public class GridEngineBackend implements Backend{
      */
     public boolean killAll(){
 		try {
+			// UM tomcat
 			Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qdel -f -u tomcat",getSGEEnv());
 			return true;
 		} catch (Exception e) {
@@ -251,17 +270,23 @@ public class GridEngineBackend implements Backend{
     		envp[1] = "SGE_ROOT="+BACKEND_ROOT; // it seems we need to set this explicitly if we change the environment.
     		String results = Util.executeCommand(QUEUE_STATS_COMMAND,envp);
 
+		log.info(results);
+
     		// Parse the output from the SGE call to get the key/value pairs for the node
     		java.util.regex.Matcher matcher = GridEngineBackend.queueAssocPattern.matcher(results);
 
     		Map<String,String> nodesToQueuesMap = new HashMap<>();
 
     		// For each match...
+    		log.info("Getting all associations");
     		while(matcher.find()) {
     			// Split apart the key from the value
     			String[] queueNode = matcher.group().split("@");
+			log.info(queueNode[1] + " " + queueNode[0]);
+
     			nodesToQueuesMap.put(queueNode[1], queueNode[0]);
     		}
+    		log.info("Got all associations");
 
     		return nodesToQueuesMap;
     	} catch (Exception e) {
@@ -287,8 +312,9 @@ public class GridEngineBackend implements Backend{
 			log.trace(methodName, "Got result: '" + results + "'");
 
 			// Trim outer whitespace and replace all consecutive whitespace with a single space.
-			String condensedResults = results.trim().replaceAll("\\s+", " ");
-			log.trace(methodName, "Condensed results: "+condensedResults);
+			// UM edit: replace ',' with space
+			String condensedResults = results.trim().replaceAll("\\s+", " ").replaceAll(","," ");
+			log.trace(methodName, "Condensed Geoff's results: "+condensedResults);
 
 			List<String> resultsWords = Arrays.asList(condensedResults.split(" "));
 			int slotsIndex = resultsWords.indexOf("slots");
@@ -303,12 +329,13 @@ public class GridEngineBackend implements Backend{
 
 
 			String slots = resultsWords.get(slotsIndex+1);
+			log.info("UM Slots: " + slots);
 			if (!slots.matches("[0-9]+")) {
 				throw new StarExecException("The slots attribute was not followed by a numeral.");
 			}
 
 
-
+			log.info("UM number of slots: " + Integer.parseInt(slots));
 			return Integer.parseInt(slots);
 		} catch (IOException e) {
 			log.error("Caught IOException.", e);
