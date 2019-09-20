@@ -1,4 +1,4 @@
-jdk: openjdk
+language: java
 rvm: 2.4
 
 addons:
