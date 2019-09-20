@@ -1,4 +1,4 @@
-jdk: oraclejdk8
+jdk: openjdk
 rvm: 2.4
 
 addons:
