@@ -683,7 +683,7 @@ function initSpaceExplorer() {
 function removeBenchmarks(selectedBenches, ownsAll) {
 	if (ownsAll) {
 		$('#dialog-confirm-delete-txt')
-		.text('Do you want to remove the selected benchmark(s) from ' + spaceName + ', or would you like  to send them to the recycle bin?');
+		.text('Do you want to remove the selected benchmark(s) from ' + spaceName + ', or would you like to send them to the trash bin?');
 
 		// Display the confirmation dialog
 		$('#dialog-confirm-delete').dialog({
@@ -711,7 +711,7 @@ function removeBenchmarks(selectedBenches, ownsAll) {
 							5000);
 					});
 				},
-				'move to recycle bin': function() {
+				'move to trash bin': function() {
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-delete').dialog('close');
 
@@ -934,16 +934,16 @@ function removeSolvers(selectedSolvers, ownsAll) {
 
 	var dialogText = null;
 	if (ownsAll) {
-		// Add the move to recycle bin button if the user owns the solvers.
-		removeSolverButtons['move to recycle bin'] = function() {
+		// Add the move to recycle/trash bin button if the user owns the solvers.
+		removeSolverButtons['move to trash bin'] = function() {
 			moveSolversToRecycleBin(selectedSolvers);
 		};
 	}
 	if (ownsAll && isLeafSpace) {
-		dialogText = 'do you want to remove the solver(s) from ' + spaceName + " or would you like to move them to the recycle bin?";
+		dialogText = 'do you want to remove the solver(s) from ' + spaceName + " or would you like to move them to the trash bin?";
 	} else if (ownsAll && !isLeafSpace) {
 		dialogText = 'do you want to remove the solver(s) from ' + spaceName + ', from ' + spaceName
-			+ ' and its hierarchy, or would you like to move them to the recycle bin?';
+			+ ' and its hierarchy, or would you like to move them to the trash bin?';
 	} else if (!ownsAll && isLeafSpace) {
 		dialogText = 'do you want to remove the solver(s) from ' + spaceName + '?';
 	} else {
@@ -1078,7 +1078,7 @@ function removeJobs(selectedJobs, ownsAll) {
  */
 function removeSubspaces(selectedSubspaces) {
 	$('#dialog-confirm-delete-txt')
-	.text('Do you want to recycle the solvers and benchmarks, and delete the jobs in the selected subspace(s), and all their subspaces, or do you only want to remove the selected subspace(s) from ' + spaceName + '?'); // Display the confirmation dialog
+	.text('Do you want to move the solvers and benchmarks to the trash, and delete the jobs in the selected subspace(s), and all their subspaces, or do you only want to remove the selected subspace(s) from ' + spaceName + '?'); // Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
 		height: 400,
@@ -1094,7 +1094,7 @@ function removeSubspaces(selectedSubspaces) {
 				});
 				$('#exploreList').jstree("refresh");
 			},
-			'remove subspace(s), and recycle primitives': function() {
+			'remove subspace(s), and move primitives to trash': function() {
 				log('user confirmed subspace deletion');
 				// If the user actually confirms, close the dialog right away
 				$('#dialog-confirm-delete').dialog('close');
