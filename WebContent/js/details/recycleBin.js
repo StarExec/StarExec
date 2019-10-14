@@ -198,7 +198,7 @@ function restoreAll(prim) {
 					postCallback,
 					"json"
 				).error(function() {
-					showMessage('error', "Internal error restoring " + prim + "s",recycle
+					showMessage('error', "Internal error restoring " + prim + "s",
 						5000);
 				});
 			},
