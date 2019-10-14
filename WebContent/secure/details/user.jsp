@@ -192,15 +192,15 @@
 				<ul class="actionList">
 					<li>
 						<button prim="solver" id="recycleSolver"
-						        class="recycleButton recycleSelected">recycle
-							selected
+								class="recycleButton recycleSelected">
+								move selected to trash bin
 						</button>
 					</li>
 					<li>
-						<button title="This will move all of the solvers you own that are not in any spaces to the recycle bin."
+						<button title="This will move all of the solvers you own that are not in any spaces to the trash bin."
 						        prim="solver" id="recycleOrphanedSolvers"
-						        class="recycleButton recycleOrphaned">recycle
-							orphaned
+								class="recycleButton recycleOrphaned">
+								move orphaned to trash bin
 						</button>
 				</ul>
 				<table id="solvers" uid="${t_user.id}" class="selectableTable">
@@ -217,15 +217,15 @@
 				<ul class="actionList">
 					<li>
 						<button prim="benchmark" id="recycleBench"
-						        class="recycleButton recycleSelected">recycle
-							selected
+								class="recycleButton recycleSelected">
+								move selected to trash bin
 						</button>
 					</li>
 					<li>
-						<button title="This will move all of the benchmarkss you own that are not in any spaces to the recycle bin"
+						<button title="This will move all of the benchmarkss you own that are not in any spaces to the trash bin"
 						        prim="benchmark" id="recycleOrphanedBench"
-						        class="recycleButton recycleOrphaned">recycle
-							orphaned
+								class="recycleButton recycleOrphaned">
+								move orphaned to trash bin
 						</button>
 					</li>
 				</ul>
@@ -277,7 +277,7 @@
 					<li><a id="showSpaceExplorer">show space explorer</a></li>
 					<li><a id="recycleBinButton"
 					       href="${starexecRoot}/secure/details/recycleBin.jsp">manage
-						recycle bin</a></li>
+						trash bin</a></li>
 
 					<c:if test="${!t_user.subscribedToErrorLogs && canSubscribeToErrorLogs}">
 						<li><a id="subscribeToErrorLogs">subscribe to error
@@ -302,7 +302,7 @@
 				<p><span class="ui-icon ui-icon-alert"></span><span
 						id="dialog-confirm-delete-txt"></span></p>
 			</div>
-			<div id="dialog-confirm-recycle" title="confirm recycle"
+			<div id="dialog-confirm-recycle" title="confirm sending to trash"
 			     class="hiddenDialog">
 				<p><span class="ui-icon ui-icon-alert"></span><span
 						id="dialog-confirm-recycle-txt"></span></p>
