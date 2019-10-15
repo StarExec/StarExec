@@ -291,7 +291,7 @@ function recycleSelected(prim) {
 		modal: true,
 		height: 220,
 		buttons: {
-			'recycle': function() {
+			'Move to Trash': function() {
 				$("#dialog-confirm-recycle").dialog("close");
 				createDialog("Moving the selected " + prim + "(s) to the trash, please wait. This will take some time for large numbers of " + prim + "(s).");
 				$.post(
@@ -369,7 +369,7 @@ function recycleOrphaned(prim) {
 		modal: true,
 		height: 220,
 		buttons: {
-			'recycle': function() {
+			'Move to Trash': function() {
 				$("#dialog-confirm-recycle").dialog("close");
 				createDialog("Moving the selected " + prim + "(s) to the trash, please wait. This will take some time for large numbers of " + prim + "(s).");
 				$.post(
