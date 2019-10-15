@@ -280,7 +280,7 @@ function getSelectedRows(dataTable) {
 
 function recycleSelected(prim) {
 	$('#dialog-confirm-recycle-txt')
-	.text('Are you sure you want to recycle all the selected ' + prim + '(s)?');
+	.text('Are you sure you want to move all the selected ' + prim + '(s) to the trash?');
 	if (prim == "solver") {
 		table = solverTable;
 	} else {
@@ -293,7 +293,7 @@ function recycleSelected(prim) {
 		buttons: {
 			'recycle': function() {
 				$("#dialog-confirm-recycle").dialog("close");
-				createDialog("Recycling the selected " + prim + "(s), please wait. This will take some time for large numbers of " + prim + "(s).");
+				createDialog("Moving the selected " + prim + "(s) to the trash, please wait. This will take some time for large numbers of " + prim + "(s).");
 				$.post(
 					starexecRoot + "services/recycle/" + prim,
 					{selectedIds: getSelectedRows(table)},
@@ -309,7 +309,7 @@ function recycleSelected(prim) {
 					},
 					"json"
 				).error(function() {
-					showMessage('error', "Internal error recycling " + prim + "s",
+					showMessage('error', "Internal error trashing " + prim + "s",
 						5000);
 				});
 			},
@@ -362,7 +362,7 @@ function linkAllOrphaned() {
 
 function recycleOrphaned(prim) {
 	$('#dialog-confirm-recycle-txt')
-	.text('Are you sure you want to recycle all of your orphaned ' + prim + '(s)?');
+	.text('Are you sure you want to move all of your orphaned ' + prim + '(s) to the trash?');
 
 	// Display the confirmation dialog
 	$('#dialog-confirm-recycle').dialog({
@@ -371,7 +371,7 @@ function recycleOrphaned(prim) {
 		buttons: {
 			'recycle': function() {
 				$("#dialog-confirm-recycle").dialog("close");
-				createDialog("Recycling the selected " + prim + "(s), please wait. This will take some time for large numbers of " + prim + "(s).");
+				createDialog("Moving the selected " + prim + "(s) to the trash, please wait. This will take some time for large numbers of " + prim + "(s).");
 				$.post(
 					starexecRoot + "services/recycleOrphaned/" + prim + "/" + userId,
 					{},
@@ -387,7 +387,7 @@ function recycleOrphaned(prim) {
 					},
 					"json"
 				).error(function() {
-					showMessage('error', "Internal error recycling " + prim + "s",
+					showMessage('error', "Internal error trashing " + prim + "s",
 						5000);
 				});
 			},
