@@ -681,16 +681,19 @@ function initSpaceExplorer() {
  * @author Todd Elvers
  */
 function removeBenchmarks(selectedBenches, ownsAll) {
-	if (ownsAll) {
-		$('#dialog-confirm-delete-txt')
-		.text('Do you want to remove the selected benchmark(s) from ' + spaceName + ', or would you like to send them to the trash bin?');
+	$('#dialog-confirm-delete-txt')
+	.text('How do you want to remove the selected benchmark(s) from ' 
+		+ spaceName 
+		+ '? Note that you cannot move benchmarks to your trash if you do not own them all');
 
-		// Display the confirmation dialog
-		$('#dialog-confirm-delete').dialog({
-			modal: true,
-			height: 220,
-			buttons: {
-				'remove from space': function() {
+	// Display the confirmation dialog
+	$('#dialog-confirm-delete').dialog({
+		modal: true,
+		height: 220,
+		buttons: [
+			{
+				'text': "Unlink from space",
+				'click': function() {
 					log('user confirmed benchmark removal');
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-delete').dialog('close');
@@ -710,8 +713,16 @@ function removeBenchmarks(selectedBenches, ownsAll) {
 							"Internal error removing benchmarks",
 							5000);
 					});
-				},
-				'move to trash bin': function() {
+				}
+			},
+			{
+				'text': "Unlink from space and all subspaces",
+				'disabled': true
+			},
+			{
+				'text': "Move to Trash Bin",
+				'disabled': !ownsAll,
+				'click': function() {
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-delete').dialog('close');
 
@@ -730,50 +741,21 @@ function removeBenchmarks(selectedBenches, ownsAll) {
 							"Internal error removing benchmarks",
 							5000);
 					});
-				},
-				"cancel": function() {
+				}
+			},
+			{
+				'text': "Delete permanently",
+				'disabled': true
+			},
+			{
+				'text': "Cancel",
+				"click": function() {
 					log('user canceled benchmark deletion');
 					$(this).dialog("close");
 				}
 			}
-		});
-	} else {
-		$('#dialog-confirm-delete-txt')
-		.text('Do you want to remove the selected benchmark(s) from ' + spaceName + '?');
-
-		// Display the confirmation dialog
-		$('#dialog-confirm-delete').dialog({
-			modal: true,
-			height: 220,
-			buttons: {
-				'remove from space': function() {
-					log('user confirmed benchmark removal');
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-delete').dialog('close');
-
-					$.post(
-						starexecRoot + "services/remove/benchmark/" + spaceId,
-						{selectedIds: selectedBenches},
-						function(returnCode) {
-							s = parseReturnCode(returnCode);
-							if (s) {
-								updateTable(benchTable);
-							}
-						},
-						"json"
-					).error(function() {
-						showMessage('error',
-							"Internal error removing benchmarks",
-							5000);
-					});
-				},
-				"cancel": function() {
-					log('user canceled benchmark deletion');
-					$(this).dialog("close");
-				}
-			}
-		});
-	}
+		]
+	});
 }
 
 function removeUsersFromSpace(selectedUsers) {
@@ -801,56 +783,54 @@ function removeUsersFromSpace(selectedUsers) {
  * @author Todd Elvers & Skylar Stark
  */
 function removeUsers(selectedUsers) {
-	var dialogButtons = null;
-	if (isLeafSpace) {
-		$('#dialog-confirm-delete-txt')
-		.text('Are you sure you want to remove the user(s)?');
-		dialogButtons = {
-			'confirm': function() {
-				removeUsersFromSpace(selectedUsers)
-			},
-			'cancel': function() {
-				$('#dialog-confirm-delete').dialog('close');
-			}
-		};
-	} else {
-		$('#dialog-confirm-delete-txt').text(
-			'do you want to remove the user(s) from ' + spaceName + ' and its hierarchy or just from ' + spaceName + '?');
-		dialogButtons = {
-			'space hierarchy': function() {
-				log('user confirmed user deletion from space and its hierarchy');
-				// If the user actually confirms, close the dialog right away
-				$('#dialog-confirm-delete').dialog('close');
-
-				$.post(
-					starexecRoot + "services/remove/user/" + spaceId,
-					{selectedIds: selectedUsers, hierarchy: true},
-					function(returnCode) {
-						s = parseReturnCode(returnCode);
-						if (s) {
-							updateTable(userTable);
-						}
-					},
-					"json"
-				).error(function() {
-					showMessage('error', "Internal error removing users", 5000);
-				});
-			},
-			'space': function() {
-				removeUsersFromSpace(selectedUsers)
-			},
-			'cancel': function() {
-				$('#dialog-confirm-delete').dialog('close');
-			}
-		};
-	}
+	$('#dialog-confirm-delete-txt').text("How do you want to remove the user(s) from " + spaceName + "?");
 
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
 		width: 380,
 		height: 200,
-		buttons: dialogButtons
+		buttons: [
+			{
+				'text': "Unlink from space",
+				'click': function(){removeUsersFromSpace(selectedUsers);}
+			},
+			{
+				'text': "Unlink from space and all subspaces",
+				'disabled': isLeafSpace,
+				'click': function() {
+					log('user confirmed user deletion from space and its hierarchy');
+					// If the user actually confirms, close the dialog right away
+					$('#dialog-confirm-delete').dialog('close');
+	
+					$.post(
+						starexecRoot + "services/remove/user/" + spaceId,
+						{selectedIds: selectedUsers, hierarchy: true},
+						function(returnCode) {
+							s = parseReturnCode(returnCode);
+							if (s) {
+								updateTable(userTable);
+							}
+						},
+						"json"
+					).error(function() {
+						showMessage('error', "Internal error removing users", 5000);
+					});
+				}
+			},
+			{
+				'text': "Move to Trash Bin",
+				'disabled': true
+			},
+			{
+				'text': "Delete Permanently",
+				'disabled': true
+			},
+			{
+				'text': "Cancel",
+				'click': function(){$('#dialog-confirm-delete').dialog('close');}
+			},
+		]
 	});
 }
 
@@ -918,51 +898,37 @@ function moveSolversToRecycleBin(selectedSolvers) {
  * @author Todd Elvers & Skylar Stark
  */
 function removeSolvers(selectedSolvers, ownsAll) {
-	var removeSolverButtons = {
-		// The remove from space button and cancel button will be in the dialog no matter what.
-		'remove from space': function() {
-			removeSolversFromSpace(selectedSolvers);
-		},
-	};
-
-	if (!isLeafSpace) {
-		// Only add the hierarchy option if the space is not a leaf.
-		removeSolverButtons['remove from space hierarchy'] = function() {
-			removeSolversFromSpaceHierarchy(selectedSolvers);
-		};
-	}
-
-	var dialogText = null;
-	if (ownsAll) {
-		// Add the move to recycle/trash bin button if the user owns the solvers.
-		removeSolverButtons['move to trash bin'] = function() {
-			moveSolversToRecycleBin(selectedSolvers);
-		};
-	}
-	if (ownsAll && isLeafSpace) {
-		dialogText = 'do you want to remove the solver(s) from ' + spaceName + " or would you like to move them to the trash bin?";
-	} else if (ownsAll && !isLeafSpace) {
-		dialogText = 'do you want to remove the solver(s) from ' + spaceName + ', from ' + spaceName
-			+ ' and its hierarchy, or would you like to move them to the trash bin?';
-	} else if (!ownsAll && isLeafSpace) {
-		dialogText = 'do you want to remove the solver(s) from ' + spaceName + '?';
-	} else {
-		dialogText = 'do you want to remove the solver(s) from ' + spaceName + ' or from ' + spaceName + ' and its hierarchy?';
-	}
-
-	// Add cancel button last
-	removeSolverButtons['cancel'] = function() {
-		$(this).dialog("close");
-	};
-
-	$('#dialog-confirm-delete-txt').text(dialogText);
+	$('#dialog-confirm-delete-txt').text("How do you want to remove the solver(s) from " + spaceName + "?");
 
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
 		width: 430,
 		height: 250,
-		buttons: removeSolverButtons
+		buttons: [
+			{
+				'text': "Unlink from space",
+				'click': function() {removeSolversFromSpace(selectedSolvers);}
+			},
+			{
+				'text': "Unlink from space and all subspaces",
+				'disabled': isLeafSpace,
+				'click': function() {removeSolversFromSpaceHierarchy(selectedSolvers);}
+			},
+			{
+				'text': "Move to Trash Bin",
+				'disabled': !ownsAll,
+				'click': function() {moveSolversToRecycleBin(selectedSolvers);}
+			},
+			{
+				'text': "Delete Permanently",
+				'disabled': true
+			},
+			{
+				'text': "Cancel",
+				'click': function(){$(this).dialog("close");}
+			},
+		]
 	});
 }
 
@@ -971,21 +937,24 @@ function removeSolvers(selectedSolvers, ownsAll) {
  * @author Todd Elvers
  */
 function removeJobs(selectedJobs, ownsAll) {
-	if (ownsAll) {
-		$('#dialog-confirm-delete-txt')
-		.text('do you want to remove the selected job(s) from ' + spaceName + ', or do you want to delete them permanently?');
+	$('#dialog-confirm-delete-txt')
+	.text('How do you want to remove the selected job(s) from ' 
+		+ spaceName 
+		+ '? Note that you cannot delete them permanently if you do not own them all.');
 
-		// Display the confirmation dialog
-		$('#dialog-confirm-delete').dialog({
-			modal: true,
-			height: 250,
-			buttons: {
-				'remove jobs': function() {
+	// Display the confirmation dialog
+	$('#dialog-confirm-delete').dialog({
+		modal: true,
+		height: 250,
+		buttons: [
+			{
+				'text': "Unlink from space",
+				'click': function() {
 					jobTable.fnProcessingIndicator();
 					log('user confirmed job deletion');
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-delete').dialog('close');
-
+	
 					$.post(
 						starexecRoot + "services/remove/job/" + spaceId,
 						{selectedIds: selectedJobs},
@@ -1002,13 +971,25 @@ function removeJobs(selectedJobs, ownsAll) {
 							"Internal error removing jobs",
 							5000);
 					});
-				},
-				'delete permanently': function() {
+				}
+			},
+			{
+				'text': "Unlink from space and all subspaces",
+				'disabled': true
+			},
+			{
+				'text': "Move to Trash",
+				'disabled': true
+			},
+			{
+				'text': "Delete Permanently",
+				'disabled': !ownsAll,
+				'click': function() {
 					jobTable.fnProcessingIndicator();
 					log('user confirmed job deletion');
 					// If the user actually confirms, close the dialog right away
 					$('#dialog-confirm-delete').dialog('close');
-
+	
 					$.post(
 						starexecRoot + "services/deleteandremove/job/" + spaceId,
 						{selectedIds: selectedJobs},
@@ -1025,51 +1006,17 @@ function removeJobs(selectedJobs, ownsAll) {
 							"Internal error removing jobs",
 							5000);
 					});
-				},
-				"cancel": function() {
+				}
+			},
+			{
+				'text': "Cancel",
+				"click": function() {
 					log('user canceled job deletion');
 					$(this).dialog("close");
 				}
 			}
-		});
-	} else {
-		$('#dialog-confirm-delete-txt')
-		.text('do you want to remove the selected job(s) from ' + spaceName + '?');
-
-		// Display the confirmation dialog
-		$('#dialog-confirm-delete').dialog({
-			modal: true,
-			height: 250,
-			buttons: {
-				'remove jobs': function() {
-					jobTable.fnProcessingIndicator();
-					log('user confirmed job deletion');
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-delete').dialog('close');
-					$.post(
-						starexecRoot + "services/remove/job/" + spaceId,
-						{selectedIds: selectedJobs},
-						function(returnCode) {
-							s = parseReturnCode(returnCode);
-							if (s) {
-								updateTable(jobTable);
-							}
-							jobTable.fnProcessingIndicator(false);
-						},
-						"json"
-					).error(function() {
-						showMessage('error',
-							"Internal error removing jobs",
-							5000);
-					});
-				},
-				"cancel": function() {
-					log('user canceled job deletion');
-					$(this).dialog("close");
-				}
-			}
-		});
-	}
+		]
+	});
 }
 
 /**
@@ -1084,7 +1031,7 @@ function removeSubspaces(selectedSubspaces) {
 		height: 400,
 		width: 400,
 		buttons: {
-			"remove subspace(s) only": function() {
+			"Remove subspace(s) only": function() {
 				log('user confirmed subspace deletion');
 				// If the user actually confirms, close the dialog right away
 				$('#dialog-confirm-delete').dialog('close');
@@ -1094,7 +1041,7 @@ function removeSubspaces(selectedSubspaces) {
 				});
 				$('#exploreList').jstree("refresh");
 			},
-			'remove subspace(s), and move primitives to trash': function() {
+			'Remove subspace(s), and move primitives to trash': function() {
 				log('user confirmed subspace deletion');
 				// If the user actually confirms, close the dialog right away
 				$('#dialog-confirm-delete').dialog('close');
@@ -1104,7 +1051,7 @@ function removeSubspaces(selectedSubspaces) {
 				});
 				$('#exploreList').jstree("refresh");
 			},
-			"cancel": function() {
+			"Cancel": function() {
 				log('user canceled subspace deletion');
 				$(this).dialog("close");
 			}
