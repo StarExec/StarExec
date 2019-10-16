@@ -689,7 +689,8 @@ function removeBenchmarks(selectedBenches, ownsAll) {
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
-		height: 220,
+		width: 800,
+		height: 400,
 		buttons: [
 			{
 				'text': "Unlink from space",
@@ -788,8 +789,8 @@ function removeUsers(selectedUsers) {
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
-		width: 380,
-		height: 200,
+		width: 800,
+		height: 400,
 		buttons: [
 			{
 				'text': "Unlink from space",
@@ -903,8 +904,8 @@ function removeSolvers(selectedSolvers, ownsAll) {
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
-		width: 430,
-		height: 250,
+		width: 800,
+		height: 400,
 		buttons: [
 			{
 				'text': "Unlink from space",
@@ -945,7 +946,8 @@ function removeJobs(selectedJobs, ownsAll) {
 	// Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
-		height: 250,
+		width: 800,
+		height: 400,
 		buttons: [
 			{
 				'text': "Unlink from space",
@@ -1028,8 +1030,8 @@ function removeSubspaces(selectedSubspaces) {
 	.text('Do you want to move the solvers and benchmarks to the trash, and delete the jobs in the selected subspace(s), and all their subspaces, or do you only want to remove the selected subspace(s) from ' + spaceName + '?'); // Display the confirmation dialog
 	$('#dialog-confirm-delete').dialog({
 		modal: true,
+		width: 800,
 		height: 400,
-		width: 400,
 		buttons: {
 			"Remove subspace(s) only": function() {
 				log('user confirmed subspace deletion');
