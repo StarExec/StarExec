@@ -104,8 +104,22 @@
 					<td><input type="checkbox" name="uc" value="uc"></td>
 				</tr>
 				<tr>
+					<td class="label">
+						Confirm that you have read and agree with our 
+						<a href="#">Terms of Service</a>
+						and
+						<a href="https://welcome.miami.edu/privacy-and-legal/index.html">Legal Notice</a>.
+					</td>
+					<td>
+						<input type="checkbox" 
+							name="termsOfService" 
+							value="termsOfService" 
+							oninput="$('#submit').attr('disabled', this.checked);">
+					</td>
+				</tr>
+				<tr>
 					<td colspan="3">
-						<button type="submit" id="submit" value="Submit">
+						<button type="submit" id="submit" value="Submit" disabled>
 							Register
 						</button>
 					</td>
@@ -115,7 +129,7 @@
 		</fieldset>
 	</form>
 	<c:if test="${not empty param.result and param.result == 'regSuccess'}">
-		<div class='success message'>Registration successfu - an email was sent
+		<div class='success message'>Registration successful - an email was sent
 			to you to activate your account
 		</div>
 	</c:if>
