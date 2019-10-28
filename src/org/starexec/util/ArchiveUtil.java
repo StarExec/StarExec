@@ -472,8 +472,22 @@ public class ArchiveUtil {
 	 * @param output The outputstream to write to
 	 * @param baseName If not null or empty, all files will be in one directory with this name
 	 * @throws IOException
-	 */
+         */
 	public static void createAndOutputZip(Iterable<File> paths, OutputStream output, String baseName) throws IOException {
+            createAndOutputZip(paths,output,baseName,false);
+        }
+
+	/**
+	 * Writes several files to one zip file at the location indicated by the given outputstream.
+         * If uniquify is true, make sure all file names are unique by appending a number to each.
+	 *
+	 * @param paths The list of files to add to the zip
+	 * @param output The outputstream to write to
+	 * @param baseName If not null or empty, all files will be in one directory with this name
+	 * @throws IOException
+	 */
+            public static void createAndOutputZip(Iterable<File> paths, OutputStream output, String baseName,
+                                                  boolean uniquify) throws IOException {
 		String newFileName = baseName;
 		ZipArchiveOutputStream stream = new ZipArchiveOutputStream(output);
 		Map<String, Integer> pathsSeen = new HashMap<>();
@@ -492,10 +506,14 @@ public class ArchiveUtil {
 				pathsSeen.put(newFileName, 0);
 			}
 
+                        if (uniquify) {
+                            newFileName = newFileName + "_" + pathsSeen.get(newFileName);
+                        }
+
 			if (f.isDirectory()) {
-				addDirToArchive(stream, f, newFileName + "_" + pathsSeen.get(newFileName));
+				addDirToArchive(stream, f, newFileName);
 			} else {
-				addFileToArchive(stream, f, newFileName + "_" +  pathsSeen.get(newFileName));
+				addFileToArchive(stream, f, newFileName);
 			}
 		}
 		stream.finish();
