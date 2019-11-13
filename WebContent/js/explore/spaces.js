@@ -947,7 +947,7 @@ function removeSolvers(selectedSolvers, ownsAll) {
 				'disabled': !ownsAll,
 				'click': function() {
 					if(applyActionInHierarchy){
-						alert('not implemented');
+						alert('Moving solvers to trash hierarchically is not supported yet.');
 					}
 					else{
 						moveSolversToRecycleBin(selectedSolvers);
@@ -987,7 +987,7 @@ function removeJobs(selectedJobs, ownsAll) {
 				'text': "Unlink from space",
 				'click': function() {
 					if(applyActionInHierarchy){
-						alert("Unlinking Jobs Hierarchically is not supported yet.")
+						alert("Unlinking jobs hierarchically is not supported yet.")
 					}
 					else{
 						jobTable.fnProcessingIndicator();
