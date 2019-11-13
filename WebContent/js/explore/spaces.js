@@ -679,7 +679,6 @@ function initSpaceExplorer() {
 
 function insertApplyActionInHierarchyCheckbox(e,ui){
 	var pane = $(this).dialog("widget").find(".ui-dialog-buttonpane")
-	
 	var script = "<script> applyActionInHierarchy = false; </script>"
 	
 	var onclickJS = "applyActionInHierarchy = this.checked"
