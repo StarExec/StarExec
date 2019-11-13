@@ -676,6 +676,21 @@ function initSpaceExplorer() {
 	log('Space explorer node list initialized');
 }
 
+
+function insertApplyActionInHierarchyCheckbox(e,ui){
+	var pane = $(this).dialog("widget").find(".ui-dialog-buttonpane")
+	
+	var script = "<script> applyActionInHierarchy = false; </script>"
+	
+	var onclickJS = "applyActionInHierarchy = this.checked"
+	var inputHTML = "<input type='checkbox' onclick='" + onclickJS + "' />"
+	var labelStyle = "float:left; display:inline-block; margin-top:1em;"
+	var final = script + "<label style='" + labelStyle + "'>Apply Action in hierarchy?" + inputHTML + "</label>"
+
+	$(final).prependTo(pane)
+}
+
+
 /**
  * Handles removal of benchmark(s) from a space
  * @author Todd Elvers
@@ -691,57 +706,64 @@ function removeBenchmarks(selectedBenches, ownsAll) {
 		modal: true,
 		width: 800,
 		height: 400,
+		create: insertApplyActionInHierarchyCheckbox,
 		buttons: [
 			{
 				'text': "Unlink from space",
 				'click': function() {
-					log('user confirmed benchmark removal');
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-delete').dialog('close');
-
-					$.post(
-						starexecRoot + "services/remove/benchmark/" + spaceId,
-						{selectedIds: selectedBenches},
-						function(returnCode) {
-							s = parseReturnCode(returnCode);
-							if (s) {
-								updateTable(benchTable);
-							}
-						},
-						"json"
-					).error(function() {
-						showMessage('error',
-							"Internal error removing benchmarks",
-							5000);
-					});
+					if(applyActionInHierarchy){
+						alert("Unlinking benchmarks in hierarchy is not supported yet.")
+					}
+					else{
+						log('user confirmed benchmark removal');
+						// If the user actually confirms, close the dialog right away
+						$('#dialog-confirm-delete').dialog('close');
+	
+						$.post(
+							starexecRoot + "services/remove/benchmark/" + spaceId,
+							{selectedIds: selectedBenches},
+							function(returnCode) {
+								s = parseReturnCode(returnCode);
+								if (s) {
+									updateTable(benchTable);
+								}
+							},
+							"json"
+						).error(function() {
+							showMessage('error',
+								"Internal error removing benchmarks",
+								5000);
+						});
+					}
 				}
-			},
-			{
-				'text': "Unlink from space and all subspaces",
-				'disabled': true
 			},
 			{
 				'text': "Move to Trash Bin",
 				'disabled': !ownsAll,
 				'click': function() {
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-delete').dialog('close');
-
-					$.post(
-						starexecRoot + "services/recycleandremove/benchmark/" + spaceId,
-						{selectedIds: selectedBenches},
-						function(returnCode) {
-							s = parseReturnCode(returnCode);
-							if (s) {
-								updateTable(benchTable);
-							}
-						},
-						"json"
-					).error(function() {
-						showMessage('error',
-							"Internal error removing benchmarks",
-							5000);
-					});
+					if(applyActionInHierarchy){
+						alert("Moving benchmarks to trash hierarchically is not supported yet.")
+					}
+					else{
+						// If the user actually confirms, close the dialog right away
+						$('#dialog-confirm-delete').dialog('close');
+	
+						$.post(
+							starexecRoot + "services/recycleandremove/benchmark/" + spaceId,
+							{selectedIds: selectedBenches},
+							function(returnCode) {
+								s = parseReturnCode(returnCode);
+								if (s) {
+									updateTable(benchTable);
+								}
+							},
+							"json"
+						).error(function() {
+							showMessage('error',
+								"Internal error removing benchmarks",
+								5000);
+						});
+					}
 				}
 			},
 			{
@@ -791,32 +813,33 @@ function removeUsers(selectedUsers) {
 		modal: true,
 		width: 800,
 		height: 400,
+		create: insertApplyActionInHierarchyCheckbox,
 		buttons: [
 			{
 				'text': "Unlink from space",
-				'click': function(){removeUsersFromSpace(selectedUsers);}
-			},
-			{
-				'text': "Unlink from space and all subspaces",
-				'disabled': isLeafSpace,
-				'click': function() {
-					log('user confirmed user deletion from space and its hierarchy');
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-delete').dialog('close');
-	
-					$.post(
-						starexecRoot + "services/remove/user/" + spaceId,
-						{selectedIds: selectedUsers, hierarchy: true},
-						function(returnCode) {
-							s = parseReturnCode(returnCode);
-							if (s) {
-								updateTable(userTable);
-							}
-						},
-						"json"
-					).error(function() {
-						showMessage('error', "Internal error removing users", 5000);
-					});
+				'click': function(){
+					if(applyActionInHierarchy){
+						log('user confirmed user deletion from space and its hierarchy');
+						// If the user actually confirms, close the dialog right away
+						$('#dialog-confirm-delete').dialog('close');
+		
+						$.post(
+							starexecRoot + "services/remove/user/" + spaceId,
+							{selectedIds: selectedUsers, hierarchy: true},
+							function(returnCode) {
+								s = parseReturnCode(returnCode);
+								if (s) {
+									updateTable(userTable);
+								}
+							},
+							"json"
+						).error(function() {
+							showMessage('error', "Internal error removing users", 5000);
+						});
+					}
+					else{
+						removeUsersFromSpace(selectedUsers);
+					}
 				}
 			},
 			{
@@ -906,20 +929,30 @@ function removeSolvers(selectedSolvers, ownsAll) {
 		modal: true,
 		width: 800,
 		height: 400,
+		create: insertApplyActionInHierarchyCheckbox,
 		buttons: [
 			{
 				'text': "Unlink from space",
-				'click': function() {removeSolversFromSpace(selectedSolvers);}
-			},
-			{
-				'text': "Unlink from space and all subspaces",
-				'disabled': isLeafSpace,
-				'click': function() {removeSolversFromSpaceHierarchy(selectedSolvers);}
+				'click': function() {
+					if(applyActionInHierarchy){
+						removeSolversFromSpaceHierarchy(selectedSolvers);
+					}
+					else{
+						removeSolversFromSpace(selectedSolvers);
+					}
+				}
 			},
 			{
 				'text': "Move to Trash Bin",
 				'disabled': !ownsAll,
-				'click': function() {moveSolversToRecycleBin(selectedSolvers);}
+				'click': function() {
+					if(applyActionInHierarchy){
+						alert('Moving solvers to trash hierarchically is not supported yet.');
+					}
+					else{
+						moveSolversToRecycleBin(selectedSolvers);
+					}
+				}
 			},
 			{
 				'text': "Delete Permanently",
@@ -948,36 +981,38 @@ function removeJobs(selectedJobs, ownsAll) {
 		modal: true,
 		width: 800,
 		height: 400,
+		create: insertApplyActionInHierarchyCheckbox,
 		buttons: [
 			{
 				'text': "Unlink from space",
 				'click': function() {
-					jobTable.fnProcessingIndicator();
-					log('user confirmed job deletion');
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-delete').dialog('close');
-	
-					$.post(
-						starexecRoot + "services/remove/job/" + spaceId,
-						{selectedIds: selectedJobs},
-						function(returnCode) {
-							s = parseReturnCode(returnCode);
-							if (s) {
-								updateTable(jobTable);
-							}
-							jobTable.fnProcessingIndicator(false);
-						},
-						"json"
-					).error(function() {
-						showMessage('error',
-							"Internal error removing jobs",
-							5000);
-					});
+					if(applyActionInHierarchy){
+						alert("Unlinking jobs hierarchically is not supported yet.")
+					}
+					else{
+						jobTable.fnProcessingIndicator();
+						log('user confirmed job deletion');
+						// If the user actually confirms, close the dialog right away
+						$('#dialog-confirm-delete').dialog('close');
+		
+						$.post(
+							starexecRoot + "services/remove/job/" + spaceId,
+							{selectedIds: selectedJobs},
+							function(returnCode) {
+								s = parseReturnCode(returnCode);
+								if (s) {
+									updateTable(jobTable);
+								}
+								jobTable.fnProcessingIndicator(false);
+							},
+							"json"
+						).error(function() {
+							showMessage('error',
+								"Internal error removing jobs",
+								5000);
+						});
+					}
 				}
-			},
-			{
-				'text': "Unlink from space and all subspaces",
-				'disabled': true
 			},
 			{
 				'text': "Move to Trash",
@@ -987,27 +1022,32 @@ function removeJobs(selectedJobs, ownsAll) {
 				'text': "Delete Permanently",
 				'disabled': !ownsAll,
 				'click': function() {
-					jobTable.fnProcessingIndicator();
-					log('user confirmed job deletion');
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-delete').dialog('close');
-	
-					$.post(
-						starexecRoot + "services/deleteandremove/job/" + spaceId,
-						{selectedIds: selectedJobs},
-						function(returnCode) {
-							s = parseReturnCode(returnCode);
-							if (s) {
-								updateTable(jobTable);
-							}
-							jobTable.fnProcessingIndicator(false);
-						},
-						"json"
-					).error(function() {
-						showMessage('error',
-							"Internal error removing jobs",
-							5000);
-					});
+					if(applyActionInHierarchy){
+						alert("Permanently deleting jobs hierarchically is not supported yet.")
+					}
+					else{
+						jobTable.fnProcessingIndicator();
+						log('user confirmed job deletion');
+						// If the user actually confirms, close the dialog right away
+						$('#dialog-confirm-delete').dialog('close');
+		
+						$.post(
+							starexecRoot + "services/deleteandremove/job/" + spaceId,
+							{selectedIds: selectedJobs},
+							function(returnCode) {
+								s = parseReturnCode(returnCode);
+								if (s) {
+									updateTable(jobTable);
+								}
+								jobTable.fnProcessingIndicator(false);
+							},
+							"json"
+						).error(function() {
+							showMessage('error',
+								"Internal error removing jobs",
+								5000);
+						});
+					}
 				}
 			},
 			{
@@ -1032,6 +1072,7 @@ function removeSubspaces(selectedSubspaces) {
 		modal: true,
 		width: 800,
 		height: 400,
+		create: insertApplyActionInHierarchyCheckbox,
 		buttons: {
 			"Remove subspace(s) only": function() {
 				log('user confirmed subspace deletion');
