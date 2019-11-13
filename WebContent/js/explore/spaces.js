@@ -676,6 +676,19 @@ function initSpaceExplorer() {
 	log('Space explorer node list initialized');
 }
 
+
+function insertApplyActionInHierarchyCheckbox(e,ui){
+	var pane = $(this).dialog("widget").find(".ui-dialog-buttonpane")
+	var labelHTML = "<label>Apply Action in hierarchy?</label>"
+	
+	var script = "<script> applyActionInHierarchy = false; </script>"
+
+	var onclickJS = "applyActionInHierarchy = this.checked"
+	var inputHTML = "<input type='checkbox' onclick='" + onclickJS + "' />"
+	$(labelHTML + script + inputHTML).prependTo(pane)
+}
+
+
 /**
  * Handles removal of benchmark(s) from a space
  * @author Todd Elvers
@@ -691,6 +704,7 @@ function removeBenchmarks(selectedBenches, ownsAll) {
 		modal: true,
 		width: 800,
 		height: 400,
+		create: insertApplyActionInHierarchyCheckbox,
 		buttons: [
 			{
 				'text': "Unlink from space",
@@ -715,10 +729,6 @@ function removeBenchmarks(selectedBenches, ownsAll) {
 							5000);
 					});
 				}
-			},
-			{
-				'text': "Unlink from space and all subspaces",
-				'disabled': true
 			},
 			{
 				'text': "Move to Trash Bin",
@@ -791,32 +801,33 @@ function removeUsers(selectedUsers) {
 		modal: true,
 		width: 800,
 		height: 400,
+		create: insertApplyActionInHierarchyCheckbox,
 		buttons: [
 			{
 				'text': "Unlink from space",
-				'click': function(){removeUsersFromSpace(selectedUsers);}
-			},
-			{
-				'text': "Unlink from space and all subspaces",
-				'disabled': isLeafSpace,
-				'click': function() {
-					log('user confirmed user deletion from space and its hierarchy');
-					// If the user actually confirms, close the dialog right away
-					$('#dialog-confirm-delete').dialog('close');
-	
-					$.post(
-						starexecRoot + "services/remove/user/" + spaceId,
-						{selectedIds: selectedUsers, hierarchy: true},
-						function(returnCode) {
-							s = parseReturnCode(returnCode);
-							if (s) {
-								updateTable(userTable);
-							}
-						},
-						"json"
-					).error(function() {
-						showMessage('error', "Internal error removing users", 5000);
-					});
+				'click': function(){
+					if(applyActionInHierarchy){
+						log('user confirmed user deletion from space and its hierarchy');
+						// If the user actually confirms, close the dialog right away
+						$('#dialog-confirm-delete').dialog('close');
+		
+						$.post(
+							starexecRoot + "services/remove/user/" + spaceId,
+							{selectedIds: selectedUsers, hierarchy: true},
+							function(returnCode) {
+								s = parseReturnCode(returnCode);
+								if (s) {
+									updateTable(userTable);
+								}
+							},
+							"json"
+						).error(function() {
+							showMessage('error', "Internal error removing users", 5000);
+						});
+					}
+					else{
+						removeUsersFromSpace(selectedUsers);
+					}
 				}
 			},
 			{
