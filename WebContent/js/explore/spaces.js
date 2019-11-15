@@ -1288,8 +1288,6 @@ function initDataTables() {
 	});
 
 
-
-
 	
 	//Hook up select all/ none buttons
 	$('.selectAllJobs, .selectAllSolvers, .selectAllBenchmarks, .selectAllUsers')
@@ -1309,29 +1307,33 @@ function initDataTables() {
 
 
 
+	// this was getting overridden and I couldn't find out where
+	// so I did something bad...
 
-	$('.dataTable tr').click(function(e){
-		if(e.shiftKey){
-			let rows = $(this).parent().children();
-			let toSelect = [];
-			for(let i=0; i<rows.length; i++){
-				let row = rows[i];
-				toSelect.push(row);
-				
-				if(row == this){
-					break;
+	setTimeout(function(){
+		$('.dataTable tr').click(function(e){
+			if(e.shiftKey){
+				let rows = $(this).parent().children();
+				let toSelect = [];
+				for(let i=0; i<rows.length; i++){
+					let row = rows[i];
+					toSelect.push(row);
+					
+					if(row == this){
+						break;
+					}
+	
+					if(row.classList.contains("row_selected")){
+						toSelect = [];
+					}
 				}
-
-				if(row.classList.contains("row_selected")){
-					toSelect = [];
+				console.log("selecting " + toSelect);
+				for(let row of toSelect){
+					$(row).addClass("row_selected");
 				}
 			}
-			console.log("selecting " + toSelect);
-			for(let row of toSelect){
-				$(row).addClass("row_selected");
-			}
-		}
-	});
+		});
+	},4000);
 
 
 
