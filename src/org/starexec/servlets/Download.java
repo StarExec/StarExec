@@ -459,7 +459,11 @@ public class Download extends HttpServlet {
 							/* we skip printing the starexec-result, and starexec-expected-result attributes,
 							   because we printed them already */
 							sb.append(",");
-							sb.append(props.getProperty(attr, "-"));
+							sb.append(
+								Util.escapeForCSV(
+									props.getProperty(attr, "-")
+								)
+							);
 						}
 					}
 				}
