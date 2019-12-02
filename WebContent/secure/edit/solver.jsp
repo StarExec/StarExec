@@ -108,8 +108,8 @@
 				</tr>
 				</tbody>
 			</table>
-			<button type="button" id="delete">Move to Trash</button>
-			<button type="button" id="update">Update</button>
+			<button type="button" id="delete">recycle</button>
+			<button type="button" id="update">update</button>
 		</fieldset>
 	</form>
 	<fieldset>
