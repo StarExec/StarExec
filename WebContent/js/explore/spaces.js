@@ -1286,21 +1286,55 @@ function initDataTables() {
 		$(this).toggleClass('hovered');
 	});
 
+
+	
 	//Hook up select all/ none buttons
 	$('.selectAllJobs, .selectAllSolvers, .selectAllBenchmarks, .selectAllUsers')
 	.click(function() {
 		$(this)
-		.parents('.dataTables_wrapper')
+		.parents('.expdContainer')
 		.find('tbody>tr')
 		.addClass('row_selected');
 	});
 	$('.unselectAllJobs, .unselectAllSolvers, .unselectAllBenchmarks, .unselectAllUsers')
 	.click(function() {
 		$(this)
-		.parents('.dataTables_wrapper')
+		.parents('.expdContainer')
 		.find('tbody>tr')
 		.removeClass('row_selected');
 	});
+
+
+
+	// this was getting overridden and I couldn't find out where
+	// so I did something bad...
+
+	setTimeout(function(){
+		$('.dataTable tr').click(function(e){
+			if(e.shiftKey){
+				let rows = $(this).parent().children();
+				let toSelect = [];
+				for(let i=0; i<rows.length; i++){
+					let row = rows[i];
+					toSelect.push(row);
+					
+					if(row == this){
+						break;
+					}
+	
+					if(row.classList.contains("row_selected")){
+						toSelect = [];
+					}
+				}
+				console.log("selecting " + toSelect);
+				for(let row of toSelect){
+					$(row).addClass("row_selected");
+				}
+			}
+		});
+	},4000);
+
+
 
 	// Set all fieldsets as expandable (except for action fieldset)
 	$('fieldset.expd').expandable(true);
