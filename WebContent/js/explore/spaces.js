@@ -946,7 +946,9 @@ function removeSolvers(selectedSolvers, ownsAll) {
 				'disabled': !ownsAll,
 				'click': function() {
 					if(applyActionInHierarchy){
-						alert('Moving solvers to trash hierarchically is not supported yet.');
+						// alert('Moving solvers to trash hierarchically is not supported yet.');
+						moveSolversToRecycleBin(selectedSolvers);
+						removeSolversFromSpaceHierarchy(selectedSolvers);
 					}
 					else{
 						moveSolversToRecycleBin(selectedSolvers);
