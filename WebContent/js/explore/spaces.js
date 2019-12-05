@@ -679,7 +679,6 @@ function initSpaceExplorer() {
 
 function insertApplyActionInHierarchyCheckbox(e,ui){
 	var pane = $(this).dialog("widget").find(".ui-dialog-buttonpane")
-	
 	var script = "<script> applyActionInHierarchy = false; </script>"
 	
 	var onclickJS = "applyActionInHierarchy = this.checked"
@@ -947,7 +946,9 @@ function removeSolvers(selectedSolvers, ownsAll) {
 				'disabled': !ownsAll,
 				'click': function() {
 					if(applyActionInHierarchy){
-						alert('Moving solvers to trash hierarchically is not supported yet.');
+						// alert('Moving solvers to trash hierarchically is not supported yet.');
+						moveSolversToRecycleBin(selectedSolvers);
+						removeSolversFromSpaceHierarchy(selectedSolvers);
 					}
 					else{
 						moveSolversToRecycleBin(selectedSolvers);
