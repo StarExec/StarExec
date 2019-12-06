@@ -106,15 +106,15 @@
 				<tr>
 					<td class="label">
 						Confirm that you have read and agree with our 
-						<a href="#">Terms of Service</a>
+						<a href="/starexec/public/TermsOfService2019.pdf" target="_blank" style="text-decoration:underline">Terms of Service</a>
 						and
-						<a href="https://welcome.miami.edu/privacy-and-legal/index.html">Legal Notice</a>.
+						<a href="https://welcome.miami.edu/privacy-and-legal/index.html" target="_blank" style="text-decoration:underline">Legal Notice</a>.
 					</td>
 					<td>
 						<input type="checkbox" 
 							name="termsOfService" 
 							value="termsOfService" 
-							oninput="$('#submit').attr('disabled', this.checked);">
+							oninput="$('#submit').button({disabled: !this.checked});">
 					</td>
 				</tr>
 				<tr>
