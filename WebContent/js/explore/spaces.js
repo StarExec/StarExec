@@ -625,6 +625,12 @@ function spaceIsLeaf(spaceId) {
  * @author Tyler Jensen & Todd Elvers & Skylar Stark
  */
 function initSpaceExplorer() {
+	var $userTable = $('#users');
+	var $solverTable = $('#solvers');
+	var $benchTable = $('#benchmarks');
+	var $spaceTable = $('#spaces');
+	var $jobTable = $('#jobs');
+
 	// Initialize the jstree plugin for the explorer list
 	// Bug: This is creating a global variable. Intentional?
 	jsTree = makeSpaceTree("#exploreList", !usingSpaceChain);
@@ -643,6 +649,13 @@ function initSpaceExplorer() {
 		window.isLeafSpace = spaceIsLeaf(id);
 		log('Selected space isLeafSpace=' + isLeafSpace);
 		log('Space explorer node ' + id + ' was clicked');
+
+		// All tables should indicate that they are loading new information
+		$userTable.DataTable().processing(true);
+		$solverTable.DataTable().processing(true);
+		$benchTable.DataTable().processing(true);
+		$spaceTable.DataTable().processing(true);
+		$jobTable.DataTable().processing(true);
 
 		updateButtonIds(id);
 		getSpaceDetails(id);
