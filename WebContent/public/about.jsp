@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8" %>
+B<%@page contentType="text/html" pageEncoding="UTF-8" %>
 <%@page trimDirectiveWhitespaces="true" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 
@@ -126,5 +126,11 @@
 		Christoph Wintersteiger,
 		and
 		Harald Zankl.
+	</p>
+	
+	<p>
+		This last line is a test ....................
+		........................................................
+		........................................................
 	</p>
 </star:template>

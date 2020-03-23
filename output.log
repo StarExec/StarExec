@@ -1,0 +1,489 @@
+Buildfile: /export1/home/fiolic/StarExec/build.xml
+
+register-commands:
+   [delete] Deleting directory /export1/home/fiolic/StarExec/bin
+    [mkdir] Created dir: /export1/home/fiolic/StarExec/bin
+    [mkdir] Created dir: /export1/home/fiolic/StarExec/bin/classes
+
+config:
+   [delete] Deleting: /tmp/starexec/R.java
+     [copy] Copying 1 file to /tmp/starexec
+
+cleanstarcom:
+   [delete] Deleting directory /export1/home/fiolic/StarExec/src/org/starexec/command/build
+    [mkdir] Created dir: /export1/home/fiolic/StarExec/src/org/starexec/command/build
+   [delete] Deleting directory /export1/home/fiolic/StarExec/src/org/starexec/command/compile
+    [mkdir] Created dir: /export1/home/fiolic/StarExec/src/org/starexec/command/compile
+
+compilestarcom:
+    [javac] /export1/home/fiolic/StarExec/build/build-starexeccommand.xml:13: warning: 'includeantruntime' was not set, defaulting to build.sysclasspath=last; set to false for repeatable builds
+    [javac] Compiling 18 source files to /export1/home/fiolic/StarExec/src/org/starexec/command/compile
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/command/Connection.java:38: error: package javax.servlet.http does not exist
+    [javac] import javax.servlet.http.HttpServletResponse;
+    [javac]                          ^
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/util/Util.java:15: error: package javax.servlet.http does not exist
+    [javac] import javax.servlet.http.Cookie;
+    [javac]                          ^
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/util/Util.java:16: error: package javax.servlet.http does not exist
+    [javac] import javax.servlet.http.HttpServletRequest;
+    [javac]                          ^
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/util/Util.java:17: error: package javax.servlet.http does not exist
+    [javac] import javax.servlet.http.Part;
+    [javac]                          ^
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/util/Util.java:242: error: cannot find symbol
+    [javac] 	public static boolean paramExists(String name, HttpServletRequest request) {
+    [javac] 	                                               ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class Util
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/util/Util.java:296: error: cannot find symbol
+    [javac] 	public static HashMap<String, Object> parseMultipartRequest(HttpServletRequest request) throws Exception {
+    [javac] 	                                                            ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class Util
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/util/Util.java:1034: error: cannot find symbol
+    [javac] 	public static String getWebPage(String url, Map<String, String> queryParameters, List<Cookie> cookiesToSend)
+    [javac] 	                                                                                      ^
+    [javac]   symbol:   class Cookie
+    [javac]   location: class Util
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/util/Util.java:1062: error: cannot find symbol
+    [javac] 	public static String getWebPage(String url, List<Cookie> cookiesToSend) throws IOException {
+    [javac] 	                                                 ^
+    [javac]   symbol:   class Cookie
+    [javac]   location: class Util
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/util/Util.java:1083: error: cannot find symbol
+    [javac] 	private static String buildCookieString(List<Cookie> cookies) {
+    [javac] 	                                             ^
+    [javac]   symbol:   class Cookie
+    [javac]   location: class Util
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/test/TestUtil.java:14: error: package javax.servlet.http does not exist
+    [javac] import javax.servlet.http.HttpServletRequest;
+    [javac]                          ^
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/test/TestUtil.java:15: error: package javax.servlet.http does not exist
+    [javac] import javax.servlet.http.HttpSession;
+    [javac]                          ^
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/test/TestUtil.java:173: error: cannot find symbol
+    [javac] 	public static HttpServletRequest getMockHttpRequest(int userId) {
+    [javac] 	              ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class TestUtil
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/test/TestUtil.java:183: error: cannot find symbol
+    [javac] 	public static HttpServletRequest getMockHttpRequest(int userId, Map<String,String> parameters) {
+    [javac] 	              ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class TestUtil
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/test/TestUtil.java:195: error: cannot find symbol
+    [javac] 	public static HttpServletRequest getMockHttpRequest(int userId, Map<String,String> parameters, Map<String, List<String>> arrayParameters) {
+    [javac] 	              ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class TestUtil
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/util/SessionUtil.java:11: error: package javax.servlet.http does not exist
+    [javac] import javax.servlet.http.HttpServletRequest;
+    [javac]                          ^
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/util/SessionUtil.java:12: error: package javax.servlet.http does not exist
+    [javac] import javax.servlet.http.HttpSession;
+    [javac]                          ^
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/util/SessionUtil.java:29: error: cannot find symbol
+    [javac] 	public static User getUser(HttpServletRequest request) {
+    [javac] 	                           ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class SessionUtil
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/util/SessionUtil.java:49: error: cannot find symbol
+    [javac] 	public static int getUserId(HttpServletRequest request) {
+    [javac] 	                            ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class SessionUtil
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/util/SessionUtil.java:57: error: cannot find symbol
+    [javac] 	private static int getUserId(HttpSession session) {
+    [javac] 	                             ^
+    [javac]   symbol:   class HttpSession
+    [javac]   location: class SessionUtil
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/util/SessionUtil.java:68: error: cannot find symbol
+    [javac] 	public static HashMap<Integer, Permission> getPermissionCache(HttpServletRequest request) {
+    [javac] 	                                                              ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class SessionUtil
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/util/SessionUtil.java:77: error: cannot find symbol
+    [javac] 	public static HashMap<Integer, Permission> getPermissionCache(HttpSession session) {
+    [javac] 	                                                              ^
+    [javac]   symbol:   class HttpSession
+    [javac]   location: class SessionUtil
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/util/SessionUtil.java:89: error: cannot find symbol
+    [javac] 	public static Permission getPermission(HttpServletRequest request, int spaceId) {
+    [javac] 	                                       ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class SessionUtil
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/util/SessionUtil.java:99: error: cannot find symbol
+    [javac] 	private static Permission getPermission(HttpSession session, int spaceId) {
+    [javac] 	                                        ^
+    [javac]   symbol:   class HttpSession
+    [javac]   location: class SessionUtil
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/util/SessionUtil.java:131: error: cannot find symbol
+    [javac] 	private static void cachePermission(HttpSession session, int spaceId) {
+    [javac] 	                                    ^
+    [javac]   symbol:   class HttpSession
+    [javac]   location: class SessionUtil
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/util/SessionUtil.java:152: error: cannot find symbol
+    [javac] 	public static void removeCachePermission(HttpServletRequest request, int spaceId){
+    [javac] 	                                         ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class SessionUtil
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/servlets/UploadBenchmark.java:15: error: package javax.servlet does not exist
+    [javac] import javax.servlet.ServletException;
+    [javac]                     ^
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/servlets/UploadBenchmark.java:16: error: package javax.servlet.annotation does not exist
+    [javac] import javax.servlet.annotation.MultipartConfig;
+    [javac]                                ^
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/servlets/UploadBenchmark.java:17: error: package javax.servlet.http does not exist
+    [javac] import javax.servlet.http.Cookie;
+    [javac]                          ^
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/servlets/UploadBenchmark.java:18: error: package javax.servlet.http does not exist
+    [javac] import javax.servlet.http.HttpServlet;
+    [javac]                          ^
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/servlets/UploadBenchmark.java:19: error: package javax.servlet.http does not exist
+    [javac] import javax.servlet.http.HttpServletRequest;
+    [javac]                          ^
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/servlets/UploadBenchmark.java:20: error: package javax.servlet.http does not exist
+    [javac] import javax.servlet.http.HttpServletResponse;
+    [javac]                          ^
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/servlets/UploadBenchmark.java:30: error: cannot find symbol
+    [javac] public class UploadBenchmark extends HttpServlet {
+    [javac]                                      ^
+    [javac]   symbol: class HttpServlet
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/servlets/UploadBenchmark.java:29: error: cannot find symbol
+    [javac] @MultipartConfig
+    [javac]  ^
+    [javac]   symbol: class MultipartConfig
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/servlets/UploadBenchmark.java:59: error: cannot find symbol
+    [javac] 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    [javac] 	                     ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class UploadBenchmark
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/servlets/UploadBenchmark.java:59: error: cannot find symbol
+    [javac] 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    [javac] 	                                                 ^
+    [javac]   symbol:   class HttpServletResponse
+    [javac]   location: class UploadBenchmark
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/servlets/UploadBenchmark.java:60: error: cannot find symbol
+    [javac] 			throws ServletException, IOException {
+    [javac] 			       ^
+    [javac]   symbol:   class ServletException
+    [javac]   location: class UploadBenchmark
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/servlets/UploadBenchmark.java:64: error: cannot find symbol
+    [javac] 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    [javac] 	                      ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class UploadBenchmark
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/servlets/UploadBenchmark.java:64: error: cannot find symbol
+    [javac] 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    [javac] 	                                                  ^
+    [javac]   symbol:   class HttpServletResponse
+    [javac]   location: class UploadBenchmark
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/servlets/UploadBenchmark.java:65: error: cannot find symbol
+    [javac] 			throws ServletException, IOException {
+    [javac] 			       ^
+    [javac]   symbol:   class ServletException
+    [javac]   location: class UploadBenchmark
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/servlets/UploadBenchmark.java:417: error: cannot find symbol
+    [javac] 	private ValidatorStatusCode isRequestValid(HashMap<String, Object> form, HttpServletRequest request) {
+    [javac] 	                                                                         ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class UploadBenchmark
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/test/integration/app/RESTHelpersTests.java:20: error: package javax.servlet.http does not exist
+    [javac] import javax.servlet.http.HttpSession;
+    [javac]                          ^
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/test/integration/app/RESTHelpersTests.java:49: error: cannot find symbol
+    [javac] 	private static HttpSession getMockSessionWithUser(int userId) {
+    [javac] 	               ^
+    [javac]   symbol:   class HttpSession
+    [javac]   location: class RESTHelpersTests
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/test/integration/app/RESTHelpersTests.java:57: error: cannot find symbol
+    [javac] 	private static HttpServletRequest getMockRequest(DataTablesQuery query, int userId) {
+    [javac] 	               ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTHelpersTests
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/test/integration/app/RESTHelpersTests.java:70: error: cannot find symbol
+    [javac] 	private static HttpServletRequest getMockRequest(int userId) {
+    [javac] 	               ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTHelpersTests
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:30: error: package javax.servlet.http does not exist
+    [javac] import javax.servlet.http.Cookie;
+    [javac]                          ^
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:75: error: cannot find symbol
+    [javac] 	public String recompileJobSpaces(@PathParam("jobid") int jobId, @Context HttpServletRequest request) {
+    [javac] 	                                                                         ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:98: error: cannot find symbol
+    [javac] 	public String getJobSpaces(@QueryParam("id") int parentId,@PathParam("jobid") int jobId, @PathParam("spaceTree") boolean makeSpaceTree, @Context HttpServletRequest request) {
+    [javac] 	                                                                                                                                                 ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:121: error: cannot find symbol
+    [javac] 			@Context HttpServletRequest request) {
+    [javac] 			         ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:174: error: cannot find symbol
+    [javac] 	public String getBenchmarkUploadDescription(@PathParam("statusId") int statusId, @Context HttpServletRequest request) {
+    [javac] 	                                                                                          ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:192: error: cannot find symbol
+    [javac] 	public String getSubSpaces(@QueryParam("id") int parentId, @Context HttpServletRequest request) {
+    [javac] 	                                                                    ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:218: error: cannot find symbol
+    [javac] 	public String clearErrorStates(@Context HttpServletRequest request) {
+    [javac] 	                                        ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:240: error: cannot find symbol
+    [javac] 	public String getAllQueues(@QueryParam("id") int id, @Context HttpServletRequest request) {
+    [javac] 	                                                              ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:260: error: cannot find symbol
+    [javac] 	public String getQstatOutput(@Context HttpServletRequest request) {
+    [javac] 	                                      ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:277: error: cannot find symbol
+    [javac] 	public String getInvalidUploadedBenchmarkOutput(@PathParam("id") int id, @Context HttpServletRequest request) {
+    [javac] 	                                                                                  ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:298: error: cannot find symbol
+    [javac] 	public String getLoadsForQueue(@PathParam("queueId") int queueId, @Context HttpServletRequest request) {
+    [javac] 	                                                                           ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:316: error: cannot find symbol
+    [javac] 	public String getJobPairLog(@PathParam("id") int id, @Context HttpServletRequest request) {
+    [javac] 	                                                              ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:340: error: cannot find symbol
+    [javac] 	public String getBenchmarkContent(@PathParam("id") int id, @QueryParam("limit") int limit, @Context HttpServletRequest request) {
+    [javac] 	                                                                                                    ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:369: error: cannot find symbol
+    [javac] 	public String getSolverBuildLog(@PathParam("id") int id, @Context HttpServletRequest request) {
+    [javac] 	                                                                  ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:398: error: cannot find symbol
+    [javac] 	public String rerunJobPairs(@PathParam("id") int id, @PathParam("status") int statusCode, @Context HttpServletRequest request) {
+    [javac] 	                                                                                                   ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:418: error: cannot find symbol
+    [javac] 	public String rerunAllJobPairs(@PathParam("id") int id, @Context HttpServletRequest request) {
+    [javac] 	                                                                 ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:436: error: cannot find symbol
+    [javac] 	public String rerunTimelessJobPairs(@PathParam("id") int id, @Context HttpServletRequest request) {
+    [javac] 	                                                                      ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:457: error: cannot find symbol
+    [javac] 	public String getJobPairStdout(@PathParam("id") int id,@PathParam("stageNumber") int stageNumber, @QueryParam("limit") int limit, @Context HttpServletRequest request) {
+    [javac] 	                                                                                                                                           ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:487: error: cannot find symbol
+    [javac] 	public String getNodeDetails(@PathParam("id") int id, @Context HttpServletRequest request) {
+    [javac] 	                                                               ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:499: error: cannot find symbol
+    [javac] 	public String getQueueJobs(@PathParam("id") int id, @Context HttpServletRequest request) {
+    [javac] 	                                                             ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:519: error: cannot find symbol
+    [javac] 	public String getQueueDetails(@PathParam("id") int id, @Context HttpServletRequest request) {
+    [javac] 	                                                                ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:533: error: cannot find symbol
+    [javac] 	public String getNumberOfNodesInQueue(@PathParam("queueId") int queueId, @Context HttpServletRequest request) {
+    [javac] 	                                                                                  ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:548: error: cannot find symbol
+    [javac] 	public String getCommunityDetails(@PathParam("id") int id, @Context HttpServletRequest request) {
+    [javac] 	                                                                    ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:572: error: cannot find symbol
+    [javac] 	public String getCommunityIdOfSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+    [javac] 	                                                                                ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:587: error: cannot find symbol
+    [javac] 	public String getPermissionDetails(@PathParam("id") int userid, @PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+    [javac] 	                                                                                                            ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:610: error: cannot find symbol
+    [javac] 	public String getSpaceDetails(@PathParam("id") int spaceId, @Context HttpServletRequest request) {
+    [javac] 	                                                                     ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:634: error: cannot find symbol
+    [javac] 	public String rerunJobPair(@PathParam("pairid") int pairId, @Context HttpServletRequest request) {
+    [javac] 	                                                                     ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:669: error: cannot find symbol
+    [javac] 			@PathParam("type") String type, @PathParam("configId") int configId, @Context HttpServletRequest request) {
+    [javac] 			                                                                              ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:697: error: cannot find symbol
+    [javac] 											   @PathParam("stageId") int stageNumber, @Context HttpServletRequest request) {
+    [javac] 											                                                   ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:777: error: cannot find symbol
+    [javac] 	public String userIsDeveloper(@Context HttpServletRequest request) {
+    [javac] 	                                       ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:792: error: cannot find symbol
+    [javac] 	public String userIsDeveloper(@PathParam("userId") int userId, @Context HttpServletRequest request) {
+    [javac] 	                                                                        ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:806: error: cannot find symbol
+    [javac] 	public String getSolversPaginatedByUser(@Context HttpServletRequest request) {
+    [javac] 	                                                 ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:825: error: cannot find symbol
+    [javac] 	public String getBenchmarksPaginatedByUser(@Context HttpServletRequest request) {
+    [javac] 	                                                    ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:847: error: cannot find symbol
+    [javac] 	public String getSolverComparisonsPaginated(@PathParam("wallclock") boolean wallclock, @PathParam("jobSpaceId") int jobSpaceId,@PathParam("config1") int config1, @PathParam("config2") int config2, @Context HttpServletRequest request) {
+    [javac] 	                                                                                                                                                                                                              ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:882: error: cannot find symbol
+    [javac] 			@Context HttpServletRequest request) {
+    [javac] 			         ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:921: error: cannot find symbol
+    [javac] 			@Context HttpServletRequest request) {
+    [javac] 			         ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:949: error: cannot find symbol
+    [javac] 			@Context HttpServletRequest request) {
+    [javac] 			         ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:977: error: cannot find symbol
+    [javac] 			@Context HttpServletRequest request) {
+    [javac] 			         ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:999: error: cannot find symbol
+    [javac] 	public String getSpaceOverviewGraph(@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId, @Context HttpServletRequest request) {
+    [javac] 	                                                                                                                              ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:1020: error: cannot find symbol
+    [javac] 	public String getPairTimeGraph(@PathParam("jobId") int jobId, @Context HttpServletRequest request) {
+    [javac] 	                                                                       ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:1032: error: cannot find symbol
+    [javac] 	public String setJobAsHighPriority(@PathParam("jobId") final int jobId, @Context final HttpServletRequest request) {
+    [javac] 	                                                                                       ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:1050: error: cannot find symbol
+    [javac] 	public String setJobAsLowPriority(@PathParam("jobId") final int jobId, @Context final HttpServletRequest request) {
+    [javac] 	                                                                                      ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:1085: error: cannot find symbol
+    [javac] 	public String getCommunityOverview(@Context HttpServletRequest request){
+    [javac] 	                                            ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:1163: error: cannot find symbol
+    [javac] 			@Context HttpServletRequest request) {
+    [javac] 			         ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:1208: error: cannot find symbol
+    [javac] 			@PathParam("edgeLengthInPixels") int edgeLengthInPixels,@PathParam("axisColor") String axisColor, @Context HttpServletRequest request) {
+    [javac] 			                                                                                                           ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:1253: error: cannot find symbol
+    [javac] 			@Context HttpServletRequest request ) {
+    [javac] 			         ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:1289: error: cannot find symbol
+    [javac] 			@Context HttpServletRequest request) {
+    [javac] 			         ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:1304: error: cannot find symbol
+    [javac] 	public String getNumberOfPairsToBeAddedAndDeleted( @Context HttpServletRequest request ) {
+    [javac] 	                                                            ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:1377: error: cannot find symbol
+    [javac] 	public String getNodeJobPairs(@PathParam("id") int id, @Context HttpServletRequest request) {
+    [javac] 	                                                                ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:1393: error: cannot find symbol
+    [javac] 	public String getQueueJobPairs(@PathParam("id") int id, @Context HttpServletRequest request) {
+    [javac] 	                                                                 ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:1414: error: cannot find symbol
+    [javac] 	public String getAllJobsDetailsPagination(@Context HttpServletRequest request) {
+    [javac] 	                                                   ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:1449: error: cannot find symbol
+    [javac] 	public String getAllUsersDetailsPagination(@Context HttpServletRequest request) {
+    [javac] 	                                                    ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:1474: error: cannot find symbol
+    [javac] 			@Context HttpServletRequest request ) {
+    [javac] 			         ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:1565: error: cannot find symbol
+    [javac] 	public String editJobName(@PathParam("jobId") int jobId, @PathParam("newName") String newName, @Context HttpServletRequest request) {
+    [javac] 	                                                                                                        ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:1598: error: cannot find symbol
+    [javac] 			                  @Context HttpServletRequest request) {
+    [javac] 			                           ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] /export1/home/fiolic/StarExec/src/org/starexec/app/RESTServices.java:1630: error: cannot find symbol
+    [javac] 	public String getAllBenchmarksInSpace(@PathParam("spaceId") int spaceId, @Context HttpServletRequest request) {
+    [javac] 	                                                                                  ^
+    [javac]   symbol:   class HttpServletRequest
+    [javac]   location: class RESTServices
+    [javac] Note: Some input files use or override a deprecated API.
+    [javac] Note: Recompile with -Xlint:deprecation for details.
+    [javac] 100 errors

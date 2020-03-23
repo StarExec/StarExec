@@ -1,4 +1,4 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"
+B<%@page contentType="text/html" pageEncoding="UTF-8"
         import="org.starexec.data.database.Communities,org.starexec.data.database.Processors,org.starexec.data.database.Spaces,org.starexec.data.security.GeneralSecurity,org.starexec.data.to.DefaultSettings, org.starexec.app.RESTHelpers" %>
 <%@page import="org.starexec.data.to.Permission, org.starexec.data.to.Processor, org.starexec.data.to.Space, org.starexec.data.to.enums.ProcessorType, org.starexec.util.SessionUtil, java.util.List" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
@@ -77,15 +77,20 @@
 				<tr>
 					<td>upload method</td>
 					<td>local file<input type="radio" id="radioLocal"
-					                     name="localOrURL" value="local"/> URL
-						<input type=radio id="radioURL" name="localOrURL"
-						       value="URL"/></td>
+					                     name="localOrURLOrGit" value="local"/>
+              URL<input type=radio id="radioURL" name="localOrURLOrGit" value="URL"/>
+               Git <input type=radio id="radioGit"
+						                   name="localOrURLOrGit" value="Git"/>
+          </td>
 				</tr>
-				<tr title="select the archive file containing your benchmarks">
+				<tr title="select the archive file, URL, or Git containing your benchmarks">
 					<td><label for="typeFile">benchmarks</label></td>
 					<td><input name="benchFile" type="file"
-					           id="benchFile"/><input name="url" type="text"
-					                                  id="fileURL"/></td>
+					           id="benchFile"/>
+              <input name="url" type="text"
+					           id="fileURL"/>
+               <input name="git" type="text"
+ 					           id="gitURL" /> </td>
 				</tr>
 				<tr>
 					<td class="label"><p>upload method</p></td>
