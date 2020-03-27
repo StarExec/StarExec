@@ -1,4 +1,4 @@
-B<%@page contentType="text/html" pageEncoding="UTF-8"
+<%@page contentType="text/html" pageEncoding="UTF-8"
         import="org.starexec.data.database.Communities,org.starexec.data.database.Processors,org.starexec.data.database.Spaces,org.starexec.data.security.GeneralSecurity,org.starexec.data.to.DefaultSettings, org.starexec.app.RESTHelpers" %>
 <%@page import="org.starexec.data.to.Permission, org.starexec.data.to.Processor, org.starexec.data.to.Space, org.starexec.data.to.enums.ProcessorType, org.starexec.util.SessionUtil, java.util.List" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
