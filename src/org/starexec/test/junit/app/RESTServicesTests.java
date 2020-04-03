@@ -37,13 +37,15 @@ public class RESTServicesTests {
 		PowerMockito.mockStatic(Util.class);
 	}
 
-    @Test
+    /*
+		@Test
     public void copyToStarDevFailValidationTest() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
 		ValidatorStatusCode failedValidation = new ValidatorStatusCode(false);
 		given(RESTHelpers.validateCopyToStardev(request, benchType)).willReturn(failedValidation);
 		assertEquals("Should fail validation.", services.copyToStarDev(instance, benchType, 10, request), gson.toJson(failedValidation));
     }
+		*/
 
     @Test
     public void copyToStarDevFailLoginTest() {
