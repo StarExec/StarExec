@@ -13,11 +13,11 @@ branches:
 before_script: script/ci
 
 script:
-- ant test/junit/backend
-- ant test/junit/command
-- ant test/junit/data
-- ant test/junit/jobs
-- ant test/junit/util
-- ant test/junit/ComparatorTests.java
-- ant test//junit/UtilTests.java
+- ant test junit backend
+- ant test junit command
+- ant test junit data
+- ant test junit jobs
+- ant test junit util
+- ant test junit ComparatorTests.java
+- ant test junit UtilTests.java
 - ant css jspc
