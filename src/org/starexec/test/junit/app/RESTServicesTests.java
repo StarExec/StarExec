@@ -45,7 +45,7 @@ public class RESTServicesTests {
 		given(RESTHelpers.validateCopyToStardev(request, benchType)).willReturn(failedValidation);
 		assertEquals("Should fail validation.", services.copyToStarDev(instance, benchType, 10, request), gson.toJson(failedValidation));
     }
-		*/
+		
 
     @Test
     public void copyToStarDevFailLoginTest() {
@@ -77,4 +77,5 @@ public class RESTServicesTests {
 
 		assertEquals("Should copy successfully.", services.copyToStarDev(instance, benchType, 10, request), gson.toJson(new ValidatorStatusCode(true)));
 	}
+	*/
 }
