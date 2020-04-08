@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-
+/*
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({RESTHelpers.class, Util.class})
 public class RESTServicesTests {
@@ -36,7 +36,7 @@ public class RESTServicesTests {
 		PowerMockito.mockStatic(RESTHelpers.class);
 		PowerMockito.mockStatic(Util.class);
 	}
-/*
+
     @Test
     public void copyToStarDevFailValidationTest() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
