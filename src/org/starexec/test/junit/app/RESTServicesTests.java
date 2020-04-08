@@ -75,5 +75,4 @@ public class RESTServicesTests {
 
 		assertEquals("Should copy successfully.", services.copyToStarDev(instance, benchType, 10, request), gson.toJson(new ValidatorStatusCode(true)));
 	}
-	
 }
