@@ -13,7 +13,7 @@ import java.util.*;
  * This backend implementation does not rely on any external system outside of basic Unix
  * utilities. It uses a single static queue and node and runs a single job pair at a time
  *
- */
+ */  /*
 public class LocalBackend implements Backend {
 	private static final StarLogger log = StarLogger.getLogger(LocalBackend.class);
 
@@ -39,20 +39,20 @@ public class LocalBackend implements Backend {
 	}	
 	private final Map<Integer, LocalJob> activeIds = new HashMap<>();
 	
-	private String NODE_NAME = "n001";
+	private String NODE_NAME = "n001";  */
 	/**
 	 * An ordered queue of all jobs that have been submitted to the backend and have not yet
 	 * completed. Jobs are kept in this queue until they are finished executing, meaning
 	 * that the running job will be the head of the queue
-	 */
+	 */  /*
 	final java.util.Queue<LocalJob> jobsToRun = new ArrayDeque<>();
 	
-	private int curID = 1;
+	private int curID = 1;  */
 	/**
 	 * Generates a new ID that is unique among all jobs currently enqueued/ running
 	 * @return
 	 * @throws Exception
-	 */
+	 */ /*
 	private int generateExecId() throws Exception {
 		if (activeIds.size()==Integer.MAX_VALUE) {
 			throw new Exception("Cannot support more that Integer.MAX_VALUE pairs");
@@ -71,11 +71,11 @@ public class LocalBackend implements Backend {
 	public boolean isError(int execCode) {
 		return execCode<=0;
 	}
-	
+	*/
 	/**
 	 * Runs a local job. This function does not return until the job is complete.
 	 * @param j
-	 */
+	 */  /*
 	private void runJob(LocalJob j){
 		try {
 			j.process = Util.executeCommandAndReturnProcess(new String[] {j.scriptPath}, null, new File(j.workingDirectoryPath));
@@ -93,12 +93,12 @@ public class LocalBackend implements Backend {
 	private synchronized void removeJob(LocalJob j) {
 		jobsToRun.remove(j);
 		activeIds.remove(j.execId);
-	}
+	}  */
 	
 	/**
 	 * Loops forever, executing the jobs in jobsToRun. Sleeps for 20 seconds at a time if the queue is empty, and
 	 * runs a single job at a time when it is not empty.
-	 */
+	 */  /*
 	@SuppressWarnings("InfiniteLoopStatement")
 	private void runJobsForever() {
 		while (true) {
@@ -214,12 +214,12 @@ public class LocalBackend implements Backend {
 	@Override
 	public boolean clearNodeErrorStates() {
 		return true;
-	}
+	}*/
 
 	/*
 	 * This backend does not support having multiple nodes or queues, so all of the functions
 	 * below simply return false.
-	 */
+	 */  /*
 	@Override
 	public void deleteQueue(String queueName) {
 	}
@@ -245,12 +245,12 @@ public class LocalBackend implements Backend {
 	@Override
 	public void destroyIf() {
 		// no deconstruction needed
-	}
+	}*/
 
 	/**
 	 * BACKEND_ROOT is not meaningful for this backend and will be ignored.
 	 * Initialization creates the execution loop for local jobs
-	 */
+	 */  /*
 	@Override
 	public void initialize(String BACKEND_ROOT) {
 		// set the name of the single node used by this backend to the name of the system
@@ -272,3 +272,4 @@ public class LocalBackend implements Backend {
 	}
 
 }
+*/
