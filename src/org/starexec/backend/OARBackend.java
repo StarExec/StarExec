@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 
 /**
  * Implementation of the Backend interface depending on the OAR scheduler (https://oar.imag.fr/)
- */  /*
+ */
 public class OARBackend implements Backend {    
 	private static final StarLogger log = StarLogger.getLogger(OARBackend.class);
 	
@@ -220,4 +220,4 @@ public class OARBackend implements Backend {
 		return null;
 	}
 
-}*/
+}
