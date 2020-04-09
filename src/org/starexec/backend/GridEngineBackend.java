@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
  * This is a backend implementation that uses Sun Grid Engine
  *
  */
-/*
+
 public class GridEngineBackend implements Backend{
     // SGE Configurations, see GridEngineBackend
     private static final String QUEUE_LIST_COMMAND = "qconf -sql";					// The SGE command to execute to get a list of all job queues
@@ -42,20 +42,20 @@ public class GridEngineBackend implements Backend{
  	static {
  		// Compile the SGE output parsing patterns when this class is loaded
  		queueAssocPattern = Pattern.compile(QUEUE_ASSOC_PATTERN, Pattern.CASE_INSENSITIVE);
- 	} */
+ 	} 
 
     /**
      * This constructor only initializes logging-- initialze must be called
      * after construction.
-     */ /*
+     */ 
     public GridEngineBackend(){
 		log = StarLogger.getLogger(GridEngineBackend.class);
-    }*/
+    }
 
     /**
      * use to initialize fields and prepare backend for tasks
 
-     **/  /*
+     **/  
     public void initialize(String BACKEND_ROOT){
 	    this.BACKEND_ROOT = BACKEND_ROOT;
 
@@ -74,13 +74,13 @@ public class GridEngineBackend implements Backend{
 		} catch (Exception e) {
 			log.error(e.getMessage(),e);
 		}
-    }*/
+    }
 
     /**
      * release resources that Backend might not need anymore
      * there's a chance that initialize is never called, so always try dealing with that case
 
-     **/   /*
+     **/   
     public void destroyIf(){
 		if (!session.toString().contains("drmaa")) {
 		    log.debug("Shutting down the session..." + session);
@@ -91,23 +91,23 @@ public class GridEngineBackend implements Backend{
 				log.error("Problem destroying session: "+e,e);
 			}
 		}
-    }*/
+    }
 
     /**
      * @param execCode : an execution code (returned by submitScript)
      * @return false if the execution code represents an error, true otherwise
      *
-     **/   /*
+     **/   
     public boolean isError(int execCode){
         return execCode < 0;
-    } */
+    } 
 
     /**
      * @param scriptPath : the full path to the jobscript file
      * @param workingDirectoryPath  :  path to a directory that can be used for scratch space (read/write)
      * @param logPath  :  path to a directory that should be used to store jobscript logs
      * @return an identifier for the task that submitScript starts, should allow a user to identify which task/script to kill
-     **/  /*
+     **/  
     public int submitScript(String scriptPath, String workingDirectoryPath, String logPath){
     	synchronized(this){
     		JobTemplate sgeTemplate = null;
@@ -153,13 +153,13 @@ public class GridEngineBackend implements Backend{
 
 		return -1;
 }
-}*/
+}
 
     /**
      * Kills all running pairs
      * @return true if successful, false otherwise
      * kills a jobpair
-     */  /*
+     */
     public boolean killAll(){
 		try {
 			Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qdel -f -u tomcat",getSGEEnv());
@@ -168,13 +168,13 @@ public class GridEngineBackend implements Backend{
 			log.error(e.getMessage(),e);
 		}
 		return false;
-    } */
+    }
 
 	/**
 	 * @param execId an int that identifies the pair to be killed, should match what is returned by submitScript
 	 * @return true if successful, false otherwise
 	 * kills a jobpair
-	 */ /*
+	 */
 	public boolean killPair(int execId){
 		try{
 			log.trace("Killing pair " + execId);
@@ -184,12 +184,12 @@ public class GridEngineBackend implements Backend{
 			log.error("Unable to killPair " + execId, e);
 			return false;
 		}
-	}*/
+	}
 
     /**
 
      * @return a string representing the status of jobs running on the system
-     */  /*
+     */
     public String getRunningJobsStatus() {
     	try {
 			return Util.executeCommand("qstat -f");
@@ -197,12 +197,12 @@ public class GridEngineBackend implements Backend{
 			log.error(e.getMessage(),e);
 		}
 		return null;
-    }*/
+    }
 
     /**
 
      * @return returns a list of names of all active worker nodes
-     */   /*
+     */
     public String[] getWorkerNodes() {
 		final String methodName = "getWorkerNodes";
 		log.entry(methodName);
@@ -218,13 +218,13 @@ public class GridEngineBackend implements Backend{
 			log.exit(methodName);
 		}
     	return null;
-    }*/
+    }
 
 
     /**
 
      * @return returns a list of all active queues
-     */  /*
+     */
     public String[] getQueues(){
     	try {
     		// Execute the SGE command to get the list of queues
@@ -236,13 +236,13 @@ public class GridEngineBackend implements Backend{
     	}
     	return null;
 
-    }*/
+    }
 
      /**
 
      * @return a map from node name to queue name
      * the queue and node names should match the names returned when calling getWorkerNodes and getQueues.
-     */  /*
+     */
     public Map<String,String> getNodeQueueAssociations(){
 
     	try {
@@ -270,14 +270,14 @@ public class GridEngineBackend implements Backend{
     	return null;
 
 
-    }*/
+    }
 
 	/**
 	 * Gets the number of slots in a given queue.
 	 * @param queueName the name of the queue to get the number of slots for.
 	 * @return An optional with the number of slots for the queue. Empty if the queue doesn't exist.
 	 * @throws IOException
-	 */   /*
+	 */
     public Integer getSlotsInQueue(String queueName) throws IOException, StarExecException {
 		final String methodName = "getSlotsInQueue";
 		try {
@@ -314,12 +314,12 @@ public class GridEngineBackend implements Backend{
 			log.error("Caught IOException.", e);
 			throw e;
 		}
-	}*/
+	}
 
     /**
      * should clear any states caused by errors on both queues and nodes
      * @return true if sucessful, false otherwise
-     */  /*
+     */
     public boolean clearNodeErrorStates(){
     	try {
 			String[] allQueueNames = this.getQueues();
@@ -331,14 +331,14 @@ public class GridEngineBackend implements Backend{
 			log.error(e.getMessage(),e);
 		}
 		return false;
-    }*/
+    }
 
 
    /**
      * deletes a queue that no longer has nodes associated with it
 
      * @param queueName the name of the queue to be removed
-     */ /*
+     */
     public void deleteQueue(String queueName){
     	try {
     		String[] split = queueName.split("\\.");
@@ -355,18 +355,18 @@ public class GridEngineBackend implements Backend{
 	    } catch (Exception e) {
     		log.error(e.getMessage(),e);
     	}
-    }*/
+    }
 
 
     /**
 	 * Gets a String array representing the environment for SGE
 	 * @return A size 1 array containing "SGE_ROOT=" plus the root path
-	 */ /*
+	 */
 	private String[] getSGEEnv() {
 		String[] envp = new String[1];
 		envp[0] = "SGE_ROOT="+BACKEND_ROOT;
 		return envp;
-	}*/
+	}
 
 
     /**
@@ -377,7 +377,7 @@ public class GridEngineBackend implements Backend{
      *@param queueNames the names of the source queues
      *@return true if successful, false otherwise
      */
-/*
+	
     public boolean createQueue(String queueName, String[] nodeNames, String[] queueNames) {
         return createQueueWithSlots(queueName, nodeNames, queueNames, 2);
     }
@@ -415,10 +415,10 @@ public class GridEngineBackend implements Backend{
 
 
 			String hostList = sb.toString();
-*/
+
 			/* CREATE A QUEUE */
 			// Create newHost.hgrp
-/*			String newHost;
+			String newHost;
 
 			newHost = "group_name @" + shortQueueName + "hosts" +
 					  "\nhostlist " + hostList;
@@ -499,7 +499,7 @@ public class GridEngineBackend implements Backend{
 			log.error(e.getMessage(),e);
 		}
 		return false;
-    }*/
+    }
 
 
     /**
@@ -508,7 +508,7 @@ public class GridEngineBackend implements Backend{
      * @param sourceQueueNames the names of the source queues
 * moves nodes from source queues to the destination queue <queueName>
 * the ith element of nodeNames corresponds to the ith element of sourceQueueNames for every i
-     */   /*
+     */
     public void moveNodes(String queueName,String[] nodeNames,String[] sourceQueueNames){
     	try {
     		log.info("moveNodes begins, for queue "+queueName);
@@ -541,14 +541,14 @@ public class GridEngineBackend implements Backend{
 	    } catch (Exception e) {
     		log.error(e.getMessage(),e);
     	}
-    }*/
+    }
 
     /**
      * moves the given node to the given queue
 
      * @param nodeName the name of a node
      * @param queueName the name of a queue
-     */ /*
+     */
     public void moveNode(String nodeName, String queueName){
     	try {
     		Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -dattr hostgroup hostlist " + nodeName + " @" + queueName + "hosts", getSGEEnv());
@@ -576,4 +576,4 @@ public class GridEngineBackend implements Backend{
 		return answer;
 	}
 
-}*/
+}
