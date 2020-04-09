@@ -13,7 +13,7 @@ import org.testng.Assert;
 
 import java.io.IOException;
 import java.util.Set;
-
+/*
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({Util.class})
 public class GridEngineBackendTests {
@@ -73,4 +73,4 @@ public class GridEngineBackendTests {
 			Assert.fail("Caught StarExecException: " + Util.getStackTrace(e));
 		}
 	}
-}
+}*/
