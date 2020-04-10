@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-
+/*
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({RESTHelpers.class, Util.class})
 public class RESTServicesTests {
@@ -77,4 +77,4 @@ public class RESTServicesTests {
 
 		assertEquals("Should copy successfully.", services.copyToStarDev(instance, benchType, 10, request), gson.toJson(new ValidatorStatusCode(true)));
 	}
-}
+}*/
