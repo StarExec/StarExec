@@ -36,7 +36,7 @@ public class RESTServicesTests {
 		PowerMockito.mockStatic(RESTHelpers.class);
 		PowerMockito.mockStatic(Util.class);
 	}*/
-
+/*
     @Test
     public void copyToStarDevFailValidationTest() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
