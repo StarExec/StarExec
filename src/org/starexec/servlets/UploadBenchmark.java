@@ -40,6 +40,7 @@ public class UploadBenchmark extends HttpServlet {
 	private static final String BENCHMARK_TYPE = "benchType";
 	private static final String BENCH_DOWNLOADABLE = "download";
 	private static final String FILE_URL = "url";
+	private static final String FILE_GIT = "git";
 	private static final String FILE_LOC = "localOrURLOrGit";
 	private static final String addSolver = "addSolver";
 	private static final String addBench = "addBench";
@@ -87,7 +88,6 @@ public class UploadBenchmark extends HttpServlet {
 				this.handleUploadRequest(form, userId, statusId);
 				//go to upload status page
 				response.addCookie(new Cookie("New_ID", String.valueOf(statusId)));
-
 				response.sendRedirect(Util.docRoot("secure/details/uploadStatus.jsp?id=" + statusId));
 			} else {
 				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
@@ -421,9 +421,9 @@ public class UploadBenchmark extends HttpServlet {
 		String tempGitUrl = null;
 		//for the git url
 		if (localOrUrlOrGit.equals("Git")) {
-			tempURL = new URL((String) form.get(FILE_URL));
-			tempGitUrl = ((String) form.get(FILE_URL));
-			log.debug("URL is : " + ((String) form.get(FILE_URL)));
+			tempURL = new URL((String) form.get(FILE_GIT));
+			tempGitUrl = ((String) form.get(FILE_GIT));
+			log.debug("URL is : " + ((String) form.get(FILE_GIT)));
 			try {
 				tempName = tempURL.toString().substring(tempURL.toString().lastIndexOf('/'));
 			} catch (Exception e) {
@@ -611,7 +611,9 @@ public class UploadBenchmark extends HttpServlet {
 				}
 			}
 			else {
-				fileName = (String) form.get(FILE_URL);
+				log.debug("in else");
+				fileName = (String) form.get(FILE_GIT);
+				log.debug("fileName: "+ fileName);
 				if (!Validator.isValidGitType(fileName)) {
 					return new ValidatorStatusCode(false, "Uploaded Git URLs need to be .git");
 				}
