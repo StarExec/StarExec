@@ -1,6 +1,6 @@
 #content fieldset {
 	width: 600px;
-	margin: 50px auto 30px auto;	
+	margin: 50px auto 30px auto;
 }
 
 #tblUploadBench {
@@ -12,6 +12,10 @@
 }
 
 #fileURL {
+	width:90%;
+}
+
+#gitURL {
 	width:90%;
 }
 
@@ -30,7 +34,7 @@ button {
 
 #tblDefaultPerm tr td {
 	padding: 0 40px 0 0;
-	background-color: transparent;	
+	background-color: transparent;
 }
 
 #tblDefaultPerm tr th {
@@ -64,9 +68,9 @@ button {
 	#wrapper #tblDefaultPerm tr td {
 		padding-right: 0;
 	}
-	
+
 	#wrapper #btnPrev {
 		float: left;
-		
+
 	}
 }

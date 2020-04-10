@@ -250,7 +250,7 @@ public class Connection {
 			HttpPost post = new HttpPost(postUrl);
 			MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 			logAddTextBody(entity, R.SPACE, spaceID.toString());
-			logAddTextBody(entity, "localOrURL", upMethod);
+			logAddTextBody(entity, "localOrUrlOrGit", upMethod);
 
 			// it is ok to set URL even if we don't need it
 			logAddTextBody(entity, "url", url);

@@ -16,6 +16,7 @@ $(document).ready(function() {
 	$("#radioLocal").attr("checked", "checked");
 	$("#benchFile").show();
 	$("#fileURL").hide();
+	$("#gitURL").hide();
 
 });
 
@@ -30,27 +31,59 @@ function attachFormValidation() {
 	$("#radioLocal").change(function() {
 		if ($("#radioLocal").is(":checked")) {
 			$("#fileURL").stop(true, true, true);
+			$("#gitURL").stop(true, true, true);
 			$("#fileURL").fadeOut('fast', function() {
 				if ($("#radioLocal").is(":checked")) {
 					$("#benchFile").fadeIn('fast');
 					$("#uploadForm").validate().element("#fileURL");
 				}
-
+			});
+			$("#gitURL").fadeOut('fast', function() {
+				if ($("#radioLocal").is(":checked")) {
+					$("#benchFile").fadeIn('fast');
+					$("#uploadForm").validate().element("#gitURL");
+				}
 			});
 
 		}
 	});
+
 	$("#radioURL").change(function() {
 		if ($("#radioURL").is(":checked")) {
 			$("#benchFile").stop(true, true, true);
+			$("#gitURL").stop(true, true, true);
 			$("#benchFile").fadeOut('fast', function() {
 				if ($("#radioURL").is(":checked")) {
 					$("#fileURL").fadeIn('fast');
 					$("#uploadForm").validate().element("#benchFile");
 				}
-
+			});
+			$("#gitURL").fadeOut('fast', function() {
+				if ($("#radioURL").is(":checked")) {
+					$("#fileURL").fadeIn('fast');
+					$("#uploadForm").validate().element("#gitURL");
+				}
 			});
 
+		}
+	});
+	//button for git
+	$("#radioGit").change(function() {
+		if ($("#radioGit").is(":checked")) {
+			$("#fileURL").stop(true, true, true);
+			$("#benchFile").stop(true, true, true);
+			$("#benchFile").fadeOut('fast', function() {
+				if ($("#radioGit").is(":checked")) {
+					$("#gitURL").fadeIn('fast');
+					$("#uploadForm").validate().element("#benchFile");
+				}
+			});
+			$("#fileURL").fadeOut('fast', function() {
+				if ($("#radioGit").is(":checked")) {
+					$("#gitURL").fadeIn('fast');
+					$("#uploadForm").validate().element("#fileURL");
+				}
+			});
 		}
 	});
 
@@ -73,6 +106,11 @@ function attachFormValidation() {
 			url: {
 				required: "#radioURL:checked",
 				regex: "(\.tgz$)|(\.zip$)|(\.tar(\.gz)?$)"
+			},
+
+			git: {
+				required: "#radioGit:checked",
+				regex: "(\.git$)"
 			}
 		},
 		messages: {
@@ -83,6 +121,11 @@ function attachFormValidation() {
 			url: {
 				required: "please enter a URL",
 				regex: "URL must be .zip, .tar, or .tar.gz"
+			},
+
+			git: {
+				required: "please enter a URL of a Git respository ",
+				regex: "URL must be .git"
 			}
 		},
 		submitHandler: function(form) {
