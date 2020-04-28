@@ -478,12 +478,23 @@ public class UploadBenchmark extends HttpServlet {
 		else{
 			gitSpaceString = uniqueDir.getAbsolutePath();
 			String[] gitClonecmd = new String[4];
+			String[] gitSubmodulecmd = new String[6];
 			gitClonecmd[0] = "git";
 			gitClonecmd[1] = "clone";
 			gitClonecmd[2] = gitUrl;
 			gitClonecmd[3] = gitSpaceString;
 			log.debug("gitclonecmd: " + gitClonecmd[0] + " " + gitClonecmd[1] + " " + gitClonecmd[2]+" " +gitClonecmd[3]);
 			Util.executeCommand(gitClonecmd);
+			//git submodule update --init --recursive
+			gitSubmodulecmd[0] = "git";
+			gitSubmodulecmd[1] = "submodule";
+			gitSubmodulecmd[2] = "update";
+			gitSubmodulecmd[3] = "--init";
+			gitSubmodulecmd[4] = "--recursive";
+			gitSubmodulecmd[5] = gitSpaceString;
+			log.debug("gitSubmodulecmd: " + gitSubmodulecmd[0] + " " + gitSubmodulecmd[1] + " " + gitSubmodulecmd[2]+" "
+								+gitSubmodulecmd[3]+ " " + gitSubmodulecmd[4]+ " " + gitSubmodulecmd[5]);
+			Util.executeCommand(gitSubmodulecmd);
 
 		}
 		final File archiveFile = archive;
