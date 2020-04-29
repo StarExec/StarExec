@@ -953,7 +953,7 @@ public class Benchmarks {
 
       else if ((!f.getName().equals(R.BENCHMARK_DESC_PATH)) && (!f.getName().equals("README.md")) &&
               (!f.getName().equals(".gitattributes")) && (!f.getName().equals(".gitignore")) &&
-							(!f.getName().equals(".gitmodules")))
+							(!f.getName().equals(".gitmodules")) && (!f.getName().equals(".git")))
 
        { //Not a description file, readme, .gitattributes, .gitmodules, and .gitignore
 
