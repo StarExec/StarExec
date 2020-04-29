@@ -896,8 +896,8 @@ public class Benchmarks {
 	 * Creates a space named after the directory and finds any benchmarks within the directory. Then the process
 	 * recursively adds any subspaces found (other directories) until all directories under the original one are
 	 * traversed. Also extracts the description file(if there is one) and sets it as the description for the space.
-	 * *New* deletes .git directory (if present) and does not add .gitignore .gitattributes and README.md files as
-	 * benchmarks.
+	 * *New* deletes .git directory (if present) and does not add .gitignore .gitattributes .gitmodules and
+	 * README.md files as benchmarks.
 	 *
 	 * @param directory The directory to extract data from
 	 * @param typeId The bench type id to set for all the found benchmarks
@@ -908,7 +908,7 @@ public class Benchmarks {
 	 * @return A single space containing all subspaces and benchmarks based on the file structure of the given
 	 * directory.
 	 * @throws Exception Any exception with the description file, with an error message contained
-	 * @author Wyatt Kaiser
+	 * @author Wyatt Kaiser, Steve Fiolic
 	 */
 	public static Space extractSpacesAndBenchmarks(
 			File directory, int typeId, int userId, boolean downloadable, Permission perm, Integer statusId
@@ -952,9 +952,10 @@ public class Benchmarks {
 			}
 
       else if ((!f.getName().equals(R.BENCHMARK_DESC_PATH)) && (!f.getName().equals("README.md")) &&
-              (!f.getName().equals(".gitattributes")) && (!f.getName().equals(".gitignore")))
+              (!f.getName().equals(".gitattributes")) && (!f.getName().equals(".gitignore")) &&
+							(!f.getName().equals(".gitmodules")))
 
-       { //Not a description file, readme, .gitattributes, and .gitignore
+       { //Not a description file, readme, .gitattributes, .gitmodules, and .gitignore
 
 				if (Validator.isValidBenchName(f.getName())) {
 					space.addBenchmark(constructBenchmark(f, typeId, downloadable, userId));
