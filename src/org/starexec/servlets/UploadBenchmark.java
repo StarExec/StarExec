@@ -479,6 +479,7 @@ public class UploadBenchmark extends HttpServlet {
 			gitSpaceString = uniqueDir.getAbsolutePath();
 			String[] gitClonecmd = new String[4];
 			String[] gitSubmodulecmd = new String[5];
+
 			gitClonecmd[0] = "git";
 			gitClonecmd[1] = "clone";
 			gitClonecmd[2] = gitUrl;

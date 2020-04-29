@@ -908,7 +908,7 @@ public class Benchmarks {
 	 * @return A single space containing all subspaces and benchmarks based on the file structure of the given
 	 * directory.
 	 * @throws Exception Any exception with the description file, with an error message contained
-	 * @author Wyatt Kaiser
+	 * @author Wyatt Kaiser, Steve Fiolic
 	 */
 	public static Space extractSpacesAndBenchmarks(
 			File directory, int typeId, int userId, boolean downloadable, Permission perm, Integer statusId
