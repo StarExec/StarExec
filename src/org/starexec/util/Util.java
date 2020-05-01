@@ -481,6 +481,7 @@ public class Util {
 			}
 		});
 		drainInputStream(message, p.getInputStream());
+                p.waitFor();
 		return message.toString();
 	}
 
