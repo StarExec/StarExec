@@ -481,7 +481,12 @@ public class Util {
 			}
 		});
 		drainInputStream(message, p.getInputStream());
-                p.waitFor();
+		try {
+		    p.waitFor();
+		}
+		catch (InterruptedException e) {
+		    log.error("drainStreams", "Received InterruptedException waiting for a process");
+		}
 		return message.toString();
 	}
 
