@@ -316,8 +316,6 @@ public class UploadBenchmark extends HttpServlet {
 		String uploadMethod, int statusId, boolean hasDependencies, boolean linked, Integer depRootSpaceId)
 		throws IOException, StarExecException{
 			ArrayList<Integer> benchmarkIds = new ArrayList<>();
-			// Create a unique path the file will be copied to
-			File uniqueDir = getDirectoryForBenchmarkUpload(userId, null);
 
 			//get the approximate files size, larger than actual beacause the .git directory is present still
 			long fileSize = FileUtils.sizeOf(gitSpace);
@@ -328,7 +326,6 @@ public class UploadBenchmark extends HttpServlet {
 
 			if (fileSize > allowedBytes - usedBytes) {
 				FileUtils.deleteDirectory(gitSpace);
-				uniqueDir.delete();
 				Uploads.setBenchmarkErrorMessage(statusId,
 				                                 "The benchmark upload is too large to fit in your disk quota. The " +
 						                                 "uncompressed" +
@@ -337,9 +334,6 @@ public class UploadBenchmark extends HttpServlet {
 						                                 " bytes remaining.");
 				throw new StarExecException("File too large to fit in user's disk quota");
 			}
-			// copy gitSpace to new directory
-			FileUtils.copyDirectory(gitSpace, uniqueDir);
-
 
 			log.info("upload complete - now extracting");
 			Uploads.benchmarkFileUploadComplete(statusId);
@@ -354,7 +348,7 @@ public class UploadBenchmark extends HttpServlet {
 			log.debug("depRootSpaceIds = " + depRootSpaceId);
 
 			log.info("about to add benchmarks to space " + spaceId + " for user " + userId);
-			Space result = Benchmarks.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, perm, statusId);
+			Space result = Benchmarks.extractSpacesAndBenchmarks(gitSpace, typeId, userId, downloadable, perm, statusId);
 			if (result == null) {
 				String message = "StarExec has failed to extract the spaces and benchmarks from the files.";
 				Uploads.setBenchmarkErrorMessage(statusId, message);
@@ -370,7 +364,7 @@ public class UploadBenchmark extends HttpServlet {
 				log.debug("convert");
 
 				//first we test to see if any names conflict
-				ValidatorStatusCode status = doSpaceNamesConflict(uniqueDir, spaceId);
+				ValidatorStatusCode status = doSpaceNamesConflict(gitSpace, spaceId);
 				if (!status.isSuccess()) {
 					Uploads.setBenchmarkErrorMessage(statusId, status.getMessage());
 					return null;
