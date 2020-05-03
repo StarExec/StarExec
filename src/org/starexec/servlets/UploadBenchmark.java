@@ -353,7 +353,7 @@ public class UploadBenchmark extends HttpServlet {
 			log.debug("linked = " + linked);
 			log.debug("depRootSpaceIds = " + depRootSpaceId);
 
-			log.info("about to add benchmarks to space " + spaceId + "for user " + userId);
+			log.info("about to add benchmarks to space " + spaceId + " for user " + userId);
 			Space result = Benchmarks.extractSpacesAndBenchmarks(uniqueDir, typeId, userId, downloadable, perm, statusId);
 			if (result == null) {
 				String message = "StarExec has failed to extract the spaces and benchmarks from the files.";

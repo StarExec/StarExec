@@ -914,7 +914,7 @@ public class Benchmarks {
 			File directory, int typeId, int userId, boolean downloadable, Permission perm, Integer statusId
 	) throws IOException, StarExecException {
 		// Create a space for the current directory and set it's name
-		log.info("Extracting Spaces and Benchmarks for " + userId);
+            log.info("Extracting Spaces and Benchmarks for " + userId + " in " + directory.getName());
 		Space space = new Space();
 		space.setName(directory.getName());
 		space.setPermission(perm);
