@@ -1309,10 +1309,11 @@ function initDataTables() {
 
 
 	// this was getting overridden and I couldn't find out where
-	// so I did something bad...
+	// so I did something bad...feel free to get rid of the bad setInterval if you can
+	// find out how to prevent it from being overridden.
 
-	setTimeout(function(){
-		$('.dataTable tr').click(function(e){
+	setInterval(function(){
+		$('.dataTable > tbody > tr').off(".namespace").on("click.namespace",function(e){
 			if(e.shiftKey){
 				let rows = $(this).parent().children();
 				let toSelect = [];
@@ -1334,7 +1335,7 @@ function initDataTables() {
 				}
 			}
 		});
-	},4000);
+	},2000);
 
 
 
