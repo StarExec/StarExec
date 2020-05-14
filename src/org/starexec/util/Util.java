@@ -683,6 +683,8 @@ public class Util {
 	public static void clearOldFiles(String directory, int daysAgo, boolean includeDirs) {
 		try {
 			Collection<File> outdatedFiles = getOldFiles(directory, daysAgo, includeDirs);
+			if (outdatedFiles == null)
+			    return;
 			log.debug("found a total of " + outdatedFiles.size() + " outdated files to delete in " + directory);
 			// Remove them all
 			outdatedFiles.forEach(FileUtils::deleteQuietly);

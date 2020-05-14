@@ -566,17 +566,14 @@ public class Benchmarks {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
-			Common.beginTransaction(con);
 
 			for (int benchId : benchIds) {
 				associate(benchId, spaceId, con);
 			}
 
-			Common.endTransaction(con);
 			return true;
 		} catch (Exception e) {
-			log.error("associate", "Rolling back transaction", e);
-			Common.doRollback(con);
+		    log.error("associate: " + e.toString());
 		} finally {
 			Common.safeClose(con);
 		}
