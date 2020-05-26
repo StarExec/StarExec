@@ -127,18 +127,46 @@ public class HTMLParser {
 	 */
 
 	public static String extractCookie(Header[] headers, String cookieName) {
+					// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//					System.out.println( "---- now ENTERING HTMLParser.extractCookie() --------\n" );
+					// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 		if (headers == null || cookieName == null) {
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println( "(headers == null || cookieName == null): " + Boolean.toString( headers == null ) + " || " + Boolean.toString( cookieName == null ) + "\n" );
+//						System.out.println( "---- now EXITING HTMLParser.extractCookie() --------\n" );
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 			return null;
 		}
+					// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//					System.out.println( "for Header in parameter headers[]:\n");
+					// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 		for (Header x : headers) {
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println( "name: " + x.getName() + ", value: " + x.getValue() );
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 			// cookies are parsed in the code below. Note that cookies are in a
 			// form like
 			// Set-Cookie: name=Nicholas; expires=Sat, 02 May 2009 23:38:25 GMT
 			// where all cookies are on a single semicolon-delimited line.
 			if (x.getName().equals("Set-Cookie")) {
+							// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//							System.out.println( "\tfound a header with name 'Set-Cookie'!" );
+							// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 				String value = x.getValue().trim();
+							// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//							System.out.println( "\tvalue = " + value );
+							// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 				if (value.contains(cookieName)) {
+								// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//								System.out.println( "\tvalue contains parameter cookieName, " + cookieName );
+								// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 					int begin = value.indexOf(cookieName);
 
 					if (begin < 0) { // Doesn't the outer `if` guard against this?
@@ -153,10 +181,20 @@ public class HTMLParser {
 					if (end == -1) {
 						end = value.length();
 					}
+								// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//								System.out.println( "\treturning substring of value: " + value.substring(begin, end) + "\n" );
+//								System.out.println( "---- now EXITING HTMLParser.extractCookie() --------\n" );
+								// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 					return value.substring(begin, end);
 				}
 			}
 		}
+					// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//					System.out.println( "\nno header with name 'Set-Cookie' was found; returning null\n" );
+//					System.out.println( "---- now EXITING HTMLParser.extractCookie() --------\n" );
+					// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 		return null;
 	}
 }
