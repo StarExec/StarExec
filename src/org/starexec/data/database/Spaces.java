@@ -401,38 +401,28 @@ public class Spaces {
 	 * @param linked true if the depRootSpace is the same as the first directory in the include statements. If no
 	 * dependencies exist, this is ignored
 	 * @param statusId ID of a benchmark upload status to update with space information
-	 * @return A list of benchmark IDs if successful, and null otherwise
 	 * @author Benton McCune
 	 */
-	public static List<Integer> addWithBenchmarks(
+	public static void addWithBenchmarks(
 			Space parent, int userId, Integer depRootSpaceId, boolean linked, Integer statusId, Boolean usesDeps
-	) throws StarExecException {
-		Connection con = null;
-		ArrayList<Integer> ids = new ArrayList<>();
-		log.trace("addWithBenchmarks", "called on space " + parent.getName());
-		try {
-			con = Common.getConnection();
-			// For each subspace...
-			for (Space sub : parent.getSubspaces()) {
-				// Apply the recursive algorithm to add each subspace
-				sub.setParentSpace(parent.getId());
-				Spaces.traverse(sub, userId, depRootSpaceId, linked, statusId, con);
-			}
+						      ) throws IOException , StarExecException {
+	    log.info("addWithBenchmarks called on space " + parent.getName());
 
-			// Add any new benchmarks in the space to the database
-			if (!parent.getBenchmarks().isEmpty()) {
-				ids.addAll(Benchmarks.processAndAdd(parent.getBenchmarks(), parent.getId(), depRootSpaceId, linked,
-				                                    statusId, usesDeps, con
-				));
-			}
-			// We're done (notice that 'parent' is never added because it should already exist)
-		} catch (SQLException | IOException e) {
-			log.error("addWithBenchmarks", e);
-			throw new StarExecException("Error adding Benchmarks", e);
-		} finally {
-			Common.safeClose(con);
+		// For each subspace...
+		for (Space sub : parent.getSubspaces()) {
+		    // Apply the recursive algorithm to add each subspace
+		    sub.setParentSpace(parent.getId());
+		    Spaces.traverse(sub, userId, depRootSpaceId, linked, statusId);
 		}
-		return ids;
+		
+		// Add any new benchmarks in the space to the database
+		if (!parent.getBenchmarks().isEmpty()) {
+		    Benchmarks.processAndAdd(parent.getBenchmarks(), parent.getId(), depRootSpaceId, linked,
+							statusId, usesDeps
+							);
+		}
+		// We're done (notice that 'parent' is never added because it should already exist)
+
 	}
 
 	/**
@@ -2508,28 +2498,6 @@ public class Spaces {
 		}
 		return paths;
 	}
-	/**
-	 * Internal recursive method that adds a space and it's benchmarks to the database
-	 *
-	 * @param space The space to add to the database
-	 * @param depRootSpaceId the id of the space where the axiom benchmarks lie. If no dependencies exist, this is
-	 * ignored.
-	 * @param userId The user id of the owner of the new space and its benchmarks
-	 */
-	protected static List<Integer> traverse(
-			Space space, int userId, Integer depRootSpaceId, Boolean linked, Integer statusId
-	) {
-		Connection con = null;
-		try {
-			con = Common.getConnection();
-			return traverse(space, userId, depRootSpaceId, linked, statusId);
-		} catch (Exception e) {
-			log.error("traverse", e);
-			return null;
-		} finally {
-			Common.safeClose(con);
-		}
-	}
 
 	/**
 	 * Internal recursive method that adds a space and it's benchmarks to the database
@@ -2540,27 +2508,25 @@ public class Spaces {
 	 * @param userId The user id of the owner of the new space and its benchmarks
 	 * @author Benton McCune
 	 */
-	protected static List<Integer> traverse(
-			Space space, int userId, Integer depRootSpaceId, Boolean linked, Integer statusId, Connection con
-	) throws IOException, SQLException, StarExecException {
-		ArrayList<Integer> ids = new ArrayList<>();
+	protected static void traverse(
+			Space space, int userId, Integer depRootSpaceId, Boolean linked, Integer statusId
+	) throws IOException, StarExecException {
 		// Add the new space to the database and get it's ID
-		int spaceId = Spaces.add(con, space, userId);
+		int spaceId = Spaces.add(space, userId);
 
 		log.info("traversing (with deps) space " + space.getName());
 		for (Space sub : space.getSubspaces()) {
 			sub.setParentSpace(spaceId);
 			// Recursively go through and add all of it's subspaces with itself as the parent
-			ids.addAll(Spaces.traverse(sub, userId, depRootSpaceId, linked, statusId, con));
+			Spaces.traverse(sub, userId, depRootSpaceId, linked, statusId);
 		}
 		// Finally, add the benchmarks in the space to the database
-		ids.addAll(Benchmarks.processAndAdd(space.getBenchmarks(), spaceId, depRootSpaceId, linked, statusId, true, con));
+		Benchmarks.processAndAdd(space.getBenchmarks(), spaceId, depRootSpaceId, linked, statusId, true);
 
 		/* `incrementCompletedSpaces` will use its own connection so it is not
 		 * part of this transaction This is to ensure the count is updated
 		 * immediately, instead of only once after everything is finished.    */
 		Uploads.incrementCompletedSpaces(statusId, 1);
-		return ids;
 	}
 
 	/**
