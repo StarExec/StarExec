@@ -29,6 +29,9 @@ import org.starexec.data.to.enums.CopyPrimitivesOption;
 import org.starexec.data.to.tuples.HtmlStatusCodePair;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
+			// -- tmp --
+			import org.apache.http.HeaderElement;
+			import org.apache.http.impl.cookie.BasicClientCookie;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -322,6 +325,10 @@ public class Connection {
 
 	// Logs and executes a GET/POST request.
 	private HttpResponse executeGetOrPost(HttpRequestBase request) throws IOException {
+					// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//					System.out.println( "---- now ENTERING executeGetOrPost() --------\n" );
+//					C.debugMode = true;
+					// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		log.log("Sending " + request.getMethod() + " request to URI: " + request.getURI());
 		List<Header> headers = Arrays.asList(request.getAllHeaders());
 		// Bypass the for loop if debug mode is off.
@@ -341,6 +348,7 @@ public class Connection {
 				log.log("");
 			}
 		}
+
 		request.setHeader("User-Agent", C.USER_AGENT);
 		HttpResponse response = client.execute(request);
 
@@ -363,6 +371,10 @@ public class Connection {
 				log.log("");
 			}
 		}
+					// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//					System.out.println( "\n---- now EXITING executeGetOrPost() --------\n" );
+//					C.debugMode = false;
+					// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		return response;
 	}
 
@@ -1221,13 +1233,44 @@ public class Connection {
 	 */
 	public int login() {
 		HttpResponse response = null;
+
+					// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//					System.out.println( "now running login()\n" );
+					// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 		try {
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println( "at the top of try block\n" );
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 			log.log("Logging in...");
 			HttpGet get = new HttpGet(baseURL + C.URL_HOME);
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println( "creating the first 'get' with " + baseURL + C.URL_HOME + "\n" );
+//						for ( Header header : get.getAllHeaders() ) {
+//							System.out.println( "\t" + header.getName() + " : " + header.getValue() );
+//						}
+//						System.out.println();
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
 			response = executeGetOrPost(get);
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println( "response contents after =executeGetOrPost(get):" );
+//						for ( Header header : response.getAllHeaders() ) {
+//							System.out.println( "\t" + header.getName() + " : " + header.getValue() );
+//						}
+//						System.out.println();
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 			sessionID = HTMLParser.extractCookie(response.getAllHeaders(), C.TYPE_SESSIONID);
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println( "sessionID after =extractCookie():\n" + sessionID + "\n" );
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 			log.log("Set Session ID to: " + sessionID);
 			response.getEntity().getContent().close();
+
 			if (!this.isValid()) {
 				// if the user specified their own URL, it is probably the
 				// problem.
@@ -1236,64 +1279,177 @@ public class Connection {
 				}
 				return Status.ERROR_INTERNAL;
 			}
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println( "this.isValid(): " + this.isValid() + "\n" );
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 			// first sets username and password data into HTTP POST request
 			List<NameValuePair> params = new ArrayList<>(3);
+
 			params.add(new BasicNameValuePair("j_username", username));
 			params.add(new BasicNameValuePair("j_password", password));
 			params.add(new BasicNameValuePair("cookieexists", "false"));
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println( "params.toString() after the .add()s:\n" + params.toString() + "\n" );
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 			HttpPost post = new HttpPost(baseURL + C.URL_LOGIN);
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println( "creating the first 'post' with " + baseURL + C.URL_LOGIN + "\n" );
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 			post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						UrlEncodedFormEntity urlEncodedFormEntity = new UrlEncodedFormEntity(params, "UTF-8");
+//						post.setEntity( urlEncodedFormEntity );
+//						System.out.println( "urlEncodedFormEntity: "+convertStreamToString( urlEncodedFormEntity.getContent() )+"\n" );
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 			post = (HttpPost) setHeaders(post);
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println( "post contents after =setHeaders(post):" );
+//						for ( Header header : post.getAllHeaders() ) {
+//							System.out.println( "\t" + header.getName() + " : " + header.getValue() );
+//						}
+//						System.out.println();
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 			// Post login credentials to server
 			response = executeGetOrPost(post);
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println( "response contents after =executeGetOrPost(post):" );
+//						for ( Header header : response.getAllHeaders() ) {
+//							System.out.println( "\t" + header.getName() + " : " + header.getValue() );
+//						}
+//						System.out.println();
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+			// -- fix -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+			// instead of trying to assign to sessionID after the second GET request, do it here, using the response
+			// from the POST request
+			sessionID = HTMLParser.extractCookie(response.getAllHeaders(), C.TYPE_SESSIONID);
+			// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 			response.getEntity().getContent().close();
 
 			// On success, starexec will try to redirect, but we don't want that
 			// here
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, false);
-			get = new HttpGet(baseURL + C.URL_HOME);
-			get = (HttpGet) setHeaders(get);
-			response = executeGetOrPost(get);
 
-			sessionID = HTMLParser.extractCookie(response.getAllHeaders(), C.TYPE_SESSIONID);
+			get = new HttpGet(baseURL + C.URL_HOME);
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println( "creating second 'get' with " + baseURL + C.URL_HOME + "\n" );
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+			get = (HttpGet) setHeaders(get);
+
+			response = executeGetOrPost(get);
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println( "response contents after =executeGetOrPost(get):" );
+//						for ( Header header : response.getAllHeaders() ) {
+//							System.out.println( "\t" + header.getName() + " : " + header.getValue() );
+//						}
+//						System.out.println();
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 			log.log("Set Session ID to: " + sessionID);
 
 			client.getParams().setParameter(ClientPNames.HANDLE_REDIRECTS, true);
 
 			safeCloseResponse(response);
 
-			get = new HttpGet(baseURL + C.URL_LOGGED_IN);
+			get = new HttpGet(baseURL + C.URL_LOGGED_IN); // first get to have C.URL_LOGGED_IN
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println( "creating third 'get' with " + baseURL + C.URL_LOGGED_IN + "\n" );
+//						System.out.println( "get contents after =new HttpGet():" );
+//						for ( Header header : get.getAllHeaders() ) {
+//							System.out.println( header.getName() + " : " + header.getValue() );
+//						}
+//						System.out.println();
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 			get = (HttpGet) setHeaders(get);
+
 			response = executeGetOrPost(get);
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println( "response contents after =executeGetOrPost(get):" );
+//						for ( Header header : response.getAllHeaders() ) {
+//							System.out.println( "\t" + header.getName() + " : " + header.getValue() );
+//						}
+//						System.out.println();
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+			// previous location of sessionID assignment (before 5/25/20 ish)
+//			sessionID = HTMLParser.extractCookie(response.getAllHeaders(), C.TYPE_SESSIONID);
+
 			boolean loggedIn = convertStreamToString(response.getEntity().getContent()).equals("true");
+						// -- debug- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						String tmpString = convertStreamToString(response.getEntity().getContent());
+//						boolean loggedIn = tmpString.equals( "true" );
+//						System.out.println( "entity as string: " + tmpString );
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 			if (loggedIn) {
 				log.log("Service says we're logged in.");
 			} else {
 				log.log("Service says we're not logged in.");
 			}
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println( "sessionID: " + sessionID );
+//						System.out.println( "loggedIn: " + loggedIn + "\n" );
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+
+
 
 			// this means that the server did not give us a new session for the
 			// login
 			if (sessionID == null || !loggedIn) {
+							// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//							System.out.println( "(sessionID == null || !loggedIn): " + true + "\n" );
+							// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 				log.log("Returning bad credentials message.");
+							// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//							System.out.println("in catch block; returning Status.ERROR_BAD_CREDENTIALS\n");
+							// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 				return Status.ERROR_BAD_CREDENTIALS;
 			}
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println("returning 0\n");
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 			return 0;
 
 		} catch (IllegalStateException e) {
 			log.log("Caught IllegalStateException: " + Util.getStackTrace(e));
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println("in catch block; returning Status.ERROR_BAD_URL\n");
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 			return Status.ERROR_BAD_URL;
 
 		} catch (Exception e) {
 			log.log("Caught Exception: " + Util.getStackTrace(e));
 			setLastError(e.getMessage() + ": " + Util.getStackTrace(e));
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println("in catch block; returning Status.ERROR_INTERNAL_EXCEPTION");
+//						System.out.println( e.getMessage() + "\n" );
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 			return Status.ERROR_INTERNAL_EXCEPTION;
 		} finally {
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println("at the top of finally block\n");
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 			safeCloseResponse(response);
+						// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+//						System.out.println( "response.toString() after safeCloseResponse(response):\n" + response.toString() + "\n" );
+//						System.out.println("-- END --");
+						// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 		}
 
 	}
