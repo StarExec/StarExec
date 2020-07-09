@@ -256,5 +256,76 @@
 		<c:if test="${rerun}">
 			<button id="rerunPair">rerun pair</button>
 		</c:if>
+
+		<c:if test="${pair.status.getStatus() == 'complete'}">
+			<script>
+
+				function findProof(output){
+					let lines = output.split("\n");
+					lines = lines.map(l => l.split("\t")[1]);
+					window.lines = lines;
+
+					let hasProof = false;
+					let start = -1;
+					let end = -1;
+					for(let [i,line] of lines.entries()){
+						if(line === undefined)
+							continue;
+						if (line.includes("SZS status Theorem") || line.includes("SZS status Unsatisfiable"))
+							hasProof = true;
+						else if (line.includes("SZS output start"))
+							start = i+1;
+						else if (line.includes("SZS output end"))
+							end = i;
+					}
+
+					if(hasProof){
+						lines = lines.splice(start, end-start);
+						return lines.join("\n");
+					}
+					else{
+						return null;
+					}
+				}
+
+				function submitProofToIDV(proof) {
+					let form = document.createElement("form");
+					form.id = "form"
+					form.method = "POST"
+					form.enctype = "multipart/form-data"
+					form.action = "http://tptp.org/idv/idv"
+
+					let proofInput = document.createElement("textarea");
+					proofInput.value = proof
+					proofInput.name = "proof"
+					proofInput.form = "form"
+
+					let button = document.createElement("input");
+					button.type = "submit"
+
+					form.appendChild(proofInput)
+					form.appendChild(button)
+					document.body.appendChild(form);
+					form.submit();
+				}
+
+				let outputPath = "${starexecRoot}/services/jobs/pairs/${pair.id}/stdout/1?limit=-1";
+				fetch(outputPath)
+					.then(response => response.text())
+					.then(function(output){
+						window.proof = findProof(output);
+						if(window.proof !== null){
+							let idvButton = document.createElement("button");
+							idvButton.id = "idvButton";
+							idvButton.innerText = "visualize proof with IDV";
+							idvButton.addEventListener("click", () => window.submitProofToIDV(window.proof));
+							document.querySelector("#fieldActions > .expdContainer").appendChild(idvButton);
+							
+							$("#idvButton").button({icons: {primary: "ui-icon-lightbulb-1-e"}});
+						}
+					})
+			</script>
+		</c:if>
+
 	</fieldset>
 </star:template>
