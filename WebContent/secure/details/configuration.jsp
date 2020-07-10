@@ -19,7 +19,7 @@
 		} else {
 			response.sendError(
 					HttpServletResponse.SC_NOT_FOUND,
-					"the configuration does not exist or is restricted"
+					"This configuration cannot be accessed because you do not have permission to view it, because it has been deleted, or because it does not exist yet."
 			);
 			return;
 		}
@@ -29,7 +29,7 @@
 			log.error("Cannot find solver", "configId: " + configId + "\tuserId: " + userId);
 			response.sendError(
 					HttpServletResponse.SC_NOT_FOUND,
-					"the solver does not exist or is restricted"
+					"This solver cannot be accessed because you do not have permission to view it, because it has been deleted, or because it does not exist yet."
 			);
 			return;
 		}

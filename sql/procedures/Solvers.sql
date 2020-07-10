@@ -138,7 +138,8 @@ CREATE PROCEDURE AddConfiguration(IN _solverId INT, IN _name VARCHAR(128), IN _d
 DROP PROCEDURE IF EXISTS DeleteConfigurationById //
 CREATE PROCEDURE DeleteConfigurationById(IN _configId INT)
 	BEGIN
-		DELETE FROM configurations
+--        DELETE FROM configurations -- no longer deleting rows from configurations due to GHI#269
+        UPDATE configurations SET deleted = 1
 		WHERE id = _configId;
 	END //
 
@@ -175,7 +176,8 @@ CREATE PROCEDURE GetConfiguration(IN _id INT)
 	BEGIN
 		SELECT *
 		FROM configurations
-		WHERE id = _id;
+--		WHERE id = _id; -- need to ensure config has not been deleted
+        WHERE id = _id AND deleted = 0;
 	END //
 
 DROP PROCEDURE IF EXISTS GetAllSolversInJob //
@@ -213,7 +215,8 @@ CREATE PROCEDURE GetConfigsForSolver(IN _id INT)
 	BEGIN
 		SELECT *
 		FROM configurations
-		WHERE solver_id = _id;
+--		WHERE solver_id = _id; -- need to ensure config has not been deleted
+        WHERE solver_id = _id AND deleted = 0;
 	END //
 
 
@@ -235,7 +238,8 @@ CREATE PROCEDURE GetSolverIdByConfigId(IN _id INT)
 	BEGIN
 		SELECT solver_id AS id
 		FROM configurations
-		WHERE id=_id;
+--		WHERE id=_id; -- need to ensure config has not been deleted
+        WHERE id=_id AND deleted = 0;
 	END //
 
 -- Retrieves the solver with the given id
@@ -486,7 +490,8 @@ CREATE PROCEDURE GetMaxConfigTimestamp(IN _solverId INT)
 	BEGIN
 		SELECT MAX(updated) AS recent
 		FROM configurations
-		WHERE configurations.solver_id=_solverId;
+--		WHERE configurations.solver_id=_solverId; -- need to ensure config has not been deleted
+        WHERE configurations.solver_id=_solverId AND configurations.deleted = 0;
 	END //
 
 -- Gets the ids of every orphaned solver a user owns (orphaned meaning the solver is in no spaces
@@ -534,7 +539,7 @@ CREATE PROCEDURE SetSolverPath(IN _solverId INT, IN _path TEXT)
 DROP PROCEDURE IF EXISTS DeleteBuildConfig //
 CREATE PROCEDURE DeleteBuildConfig(IN _solverId INT)
     BEGIN
-        DELETE FROM configurations
+        DELETE FROM configurations -- dummy configs are deleted but not other configs
         WHERE solver_id=_solverId AND name="starexec_build";
     END //
 
