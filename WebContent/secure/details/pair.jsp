@@ -309,19 +309,61 @@
 					form.submit();
 				}
 
+				function submitProofToGDV(proof){
+					console.log(proof);
+
+					let form = document.createElement("form");
+					form.id = "form"
+					form.method = "POST"
+					form.enctype = "multipart/form-data"
+					form.action = "http://www.tptp.org/cgi-bin/SystemOnTPTPFormReply"
+
+					
+					let proofInput = document.createElement("textarea");
+					proofInput.name = "FORMULAEProblem"
+					proofInput.value = proof
+					proofInput.innerHTML = proof;
+					proofInput.form = "form"
+
+					let GDVInputs = `
+						<input type="radio" name="ProblemSource" value="FORMULAE" checked>
+						<input type="radio" name="QuietFlag" value="-q01" checked>
+						<input type="checkbox" name="System___GDV---0.0" value="GDV---0.0" checked>
+						<input type="text" name="TimeLimit___GDV---0.0" tabindex="20" value="300" size="3" maxlength="3" />
+						<input type="text" name="Transform___GDV---0.0" tabindex="20" value="fofify:!" size="20" />
+						<input type="text" name="Format___GDV---0.0" tabindex="20" value="tptp:raw" size="20" />
+						<input type="text" name="Command___GDV---0.0" tabindex="20" value="run_GDV %s" size="20" />
+						<input id="GDVSubmitButton" type="submit" name="SubmitButton" value="ProcessSolution" form="form">
+					`;
+
+					form.appendChild(proofInput);
+					form.innerHTML += GDVInputs;
+
+					document.body.appendChild(form);
+					document.querySelector("#GDVSubmitButton").click()
+				}
+
 				let outputPath = "${starexecRoot}/services/jobs/pairs/${pair.id}/stdout/1?limit=-1";
 				fetch(outputPath)
 					.then(response => response.text())
 					.then(function(output){
 						window.proof = findProof(output);
 						if(window.proof !== null){
+
 							let idvButton = document.createElement("button");
 							idvButton.id = "idvButton";
 							idvButton.innerText = "visualize proof with IDV";
 							idvButton.addEventListener("click", () => window.submitProofToIDV(window.proof));
 							document.querySelector("#fieldActions > .expdContainer").appendChild(idvButton);
-							
 							$("#idvButton").button({icons: {primary: "ui-icon-lightbulb-1-e"}});
+
+							let gdvButton = document.createElement("button");
+							gdvButton.id = "gdvButton";
+							gdvButton.innerText = "verify proof with GDV";
+							gdvButton.addEventListener("click", () => window.submitProofToGDV(window.proof));
+							document.querySelector("#fieldActions > .expdContainer").appendChild(gdvButton);
+							$("#gdvButton").button({icons: {primary: "ui-icon-check-1-e"}});
+							
 						}
 					})
 			</script>
