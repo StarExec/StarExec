@@ -1,5 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.data.database.JobPairs, org.starexec.data.database.Jobs,org.starexec.data.database.Permissions, org.starexec.data.database.Users,org.starexec.data.security.GeneralSecurity, org.starexec.data.security.JobSecurity, org.starexec.data.to.Job, org.starexec.data.to.JobPair, org.starexec.data.to.User, org.starexec.data.to.enums.BenchmarkingFramework, org.starexec.data.to.pipelines.JoblineStage, org.starexec.logger.StarLogger, org.starexec.util.SessionUtil, java.util.Optional" %>
+        import="org.starexec.data.database.JobPairs, org.starexec.data.database.Jobs,org.starexec.data.database.Permissions, org.starexec.data.database.Users,org.starexec.data.security.GeneralSecurity, org.starexec.data.security.JobSecurity, org.starexec.data.to.Job, org.starexec.data.to.JobPair, org.starexec.data.to.User, org.starexec.data.to.enums.BenchmarkingFramework, org.starexec.data.to.pipelines.JoblineStage, org.starexec.logger.StarLogger, org.starexec.util.SessionUtil, java.util.Optional" 
+		import="org.starexec.data.to.Benchmark, java.util.ArrayList"
+		%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
@@ -45,7 +47,7 @@
 					"isRunsolver", j.getBenchmarkingFramework() ==
 							BenchmarkingFramework.RUNSOLVER);
 
-			List<BenchmarkDependency> benchDependencies = jp.getBench().getDependencies();
+			ArrayList<BenchmarkDependency> benchDependencies = jp.getBench().getDependencies();
 			ArrayList<int> benchDependencyIds = new ArrayList<int>();
 			for(BenchmarkDependency depend : benchDependencies){
 				benchDependencyIds.add(depend.getSecondaryBench().getId());
@@ -269,7 +271,7 @@
 		<c:if test="${pair.status.getStatus() == 'complete'}">
 			<script>
 				window.dependencies = "${benchDependencyIds}";
-				
+
 
 				function findProof(output){
 					let lines = output.split("\n");
