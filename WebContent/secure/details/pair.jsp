@@ -44,8 +44,16 @@
 			request.setAttribute(
 					"isRunsolver", j.getBenchmarkingFramework() ==
 							BenchmarkingFramework.RUNSOLVER);
+
+			List<BenchmarkDependency> benchDependencies = jp.getBench().getDependencies();
+			ArrayList<int> benchDependencyIds = new ArrayList<int>();
+			for(BenchmarkDependency depend : benchDependencies){
+				benchDependencyIds.add(depend.getSecondaryBench().getId());
+			}
+
 			request.setAttribute("moreThanOneStage", moreThanOneStage);
 			request.setAttribute("pair", jp);
+			request.setAttribute("benchDependencyIds", benchDependencyIds);
 			request.setAttribute("job", j);
 			request.setAttribute("usr", u);
 			request.setAttribute("log", pairlog);
@@ -257,8 +265,10 @@
 			<button id="rerunPair">rerun pair</button>
 		</c:if>
 
+		<!-- IDV and GDV stuff from here down -->
 		<c:if test="${pair.status.getStatus() == 'complete'}">
 			<script>
+				window.dependencies = "${benchDependencyIds}";
 
 				function findProof(output){
 					let lines = output.split("\n");
