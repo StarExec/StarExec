@@ -47,7 +47,8 @@
 					"isRunsolver", j.getBenchmarkingFramework() ==
 							BenchmarkingFramework.RUNSOLVER);
 
-			List<BenchmarkDependency> benchDependencies = jp.getBench().getDependencies();
+			// List<BenchmarkDependency> benchDependencies = jp.getBench().getDependencies();
+			List<BenchmarkDependency> benchDependencies = Benchmarks.getBenchDependencies(jp.getBench().getId());
 			ArrayList<Integer> benchDependencyIds = new ArrayList<Integer>();
 			for(BenchmarkDependency depend : benchDependencies){
 				benchDependencyIds.add(depend.getSecondaryBench().getId());
