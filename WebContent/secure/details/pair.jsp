@@ -270,7 +270,9 @@
 		<!-- IDV and GDV stuff from here down -->
 		<c:if test="${pair.status.getStatus() == 'complete'}">
 			<script>
+				window.jp = "${jp}";
 				window.benchmark = "${jp.getBench()}";
+				window.benchId = "${jp.getBench().getId()}";
 				window.dependencies = "${benchDependencyIds}";
 
 
