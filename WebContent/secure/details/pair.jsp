@@ -269,6 +269,7 @@
 		<c:if test="${pair.status.getStatus() == 'complete'}">
 			<script>
 				window.dependencies = "${benchDependencyIds}";
+				
 
 				function findProof(output){
 					let lines = output.split("\n");
