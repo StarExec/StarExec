@@ -48,7 +48,7 @@
 							BenchmarkingFramework.RUNSOLVER);
 
 			List<BenchmarkDependency> benchDependencies = jp.getBench().getDependencies();
-			ArrayList<int> benchDependencyIds = new ArrayList<int>();
+			ArrayList<Integer> benchDependencyIds = new ArrayList<Integer>();
 			for(BenchmarkDependency depend : benchDependencies){
 				benchDependencyIds.add(depend.getSecondaryBench().getId());
 			}
