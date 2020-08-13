@@ -400,21 +400,21 @@
 					.then(responses => Promise.all(responses.map(r => r.text())))
 					.then(function(responses){
 						window.benchmarkContents = responses;
+						// Remove include lines now that I've imported all benchmarks dependencies.
+						// This will not be good if dependencies can have dependencies...if so, fix the JSP stuff above.
+						benchmarkContents = benchmarkContents.map(function(text){
+							let lines = text.split("\n");
+							let regex = /\s*include\(.+\)\./
+							lines = lines.map(function(l){
+								while(match = l.match(regex)){
+									l = l.substr(0,match.index) + l.substr(match.index + match[0].length)
+								}
+								return l;
+							})
+							return lines.join("\n");
+						})
 					})
 
-				// Remove include lines now that I've imported all benchmarks dependencies.
-				// This will not be good if dependencies can have dependencies...if so, fix the JSP stuff above.
-				benchmarkContents = benchmarkContents.map(function(text){
-					let lines = text.split("\n");
-					let regex = /\s*include\(.+\)\./
-					lines = lines.map(function(l){
-						while(match = l.match(regex)){
-							l = l.substr(0,match.index) + l.substr(match.index + match[0].length)
-						}
-						return l;
-					})
-					return lines.join("\n");
-				})
 
 			</script>
 		</c:if>
