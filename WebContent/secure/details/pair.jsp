@@ -53,10 +53,10 @@
 			for(BenchmarkDependency depend : benchDependencies){
 				benchDependencyIds.add(depend.getSecondaryBench().getId());
 			}
+			request.setAttribute("benchDependencyIds", benchDependencyIds);
 
 			request.setAttribute("moreThanOneStage", moreThanOneStage);
 			request.setAttribute("pair", jp);
-			request.setAttribute("benchDependencyIds", benchDependencyIds);
 			request.setAttribute("job", j);
 			request.setAttribute("usr", u);
 			request.setAttribute("log", pairlog);
@@ -271,11 +271,7 @@
 		<!-- IDV and GDV stuff from here down -->
 		<c:if test="${pair.status.getStatus() == 'complete'}">
 			<script>
-				window.jp = "${jp}";
-				window.benchmark = "${jp.getBench()}";
-				window.benchId = "${jp.getBench().getId()}";
-				window.dependencies = "${benchDependencyIds}";
-
+				window.benchmarkIds = JSON.parse("${benchDependencyIds}") + [${pair.bench.id}];
 
 				function findProof(output){
 					let lines = output.split("\n");
@@ -360,6 +356,7 @@
 					document.querySelector("#GDVSubmitButton").click()
 				}
 
+				// Fetch the complete output from this job pair.
 				let outputPath = "${starexecRoot}/services/jobs/pairs/${pair.id}/stdout/1?limit=-1";
 				fetch(outputPath)
 					.then(response => response.text())
@@ -383,6 +380,16 @@
 							
 						}
 					})
+
+
+
+				// Fetch the complete TPTP source from the benchmarks.
+				// Promise.all(
+				// 	window.benchmarkIds.map(function(id){
+						
+				// 	})
+				// )
+
 			</script>
 		</c:if>
 
