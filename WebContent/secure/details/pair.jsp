@@ -385,7 +385,7 @@
 
 				// Fetch the complete TPTP source from the benchmarks.
 				let benchmarkPromises = window.benchmarkIds.map(function(id){
-					fetch(`${starexecRoot}/services/benchmarks/\${id}/contents?limit=-1`);
+					return fetch(`${starexecRoot}/services/benchmarks/\${id}/contents?limit=-1`);
 				})
 
 				Promise.all(benchmarkPromises)
