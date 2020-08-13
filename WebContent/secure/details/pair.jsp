@@ -323,20 +323,28 @@
 				}
 
 				function submitProofToGDV(proof){
-					console.log(proof);
+
+					textContent = [
+						"% SZS output start ListOfFormulae",
+						benchmarkContents.join("\n\n"),
+						"% SZS output end ListOfFormulae",
+						"% SZS output start Proof",
+						proof,
+						"% SZS output end Proof"
+					].join("\n\n")
 
 					let form = document.createElement("form");
-					form.id = "form"
-					form.method = "POST"
-					form.enctype = "multipart/form-data"
-					form.action = "http://www.tptp.org/cgi-bin/SystemOnTPTPFormReply"
+					form.id = "form";
+					form.method = "POST";
+					form.enctype = "multipart/form-data";
+					form.action = "http://www.tptp.org/cgi-bin/SystemOnTPTPFormReply";
 
 					
-					let proofInput = document.createElement("textarea");
-					proofInput.name = "FORMULAEProblem"
-					proofInput.value = proof
-					proofInput.innerHTML = proof;
-					proofInput.form = "form"
+					let textContentInput = document.createElement("textarea");
+					textContentInput.name = "FORMULAEProblem";
+					textContentInput.value = textContent;
+					textContentInput.innerHTML = textContent;
+					textContentInput.form = "form";
 
 					let GDVInputs = `
 						<input type="radio" name="ProblemSource" value="FORMULAE" checked>
@@ -349,7 +357,7 @@
 						<input id="GDVSubmitButton" type="submit" name="SubmitButton" value="ProcessSolution" form="form">
 					`;
 
-					form.appendChild(proofInput);
+					form.appendChild(textContentInput);
 					form.innerHTML += GDVInputs;
 
 					document.body.appendChild(form);
@@ -394,6 +402,19 @@
 						window.benchmarkContents = responses;
 					})
 
+				// Remove include lines now that I've imported all benchmarks dependencies.
+				// This will not be good if dependencies can have dependencies...if so, fix the JSP stuff above.
+				benchmarkContents = benchmarkContents.map(function(text){
+					let lines = text.split("\n");
+					let regex = /\s*include\(.+\)\./
+					lines = lines.map(function(l){
+						while(match = l.match(regex)){
+							l = l.substr(0,match.index) + l.substr(match.index + match[0].length)
+						}
+						return l;
+					})
+					return lines.join("\n");
+				})
 
 			</script>
 		</c:if>
