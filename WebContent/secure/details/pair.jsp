@@ -271,7 +271,7 @@
 		<!-- IDV and GDV stuff from here down -->
 		<c:if test="${pair.status.getStatus() == 'complete'}">
 			<script>
-				window.benchmarkIds = JSON.parse("${benchDependencyIds}") + [${pair.bench.id}];
+				window.benchmarkIds = JSON.parse("${benchDependencyIds}").concat([${pair.bench.id}]);
 
 				function findProof(output){
 					let lines = output.split("\n");
