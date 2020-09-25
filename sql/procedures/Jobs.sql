@@ -146,6 +146,7 @@ CREATE PROCEDURE AddJobStats(IN _jobSpaceId INT, IN _configId INT, IN _complete 
 
 -- Gets the cached job results for the hierarchy rooted at the given job space
 -- Author: Eric Burns
+-- This is the root query of the "solver summary" table displayed in the job space view; Alexander Brown 9/7/2020
 
 DROP PROCEDURE IF EXISTS GetJobStatsInJobSpace //
 CREATE PROCEDURE GetJobStatsInJobSpace(IN _jobSpaceId INT, IN _jobId INT, IN _stageNumber INT)
@@ -160,8 +161,28 @@ CREATE PROCEDURE GetJobStatsInJobSpace(IN _jobSpaceId INT, IN _jobId INT, IN _st
 			LEFT JOIN anonymous_primitive_names AS anonymous_config_names
 				ON config.id=anonymous_config_names.primitive_id AND anonymous_config_names.primitive_type="config"
 						AND anonymous_config_names.job_id=_jobId
-		WHERE job_stats.job_space_id = _jobSpaceId AND stage_number=_stageNumber;
+		WHERE job_stats.job_space_id = _jobSpaceId AND stage_number=_stageNumber AND config.deleted = 0;
+		-- configs are no longer removed from the table, so only non-deleted ones should be selected
 	END //
+
+-- this version includes deleted configs; used to construct the solver summary table in the job space view
+-- Alexander Brown, 9/20
+DROP PROCEDURE IF EXISTS GetJobStatsInJobSpaceIncludeDeletedConfigs //
+CREATE PROCEDURE GetJobStatsInJobSpaceIncludeDeletedConfigs(IN _jobSpaceId INT, IN _jobId INT, IN _stageNumber INT)
+BEGIN
+SELECT *
+FROM job_stats
+JOIN configurations AS config ON config.id=job_stats.config_id
+JOIN solvers AS solver ON solver.id=config.solver_id
+LEFT JOIN anonymous_primitive_names AS anonymous_solver_names
+	ON solver.id=anonymous_solver_names.primitive_id AND anonymous_solver_names.primitive_type="solver"
+AND anonymous_solver_names.job_id=_jobId
+LEFT JOIN anonymous_primitive_names AS anonymous_config_names
+	ON config.id=anonymous_config_names.primitive_id AND anonymous_config_names.primitive_type="config"
+AND anonymous_config_names.job_id=_jobId
+WHERE job_stats.job_space_id = _jobSpaceId AND stage_number=_stageNumber;
+END //
+
 -- Clears the entire cache of job stats
 -- Author: Eric Burns
 DROP PROCEDURE IF EXISTS RemoveAllJobStats //
@@ -293,6 +314,8 @@ CREATE PROCEDURE GetJobPairsPrimaryStageByJob(IN _id INT)
 									LEFT JOIN	job_spaces 		AS  jobSpace ON jobSpace.id=job_pairs.job_space_id
 
 		WHERE job_pairs.job_id=_id AND jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data
+		AND config.deleted = 0
+		-- configs are no longer removed from the table, so only non-deleted ones should be selected
 		ORDER BY job_pairs.end_time DESC;
 	END //
 
@@ -455,9 +478,10 @@ CREATE PROCEDURE GetAllJobPairsByJob(IN _id INT)
 						JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
 						LEFT JOIN	nodes 			AS node 	ON  job_pairs.node_id=node.id
-
-					   LEFT JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
-		WHERE job_pairs.job_id=_id AND job_pairs.primary_jobpair_data=jobpair_stage_data.stage_number;
+					    LEFT JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
+		WHERE job_pairs.job_id=_id AND job_pairs.primary_jobpair_data=jobpair_stage_data.stage_number
+		AND config.deleted = 0;
+		-- configs are no longer removed from the table, so only non-deleted ones should be selected
 	END //
 
 -- Retrieves basic info about job pairs for the given job id for pairs completed after _completionId
@@ -473,9 +497,10 @@ CREATE PROCEDURE GetNewCompletedJobPairsByJob(IN _id INT, IN _completionId INT)
 						JOIN	benchmarks		AS	bench	ON	job_pairs.bench_id = bench.id
 						JOIN	solvers			AS	solver	ON	config.solver_id = solver.id
 						LEFT JOIN	nodes 			AS node 	ON  job_pairs.node_id=node.id
-
-					   LEFT JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
+					    LEFT JOIN job_spaces AS jobSpace ON job_pairs.job_space_id=jobSpace.id
 		WHERE job_pairs.job_id=_id AND complete.completion_id>_completionId AND job_pairs.primary_jobpair_data=jobpair_stage_data.stage_number
+		AND config.deleted = 0
+		-- configs are no longer removed from the table, so only non-deleted ones should be selected
 		ORDER BY job_pairs.end_time DESC;
 	END //
 

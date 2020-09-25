@@ -48,7 +48,7 @@
 		} else {
 			response.sendError(
 					HttpServletResponse.SC_NOT_FOUND,
-					"the configuration does not exist or is restricted /EDIT/"
+					"the configuration does not exist or is restricted"
 			);
 			return;
 		}

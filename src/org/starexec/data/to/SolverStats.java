@@ -22,6 +22,7 @@ public class SolverStats extends Identifiable {
 	@Expose private double cpuTime = 0;
 	@Expose private int stageNumber = 0;
 	@Expose private int jobSpaceId;
+	@Expose private int config_deleted = 0; // Alexander Brown, 9/2/20
 
 	public SolverStats() {
 		this.solver = new Solver();
@@ -179,4 +180,8 @@ public class SolverStats extends Identifiable {
 	public String getCorrectOverCompleted() {
 		return getCorrectJobPairs() + "/" + getCompleteJobPairs();
 	}
+
+	public int getConfigDeleted() { return config_deleted; }
+
+	public void setConfigDeleted( int status ) { config_deleted = status; }
 }

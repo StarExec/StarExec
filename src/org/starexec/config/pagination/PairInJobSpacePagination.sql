@@ -18,10 +18,9 @@
 						jobpair_stage_data.cpu AS cpu,
 						anonymous_bench_names.anonymous_name AS anon_bench_name,
 						anonymous_solver_names.anonymous_name AS anon_solver_name,
-						anonymous_config_names.anonymous_name AS anon_config_name
+						anonymous_config_names.anonymous_name AS anon_config_name,
+						configurations.deleted AS config_deleted
 
-						
-						
 				FROM	job_pairs	
 				LEFT JOIN job_pair_completion ON job_pairs.id=job_pair_completion.pair_id
 				JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
@@ -34,6 +33,8 @@
 					bench_id=anonymous_bench_names.primitive_id AND anonymous_bench_names.primitive_type="bench"
 				LEFT JOIN anonymous_primitive_names AS anonymous_config_names ON
 					jobpair_stage_data.config_id=anonymous_config_names.primitive_id AND anonymous_config_names.primitive_type="config"
+                JOIN configurations ON jobpair_stage_data.config_id=configurations.id
+
 
 				WHERE 	jobpair_stage_data.job_space_id= :jobSpaceId AND 
 				(( :stageNumber = 0 AND jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data) OR jobpair_stage_data.stage_number= :stageNumber)

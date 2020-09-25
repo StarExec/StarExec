@@ -271,8 +271,7 @@
 				navigate to a subspace with fewer pairs.</p>
 		</fieldset>
 		<fieldset id="pairTblField">
-			<legend>runtime job pairs</legend>
-            <p>These job pairs reflect runtime values and as such may not display the current values of the solvers and configurations presented.</p>
+			<legend>job pairs</legend>
 			<fieldset  style="width:95%" id="pairActions" class="tableActions">
 				<button class="changeTime">Use CPU Time</button>
 				<c:if test="${!isLocalJobPage}">

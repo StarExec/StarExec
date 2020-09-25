@@ -100,7 +100,7 @@
 							</a>
 						</td>
 						<td>
-							<a href="${starexecRoot}/secure/details/configuration.jsp?id=${row.configId}">
+							<a href="${starexecRoot}/secure/details/configDeleted.jsp?id=${row.configId}">
 									${row.configName}
 							</a>
 						</td>
