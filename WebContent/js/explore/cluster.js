@@ -4,6 +4,11 @@ var selectedId = 0;  // ID of the selected primitive
 
 // When the document is ready to be executed on
 $(document).ready(function() {
+	window.setInterval(function(){
+		d = new Date();
+		$("#queuegraph").attr("src", starexecRoot + "secure/clustergraphs/queuegraph.png?" + d.getTime());
+	}, 5000);
+
 	initDataTables();
 
 	//Set up row click to send to pair details page
@@ -295,7 +300,7 @@ function getDetails(id, type, parent_node) {
 	}
 	loadQueueLoads();
 
-	$('#loader').show();
+	$('#loader').show();	
 
 	jobPairTable.fnDraw();
 	$.get(

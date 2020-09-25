@@ -131,7 +131,7 @@ public class Download extends HttpServlet {
 		}
 
 		log.debug(methodName, "Outputting zip of processors.");
-		ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), "processors");
+		ArchiveUtil.createAndOutputZip(files, response.getOutputStream(), "processors", true /* uniquify names */);
 		return true;
 	}
 

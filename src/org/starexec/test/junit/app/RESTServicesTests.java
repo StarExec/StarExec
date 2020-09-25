@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletRequest;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-
+/*
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({RESTHelpers.class, Util.class})
 public class RESTServicesTests {
@@ -35,8 +35,8 @@ public class RESTServicesTests {
 	public void initialize() {
 		PowerMockito.mockStatic(RESTHelpers.class);
 		PowerMockito.mockStatic(Util.class);
-	}
-
+	}*/
+/*
     @Test
     public void copyToStarDevFailValidationTest() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
@@ -44,7 +44,8 @@ public class RESTServicesTests {
 		given(RESTHelpers.validateCopyToStardev(request, benchType)).willReturn(failedValidation);
 		assertEquals("Should fail validation.", services.copyToStarDev(instance, benchType, 10, request), gson.toJson(failedValidation));
     }
-
+		*/
+/*
     @Test
     public void copyToStarDevFailLoginTest() {
 		HttpServletRequest request = mock(HttpServletRequest.class);
@@ -75,4 +76,4 @@ public class RESTServicesTests {
 
 		assertEquals("Should copy successfully.", services.copyToStarDev(instance, benchType, 10, request), gson.toJson(new ValidatorStatusCode(true)));
 	}
-}
+}*/

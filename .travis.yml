@@ -1,4 +1,4 @@
-jdk: oraclejdk8
+language: java
 rvm: 2.4
 
 addons:

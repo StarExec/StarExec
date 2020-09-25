@@ -492,7 +492,7 @@ public class Benchmarks {
 					Uploads.setBenchmarkErrorMessage(
 							statusId,
 							"Benchmark dependencies failed to validate. Please check your processor output"
-					);	
+					);
 				return null;
 				}
 			}
@@ -566,17 +566,14 @@ public class Benchmarks {
 		Connection con = null;
 		try {
 			con = Common.getConnection();
-			Common.beginTransaction(con);
 
 			for (int benchId : benchIds) {
 				associate(benchId, spaceId, con);
 			}
 
-			Common.endTransaction(con);
 			return true;
 		} catch (Exception e) {
-			log.error("associate", "Rolling back transaction", e);
-			Common.doRollback(con);
+		    log.error("associate: " + e.toString());
 		} finally {
 			Common.safeClose(con);
 		}
@@ -896,6 +893,8 @@ public class Benchmarks {
 	 * Creates a space named after the directory and finds any benchmarks within the directory. Then the process
 	 * recursively adds any subspaces found (other directories) until all directories under the original one are
 	 * traversed. Also extracts the description file(if there is one) and sets it as the description for the space.
+	 * *New* deletes .git directory (if present) and does not add .gitignore .gitattributes .gitmodules and
+	 * README.md files as benchmarks.
 	 *
 	 * @param directory The directory to extract data from
 	 * @param typeId The bench type id to set for all the found benchmarks
@@ -906,13 +905,13 @@ public class Benchmarks {
 	 * @return A single space containing all subspaces and benchmarks based on the file structure of the given
 	 * directory.
 	 * @throws Exception Any exception with the description file, with an error message contained
-	 * @author Wyatt Kaiser
+	 * @author Wyatt Kaiser, Steve Fiolic
 	 */
 	public static Space extractSpacesAndBenchmarks(
 			File directory, int typeId, int userId, boolean downloadable, Permission perm, Integer statusId
 	) throws IOException, StarExecException {
 		// Create a space for the current directory and set it's name
-		log.info("Extracting Spaces and Benchmarks for " + userId);
+            log.info("Extracting Spaces and Benchmarks for " + userId + " in " + directory.getName());
 		Space space = new Space();
 		space.setName(directory.getName());
 		space.setPermission(perm);
@@ -930,18 +929,30 @@ public class Benchmarks {
 		Timer spaceTimer = new Timer();
 		Timer benchTimer = new Timer();
 		for (File f : directory.listFiles()) {
+
 			// If it's a sub-directory
 			if (f.isDirectory()) {
-				// Recursively extract spaces/benchmarks from that directory
-				space.getSubspaces()
-				     .add(Benchmarks.extractSpacesAndBenchmarks(f, typeId, userId, downloadable, perm, statusId));
-				spaceCounter++;
-				if (spaceTimer.getTime() > R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
-					Uploads.incrementTotalSpaces(statusId, spaceCounter);//for upload status page
-					spaceCounter = 0;
-					spaceTimer.reset();
-				}
-			} else if (!f.getName().equals(R.BENCHMARK_DESC_PATH)) { //Not a description file
+        if (f.getName().equals(".git")){
+          FileUtils.deleteDirectory(f);
+        }
+        else{
+  				// Recursively extract spaces/benchmarks from that directory
+  				space.getSubspaces()
+  				     .add(Benchmarks.extractSpacesAndBenchmarks(f, typeId, userId, downloadable, perm, statusId));
+  				spaceCounter++;
+  				if (spaceTimer.getTime() > R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
+  					Uploads.incrementTotalSpaces(statusId, spaceCounter);//for upload status page
+  					spaceCounter = 0;
+  					spaceTimer.reset();
+  				}
+        }
+			}
+
+      else if ((!f.getName().equals(R.BENCHMARK_DESC_PATH)) && (!f.getName().equals("README.md")) &&
+              (!f.getName().equals(".gitattributes")) && (!f.getName().equals(".gitignore")) &&
+							(!f.getName().equals(".gitmodules")) && (!f.getName().equals(".git")))
+
+       { //Not a description file, readme, .gitattributes, .gitmodules, and .gitignore
 
 				if (Validator.isValidBenchName(f.getName())) {
 					space.addBenchmark(constructBenchmark(f, typeId, downloadable, userId));
@@ -951,7 +962,8 @@ public class Benchmarks {
 						benchCounter = 0;
 						benchTimer.reset();
 					}
-				} else {
+				}
+        else {
 					String msg = "\"" + f.getName() + "\" is not accepted as a legal benchmark name.";
 					Uploads.setBenchmarkErrorMessage(statusId, msg);
 					throw new StarExecException(msg);

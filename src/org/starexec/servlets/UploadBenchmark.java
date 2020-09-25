@@ -40,7 +40,8 @@ public class UploadBenchmark extends HttpServlet {
 	private static final String BENCHMARK_TYPE = "benchType";
 	private static final String BENCH_DOWNLOADABLE = "download";
 	private static final String FILE_URL = "url";
-	private static final String FILE_LOC = "localOrURL";
+	private static final String FILE_GIT = "git";
+	private static final String FILE_LOC = "localOrURLOrGit";
 	private static final String addSolver = "addSolver";
 	private static final String addBench = "addBench";
 	private static final String addUser = "addUser";
@@ -87,7 +88,6 @@ public class UploadBenchmark extends HttpServlet {
 				this.handleUploadRequest(form, userId, statusId);
 				//go to upload status page
 				response.addCookie(new Cookie("New_ID", String.valueOf(statusId)));
-
 				response.sendRedirect(Util.docRoot("secure/details/uploadStatus.jsp?id=" + statusId));
 			} else {
 				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
@@ -206,7 +206,7 @@ public class UploadBenchmark extends HttpServlet {
 	 * @param hasDependencies Whether the benchmarks have dependencies
 	 * @param linked
 	 * @param depRootSpaceId The root space for dependencies for these benchmarks
-	 * @return A list of IDs of the newly created benchmarks
+         * @return list of ids of benchmarks added, if uploadMethod is "dump"; otherwise empty list
 	 * @throws Exception
 	 */
 	public static List<Integer> addBenchmarksFromArchive(
@@ -238,6 +238,7 @@ public class UploadBenchmark extends HttpServlet {
 
 		// Copy the benchmark zip to the server from the client
 
+		List<Integer> ids = new ArrayList<Integer>();
 		log.info("upload complete - now extracting");
 		Uploads.benchmarkFileUploadComplete(statusId);
 		// Extract the downloaded benchmark zip file
@@ -245,7 +246,7 @@ public class UploadBenchmark extends HttpServlet {
 			String message = "StarExec has failed to extract your uploaded file.";
 			Uploads.setBenchmarkErrorMessage(statusId, message);
 			log.error(message + " - status id = " + statusId + ", filepath = " + archiveFile.getAbsolutePath());
-			return null;
+			return ids;
 		}
 		log.info("Extraction Complete");
 		//update upload status
@@ -262,7 +263,7 @@ public class UploadBenchmark extends HttpServlet {
 			String message = "StarExec has failed to extract the spaces and benchmarks from the files.";
 			Uploads.setBenchmarkErrorMessage(statusId, message);
 			log.error(message + " - status id = " + statusId);
-			return null;
+			return ids;
 		}
 		result.setId(spaceId);
 
@@ -276,21 +277,111 @@ public class UploadBenchmark extends HttpServlet {
 			ValidatorStatusCode status = doSpaceNamesConflict(uniqueDir, spaceId);
 			if (!status.isSuccess()) {
 				Uploads.setBenchmarkErrorMessage(statusId, status.getMessage());
-				return null;
+				return ids;
 			}
 
-			benchmarkIds.addAll(Spaces.addWithBenchmarks(result, userId, depRootSpaceId, linked, statusId,
-			                                             hasDependencies));
+			Spaces.addWithBenchmarks(result, userId, depRootSpaceId, linked, statusId,
+			                                             hasDependencies);
 		} else if (uploadMethod.equals("dump")) {
 			List<Benchmark> benchmarks = result.getBenchmarksRecursively();
 
-			benchmarkIds.addAll(Benchmarks.processAndAdd(benchmarks, spaceId, depRootSpaceId, linked, statusId,
+			ids.addAll(Benchmarks.processAndAdd(benchmarks, spaceId, depRootSpaceId, linked, statusId,
 			                                             hasDependencies
-			));
+							 ));
 		}
 		log.info("Handle upload method complete in " + spaceId + "for user " + userId);
-		return benchmarkIds;
+                return ids;
 	}
+
+
+		/**
+		 * Adds a set of benchmarks to the database by extracting the given directory and finding the benchmarks inside of it
+		 *
+		 * @param gitSpace The directory of the git clone
+		 * @param userId The user who will own all of the new benchmarks
+		 * @param spaceId The ID of the root space for this upload (what space did the user click "upload benchmarks" in?)
+		 * @param typeId The ID of the benchmark processor that will be applied to the new benchmarks,
+		 * @param downloadable Whether each of the benchmarks should be flagged as downloadable
+		 * @param perm Permissions object representing the permissions for any new spaces created as a result of this
+		 * upload
+		 * @param uploadMethod "convert" or "dump", depending on whether to make a hierarchy or just put all benchmarks in
+		 * the root space
+		 * @param statusId The ID of the UploadStatus object for tracking this upload
+		 * @param hasDependencies Whether the benchmarks have dependencies
+		 * @param linked
+		 * @param depRootSpaceId The root space for dependencies for these benchmarks
+		 * @throws Exception
+		 */
+		public static void addBenchmarksGit(File gitSpace, int userId, int spaceId, int typeId, boolean downloadable, Permission perm,
+		String uploadMethod, int statusId, boolean hasDependencies, boolean linked, Integer depRootSpaceId)
+		throws IOException, StarExecException{
+			ArrayList<Integer> benchmarkIds = new ArrayList<>();
+
+			//get the approximate files size, larger than actual beacause the .git directory is present still
+			long fileSize = FileUtils.sizeOf(gitSpace);
+			log.debug("size of file: " + fileSize);
+			User currentUser = Users.get(userId);
+			long allowedBytes = currentUser.getDiskQuota();
+			long usedBytes = currentUser.getDiskUsage();
+
+			if (fileSize > allowedBytes - usedBytes) {
+				FileUtils.deleteDirectory(gitSpace);
+				Uploads.setBenchmarkErrorMessage(statusId,
+				                                 "The benchmark upload is too large to fit in your disk quota. The " +
+						                                 "uncompressed" +
+						                                 " size of the archive is approximately " + fileSize +
+						                                 " bytes, but you have only " + (allowedBytes - usedBytes) +
+						                                 " bytes remaining.");
+				throw new StarExecException("File too large to fit in user's disk quota");
+			}
+
+			log.info("upload complete - now extracting");
+			Uploads.benchmarkFileUploadComplete(statusId);
+			log.info("Extraction Complete");
+			//update upload status
+			//This was apart of the orignial archive process so I left the message update
+			Uploads.fileExtractComplete(statusId);
+
+
+			log.debug("has dependencies = " + hasDependencies);
+			log.debug("linked = " + linked);
+			log.debug("depRootSpaceIds = " + depRootSpaceId);
+
+			log.info("about to add benchmarks to space " + spaceId + " for user " + userId);
+			Space result = Benchmarks.extractSpacesAndBenchmarks(gitSpace, typeId, userId, downloadable, perm, statusId);
+			if (result == null) {
+				String message = "StarExec has failed to extract the spaces and benchmarks from the files.";
+				Uploads.setBenchmarkErrorMessage(statusId, message);
+				log.error(message + " - status id = " + statusId);
+				return;
+			}
+			result.setId(spaceId);
+
+			//update Status
+			Uploads.processingBegun(statusId);
+
+			if (uploadMethod.equals("convert")) {
+				log.debug("convert");
+
+				//first we test to see if any names conflict
+				ValidatorStatusCode status = doSpaceNamesConflict(gitSpace, spaceId);
+				if (!status.isSuccess()) {
+					Uploads.setBenchmarkErrorMessage(statusId, status.getMessage());
+					return;
+				}
+
+				Spaces.addWithBenchmarks(result, userId, depRootSpaceId, linked, statusId,
+		                                         hasDependencies);
+			} else if (uploadMethod.equals("dump")) {
+				List<Benchmark> benchmarks = result.getBenchmarksRecursively();
+
+				Benchmarks.processAndAdd(benchmarks, spaceId, depRootSpaceId, linked, statusId,
+				                         hasDependencies
+				);
+			}
+			log.info("Handle upload method complete in " + spaceId + "for user " + userId);
+		}
+
 
 	private void handleUploadRequest(HashMap<String, Object> form, Integer uId, Integer sId) throws Exception {
 		//First extract all data from request
@@ -305,12 +396,12 @@ public class UploadBenchmark extends HttpServlet {
 		final int depRootSpaceId = Integer.parseInt((String) form.get(DEP_ROOT_SPACE_ID));
 		final Permission perm = this.extractPermissions(form);
 		final Integer statusId = sId;
-		final String localOrUrl = (String) form.get(FILE_LOC);
+		final String localOrUrlOrGit = (String) form.get(FILE_LOC);
 
 		URL tempURL = null;
 		String tempName = null;
 		PartWrapper tempFileToUpload = null;
-		if (localOrUrl.equals("URL")) {
+		if (localOrUrlOrGit.equals("URL")) {
 			tempURL = new URL((String) form.get(FILE_URL));
 			try {
 				tempName = tempURL.toString().substring(tempURL.toString().lastIndexOf('/'));
@@ -320,10 +411,26 @@ public class UploadBenchmark extends HttpServlet {
 		} else {
 			tempFileToUpload = ((PartWrapper) form.get(BENCHMARK_FILE));
 		}
+		String tempGitUrl = null;
+		//for the git url
+		if (localOrUrlOrGit.equals("Git")) {
+			tempURL = new URL((String) form.get(FILE_GIT));
+			tempGitUrl = ((String) form.get(FILE_GIT)).trim();
+			log.debug("URL is : " + ((String) form.get(FILE_GIT)));
+			try {
+				tempName = tempURL.toString().substring(tempURL.toString().lastIndexOf('/'));
+			} catch (Exception e) {
+				tempName = tempURL.toString().replace('/', '-');
+			}
+		} else {
+			tempFileToUpload = ((PartWrapper) form.get(BENCHMARK_FILE));
+		}
+
 
 		final String name = tempName;
 		final URL url = tempURL;
 		final PartWrapper fileToUpload = tempFileToUpload;
+		final String gitUrl = tempGitUrl;
 
 		log.debug("upload status id is " + statusId);
 
@@ -348,41 +455,108 @@ public class UploadBenchmark extends HttpServlet {
 		log.info("Handling upload request for user " + userId + " in space " + spaceId);
 
 		File archive = null;
-		if (localOrUrl.equals("local")) {
+		String gitSpaceString = null;
+		if (localOrUrlOrGit.equals("local")) {
 			archive = new File(uniqueDir, FilenameUtils.getName(fileToUpload.getName()));
 			fileToUpload.write(archive);
-		} else {
+		}
+
+		//////////////////////// URL process
+		else if (localOrUrlOrGit.equals("URL")){
 			archive = new File(uniqueDir, name);
 			if (!Util.copyFileFromURLUsingProxy(url, archive)) {
 				throw new Exception("Unable to copy file from URL");
 			}
 		}
-		final File archiveFile = archive;
-		Util.threadPoolExecute(() -> {
-			try {
-				addBenchmarksFromArchive(archiveFile, userId, spaceId, typeId, downloadable, perm, uploadMethod,
-				                         statusId, hasDependencies, linked, depRootSpaceId
-				);
+		else{
+			gitSpaceString = uniqueDir.getAbsolutePath();
+			String[] gitClonecmd = new String[4];
+			String[] gitSubmodulecmd = new String[5];
 
-				BenchmarkUploadStatus status = Uploads.getBenchmarkStatus(statusId);
+			gitClonecmd[0] = "git";
+			gitClonecmd[1] = "clone";
+			gitClonecmd[2] = gitUrl;
+			gitClonecmd[3] = gitSpaceString;
+			log.debug("gitclonecmd: " + gitClonecmd[0] + " " + gitClonecmd[1] + " " + gitClonecmd[2]+" " +gitClonecmd[3]);
+			Util.executeCommand(gitClonecmd);
+			//git submodule update --init --recursive
 
-				if (status.isFileUploadComplete()) {
-					// if the benchmarks archive was successfully uploaded record that in the weekly reports table
-					Reports.addToEventOccurrencesNotRelatedToQueue("benchmark archives uploaded", 1);
-					// Record the total number of benchmarks uploaded in the weekly reports data table
-					int totalBenchmarksUploaded = status.getTotalBenchmarks();
-					Reports.addToEventOccurrencesNotRelatedToQueue("benchmarks uploaded", totalBenchmarksUploaded);
-				}
-			} catch (Exception e) {
-				String msg = "userId:      " + userId
-					+ "\nspaceId:     " + spaceId
-					+ "\narchiveFile: " + archiveFile.getName()
-				;
-				log.error("handleUploadRequest", msg, e);
-			} finally {
-				Uploads.benchmarkEverythingComplete(statusId);
+			String[] filesInUniqueDir = uniqueDir.list();
+			log.debug("Files in uniqueDir: ");
+			for (String s : filesInUniqueDir) {
+				log.debug("    " + s);
 			}
-		});
+
+			gitSubmodulecmd[0] = "git";
+			gitSubmodulecmd[1] = "submodule";
+			gitSubmodulecmd[2] = "update";
+			gitSubmodulecmd[3] = "--init";
+			gitSubmodulecmd[4] = "--recursive";
+
+			log.debug("gitSubmodulecmd: " + gitSubmodulecmd[0] + " " + gitSubmodulecmd[1] + " " + gitSubmodulecmd[2]+" "
+								+gitSubmodulecmd[3]+ " " + gitSubmodulecmd[4]);
+			Util.executeCommand(gitSubmodulecmd,null, uniqueDir);
+		}
+
+		final File archiveFile = archive;
+		final File gitSpace = uniqueDir;
+
+		if (localOrUrlOrGit.equals("Git")){
+			log.debug("String is: "+gitSpaceString);
+			log.debug("Before addBenchmakrGit: "+ gitSpace.getAbsolutePath());
+			Util.threadPoolExecute(() -> {
+				try {
+					addBenchmarksGit(gitSpace, userId, spaceId, typeId, downloadable, perm, uploadMethod,
+					                         statusId, hasDependencies, linked, depRootSpaceId
+					);
+
+					BenchmarkUploadStatus status = Uploads.getBenchmarkStatus(statusId);
+
+					if (status.isFileUploadComplete()) {
+						// if the benchmarks archive was successfully uploaded record that in the weekly reports table
+						Reports.addToEventOccurrencesNotRelatedToQueue("benchmark archives uploaded", 1);
+						// Record the total number of benchmarks uploaded in the weekly reports data table
+						int totalBenchmarksUploaded = status.getTotalBenchmarks();
+						Reports.addToEventOccurrencesNotRelatedToQueue("benchmarks uploaded", totalBenchmarksUploaded);
+					}
+				} catch (Exception e) {
+					String msg = "userId:      " + userId
+						+ "\nspaceId:     " + spaceId
+						+ "\narchiveFile: " + archiveFile.getName()
+					;
+					log.error("handleUploadRequest", msg, e);
+				} finally {
+					Uploads.benchmarkEverythingComplete(statusId);
+				}
+			});
+		}
+		else{
+			Util.threadPoolExecute(() -> {
+				try {
+					addBenchmarksFromArchive(archiveFile, userId, spaceId, typeId, downloadable, perm, uploadMethod,
+					                         statusId, hasDependencies, linked, depRootSpaceId
+					);
+
+					BenchmarkUploadStatus status = Uploads.getBenchmarkStatus(statusId);
+
+					if (status.isFileUploadComplete()) {
+						// if the benchmarks archive was successfully uploaded record that in the weekly reports table
+						Reports.addToEventOccurrencesNotRelatedToQueue("benchmark archives uploaded", 1);
+						// Record the total number of benchmarks uploaded in the weekly reports data table
+						int totalBenchmarksUploaded = status.getTotalBenchmarks();
+						Reports.addToEventOccurrencesNotRelatedToQueue("benchmarks uploaded", totalBenchmarksUploaded);
+					}
+				} catch (Exception e) {
+					String msg = "userId:      " + userId
+						+ "\nspaceId:     " + spaceId
+						+ "\narchiveFile: " + archiveFile.getName()
+					;
+					log.error("handleUploadRequest", msg, e);
+				} finally {
+					Uploads.benchmarkEverythingComplete(statusId);
+				}
+			});
+		}
 	}
 
 	/**
@@ -438,12 +612,23 @@ public class UploadBenchmark extends HttpServlet {
 			// Last test, return true when we find a valid file extension
 			if (form.get(FILE_LOC).equals("local")) {
 				fileName = ((PartWrapper) form.get(BENCHMARK_FILE)).getName();
-			} else {
-				fileName = (String) form.get(FILE_URL);
+				if (!Validator.isValidArchiveType(fileName)) {
+					return new ValidatorStatusCode(false, "Uploaded archives need to be either .zip, .tar, or .tgz");
+				}
 			}
-
-			if (!Validator.isValidArchiveType(fileName)) {
-				return new ValidatorStatusCode(false, "Uploaded archives need to be either .zip, .tar, or .tgz");
+			else if (form.get(FILE_LOC).equals("URL")) {
+				fileName = (String) form.get(FILE_URL);
+				if (!Validator.isValidArchiveType(fileName)) {
+					return new ValidatorStatusCode(false, "Uploaded archives need to be either .zip, .tar, or .tgz");
+				}
+			}
+			else {
+				log.debug("in else");
+				fileName = (String) form.get(FILE_GIT);
+				log.debug("fileName: "+ fileName);
+				if (!Validator.isValidGitType(fileName)) {
+					return new ValidatorStatusCode(false, "Uploaded Git URLs need to be .git");
+				}
 			}
 
 			Permission perm = SessionUtil.getPermission(request, Integer.parseInt((String) form.get(R.SPACE)));

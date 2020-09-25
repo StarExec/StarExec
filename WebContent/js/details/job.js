@@ -44,7 +44,7 @@ function initializeGlobalPageVariables() {
 	DETAILS_JOB.primitivesToAnonymize = $('#primitivesToAnonymize')
 	.attr('value');
 	DETAILS_JOB.anonymousLinkUuid = getParameterByName('anonId');
-	DETAILS_JOB.spaceExplorerJsonData = getSpaceExplorerJsonData();
+	DETAILS_JOB.spaceExplorerJsonData = getSpaceExplorerJsonData();		
 
 	log("starexecUrl: " + DETAILS_JOB.starexecUrl);
 	log("isLocalJobPage: " + isLocalJobPage);
@@ -146,9 +146,9 @@ function refreshStats(id) {
 			.prop("selected", true);
 			lastValidSelectOption = $spaceOverviewSelections.val();
 			updateSpaceOverviewGraph();
+			updatePairJobTimeGraph();
 			if (summaryTable.fnSettings().fnRecordsTotal() > 1) {
 				$("#solverComparison").show();
-				$("#solverComparisonOptionField").show();
 				$("#solverChoice1")
 				.children("option:first")
 				.prop("selected", true);
@@ -316,9 +316,12 @@ function initUI() {
 	$("#statsErrorField").hide();
 	$(".cpuTime").hide();
 
-	//for aesthetics, make the heights of the two option fields identical
-	$("#solverComparisonOptionField")
-	.height($("#spaceOverviewOptionField").height());
+	$("#spaceOverview").show();
+	$("#solverComparison300").hide();
+	$("#pairTimeGraph").hide();	
+	$("#spaceOverviewOptionField").show();
+	$("#solverComparisonOptionField").hide();
+	$("#pairTimeOptionField").hide();
 
 	$("#addJobPairs")
 	.button({
@@ -594,6 +597,46 @@ function initUI() {
 			refreshPanels();
 			refreshStats(curSpaceId);
 		});
+		$("#selectSpaceOverview")
+		.button({
+			icons: {
+				primary: "ui-icon-arrowrefresh-1-e"
+			}
+		}).click(function() {
+			$("#solverComparison300").hide();
+			$("#pairTimeGraph").hide();
+			$("#spaceOverview").show();
+			$("#solverComparisonOptionField").hide();
+			$("#pairTimeOptionField").hide();
+			$("#spaceOverviewOptionField").show();
+		});
+                $("#selectSolverComparison")
+                .button({
+                        icons: {
+                                primary: "ui-icon-arrowrefresh-1-e"
+                        }
+                }).click(function() {
+                        $("#spaceOverview").hide();
+                        $("#pairTimeGraph").hide();
+                        $("#solverComparison300").show();
+			$("#spaceOverviewOptionField").hide();
+                        $("#pairTimeOptionField").hide();
+                        $("#solverComparisonOptionField").show();
+                });
+                $("#selectPairTimeGraph")
+                .button({
+                        icons: {
+                                primary: "ui-icon-arrowrefresh-1-e"
+                        }
+                }).click(function() {
+                        $("#spaceOverview").hide();
+                        $("#solverComparison300").hide();
+                        $("#pairTimeGraph").show();
+			$("#spaceOverviewOptionField").hide();
+			$("#solverComparisonOptionField").hide();
+                        $("#pairTimeOptionField").show();
+                });
+
 		$("#spaceOverviewUpdate")
 		.button({
 			icons: {
@@ -609,6 +652,14 @@ function initUI() {
 			}
 		}).click(function() {
 			updateSolverComparison(300, "white");
+		});
+		$("#pairTimeUpdate")
+		.button({
+			icons: {
+				primary: "ui-icon-arrowrefresh-1-e"
+			}
+		}).click(function() {
+			updatePairJobTimeGraph();
 		});
 
 		if (star.isUserSubscribedToJob !== undefined) {
@@ -728,6 +779,14 @@ function initUI() {
 
 	$("#spaceOverview").click(function() {
 		$('#dialog-spaceOverview').dialog({
+			modal: true,
+			width: 850,
+			height: 850
+		});
+	});
+
+	$("#pairTimeGraph").click(function() {
+		$('#dialog-pairTimeGraph').dialog({
 			modal: true,
 			width: 850,
 			height: 850
@@ -950,6 +1009,34 @@ function setupPostProcessButton() {
 		});
 	});
 }
+
+function updatePairJobTimeGraph() {
+	var postUrl = null;
+
+	if(DETAILS_JOB.isAnonymousPage) {
+		postUrl = starexecRoot + 'services/jobs/anonymousLink/' + DETAILS_JOB.anonymousLinkUuid + '/' + jobId + '/graphs/pairTime';
+	} else {
+		postUrl = starexecRoot + 'services/jobs/' + jobId + '/graphs/pairTime';
+	}
+	log('updatePairJobTimeGraph postUrl: ' + postUrl);
+
+	var xhr = $.post(
+			postUrl,
+			{},
+			function(returnCode) {
+				var s = parseReturnCode(returnCode);
+				if(s) {
+					$("#pairTimeGraph").attr("src", returnCode);
+					$("#bigPairTimeGraph").attr("src", returnCode + "800");
+				} else {
+					$("#pairTimeGraph").attr("src", starexecRoot + "/images/noDisplayGraph.png");
+				}
+			},
+			"text"
+		);
+		openAjaxRequests.push(xhr);
+}
+
 
 function updateSpaceOverviewGraph() {
 	var configs = [];

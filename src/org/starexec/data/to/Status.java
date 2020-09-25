@@ -190,7 +190,7 @@ public class Status {
 		Status.StatusCode[] codes = Status.StatusCode.values();
 		List<Status.StatusCode> filteredCodes = new ArrayList<>();
 		for (Status.StatusCode code : codes) {
-			if (code.getVal() > 6 && code.getVal() < 19) {
+			if ((code.getVal() > 6 && code.getVal() < 19) || code.getVal() == 25 || code.getVal() == 26) {
 				filteredCodes.add(code);
 			}
 		}

@@ -33,3 +33,9 @@ CREATE PROCEDURE GetStatusMessage()
 	BEGIN
 		SELECT enabled, message, url FROM ui_status_message;
 	END //
+
+DROP PROCEDURE IF EXISTS GetPairTimes //
+CREATE PROCEDURE GetPairTimes(IN _jobID INT)
+	BEGIN
+		SELECT start_time, end_time FROM job_pairs WHERE job_id = _jobID;
+	END //

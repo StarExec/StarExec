@@ -17,7 +17,7 @@ import org.starexec.data.to.Queue;
 import org.starexec.util.Util;
 
 import static org.mockito.Matchers.any;
-
+/*
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({Jobs.class})
 public class JobTests {
@@ -70,4 +70,4 @@ public class JobTests {
 		R.BACKEND_TYPE = R.OAR_TYPE;
 		Assert.assertEquals(Jobs.getSlotsInJobQueue(job), R.DEFAULT_QUEUE_SLOTS);
 	}
-}
+}*/

@@ -6,7 +6,7 @@ import org.starexec.backend.Backend;
 import org.starexec.backend.LocalBackend;
 import org.starexec.constants.R;
 import org.testng.Assert;
-
+/*
 public class LocalBackendTests {
 
 	private Backend backend = null;
@@ -55,4 +55,4 @@ public class LocalBackendTests {
 		Assert.assertEquals(queues.length, 1);
 		Assert.assertEquals(queues[0], R.DEFAULT_QUEUE_NAME);
 	}
-}
+}*/

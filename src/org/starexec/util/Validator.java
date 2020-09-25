@@ -28,6 +28,7 @@ public class Validator {
 	private static Pattern patternPassword;
 	private static Pattern patternRequestMsg;
 	public static final String[] extensions = {".tar", ".tar.gz", ".tgz", ".zip"};
+	public static final String[] gitExtensions = {".git"};
 
 	public static void initialize() {
 		// Make sure some patterns were loaded first before we compile them
@@ -307,6 +308,17 @@ public class Validator {
 	public static boolean isValidArchiveType(String format) {
 		return (format != null)
 				&& Arrays.stream(extensions).anyMatch(s->format.endsWith(s));
+	}
+
+	/**
+	 * Validates an Git URL type. URL must end with .git
+	 *
+	 * @param format the Git URL type to check
+	 * @return true iff the format is of supported type
+	 */
+	public static boolean isValidGitType(String format) {
+		return (format != null)
+				&& Arrays.stream(gitExtensions).anyMatch(s->format.endsWith(s));
 	}
 
 	/**
