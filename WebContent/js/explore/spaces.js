@@ -1301,14 +1301,14 @@ function initDataTables() {
 	$('.selectAllJobs, .selectAllSolvers, .selectAllBenchmarks, .selectAllUsers')
 	.click(function() {
 		$(this)
-		.parents('.dataTables_wrapper')
+		.parents('.dataTables_wrapper, .expdContainer')
 		.find('tbody>tr')
 		.addClass('row_selected');
 	});
 	$('.unselectAllJobs, .unselectAllSolvers, .unselectAllBenchmarks, .unselectAllUsers')
 	.click(function() {
 		$(this)
-		.parents('.dataTables_wrapper')
+		.parents('.dataTables_wrapper, .expdContainer')
 		.find('tbody>tr')
 		.removeClass('row_selected');
 	});
