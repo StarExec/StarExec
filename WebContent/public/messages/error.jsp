@@ -32,9 +32,12 @@
 	request.setAttribute("errorDesc", desc);
 %>
 
-<star:template title="http ${pageContext.errorData.statusCode} - ${errorDesc}"
+<star:template title="It seems an error has occurred..."
                css="error">
+    <p><c:out value="(http ${pageContext.errorData.statusCode} - ${errorDesc})"/></p>
+    <br>
 	<p><c:out value="${requestScope['javax.servlet.error.message']}"/></p>
+	<br>
 	<div id="actions" class="starexecErrorPage">
 		<a href="#" onclick="history.go(-1);return false;">try again</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a
 			href="mailto:${contactEmail}?subject=[Starexec] Error Report">report

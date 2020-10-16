@@ -226,7 +226,7 @@
 		<c:if test="${!isLocalJobPage}">
 			<fieldset id="graphField">
 				<legend>graphs</legend>
-				<fieldset id="graphActions" class="tableActions">
+				<fieldset style="width:95%" id="graphActions" class="tableActions">
 					<button id="selectSpaceOverview" type="button">Show Space Overview</button>
 					<button id="selectSolverComparison" type="button">Show Solver Comparison</button>
 					<button id="selectPairTimeGraph" type="button">Show Pairs vs. Time</button>
@@ -272,7 +272,7 @@
 		</fieldset>
 		<fieldset id="pairTblField">
 			<legend>job pairs</legend>
-			<fieldset id="pairActions" class="tableActions">
+			<fieldset  style="width:95%" id="pairActions" class="tableActions">
 				<button class="changeTime">Use CPU Time</button>
 				<c:if test="${!isLocalJobPage}">
 					<button title="sorts pairs by their ids, which is the order they are submitted to be run"

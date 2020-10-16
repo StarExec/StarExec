@@ -126,7 +126,6 @@ public class JspHelpers {
 					Map<Integer, Collection<SolverStats>> jobSpaceIdToSolverStatsMap =
 							Jobs.buildJobSpaceIdToSolverStatsMapWallCpuTimesRounded(j, 1);
 					request.setAttribute("jobSpaceIdToSolverStatsMap", jobSpaceIdToSolverStatsMap);
-
 				}
 
 				String primitivesToAnonymizeName = AnonymousLinks.getPrimitivesToAnonymizeName( primitivesToAnonymize );

@@ -30,6 +30,7 @@ import org.starexec.logger.StarLogger;
 import org.starexec.test.integration.TestResult;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.util.*;
+//import org.starexec.data.database.Common;
 
 import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
@@ -37,6 +38,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+//import java.sql.CallableStatement;
+//import java.sql.ResultSet;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -368,8 +371,11 @@ public class RESTHelpers {
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
-		Collection<SolverStats> solverStats = Jobs.getAllJobStatsInJobSpaceHierarchy(jobSpace, stageNumber, primitivesToAnonymize);
-
+		// changed this from Jobs.getAllJobStatsInJobSpaceHierarchy() to Jobs.getAllJobStatsInJobSpaceHierarchyIncludeDeletedConfigs()
+		// had to split up a function call chain to one version that includes configs marked as deleted and another that does not
+		// this includes them; used to construct the solver summary table in the job space view
+		// Alexander Brown, 9/20
+		Collection<SolverStats> solverStats = Jobs.getAllJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(jobSpace, stageNumber, primitivesToAnonymize);
 		stopWatch.stop();
 		log.debug("getNextDataTablePageForJobStats", "Time taken to get all jobs: " + stopWatch.toString());
 
@@ -1209,15 +1215,31 @@ public class RESTHelpers {
 		StringBuilder sb = new StringBuilder();
 		sb.append("<a class=\"configLink\" title=\"");
 		sb.append(configName).append("\"");
+
 		// Add the link to the solver if we don't need to be an anoymous config.
 		if (!AnonymousLinks.areSolversAnonymized(primitivesToAnonymize)) {
-			sb.append(" href=\"").append(Util.docRoot("secure/details/configuration.jsp?id="));
-			sb.append(configId).append("\" target=\"_blank\"");
+
+			// If the config has been marked as delted, use the link for the delted config page instead
+			try {
+				Configuration configuration = Solvers.getConfigurationIncludeDeleted( configId );
+				if ( configuration.getDeleted() == 1 ) {
+					sb.append( " href=\"" ).append( Util.docRoot( "secure/details/configDeleted.jsp?id=" ) );
+					sb.append(configId).append("\" target=\"_blank\"");
+				} else {
+					sb.append(" href=\"").append(Util.docRoot("secure/details/configuration.jsp?id="));
+					sb.append(configId).append("\" target=\"_blank\"");
+				}
+			} catch ( Exception e ) {
+				sb.append(" href=\"").append(Util.docRoot("secure/details/configuration.jsp?id="));
+				sb.append(configId).append("\" target=\"_blank\"");
+			}
+
 		}
 		sb.append(" id=\"");
 		sb.append(configId);
 		sb.append("\">");
 		sb.append(configName);
+
 		// Add link image to the solver if we don't need to be an anoymous config.
 		if (!AnonymousLinks.areSolversAnonymized(primitivesToAnonymize)) {
 			RESTHelpers.addImg(sb);
@@ -1341,6 +1363,7 @@ public class RESTHelpers {
 
 	/**
 	 * Given a list of job pairs, creates a JsonObject that can be used to populate a datatable client-side
+	 * It seems this is used to populate the job pairs table in the job view page
 	 *
 	 * @param pairs The pairs that will be the rows of the table
 	 * @param query a DataTables query object
@@ -1800,7 +1823,7 @@ public class RESTHelpers {
 	 * @param wallTime Whether to use wallclock times (true) or cpu times (false).
 	 * @param primitivesToAnonymize a PrimitivesToAnonymize enum describing if the solver stats should be anonymized.
 	 * @return A JsonObject that can be used to populate a datatable
-	 * @author Eric Burns
+	 * @author Eric Burns+
 	 * @author Pat Hawks
 	 */
 	public static JsonObject convertSolverStatsToJsonObject(Collection<SolverStats> stats, DataTablesQuery query, int spaceId, int jobId, boolean shortFormat, boolean wallTime, PrimitivesToAnonymize primitivesToAnonymize) {
@@ -1835,6 +1858,9 @@ public class RESTHelpers {
 					entries.add("N/A");
 				}
 			}
+
+			// initial test!!
+			entries.add(js.getConfiguration().getDeleted());
 
 			dataTablePageEntries.add(entries);
 		}

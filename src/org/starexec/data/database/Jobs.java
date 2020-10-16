@@ -1174,6 +1174,60 @@ public class Jobs {
 	}
 
 	/**
+	 * Gets all the SolverStats objects for a given job in the given space hierarchy
+	 *
+	 * This version uses a stored procedure (at its base) that includes configs marked as deleted. Used to construct
+	 * the solver summary table in the job space view.
+	 * Alexander Brown 9/20
+	 *
+	 * @param space The JobSpace root  in question
+	 * @param stageNumber The ID of the stage to get data for
+	 * @param primitivesToAnonymize PrimitivesToAnonymize instance
+	 * @return A list containing every SolverStats for the given job where the solvers reside in the given space
+	 * @author Eric Burns
+	 */
+
+	public static Collection<SolverStats> getAllJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(
+			JobSpace space, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize
+	) {
+		final int spaceId = space.getId();
+		Collection<SolverStats> stats;
+
+		stats = Jobs.getCachedJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(spaceId, stageNumber, primitivesToAnonymize);
+		//if the size is greater than 0, then this job is done and its stats have already been
+		//computed and stored
+		if (stats != null && !stats.isEmpty()) {
+			log.debug("stats already cached in database");
+			return stats;
+		}
+
+		int jobId = space.getJobId();
+
+		//we will cache the stats only if the job is complete
+		boolean isJobComplete = Jobs.isJobComplete(jobId);
+
+		//otherwise, we need to compile the stats
+		log.debug("stats not present in database -- compiling stats now");
+		List<JobPair> pairs = getJobPairsInJobSpaceHierarchy(spaceId, primitivesToAnonymize);
+
+		//compiles pairs into solver stats
+		stats = processPairsToSolverStats(jobId, pairs);
+		for (SolverStats s : stats) {
+			s.setJobSpaceId(spaceId);
+		}
+
+		//caches the job stats so we do not need to compute them again in the future
+		if (isJobComplete) {
+			saveStats(jobId, stats);
+		}
+
+		//next, we simply filter down the stats to the ones for the given stage
+		stats.removeIf((s) -> s.getStageNumber() != stageNumber);
+
+		return stats;
+	}
+
+	/**
 	 * @param job The job to make the mapping for
 	 * @param stageNumber Stage number to get mapping for
 	 * @return Map from job space ID to solver stats objects
@@ -1210,6 +1264,8 @@ public class Jobs {
 			int jobspaceId = jobspace.getId();
 			Collection<SolverStats> stats =
 					getAllJobStatsInJobSpaceHierarchy(jobspace, stageNumber, PrimitivesToAnonymize.NONE);
+					// tmp
+					log.debug( "\n\nTRIGGERED IN buildJobSpaceIdToSolverStatsMap(), Jobs.java:1214\n" );
 			jobSpaceIdToSolverStatsMap.put(jobspaceId, stats);
 		}
 		return jobSpaceIdToSolverStatsMap;
@@ -2756,6 +2812,7 @@ public class Jobs {
 				s.setCorrectJobPairs(results.getInt("correct"));
 				s.setResourceOutJobPairs(results.getInt("resource_out"));
 				s.setStageNumber(results.getInt("stage_number"));
+				s.setConfigDeleted(results.getInt("config_deleted")); // Alexander Brown, 9/7/2020
 				Solver solver = new Solver();
 				Configuration c = new Configuration();
 				if (AnonymousLinks.areSolversAnonymized(primitivesToAnonymize)) {
@@ -2767,6 +2824,7 @@ public class Jobs {
 				}
 				solver.setId(results.getInt("solver.id"));
 				c.setId(results.getInt("config.id"));
+				c.setDeleted(results.getInt("config_deleted")); // Alexander Brown, 9/7/2020
 				solver.addConfiguration(c);
 				s.setSolver(solver);
 				s.setConfiguration(c);
@@ -2775,6 +2833,79 @@ public class Jobs {
 			return stats;
 		} catch (Exception e) {
 			log.error("getCachedJobStatsInJobSpaceHierarchy", e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+
+	/**
+	 * Attempts to retrieve cached SolverStats objects from the database. Returns an empty list if the stats have not
+	 * already been cached.
+	 *
+	 * This version uses a stored procedure that includes configs marked as deleted. Used to construct the solver
+	 * summary table in the job space view
+	 * Alexander Brown 9/20
+	 *
+	 * @param jobSpaceId The ID of the root job space for the stats
+	 * @param stageNumber The number of the stage to get data for
+	 * @param primitivesToAnonymize PrimitivesToAnonymize instance
+	 * @return A list of the relevant SolverStats objects in this space
+	 * @author Eric Burns
+	 */
+
+	public static List<SolverStats> getCachedJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(
+			int jobSpaceId, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize
+	) {
+		log.debug("calling GetJobStatsInJobSpace with jobspace = " + jobSpaceId + " and stage = " + stageNumber);
+		int jobId = Spaces.getJobSpace(jobSpaceId).getJobId();
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetJobStatsInJobSpaceIncludeDeletedConfigs(?,?,?)}");
+			procedure.setInt(1, jobSpaceId);
+			procedure.setInt(2, jobId);
+			procedure.setInt(3, stageNumber);
+			results = procedure.executeQuery();
+			List<SolverStats> stats = new ArrayList<>();
+			while (results.next()) {
+				SolverStats s = new SolverStats();
+				s.setCompleteJobPairs(results.getInt("complete"));
+				s.setConflicts(results.getInt("conflicts"));
+				s.setIncompleteJobPairs(results.getInt("incomplete"));
+				s.setWallTime(results.getDouble("wallclock"));
+				s.setCpuTime(results.getDouble("cpu"));
+				s.setFailedJobPairs(results.getInt("failed"));
+				s.setIncorrectJobPairs(results.getInt("incorrect"));
+				s.setCorrectJobPairs(results.getInt("correct"));
+				s.setResourceOutJobPairs(results.getInt("resource_out"));
+				s.setStageNumber(results.getInt("stage_number"));
+				s.setConfigDeleted(results.getInt("config_deleted")); // Alexander Brown, 9/7/2020
+				Solver solver = new Solver();
+				Configuration c = new Configuration();
+				if (AnonymousLinks.areSolversAnonymized(primitivesToAnonymize)) {
+					solver.setName(results.getString("anonymous_solver_names.anonymous_name"));
+					c.setName(results.getString("anonymous_config_names.anonymous_name"));
+				} else {
+					solver.setName(results.getString("solver.name"));
+					c.setName(results.getString("config.name"));
+				}
+				solver.setId(results.getInt("solver.id"));
+				c.setId(results.getInt("config.id"));
+				c.setDeleted(results.getInt("config_deleted")); // Alexander Brown, 9/7/2020
+				solver.addConfiguration(c);
+				s.setSolver(solver);
+				s.setConfiguration(c);
+				stats.add(s);
+			}
+			return stats;
+		} catch (Exception e) {
+			log.error("getCachedJobStatsInJobSpaceHierarchyIncludeDeletedConfigs", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
