@@ -31,6 +31,9 @@ $(document).ready(function() {
 
 	//puts data into the data tables
 	reloadTables($("#spaceId").attr("value"));
+
+	$("#solverSummaryField").hide()
+	$("#graphField").hide()
 });
 
 // Initializes the fields of the global DETAILS_JOB object.
