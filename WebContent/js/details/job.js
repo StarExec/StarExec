@@ -139,7 +139,8 @@ function refreshStats(id) {
 			.appendChild(solverOptions.cloneNode(true));
 
 			$spaceOverviewSelections.empty().append(solverOptions);
-			$("#graphField").show();
+			// $("#graphField").show();
+			$("#graphField").hide();
 
 			//select first five solver/ configuration pairs
 			$spaceOverviewSelections.children("option:lt(5)")
@@ -1630,25 +1631,25 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 	} else {
 		postUrl = sSource + "solvers/pagination/" + curSpaceId + "/false/" + useWallclock + "/" + getSelectedStage();
 	}
-	var xhr = $.post(
-		postUrl,
-		aoData,
-		function(nextDataTablePage) {
-			//if the user has clicked on a different space since this was called, we want those results, not these
-			var s = parseReturnCode(nextDataTablePage);
-			if (s) {
-				$("#solverSummaryField").show();
-				$("#graphField").show();
-				$("#statsErrorField").hide();
-				fnCallback(nextDataTablePage);
-			}
-		},
-		"json"
-	).fail(function(code, textStatus) {
-		handleAjaxError(textStatus);
-	});
+	// var xhr = $.post(
+	// 	postUrl,
+	// 	aoData,
+	// 	function(nextDataTablePage) {
+	// 		//if the user has clicked on a different space since this was called, we want those results, not these
+	// 		var s = parseReturnCode(nextDataTablePage);
+	// 		if (s) {
+	// 			$("#solverSummaryField").show();
+	// 			$("#graphField").show();
+	// 			$("#statsErrorField").hide();
+	// 			fnCallback(nextDataTablePage);
+	// 		}
+	// 	},
+	// 	"json"
+	// ).fail(function(code, textStatus) {
+	// 	handleAjaxError(textStatus);
+	// });
 
-	openAjaxRequests.push(xhr);
+	// openAjaxRequests.push(xhr);
 }
 
 //
