@@ -145,8 +145,8 @@ function refreshStats(id) {
 			$spaceOverviewSelections.children("option:lt(5)")
 			.prop("selected", true);
 			lastValidSelectOption = $spaceOverviewSelections.val();
-			updateSpaceOverviewGraph();
-			updatePairJobTimeGraph();
+			// updateSpaceOverviewGraph();
+			// updatePairJobTimeGraph();
 			if (summaryTable.fnSettings().fnRecordsTotal() > 1) {
 				$("#solverComparison").show();
 				$("#solverChoice1")
