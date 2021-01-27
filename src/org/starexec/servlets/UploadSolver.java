@@ -306,6 +306,11 @@ public class UploadSolver extends HttpServlet {
 			//if there was an extraction error or if the temp directory is still empty.
 			if (!extracted || sandboxDir.listFiles().length == 0) {
 				log.warn("there was an error extracting the new solver archive");
+				if(!extracted){
+					log.warn("Failed to extract archive!");
+				}else{
+					log.warn("Zero files in sandbox dir!");
+				}
 				FileUtils.deleteDirectory(sandboxDir);
 				FileUtils.deleteDirectory(uniqueDir);
 				FileUtils.deleteQuietly(archiveFile);
