@@ -296,7 +296,8 @@ public class UploadSolver extends HttpServlet {
 			log.debug("location of archive file = " + archiveFile.getAbsolutePath() + " and archive file exists =" +
 					          archiveFile.exists());
 
-			Util.sandboxChownDirectory(sandboxDir);
+			log.debug(Util.sandboxChownDirectory(sandboxDir));
+
 			//extracts the given archive using the sandbox user
 			boolean extracted =
 					ArchiveUtil.extractArchiveAsSandbox(archiveFile.getAbsolutePath(), sandboxDir.getAbsolutePath());
