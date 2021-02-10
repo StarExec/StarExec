@@ -302,7 +302,7 @@ public class UploadSolver extends HttpServlet {
 
 			//give sandbox full permissions over the solver directory
 			Util.sandboxChmodDirectory(sandboxDir);
-
+			Util.sandboxChownDirectory(sandboxDir);
 			//if there was an extraction error or if the temp directory is still empty.
 			if (!extracted || sandboxDir.listFiles().length == 0) {
 				log.warn("there was an error extracting the new solver archive");

@@ -935,6 +935,23 @@ public class Util {
 			Util.executeCommand(chmod);
 		}
 	}
+	public static void sandboxChownDirectory(File dir) throws IOException {
+		if (!dir.isDirectory()) {
+			return;
+		}
+		//give sandbox full permissions over the solver directory
+		String[] chown = new String[7];
+		chown[0] = "sudo";
+		chown[1] = "-u";
+		chown[2] = R.SANDBOX_USER_ONE;
+		chown[3] = "chown";
+		chown[4] = "-R";
+		chown[5] = "sandbox:sandbox";
+		for (File f : dir.listFiles()) {
+			chown[6] = f.getAbsolutePath();
+			Util.executeCommand(chown);
+		}
+	}
 
 	/**
 	 * Adds rwx permissions to the directory for either the owner or the group
@@ -1021,10 +1038,7 @@ public class Util {
 	public static void logSandboxContents() {
 		try {
 			log.debug("logging sandbox contents");
-			log.debug("before changing ownership...");
-			log.debug(Util.executeCommand("ls -l -R " + Util.getSandboxDirectory().getAbsolutePath()));
-			log.debug("changing ownership back to sandbox...");
-			Util.executeCommand("chown sandbox:sandbox " + Util.getSandboxDirectory().getAbsolutePath());
+			log.debug("PERMISSION CHECK")
 			log.debug(Util.executeCommand("ls -l -R " + Util.getSandboxDirectory().getAbsolutePath()));
 
 		} catch (Exception e) {
