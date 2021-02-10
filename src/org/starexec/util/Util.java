@@ -942,13 +942,11 @@ public class Util {
 		//make owner sandbox
 		String[] chown = new String[7];
 		chown[0] = "sudo";
-		chown[1] = "-u";
-		chown[2] = R.SANDBOX_USER_ONE;
-		chown[3] = "chown";
-		chown[4] = "-R";
-		chown[5] = "sandbox:sandbox";
+		chown[1] = "chown";
+		chown[2] = "-R";
+		chown[3] = "sandbox:sandbox";
 		for (File f : dir.listFiles()) {
-			chown[6] = f.getAbsolutePath();
+			chown[4] = f.getAbsolutePath();
 			Util.executeCommand(chown);
 		}
 	}
