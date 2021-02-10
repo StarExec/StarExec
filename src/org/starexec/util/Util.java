@@ -1021,6 +1021,10 @@ public class Util {
 	public static void logSandboxContents() {
 		try {
 			log.debug("logging sandbox contents");
+			log.debug("before changing ownership...")
+			log.debug(Util.executeCommand("ls -l -R " + Util.getSandboxDirectory().getAbsolutePath()));
+			log.debug("changing ownership back to sandbox...")
+			Util.executeCommand("chown sandbox:sandbox " + Util.getSandboxDirectory().getAbsolutePath())
 			log.debug(Util.executeCommand("ls -l -R " + Util.getSandboxDirectory().getAbsolutePath()));
 
 		} catch (Exception e) {
