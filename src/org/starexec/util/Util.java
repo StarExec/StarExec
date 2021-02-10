@@ -1038,7 +1038,7 @@ public class Util {
 	public static void logSandboxContents() {
 		try {
 			log.debug("logging sandbox contents");
-			log.debug("PERMISSION CHECK")
+			log.debug("PERMISSION CHECK");
 			log.debug(Util.executeCommand("ls -l -R " + Util.getSandboxDirectory().getAbsolutePath()));
 
 		} catch (Exception e) {
