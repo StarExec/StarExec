@@ -939,7 +939,7 @@ public class Util {
 		if (!dir.isDirectory()) {
 			return;
 		}
-		//give sandbox full permissions over the solver directory
+		//make owner sandbox
 		String[] chown = new String[7];
 		chown[0] = "sudo";
 		chown[1] = "-u";
