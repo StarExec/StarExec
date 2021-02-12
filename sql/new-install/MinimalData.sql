@@ -1,12 +1,13 @@
 -- Populate the StarExec DB with a minimal set of data to get started.
 
--- the password is Starexec4ever
+-- the password for admin is admin -- recommended to change
+-- the password for public is public
 INSERT INTO users (email, first_name, last_name, institution, created, password, disk_quota) VALUES
-	('admin@uiowa.edu', 'Admin', 'User', 'The University of Iowa', SYSDATE(), 'b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86', 107374182400),
+	('admin', 'Admin', 'User', 'The University of Iowa', SYSDATE(), 'c7ad44cbad762a5da0a452f9e854fdc1e0e7a52a38015f23f3eab1d80b931dd472634dfac71cd34ebc35d16ab7fb8a90c81f975113d6c7538dc69dd8de9077ec', 107374182400),
 	('public', 'Public', 'User', 'None', SYSDATE(), 'd32997e9747b65a3ecf65b82533a4c843c4e16dd30cf371e8c81ab60a341de00051da422d41ff29c55695f233a1e06fac8b79aeb0a4d91ae5d3d18c8e09b8c73', 52428800);
 
 INSERT INTO user_roles VALUES
-	('admin@uiowa.edu', 'admin'),
+	('admin', 'admin'),
 	('public', 'user');
 
 -- Starts at 2 (the root default permission is defined in the schema)
