@@ -12,8 +12,8 @@
 .jstree-default .jstree-closed > ins { background-position:-54px 0; }
 .jstree-default .jstree-leaf > ins { background-position:-36px 0; }
 
-.jstree-default .jstree-hovered { background:#dc6f04; box-shadow:0px 0px 2px 1px white; padding:0 2px 0 1px; }
-.jstree-default .jstree-clicked { background:#ae0000; box-shadow:0px 0px 2px 1px white; padding:0 2px 0 1px; }
+.jstree-default .jstree-hovered { background:#dc6f04; box-shadow:0px 0px 2px 1px white; }
+.jstree-default .jstree-clicked { background:#ae0000; box-shadow:0px 0px 2px 1px white; }
 .jstree-default a .jstree-icon { background-position:-56px -19px; }
 .jstree-default a.jstree-loading .jstree-icon { background:url("throbber.gif") center center no-repeat !important; }
 
