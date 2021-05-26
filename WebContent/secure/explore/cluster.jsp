@@ -55,7 +55,8 @@
 
 		<fieldset id="graphs">
 			<legend>graphs</legend>
-			<img id="queuegraph" src="${starexecRoot}/secure/clustergraphs/queuegraph.png" width="400" height="400"/>
+			<%-- "default the queuegraph image to all.q (1) because all.q always exists" --%>
+			<img id="queuegraph" src="${starexecRoot}/secure/clustergraphs/1_queuegraph.png" width="400" height="400"/>
 		</fieldset>
 	</div>
 </star:template>

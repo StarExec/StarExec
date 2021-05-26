@@ -1382,6 +1382,7 @@ function getPairTableInitializer() {
 	return pairTableInitializer;
 }
 
+// see ./StarExec/src/org/starexec/app/RESTHelpers.java:convertSolverStatsToJsonObject()
 function getSolverTableInitializer() {
 	var SOLVER_ID = 0,
 		CONFIG_ID = 1,
@@ -1446,7 +1447,7 @@ function getSolverTableInitializer() {
 	};
 
 // changed configTemplate so that href= is also null to start; now gets populated depending on
-// if the config is marked as deleted or not in table configurations; Alexander Brown 9/24
+// if the config is marked as deleted or not in table configurations; Alexander Brown 9/2020
 	var configTemplate = [
 		"<a target='_blank' class='configLink' href='",
 		null,

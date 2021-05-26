@@ -4,6 +4,10 @@ import org.apache.commons.io.FileUtils;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
 import org.ggf.drmaa.SessionFactory;
+
+import com.sun.grid.drmaa.SessionFactoryImpl;
+import java.lang.reflect.Field;
+
 import org.starexec.constants.R;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.logger.StarLogger;
@@ -61,14 +65,33 @@ public class GridEngineBackend implements Backend{
 
     	try {
 			log.debug("createSession() loading class.");
-			// Try to load the class, if it does not exist this will cause an exception instead of an error
-			Class.forName("com.sun.grid.drmaa.SessionImpl");
-			session = SessionFactory.getFactory().getSession();
+
+			//set sys_paths to null
+			try {
+				final Field sysPathsField = ClassLoader.class.getDeclaredField("sys_paths");
+				sysPathsField.setAccessible(true);
+				sysPathsField.set(null, null);
+			} catch ( Exception e ) {
+				System.out.println( e.toString() );
+			}
+
+			log.debug( "\n\njust before assigning to sessionFactory\nis session == null?: " + (session == null) + "\n" );
+
+			SessionFactory sessionFactory = SessionFactoryImpl.getFactory();
+			session = sessionFactory.getSession();
+
+//			SessionFactory factory = SessionFactory.getFactory();
+//			Session session = factory.getSession();
+
+			log.debug( "\n\nmade it past assigning to session\nis session == null?: " + (session == null) + "\nsession: "+session + "\n" );
+
 			try {
 				session.init("");
 			} catch (Exception e) {
 				// ignoring any errors for initialization. Errors are thrown
 				// if a session already exists, but this does not impact functionality
+
+				log.debug( "error while initializing: session already exists; this will not impact functionality\n" + e.toString() + "\n" );
 			}
 		    log.info("Created GridEngine session");
 		} catch (Exception e) {
@@ -81,16 +104,23 @@ public class GridEngineBackend implements Backend{
      * there's a chance that initialize is never called, so always try dealing with that case
 
      **/   
-    public void destroyIf(){
-		if (!session.toString().contains("drmaa")) {
-		    log.debug("Shutting down the session..." + session);
-		    try {
-				session.exit();
-			}
-			catch (Exception e) {
-				log.error("Problem destroying session: "+e,e);
+    public void destroyIf() {
+
+		if ( session != null ) {
+			log.debug( "\n\ntesting object 'session':\n" + session.toString() + "\n" );
+
+			if (!session.toString().contains("drmaa")) {
+				log.debug("Shutting down the session..." + session);
+				try {
+					session.exit();
+				}
+				catch (Exception e) {
+					log.error("Problem destroying session: "+e,e);
+				}
 			}
 		}
+
+
     }
 
     /**
@@ -112,6 +142,9 @@ public class GridEngineBackend implements Backend{
     	synchronized(this){
     		JobTemplate sgeTemplate = null;
 		try {
+
+			log.debug("in submitScript()\nsession: "+session+"\nsession.createJobTemplate(): "+session.createJobTemplate()+"\n");
+
 			// Set up the grid engine template
 			sgeTemplate = session.createJobTemplate();
 

@@ -61,8 +61,9 @@ for d in Benchmarks Solvers processor_scripts jobin jobxml jobout joboutput jobo
   mkdirIf $STAREXEC_DATA_DIR/$d
 done
 
+echo $APPDIR
 while [ -d $APPDIR ] ; do
-  echo "waiting for tomcat to remove the app directory"
+  echo "waiting for tomcat to remove the app directory ($APPDIR)"
   sleep 4
 done
 

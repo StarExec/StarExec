@@ -1,13 +1,21 @@
 var jobPairTable;
 var qid = 0; // ID of the selected queue, or the queue that owns the selected node
 var selectedId = 0;  // ID of the selected primitive
+var qIdForQueueGraph = 1; // queue id used to select which queuegraph image is displayed; default is 1 because
+                          // all.q always exists
+
+// updateQueueGraph() changes the queuegraph image on the cluster page to be the most current one and of the queue
+// currently selected in the Active Queues list (which queue is selected is represented by qIdForQueueGraph)
+// Alexander Brown, 11/20
+function updateQueueGraph() {
+    var d = new Date();
+    $("#queuegraph").attr("src", starexecRoot + "secure/clustergraphs/"+qIdForQueueGraph+"_queuegraph.png?" + d.getTime());
+}
 
 // When the document is ready to be executed on
 $(document).ready(function() {
-	window.setInterval(function(){
-		d = new Date();
-		$("#queuegraph").attr("src", starexecRoot + "secure/clustergraphs/queuegraph.png?" + d.getTime());
-	}, 5000);
+    // call updateQueueGraph() periodically (time in ms)
+    window.setInterval( updateQueueGraph, 5000 );
 
 	initDataTables();
 
@@ -86,8 +94,8 @@ function initClusterExplorer() {
 			"icons": true
 		},
 		"types": {
-			"max_depth": -2,
-			"max_children": -2,
+			"max_depth": -2,    // -2 means disable max_children checking in the tree
+			"max_children": -2, // -2 means disable max_depth checking in the tree
 			"valid_children": ["queue"],
 			"types": {
 				"active_queue": {
@@ -124,6 +132,23 @@ function initClusterExplorer() {
 		parent_node = $.jstree._reference('#exploreList')
 		._get_parent(data.rslt.obj);
 		getDetails(id, data.rslt.obj.attr("rel"), parent_node);
+
+        // ---------------------------------------------------------------------------------------------------------- //
+		// when an item is selected in Active Queues (exploreList), update the queuegraph
+		// Alexander Brown, 11/20
+
+		// if the selected item is a queue, set qIdForQueueGraph to that item's id
+        if ( data.rslt.obj.attr("rel") == 'active_queue' || data.rslt.obj.attr("rel") == 'inactive_queue' ) {
+            qIdForQueueGraph = id;
+        } else {
+        // if the selected item is not a queue, then it is a node; set qIdForQueueGraph to that item's parent's id
+            qIdForQueueGraph = parent_node.attr("id");
+        }
+
+        // call updateQueueGraph() to immediately change the queuegraph image instead of waiting for the periodic update
+        updateQueueGraph();
+        // ---------------------------------------------------------------------------------------------------------- //
+
 	}).on("click", "a", function(event, data) { event.preventDefault(); });	// This just disable's links in the node title
 }
 

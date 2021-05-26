@@ -22,7 +22,8 @@ public class SolverStats extends Identifiable {
 	@Expose private double cpuTime = 0;
 	@Expose private int stageNumber = 0;
 	@Expose private int jobSpaceId;
-	@Expose private int config_deleted = 0; // Alexander Brown, 9/2/20
+	// instead of having its own field for whether or not a config has been deleted, access that field through the
+	// owned Configuration configuration object
 
 	public SolverStats() {
 		this.solver = new Solver();
@@ -181,7 +182,7 @@ public class SolverStats extends Identifiable {
 		return getCorrectJobPairs() + "/" + getCompleteJobPairs();
 	}
 
-	public int getConfigDeleted() { return config_deleted; }
+	public int getConfigDeleted() { return configuration.getDeleted(); }
 
-	public void setConfigDeleted( int status ) { config_deleted = status; }
+
 }

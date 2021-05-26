@@ -144,21 +144,10 @@ DROP PROCEDURE IF EXISTS DeleteConfigurationById //
 CREATE PROCEDURE DeleteConfigurationById(IN _configId INT)
 	BEGIN
 --        DELETE FROM configurations -- no longer deleting rows from configurations due to GHI#269; Alexander Brown 2020
+--				now marking them as "deleted" instead
         UPDATE configurations SET deleted = 1
 		WHERE id = _configId;
-		-- we are now marking the config as deleted and updating the owning solver
-        CALL UpdateConfigDeletedInSolvers( _configId, 1 );
 	END //
-
-
--- Updates the solvers table to properly reflect that the corresponding configuration has been deleted
--- Author: Alexander Brown
-DROP PROCEDURE IF EXISTS UpdateConfigDeletedInSolvers //
-CREATE PROCEDURE UpdateConfigDeletedInSolvers( IN _configId INT, IN _configDeleted INT )
-    BEGIN
-        UPDATE solvers SET config_deleted = _configDeleted
-        WHERE id = _configId;
-    END //
 
 
 -- Deletes a solver given that solver's id
@@ -196,7 +185,7 @@ CREATE PROCEDURE GetConfiguration(IN _id INT)
 		FROM configurations
     -- need to ensure config has not been deleted
 --		WHERE id = _id;
-    WHERE id = _id; -- AND deleted = 0;
+    WHERE id = _id AND deleted = 0;
 	END //
 
 -- Retrieves the configurations with the given id, including deleted configs

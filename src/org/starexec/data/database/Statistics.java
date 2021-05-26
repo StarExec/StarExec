@@ -32,6 +32,7 @@ import org.starexec.util.BenchmarkTooltipGenerator;
 import org.starexec.util.BenchmarkURLGenerator;
 import org.starexec.util.Util;
 import org.starexec.data.to.Queue;
+import org.starexec.data.to.QueueGraphData;
 
 import java.awt.*;
 import java.io.File;
@@ -53,24 +54,35 @@ public class Statistics {
 	 * This string is returned in place of a file path whenever there are too many pairs to render a graph.
 	 */
 	public static final String OVERSIZED_GRAPH_ERROR = "big";
-	private static ArrayList<Integer> queue_size = new ArrayList<>();
-	private static ArrayList<Long> queue_time = new ArrayList<>();
-	private static final int MAX_QUEUE_PLOT_POINTS = 50;
+	private static HashMap<Integer, QueueGraphData> queueGraphDataHashMap = new HashMap<Integer, QueueGraphData>();
 
 	/**
-	*Adds a data point to the enqueued pairs dataset and generates a graph of the current dataset.
-	*@param num_enqueued The number of pairs enqueued at a time
-	*/
-	public static void addQueuePlotPoint(int num_enqueued) {
+	 * Adds a data point to the enqueued pairs dataset and generates a graph of the current dataset.
+	 *
+	 * I edited this heavily to provide separate graphs for each queue, but this, and the QueueGraphData class,
+	 * are based on the work of Andy Swiston. -Alexander Brown 11/20
+	 *
+	 * @param qId is the identification number of the queue
+	 */
+	public static void addQueuePlotPoint( int qId ) {
 		try {
-			queue_size.add(num_enqueued);
-			queue_time.add(System.currentTimeMillis());
-			if(queue_size.size() > MAX_QUEUE_PLOT_POINTS) {
-				queue_size.remove(0);
-				queue_time.remove(0);
+			// if there is not a QueueGraphData object associated with the qId yet, create one and add it to the HashMap
+			if ( !queueGraphDataHashMap.containsKey(qId) ) {
+				queueGraphDataHashMap.put( qId, new QueueGraphData(qId) );
 			}
-		
-			log.debug("Started chart making with " + queue_size.size() + " datapoints!");
+
+			QueueGraphData currQGD = queueGraphDataHashMap.get(qId);
+			String qName = currQGD.getQueueName();
+
+			// poll for the number of enqueued job pairs and then create a new data point for QueueGraphData object
+			// based on the polled value and the time of the poll
+			currQGD.addNewDataPoint( Queues.getSizeOfQueue(qId), System.currentTimeMillis() );
+
+			// create the arrays of the separate data series from the currQGD
+			ArrayList<Integer> queue_size = currQGD.getSizeDataList();
+			ArrayList<Long> queue_time = currQGD.getTimeDataList();
+
+			log.debug("Started chart making for " + qName + " (" + qId + ") with " + queue_size.size() + " datapoints!");
 			XYSeries series = new XYSeries("Number of Enqueued Pairs");
 			for(int i = 0; i < queue_size.size(); i++) {
 				series.add(queue_time.get(i), queue_size.get(i));
@@ -79,11 +91,11 @@ public class Statistics {
 			XYSeriesCollection dataset = new XYSeriesCollection();
 			dataset.addSeries(series);
 
-			JFreeChart chart = ChartFactory.createXYLineChart("Enqueued Pairs vs. Time", "Time", "# of Enqueued Pairs", dataset, PlotOrientation.VERTICAL, false, false, false);
+			JFreeChart chart = ChartFactory.createXYLineChart("Enqueued Pairs vs. Time\nfor "+qName+" ("+qId+")", "Time", "# of Enqueued Pairs", dataset, PlotOrientation.VERTICAL, false, false, false);
 			chart.setBackgroundPaint(new Color(0, 0, 0, 0));
 			chart.getTitle().setPaint(new Color(255, 255, 255));
 			XYPlot plot = (XYPlot) chart.getXYPlot();
-		
+
 			plot.getRangeAxis().setAutoRange(false);
 
 			int numNodes = 0;
@@ -91,7 +103,7 @@ public class Statistics {
 				numNodes += Queues.getNodes(q.getId()).size();
 			}
 			plot.getRangeAxis().setRange(new Range(0, R.NODE_MULTIPLIER * numNodes * 1.1));
-		
+
 			plot.getDomainAxis().setLabelPaint(new Color(255, 255, 255));
 			plot.getRangeAxis().setTickLabelPaint(new Color(255, 255, 255));
 			plot.getRangeAxis().setLabelPaint(new Color(255, 255, 255));
@@ -106,11 +118,11 @@ public class Statistics {
 			if(!path.exists()) {
 				path.mkdir();
 			}
-			File output = new File(path, "queuegraph.png");
+			File output = new File(path, qId+"_queuegraph.png");
 			ChartUtilities.saveChartAsPNG(output, chart, 400, 400);
-			log.debug("Finished chart making!");
+			log.debug( "Finished chart making!: \n" + path.toString() + "/" + qId + "_queuegraph.png" );
 		} catch(Exception e) {
-			log.error("Error creating queue chart", e);
+			log.error("Error creating queue chart for "+Queues.getNameById(qId)+" ("+qId+")", e);
 		}
 	}
 
