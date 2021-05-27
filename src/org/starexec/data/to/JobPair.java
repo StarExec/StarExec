@@ -56,6 +56,8 @@ public class JobPair extends Identifiable {
 	private Job owningJob = null;
 	private User owningUser = null;
 
+	private int config_deleted = -1;
+
 	public JobPair() {
 		this.node = new WorkerNode();
 		this.bench = new Benchmark();
@@ -506,4 +508,9 @@ public class JobPair extends Identifiable {
 	public void setOwningUser(User owningUser) {
 		this.owningUser = owningUser;
 	}
+
+	// HERE
+	public int getConfigDelted() { return config_deleted; }
+
+	public void setConfigDeleted( int status ) { config_deleted = status; }
 }

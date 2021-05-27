@@ -511,8 +511,8 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>org.apache.jsp.secure.admin.cluster_jsp</servlet-name>
-        <url-pattern>/secure/admin/cluster.jsp</url-pattern>
+        <servlet-name>org.apache.jsp.secure.details.configuration_jsp</servlet-name>
+        <url-pattern>/secure/details/configuration.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
@@ -808,6 +808,16 @@
     <servlet-mapping>
         <servlet-name>org.apache.jsp.secure.details.solver_jsp</servlet-name>
         <url-pattern>/secure/details/solver.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.secure.details.benchmark_jsp</servlet-name>
+        <url-pattern>/secure/details/benchmark.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.secure.edit.community_jsp</servlet-name>
+        <url-pattern>/secure/edit/community.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
