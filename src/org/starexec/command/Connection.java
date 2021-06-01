@@ -326,8 +326,10 @@ public class Connection {
 	// Logs and executes a GET/POST request.
 	private HttpResponse executeGetOrPost(HttpRequestBase request) throws IOException {
 					// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-					System.out.println( "---- now ENTERING executeGetOrPost() --------\n" );
-					C.debugMode = true;
+					C.debugMode = false; // goes back to false at the end of the function
+					if (C.debugMode) {
+						System.out.println( "---- now ENTERING executeGetOrPost() --------\n" );
+					}
 					// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		log.log("Sending " + request.getMethod() + " request to URI: " + request.getURI());
 		List<Header> headers = Arrays.asList(request.getAllHeaders());
@@ -372,7 +374,9 @@ public class Connection {
 			}
 		}
 					// -- debug -- vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-					System.out.println( "\n---- now EXITING executeGetOrPost() --------\n" );
+					if (C.debugMode) {
+						System.out.println( "\n---- now EXITING executeGetOrPost() --------\n" );
+					}					
 					C.debugMode = false;
 					// ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 		return response;
