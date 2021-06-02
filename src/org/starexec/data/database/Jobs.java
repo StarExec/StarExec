@@ -2812,7 +2812,6 @@ public class Jobs {
 				s.setCorrectJobPairs(results.getInt("correct"));
 				s.setResourceOutJobPairs(results.getInt("resource_out"));
 				s.setStageNumber(results.getInt("stage_number"));
-				s.setConfigDeleted(results.getInt("config_deleted")); // Alexander Brown, 9/7/2020
 				Solver solver = new Solver();
 				Configuration c = new Configuration();
 				if (AnonymousLinks.areSolversAnonymized(primitivesToAnonymize)) {

@@ -1228,16 +1228,6 @@ public class Solvers {
 				c.setSolverId(results.getInt("solver_id"));
 				c.setDescription(results.getString("description"));
 				c.setDeleted( results.getInt( "deleted" ) );
-<<<<<<< HEAD
-
-				// tmpdebug for queuegraph
-				if ( results.getInt("id") == 369182 || configId == 369182 ) {
-					log.info( "\n\nin getConfigurationIncludeDeleted() for config id = 369182\n" +
-							"config id passed in: " + configId + "; config id from table: " + results.getInt( "deleted" ) );
-				}
-
-=======
->>>>>>> f008917bd453da3f34603bfeaca677077ee0f277
 				Common.safeClose(results);
 				return c;
 			}
