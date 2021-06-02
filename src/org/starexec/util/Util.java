@@ -443,6 +443,9 @@ public class Util {
 				sb.append(line).append(System.getProperty("line.separator"));
 			}
 			reader.close();
+
+			// output the InputStream text to the log file (print sb)
+			log.debug("The process produced stdout output:\n"+sb);
 		} catch (IOException e) {
 			log.warn("drainInputStream caught: " + e.toString(), e);
 		} finally {
@@ -480,6 +483,7 @@ public class Util {
 				log.error("drainStreams", "Error draining stderr from process: " + e.toString());
 			}
 		});
+		
 		drainInputStream(message, p.getInputStream());
 		try {
 		    p.waitFor();
@@ -910,6 +914,47 @@ public class Util {
 		return sw.toString();
 	}
 
+	/**
+	 * Grants full permission to the owner of the specified directory.
+	 * I am adding this function because sandbox is unable to create directories as 
+	 * it unzips currently. 
+	 * In the update from tc7 to tc9, the tmp directory made in the sandbox directory
+	 * defaulted to r-s permissions for the sandbox group. This function adds write 
+	 * permissions to the sandbox group such that user sandbox can successfully 
+	 * unzip the uploaded archive solver files.
+	 * -Alexander Brown, 5/9/21
+	 *
+	 * @param dir
+	 * @throws IOException
+	 */
+	public static void sandboxChmodDirectoryDirect(File dir) throws IOException {
+		if (!dir.isDirectory()) {
+			return;
+		}
+
+		// // print the permissions before the change
+		// log.debug("\n\npermissions before chmod command\n");
+		// String[] lsCmd = new String[3];
+		// lsCmd[0] = "ls";
+		// lsCmd[1] = "-al";
+		// lsCmd[2] = dir.toString();
+		// Util.executeCommand(lsCmd);
+		// // for (File f : dir.listFiles()) {
+		// // 	chmod[5] = f.getAbsolutePath();
+		// // 	Util.executeCommand(chmod);
+		// // }
+
+		// make the permissions change to the sandbox group as active user (tomcat)
+		String[] chmod = new String[3];
+		chmod[0] = "chmod";
+		chmod[1] = "g+rws";
+		chmod[2] = dir.toString();
+		Util.executeCommand(chmod);
+
+		// // print the permissions after the change
+		// log.debug("\n\npermissions after chmod command\n");
+		// Util.executeCommand(lsCmd);
+	}
 
 	/**
 	 * Recursively grants full permission to the owner of everything in the given
@@ -922,6 +967,7 @@ public class Util {
 		if (!dir.isDirectory()) {
 			return;
 		}
+		
 		//give sandbox full permissions over the solver directory
 		String[] chmod = new String[7];
 		chmod[0] = "sudo";

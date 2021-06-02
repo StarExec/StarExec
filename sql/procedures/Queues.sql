@@ -85,8 +85,8 @@ CREATE PROCEDURE GetCountOfEnqueuedJobPairsByQueue(IN _id INT)
 
 -- Get the name of a queue given its id
 -- Author: Wyatt Kaiser
-DROP PROCEDURE IF EXISTS getNameById //
-CREATE PROCEDURE getNameById(IN _queueId INT)
+DROP PROCEDURE IF EXISTS GetNameById //
+CREATE PROCEDURE GetNameById(IN _queueId INT)
 	BEGIN
 		SELECT name
 		FROM queues

@@ -2812,7 +2812,6 @@ public class Jobs {
 				s.setCorrectJobPairs(results.getInt("correct"));
 				s.setResourceOutJobPairs(results.getInt("resource_out"));
 				s.setStageNumber(results.getInt("stage_number"));
-				s.setConfigDeleted(results.getInt("config_deleted")); // Alexander Brown, 9/7/2020
 				Solver solver = new Solver();
 				Configuration c = new Configuration();
 				if (AnonymousLinks.areSolversAnonymized(primitivesToAnonymize)) {
@@ -2885,7 +2884,6 @@ public class Jobs {
 				s.setCorrectJobPairs(results.getInt("correct"));
 				s.setResourceOutJobPairs(results.getInt("resource_out"));
 				s.setStageNumber(results.getInt("stage_number"));
-				s.setConfigDeleted(results.getInt("config_deleted")); // Alexander Brown, 9/7/2020
 				Solver solver = new Solver();
 				Configuration c = new Configuration();
 				if (AnonymousLinks.areSolversAnonymized(primitivesToAnonymize)) {
@@ -2897,11 +2895,17 @@ public class Jobs {
 				}
 				solver.setId(results.getInt("solver.id"));
 				c.setId(results.getInt("config.id"));
-				c.setDeleted(results.getInt("config_deleted")); // Alexander Brown, 9/7/2020
+				c.setDeleted(results.getInt("config.deleted")); // Alexander Brown, 9/20
 				solver.addConfiguration(c);
 				s.setSolver(solver);
 				s.setConfiguration(c);
 				stats.add(s);
+
+				// print status
+				log.debug( "in Jobs.getCachedJobStatsInJobSpaceHierarchyIncludeDeletedConfigs:\n" +
+						"config.deleted: " + results.getInt( "config.deleted" ) + "\n" +
+						"c.getDeleted(): " + c.getDeleted() + "\n" +
+						"s.getConfigDeleted(): " + s.getConfigDeleted() );
 			}
 			return stats;
 		} catch (Exception e) {
@@ -4536,6 +4540,11 @@ public class Jobs {
 					key = getStageConfigHashKey(stage);
 					log.trace("Got solver stats key: " + key);
 					int configId = stage.getConfiguration().getId();
+
+					// // print status
+					// log.debug( "in Jobs.processPairsToSolverStats(): current configId = " + stage.getConfiguration().getId() +
+					// 		"; current deleted status = " + stage.getConfiguration().getDeleted() );
+
 					int stageNumber = stage.getStageNumber();
 					Integer conflicts = null;
 					if (!stats.containsKey(key)) { // current stats entry does not yet exist

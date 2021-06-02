@@ -541,6 +541,7 @@ public class Solvers {
 		final String methodName = "deleteConfiguration";
 		Connection con = null;
 		CallableStatement procedure = null;
+
 		try {
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL DeleteConfigurationById(?)}");
@@ -575,6 +576,7 @@ public class Solvers {
 			Solver s = Solvers.getSolverByConfig(config.getId(), false);
 			// Builds the path to the configuration object's physical file on disk, then deletes it from disk
 			File configFile = new File(Util.getSolverConfigPath(s.getPath(), config.getName()));
+
 			if (configFile.delete()) {
 				log.info(String.format("Configuration %d has been successfully deleted from disk.", config.getId()));
 			}

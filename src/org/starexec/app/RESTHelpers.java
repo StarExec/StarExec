@@ -1859,8 +1859,12 @@ public class RESTHelpers {
 				}
 			}
 
-			// initial test!!
-			entries.add(js.getConfiguration().getDeleted());
+			// add index 13, CONFIG_DELETED, for dynamic config link; see getSolverTableInitializer() in job.js
+			entries.add( js.getConfigDeleted() );
+
+			// debug for queuegraph
+			log.info( "\n\nin convertSolverStatsToJsonObject(); " +
+					"CONFIG_DELETED = " +  js.getConfigDeleted() + "\n" );
 
 			dataTablePageEntries.add(entries);
 		}

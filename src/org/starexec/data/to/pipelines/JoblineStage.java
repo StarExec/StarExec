@@ -4,6 +4,7 @@ import org.starexec.constants.R;
 import org.starexec.data.to.Configuration;
 import org.starexec.data.to.Solver;
 import org.starexec.data.to.Status;
+import org.starexec.logger.StarLogger;
 
 import java.util.List;
 import java.util.Properties;
@@ -14,6 +15,8 @@ import java.util.Properties;
  * @author Eric
  */
 public class JoblineStage {
+	private static final StarLogger log = StarLogger.getLogger(JoblineStage.class);
+
 	private Solver solver = null;
 	private Integer stageId = null; // This is the ID of the PipelineStage that this JoblineStage refers to
 	private Integer jobpairId = null;
@@ -47,6 +50,10 @@ public class JoblineStage {
 
 	public void setConfiguration(Configuration configuration) {
 		this.configuration = configuration;
+
+		// print status
+		log.debug( "in JoblineStage.setConfiguration(): current configId = " + configuration.getId() +
+				"; current deleted status = " + configuration.getDeleted() );
 	}
 
 	public double getMaxResidenceSetSize() {
