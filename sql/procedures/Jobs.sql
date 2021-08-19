@@ -457,7 +457,6 @@ CREATE PROCEDURE GetJobPairStagesInJobSpaceHierarchy(IN _jobSpaceId INT, IN _sin
 			WHERE ancestor=_jobSpaceId AND ((_since is null) OR job_pair_completion.completion_id>_since);
 	END //
 
-
 -- Counts the number of pairs in a job
 -- Author Eric Burns
 DROP PROCEDURE IF EXISTS countPairsForJob //

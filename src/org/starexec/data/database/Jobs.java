@@ -2320,6 +2320,22 @@ public class Jobs {
 	}
 
 	/**
+	 * Returns all of the successfully completed job pairs in a given job space hierarchy, populated with all the fields necessary to display
+	 * in a SolverStats table. All job pair stages are obtained
+	 * This alternate version is to fix the job graphs, Alexander Brown 6/21
+	 *
+	 * @param jobSpaceId The space ID of the space containing the solvers to get stats for
+	 * @param primitivesToAnonymize PrimitivesToAnonymize instance
+	 * @return A list of job pairs for the given job for which the solver is in the given space
+	 * @author Eric Burns
+	 */
+	public static List<JobPair> getSuccessfullyCompletedJobPairsInJobSpaceHierarchy(
+			int jobSpaceId, PrimitivesToAnonymize primitivesToAnonymize
+	) {
+		return getSuccessfullyCompletedJobPairsInJobSpaceHierarchy(jobSpaceId, null, primitivesToAnonymize);
+	}
+
+	/**
 	 * Returns all of the job pairs in a given job space hierarchy, populated with all the fields necessary to display
 	 * in a SolverStats table. All job pair stages are obtained.
 	 *
@@ -2363,6 +2379,70 @@ public class Jobs {
 			Common.safeClose(procedure);
 			Common.safeClose(results);
 			procedure = con.prepareCall("{CALL GetJobPairStagesInJobSpaceHierarchy(?,?)}");
+			procedure.setInt(1, jobSpaceId);
+			if (since == null) {
+				procedure.setNull(2, java.sql.Types.INTEGER);
+			} else {
+				procedure.setInt(2, since);
+			}
+			results = procedure.executeQuery();
+			if (populateJobPairStages(pairs, results, true, primitivesToAnonymize)) {
+				return pairs;
+			}
+		} catch (Exception e) {
+			log.error(methodName, e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+
+	/**
+	 * Returns all of the successfully completed job pairs in a given job space hierarchy, populated with all the fields necessary to display
+	 * in a SolverStats table. All job pair stages are obtained.
+	 *
+	 * @param jobSpaceId The space ID of the space containing the solvers to get stats for
+	 * @param since If null, all pairs in the hierarchy are returned. Otherwise, only pairs that have a completion ID
+	 * greater than since are returned
+	 * @param primitivesToAnonymize PrimitivesToAnonymize instance
+	 * @return A list of job pairs for the given job for which the solver is in the given space
+	 * @author Eric Burns (wrote original), Alexander Brown
+	 */
+	public static List<JobPair> getSuccessfullyCompletedJobPairsInJobSpaceHierarchy(
+			int jobSpaceId, Integer since, PrimitivesToAnonymize primitivesToAnonymize
+	) {
+		final String methodName = "getSuccessfullyCompletedJobPairsInJobSpaceHierarchy";
+		log.entry(methodName);
+		Connection con = null;
+		ResultSet results = null;
+		CallableStatement procedure = null;
+		log.debug("called with jobSpaceId = " + jobSpaceId);
+		log.debug(
+				methodName,
+				"primitivesToAnonymize equals " + AnonymousLinks.getPrimitivesToAnonymizeName(primitivesToAnonymize)
+		);
+		try {
+			Spaces.updateJobSpaceClosureTable(jobSpaceId);
+
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetSuccessfullyCompletedJobPairsInJobSpaceHierarchy(?,?)}");
+
+			procedure.setInt(1, jobSpaceId);
+			if (since == null) {
+				procedure.setNull(2, java.sql.Types.INTEGER);
+			} else {
+				procedure.setInt(2, since);
+			}
+			results = procedure.executeQuery();
+
+			List<JobPair> pairs = processStatResults(results, false, primitivesToAnonymize);
+
+
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+			procedure = con.prepareCall("{CALL GetSuccessfullyCompletedJobPairStagesInJobSpaceHierarchy(?,?)}");
 			procedure.setInt(1, jobSpaceId);
 			if (since == null) {
 				procedure.setNull(2, java.sql.Types.INTEGER);
@@ -2542,6 +2622,8 @@ public class Jobs {
 			int jobSpaceId, List<Integer> configIds, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize
 	) {
 		try {
+			// we will actually not be using the alternate function calls; we found an easier way to filter out non-correct job pairs
+			// List<JobPair> pairs = Jobs.getSuccessfullyCompletedJobPairsInJobSpaceHierarchy(jobSpaceId, primitivesToAnonymize);
 			List<JobPair> pairs = Jobs.getJobPairsInJobSpaceHierarchy(jobSpaceId, primitivesToAnonymize);
 			List<List<JobPair>> pairLists = new ArrayList<>();
 
@@ -2559,6 +2641,13 @@ public class Jobs {
 				if (stage == null || stage.isNoOp()) {
 					continue;
 				}
+
+				// only forward successfully completed job pairs -- Alexander Brown, 8/2021
+				// int value 0 is returned when the job pair is correct
+				if (JobPairs.isPairCorrect(stage) != 0) {
+					continue;
+				}
+
 				int configId = stage.getConfiguration().getId();
 				if (configToPosition.containsKey(configId)) {
 					List<JobPair> filteredPairs = pairLists.get(configToPosition.get(configId));

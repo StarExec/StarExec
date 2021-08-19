@@ -509,7 +509,6 @@ public class JobPair extends Identifiable {
 		this.owningUser = owningUser;
 	}
 
-	// HERE
 	public int getConfigDelted() { return config_deleted; }
 
 	public void setConfigDeleted( int status ) { config_deleted = status; }
