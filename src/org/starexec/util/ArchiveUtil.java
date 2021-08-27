@@ -146,8 +146,13 @@ public class ArchiveUtil {
 				unzipCmd[4] = fileName;
 				unzipCmd[5] = "-d";
 				unzipCmd[6] = destination;
+				
+				log.debug("id is run here: " + Util.executeCommand("id"));
 				log.debug("about to execute command unzip command");
-				Util.executeCommand(unzipCmd);
+				log.debug("unzip said: " + Util.executeCommand(unzipCmd));
+
+				// log.debug("about to execute command unzip command");
+				// Util.executeCommand(unzipCmd);
 				log.debug("now removing the archived file " + fileName);
 				ArchiveUtil.removeArchive(fileName);
 
