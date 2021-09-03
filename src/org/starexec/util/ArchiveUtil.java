@@ -148,6 +148,7 @@ public class ArchiveUtil {
 				unzipCmd[6] = destination;
 				
 				log.debug("id is run here: " + Util.executeCommand("id"));
+				Util.executeCommand("chmod g+w " + destination);
 				log.debug("about to execute command unzip command");
 				log.debug("unzip said: " + Util.executeCommand(unzipCmd));
 
