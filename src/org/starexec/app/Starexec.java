@@ -98,6 +98,9 @@ public class Starexec implements ServletContextListener {
 
 		log = StarLogger.getLogger(Starexec.class);
 
+		// HERE
+		log.debug("\n\nHERE: Java Version: "+System.getProperty("java.version")+"\n\n");
+
 		// Log info on the initialization stack
 		/*
 		log.info( "\n\nstarting Starexec.contextInitialized()\n" );
