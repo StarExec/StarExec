@@ -1028,7 +1028,14 @@ public class Util {
 				Util.executeCommand(cpCmd);
 			}
 
-			//next, copy the files over so they are owned by sandbox
+			/* next, copy the files over so they are owned by sandbox */
+
+                        // first make sure sandbox2 is group writeable, since we will copy
+                        // the files when sudo'ed to the sandbox user.  The group for sandbox2
+                        // is set as sandbox (by the system) when the directory is created.
+                        sandboxChmodDirectoryDirect(sandbox2);
+
+                        // now copy as sandbox user.  We could also have just chown'ed everything...
 			String[] sudoCpCmd = new String[4];
 
 			sudoCpCmd[0] = "cp";
@@ -1038,6 +1045,8 @@ public class Util {
 				sudoCpCmd[2] = f.getAbsolutePath();
 				Util.executeSandboxCommand(sudoCpCmd);
 			}
+
+                        // now give full permissions to the sandbox user for contents of sandbox2
 			sandboxChmodDirectory(sandbox2);
 		} finally {
 			FileUtils.deleteQuietly(sandbox);
