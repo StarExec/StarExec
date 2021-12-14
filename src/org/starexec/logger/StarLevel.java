@@ -1,6 +1,6 @@
 package org.starexec.logger;
 
-import org.apache.log4j.Level;
+import org.apache.logging.log4j.Level;
 
 /**
  * Wrapper class for logging levels.

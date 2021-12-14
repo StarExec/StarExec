@@ -1,7 +1,8 @@
 package org.starexec.logger;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 /**
  * Created by agieg on 2/10/2017.
@@ -13,12 +14,12 @@ public abstract class BaseStarLogger {
 
     protected BaseStarLogger(Class clazz) {
 
-        log = Logger.getLogger(clazz);
+        log = LogManager.getLogger(clazz);
         this.name = clazz.getName();
     }
 
     protected BaseStarLogger(String name) {
-        log = Logger.getLogger(name);
+        log = LogManager.getLogger(name);
         this.name = name;
     }
 
@@ -29,19 +30,9 @@ public abstract class BaseStarLogger {
 
 
 
-    public static void turnOffLogging() {
-        Logger.getRootLogger().setLevel(Level.OFF);
-    }
-
     public String getName() {
         return log.getName();
     }
-
-
-    public void setLevel(StarLevel level) {
-        log.setLevel(level.get());
-    }
-
 
     public void entry(String method) {
         log.debug(prefix(method) + "Entering method " + method + ".");
