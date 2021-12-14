@@ -43,7 +43,7 @@ import static java.util.Objects.nonNull;
  */
 public class Util {
 	protected static final ExecutorService threadPool = Executors.newCachedThreadPool();
-	private static final StarLogger log = StarLoggerFactory.getLogger(Util.class);
+	private static final StarLogger log = StarLogger.getLogger(Util.class);
 	private static String docRoot = null;
 	private static String docRootUrl = null;
 

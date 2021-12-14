@@ -49,7 +49,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 @SuppressWarnings({"deprecation"})
 public class Connection {
-	final private CommandLogger log = CommandLoggerFactory.getLogger(Connection.class);
+	final private CommandLogger log = CommandLogger.getLogger(Connection.class);
 	DefaultHttpClient client = null;
 	private String baseURL;
 	private String sessionID = null;

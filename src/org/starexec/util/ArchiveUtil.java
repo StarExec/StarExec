@@ -20,7 +20,7 @@ import java.nio.file.Files;
  * Contains helper methods for dealing with .zip files
  */
 public class ArchiveUtil {
-	private static final StarLogger log = StarLoggerFactory.getLogger(ArchiveUtil.class);
+	private static final StarLogger log = StarLogger.getLogger(ArchiveUtil.class);
 
 	/**
 	 * Gets the uncompressed size of an archive

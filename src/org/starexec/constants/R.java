@@ -23,7 +23,7 @@ import java.util.HashMap;
  * @author Tyler Jensen
  */
 public class R {
-	private static final StarLogger log = StarLoggerFactory.getLogger(R.class);
+	private static final StarLogger log = StarLogger.getLogger(R.class);
 
     /*
      * IMPORTANT: This class only supports string, int and boolean types.

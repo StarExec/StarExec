@@ -53,7 +53,7 @@ public class GridEngineBackend implements Backend{
      * after construction.
      */ 
     public GridEngineBackend(){
-		log = StarLoggerFactory.getLogger(GridEngineBackend.class);
+		log = StarLogger.getLogger(GridEngineBackend.class);
     }
 
     /**

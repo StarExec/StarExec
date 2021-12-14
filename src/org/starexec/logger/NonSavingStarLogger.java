@@ -9,20 +9,14 @@ public class NonSavingStarLogger extends BaseStarLogger {
         super(name);
     }
 
-    public static NonSavingStarLoggerFactory.getLogger(Class clazz) {
+    public static NonSavingStarLogger getLogger(Class clazz) {
         return new NonSavingStarLogger(clazz);
     }
-    public static NonSavingStarLoggerFactory.getLogger(String name) {
+    public static NonSavingStarLogger getLogger(String name) {
         return new NonSavingStarLogger(name);
     }
     @Override
     protected void log(StarLevel level, final String method, final String message, final Throwable t) {
-        final String prefixedMessage = method == null ? message : prefix(method)+message;
-
-        if (t == null) {
-            log.log(level.get(), prefixedMessage);
-        } else {
-            log.log(level.get(), prefixedMessage, t);
-        }
+	sendToLogger(level, getMessage(method,message,t));
     }
 }

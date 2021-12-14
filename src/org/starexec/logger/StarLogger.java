@@ -1,6 +1,7 @@
 package org.starexec.logger;
 
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.starexec.data.database.ErrorLogs;
 import org.starexec.util.Util;
 
@@ -22,45 +23,26 @@ public class StarLogger extends BaseStarLogger {
         super(logger);
     }
 
-    public static StarLoggerFactory.getLogger(Class clazz) {
+    public static StarLogger getLogger(Class clazz) {
         return new StarLogger(clazz);
     }
-    public static StarLoggerFactory.getLogger(String name) {
+    public static StarLogger getLogger(String name) {
         return new StarLogger(name);
     }
 
-    public static List<StarLogger> getCurrentLoggers() {
-        Enumeration loggers = Logger.getRootLogger().getLoggerRepository().getCurrentLoggers();
-        List<StarLogger> currentLoggers = new ArrayList<>();
-        while (loggers.hasMoreElements()) {
-            currentLoggers.add(new StarLogger((Logger)loggers.nextElement()));
-        }
-        return currentLoggers;
-    }
-
     public static StarLogger getRootLogger() {
-        return new StarLogger(Logger.getRootLogger());
+        return new StarLogger(LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME));
     }
 
 
     @Override
     protected void log(StarLevel level, final String method, final String message, final Throwable t) {
-        final String prefixedMessage = method == null ? message : prefix(method)+message;
-
-        if (t == null) {
-            log.log(level.get(), prefixedMessage);
-        } else {
-            log.log(level.get(), prefixedMessage, t);
-        }
-
+	String msg = getMessage(method,message,t);
+	sendToLogger(level, msg);
 
         if (level == StarLevel.ERROR || level == StarLevel.FATAL || level == StarLevel.WARN) {
-            reportError(level, prefixedMessage, t);
+            reportError(level, msg, t);
         }
-    }
-
-    private void reportError(final StarLevel level, final String message) {
-        reportError(level, message, null);
     }
 
     private void reportError(final StarLevel level, final String message, final Throwable t) {

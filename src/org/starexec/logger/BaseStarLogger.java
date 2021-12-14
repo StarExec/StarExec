@@ -1,8 +1,8 @@
 package org.starexec.logger;
 
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import ch.qos.logback.classic.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by agieg on 2/10/2017.
@@ -118,6 +118,32 @@ public abstract class BaseStarLogger {
     }
     public void fatal(final String message, final Throwable t) {
         log(StarLevel.FATAL, null, message, t);
+    }
+
+    protected void sendToLogger(StarLevel level, String message) {
+	switch (level) {
+	case FATAL:
+	    log.error(message);
+	    break;
+	case ERROR:
+	    log.error(message);
+	    break;
+	case WARN:
+	    log.warn(message);
+	    break;
+	case INFO:
+	    log.info(message);
+	    break;
+	case DEBUG:
+	    log.debug(message);
+	    break;
+	case TRACE:
+	    log.trace(message);
+	    break;
+	}
+   }
+    protected String getMessage(final String method, final String message, final Throwable t) {
+	return (method == null ? message : prefix(method)+message + (t == null ? "" : t.toString()));
     }
 
     protected abstract void log(StarLevel level, String method, String message, Throwable t);
