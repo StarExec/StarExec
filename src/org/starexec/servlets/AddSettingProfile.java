@@ -32,7 +32,7 @@ import java.util.List;
  * @author Eric Burns
  */
 public class AddSettingProfile extends HttpServlet {
-	private static final StarLogger log = StarLogger.getLogger(AddSettingProfile.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(AddSettingProfile.class);
 
 	// Param strings for processing
 	private static final String POST_PROCESSOR = "postp";

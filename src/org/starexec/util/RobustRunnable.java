@@ -4,7 +4,7 @@ import org.starexec.util.Timer;
 import org.starexec.logger.StarLogger;
 
 public abstract class RobustRunnable implements Runnable {
-	private static final StarLogger log = StarLogger.getLogger(RobustRunnable.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(RobustRunnable.class);
 
 	protected final String name;
 

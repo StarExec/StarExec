@@ -6,7 +6,7 @@ import org.starexec.logger.StarLogger;
 import java.util.List;
 
 public class LoggingManager {
-	private static final StarLogger log = StarLogger.getLogger(LoggingManager.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(LoggingManager.class);
 
 	public static void setLoggingLevel(StarLevel level) {
 		StarLogger.getRootLogger().setLevel(level);
@@ -16,7 +16,7 @@ public class LoggingManager {
 		if (!loggerExists(className)) {
 			return false;
 		}
-		StarLogger.getLogger(className).setLevel(level);
+		StarLoggerFactory.getLogger(className).setLevel(level);
 		return true;
 	}
 

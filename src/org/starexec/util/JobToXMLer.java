@@ -25,7 +25,7 @@ import java.util.List;
  */
 
 public class JobToXMLer {
-	private static final StarLogger log = StarLogger.getLogger(JobToXMLer.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(JobToXMLer.class);
 
 	private Document doc = null;
 

@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
  * Handles all database interaction for spaces
  */
 public class Spaces {
-	private static final StarLogger log = StarLogger.getLogger(Spaces.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(Spaces.class);
 
 	/**
 	 * Adds a new space to the system. This action adds the space, adds a default permission record for the space, and

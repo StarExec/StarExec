@@ -9,7 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class ClearCacheManager {
-	private static final StarLogger log = StarLogger.getLogger(ClearCacheManager.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(ClearCacheManager.class);
 
 	private static String scriptTemplate=null;
 	protected static void initScriptTemplateIf() {

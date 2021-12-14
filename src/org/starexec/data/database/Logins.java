@@ -7,7 +7,7 @@ import org.starexec.logger.StarLogger;
  */
 public class Logins {
 
-	private static final StarLogger log = StarLogger.getLogger(Logins.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(Logins.class);
 
 	/**
 	 * Gets the number of unique user logins in the logins table.

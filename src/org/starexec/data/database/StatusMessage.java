@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import java.util.Optional;
 
 public class StatusMessage {
-	private static final StarLogger log = StarLogger.getLogger(StatusMessage.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(StatusMessage.class);
 	private static final Gson gson = new GsonBuilder().create();
 
 	private StatusMessage() {} // Class is not instantiable

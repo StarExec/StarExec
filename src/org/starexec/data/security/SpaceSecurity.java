@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SpaceSecurity {
-	private static final StarLogger log = StarLogger.getLogger(SpaceSecurity.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(SpaceSecurity.class);
 
 	/**
 	 * Checks to see whether a user can update the properties of a space (such as default permissions, sticky leaders,

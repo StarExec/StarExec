@@ -32,7 +32,7 @@ import java.io.IOException;
  * @author Todd Elvers & Tyler Jensen
  */
 public class Verify extends HttpServlet {
-	private static final StarLogger log = StarLogger.getLogger(Verify.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(Verify.class);
 	private static final Gson gson = new Gson();
 
 	@Override

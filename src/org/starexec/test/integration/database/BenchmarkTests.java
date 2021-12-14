@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * @author Eric
  */
 public class BenchmarkTests extends TestSequence {
-	private static final StarLogger log = StarLogger.getLogger(BenchmarkTests.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(BenchmarkTests.class);
 	private User user=null;
 	private User user2=null;
 	private User admin=null;

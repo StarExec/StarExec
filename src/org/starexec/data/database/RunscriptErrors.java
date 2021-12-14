@@ -15,7 +15,7 @@ import java.util.ArrayList;
 public class RunscriptErrors {
 	private RunscriptErrors() {} // Class cannot be instantiated
 
-	private static final StarLogger log = StarLogger.getLogger(Analytics.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(Analytics.class);
 
 	public static int getCount(Date begin, Date end) throws SQLException {
 		return Common.query(

@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  */
 public class SpaceTests extends TestSequence {
 
-	private static final StarLogger log = StarLogger.getLogger(SpaceTests.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(SpaceTests.class);
 	Space community=null;
 	Space subspace=null;  //subspace of community
 	Space subspace2=null; //subspace of community

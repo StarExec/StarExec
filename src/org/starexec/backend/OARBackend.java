@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
  * Implementation of the Backend interface depending on the OAR scheduler (https://oar.imag.fr/)
  */
 public class OARBackend implements Backend {    
-	private static final StarLogger log = StarLogger.getLogger(OARBackend.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(OARBackend.class);
 	
 	private static final String JOB_ID_PATTERN = "OAR_JOB_ID=(-?\\d+)";
 	

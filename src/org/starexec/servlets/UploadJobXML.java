@@ -36,7 +36,7 @@ import java.util.List;
 @MultipartConfig
 public class UploadJobXML extends HttpServlet {
 
-	private static final StarLogger log = StarLogger.getLogger(UploadJobXML.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(UploadJobXML.class);
 	private static final String UPLOAD_FILE = "f";
 	private static final DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
 	private static final String SPACE_ID = R.SPACE;

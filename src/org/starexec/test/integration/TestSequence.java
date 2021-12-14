@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public abstract class TestSequence {
-	protected static final StarLogger log = StarLogger.getLogger(TestSequence.class);
+	protected static final StarLogger log = StarLoggerFactory.getLogger(TestSequence.class);
 	protected String sequenceName="No Name";
 	protected final TestStatus status=new TestStatus();
 	protected String message="No Message";
@@ -103,45 +103,45 @@ public abstract class TestSequence {
 	 * tend to be extremely verbose and drown out our logging
 	 */
 	private void turnOffExternalLogging() {
-		StarLogger.getLogger("java_cup.runtime").setLevel(StarLevel.OFF);
-		StarLogger.getLogger("trax").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("java_cup.runtime").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("trax").setLevel(StarLevel.OFF);
 
-		StarLogger.getLogger("selenium.webdriver").setLevel(StarLevel.OFF);
-		StarLogger.getLogger("org.openqa").setLevel(StarLevel.OFF);
-		StarLogger.getLogger("org.eclipse").setLevel(StarLevel.OFF);
-		StarLogger.getLogger("org.jboss").setLevel(StarLevel.OFF);
-		StarLogger.getLogger("org.apache").setLevel(StarLevel.OFF);
-		StarLogger.getLogger("org.hamcrest").setLevel(StarLevel.OFF);
-		StarLogger.getLogger("org.cyberneko").setLevel(StarLevel.OFF);
-		StarLogger.getLogger("org.testng").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("selenium.webdriver").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("org.openqa").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("org.eclipse").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("org.jboss").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("org.apache").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("org.hamcrest").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("org.cyberneko").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("org.testng").setLevel(StarLevel.OFF);
 
-		StarLogger.getLogger("org.w3c").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("org.w3c").setLevel(StarLevel.OFF);
 
-		StarLogger.getLogger("bsh").setLevel(StarLevel.OFF);
-		StarLogger.getLogger("net.sf").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("bsh").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("net.sf").setLevel(StarLevel.OFF);
 
-		StarLogger.getLogger("org.apache.http.wire").setLevel(StarLevel.OFF);
-		StarLogger.getLogger("org.apache.http.impl.conn.Wire").setLevel(StarLevel.OFF);
-		StarLogger.getLogger("org.apache.http.impl.conn.LoggingManagedHttpClientConnection").setLevel(StarLevel.OFF);
-		StarLogger.getLogger("org.apache.http.impl.execchain.MainClientExec").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("org.apache.http.wire").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("org.apache.http.impl.conn.Wire").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("org.apache.http.impl.conn.LoggingManagedHttpClientConnection").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("org.apache.http.impl.execchain.MainClientExec").setLevel(StarLevel.OFF);
 
-		StarLogger.getLogger("org.apache.http").setLevel(StarLevel.OFF);
-		StarLogger.getLogger("selenium.webdriver.remote.remote_connection").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("org.apache.http").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("selenium.webdriver.remote.remote_connection").setLevel(StarLevel.OFF);
 
-		StarLogger.getLogger("com.google").setLevel(StarLevel.OFF);
-		StarLogger.getLogger("com.opera").setLevel(StarLevel.OFF);
-		StarLogger.getLogger("com.thoughtworks").setLevel(StarLevel.OFF);
-		StarLogger.getLogger("com.steadystate").setLevel(StarLevel.OFF);
-		StarLogger.getLogger("com.beust").setLevel(StarLevel.OFF);
-		StarLogger.getLogger("com.sun").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("com.google").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("com.opera").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("com.thoughtworks").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("com.steadystate").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("com.beust").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("com.sun").setLevel(StarLevel.OFF);
 
-		StarLogger.getLogger("com.keypoint").setLevel(StarLevel.OFF);
-		StarLogger.getLogger("org.jfree").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("com.keypoint").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("org.jfree").setLevel(StarLevel.OFF);
 
-		StarLogger.getLogger("netscape.javascript").setLevel(StarLevel.OFF);
-		StarLogger.getLogger("net.sourceforge").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("netscape.javascript").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("net.sourceforge").setLevel(StarLevel.OFF);
 
-		StarLogger.getLogger("com.gargoylesoftware").setLevel(StarLevel.OFF);
+		StarLoggerFactory.getLogger("com.gargoylesoftware").setLevel(StarLevel.OFF);
 	}
 
 	/**

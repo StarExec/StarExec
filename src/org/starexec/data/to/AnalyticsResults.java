@@ -21,7 +21,7 @@ public class AnalyticsResults {
 	public final int count;
 	public final int users;
 
-	protected static final StarLogger log = StarLogger.getLogger(AnalyticsResults.class);
+	protected static final StarLogger log = StarLoggerFactory.getLogger(AnalyticsResults.class);
 
 	public AnalyticsResults(String event, int count, int users) {
 		this.event = Analytics.valueOf(event);

@@ -20,7 +20,7 @@ import java.util.List;
  * community and password reset requests
  */
 public class Requests {
-	private static final StarLogger log = StarLogger.getLogger(Requests.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(Requests.class);
 
 	/**
 	 * Adds an activation code to the database for a given user (used during registration)

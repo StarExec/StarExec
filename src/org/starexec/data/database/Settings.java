@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Settings {
-	private static final StarLogger log = StarLogger.getLogger(Settings.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(Settings.class);
 
 	public static int addNewSettingsProfile(DefaultSettings settings) {
 		Connection con = null;

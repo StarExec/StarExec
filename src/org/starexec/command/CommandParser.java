@@ -14,7 +14,7 @@ import java.util.*;
  * in the ArgumentParser class.
  */
 class CommandParser {
-	final private CommandLogger log = CommandLogger.getLogger(CommandParser.class);
+	final private CommandLogger log = CommandLoggerFactory.getLogger(CommandParser.class);
 	final private Map<String, String> variables;
 	private ArgumentParser parser = null;
 

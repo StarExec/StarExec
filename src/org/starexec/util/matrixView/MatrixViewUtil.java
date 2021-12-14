@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class MatrixViewUtil {
 
-	private static final StarLogger log = StarLogger.getLogger(MatrixViewUtil.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(MatrixViewUtil.class);
 
 	public static Job getJobIfAvailableToUser(int jobId, int userId, HttpServletResponse response) throws IOException {
 		final String method = "getJobIfAvailableToUser";

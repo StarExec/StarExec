@@ -44,7 +44,7 @@ import java.util.concurrent.TimeUnit;
  *
  */
 public class ResourceLoader implements AutoCloseable {
-	private final StarLogger log = StarLogger.getLogger(ResourceLoader.class);
+	private final StarLogger log = StarLoggerFactory.getLogger(ResourceLoader.class);
 
 	// this class keeps track of all the primitives it creates. Calling deleteAllPrimitives
 	// will delete all of these objects

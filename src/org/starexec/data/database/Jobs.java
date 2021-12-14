@@ -42,7 +42,7 @@ import java.util.*;
  */
 
 public class Jobs {
-	private static final StarLogger log = StarLogger.getLogger(Jobs.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(Jobs.class);
 
 	/**
 	 * Returns a list of job spaces that are present in the given path. Spaces are returned ordered from top level to

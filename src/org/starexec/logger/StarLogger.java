@@ -22,10 +22,10 @@ public class StarLogger extends BaseStarLogger {
         super(logger);
     }
 
-    public static StarLogger getLogger(Class clazz) {
+    public static StarLoggerFactory.getLogger(Class clazz) {
         return new StarLogger(clazz);
     }
-    public static StarLogger getLogger(String name) {
+    public static StarLoggerFactory.getLogger(String name) {
         return new StarLogger(name);
     }
 

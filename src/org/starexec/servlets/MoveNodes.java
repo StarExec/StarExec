@@ -25,7 +25,7 @@ import java.util.List;
  */
 @SuppressWarnings("ALL")
 public class MoveNodes extends HttpServlet {
-	private static final StarLogger log = StarLogger.getLogger(MoveNodes.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(MoveNodes.class);
 
 	// Request attributes
 	private static final String name = "name";

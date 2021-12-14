@@ -20,7 +20,7 @@ import java.util.*;
  */
 class ArgumentParser {
 
-	final private CommandLogger log = CommandLogger.getLogger(ArgumentParser.class);
+	final private CommandLogger log = CommandLoggerFactory.getLogger(ArgumentParser.class);
 
 	Connection con;
 

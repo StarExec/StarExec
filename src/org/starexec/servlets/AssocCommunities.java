@@ -21,7 +21,7 @@ import java.util.List;
  * @author Eric
  */
 public class AssocCommunities extends HttpServlet {
-	private static final StarLogger log = StarLogger.getLogger(AssocCommunities.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(AssocCommunities.class);
 
 	// Request attributes
 	private static final String name = "name";

@@ -25,7 +25,7 @@ import java.util.UUID;
  * @author Todd Elvers & Tyler Jensen
  */
 public class Registration extends HttpServlet {
-	private static final StarLogger log = StarLogger.getLogger(Registration.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(Registration.class);
 
 	// Param strings for processing
 	public static final String USER_COMMUNITY = "cm";

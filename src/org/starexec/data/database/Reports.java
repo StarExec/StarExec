@@ -15,7 +15,7 @@ import java.util.*;
  * @author Albert Giegerich
  */
 public class Reports {
-	private static final StarLogger log = StarLogger.getLogger(Reports.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(Reports.class);
 
 	/**
 	 * Set the number of occurrences for an event not related to a queue.

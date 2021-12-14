@@ -13,7 +13,7 @@ import java.util.Map;
  * Handles all database interaction for bench, pre and post processors
  */
 public class Syntaxes {
-	private static final StarLogger log = StarLogger.getLogger(Syntaxes.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(Syntaxes.class);
 	private static Map<Integer, Syntax> all = null;
 
 	/**

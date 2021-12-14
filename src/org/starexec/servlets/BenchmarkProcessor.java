@@ -28,7 +28,7 @@ import java.io.IOException;
  * @author Tyler Jensen
  */
 public class BenchmarkProcessor extends HttpServlet {
-	private static final StarLogger log = StarLogger.getLogger(BenchmarkProcessor.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(BenchmarkProcessor.class);
 
 	// Request attributes
 	private static final String PROCESSOR_ID = "pid";

@@ -15,7 +15,7 @@ import java.util.*;
  *
  */
 public class LocalBackend implements Backend {
-	private static final StarLogger log = StarLogger.getLogger(LocalBackend.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(LocalBackend.class);
 
 	private static class LocalJob {
 		public int execId = 0;

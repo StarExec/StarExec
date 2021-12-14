@@ -49,7 +49,7 @@ import java.util.List;
  * @author Tyler Jensen
  */
 public class Statistics {
-	private static final StarLogger log = StarLogger.getLogger(Statistics.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(Statistics.class);
 	/**
 	 * This string is returned in place of a file path whenever there are too many pairs to render a graph.
 	 */

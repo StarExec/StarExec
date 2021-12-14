@@ -14,12 +14,12 @@ public abstract class BaseStarLogger {
 
     protected BaseStarLogger(Class clazz) {
 
-        log = LogManager.getLogger(clazz);
+        log = LoggerFactory.getLogger(clazz);
         this.name = clazz.getName();
     }
 
     protected BaseStarLogger(String name) {
-        log = LogManager.getLogger(name);
+        log = LoggerFactory.getLogger(name);
         this.name = name;
     }
 

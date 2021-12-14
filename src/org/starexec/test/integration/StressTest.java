@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Random;
 
 public class StressTest {
-	private static final StarLogger log = StarLogger.getLogger(StressTest.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(StressTest.class);
 
 	private static final String SOLVER_NAME="smallsolver.zip";
 	private static final String BENCHMARK_NAME="app12.zip"; //contains about 1500 benchmarks

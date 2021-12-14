@@ -27,7 +27,7 @@ import java.util.stream.Stream;
  * Handles all database interaction for solvers
  */
 public class Solvers {
-	private static final StarLogger log = StarLogger.getLogger(Solvers.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(Solvers.class);
 	private static final String CONFIG_PREFIX = R.CONFIGURATION_PREFIX;
 	private static final DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);
 

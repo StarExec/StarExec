@@ -29,7 +29,7 @@ import java.util.List;
  */
 public class GetPageTests extends TestSequence {
 
-	private static final StarLogger log = StarLogger.getLogger(GetPageTests.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(GetPageTests.class);
 	private Connection con; // connection of a normal user
 	private Connection adminCon;
 	private Connection nonUserCon; // connection for someone who is not logged in

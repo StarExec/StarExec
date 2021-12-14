@@ -33,7 +33,7 @@ import java.util.HashMap;
  */
 @MultipartConfig
 public class UploadPicture extends HttpServlet {
-	private static final StarLogger log = StarLogger.getLogger(UploadPicture.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(UploadPicture.class);
 
 	// Request attributes
 	private static final String PICTURE_FILE = "f";

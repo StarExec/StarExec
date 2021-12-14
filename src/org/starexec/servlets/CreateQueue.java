@@ -26,7 +26,7 @@ import java.util.List;
  * @author Wyatt Kaiser
  */
 public class CreateQueue extends HttpServlet {
-	private static final StarLogger log = StarLogger.getLogger(CreateQueue.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(CreateQueue.class);
 
 	// Request attributes
 	private static final String name = "name";

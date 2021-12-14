@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
  * Holds all helper methods and classes for our restful web services
  */
 public class RESTHelpers {
-	private static final StarLogger log = StarLogger.getLogger(RESTHelpers.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(RESTHelpers.class);
 	private static final String SEARCH_QUERY = "sSearch";
 	private static final String SORT_DIRECTION = "sSortDir_0";
 	private static final String SYNC_VALUE = "sEcho";

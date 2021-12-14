@@ -51,7 +51,7 @@ import java.util.Optional;
 @MultipartConfig
 public class UploadSolver extends HttpServlet {
 
-	private static final StarLogger log = StarLogger.getLogger(UploadSolver.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(UploadSolver.class);
 	// Some param constants to process the form
 	private static final String SOLVER_DESC = "desc";
 	private static final String SOLVER_DESC_FILE = "d";

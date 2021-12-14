@@ -23,7 +23,7 @@ import java.util.List;
  * @see Spaces
  */
 public class Communities {
-	private static final StarLogger log = StarLogger.getLogger(Communities.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(Communities.class);
 
 	/**
 	 * @return A list of child spaces belonging to the root space (community spaces)

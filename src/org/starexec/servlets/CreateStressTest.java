@@ -22,7 +22,7 @@ import java.io.IOException;
  * @author Tyler Jensen
  */
 public class CreateStressTest extends HttpServlet {
-	private static final StarLogger log = StarLogger.getLogger(CreateStressTest.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(CreateStressTest.class);
 
 	// Request attributes
 	private static final String USER_COUNT = "userCount";

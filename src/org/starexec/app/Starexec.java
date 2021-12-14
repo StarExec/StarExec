@@ -1,7 +1,8 @@
 package org.starexec.app;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.PropertyConfigurator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.database.Analytics;
@@ -96,7 +97,7 @@ public class Starexec implements ServletContextListener {
 		// Before we do anything we must configure log4j!
 		PropertyConfigurator.configure(new File(R.STAREXEC_ROOT, LOG4J_PATH).getAbsolutePath());
 
-		log = StarLogger.getLogger(Starexec.class);
+		log = StarLoggerFactory.getLogger(Starexec.class);
 
 		// HERE
 		log.debug("\n\nHERE: Java Version: "+System.getProperty("java.version")+"\n\n");

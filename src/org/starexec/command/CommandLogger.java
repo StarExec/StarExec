@@ -13,7 +13,7 @@ public class CommandLogger {
 		logClass = c;
 	}
 
-	public static CommandLogger getLogger(Class c) {
+	public static CommandLoggerFactory.getLogger(Class c) {
 		return new CommandLogger(c);
 	}
 

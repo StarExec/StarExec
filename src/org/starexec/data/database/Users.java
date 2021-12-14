@@ -24,7 +24,7 @@ import java.util.List;
  * Handles all database interaction for users
  */
 public class Users {
-	private static final StarLogger log = StarLogger.getLogger(Users.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(Users.class);
 
 	/**
 	 * Associates a user with a space (i.e. adds the user to the space)

@@ -7,7 +7,7 @@ import org.starexec.test.integration.TestSequence;
 import org.starexec.util.dataStructures.TreeNode;
 
 public class TreeNodeTests extends TestSequence {
-	private static final StarLogger log = StarLogger.getLogger(TreeNodeTests.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(TreeNodeTests.class);
 
 	@Override 
 	protected String getTestName() {

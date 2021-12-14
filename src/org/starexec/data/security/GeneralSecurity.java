@@ -13,7 +13,7 @@ import java.sql.Connection;
 
 public class GeneralSecurity {
 
-	private static final StarLogger log = StarLogger.getLogger(GeneralSecurity.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(GeneralSecurity.class);
 
 	/**
 	 * Checks to see if the given user has permission to execute tests without checking to see if tests are already

@@ -17,7 +17,7 @@ import java.io.File;
  * @author Tyler Jensen
  */
 public class Processor extends Identifiable implements Nameable, Locatable {
-	private static final StarLogger log = StarLogger.getLogger(Processor.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(Processor.class);
 
 	@Expose private String name = "none";
 	@Expose private String description = "no description";

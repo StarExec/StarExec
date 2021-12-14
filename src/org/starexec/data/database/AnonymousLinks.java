@@ -15,7 +15,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class AnonymousLinks {
-	private static final StarLogger log = StarLogger.getLogger(AnonymousLinks.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(AnonymousLinks.class);
 	private static final int MAX_UUID_LENGTH = 36;
 
 	public enum PrimitivesToAnonymize {

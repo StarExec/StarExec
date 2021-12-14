@@ -12,7 +12,7 @@ import java.security.NoSuchAlgorithmException;
  * @author Skylar Stark
  */
 public class Hash {
-	private static final StarLogger log = StarLogger.getLogger(Hash.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(Hash.class);
 
 	/**
 	 * Hashes a password using a pre-specified hashing algorithm.

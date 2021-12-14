@@ -42,7 +42,7 @@ import java.util.*;
  */
 @Path("")
 public class RESTServices {
-	private static final StarLogger log = StarLogger.getLogger(RESTServices.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(RESTServices.class);
 	private static final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss").create();
 	private static final Gson limitGson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 

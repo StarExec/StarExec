@@ -21,7 +21,7 @@ public class CommandValidator {
 	 * which archives can we download from Starexec
 	 */
 	public static final String[] VALID_ARCHIVETYPES = {"zip"};
-	private static final CommandLogger log = CommandLogger.getLogger(CommandValidator.class);
+	private static final CommandLogger log = CommandLoggerFactory.getLogger(CommandValidator.class);
 	private static String missingParam = null;
 	private static List<String> unnecessaryParams = new ArrayList<>();
 

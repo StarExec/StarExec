@@ -9,10 +9,10 @@ public class NonSavingStarLogger extends BaseStarLogger {
         super(name);
     }
 
-    public static NonSavingStarLogger getLogger(Class clazz) {
+    public static NonSavingStarLoggerFactory.getLogger(Class clazz) {
         return new NonSavingStarLogger(clazz);
     }
-    public static NonSavingStarLogger getLogger(String name) {
+    public static NonSavingStarLoggerFactory.getLogger(String name) {
         return new NonSavingStarLogger(name);
     }
     @Override

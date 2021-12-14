@@ -22,7 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class AddJobPairs extends HttpServlet {
-	private static final StarLogger log = StarLogger.getLogger(AddJobPairs.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(AddJobPairs.class);
 	private static final String jobIdParam = "jobId";
 	final JsonParser parser = new JsonParser();
 

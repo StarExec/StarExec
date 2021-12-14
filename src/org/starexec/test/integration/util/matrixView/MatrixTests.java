@@ -19,7 +19,7 @@ import org.starexec.util.matrixView.Matrix;
 import java.util.*;
 
 public class MatrixTests extends TestSequence {
-	private static final StarLogger log = StarLogger.getLogger(MatrixTests.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(MatrixTests.class);
 
 	private Space space=null; //space to put the test job
 	private Solver solver=null; //solver to use for the job

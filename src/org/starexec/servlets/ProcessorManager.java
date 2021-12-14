@@ -33,7 +33,7 @@ import java.util.HashMap;
  */
 @MultipartConfig
 public class ProcessorManager extends HttpServlet {
-	private static final StarLogger log = StarLogger.getLogger(ProcessorManager.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(ProcessorManager.class);
 
 	// The unique date stamped file name format (for saving processor files)
 	private static final DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);

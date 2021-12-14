@@ -28,7 +28,7 @@ import java.util.*;
 
 @MultipartConfig
 public class UploadBenchmark extends HttpServlet {
-	private static final StarLogger log = StarLogger.getLogger(UploadBenchmark.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(UploadBenchmark.class);
 
 	// The unique date stamped file name format
 	private static final DateFormat shortDate = new SimpleDateFormat(R.PATH_DATE_FORMAT);

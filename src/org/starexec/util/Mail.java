@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * Contains utilities for sending mail from the local SMTP server
  */
 public class Mail {
-	private static final StarLogger log = StarLogger.getLogger(Mail.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(Mail.class);
 	public static final String EMAIL_CODE = "conf";            // Param string for email verification codes
 	public static final String CHANGE_EMAIL_CODE = "changeEmail";
 	public static final String LEADER_RESPONSE = "lead";    // Param string for leader response decisions

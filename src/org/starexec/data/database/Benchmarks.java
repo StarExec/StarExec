@@ -27,7 +27,7 @@ import java.util.function.Supplier;
  * Handles all database interaction for benchmarks.
  */
 public class Benchmarks {
-	private static final StarLogger log = StarLogger.getLogger(Benchmarks.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(Benchmarks.class);
 
 	/**
 	 * Deletes a benchmark and permanently removes it from the database. This is NOT the normal procedure for

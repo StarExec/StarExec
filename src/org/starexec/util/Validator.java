@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  * @author Todd Elvers & Tyler Jensen
  */
 public class Validator {
-	private static final StarLogger log = StarLogger.getLogger(Validator.class);
+	private static final StarLogger log = StarLoggerFactory.getLogger(Validator.class);
 
 	// Compiled patterns used for validation
 	private static Pattern patternBoolean;
