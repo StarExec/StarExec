@@ -12,6 +12,7 @@ public class Configuration extends Identifiable implements Nameable {
 	private int solverId = -1;
 	@Expose private String name;
 	@Expose private String description = "no description";
+	private int deleted = 0;
 
 	public Configuration() {
 
@@ -64,4 +65,14 @@ public class Configuration extends Identifiable implements Nameable {
 			this.description = description;
 		}
 	}
+
+	/**
+	 * @return the integer indicating whether the config is delted or not; 0 = false, 1 = true
+	 */
+	public int getDeleted() { return deleted; }
+
+	/**
+	 * @param deleted the integer indicating whether the config is delted or not; 0 = false, 1 = true
+	 */
+	public void setDeleted( int deleted ) { this.deleted = deleted; }
 }

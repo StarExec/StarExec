@@ -312,7 +312,7 @@ public class Queues {
 	/**
 	 * Gets the number of pairs that are enqueued in the given queue.
 	 *
-	 * @param qId The id of the queue to get pairs for
+ 	 * @param qId The id of the queue to get pairs for
 	 * @return A list of job pair objects that belong to the given queue.
 	 * @author Wyatt Kaiser
 	 */

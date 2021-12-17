@@ -541,6 +541,7 @@ public class Solvers {
 		final String methodName = "deleteConfiguration";
 		Connection con = null;
 		CallableStatement procedure = null;
+
 		try {
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL DeleteConfigurationById(?)}");
@@ -575,6 +576,7 @@ public class Solvers {
 			Solver s = Solvers.getSolverByConfig(config.getId(), false);
 			// Builds the path to the configuration object's physical file on disk, then deletes it from disk
 			File configFile = new File(Util.getSolverConfigPath(s.getPath(), config.getName()));
+
 			if (configFile.delete()) {
 				log.info(String.format("Configuration %d has been successfully deleted from disk.", config.getId()));
 			}
@@ -1168,7 +1170,7 @@ public class Solvers {
 	}
 
 	/**
-	 * Gets a particular Configuration on a connection
+	 * Gets a particular Configuration on a connection (excludes deleted configs)
 	 *
 	 * @param con The connection to query with
 	 * @param configId The id of the configuration to retrieve
@@ -1190,6 +1192,42 @@ public class Solvers {
 				c.setName(results.getString("name"));
 				c.setSolverId(results.getInt("solver_id"));
 				c.setDescription(results.getString("description"));
+				Common.safeClose(results);
+				return c;
+			}
+		} catch (Exception e) {
+			log.error(methodName, e.getMessage(), e);
+		} finally {
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+		return null;
+	}
+
+	/**
+	 * Gets a particular Configuration on a connection (includes deleted configs)
+	 *
+	 * @param con The connection to query with
+	 * @param configId The id of the configuration to retrieve
+	 * @return The configuration with the given id
+	 * @author Tyler Jensen and Alexander Brown
+	 */
+	protected static Configuration getConfigurationIncludeDeleted(Connection con, int configId) {
+		final String methodName = "getConfigurationIncludeDeleted";
+		CallableStatement procedure = null;
+		ResultSet results = null;
+
+		try {
+			procedure = con.prepareCall("{CALL GetConfigurationIncludeDeleted(?)}");
+			procedure.setInt(1, configId);
+			results = procedure.executeQuery();
+			if (results.next()) {
+				Configuration c = new Configuration();
+				c.setId(results.getInt("id"));
+				c.setName(results.getString("name"));
+				c.setSolverId(results.getInt("solver_id"));
+				c.setDescription(results.getString("description"));
+				c.setDeleted( results.getInt( "deleted" ) );
 				Common.safeClose(results);
 				return c;
 			}
@@ -1238,7 +1276,7 @@ public class Solvers {
 	}
 
 	/**
-	 * Gets a particular Configuration
+	 * Gets a particular Configuration (excludes deleted configs)
 	 *
 	 * @param configId The id of the configuration to retrieve
 	 * @return The configuration with the given id
@@ -1250,6 +1288,27 @@ public class Solvers {
 		try {
 			con = Common.getConnection();
 			return Solvers.getConfiguration(con, configId);
+		} catch (Exception e) {
+			log.error(methodName, e.getMessage(), e);
+			return null;
+		} finally {
+			Common.safeClose(con);
+		}
+	}
+
+	/**
+	 * Gets a particular Configuration (includes deleted configs)
+	 *
+	 * @param configId The id of the configuration to retrieve
+	 * @return The configuration with the given id
+	 * @author Tyler Jensen and Alexander Brown
+	 */
+	public static Configuration getConfigurationIncludeDeleted(int configId) {
+		final String methodName = "getConfigurationIncludeDeleted";
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			return Solvers.getConfigurationIncludeDeleted(con, configId);
 		} catch (Exception e) {
 			log.error(methodName, e.getMessage(), e);
 			return null;

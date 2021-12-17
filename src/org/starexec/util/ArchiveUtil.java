@@ -136,6 +136,14 @@ public class ArchiveUtil {
 	public static Boolean extractArchiveAsSandbox(String fileName, String destination) {
 		log.debug("ExtractingArchive for " + fileName);
 		try {
+
+			// // print the permissions of the tmp directory, the parent directory (sandbox), and the archive file
+			// String[] lsCmd = new String[3];
+			// tstCmd3[0] = "ls";
+			// tstCmd3[1] = "-al";
+			// tstCmd3[2] = destination;
+			// Util.executeCommand(lsCmd);
+
 			// Check for the appropriate file extension and hand off to the appropriate method
 			if (fileName.endsWith(".zip")) {
 				String[] unzipCmd = new String[7];

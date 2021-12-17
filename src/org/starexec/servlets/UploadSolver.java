@@ -245,7 +245,7 @@ public class UploadSolver extends HttpServlet {
 			newSolver.setName((String) form.get(UploadSolver.SOLVER_NAME));
 			newSolver.setDownloadable((Boolean.parseBoolean((String) form.get(SOLVER_DOWNLOADABLE))));
 
-			log.info("Handling upload of solver" + newSolver.getName());
+			log.info("Handling upload of solver " + newSolver.getName());
 
 			//Set up the unique directory to store the solver
 			//The directory is (base path)/user's ID/solver name/date/
@@ -290,11 +290,18 @@ public class UploadSolver extends HttpServlet {
 			}
 
 			//move the archive to the sandbox
+			log.debug("in UploadSolver.handleSolver() about to copy the archive to the sandbox directory where\nsandboxDir: "+sandboxDir);
+
 			FileUtils.copyFileToDirectory(archiveFile, sandboxDir);
 			archiveFile.delete();
 			archiveFile = new File(sandboxDir, archiveFile.getName());
 			log.debug("location of archive file = " + archiveFile.getAbsolutePath() + " and archive file exists =" +
 					          archiveFile.exists());
+
+			
+			// in the change from tc7 to tc9, the temporary directory, sandboxDir, is not created with the permissions we expect
+			// this call manually changes them to what we expect -- this allows for the sandbox user using the unzip command
+			Util.sandboxChmodDirectoryDirect(sandboxDir);
 
 			//extracts the given archive using the sandbox user
 			boolean extracted =

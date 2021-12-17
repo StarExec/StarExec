@@ -17,7 +17,7 @@ var getPanelTableInitializer;
 var openAjaxRequests = [];
 
 $(document).ready(function() {
-	initializeGlobalPageVariables();
+    initializeGlobalPageVariables();
 	initUI();
 	initSpaceExplorer();
 	initDataTables();
@@ -1386,6 +1386,7 @@ function getPairTableInitializer() {
 	return pairTableInitializer;
 }
 
+// see ./StarExec/src/org/starexec/app/RESTHelpers.java:convertSolverStatsToJsonObject()
 function getSolverTableInitializer() {
 	var SOLVER_ID = 0,
 		CONFIG_ID = 1,
@@ -1399,7 +1400,8 @@ function getSolverTableInitializer() {
 		FAILED = 9,
 		UNKNOWN = 10,
 		INCOMPLETE = 11,
-		CONFLICTS = 12;
+		CONFLICTS = 12,
+		CONFIG_DELETED = 13;
 
 	var linkTemplate = document.createElement("a");
 	linkTemplate.target = "_blank";
@@ -1448,8 +1450,12 @@ function getSolverTableInitializer() {
 		return solverTemplate.join("");
 	};
 
+// changed configTemplate so that href= is also null to start; now gets populated depending on
+// if the config is marked as deleted or not in table configurations; Alexander Brown 9/2020
 	var configTemplate = [
-		"<a target='_blank' class='configLink' href='configuration.jsp?id=",
+		"<a target='_blank' class='configLink' href='",
+		null,
+		"?id=",
 		null,
 		"' id='",
 		null,
@@ -1457,10 +1463,16 @@ function getSolverTableInitializer() {
 		null,
 		"</a>"
 	];
+
 	var formatConfig = function(row, type, val) {
-		configTemplate[1] = val[CONFIG_ID];
+	    if ( val[CONFIG_DELETED] == 1 ) {
+	        configTemplate[1] = "configDeleted.jsp";
+	    } else {
+            configTemplate[1] = "configuration.jsp";
+	    }
 		configTemplate[3] = val[CONFIG_ID];
-		configTemplate[5] = val[CONFIG_NAME];
+		configTemplate[5] = val[CONFIG_ID];
+		configTemplate[7] = val[CONFIG_NAME];
 		return configTemplate.join("");
 	};
 
@@ -1577,6 +1589,7 @@ function getSolverTableInitializer() {
 		}
 	}
 
+// solverTableInitializer is used to construct the solver summary page in the job space view
 	var solverTableInitializer = new window.star.DataTableConfig({
 		"bSort": true,
 		"bPaginate": true,

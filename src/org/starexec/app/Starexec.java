@@ -23,6 +23,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+// import java.lang.reflect.Field;
+
 /**
  * Class which listens for application events (mainly startup/shutdown)
  * and does any required setup/teardown.
@@ -41,6 +43,20 @@ public class Starexec implements ServletContextListener {
 	public void contextDestroyed(ServletContextEvent arg0) {
 		try {
 			log.info("Initiating shutdown of StarExec.");
+
+			StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
+			String stackString = "";
+			for ( StackTraceElement element : stacktrace ) {
+				// stackString += element.toString()+"\t"+ClassLoader.findClass(element.getClassName()).getResource(".class")+"\n";
+				stackString += element.toString()+"\n";
+			}
+			log.debug( "\n\ncontextDestroyed() stackString:\n"+stackString+"\n" );
+
+			log.debug( "\n\nServletContext info:\ngetInitParameterNames(): "+arg0.getServletContext().getInitParameterNames()+
+					"\ntoString(): "+arg0.toString()+"\n" );
+
+
+
 			// Stop the task scheduler since it freezes in an unorderly shutdown...
 			log.debug("Stopping starexec task scheduler...");
 			taskScheduler.shutdown();
@@ -73,14 +89,32 @@ public class Starexec implements ServletContextListener {
 	 */
 	@Override
 	public void contextInitialized(ServletContextEvent event) {
+
 		// Remember the application's root so we can load properties from it later
 		R.STAREXEC_ROOT = event.getServletContext().getRealPath("/");
+
 		// Before we do anything we must configure log4j!
 		PropertyConfigurator.configure(new File(R.STAREXEC_ROOT, LOG4J_PATH).getAbsolutePath());
 
 		log = StarLogger.getLogger(Starexec.class);
 
-		log.info(String.format("StarExec started at [%s]", R.STAREXEC_ROOT));
+		// HERE
+		log.debug("\n\nHERE: Java Version: "+System.getProperty("java.version")+"\n\n");
+
+		// Log info on the initialization stack
+		/*
+		log.info( "\n\nstarting Starexec.contextInitialized()\n" );
+		StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
+		String stackString = "";
+		for ( StackTraceElement element : stacktrace ) {
+			stackString += element.toString()+"\n";
+		}
+		log.debug( "\n\ncontextInitialized() stackString:\n"+stackString+"\n" );
+		
+		log.debug( "\n\nR.STAREXEC_ROOT: "+R.STAREXEC_ROOT+"\nenvvar SGE_ROOT: "+System.getenv("SGE_ROOT")+"\nR.BACKEND_ROOT: "+R.BACKEND_ROOT+"\n" );
+		*/
+
+		log.info(String.format("StarExec TMP started at [%s]", R.STAREXEC_ROOT));
 		try {
 			log.info("Starexec running as " + Util.executeCommand("whoami"));
 		} catch (IOException e1) {
@@ -107,6 +141,8 @@ public class Starexec implements ServletContextListener {
 
 
 		if (R.IS_FULL_STAREXEC_INSTANCE) {
+			// log.debug( "\n\nR.BACKEND_ROOT: "+R.BACKEND_ROOT+"\n" );
+
 			R.BACKEND.initialize(R.BACKEND_ROOT);
 		}
 
@@ -130,6 +166,8 @@ public class Starexec implements ServletContextListener {
 		event.getServletContext().setAttribute("contactEmail", R.CONTACT_EMAIL);
 
 		Analytics.STAREXEC_DEPLOY.record();
+
+		log.info( "finishing Starexec.contextInitialized()" );
 	}
 
 

@@ -22,6 +22,8 @@ public class SolverStats extends Identifiable {
 	@Expose private double cpuTime = 0;
 	@Expose private int stageNumber = 0;
 	@Expose private int jobSpaceId;
+	// instead of having its own field for whether or not a config has been deleted, access that field through the
+	// owned Configuration configuration object
 
 	public SolverStats() {
 		this.solver = new Solver();
@@ -179,4 +181,8 @@ public class SolverStats extends Identifiable {
 	public String getCorrectOverCompleted() {
 		return getCorrectJobPairs() + "/" + getCompleteJobPairs();
 	}
+
+	public int getConfigDeleted() { return configuration.getDeleted(); }
+
+
 }
