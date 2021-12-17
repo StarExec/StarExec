@@ -37,9 +37,6 @@ public class Starexec implements ServletContextListener {
 	private final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(10);
 	// private Session session; // GridEngine session
 
-	// Path of the starexec config and log4j files which are needed at compile time to load other resources
-	private static final String LOG4J_PATH = "/WEB-INF/classes/org/starexec/config/log4j.properties";
-
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
 		try {
@@ -94,10 +91,7 @@ public class Starexec implements ServletContextListener {
 		// Remember the application's root so we can load properties from it later
 		R.STAREXEC_ROOT = event.getServletContext().getRealPath("/");
 
-		// Before we do anything we must configure log4j!
-		PropertyConfigurator.configure(new File(R.STAREXEC_ROOT, LOG4J_PATH).getAbsolutePath());
-
-		log = StarLoggerFactory.getLogger(Starexec.class);
+		log = StarLogger.getLogger(Starexec.class);
 
 		// HERE
 		log.debug("\n\nHERE: Java Version: "+System.getProperty("java.version")+"\n\n");

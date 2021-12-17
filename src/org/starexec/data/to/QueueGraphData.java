@@ -15,7 +15,7 @@ import org.starexec.logger.StarLogger;
  */
 public class QueueGraphData {
     /* -- fields ---------------------------------------------------------------------------------------------------- */
-    private static final StarLogger log = StarLoggerFactory.getLogger(QueueGraphData.class);
+    private static final StarLogger log = StarLogger.getLogger(QueueGraphData.class);
     public static final int MAX_QUEUE_PLOT_POINTS = 50;
     private final int queueId;
     /**

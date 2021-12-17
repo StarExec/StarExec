@@ -16,7 +16,7 @@ import java.util.List;
  * Handles database interaction for the uploading Benchmarks Status Page.
  */
 public class Uploads {
-	private static final StarLogger log = StarLoggerFactory.getLogger(Uploads.class);
+	private static final StarLogger log = StarLogger.getLogger(Uploads.class);
 
 	/**
 	 * Adds failed benchmark name to db

@@ -24,7 +24,7 @@ import javax.servlet.ServletException;
  * This can be usefull if StarExec's version of GCC is updated
  */
 public class RebuildSolver extends HttpServlet {
-	private static final StarLogger log = StarLoggerFactory.getLogger(RebuildSolver.class);
+	private static final StarLogger log = StarLogger.getLogger(RebuildSolver.class);
 	private static final Gson gson = new Gson();
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)

@@ -27,7 +27,7 @@ import java.util.Map.Entry;
  * Contains handles on database queries for retrieving and updating job pairs.
  */
 public class JobPairs {
-	private static final StarLogger log = StarLoggerFactory.getLogger(JobPairs.class);
+	private static final StarLogger log = StarLogger.getLogger(JobPairs.class);
 
 	private static void addJobPairInputs(List<JobPair> pairs, Connection con) {
 		final String methodName = "addJobPairInputs";

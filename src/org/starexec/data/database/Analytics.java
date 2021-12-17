@@ -29,7 +29,7 @@ public enum Analytics {
 	STAREXEC_DEPLOY,
 	STAREXECCOMMAND_LOGIN;
 
-	private static final StarLogger log = StarLoggerFactory.getLogger(Analytics.class);
+	private static final StarLogger log = StarLogger.getLogger(Analytics.class);
 
 	private final int id;
 	private final HashMap<Date, Data> events;
@@ -80,7 +80,7 @@ public enum Analytics {
 			/* Cannot access `static log`
 			 * because it has not been initialized yet
 			 */
-			final StarLogger log = StarLoggerFactory.getLogger(Analytics.class);
+			final StarLogger log = StarLogger.getLogger(Analytics.class);
 			log.error("Event not found in database: " + this.name());
 		}
 		return id;

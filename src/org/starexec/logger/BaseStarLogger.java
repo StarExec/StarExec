@@ -28,10 +28,16 @@ public abstract class BaseStarLogger {
         this.name = log.getName();
     }
 
-
+    public static void turnOffLogging() {
+	((ch.qos.logback.classic.Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.OFF);
+    }
 
     public String getName() {
         return log.getName();
+    }
+
+    public void setLevel(StarLevel level) {
+        ((ch.qos.logback.classic.Logger)log).setLevel(level.get());
     }
 
     public void entry(String method) {
@@ -108,23 +114,20 @@ public abstract class BaseStarLogger {
     }
 
     public void fatal(final String method, final String message, final Throwable t) {
-        log(StarLevel.FATAL, method, message, t);
+        log(StarLevel.ERROR, method, message, t);
     }
     public void fatal(final String method, final String message) {
-        log(StarLevel.FATAL, method, message, null);
+        log(StarLevel.ERROR, method, message, null);
     }
     public void fatal(final String message) {
-        log(StarLevel.FATAL, null, message, null);
+        log(StarLevel.ERROR, null, message, null);
     }
     public void fatal(final String message, final Throwable t) {
-        log(StarLevel.FATAL, null, message, t);
+        log(StarLevel.ERROR, null, message, t);
     }
 
     protected void sendToLogger(StarLevel level, String message) {
 	switch (level) {
-	case FATAL:
-	    log.error(message);
-	    break;
 	case ERROR:
 	    log.error(message);
 	    break;

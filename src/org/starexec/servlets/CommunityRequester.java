@@ -25,7 +25,7 @@ import java.util.UUID;
  * @author Todd Elvers
  */
 public class CommunityRequester extends HttpServlet {
-	private static final StarLogger log = StarLoggerFactory.getLogger(CommunityRequester.class);
+	private static final StarLogger log = StarLogger.getLogger(CommunityRequester.class);
 	private String errorMessage;
 
 	@Override

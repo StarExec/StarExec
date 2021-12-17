@@ -16,7 +16,7 @@ import java.sql.Timestamp;
  * @author Todd Elvers & Tyler Jensen
  */
 public class CommunityRequest {
-	private static final StarLogger log = StarLoggerFactory.getLogger(CommunityRequest.class);
+	private static final StarLogger log = StarLogger.getLogger(CommunityRequest.class);
 
 	private int communityId;
 	private String message;

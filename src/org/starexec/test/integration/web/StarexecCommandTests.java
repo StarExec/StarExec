@@ -22,7 +22,7 @@ import java.util.List;
 import static org.junit.Assert.assertTrue;
 
 public class StarexecCommandTests extends TestSequence {
-	private static final StarLogger log = StarLoggerFactory.getLogger(StarexecCommandTests.class);
+	private static final StarLogger log = StarLogger.getLogger(StarexecCommandTests.class);
 	private Connection con;
 	private Space space1=null; //will contain both solvers and benchmarks
 	private Space space2=null;

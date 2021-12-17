@@ -40,7 +40,7 @@ public class StarLogger extends BaseStarLogger {
 	String msg = getMessage(method,message,t);
 	sendToLogger(level, msg);
 
-        if (level == StarLevel.ERROR || level == StarLevel.FATAL || level == StarLevel.WARN) {
+        if (level == StarLevel.ERROR || level == StarLevel.WARN) {
             reportError(level, msg, t);
         }
     }

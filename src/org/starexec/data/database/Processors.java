@@ -19,7 +19,7 @@ import java.util.List;
  * Handles all database interaction for bench, pre and post processors
  */
 public class Processors {
-	private static final StarLogger log = StarLoggerFactory.getLogger(Processors.class);
+	private static final StarLogger log = StarLogger.getLogger(Processors.class);
 
 	/**
 	 * Given a result set where the current row points to a  processor, return the processor

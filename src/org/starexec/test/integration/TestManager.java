@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  */
 public class TestManager {
-	private static final StarLogger log = StarLoggerFactory.getLogger(TestManager.class);
+	private static final StarLogger log = StarLogger.getLogger(TestManager.class);
 	private final static AtomicBoolean isRunning=new AtomicBoolean(false);
 	private final static AtomicBoolean isRunningStress=new AtomicBoolean(false);
 	//this should never be modified outside of the initializeTests method

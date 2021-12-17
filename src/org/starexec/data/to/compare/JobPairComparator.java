@@ -8,7 +8,7 @@ import org.starexec.logger.StarLogger;
 import java.util.Comparator;
 
 public class JobPairComparator implements Comparator<JobPair> {
-	protected static final StarLogger log = StarLoggerFactory.getLogger(JobPairComparator.class);
+	protected static final StarLogger log = StarLogger.getLogger(JobPairComparator.class);
 
 	private final int column; //will specify which field we are using to sort the job pairs
 	private final int stageNumber;

@@ -19,7 +19,7 @@ import java.sql.SQLException;
 import java.util.*;
 
 public class AnonymousLinkTests extends TestSequence {
-	private static final StarLogger log = StarLoggerFactory.getLogger(AnonymousLinkTests.class);	
+	private static final StarLogger log = StarLogger.getLogger(AnonymousLinkTests.class);	
 	private User admin;
 	private User user;
 	private Space space;

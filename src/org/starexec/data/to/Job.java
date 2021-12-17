@@ -21,7 +21,7 @@ import java.util.*;
  * @author Tyler Jensen
  */
 public class Job extends Identifiable implements Iterable<JobPair>, Nameable {
-	private static final StarLogger log = StarLoggerFactory.getLogger(Jobs.class);
+	private static final StarLogger log = StarLogger.getLogger(Jobs.class);
 
 	private int userId = -1;
 	private User user = null; // this is populated for the JobManager

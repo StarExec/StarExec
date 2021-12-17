@@ -26,7 +26,7 @@ import java.util.*;
  * Contains helper methods for JSP pages.
  */
 public class JspHelpers {
-    private static final StarLogger log = StarLoggerFactory.getLogger( JspHelpers.class );
+    private static final StarLogger log = StarLogger.getLogger( JspHelpers.class );
 
 	private JspHelpers() {
 		throw new UnsupportedOperationException("You may not create an instance of JspHelpers.");

@@ -31,7 +31,7 @@ import java.util.HashMap;
  */
 @MultipartConfig
 public class UploadConfiguration extends HttpServlet {
-	private static final StarLogger log = StarLoggerFactory.getLogger(UploadConfiguration.class);
+	private static final StarLogger log = StarLogger.getLogger(UploadConfiguration.class);
 
 	// Param constants to use to process the form
 	private static final String CONFIG_DESC = "uploadConfigDesc";

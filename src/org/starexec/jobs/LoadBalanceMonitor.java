@@ -8,7 +8,7 @@ import org.starexec.constants.R;
 import java.util.*;
 
 public class LoadBalanceMonitor {
-	private static final StarLogger log = StarLoggerFactory.getLogger(LoadBalanceMonitor.class);
+	private static final StarLogger log = StarLogger.getLogger(LoadBalanceMonitor.class);
 	static class UserLoadData implements Comparable<UserLoadData> {
 		final int userId;
 		

@@ -36,7 +36,7 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
  * @author Skylar Stark & Tyler Jensen
  */
 public class Download extends HttpServlet {
-	private static final StarLogger log = StarLoggerFactory.getLogger(Download.class);
+	private static final StarLogger log = StarLogger.getLogger(Download.class);
 	private static final String JS_FILE_TYPE = "js";
 	private static final String CSS_FILE_TYPE = "css";
 	private static final String PNG_FILE_TYPE = "png";

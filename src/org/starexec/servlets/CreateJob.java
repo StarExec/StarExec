@@ -30,7 +30,7 @@ import java.util.*;
  * @author Tyler Jensen
  */
 public class CreateJob extends HttpServlet {
-	private static final StarLogger log = StarLoggerFactory.getLogger(CreateJob.class);
+	private static final StarLogger log = StarLogger.getLogger(CreateJob.class);
 
 	// Request attributes
 	private static final String name = "name";

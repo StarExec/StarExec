@@ -18,7 +18,7 @@ import java.util.List;
  * Handles all database interaction for permissions
  */
 public class Permissions {
-	private static final StarLogger log = StarLoggerFactory.getLogger(Permissions.class);
+	private static final StarLogger log = StarLogger.getLogger(Permissions.class);
 
 	/**
 	 * Adds a new permission record to the database. This is an internal helper method.

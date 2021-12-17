@@ -6,14 +6,14 @@ import org.starexec.logger.StarLogger;
 import java.util.List;
 
 public class LoggingManager {
-	private static final StarLogger log = StarLoggerFactory.getLogger(LoggingManager.class);
+	private static final StarLogger log = StarLogger.getLogger(LoggingManager.class);
 
 	public static void setLoggingLevel(StarLevel level) {
 		StarLogger.getRootLogger().setLevel(level);
 	}
 
 	public static boolean setLoggingLevelForClass(StarLevel level, String className) {
-	    Logger logger = StarLogger.getLogger(className);
+	    StarLogger logger = StarLogger.getLogger(className);
 	    if (logger == null) {
 		return false;
 	    }

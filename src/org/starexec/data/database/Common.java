@@ -21,7 +21,7 @@ public class Common {
 	// We have to use the non saving star logger here because this class is used by the ErrorLogs class. If ErrorLogs
 	// calls this class and this class logs an error then that error will be saved to the database via ErrorLogs (if we
 	// were using StarLogger instead of NonSavingStarLogger). This could cause infinite recursion.
-	private static final NonSavingStarLogger log = NonSavingStarLoggerFactory.getLogger(Common.class);
+	private static final NonSavingStarLogger log = NonSavingStarLogger.getLogger(Common.class);
 	private static DataSource dataPool = null;
 
 	private static int connectionsOpened = 0;

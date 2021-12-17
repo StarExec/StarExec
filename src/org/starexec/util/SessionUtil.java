@@ -18,7 +18,7 @@ import java.util.HashMap;
  */
 
 public class SessionUtil {	
-	private static final StarLogger log = StarLoggerFactory.getLogger(SessionUtil.class);
+	private static final StarLogger log = StarLogger.getLogger(SessionUtil.class);
 	public static final String USER = "user";	// The string we store the user's User object under
 	public static final String PERMISSION_CACHE = "perm";	// The string we store the user's permission cache object under
 	private static User publicUser = null;

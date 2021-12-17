@@ -28,7 +28,7 @@ import java.io.IOException;
  * @author Todd Elvers
  */
 public class SaveConfiguration extends HttpServlet {
-	private static final StarLogger log = StarLoggerFactory.getLogger(SaveConfiguration.class);
+	private static final StarLogger log = StarLogger.getLogger(SaveConfiguration.class);
 
 	// Param constants to use to process the form
 	private static final String CONFIG_DESC = "saveConfigDesc";

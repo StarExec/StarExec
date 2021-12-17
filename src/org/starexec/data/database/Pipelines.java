@@ -19,7 +19,7 @@ import java.util.List;
  * @author Eric
  */
 public class Pipelines {
-	private static final StarLogger log = StarLoggerFactory.getLogger(Pipelines.class);
+	private static final StarLogger log = StarLogger.getLogger(Pipelines.class);
 
 	/**
 	 * Returns a list of dependencies that go with the pipeline stage with the given ID. Dependencies will be returned

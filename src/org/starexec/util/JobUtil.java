@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.util.*;
 
 public class JobUtil {
-	private static final StarLogger log = StarLoggerFactory.getLogger(JobUtil.class);
+	private static final StarLogger log = StarLogger.getLogger(JobUtil.class);
 
 	private Boolean jobCreationSuccess = false;
 	private String errorMessage = "";//this will be used to given information to user about failures in validation

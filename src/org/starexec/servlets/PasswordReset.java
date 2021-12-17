@@ -26,7 +26,7 @@ import java.util.UUID;
  */
 
 public class PasswordReset extends HttpServlet {
-	private static final StarLogger log = StarLoggerFactory.getLogger(PasswordReset.class);
+	private static final StarLogger log = StarLogger.getLogger(PasswordReset.class);
 	public static final String PASS_RESET = "reset";        // Param string for password reset codes
 
 	/**

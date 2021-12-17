@@ -22,7 +22,7 @@ import java.io.IOException;
  * @author Ruoyu Zhang & Todd Elvers
  */
 public class GetPicture extends HttpServlet {
-	private static final StarLogger log = StarLoggerFactory.getLogger(GetPicture.class);
+	private static final StarLogger log = StarLogger.getLogger(GetPicture.class);
 
 	@Override
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)

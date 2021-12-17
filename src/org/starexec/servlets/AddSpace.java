@@ -25,7 +25,7 @@ import java.util.Set;
  */
 @SuppressWarnings("JavadocReference")
 public class AddSpace extends HttpServlet {
-	private static final StarLogger log = StarLoggerFactory.getLogger(AddSpace.class);
+	private static final StarLogger log = StarLogger.getLogger(AddSpace.class);
 
 	// Request attributes
 	private static final String parentSpace = "parent";

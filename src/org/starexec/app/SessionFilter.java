@@ -27,7 +27,7 @@ import java.util.regex.Pattern;
  * @author Tyler Jensen
  */
 public class SessionFilter implements Filter {
-	private static final StarLogger log = StarLoggerFactory.getLogger(SessionFilter.class);
+	private static final StarLogger log = StarLogger.getLogger(SessionFilter.class);
 
 	/**
 	 * This RegEx is used to match known StarExecCommand User-Agent headers.

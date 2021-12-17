@@ -15,7 +15,7 @@ import java.util.Properties;
  * @author Eric
  */
 public class JoblineStage {
-	private static final StarLogger log = StarLoggerFactory.getLogger(JoblineStage.class);
+	private static final StarLogger log = StarLogger.getLogger(JoblineStage.class);
 
 	private Solver solver = null;
 	private Integer stageId = null; // This is the ID of the PipelineStage that this JoblineStage refers to

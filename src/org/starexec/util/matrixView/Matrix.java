@@ -29,7 +29,7 @@ public class Matrix {
 	private Integer jobSpaceId;
 
 
-	private static final StarLogger log = StarLoggerFactory.getLogger(Matrix.class);
+	private static final StarLogger log = StarLogger.getLogger(Matrix.class);
 
 
 	/**

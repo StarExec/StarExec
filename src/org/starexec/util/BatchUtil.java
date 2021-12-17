@@ -27,7 +27,7 @@ import java.util.*;
  * @author Benton McCune. changes: Julio Cervantes
  */
 public class BatchUtil {
-	private static final StarLogger log = StarLoggerFactory.getLogger(BatchUtil.class);
+	private static final StarLogger log = StarLogger.getLogger(BatchUtil.class);
 
 	private Document doc = null;
 	private String errorMessage = "";//this will be used to given information to user about failures in validation

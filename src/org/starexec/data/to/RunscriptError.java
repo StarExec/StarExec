@@ -13,7 +13,7 @@ public class RunscriptError {
 	public final WorkerNode node;
 	public final JobPair jobPair;
 
-	protected static final StarLogger log = StarLoggerFactory.getLogger(AnalyticsResults.class);
+	protected static final StarLogger log = StarLogger.getLogger(AnalyticsResults.class);
 
 	public RunscriptError(Date time, String node, int jobPairId) {
 		this.time = time;

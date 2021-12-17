@@ -25,7 +25,7 @@ import java.util.Map;
  * @author Tyler Jensen
  */
 public class Queues {
-	private static final StarLogger log = StarLoggerFactory.getLogger(Queues.class);
+	private static final StarLogger log = StarLogger.getLogger(Queues.class);
 
 	/**
 	 * @return returns the default queue name, default queue should always exist

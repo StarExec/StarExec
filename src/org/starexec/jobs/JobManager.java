@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * @author Tyler Jensen
  */
 public abstract class JobManager {
-	private static final StarLogger log = StarLoggerFactory.getLogger(JobManager.class);
+	private static final StarLogger log = StarLogger.getLogger(JobManager.class);
 
 	private static String mainTemplate = null; // initialized below
 

@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public class JobSecurity {
 
-	private static final StarLogger log = StarLoggerFactory.getLogger(JobSecurity.class);
+	private static final StarLogger log = StarLogger.getLogger(JobSecurity.class);
 
 	/**
 	 * Checks to see whether a user can delete all the orphaned jobs owned by some user

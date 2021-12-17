@@ -18,7 +18,7 @@ import java.util.Map;
  */
 
 public class Cluster {
-	private static final StarLogger log = StarLoggerFactory.getLogger(Cluster.class);
+	private static final StarLogger log = StarLogger.getLogger(Cluster.class);
 
 	/**
 	 * Gets the worker nodes from BACKEND and adds them to the database if they don't already exist. This must be done
