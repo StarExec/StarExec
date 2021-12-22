@@ -34,7 +34,6 @@ public class StarLogger extends BaseStarLogger {
         return new StarLogger(LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME));
     }
 
-
     @Override
     protected void log(StarLevel level, final String method, final String message, final Throwable t) {
 	String msg = getMessage(method,message,t);

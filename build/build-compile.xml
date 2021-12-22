@@ -100,12 +100,16 @@
 			</fileset>
 		</copy>
 
-		<!-- Update the log4j config file to only record INFO level events	-->
-		<propertyfile file="${config-dir}/log4j.properties" comment="${generated-message}">
-			<entry key="log4j.rootLogger" value="${logging_levels}"/>
-			<entry key="log4j.appender.STAREXEC.File" value="${catalina.base}/logs/${logfile_name}.log" />
-		</propertyfile>
-
+		<!-- Update the logback config file, then move it to classes/, where logback expects it -->
+                <replace file="${config-dir}/logback.xml" 
+                         token="@STAREXEC_LOG@" 
+                         value="${catalina.base}/logs/${logfile_name}.log"/>
+                <replace file="${config-dir}/logback.xml"
+                         token="@LOGGING_LEVEL@" 
+                         value="${logging_level}"/>
+                <echo file="${config-dir}/logback.xml" message="&lt;!-- ${generated-message} -->" append="true"/>
+                <move file="${config-dir}/logback.xml" todir="${class-dir}"/>
+                
 		<!-- Create the war file! -->
 		<war compress="${compression-enabled}" level="9" warfile="${war-file-name}" webxml="${web-inf}/web.xml">
 			<classes dir="${class-dir}" />

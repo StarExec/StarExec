@@ -1,8 +1,9 @@
 package org.starexec.app;
 
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.Logger;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.database.Analytics;
@@ -93,6 +94,10 @@ public class Starexec implements ServletContextListener {
 
 		log = StarLogger.getLogger(Starexec.class);
 
+		/* uncomment to debug what is happening with logback configuration:
+		LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+		ch.qos.logback.core.util.StatusPrinter.print(context); */
+
 		// HERE
 		log.debug("\n\nHERE: Java Version: "+System.getProperty("java.version")+"\n\n");
 
@@ -109,7 +114,7 @@ public class Starexec implements ServletContextListener {
 		log.debug( "\n\nR.STAREXEC_ROOT: "+R.STAREXEC_ROOT+"\nenvvar SGE_ROOT: "+System.getenv("SGE_ROOT")+"\nR.BACKEND_ROOT: "+R.BACKEND_ROOT+"\n" );
 		*/
 
-		log.info(String.format("StarExec TMP started at [%s]", R.STAREXEC_ROOT));
+		log.info(String.format("StarExec started at [%s]", R.STAREXEC_ROOT));
 		try {
 			log.info("Starexec running as " + Util.executeCommand("whoami"));
 		} catch (IOException e1) {

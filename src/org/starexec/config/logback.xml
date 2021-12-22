@@ -1,35 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- For assistance related to logback-translator or configuration  -->
-<!-- files in general, please contact the logback user mailing list -->
-<!-- at http://www.qos.ch/mailman/listinfo/logback-user             -->
-<!--                                                                -->
-<!-- For professional support please see                            -->
-<!--    http://www.qos.ch/shop/products/professionalSupport         -->
-<!--                                                                -->
-<configuration>
+<configuration debug="true">
+  
   <appender name="STAREXEC" class="ch.qos.logback.core.rolling.RollingFileAppender">
     <!--See http://logback.qos.ch/manual/appenders.html#RollingFileAppender-->
     <!--and http://logback.qos.ch/manual/appenders.html#TimeBasedRollingPolicy-->
     <!--for further documentation-->
-    <Encoding>UTF-8</Encoding>
     <Append>true</Append>
-    <File>${catalina.base}/logs/starexec.log</File>
-    <encoder>
-      <pattern>%d{dd MMM yyyy HH:mm:ss.SSS} %22t [%-5p] (%c{1}) - %m%n</pattern>
+    <File>@STAREXEC_LOG@</File>
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <pattern>%d{dd MMM HH:mm:ss.SSS} %22t [%-5p] - %m%n</pattern>
     </encoder>
     <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-      <fileNamePattern>${catalina.base}/logs/starexec.log .%d{'.'yyyy-MM-dd }</fileNamePattern>
-    </rollingPolicy>
+      <fileNamePattern>@STAREXEC_LOG@.%d</fileNamePattern>
+    </rollingPolicy> 
   </appender>
-  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-    <Encoding>UTF-8</Encoding>
-    <encoder>
-      <pattern>%d{dd MMM yyyy HH:mm:ss.SSS} %22t [%-5p] (%c{1}) - %m%n</pattern>
-    </encoder>
-  </appender>
-  <root level="DEBUG">
+  <root level="@LOGGING_LEVEL@">
     <appender-ref ref="STAREXEC"/>
-    <appender-ref ref="CONSOLE"/>
   </root>
 </configuration>
