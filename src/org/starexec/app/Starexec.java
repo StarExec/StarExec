@@ -156,6 +156,8 @@ public class Starexec implements ServletContextListener {
 		System.setProperty("http.proxyHost", R.HTTP_PROXY_HOST);
 		System.setProperty("http.proxyPort", R.HTTP_PROXY_PORT);
 
+		org.starexec.data.security.GeneralSecurity.test();
+
 		// Schedule necessary periodic tasks to run
 		this.scheduleRecurringTasks();
 
