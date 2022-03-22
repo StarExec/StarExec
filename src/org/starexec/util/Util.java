@@ -39,7 +39,7 @@ import static java.util.Objects.nonNull;
  * This class contains utility functions used throughout Starexec, including many
  * for executing commands and interacting with the filesystem.
  *
- * @author Eric
+ * @author Eric, and others
  */
 public class Util {
 	protected static final ExecutorService threadPool = Executors.newCachedThreadPool();
