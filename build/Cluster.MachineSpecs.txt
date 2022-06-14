@@ -1,5 +1,5 @@
 # Starexec stats for each node (001 - 032):
-CPU Model name:                 Intel(R) Xeon(R) CPU E5-2667 v4 0 @ 3.20GHz
+CPU Model name:                 Intel(R) Xeon(R) CPU E5-2620 v4 @ 2.10GHz 
 Cache size:                     25600 KB
 
 CPUs per node (Sockets):        2
