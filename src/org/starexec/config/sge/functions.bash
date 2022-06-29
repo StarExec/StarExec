@@ -507,8 +507,9 @@ function sendNode {
 	local NODE=$(dbEscape $1)
 	local SANDBOX=$(($2))
 	log "sending Node Id $NODE to $REPORT_HOST in sandbox $SANDBOX"
+	sendStatus $STATUS_RUNNING
+	sendStageStatus $STATUS_RUNNING ${STAGE_NUMBERS[STAGE_INDEX]}
 	dbExec "
-		CALL UpdatePairStatus($PAIR_ID, $STATUS_RUNNING);
 		CALL UpdateNodeId($PAIR_ID, '$NODE', $SANDBOX);
 	"
 }
