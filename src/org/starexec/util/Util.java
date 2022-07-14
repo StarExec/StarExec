@@ -1198,4 +1198,13 @@ public class Util {
 		};
 		return Util.executeCommand(command).contains("charset=binary");
 	}
+
+	/**
+	 * Escape a string for export to a CSV file
+	 * @param s String to escape
+	 * @return String with no quotes or commas
+	 */
+	public static String escapeForCSV(String s) {
+		return s.replaceAll("[,\"]+","");
+	}
 }
