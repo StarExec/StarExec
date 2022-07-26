@@ -299,6 +299,8 @@ public class R {
 	public static final int NUM_REPOSTPROCESS_AT_A_TIME = 200; // number of job pairs to re-postprocess at a time with our periodic task
 	public static final int DEFAULT_MAX_TIMEOUT = 259200;
         public static final Long LOAD_DIFFERENCE_THRESHOLD = 5400L; // 90 minutes in seconds
+	public static final int PROCESSOR_TIME_LIMIT = 45;
+	
 	/* Maximum Runsolver kill-delay */
 	public static final int MAX_KILL_DELAY = 120;
 
