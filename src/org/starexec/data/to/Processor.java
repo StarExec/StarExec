@@ -25,7 +25,7 @@ public class Processor extends Identifiable implements Nameable, Locatable {
 	@Expose private ProcessorType type = ProcessorType.DEFAULT;
 	private String filePath;
 	private long diskSize;
-	private int timeLimit = 45;
+	private int timeLimit = R.PROCESSOR_TIME_LIMIT;
 	private int communityId;
 	private Syntax syntax;
 
