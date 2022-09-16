@@ -15,9 +15,6 @@
 		   userCredCol="password"
 		   userRoleTable="user_roles"
 		   roleNameCol="role"
-		   digest="SHA-256">
-		   <CredentialHandler className="org.apache.catalina.realm.MessageDigestCredentialHandler"
-              algorithm="SHA-512"/>
-        </Realm>
+		   digest="SHA-512" />
 	  </Realm>
 	</Context>

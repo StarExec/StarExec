@@ -16,6 +16,11 @@
     </servlet>
 
     <servlet>
+        <servlet-name>org.apache.jsp.secure.explore.cluster_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.secure.explore.cluster_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>org.apache.jsp.secure.explore.communities_jsp</servlet-name>
         <servlet-class>org.apache.jsp.secure.explore.communities_jsp</servlet-class>
     </servlet>
@@ -36,11 +41,6 @@
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.jsp.secure.explore.cluster_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.secure.explore.cluster_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
         <servlet-name>org.apache.jsp.secure.edit.account_jsp</servlet-name>
         <servlet-class>org.apache.jsp.secure.edit.account_jsp</servlet-class>
     </servlet>
@@ -53,6 +53,11 @@
     <servlet>
         <servlet-name>org.apache.jsp.secure.edit.community_jsp</servlet-name>
         <servlet-class>org.apache.jsp.secure.edit.community_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.secure.edit.configuration_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.secure.edit.configuration_jsp</servlet-class>
     </servlet>
 
     <servlet>
@@ -96,11 +101,6 @@
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.jsp.secure.edit.configuration_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.secure.edit.configuration_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
         <servlet-name>org.apache.jsp.secure.details.XMLuploadStatus_jsp</servlet-name>
         <servlet-class>org.apache.jsp.secure.details.XMLuploadStatus_jsp</servlet-class>
     </servlet>
@@ -116,6 +116,16 @@
     </servlet>
 
     <servlet>
+        <servlet-name>org.apache.jsp.secure.details.configDeleted_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.secure.details.configDeleted_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.secure.details.configuration_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.secure.details.configuration_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>org.apache.jsp.secure.details.conflictingBenchmarks_jsp</servlet-name>
         <servlet-class>org.apache.jsp.secure.details.conflictingBenchmarks_jsp</servlet-class>
     </servlet>
@@ -123,6 +133,16 @@
     <servlet>
         <servlet-name>org.apache.jsp.secure.details.conflictingSolvers_jsp</servlet-name>
         <servlet-class>org.apache.jsp.secure.details.conflictingSolvers_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.secure.details.job_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.secure.details.job_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.secure.details.jobAttributes_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.secure.details.jobAttributes_jsp</servlet-class>
     </servlet>
 
     <servlet>
@@ -136,8 +156,18 @@
     </servlet>
 
     <servlet>
+        <servlet-name>org.apache.jsp.secure.details.pair_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.secure.details.pair_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>org.apache.jsp.secure.details.pairsInSpace_jsp</servlet-name>
         <servlet-class>org.apache.jsp.secure.details.pairsInSpace_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>org.apache.jsp.secure.details.recycleBin_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.secure.details.recycleBin_jsp</servlet-class>
     </servlet>
 
     <servlet>
@@ -161,38 +191,8 @@
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.jsp.secure.details.recycleBin_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.secure.details.recycleBin_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
         <servlet-name>org.apache.jsp.secure.details.user_jsp</servlet-name>
         <servlet-class>org.apache.jsp.secure.details.user_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.secure.details.configuration_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.secure.details.configuration_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.secure.details.configDeleted_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.secure.details.configDeleted_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.secure.details.configuration_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.secure.details.configuration_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.secure.details.job_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.secure.details.job_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.secure.details.jobAttributes_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.secure.details.jobAttributes_jsp</servlet-class>
     </servlet>
 
     <servlet>
@@ -291,6 +291,11 @@
     </servlet>
 
     <servlet>
+        <servlet-name>org.apache.jsp.secure.add.benchmarks_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.secure.add.benchmarks_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>org.apache.jsp.secure.add.configuration_jsp</servlet-name>
         <servlet-class>org.apache.jsp.secure.add.configuration_jsp</servlet-class>
     </servlet>
@@ -316,8 +321,8 @@
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.jsp.secure.add.to_005fcommunity_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.secure.add.to_005fcommunity_jsp</servlet-class>
+        <servlet-name>org.apache.jsp.secure.add.solver_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.secure.add.solver_jsp</servlet-class>
     </servlet>
 
     <servlet>
@@ -331,8 +336,8 @@
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.jsp.secure.add.benchmarks_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.secure.add.benchmarks_jsp</servlet-class>
+        <servlet-name>org.apache.jsp.public_.about_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.public_.about_jsp</servlet-class>
     </servlet>
 
     <servlet>
@@ -341,13 +346,8 @@
     </servlet>
 
     <servlet>
-        <servlet-name>org.apache.jsp.public_.password_005freset_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.public_.password_005freset_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.public_.quickReference_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.public_.quickReference_jsp</servlet-class>
+        <servlet-name>org.apache.jsp.public_.help_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.public_.help_jsp</servlet-class>
     </servlet>
 
     <servlet>
@@ -366,6 +366,11 @@
     </servlet>
 
     <servlet>
+        <servlet-name>org.apache.jsp.public_.registration_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.public_.registration_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>org.apache.jsp.public_.registrationConfirmation_jsp</servlet-name>
         <servlet-class>org.apache.jsp.public_.registrationConfirmation_jsp</servlet-class>
     </servlet>
@@ -378,21 +383,6 @@
     <servlet>
         <servlet-name>org.apache.jsp.public_.temp_005fpass_jsp</servlet-name>
         <servlet-class>org.apache.jsp.public_.temp_005fpass_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.public_.about_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.public_.about_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.public_.registration_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.public_.registration_jsp</servlet-class>
-    </servlet>
-
-    <servlet>
-        <servlet-name>org.apache.jsp.public_.messages.email_005factivated_jsp</servlet-name>
-        <servlet-class>org.apache.jsp.public_.messages.email_005factivated_jsp</servlet-class>
     </servlet>
 
     <servlet>
@@ -411,6 +401,11 @@
     </servlet>
 
     <servlet>
+        <servlet-name>org.apache.jsp.public_.messages.leader_005fresponse_jsp</servlet-name>
+        <servlet-class>org.apache.jsp.public_.messages.leader_005fresponse_jsp</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>org.apache.jsp.public_.jobs.job_jsp</servlet-name>
         <servlet-class>org.apache.jsp.public_.jobs.job_jsp</servlet-class>
     </servlet>
@@ -423,6 +418,11 @@
     <servlet-mapping>
         <servlet-name>org.apache.jsp.secure.index_jsp</servlet-name>
         <url-pattern>/secure/index.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.secure.explore.cluster_jsp</servlet-name>
+        <url-pattern>/secure/explore/cluster.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
@@ -446,11 +446,6 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>org.apache.jsp.secure.explore.cluster_jsp</servlet-name>
-        <url-pattern>/secure/explore/cluster.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
         <servlet-name>org.apache.jsp.secure.edit.account_jsp</servlet-name>
         <url-pattern>/secure/edit/account.jsp</url-pattern>
     </servlet-mapping>
@@ -463,6 +458,11 @@
     <servlet-mapping>
         <servlet-name>org.apache.jsp.secure.edit.community_jsp</servlet-name>
         <url-pattern>/secure/edit/community.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.secure.edit.configuration_jsp</servlet-name>
+        <url-pattern>/secure/edit/configuration.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
@@ -506,83 +506,18 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>org.apache.jsp.secure.edit.configuration_jsp</servlet-name>
-        <url-pattern>/secure/edit/configuration.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
         <servlet-name>org.apache.jsp.secure.details.XMLuploadStatus_jsp</servlet-name>
         <url-pattern>/secure/details/XMLuploadStatus.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>org.apache.jsp.secure.explore.spaces_jsp</servlet-name>
-        <url-pattern>/secure/explore/spaces.jsp</url-pattern>
+        <servlet-name>org.apache.jsp.secure.details.anonymousJobPageKey_jsp</servlet-name>
+        <url-pattern>/secure/details/anonymousJobPageKey.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
         <servlet-name>org.apache.jsp.secure.details.benchmark_jsp</servlet-name>
         <url-pattern>/secure/details/benchmark.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.secure.details.conflictingBenchmarks_jsp</servlet-name>
-        <url-pattern>/secure/details/conflictingBenchmarks.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.secure.details.conflictingSolvers_jsp</servlet-name>
-        <url-pattern>/secure/details/conflictingSolvers.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.secure.details.jobMatrixView_jsp</servlet-name>
-        <url-pattern>/secure/details/jobMatrixView.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.secure.details.jobPanelView_jsp</servlet-name>
-        <url-pattern>/secure/details/jobPanelView.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.secure.details.pairsInSpace_jsp</servlet-name>
-        <url-pattern>/secure/details/pairsInSpace.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.secure.details.solver_jsp</servlet-name>
-        <url-pattern>/secure/details/solver.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.secure.details.solverComparison_jsp</servlet-name>
-        <url-pattern>/secure/details/solverComparison.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.secure.edit.queue_jsp</servlet-name>
-        <url-pattern>/secure/edit/queue.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.secure.edit.resubmitPairs_jsp</servlet-name>
-        <url-pattern>/secure/edit/resubmitPairs.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.secure.details.recycleBin_jsp</servlet-name>
-        <url-pattern>/secure/details/recycleBin.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.secure.edit.space_jsp</servlet-name>
-        <url-pattern>/secure/edit/space.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.secure.details.pair_jsp</servlet-name>
-        <url-pattern>/secure/details/pair.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
@@ -596,6 +531,16 @@
     </servlet-mapping>
 
     <servlet-mapping>
+        <servlet-name>org.apache.jsp.secure.details.conflictingBenchmarks_jsp</servlet-name>
+        <url-pattern>/secure/details/conflictingBenchmarks.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.secure.details.conflictingSolvers_jsp</servlet-name>
+        <url-pattern>/secure/details/conflictingSolvers.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
         <servlet-name>org.apache.jsp.secure.details.job_jsp</servlet-name>
         <url-pattern>/secure/details/job.jsp</url-pattern>
     </servlet-mapping>
@@ -603,6 +548,56 @@
     <servlet-mapping>
         <servlet-name>org.apache.jsp.secure.details.jobAttributes_jsp</servlet-name>
         <url-pattern>/secure/details/jobAttributes.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.secure.details.jobMatrixView_jsp</servlet-name>
+        <url-pattern>/secure/details/jobMatrixView.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.secure.details.jobPanelView_jsp</servlet-name>
+        <url-pattern>/secure/details/jobPanelView.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.secure.details.pair_jsp</servlet-name>
+        <url-pattern>/secure/details/pair.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.secure.details.pairsInSpace_jsp</servlet-name>
+        <url-pattern>/secure/details/pairsInSpace.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.secure.details.recycleBin_jsp</servlet-name>
+        <url-pattern>/secure/details/recycleBin.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.secure.details.solver_jsp</servlet-name>
+        <url-pattern>/secure/details/solver.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.secure.details.solverComparison_jsp</servlet-name>
+        <url-pattern>/secure/details/solverComparison.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.secure.details.solverconfigs_jsp</servlet-name>
+        <url-pattern>/secure/details/solverconfigs.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.secure.details.uploadStatus_jsp</servlet-name>
+        <url-pattern>/secure/details/uploadStatus.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.secure.details.user_jsp</servlet-name>
+        <url-pattern>/secure/details/user.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
@@ -646,8 +641,8 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>org.apache.jsp.secure.details.conflictingBenchmarks_jsp</servlet-name>
-        <url-pattern>/secure/details/conflictingBenchmarks.jsp</url-pattern>
+        <servlet-name>org.apache.jsp.secure.admin.moveNodes_jsp</servlet-name>
+        <url-pattern>/secure/admin/moveNodes.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
@@ -661,8 +656,8 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>org.apache.jsp.secure.details.jobPanelView_jsp</servlet-name>
-        <url-pattern>/secure/details/jobPanelView.jsp</url-pattern>
+        <servlet-name>org.apache.jsp.secure.admin.starexec_jsp</servlet-name>
+        <url-pattern>/secure/admin/starexec.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
@@ -681,8 +676,8 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>org.apache.jsp.secure.details.solverconfigs_jsp</servlet-name>
-        <url-pattern>/secure/details/solverconfigs.jsp</url-pattern>
+        <servlet-name>org.apache.jsp.secure.admin.testing_jsp</servlet-name>
+        <url-pattern>/secure/admin/testing.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
@@ -698,6 +693,11 @@
     <servlet-mapping>
         <servlet-name>org.apache.jsp.secure.add.batchSpace_jsp</servlet-name>
         <url-pattern>/secure/add/batchSpace.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>org.apache.jsp.secure.add.benchmarks_jsp</servlet-name>
+        <url-pattern>/secure/add/benchmarks.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
@@ -741,8 +741,8 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>org.apache.jsp.secure.add.benchmarks_jsp</servlet-name>
-        <url-pattern>/secure/add/benchmarks.jsp</url-pattern>
+        <servlet-name>org.apache.jsp.public_.about_jsp</servlet-name>
+        <url-pattern>/public/about.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
@@ -771,6 +771,11 @@
     </servlet-mapping>
 
     <servlet-mapping>
+        <servlet-name>org.apache.jsp.public_.registration_jsp</servlet-name>
+        <url-pattern>/public/registration.jsp</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
         <servlet-name>org.apache.jsp.public_.registrationConfirmation_jsp</servlet-name>
         <url-pattern>/public/registrationConfirmation.jsp</url-pattern>
     </servlet-mapping>
@@ -786,16 +791,6 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>org.apache.jsp.public_.about_jsp</servlet-name>
-        <url-pattern>/public/about.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
-        <servlet-name>org.apache.jsp.public_.registration_jsp</servlet-name>
-        <url-pattern>/public/registration.jsp</url-pattern>
-    </servlet-mapping>
-
-    <servlet-mapping>
         <servlet-name>org.apache.jsp.public_.messages.email_005factivated_jsp</servlet-name>
         <url-pattern>/public/messages/email_activated.jsp</url-pattern>
     </servlet-mapping>
@@ -806,13 +801,13 @@
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>org.apache.jsp.public_.messages.leader_005fresponse_jsp</servlet-name>
-        <url-pattern>/public/messages/leader_response.jsp</url-pattern>
+        <servlet-name>org.apache.jsp.public_.messages.error_jsp</servlet-name>
+        <url-pattern>/public/messages/error.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
-        <servlet-name>org.apache.jsp.public_.messages.error_jsp</servlet-name>
-        <url-pattern>/public/messages/error.jsp</url-pattern>
+        <servlet-name>org.apache.jsp.public_.messages.leader_005fresponse_jsp</servlet-name>
+        <url-pattern>/public/messages/leader_response.jsp</url-pattern>
     </servlet-mapping>
 
     <servlet-mapping>
