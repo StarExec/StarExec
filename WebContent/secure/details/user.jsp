@@ -1,5 +1,5 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.data.database.Communities,org.starexec.data.database.Jobs, org.starexec.data.database.Users,org.starexec.data.database.Websites, org.starexec.data.security.GeneralSecurity, org.starexec.data.to.Job, org.starexec.data.to.User, org.starexec.data.to.Website.WebsiteType, org.starexec.util.SessionUtil, org.starexec.util.Util, java.util.List" %>
+        import="org.starexec.data.database.Communities,org.starexec.data.database.Jobs, org.starexec.data.database.Users,org.starexec.data.database.Websites, org.starexec.data.security.GeneralSecurity, org.starexec.data.to.Job, org.starexec.data.to.User, org.starexec.data.to.Website.WebsiteType, org.starexec.util.SessionUtil, org.starexec.util.Util, java.util.List, org.starexec.data.to.BenchmarkUploadStatus" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
@@ -238,6 +238,18 @@
 					</tr>
 					</thead>
 				</table>
+		</star:panel>
+		<star:panel test="${owner}" title="uploads" withCount="true">
+			         <table id="uploads" uid="${t_user.id}"
+			               class="selectableTable">
+				        <thead>
+				        <tr>
+						<th> uploadDate</th>
+					        <th> totalBenchmarks</th>
+					        <th> completed</th>
+				        </tr>
+				        </thead>
+			         </table>
 		</star:panel>
 		<star:panel test="${owner}" title="jobs" withCount="true">
 				<ul class="actionList">

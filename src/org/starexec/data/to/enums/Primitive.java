@@ -3,7 +3,7 @@ package org.starexec.data.to.enums;
 import org.starexec.constants.R;
 
 public enum Primitive {
-	JOB("jobPrimitiveType"), USER("userPrimitiveType"), SOLVER("solverPrimitiveType"), BENCHMARK(
+    JOB("jobPrimitiveType"),UPLOAD("uploadPrimitiveType"), USER("userPrimitiveType"), SOLVER("solverPrimitiveType"), BENCHMARK(
 			"benchmarkPrimitiveType"), SPACE("spacePrimitiveType"), JOB_PAIR("jobPairPrimitiveType"), JOB_STATS(
 			"jobStatsPrimitiveType"), NODE("nodePrimitiveType"), QUEUE("queuePrimitiveType"), CONFIGURATION(
 			"configurationPrimitiveType"), PROCESSOR("processorPrimitiveType");
@@ -43,6 +43,8 @@ public enum Primitive {
 				return CONFIGURATION;
 			case R.PROCESSOR:
 				return PROCESSOR;
+		        case R.UPLOAD:
+			        return UPLOAD;
 			default:
 				return Primitive.valueOf(name);
 		}
