@@ -1,0 +1,759 @@
+<!doctype html>
+<!--[if !IE]>
+<html class="no-js non-ie" lang="en-US"> <![endif]-->
+<!--[if IE 7 ]>
+<html class="no-js ie7" lang="en-US"> <![endif]-->
+<!--[if IE 8 ]>
+<html class="no-js ie8" lang="en-US"> <![endif]-->
+<!--[if IE 9 ]>
+<html class="no-js ie9" lang="en-US"> <![endif]-->
+<!--[if gt IE 9]><!-->
+<html class="no-js" lang="en-US"> <!--<![endif]-->
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#005030">
+<link rel="profile" href="http://gmpg.org/xfn/11">
+
+<title>SGE &#8211; jobscript &#8211; StarExec Miami</title>
+<link rel='dns-prefetch' href='//fonts.googleapis.com' />
+<link rel='dns-prefetch' href='//s.w.org' />
+<link rel="alternate" type="application/rss+xml" title="StarExec Miami &raquo; Feed" href="https://starexec.ccs.miami.edu/docs/?feed=rss2" />
+<link rel="alternate" type="application/rss+xml" title="StarExec Miami &raquo; Comments Feed" href="https://starexec.ccs.miami.edu/docs/?feed=comments-rss2" />
+		<script type="text/javascript">
+			window._wpemojiSettings = {"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/11.2.0\/72x72\/","ext":".png","svgUrl":"https:\/\/s.w.org\/images\/core\/emoji\/11.2.0\/svg\/","svgExt":".svg","source":{"concatemoji":"https:\/\/starexec.ccs.miami.edu\/docs\/wp-includes\/js\/wp-emoji-release.min.js?ver=5.1.14"}};
+			!function(e,a,t){var n,r,o,i=a.createElement("canvas"),p=i.getContext&&i.getContext("2d");function s(e,t){var a=String.fromCharCode;p.clearRect(0,0,i.width,i.height),p.fillText(a.apply(this,e),0,0);e=i.toDataURL();return p.clearRect(0,0,i.width,i.height),p.fillText(a.apply(this,t),0,0),e===i.toDataURL()}function c(e){var t=a.createElement("script");t.src=e,t.defer=t.type="text/javascript",a.getElementsByTagName("head")[0].appendChild(t)}for(o=Array("flag","emoji"),t.supports={everything:!0,everythingExceptFlag:!0},r=0;r<o.length;r++)t.supports[o[r]]=function(e){if(!p||!p.fillText)return!1;switch(p.textBaseline="top",p.font="600 32px Arial",e){case"flag":return s([55356,56826,55356,56819],[55356,56826,8203,55356,56819])?!1:!s([55356,57332,56128,56423,56128,56418,56128,56421,56128,56430,56128,56423,56128,56447],[55356,57332,8203,56128,56423,8203,56128,56418,8203,56128,56421,8203,56128,56430,8203,56128,56423,8203,56128,56447]);case"emoji":return!s([55358,56760,9792,65039],[55358,56760,8203,9792,65039])}return!1}(o[r]),t.supports.everything=t.supports.everything&&t.supports[o[r]],"flag"!==o[r]&&(t.supports.everythingExceptFlag=t.supports.everythingExceptFlag&&t.supports[o[r]]);t.supports.everythingExceptFlag=t.supports.everythingExceptFlag&&!t.supports.flag,t.DOMReady=!1,t.readyCallback=function(){t.DOMReady=!0},t.supports.everything||(n=function(){t.readyCallback()},a.addEventListener?(a.addEventListener("DOMContentLoaded",n,!1),e.addEventListener("load",n,!1)):(e.attachEvent("onload",n),a.attachEvent("onreadystatechange",function(){"complete"===a.readyState&&t.readyCallback()})),(n=t.source||{}).concatemoji?c(n.concatemoji):n.wpemoji&&n.twemoji&&(c(n.twemoji),c(n.wpemoji)))}(window,document,window._wpemojiSettings);
+		</script>
+		<style type="text/css">
+img.wp-smiley,
+img.emoji {
+	display: inline !important;
+	border: none !important;
+	box-shadow: none !important;
+	height: 1em !important;
+	width: 1em !important;
+	margin: 0 .07em !important;
+	vertical-align: -0.1em !important;
+	background: none !important;
+	padding: 0 !important;
+}
+</style>
+	<link rel='stylesheet' id='dashicons-css'  href='https://starexec.ccs.miami.edu/docs/wp-includes/css/dashicons.min.css?ver=5.1.14' type='text/css' media='all' />
+<link rel='stylesheet' id='admin-bar-css'  href='https://starexec.ccs.miami.edu/docs/wp-includes/css/admin-bar.min.css?ver=5.1.14' type='text/css' media='all' />
+<link rel='stylesheet' id='wp-block-library-css'  href='https://starexec.ccs.miami.edu/docs/wp-includes/css/dist/block-library/style.min.css?ver=5.1.14' type='text/css' media='all' />
+<link rel='stylesheet' id='wordfenceAJAXcss-css'  href='https://starexec.ccs.miami.edu/docs/wp-content/plugins/wordfence/css/wordfenceBox.1663593635.css?ver=7.6.2' type='text/css' media='all' />
+<link rel='stylesheet' id='sparkling-bootstrap-css'  href='https://starexec.ccs.miami.edu/docs/wp-content/themes/sparkling/assets/css/bootstrap.min.css?ver=5.1.14' type='text/css' media='all' />
+<link rel='stylesheet' id='sparkling-icons-css'  href='https://starexec.ccs.miami.edu/docs/wp-content/themes/sparkling/assets/css/fontawesome-all.min.css?ver=5.1.1.' type='text/css' media='all' />
+<link rel='stylesheet' id='sparkling-fonts-css'  href='//fonts.googleapis.com/css?family=Open+Sans%3A400italic%2C400%2C600%2C700%7CRoboto+Slab%3A400%2C300%2C700&#038;ver=5.1.14' type='text/css' media='all' />
+<link rel='stylesheet' id='sparkling-style-css'  href='https://starexec.ccs.miami.edu/docs/wp-content/themes/sparkling/style.css?ver=2.4.2' type='text/css' media='all' />
+<script type='text/javascript' src='https://starexec.ccs.miami.edu/docs/wp-includes/js/jquery/jquery.js?ver=1.12.4'></script>
+<script type='text/javascript' src='https://starexec.ccs.miami.edu/docs/wp-includes/js/jquery/jquery-migrate.min.js?ver=1.4.1'></script>
+<script type='text/javascript'>
+/* <![CDATA[ */
+var WordfenceI18nStrings = {"${totalIPs} addresses in this network":"${totalIPs} addresses in this network","%s in POST body: %s":"%s in POST body: %s","%s in cookie: %s":"%s in cookie: %s","%s in file: %s":"%s in file: %s","%s in query string: %s":"%s in query string: %s","%s is not valid hostname":"%s is not valid hostname",".htaccess Updated":".htaccess Updated",".htaccess change":".htaccess change","404 Not Found":"404 Not Found","Activity Log Sent":"Activity Log Sent","Add action to allowlist":"Add action to allowlist","Add code to .htaccess":"Add code to .htaccess","All Hits":"All Hits","All capabilties of admin user %s were successfully revoked.":"All capabilties of admin user %s were successfully revoked.","An error occurred":"An error occurred","An error occurred when adding the request to the allowlist.":"An error occurred when adding the request to the allowlist.","Are you sure you want to allowlist this action?":"Are you sure you want to allowlist this action?","Authentication Code":"Authentication Code","Background Request Blocked":"Background Request Blocked","Block This Network":"Block This Network","Blocked":"Blocked","Blocked By Firewall":"Blocked By Firewall","Blocked WAF":"Blocked WAF","Blocked by Wordfence":"Blocked by Wordfence","Blocked by Wordfence plugin settings":"Blocked by Wordfence plugin settings","Blocked by the Wordfence Application Firewall and plugin settings":"Blocked by the Wordfence Application Firewall and plugin settings","Blocked by the Wordfence Security Network":"Blocked by the Wordfence Security Network","Blocked by the Wordfence Web Application Firewall":"Blocked by the Wordfence Web Application Firewall","Bot":"Bot","Cancel Changes":"Cancel Changes","Cellphone Sign-In Recovery Codes":"Cellphone Sign-In Recovery Codes","Cellphone Sign-in activated for user.":"Cellphone Sign-in activated for user.","Click here to download a backup copy of this file now":"Click here to download a backup copy of this file now","Click here to download a backup copy of your .htaccess file now":"Click here to download a backup copy of your .htaccess file now","Click to fix .htaccess":"Click to fix .htaccess","Close":"Close","Crawlers":"Crawlers","Diagnostic report has been sent successfully.":"Diagnostic report has been sent successfully.","Directory Listing Disabled":"Directory Listing Disabled","Directory listing has been disabled on your server.":"Directory listing has been disabled on your server.","Disabled":"Disabled","Dismiss":"Dismiss","Don't ask again":"Don't ask again","Download":"Download","Download Backup File":"Download Backup File","Each line of 16 letters and numbers is a single recovery code, with optional spaces for readability. When typing your password, enter \"wf\" followed by the entire code like \"mypassword wf1234 5678 90AB CDEF\". If your site shows a separate prompt for entering a code after entering only your username and password, enter only the code like \"1234 5678 90AB CDEF\". Your recovery codes are:":"Each line of 16 letters and numbers is a single recovery code, with optional spaces for readability. When typing your password, enter \"wf\" followed by the entire code like \"mypassword wf1234 5678 90AB CDEF\". If your site shows a separate prompt for entering a code after entering only your username and password, enter only the code like \"1234 5678 90AB CDEF\". Your recovery codes are:","Email Diagnostic Report":"Email Diagnostic Report","Email Wordfence Activity Log":"Email Wordfence Activity Log","Enter a valid IP or domain":"Enter a valid IP or domain","Enter the email address you would like to send the Wordfence activity log to. Note that the activity log may contain thousands of lines of data. This log is usually only sent to a member of the Wordfence support team. It also contains your PHP configuration from the phpinfo() function for diagnostic data.":"Enter the email address you would like to send the Wordfence activity log to. Note that the activity log may contain thousands of lines of data. This log is usually only sent to a member of the Wordfence support team. It also contains your PHP configuration from the phpinfo() function for diagnostic data.","Error":"Error","Error Enabling All Options Page":"Error Enabling All Options Page","Error Restoring Defaults":"Error Restoring Defaults","Error Saving Option":"Error Saving Option","Error Saving Options":"Error Saving Options","Failed Login":"Failed Login","Failed Login: Invalid Username":"Failed Login: Invalid Username","Failed Login: Valid Username":"Failed Login: Valid Username","File hidden successfully":"File hidden successfully","File restored OK":"File restored OK","Filter Traffic":"Filter Traffic","Firewall Response":"Firewall Response","Full Path Disclosure":"Full Path Disclosure","Google Bot":"Google Bot","Google Crawlers":"Google Crawlers","HTTP Response Code":"HTTP Response Code","Human":"Human","Humans":"Humans","IP":"IP","Key:":"Key:","Last Updated: %s":"Last Updated: %s","Learn more about repairing modified files.":"Learn more about repairing modified files.","Loading...":"Loading...","Locked Out":"Locked Out","Locked out from logging in":"Locked out from logging in","Logged In":"Logged In","Logins":"Logins","Logins and Logouts":"Logins and Logouts","Look up IP or Domain":"Look up IP or Domain","Manual block by administrator":"Manual block by administrator","Next Update Check: %s":"Next Update Check: %s","No activity to report yet. Please complete your first scan.":"No activity to report yet. Please complete your first scan.","No issues have been ignored.":"No issues have been ignored.","No new issues have been found.":"No new issues have been found.","No rules were updated. Please verify you have permissions to write to the \/wp-content\/wflogs directory.":"No rules were updated. Please verify you have permissions to write to the \/wp-content\/wflogs directory.","No rules were updated. Please verify your website can reach the Wordfence servers.":"No rules were updated. Please verify your website can reach the Wordfence servers.","No rules were updated. Your website has reached the maximum number of rule update requests. Please try again later.":"No rules were updated. Your website has reached the maximum number of rule update requests. Please try again later.","Note: Status will update when changes are saved":"Note: Status will update when changes are saved","OK":"OK","Pages Not Found":"Pages Not Found","Paid Members Only":"Paid Members Only","Please enter a valid IP address or domain name for your whois lookup.":"Please enter a valid IP address or domain name for your whois lookup.","Please enter a valid email address.":"Please enter a valid email address.","Please include your support ticket number or forum username.":"Please include your support ticket number or forum username.","Please make a backup of this file before proceeding. If you need to restore this backup file, you can copy it to the following path from your site's root:":"Please make a backup of this file before proceeding. If you need to restore this backup file, you can copy it to the following path from your site's root:","Please specify a reason":"Please specify a reason","Please specify a valid IP address range in the form of \"1.2.3.4 - 1.2.3.5\" without quotes. Make sure the dash between the IP addresses in a normal dash (a minus sign on your keyboard) and not another character that looks like a dash.":"Please specify a valid IP address range in the form of \"1.2.3.4 - 1.2.3.5\" without quotes. Make sure the dash between the IP addresses in a normal dash (a minus sign on your keyboard) and not another character that looks like a dash.","Please specify either an IP address range, Hostname or a web browser pattern to match.":"Please specify either an IP address range, Hostname or a web browser pattern to match.","Recent Activity":"Recent Activity","Recovery Codes":"Recovery Codes","Redirected":"Redirected","Redirected by Country Blocking bypass URL":"Redirected by Country Blocking bypass URL","Referer":"Referer","Registered Users":"Registered Users","Restore Defaults":"Restore Defaults","Rule Update Failed":"Rule Update Failed","Rules Updated":"Rules Updated","Save Changes":"Save Changes","Scan Complete.":"Scan Complete.","Scan the code below with your authenticator app to add this account. Some authenticator apps also allow you to type in the text version instead.":"Scan the code below with your authenticator app to add this account. Some authenticator apps also allow you to type in the text version instead.","Security Event":"Security Event","Send":"Send","Sorry, but no data for that IP or domain was found.":"Sorry, but no data for that IP or domain was found.","Specify a valid IP range":"Specify a valid IP range","Specify a valid hostname":"Specify a valid hostname","Specify an IP range, Hostname or Browser pattern":"Specify an IP range, Hostname or Browser pattern","Success deleting file":"Success deleting file","Success removing option":"Success removing option","Success restoring file":"Success restoring file","Success updating option":"Success updating option","Successfully deleted admin":"Successfully deleted admin","Successfully revoked admin":"Successfully revoked admin","Test Email Sent":"Test Email Sent","The 'How does Wordfence get IPs' option was successfully updated to the recommended value.":"The 'How does Wordfence get IPs' option was successfully updated to the recommended value.","The Full Path disclosure issue has been fixed":"The Full Path disclosure issue has been fixed","The admin user %s was successfully deleted.":"The admin user %s was successfully deleted.","The file %s was successfully deleted.":"The file %s was successfully deleted.","The file %s was successfully hidden from public view.":"The file %s was successfully hidden from public view.","The file %s was successfully restored.":"The file %s was successfully restored.","The option %s was successfully removed.":"The option %s was successfully removed.","The request has been allowlisted. Please try it again.":"The request has been allowlisted. Please try it again.","There was an error while sending the email.":"There was an error while sending the email.","This will be shown only once. Keep these codes somewhere safe.":"This will be shown only once. Keep these codes somewhere safe.","Throttled":"Throttled","Two Factor Status":"Two Factor Status","Type":"Type","Type: %s":"Type: %s","URL":"URL","Unable to automatically hide file":"Unable to automatically hide file","Use one of these %s codes to log in if you are unable to access your phone. Codes are 16 characters long, plus optional spaces. Each one may be used only once.":"Use one of these %s codes to log in if you are unable to access your phone. Codes are 16 characters long, plus optional spaces. Each one may be used only once.","Use one of these %s codes to log in if you lose access to your authenticator device. Codes are 16 characters long, plus optional spaces. Each one may be used only once.":"Use one of these %s codes to log in if you lose access to your authenticator device. Codes are 16 characters long, plus optional spaces. Each one may be used only once.","User Agent":"User Agent","User ID":"User ID","Username":"Username","WHOIS LOOKUP":"WHOIS LOOKUP","We are about to change your <em>.htaccess<\/em> file. Please make a backup of this file before proceeding.":"We are about to change your <em>.htaccess<\/em> file. Please make a backup of this file before proceeding.","We can't modify your .htaccess file for you because: %s":"We can't modify your .htaccess file for you because: %s","We encountered a problem":"We encountered a problem","Wordfence Firewall blocked a background request to WordPress for the URL %s. If this occurred as a result of an intentional action, you may consider allowlisting the request to allow it in the future.":"Wordfence Firewall blocked a background request to WordPress for the URL %s. If this occurred as a result of an intentional action, you may consider allowlisting the request to allow it in the future.","Wordfence is working...":"Wordfence is working...","You are using Nginx as your web server. You'll need to disable autoindexing in your nginx.conf. See the <a target='_blank'  rel='noopener noreferrer' href='https:\/\/nginx.org\/en\/docs\/http\/ngx_http_autoindex_module.html'>Nginx docs for more info<\/a> on how to do this.":"You are using Nginx as your web server. You'll need to disable autoindexing in your nginx.conf. See the <a target='_blank'  rel='noopener noreferrer' href='https:\/\/nginx.org\/en\/docs\/http\/ngx_http_autoindex_module.html'>Nginx docs for more info<\/a> on how to do this.","You are using an Nginx web server and using a FastCGI processor like PHP5-FPM. You will need to manually delete or hide those files.":"You are using an Nginx web server and using a FastCGI processor like PHP5-FPM. You will need to manually delete or hide those files.","You are using an Nginx web server and using a FastCGI processor like PHP5-FPM. You will need to manually modify your php.ini to disable <em>display_error<\/em>":"You are using an Nginx web server and using a FastCGI processor like PHP5-FPM. You will need to manually modify your php.ini to disable <em>display_error<\/em>","You forgot to include a reason you're blocking this IP range. We ask you to include this for your own record keeping.":"You forgot to include a reason you're blocking this IP range. We ask you to include this for your own record keeping.","You have unsaved changes to your options. If you leave this page, those changes will be lost.":"You have unsaved changes to your options. If you leave this page, those changes will be lost.","Your .htaccess has been updated successfully. Please verify your site is functioning normally.":"Your .htaccess has been updated successfully. Please verify your site is functioning normally.","Your Wordfence activity log was sent to %s":"Your Wordfence activity log was sent to %s","Your rules have been updated successfully.":"Your rules have been updated successfully.","Your rules have been updated successfully. You are currently using the free version of Wordfence. Upgrade to Wordfence premium to have your rules updated automatically as new threats emerge. <a href=\"https:\/\/www.wordfence.com\/wafUpdateRules1\/wordfence-signup\/\">Click here to purchase a premium license<\/a>. <em>Note: Your rules will still update every 30 days as a free user.<\/em>":"Your rules have been updated successfully. You are currently using the free version of Wordfence. Upgrade to Wordfence premium to have your rules updated automatically as new threats emerge. <a href=\"https:\/\/www.wordfence.com\/wafUpdateRules1\/wordfence-signup\/\">Click here to purchase a premium license<\/a>. <em>Note: Your rules will still update every 30 days as a free user.<\/em>","Your test email was sent to the requested email address. The result we received from the WordPress wp_mail() function was: %s<br \/><br \/>A 'True' result means WordPress thinks the mail was sent without errors. A 'False' result means that WordPress encountered an error sending your mail. Note that it's possible to get a 'True' response with an error elsewhere in your mail system that may cause emails to not be delivered.":"Your test email was sent to the requested email address. The result we received from the WordPress wp_mail() function was: %s<br \/><br \/>A 'True' result means WordPress thinks the mail was sent without errors. A 'False' result means that WordPress encountered an error sending your mail. Note that it's possible to get a 'True' response with an error elsewhere in your mail system that may cause emails to not be delivered.","blocked by firewall":"blocked by firewall","blocked by firewall for %s":"blocked by firewall for %s","blocked by real-time IP blocklist":"blocked by real-time IP blocklist","blocked by the Wordfence Security Network":"blocked by the Wordfence Security Network","blocked for %s":"blocked for %s","locked out from logging in":"locked out from logging in"};
+/* ]]> */
+</script>
+<script type='text/javascript' src='https://starexec.ccs.miami.edu/docs/wp-content/plugins/wordfence/js/wfi18n.1663593635.js?ver=7.6.2'></script>
+<script type='text/javascript'>
+/* <![CDATA[ */
+var WFAJAXWatcherVars = {"nonce":"5af5232d86"};
+/* ]]> */
+</script>
+<script type='text/javascript' src='https://starexec.ccs.miami.edu/docs/wp-content/plugins/wordfence/js/admin.ajaxWatcher.1663593635.js?ver=7.6.2'></script>
+<script type='text/javascript' src='https://starexec.ccs.miami.edu/docs/wp-content/themes/sparkling/assets/js/vendor/bootstrap.min.js?ver=5.1.14'></script>
+<script type='text/javascript' src='https://starexec.ccs.miami.edu/docs/wp-content/themes/sparkling/assets/js/functions.js?ver=20180503'></script>
+<link rel='https://api.w.org/' href='https://starexec.ccs.miami.edu/docs/index.php?rest_route=/' />
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://starexec.ccs.miami.edu/docs/xmlrpc.php?rsd" />
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="https://starexec.ccs.miami.edu/docs/wp-includes/wlwmanifest.xml" /> 
+<meta name="generator" content="WordPress 5.1.14" />
+<link rel="canonical" href="https://starexec.ccs.miami.edu/docs/?page_id=113" />
+<link rel='shortlink' href='https://starexec.ccs.miami.edu/docs/?p=113' />
+<link rel="alternate" type="application/json+oembed" href="https://starexec.ccs.miami.edu/docs/index.php?rest_route=%2Foembed%2F1.0%2Fembed&#038;url=https%3A%2F%2Fstarexec.ccs.miami.edu%2Fdocs%2F%3Fpage_id%3D113" />
+<link rel="alternate" type="text/xml+oembed" href="https://starexec.ccs.miami.edu/docs/index.php?rest_route=%2Foembed%2F1.0%2Fembed&#038;url=https%3A%2F%2Fstarexec.ccs.miami.edu%2Fdocs%2F%3Fpage_id%3D113&#038;format=xml" />
+<style id="mystickymenu" type="text/css">#mysticky-nav { width:100%; position: static; }#mysticky-nav.wrapfixed { position:fixed; left: 0px; margin-top:0px;  z-index: 99990; -webkit-transition: 0.3s; -moz-transition: 0.3s; -o-transition: 0.3s; transition: 0.3s; -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=90)"; filter: alpha(opacity=90); opacity:0.9; background-color: #005030;}#mysticky-nav.wrapfixed { } #mysticky-nav.wrapfixed.up { } #mysticky-nav.wrapfixed.down { } #mysticky-nav .myfixed { margin:0 auto; float:none; border:0px; background:none; max-width:100%; }</style><style type="text/css">a, #infinite-handle span, #secondary .widget .post-content a, .entry-meta a {color:#f47321}.btn-default, .label-default, .flex-caption h2, .btn.btn-default.read-more,button,
+              .navigation .wp-pagenavi-pagination span.current,.navigation .wp-pagenavi-pagination a:hover,
+              .woocommerce a.button, .woocommerce button.button,
+              .woocommerce input.button, .woocommerce #respond input#submit.alt,
+              .woocommerce a.button, .woocommerce button.button,
+              .woocommerce a.button.alt, .woocommerce button.button.alt, .woocommerce input.button.alt { background-color: #f47321; border-color: #f47321;}.site-main [class*="navigation"] a, .more-link, .pagination>li>a, .pagination>li>span, .cfa-button { color: #f47321}.cfa-button {border-color: #f47321;}.cfa-text { color: #f47321;}.cfa-button {border-color: #f47321; color: #f47321;}.navbar.navbar-default, .navbar-default .navbar-nav .open .dropdown-menu > li > a {background-color: #005030;}.navbar-default .navbar-nav > li:hover > a, .navbar-nav > li:hover > .caret, .navbar-default .navbar-nav.sparkling-mobile-menu > li.open > a, .navbar-default .navbar-nav.sparkling-mobile-menu > li.open > .caret, .navbar-default .navbar-nav > li:hover, .navbar-default .navbar-nav > .active > a, .navbar-default .navbar-nav > .active > .caret, .navbar-default .navbar-nav > .active > a:hover, .navbar-default .navbar-nav > .active > a:focus, .navbar-default .navbar-nav > li > a:hover, .navbar-default .navbar-nav > li > a:focus, .navbar-default .navbar-nav > .open > a, .navbar-default .navbar-nav > .open > a:hover, .navbar-default .navbar-nav > .open > a:focus {color: #f47321;}@media (max-width: 767px){ .navbar-default .navbar-nav > li.open > a, .navbar-default .navbar-nav > li.open > .caret { color: #f47321 !important; } }.dropdown-menu {background-color: #f47321;}.navbar-default .navbar-nav .open .dropdown-menu > li > a, .dropdown-menu > li > a, .dropdown-menu > li > .caret { color: #005030;}.navbar-default .navbar-nav .dropdown-menu > li:hover, .navbar-default .navbar-nav .dropdown-menu > li:focus, .dropdown-menu > .active {background-color: #f47321;}@media (max-width: 767px) {.navbar-default .navbar-nav .dropdown-menu > li:hover, .navbar-default .navbar-nav .dropdown-menu > li:focus, .dropdown-menu > .active {background: transparent;} }#colophon {background-color: #005030;}#footer-area {background-color: #005030;}</style>		<style type="text/css">
+				.navbar > .container .navbar-brand {
+			color: #dadada;
+		}
+		</style>
+	<style type="text/css" media="print">#wpadminbar { display:none; }</style>
+	<style type="text/css" media="screen">
+	html { margin-top: 32px !important; }
+	* html body { margin-top: 32px !important; }
+	@media screen and ( max-width: 782px ) {
+		html { margin-top: 46px !important; }
+		* html body { margin-top: 46px !important; }
+	}
+</style>
+			<style type="text/css" id="wp-custom-css">
+			code {
+	color:#000;
+	background-color:#cce0dc;
+}
+
+a, h1, h2, h3, #infinite-handle span, #secondary .widget .post-content a, .entry-meta a {
+		color:#F47321;
+	  display:inline
+}		</style>
+		
+</head>
+
+<body class="page-template page-template-page-fullwidth page-template-page-fullwidth-php page page-id-113 logged-in admin-bar no-customize-support">
+<a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+<div id="page" class="hfeed site">
+
+	<header id="masthead" class="site-header" role="banner">
+		<nav class="navbar navbar-default 
+		" role="navigation">
+			<div class="container">
+				<div class="row">
+					<div class="site-navigation-inner col-sm-12">
+						<div class="navbar-header">
+							<button type="button" class="btn navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+								<span class="sr-only">Toggle navigation</span>
+								<span class="icon-bar"></span>
+								<span class="icon-bar"></span>
+								<span class="icon-bar"></span>
+							</button>
+
+														<div id="logo">
+															<p class="site-name">																		<a class="navbar-brand" href="https://starexec.ccs.miami.edu/docs/" title="StarExec Miami" rel="home">StarExec Miami</a>
+																</p>																													</div><!-- end of #logo -->
+						</div>
+						<div class="collapse navbar-collapse navbar-ex1-collapse"><ul id="menu-main" class="nav navbar-nav"><li id="menu-item-43" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home menu-item-43"><a href="https://starexec.ccs.miami.edu/docs/">Home</a></li>
+<li id="menu-item-139" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-139 dropdown"><a href="http://starexec.ccs.miami.edu/starexec">StarExec</a><span class="caret sparkling-dropdown"></span>
+<ul role="menu" class=" dropdown-menu">
+	<li id="menu-item-391" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-391"><a href="https://starexec.ccs.miami.edu/docs/?page_id=388">StarExec Maintenance Commands.</a></li>
+	<li id="menu-item-241" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-241"><a href="https://starexec.ccs.miami.edu/docs/?page_id=237">StarExec README.markdown</a></li>
+	<li id="menu-item-36" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-36"><a href="https://starexec.ccs.miami.edu/docs/?page_id=32">Dependencies</a></li>
+	<li id="menu-item-165" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-165"><a href="https://starexec.ccs.miami.edu/docs/?page_id=160">TPTP new config</a></li>
+	<li id="menu-item-142" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-142"><a href="https://wiki.uiowa.edu/display/stardev/User+Guide">User Guide</a></li>
+</ul>
+</li>
+<li id="menu-item-9" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-9"><a href="https://starexec.ccs.miami.edu/docs/?page_id=5">Meeting notes</a></li>
+<li id="menu-item-37" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-37 dropdown"><a href="https://starexec.ccs.miami.edu/docs/?page_id=2">xCAT</a><span class="caret sparkling-dropdown"></span>
+<ul role="menu" class=" dropdown-menu">
+	<li id="menu-item-98" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-98"><a href="https://starexec.ccs.miami.edu/docs/?page_id=97">Installation</a></li>
+	<li id="menu-item-92" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-92"><a href="https://starexec.ccs.miami.edu/docs/?page_id=91">Configuration</a></li>
+	<li id="menu-item-74" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-74"><a href="https://starexec.ccs.miami.edu/docs/?page_id=72">MAC Addresses</a></li>
+	<li id="menu-item-104" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-104"><a href="https://starexec.ccs.miami.edu/docs/?page_id=103">Node Discovery</a></li>
+	<li id="menu-item-109" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-109"><a href="https://starexec.ccs.miami.edu/docs/?page_id=106">Troubleshooting</a></li>
+</ul>
+</li>
+<li id="menu-item-55" class="menu-item menu-item-type-post_type menu-item-object-page current-menu-ancestor current-menu-parent current_page_parent current_page_ancestor menu-item-has-children menu-item-55 dropdown"><a href="https://starexec.ccs.miami.edu/docs/?page_id=54">SGE</a><span class="caret sparkling-dropdown"></span>
+<ul role="menu" class=" dropdown-menu">
+	<li id="menu-item-115" class="menu-item menu-item-type-post_type menu-item-object-page current-menu-item page_item page-item-113 current_page_item menu-item-115 active"><a href="https://starexec.ccs.miami.edu/docs/?page_id=113">SGE – jobscript</a></li>
+	<li id="menu-item-116" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-116"><a href="https://starexec.ccs.miami.edu/docs/?page_id=111">SGE – functions.bash</a></li>
+</ul>
+</li>
+</ul></div>					</div>
+				</div>
+			</div>
+		</nav><!-- .site-navigation -->
+	</header><!-- #masthead -->
+
+	<div id="content" class="site-content">
+
+		<div class="top-section">
+								</div>
+
+		<div class="container main-content-area">
+						<div class="row side-pull-left">
+				<div class="main-content-inner col-sm-12 col-md-12">
+
+  <div id="primary" class="content-area">
+
+	<main id="main" class="site-main" role="main">
+
+		
+		
+
+<div class="post-inner-content">
+<article id="post-113" class="post-113 page type-page status-publish hentry">
+	<header class="entry-header page-header">
+		<h1 class="entry-title">SGE &#8211; jobscript</h1>
+	</header><!-- .entry-header -->
+
+	<div class="entry-content">
+		<p><a href="https://github.com/StarExec/StarExec/blob/fb1/src/org/starexec/config/sge/jobscript">https://github.com/StarExec/StarExec/blob/fb1/src/org/starexec/config/sge/jobscript</a></p>
+<pre class="line-numbers"><code class='bash'>
+#!/bin/bash
+#==========================================================================
+# Standard SGE job script setup.
+#==========================================================================
+
+# The queue to submit to
+#$ -q $$QUEUE$$
+#OAR -q $$QUEUE$$
+#OAR -p queue='$$QUEUE$$'
+
+# Enable resource limit signals
+#$ -notify
+
+# Submit under sandbox user
+#$ -u $$SANDBOX_USER_ONE$$
+
+# Resource limits
+#$ -l s_fsize=$$MAX_WRITE$$G
+
+# Default shell is bash
+#$ -S /bin/bash
+
+# Merge stdout and stderr streams
+#$ -j y
+
+export readonly BENCHEXEC='BENCHEXEC'
+export readonly RUNSOLVER='RUNSOLVER'
+
+export BENCH_NAME_LENGTH_LIMIT='$$BENCH_NAME_LENGTH_MAX$$'
+export PRIMARY_PREPROCESSOR_PATH='$$PRIMARY_PREPROCESSOR_PATH$$'
+export NUM_SLOTS='$$NUM_SLOTS$$'
+export RAND_SEED='$$RANDSEED$$'
+export MAX_MEM='$$MAX_MEM$$'
+export BENCH_SAVE_DIR='$$BENCH_SAVE_PATH$$'
+export USER_ID='$$USERID$$'
+export HAS_DEPENDS='$$HAS_DEPENDS$$'
+export BENCH_PATH='$$BENCH$$'
+export PAIR_ID='$$PAIRID$$'
+export STAREXEC_MAX_WRITE='$$MAX_WRITE$$'
+export STAREXEC_CPU_LIMIT='$$MAX_CPUTIME$$'
+export STAREXEC_WALLCLOCK_LIMIT='$$MAX_RUNTIME$$'
+export SOFT_TIME_LIMIT='$$SOFT_TIME_LIMIT$$'
+export KILL_DELAY='$$KILL_DELAY$$'
+export REPORT_HOST='$$REPORT_HOST$$'
+export SHARED_DIR='$$STAREXEC_DATA_DIR$$'
+export SPACE_PATH='$$SPACE_PATH$$'
+export SCRIPT_PATH='$$SCRIPT_PATH$$'
+export PAIR_OUTPUT_DIRECTORY='$$PAIR_OUTPUT_DIRECTORY$$'
+export DB_NAME='$$DB_NAME$$'
+export BUILD_JOB='$$BUILD_JOB$$'
+export WORKING_DIR_BASE='$$WORKING_DIR_BASE$$'
+export BENCH_ID='$$BENCH_ID$$'
+export SANDBOX_USER_ONE='$$SANDBOX_USER_ONE$$'
+export SANDBOX_USER_TWO='$$SANDBOX_USER_TWO$$'
+export DISK_QUOTA='$$DISK_QUOTA$$'
+export DISK_QUOTA_EXCEEDED=0
+# DB username and password for status reporting
+export DB_USER="$$DB_USER$$"
+export DB_PASS="$$DB_PASS$$"
+export SCRIPT_DIR="$$SCRIPT_DIR$$"
+
+export BENCHMARKING_FRAMEWORK="$$BENCHMARKING_FRAMEWORK$$"
+
+# Path to Olivier Roussel's runSolver
+export RUNSOLVER_PATH='$$RUNSOLVER_PATH$$'
+# Include common functions and status codes
+. $SCRIPT_DIR/functions.bash
+
+# Array of secondary benchmarks starexec paths
+declare -a BENCH_DEPENDS_ARRAY
+
+# Array of secondary benchmarks execution host paths
+declare -a LOCAL_DEPENDS_ARRAY
+
+#==========================================================================
+# Arrays of stage information written from Java
+#
+#
+#==========================================================================
+
+$$STAGE_NUMBER_ARRAY$$
+
+$$CPU_TIMEOUT_ARRAY$$
+
+$$CLOCK_TIMEOUT_ARRAY$$
+
+$$MEM_LIMIT_ARRAY$$
+
+$$SOLVER_ID_ARRAY$$
+
+$$SOLVER_TIMESTAMP_ARRAY$$
+
+$$CONFIG_NAME_ARRAY$$
+
+$$PRE_PROCESSOR_PATH_ARRAY$$
+$$PRE_PROCESSOR_TIME_LIMIT_ARRAY$$
+
+$$POST_PROCESSOR_PATH_ARRAY$$
+$$POST_PROCESSOR_TIME_LIMIT_ARRAY$$
+
+$$SPACE_ID_ARRAY$$
+
+$$SOLVER_NAME_ARRAY$$
+
+$$SOLVER_PATH_ARRAY$$
+
+$$BENCH_INPUT_ARRAY$$
+
+$$BENCH_SUFFIX_ARRAY$$
+
+$$RESULTS_INTERVAL_ARRAY$$
+
+$$STDOUT_SAVE_OPTION_ARRAY$$
+
+$$EXTRA_SAVE_OPTION_ARRAY$$
+
+NUM_STAGES=${#STAGE_NUMBERS[@]}
+
+((NUM_BENCH_INPUTS = ${#BENCH_INPUT_PATHS[@]} - 1)) # we terminate the array with an empty string, so the number is the size-1
+
+#==========================================================================
+# Signal Traps
+#
+# These are just for the limits we are asking SGE to enforce.
+# For the ones runsolver is enforcing, we will look in the
+# watcher.out file.
+#==========================================================================
+
+trap "limitExceeded 'file write' $EXCEED_FILE_WRITE" SIGXFSZ
+
+handleUsrTwo() {
+echo "Jobscript received USR2."
+}
+
+trap 'handleUsrTwo' USR2
+
+#==========================================================================
+# Execute (prolog will take care of data staging)
+#==========================================================================
+
+echo "STAREXEC Job Log"
+echo "(C) $(date +%Y) The University of Iowa"
+echo "====================================="
+echo "date: $(date)"
+echo "user: $USER_ID"
+echo "pair id: $PAIR_ID"
+echo "solver ids: ${SOLVER_IDS[*]}"
+echo "benchmark id: $BENCH_ID"
+echo "execution host: $HOSTNAME"
+echo "benchmarking framework: $BENCHMARKING_FRAMEWORK"
+echo "whoami: $(whoami)"
+
+if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
+log "Using benchexec."
+else
+log "Using runsolver."
+fi
+
+if [ $BUILD_JOB == "true" ]; then
+echo "This is a solver build job"
+fi
+
+echo ""
+
+initSandbox
+initWorkspaceVariables
+cleanWorkspace 1
+setStartTime
+
+createLocalTmpDirectory
+
+log "there are this many benchmark inputs $NUM_BENCH_INPUTS"
+
+decodePathArrays
+
+$$STAGE_DEPENDENCY_ARRAY$$
+fillDependArrays
+
+checkIfBenchmarkDependenciesExists
+dependenciesExist=$?
+log "dependenciesExist was $dependenciesExist"
+if ((dependenciesExist == 0)); then
+sendStatus "$ERROR_BENCH_DEPENDENCY_MISSING"
+exit 0
+fi
+#todo: alter the way we copy runsolver over so it only happens once
+copyBenchmarkDependencies
+
+#==============================================================================
+# This is the start of the loop that runs for each stage
+#
+#
+#==============================================================================
+
+# directory containing all the output files from a solver. This won't exist until the second stage
+# and onwards
+OTHER_INPUT_PATH=""
+
+# if we are using pipelines, the OTHER_INPUT_PATH should always exist.
+# so, we start with an empty directory here
+if ((NUM_STAGES &gt; 1)); then
+mkdir "$OUT_DIR"/empty_output_dir
+OTHER_INPUT_PATH="$OUT_DIR"/empty_output_dir
+fi
+
+log "the number of stages is $NUM_STAGES"
+
+for (( STAGE_INDEX = 0; STAGE_INDEX &lt; NUM_STAGES; ++STAGE_INDEX )); do CURRENT_STAGE_MEMORY=$MAX_MEM #start with the default max mem CURRENT_STAGE_CPU=$STAREXEC_CPU_LIMIT CURRENT_STAGE_WALLCLOCK=$STAREXEC_WALLCLOCK_LIMIT if ((CURRENT_STAGE_MEMORY &gt; "${STAGE_MEM_LIMITS[STAGE_INDEX]}")); then
+CURRENT_STAGE_MEMORY=${STAGE_MEM_LIMITS[STAGE_INDEX]}
+fi
+
+if ((CURRENT_STAGE_CPU &gt; "${STAGE_CPU_TIMEOUTS[STAGE_INDEX]}")); then
+CURRENT_STAGE_CPU=${STAGE_CPU_TIMEOUTS[STAGE_INDEX]}
+fi
+
+if ((CURRENT_STAGE_WALLCLOCK &gt; "${STAGE_CLOCK_TIMEOUTS[STAGE_INDEX]}")); then
+CURRENT_STAGE_WALLCLOCK=${STAGE_CLOCK_TIMEOUTS[STAGE_INDEX]}
+fi
+
+POST_PROCESSOR_PATH=${POST_PROCESSOR_PATHS[STAGE_INDEX]}
+POST_PROCESSOR_TIME_LIMIT=${POST_PROCESSOR_TIME_LIMITS[STAGE_INDEX]}
+
+PRE_PROCESSOR_PATH=${PRE_PROCESSOR_PATHS[STAGE_INDEX]}
+PRE_PROCESSOR_TIME_LIMIT=${PRE_PROCESSOR_TIME_LIMITS[STAGE_INDEX]}
+
+CONFIG_NAME=${CONFIG_NAMES[STAGE_INDEX]}
+SOLVER_NAME=${SOLVER_NAMES[STAGE_INDEX]}
+SOLVER_PATH=${SOLVER_PATHS[STAGE_INDEX]}
+SOLVER_ID=${SOLVER_IDS[STAGE_INDEX]}
+SOLVER_TIMESTAMP=${SOLVER_TIMESTAMPS[STAGE_INDEX]}
+SPACE_ID=${SPACE_IDS[STAGE_INDEX]}
+ARGUMENT_STRING=${STAGE_DEPENDENCIES[STAGE_INDEX]}
+CURRENT_BENCH_SUFFIX=${BENCH_SUFFIXES[STAGE_INDEX]}
+SUPPRESS_TIMESTAMP=$$SUPPRESS_TIMESTAMP_OPTION$$
+RESULTS_INTERVAL=${RESULTS_INTERVALS[STAGE_INDEX]}
+STDOUT_SAVE_OPTION=${STDOUT_SAVE_OPTIONS[STAGE_INDEX]}
+EXTRA_SAVE_OPTION=${EXTRA_SAVE_OPTIONS[STAGE_INDEX]}
+
+#path to where cached solvers are stored
+SOLVER_CACHE_PATH="$WORKING_DIR_BASE/solvercache/$SOLVER_TIMESTAMP/$SOLVER_ID"
+
+#whether the solver was found in the cache
+SOLVER_CACHED=0
+
+if [ $BUILD_JOB == "true" ]; then
+LOCAL_CONFIG_PATH="$LOCAL_SOLVER_DIR/starexec_build"
+else
+# The path to the config run script on the execution host
+LOCAL_CONFIG_PATH="$LOCAL_SOLVER_DIR/bin/starexec_run_$CONFIG_NAME"
+fi
+
+if [ $SOFT_TIME_LIMIT -ne 0 ]; then
+SOFT_TIME_LIMIT_FLAG="--softtimelimit $SOFT_TIME_LIMIT"
+fi
+
+if [ $KILL_DELAY -ne 0 ]; then
+KILL_DELAY_FLAG="-d $KILL_DELAY"
+fi
+
+createDir "$OUT_DIR/output_files"
+chmod g+w "$OUT_DIR/output_files"
+
+checkCache
+copyDependencies
+verifyWorkspace
+sandboxWorkspace
+
+log "listing contents of sandbox..."
+ls -lR "$WORKING_DIR"
+
+CURRENT_STAGE_NUMBER=${STAGE_NUMBERS[STAGE_INDEX]}
+
+#Give job pairs 2 extra minutes before we kill them.
+JOB_PAIR_EXTRA_TIME=120
+
+log "doing stage index $STAGE_INDEX"
+log "stage number : $CURRENT_STAGE_NUMBER"
+log "cpu timeout : $CURRENT_STAGE_CPU"
+log "clock timeout : $CURRENT_STAGE_WALLCLOCK"
+log "global cpu timeout : $STAREXEC_CPU_LIMIT"
+log "global wallclock timeout : $STAREXEC_WALLCLOCK_LIMIT"
+log "extra time for job pair after wallclock timeout : $JOB_PAIR_EXTRA_TIME"
+log "mem limit : $CURRENT_STAGE_MEMORY"
+log "solver id : $SOLVER_ID"
+log "solver name : $SOLVER_NAME"
+log "solver path : $SOLVER_PATH"
+log "solver timestamp : $SOLVER_TIMESTAMP"
+log "config name : $CONFIG_NAME"
+log "pre processor path : $PRE_PROCESSOR_PATH"
+log "post processor path : $POST_PROCESSOR_PATH"
+log "space id : $SPACE_ID"
+log "bench path : $BENCH_PATH"
+log "benchmark suffix : $CURRENT_BENCH_SUFFIX"
+log "argument string : $ARGUMENT_STRING"
+log "results interval : $RESULTS_INTERVAL"
+log "stdout save option : $STDOUT_SAVE_OPTION"
+log "additional output save option : $EXTRA_SAVE_OPTION"
+log "user disk quota : $DISK_QUOTA"
+
+log "whoami: $(whoami)"
+
+# this will be set to true in killDeadlockedJobPair if the job pair gets deadlocked
+echo "Calling killDeadlockedJobPair"
+
+killDeadlockedJobPair "$CURRENT_STAGE_WALLCLOCK" $JOB_PAIR_EXTRA_TIME $SANDBOX_PARAM &amp;
+# Get the process of our defensive killDeadlockedJobPair function.
+KILL_DEADLOCKED_JOB_PAIR_PID=$!
+echo "KILL_DEADLOCKED_JOB_PAIR_PID = $KILL_DEADLOCKED_JOB_PAIR_PID"
+
+if ((RESULTS_INTERVAL &gt; 0)); then
+copyOutputIncrementally "$RESULTS_INTERVAL" "$STAREXEC_WALLCLOCK_LIMIT" "$CURRENT_STAGE_NUMBER" "$STDOUT_SAVE_OPTION" "$EXTRA_SAVE_OPTION" &amp;
+COPY_OUTPUT_INCREMENTALLY_PID=$!
+fi
+
+if [ $BUILD_JOB == "true" ]; then
+cd $WORKING_DIR_BASE/$SANDBOX_PARAM/solver
+rm "$LOCAL_BENCH_PATH"
+LOCAL_BENCH_PATH=""
+else
+cd $WORKING_DIR_BASE/$SANDBOX_PARAM/solver/bin
+fi
+
+pwd
+
+log "listing contents of the output directory"
+ls -l "$OUT_DIR"
+
+if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
+((MEM_IN_BYTES = CURRENT_STAGE_MEMORY * 1000000))
+
+log "Setting up cpuset cgroup..."
+echo $$ &gt; /sys/fs/cgroup/cpuset/system.slice/benchexec-cgroup.service/tasks
+log "Setting up cpuacct cgroup..."
+echo $$ &gt; /sys/fs/cgroup/cpuacct/system.slice/benchexec-cgroup.service/tasks
+log "Setting up memory cgroup..."
+echo $$ &gt; /sys/fs/cgroup/memory/system.slice/benchexec-cgroup.service/tasks
+log "Setting up freezer cgroup..."
+echo $$ &gt; /sys/fs/cgroup/freezer/system.slice/benchexec-cgroup.service/tasks
+
+log "Running runexec."
+echo "runexec --no-container --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK $SOFT_TIME_LIMIT_FLAG --cores $CORES --output $STDOUT_FILE $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH $OUT_DIR/output_files $OTHER_INPUT_PATH $ARGUMENT_STRING"
+
+# Run runexec, runexec will output the stdout of the solver to $OUT_DIR/stdout.txt and will output statistics to $OUT_DIR/var.out
+sudo -u $SANDBOX_PARAM TMPDIR="$LOCAL_TMP_DIR" STAREXEC_MAX_MEM="$CURRENT_STAGE_MEMORY" STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT="$CURRENT_STAGE_CPU" STAREXEC_WALLCLOCK_LIMIT="$CURRENT_STAGE_WALLCLOCK" runexec --no-container --memlimit $MEM_IN_BYTES --timelimit $CURRENT_STAGE_CPU --walltimelimit $CURRENT_STAGE_WALLCLOCK $SOFT_TIME_LIMIT_FLAG --cores $CORES --output "$STDOUT_FILE" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" "$OUT_DIR/output_files" $OTHER_INPUT_PATH $ARGUMENT_STRING &gt; "$VARFILE"
+
+# make a blank watchfile
+touch "$WATCHFILE"
+else
+# run runsolver
+log "Running runsolver."
+echo " $LOCAL_RUNSOLVER_PATH $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $CURRENT_STAGE_CPU -W $CURRENT_STAGE_WALLCLOCK $KILL_DELAY_FLAG -M $$MAX_MEM$$ -w $WATCHFILE -v $VARFILE -o $STDOUT_FILE $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
+
+if [ "$SUPPRESS_TIMESTAMP" = true ]; then
+log "Suppressing timestamp."
+TIMESTAMP_PARAM=""
+ADDEOF_PARAM=""
+else
+log "Not suppressing timestamp."
+TIMESTAMP_PARAM="--timestamp"
+ADDEOF_PARAM="--add-eof"
+fi
+
+sudo -u "$SANDBOX_PARAM" TMPDIR="$LOCAL_TMP_DIR" STAREXEC_MAX_MEM="$CURRENT_STAGE_MEMORY" STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT="$CURRENT_STAGE_CPU" STAREXEC_WALLCLOCK_LIMIT="$CURRENT_STAGE_WALLCLOCK" "$LOCAL_RUNSOLVER_PATH" $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $CURRENT_STAGE_CPU -W $CURRENT_STAGE_WALLCLOCK $KILL_DELAY_FLAG -M $MAX_MEM -w "$WATCHFILE" -v "$VARFILE" -o "$STDOUT_FILE" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" "$OUT_DIR/output_files" "$OTHER_INPUT_PATH" $ARGUMENT_STRING
+fi
+
+# move the working directory back to the top level sandbox
+cd $WORKING_DIR_BASE/$SANDBOX_PARAM
+if ((RESULTS_INTERVAL &gt; 0)); then
+kill $COPY_OUTPUT_INCREMENTALLY_PID
+fi
+
+# If runsolver finishes then stop the killDeadlockedJobPair function.
+log "Runsolver finished. Killing the defensive killall function."
+kill $KILL_DEADLOCKED_JOB_PAIR_PID
+KILL_EXIT_STATUS=$?
+JOB_PAIR_DEADLOCKED=false
+if ((KILL_EXIT_STATUS == 1)); then
+#killDeadlockedJobPair was dead so the job pair
+log "Job pair was deadlocked."
+JOB_PAIR_DEADLOCKED=true
+fi
+
+log "listing contents of the output directory"
+ls -l "$OUT_DIR"
+
+log "recording header of job pair output"
+head -5 "$STDOUT_FILE"
+
+if [ ! -s "$VARFILE" ]; then
+echo "Varfile could not be found. Terminating job pair."
+copyOutputNoStats "$CURRENT_STAGE_NUMBER" "$STDOUT_SAVE_OPTION" "$EXTRA_SAVE_OPTION" "$BENCHMARKING_FRAMEWORK"
+markRunscriptError "${STAGE_NUMBERS[STAGE_INDEX]}"
+exit 0
+fi
+
+if [ ! -s "$WATCHFILE" ]; then
+log "Runsolver watchfile could not be found. Terminating job pair."
+copyOutput "$CURRENT_STAGE_NUMBER" "$STDOUT_SAVE_OPTION" "$EXTRA_SAVE_OPTION" "$BENCHMARKING_FRAMEWORK"
+markRunscriptError "${STAGE_NUMBERS[STAGE_INDEX]}"
+exit 0
+fi
+
+if ! isOutputValid "$STDOUT_FILE" "$CURRENT_STAGE_NUMBER" "$SUPPRESS_TIMESTAMP" "$BENCHMARKING_FRAMEWORK" ; then
+log "runsolver output was not valid. Terminating job pair."
+markRunscriptError "${STAGE_NUMBERS[STAGE_INDEX]}"
+exit 0
+fi
+
+# check for which cores we are on
+log "epilog checking for information on cores, from runsolver's watch file:"
+grep 'cores:' "$WATCHFILE"
+
+# this also does post processing
+copyOutput "$CURRENT_STAGE_NUMBER" "$STDOUT_SAVE_OPTION" "$EXTRA_SAVE_OPTION" "$BENCHMARKING_FRAMEWORK"
+
+if ((STDOUT_SAVE_OPTION == 3)); then
+saveStdoutAsBenchmark
+fi
+
+if ((EXTRA_SAVE_OPTION == 3)); then
+saveExtraOutputAsBenchmarks
+fi
+
+ERROR_DETECTED=false
+
+if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
+log "Checking for errors for benchexec."
+if (grep 'terminationreason=cputime' "$VARFILE") then
+sendCpuExceededStatus
+ERROR_DETECTED=true
+elif (grep 'terminationreason=walltime' "$VARFILE") || [ "$JOB_PAIR_DEADLOCKED" = true ]; then
+sendWallclockExceededStatus
+ERROR_DETECTED=true
+elif (grep 'terminationreason=memory' "$VARFILE") then
+sendExceedMemStatus
+ERROR_DETECTED=true
+elif (grep 'terminationreason=' "$VARFILE") then
+# generic case for failure
+ERROR_DETECTED=true
+fi
+elif [ "$BENCHMARKING_FRAMEWORK" == "$RUNSOLVER" ]; then
+log "Checking for errors for runsolver."
+if (grep 'job error:' "$SGE_STDOUT_PATH" &gt; /dev/null) then
+ERROR_DETECTED=true
+elif (grep 'wall clock time exceeded' "$WATCHFILE" ) || [ "$JOB_PAIR_DEADLOCKED" = true ]; then
+sendWallclockExceededStatus
+ERROR_DETECTED=true
+elif (grep 'CPU time exceeded' "$WATCHFILE" ) then
+sendCpuExceededStatus
+ERROR_DETECTED=true
+elif (grep 'VSize exceeded' "$WATCHFILE" ) then
+sendExceedMemStatus
+ERROR_DETECTED=true
+fi
+fi
+
+if [ "$ERROR_DETECTED" = false ] &amp;&amp; ((DISK_QUOTA_EXCEEDED == 1)); then
+log "Error: disk quota exceeded"
+sendStatus "$ERROR_DISK_QUOTA_EXCEEDED"
+sendStageStatus "$ERROR_DISK_QUOTA_EXCEEDED" "${STAGE_NUMBERS[STAGE_INDEX]}"
+ERROR_DETECTED=true
+fi
+
+# This appears to be the idiomatic Bash way to test if a value is false.
+if [ "$ERROR_DETECTED" = false ]; then
+log "execution on $HOSTNAME complete"
+sendStageStatus "$STATUS_COMPLETE" "${STAGE_NUMBERS[STAGE_INDEX]}"
+
+if ((STAGE_INDEX == NUM_STAGES - 1)); then
+log "job finished successfully"
+sendStatus "$STATUS_COMPLETE"
+fi
+log "STAREXEC job $PAIR_ID completed successfully"
+else
+log "STAREXEC job $PAIR_ID exited with errors"
+sendStatusToLaterStages "$STATUS_NOT_REACHED" "${STAGE_NUMBERS[STAGE_INDEX]}"
+setRunStatsToZeroForLaterStages "${STAGE_NUMBERS[STAGE_INDEX]}"
+cleanUpAfterKilledBuildJob
+fi
+
+if [ $BUILD_JOB == "true" ]; then
+copySolverBack
+fi
+
+cleanForNextStage
+
+# update the path to the input to the output of the last stage
+BENCH_PATH="$SAVED_OUTPUT_DIR/$CURRENT_STAGE_NUMBER"
+OTHER_INPUT_PATH=$SAVED_OUTPUT_DIR"/"$CURRENT_STAGE_NUMBER"_output"
+done
+
+setEndTime
+
+cleanWorkspace 0 $SANDBOX_PARAM
+
+echo "Jobscript ending."
+</code></pre>
+
+		</div><!-- .entry-content -->
+
+	</article><!-- #post-## -->
+</div>
+
+		
+		
+	</main><!-- #main -->
+
+  </div><!-- #primary -->
+
+</div><!-- close .main-content-inner -->
+
+		</div><!-- close .row -->
+	</div><!-- close .container -->
+</div><!-- close .site-content -->
+
+	<div id="footer-area">
+		<div class="container footer-inner">
+			<div class="row">
+				
+				</div>
+		</div>
+
+		<footer id="colophon" class="site-footer" role="contentinfo">
+			<div class="site-info container">
+				<div class="row">
+										<nav role="navigation" class="col-md-6">
+											</nav>
+					<div class="copyright col-md-6">
+						sparkling						Theme by <a href="http://colorlib.com/" target="_blank">Colorlib</a> Powered by <a href="http://wordpress.org/" target="_blank">WordPress</a>					</div>
+				</div>
+			</div><!-- .site-info -->
+			<div class="scroll-to-top"><i class="fa fa-angle-up"></i></div><!-- .scroll-to-top -->
+		</footer><!-- #colophon -->
+	</div>
+</div><!-- #page -->
+
+		<script type="text/javascript">
+		  jQuery(document).ready(function ($) {
+			if ($(window).width() >= 767) {
+			  $('.navbar-nav > li.menu-item > a').click(function () {
+				if ($(this).attr('target') !== '_blank') {
+				  window.location = $(this).attr('href')
+				}
+			  })
+			}
+		  })
+		</script>
+	<script type='text/javascript' src='https://starexec.ccs.miami.edu/docs/wp-includes/js/admin-bar.min.js?ver=5.1.14'></script>
+<script type='text/javascript'>
+/* <![CDATA[ */
+var option = {"mystickyClass":".navbar","activationHeight":"0","disableWidth":"0","disableLargeWidth":"0","adminBar":"true","mystickyTransition":"on","mysticky_disable_down":"false"};
+/* ]]> */
+</script>
+<script type='text/javascript' src='https://starexec.ccs.miami.edu/docs/wp-content/plugins/mystickymenu/js/mystickymenu.min.js?ver=2.0.6'></script>
+<script type='text/javascript' src='https://starexec.ccs.miami.edu/docs/wp-content/themes/sparkling/assets/js/skip-link-focus-fix.min.js?ver=20140222'></script>
+<script type='text/javascript' src='https://starexec.ccs.miami.edu/docs/wp-includes/js/wp-embed.min.js?ver=5.1.14'></script>
+	<!--[if lte IE 8]>
+		<script type="text/javascript">
+			document.body.className = document.body.className.replace( /(^|\s)(no-)?customize-support(?=\s|$)/, '' ) + ' no-customize-support';
+		</script>
+	<![endif]-->
+	<!--[if gte IE 9]><!-->
+		<script type="text/javascript">
+			(function() {
+				var request, b = document.body, c = 'className', cs = 'customize-support', rcs = new RegExp('(^|\\s+)(no-)?'+cs+'(\\s+|$)');
+
+						request = true;
+		
+				b[c] = b[c].replace( rcs, ' ' );
+				// The customizer requires postMessage and CORS (if the site is cross domain)
+				b[c] += ( window.postMessage && request ? ' ' : ' no-' ) + cs;
+			}());
+		</script>
+	<!--<![endif]-->
+</body>
+</html>
