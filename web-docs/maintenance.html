@@ -1,0 +1,55 @@
+<HTML>
+<HEAD>
+<TITLE>StarExec Maintenance</TITLE>
+</HEAD>
+<BODY>
+<HR> <!-- ------------------------------------------------------------------------------------- -->
+<H1>Everything We Need to Know and Do to Maintain StarExec</H1>
+<HR> <!-- ------------------------------------------------------------------------------------- -->
+<H2>Routine StarExec Maintenance</H2>
+
+My (Jack’s) experience maintaining StarExec on the head node has mostly consisted of 
+“re-deploying” StarExec after code changes and restarting Apache (web server) or Apache Tomcat 
+(java web framework server that normal apache forwards to) when they’re down.
+<P>
+First ssh into the head node as your user. 
+You can then switch users to become the tomcat user which hosts everything using
+<PRE>
+sudo su - tomcat
+</PRE>
+(You’ll have to enter the long weird tomcat user password at this point.)
+<P>
+As tomcat, you’ll find the main StarExec code directory under “~/StarExec-deploy”:
+<PRE>
+cd ~/StarExec-deploy
+</PRE>
+<P> 
+You can rebuild and redeploy using the following incantation from within that directory:
+<PRE>
+ant build -buildfile build.xml; script/soft-deploy.sh
+</PRE>
+<P> 
+If ever there is a problem with tomcat, it would normally be restarted using 
+<PRE>
+sudo systemctl restart tomcat7
+</PRE>
+I don’t have  sudo privileges to run this, however, so instead you can run the following:
+<PRE>
+/project/apache-tomcat-7/bin/shutdown.sh
+/project/apache-tomcat-7/bin/startup.sh
+</PRE>
+<P> 
+To see the state of SGE queues:
+<PRE>
+qstat -f | less 
+</PRE>
+<P> 
+To remove an error flag (E) from an SGE queue, as user ‘jam771’ (or any other user with the 
+privilege to run this) run the following, for example:
+<PRE>
+sudo qmod -c all.q@n001.cluster.edu 
+</PRE>
+<P>
+<HR> <!-- ------------------------------------------------------------------------------------- -->
+</BODY>
+</HTML>

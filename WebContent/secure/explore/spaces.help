@@ -47,8 +47,8 @@ desired space in the tree view on the left part of the page.</p>
 	<strong>Deleting and removing benchmarks.</strong>
 	Similarly to jobs, benchmarks can be deleted or removed by dragging them
 	to the trashbin. Selecting "remove from space" will remove them from the space but not
-	delete them. Selecting "move to recycle bin" will delete the benchmark and move it to your
-	recycle bin accessible from your Account->Profile, removed benchmarks are also available at
+	delete them. Selecting "move to trash bin" will delete the benchmark and move it to your
+	trash bin accessible from your Account->Profile, removed benchmarks are also available at
 	Account->Profile.
 </p>
 <p>
@@ -61,9 +61,9 @@ desired space in the tree view on the left part of the page.</p>
 	<strong>Deleting and removing subspaces.</strong>
 	To delete a subspace, drag and drop it to the trashbin. The "remove subspaces only" option
 	will delete the subspace and descendant subspaces but your primitives will still be accessible
-	from Account->Profile. The remove subspaces and recycle primitives" option will delete the subspace
-	and descendant subspaces and recycle your primitives in those spaces. The recycled primitives can be
-	restored from your recycle bin.
+	from Account->Profile. The "remove subspaces and move primitives to trash" option will delete the subspace
+	and descendant subspaces and move the primitives to your trash. The trashed primitives can be
+	restored from your trash bin.
 </p>
 
 <p><strong>Changing permissions.</strong>

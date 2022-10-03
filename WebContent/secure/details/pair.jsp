@@ -1,5 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.data.database.JobPairs, org.starexec.data.database.Jobs,org.starexec.data.database.Permissions, org.starexec.data.database.Users,org.starexec.data.security.GeneralSecurity, org.starexec.data.security.JobSecurity, org.starexec.data.to.Job, org.starexec.data.to.JobPair, org.starexec.data.to.User, org.starexec.data.to.enums.BenchmarkingFramework, org.starexec.data.to.pipelines.JoblineStage, org.starexec.logger.StarLogger, org.starexec.util.SessionUtil, java.util.Optional" %>
+        import="org.starexec.data.database.JobPairs, org.starexec.data.database.Jobs,org.starexec.data.database.Permissions, org.starexec.data.database.Users,org.starexec.data.security.GeneralSecurity, org.starexec.data.security.JobSecurity, org.starexec.data.to.Job, org.starexec.data.to.JobPair, org.starexec.data.to.User, org.starexec.data.to.enums.BenchmarkingFramework, org.starexec.data.to.pipelines.JoblineStage, org.starexec.logger.StarLogger, org.starexec.util.SessionUtil, java.util.Optional" 
+		import="org.starexec.data.to.Benchmark, org.starexec.data.database.Benchmarks, org.starexec.data.to.BenchmarkDependency, java.util.ArrayList, java.util.List"
+		%>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
@@ -44,6 +46,15 @@
 			request.setAttribute(
 					"isRunsolver", j.getBenchmarkingFramework() ==
 							BenchmarkingFramework.RUNSOLVER);
+
+			// List<BenchmarkDependency> benchDependencies = jp.getBench().getDependencies();
+			List<BenchmarkDependency> benchDependencies = Benchmarks.getBenchDependencies(jp.getBench().getId());
+			ArrayList<Integer> benchDependencyIds = new ArrayList<Integer>();
+			for(BenchmarkDependency depend : benchDependencies){
+				benchDependencyIds.add(depend.getSecondaryBench().getId());
+			}
+			request.setAttribute("benchDependencyIds", benchDependencyIds);
+
 			request.setAttribute("moreThanOneStage", moreThanOneStage);
 			request.setAttribute("pair", jp);
 			request.setAttribute("job", j);
@@ -256,5 +267,157 @@
 		<c:if test="${rerun}">
 			<button id="rerunPair">rerun pair</button>
 		</c:if>
+
+		<!-- IDV and GDV stuff from here down -->
+		<c:if test="${pair.status.getStatus() == 'complete'}">
+			<script>
+				window.benchmarkIds = JSON.parse("${benchDependencyIds}").concat([${pair.bench.id}]);
+
+				function findProof(output){
+					let lines = output.split("\n");
+					lines = lines.map(l => l.split("\t")[1]);
+					window.lines = lines;
+
+					let hasProof = false;
+					let start = -1;
+					let end = -1;
+					for(let [i,line] of lines.entries()){
+						if(line === undefined)
+							continue;
+						if (line.includes("SZS status Theorem") || line.includes("SZS status Unsatisfiable"))
+							hasProof = true;
+						else if (line.includes("SZS output start"))
+							start = i+1;
+						else if (line.includes("SZS output end"))
+							end = i;
+					}
+
+					if(hasProof){
+						lines = lines.splice(start, end-start);
+						return lines.join("\n");
+					}
+					else{
+						return null;
+					}
+				}
+
+				function submitProofToIDV(proof) {
+					let form = document.createElement("form");
+					form.id = "form"
+					form.method = "POST"
+					form.enctype = "multipart/form-data"
+					form.action = "http://tptp.org/idv/idv"
+
+					let proofInput = document.createElement("textarea");
+					proofInput.value = proof
+					proofInput.name = "proof"
+					proofInput.form = "form"
+
+					let button = document.createElement("input");
+					button.type = "submit"
+
+					form.appendChild(proofInput)
+					form.appendChild(button)
+					document.body.appendChild(form);
+					form.submit();
+				}
+
+				function submitProofToGDV(proof){
+
+					textContent = [
+						"% SZS output start ListOfFormulae",
+						benchmarkContents.join("\n\n"),
+						"% SZS output end ListOfFormulae",
+						"% SZS output start Proof",
+						proof,
+						"% SZS output end Proof"
+					].join("\n\n")
+
+					let form = document.createElement("form");
+					form.id = "form";
+					form.method = "POST";
+					form.enctype = "multipart/form-data";
+					form.action = "http://www.tptp.org/cgi-bin/SystemOnTPTPFormReply";
+
+					
+					let textContentInput = document.createElement("textarea");
+					textContentInput.name = "FORMULAEProblem";
+					textContentInput.value = textContent;
+					textContentInput.innerHTML = textContent;
+					textContentInput.form = "form";
+
+					let GDVInputs = `
+						<input type="radio" name="ProblemSource" value="FORMULAE" checked>
+						<input type="radio" name="QuietFlag" value="-q01" checked>
+						<input type="checkbox" name="System___GDV---0.0" value="GDV---0.0" checked>
+						<input type="text" name="TimeLimit___GDV---0.0" tabindex="20" value="300" size="3" maxlength="3" />
+						<input type="text" name="Transform___GDV---0.0" tabindex="20" value="fofify:!" size="20" />
+						<input type="text" name="Format___GDV---0.0" tabindex="20" value="tptp:raw" size="20" />
+						<input type="text" name="Command___GDV---0.0" tabindex="20" value="run_GDV %s" size="20" />
+						<input id="GDVSubmitButton" type="submit" name="SubmitButton" value="ProcessSolution" form="form">
+					`;
+
+					form.appendChild(textContentInput);
+					form.innerHTML += GDVInputs;
+
+					document.body.appendChild(form);
+					document.querySelector("#GDVSubmitButton").click()
+				}
+
+				// Fetch the complete output from this job pair.
+				let outputPath = "${starexecRoot}/services/jobs/pairs/${pair.id}/stdout/1?limit=-1";
+				fetch(outputPath)
+					.then(response => response.text())
+					.then(function(output){
+						window.proof = findProof(output);
+						if(window.proof !== null){
+
+							let idvButton = document.createElement("button");
+							idvButton.id = "idvButton";
+							idvButton.innerText = "visualize proof with IDV";
+							idvButton.addEventListener("click", () => window.submitProofToIDV(window.proof));
+							document.querySelector("#fieldActions > .expdContainer").appendChild(idvButton);
+							$("#idvButton").button({icons: {primary: "ui-icon-lightbulb-1-e"}});
+
+							let gdvButton = document.createElement("button");
+							gdvButton.id = "gdvButton";
+							gdvButton.innerText = "verify proof with GDV";
+							gdvButton.addEventListener("click", () => window.submitProofToGDV(window.proof));
+							document.querySelector("#fieldActions > .expdContainer").appendChild(gdvButton);
+							$("#gdvButton").button({icons: {primary: "ui-icon-check-1-e"}});
+							
+						}
+					})
+
+
+
+				// Fetch the complete TPTP source from the benchmarks.
+				let benchmarkPromises = window.benchmarkIds.map(function(id){
+					return fetch(`${starexecRoot}/services/benchmarks/\${id}/contents?limit=-1`);
+				})
+
+				Promise.all(benchmarkPromises)
+					.then(responses => Promise.all(responses.map(r => r.text())))
+					.then(function(responses){
+						window.benchmarkContents = responses;
+						// Remove include lines now that I've imported all benchmarks dependencies.
+						// This will not be good if dependencies can have dependencies...if so, fix the JSP stuff above.
+						benchmarkContents = benchmarkContents.map(function(text){
+							let lines = text.split("\n");
+							let regex = /\s*include\(.+\)\./
+							lines = lines.map(function(l){
+								while(match = l.match(regex)){
+									l = l.substr(0,match.index) + l.substr(match.index + match[0].length)
+								}
+								return l;
+							})
+							return lines.join("\n");
+						})
+					})
+
+
+			</script>
+		</c:if>
+
 	</fieldset>
 </star:template>

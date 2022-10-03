@@ -20,16 +20,16 @@
 	}
 %>
 
-<star:template title="Personal Recycle Bin"
+<star:template title="Personal Trash Bin"
                js="common/delaySpinner, details/recycleBin, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min"
                css="common/delaySpinner, common/table, explore/common, explore/spaces, details/shared, details/recycleBin">
 	<fieldset id="recycledSolverField">
-		<legend class="expd" id="recycledSolverExpd"><span class="list-count"></span> recycled
+		<legend class="expd" id="recycledSolverExpd"><span class="list-count"></span>
 			solvers
 		</legend>
 		<ul class="actionList">
 			<li>
-				<button type="button" id="clearSolvers">empty solver bin
+				<button type="button" id="clearSolvers">permanently delete all solvers in trash
 				</button>
 			</li>
 			<li>
@@ -56,12 +56,12 @@
 	</fieldset>
 
 	<fieldset id="recycledBenchField">
-		<legend class="expd" id="recycledBenchExpd"><span>0</span> recycled
+		<legend class="expd" id="recycledBenchExpd"><span>0</span>
 			benchmarks
 		</legend>
 		<ul class="actionList">
 			<li>
-				<button type="button" id="clearBenchmarks">empty benchmark bin
+				<button type="button" id="clearBenchmarks">permanently delete all benchmarks in trash
 				</button>
 			</li>
 			<li>

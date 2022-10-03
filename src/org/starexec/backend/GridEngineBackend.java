@@ -29,12 +29,16 @@ public class GridEngineBackend implements Backend{
     private static final String QUEUE_LIST_COMMAND = "qconf -sql";					// The SGE command to execute to get a list of all job queues
     private static final String QUEUE_STATS_COMMAND = "qstat -f";				// The SGE command to get stats about all the queues
     private static final String NODE_LIST_COMMAND = "qconf -sel";					// The SGE command to execute to get a list of all worker nodes
-    private static final String QUEUE_ASSOC_PATTERN = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,16}\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
-	public static final String QUEUE_NAME_PATTERN = "QUEUE_NAME";
+    //private static final String QUEUE_ASSOC_PATTERN = "\\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,16}\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
+    
+    // UM edit
+    private static final String QUEUE_ASSOC_PATTERN = "\\b[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\b";  // The regular expression to parse out the nodes that belong to a queue from SGE's qstat -f
+	
+  public static final String QUEUE_NAME_PATTERN = "QUEUE_NAME";
 	public static final String QUEUE_GET_SLOTS_PATTERN = "qconf -sq " + QUEUE_NAME_PATTERN;// + " | grep 'slots' | grep -o '[0-9]\\{1,\\}'";
 
+//    private static final String GRID_ENGINE_PATH = "/cluster/gridengine-8.1.8/bin/lx-amd64/";
 	private static final String GRID_ENGINE_PATH = R.BACKEND_ROOT+"/bin/lx-amd64/";
-
 
     private Session session = null;
     private StarLogger log;
@@ -141,6 +145,14 @@ public class GridEngineBackend implements Backend{
     public int submitScript(String scriptPath, String workingDirectoryPath, String logPath){
     	synchronized(this){
     		JobTemplate sgeTemplate = null;
+
+ 	try {
+                // Execute the SGE command to get the node list
+                String uid = Util.executeCommand("id");
+        } catch (Exception e) {
+                log.error(e.getMessage(),e);
+        }
+
 		try {
 
 			log.debug("in submitScript()\nsession: "+session+"\nsession.createJobTemplate(): "+session.createJobTemplate()+"\n");
@@ -167,6 +179,7 @@ public class GridEngineBackend implements Backend{
 		} catch (org.ggf.drmaa.DrmaaException e) {
 			//JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());
 			log.error("submitScript", "scriptPath: " + scriptPath, e);
+
 
 		} catch (Exception e) {
 		    //JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
@@ -195,6 +208,7 @@ public class GridEngineBackend implements Backend{
      */
     public boolean killAll(){
 		try {
+			// UM tomcat
 			Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qdel -f -u tomcat",getSGEEnv());
 			return true;
 		} catch (Exception e) {
@@ -284,6 +298,7 @@ public class GridEngineBackend implements Backend{
     		envp[1] = "SGE_ROOT="+BACKEND_ROOT; // it seems we need to set this explicitly if we change the environment.
     		String results = Util.executeCommand(QUEUE_STATS_COMMAND,envp);
 
+
     		// Parse the output from the SGE call to get the key/value pairs for the node
     		java.util.regex.Matcher matcher = GridEngineBackend.queueAssocPattern.matcher(results);
 
@@ -320,8 +335,9 @@ public class GridEngineBackend implements Backend{
 			log.trace(methodName, "Got result: '" + results + "'");
 
 			// Trim outer whitespace and replace all consecutive whitespace with a single space.
-			String condensedResults = results.trim().replaceAll("\\s+", " ");
-			log.trace(methodName, "Condensed results: "+condensedResults);
+			// UM edit: replace ',' with space
+			String condensedResults = results.trim().replaceAll("\\s+", " ").replaceAll(","," ");
+			log.trace(methodName, "Condensed Geoff's results: "+condensedResults);
 
 			List<String> resultsWords = Arrays.asList(condensedResults.split(" "));
 			int slotsIndex = resultsWords.indexOf("slots");
@@ -339,7 +355,6 @@ public class GridEngineBackend implements Backend{
 			if (!slots.matches("[0-9]+")) {
 				throw new StarExecException("The slots attribute was not followed by a numeral.");
 			}
-
 
 
 			return Integer.parseInt(slots);

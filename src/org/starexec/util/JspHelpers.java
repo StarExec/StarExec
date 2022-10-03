@@ -303,7 +303,7 @@ public class JspHelpers {
 		if (Solvers.isSolverDeleted(solverId)) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "This solver has been deleted. You likely want to remove it from your spaces.");
 		} else if (Solvers.isSolverRecycled(solverId))  {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "This solver has been moved to the recycle bin by its owner.");
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "This solver has been moved to the trash bin by its owner.");
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Solver does not exist or is restricted");
 		}
@@ -454,7 +454,7 @@ public class JspHelpers {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND,
 				"This benchmark has been deleted. You likely want to remove it from your spaces");
 		} else if (Benchmarks.isBenchmarkRecycled(benchId))  {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "This benchmark has been moved to the recycle bin by its owner.");
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "This benchmark has been moved to the trash bin by its owner.");
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");
 		}
