@@ -444,8 +444,8 @@ public class Download extends HttpServlet {
 
 				sb.append(stage.getMaxVirtualMemory());
 				sb.append(",");
-				sb.append(stage.getStarexecResult());
-
+				//escape commas
+				sb.append("\""+stage.getStarexecResult().replaceAll("\"","\"\"")+"\""); 	
 				if (attrNames != null) {
 					// print out attributes for this job pair
 					Properties props = stage.getAttributes();
