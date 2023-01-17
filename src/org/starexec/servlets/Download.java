@@ -445,7 +445,7 @@ public class Download extends HttpServlet {
 				sb.append(stage.getMaxVirtualMemory());
 				sb.append(",");
 
-				//escape commas
+				//escape commas 
 				if (stage.getStarexecResult().contains(",")) { 
 					sb.append("\""+stage.getStarexecResult().replaceAll("\"","\"\"")+"\"");
 				} else {
