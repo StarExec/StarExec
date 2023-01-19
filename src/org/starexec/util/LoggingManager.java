@@ -13,22 +13,11 @@ public class LoggingManager {
 	}
 
 	public static boolean setLoggingLevelForClass(StarLevel level, String className) {
-		if (!loggerExists(className)) {
-			return false;
-		}
-		StarLogger.getLogger(className).setLevel(level);
-		return true;
-	}
-
-	public static boolean loggerExists(String className) {
-		List<StarLogger> logs = StarLogger.getCurrentLoggers();
-
-		for (StarLogger log : logs) {
-			log.debug("found this logger = " + log.getName());
-			if (log.getName().equals(className)) {
-				return true;
-			}
-		}
+	    StarLogger logger = StarLogger.getLogger(className);
+	    if (logger == null) {
 		return false;
+	    }
+	    logger.setLevel(level);
+	    return true;
 	}
 }

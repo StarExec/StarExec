@@ -59,8 +59,6 @@ public class Shell {
 	 *        Any other arguments are not correct.
 	 */
 	public static void main(String[] args) {
-		// log4j is not used for StarexecCommand
-		StarLogger.turnOffLogging();
 		Shell shell = new Shell();
 		System.out.println("Last update = " + C.VERSION); // version is just the
 															// date of the last

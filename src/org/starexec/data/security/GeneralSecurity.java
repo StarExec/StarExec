@@ -14,6 +14,7 @@ import java.sql.Connection;
 public class GeneralSecurity {
 
 	private static final StarLogger log = StarLogger.getLogger(GeneralSecurity.class);
+    //        private static final org.owasp.esapi.Logger esapiLogger = ESAPI.getLogger(GeneralSecurity.class.toString());
 
 	/**
 	 * Checks to see if the given user has permission to execute tests without checking to see if tests are already
@@ -68,6 +69,21 @@ public class GeneralSecurity {
 	public static String getHTMLSafeString(String str) {
 		return ESAPI.encoder().encodeForHTML(str);
 	}
+
+    /**
+     * a test method to make sure ESAPI is working correctly 
+     */
+    public static void test() {
+	try {
+	    String str = getHTMLSafeString("test");
+	}
+	catch(Exception e) {
+	    log.error("Caught exception checking that ESAPI is working: " + Util.getStackTrace(e));
+	    return;
+	}
+	log.info("ESAPI test passed.");
+    }
+	    
 
 	/**
 	 * Formats a string so it is safe to insert in to an HTML attribute

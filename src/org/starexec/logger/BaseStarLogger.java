@@ -1,7 +1,8 @@
 package org.starexec.logger;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
+import ch.qos.logback.classic.Level;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created by agieg on 2/10/2017.
@@ -13,12 +14,12 @@ public abstract class BaseStarLogger {
 
     protected BaseStarLogger(Class clazz) {
 
-        log = Logger.getLogger(clazz);
+        log = LoggerFactory.getLogger(clazz);
         this.name = clazz.getName();
     }
 
     protected BaseStarLogger(String name) {
-        log = Logger.getLogger(name);
+        log = LoggerFactory.getLogger(name);
         this.name = name;
     }
 
@@ -27,21 +28,17 @@ public abstract class BaseStarLogger {
         this.name = log.getName();
     }
 
-
-
     public static void turnOffLogging() {
-        Logger.getRootLogger().setLevel(Level.OFF);
+	((ch.qos.logback.classic.Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(Level.OFF);
     }
 
     public String getName() {
         return log.getName();
     }
 
-
     public void setLevel(StarLevel level) {
-        log.setLevel(level.get());
+        ((ch.qos.logback.classic.Logger)log).setLevel(level.get());
     }
-
 
     public void entry(String method) {
         log.debug(prefix(method) + "Entering method " + method + ".");
@@ -117,16 +114,39 @@ public abstract class BaseStarLogger {
     }
 
     public void fatal(final String method, final String message, final Throwable t) {
-        log(StarLevel.FATAL, method, message, t);
+        log(StarLevel.ERROR, method, message, t);
     }
     public void fatal(final String method, final String message) {
-        log(StarLevel.FATAL, method, message, null);
+        log(StarLevel.ERROR, method, message, null);
     }
     public void fatal(final String message) {
-        log(StarLevel.FATAL, null, message, null);
+        log(StarLevel.ERROR, null, message, null);
     }
     public void fatal(final String message, final Throwable t) {
-        log(StarLevel.FATAL, null, message, t);
+        log(StarLevel.ERROR, null, message, t);
+    }
+
+    protected void sendToLogger(StarLevel level, String message) {
+	switch (level) {
+	case ERROR:
+	    log.error(message);
+	    break;
+	case WARN:
+	    log.warn(message);
+	    break;
+	case INFO:
+	    log.info(message);
+	    break;
+	case DEBUG:
+	    log.debug(message);
+	    break;
+	case TRACE:
+	    log.trace(message);
+	    break;
+	}
+   }
+    protected String getMessage(final String method, final String message, final Throwable t) {
+	return (method == null ? message : prefix(method)+message + (t == null ? "" : t.toString()));
     }
 
     protected abstract void log(StarLevel level, String method, String message, Throwable t);
