@@ -446,11 +446,10 @@ public class Download extends HttpServlet {
 				sb.append(",");
 
 				//escape commas
-				if (stage.getStarexecResult().contains(",")) { 
-					sb.append("\""+stage.getStarexecResult().replaceAll("\"","\"\"")+"\"");
+				if (stage.getStarexecResult().contains(",")) {
+					sb.append("\""+stage.getStarexecResult().replaceAll("\"","\"\"")+"\"");	
 				} else {
-					sb.append(stage.getStarexecResult());
-				}
+					sb.append(stage.getStarexecResult());																		}
 
 				if (attrNames != null) {
 					// print out attributes for this job pair
@@ -869,7 +868,7 @@ public class Download extends HttpServlet {
 			break;
 		}
 		case R.BENCHMARK:
-			status = BenchmarkSecurity.canUserDownloadBenchmark(id, userId);
+F			status = BenchmarkSecurity.canUserDownloadBenchmark(id, userId);
 			if (!status.isSuccess()) {
 				return status;
 			}

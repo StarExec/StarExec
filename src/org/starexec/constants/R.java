@@ -301,6 +301,7 @@ public class R {
         public static final Long LOAD_DIFFERENCE_THRESHOLD = 5400L; // 90 minutes in seconds
 	public static final int PROCESSOR_TIME_LIMIT = 45;
 	
+
 	/* Maximum Runsolver kill-delay */
 	public static final int MAX_KILL_DELAY = 120;
 

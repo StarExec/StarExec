@@ -1,13 +1,12 @@
 package org.starexec.logger;
 
-import org.apache.log4j.Level;
+import ch.qos.logback.classic.Level;
 
 /**
  * Wrapper class for logging levels.
  */
 public enum StarLevel {
     OFF(Level.OFF),
-    FATAL(Level.FATAL),
     ERROR(Level.ERROR),
     WARN(Level.WARN),
     INFO(Level.INFO),

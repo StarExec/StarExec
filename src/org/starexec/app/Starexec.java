@@ -1,7 +1,9 @@
 package org.starexec.app;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.log4j.PropertyConfigurator;
+import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.Logger;
 import org.starexec.constants.PaginationQueries;
 import org.starexec.constants.R;
 import org.starexec.data.database.Analytics;
@@ -35,9 +37,6 @@ public class Starexec implements ServletContextListener {
 	private StarLogger log;
 	private final ScheduledExecutorService taskScheduler = Executors.newScheduledThreadPool(10);
 	// private Session session; // GridEngine session
-
-	// Path of the starexec config and log4j files which are needed at compile time to load other resources
-	private static final String LOG4J_PATH = "/WEB-INF/classes/org/starexec/config/log4j.properties";
 
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
@@ -93,10 +92,11 @@ public class Starexec implements ServletContextListener {
 		// Remember the application's root so we can load properties from it later
 		R.STAREXEC_ROOT = event.getServletContext().getRealPath("/");
 
-		// Before we do anything we must configure log4j!
-		PropertyConfigurator.configure(new File(R.STAREXEC_ROOT, LOG4J_PATH).getAbsolutePath());
-
 		log = StarLogger.getLogger(Starexec.class);
+
+		/* uncomment to debug what is happening with logback configuration:
+		LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+		ch.qos.logback.core.util.StatusPrinter.print(context); */
 
 		// HERE
 		log.debug("\n\nHERE: Java Version: "+System.getProperty("java.version")+"\n\n");
@@ -114,7 +114,7 @@ public class Starexec implements ServletContextListener {
 		log.debug( "\n\nR.STAREXEC_ROOT: "+R.STAREXEC_ROOT+"\nenvvar SGE_ROOT: "+System.getenv("SGE_ROOT")+"\nR.BACKEND_ROOT: "+R.BACKEND_ROOT+"\n" );
 		*/
 
-		log.info(String.format("StarExec TMP started at [%s]", R.STAREXEC_ROOT));
+		log.info(String.format("StarExec started at [%s]", R.STAREXEC_ROOT));
 		try {
 			log.info("Starexec running as " + Util.executeCommand("whoami"));
 		} catch (IOException e1) {
@@ -155,6 +155,8 @@ public class Starexec implements ServletContextListener {
 
 		System.setProperty("http.proxyHost", R.HTTP_PROXY_HOST);
 		System.setProperty("http.proxyPort", R.HTTP_PROXY_PORT);
+
+		org.starexec.data.security.GeneralSecurity.test();
 
 		// Schedule necessary periodic tasks to run
 		this.scheduleRecurringTasks();

@@ -4551,8 +4551,6 @@ public class RESTServices {
 			success=LoggingManager.setLoggingLevelForClass(StarLevel.INFO,className);
 		} else if (level.equalsIgnoreCase("error")) {
 			success=LoggingManager.setLoggingLevelForClass(StarLevel.ERROR,className);
-		} else if(level.equalsIgnoreCase("fatal")) {
-			success=LoggingManager.setLoggingLevelForClass(StarLevel.FATAL,className);
 		} else if (level.equalsIgnoreCase("off")) {
 			success=LoggingManager.setLoggingLevelForClass(StarLevel.OFF,className);
 		} else if (level.equalsIgnoreCase("warn")) {
@@ -4595,8 +4593,6 @@ public class RESTServices {
 			level =StarLevel.INFO;
 		} else if (inputLevel.equalsIgnoreCase("error")) {
 			level =StarLevel.ERROR;
-		} else if(inputLevel.equalsIgnoreCase("fatal")) {
-			level =StarLevel.FATAL;
 		} else if (inputLevel.equalsIgnoreCase("off")) {
 			level =StarLevel.OFF;
 		} else if (inputLevel.equalsIgnoreCase("warn")) {
@@ -4643,8 +4639,6 @@ public class RESTServices {
 			LoggingManager.setLoggingLevel(StarLevel.INFO);
 		} else if (level.equalsIgnoreCase("error")) {
 			LoggingManager.setLoggingLevel(StarLevel.ERROR);
-		} else if(level.equalsIgnoreCase("fatal")) {
-			LoggingManager.setLoggingLevel(StarLevel.FATAL);
 		} else if (level.equalsIgnoreCase("off")) {
 			LoggingManager.setLoggingLevel(StarLevel.OFF);
 		} else if (level.equalsIgnoreCase("warn")) {

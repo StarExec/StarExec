@@ -14,18 +14,13 @@
 					Reference</a>
 			</li>
 			<li>
-				<a href="http://wiki.uiowa.edu/display/stardev/User+Guide">User
+				<a href="${starexecRoot}/public/StarExecUserGuide.pdf">User
 					Guide</a>,
 				detailed description of StarExec features and functionality
 			</li>
 			<li>
 				<a href="https://github.com/StarExec/StarExec">StarExec on GitHub</a>,
 				for bug reports and feature requests
-			</li>
-			<li>
-				<a href="http://wiki.uiowa.edu/display/stardev/Home">Public
-					Developers Wiki</a>,
-				for those interested in development aspects
 			</li>
 			<li>
 				<a href="${starexecRoot}/public/WebInterface.pdf">Web Interface
