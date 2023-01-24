@@ -868,7 +868,7 @@ public class Download extends HttpServlet {
 			break;
 		}
 		case R.BENCHMARK:
-			status = BenchmarkSecurity.canUserDownloadBenchmark(id, userId);
+F			status = BenchmarkSecurity.canUserDownloadBenchmark(id, userId);
 			if (!status.isSuccess()) {
 				return status;
 			}
@@ -1195,6 +1195,7 @@ public class Download extends HttpServlet {
 	 * @param includeSolvers Whether to include solvers in the directory
 	 * @param useIdDirectories whether to put each primitive in a directory that has the name of it's id.
 	 * @return a file representing the archive to send back to the client
+
 	 * @throws ClientAbortException
 	 * @author Ruoyu Zhang + Eric Burns + Albert Giegerich
 	 */

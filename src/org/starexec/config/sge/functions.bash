@@ -542,7 +542,7 @@ function processAttributes {
 		# Only process if key and value are both non-null strings
 		if [[ -n $key && -n $value ]]; then
 			key=$(dbEscape $key)
-			# value=$(dbEscape $value)
+			value=$(dbEscape $value)
 			log "processing attribute $a (pair=$PAIR_ID, key='$key', value='$value' stage='$STAGE')"
 			QUERY+="CALL AddJobAttr($PAIR_ID, '$key', '$value', $STAGE);"
 		else
@@ -709,7 +709,6 @@ function copyOutput {
 		fi
 
 		log "processing attributes"
-		atts=$(<$OUT_DIR/attributes.txt)
 		processAttributes $OUT_DIR/attributes.txt $1
 	fi
 
