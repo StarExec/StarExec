@@ -2,6 +2,7 @@ var jTable;
 var benchTable;
 var solverTable;
 var userId;
+var uploadTable;
 
 var spaceId;
 var spaceName;
@@ -85,7 +86,8 @@ $(document).ready(function() {
 	jTable = $('#jobs').dataTable(dataTableConfig);
 	solverTable = $('#solvers').dataTable(dataTableConfig);
 	benchTable = $('#benchmarks').dataTable(dataTableConfig);
-
+        uploadTable = $('#uploads').dataTable(dataTableConfig);
+    
 	$(".selectableTable").on("mousedown", "tr", function() {
 		$(this).toggleClass("row_selected");
 		handleSelectChange();

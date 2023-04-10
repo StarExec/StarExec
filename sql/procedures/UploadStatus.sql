@@ -271,3 +271,20 @@ CREATE PROCEDURE GetInvalidBenchmarkMessage(IN _id INT)
 		FROM unvalidated_benchmarks
 		WHERE id = _id;
 	END //
+-- Gets the total count of the Uploads that belong to a specific user
+DROP PROCEDURE IF EXISTS GetUploadCountByUser //
+CREATE PROCEDURE GetUploadCountByUser(IN _userId INT)
+        BEGIN
+                SELECT COUNT(*) AS uploadCount
+                FROM benchmark_uploads
+                WHERE user_id = _userId;
+        END //
+
+DROP PROCEDURE IF EXISTS GetUploadCountByUserWithQuery //
+CREATE PROCEDURE GetUploadCountByUserWithQuery(IN _userId INT, IN _query TEXT)
+        BEGIN
+                SELECT  COUNT(*) AS uploadCount
+                FROM    benchmark_uploads
+                WHERE   user_id=_userId AND
+                                (upload_time  LIKE   CONCAT('%', _query, '%'));
+        END //

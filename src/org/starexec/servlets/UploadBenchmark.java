@@ -450,7 +450,12 @@ public class UploadBenchmark extends HttpServlet {
 		// user uploads two benchmark directories in the same minute, which can easily happen using StarexecCommand
 		uniqueDir = new File(uniqueDir, TestUtil.getRandomAlphaString(20));
 		// Create the paths on the filesystem
-		uniqueDir.mkdirs();
+                if (uniqueDir.mkdirs()) {
+                    log.info("Directory has been created");
+                }
+                else {
+                    log.info("Directory has NOT been created");
+                }
 
 		log.info("Handling upload request for user " + userId + " in space " + spaceId);
 
