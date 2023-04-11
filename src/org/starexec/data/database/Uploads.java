@@ -4,6 +4,12 @@ import org.starexec.data.to.Benchmark;
 import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.SpaceXMLUploadStatus;
 import org.starexec.logger.StarLogger;
+import org.starexec.constants.PaginationQueries;
+import org.starexec.constants.R;
+import org.starexec.util.DataTablesQuery;
+import org.starexec.util.NamedParameterStatement;
+import org.starexec.util.PaginationQueryBuilder;
+import org.starexec.util.Util;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -785,6 +791,125 @@ public class Uploads {
 			Common.safeClose(procedure);
 		}
 	}
+
+
+// Archie code start
+    public static List<BenchmarkUploadStatus> getUploadsByUserForNextPage(DataTablesQuery query, int userId) {
+	Connection con = null;
+	NamedParameterStatement procedure = null;
+	ResultSet results = null;
+	try {
+	    con = Common.getConnection();
+	    PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_UPLOADS_BY_USER_QUERY,
+									getUploadOrderColumn(query.getSortColumn()),
+									query
+									);
+
+	    procedure = new NamedParameterStatement(con, builder.getSQL());
+	    procedure.setInt("userId", userId);
+	    procedure.setString("query", query.getSearchQuery());
+
+	    results = procedure.executeQuery();
+	    List<BenchmarkUploadStatus> uploads = new LinkedList<>();
+
+	    while(results.next()) {
+		BenchmarkUploadStatus u  = new BenchmarkUploadStatus();
+		u.setId(results.getInt("id"));
+		u.setCompletedBenchmarks(results.getInt("completed_benchmarks"));
+		u.setCompletedSpaces(results.getInt("completed_spaces"));
+		u.setFileExtractionComplete(results.getBoolean("file_extraction_complete"));
+		u.setProcessingBegun(results.getBoolean("processing_begun"));
+		u.setSpaceId(results.getInt("space_id"));
+		u.setTotalBenchmarks(results.getInt("total_benchmarks"));
+		u.setValidatedBenchmarks(results.getInt("validated_benchmarks"));
+		u.setTotalSpaces(results.getInt("total_spaces"));
+		u.setUploadDate(results.getTimestamp("upload_time"));
+		u.setUserId(results.getInt("user_id"));
+		u.setFileUploadComplete(results.getBoolean("file_upload_complete"));
+		u.setEverythingComplete(results.getBoolean("everything_complete"));
+		u.setErrorMessage(results.getString("error_message"));
+		u.setFailedBenchmarks(results.getInt("failed_benchmarks"));
+		uploads.add(u);
+	    }
+	    return uploads;
+	} catch (Exception e) {
+	    log.error("getUploadsForNextPage", e);
+	} finally {
+	    Common.safeClose(con);
+	    Common.safeClose(procedure);
+	    Common.safeClose(results);
+	}
+	return null;
+    }
+
+
+
+    public static String getUploadOrderColumn(int indexOfColumn) {
+	switch (indexOfColumn) {
+	case 0:
+	    return "space_id";
+	case 1:
+	    return "total_benchmarks";
+	case 2:
+	    return "upload_time";
+	default:
+	    return "space_id";
+	}
+    }
+
+
+
+    public static int getUploadCountByUser(int userId) {
+	Connection con = null;
+	CallableStatement procedure = null;
+	ResultSet results = null;
+	try {
+	    con = Common.getConnection();
+	    procedure = con.prepareCall("{CALL GetUploadCountByUser(?)}");
+	    procedure.setInt(1, userId);
+	    results = procedure.executeQuery();
+
+	    if(results.next()) {
+		return results.getInt("uploadCount");
+	    }
+	} catch (Exception e) {
+	    log.error("getUploadCountByUser", e);
+	} finally {
+	    Common.safeClose(con);
+	    Common.safeClose(procedure);
+	    Common.safeClose(results);
+	}
+	return 0;
+    }
+
+
+    public static int getUploadCountByUser(int userId, String query) {
+	Connection con = null;
+	CallableStatement procedure = null;
+	ResultSet results = null;
+	try {
+	    con = Common.getConnection();
+	    procedure = con.prepareCall("{CALL GetUploadCountByUserWithQuery(?, ?)}");
+	    procedure.setInt(1, userId);
+	    procedure.setString(2, query);
+	    results = procedure.executeQuery();
+
+	    if (results.next()) {
+		return results.getInt("uploadCount");
+	    }
+	} catch (Exception e) {
+		log.error("getUploadCountByUser", e);
+	} finally {
+	    Common.safeClose(con);
+	    Common.safeClose(procedure);
+	    Common.safeClose(results);
+	}
+	    return 0;
+
+    }
+
+// End Archie Code
+
 
 	/**
 	 * Sets error message

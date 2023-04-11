@@ -353,6 +353,7 @@ public class R {
 	public static final String JOB_OUTPUTS = "jp_outputs";
 	public static final String USER = "user";
 	public static final String SOLVER_SOURCE = "solverSrc";
+	public static final String UPLOAD="upload";
 
 	//
 	public static final String CONFIG_ID_ATTR = "config-id";

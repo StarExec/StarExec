@@ -868,7 +868,7 @@ public class Download extends HttpServlet {
 			break;
 		}
 		case R.BENCHMARK:
-F			status = BenchmarkSecurity.canUserDownloadBenchmark(id, userId);
+			status = BenchmarkSecurity.canUserDownloadBenchmark(id, userId);
 			if (!status.isSuccess()) {
 				return status;
 			}

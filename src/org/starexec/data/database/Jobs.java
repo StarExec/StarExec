@@ -2320,8 +2320,12 @@ public class Jobs {
 	}
 
 	/**
+<<<<<<< HEAD
+	 * Returns all of the successfully completed job pairs in a given job space hierarchy, populated with all the fields necessary to display
+=======
 	 
    
+>>>>>>> 028325927bb56db6ee1c5404fffb3ef4c13ffdb2
 	 * in a SolverStats table. All job pair stages are obtained
 	 * This alternate version is to fix the job graphs, Alexander Brown 6/21
 	 *
@@ -5666,4 +5670,3 @@ public class Jobs {
 				});
 	}
 }
-

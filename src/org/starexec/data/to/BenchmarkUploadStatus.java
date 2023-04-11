@@ -22,6 +22,10 @@ public class BenchmarkUploadStatus extends Identifiable {
 	private int completedBenchmarks;
 	private int failedBenchmarks;
 	private String errorMessage;
+    
+
+        public BenchmarkUploadStatus() {
+        }
 
 	/**
 	 * @return the spaceId

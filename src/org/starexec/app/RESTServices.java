@@ -4364,6 +4364,7 @@ public class RESTServices {
 	public String getUserBenchmarksPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
 		int requestUserId=SessionUtil.getUserId(request);
 		ValidatorStatusCode status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
+		log.error("made it to getUserBenchmarksPaginated");
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}		// Query for the next page of solver pairs and return them to the user
@@ -4371,6 +4372,23 @@ public class RESTServices {
 
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
+
+	/**
+ 	*
+ 	**/
+	@POST
+	@Path("/users/{id}/uploads/pagination")
+	@Produces("application/json")
+    	public String getUserUploadsPaginated(@PathParam("id") int usrId, @Context HttpServletRequest request) {
+		int requestUserId=SessionUtil.getUserId(request);
+		ValidatorStatusCode status=UserSecurity.canViewUserPrimitives(usrId, requestUserId);
+		if (!status.isSuccess()) {
+		    return gson.toJson(status);
+		}
+		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.UPLOAD, usrId, request, false, false);
+		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
+    }
+
 
 	/**
 	 * Get the paginated result of the solvers belong to a specified user
