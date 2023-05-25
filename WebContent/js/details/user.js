@@ -10,7 +10,7 @@ var spaceName;
 /**
 * When the document is ready, IE the entire HTML page is ready, call
 * this function
-/
+* /
 $(document).ready(function() {
 	userId = $("#userId").attr("value");
 	// Hide loading images by default
