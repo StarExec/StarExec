@@ -9,7 +9,7 @@ var spaceName;
 
 /**
 * When the document is ready, IE the entire HTML page is ready, call
-* this function
+* this function, I belive we are using https://datatables.net/manual/
 */
 $(document).ready(function() {
 	userId = $("#userId").attr("value");
