@@ -91,7 +91,7 @@ $(document).ready(function() {
 	jTable = $('#jobs').dataTable(dataTableConfig);
 	solverTable = $('#solvers').dataTable(dataTableConfig);
 	benchTable = $('#benchmarks').dataTable(dataTableConfig);
-        uploadTable = $('#uploads').dataTable(dataTableConfig);
+        uploadTable = $('#uploads').dataTable(dataTableConfig).api().reverse();;
     
 	$(".selectableTable").on("mousedown", "tr", function() {
 		$(this).toggleClass("row_selected");
