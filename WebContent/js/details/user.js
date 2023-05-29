@@ -180,7 +180,7 @@ function PopUp(uri) {
 function fnPaginationHandler(sSource, aoData, fnCallback) {
     	console.log(sSource + ": sSource");
 	console.log(aoData + ": aoData");
-	console.log(fnCallback.name() + ":callback");
+	console.log(typeof fnCallback + ":callback");
 	
 	var tableName = $(this).attr('id');
 	var usrId = $(this).attr("uid");
