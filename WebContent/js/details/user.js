@@ -183,7 +183,8 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	
 	var tableName = $(this).attr('id');
 	var usrId = $(this).attr("uid");
-
+ 
+//https://api.jquery.com/jquery.post/
 	$.post(
 		sSource + usrId + "/" + tableName + "/pagination",
 		aoData,
