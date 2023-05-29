@@ -1,0 +1,34 @@
+#!/bin/bash
+
+#OAR -p network_address='$$NODE_NAME$$'
+
+# Submit under sandbox user 
+#$ -u $$SANDBOX_USER_ONE$$
+
+# Resource limits
+#$ -l s_fsize=$$MAX_WRITE$$G,exclusive=true,h=$$NODE_NAME$$
+
+# Default shell is bash
+#$ -S /bin/bash
+
+# Make these jobs high priority
+#$ -p 1024
+
+# Merge stdout and stderr streams
+#$ -j y
+
+WORKING_DIR_BASE='$$WORKING_DIR_BASE$$'
+
+date
+echo "deleting solver cache on $$NODE_NAME$$"
+echo "confirming host using the hostname command"
+hostname
+rm -rf "$WORKING_DIR_BASE/solvercache"
+mkdir "$WORKING_DIR_BASE/solvercache"
+chmod gu+rwx "$WORKING_DIR_BASE/solvercache"
+
+echo "doing ls to confirm the directory was removed"
+ls -l "$WORKING_DIR_BASE/solvercache"
+
+echo "cache script ending."
+

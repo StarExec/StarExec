@@ -1,0 +1,9 @@
+$$USER$$,
+
+We regret to inform you that your request to reserve the queue $$QUEUENAME$$ has been declined.
+
+If you feel like you've received this message in error, you can try again to reserve the queue on our website.
+
+We apologize for any inconvenience!
+
+-STAREXEC TEAM

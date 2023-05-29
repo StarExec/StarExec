@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" xmlns:tns="https://stardev.cs.uiowa.edu/starexec_aguo2/public/batchSpaceSchema.xsd" targetNamespace="https://stardev.cs.uiowa.edu/starexec_aguo2/public/batchSpaceSchema.xsd">
+
+	<annotation>
+		<documentation>
+			This is the xml schema for a starexec space hierarchy.
+		</documentation>
+	</annotation>
+
+	<element name="Spaces" type="tns:Spaces"></element>
+
+	<complexType name="Spaces">
+		<sequence>
+			<element name="Space" type="tns:Space" minOccurs="1"
+					 maxOccurs="unbounded">
+			</element>
+		</sequence>
+	</complexType>
+
+	<complexType name="Space">
+		<sequence>
+			<element name="SpaceAttributes"
+					 type="tns:SpaceAttributes" minOccurs="0"
+					 maxOccurs="1"></element>
+
+			<choice minOccurs="0" maxOccurs="unbounded">
+				<element name="Update" type="tns:Update"></element>
+				<element name="Benchmark" type="tns:Benchmark"></element>
+				<element name="Solver" type="tns:Solver"></element>
+				<element name="Space" type="tns:Space"></element>
+			</choice>
+		</sequence>
+		<attribute name="id" type="int" use="optional"></attribute>
+
+		<!-- This should not be null and must have at least 1 character -->
+		<attribute name="name" type="tns:PrimitiveName"></attribute>
+	</complexType>
+
+	<complexType name="SpaceAttributes">
+		<all>
+			<element name="sticky-leaders" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+			<element name="inherit-users" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+			<element name="locked" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+			<element name="description" type="tns:descriptionInfo" minOccurs="0" maxOccurs="1"></element>
+
+			<element name="add-benchmark-perm" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+			<element name="add-job-perm" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+			<element name="add-solver-perm" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+			<element name="add-space-perm" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+			<element name="add-user-perm" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+
+			<element name="rem-benchmark-perm" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+			<element name="rem-job-perm" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+			<element name="rem-solver-perm" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+			<element name="rem-space-perm" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+			<element name="rem-user-perm" type="tns:booleanInfo" minOccurs="0" maxOccurs="1"></element>
+		</all>
+	</complexType>
+
+	<!-- space attributes type definitions -->
+	<complexType name="descriptionInfo">
+		<attribute name="value" type="tns:Description" use="required"></attribute>
+	</complexType>
+
+	<complexType name="booleanInfo">
+		<attribute name="value" type="boolean" use="required"></attribute>
+	</complexType>
+	<!-- end space attributes type definitions -->
+
+	<complexType name="Update">
+		<all>
+			<element name="Text" type="string" minOccurs="0" maxOccurs
+					="1"/> <!-- Text used by update processor -->
+		</all>
+		<attribute name="id" type="int"/> <!--id of benchmark being
+      updated-->
+		<attribute name="name" type="string" use="optional"/>
+		<attribute name="pid" type="int"/> <!-- update processor id-->
+		<attribute name="bid" type="int"/> <!-- benchmark processor id-->
+	</complexType>
+
+	<complexType name="Benchmark">
+		<sequence>
+			<element name="Attribute" type="tns:Attribute" minOccurs="0" maxOccurs="unbounded">
+			</element>
+		</sequence>
+		<attribute name="id" type="int"></attribute>
+		<attribute name="name" type="string"
+				   use="optional"></attribute>
+		<attribute name="uploadTime" type="string" use="optional"></attribute>
+	</complexType>
+
+	<complexType name="Attribute">
+		<attribute name="name" type="string"></attribute>
+		<attribute name="value" type="string"></attribute>
+	</complexType>
+
+	<complexType name="Solver">
+		<attribute name="id" type="int"></attribute>
+		<attribute name="name" type="string" use="optional"></attribute>
+	</complexType>
+
+
+	<simpleType name="Description">
+		<restriction base="string">
+			<pattern value="[^&lt;&gt;&quot;&apos;)(&amp;&#37;&#43;&#45;]{0,1024}"/>
+		</restriction>
+	</simpleType>
+
+	<simpleType name="PrimitiveName">
+		<restriction base="string">
+			<pattern value="[_\w\-\. \+\^=,!?:$%#@]{1,250}"/>
+		</restriction>
+	</simpleType>
+
+
+</schema>

@@ -1,0 +1,11 @@
+$$USER$$,
+
+Congratulations, your request to reserve queue $$QUEUENAME$$ for space $$SPACE$$ has been approved!
+
+The queue will be created and will have $$NODECOUNT$$ nodes associated with it on $$STARTDATE$$.
+
+Your reservation will last until $$ENDDATE$$.
+
+Thanks for your continued use of our service!  
+
+-STAREXEC TEAM

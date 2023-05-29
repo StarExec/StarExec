@@ -1,0 +1,11 @@
+$$USER$$,
+
+Your reservation for queue $$QUEUENAME$$ for space $$SPACE$$ has expired!
+
+The queue has been deleted and all jobs that were running on it have been paused.
+
+Please visit the job details page of the jobs running on the queue to select an alternative queue and resume jobs as necessary.
+
+Thanks for your continued use of our service!  
+
+-STAREXEC TEAM

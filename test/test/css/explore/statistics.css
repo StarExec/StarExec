@@ -1,0 +1,29 @@
+@media only screen and (max-width: 767px) {
+	#statistics {
+		width: 100%;
+	}
+
+	#statsTable {
+		width: 85%;
+	}
+
+	#statsTable td, #statsTable th {
+		font-size: 12px;
+	}
+
+	#graph {
+		width: 85%;
+	}
+
+	body td {
+		text-align: center;
+	}
+
+	body th {
+		text-align: center;
+	}
+
+	#statsTable tr > *:nth-child(3), #statsTable tr > *:nth-child(4), #statsTable tr > *:nth-child(5), #statsTable tr > *:nth-child(6)  {
+		display: none;
+	}
+}

@@ -1,0 +1,140 @@
+runsolver Copyright (C) 2010-2013 Olivier ROUSSEL
+
+This is runsolver version 3.3.2 (svn: 1389)
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+command line: /home/astump/runsolver/runsolver-geoff/src/runsolver --timestamp --add-eof --cores 0-3 -C 300 -W 600 -M 4096 -w watcher.out -o stdout.txt ./starexec_run_iProver---1.0 /home/astump/starexec/Benchmarks/3/20140507-10.34.29/Problems/GRP/GRP673+1.p 
+
+running on 4 cores: 0-3
+
+Enforcing CPUTime limit (soft limit, will send SIGTERM then SIGKILL): 300 seconds
+Enforcing CPUTime limit (hard limit, will send SIGXCPU): 330 seconds
+Enforcing wall clock limit (soft limit, will send SIGTERM then SIGKILL): 600 seconds
+Enforcing VSIZE limit (soft limit, will send SIGTERM then SIGKILL): 4194304 KiB
+Enforcing VSIZE limit (hard limit, stack expansion will fail with SIGSEGV, brk() and mmap() will return ENOMEM): 4245504 KiB
+Current StackSize limit: 10240 KiB
+
+
+[startup+0 s]
+/proc/loadavg: 0.23 0.17 0.33 3/399 24200
+/proc/meminfo: memFree=53720504/132119084 swapFree=0/0
+[pid=24200] ppid=24194 vsize=113180 CPUtime=0.03 cores=0-3
+/proc/24200/stat : 24200 (starexec_run_iP) S 24194 24200 57343 34818 24194 4202496 856 5158 1 0 0 1 2 0 20 0 1 0 97643277 115896320 488 18446744073709551615 4194304 4561580 140736900320208 140736900285480 248721028912 0 0 0 134291456 18446744071580497547 0 0 17 2 0 0 0 0 0
+/proc/24200/statm: 28295 488 284 90 0 291 0
+
+[startup+0.144959 s]
+/proc/loadavg: 0.23 0.17 0.33 3/399 24200
+/proc/meminfo: memFree=53720504/132119084 swapFree=0/0
+[pid=24200] ppid=24194 vsize=113184 CPUtime=0.07 cores=0-3
+/proc/24200/stat : 24200 (starexec_run_iP) S 24194 24200 57343 34818 24194 4202496 886 10030 1 0 0 1 5 1 20 0 1 0 97643277 115900416 489 18446744073709551615 4194304 4561580 140736900320208 140736900285480 248721028912 0 0 0 134291456 18446744071580497547 0 0 17 0 0 0 0 0 0
+/proc/24200/statm: 28296 489 284 90 0 292 0
+Current children cumulated CPU time (s) 0.07
+Current children cumulated vsize (KiB) 113184
+
+[startup+0.200211 s]
+/proc/loadavg: 0.23 0.17 0.33 3/399 24200
+/proc/meminfo: memFree=53720504/132119084 swapFree=0/0
+[pid=24200] ppid=24194 vsize=113196 CPUtime=0.09 cores=0-3
+/proc/24200/stat : 24200 (starexec_run_iP) D 24194 24200 57343 34818 24194 1077944320 1006 15190 1 0 0 1 7 1 20 0 1 0 97643277 115912704 500 18446744073709551615 4194304 4561580 140736900320208 140736900319200 248721030213 0 0 0 134291456 18446744072101401010 0 0 17 3 0 0 0 0 0
+/proc/24200/statm: 28299 500 284 90 0 295 0
+Current children cumulated CPU time (s) 0.09
+Current children cumulated vsize (KiB) 113196
+
+[startup+0.300181 s]
+/proc/loadavg: 0.23 0.17 0.33 3/399 24200
+/proc/meminfo: memFree=53720504/132119084 swapFree=0/0
+[pid=24200] ppid=24194 vsize=113200 CPUtime=0.11 cores=0-3
+/proc/24200/stat : 24200 (starexec_run_iP) S 24194 24200 57343 34818 24194 4202496 1218 16880 1 0 0 1 7 3 20 0 1 0 97643277 115916800 501 18446744073709551615 4194304 4561580 140736900320208 140736900317008 248720338090 0 0 0 134291456 18446744071579410403 0 0 17 3 0 0 0 0 0
+/proc/24200/statm: 28300 501 284 90 0 296 0
+Current children cumulated CPU time (s) 0.11
+Current children cumulated vsize (KiB) 113200
+
+[startup+0.70014 s]
+/proc/loadavg: 0.23 0.17 0.33 3/399 24200
+/proc/meminfo: memFree=53720504/132119084 swapFree=0/0
+[pid=24200] ppid=24194 vsize=113200 CPUtime=0.11 cores=0-3
+/proc/24200/stat : 24200 (starexec_run_iP) S 24194 24200 57343 34818 24194 4202496 1218 16880 1 0 0 1 7 3 20 0 1 0 97643277 115916800 501 18446744073709551615 4194304 4561580 140736900320208 140736900317008 248720338090 0 0 0 134291456 18446744071579410403 0 0 17 3 0 0 0 0 0
+/proc/24200/statm: 28300 501 284 90 0 296 0
+Current children cumulated CPU time (s) 0.11
+Current children cumulated vsize (KiB) 113200
+
+Solver just ended. Dumping a history of the last processes samples
+
+[startup+0.800185 s]
+/proc/loadavg: 0.23 0.17 0.33 3/399 24200
+/proc/meminfo: memFree=53720504/132119084 swapFree=0/0
+[pid=24200] ppid=24194 vsize=113200 CPUtime=0.11 cores=0-3
+/proc/24200/stat : 24200 (starexec_run_iP) S 24194 24200 57343 34818 24194 4202496 1218 16880 1 0 0 1 7 3 20 0 1 0 97643277 115916800 501 18446744073709551615 4194304 4561580 140736900320208 140736900317008 248720338090 0 0 0 134291456 18446744071579410403 0 0 17 3 0 0 0 0 0
+/proc/24200/statm: 28300 501 284 90 0 296 0
+Current children cumulated CPU time (s) 0.11
+Current children cumulated vsize (KiB) 113200
+
+[startup+1.21852 s]
+/proc/loadavg: 0.23 0.17 0.33 2/401 24330
+/proc/meminfo: memFree=53714780/132119084 swapFree=0/0
+[pid=24200] ppid=24194 vsize=113200 CPUtime=0.11 cores=0-3
+/proc/24200/stat : 24200 (starexec_run_iP) S 24194 24200 57343 34818 24194 4202496 1218 16880 1 0 0 1 7 3 20 0 1 0 97643277 115916800 501 18446744073709551615 4194304 4561580 140736900320208 140736900317008 248720338090 0 0 0 134291456 18446744071579410403 0 0 17 3 0 0 0 0 0
+/proc/24200/statm: 28300 501 284 90 0 296 0
+[pid=24276] ppid=24200 vsize=122888 CPUtime=0.01 cores=0-3
+/proc/24276/stat : 24276 (GetComputerInfo) S 24200 24200 57343 34818 24194 4202496 1150 3624 0 2 0 0 0 1 20 0 1 0 97643307 125837312 612 18446744073709551615 4194304 4198148 140733436686432 140733436676808 248728577856 0 0 128 0 18446744071580497547 0 0 17 0 0 0 1 0 0
+/proc/24276/statm: 30722 612 408 1 0 259 0
+[pid=24316] ppid=24276 vsize=14900 CPUtime=0 cores=0-3
+/proc/24316/stat : 24316 (top) S 24276 24200 57343 34818 24194 4202496 331 0 0 0 0 0 0 0 20 0 1 0 97643363 15257600 244 18446744073709551615 4194304 4250756 140735368786928 140735368785576 248721053123 0 0 0 138047495 18446744071580547497 0 0 17 2 0 0 0 0 0
+/proc/24316/statm: 3725 244 206 14 0 90 0
+[pid=24277] ppid=24200 vsize=105252 CPUtime=0 cores=0-3
+/proc/24277/stat : 24277 (sed) S 24200 24200 57343 34818 24194 4202496 279 0 0 0 0 0 0 0 20 0 1 0 97643307 107778048 198 18446744073709551615 4194304 4259712 140735718267536 140735718266792 248721028912 0 0 0 0 18446744071580497547 0 0 17 2 0 0 0 0 0
+/proc/24277/statm: 26313 198 171 16 0 77 0
+Current children cumulated CPU time (s) 0.12
+Current children cumulated vsize (KiB) 356240
+
+[startup+1.30033 s]
+/proc/loadavg: 0.23 0.17 0.33 2/401 24330
+/proc/meminfo: memFree=53714780/132119084 swapFree=0/0
+[pid=24200] ppid=24194 vsize=113200 CPUtime=0.11 cores=0-3
+/proc/24200/stat : 24200 (starexec_run_iP) S 24194 24200 57343 34818 24194 4202496 1218 16880 1 0 0 1 7 3 20 0 1 0 97643277 115916800 501 18446744073709551615 4194304 4561580 140736900320208 140736900317008 248720338090 0 0 0 134291456 18446744071579410403 0 0 17 3 0 0 0 0 0
+/proc/24200/statm: 28300 501 284 90 0 296 0
+[pid=24276] ppid=24200 vsize=122888 CPUtime=0.01 cores=0-3
+/proc/24276/stat : 24276 (GetComputerInfo) S 24200 24200 57343 34818 24194 4202496 1150 3624 0 2 0 0 0 1 20 0 1 0 97643307 125837312 612 18446744073709551615 4194304 4198148 140733436686432 140733436676808 248728577856 0 0 128 0 18446744071580497547 0 0 17 0 0 0 1 0 0
+/proc/24276/statm: 30722 612 408 1 0 259 0
+[pid=24316] ppid=24276 vsize=14900 CPUtime=0 cores=0-3
+/proc/24316/stat : 24316 (top) S 24276 24200 57343 34818 24194 4202496 331 0 0 0 0 0 0 0 20 0 1 0 97643363 15257600 244 18446744073709551615 4194304 4250756 140735368786928 140735368785576 248721053123 0 0 0 138047495 18446744071580547497 0 0 17 2 0 0 0 0 0
+/proc/24316/statm: 3725 244 206 14 0 90 0
+[pid=24277] ppid=24200 vsize=105252 CPUtime=0 cores=0-3
+/proc/24277/stat : 24277 (sed) S 24200 24200 57343 34818 24194 4202496 279 0 0 0 0 0 0 0 20 0 1 0 97643307 107778048 198 18446744073709551615 4194304 4259712 140735718267536 140735718266792 248721028912 0 0 0 0 18446744071580497547 0 0 17 2 0 0 0 0 0
+/proc/24277/statm: 26313 198 171 16 0 77 0
+Current children cumulated CPU time (s) 0.12
+Current children cumulated vsize (KiB) 356240
+
+Child status: 1
+Real time (s): 1.35932
+CPU time (s): 0.172973
+CPU user time (s): 0.101984
+CPU system time (s): 0.070989
+CPU usage (%): 12.725
+Max. virtual memory (cumulated for all children) (KiB): 356240
+
+getrusage(RUSAGE_CHILDREN,...) data:
+user time used= 0.101984
+system time used= 0.070989
+maximum resident set size= 2908
+integral shared memory size= 0
+integral unshared data size= 0
+integral unshared stack size= 0
+page reclaims= 23699
+page faults= 3
+swaps= 0
+block input operations= 600
+block output operations= 0
+messages sent= 0
+messages received= 0
+signals received= 0
+voluntary context switches= 380
+involuntary context switches= 66
+
+runsolver used 0.006998 second user time and 0.106983 second system time
+
+The end

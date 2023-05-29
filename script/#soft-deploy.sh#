@@ -1,5 +1,6 @@
+
 #!/bin/bash
-# This file generated during build: 05/24/2023 11:10:29 AM
+# This file generated during build: 05/29/2023 02:04:46 PM
 #
 # Run from the directory where you build starexec with ant (build.xml).
 
@@ -7,12 +8,12 @@
 umask -S g=rwx
 
 # filled in by running ant with build.xml:
-APPNAME=starexec_aguo2	
-STAREXEC_DATA_DIR=/home/starexec/starexec_aguo2	/data_dir
-WEB_HOME=/project/starexec_aguo2/webapps
+APPNAME=starexec_aguo2
+STAREXEC_DATA_DIR=/home/starexec/starexec_aguo2/data_dir
+WEB_HOME=/project/starexec_astump/webapps
 
 SGE_SCRIPT_DIR=$STAREXEC_DATA_DIR/sge_scripts
-WAR=starexec_aguo2	.war
+WAR=starexec_aguo2.war
 APPDIR=$WEB_HOME/$APPNAME
 STAR_WAR=$WEB_HOME/$WAR
 

@@ -1,0 +1,60 @@
+#subspaceSummaryField {
+	width:97%;	
+}
+#subspaceSummaryField table.panel {
+	font-size:70%;
+	
+}
+
+
+#subspaceSummaryField .dataTables_wrapper {
+	float:left;
+	clear:none;
+	padding:3px;
+}
+
+#subspaceSummaryField .panelField {
+    max-width:31.5%;
+	width:31.5%;
+    float: left;
+    padding-right: 1px ;
+	border: 1px solid #000000;
+	clear: none;
+	margin-bottom:2px;
+	margin-right:5px;
+	margin-top:5px;
+	border-radius:0;
+	padding-left:0;
+}
+
+#subspaceSummaryField #panelActions {
+	width:97%;
+	border: 0 none black;
+	border-bottom: 5px solid;
+	margin-top:0;
+	padding-top:0;
+}
+
+tr.viewSubspace {
+	text-align:center;
+	font-size: 140%;
+	cursor:pointer;
+}
+
+table.panel .configHead, table.panel .solverHead {
+	width: 30%;
+}
+table.panel .solvedHead, table.panel .timeHead {
+	width: 20%;	
+}
+
+@media only screen and (max-width: 767px) {
+	#wrapper #subspaceSummaryField .panelField {
+		max-width: 100%;
+		width: 100%;
+	}
+
+	th, td {
+		text-align: center;
+	}
+}

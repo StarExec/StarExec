@@ -1,0 +1,12 @@
+Greetings $$USER$$,
+
+This is an automatically generated email to help you on your way to becoming a Starexec member!
+
+There are two steps that have yet to be completed before you can login and begin using our service.  First you must activate your account and to do so just follow the provided link:
+$$LINK$$
+
+Second, you must be approved to join a community.  Once you have verified your email address in the above step, the leaders of the community you selected at registration will review your request.  You will receive another email from us when a leader has approved/declined your request.  
+
+We hope you enjoy our services!
+
+-STAREXEC TEAM

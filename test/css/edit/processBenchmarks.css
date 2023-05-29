@@ -1,0 +1,48 @@
+fieldset {						
+	width: 75%;	
+	margin-bottom: 30px;
+	margin-top: 30px;
+}
+
+fieldset table,
+fieldset ul {
+	width: 100%;
+}
+tr .label {
+	width: 20%;
+}
+
+tr td,
+tr th {
+	padding: 10px;		
+	vertical-align: middle;
+}
+#process{
+	margin-top:5px;
+	margin-right:20px;
+}
+#detailsTbl tr td:first-child {
+	width: 20%;
+}
+
+.error {
+	vertical-align: middle;
+}
+
+#actionField button {
+	float:right;
+}
+
+@media only screen and (max-width: 767px) {
+	body fieldset {
+		width: 85%;
+	}
+	
+	#processorSelectionTable td, #processorSelectionTable th {
+		width: 50%;
+	}
+
+	body #detailsTbl td, #detailsTbl th  {
+		width: 50%;
+	}
+}

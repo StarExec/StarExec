@@ -1,0 +1,9 @@
+Greetings,
+
+This is an automatically generated email from the Starexec team to all administrators, because a user by the name of $$USER$$ ($$EMAIL$$) has requested to reserve queue $$QUEUENAME$$ for space $$SPACENAME$$.
+
+
+Please do not respond to this email, but instead sign into Starexec as an administrator and visit the admin_cluster page to handle the request.
+
+
+-STAREXEC TEAM

@@ -10,6 +10,7 @@ var spaceName;
 /**
 * When the document is ready, IE the entire HTML page is ready, call
 * this function, I belive we are using https://datatables.net/manual/
+* this line to test if changes get depolyed
 */
 $(document).ready(function() {
 	userId = $("#userId").attr("value");
@@ -177,9 +178,9 @@ function PopUp(uri) {
 }
 
 function fnPaginationHandler(sSource, aoData, fnCallback) {
-	console.log(sSource);
-	console.log(aoData);
-	console.log(fnCallback);
+    	console.log(sSource + ": sSource");
+	console.log(aoData + ": aoData");
+	console.log(fnCallback.toString() + ":callback");
 	
 	var tableName = $(this).attr('id');
 	var usrId = $(this).attr("uid");

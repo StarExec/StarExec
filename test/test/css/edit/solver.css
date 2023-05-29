@@ -1,0 +1,43 @@
+#new_website input {
+	width: 30%;
+}
+
+.delWebsite {
+	float: right;
+	cursor: pointer;
+	font-size: smaller;
+}
+
+.caption {
+	text-align: right;
+	font-size: 14px;
+	display: block;
+	margin-top: 10px;
+}
+
+#new_website {
+	float: right;
+	margin-top: 10px;
+}
+
+#toggleWebsite {	
+	cursor: pointer;	
+}
+
+table tr td:first-child {
+	width: 160px;
+}
+
+@media only screen and (max-width: 767px) {
+	fieldset {
+		width: 85%;
+	}
+
+	#solverDetails tr > *:first-child {
+		width: 33.33%;
+	}
+
+	#solverDetails tr > *:nth-child(2) {
+		width: 66.66%;
+	}
+}

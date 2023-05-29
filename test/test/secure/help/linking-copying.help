@@ -1,0 +1,24 @@
+<h1>Linking and Copying Primitives</h1>
+
+<p>This page explains the semantics of linking and copying primitives.</p>
+
+<h2>Linking</h2>
+
+<p>Primitives (solvers, benchmarks, and jobs) on StarExec can be associated with any number of spaces.
+To put an existing primitive in a new space, you can "link" it from a space it already exists in to a new space.
+Linking a primitive simply associates it with the new space-- it does not make a copy of the primitive on disk,
+and, if you are not the owner of the primitive being linked, it does not make you the owner of that primitive 
+in the new space. Linking primitives has no affect on your disk quota, because linking does not create actual copies.</p>
+
+<h2>Copying</h2>
+
+<p>When a primitive is "copied," a deep copy of that primitive is made both on disk and in the database. This means
+the primitive will have a new ID, and you will be the owner of the primitive, exactly as if you had uploaded the
+primitive yourself. The primitive will count against your disk quota. All of this applies even if you were the owner
+of the primitive that was the source of the copy!</p>
+
+<p>A primitive that has been copied is a totally different object from the source primitive. Editing or deleting a primitive
+has no effect on any primitives that were copied from that primitive. </p>
+
+<p>Jobs can not currently be copied in any way. Any time an existing job is added to a new space, it is a linking operation.</p>
+

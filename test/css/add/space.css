@@ -1,0 +1,63 @@
+#content fieldset {
+	width: 600px;
+	margin: 50px auto 30px auto;	
+}
+
+#tblSpace {
+	width: 100%;
+}
+
+#tblSpace tr td {
+	padding: 10px;
+}
+
+#tblSpace input[type="text"], #tblSpace textarea {
+	width: 200px;
+	margin-right: 10px;
+}
+
+#tblSpace input[type="radio"]:last-child {
+	margin-left: 15px;
+}
+
+#tblDefaultPerm tr td {
+	padding: 0 40px 0 0;
+}
+
+#tblDefaultPerm tr th {
+	text-align: left;
+}
+
+.label {
+	width: 140px;
+	vertical-align: middle;
+}
+
+button {
+	float: right;
+}
+
+@media only screen and (max-width: 767px) {
+	#wrapper fieldset {
+		width: 75%;
+	}
+
+	#tblDefaultPerm {
+		table-layout: auto;
+		width: 100%;
+	}
+
+	#wrapper #tblDefaultPerm th, #wrapper #tblDefaultPerm td {
+		width: 11px;
+		text-align: center;
+	}
+
+	#wrapper #tblDefaultPerm tr > *:nth-child(1){
+		width: 55px;
+		text-align: left;
+	}
+
+	#wrapper #tblDefaultPerm tr td {
+		padding-right: 0;
+	}
+}

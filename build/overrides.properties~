@@ -2,7 +2,7 @@ STAREXEC_APPNAME: starexec_aguo2
 #tomcat-dir: /project/tomcat/apache-tomcat-7.0.78
 #web-home:/project/tomcat-webapps/webapps
 tomcat-dir: /project/tomcat/apache-tomcat-9
-web-home: /project/starexec_aguo2/webapps
+web-home: /project/starexec_astump/webapps
 
 ALLOW_TESTING: true
 

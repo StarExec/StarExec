@@ -1,0 +1,38 @@
+.actionField {
+	width:95%;
+}
+
+#detailPanel.userDetailPanel {
+	float:left;
+}
+
+.community {
+	text-align: center;
+}
+
+@media only screen and (max-width: 767px) {
+	#picSection {
+		display: none;
+	}
+
+	#wrapper #detailPanel.userDetailPanel {
+		border-left: initial;
+	}
+
+	#jobs tr > *:first-child {
+		width: 100% !important;
+	}
+
+	#jobs tr > *:nth-child(2), #jobs tr > *:nth-child(3), #jobs tr > *:nth-child(4),
+	#jobs tr > *:nth-child(5), #jobs tr > *:nth-child(6) {
+		display: none;
+	}
+
+	body button {
+		margin: 0 0 5px 0;
+	}
+
+	body td, body th {
+		text-align: center;
+	}
+}

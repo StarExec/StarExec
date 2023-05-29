@@ -1,0 +1,10 @@
+
+@media only screen and (max-width: 767px) {
+	body th, body td {
+		text-align: center;
+	}
+
+	#actionField button {
+		margin: 0 5px 5px 0;
+	}
+}
