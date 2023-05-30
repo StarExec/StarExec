@@ -86,7 +86,7 @@ $(document).ready(function() {
 	var dataTableConfig = new star.DataTableConfig({
 		"bServerSide": true,
 		"sAjaxSource": starexecRoot + "services/users/",
-		"fnServerData": fnPaginationHandler
+		//"fnServerData": fnPaginationHandler
 	});
 
 	jTable = $('#jobs').dataTable(dataTableConfig);
