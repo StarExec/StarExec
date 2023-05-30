@@ -207,7 +207,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		//datatable page contains the data in the table
 		function(nextDataTablePage) {
 			if (tableName == "uploads") {
-				console.log("found");
+				nextDataTablePage.aaData.reverse();
 			}
 			
 			s = parseReturnCode(nextDataTablePage);
