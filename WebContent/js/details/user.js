@@ -84,9 +84,14 @@ $(document).ready(function() {
 	});
 
 	var dataTableConfig = new star.DataTableConfig({
+		//use erverside processing
 		"bServerSide": true,
 		//this is arguement sSource for fnpangnationhandler
 		"sAjaxSource": starexecRoot + "services/users/",
+		//This parameter allows you to override the default function which 
+		//obtains the data from the server ($.getJSON) so something more suitable 
+		//for your application. For example you could use POST data, or pull in
+		//formation from a Gears or AIR database.
 		"fnServerData": fnPaginationHandler
 	});
 
