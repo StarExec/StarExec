@@ -181,6 +181,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
     	console.log(sSource + ": sSource");
 	console.log(aoData + ": aoData");
 	console.log(fnCallback.name + ":callback");
+	console.log(nextDataTablePage);
 	
 	var tableName = $(this).attr('id');
 	var usrId = $(this).attr("uid");
