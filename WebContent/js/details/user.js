@@ -199,6 +199,10 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		sSource + usrId + "/" + tableName + "/pagination",
 		aoData,
 		function(nextDataTablePage) {
+			if (tableName == uploads) {
+				console.log("found");
+			}
+			
 			console.log(typeof nextDataTablePage);
 			s = parseReturnCode(nextDataTablePage);
 			if (s) {
