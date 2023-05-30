@@ -183,6 +183,7 @@ function PopUp(uri) {
 	});
 }
 
+//this handles the pagination of the page. 
 function fnPaginationHandler(sSource, aoData, fnCallback) {
     	console.log(sSource + ": sSource");
 	console.log(aoData[0].toString() + ": aoData");
@@ -198,7 +199,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		sSource + usrId + "/" + tableName + "/pagination",
 		aoData,
 		function(nextDataTablePage) {
-			console.log(nextDataTablePage);
+			console.log(typeof nextDataTablePage);
 			s = parseReturnCode(nextDataTablePage);
 			if (s) {
 				fnCallback(nextDataTablePage);
