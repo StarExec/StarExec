@@ -198,6 +198,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	$.post(
 		sSource + usrId + "/" + tableName + "/pagination",
 		aoData,
+		//datatable page contains the data in the table
 		function(nextDataTablePage) {
 			console.log(tableName);
 			
