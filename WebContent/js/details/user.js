@@ -179,7 +179,7 @@ function PopUp(uri) {
 
 function fnPaginationHandler(sSource, aoData, fnCallback) {
     	console.log(sSource + ": sSource");
-	console.log(aoData[0][0].toString() + ": aoData");
+	console.log(aoData[0].toString() + ": aoData");
 	console.log(fnCallback.name + ":callback");
 	
 	
