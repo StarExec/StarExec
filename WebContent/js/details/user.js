@@ -187,11 +187,12 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	var usrId = $(this).attr("uid");
  
 //https://api.jquery.com/jquery.post/
-	console.log(nextDataTablePage);
+	
 	$.post(
 		sSource + usrId + "/" + tableName + "/pagination",
 		aoData,
 		function(nextDataTablePage) {
+			console.log(nextDataTablePage);
 			s = parseReturnCode(nextDataTablePage);
 			if (s) {
 				fnCallback(nextDataTablePage);
