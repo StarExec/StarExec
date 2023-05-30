@@ -183,7 +183,13 @@ function PopUp(uri) {
 	});
 }
 
-//this handles the pagination of the page. 
+/*this handles the pagination of the page. 
+* @param sSource part ofwhere we get the json data from
+* @param aoData data sent to the server
+* @param callback function
+* @author unknown
+*/
+
 function fnPaginationHandler(sSource, aoData, fnCallback) {
     	console.log(sSource + ": sSource");
 	console.log(aoData[0].toString() + ": aoData");
@@ -200,7 +206,9 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		aoData,
 		//datatable page contains the data in the table
 		function(nextDataTablePage) {
-			console.log(tableName);
+			if (tableName == "uploads") {
+				console.log("found");
+			}
 			
 			s = parseReturnCode(nextDataTablePage);
 			if (s) {
