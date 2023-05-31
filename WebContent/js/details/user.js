@@ -183,22 +183,106 @@ function PopUp(uri) {
 	});
 }
 
-/*this handles the pagination of the page. 
+//String of ao to see contents
+function printaoElement(aoElement) {
+		return aoElement.name;
+}
+
+/* try to get a stack trace
+*/
+function stackTrace() {
+    var err = new Error();
+    return err.stack;
+}
+
+//prints ao to see contents
+function printao(elements) {
+	String = '{';
+	var len = elements.length
+	for (let i = 0; i < len - 1; i++) {
+		String += printaoElement(elements[i]) + ",";
+	}
+	String += elements[len - 1];
+	console.log(elements); 
+}
+
+/*this handles the pagination of the page.
+* this is called from the datatables lib,
+* the source code of which is heavily obsfucated 
 * @param sSource part ofwhere we get the json data from
-* @param aoData data sent to the server
+* @param aoData data sent to the server in the form of name value pair
+* Here's an example of the type of stuff that aoData contains
+0
+: 
+{name: 'sEcho', value: 1}
+1
+: 
+{name: 'iColumns', value: 2}
+2
+: 
+{name: 'sColumns', value: ','}
+3
+: 
+{name: 'iDisplayStart', value: 0}
+4
+: 
+{name: 'iDisplayLength', value: 10}
+5
+: 
+{name: 'mDataProp_0', value: 0}
+6
+: 
+{name: 'sSearch_0', value: ''}
+7
+: 
+{name: 'bRegex_0', value: false}
+8
+: 
+{name: 'bSearchable_0', value: true}
+9
+: 
+{name: 'bSortable_0', value: true}
+10
+: 
+{name: 'mDataProp_1', value: 1}
+11
+: 
+{name: 'sSearch_1', value: ''}
+12
+: 
+{name: 'bRegex_1', value: false}
+13
+: 
+{name: 'bSearchable_1', value: true}
+14
+: 
+{name: 'bSortable_1', value: true}
+15
+: 
+{name: 'sSearch', value: ''}
+16
+: 
+{name: 'bRegex', value: false}
+17
+: 
+{name: 'iSortCol_0', value: 0}
+18
+: 
+{name: 'sSortDir_0', value: 'asc'}
+19
+: 
+{name: 'iSortingCols', value: 1}
+
 * @param callback function
 * @author unknown
 */
-
 function fnPaginationHandler(sSource, aoData, fnCallback) {
-    	console.log(sSource + ": sSource");
-	console.log(aoData[0].toString() + ": aoData");
-	console.log(fnCallback.name + ":callback");
-	
+
 	
 	var tableName = $(this).attr('id');
 	var usrId = $(this).attr("uid");
  
+	console.log(sSource + usrId + "/" + tableName + "/pagination");
 //https://api.jquery.com/jquery.post/
 	
 	$.post(
