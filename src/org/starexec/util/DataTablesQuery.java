@@ -7,7 +7,7 @@ package org.starexec.util;
  */
 public class DataTablesQuery {
 
-	private String searchQuery =null;
+	private Strin g searchQuery =null;
 	private boolean sortASC;
 	private int startingRecord;
 	private int numRecords;

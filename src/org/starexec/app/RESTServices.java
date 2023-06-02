@@ -4373,9 +4373,12 @@ public class RESTServices {
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 
-	/**
- 	*
- 	**/
+	/* The post request in User.js calls this method. Given a user and a HTTPRequest, return string (Json) of next page
+ 	* @param int usrId the id of the user to be fetched
+	* @param HTTPServletRequest the request
+	* Docs by @AGUO2
+	* @author ArchieKipp
+ 	*/
 	@POST
 	@Path("/users/{id}/uploads/pagination")
 	@Produces("application/json")

@@ -1025,6 +1025,12 @@ public class RESTHelpers {
 		return convertSpacesToJsonObject(spacesToDisplay, query);
 	}
 
+	/*
+	 * Given data about a request, return a json object representing the next page
+	 * Docs by @aguo2
+	 * @author ArchieKipp
+	 * 
+	 */
 	public static JsonObject getNextDataTablesPageForUserDetails(Primitive type, int id, HttpServletRequest request, boolean recycled, boolean dataAsObjects) {
 		// Parameter validation
 		DataTablesQuery query = RESTHelpers.getAttrMap(type, request);
@@ -1780,31 +1786,37 @@ public class RESTHelpers {
 		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 
-
+		/*given a list of the {all (I think pagination happens later)} benchmark uploads for some user, convert this to a json object
+		* @param uploads List of the uploads
+		* @param query Data about the query
+		* Documentation by @aguo2
+		* @author unknown
+		*/
+		
         public static JsonObject convertUploadsToJsonObject(List<BenchmarkUploadStatus> uploads, DataTablesQuery query) {
 	    JsonArray dataTablePageEntries = new JsonArray();
 	    for (BenchmarkUploadStatus upload: uploads) {
-		StringBuilder sb = new StringBuilder();
+			StringBuilder sb = new StringBuilder();
 
-		sb.append("<input type=\"hidden\" value =\"");
-		sb.append(upload.getId());
-		sb.append("\" prim=\"upload\" userId=\"").append(upload.getUserId()).append("\"/>");
-		String hiddenUploadId = sb.toString();
+			sb.append("<input type=\"hidden\" value =\"");
+			sb.append(upload.getId());
+			sb.append("\" prim=\"upload\" userId=\"").append(upload.getUserId()).append("\"/>");
+			String hiddenUploadId = sb.toString();
 
-		sb = new StringBuilder();
-		sb.append("<a href =\"").append(Util.docRoot("secure/details/uploadStatus.jsp?id="));
-		sb.append(upload.getId());
-		sb.append("\" target=\"_blank\">");
-		sb.append(upload.getUploadDate().toString());
-		RESTHelpers.addImg(sb);
-		sb.append(hiddenUploadId);
-	        String uploadLink = sb.toString();
+			sb = new StringBuilder();
+			sb.append("<a href =\"").append(Util.docRoot("secure/details/uploadStatus.jsp?id="));
+			sb.append(upload.getId());
+			sb.append("\" target=\"_blank\">");
+			sb.append(upload.getUploadDate().toString());
+			RESTHelpers.addImg(sb);
+			sb.append(hiddenUploadId);
+			String uploadLink = sb.toString();
 
-	        JsonArray entry = new JsonArray();
-	        entry.add(new JsonPrimitive(uploadLink));
-		entry.add(new JsonPrimitive(upload.getTotalBenchmarks()));
-		entry.add(new JsonPrimitive(upload.isEverythingComplete()));
-		dataTablePageEntries.add(entry);
+			JsonArray entry = new JsonArray();
+			entry.add(new JsonPrimitive(uploadLink));
+			entry.add(new JsonPrimitive(upload.getTotalBenchmarks()));
+			entry.add(new JsonPrimitive(upload.isEverythingComplete()));
+			dataTablePageEntries.add(entry);
 	    }
 	    return createPageDataJsonObject(query, dataTablePageEntries);
 	}
@@ -2127,7 +2139,8 @@ public class RESTHelpers {
 		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 
-	private static JsonObject createPageDataJsonObject(DataTablesQuery query, JsonArray entries) {
+
+	private static JsonObject getAttrMapcreatePageDataJsonObject(DataTablesQuery query, JsonArray entries) {
 		JsonObject nextPage = new JsonObject();
 		// Build the actual JSON response object and populated it with the
 		// created data
