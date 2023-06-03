@@ -2140,7 +2140,7 @@ public class RESTHelpers {
 	}
 
 
-	private static JsonObject getAttrMapcreatePageDataJsonObject(DataTablesQuery query, JsonArray entries) {
+	private static JsonObject createPageDataJsonObject(DataTablesQuery query, JsonArray entries) {
 		JsonObject nextPage = new JsonObject();
 		// Build the actual JSON response object and populated it with the
 		// created data
