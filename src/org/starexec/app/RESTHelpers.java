@@ -214,9 +214,9 @@ public class RESTHelpers {
 			//we use not to make sure it starts from false. This value is changed automatically 
 			//by datatables, so we are fine. 
 			if (sDir.contains("asc")) {
-				query.setSortASC(true);
-			} else if (sDir.contains("desc")) {
 				query.setSortASC(false);
+			} else if (sDir.contains("desc")) {
+				query.setSortASC(true);
 			} else {
 				log.warn("getAttrMap", "sDir is not 'asc' or 'desc': "+sDir);
 				return null;
