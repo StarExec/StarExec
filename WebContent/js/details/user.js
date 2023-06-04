@@ -10,7 +10,7 @@ var spaceName;
 /**
 * When the document is ready, IE the entire HTML page is ready, call
 * this function, I belive we are using https://datatables.net/manual/
-* this line to test if changes get depolyed
+* this line to test if changes get depolyed 23
 */
 $(document).ready(function() {
 	userId = $("#userId").attr("value");
@@ -183,12 +183,15 @@ function PopUp(uri) {
 	});
 }
 
-//String of ao to see contents
+/*String of ao to see contents
+@author aguo2
+*/
 function printaoElement(aoElement) {
-		return aoElement.name;
+		return "{Name: " +aoElement.name + ", Value: " + aoElement.value + "}";
 }
 
-/* try to get a stack trace
+/* try to get a stack trace for debugging.
+/* @author aguo2
 */
 function stackTrace() {
     var err = new Error();
@@ -282,7 +285,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	var tableName = $(this).attr('id');
 	var usrId = $(this).attr("uid");
  
-	console.log(sSource + usrId + "/" + tableName + "/pagination");
+	printao(aoData);
 //https://api.jquery.com/jquery.post/
 	
 	$.post(
@@ -292,9 +295,6 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		function(nextDataTablePage) {
 			//issue 335, if we are getting data for uploads, we want the table data to be
 			//in reverse chronological order. 
-			if (tableName == "uploads") {
-				nextDataTablePage.aaData.reverse();
-			}
 			
 			s = parseReturnCode(nextDataTablePage);
 			if (s) {

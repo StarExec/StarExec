@@ -210,10 +210,13 @@ public class RESTHelpers {
 			}
 
 			//Validates that the sort direction is specified and valid
-			if (Util.isNullOrEmpty(sDir)) {
+			//in theory, the sort order on load is in asc, but this is chronological order. 
+			//we use not to make sure it starts from false. This value is changed automatically 
+			//by datatables, so we are fine. 
+			if (sDir.contains("asc")) {
+				query.setSortASC(true);
+			} else if (sDir.contains("desc")) {
 				query.setSortASC(false);
-			} else if (sDir.contains("asc") || sDir.contains("desc")) {
-				query.setSortASC(sDir.equals("asc"));
 			} else {
 				log.warn("getAttrMap", "sDir is not 'asc' or 'desc': "+sDir);
 				return null;
@@ -2139,7 +2142,12 @@ public class RESTHelpers {
 		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 
-
+	/*
+	 * Given an JSONArray of the next page and the query,
+	 * return a JsonObject of the elements displayed in the front end table
+	 * @author PressDodd
+	 * @docs aguo2
+	 */
 	private static JsonObject createPageDataJsonObject(DataTablesQuery query, JsonArray entries) {
 		JsonObject nextPage = new JsonObject();
 		// Build the actual JSON response object and populated it with the
