@@ -5,6 +5,7 @@ package org.starexec.backend;
 
 import java.lang.reflect.Field;
 
+import org.apache.commons.io.FileUtils;
 import org.starexec.constants.R;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.logger.StarLogger;
@@ -32,8 +33,34 @@ public class GridEngineBackend implements Backend{
 
 	private static final String GRID_ENGINE_PATH = R.BACKEND_ROOT+"/bin/lx-amd64/";
 
+	/**
+     * use to initialize fields and prepare backend for tasks
+
+     **/  
+    public void initialize(String BACKEND_ROOT){
+	    this.BACKEND_ROOT = BACKEND_ROOT;
+		//I don't know if this is still needed
+    	try {
+			log.debug("createSession() loading class.");
+
+			//set sys_paths to null
+			try {
+				final Field sysPathsField = ClassLoader.class.getDeclaredField("sys_paths");
+				sysPathsField.setAccessible(true);
+				sysPathsField.set(null, null);
+			} catch ( Exception e ) {
+				log.error(e.toString());
+			} } catch (Exception e) {
+				log.error(e.getMessage(),e);
+			}
+
+			
+
+			
+    }
+
 	@Override
-	//no teardown necessary
+	//no teardown necessary because DRMAA.jar is no longer used
 	 public void destroyIf() {}
 
     private StarLogger log;
@@ -92,18 +119,12 @@ public class GridEngineBackend implements Backend{
 		sb.append(scriptPath);
 		String[] finalCommand = {sb.toString()};
 		//get the stdout. 
-		Process p;
 		try {
-			p = Util.executeCommandAndReturnProcess(finalCommand, null, null);
-		} 
-		catch (IOException e) {
-			log.error("[GridEngineBackend.java]: Could not find the file.");
-		}
-		Process p = Util.executeCommandAndReturnProcess(finalCommand, null, null);
-		//check if we had stderr
+			Process p = Util.executeCommandAndReturnProcess(finalCommand, null, null);
+			//check if we had stderr
 		String stdout;
 		try {
-			stdout = Util.getOnlyStdOut(p);
+			stdout = Util.getstdout(p);
 		}
 		catch (Exception e) {
 			log.error("[GridEngineBackend.java]: uploading the job produced stderr output: " + e.getMessage() + ".");
@@ -123,8 +144,11 @@ public class GridEngineBackend implements Backend{
 			log.error("[GridEngineBackend.java]: there was a problem parsing stdout as an int.");
 			return -1;
 		}
- 
-		
+		} 
+		catch (IOException e) {
+			log.error("[GridEngineBackend.java]: Could not find the file.");
+			return -1;
+		}
 	}
 
 

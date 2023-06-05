@@ -39,7 +39,7 @@ import static java.util.Objects.nonNull;
  * This class contains utility functions used throughout Starexec, including many
  * for executing commands and interacting with the filesystem.
  *
- * @author Eric
+ * @author Eric and Aguo2
  */
 public class Util {
 	protected static final ExecutorService threadPool = Executors.newCachedThreadPool();
@@ -458,11 +458,29 @@ public class Util {
 		return readsomething;
 	}
 
+	/*
+	 * This method gets the stdout from a process. If there was stderr output, then 
+	 * something bad happened as a result of running something, and an exception
+	 * is thrown to the caller.
+	 * @param p the process
+	 * @return
+	 */
+	public static String getstdout(final Process p) throws StarExecException {
+		final StringBuffer message = new StringBuffer();
+		//if we got an error from stderr, we throw our custom exception
+		if (drainInputStream(message, p.getErrorStream())) {
+			throw new StarExecException(message.toString());
+		}
+		//if nothing was read into the buffer, get the output
+		drainInputStream(message, p.getInputStream());
+		return message.toString();
+	}
+
 	/**
 	 * Drains both the stdout and stderr streams of a process and returns
 	 *
-	 * @param p
-	 * @return The stdout of the process. The stderr is redirected to a log file.
+	 * @param p the process 
+	 * @return A string with stderr first, followed by stdout. 
 	 */
 	public static String drainStreams(final Process p) {
 
