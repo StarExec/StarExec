@@ -1,5 +1,7 @@
 package org.starexec.backend;
 
+//all drmaa must use  Util.java executeCommand and qsub
+
 import org.apache.commons.io.FileUtils;
 import org.ggf.drmaa.JobTemplate;
 import org.ggf.drmaa.Session;
@@ -75,7 +77,7 @@ public class GridEngineBackend implements Backend{
 				System.out.println( e.toString() );
 			}
 
-			log.debug( "\n\njust before assigning to sessionFactory\nis session == null?: " + (session == null) + "\n" ); //remove
+
 
 			SessionFactory sessionFactory = SessionFactoryImpl.getFactory(); //remove
 			session = sessionFactory.getSession(); //remove
@@ -105,10 +107,10 @@ public class GridEngineBackend implements Backend{
      **/   
     public void destroyIf() {
 
-		if ( session != null ) {
+		if ( session != null ) { //remove
 
 
-			if (!session.toString().contains("drmaa")) {
+			if (!session.toString().contains("drmaa")) { //remove
 
 				try {
 					session.exit(); //remove
@@ -135,7 +137,11 @@ public class GridEngineBackend implements Backend{
      * @param scriptPath : the full path to the jobscript file
      * @param workingDirectoryPath  :  path to a directory that can be used for scratch space (read/write)
      * @param logPath  :  path to a directory that should be used to store jobscript logs
+	 * qsub only has a place to put std out, lets hope the 2 are the same
      * @return an identifier for the task that submitScript starts, should allow a user to identify which task/script to kill
+	 * as of the great rocky migration, we need to use qsub because we can't get drmma.jar :'(
+	 * here are the docs
+	 * the command we run is qqsub -b n -v TMPDIR={$workingDirectoryPath} -v -o {$logPath} {$scriptPath}
      **/  
     public int submitScript(String scriptPath, String workingDirectoryPath, String logPath){
     	synchronized(this){
