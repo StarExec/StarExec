@@ -140,7 +140,7 @@ public class GridEngineBackend implements Backend{
 	 * qsub only has a place to put std out, lets hope the 2 are the same
      * @return an identifier for the task that submitScript starts, should allow a user to identify which task/script to kill
 	 * as of the great rocky migration, we need to use qsub because we can't get drmma.jar :'(
-	 * here are the docs
+	 * here are the docs https://gridscheduler.sourceforge.net/htmlman/htmlman1/qsub.html
 	 * the command we run is qqsub -b n -v TMPDIR={$workingDirectoryPath} -v -o {$logPath} {$scriptPath}
      **/  
     public int submitScript(String scriptPath, String workingDirectoryPath, String logPath){
