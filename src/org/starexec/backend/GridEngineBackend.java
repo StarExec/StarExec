@@ -36,7 +36,7 @@ public class GridEngineBackend implements Backend{
 	private static final String GRID_ENGINE_PATH = R.BACKEND_ROOT+"/bin/lx-amd64/";
 
 
-    private Session session = null;
+    private Session session = null; //remove
     private StarLogger log;
     private String BACKEND_ROOT = null;
 
@@ -77,16 +77,15 @@ public class GridEngineBackend implements Backend{
 
 			log.debug( "\n\njust before assigning to sessionFactory\nis session == null?: " + (session == null) + "\n" );
 
-			SessionFactory sessionFactory = SessionFactoryImpl.getFactory();
-			session = sessionFactory.getSession();
+			SessionFactory sessionFactory = SessionFactoryImpl.getFactory(); //remove
+			session = sessionFactory.getSession(); //remove
 
 //			SessionFactory factory = SessionFactory.getFactory();
 //			Session session = factory.getSession();
 
-			log.debug( "\n\nmade it past assigning to session\nis session == null?: " + (session == null) + "\nsession: "+session + "\n" );
 
 			try {
-				session.init("");
+				session.init(""); //remove
 			} catch (Exception e) {
 				// ignoring any errors for initialization. Errors are thrown
 				// if a session already exists, but this does not impact functionality
@@ -107,12 +106,12 @@ public class GridEngineBackend implements Backend{
     public void destroyIf() {
 
 		if ( session != null ) {
-			log.debug( "\n\ntesting object 'session':\n" + session.toString() + "\n" );
+
 
 			if (!session.toString().contains("drmaa")) {
-				log.debug("Shutting down the session..." + session);
+
 				try {
-					session.exit();
+					session.exit(); //remove
 				}
 				catch (Exception e) {
 					log.error("Problem destroying session: "+e,e);
@@ -140,16 +139,15 @@ public class GridEngineBackend implements Backend{
      **/  
     public int submitScript(String scriptPath, String workingDirectoryPath, String logPath){
     	synchronized(this){
-    		JobTemplate sgeTemplate = null;
+    		JobTemplate sgeTemplate = null; //remove
 		try {
 
-			log.debug("in submitScript()\nsession: "+session+"\nsession.createJobTemplate(): "+session.createJobTemplate()+"\n");
 
 			// Set up the grid engine template
-			sgeTemplate = session.createJobTemplate();
+			sgeTemplate = session.createJobTemplate(); //remove
 
 			// DRMAA needs to be told to expect a shell script and not a binary
-			sgeTemplate.setNativeSpecification("-shell y -b n -w n");
+			sgeTemplate.setNativeSpecification("-shell y -b n -w n"); //remove
 
 			// Tell the job where it will deal with files
 			sgeTemplate.setWorkingDirectory(workingDirectoryPath);
@@ -160,13 +158,13 @@ public class GridEngineBackend implements Backend{
 			sgeTemplate.setRemoteCommand(scriptPath);
 
 			// Actually submit the job to the grid engine
-			String id = session.runJob(sgeTemplate);
+			String id = session.runJob(sgeTemplate); //remove
 			//log.info(String.format("Submitted SGE job #%s, job pair %s, script \"%s\".", id, pair.getId(), scriptPath));
 
 			return Integer.parseInt(id);
 		} catch (org.ggf.drmaa.DrmaaException e) {
 			//JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());
-			log.error("submitScript", "scriptPath: " + scriptPath, e);
+			log.error("submitScript", "scriptPath: " + scriptPath, e); 
 
 		} catch (Exception e) {
 		    //JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
@@ -174,9 +172,9 @@ public class GridEngineBackend implements Backend{
 
 		} finally {
 			// Cleanup. Session's MUST be exited or SGE will be mean to you
-			if(sgeTemplate != null) {
+			if(sgeTemplate != null) { //remove
 			    try{
-				session.deleteJobTemplate(sgeTemplate);
+				session.deleteJobTemplate(sgeTemplate); //remove
 			    } catch(Exception e){
 				log.error(e.getMessage(),e);
 			    }
