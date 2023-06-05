@@ -32,6 +32,9 @@ public class GridEngineBackend implements Backend{
 
 	private static final String GRID_ENGINE_PATH = R.BACKEND_ROOT+"/bin/lx-amd64/";
 
+	@Override
+	//no teardown necessary
+	 public void destroyIf() {}
 
     private StarLogger log;
     private String BACKEND_ROOT = null;
