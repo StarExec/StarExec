@@ -384,7 +384,7 @@ public class Util {
 	 * @param command An array holding the command and then its arguments
 	 * @param envp The environment
 	 * @param workingDirectory the working directory to use
-	 * @return A String containing both stderr and stdout from the command
+	 * @return A process containing both stderr and stdout from the command
 	 * @throws IOException We do not want to catch exceptions at this level, because this code is generic and
 	 * has no useful way to handle them! Throwing an exception to higher levels is the desired behavior.
 	 */
@@ -462,7 +462,7 @@ public class Util {
 	 * Drains both the stdout and stderr streams of a process and returns
 	 *
 	 * @param p
-	 * @return The combined stdout and stderr from the process
+	 * @return The stdout of the process. The stderr is redirected to a log file.
 	 */
 	public static String drainStreams(final Process p) {
 
@@ -474,6 +474,7 @@ public class Util {
 		final StringBuffer message = new StringBuffer();
 		threadPool.execute(() -> {
 			try {
+				//if we got an error from stderr, we throw our custom exception
 				if (drainInputStream(message, p.getErrorStream())) {
 					throw new StarExecException(message.toString());
 				}
