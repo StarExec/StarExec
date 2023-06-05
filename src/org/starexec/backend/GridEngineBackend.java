@@ -137,11 +137,13 @@ public class GridEngineBackend implements Backend{
      * @param scriptPath : the full path to the jobscript file
      * @param workingDirectoryPath  :  path to a directory that can be used for scratch space (read/write)
      * @param logPath  :  path to a directory that should be used to store jobscript logs
-	 * qsub only has a place to put std out, lets hope the 2 are the same
+     * qsub only has a place to put std out, lets hope the 2 are the same
+     * -w is included b/c it was included before the refactor
      * @return an identifier for the task that submitScript starts, should allow a user to identify which task/script to kill
-	 * as of the great rocky migration, we need to use qsub because we can't get drmma.jar :'(
-	 * here are the docs https://gridscheduler.sourceforge.net/htmlman/htmlman1/qsub.html
-	 * the command we run is qqsub -b n -v TMPDIR={$workingDirectoryPath} -v -o {$logPath} {$scriptPath}
+     * as of the great rocky migration, we need to use qsub because we can't get drmma.jar :'(
+     * here are the docs https://gridscheduler.sourceforge.net/htmlman/htmlman1/qsub.html
+	 
+	 * the command we run is qqsub -b n -v TMPDIR={$workingDirectoryPath} -w n -o {$logPath} {$scriptPath}
      **/  
     public int submitScript(String scriptPath, String workingDirectoryPath, String logPath){
     	synchronized(this){
