@@ -75,7 +75,7 @@ public class GridEngineBackend implements Backend{
 				System.out.println( e.toString() );
 			}
 
-			log.debug( "\n\njust before assigning to sessionFactory\nis session == null?: " + (session == null) + "\n" );
+			log.debug( "\n\njust before assigning to sessionFactory\nis session == null?: " + (session == null) + "\n" ); //remove
 
 			SessionFactory sessionFactory = SessionFactoryImpl.getFactory(); //remove
 			session = sessionFactory.getSession(); //remove
@@ -554,7 +554,7 @@ public class GridEngineBackend implements Backend{
 	    			//String fullName = n.getName();
 	    		    String nodeFullName = nodeNames[i];
 	    			log.debug("moving node "+nodeFullName);
-					//remove the association with this node and the queue it is currently associated with and add it to the queue
+					//delete the association with this node and the queue it is currently associated with and add it to the queue
 					if (sourceQueueNames[i] != null) {
 					    // orphaned nodes could have null queues
 
