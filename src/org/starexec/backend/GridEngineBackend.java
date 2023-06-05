@@ -122,28 +122,28 @@ public class GridEngineBackend implements Backend{
 		try {
 			Process p = Util.executeCommandAndReturnProcess(finalCommand, null, null);
 			//check if we had stderr
-		String stdout;
-		try {
-			stdout = Util.getstdout(p);
-		}
-		catch (Exception e) {
-			log.error("[GridEngineBackend.java]: uploading the job produced stderr output: " + e.getMessage() + ".");
-			return -1;
-		}
-		int jobID;
-		//check if the output can be parsed as an int
-		try {
-			jobID = Integer.parseInt(stdout);
-			if (jobID < 0) {
-				log.error("[GridEngineBackend.java]: Submitting the job caused an error code: " + 
-				Integer.toString(jobID) + ".");
+			String stdout;
+			try {
+				stdout = Util.getstdout(p);
 			}
-			return jobID;
-		} 
-		catch (Exception e) {
-			log.error("[GridEngineBackend.java]: there was a problem parsing stdout as an int.");
-			return -1;
-		}
+			catch (Exception e) {
+				log.error("[GridEngineBackend.java]: uploading the job produced stderr output: " + e.getMessage() + ".");
+				return -1;
+			}
+			int jobID;
+			//check if the output can be parsed as an int
+			try {
+				jobID = Integer.parseInt(stdout);
+				if (jobID < 0) {
+					log.error("[GridEngineBackend.java]: Submitting the job caused an error code: " + 
+					Integer.toString(jobID) + ".");
+				}
+				return jobID;
+			} 
+			catch (Exception e) {
+				log.error("[GridEngineBackend.java]: there was a problem parsing stdout as an int.");
+				return -1;
+			}
 		} 
 		catch (IOException e) {
 			log.error("[GridEngineBackend.java]: Could not find the file.");
