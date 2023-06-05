@@ -222,7 +222,7 @@ public class RESTHelpers {
 			// Depending on if the search/filter is empty or not, this will be 0 or 1
 			if (Util.isNullOrEmpty(sSearch)) {
 				sSearch = null;
-			}
+			}  //test
 			query.setSearchQuery(sSearch);
 
 			// The request is valid if it makes it this far;
