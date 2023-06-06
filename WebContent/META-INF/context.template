@@ -20,4 +20,5 @@
               algorithm="SHA-512"/>
         </Realm>
 	  </Realm>
+		<CookieProcessor className="org.apache.tomcat.util.http.LegacyCookieProcessor"/>
 	</Context>
