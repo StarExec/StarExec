@@ -1824,6 +1824,11 @@ public class RESTHelpers {
 			entry.add(new JsonPrimitive(upload.isEverythingComplete()));
 			dataTablePageEntries.add(entry);
 	    }
+
+		//reverse the elements 
+		if (query.isSortASC()) {
+			entries = reverseJsonArray(entries);
+		}
 		
 	    return createPageDataJsonObject(query, dataTablePageEntries);
 	}
@@ -2179,10 +2184,7 @@ public class RESTHelpers {
 		nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, query.getTotalRecordsAfterQuery());
 
 		
-		//reverse the elements
-		if (query.isSortASC()) {
-			entries = reverseJsonArray(entries);
-		}
+		
 		nextPage.add("aaData", entries);
 
 		// Return the next DataTable page
