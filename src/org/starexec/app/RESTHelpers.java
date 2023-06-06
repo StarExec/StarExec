@@ -3,6 +3,7 @@ package org.starexec.app;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.annotations.Expose;
 import org.apache.commons.io.FileUtils;
@@ -11,6 +12,7 @@ import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import org.starexec.command.C;
 import org.starexec.command.Connection;
+import org.starexec.command.JsonHandler;
 import org.starexec.constants.R;
 import org.starexec.data.database.*;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
@@ -209,14 +211,11 @@ public class RESTHelpers {
 				query.setSortColumn(sortColumnIndex);
 			}
 
-			//Validates that the sort direction is specified and valid
-			//in theory, the sort order on load is in asc, but this is chronological order. 
-			//we use not to make sure it starts from false. This value is changed automatically 
-			//by datatables, so we are fine. 
+			//set the sortASC flag
 			if (sDir.contains("asc")) {
-				query.setSortASC(false);
-			} else if (sDir.contains("desc")) {
 				query.setSortASC(true);
+			} else if (sDir.contains("desc")) {
+				query.setSortASC(false);
 			} else {
 				log.warn("getAttrMap", "sDir is not 'asc' or 'desc': "+sDir);
 				return null;
@@ -1084,7 +1083,9 @@ public class RESTHelpers {
 
 
 			case UPLOAD:
-		    	        List<BenchmarkUploadStatus> uploadsToDisplay = Uploads.getUploadsByUserForNextPage(query, id);
+
+
+		    	List<BenchmarkUploadStatus> uploadsToDisplay = Uploads.getUploadsByUserForNextPage(query, id);
 				query.setTotalRecords(Uploads.getUploadCountByUser(id));
 				if (!query.hasSearchQuery()) {
 				    query.setTotalRecordsAfterQuery(query.getTotalRecords());
@@ -1092,7 +1093,9 @@ public class RESTHelpers {
 				    query.setTotalRecordsAfterQuery(Uploads.getUploadCountByUser(id, query.getSearchQuery()));
 				}
 
-				return convertUploadsToJsonObject(uploadsToDisplay, query);
+				JsonObject obj =  convertUploadsToJsonObject(uploadsToDisplay, query);
+				log.debug("@sdogodkfoskfoskdfoskdfovvvvv" + uploadsToDisplay.toString());
+				return obj;
 
 
 
@@ -1821,6 +1824,7 @@ public class RESTHelpers {
 			entry.add(new JsonPrimitive(upload.isEverythingComplete()));
 			dataTablePageEntries.add(entry);
 	    }
+		
 	    return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 
@@ -2143,18 +2147,42 @@ public class RESTHelpers {
 	}
 
 	/*
+	 * given a Json Array, reverse it
+	 */
+	private static JsonArray reverseJsonArray(JsonArray ja) {
+		log.debug("HERE@SDJFEKFOEOFKEOFKOM");
+		JsonArray newjson = new JsonArray();
+		for (int i = ja.size() - 1; i >= 0; i --) {
+			JsonElement je = ja.get(i);
+			newjson.add(je);
+		}
+		
+		log.debug("sdfjisjdfijsofjoiwoew" + ja.toString());
+		log.debug("sdfjisjdfijsofjoiwoew" + newjson.toString());
+		return newjson;
+	} 
+
+	/*
 	 * Given an JSONArray of the next page and the query,
 	 * return a JsonObject of the elements displayed in the front end table
 	 * @author PressDodd
 	 * @docs aguo2
 	 */
 	private static JsonObject createPageDataJsonObject(DataTablesQuery query, JsonArray entries) {
+		//good here
+		log.debug("@wdfsefwefwfwofkokdbofkobkbofkbkofobkkowitji" +query.isSortASC());
 		JsonObject nextPage = new JsonObject();
 		// Build the actual JSON response object and populated it with the
 		// created data
 		nextPage.addProperty(SYNC_VALUE, query.getSyncValue());
 		nextPage.addProperty(TOTAL_RECORDS, query.getTotalRecords());
 		nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, query.getTotalRecordsAfterQuery());
+
+		
+		//reverse the elements
+		if (query.isSortASC()) {
+			entries = reverseJsonArray(entries);
+		}
 		nextPage.add("aaData", entries);
 
 		// Return the next DataTable page
