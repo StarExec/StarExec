@@ -84,7 +84,7 @@ $(document).ready(function() {
 	});
 
 	var dataTableConfig = new star.DataTableConfig({
-		//use erverside processing
+		//use serverside processing
 		"bServerSide": true,
 		//this is arguement sSource for fnpangnationhandler
 		"sAjaxSource": starexecRoot + "services/users/",
@@ -280,7 +280,7 @@ function printao(elements) {
 * @author unknown
 */
 function fnPaginationHandler(sSource, aoData, fnCallback) {
-
+	printao(aoData);
 	
 	var tableName = $(this).attr('id');
 	var usrId = $(this).attr("uid");
