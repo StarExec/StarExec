@@ -1824,13 +1824,15 @@ public class RESTHelpers {
 			entry.add(new JsonPrimitive(upload.isEverythingComplete()));
 			dataTablePageEntries.add(entry);
 	    }
-
 		//reverse the elements 
 		if (query.isSortASC()) {
-			entries = reverseJsonArray(entries);
+			dataTablePageEntries = reverseJsonArray(dataTablePageEntries);
 		}
+		JsonObject entries = createPageDataJsonObject(query, dataTablePageEntries);
+
 		
-	    return createPageDataJsonObject(query, dataTablePageEntries);
+		
+	    return entries;
 	}
 
 
