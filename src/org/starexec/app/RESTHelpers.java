@@ -1094,26 +1094,9 @@ public class RESTHelpers {
 				} else {
 				    query.setTotalRecordsAfterQuery(Uploads.getUploadCountByUser(id, query.getSearchQuery()));
 				}
-				query = fixQueryForUploads(query);
 				
+				query.setSortASC(!query.isSortASC());
 		    	List<BenchmarkUploadStatus> uploadsToDisplay = Uploads.getUploadsByUserForNextPage(query, id);
-				
-				//sometimes, we have a casse where we have the total number of entries that don't create pages that 
-				//are completely full. In this case, we can't just blindly fetch 10 entries. Suppose we had 12 uploads,
-				//our first page is 3 - 12 which is correctly fetched. But then our last page is not (0 - 10 when 
-				//we need just 0 - 2) the if checks for that case and splices the array properly.
-				if ((!( (query.getNumRecords() % query.getTotalRecordsAfterQuery()) == 0)) && query.getStartingRecord() == 0 && query.isSortASC()) {
-					log.debug("@sifjgisgoiofwkof" + ((query.getNumRecords() % query.getTotalRecordsAfterQuery()) == 0));
-					//get the remainder number of records, in our example this is 2
-					int remiander = query.getTotalRecordsAfterQuery() % query.getNumRecords();
-					//note that there is no off by one error b/c the 2nd arg of the sublist is exclusive.
-					uploadsToDisplay = uploadsToDisplay.subList(0, remiander);
-					
-				}
-				if (query.isSortASC()) {
-					//now we just need to reverse the list
-					Collections.reverse(uploadsToDisplay);
-				}
 				JsonObject obj =  convertUploadsToJsonObject(uploadsToDisplay, query);
 				log.debug("@sdogodkfoskfoskdfoskdfovvvvv" + uploadsToDisplay.toString());
 				return obj;
@@ -1153,30 +1136,7 @@ public class RESTHelpers {
 		return null;
 	}
 
-	/*
-	 * Given a Datatablesquery from uploads, reverse it if it's ascending.
-	 * This math took me longer than I'd like to admit;
-	 * @author aguo2
-	 */
-	private static DataTablesQuery fixQueryForUploads(DataTablesQuery query) {
-		if (query.isSortASC() && (query.getNumRecords() < query.getTotalRecordsAfterQuery())) {
-			int currentStarting = query.getStartingRecord();
-			int pageNumber = currentStarting/10;
-			pageNumber += 1;
-			int pageOffset = pageNumber * 10;
-			log.debug("kfekogrroko" + pageNumber);
-			
-			int correctStarting = query.getTotalRecordsAfterQuery() - pageOffset;
-			//sometimes, we go too far and the starting entry is negative
-			if (correctStarting < 0) {
-				correctStarting = 0;
-			}
-			query.setStartingRecord(correctStarting);
-			
-		}
-		
-		return query;
-	} 
+	
 	/**
 	 * Generate the HTML for the next DataTable page of entries
 	 *
