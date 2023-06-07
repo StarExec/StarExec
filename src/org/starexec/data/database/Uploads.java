@@ -803,11 +803,7 @@ public class Uploads {
 	    PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_UPLOADS_BY_USER_QUERY,
 									getUploadOrderColumn(query.getSortColumn()),
 									query
-									);
-
-	    
-		
-		
+									);		
 		procedure = new NamedParameterStatement(con, builder.getSQL());
 	    procedure.setInt("userId", userId);
 	    procedure.setString("query", query.getSearchQuery());

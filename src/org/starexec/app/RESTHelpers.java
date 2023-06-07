@@ -1086,7 +1086,6 @@ public class RESTHelpers {
 				}
 				return convertSolversToJsonObject(solversToDisplay, query);
 
-
 			case UPLOAD:
 				query.setTotalRecords(Uploads.getUploadCountByUser(id));
 				if (!query.hasSearchQuery()) {
@@ -1094,15 +1093,11 @@ public class RESTHelpers {
 				} else {
 				    query.setTotalRecordsAfterQuery(Uploads.getUploadCountByUser(id, query.getSearchQuery()));
 				}
-				
 				query.setSortASC(!query.isSortASC());
 		    	List<BenchmarkUploadStatus> uploadsToDisplay = Uploads.getUploadsByUserForNextPage(query, id);
 				JsonObject obj =  convertUploadsToJsonObject(uploadsToDisplay, query);
 				log.debug("@sdogodkfoskfoskdfoskdfovvvvv" + uploadsToDisplay.toString());
 				return obj;
-
-
-
 
 			case BENCHMARK:
 				String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
@@ -1110,14 +1105,12 @@ public class RESTHelpers {
 					query.setSortColumn(Integer.parseInt(sortOverride));
 					query.setSortASC(Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR)));
 				}
-
 				List<Benchmark> benchmarksToDisplay = Benchmarks.getBenchmarksByUserForNextPage(query, id, recycled);
 				if (!recycled) {
 					query.setTotalRecords(Benchmarks.getBenchmarkCountByUser(id));
 				} else {
 					query.setTotalRecords(Benchmarks.getRecycledBenchmarkCountByUser(id));
 				}
-
 				// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 				if (!query.hasSearchQuery()) {
 					query.setTotalRecordsAfterQuery(query.getTotalRecords());
@@ -1128,7 +1121,6 @@ public class RESTHelpers {
 						query.setTotalRecordsAfterQuery(Benchmarks.getRecycledBenchmarkCountByUser(id, query.getSearchQuery()));
 					}
 				}
-
 				return convertBenchmarksToJsonObject(benchmarksToDisplay, query);
 			default:
 				log.error("invalid type given = " + type);
@@ -1808,12 +1800,10 @@ public class RESTHelpers {
 	    JsonArray dataTablePageEntries = new JsonArray();
 	    for (BenchmarkUploadStatus upload: uploads) {
 			StringBuilder sb = new StringBuilder();
-
 			sb.append("<input type=\"hidden\" value =\"");
 			sb.append(upload.getId());
 			sb.append("\" prim=\"upload\" userId=\"").append(upload.getUserId()).append("\"/>");
 			String hiddenUploadId = sb.toString();
-
 			sb = new StringBuilder();
 			sb.append("<a href =\"").append(Util.docRoot("secure/details/uploadStatus.jsp?id="));
 			sb.append(upload.getId());
@@ -1822,7 +1812,6 @@ public class RESTHelpers {
 			RESTHelpers.addImg(sb);
 			sb.append(hiddenUploadId);
 			String uploadLink = sb.toString();
-
 			JsonArray entry = new JsonArray();
 			entry.add(new JsonPrimitive(uploadLink));
 			entry.add(new JsonPrimitive(upload.getTotalBenchmarks()));
@@ -2155,22 +2144,6 @@ public class RESTHelpers {
 		}
 		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
-
-	/*
-	 * given a Json Array, reverse it
-	 */
-	private static JsonArray reverseJsonArray(JsonArray ja) {
-		log.debug("HERE@SDJFEKFOEOFKEOFKOM");
-		JsonArray newjson = new JsonArray();
-		for (int i = ja.size() - 1; i >= 0; i --) {
-			JsonElement je = ja.get(i);
-			newjson.add(je);
-		}
-		
-		log.debug("sdfjisjdfijsofjoiwoew" + ja.toString());
-		log.debug("sdfjisjdfijsofjoiwoew" + newjson.toString());
-		return newjson;
-	} 
 
 	/*
 	 * Given an JSONArray of the next page and the query,

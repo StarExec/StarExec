@@ -277,7 +277,8 @@ function printao(elements) {
 {name: 'iSortingCols', value: 1}
 
 * @param callback function
-* @author unknown
+* @author Hawks
+* @docs auguo2
 */
 function fnPaginationHandler(sSource, aoData, fnCallback) {
 	printao(aoData);
@@ -286,7 +287,7 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	var usrId = $(this).attr("uid");
  
 	printao(aoData);
-//https://api.jquery.com/jquery.post/
+	//https://api.jquery.com/jquery.post/
 	
 	$.post(
 		sSource + usrId + "/" + tableName + "/pagination",
