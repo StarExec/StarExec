@@ -281,7 +281,7 @@ function printao(elements) {
 */
 function fnPaginationHandler(sSource, aoData, fnCallback) {
 	printao(aoData);
-	
+	console.log("here");
 	var tableName = $(this).attr('id');
 	var usrId = $(this).attr("uid");
  
