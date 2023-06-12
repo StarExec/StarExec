@@ -109,6 +109,7 @@ public class GridEngineBackend implements Backend{
 	 * the command we run is qsub -b n -v TMPDIR={$workingDirectoryPath} -o {$logPath} -terse {$scriptPath}
      **/  
     public int submitScript(String scriptPath, String workingDirectoryPath, String logPath){
+		log.debug("made it to submitScript!");
 		//build the command
 		StringBuilder sb = new StringBuilder();
 		sb.append("qsub -b n -v TMPDIR=");
@@ -133,15 +134,19 @@ public class GridEngineBackend implements Backend{
 			int jobID;
 			//check if the output can be parsed as an int
 			try {
+				//the std out has a new line. If we don't remove it we get a parse error!
+				String newLine = System.getProperty("line.separator");
+				stdout = stdout.replace(newLine,"");
 				jobID = Integer.parseInt(stdout);
 				if (jobID < 0) {
 					log.error("[GridEngineBackend.java]: Submitting the job caused an error code: " + 
 					Integer.toString(jobID) + ".");
 				}
+				log.debug("Sucessfully parsed as an int");
 				return jobID;
 			} 
 			catch (Exception e) {
-				log.error("[GridEngineBackend.java]: there was a problem parsing stdout as an int.");
+				log.error("[GridEngineBackend.java]: there was a problem parsing stdout as an int: stdout was: " + stdout);
 				return -1;
 			}
 		} 
