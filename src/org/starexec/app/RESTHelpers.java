@@ -1096,7 +1096,6 @@ public class RESTHelpers {
 				query.setSortASC(!query.isSortASC());
 		    	List<BenchmarkUploadStatus> uploadsToDisplay = Uploads.getUploadsByUserForNextPage(query, id);
 				JsonObject obj =  convertUploadsToJsonObject(uploadsToDisplay, query);
-				log.debug("@sdogodkfoskfoskdfoskdfovvvvv" + uploadsToDisplay.toString());
 				return obj;
 
 			case BENCHMARK:
@@ -2152,8 +2151,6 @@ public class RESTHelpers {
 	 * @docs aguo2
 	 */
 	private static JsonObject createPageDataJsonObject(DataTablesQuery query, JsonArray entries) {
-		//good here
-		log.debug("@wdfsefwefwfwofkokdbofkobkbofkbkofobkkowitji" +query.isSortASC());
 		JsonObject nextPage = new JsonObject();
 		// Build the actual JSON response object and populated it with the
 		// created data

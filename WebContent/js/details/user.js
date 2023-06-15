@@ -98,7 +98,7 @@ $(document).ready(function() {
 	jTable = $('#jobs').dataTable(dataTableConfig);
 	solverTable = $('#solvers').dataTable(dataTableConfig);
 	benchTable = $('#benchmarks').dataTable(dataTableConfig);
-        uploadTable = $('#uploads').dataTable(dataTableConfig).api().reverse();;
+        uploadTable = $('#uploads').dataTable(dataTableConfig);
     
 	$(".selectableTable").on("mousedown", "tr", function() {
 		$(this).toggleClass("row_selected");
@@ -281,8 +281,6 @@ function printao(elements) {
 * @docs auguo2
 */
 function fnPaginationHandler(sSource, aoData, fnCallback) {
-	printao(aoData);
-	console.log("here");
 	var tableName = $(this).attr('id');
 	var usrId = $(this).attr("uid");
  
