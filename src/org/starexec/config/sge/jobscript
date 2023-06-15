@@ -385,8 +385,8 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++STAGE_INDEX )); do
 		JOB_PAIR_DEADLOCKED=true
 	fi
 
-	log "listing contents of the output directory"
-	ls -l "$OUT_DIR"
+	log "listing contents of the output directory recursively"
+	ls -lhR "$OUT_DIR"
 
 	log "recording header of job pair output"
 	head -5 "$STDOUT_FILE"
