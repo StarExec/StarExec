@@ -1,26 +1,17 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"
-        import="org.starexec.constants.DB, org.starexec.constants.R, org.starexec.data.database.Cluster, org.starexec.data.database.Queues, org.starexec.data.to.Queue, org.starexec.data.to.WorkerNode, java.util.*" %>
+        import="org.starexec.constants.DB, org.starexec.constants.R, org.starexec.data.database.Cluster, org.starexec.data.database.Queues, org.starexec.data.to.Queue, org.starexec.data.to.WorkerNode, java.util.List" %>
 <%@taglib prefix="star" tagdir="/WEB-INF/tags" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%
 	try {
 		int id = Integer.parseInt(request.getParameter("id"));
 		Queue q = Queues.get(id);
-		List<Queue> qs = Queues.getQueues(-2);
-		List<Queue> queuesToDisplay = new ArrayList();
-		System.out.println("asfjwiowjfiewoof" + queues.toString());
-		for (Queue qf : queues) {
-			if (!qf.getName().equals(q.getName())) {
-				queuesToDisplay.add(qf);
-			}
-		}
 
 		List<WorkerNode> nodes = Cluster.getNonAttachedNodes(id);
 		request.setAttribute("queueNameLen", DB.QUEUE_NAME_LEN);
 		request.setAttribute("queueName", q.getName());
 		request.setAttribute("nodes", nodes);
 		request.setAttribute("nameRegex", R.PRIMITIVE_NAME_PATTERN);
-		System.out.println("adskofdejkogkweokewoowfmeow" + queuesToDisplay.toString());
 	} catch (NumberFormatException nfe) {
 		response.sendError(
 				HttpServletResponse.SC_BAD_REQUEST,
@@ -83,24 +74,6 @@
 				</tbody>
 			</table>
 			<span id="selectBetween">Select Rows Between</span>
-			<div id="bulkMove">
-				<span>Move nodes in bulk</span> <br>
-				<div id="bulkMoveForm">
-						<label id="sourceSelect">Source queue: </label>
-						<select id="dropDownSource">
-							<c:forEach var="n" items="${qs}">
-								<option>
-									bob
-								</option>
-							</c:forEach>
-						</select><br>
-						<div id="numNodes">
-							<label >Number of Nodes: </label>
-							<input type="number" id="numNodes">
-						</div>
-				</div>
-			</div>
-			
 		</fieldset>
 		<div id="actionBar">
 			<fieldset>
