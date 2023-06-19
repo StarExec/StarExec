@@ -34,6 +34,14 @@ public class GridEngineBackend implements Backend{
 	private static final String GRID_ENGINE_PATH = R.BACKEND_ROOT+"/bin/lx-amd64/";
 
 	/**
+     * This constructor only initializes logging-- initialze must be called
+     * after construction.
+     */ 
+    public GridEngineBackend(){
+		log = StarLogger.getLogger(GridEngineBackend.class);
+    }
+
+	/**
      * use to initialize fields and prepare backend for tasks
 
      **/  
@@ -54,14 +62,6 @@ public class GridEngineBackend implements Backend{
 				log.error(e.getMessage(),e);
 			}
 
-			/**
-     * This constructor only initializes logging-- initialze must be called
-     * after construction.
-     */ 
-    public GridEngineBackend(){
-		log = StarLogger.getLogger(GridEngineBackend.class);
-    }
-
 			
     }
 
@@ -80,16 +80,6 @@ public class GridEngineBackend implements Backend{
  		queueAssocPattern = Pattern.compile(QUEUE_ASSOC_PATTERN, Pattern.CASE_INSENSITIVE);
  	} 
 
-    /**
-     * This constructor only initializes logging-- initialze must be called
-     * after construction.
-     */ 
-    public GridEngineBackend(){
-		log = StarLogger.getLogger(GridEngineBackend.class);
-    }
-
-    
-    
 
     /**
      * @param execCode : an execution code (returned by submitScript)
