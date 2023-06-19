@@ -1,7 +1,6 @@
 /**
  * StarExec namespace
  * Let's try to put global vars here going forward
- * if this text is here, we are on the correct branch.
  */
 var star = star || {};
 

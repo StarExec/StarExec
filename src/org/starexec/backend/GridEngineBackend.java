@@ -151,7 +151,9 @@ public class GridEngineBackend implements Backend{
 			}
 		} 
 		catch (IOException e) {
-			log.error("[GridEngineBackend.java]: Could not find the file.");
+			//we are required to catch the IO exception, running qsub will throw this if 
+			//it can't find the script we submit, it throws an error
+			log.error("[GridEngineBackend.java]: Could not find script that was submitted.");
 			return -1;
 		}
 	}
