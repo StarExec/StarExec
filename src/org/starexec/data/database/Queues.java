@@ -633,7 +633,7 @@ public class Queues {
 	 * @return A list of queues
 	 * @author Tyler Jensen and Aaron Stump
 	 */
-	protected static List<Queue> getQueues(int userId) {
+	public static List<Queue> getQueues(int userId) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
@@ -660,7 +660,6 @@ public class Queues {
 			while (results.next()) {
 				queues.add(Queues.resultSetToQueue(results));
 			}
-
 			return queues;
 		} catch (Exception e) {
 			log.error("getQueues", e);
