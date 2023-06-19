@@ -633,7 +633,7 @@ public class Queues {
 	 * @return A list of queues
 	 * @author Tyler Jensen and Aaron Stump
 	 */
-	public static List<Queue> getQueues(int userId) {
+	protected static List<Queue> getQueues(int userId) {
 		Connection con = null;
 		CallableStatement procedure = null;
 		ResultSet results = null;
