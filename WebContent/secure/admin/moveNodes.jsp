@@ -74,6 +74,7 @@
 				</tbody>
 			</table>
 			<span id="selectBetween">Select Rows Between</span>
+			<select></select>
 		</fieldset>
 		<div id="actionBar">
 			<fieldset>
