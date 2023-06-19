@@ -54,7 +54,13 @@ public class GridEngineBackend implements Backend{
 				log.error(e.getMessage(),e);
 			}
 
-			
+			/**
+     * This constructor only initializes logging-- initialze must be called
+     * after construction.
+     */ 
+    public GridEngineBackend(){
+		log = StarLogger.getLogger(GridEngineBackend.class);
+    }
 
 			
     }
