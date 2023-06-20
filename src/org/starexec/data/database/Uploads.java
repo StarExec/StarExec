@@ -334,6 +334,7 @@ public class Uploads {
 		s.setEverythingComplete(results.getBoolean("everything_complete"));
 		s.setErrorMessage(results.getString("error_message"));
 		s.setFailedBenchmarks(results.getInt("failed_benchmarks"));
+		s.setResumable(results.getBoolean("resumable"));
 		return s;
 	}
 

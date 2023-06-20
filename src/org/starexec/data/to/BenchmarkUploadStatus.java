@@ -22,6 +22,7 @@ public class BenchmarkUploadStatus extends Identifiable {
 	private int completedBenchmarks;
 	private int failedBenchmarks;
 	private String errorMessage;
+	private boolean resumable;
     
 
         public BenchmarkUploadStatus() {
@@ -221,6 +222,20 @@ public class BenchmarkUploadStatus extends Identifiable {
 	 */
 	public void setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
+	}
+
+	/**
+	 * @return resumable
+	 */
+	public boolean getResumable() {
+		return resumable;
+	}
+
+	/**
+	 * @param resumable the resumable to set
+	 */
+	public void setResumable(boolean resumable){
+		this.resumable = resumable;
 	}
 }
 
