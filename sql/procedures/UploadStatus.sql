@@ -46,6 +46,16 @@ CREATE PROCEDURE FileExtractComplete(IN _id INT)
 		WHERE id = _id;
 	END //
 
+-- Sets the resumable status of a benchmark upload. (Resumable means it will resume on system restart)
+-- Author: Danny Bodin (odin5on)
+DROP PROCEDURE IF EXISTS SetResumable //
+CREATE PROCEDURE SetResumable(IN _id INT, IN _resumable TINYINT)
+	BEGIN
+		UPDATE benchmark_uploads
+		SET resumable = _resumable
+		WHERE id = _id;
+	END //
+
 -- Updates status when java object is created and processing/entering of benchmarks in db has begun
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS ProcessingBegun //
@@ -288,3 +298,11 @@ CREATE PROCEDURE GetUploadCountByUserWithQuery(IN _userId INT, IN _query TEXT)
                 WHERE   user_id=_userId AND
                                 (upload_time  LIKE   CONCAT('%', _query, '%'));
         END //
+
+DROP PROCEDURE IF EXISTS GetResumableBenchmarkUploads //
+CREATE PROCEDURE GetResumableBenchmarkUploads()
+	BEGIN
+		SELECT *
+		FROM benchmark_uploads
+		WHERE resumable=TRUE;
+	END //

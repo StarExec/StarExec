@@ -462,6 +462,35 @@ public class Uploads {
 		return null;
 	}
 
+	public static Boolean setResumableBenchmarkUpload(Integer statusId, Boolean resumable) {
+		if (statusId == null || statusId <= 0) {
+			return false;
+		}
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL SetResumable(?,?)}");
+
+			procedure.setInt(1, statusId);
+			if(resumable){
+				procedure.setInt(2, 1);
+			}
+			else{
+				procedure.setInt(2, 0);
+			}
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return false;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+
 	/**
 	 * Adds incrementCount to the count of completed benchmarks when a benchmark is finished and added to the db.
 	 *
