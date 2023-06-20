@@ -2666,4 +2666,32 @@ public class Benchmarks {
 		}
 		return null;
 	}
+
+	// wip: odin5on
+	public static void restartIncompleteBenchmarkUploads() {
+		// remove // query the database and print out resumable benchmarks
+		log.debug("DANNY start of periodic task!!\n");
+
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetResumableBenchmarkUploads()}");
+			results = procedure.executeQuery();
+			if(results.next()){
+				log.debug("DANNY " + Integer.toString(results.getInt(1)));
+			}
+			if(results.next()){
+				log.debug("DANNY " + Integer.toString(results.getInt(1)));
+			}
+			log.debug("DANNY after trying to print results\n");
+		} catch (Exception e) {
+			log.error("getResumableBenchmarkUploads", e.getMessage());
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+	}
 }
