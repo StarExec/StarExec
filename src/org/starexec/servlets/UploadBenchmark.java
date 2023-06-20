@@ -39,6 +39,7 @@ public class UploadBenchmark extends HttpServlet {
 	private static final String BENCHMARK_FILE = "benchFile";
 	private static final String BENCHMARK_TYPE = "benchType";
 	private static final String BENCH_DOWNLOADABLE = "download";
+	private static final String RESUMABLE = "resumable";
 	private static final String FILE_URL = "url";
 	private static final String FILE_GIT = "git";
 	private static final String FILE_LOC = "localOrURLOrGit";
@@ -397,6 +398,9 @@ public class UploadBenchmark extends HttpServlet {
 		final Permission perm = this.extractPermissions(form);
 		final Integer statusId = sId;
 		final String localOrUrlOrGit = (String) form.get(FILE_LOC);
+		final boolean resumable = Boolean.parseBoolean((String) form.get(RESUMABLE));
+
+		Uploads.setResumableBenchmarkUpload(statusId, resumable);
 
 		URL tempURL = null;
 		String tempName = null;
