@@ -25,7 +25,7 @@ function selectFirstN(table, n) {
 			break;
 		}
 		//WARNING, IF YOU DON'T SPLICE HERE, JQUERY WILL SELECT ALL THE ROWS!!
-		//i don't understand how it worked in the other function. What matters
+		//I don't understand how it worked in the other function. What matters
 		//is that it works now
 		var currentEl = no1stele.slice(0,1);
 		console.log(currentEl);
