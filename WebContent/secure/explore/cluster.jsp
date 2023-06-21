@@ -19,7 +19,7 @@
 		<fieldset id="descriptionContainer">
 			<legend class="Queue Description">Queue Description</legend>
 			<div id="queueDescriptionWrapper">
-				<p>bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bobbob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bobbob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob bob </p>
+				<p id="queueDescriptionText"></p>
 			</div>
 		</fieldset>
 

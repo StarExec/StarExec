@@ -63,6 +63,17 @@ public class RESTServices {
 
 	public static final ValidatorStatusCode ERROR_LOG_SUBSCRIPTION_SUCCESS = new ValidatorStatusCode(true, "User subscribed successfully.");
 
+
+	@GET
+	@Path("/queue/{qid}/getDesc")
+	@Produces("text/plain")
+	public String getDescription(@PathParam("qid") int qid) {
+		if (qid == 131488) {
+			return "larry";
+		}
+		return "testbob123";
+	}
+
 	/**
 	 * Recompiles all the job spaces for the given job
 	 * @param jobId ID of the job to recompile
