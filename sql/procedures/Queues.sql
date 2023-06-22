@@ -222,3 +222,12 @@ CREATE PROCEDURE GetQueuesForUser(IN _userID INT)
 				(global_access)							-- or it is a global queue
 				);
 	END //
+
+
+DROP PROCEDURE IF EXISTS GetDescForQueue //
+CREATE PROCEDURE GetDescForQueue(IN _qID INT)
+	BEGIN
+		SELECT description 
+		FROM queues 
+		WHERE id = _qID;
+	END //

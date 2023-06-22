@@ -1108,4 +1108,42 @@ public class Queues {
 		}
 		return false;
 	}
+
+	/*
+	 * Given a queue id, fetch the description for the queue
+	 * @param qid the id of the queue
+	 * @author aguo2
+	 */
+	public static String getDescForQueue(int qid) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			procedure = con.prepareCall("{CALL GetDescForQueue(?)}");
+			procedure.setInt(1, qid);
+			results = procedure.executeQuery();
+			String result = "";
+			if (results.next()) {
+        		// Move the cursor to the first row and access the data
+				result = results.getString("description");
+			}
+			return result;
+
+		}
+		catch (Exception e) {
+			log.error("there was an error getting the description for queue " + qid 
+			+ ". Exception was: " + e.getMessage());
+			return "";
+		}
+		 finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		
+		
+	}
+
 }

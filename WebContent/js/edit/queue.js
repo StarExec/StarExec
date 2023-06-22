@@ -1,4 +1,5 @@
 $(document).ready(function() {
+	onDescBoxUpdate();
 	initUI();
 	attachFormValidation();
 	attachButtonActions();
@@ -8,6 +9,8 @@ $(document).ready(function() {
  * Initializes the user-interface
  */
 function initUI() {
+	
+
 
 
 	// Setup JQuery button icons
@@ -67,7 +70,8 @@ function attachButtonActions() {
 			var data =
 				{
 					cpuTimeout: $("#cpuTimeout").val(),
-					wallTimeout: $("#wallTimeout").val()
+					wallTimeout: $("#wallTimeout").val(),
+					description: $("#description").val()
 				};
 			//Pass data to server via AJAX
 			$.post(
@@ -83,7 +87,13 @@ function attachButtonActions() {
 			);
 		}
 	});
-
 }
 
+function onDescBoxUpdate() {
+	console.log("here");
+	var descBox = $('#description');
+	var numChars = descBox.val().length;
+	var numCharsLable = $('#descCharRemaining');
+	descCharRemaining.textContent = numChars + "/200 chars remaining";
+}
 

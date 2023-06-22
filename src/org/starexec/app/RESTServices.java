@@ -67,11 +67,8 @@ public class RESTServices {
 	@GET
 	@Path("/queue/{qid}/getDesc")
 	@Produces("text/plain")
-	public String getDescription(@PathParam("qid") int qid) {
-		if (qid == 131488) {
-			return "larry";
-		}
-		return "testbob123";
+	public static String getDescription(@PathParam("qid") int qid) {
+		return RESTHelpers.getQueueDescription(qid);
 	}
 
 	/**
@@ -1984,6 +1981,7 @@ public class RESTServices {
 	@Path("/edit/queue/{id}")
 	@Produces("application/json")
 	public String editQueueInfo(@PathParam("id") int id, @Context HttpServletRequest request) {
+		log.debug("sdnjgfdnkvnfjandfjsnvjgw" + request.getParameter("description"));
 		int userId = SessionUtil.getUserId(request);
 
 		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
