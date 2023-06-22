@@ -69,7 +69,7 @@
 							<span id="descCharRemaining" ></span>
 						</div>
 					</td>
-					<td><textarea id="description" name="description" rows="4" cols="50" maxlength="200" id="descTextBox" oninput="onDescBoxUpdate()" value="${queue.getDesc()}" >${queue.getDesc()}</textarea>
+					<td><textarea name="description" rows="4" cols="50" maxlength="200" id="descTextBox" oninput="onDescBoxUpdate()" value="" >${queue.getDesc()}</textarea>
 				</tr>
 				</tbody>
 			</table>

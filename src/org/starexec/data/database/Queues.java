@@ -1146,4 +1146,26 @@ public class Queues {
 		
 	}
 
+	public static Boolean updateQueueDesc(int qid, String desc) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			procedure = con.prepareCall("{CALL SetDescForQueue(?,?)}");
+			procedure.setInt(1, qid);
+			procedure.setString(2, desc);
+			procedure.executeUpdate();
+			return true;
+		}
+		catch (Exception e) {
+			log.error("there was an error setting the description for queue " + qid 
+			+ ". Exception was: " + e.getMessage());
+			return false;
+		}
+		 finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}}
+
 }

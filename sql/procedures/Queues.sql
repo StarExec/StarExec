@@ -231,3 +231,11 @@ CREATE PROCEDURE GetDescForQueue(IN _qID INT)
 		FROM queues 
 		WHERE id = _qID;
 	END //
+
+DROP PROCEDURE IF EXISTS SetDescForQueue //
+CREATE PROCEDURE SetDescForQueue(IN _qID INT, IN _desc VARCHAR(200)) 
+	BEGIN
+		UPDATE queues
+		SET description = _desc
+		WHERE id = _qid;
+	END //

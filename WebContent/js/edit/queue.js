@@ -71,7 +71,7 @@ function attachButtonActions() {
 				{
 					cpuTimeout: $("#cpuTimeout").val(),
 					wallTimeout: $("#wallTimeout").val(),
-					description: $("#description").val()
+					description: $("#descTextBox").val()
 				};
 			//Pass data to server via AJAX
 			$.post(
@@ -82,6 +82,9 @@ function attachButtonActions() {
 					if (s) {
 						window.location = starexecRoot + 'secure/admin/cluster.jsp';
 					}
+					else {
+						console.log(returnCode);
+					}
 				},
 				"json"
 			);
@@ -91,7 +94,7 @@ function attachButtonActions() {
 
 function onDescBoxUpdate() {
 	console.log("here");
-	var descBox = $('#description');
+	var descBox = $('#descTextBox');
 	var numChars = descBox.val().length;
 	var numCharsLable = $('#descCharRemaining');
 	descCharRemaining.textContent = numChars + "/200 chars remaining";

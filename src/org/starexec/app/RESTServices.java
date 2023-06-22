@@ -1981,7 +1981,7 @@ public class RESTServices {
 	@Path("/edit/queue/{id}")
 	@Produces("application/json")
 	public String editQueueInfo(@PathParam("id") int id, @Context HttpServletRequest request) {
-		log.debug("sdnjgfdnkvnfjandfjsnvjgw" + request.getParameter("description"));
+		log.debug("entered into edit queue"); 
 		int userId = SessionUtil.getUserId(request);
 
 		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
@@ -1993,6 +1993,7 @@ public class RESTServices {
 		}
 		int cpuTimeout=0;
 		int wallTimeout=0;
+		String desc = request.getParameter("description");
 		try {
 			cpuTimeout=Integer.parseInt(request.getParameter("cpuTimeout"));
 			wallTimeout=Integer.parseInt(request.getParameter("wallTimeout"));
@@ -2004,8 +2005,9 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-
-		boolean success=Queues.updateQueueCpuTimeout(id, cpuTimeout) && Queues.updateQueueWallclockTimeout(id, wallTimeout);
+		log.debug("dfgwfojweofeworo" + Queues.updateQueueCpuTimeout(id, cpuTimeout) + " " + Queues.updateQueueWallclockTimeout(id, wallTimeout) + " " + Queues.updateQueueDesc(id, desc));
+		boolean success=Queues.updateQueueCpuTimeout(id, cpuTimeout) && Queues.updateQueueWallclockTimeout(id, wallTimeout) && Queues.updateQueueDesc(id, desc);
+		log.debug("about to exit edit queue");
 		return success ? gson.toJson(new ValidatorStatusCode(true,"Queue edited successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 
