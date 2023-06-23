@@ -15,6 +15,7 @@ $(document).ready(function() {
 });
 
 function initUI() {
+	onDescBoxUpdate();
 
 	$("#btnDone").button({
 		icons: {
@@ -76,3 +77,9 @@ function attachFormValidation() {
 
 
 
+function onDescBoxUpdate() {
+	var descBox = $('#descTextBox');
+	var numChars = descBox.val().length;
+	var numCharsLable = $('#descCharRemaining');
+	descCharRemaining.textContent = numChars + "/200 chars remaining";
+}

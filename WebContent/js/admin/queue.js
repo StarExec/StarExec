@@ -172,5 +172,3 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 	);
 }
 
-
-
