@@ -2005,7 +2005,6 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-		log.debug("dfgwfojweofeworo" + Queues.updateQueueCpuTimeout(id, cpuTimeout) + " " + Queues.updateQueueWallclockTimeout(id, wallTimeout) + " " + Queues.updateQueueDesc(id, desc));
 		boolean success=Queues.updateQueueCpuTimeout(id, cpuTimeout) && Queues.updateQueueWallclockTimeout(id, wallTimeout) && Queues.updateQueueDesc(id, desc);
 		log.debug("about to exit edit queue");
 		return success ? gson.toJson(new ValidatorStatusCode(true,"Queue edited successfully")) : gson.toJson(ERROR_DATABASE);
