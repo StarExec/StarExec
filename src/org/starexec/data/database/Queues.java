@@ -862,7 +862,7 @@ public class Queues {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error("updateQueueCpuTimeout", e);
+			log.error("updateQueueCpuTimeout" + e.toString());
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
