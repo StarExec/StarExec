@@ -81,8 +81,12 @@
 			</ul>
 			<script>
 				var star = star || {};
-				star.freezePrimitives = ${freezePrimitives}
+				star.freezePrimitives = ${freezePrimitives};
 			</script>
+		</fieldset>
+		<fieldset>
+			<legend>freeze primitives</legend>
+			<p>When read-only mode is enabled, no new jobs can be created.</p>
 		</fieldset>
 	</div>
 </star:template>

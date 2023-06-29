@@ -5236,7 +5236,7 @@ public class RESTServices {
 		}
 		try {
 			RESTHelpers.setFreezePrimitives(frozen);
-			return gson.toJson(new ValidatorStatusCode(true, "Uploading benchmarks and solvers is now " + (frozen ? "allowed" : "disallowed")));
+			return gson.toJson(new ValidatorStatusCode(true, "Uploading benchmarks and solvers is now " + (frozen ? "disallowed" : "allowed")));
 		} catch (SQLException e) {
 			log.error("freezePrimitives", e);
 			throw RESTException.INTERNAL_SERVER_ERROR;
