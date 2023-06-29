@@ -10,6 +10,19 @@ CREATE PROCEDURE LoginRecord(IN _userId INT, IN _ipAddress VARCHAR(15), IN _agen
 		VALUES (_userId, SYSDATE(), _ipAddress, _agent);
 	END //
 
+DROP PROCEDURE IF EXISTS SetReadOnly //
+CREATE PROCEDURE SetReadOnly(IN readOnly BOOLEAN)
+	BEGIN
+		UPDATE system_flags SET read_only=readOnly;
+	END //
+
+DROP PROCEDURE IF EXISTS GetReadOnly //
+CREATE PROCEDURE GetReadOnly()
+	BEGIN
+		SELECT read_only FROM system_flags;
+	END //
+
+
 DROP PROCEDURE IF EXISTS SetFreezePrimitives //
 CREATE PROCEDURE SetFreezePrimitives(IN frozen BOOLEAN)
 	BEGIN
