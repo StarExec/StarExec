@@ -4079,6 +4079,7 @@ public class RESTServices {
 			Permission p = Permissions.getFullPermission();
 			//give the users leader permissions
 			Permissions.set(userId, spaceId, p);
+
 			//update quotas
 			Users.setDiskQuota(userId, R.CL_DEFAULT_DISK_QUOTA);
 			Users.setPairQuota(userId, R.CL_PAIR_QUOTA);
