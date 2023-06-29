@@ -16,6 +16,18 @@ CREATE PROCEDURE SetFreezePrimitives(IN frozen BOOLEAN)
 		UPDATE system_flags SET freeze_primitives=frozen;
 	END //
 
+DROP PROCEDURE IF EXISTS SetReadOnly //
+CREATE PROCEDURE SetReadOnly(IN readOnly BOOLEAN)
+	BEGIN
+		UPDATE system_flags SET read_only=readOnly;
+	END //
+
+DROP PROCEDURE IF EXISTS GetReadOnly //
+CREATE PROCEDURE GetReadOnly()
+	BEGIN
+		SELECT read_only FROM system_flags;
+	END //
+
 DROP PROCEDURE IF EXISTS GetFreezePrimitives //
 CREATE PROCEDURE GetFreezePrimitives()
 	BEGIN
