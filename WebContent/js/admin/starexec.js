@@ -153,6 +153,12 @@ function initUI() {
 		);
 	});
 
+	$("#toggleReadOnly").button({
+		icons: {
+			primary: "ui-icon-circle-close"
+		}
+	})
+
 	setDebugText();
 }
 
