@@ -93,8 +93,6 @@ function removeUser(userid, id) {
 }
 
 function promoteUser(userid, id) {
-	console.log("here");
-	console.log(userid + " " + id);
 	var idArray = [];
 	idArray.push(userid);
 	$.post(
