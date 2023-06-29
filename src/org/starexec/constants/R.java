@@ -248,9 +248,11 @@ public class R {
 	public static HashMap<Integer,HashMap<String,Long>> COMM_INFO_MAP = null;
 	public static Long COMM_ASSOC_LAST_UPDATE = null;    //last time community_assoc table was updated (milliseconds)
 	public static long COMM_ASSOC_UPDATE_PERIOD = 21600000;  //how much time we should wait before requerying for community_assoc table, currentely set to a 10 seconds (milliseconds)
-	public static final long DEFAULT_DISK_QUOTA = @User.DefaultDiskQuota@L;          // The default user disk quota to assign new users; currently 50MB
+	public static final long DEFAULT_DISK_QUOTA = @User.DefaultDiskQuota@L;           // The default user disk quota to assign new users; currently 50MB. This value is found at build/default.properties
+	public static final int CL_DEFAULT_DISK_QUOTA = @User.CLDefaultDiskQuota@L;  	 //The default disk quotas for commuinity leaders. 1.5 * default user
 	public static final int DEFAULT_PAIR_QUOTA = 750000;                            // The default max number of pairs a user should be able to own
-	public static final String PERSONAL_SPACE_DESCRIPTION =                            // The default text that appears at the top of a user's personal space
+	public static final int DEFAULT_PAIR_QUOTA = 1125000;                            // The default max number of pairs a comunity leader should be able to own. 1.5 * default user
+	public static final String PERSONAL_SPACE_DESCRIPTION =                        // The default text that appears at the top of a user's personal space
 			"this is your personal space";
 	public static final int MAX_FAILED_VALIDATIONS = 50;                            //More than this number of benchmark validation failures triggers a message and ends
 	public static final String VALID_BENCHMARK_ATTRIBUTE = "starexec-valid"; //Name of attribute given by benchmark processors to show a benchmark is valid
