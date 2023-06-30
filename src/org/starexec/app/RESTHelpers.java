@@ -2313,11 +2313,23 @@ public class RESTHelpers {
 			: "READ ONLY IS DISABLED, no new jobs can be ran"
 		);
 			Common.update(
-				"{CALL SetFreezePrimitives(?)}",
+				"{CALL SetReadOnly(?)}",
 				procedure -> {
 				procedure.setBoolean(1, readOnly);
 				});
 		
+	}
+
+	public static boolean getReadOnly() throws SQLException {
+		return Common.query(
+				"{CALL GetReadOnly()}",
+				procedure -> {},
+				results -> {
+					results.next();
+					return results.getBoolean("read_only");
+				}
+		);
+
 	}
 
 	public static void setFreezePrimitives(boolean frozen) throws SQLException {

@@ -5226,6 +5226,7 @@ public class RESTServices {
 	@Path("/admin/readOnly")
 	@Produces("application/json")
 	public String readOnly(@FormParam("readOnly") boolean readOnly, @Context HttpServletRequest request ) {
+		log.debug("made it into readOnly API CALL readOnly: " + readOnly);
 		int userId = SessionUtil.getUserId(request);
 		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
 			return gson.toJson(new ValidatorStatusCode(true, "Only Admins can freeze or unfreeze primitives"));

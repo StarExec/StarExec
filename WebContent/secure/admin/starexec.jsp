@@ -5,6 +5,7 @@
 	try {
 		request.setAttribute("debugModeActive", R.DEBUG_MODE_ACTIVE);
 		request.setAttribute("freezePrimitives", RESTHelpers.freezePrimitives());
+		request.setAttribute("readOnly", RESTHelpers.getReadOnly());
 	} catch (NumberFormatException nfe) {
 		response.sendError(
 				HttpServletResponse.SC_BAD_REQUEST,
@@ -82,6 +83,8 @@
 			<script>
 				var star = star || {};
 				star.freezePrimitives = ${freezePrimitives}
+				star.readOnly = ${readOnly}
+
 			</script>
 		</fieldset>
 		<fieldset>
