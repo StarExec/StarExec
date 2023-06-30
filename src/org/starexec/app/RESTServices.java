@@ -27,6 +27,7 @@ import org.starexec.test.integration.TestResult;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.util.*;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -5217,6 +5218,24 @@ public class RESTServices {
 			return gson.toJson(org.starexec.data.database.RunscriptErrors.getInRange(startDate, endDate));
 		} catch (SQLException e) {
 			log.error("jobpairErrors", e);
+			throw RESTException.INTERNAL_SERVER_ERROR;
+		}
+	}
+
+	@POST
+	@Path("/admin/readOnly")
+	@Produces("application/json")
+	public String readOnly(@FormParam("readOnly") boolean readOnly, @Context HttpServletRequest request ) {
+		int userId = SessionUtil.getUserId(request);
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+			return gson.toJson(new ValidatorStatusCode(true, "Only Admins can freeze or unfreeze primitives"));
+		}
+		try {
+			RESTHelpers.setReadOnly(readOnly);
+			return gson.toJson(new ValidatorStatusCode(true, "ReadOnly is now " + (readOnly ? "enabled" : "disabled")));
+		} 
+		catch (Exception e) {
+			log.error("There was a exception when setting readonly: " + e.getMessage());
 			throw RESTException.INTERNAL_SERVER_ERROR;
 		}
 	}
