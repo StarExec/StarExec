@@ -2310,7 +2310,7 @@ public class RESTHelpers {
 	public static void setReadOnly(boolean readOnly) throws SQLException{
 		log.debug(
 			readOnly ? "READ ONLY IS ENABLED, no new jobs can be ran" 
-			: "READ ONLY IS DISABLED, no new jobs can be ran"
+			: "READ ONLY IS DISABLED, jobs can be ran normally"
 		);
 			Common.update(
 				"{CALL SetReadOnly(?)}",
