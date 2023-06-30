@@ -52,7 +52,7 @@ public class RESTServices {
 	private static final ValidatorStatusCode ERROR_INVALID_WEBSITE_TYPE=new ValidatorStatusCode(false, "The supplied website type was invalid");
 	private static final ValidatorStatusCode ERROR_EDIT_VAL_ABSENT=new ValidatorStatusCode(false, "No value specified");
 	private static final ValidatorStatusCode ERROR_IDS_NOT_GIVEN=new ValidatorStatusCode(false, "No ids specified");
-
+	
 	private static final ValidatorStatusCode ERROR_INVALID_PERMISSIONS=new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
 
 	private static final ValidatorStatusCode ERROR_INVALID_PARAMS=new ValidatorStatusCode(false, "The supplied parameters are invalid");

@@ -14,6 +14,7 @@ import org.starexec.logger.StarLogger;
 import org.starexec.util.SessionUtil;
 import org.starexec.util.Util;
 import org.starexec.util.Validator;
+import org.starexec.app.RESTHelpers;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
@@ -207,6 +208,11 @@ public class CreateJob extends HttpServlet {
 		final String method = "doPost";
 		log.debug(method, "starting job post");
 		try {
+			log.debug("made it to submit job");
+			if (RESTHelpers.getReadOnly()) {
+				response.sendError(HttpServletResponse.	SC_SERVICE_UNAVAILABLE, "Read only mode is enabled, no new jobs can be created.");
+				return;
+			}
 			// Make sure the request is valid
 			ValidatorStatusCode status = isValid(request);
 			if (!status.isSuccess()) {
@@ -460,9 +466,13 @@ public class CreateJob extends HttpServlet {
 						"Your job failed to submit for an unknown reason. Please try again."
 				);
 			}
+		} 
+		catch (SQLException sqle) {
+			log.error("Caught SQLException in CreateJob.doPost: " + sqle.getMessage());
 		} catch (Exception e) {
 			log.warn(method, "Caught Exception in CreateJob.doPost.", e);
 			throw e;
+			
 		}
 	}
 
