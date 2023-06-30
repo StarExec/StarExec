@@ -358,6 +358,23 @@ public class RESTServices {
 		}
 	}
 
+	/*
+	 * get the value of the read_only system flag
+	 * @author aguo2
+	 */
+	@GET
+	@Path("/isReadOnly")
+	@Produces("text/plain")
+	public String GetReadOnly() {
+		try {
+			return Boolean.toString(RESTHelpers.getReadOnly());
+		} 
+		catch (Exception e) {
+			throw RESTException.INTERNAL_SERVER_ERROR;
+		}
+		
+	}
+
 	/**
 	 * @param id the ID of the solver to get build output for
 	 * @param request HTTP Request
