@@ -93,7 +93,7 @@
 			<ul id="actionList">
 				<li>
 					<button type="button" id="toggleReadOnly">
-						toggleReadOnly
+						${readOnly ? "Disable" : "Enable"} Read Only
 					</button>
 				</li>
 			</ul>
