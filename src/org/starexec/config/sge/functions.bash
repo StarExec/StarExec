@@ -673,14 +673,12 @@ function copyOutputNoStats {
 	fi
 
 	if (($3 != 1)); then
-	    log "rsync [flags] $OUT_DIR/output_files/ $PAIR_OTHER_OUTPUT_PATH"
 		mv "$OUT_DIR/output_files/" "$PAIR_OTHER_OUTPUT_PATH"
 	fi
 	SAVED_PAIR_OUTPUT_PATH="$SAVED_OUTPUT_DIR/$1"
 	SAVED_PAIR_OTHER_OUTPUT_PATH=$SAVED_OUTPUT_DIR"/"$1"_output"
 
 	cp "$STDOUT_FILE" "$SAVED_PAIR_OUTPUT_PATH"
-        log "rsync [flags] $OUT_DIR/output_files/ $SAVED_PAIR_OTHER_OUTPUT_PATH"
 	mv "$OUT_DIR/output_files/" "$SAVED_PAIR_OTHER_OUTPUT_PATH"
 }
 
