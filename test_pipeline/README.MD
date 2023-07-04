@@ -9,6 +9,9 @@ and config-id with the ids of the config and benchmark you will be using. This i
 can be aquired by running a job with your desired config/benchmark, downloading the job XML, 
 and copying the values. If you run into any unanticipated errors, more documentation can be found here: https://wiki.uiowa.edu/display/stardev/User+Guide.
 
+I have also included the source code in C, as well as the benchmark and the text file it was 
+creared from.
+
 The dummySolver.tar contains the executable and config files. Starexec should automagically find 
 the config and add it to the solver. The solver was compiled using GCC for redhat linux. 
 
