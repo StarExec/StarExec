@@ -28,16 +28,23 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
-    char buff[50];
+    int bufsize = 10;
+    char* buff;
+    buff = (char*) malloc(bufsize);
     int size = 0;
     // Printing what is written in file
     // character by character using loop.
     while ((ch = fgetc(file)) != EOF) {
-        //please do not attempt buffer overflow on our machines ;)
-        if (size < 49) {
+        if (size < bufsize - 1) {
         buff[size] = ch;
         size++;
         }
+        else {
+            bufsize *= 2;
+            buff = (char *) realloc(buff, bufsize);
+            buff[size] = ch;
+            size++;
+        } 
     }
     buff[size] = '\0';
     printf("%s\n", buff);
