@@ -48,6 +48,7 @@ int main(int argc, char** argv) {
     }
     buff[size] = '\0';
     printf("%s\n", buff);
+    free(buff);
     printf("Starexec4ever! \n");
 
     fclose(file);
