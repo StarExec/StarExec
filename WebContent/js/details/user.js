@@ -3,7 +3,6 @@ var benchTable;
 var solverTable;
 var userId;
 var uploadTable;
-
 var spaceId;
 var spaceName;
 
@@ -288,9 +287,6 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		aoData,
 		//datatable page contains the data in the table
 		function(nextDataTablePage) {
-			//issue 335, if we are getting data for uploads, we want the table data to be
-			//in reverse chronological order. 
-			
 			s = parseReturnCode(nextDataTablePage);
 			if (s) {
 				fnCallback(nextDataTablePage);
