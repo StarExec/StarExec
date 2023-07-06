@@ -8,9 +8,7 @@ var spaceId;
 var spaceName;
 
 /**
-* When the document is ready, IE the entire HTML page is ready, call
-* this function, I belive we are using https://datatables.net/manual/
-* this line to test if changes get depolyed 23
+* Event listener for page load. We are using https://datatables.net/
 */
 $(document).ready(function() {
 	userId = $("#userId").attr("value");
