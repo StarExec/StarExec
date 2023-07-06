@@ -1783,7 +1783,7 @@ public class RESTHelpers {
 		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 
-		/*given a list of the {all (I think pagination happens later)} benchmark uploads for some user, convert this to a json object
+		/*given a list of the current page of	 benchmark uploads for some user, convert this to a json object
 		* @param uploads List of the uploads
 		* @param query Data about the query
 		* Documentation by @aguo2
@@ -1814,9 +1814,6 @@ public class RESTHelpers {
 	    }
 		
 		JsonObject entries = createPageDataJsonObject(query, dataTablePageEntries);
-
-		
-		
 	    return entries;
 	}
 
@@ -2152,11 +2149,7 @@ public class RESTHelpers {
 		nextPage.addProperty(SYNC_VALUE, query.getSyncValue());
 		nextPage.addProperty(TOTAL_RECORDS, query.getTotalRecords());
 		nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, query.getTotalRecordsAfterQuery());
-
-		
-		
 		nextPage.add("aaData", entries);
-
 		// Return the next DataTable page
 		return nextPage;
 	}
