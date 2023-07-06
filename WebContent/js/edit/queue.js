@@ -9,18 +9,12 @@ $(document).ready(function() {
  * Initializes the user-interface
  */
 function initUI() {
-	
-
-
-
 	// Setup JQuery button icons
-
 	$('#update').button({
 		icons: {
 			secondary: "ui-icon-check"
 		}
 	});
-
 }
 
 function attachFormValidation() {
