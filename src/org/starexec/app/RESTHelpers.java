@@ -1051,11 +1051,6 @@ public class RESTHelpers {
 				} else {
 					query.setTotalRecordsAfterQuery(Jobs.getJobCountByUser(id, query.getSearchQuery()));
 				}
-				//at this point, we have a query that had a page at the end thats not full, IE, 33 total elements,
-				//we have 3 on the last page. We should only display the 3 elements 
-				if ((!((query.getTotalRecordsAfterQuery() % 10) == 0)) && query.getStartingRecord() == 0) {
-
-				}
 
 
 				// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
