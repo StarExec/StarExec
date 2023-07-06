@@ -34,7 +34,6 @@ $(document).ready(function() {
 			var aaData = data.aaData;
 			if (aaData.length == 0) {
 				hasNoBenchmarks = true;
-				console.log("hasNoBench");
 			}
 		})
 		.catch(error => {
