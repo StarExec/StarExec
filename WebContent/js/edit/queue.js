@@ -82,9 +82,6 @@ function attachButtonActions() {
 					if (s) {
 						window.location = starexecRoot + 'secure/admin/cluster.jsp';
 					}
-					else {
-						console.log(returnCode);
-					}
 				},
 				"json"
 			);
