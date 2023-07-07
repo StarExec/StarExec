@@ -1297,21 +1297,7 @@ function initDataTables() {
 		$(this).toggleClass('hovered');
 	});
 
-	//Hook up select all/ none buttons
-	$('.selectAllJobs, .selectAllSolvers, .selectAllBenchmarks, .selectAllUsers')
-	.click(function() {
-		$(this)
-		.parents('.dataTables_wrapper')
-		.find('tbody>tr')
-		.addClass('row_selected');
-	});
-	$('.unselectAllJobs, .unselectAllSolvers, .unselectAllBenchmarks, .unselectAllUsers')
-	.click(function() {
-		$(this)
-		.parents('.dataTables_wrapper')
-		.find('tbody>tr')
-		.removeClass('row_selected');
-	});
+	linkButtons()
 
 	// Set all fieldsets as expandable (except for action fieldset)
 	$('fieldset.expd').expandable(true);
@@ -1336,6 +1322,55 @@ function initDataTables() {
 	log('all datatables initialized');
 }
 
+/*
+* Links all the all/none buttons that were broken before.
+* This one function handles jobs, benchmarks, solvers, users tables 
+* @author aguo2
+*/
+function linkButtons() {
+	$('.selectAllJobs').click(
+		function() {
+			selectAllInTable('#jobs');
+		}
+	)
+		$('.selectAllSolvers').click(
+		function() {
+			selectAllInTable('#solvers');
+		}
+	)
+	$('.selectAllBenchmarks').click(
+		function() {
+			selectAllInTable('#benchmarks');
+		}
+	)
+	$('.selectAllUsers').click(
+		function() {
+			selectAllInTable('#users');
+		}
+	)
+	$('.unselectAllJobs').click(
+		function() {
+			selectNoneInTable('#jobs');
+		}
+	)
+		$('.unselectAllSolvers').click(
+		function() {
+			selectNoneInTable('#solvers');
+		}
+	)
+	$('.unselectAllBenchmarks').click(
+		function() {
+			selectNoneInTable('#benchmarks');
+		}
+	)
+	$('.unselectAllUsers').click(
+		function() {
+			selectNoneInTable('#users');
+		}
+	)
+
+
+}
 /**
  * Adds fnProcessingIndicator and fnFilterOnDoneTyping to dataTables api
  */

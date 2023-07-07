@@ -35,7 +35,7 @@
 	request.setAttribute("pageTitle", pageTitle);
 %>
 <star:template title="${pageTitle}"
-               js="util/draggable, util/spaceTree, util/sortButtons, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, explore/spaces, util/datatablesUtility, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min, shared/sharedFunctions"
+               js="util/draggable, util/spaceTree, util/sortButtons, common/delaySpinner, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, explore/spaces, util/datatablesUtility, lib/jquery.heatcolor.0.0.1.min, lib/jquery.ba-throttle-debounce.min, shared/sharedFunctions, util/selectInDatatable"
                css="common/delaySpinner, common/table, explore/common, explore/jquery.qtip, explore/spaces">
 	<span id="userId" value="${userId}"></span>
 	<span id="spaceChain" value="${spaceChain}"></span>

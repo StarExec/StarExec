@@ -15,6 +15,26 @@ function selectAllBetween(table) {
 	}
 }
 
+/* 
+* given a datatable, select all the items in that table. 
+* NOTE: only selects all in the page that you are currently
+* on, changing pages requires a new api call and page refresh.
+* @author aguo2
+*/
+function selectAllInTable(table) {
+	var row = $(table).find("tr");
+	console.log("snfjndjfgw");
+}
+/* 
+* given a datatable, unselect all the items in that table. 
+* NOTE: only unselects all in the page that you are currently
+* on, changing pages requires a new api call and page refresh.
+* @author aguo2
+*/
+function selectNoneInTable(table) {
+	console.log("here");
+}
+
 function selectFirstN(table, n) {
 
 	var row = $(table).find("tr");
