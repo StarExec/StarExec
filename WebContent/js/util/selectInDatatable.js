@@ -28,7 +28,6 @@ function selectFirstN(table, n) {
 		//I don't understand how it worked in the other function. What matters
 		//is that it works now
 		var currentEl = no1stele.slice(0,1);
-		console.log(currentEl);
 		if (!currentEl.hasClass("row_selected")) {
 			currentEl.addClass("row_selected");
 		}
