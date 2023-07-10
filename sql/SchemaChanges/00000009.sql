@@ -1,4 +1,7 @@
+-- this adds the read only mode, which disables job submission. This implements
+-- the requirements as specified in ticket 353
 
+--Author: aguo2
 
 DROP PROCEDURE IF EXISTS UpdateTo8_9 //
 CREATE PROCEDURE UpdateTo8_9()
