@@ -803,9 +803,8 @@ public class Uploads {
 	    PaginationQueryBuilder builder = new PaginationQueryBuilder(PaginationQueries.GET_UPLOADS_BY_USER_QUERY,
 									getUploadOrderColumn(query.getSortColumn()),
 									query
-									);
-
-	    procedure = new NamedParameterStatement(con, builder.getSQL());
+									);		
+		procedure = new NamedParameterStatement(con, builder.getSQL());
 	    procedure.setInt("userId", userId);
 	    procedure.setString("query", query.getSearchQuery());
 
@@ -843,15 +842,15 @@ public class Uploads {
     }
 
 
-
+	//get what column we are sorting by for the sql query
     public static String getUploadOrderColumn(int indexOfColumn) {
 	switch (indexOfColumn) {
 	case 0:
-	    return "space_id";
+	    return  "upload_time";
 	case 1:
 	    return "total_benchmarks";
 	case 2:
-	    return "upload_time";
+	    return "space_id";
 	default:
 	    return "space_id";
 	}

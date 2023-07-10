@@ -3,9 +3,12 @@ var benchTable;
 var solverTable;
 var userId;
 var uploadTable;
-
 var spaceId;
 var spaceName;
+
+/**
+* Event listener for page load. We are using https://datatables.net/
+*/
 $(document).ready(function() {
 	userId = $("#userId").attr("value");
 	// Hide loading images by default
@@ -78,8 +81,14 @@ $(document).ready(function() {
 	});
 
 	var dataTableConfig = new star.DataTableConfig({
+		//use serverside processing
 		"bServerSide": true,
+		//this is arguement sSource for fnpangnationhandler
 		"sAjaxSource": starexecRoot + "services/users/",
+		//This parameter allows you to override the default function which 
+		//obtains the data from the server ($.getJSON) so something more suitable 
+		//for your application. For example you could use POST data, or pull in
+		//formation from a Gears or AIR database.
 		"fnServerData": fnPaginationHandler
 	});
 
@@ -171,13 +180,112 @@ function PopUp(uri) {
 	});
 }
 
+/*String of ao to see contents
+@author aguo2
+*/
+function printaoElement(aoElement) {
+		return "{Name: " +aoElement.name + ", Value: " + aoElement.value + "}";
+}
+
+/* try to get a stack trace for debugging.
+/* @author aguo2
+*/
+function stackTrace() {
+    var err = new Error();
+    return err.stack;
+}
+
+//prints ao to see contents
+function printao(elements) {
+	String = '{';
+	var len = elements.length
+	for (let i = 0; i < len - 1; i++) {
+		String += printaoElement(elements[i]) + ",";
+	}
+	String += elements[len - 1];
+	console.log(elements); 
+}
+
+/*this handles the pagination of the page.
+* this is called from the datatables lib,
+* the source code of which is heavily obsfucated 
+* @param sSource part ofwhere we get the json data from
+* @param aoData data sent to the server in the form of name value pair
+* Here's an example of the type of stuff that aoData contains
+0
+: 
+{name: 'sEcho', value: 1}
+1
+: 
+{name: 'iColumns', value: 2}
+2
+: 
+{name: 'sColumns', value: ','}
+3
+: 
+{name: 'iDisplayStart', value: 0}
+4
+: 
+{name: 'iDisplayLength', value: 10}
+5
+: 
+{name: 'mDataProp_0', value: 0}
+6
+: 
+{name: 'sSearch_0', value: ''}
+7
+: 
+{name: 'bRegex_0', value: false}
+8
+: 
+{name: 'bSearchable_0', value: true}
+9
+: 
+{name: 'bSortable_0', value: true}
+10
+: 
+{name: 'mDataProp_1', value: 1}
+11
+: 
+{name: 'sSearch_1', value: ''}
+12
+: 
+{name: 'bRegex_1', value: false}
+13
+: 
+{name: 'bSearchable_1', value: true}
+14
+: 
+{name: 'bSortable_1', value: true}
+15
+: 
+{name: 'sSearch', value: ''}
+16
+: 
+{name: 'bRegex', value: false}
+17
+: 
+{name: 'iSortCol_0', value: 0}
+18
+: 
+{name: 'sSortDir_0', value: 'asc'}
+19
+: 
+{name: 'iSortingCols', value: 1}
+
+* @param callback function
+* @author Hawks
+* @docs auguo2
+*/
 function fnPaginationHandler(sSource, aoData, fnCallback) {
 	var tableName = $(this).attr('id');
 	var usrId = $(this).attr("uid");
-
+	//https://api.jquery.com/jquery.post/
+	
 	$.post(
 		sSource + usrId + "/" + tableName + "/pagination",
 		aoData,
+		//datatable page contains the data in the table
 		function(nextDataTablePage) {
 			s = parseReturnCode(nextDataTablePage);
 			if (s) {
