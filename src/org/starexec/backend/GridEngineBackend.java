@@ -1,13 +1,11 @@
 package org.starexec.backend;
 
-import org.apache.commons.io.FileUtils;
-import org.ggf.drmaa.JobTemplate;
-import org.ggf.drmaa.Session;
-import org.ggf.drmaa.SessionFactory;
+//all drmaa must use  Util.java executeCommand and qsub
 
-import com.sun.grid.drmaa.SessionFactoryImpl;
+
 import java.lang.reflect.Field;
 
+import org.apache.commons.io.FileUtils;
 import org.starexec.constants.R;
 import org.starexec.exceptions.StarExecException;
 import org.starexec.logger.StarLogger;
@@ -35,8 +33,42 @@ public class GridEngineBackend implements Backend{
 
 	private static final String GRID_ENGINE_PATH = R.BACKEND_ROOT+"/bin/lx-amd64/";
 
+	/**
+     * This constructor only initializes logging-- initialze must be called
+     * after construction.
+     */ 
+    public GridEngineBackend(){
+		log = StarLogger.getLogger(GridEngineBackend.class);
+    }
 
-    private Session session = null;
+	/**
+     * use to initialize fields and prepare backend for tasks
+
+     **/  
+    public void initialize(String BACKEND_ROOT){
+	    this.BACKEND_ROOT = BACKEND_ROOT;
+		//I don't know if this is still needed
+    	try {
+			log.debug("createSession() loading class.");
+
+			//set sys_paths to null
+			try {
+				final Field sysPathsField = ClassLoader.class.getDeclaredField("sys_paths");
+				sysPathsField.setAccessible(true);
+				sysPathsField.set(null, null);
+			} catch ( Exception e ) {
+				log.error(e.toString());
+			} } catch (Exception e) {
+				log.error(e.getMessage(),e);
+			}
+
+			
+    }
+
+	@Override
+	//no teardown necessary because DRMAA.jar is no longer used
+	 public void destroyIf() {}
+
     private StarLogger log;
     private String BACKEND_ROOT = null;
 
@@ -48,80 +80,6 @@ public class GridEngineBackend implements Backend{
  		queueAssocPattern = Pattern.compile(QUEUE_ASSOC_PATTERN, Pattern.CASE_INSENSITIVE);
  	} 
 
-    /**
-     * This constructor only initializes logging-- initialze must be called
-     * after construction.
-     */ 
-    public GridEngineBackend(){
-		log = StarLogger.getLogger(GridEngineBackend.class);
-    }
-
-    /**
-     * use to initialize fields and prepare backend for tasks
-
-     **/  
-    public void initialize(String BACKEND_ROOT){
-	    this.BACKEND_ROOT = BACKEND_ROOT;
-
-    	try {
-			log.debug("createSession() loading class.");
-
-			//set sys_paths to null
-			try {
-				final Field sysPathsField = ClassLoader.class.getDeclaredField("sys_paths");
-				sysPathsField.setAccessible(true);
-				sysPathsField.set(null, null);
-			} catch ( Exception e ) {
-				System.out.println( e.toString() );
-			}
-
-			log.debug( "\n\njust before assigning to sessionFactory\nis session == null?: " + (session == null) + "\n" );
-
-			SessionFactory sessionFactory = SessionFactoryImpl.getFactory();
-			session = sessionFactory.getSession();
-
-//			SessionFactory factory = SessionFactory.getFactory();
-//			Session session = factory.getSession();
-
-			log.debug( "\n\nmade it past assigning to session\nis session == null?: " + (session == null) + "\nsession: "+session + "\n" );
-
-			try {
-				session.init("");
-			} catch (Exception e) {
-				// ignoring any errors for initialization. Errors are thrown
-				// if a session already exists, but this does not impact functionality
-
-				log.debug( "error while initializing: session already exists; this will not impact functionality\n" + e.toString() + "\n" );
-			}
-		    log.info("Created GridEngine session");
-		} catch (Exception e) {
-			log.error(e.getMessage(),e);
-		}
-    }
-
-    /**
-     * release resources that Backend might not need anymore
-     * there's a chance that initialize is never called, so always try dealing with that case
-
-     **/   
-    public void destroyIf() {
-
-		if ( session != null ) {
-			log.debug( "\n\ntesting object 'session':\n" + session.toString() + "\n" );
-
-			if (!session.toString().contains("drmaa")) {
-				log.debug("Shutting down the session..." + session);
-				try {
-					session.exit();
-				}
-				catch (Exception e) {
-					log.error("Problem destroying session: "+e,e);
-				}
-			}
-		}
-
-
-    }
 
     /**
      * @param execCode : an execution code (returned by submitScript)
@@ -136,57 +94,66 @@ public class GridEngineBackend implements Backend{
      * @param scriptPath : the full path to the jobscript file
      * @param workingDirectoryPath  :  path to a directory that can be used for scratch space (read/write)
      * @param logPath  :  path to a directory that should be used to store jobscript logs
-     * @return an identifier for the task that submitScript starts, should allow a user to identify which task/script to kill
+	 * qsub only has a place to put std out, lets hope they are the same
+     * @return an identifier for the task that submitScript starts, should allow a user to identify which task/script to kill. If there was a problem submitting the job, returns -1. 
+	 * as of the great rocky migration, we need to use qsub because we can't get drmma.jar :'(
+	 * here are the docs: https://gridscheduler.sourceforge.net/htmlman/htmlman1/qsub.html
+	 * -b n to specify input as a script
+	 * -v to set the TMPdir variable
+	 * -o to specify the log path
+	 * -terse to only get the job id from stdout
+	 * the command we run is qsub -b n -v TMPDIR={$workingDirectoryPath} -o {$logPath} -terse {$scriptPath}
      **/  
     public int submitScript(String scriptPath, String workingDirectoryPath, String logPath){
-    	synchronized(this){
-    		JobTemplate sgeTemplate = null;
+		log.debug("made it to submitScript!");
+		//build the command
+		StringBuilder sb = new StringBuilder();
+		sb.append("qsub -b n -v TMPDIR=");
+		sb.append(workingDirectoryPath);
+		sb.append(" -o ");
+		sb.append(logPath); 
+		sb.append(" -terse ");
+		sb.append(scriptPath);
+		String[] finalCommand = {sb.toString()};
+		//get the stdout. 
 		try {
-
-			log.debug("in submitScript()\nsession: "+session+"\nsession.createJobTemplate(): "+session.createJobTemplate()+"\n");
-
-			// Set up the grid engine template
-			sgeTemplate = session.createJobTemplate();
-
-			// DRMAA needs to be told to expect a shell script and not a binary
-			sgeTemplate.setNativeSpecification("-shell y -b n -w n");
-
-			// Tell the job where it will deal with files
-			sgeTemplate.setWorkingDirectory(workingDirectoryPath);
-
-			sgeTemplate.setOutputPath(":" + logPath);
-
-			// Tell the job where the script to be executed is
-			sgeTemplate.setRemoteCommand(scriptPath);
-
-			// Actually submit the job to the grid engine
-			String id = session.runJob(sgeTemplate);
-			//log.info(String.format("Submitted SGE job #%s, job pair %s, script \"%s\".", id, pair.getId(), scriptPath));
-
-			return Integer.parseInt(id);
-		} catch (org.ggf.drmaa.DrmaaException e) {
-			//JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SGE_REJECT.getVal());
-			log.error("submitScript", "scriptPath: " + scriptPath, e);
-
-		} catch (Exception e) {
-		    //JobPairs.setPairStatus(pair.getId(), StatusCode.ERROR_SUBMIT_FAIL.getVal());
-			log.error(e.getMessage(), e);
-
-		} finally {
-			// Cleanup. Session's MUST be exited or SGE will be mean to you
-			if(sgeTemplate != null) {
-			    try{
-				session.deleteJobTemplate(sgeTemplate);
-			    } catch(Exception e){
-				log.error(e.getMessage(),e);
-			    }
+			Process p = Util.executeCommandAndReturnProcess(finalCommand, null, null);
+			//check if we had stderr
+			String stdout;
+			try {
+				stdout = Util.getstdout(p);
 			}
-
+			catch (Exception e) {
+				log.error("[GridEngineBackend.java]: uploading the job produced stderr output: " + e.getMessage() + ".");
+				return -1;
+			}
+			int jobID;
+			//check if the output can be parsed as an int
+			try {
+				//the std out has a new line. If we don't remove it we get a parse error!
+				String newLine = System.getProperty("line.separator");
+				stdout = stdout.replace(newLine,"");
+				jobID = Integer.parseInt(stdout);
+				if (jobID < 0) {
+					log.error("[GridEngineBackend.java]: Submitting the job caused an error code: " + 
+					Integer.toString(jobID) + ".");
+				}
+				log.debug("Sucessfully parsed as an int");
+				return jobID;
+			} 
+			catch (Exception e) {
+				log.error("[GridEngineBackend.java]: there was a problem parsing stdout as an int: stdout was: " + stdout);
+				return -1;
+			}
+		} 
+		catch (IOException e) {
+			//we are required to catch the IO exception, running qsub will throw this if 
+			//it can't find the script we submit, it throws an error
+			log.error("[GridEngineBackend.java]: Could not find script that was submitted.");
+			return -1;
 		}
+	}
 
-		return -1;
-}
-}
 
     /**
      * Kills all running pairs
@@ -556,7 +523,7 @@ public class GridEngineBackend implements Backend{
 	    			//String fullName = n.getName();
 	    		    String nodeFullName = nodeNames[i];
 	    			log.debug("moving node "+nodeFullName);
-					//remove the association with this node and the queue it is currently associated with and add it to the queue
+					//delete the association with this node and the queue it is currently associated with and add it to the queue
 					if (sourceQueueNames[i] != null) {
 					    // orphaned nodes could have null queues
 

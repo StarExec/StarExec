@@ -660,7 +660,6 @@ public class Queues {
 			while (results.next()) {
 				queues.add(Queues.resultSetToQueue(results));
 			}
-
 			return queues;
 		} catch (Exception e) {
 			log.error("getQueues", e);
