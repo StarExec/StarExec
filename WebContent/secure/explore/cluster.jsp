@@ -16,6 +16,13 @@
 		<span id="activeStatus"></span>
 		<p class="accent" id="queueID"></p>
 
+		<fieldset id="descriptionContainer">
+			<legend class="Queue Description">Queue Description</legend>
+			<div id="queueDescriptionWrapper">
+				<p id="queueDescriptionText"></p>
+			</div>
+		</fieldset>
+
 		<fieldset id="jobsContainer" class="expdContainer">
 			<legend class="expd"><span class="list-count"></span> Running Jobs</legend>
 			<table id="jobs"></table>

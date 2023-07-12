@@ -45,10 +45,12 @@ public class CreateQueue extends HttpServlet {
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
+	 * handles the post request 
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		try {
+			//make sure that the user supplied values are valid
 			ValidatorStatusCode status = isRequestValid(request);
 			if (!status.isSuccess()) {
 				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
@@ -58,9 +60,8 @@ public class CreateQueue extends HttpServlet {
 			}
 
 
-			//String node_name = (String)request.getParameter(Nodes);
+			//get all the node data required to re-assign the selected nodes from their original queues
 			List<Integer> nodeIds = Util.toIntegerList(request.getParameterValues(nodes));
-
 			log.debug("nodeIds = " + nodeIds);
 			LinkedList<String> nodeNames = new LinkedList<>();
 			LinkedList<String> queueNames = new LinkedList<>();
@@ -76,33 +77,31 @@ public class CreateQueue extends HttpServlet {
 					}
 				}
 			}
+
+			//creates the queue
 			String queue_name = (String) request.getParameter(name);
 			log.debug("queue_name: " + queue_name);
-
 			String qName = queue_name + ".q";
-
 			Integer jobsPerQueue = Integer.parseInt(request.getParameter(numberOfJobsPerQueue));
-
 			String[] nNames = nodeNames.toArray(new String[nodeNames.size()]);
 			String[] qNames = queueNames.toArray(new String[queueNames.size()]);
 			boolean backend_success = R.BACKEND.createQueueWithSlots(qName, nNames, qNames, jobsPerQueue);
-
 			log.debug("backend_success: " + backend_success);
+
 
 			//reloads worker nodes and queues
 			Cluster.loadWorkerNodes();
 			Cluster.loadQueueDetails();
 
-			//DatabaseChanges
+			//DatabaseChanges, sets the timeOut values, and the descriptions
 			int queueId = Queues.getIdByName(qName);
 			log.debug("just added new queue with id = " + queueId);
-
-
 			Integer cpuTimeout = Integer.parseInt(request.getParameter(maxCpuTimeout));
 			Integer wallTimeout = Integer.parseInt(request.getParameter(maxWallTimeout));
-
+			String description = request.getParameter("description");
 			boolean success = Queues.updateQueueCpuTimeout(queueId, cpuTimeout);
 			success = success && Queues.updateQueueWallclockTimeout(queueId, wallTimeout);
+			success &= Queues.updateQueueDesc(queueId, description);
 			if (!success) {
 				response.sendError(
 						HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
@@ -113,11 +112,13 @@ public class CreateQueue extends HttpServlet {
 				response.sendRedirect(Util.docRoot("secure/admin/cluster.jsp"));
 			}
 		} catch (Exception e) {
-			log.warn("Caught Exception in CreateQueue.doPost", e);
-			throw e;
+			log.error("Caught Exception in CreateQueue.doPost" + e.getMessage());
 		}
 	}
 
+	/*
+	 * Given an http request, make sure that the user supplied parameters are valid, 
+	 */
 	private static ValidatorStatusCode isRequestValid(HttpServletRequest request) {
 		try {
 			int userId = SessionUtil.getUserId(request);

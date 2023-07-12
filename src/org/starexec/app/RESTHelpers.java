@@ -87,6 +87,15 @@ public class RESTHelpers {
 		return list;
 	}
 
+	/*
+	 * This just calls the Queue.getDescription. This choice was made so only this
+	 * class needs to know about queues i.e RestServices dosen't need to know about 
+	 * queues.
+	 */
+	public static String getQueueDescription(int qid) {
+		return Queues.getDescForQueue(qid);
+	}
+
 	/**
 	 * Takes in a list of spaces and converts it into a list of JSTreeItems
 	 * suitable for being displayed on the client side with the jsTree plugin.

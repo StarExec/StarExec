@@ -56,6 +56,18 @@
 					<td><input value="${defaultTimeout}" name="wallTimeout"
 					           type="text" id="wallTimeoutText"/></td>
 				</tr>
+				<tr title="the description you would like for the queue">
+					<td>
+						<div>
+							<span>description</span>
+							<br>
+							<span id="descCharRemaining"></span>
+						</div>
+					</td>
+					<td>
+						<textarea name="description" rows="4" cols="50" maxlength="200" id="descTextBox" oninput="onDescBoxUpdate()" value="" >${queue.getDesc()}</textarea>
+					</td>
+				</tr>
 				</tbody>
 			</table>
 		</fieldset>
