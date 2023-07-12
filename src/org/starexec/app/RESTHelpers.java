@@ -3,6 +3,7 @@ package org.starexec.app;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.annotations.Expose;
 import org.apache.commons.io.FileUtils;
@@ -11,6 +12,7 @@ import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 import org.starexec.command.C;
 import org.starexec.command.Connection;
+import org.starexec.command.JsonHandler;
 import org.starexec.constants.R;
 import org.starexec.data.database.*;
 import org.starexec.data.database.AnonymousLinks.PrimitivesToAnonymize;
@@ -83,6 +85,15 @@ public class RESTHelpers {
 		}
 
 		return list;
+	}
+
+	/*
+	 * This just calls the Queue.getDescription. This choice was made so only this
+	 * class needs to know about queues i.e RestServices dosen't need to know about 
+	 * queues.
+	 */
+	public static String getQueueDescription(int qid) {
+		return Queues.getDescForQueue(qid);
 	}
 
 	/**
@@ -209,11 +220,11 @@ public class RESTHelpers {
 				query.setSortColumn(sortColumnIndex);
 			}
 
-			//Validates that the sort direction is specified and valid
-			if (Util.isNullOrEmpty(sDir)) {
+			//set the sortASC flag
+			if (sDir.contains("asc")) {
+				query.setSortASC(true);
+			} else if (sDir.contains("desc")) {
 				query.setSortASC(false);
-			} else if (sDir.contains("asc") || sDir.contains("desc")) {
-				query.setSortASC(sDir.equals("asc"));
 			} else {
 				log.warn("getAttrMap", "sDir is not 'asc' or 'desc': "+sDir);
 				return null;
@@ -1025,6 +1036,12 @@ public class RESTHelpers {
 		return convertSpacesToJsonObject(spacesToDisplay, query);
 	}
 
+	/*
+	 * Given data about a request, return a json object representing the next page
+	 * Docs by @aguo2
+	 * @author ArchieKipp
+	 * 
+	 */
 	public static JsonObject getNextDataTablesPageForUserDetails(Primitive type, int id, HttpServletRequest request, boolean recycled, boolean dataAsObjects) {
 		// Parameter validation
 		DataTablesQuery query = RESTHelpers.getAttrMap(type, request);
@@ -1073,20 +1090,17 @@ public class RESTHelpers {
 				}
 				return convertSolversToJsonObject(solversToDisplay, query);
 
-
 			case UPLOAD:
-		    	        List<BenchmarkUploadStatus> uploadsToDisplay = Uploads.getUploadsByUserForNextPage(query, id);
 				query.setTotalRecords(Uploads.getUploadCountByUser(id));
 				if (!query.hasSearchQuery()) {
 				    query.setTotalRecordsAfterQuery(query.getTotalRecords());
 				} else {
 				    query.setTotalRecordsAfterQuery(Uploads.getUploadCountByUser(id, query.getSearchQuery()));
 				}
-
-				return convertUploadsToJsonObject(uploadsToDisplay, query);
-
-
-
+				query.setSortASC(!query.isSortASC());
+		    	List<BenchmarkUploadStatus> uploadsToDisplay = Uploads.getUploadsByUserForNextPage(query, id);
+				JsonObject obj =  convertUploadsToJsonObject(uploadsToDisplay, query);
+				return obj;
 
 			case BENCHMARK:
 				String sortOverride = request.getParameter(SORT_COLUMN_OVERRIDE);
@@ -1094,14 +1108,12 @@ public class RESTHelpers {
 					query.setSortColumn(Integer.parseInt(sortOverride));
 					query.setSortASC(Boolean.parseBoolean(request.getParameter(SORT_COLUMN_OVERRIDE_DIR)));
 				}
-
 				List<Benchmark> benchmarksToDisplay = Benchmarks.getBenchmarksByUserForNextPage(query, id, recycled);
 				if (!recycled) {
 					query.setTotalRecords(Benchmarks.getBenchmarkCountByUser(id));
 				} else {
 					query.setTotalRecords(Benchmarks.getRecycledBenchmarkCountByUser(id));
 				}
-
 				// If no search is provided, TOTAL_RECORDS_AFTER_QUERY = TOTAL_RECORDS
 				if (!query.hasSearchQuery()) {
 					query.setTotalRecordsAfterQuery(query.getTotalRecords());
@@ -1112,7 +1124,6 @@ public class RESTHelpers {
 						query.setTotalRecordsAfterQuery(Benchmarks.getRecycledBenchmarkCountByUser(id, query.getSearchQuery()));
 					}
 				}
-
 				return convertBenchmarksToJsonObject(benchmarksToDisplay, query);
 			default:
 				log.error("invalid type given = " + type);
@@ -1120,6 +1131,7 @@ public class RESTHelpers {
 		return null;
 	}
 
+	
 	/**
 	 * Generate the HTML for the next DataTable page of entries
 	 *
@@ -1780,34 +1792,40 @@ public class RESTHelpers {
 		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 
-
+		/*given a list of the current page of	 benchmark uploads for some user, convert this to a json object
+		* @param uploads List of the uploads
+		* @param query Data about the query
+		* Documentation by @aguo2
+		* @author unknown
+		*/
+		
         public static JsonObject convertUploadsToJsonObject(List<BenchmarkUploadStatus> uploads, DataTablesQuery query) {
 	    JsonArray dataTablePageEntries = new JsonArray();
 	    for (BenchmarkUploadStatus upload: uploads) {
-		StringBuilder sb = new StringBuilder();
-
-		sb.append("<input type=\"hidden\" value =\"");
-		sb.append(upload.getId());
-		sb.append("\" prim=\"upload\" userId=\"").append(upload.getUserId()).append("\"/>");
-		String hiddenUploadId = sb.toString();
-
-		sb = new StringBuilder();
-		sb.append("<a href =\"").append(Util.docRoot("secure/details/uploadStatus.jsp?id="));
-		sb.append(upload.getId());
-		sb.append("\" target=\"_blank\">");
-		sb.append(upload.getUploadDate().toString());
-		RESTHelpers.addImg(sb);
-		sb.append(hiddenUploadId);
-	        String uploadLink = sb.toString();
-
-	        JsonArray entry = new JsonArray();
-	        entry.add(new JsonPrimitive(uploadLink));
-		entry.add(new JsonPrimitive(upload.getTotalBenchmarks()));
-		entry.add(new JsonPrimitive(upload.isEverythingComplete()));
-		dataTablePageEntries.add(entry);
+			StringBuilder sb = new StringBuilder();
+			sb.append("<input type=\"hidden\" value =\"");
+			sb.append(upload.getId());
+			sb.append("\" prim=\"upload\" userId=\"").append(upload.getUserId()).append("\"/>");
+			String hiddenUploadId = sb.toString();
+			sb = new StringBuilder();
+			sb.append("<a href =\"").append(Util.docRoot("secure/details/uploadStatus.jsp?id="));
+			sb.append(upload.getId());
+			sb.append("\" target=\"_blank\">");
+			sb.append(upload.getUploadDate().toString());
+			RESTHelpers.addImg(sb);
+			sb.append(hiddenUploadId);
+			String uploadLink = sb.toString();
+			JsonArray entry = new JsonArray();
+			entry.add(new JsonPrimitive(uploadLink));
+			entry.add(new JsonPrimitive(upload.getTotalBenchmarks()));
+			entry.add(new JsonPrimitive(upload.isEverythingComplete()));
+			dataTablePageEntries.add(entry);
 	    }
-	    return createPageDataJsonObject(query, dataTablePageEntries);
+		
+		JsonObject entries = createPageDataJsonObject(query, dataTablePageEntries);
+	    return entries;
 	}
+
 
 
 	/**
@@ -2127,6 +2145,12 @@ public class RESTHelpers {
 		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 
+	/*
+	 * Given an JSONArray of the next page and the query,
+	 * return a JsonObject of the elements displayed in the front end table
+	 * @author PressDodd
+	 * @docs aguo2
+	 */
 	private static JsonObject createPageDataJsonObject(DataTablesQuery query, JsonArray entries) {
 		JsonObject nextPage = new JsonObject();
 		// Build the actual JSON response object and populated it with the
@@ -2135,7 +2159,6 @@ public class RESTHelpers {
 		nextPage.addProperty(TOTAL_RECORDS, query.getTotalRecords());
 		nextPage.addProperty(TOTAL_RECORDS_AFTER_QUERY, query.getTotalRecordsAfterQuery());
 		nextPage.add("aaData", entries);
-
 		// Return the next DataTable page
 		return nextPage;
 	}

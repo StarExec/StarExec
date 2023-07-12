@@ -25,7 +25,7 @@
 	}
 %>
 <star:template title="move nodes to queue"
-               js="util/selectBetween, admin/moveNodes, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min,lib/jquery.validate.min"
+               js="util/selectInDatatable, admin/moveNodes, lib/jquery.dataTables.min, lib/jquery.jstree, lib/jquery.qtip.min, lib/jquery.heatcolor.0.0.1.min,lib/jquery.validate.min"
                css="common/table, details/shared, explore/common, explore/spaces, admin/admin">
 	<form id="addForm" method="POST" action="${starexecRoot}/secure/move/nodes"
 	      class="queue">
@@ -74,6 +74,12 @@
 				</tbody>
 			</table>
 			<span id="selectBetween">Select Rows Between</span>
+			<div id="selectNDiv">
+				<span>Select first n nodes</span>
+				<input id="numNodes" Placeholder="n" type="number" onblur="numNodesOnBlur()">
+				<br>
+				<span id="selectNRows">Select</span>
+			</div>
 		</fieldset>
 		<div id="actionBar">
 			<fieldset>

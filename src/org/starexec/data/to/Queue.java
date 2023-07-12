@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import org.starexec.data.database.Queues;
 
 /**
  * Represents an SGE queue which has a collection of worker nodes that belong to it
@@ -146,5 +147,11 @@ public class Queue extends Identifiable implements Iterable<WorkerNode>, Nameabl
 	 */
 	public int getWallTimeout() {
 		return wallTimeout;
+	}
+
+	public String getDesc() {
+		//get the id of this queue;
+		int id = Queues.getIdByName(this.name);
+		return Queues.getDescForQueue(id);
 	}
 }

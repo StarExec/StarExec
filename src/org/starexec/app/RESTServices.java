@@ -63,6 +63,14 @@ public class RESTServices {
 
 	public static final ValidatorStatusCode ERROR_LOG_SUBSCRIPTION_SUCCESS = new ValidatorStatusCode(true, "User subscribed successfully.");
 
+
+	@GET
+	@Path("/queue/{qid}/getDesc")
+	@Produces("text/plain")
+	public static String getDescription(@PathParam("qid") int qid) {
+		return RESTHelpers.getQueueDescription(qid);
+	}
+
 	/**
 	 * Recompiles all the job spaces for the given job
 	 * @param jobId ID of the job to recompile
@@ -1973,6 +1981,7 @@ public class RESTServices {
 	@Path("/edit/queue/{id}")
 	@Produces("application/json")
 	public String editQueueInfo(@PathParam("id") int id, @Context HttpServletRequest request) {
+		log.debug("entered into edit queue"); 
 		int userId = SessionUtil.getUserId(request);
 
 		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
@@ -1984,6 +1993,7 @@ public class RESTServices {
 		}
 		int cpuTimeout=0;
 		int wallTimeout=0;
+		String desc = request.getParameter("description");
 		try {
 			cpuTimeout=Integer.parseInt(request.getParameter("cpuTimeout"));
 			wallTimeout=Integer.parseInt(request.getParameter("wallTimeout"));
@@ -1995,8 +2005,8 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		}
-
-		boolean success=Queues.updateQueueCpuTimeout(id, cpuTimeout) && Queues.updateQueueWallclockTimeout(id, wallTimeout);
+		boolean success=Queues.updateQueueCpuTimeout(id, cpuTimeout) && Queues.updateQueueWallclockTimeout(id, wallTimeout) && Queues.updateQueueDesc(id, desc);
+		log.debug("about to exit edit queue");
 		return success ? gson.toJson(new ValidatorStatusCode(true,"Queue edited successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 
@@ -4381,9 +4391,12 @@ public class RESTServices {
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
 	}
 
-	/**
- 	*
- 	**/
+	/* The post request in User.js calls this method. Given a user and a HTTPRequest, return string (Json) of next page
+ 	* @param int usrId the id of the user to be fetched
+	* @param HTTPServletRequest the request
+	* Docs by @AGUO2
+	* @author ArchieKipp
+ 	*/
 	@POST
 	@Path("/users/{id}/uploads/pagination")
 	@Produces("application/json")

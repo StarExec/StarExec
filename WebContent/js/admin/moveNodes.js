@@ -1,4 +1,5 @@
 var nodeTable;
+var numNodes;
 
 $(document).ready(function() {
 	attachFormValidation();
@@ -24,6 +25,12 @@ function initUI() {
 		}
 	});
 
+	$("#selectNRows").button({
+		icons: {
+			primary: "ui-icon-carat-2-n-s"
+		}
+	});
+
 	$("#selectBetween").button({
 		icons: {
 			primary: "ui-icon-carat-2-n-s"
@@ -32,6 +39,10 @@ function initUI() {
 
 	$("#selectBetween").click(function() {
 		selectAllBetween(nodeTable);
+	});
+
+	$("#selectNRows").click(function() {
+		selectFirstN(nodeTable,numNodes);
 	});
 
 	// Set up datatables
@@ -45,6 +56,11 @@ function initUI() {
 		$(this).toggleClass("row_selected");
 	});
 
+}
+
+function numNodesOnBlur() {
+	var input = document.getElementById("numNodes");
+	numNodes = input.value;
 }
 
 function attachFormValidation() {
