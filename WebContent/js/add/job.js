@@ -18,12 +18,28 @@ var benchMethodVal = 0;  //1 if choose from space, 2 if choose from hier, 0 othe
 var benchTable = null;
 var curSpaceId = null;
 var isLeaf = null;
+var hasNoBenchmarks = false;	
 $(document).ready(function() {
 	curSpaceId = $("#spaceIdInput").attr("value");
 	log('curSpaceId=' + curSpaceId);
 	checkIfLeafSpace(curSpaceId);
 
 	initUI();
+	fetch(starexecRoot + "services/job/" + curSpaceId + "/allbench/pagination", {
+		method: 'POST',
+	  })
+		.then(response => response.json())
+		.then(data => {
+		  // Handle the response data
+			var aaData = data.aaData;
+			if (aaData.length == 0) {
+				hasNoBenchmarks = true;
+			}
+		})
+		.catch(error => {
+
+		  console.error('Error:', error);
+		});
 	attachFormValidation();
 
 	$('#radioDepth').prop('checked', true);
@@ -314,11 +330,21 @@ function initUI() {
 		}
 	}).click(function() {
 		// Make sure the user has at least one benchmark in the table
-		if ((progress == 4 && $('#tblBenchConfig tbody tr.row_selected').length <= 0)) {
-			showMessage('warn',
+		if (progress == 4) {
+			if (hasNoBenchmarks) {
+				showMessage('warn',
+				'Your Space has no benchmarks, please upload a benchmark before creating a job',
+				3000);
+			return false;
+			}
+			if ($('#tblBenchConfig tbody tr.row_selected').length <= 0) {
+				showMessage('warn',
 				'You must have at least one benchmark for this job.',
 				3000);
 			return false;
+			}
+			
+			
 		}
 		if (progress == 3 && $('#tblSolverConfig tbody tr.row_selected').length <= 0) {
 			// Make sure the user selects at least one solver before moving on

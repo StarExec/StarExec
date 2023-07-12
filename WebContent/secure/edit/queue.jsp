@@ -60,6 +60,17 @@
 					<td><input id="wallTimeout" type="text" name="wallTimeout"
 					           value="${queue.wallTimeout}"/></td>
 				</tr>
+				<tr>
+					
+					<td class="label">
+						<div>
+							<span>description</span>
+							<br>
+							<span id="descCharRemaining" ></span>
+						</div>
+					</td>
+					<td><textarea name="description" rows="4" cols="50" maxlength="200" id="descTextBox" oninput="onDescBoxUpdate()" value="" >${queue.getDesc()}</textarea>
+				</tr>
 				</tbody>
 			</table>
 			<button type="button" id="update">update</button>

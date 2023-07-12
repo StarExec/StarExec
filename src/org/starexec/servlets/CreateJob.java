@@ -636,6 +636,11 @@ public class CreateJob extends HttpServlet {
 
 				// Check to see if we have a valid list of configuration ids
 				if (!Validator.isValidIntegerList(request.getParameterValues(configs))) {
+					if (request.getParameterValues(configs) == null) {
+						return new ValidatorStatusCode(false,
+					                               "You need to select at least one configuration to run a " + "job"
+					);
+					} 
 					return new ValidatorStatusCode(false, "All selected configuration IDs need to be valid integers");
 				}
 
@@ -643,11 +648,7 @@ public class CreateJob extends HttpServlet {
 				for (Integer cid : Util.toIntegerList(request.getParameterValues(configs))) {
 					solverIds.add(Solvers.getSolverByConfig(cid, false).getId());
 				}
-				if (solverIds.isEmpty()) {
-					return new ValidatorStatusCode(false,
-					                               "You need to select at least one configuration to run a " + "job"
-					);
-				}
+				
 				// Make sure the user is using solvers they can see
 				if (!Permissions.canUserSeeSolvers(solverIds, userId)) {
 					return new ValidatorStatusCode(false,

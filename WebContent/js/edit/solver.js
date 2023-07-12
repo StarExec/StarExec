@@ -238,7 +238,7 @@ function attachWebsiteMonitor() {
 		if (name.trim().length == 0) {
 			showMessage('error', 'please enter a website name', 6000);
 			return;
-		} else if (url.indexOf("http://") != 0) {
+		} else if (url.indexOf("http://") != 0 && url.indexOf("https://") != 0) {
 			showMessage('error', 'url must start with http://', 6000);
 			return;
 		} else if (url.trim().length <= 12) {

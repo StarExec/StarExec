@@ -1,7 +1,7 @@
 package org.starexec.data.database;
 
 import com.google.gson.JsonObject;
-import com.mysql.jdbc.ResultSetMetaData;
+import java.sql.ResultSetMetaData;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartRenderingInfo;
 import org.jfree.chart.ChartUtilities;

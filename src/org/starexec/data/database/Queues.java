@@ -660,7 +660,6 @@ public class Queues {
 			while (results.next()) {
 				queues.add(Queues.resultSetToQueue(results));
 			}
-
 			return queues;
 		} catch (Exception e) {
 			log.error("getQueues", e);
@@ -862,7 +861,7 @@ public class Queues {
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error("updateQueueCpuTimeout", e);
+			log.error("updateQueueCpuTimeout" + e.toString());
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -1108,4 +1107,64 @@ public class Queues {
 		}
 		return false;
 	}
+
+	/*
+	 * Given a queue id, fetch the description for the queue
+	 * @param qid the id of the queue
+	 * @author aguo2
+	 */
+	public static String getDescForQueue(int qid) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			procedure = con.prepareCall("{CALL GetDescForQueue(?)}");
+			procedure.setInt(1, qid);
+			results = procedure.executeQuery();
+			String result = "";
+			if (results.next()) {
+        		// Move the cursor to the first row and access the data
+				result = results.getString("description");
+			}
+			return result;
+
+		}
+		catch (Exception e) {
+			log.error("there was an error getting the description for queue " + qid 
+			+ ". Exception was: " + e.getMessage());
+			return "";
+		}
+		 finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		
+		
+	}
+
+	public static Boolean updateQueueDesc(int qid, String desc) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+			Common.beginTransaction(con);
+			procedure = con.prepareCall("{CALL SetDescForQueue(?,?)}");
+			procedure.setInt(1, qid);
+			procedure.setString(2, desc);
+			procedure.executeUpdate();
+			return true;
+		}
+		catch (Exception e) {
+			log.error("there was an error setting the description for queue " + qid 
+			+ ". Exception was: " + e.getMessage());
+			return false;
+		}
+		 finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}}
+
 }

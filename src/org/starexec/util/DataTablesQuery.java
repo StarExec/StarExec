@@ -36,6 +36,7 @@ public class DataTablesQuery {
 	public boolean isSortASC() {
 		return sortASC;
 	}
+	
 	public void setSortASC(boolean sortASC) {
 		this.sortASC = sortASC;
 	}
