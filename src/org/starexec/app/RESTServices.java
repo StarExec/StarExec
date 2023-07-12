@@ -4110,12 +4110,9 @@ public class RESTServices {
 
 		Permission p = Permissions.getFullPermission();
 		p.setLeader(false);
-		
-		//update quotas
 		boolean success = Permissions.set(userIdBeingDemoted, spaceId, p);
-		success &= Users.setPairQuota(userIdBeingDemoted, R.DEFAULT_PAIR_QUOTA);
-		success &= Users.setDiskQuota(userIdBeingDemoted, R.DEFAULT_DISK_QUOTA);
-
+		//note that the desired behavior for quotas when a user is being demoted is to not reduce their quotas
+		//The analogy I was given: "Think of former leaders as retired emperors..."
 		return success ? gson.toJson(new ValidatorStatusCode(true,"User demoted successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 
