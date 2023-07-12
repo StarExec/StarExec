@@ -1156,6 +1156,8 @@ function fnPaginationHandler(sSource, aoData, fnCallback) {
 		aoData.push({"name": "sort_by", "value": getSelectedSort()});
 		aoData.push({"name": "sort_dir", "value": isASC()});
 	}
+	console.log(tableName)
+	console.log(aoData)
 	// Request the next page of primitives from the server via AJAX
 	log('Source: ' + sSource + idOfSelectedSpace + "/" + tableName + "/pagination");
 	$.ajax({
