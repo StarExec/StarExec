@@ -7,6 +7,9 @@ BEGIN
     ALTER TABLE benchmark_uploads
       ADD resumable TINYINT NOT NULL 
       DEFAULT 0;
+    ALTER TABLE benchmark_uploads
+      ADD path VARCHAR(256)
+      DEFAULT NULL;
   END IF;
 END //
 

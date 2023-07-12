@@ -56,6 +56,24 @@ CREATE PROCEDURE SetResumable(IN _id INT, IN _resumable TINYINT)
 		WHERE id = _id;
 	END //
 
+DROP PROCEDURE IF EXISTS GetResumable //
+CREATE PROCEDURE GetResumable(IN _id INT)
+	BEGIN
+		SELECT resumable
+		FROM benchmark_uploads
+		WHERE id = _id;
+	END //
+
+-- Sets the path to the resumable benchmark upload.
+-- Author: Danny Bodin (odin5on)
+DROP PROCEDURE IF EXISTS SetPath //
+CREATE PROCEDURE SetPath(IN _id INT, IN _path VARCHAR(256))
+	BEGIN
+		UPDATE benchmark_uploads
+		SET path = _path
+		WHERE id = _id;
+	END //
+
 -- Updates status when java object is created and processing/entering of benchmarks in db has begun
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS ProcessingBegun //
@@ -304,5 +322,6 @@ CREATE PROCEDURE GetResumableBenchmarkUploads()
 	BEGIN
 		SELECT *
 		FROM benchmark_uploads
-		WHERE resumable=TRUE;
+		WHERE resumable=TRUE
+		AND everything_complete=FALSE;
 	END //

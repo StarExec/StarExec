@@ -207,17 +207,34 @@ public class UploadBenchmark extends HttpServlet {
 	 * @param hasDependencies Whether the benchmarks have dependencies
 	 * @param linked
 	 * @param depRootSpaceId The root space for dependencies for these benchmarks
+	 * @param resumable if the benchmark is resumable or not
          * @return list of ids of benchmarks added, if uploadMethod is "dump"; otherwise empty list
 	 * @throws Exception
 	 */
 	public static List<Integer> addBenchmarksFromArchive(
 			File archiveFile, int userId, int spaceId, int typeId, boolean downloadable, Permission perm,
-			String uploadMethod, int statusId, boolean hasDependencies, boolean linked, Integer depRootSpaceId
-	) throws IOException, StarExecException {
+			String uploadMethod, int statusId, boolean hasDependencies, boolean linked, Integer depRootSpaceId, Boolean resumable
+			) throws IOException, StarExecException {
+				log.debug("\nDANNY: statusId: "+statusId);
+				List<Integer> ids = new ArrayList<Integer>();
+				final File uniqueDir = getDirectoryForBenchmarkUpload(userId, null);
+				
+				if(!putBenchmarksOnDisk(archiveFile, userId, spaceId, typeId, downloadable, perm, uploadMethod, statusId, hasDependencies, linked, depRootSpaceId, resumable, uniqueDir)){
+					return ids;
+				}
+				
+				if(resumable) { // if the upload is resumable, we want it to be processed by the periodic task.
+					return ids;
+				}
+				
+				return extractAndProcess(userId, spaceId, typeId, downloadable, perm, uploadMethod, statusId, hasDependencies, linked, depRootSpaceId, resumable, uniqueDir);
+			}
 
-		ArrayList<Integer> benchmarkIds = new ArrayList<>();
+	public static Boolean putBenchmarksOnDisk(
+			File archiveFile, int userId, int spaceId, int typeId, boolean downloadable, Permission perm,
+			String uploadMethod, int statusId, boolean hasDependencies, boolean linked, Integer depRootSpaceId,
+			Boolean resumable, File uniqueDir) throws IOException, StarExecException {
 		// Create a unique path the zip file will be extracted to
-		final File uniqueDir = getDirectoryForBenchmarkUpload(userId, null);
 
 		// Create the zip file object-to-be
 		long fileSize = ArchiveUtil.getArchiveSize(archiveFile.getAbsolutePath());
@@ -229,31 +246,39 @@ public class UploadBenchmark extends HttpServlet {
 		if (fileSize > allowedBytes - usedBytes) {
 			archiveFile.delete();
 			Uploads.setBenchmarkErrorMessage(statusId,
-			                                 "The benchmark upload is too large to fit in your disk quota. The " +
-					                                 "uncompressed" +
-					                                 " size of the archive is approximately " + fileSize +
-					                                 " bytes, but you have only " + (allowedBytes - usedBytes) +
-					                                 " bytes remaining.");
+					"The benchmark upload is too large to fit in your disk quota. The " +
+							"uncompressed" +
+							" size of the archive is approximately " + fileSize +
+							" bytes, but you have only " + (allowedBytes - usedBytes) +
+							" bytes remaining.");
 			throw new StarExecException("File too large to fit in user's disk quota");
 		}
 
 		// Copy the benchmark zip to the server from the client
 
-		List<Integer> ids = new ArrayList<Integer>();
 		log.info("upload complete - now extracting");
 		Uploads.benchmarkFileUploadComplete(statusId);
 		// Extract the downloaded benchmark zip file
+		// this is where zip gets extracted from temp directory into final holding place
 		if (!ArchiveUtil.extractArchive(archiveFile.getAbsolutePath(), uniqueDir.getAbsolutePath())) {
 			String message = "StarExec has failed to extract your uploaded file.";
 			Uploads.setBenchmarkErrorMessage(statusId, message);
 			log.error(message + " - status id = " + statusId + ", filepath = " + archiveFile.getAbsolutePath());
-			return ids;
+			return false;
 		}
-		log.info("Extraction Complete");
-		//update upload status
-		Uploads.fileExtractComplete(statusId);
 
+		// put the path the archive was extracted to in the database
+		Uploads.setResumableBenchmarkUploadPath(statusId, uniqueDir.getAbsolutePath());
 
+		return true;
+	}
+
+	public static List<Integer> extractAndProcess(
+			int userId, int spaceId, int typeId, boolean downloadable, Permission perm,
+			String uploadMethod, int statusId, boolean hasDependencies, boolean linked, Integer depRootSpaceId,
+			Boolean resumable, File uniqueDir) throws IOException, StarExecException {
+		
+		List<Integer> ids = new ArrayList<Integer>();
 		log.debug("has dependencies = " + hasDependencies);
 		log.debug("linked = " + linked);
 		log.debug("depRootSpaceIds = " + depRootSpaceId);
@@ -268,13 +293,17 @@ public class UploadBenchmark extends HttpServlet {
 		}
 		result.setId(spaceId);
 
-		//update Status
+		// update upload status
+		Uploads.fileExtractComplete(statusId);
+		log.info("Extraction Complete");
+
+		// update Status
 		Uploads.processingBegun(statusId);
 
 		if (uploadMethod.equals("convert")) {
 			log.debug("convert");
 
-			//first we test to see if any names conflict
+			// first we test to see if any names conflict
 			ValidatorStatusCode status = doSpaceNamesConflict(uniqueDir, spaceId);
 			if (!status.isSuccess()) {
 				Uploads.setBenchmarkErrorMessage(statusId, status.getMessage());
@@ -282,18 +311,16 @@ public class UploadBenchmark extends HttpServlet {
 			}
 
 			Spaces.addWithBenchmarks(result, userId, depRootSpaceId, linked, statusId,
-			                                             hasDependencies);
+					hasDependencies);
 		} else if (uploadMethod.equals("dump")) {
 			List<Benchmark> benchmarks = result.getBenchmarksRecursively();
 
 			ids.addAll(Benchmarks.processAndAdd(benchmarks, spaceId, depRootSpaceId, linked, statusId,
-			                                             hasDependencies
-							 ));
+					hasDependencies));
 		}
 		log.info("Handle upload method complete in " + spaceId + "for user " + userId);
-                return ids;
+		return ids;
 	}
-
 
 		/**
 		 * Adds a set of benchmarks to the database by extracting the given directory and finding the benchmarks inside of it
@@ -338,16 +365,12 @@ public class UploadBenchmark extends HttpServlet {
 
 			log.info("upload complete - now extracting");
 			Uploads.benchmarkFileUploadComplete(statusId);
-			log.info("Extraction Complete");
-			//update upload status
-			//This was apart of the orignial archive process so I left the message update
-			Uploads.fileExtractComplete(statusId);
-
-
+			
+			
 			log.debug("has dependencies = " + hasDependencies);
 			log.debug("linked = " + linked);
 			log.debug("depRootSpaceIds = " + depRootSpaceId);
-
+			
 			log.info("about to add benchmarks to space " + spaceId + " for user " + userId);
 			Space result = Benchmarks.extractSpacesAndBenchmarks(gitSpace, typeId, userId, downloadable, perm, statusId);
 			if (result == null) {
@@ -357,7 +380,12 @@ public class UploadBenchmark extends HttpServlet {
 				return;
 			}
 			result.setId(spaceId);
-
+			
+			//update upload status
+			//This was apart of the orignial archive process so I left the message update
+			log.info("Extraction Complete");
+			Uploads.fileExtractComplete(statusId);
+			
 			//update Status
 			Uploads.processingBegun(statusId);
 
@@ -508,6 +536,7 @@ public class UploadBenchmark extends HttpServlet {
 		}
 
 		final File archiveFile = archive;
+		log.debug("\n\nDANNY: " + archiveFile.getAbsolutePath() +"\n");
 		final File gitSpace = uniqueDir;
 
 		if (localOrUrlOrGit.equals("Git")){
@@ -543,8 +572,8 @@ public class UploadBenchmark extends HttpServlet {
 			Util.threadPoolExecute(() -> {
 				try {
 					addBenchmarksFromArchive(archiveFile, userId, spaceId, typeId, downloadable, perm, uploadMethod,
-					                         statusId, hasDependencies, linked, depRootSpaceId
-					);
+					                         statusId, hasDependencies, linked, depRootSpaceId, resumable
+					); // finishes early if it is resumable
 
 					BenchmarkUploadStatus status = Uploads.getBenchmarkStatus(statusId);
 
@@ -562,7 +591,9 @@ public class UploadBenchmark extends HttpServlet {
 					;
 					log.error("handleUploadRequest", msg, e);
 				} finally {
-					Uploads.benchmarkEverythingComplete(statusId);
+					if(!resumable){
+						Uploads.benchmarkEverythingComplete(statusId);
+					}
 				}
 			});
 		}

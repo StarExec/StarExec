@@ -23,6 +23,7 @@ public class BenchmarkUploadStatus extends Identifiable {
 	private int failedBenchmarks;
 	private String errorMessage;
 	private boolean resumable;
+	private String path;
     
 
         public BenchmarkUploadStatus() {
@@ -236,6 +237,20 @@ public class BenchmarkUploadStatus extends Identifiable {
 	 */
 	public void setResumable(boolean resumable){
 		this.resumable = resumable;
+	}
+
+	/**
+	 * @return the path
+	 */
+	public String getPath() {
+		return path;
+	}
+
+	/**
+	 * @param path the path to set
+	 */
+	public void setPath(String path) {
+		this.path = path;
 	}
 }
 

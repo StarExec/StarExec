@@ -401,7 +401,7 @@ class PeriodicTasks {
         @Override
         protected void dorun() {
             // look for unprocessed benchmarks
-            Benchmarks.restartIncompleteBenchmarkUploads();
+            Benchmarks.processResumableBenchmarks();
         }
     };
 }

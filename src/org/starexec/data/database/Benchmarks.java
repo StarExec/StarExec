@@ -2668,30 +2668,27 @@ public class Benchmarks {
 	}
 
 	// wip: odin5on
-	public static void restartIncompleteBenchmarkUploads() {
-		// remove // query the database and print out resumable benchmarks
+	public static void processResumableBenchmarks() {
 		log.debug("DANNY start of periodic task!!\n");
 
-		Connection con = null;
-		CallableStatement procedure = null;
-		ResultSet results = null;
-		try {
-			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetResumableBenchmarkUploads()}");
-			results = procedure.executeQuery();
-			if(results.next()){
-				log.debug("DANNY " + Integer.toString(results.getInt(1)));
+			List<BenchmarkUploadStatus> benchmarksToProcess = Uploads.getResumableBenchmarkUploads();
+			Iterator<BenchmarkUploadStatus> b = benchmarksToProcess.iterator();
+
+			while(b.hasNext()){
+				try{
+					BenchmarkUploadStatus benchmark = b.next();
+					UploadBenchmark.extractAndProcess(benchmark.getUserId(), benchmark.getSpaceId(), 1, 
+					true, new Permission(false), "convert", benchmark.getId(), 
+					false, false, benchmark.getSpaceId(), benchmark.getResumable(), new File(benchmark.getPath	()));
+	
+					Uploads.benchmarkEverythingComplete(benchmark.getId());
+					log.info("Processed benchmark with id: "+benchmark.getId());
+
+				} catch (Exception e) {
+					log.error("Could not process a resumable benchmark", e);
+				}
 			}
-			if(results.next()){
-				log.debug("DANNY " + Integer.toString(results.getInt(1)));
-			}
-			log.debug("DANNY after trying to print results\n");
-		} catch (Exception e) {
-			log.error("getResumableBenchmarkUploads", e.getMessage());
-		} finally {
-			Common.safeClose(con);
-			Common.safeClose(procedure);
-			Common.safeClose(results);
-		}
+
+		log.debug("DANNY after trying to print results\n");
 	}
 }

@@ -335,6 +335,7 @@ public class Uploads {
 		s.setErrorMessage(results.getString("error_message"));
 		s.setFailedBenchmarks(results.getInt("failed_benchmarks"));
 		s.setResumable(results.getBoolean("resumable"));
+		s.setPath(results.getString("path"));
 		return s;
 	}
 
@@ -481,6 +482,54 @@ public class Uploads {
 			else{
 				procedure.setInt(2, 0);
 			}
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return false;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+
+	public static Boolean getResumableBenchmarkUpload(int id) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetResumable(?)}");
+			procedure.setInt(1, id);
+			results = procedure.executeQuery();
+			if (results.next()) {
+				return results.getBoolean(1);
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+
+		return null;
+	}
+
+	public static Boolean setResumableBenchmarkUploadPath(Integer statusId, String path) {
+		if (statusId == null || statusId <= 0) {
+			return false;
+		}
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL SetPath(?,?)}");
+
+			procedure.setInt(1, statusId);
+			procedure.setString(2, path);
+			
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
@@ -970,6 +1019,36 @@ public class Uploads {
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
+		}
+	}
+
+	/**
+	 * Gets all resumable benchmark uploads to be processed by periodic task
+	 */
+	public static List<BenchmarkUploadStatus> getResumableBenchmarkUploads(){
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetResumableBenchmarkUploads()}");
+			results = procedure.executeQuery();
+
+			List<BenchmarkUploadStatus> benchmarksToProcess = new LinkedList<>();
+
+			while(results.next()){
+				benchmarksToProcess.add(Uploads.resultsToBenchmarkUploadStatus(results));
+			}
+
+			return benchmarksToProcess;
+
+		} catch (Exception e) {
+			log.error("getResumableBenchmarkUploads", e.getMessage());
+			return (new LinkedList<BenchmarkUploadStatus>());
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
 		}
 	}
 }
