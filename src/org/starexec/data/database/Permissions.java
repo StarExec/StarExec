@@ -450,6 +450,10 @@ public class Permissions {
 	 * @author Eric Burns
 	 */
 
+	 /*
+	  * Adds all permisions and makes the user a leader
+	  * @docs aguo2
+	  */
 	public static Permission getFullPermission() {
 		Permission p = new Permission();
 		p.setAddBenchmark(true);

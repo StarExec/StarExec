@@ -4087,7 +4087,12 @@ public class RESTServices {
 			}
 
 			Permission p = Permissions.getFullPermission();
+			//give the users leader permissions
 			Permissions.set(userId, spaceId, p);
+
+			//update quotas
+			Users.setDiskQuota(userId, R.CL_DEFAULT_DISK_QUOTA);
+			Users.setPairQuota(userId, R.CL_PAIR_QUOTA);
 		}
 		return gson.toJson(new ValidatorStatusCode(true,"User promoted successfully"));
 	}
@@ -4115,7 +4120,10 @@ public class RESTServices {
 
 		Permission p = Permissions.getFullPermission();
 		p.setLeader(false);
-		return Permissions.set(userIdBeingDemoted, spaceId, p) ? gson.toJson(new ValidatorStatusCode(true,"User demoted successfully")) : gson.toJson(ERROR_DATABASE);
+		boolean success = Permissions.set(userIdBeingDemoted, spaceId, p);
+		//note that the desired behavior for quotas when a user is being demoted is to not reduce their quotas
+		//The analogy I was given: "Think of former leaders as retired emperors..."
+		return success ? gson.toJson(new ValidatorStatusCode(true,"User demoted successfully")) : gson.toJson(ERROR_DATABASE);
 	}
 
 	/**

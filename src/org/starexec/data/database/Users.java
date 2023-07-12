@@ -905,6 +905,7 @@ public class Users {
 	 * @return true iff the new pair quota is successfully set, false otherwise
 	 */
 	public static boolean setPairQuota(int userId, int newPairQuota) {
+		log.debug("in set pairquotas");
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
@@ -917,7 +918,7 @@ public class Users {
 
 			return true;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("there was a problem setting pair quota" + e.getMessage());
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
