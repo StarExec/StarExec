@@ -430,13 +430,24 @@ public class Solvers {
 		newSolver.setType(s.getType());
 		newSolver.setBuildStatus(s.buildStatus());
 		File solverDirectory = new File(s.getPath());
-
 		File uniqueDir = new File(R.getSolverPath(), "" + userId);
 		uniqueDir = new File(uniqueDir, newSolver.getName());
-		uniqueDir = new File(uniqueDir, "" + shortDate.format(new Date()));
+		String date = shortDate.format(new Date());
+		uniqueDir = new File(uniqueDir, "" + date);
 		uniqueDir.mkdirs();
 		newSolver.setPath(uniqueDir.getAbsolutePath());
 		try {
+			//we need to check if the solver has a src dir. If it does, we also need to 
+			//copy it. This fixes issue 307
+			File maybeSrc = new File(s.getPath()+ "_src");
+			boolean hasSrc = maybeSrc.exists();
+			if (hasSrc) {
+				File originalSrcDir = maybeSrc;
+				File newSrcDir = new File(uniqueDir.getAbsolutePath() + "_src");
+				newSrcDir.mkdirs();
+				FileUtils.copyDirectory(originalSrcDir, newSrcDir);
+			}
+			
 			FileUtils.copyDirectory(solverDirectory, uniqueDir);
 			for (Configuration c : findConfigs(uniqueDir.getAbsolutePath())) {
 				newSolver.addConfiguration(c);
