@@ -272,7 +272,7 @@ public class Validator {
 	}
 
 	/**
-	 * Validates a list of strings to ensure every one is a valid int
+	 * Validates a list of strings to ensure every one is a valid int and checks that the list is not null
 	 *
 	 * @param list The list of strings to validate
 	 * @return True if every string in the array can be parsed as a int
