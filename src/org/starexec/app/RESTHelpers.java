@@ -205,7 +205,6 @@ public class RESTHelpers {
 			// Validates the starting record, the number of records per page,
 			// and the sync value
 			if (Util.isNullOrEmpty(iDisplayStart) || Util.isNullOrEmpty(iDisplayLength) || Util.isNullOrEmpty(sEcho) || Integer.parseInt(iDisplayStart) < 0 || Integer.parseInt(sEcho) < 0) {
-				log.debug("wefwEFwewEFweqfd");
 				return null;
 			}
 
@@ -215,14 +214,12 @@ public class RESTHelpers {
 				if (type == Primitive.JOB) {
 					query.setSortColumn(5);
 				} else {
-					log.debug("argmaemrfoamdfomv");
 					return null;
 				}
 			} else {
 				int sortColumnIndex = Integer.parseInt(iSortCol);
 				query.setSortColumn(sortColumnIndex);
 			}
-			log.debug("dbnjsnbdlkansdjsdnfs:");
 			//set the sortASC flag
 			if (Util.isNullOrEmpty(sDir)) {
 				//WARNING: if you don't do this check, sometimes null gets passed, and this
@@ -954,17 +951,13 @@ public class RESTHelpers {
 
 	public static JsonObject getNextJobPageForSpaceExplorer(int id, HttpServletRequest request) {
 		// Parameter validation
-
 		DataTablesQuery query = RESTHelpers.getAttrMap(Primitive.JOB, request);
-		log.debug("made it wofnaoirniadsngvisdmvf" + query);
 		if (query == null) {
 			return null;
 		}
-
 		// Retrieves the relevant Job objects to use in constructing the
 		// JSON to send to the client
 		List<Job> jobsToDisplay = Jobs.getJobsForNextPage(query, id);
-		log.debug("asfpiengodnvkam" + jobsToDisplay);
 		query.setTotalRecords(Jobs.getCountInSpace(id));
 		if (!query.hasSearchQuery()) {
 			query.setTotalRecordsAfterQuery(query.getTotalRecords());
