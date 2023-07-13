@@ -267,8 +267,16 @@
 			<a href="${starexecRoot}/secure/download?type=jp_output&id=${pair.id}"
 			id="downLink">all output</a>
 		</c:if>
-		<a href="${starexecRoot}/secure/details/job.jsp?id=${job.id}"
+		<c:choose>
+			<c:when test="${isLocalJobPage}">
+				<a href="../job.html"
+				id="returnLink">return to ${job.name}</a>
+			</c:when>
+			<c:otherwise>
+				<a href="${starexecRoot}/secure/details/job.jsp?id=${job.id}"
 		   id="returnLink">return to ${job.name}</a>
+			</c:otherwise>
+		</c:choose>
 		<c:if test="${!isLocalJobPage}">
 			<c:if test="${rerun}">
 				<button id="rerunPair">rerun pair</button>
