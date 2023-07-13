@@ -1365,7 +1365,17 @@ function initDataTables() {
             $pairTbl.find("tbody").on("click", "tr", function() {
                 var pairId = $(this).find('input').val();
                 window.location.assign("./jobPairs/" + pairId);
-            });
+            }).hover(
+				function () {
+					//mouse is over table item
+					document.body.style.cursor = "pointer";
+				},
+				function () {
+					//mouse is over table item
+					document.body.style.cursor = "auto";
+
+				}
+			);
 
 	}}
 
