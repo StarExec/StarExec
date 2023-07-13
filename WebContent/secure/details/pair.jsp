@@ -247,15 +247,20 @@
 		</c:if>
 	</c:forEach>
 
-	<fieldset id="fieldLog">
-		<legend><img alt="loading" src="${starexecRoot}/images/loader.gif"> job
-			log
-		</legend>
-		<star:displayTextContents text="${log}" lang="log"/>
-		<a href="${starexecRoot}/services/jobs/pairs/${pair.id}/log"
-		   target="_blank" class="popoutLink">popout</a>
-	</fieldset>
-
+	<c:choose>
+		<c:when test="${!isLocalJobPage}">
+			<fieldset id="fieldLog">
+				<legend><img alt="loading" src="${starexecRoot}/images/loader.gif"> job
+					log
+				</legend>
+				<star:displayTextContents text="${log}" lang="log"/>
+				<a href="${starexecRoot}/services/jobs/pairs/${pair.id}/log"
+				   target="_blank" class="popoutLink">popout</a>
+			</fieldset>
+		
+		</c:when>
+	</c:choose>
+	
 	<fieldset id="fieldActions">
 		<legend>actions</legend>
 		<a href="${starexecRoot}/secure/download?type=jp_output&id=${pair.id}"
