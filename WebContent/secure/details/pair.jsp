@@ -228,8 +228,17 @@
 			</legend>
 			<textarea class=contentTextarea id="jpStdout"
 			          readonly="readonly">${stage.output}</textarea>
-			<a href="${starexecRoot}/services/jobs/pairs/${pair.id}/stdout/${stage.stageNumber}?limit=-1"
-			   target="_blank" class="popoutLink">popout</a>
+			<c:choose>
+				<c:when test="${!isLocalJobPage}">
+					<a href="${starexecRoot}/services/jobs/pairs/${pair.id}/stdout/${stage.stageNumber}?limit=-1"
+					target="_blank" class="popoutLink">popout</a>
+				</c:when>
+				<c:otherwise>
+					<a href="./output/${pair.id}/${stage.stageNumber}.txt"
+					target="_blank" class="popoutLink">popout</a>
+				</c:otherwise>
+			</c:choose>
+			
 			<p class="caption">output may be truncated. 'popout' for the full
 				output.</p>
 		</fieldset>
