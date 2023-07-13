@@ -10,6 +10,24 @@ BEGIN
     ALTER TABLE benchmark_uploads
       ADD path VARCHAR(256)
       DEFAULT NULL;
+    ALTER TABLE benchmark_uploads
+      ADD type_id INT
+      DEFAULT NULL;
+    ALTER TABLE benchmark_uploads
+      ADD downloadable TINYINT
+      DEFAULT NULL;
+    ALTER TABLE benchmark_uploads
+      ADD has_dependencies TINYINT
+      DEFAULT NULL;
+    ALTER TABLE benchmark_uploads
+      ADD linked TINYINT
+      DEFAULT NULL;
+    ALTER TABLE benchmark_uploads
+      ADD upload_method VARCHAR(256)
+      DEFAULT NULL;
+    ALTER TABLE benchmark_uploads
+      ADD permission_id INT
+      DEFAULT NULL;
   END IF;
 END //
 

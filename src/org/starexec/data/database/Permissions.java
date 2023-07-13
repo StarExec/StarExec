@@ -537,6 +537,29 @@ public class Permissions {
 		return p;
 	}
 
+	public static Permission getPermissionFromId(int id){
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetPermissionFromId(?)}");
+			procedure.setInt(1, id);
+			results = procedure.executeQuery();
+
+			if (results.first()) {
+				return resultsToPermissionWithId(results.getInt("id"), results);
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
+
 	/**
 	 * Sets the permissions of a given user in a given space
 	 *
@@ -576,13 +599,13 @@ public class Permissions {
 	protected static boolean set(int userId, int spaceId, Permission newPerm, Connection con) {
 		CallableStatement procedure = null;
 		int permissionId = add(newPerm, con);
-
+		
 		try {
 			procedure = con.prepareCall("{CALL SetUserPermissions2(?, ?, ?)}");
 			procedure.setInt(1, userId);
 			procedure.setInt(2, spaceId);
 			procedure.setInt(3, permissionId);
-
+			
 			procedure.executeUpdate();
 			log.debug(String.format("Permissions successfully changed for user [%d] in space [%d]", userId, spaceId));
 			return true;
@@ -592,6 +615,20 @@ public class Permissions {
 			Common.safeClose(procedure);
 		}
 		return false;
+	}     
+	
+	public static int addPermission(Permission perm){
+		Connection con = null;
+
+		try {
+			con = Common.getConnection();
+			return Permissions.add(perm, con);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return -1;
+		} finally {
+			Common.safeClose(con);
+		}
 	}
 
 	/**

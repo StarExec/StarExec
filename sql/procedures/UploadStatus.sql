@@ -325,3 +325,40 @@ CREATE PROCEDURE GetResumableBenchmarkUploads()
 		WHERE resumable=TRUE
 		AND everything_complete=FALSE;
 	END //
+
+-- Sets the typeId to the resumable benchmark upload.
+-- Author: Danny Bodin (odin5on)
+DROP PROCEDURE IF EXISTS SetTypeId //
+CREATE PROCEDURE SetTypeId(IN _id INT, IN _typeid INT)
+	BEGIN
+		UPDATE benchmark_uploads
+		SET type_id = _typeid
+		WHERE id = _id;
+	END //
+
+DROP PROCEDURE IF EXISTS GetTypeId //
+CREATE PROCEDURE GetTypeId(IN _id INT)
+	BEGIN
+		SELECT type_id
+		FROM benchmark_uploads
+		WHERE id = _id;
+	END //
+
+DROP PROCEDURE IF EXISTS SetBUdeets //
+CREATE PROCEDURE SetBUdeets(IN _id INT, IN _downloadable TINYINT, IN _hasdeps TINYINT, IN _linked TINYINT, IN _uploadmethod VARCHAR(256))
+	BEGIN
+		UPDATE benchmark_uploads
+		SET downloadable = _downloadable,
+				has_dependencies = _hasdeps,
+				linked = _linked,
+				upload_method = _uploadmethod
+		WHERE id = _id;
+	END //
+
+DROP PROCEDURE IF EXISTS SetPermissionsId //
+CREATE PROCEDURE SetPermissionsId(IN _id INT, IN _permId INT)
+	BEGIN
+		UPDATE benchmark_uploads
+		SET permission_id = _permId
+		WHERE id = _id;
+	END //

@@ -336,6 +336,12 @@ public class Uploads {
 		s.setFailedBenchmarks(results.getInt("failed_benchmarks"));
 		s.setResumable(results.getBoolean("resumable"));
 		s.setPath(results.getString("path"));
+		s.setTypeId(results.getInt("type_id"));
+		s.setDownloadable(results.getBoolean("downloadable"));
+		s.setHasDependencies(results.getBoolean("has_dependencies"));
+		s.setLinked(results.getBoolean("linked"));
+		s.setUploadMethod(results.getString("upload_method"));
+		s.setPermission(Permissions.getPermissionFromId(results.getInt("permission_id")));
 		return s;
 	}
 
@@ -529,6 +535,31 @@ public class Uploads {
 
 			procedure.setInt(1, statusId);
 			procedure.setString(2, path);
+			
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return false;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+
+	public static Boolean setResumableBenchmarkUploadTypeId(Integer statusId, Integer typeId){
+		if (statusId == null || statusId <= 0) {
+			return false;
+		}
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL SetTypeId(?,?)}");
+
+			procedure.setInt(1, statusId);
+			procedure.setInt(2, typeId);
 			
 			procedure.executeUpdate();
 			return true;
@@ -1049,6 +1080,59 @@ public class Uploads {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 			Common.safeClose(results);
+		}
+	}
+
+	public static Boolean setBUdeets(Integer statusId, Boolean downloadable, Boolean hasDependencies, Boolean linked, String uploadMethod){
+		if (statusId == null) {
+			return false;
+		}
+		Connection con = null;
+		CallableStatement procedure = null;
+
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL SetBUdeets(?,?,?,?,?)}");
+
+			procedure.setInt(1, statusId);
+			procedure.setBoolean(2, downloadable);
+			procedure.setBoolean(3, hasDependencies);
+			procedure.setBoolean(4, linked);
+			procedure.setString(5, uploadMethod);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return false;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+
+	public static Boolean setPermissionsId(Integer statusId, Integer permissionsId){
+		if (statusId == null) {
+			return false;
+		}
+		Connection con = null;
+		CallableStatement procedure = null;
+
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL SetPermissionsId(?,?)}");
+
+			procedure.setInt(1, statusId);
+			procedure.setInt(2, permissionsId);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return false;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
 		}
 	}
 }

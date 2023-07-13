@@ -164,3 +164,11 @@ CREATE PROCEDURE SetUserPermissions2(IN _userId INT, IN _spaceId INT,IN _permiss
 		SET	permission	= _permissionId
 		WHERE user_id = _userId && space_id = _spaceId;
 	END //
+
+DROP PROCEDURE IF EXISTS GetPermissionFromId //
+CREATE PROCEDURE GetPermissionFromId(IN _id INT)
+	BEGIN
+		SELECT *
+		FROM permissions
+		WHERE id = _id;
+	END //

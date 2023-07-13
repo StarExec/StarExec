@@ -269,6 +269,10 @@ public class UploadBenchmark extends HttpServlet {
 
 		// put the path the archive was extracted to in the database
 		Uploads.setResumableBenchmarkUploadPath(statusId, uniqueDir.getAbsolutePath());
+		log.debug("DANNY settypeId success?: " + Uploads.setResumableBenchmarkUploadTypeId(statusId, typeId));
+		log.debug("DANNY typeId: "+typeId);
+		Uploads.setBUdeets(statusId, downloadable, hasDependencies, linked, uploadMethod);
+		Uploads.setPermissionsId(statusId, Permissions.addPermission(perm));
 
 		return true;
 	}

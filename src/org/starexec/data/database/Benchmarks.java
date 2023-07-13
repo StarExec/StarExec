@@ -2677,9 +2677,9 @@ public class Benchmarks {
 			while(b.hasNext()){
 				try{
 					BenchmarkUploadStatus benchmark = b.next();
-					UploadBenchmark.extractAndProcess(benchmark.getUserId(), benchmark.getSpaceId(), 1, 
-					true, new Permission(false), "convert", benchmark.getId(), 
-					false, false, benchmark.getSpaceId(), benchmark.getResumable(), new File(benchmark.getPath	()));
+					UploadBenchmark.extractAndProcess(benchmark.getUserId(), benchmark.getSpaceId(), benchmark.getTypeId(), 
+					benchmark.getDownloadable(), benchmark.getPermission(), benchmark.getUploadMethod(), benchmark.getId(), 
+					benchmark.getHasDependencies(), benchmark.getLinked(), benchmark.getSpaceId(), benchmark.getResumable(), new File(benchmark.getPath()));
 	
 					Uploads.benchmarkEverythingComplete(benchmark.getId());
 					log.info("Processed benchmark with id: "+benchmark.getId());
