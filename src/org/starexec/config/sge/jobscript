@@ -147,7 +147,6 @@ echo "benchmark id: $BENCH_ID"
 echo "execution host: $HOSTNAME"
 echo "benchmarking framework: $BENCHMARKING_FRAMEWORK"
 echo "whoami: $(whoami)"
-echo "the presence of this line means that the MV changes are in effect!"
 
 if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
 	log "Using benchexec."
