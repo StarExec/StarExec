@@ -49,11 +49,14 @@ changes for StarExec, so using a different version of Tomcat is not recommended.
 A full release of Tomcat is included in the starexec package under the
 `distribution/` directory. This is identical to a release that you can download
 from Apache, with the exception that the `mysql-connector-java-5.1.22-bin.jar`
-and `drmaa.jar` files are included in the `lib/` directory. These `.jar` files
-are required for StarExec to connect to its database and backend, and as such we
+and file is included in the `lib/` directory. This `.jar` file
+is required for StarExec to connect to its database, and as such we
 recommend that you install Tomcat using the provided archive. If you would like
-to install a clean copy of Tomcat, you will need to copy the MySQL connector and
-DRMAA files to the new lib directory.
+to install a clean copy of Tomcat, you will need to copy MySQL connector to the new lib directory.
+
+PLEASE NOTE: We recently migrated our servers from centOS to Rocky8. Due to this, DRMAA is no longer 
+a required dependency. Instead, we will be using qsub. For more information about this command, please 
+see [https://www.jlab.org/hpc/PBS/qsub.html](https://www.jlab.org/hpc/PBS/qsub.html)
 
 If you install Tomcat using the provided archive, you may need to update
 permissions on the install directory to make Tomcat's scripts executable. This
