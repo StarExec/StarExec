@@ -316,7 +316,7 @@
 							           items="${jobSpaceIdToPairMap.get(jsId)}">
 								<tr>
 									<td>${pair.getBench().getName()}
-										<input type="hidden" value="${pair.getJobId()}" name="pid">
+										<input type="hidden" value="${pair.getId()}" name="pid">
 									</td>
 									<td>${pair.getPrimarySolver().getName()}</td>
 									<td>${pair.getPrimaryConfiguration().getName()}</td>
