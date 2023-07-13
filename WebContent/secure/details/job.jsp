@@ -315,7 +315,9 @@
 							<c:forEach var="pair"
 							           items="${jobSpaceIdToPairMap.get(jsId)}">
 								<tr>
-									<td>${pair.getBench().getName()}</td>
+									<td>${pair.getBench().getName()}
+										<input type="hidden" value="${pair.getJobId()}" name="pid">
+									</td>
 									<td>${pair.getPrimarySolver().getName()}</td>
 									<td>${pair.getPrimaryConfiguration().getName()}</td>
 									<td>${pair.getPrimaryStage().getStatus().getStatus()}

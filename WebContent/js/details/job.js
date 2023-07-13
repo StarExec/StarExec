@@ -1352,11 +1352,22 @@ function initDataTables() {
 
 	//Set up row click to send to pair details page
 	if (!DETAILS_JOB.isAnonymousPage) {
-		$pairTbl.find("tbody").on("click", "tr", function() {
-			var pairId = $(this).find('input').val();
-			window.location.assign(DETAILS_JOB.starexecUrl + "secure/details/pair.jsp?id=" + pairId);
-		});
-	}
+		if (!isLocalJobPage) {
+            //if its not a local job page, redirect to the server page.
+            $pairTbl.find("tbody").on("click", "tr", function() {
+                var pairId = $(this).find('input').val();
+                window.location.assign(DETAILS_JOB.starexecUrl + "secure/details/pair.jsp?id=" + pairId);
+            });
+        }
+		else {
+            //for some reason, on the local page, the id is jobId + "pairTbl"
+            $pairTbl = $('#' + jobId + 'pairTbl');
+            $pairTbl.find("tbody").on("click", "tr", function() {
+                var pairId = $(this).find('input').val();
+                window.location.assign("./jobPairs/" + pairId);
+            });
+
+	}}
 
 	// Change the filter so that it only queries the server when the user stops typing
 	$pairTbl.dataTable().fnFilterOnDoneTyping();
