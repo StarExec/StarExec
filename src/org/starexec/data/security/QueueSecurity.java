@@ -37,7 +37,8 @@ public class QueueSecurity {
 	}
 
 	/**
-	 * Ensures a user has the appropriate permissions to edit an existing queue with the given new values
+	 * Ensures a user has the appropriate permissions to edit an existing queue 
+	 * and verifies that the timeOuts are allowed values
 	 *
 	 * @param userId The user making the request
 	 * @param clockTimeout The new clock timeout to be given to the queue

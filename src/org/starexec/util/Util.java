@@ -39,7 +39,7 @@ import static java.util.Objects.nonNull;
  * This class contains utility functions used throughout Starexec, including many
  * for executing commands and interacting with the filesystem.
  *
- * @author Eric
+ * @author Eric and Aguo2
  */
 public class Util {
 	protected static final ExecutorService threadPool = Executors.newCachedThreadPool();
@@ -384,7 +384,7 @@ public class Util {
 	 * @param command An array holding the command and then its arguments
 	 * @param envp The environment
 	 * @param workingDirectory the working directory to use
-	 * @return A String containing both stderr and stdout from the command
+	 * @return A process containing both stderr and stdout from the command
 	 * @throws IOException We do not want to catch exceptions at this level, because this code is generic and
 	 * has no useful way to handle them! Throwing an exception to higher levels is the desired behavior.
 	 */
@@ -458,11 +458,29 @@ public class Util {
 		return readsomething;
 	}
 
+	/*
+	 * This method gets the stdout from a process. If there was stderr output, then 
+	 * something bad happened as a result of running something, and an exception
+	 * is thrown to the caller.
+	 * @param p the process
+	 * @return
+	 */
+	public static String getstdout(final Process p) throws StarExecException {
+		final StringBuffer message = new StringBuffer();
+		//if we got an error from stderr, we throw our custom exception
+		if (drainInputStream(message, p.getErrorStream())) {
+			throw new StarExecException(message.toString());
+		}
+		//if nothing was read into the buffer, get the output
+		drainInputStream(message, p.getInputStream());
+		return message.toString();
+	}
+
 	/**
 	 * Drains both the stdout and stderr streams of a process and returns
 	 *
-	 * @param p
-	 * @return The combined stdout and stderr from the process
+	 * @param p the process 
+	 * @return A string with stderr first, followed by stdout. 
 	 */
 	public static String drainStreams(final Process p) {
 
@@ -474,6 +492,7 @@ public class Util {
 		final StringBuffer message = new StringBuffer();
 		threadPool.execute(() -> {
 			try {
+				//if we got an error from stderr, we throw our custom exception
 				if (drainInputStream(message, p.getErrorStream())) {
 					throw new StarExecException(message.toString());
 				}

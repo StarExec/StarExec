@@ -216,6 +216,7 @@ CREATE TABLE queues (
 	global_access BOOLEAN DEFAULT FALSE,
 	cpuTimeout INT DEFAULT 259200,
 	clockTimeout INT DEFAULT 259200, -- timeouts are maxes for any jobs created on the queue
+	description VARCHAR(200) DEFAULT "",
 	PRIMARY KEY (id),
 	UNIQUE KEY (name)
 );

@@ -70,7 +70,8 @@
 				When frozen, no new solvers or benchmarks can be uploaded.
 				Solvers and benchmarks cannot be copied between spaces
 				(though they can still be <em>linked</em>).
-			</p><p>
+			</p>
+			<p id="frozenDesc">
 				This mode is designed to be used when migrating primitives to a new drive.
 			</p>
 			<ul id="actionList">
@@ -84,6 +85,7 @@
 				var star = star || {};
 				star.freezePrimitives = ${freezePrimitives}
 				star.readOnly = ${readOnly}
+
 
 			</script>
 		</fieldset>
