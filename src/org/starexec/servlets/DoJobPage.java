@@ -237,9 +237,9 @@ public class DoJobPage {
 		//gets our dependencies
 		try {
 			addFilesInDirectory(sandboxDirectory, JS_FILE_TYPE, Web.JOB_DETAILS_JS_FILES);
-			addFilesInDirectory(sandboxDirectory, JS_FILE_TYPE, Web.GLOBAL_JS_FILES);
+			addFilesInDirectory(sandboxDirectory, JS_FILE_TYPE, Web.JS_FILES_FOR_LOCAL_JOB);
 			addFilesInDirectory(sandboxDirectory, CSS_FILE_TYPE, Web.JOB_DETAILS_CSS_FILES);
-			addFilesInDirectory(sandboxDirectory, CSS_FILE_TYPE, Web.GLOBAL_CSS_FILES_FOR_LOCAL_JOB);
+			addFilesInDirectory(sandboxDirectory, CSS_FILE_TYPE, Web.CSS_FILES_FOR_LOCAL_JOB);
 			addFilesInDirectory(sandboxDirectory, PNG_FILE_TYPE, Web.GLOBAL_PNG_FILES);
 			addFilesInDirectory(sandboxDirectory, GIF_FILE_TYPE, Web.GLOBAL_GIF_FILES);
 			addFilesInDirectory(sandboxDirectory, ICO_FILE_TYPE, Web.GLOBAL_ICO_FILES);
