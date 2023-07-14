@@ -93,7 +93,7 @@
 				<td>benchmark</td>
 					<c:choose>
 						<c:when test="${isLocalJobPage}">
-							<td>${pair.bench}</td>
+							<td>${pair.bench.getName()}</td>
 						</c:when>
 						<c:otherwise>
 							<td><star:benchmark value="${pair.bench}"/></td>
@@ -170,7 +170,7 @@
 					<td>solver</td>
 					<c:choose>
 						<c:when test="${isLocalJobPage}">
-							<td>${stage.solver}</td>
+							<td>${stage.solver.getName()}</td>
 						</c:when>
 						<c:otherwise>
 							<td><star:solver value="${stage.solver}"/></td>
@@ -181,7 +181,7 @@
 					<td>configuration</td>
 					<c:choose>
 						<c:when test="${isLocalJobPage}">
-							<td>${stage.solver.configurations[0]}</td>
+							<td>${stage.solver.configurations[0].getName()}</td>
 						</c:when>
 						<c:otherwise>
 							<td><star:config
