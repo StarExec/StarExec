@@ -269,7 +269,7 @@
 		</c:if>
 		<c:choose>
 			<c:when test="${isLocalJobPage}">
-				<a href="../job.html"
+				<a href="./job.html"
 				id="returnLink">return to ${job.name}</a>
 			</c:when>
 			<c:otherwise>

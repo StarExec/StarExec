@@ -281,8 +281,7 @@ public class DoJobPage {
 			putRootHtmlFileFromServerInSandbox(sandboxDirectory, jobId, request);
 			doMainPageDependencies(sandboxDirectory);
             doReadMe(sandboxDirectory);
-			File jobPairs = new File(sandboxDirectory, "jobPairs");
-			handleJobPairSites(jobPairs, jobId, request);
+			handleJobPairSites(sandboxDirectory, jobId, request);
 			List<File> filesToBeDownloaded = Arrays.asList(sandboxDirectory.listFiles());
 			ArchiveUtil.createAndOutputZip(filesToBeDownloaded, response.getOutputStream(),
 			                               "Job" + String.valueOf(jobId) + "_page"
