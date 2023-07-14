@@ -87,6 +87,34 @@ public class DoJobPage {
 
     }
 
+	/*
+	 * Given the id of the job, put all the jobpair pages into the specified directory using 
+	 * the format: /pair_{pairid}
+	 * @param directory the directory to put the files in
+	 * @param jobID the ID of the job
+	 * @param request the request to get the session cookies from
+	 * @author aguo2
+	 */
+	private static void handleJobPairSites(File directory, int jobID, HttpServletRequest request) throws IOException {
+		Job j = Jobs.get(jobID);
+		//get the JobPairs on the job
+		Map<Integer, List<JobPair>> map = JobPairs.buildJobSpaceIdToJobPairMapWithWallCpuTimesRounded(j);
+		for (List<JobPair> l : map.values()) {
+			for (JobPair jp : l) {
+				File htmlFile= new File(directory, "pair_" + jp.getId() + ".html");
+				//for each jobpair on the job, do the following 
+				List<Cookie> requestCookies = Arrays.asList(request.getCookies());
+				String url = R.STAREXEC_URL_PREFIX + "://" + R.STAREXEC_SERVERNAME + "/" + R.STAREXEC_APPNAME +
+				"/secure/details/pair.jsp?id=" + jp.getId() + "&localJobPage=true";
+				Map<String, String> queryParameters = new HashMap<>();
+				//if we don't have to cookies, it throws an unauth error
+				String htmlText = Util.getWebPage(url, requestCookies);
+				FileUtils.writeStringToFile(htmlFile, htmlText, StandardCharsets.UTF_8);
+
+			}
+		}
+	}
+
     /*
 	 * Given the absolute file to the CSS file, replace all instances of STAREXECAPPNAME/css with .
 	 * This needs to happen or the UI experiance for the local page will be ugly and full of errors.
@@ -253,6 +281,8 @@ public class DoJobPage {
 			putRootHtmlFileFromServerInSandbox(sandboxDirectory, jobId, request);
 			doMainPageDependencies(sandboxDirectory);
             doReadMe(sandboxDirectory);
+			File jobPairs = new File(sandboxDirectory, "jobPairs");
+			handleJobPairSites(jobPairs, jobId, request);
 			List<File> filesToBeDownloaded = Arrays.asList(sandboxDirectory.listFiles());
 			ArchiveUtil.createAndOutputZip(filesToBeDownloaded, response.getOutputStream(),
 			                               "Job" + String.valueOf(jobId) + "_page"
