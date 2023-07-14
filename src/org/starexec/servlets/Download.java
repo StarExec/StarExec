@@ -680,6 +680,12 @@ public class Download extends HttpServlet {
 			File csspath = new File(sandboxDirectory, "css/global.css");
 			handleCSS(csspath);
 			putRootHtmlFileFromServerInSandbox(sandboxDirectory, jobId, request);
+			File cssMap = new File(R.STAREXEC_ROOT + CSS_FILE_TYPE + "/" + "global.css.map");
+			File cssFolder = new File(sandboxDirectory, "css");
+			File fullPath = new File(cssFolder, "global.css.map");
+			
+			FileUtils.copyFile(cssMap,fullPath);
+			
 
 			File serverCssJqueryUiImagesDirectory = new File(R.STAREXEC_ROOT + "css/jqueryui/images");
 			File sandboxCssJqueryUiDirectory = new File(sandboxDirectory, "css/jqueryui");
@@ -729,7 +735,15 @@ public class Download extends HttpServlet {
 		FileUtils.writeStringToFile(htmlFile, htmlText, StandardCharsets.UTF_8);
 	}
 
-
+	/*
+	 * Puts the files of a given file type at a given path into a directory. Note that 
+	 * this function handles resolving the full file path, so you only need to provide relative ones
+	 * @param containingDirectory where you want the files
+	 * @param filetype the type of files, ex. js, css
+	 * @param allFilePaths all the RELATIVE file paths
+	 * @author presdod
+	 * @docs aguo2
+	 */
 	private static void addFilesInDirectory(File containingDirectory, String filetype, String[] allFilePaths)
 			throws IOException {
 		// Create a new directory named after the filetype such as /js or /css
