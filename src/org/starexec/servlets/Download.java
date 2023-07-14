@@ -708,6 +708,12 @@ public class Download extends HttpServlet {
 		}
 	}
 
+	/*
+	 * Given the directory to place it in, put the HTML page representing the root job into it. 
+	 * @param sandboxDirectory the directory to put it in
+	 * @param jobId id of job
+	 * @param request the HTTP request to get the session cookies from
+	 */
 	private static void putRootHtmlFileFromServerInSandbox(File sandboxDirectory, int jobId, HttpServletRequest request)
 			throws IOException {
 		// Create a new html file in the sandbox.
@@ -718,6 +724,7 @@ public class Download extends HttpServlet {
 		log.debug("Getting job page from " + urlToGetJobPageFrom);
 		List<Cookie> requestCookies = Arrays.asList(request.getCookies());
 		Map<String, String> queryParameters = new HashMap<>();
+		//if we don't have to cookies, it throws an unauth error
 		String htmlText = Util.getWebPage(urlToGetJobPageFrom, requestCookies);
 		FileUtils.writeStringToFile(htmlFile, htmlText, StandardCharsets.UTF_8);
 	}
