@@ -91,11 +91,27 @@
 			</tr>
 			<tr>
 				<td>benchmark</td>
-				<td><star:benchmark value="${pair.bench}"/></td>
+					<c:choose>
+						<c:when test="${isLocalJobPage}">
+							<td>${pair.bench}</td>
+						</c:when>
+						<c:otherwise>
+							<td><star:benchmark value="${pair.bench}"/></td>
+						</c:otherwise>
+					</c:choose>
+				
 			</tr>
 			<tr>
 				<td>ran by</td>
-				<td><star:user value="${usr}"/></td>
+				<c:choose>
+						<c:when test="${isLocalJobPage}">
+							<td>${usr}</td>
+						</c:when>
+						<c:otherwise>
+							<td><star:user value="${usr}"/></td>
+						</c:otherwise>
+					</c:choose>
+				
 			</tr>
 			<tr>
 				<td>cpu timeout</td>
@@ -112,11 +128,19 @@
 			<c:if test="${pair.status.code == 'STATUS_COMPLETE'}">
 				<tr>
 					<td>execution host</td>
-					<td>
-						<a href="${starexecRoot}/secure/explore/cluster.jsp">${pair.node.name}
-							<img class="extLink"
-							     src="${starexecRoot}/images/external.png"/></a>
-					</td>
+					<c:choose>
+						<c:when test="${isLocalJobPage}">
+							<td>${pair.node.name}</td>
+						</c:when>
+						<c:otherwise>
+							<td><a href="${starexecRoot}/secure/explore/cluster.jsp">${pair.node.name}
+								<img class="extLink"
+									 src="${starexecRoot}/images/external.png"/></a>
+						</td>
+						</c:otherwise>
+					</c:choose>
+					
+						
 				</tr>
 			</c:if>
 			<tr>
@@ -144,12 +168,27 @@
 				<tbody>
 				<tr>
 					<td>solver</td>
-					<td><star:solver value="${stage.solver}"/></td>
+					<c:choose>
+						<c:when test="${isLocalJobPage}">
+							<td>${stage.solver}</td>
+						</c:when>
+						<c:otherwise>
+							<td><star:solver value="${stage.solver}"/></td>
+						</c:otherwise>
+					</c:choose>
 				</tr>
 				<tr>
 					<td>configuration</td>
-					<td><star:config
-							value="${stage.solver.configurations[0]}"/></td>
+					<c:choose>
+						<c:when test="${isLocalJobPage}">
+							<td>${stage.solver.configurations[0]}</td>
+						</c:when>
+						<c:otherwise>
+							<td><star:config
+								value="${stage.solver.configurations[0]}"/></td>
+						</c:otherwise>
+					</c:choose>
+					
 				</tr>
 				<tr>
 					<td>runtime (wallclock)</td>
