@@ -1364,7 +1364,7 @@ function initDataTables() {
             $pairTbl = $('#' + jobId + 'pairTbl');
             $pairTbl.find("tbody").on("click", "tr", function() {
                 var pairId = $(this).find('input').val();
-                window.location.assign("./jobPairs/" + pairId);
+                window.location.assign("./jobPairs/pair_" + pairId);
             }).hover(
 				function () {
 					//mouse is over table item
