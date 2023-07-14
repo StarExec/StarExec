@@ -88,17 +88,22 @@ public class DoJobPage {
     }
 
 	/*
-	 * Given the id of the job, put all the jobpair pages into the specified directory using 
-	 * the format: /pair_{pairid}
+	 * Given the id of the job, put all the jobpair pages, and their output
+	 * into the specified directory using root/pair_{pairid}.html and 
+	 * output/{pairId}/{stagenumber}.txt
 	 * @param directory the directory to put the files in
 	 * @param jobID the ID of the job
 	 * @param request the request to get the session cookies from
 	 * @author aguo2
 	 */
-	private static void handleJobPairSites(File directory, int jobID, HttpServletRequest request) throws IOException {
+	private static void handleJobPairSitesAndOutput(File directory, int jobID, HttpServletRequest request) throws IOException {
 		Job j = Jobs.get(jobID);
 		//get the JobPairs on the job
 		Map<Integer, List<JobPair>> map = JobPairs.buildJobSpaceIdToJobPairMapWithWallCpuTimesRounded(j);
+		File outputDir = new File(directory,"output");
+		if (!outputDir.mkdirs()) {
+			throw new IOException("The directory for output was not created");
+		}  
 		for (List<JobPair> l : map.values()) {
 			for (JobPair jp : l) {
 				File htmlFile= new File(directory, "pair_" + jp.getId() + ".html");
@@ -110,7 +115,6 @@ public class DoJobPage {
 				//if we don't have to cookies, it throws an unauth error
 				String htmlText = Util.getWebPage(url, requestCookies);
 				FileUtils.writeStringToFile(htmlFile, htmlText, StandardCharsets.UTF_8);
-
 			}
 		}
 	}
@@ -224,12 +228,12 @@ public class DoJobPage {
 		FileUtils.writeStringToFile(htmlFile, htmlText, StandardCharsets.UTF_8);
 	}
 
-
     /*
-	 * This function handles all the dependencies that the main job page needs
+	 * This function handles all the dependencies that the HTML files need
 	 * @param sandboxDirectory the directory you want the dependencies in.
+	 * @author aguo2
 	 */
-	private static void doMainPageDependencies(File sandboxDirectory) {
+	private static void doPageDependencies(File sandboxDirectory) {
 		//gets our dependencies
 		try {
 			addFilesInDirectory(sandboxDirectory, JS_FILE_TYPE, Web.JOB_DETAILS_JS_FILES);
@@ -241,12 +245,15 @@ public class DoJobPage {
 			addFilesInDirectory(sandboxDirectory, ICO_FILE_TYPE, Web.GLOBAL_ICO_FILES);
 			File csspath = new File(sandboxDirectory, "css/global.css");
 			handleCSS(csspath);
+			//get the maps as well
 			handleCSSMaps(sandboxDirectory, "global");
 			handleCSSMaps(sandboxDirectory, "details/job");
 			handleCSSMaps(sandboxDirectory, "details/shared");
 			handleCSSMaps(sandboxDirectory, "explore/common");
 			handleCSSMaps(sandboxDirectory, "common/table");
 			handleCSSMaps(sandboxDirectory, "common/delaySpinner");
+			handleCSSMaps(sandboxDirectory, "details/pair");
+			handleCSSMaps(sandboxDirectory, "prettify/prettify");
 			//gets jqurey dependencies, as well as images
 			File serverCssJqueryUiImagesDirectory = new File(R.STAREXEC_ROOT + "css/jqueryui/images");
 			File sandboxCssJqueryUiDirectory = new File(sandboxDirectory, "css/jqueryui");
@@ -279,9 +286,9 @@ public class DoJobPage {
 		try {
 			sandboxDirectory = Util.getRandomSandboxDirectory();
 			putRootHtmlFileFromServerInSandbox(sandboxDirectory, jobId, request);
-			doMainPageDependencies(sandboxDirectory);
+			doPageDependencies(sandboxDirectory);
             doReadMe(sandboxDirectory);
-			handleJobPairSites(sandboxDirectory, jobId, request);
+			handleJobPairSitesAndOutput(sandboxDirectory, jobId, request);
 			List<File> filesToBeDownloaded = Arrays.asList(sandboxDirectory.listFiles());
 			ArchiveUtil.createAndOutputZip(filesToBeDownloaded, response.getOutputStream(),
 			                               "Job" + String.valueOf(jobId) + "_page"
