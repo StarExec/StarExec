@@ -13,6 +13,7 @@ import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.*;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.*;
 
@@ -644,6 +645,25 @@ public class Download extends HttpServlet {
 		return true;
 	}
 
+	/*
+	 * Given the absolute file to the CSS file, replace all instances of STAREXECAPPNAME/css with .
+	 * This needs to happen or the UI experiance for the local page will be ugly and full of errors.
+	 * @aguo
+	 */
+	private static void handleCSS(File path) throws StarExecException {
+		try {
+			String css = FileUtils.readFileToString(path,"UTF-8");
+			css = css.replace("/" + R.STAREXEC_APPNAME + "/css", ".");
+			log.debug("sfjiwfwfwewegrgv: " + css);
+			FileUtils.write(path,css,"UTF-8");
+		}
+		catch (Exception e) {
+			String exp = e.getMessage();
+			throw new StarExecException("Caught exception while handling css: " + exp);
+		}
+		
+	}
+
 	private static void handleJobPage(int jobId, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
 		File sandboxDirectory = null;
@@ -653,11 +673,13 @@ public class Download extends HttpServlet {
 			addFilesInDirectory(sandboxDirectory, JS_FILE_TYPE, Web.JOB_DETAILS_JS_FILES);
 			addFilesInDirectory(sandboxDirectory, JS_FILE_TYPE, Web.GLOBAL_JS_FILES);
 			addFilesInDirectory(sandboxDirectory, CSS_FILE_TYPE, Web.JOB_DETAILS_CSS_FILES);
-			addFilesInDirectory(sandboxDirectory, CSS_FILE_TYPE, Web.GLOBAL_CSS_FILES);
+			addFilesInDirectory(sandboxDirectory, CSS_FILE_TYPE, Web.GLOBAL_CSS_FILES_FOR_LOCAL_JOB);
 			addFilesInDirectory(sandboxDirectory, PNG_FILE_TYPE, Web.GLOBAL_PNG_FILES);
 			addFilesInDirectory(sandboxDirectory, GIF_FILE_TYPE, Web.GLOBAL_GIF_FILES);
 			addFilesInDirectory(sandboxDirectory, ICO_FILE_TYPE, Web.GLOBAL_ICO_FILES);
-			putHtmlFileFromServerInSandbox(sandboxDirectory, jobId, request);
+			File csspath = new File(sandboxDirectory, "css/global.css");
+			handleCSS(csspath);
+			putRootHtmlFileFromServerInSandbox(sandboxDirectory, jobId, request);
 
 			File serverCssJqueryUiImagesDirectory = new File(R.STAREXEC_ROOT + "css/jqueryui/images");
 			File sandboxCssJqueryUiDirectory = new File(sandboxDirectory, "css/jqueryui");
@@ -679,14 +701,14 @@ public class Download extends HttpServlet {
 			ArchiveUtil.createAndOutputZip(filesToBeDownloaded, response.getOutputStream(),
 			                               "Job" + String.valueOf(jobId) + "_page"
 			);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw new IOException("Could not get files for job page download", e);
 		} finally {
 			FileUtils.deleteDirectory(sandboxDirectory);
 		}
 	}
 
-	private static void putHtmlFileFromServerInSandbox(File sandboxDirectory, int jobId, HttpServletRequest request)
+	private static void putRootHtmlFileFromServerInSandbox(File sandboxDirectory, int jobId, HttpServletRequest request)
 			throws IOException {
 		// Create a new html file in the sandbox.
 		File htmlFile = new File(sandboxDirectory, "job.html");
@@ -699,6 +721,7 @@ public class Download extends HttpServlet {
 		String htmlText = Util.getWebPage(urlToGetJobPageFrom, requestCookies);
 		FileUtils.writeStringToFile(htmlFile, htmlText, StandardCharsets.UTF_8);
 	}
+
 
 	private static void addFilesInDirectory(File containingDirectory, String filetype, String[] allFilePaths)
 			throws IOException {
