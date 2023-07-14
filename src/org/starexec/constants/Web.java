@@ -27,7 +27,7 @@ public final class Web {
 	public static final String[] JOB_DETAILS_CSS_FILES = {"jobDetails"};
 	public static final String[] GLOBAL_CSS_FILES = {"jqueryui/jquery-ui", "global"};
 	//this needs to be seperate, or it will break everything!
-	public static final String[] GLOBAL_CSS_FILES_FOR_LOCAL_JOB = {"jqueryui/jquery-ui", "global"};
+	public static final String[] GLOBAL_CSS_FILES_FOR_LOCAL_JOB = {"jqueryui/jquery-ui", "global", "details/job", "details/shared", "explore/common", "common/table", "common/delaySpinner"};
 	public static final String[] GLOBAL_PNG_FILES = {"loadingGraph", "starlogo", "external"};
 	public static final String[] GLOBAL_GIF_FILES = {"ajaxloader", "loader"};
 	public static final String[] GLOBAL_ICO_FILES = {"favicon"};

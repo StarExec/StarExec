@@ -648,7 +648,7 @@ public class Download extends HttpServlet {
 	/*
 	 * Given the absolute file to the CSS file, replace all instances of STAREXECAPPNAME/css with .
 	 * This needs to happen or the UI experiance for the local page will be ugly and full of errors.
-	 * @aguo
+	 * @aguo2
 	 */
 	private static void handleCSS(File path) throws StarExecException {
 		try {
@@ -664,12 +664,37 @@ public class Download extends HttpServlet {
 		
 	}
 
+	/* 
+	 * Given the path to the sandbox and the name of the css file (excluding the file extention) , 
+	 * move the associated css map into the proper place. Note that the file paths passed in should 
+	 * be relative, This method handles concating the file name with the root. 
+	 * @param sanbox the directory to put the files in
+	 * @param cssName the name of the css file, including the parent directory if it has one.
+	 */
+	private static void handleCSSMaps(File sandbox, String cssName) throws StarExecException{
+		try {
+			File cssMap = new File(R.STAREXEC_ROOT + CSS_FILE_TYPE + "/" + cssName + ".css.map");
+			File cssFolder = new File(sandbox, "css");
+			File fullPath = new File(cssFolder, cssName + ".css.map");
+			
+			FileUtils.copyFile(cssMap,fullPath);
+		} 
+		catch (Exception e) {
+			String exp = e.getMessage();
+			throw new StarExecException("Caught exception while handling css: " + exp);
+		}
+	}
+
+	/*
+	 * This function is responsible for packaging the job page archive and sending it to the user. 
+	 * @author presdod and aguo2
+	 */
 	private static void handleJobPage(int jobId, HttpServletRequest request, HttpServletResponse response)
 			throws IOException {
 		File sandboxDirectory = null;
 		try {
 			sandboxDirectory = Util.getRandomSandboxDirectory();
-
+			//gets our dependencies
 			addFilesInDirectory(sandboxDirectory, JS_FILE_TYPE, Web.JOB_DETAILS_JS_FILES);
 			addFilesInDirectory(sandboxDirectory, JS_FILE_TYPE, Web.GLOBAL_JS_FILES);
 			addFilesInDirectory(sandboxDirectory, CSS_FILE_TYPE, Web.JOB_DETAILS_CSS_FILES);
@@ -679,14 +704,18 @@ public class Download extends HttpServlet {
 			addFilesInDirectory(sandboxDirectory, ICO_FILE_TYPE, Web.GLOBAL_ICO_FILES);
 			File csspath = new File(sandboxDirectory, "css/global.css");
 			handleCSS(csspath);
+			handleCSSMaps(sandboxDirectory, "global");
+			handleCSSMaps(sandboxDirectory, "details/job");
+			handleCSSMaps(sandboxDirectory, "details/shared");
+			handleCSSMaps(sandboxDirectory, "explore/common");
+			handleCSSMaps(sandboxDirectory, "common/table");
+			handleCSSMaps(sandboxDirectory, "common/delaySpinner");
+			
 			putRootHtmlFileFromServerInSandbox(sandboxDirectory, jobId, request);
-			File cssMap = new File(R.STAREXEC_ROOT + CSS_FILE_TYPE + "/" + "global.css.map");
-			File cssFolder = new File(sandboxDirectory, "css");
-			File fullPath = new File(cssFolder, "global.css.map");
 			
-			FileUtils.copyFile(cssMap,fullPath);
 			
-
+			
+			//gets jqurey dependencies, as well as
 			File serverCssJqueryUiImagesDirectory = new File(R.STAREXEC_ROOT + "css/jqueryui/images");
 			File sandboxCssJqueryUiDirectory = new File(sandboxDirectory, "css/jqueryui");
 			FileUtils.copyDirectoryToDirectory(serverCssJqueryUiImagesDirectory, sandboxCssJqueryUiDirectory);
@@ -703,7 +732,6 @@ public class Download extends HttpServlet {
 			FileUtils.copyDirectoryToDirectory(serverImagesJstreeDirectory, sandboxImagesDirectory);
 
 			List<File> filesToBeDownloaded = Arrays.asList(sandboxDirectory.listFiles());
-
 			ArchiveUtil.createAndOutputZip(filesToBeDownloaded, response.getOutputStream(),
 			                               "Job" + String.valueOf(jobId) + "_page"
 			);
