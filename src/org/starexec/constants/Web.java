@@ -23,7 +23,7 @@ public final class Web {
 
 	public static final String[] JOB_DETAILS_JS_FILES = {"util/sortButtons", "util/jobDetailsUtilityFunctions", "common/delaySpinner", "lib/jquery.jstree", "lib/jquery.dataTables.min", "details/shared", "details/job", "lib/jquery.ba-throttle-debounce.min", "lib/jquery.qtip.min", "lib/jquery.heatcolor.0.0.1.min", "util/datatablesUtility"};
 	public static final String[] GLOBAL_JS_FILES = {"lib/jquery.min", "lib/jquery-ui.min", "lib/jquery.cookie", "master"};
-	public static final String[] JS_FILES_FOR_LOCAL_JOB = {"lib/jquery.min", "lib/jquery-ui.min", "lib/jquery.cookie", "master"};
+	public static final String[] JS_FILES_FOR_LOCAL_JOB = {"lib/jquery.min", "lib/jquery-ui.min", "lib/jquery.cookie", "master", "details/pair"};
 	public static final String[] JOB_DETAILS_CSS_FILES = {"jobDetails"};
 	public static final String[] GLOBAL_CSS_FILES = {"jqueryui/jquery-ui", "global"};
 	//this needs to be seperate, or it will break everything!
