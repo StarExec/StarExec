@@ -38,12 +38,6 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
  */
 public class Download extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(Download.class);
-	private static final String JS_FILE_TYPE = "js";
-	private static final String CSS_FILE_TYPE = "css";
-	private static final String PNG_FILE_TYPE = "png";
-	private static final String GIF_FILE_TYPE = "gif";
-	private static final String ICO_FILE_TYPE = "ico";
-	private static final String IMAGES_DIRECTORY_NAME = "images";
 	private static final String PARAM_TYPE = "type";
 	private static final String PARAM_ID = "id";
 	private static final String PARAM_ANON_ID = "anonId";
@@ -645,176 +639,6 @@ public class Download extends HttpServlet {
 		return true;
 	}
 
-	/*
-	 * Given the absolute file to the CSS file, replace all instances of STAREXECAPPNAME/css with .
-	 * This needs to happen or the UI experiance for the local page will be ugly and full of errors.
-	 * @aguo2
-	 */
-	private static void handleCSS(File path) throws StarExecException {
-		try {
-			String css = FileUtils.readFileToString(path,"UTF-8");
-			css = css.replace("/" + R.STAREXEC_APPNAME + "/css", ".");
-			log.debug("sfjiwfwfwewegrgv: " + css);
-			FileUtils.write(path,css,"UTF-8");
-		}
-		catch (Exception e) {
-			String exp = e.getMessage();
-			throw new StarExecException("Caught exception while handling css: " + exp);
-		}
-		
-	}
-
-	/* 
-	 * Given the path to the sandbox and the name of the css file (excluding the file extention) , 
-	 * move the associated css map into the proper place. Note that the file paths passed in should 
-	 * be relative, This method handles concating the file name with the root. 
-	 * @param sanbox the directory to put the files in
-	 * @param cssName the name of the css file, including the parent directory if it has one.
-	 */
-	private static void handleCSSMaps(File sandbox, String cssName) throws StarExecException{
-		try {
-			File cssMap = new File(R.STAREXEC_ROOT + CSS_FILE_TYPE + "/" + cssName + ".css.map");
-			File cssFolder = new File(sandbox, "css");
-			File fullPath = new File(cssFolder, cssName + ".css.map");
-			
-			FileUtils.copyFile(cssMap,fullPath);
-		} 
-		catch (Exception e) {
-			String exp = e.getMessage();
-			throw new StarExecException("Caught exception while handling css: " + exp);
-		}
-	}
-
-	private static void doMainPageDependencies(File sandboxDirectory) {
-		//gets our dependencies
-		try {
-			addFilesInDirectory(sandboxDirectory, JS_FILE_TYPE, Web.JOB_DETAILS_JS_FILES);
-			addFilesInDirectory(sandboxDirectory, JS_FILE_TYPE, Web.GLOBAL_JS_FILES);
-			addFilesInDirectory(sandboxDirectory, CSS_FILE_TYPE, Web.JOB_DETAILS_CSS_FILES);
-			addFilesInDirectory(sandboxDirectory, CSS_FILE_TYPE, Web.GLOBAL_CSS_FILES_FOR_LOCAL_JOB);
-			addFilesInDirectory(sandboxDirectory, PNG_FILE_TYPE, Web.GLOBAL_PNG_FILES);
-			addFilesInDirectory(sandboxDirectory, GIF_FILE_TYPE, Web.GLOBAL_GIF_FILES);
-			addFilesInDirectory(sandboxDirectory, ICO_FILE_TYPE, Web.GLOBAL_ICO_FILES);
-			File csspath = new File(sandboxDirectory, "css/global.css");
-			handleCSS(csspath);
-			handleCSSMaps(sandboxDirectory, "global");
-			handleCSSMaps(sandboxDirectory, "details/job");
-			handleCSSMaps(sandboxDirectory, "details/shared");
-			handleCSSMaps(sandboxDirectory, "explore/common");
-			handleCSSMaps(sandboxDirectory, "common/table");
-			handleCSSMaps(sandboxDirectory, "common/delaySpinner");
-			//gets jqurey dependencies, as well as images
-			File serverCssJqueryUiImagesDirectory = new File(R.STAREXEC_ROOT + "css/jqueryui/images");
-			File sandboxCssJqueryUiDirectory = new File(sandboxDirectory, "css/jqueryui");
-			FileUtils.copyDirectoryToDirectory(serverCssJqueryUiImagesDirectory, sandboxCssJqueryUiDirectory);
-
-			File serverCssImagesDirectory = new File(R.STAREXEC_ROOT + "css/images");
-			File sandboxCssDirectory = new File(sandboxDirectory, "css/");
-			FileUtils.copyDirectoryToDirectory(serverCssImagesDirectory, sandboxCssDirectory);
-
-			File serverCssJstreeDirectory = new File(R.STAREXEC_ROOT + "css/jstree");
-			FileUtils.copyDirectoryToDirectory(serverCssJstreeDirectory, sandboxCssDirectory);
-
-			File serverImagesJstreeDirectory = new File(R.STAREXEC_ROOT + "images/jstree");
-			File sandboxImagesDirectory = new File(sandboxDirectory, "images/");
-			FileUtils.copyDirectoryToDirectory(serverImagesJstreeDirectory, sandboxImagesDirectory);
-
-		} catch (Exception e) {
-			String msg = e.getMessage();
-			log.error("could not get dependencies for the main page: " + msg);
-		}
-	}
-
-	/*
-	 * This function is responsible for packaging the job page archive and sending it to the user. 
-	 * @author presdod and aguo2
-	 */
-	private static void handleJobPage(int jobId, HttpServletRequest request, HttpServletResponse response)
-			throws IOException {
-		File sandboxDirectory = null;
-		try {
-			sandboxDirectory = Util.getRandomSandboxDirectory();
-			putRootHtmlFileFromServerInSandbox(sandboxDirectory, jobId, request);
-			doMainPageDependencies(sandboxDirectory);
-
-			List<File> filesToBeDownloaded = Arrays.asList(sandboxDirectory.listFiles());
-			ArchiveUtil.createAndOutputZip(filesToBeDownloaded, response.getOutputStream(),
-			                               "Job" + String.valueOf(jobId) + "_page"
-			);
-		} catch (Exception e) {
-			throw new IOException("Could not get files for job page download", e);
-		} finally {
-			FileUtils.deleteDirectory(sandboxDirectory);
-		}
-	}
-
-	/*
-	 * Given the directory to place it in, put the HTML page representing the root job into it. 
-	 * @param sandboxDirectory the directory to put it in
-	 * @param jobId id of job
-	 * @param request the HTTP request to get the session cookies from
-	 */
-	private static void putRootHtmlFileFromServerInSandbox(File sandboxDirectory, int jobId, HttpServletRequest request)
-			throws IOException {
-		// Create a new html file in the sandbox.
-		File htmlFile = new File(sandboxDirectory, "job.html");
-		// Make an HTTP request to our own server to get the HTML for the job page and write it to the new html file.
-		String urlToGetJobPageFrom = R.STAREXEC_URL_PREFIX + "://" + R.STAREXEC_SERVERNAME + "/" + R.STAREXEC_APPNAME +
-				"/secure/details/job.jsp?id=" + jobId + "&" + Web.LOCAL_JOB_PAGE_PARAMETER + "=true";
-		log.debug("Getting job page from " + urlToGetJobPageFrom);
-		List<Cookie> requestCookies = Arrays.asList(request.getCookies());
-		Map<String, String> queryParameters = new HashMap<>();
-		//if we don't have to cookies, it throws an unauth error
-		String htmlText = Util.getWebPage(urlToGetJobPageFrom, requestCookies);
-		FileUtils.writeStringToFile(htmlFile, htmlText, StandardCharsets.UTF_8);
-	}
-
-	/*
-	 * Puts the files of a given file type at a given path into a directory. Note that 
-	 * this function handles resolving the full file path, so you only need to provide relative ones
-	 * @param containingDirectory where you want the files
-	 * @param filetype the type of files, ex. js, css
-	 * @param allFilePaths all the RELATIVE file paths
-	 * @author presdod
-	 * @docs aguo2
-	 */
-	private static void addFilesInDirectory(File containingDirectory, String filetype, String[] allFilePaths)
-			throws IOException {
-		// Create a new directory named after the filetype such as /js or /css
-		String filetypeDirectoryName = null;
-		switch (filetype) {
-		case CSS_FILE_TYPE:
-		case JS_FILE_TYPE:
-			filetypeDirectoryName = filetype;
-			break;
-		case PNG_FILE_TYPE:
-		case GIF_FILE_TYPE:
-		case ICO_FILE_TYPE:
-			filetypeDirectoryName = IMAGES_DIRECTORY_NAME;
-			break;
-		default:
-			throw new IOException("Attempted to copy unsupported file type: " + filetype);
-		}
-
-		File filetypeDirectory = new File(containingDirectory, filetypeDirectoryName);
-
-		for (String filePath : allFilePaths) {
-			List<String> filesInHierarchy = new ArrayList<>(Arrays.asList(filePath.split("/")));
-
-			// The last filename is the source file.
-			String sourceFile = filesInHierarchy.remove(filesInHierarchy.size() - 1);
-
-			File parentDirectory = filetypeDirectory;
-			for (String directory : filesInHierarchy) {
-				parentDirectory = new File(parentDirectory, directory);
-			}
-			parentDirectory.mkdirs();
-			File fileOnServer = new File(R.STAREXEC_ROOT + filetypeDirectoryName + "/" + filePath + "." + filetype);
-			File fileToBeDownloaded = new File(parentDirectory, sourceFile + "." + filetype);
-			FileUtils.copyFile(fileOnServer, fileToBeDownloaded);
-		}
-	}
-
 	/**
 	 * Using a list of Solvers map each solver name to whether or not that solver name is duplicated in the solver
 	 * list.
@@ -1222,7 +1046,7 @@ public class Download extends HttpServlet {
 				} else if (request.getParameter(PARAM_TYPE).equals(R.JOB_PAGE_DOWNLOAD_TYPE)) {
 					log.debug(methodName, "Handling " + R.JOB_PAGE_DOWNLOAD_TYPE);
 					int jobId = Integer.parseInt(request.getParameter(PARAM_ID));
-					handleJobPage(jobId, request, response);
+					DoJobPage.handleJobPage(jobId, request, response);
 					// Just set success to true, handleJobPage will throw an exception if it is unsuccessful.
 					success = true;
 				} else {
