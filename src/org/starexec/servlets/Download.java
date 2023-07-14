@@ -685,16 +685,9 @@ public class Download extends HttpServlet {
 		}
 	}
 
-	/*
-	 * This function is responsible for packaging the job page archive and sending it to the user. 
-	 * @author presdod and aguo2
-	 */
-	private static void handleJobPage(int jobId, HttpServletRequest request, HttpServletResponse response)
-			throws IOException {
-		File sandboxDirectory = null;
+	private static void doMainPageDependencies(File sandboxDirectory) {
+		//gets our dependencies
 		try {
-			sandboxDirectory = Util.getRandomSandboxDirectory();
-			//gets our dependencies
 			addFilesInDirectory(sandboxDirectory, JS_FILE_TYPE, Web.JOB_DETAILS_JS_FILES);
 			addFilesInDirectory(sandboxDirectory, JS_FILE_TYPE, Web.GLOBAL_JS_FILES);
 			addFilesInDirectory(sandboxDirectory, CSS_FILE_TYPE, Web.JOB_DETAILS_CSS_FILES);
@@ -710,12 +703,7 @@ public class Download extends HttpServlet {
 			handleCSSMaps(sandboxDirectory, "explore/common");
 			handleCSSMaps(sandboxDirectory, "common/table");
 			handleCSSMaps(sandboxDirectory, "common/delaySpinner");
-			
-			putRootHtmlFileFromServerInSandbox(sandboxDirectory, jobId, request);
-			
-			
-			
-			//gets jqurey dependencies, as well as
+			//gets jqurey dependencies, as well as images
 			File serverCssJqueryUiImagesDirectory = new File(R.STAREXEC_ROOT + "css/jqueryui/images");
 			File sandboxCssJqueryUiDirectory = new File(sandboxDirectory, "css/jqueryui");
 			FileUtils.copyDirectoryToDirectory(serverCssJqueryUiImagesDirectory, sandboxCssJqueryUiDirectory);
@@ -730,6 +718,24 @@ public class Download extends HttpServlet {
 			File serverImagesJstreeDirectory = new File(R.STAREXEC_ROOT + "images/jstree");
 			File sandboxImagesDirectory = new File(sandboxDirectory, "images/");
 			FileUtils.copyDirectoryToDirectory(serverImagesJstreeDirectory, sandboxImagesDirectory);
+
+		} catch (Exception e) {
+			String msg = e.getMessage();
+			log.error("could not get dependencies for the main page: " + msg);
+		}
+	}
+
+	/*
+	 * This function is responsible for packaging the job page archive and sending it to the user. 
+	 * @author presdod and aguo2
+	 */
+	private static void handleJobPage(int jobId, HttpServletRequest request, HttpServletResponse response)
+			throws IOException {
+		File sandboxDirectory = null;
+		try {
+			sandboxDirectory = Util.getRandomSandboxDirectory();
+			putRootHtmlFileFromServerInSandbox(sandboxDirectory, jobId, request);
+			doMainPageDependencies(sandboxDirectory);
 
 			List<File> filesToBeDownloaded = Arrays.asList(sandboxDirectory.listFiles());
 			ArchiveUtil.createAndOutputZip(filesToBeDownloaded, response.getOutputStream(),
