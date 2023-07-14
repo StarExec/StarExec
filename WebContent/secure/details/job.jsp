@@ -408,7 +408,14 @@
 					</tr>
 					<tr title="the user who submitted this job">
 						<td>owner</td>
-						<td><star:user value="${usr}"/></td>
+						<c:choose>
+							<c:when test="${!isLocalJobPage}">
+								<td><star:user value="${usr}"/></td>
+							</c:when>
+							<c:otherwise>
+								<td>${usr}</td>
+							</c:otherwise>
+						</c:choose>
 					</tr>
 					<tr title="the benchmarking framework used to run the job">
 						<td>benchmarking framework</td>
