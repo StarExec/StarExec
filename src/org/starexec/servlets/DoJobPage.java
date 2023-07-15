@@ -86,6 +86,25 @@ public class DoJobPage {
         }
 
     }
+	
+	/*
+	 * Given the Job ID, find the output files and put it into the format
+	 * {pairId}/{stagenumber}.txt
+	 * @param output the directory to put the files in
+	 * @param pairID the id of the pair
+	 */
+	private static void getPairOutput(File output, int pairID) throws IOException {
+		JobPair pair = JobPairs.getPairDetailed(pairID);
+		File pidFile = new File(output, Integer.toString(pairID));
+		pidFile.mkdirs();
+		for (JoblineStage stage: pair.getStages()) {
+			String originalFile = JobPairs.getStdout(pairID, stage.getStageNumber());
+			File oPath = new File(originalFile);
+			File newFile = new File(pidFile,stage.getStageNumber() + ".txt");
+			FileUtils.copyFile(oPath, newFile);
+		}
+		
+	}
 
 	/*
 	 * Given the id of the job, put all the jobpair pages, and their output
@@ -106,6 +125,7 @@ public class DoJobPage {
 		}  
 		for (List<JobPair> l : map.values()) {
 			for (JobPair jp : l) {
+				getPairOutput(outputDir, jp.getId());
 				File htmlFile= new File(directory, "pair_" + jp.getId() + ".html");
 				//for each jobpair on the job, do the following 
 				List<Cookie> requestCookies = Arrays.asList(request.getCookies());
@@ -121,13 +141,17 @@ public class DoJobPage {
 
     /*
 	 * Given the absolute file to the CSS file, replace all instances of STAREXECAPPNAME/css with .
+	 * Also makes the mouse not a pointer when our logo is hovered
 	 * This needs to happen or the UI experiance for the local page will be ugly and full of errors.
-	 * @aguo2
+	 * @author aguo2
 	 */
 	private static void handleCSS(File path) throws StarExecException {
 		try {
 			String css = FileUtils.readFileToString(path,"UTF-8");
-			css = css.replace("/" + R.STAREXEC_APPNAME + "/css", ".");
+			//this is the most maintainable way to do this, yes it's expensive. However, people who use this tool don't 
+			//want to code the css themselves. T
+			css = css.replace("/" + R.STAREXEC_APPNAME + "/css", ".")
+			css = css.replace(".expd,.qtip-nonPermanentLeader a.tooltipButton,img{cursor:pointer}", "");
 			log.debug("sfjiwfwfwewegrgv: " + css);
 			FileUtils.write(path,css,"UTF-8");
 		}
@@ -294,7 +318,7 @@ public class DoJobPage {
 			                               "Job" + String.valueOf(jobId) + "_page"
 			);
 		} catch (Exception e) {
-			throw new IOException("Could not get files for job page download", e);
+			throw new IOException(e.getMessage());
 		} finally {
 			FileUtils.deleteDirectory(sandboxDirectory);
 		}
