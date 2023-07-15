@@ -140,18 +140,16 @@ public class DoJobPage {
 	}
 
     /*
-	 * Given the absolute file to the CSS file, replace all instances of STAREXECAPPNAME/css with .
-	 * Also makes the mouse not a pointer when our logo is hovered
+	 * Given the absolute file to the CSS file, replace all instances of the given String with the given String
 	 * This needs to happen or the UI experiance for the local page will be ugly and full of errors.
 	 * @author aguo2
 	 */
-	private static void handleCSS(File path) throws StarExecException {
+	private static void handleCSS(File path, String target, String replacement) throws StarExecException {
 		try {
 			String css = FileUtils.readFileToString(path,"UTF-8");
 			//this is the most maintainable way to do this, yes it's expensive. However, people who use this tool don't 
 			//want to code the css themselves. T
-			css = css.replace("/" + R.STAREXEC_APPNAME + "/css", ".")
-			css = css.replace(".expd,.qtip-nonPermanentLeader a.tooltipButton,img{cursor:pointer}", "");
+			css = css.replace(target, replacement);
 			log.debug("sfjiwfwfwewegrgv: " + css);
 			FileUtils.write(path,css,"UTF-8");
 		}
@@ -268,7 +266,9 @@ public class DoJobPage {
 			addFilesInDirectory(sandboxDirectory, GIF_FILE_TYPE, Web.GLOBAL_GIF_FILES);
 			addFilesInDirectory(sandboxDirectory, ICO_FILE_TYPE, Web.GLOBAL_ICO_FILES);
 			File csspath = new File(sandboxDirectory, "css/global.css");
-			handleCSS(csspath);
+			handleCSS(csspath,"/" + R.STAREXEC_APPNAME + "/css", ".");
+			csspath = new File(sandboxDirectory, "css/explore/common.css");
+			handleCSS(csspath,"qtip-nonPermanentLeader a.tooltipButton,img{cursor:pointer}", "");
 			//get the maps as well
 			handleCSSMaps(sandboxDirectory, "global");
 			handleCSSMaps(sandboxDirectory, "details/job");
