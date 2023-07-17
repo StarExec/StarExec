@@ -4,7 +4,7 @@
 <%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 
 <footer id="pageFooter">
-	<c:if test="${localJobPage}">
+	<c:if test="${!islocalJobPage}">
 		<ul>
 			<c:if test="${not empty user}">
 				<li><a target="_blank"
