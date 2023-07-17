@@ -5,6 +5,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.starexec.constants.R;
 import org.starexec.data.database.*;
 import org.starexec.data.security.GeneralSecurity;
+import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.ErrorLog;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.User;
@@ -15,8 +16,10 @@ import org.starexec.exceptions.StarExecException;
 import org.starexec.jobs.JobManager;
 import org.starexec.jobs.ProcessingManager;
 import org.starexec.logger.StarLogger;
+import org.starexec.servlets.UploadBenchmark;
 import org.starexec.util.Mail;
 import org.starexec.util.RobustRunnable;
+import org.starexec.util.ResumableRobustRunnable;
 import org.starexec.util.Util;
 
 import java.io.File;
@@ -24,6 +27,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -397,11 +401,32 @@ class PeriodicTasks {
     // a part of making the benchmark upload process robust to a system restart
     // @author: odin5on
     private static final String processResumableBenchmarksTask = "processResumableBenchmarksTask";
-    private static final Runnable PROCESS_RESUMABLE_BENCHMARKS_TASK = new RobustRunnable(processResumableBenchmarksTask) {
+    private static final ResumableRobustRunnable PROCESS_RESUMABLE_BENCHMARKS_TASK = new ResumableRobustRunnable(processResumableBenchmarksTask) {
         @Override
         protected void dorun() {
-            // look for unprocessed benchmarks
-            Benchmarks.processResumableBenchmarks();
-        }
+            log.debug("DANNY: Start of process resumable benchmarks task");
+            List<BenchmarkUploadStatus> benchmarksToProcess = Uploads.getResumableBenchmarkUploads();
+			Iterator<BenchmarkUploadStatus> b = benchmarksToProcess.iterator();
+
+            while(b.hasNext()){
+                BenchmarkUploadStatus benchmark = b.next();
+                if(!PROCESS_RESUMABLE_BENCHMARKS_TASK.uploadIdRunning(benchmark.getId())){
+                    Util.threadPoolExecute(() -> {
+                        try {
+                            log.info("New thread created to process benchmark with ID: "+benchmark.getId());
+                            UploadBenchmark.extractAndProcess(benchmark.getUserId(), benchmark.getSpaceId(), benchmark.getTypeId(), 
+                            benchmark.getDownloadable(), benchmark.getPermission(), benchmark.getUploadMethod(), benchmark.getId(), 
+                            benchmark.getHasDependencies(), benchmark.getLinked(), benchmark.getSpaceId(), benchmark.getResumable(), new File(benchmark.getPath()));
+            
+                            Uploads.benchmarkEverythingComplete(benchmark.getId());
+                            log.info("Processed benchmark with id: "+benchmark.getId());
+                            PROCESS_RESUMABLE_BENCHMARKS_TASK.uploadIdFinished(benchmark.getId());
+                        } catch (Exception e) {
+                            log.error("Could not process a resumable benchmark", e);
+                        }
+                    });
+                }
+            } 
+        }    
     };
 }
