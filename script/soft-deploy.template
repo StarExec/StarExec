@@ -84,4 +84,6 @@ while [ ! -d $APPDIR ] ; do
 done
 
 echo Deployed $APPNAME without restarting Tomcat.
-echo "Update the database (schema and procedures) as needed."
+echo "Please update the database (schema and procedures) as needed."
+echo "To update schema, run ant \"update-sql\""
+echo "To update procedures, run ant \"reload-sql\""
