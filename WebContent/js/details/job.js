@@ -1209,7 +1209,6 @@ function initializePanels() {
 		var panelJson = $.parseJSON($("#subspacePanelJson" + DETAILS_JOB.sentSpaceId)
 		.attr("value"));
 		handleSpacesData(panelJson);
-		$("#subspacePanelJson" + DETAILS_JOB.sentSpaceId).remove();
 	} else if (DETAILS_JOB.isAnonymousPage) {
 		$.getJSON(starexecRoot + "services/space/anonymousLink/" + DETAILS_JOB.anonymousLinkUuid + "/jobspaces/false/" + DETAILS_JOB.primitivesToAnonymize + "?id=" + DETAILS_JOB.sentSpaceId,
 			handleSpacesData);
@@ -1254,25 +1253,28 @@ function handleSpacesData(spaces) {
 				var $this = $(this);
 				panelArray.push($panel.dataTable(panelTableInitializer));
 
-				/* We want each panel to reload its contents every 30 seconds while
-				  * it is open. If it is closed, it should not reload its contents. Upon
-				  * being opened, it should immediately refresh its contents because we
-				  * don't know how long it has been closed and we do not want to show
-				  * stale data for 30 seconds.
-				  * We can keep track of the interval handle internally as
-				  * `panelRefreshInterval`, but we must also expose it to `clearPanels`.
-				  * For this reason, we will let jQuery save the handle also so that we
-				  * can clear the interval if the panel is cleared.
-				  */
-				var panelRefreshInterval;
-				var reload = $panel.dataTable().api().ajax.reload;
-				$this.on("open.expandable", function() {
-					reload();
-					panelRefreshInterval = window.setInterval(reload, 30000);
-					$panel.data("panelRefreshInterval", panelRefreshInterval);
-				}).on("close.expandable", function() {
-					window.clearInterval(panelRefreshInterval);
-				});
+				//only reload the subspace summary if it's not a local job page
+				if (!isLocalJobPage) {
+					/* We want each panel to reload its contents every 30 seconds while
+					* it is open. If it is closed, it should not reload its contents. Upon
+					* being opened, it should immediately refresh its contents because we
+					* don't know how long it has been closed and we do not want to show
+					* stale data for 30 seconds.
+					* We can keep track of the interval handle internally as
+					* `panelRefreshInterval`, but we must also expose it to `clearPanels`.
+					* For this reason, we will let jQuery save the handle also so that we
+					* can clear the interval if the panel is cleared.
+					*/
+					var panelRefreshInterval;
+					var reload = $panel.dataTable().api().ajax.reload;
+					$this.on("open.expandable", function() {
+						reload();
+						panelRefreshInterval = window.setInterval(reload, 30000);
+						$panel.data("panelRefreshInterval", panelRefreshInterval);
+					}).on("close.expandable", function() {
+						window.clearInterval(panelRefreshInterval);
+					});
+				}
 			});
 		})();
 	}
