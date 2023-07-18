@@ -286,6 +286,8 @@ function reloadTables(id) {
 			refreshStats(id);
 
 		} else {
+			//if its a local job page:
+			//hereherehere
 			$('[id$=pairTbl_wrapper]').hide();
 			$('#pairTblField').show();
 			$('#' + id + 'pairTbl_wrapper').show();
