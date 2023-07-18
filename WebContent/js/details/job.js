@@ -182,6 +182,59 @@ function createDownloadRequest(item, type, returnIds, getCompleted) {
 	window.location.href = href;
 }
 
+/*
+* given an IDs of the pair table as an int[], attatch the links for each
+* pair table
+*/
+function attatchLinksHelper(tables) {
+	tables.forEach(
+		function(id) {
+			var $pairTbl = $('#' + id + 'pairTbl');
+			$pairTbl.find("tbody").on("click", "tr", function() {
+				var pairId = $(this).find('input').val();
+				window.location.assign("./pair_" + pairId + ".html");
+			}).hover(
+				function () {
+					//mouse is over table item
+					document.body.style.cursor = "pointer";
+				},
+				function () {
+					//mouse is over table item
+					document.body.style.cursor = "auto";
+		
+				}
+			);
+		}
+	)
+}
+
+/* 
+* This function attatches all the links for the jobpairtable 
+* iff it's a local job page
+*/
+function initPairLinksForLJP() {
+	var currentID = $("#spaceId").attr("value");
+	var ids = []
+	ids.push(currentID);
+	//if the job has multiple subspaces, get each of the subspaces and 
+	//attatch the links also.
+	var unparsedIds = $("#exploreList").children().find("ul").children();
+	if (unparsedIds.length > 0) {
+		//we actually have subspaces
+		unparsedIds.each(
+			function(i) {
+				ids.push($(this).attr('id'));
+			}
+		)
+	}
+	console.log(unparsedIds);
+	//unparsed Ids is an array of dom elements that contain the subspace ids in the id field. 
+
+
+	attatchLinksHelper(ids);
+	
+}
+
 function initSpaceExplorer() {
 	// Set the path to the css theme for the jstree plugin
 
@@ -233,6 +286,7 @@ function initSpaceExplorer() {
 			//no solvers will be selected when a space changes, so hide this button
 			$("#compareSolvers").hide();
 			reloadTables(id);
+
 		}
 	}).on("click", "a", function(event, data) {
 		event.preventDefault();  // This just disable's links in the node title
@@ -1371,24 +1425,9 @@ function initDataTables() {
             });
         }
 		else {
-            //for some reason, on the local page, the id is curSpaceId + "pairTbl"
-            $pairTbl = $('#' + curSpaceId + 'pairTbl');
-            $pairTbl.find("tbody").on("click", "tr", function() {
-                var pairId = $(this).find('input').val();
-                window.location.assign("./pair_" + pairId + ".html");
-            }).hover(
-				function () {
-					//mouse is over table item
-					document.body.style.cursor = "pointer";
-				},
-				function () {
-					//mouse is over table item
-					document.body.style.cursor = "auto";
+			initPairLinksForLJP();
 
-				}
-			);
-
-	}}
+		}}
 
 	// Change the filter so that it only queries the server when the user stops typing
 	$pairTbl.dataTable().fnFilterOnDoneTyping();
