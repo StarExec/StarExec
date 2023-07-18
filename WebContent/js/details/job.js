@@ -287,10 +287,16 @@ function reloadTables(id) {
 
 		} else {
 			//if its a local job page:
-			//hereherehere
 			$('[id$=pairTbl_wrapper]').hide();
 			$('#pairTblField').show();
-			$('#' + id + 'pairTbl_wrapper').show();
+			//we should hide the pair table field if there are no elements in the table. 
+			//IE when we have a job with multiple subspaces and we are at the root
+			if ($('#' + id + 'pairTbl').length == 0) {
+				$('#pairTblField').hide();
+			}
+			else {
+				$('#' + id + 'pairTbl_wrapper').show();
+			}
 			$('[id$=solveTbl_wrapper]').hide();
 			$('#' + id + 'solveTbl_wrapper').show();
 			log('showing id: ' + id);
