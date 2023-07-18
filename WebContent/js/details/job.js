@@ -1258,10 +1258,10 @@ function getPanelTable(space) {
 	if (!isLocalJobPage) {
 		includeUnkownStatusButton = "<button>Include Unknown Status</button>";
 	}
-
+	console.log(typeof(includeUnkownStatusButton));
 	return "<fieldset class=\"panelField\">" +
 		"<legend class=\"panelHeader\">" + spaceName + "</legend>" +
-		+ includeUnkownStatusButton + 
+		includeUnkownStatusButton + 
 		"<table id=panel" + spaceId + " spaceId=\"" + spaceId + "\" class=\"panel\"><thead>" +
 		"<tr class=\"viewSubspace\"><th colspan=\"4\" >Go To Subspace</th></tr>" +
 		"<tr><th class=\"solverHead\">solver</th><th class=\"configHead\">config</th> " +
@@ -1306,6 +1306,7 @@ function handleSpacesData(spaces) {
 			var space = $(spaces[i]),
 				spaceId = parseInt(space.attr("id")),
 				child = getPanelTable(space);
+				console.log(child)
 
 			//if the user has changed spaces since this request was sent, we don't want to continue
 			//generating panels for the old space.
