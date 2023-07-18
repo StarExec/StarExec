@@ -5267,7 +5267,7 @@ public class RESTServices {
 		log.debug("made it into readOnly API CALL readOnly: " + readOnly);
 		int userId = SessionUtil.getUserId(request);
 		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
-			return gson.toJson(new ValidatorStatusCode(true, "Only Admins can freeze or unfreeze primitives"));
+			return gson.toJson(new ValidatorStatusCode(true, "Only Admins can set read only"));
 		}
 		try {
 			RESTHelpers.setReadOnly(readOnly);
