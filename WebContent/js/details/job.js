@@ -1209,6 +1209,7 @@ function initializePanels() {
 		var panelJson = $.parseJSON($("#subspacePanelJson" + DETAILS_JOB.sentSpaceId)
 		.attr("value"));
 		handleSpacesData(panelJson);
+
 	} else if (DETAILS_JOB.isAnonymousPage) {
 		$.getJSON(starexecRoot + "services/space/anonymousLink/" + DETAILS_JOB.anonymousLinkUuid + "/jobspaces/false/" + DETAILS_JOB.primitivesToAnonymize + "?id=" + DETAILS_JOB.sentSpaceId,
 			handleSpacesData);
@@ -1362,8 +1363,8 @@ function initDataTables() {
             });
         }
 		else {
-            //for some reason, on the local page, the id is jobId + "pairTbl"
-            $pairTbl = $('#' + jobId + 'pairTbl');
+            //for some reason, on the local page, the id is curSpaceId + "pairTbl"
+            $pairTbl = $('#' + curSpaceId + 'pairTbl');
             $pairTbl.find("tbody").on("click", "tr", function() {
                 var pairId = $(this).find('input').val();
                 window.location.assign("./pair_" + pairId + ".html");
