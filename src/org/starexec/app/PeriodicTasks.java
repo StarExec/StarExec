@@ -32,7 +32,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
+import java.util.ArrayList;
 
 /**
  * Class that contains the periodic task enumerations.
@@ -407,24 +407,30 @@ class PeriodicTasks {
             log.debug("DANNY: Start of process resumable benchmarks task");
             List<BenchmarkUploadStatus> benchmarksToProcess = Uploads.getResumableBenchmarkUploads();
 			Iterator<BenchmarkUploadStatus> b = benchmarksToProcess.iterator();
+            ArrayList<Integer> runningIds = PROCESS_RESUMABLE_BENCHMARKS_TASK.getUploadIds();
+            log.debug("DANNY: running Ids: "+runningIds.toString());
 
             while(b.hasNext()){
                 BenchmarkUploadStatus benchmark = b.next();
-                if(!PROCESS_RESUMABLE_BENCHMARKS_TASK.uploadIdRunning(benchmark.getId())){
+                log.debug("DANNY: start processing?: " + (!runningIds.contains(benchmark.getId())));
+                if(!runningIds.contains(benchmark.getId())){
                     Util.threadPoolExecute(() -> {
                         try {
-                            log.info("New thread created to process benchmark with ID: "+benchmark.getId());
+                            PROCESS_RESUMABLE_BENCHMARKS_TASK.addThread(benchmark.getId());
+                            log.info("New thread created to process resumable benchmark with ID: "+benchmark.getId());
                             UploadBenchmark.extractAndProcess(benchmark.getUserId(), benchmark.getSpaceId(), benchmark.getTypeId(), 
                             benchmark.getDownloadable(), benchmark.getPermission(), benchmark.getUploadMethod(), benchmark.getId(), 
                             benchmark.getHasDependencies(), benchmark.getLinked(), benchmark.getSpaceId(), benchmark.getResumable(), new File(benchmark.getPath()));
             
                             Uploads.benchmarkEverythingComplete(benchmark.getId());
-                            log.info("Processed benchmark with id: "+benchmark.getId());
+                            log.info("Processed resumable benchmark with id: "+benchmark.getId());
                             PROCESS_RESUMABLE_BENCHMARKS_TASK.uploadIdFinished(benchmark.getId());
                         } catch (Exception e) {
                             log.error("Could not process a resumable benchmark", e);
                         }
                     });
+                } else {
+                    log.info("Encountered a resumable benchmark that is already processing with ID: " + benchmark.getId());
                 }
             } 
         }    
