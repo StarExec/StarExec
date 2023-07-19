@@ -22,6 +22,13 @@ $(document).ready(function() {
 	initUI();
 	initSpaceExplorer();
 	initDataTables();
+	/*
+	I know this would look better in initUI. However, this depends on the IDs being 
+	in the space explorer, ie this needs to run after init space explorer
+	*/
+	if (!isLocalJobPage) {
+		setupButtonsForSubspaceSummaries();
+	}
 
 	if (!isLocalJobPage) {
 		//update the tables every 30 seconds
@@ -229,7 +236,6 @@ function initPairLinksForLJP() {
 			}
 		)
 	}
-	console.log(unparsedIds);
 	//unparsed Ids is an array of dom elements that contain the subspace ids in the id field. 
 
 
@@ -789,6 +795,7 @@ function initUI() {
 	setupPostProcessButton();
 	attachSortButtonFunctions();
 
+
 	//set the two default solvers to compare
 	var defaultSolver1 = $('#solverChoice1').attr('default');
 	$('#solverChoice1 option[value=' + defaultSolver1 + ']')
@@ -899,6 +906,39 @@ function setupDeleteJobButton() {
 			}
 		});
 	});
+}
+
+/* 
+* this sets up the buttons for getting pair times with unknown requests.
+* @author aguo2
+*/
+function setupButtonsForSubspaceSummaries() {
+	//gets the subspaces
+	var unparsedIds = $("#exploreList").children().find("li").find("ul");
+	console.log(unparsedIds);
+	if (unparsedIds.length > 0) {
+		//we actually have subspaces
+		unparsedIds.each(
+			function(i) {
+				subspaces.push($(this).attr('id'));
+			}
+		)
+	}
+	console.log(subspaces);
+	
+	for (var i = 0; i < subspaces.length; i++) {
+		spaceId = subspaces[i];
+		var button = $("#" + spaceId + "_includeUnknownButton");
+		console.log(button);
+		button.button({
+			icons: {
+				primary: "ui-icon-arrowrefresh-1-e"
+			}
+		}).click(function() {
+			console.log(spaceID);
+		});
+	}
+
 }
 
 function setupSetHighPriorityButton() {
@@ -1260,7 +1300,6 @@ function getPanelTable(space) {
 	if (!isLocalJobPage) {
 		includeUnkownStatusButton = "<button id=\"" + spaceId + "_includeUnknownButton\">Include Unknown Status</button>";
 	}
-	console.log(typeof(includeUnkownStatusButton));
 	return "<fieldset class=\"panelField\">" +
 		"<legend class=\"panelHeader\">" + spaceName + "</legend>" +
 		includeUnkownStatusButton + 
@@ -1308,7 +1347,6 @@ function handleSpacesData(spaces) {
 			var space = $(spaces[i]),
 				spaceId = parseInt(space.attr("id")),
 				child = getPanelTable(space);
-				console.log(child)
 
 			//if the user has changed spaces since this request was sent, we don't want to continue
 			//generating panels for the old space.
