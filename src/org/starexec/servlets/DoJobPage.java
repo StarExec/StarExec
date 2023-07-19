@@ -53,7 +53,7 @@ public class DoJobPage {
             FileWriter writer = new FileWriter(readme);
             writer.write("This tool was created by aguo2, presdod, and pathawks. \n\n");
             writer.write("WARNING: if you download the same page multiple times, the OS will mess with the file name \n");
-			writer.write("by putting a number at the end. This messes with the CSS, causing some image dependenceis to \n");
+			writer.write("by putting a number at the end. This messes with the CSS, causing some image dependencies to \n");
 			writer.write("not load correctly. \n");
 			writer.write("\n");
 			writer.write("\n");
