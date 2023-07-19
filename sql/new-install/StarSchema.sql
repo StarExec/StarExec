@@ -737,6 +737,7 @@ CREATE TABLE system_flags (
 	test_queue INT,
 	major_version INT UNSIGNED,
 	minor_version INT UNSIGNED,
+	read_only BOOLEAN NOT NULL DEFAULT FALSE,
 	PRIMARY KEY (integrity_keeper),
 	CONSTRAINT system_flags_test_queue FOREIGN KEY (test_queue) REFERENCES queues(id) ON DELETE SET NULL
 );

@@ -27,6 +27,7 @@ import org.starexec.test.integration.TestResult;
 import org.starexec.test.integration.TestSequence;
 import org.starexec.util.*;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -51,7 +52,7 @@ public class RESTServices {
 	private static final ValidatorStatusCode ERROR_INVALID_WEBSITE_TYPE=new ValidatorStatusCode(false, "The supplied website type was invalid");
 	private static final ValidatorStatusCode ERROR_EDIT_VAL_ABSENT=new ValidatorStatusCode(false, "No value specified");
 	private static final ValidatorStatusCode ERROR_IDS_NOT_GIVEN=new ValidatorStatusCode(false, "No ids specified");
-
+	
 	private static final ValidatorStatusCode ERROR_INVALID_PERMISSIONS=new ValidatorStatusCode(false, "You do not have permission to perform the requested operation");
 
 	private static final ValidatorStatusCode ERROR_INVALID_PARAMS=new ValidatorStatusCode(false, "The supplied parameters are invalid");
@@ -363,6 +364,23 @@ public class RESTServices {
 			log.warn(methodName, "Caught IOException.");
 			throw RESTException.INTERNAL_SERVER_ERROR;
 		}
+	}
+
+	/*
+	 * get the value of the read_only system flag
+	 * @author aguo2
+	 */
+	@GET
+	@Path("/isReadOnly")
+	@Produces("text/plain")
+	public String GetReadOnly() {
+		try {
+			return Boolean.toString(RESTHelpers.getReadOnly());
+		} 
+		catch (Exception e) {
+			throw RESTException.INTERNAL_SERVER_ERROR;
+		}
+		
 	}
 
 	/**
@@ -5242,6 +5260,25 @@ public class RESTServices {
 		}
 	}
 
+	@POST
+	@Path("/admin/readOnly")
+	@Produces("application/json")
+	public String readOnly(@FormParam("readOnly") boolean readOnly, @Context HttpServletRequest request ) {
+		log.debug("made it into readOnly API CALL readOnly: " + readOnly);
+		int userId = SessionUtil.getUserId(request);
+		if (!GeneralSecurity.hasAdminWritePrivileges(userId)) {
+			return gson.toJson(new ValidatorStatusCode(true, "Only Admins can set read only"));
+		}
+		try {
+			RESTHelpers.setReadOnly(readOnly);
+			return gson.toJson(new ValidatorStatusCode(true, "ReadOnly is now " + (readOnly ? "enabled" : "disabled")));
+		} 
+		catch (Exception e) {
+			log.error("There was a exception when setting readonly: " + e.getMessage());
+			throw RESTException.INTERNAL_SERVER_ERROR;
+		}
+	}
+
 	/**
 	 * @param frozen True to freeze primitives, false to unfreeze primitives
 	 * @param request HTTP request
@@ -5257,7 +5294,7 @@ public class RESTServices {
 		}
 		try {
 			RESTHelpers.setFreezePrimitives(frozen);
-			return gson.toJson(new ValidatorStatusCode(true, "Uploading benchmarks and solvers is now " + (frozen ? "allowed" : "disallowed")));
+			return gson.toJson(new ValidatorStatusCode(true, "Uploading benchmarks and solvers is now " + (frozen ? "disallowed" : "allowed")));
 		} catch (SQLException e) {
 			log.error("freezePrimitives", e);
 			throw RESTException.INTERNAL_SERVER_ERROR;

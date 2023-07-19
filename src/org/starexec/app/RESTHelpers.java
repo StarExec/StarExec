@@ -28,6 +28,7 @@ import org.starexec.data.to.tuples.AttributesTableData;
 import org.starexec.data.to.tuples.AttributesTableRow;
 import org.starexec.data.to.tuples.Locatable;
 import org.starexec.data.to.tuples.SolverConfig;
+import org.starexec.exceptions.RESTException;
 import org.starexec.exceptions.StarExecDatabaseException;
 import org.starexec.logger.StarLogger;
 import org.starexec.test.integration.TestResult;
@@ -40,6 +41,7 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.sql.CallableStatement;
 import java.sql.SQLException;
 //import java.sql.CallableStatement;
 //import java.sql.ResultSet;
@@ -2329,6 +2331,32 @@ public class RESTHelpers {
 					return results.getBoolean("freeze_primitives");
 				}
 		);
+	}
+
+	
+	public static void setReadOnly(boolean readOnly) throws SQLException{
+		log.debug(
+			readOnly ? "READ ONLY IS ENABLED, no new jobs can be ran" 
+			: "READ ONLY IS DISABLED, jobs can be ran normally"
+		);
+			Common.update(
+				"{CALL SetReadOnly(?)}",
+				procedure -> {
+				procedure.setBoolean(1, readOnly);
+				});
+		
+	}
+
+	public static boolean getReadOnly() throws SQLException {
+		return Common.query(
+				"{CALL GetReadOnly()}",
+				procedure -> {},
+				results -> {
+					results.next();
+					return results.getBoolean("read_only");
+				}
+		);
+
 	}
 
 	public static void setFreezePrimitives(boolean frozen) throws SQLException {
