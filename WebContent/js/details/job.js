@@ -11,7 +11,7 @@ var syncResults = false;
 var DETAILS_JOB = {};
 var selectedJobSpaceId = null;
 var getPanelTableInitializer;
-var subspaces = []; //sometimes, jobs have pairs in multiple subspaces, those are here
+var subspaces;
 // contains requests that have been sent to the server to update pairs, stats, or graphs that
 // have not yet returned. If the user clicks on a new job space, these requests will all
 // be aborted, as they will no longer be useful.
@@ -22,13 +22,6 @@ $(document).ready(function() {
 	initUI();
 	initSpaceExplorer();
 	initDataTables();
-	/*
-	I know this would look better in initUI. However, this depends on the IDs being 
-	in the space explorer, ie this needs to run after init space explorer
-	*/
-	if (!isLocalJobPage) {
-		setupButtonsForSubspaceSummaries();
-	}
 
 	if (!isLocalJobPage) {
 		//update the tables every 30 seconds
@@ -39,6 +32,13 @@ $(document).ready(function() {
 
 	//puts data into the data tables
 	reloadTables($("#spaceId").attr("value"));
+	if (!isLocalJobPage) {
+		$.getJSON(starexecRoot + "services/space/" + jobId + "/jobspaces/false?id=" + DETAILS_JOB.rootJobSpaceId,
+		function(data) {
+			setupButtonsForSubspaceSummaries(data);
+		}
+	);	
+	}
 });
 
 // Initializes the fields of the global DETAILS_JOB object.
@@ -52,7 +52,8 @@ function initializeGlobalPageVariables() {
 	DETAILS_JOB.primitivesToAnonymize = $('#primitivesToAnonymize')
 	.attr('value');
 	DETAILS_JOB.anonymousLinkUuid = getParameterByName('anonId');
-	DETAILS_JOB.spaceExplorerJsonData = getSpaceExplorerJsonData();		
+	DETAILS_JOB.spaceExplorerJsonData = getSpaceExplorerJsonData();	
+	
 
 	log("starexecUrl: " + DETAILS_JOB.starexecUrl);
 	log("isLocalJobPage: " + isLocalJobPage);
@@ -232,7 +233,6 @@ function initPairLinksForLJP() {
 		unparsedIds.each(
 			function(i) {
 				ids.push($(this).attr('id'));
-				subspaces.push($(this).attr('id'));
 			}
 		)
 	}
@@ -912,22 +912,11 @@ function setupDeleteJobButton() {
 * this sets up the buttons for getting pair times with unknown requests.
 * @author aguo2
 */
-function setupButtonsForSubspaceSummaries() {
-	//gets the subspaces
-	var unparsedIds = $("#exploreList").children().find("li").find("ul");
-	console.log(unparsedIds);
-	if (unparsedIds.length > 0) {
-		//we actually have subspaces
-		unparsedIds.each(
-			function(i) {
-				subspaces.push($(this).attr('id'));
-			}
-		)
-	}
-	console.log(subspaces);
+function setupButtonsForSubspaceSummaries(subspaces) {
 	
 	for (var i = 0; i < subspaces.length; i++) {
-		spaceId = subspaces[i];
+		var spaceId = subspaces[i].id;
+		console.log("#" + spaceId + "_includeUnknownButton");
 		var button = $("#" + spaceId + "_includeUnknownButton");
 		console.log(button);
 		button.button({
