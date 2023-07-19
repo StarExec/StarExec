@@ -182,6 +182,59 @@ function createDownloadRequest(item, type, returnIds, getCompleted) {
 	window.location.href = href;
 }
 
+/*
+* given an IDs of the pair table as an int[], attatch the links for each
+* pair table
+*/
+function attatchLinksHelper(tables) {
+	tables.forEach(
+		function(id) {
+			var $pairTbl = $('#' + id + 'pairTbl');
+			$pairTbl.find("tbody").on("click", "tr", function() {
+				var pairId = $(this).find('input').val();
+				window.location.assign("./pair_" + pairId + ".html");
+			}).hover(
+				function () {
+					//mouse is over table item
+					document.body.style.cursor = "pointer";
+				},
+				function () {
+					//mouse is over table item
+					document.body.style.cursor = "auto";
+		
+				}
+			);
+		}
+	)
+}
+
+/* 
+* This function attatches all the links for the jobpairtable 
+* iff it's a local job page
+*/
+function initPairLinksForLJP() {
+	var currentID = $("#spaceId").attr("value");
+	var ids = []
+	ids.push(currentID);
+	//if the job has multiple subspaces, get each of the subspaces and 
+	//attatch the links also.
+	var unparsedIds = $("#exploreList").children().find("ul").children();
+	if (unparsedIds.length > 0) {
+		//we actually have subspaces
+		unparsedIds.each(
+			function(i) {
+				ids.push($(this).attr('id'));
+			}
+		)
+	}
+	console.log(unparsedIds);
+	//unparsed Ids is an array of dom elements that contain the subspace ids in the id field. 
+
+
+	attatchLinksHelper(ids);
+	
+}
+
 function initSpaceExplorer() {
 	// Set the path to the css theme for the jstree plugin
 
@@ -233,6 +286,7 @@ function initSpaceExplorer() {
 			//no solvers will be selected when a space changes, so hide this button
 			$("#compareSolvers").hide();
 			reloadTables(id);
+
 		}
 	}).on("click", "a", function(event, data) {
 		event.preventDefault();  // This just disable's links in the node title
@@ -286,9 +340,17 @@ function reloadTables(id) {
 			refreshStats(id);
 
 		} else {
+			//if its a local job page:
 			$('[id$=pairTbl_wrapper]').hide();
 			$('#pairTblField').show();
-			$('#' + id + 'pairTbl_wrapper').show();
+			//we should hide the pair table field if there are no elements in the table. 
+			//IE when we have a job with multiple subspaces and we are at the root
+			if ($('#' + id + 'pairTbl').length == 0) {
+				$('#pairTblField').hide();
+			}
+			else {
+				$('#' + id + 'pairTbl_wrapper').show();
+			}
 			$('[id$=solveTbl_wrapper]').hide();
 			$('#' + id + 'solveTbl_wrapper').show();
 			log('showing id: ' + id);
@@ -1209,7 +1271,7 @@ function initializePanels() {
 		var panelJson = $.parseJSON($("#subspacePanelJson" + DETAILS_JOB.sentSpaceId)
 		.attr("value"));
 		handleSpacesData(panelJson);
-		$("#subspacePanelJson" + DETAILS_JOB.sentSpaceId).remove();
+
 	} else if (DETAILS_JOB.isAnonymousPage) {
 		$.getJSON(starexecRoot + "services/space/anonymousLink/" + DETAILS_JOB.anonymousLinkUuid + "/jobspaces/false/" + DETAILS_JOB.primitivesToAnonymize + "?id=" + DETAILS_JOB.sentSpaceId,
 			handleSpacesData);
@@ -1254,25 +1316,28 @@ function handleSpacesData(spaces) {
 				var $this = $(this);
 				panelArray.push($panel.dataTable(panelTableInitializer));
 
-				/* We want each panel to reload its contents every 30 seconds while
-				  * it is open. If it is closed, it should not reload its contents. Upon
-				  * being opened, it should immediately refresh its contents because we
-				  * don't know how long it has been closed and we do not want to show
-				  * stale data for 30 seconds.
-				  * We can keep track of the interval handle internally as
-				  * `panelRefreshInterval`, but we must also expose it to `clearPanels`.
-				  * For this reason, we will let jQuery save the handle also so that we
-				  * can clear the interval if the panel is cleared.
-				  */
-				var panelRefreshInterval;
-				var reload = $panel.dataTable().api().ajax.reload;
-				$this.on("open.expandable", function() {
-					reload();
-					panelRefreshInterval = window.setInterval(reload, 30000);
-					$panel.data("panelRefreshInterval", panelRefreshInterval);
-				}).on("close.expandable", function() {
-					window.clearInterval(panelRefreshInterval);
-				});
+				//only reload the subspace summary if it's not a local job page
+				if (!isLocalJobPage) {
+					/* We want each panel to reload its contents every 30 seconds while
+					* it is open. If it is closed, it should not reload its contents. Upon
+					* being opened, it should immediately refresh its contents because we
+					* don't know how long it has been closed and we do not want to show
+					* stale data for 30 seconds.
+					* We can keep track of the interval handle internally as
+					* `panelRefreshInterval`, but we must also expose it to `clearPanels`.
+					* For this reason, we will let jQuery save the handle also so that we
+					* can clear the interval if the panel is cleared.
+					*/
+					var panelRefreshInterval;
+					var reload = $panel.dataTable().api().ajax.reload;
+					$this.on("open.expandable", function() {
+						reload();
+						panelRefreshInterval = window.setInterval(reload, 30000);
+						$panel.data("panelRefreshInterval", panelRefreshInterval);
+					}).on("close.expandable", function() {
+						window.clearInterval(panelRefreshInterval);
+					});
+				}
 			});
 		})();
 	}
@@ -1352,11 +1417,17 @@ function initDataTables() {
 
 	//Set up row click to send to pair details page
 	if (!DETAILS_JOB.isAnonymousPage) {
-		$pairTbl.find("tbody").on("click", "tr", function() {
-			var pairId = $(this).find('input').val();
-			window.location.assign(DETAILS_JOB.starexecUrl + "secure/details/pair.jsp?id=" + pairId);
-		});
-	}
+		if (!isLocalJobPage) {
+            //if its not a local job page, redirect to the server page.
+            $pairTbl.find("tbody").on("click", "tr", function() {
+                var pairId = $(this).find('input').val();
+                window.location.assign(DETAILS_JOB.starexecUrl + "secure/details/pair.jsp?id=" + pairId);
+            });
+        }
+		else {
+			initPairLinksForLJP();
+
+		}}
 
 	// Change the filter so that it only queries the server when the user stops typing
 	$pairTbl.dataTable().fnFilterOnDoneTyping();

@@ -23,9 +23,11 @@ public final class Web {
 
 	public static final String[] JOB_DETAILS_JS_FILES = {"util/sortButtons", "util/jobDetailsUtilityFunctions", "common/delaySpinner", "lib/jquery.jstree", "lib/jquery.dataTables.min", "details/shared", "details/job", "lib/jquery.ba-throttle-debounce.min", "lib/jquery.qtip.min", "lib/jquery.heatcolor.0.0.1.min", "util/datatablesUtility"};
 	public static final String[] GLOBAL_JS_FILES = {"lib/jquery.min", "lib/jquery-ui.min", "lib/jquery.cookie", "master"};
-
+	public static final String[] JS_FILES_FOR_LOCAL_JOB = {"lib/jquery.min", "lib/jquery-ui.min", "lib/jquery.cookie", "master", "details/pair", "lib/prettify", "lib/lang-log"};
 	public static final String[] JOB_DETAILS_CSS_FILES = {"jobDetails"};
 	public static final String[] GLOBAL_CSS_FILES = {"jqueryui/jquery-ui", "global"};
+	//this needs to be seperate, or it will break everything!
+	public static final String[] CSS_FILES_FOR_LOCAL_JOB = {"jqueryui/jquery-ui", "global", "details/job", "details/shared", "explore/common", "common/table", "common/delaySpinner", "details/pair", "prettify/prettify"};
 	public static final String[] GLOBAL_PNG_FILES = {"loadingGraph", "starlogo", "external"};
 	public static final String[] GLOBAL_GIF_FILES = {"ajaxloader", "loader"};
 	public static final String[] GLOBAL_ICO_FILES = {"favicon"};

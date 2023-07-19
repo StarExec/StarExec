@@ -91,7 +91,7 @@
 		<fieldset id="subspaceSummaryField">
 			<legend class="expd" id="subspaceExpd">subspace summaries</legend>
 			<fieldset id="panelActions" class="tableActions">
-				<c:if test="${!isAnonymousPage}">
+				<c:if test="${!isAnonymousPage && !isLocalJobPage}">
 					<button id="popoutPanels">Popout</button>
 				</c:if>
 				<button id="collapsePanels">Collapse All</button>
@@ -315,7 +315,9 @@
 							<c:forEach var="pair"
 							           items="${jobSpaceIdToPairMap.get(jsId)}">
 								<tr>
-									<td>${pair.getBench().getName()}</td>
+									<td>${pair.getBench().getName()}
+										<input type="hidden" value="${pair.getId()}" name="pid">
+									</td>
 									<td>${pair.getPrimarySolver().getName()}</td>
 									<td>${pair.getPrimaryConfiguration().getName()}</td>
 									<td>${pair.getPrimaryStage().getStatus().getStatus()}
@@ -406,7 +408,14 @@
 					</tr>
 					<tr title="the user who submitted this job">
 						<td>owner</td>
-						<td><star:user value="${usr}"/></td>
+						<c:choose>
+							<c:when test="${!isLocalJobPage}">
+								<td><star:user value="${usr}"/></td>
+							</c:when>
+							<c:otherwise>
+								<td>${usr}</td>
+							</c:otherwise>
+						</c:choose>
 					</tr>
 					<tr title="the benchmarking framework used to run the job">
 						<td>benchmarking framework</td>

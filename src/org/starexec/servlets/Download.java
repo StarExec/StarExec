@@ -13,6 +13,7 @@ import org.starexec.data.security.ValidatorStatusCode;
 import org.starexec.data.to.*;
 import org.starexec.data.to.enums.ProcessorType;
 import org.starexec.data.to.pipelines.JoblineStage;
+import org.starexec.exceptions.StarExecException;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.*;
 
@@ -37,12 +38,6 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
  */
 public class Download extends HttpServlet {
 	private static final StarLogger log = StarLogger.getLogger(Download.class);
-	private static final String JS_FILE_TYPE = "js";
-	private static final String CSS_FILE_TYPE = "css";
-	private static final String PNG_FILE_TYPE = "png";
-	private static final String GIF_FILE_TYPE = "gif";
-	private static final String ICO_FILE_TYPE = "ico";
-	private static final String IMAGES_DIRECTORY_NAME = "images";
 	private static final String PARAM_TYPE = "type";
 	private static final String PARAM_ID = "id";
 	private static final String PARAM_ANON_ID = "anonId";
@@ -644,99 +639,6 @@ public class Download extends HttpServlet {
 		return true;
 	}
 
-	private static void handleJobPage(int jobId, HttpServletRequest request, HttpServletResponse response)
-			throws IOException {
-		File sandboxDirectory = null;
-		try {
-			sandboxDirectory = Util.getRandomSandboxDirectory();
-
-			addFilesInDirectory(sandboxDirectory, JS_FILE_TYPE, Web.JOB_DETAILS_JS_FILES);
-			addFilesInDirectory(sandboxDirectory, JS_FILE_TYPE, Web.GLOBAL_JS_FILES);
-			addFilesInDirectory(sandboxDirectory, CSS_FILE_TYPE, Web.JOB_DETAILS_CSS_FILES);
-			addFilesInDirectory(sandboxDirectory, CSS_FILE_TYPE, Web.GLOBAL_CSS_FILES);
-			addFilesInDirectory(sandboxDirectory, PNG_FILE_TYPE, Web.GLOBAL_PNG_FILES);
-			addFilesInDirectory(sandboxDirectory, GIF_FILE_TYPE, Web.GLOBAL_GIF_FILES);
-			addFilesInDirectory(sandboxDirectory, ICO_FILE_TYPE, Web.GLOBAL_ICO_FILES);
-			putHtmlFileFromServerInSandbox(sandboxDirectory, jobId, request);
-
-			File serverCssJqueryUiImagesDirectory = new File(R.STAREXEC_ROOT + "css/jqueryui/images");
-			File sandboxCssJqueryUiDirectory = new File(sandboxDirectory, "css/jqueryui");
-			FileUtils.copyDirectoryToDirectory(serverCssJqueryUiImagesDirectory, sandboxCssJqueryUiDirectory);
-
-			File serverCssImagesDirectory = new File(R.STAREXEC_ROOT + "css/images");
-			File sandboxCssDirectory = new File(sandboxDirectory, "css/");
-			FileUtils.copyDirectoryToDirectory(serverCssImagesDirectory, sandboxCssDirectory);
-
-			File serverCssJstreeDirectory = new File(R.STAREXEC_ROOT + "css/jstree");
-			FileUtils.copyDirectoryToDirectory(serverCssJstreeDirectory, sandboxCssDirectory);
-
-			File serverImagesJstreeDirectory = new File(R.STAREXEC_ROOT + "images/jstree");
-			File sandboxImagesDirectory = new File(sandboxDirectory, "images/");
-			FileUtils.copyDirectoryToDirectory(serverImagesJstreeDirectory, sandboxImagesDirectory);
-
-			List<File> filesToBeDownloaded = Arrays.asList(sandboxDirectory.listFiles());
-
-			ArchiveUtil.createAndOutputZip(filesToBeDownloaded, response.getOutputStream(),
-			                               "Job" + String.valueOf(jobId) + "_page"
-			);
-		} catch (IOException e) {
-			throw new IOException("Could not get files for job page download", e);
-		} finally {
-			FileUtils.deleteDirectory(sandboxDirectory);
-		}
-	}
-
-	private static void putHtmlFileFromServerInSandbox(File sandboxDirectory, int jobId, HttpServletRequest request)
-			throws IOException {
-		// Create a new html file in the sandbox.
-		File htmlFile = new File(sandboxDirectory, "job.html");
-		// Make an HTTP request to our own server to get the HTML for the job page and write it to the new html file.
-		String urlToGetJobPageFrom = R.STAREXEC_URL_PREFIX + "://" + R.STAREXEC_SERVERNAME + "/" + R.STAREXEC_APPNAME +
-				"/secure/details/job.jsp?id=" + jobId + "&" + Web.LOCAL_JOB_PAGE_PARAMETER + "=true";
-		log.debug("Getting job page from " + urlToGetJobPageFrom);
-		List<Cookie> requestCookies = Arrays.asList(request.getCookies());
-		Map<String, String> queryParameters = new HashMap<>();
-		String htmlText = Util.getWebPage(urlToGetJobPageFrom, requestCookies);
-		FileUtils.writeStringToFile(htmlFile, htmlText, StandardCharsets.UTF_8);
-	}
-
-	private static void addFilesInDirectory(File containingDirectory, String filetype, String[] allFilePaths)
-			throws IOException {
-		// Create a new directory named after the filetype such as /js or /css
-		String filetypeDirectoryName = null;
-		switch (filetype) {
-		case CSS_FILE_TYPE:
-		case JS_FILE_TYPE:
-			filetypeDirectoryName = filetype;
-			break;
-		case PNG_FILE_TYPE:
-		case GIF_FILE_TYPE:
-		case ICO_FILE_TYPE:
-			filetypeDirectoryName = IMAGES_DIRECTORY_NAME;
-			break;
-		default:
-			throw new IOException("Attempted to copy unsupported file type: " + filetype);
-		}
-
-		File filetypeDirectory = new File(containingDirectory, filetypeDirectoryName);
-
-		for (String filePath : allFilePaths) {
-			List<String> filesInHierarchy = new ArrayList<>(Arrays.asList(filePath.split("/")));
-
-			// The last filename is the source file.
-			String sourceFile = filesInHierarchy.remove(filesInHierarchy.size() - 1);
-
-			File parentDirectory = filetypeDirectory;
-			for (String directory : filesInHierarchy) {
-				parentDirectory = new File(parentDirectory, directory);
-			}
-			parentDirectory.mkdirs();
-			File fileOnServer = new File(R.STAREXEC_ROOT + filetypeDirectoryName + "/" + filePath + "." + filetype);
-			File fileToBeDownloaded = new File(parentDirectory, sourceFile + "." + filetype);
-			FileUtils.copyFile(fileOnServer, fileToBeDownloaded);
-		}
-	}
-
 	/**
 	 * Using a list of Solvers map each solver name to whether or not that solver name is duplicated in the solver
 	 * list.
@@ -1144,7 +1046,7 @@ public class Download extends HttpServlet {
 				} else if (request.getParameter(PARAM_TYPE).equals(R.JOB_PAGE_DOWNLOAD_TYPE)) {
 					log.debug(methodName, "Handling " + R.JOB_PAGE_DOWNLOAD_TYPE);
 					int jobId = Integer.parseInt(request.getParameter(PARAM_ID));
-					handleJobPage(jobId, request, response);
+					DoJobPage.handleJobPage(jobId, request, response);
 					// Just set success to true, handleJobPage will throw an exception if it is unsuccessful.
 					success = true;
 				} else {
@@ -1175,7 +1077,7 @@ public class Download extends HttpServlet {
 			);
 			response.getOutputStream().close();
 		} catch (Exception e) {
-			log.warn("Caught Exception in Download.doGet", e);
+			log.warn("Caught Exception in Download.doGet"+ e.getMessage());
 			response.getOutputStream().close();
 			//this won't work because we have already opened the response output stream
 			//response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());

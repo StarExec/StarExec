@@ -3,9 +3,18 @@
 
 <header id="pageHeader">
 	<div id="starexecLogoWrapper">
-		<a href="${starexecRoot}/secure/index.jsp"><img src="${starexecRoot}/images/starlogo.png" alt="StarExec Logo"></a>
+		<c:choose>
+		<c:when test="${!isLocalJobPage}">
+			<a href="${starexecRoot}/secure/index.jsp"><img src="${starexecRoot}/images/starlogo.png" alt="StarExec Logo"></a>
+		</c:when>
+		<c:otherwise>
+			<img src="${starexecRoot}/images/starlogo.png" alt="StarExec Logo">
+		</c:otherwise>
+		</c:choose> 
+		
 	</div>
-	<c:if test="${empty user || (user.role != 'unauthorized' && user.role != 'suspended')}">
+	<c:if test="${!isLocalJobPage}">
+		<c:if test="${empty user || (user.role != 'unauthorized' && user.role != 'suspended')}">
 		<div id="starexecNavWrapper">
 			<nav>
 				<ul>
@@ -53,5 +62,6 @@
 				</ul>
 			</nav>
 		</div>
+	</c:if>
 	</c:if>
 </header>

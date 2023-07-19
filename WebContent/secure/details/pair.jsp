@@ -91,11 +91,27 @@
 			</tr>
 			<tr>
 				<td>benchmark</td>
-				<td><star:benchmark value="${pair.bench}"/></td>
+					<c:choose>
+						<c:when test="${isLocalJobPage}">
+							<td>${pair.bench.getName()}</td>
+						</c:when>
+						<c:otherwise>
+							<td><star:benchmark value="${pair.bench}"/></td>
+						</c:otherwise>
+					</c:choose>
+				
 			</tr>
 			<tr>
 				<td>ran by</td>
-				<td><star:user value="${usr}"/></td>
+				<c:choose>
+						<c:when test="${isLocalJobPage}">
+							<td>${usr}</td>
+						</c:when>
+						<c:otherwise>
+							<td><star:user value="${usr}"/></td>
+						</c:otherwise>
+					</c:choose>
+				
 			</tr>
 			<tr>
 				<td>cpu timeout</td>
@@ -112,11 +128,19 @@
 			<c:if test="${pair.status.code == 'STATUS_COMPLETE'}">
 				<tr>
 					<td>execution host</td>
-					<td>
-						<a href="${starexecRoot}/secure/explore/cluster.jsp">${pair.node.name}
-							<img class="extLink"
-							     src="${starexecRoot}/images/external.png"/></a>
-					</td>
+					<c:choose>
+						<c:when test="${isLocalJobPage}">
+							<td>${pair.node.name}</td>
+						</c:when>
+						<c:otherwise>
+							<td><a href="${starexecRoot}/secure/explore/cluster.jsp">${pair.node.name}
+								<img class="extLink"
+									 src="${starexecRoot}/images/external.png"/></a>
+						</td>
+						</c:otherwise>
+					</c:choose>
+					
+						
 				</tr>
 			</c:if>
 			<tr>
@@ -144,12 +168,27 @@
 				<tbody>
 				<tr>
 					<td>solver</td>
-					<td><star:solver value="${stage.solver}"/></td>
+					<c:choose>
+						<c:when test="${isLocalJobPage}">
+							<td>${stage.solver.getName()}</td>
+						</c:when>
+						<c:otherwise>
+							<td><star:solver value="${stage.solver}"/></td>
+						</c:otherwise>
+					</c:choose>
 				</tr>
 				<tr>
 					<td>configuration</td>
-					<td><star:config
-							value="${stage.solver.configurations[0]}"/></td>
+					<c:choose>
+						<c:when test="${isLocalJobPage}">
+							<td>${stage.solver.configurations[0].getName()}</td>
+						</c:when>
+						<c:otherwise>
+							<td><star:config
+								value="${stage.solver.configurations[0]}"/></td>
+						</c:otherwise>
+					</c:choose>
+					
 				</tr>
 				<tr>
 					<td>runtime (wallclock)</td>
@@ -228,8 +267,17 @@
 			</legend>
 			<textarea class=contentTextarea id="jpStdout"
 			          readonly="readonly">${stage.output}</textarea>
-			<a href="${starexecRoot}/services/jobs/pairs/${pair.id}/stdout/${stage.stageNumber}?limit=-1"
-			   target="_blank" class="popoutLink">popout</a>
+			<c:choose>
+				<c:when test="${!isLocalJobPage}">
+					<a href="${starexecRoot}/services/jobs/pairs/${pair.id}/stdout/${stage.stageNumber}?limit=-1"
+					target="_blank" class="popoutLink">popout</a>
+				</c:when>
+				<c:otherwise>
+					<a href="./output/${pair.id}/${stage.stageNumber}.txt"
+					target="_blank" class="popoutLink">popout</a>
+				</c:otherwise>
+			</c:choose>
+			
 			<p class="caption">output may be truncated. 'popout' for the full
 				output.</p>
 		</fieldset>
@@ -238,23 +286,40 @@
 		</c:if>
 	</c:forEach>
 
-	<fieldset id="fieldLog">
-		<legend><img alt="loading" src="${starexecRoot}/images/loader.gif"> job
-			log
-		</legend>
-		<star:displayTextContents text="${log}" lang="log"/>
-		<a href="${starexecRoot}/services/jobs/pairs/${pair.id}/log"
-		   target="_blank" class="popoutLink">popout</a>
-	</fieldset>
-
+	<c:choose>
+		<c:when test="${!isLocalJobPage}">
+			<fieldset id="fieldLog">
+				<legend><img alt="loading" src="${starexecRoot}/images/loader.gif"> job
+					log
+				</legend>
+				<star:displayTextContents text="${log}" lang="log"/>
+				<a href="${starexecRoot}/services/jobs/pairs/${pair.id}/log"
+				   target="_blank" class="popoutLink">popout</a>
+			</fieldset>
+		
+		</c:when>
+	</c:choose>
+	
 	<fieldset id="fieldActions">
 		<legend>actions</legend>
-		<a href="${starexecRoot}/secure/download?type=jp_output&id=${pair.id}"
-		   id="downLink">all output</a>
-		<a href="${starexecRoot}/secure/details/job.jsp?id=${job.id}"
+		<c:if test="${!isLocalJobPage}">
+			<a href="${starexecRoot}/secure/download?type=jp_output&id=${pair.id}"
+			id="downLink">all output</a>
+		</c:if>
+		<c:choose>
+			<c:when test="${isLocalJobPage}">
+				<a href="./job.html"
+				id="returnLink">return to ${job.name}</a>
+			</c:when>
+			<c:otherwise>
+				<a href="${starexecRoot}/secure/details/job.jsp?id=${job.id}"
 		   id="returnLink">return to ${job.name}</a>
-		<c:if test="${rerun}">
-			<button id="rerunPair">rerun pair</button>
+			</c:otherwise>
+		</c:choose>
+		<c:if test="${!isLocalJobPage}">
+			<c:if test="${rerun}">
+				<button id="rerunPair">rerun pair</button>
+			</c:if>
 		</c:if>
 	</fieldset>
 </star:template>
