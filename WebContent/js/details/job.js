@@ -924,7 +924,10 @@ function setupButtonsForSubspaceSummaries(subspaces) {
 				primary: "ui-icon-arrowrefresh-1-e"
 			}
 		}).click(function() {
-			console.log(spaceID);
+			console.log(spaceId);
+			var $panel = $("#panel" + spaceId);
+			$panel.dataTable().api().ajax.reload();
+			
 		});
 	}
 
