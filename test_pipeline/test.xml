@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?><tns:Jobs xmlns:tns="https://stardev.cs.uiowa.edu/starexec_aguo2/public/batchJobSchema.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://stardev.cs.uiowa.edu/starexec_aguo2/public/batchJobSchema.xsd batchJobSchema.xsd">
+
+<SolverPipeline name="pipeline">
+  <PipelineStage config-id="6"></PipelineStage>
+  <PipelineStage config-id="6"></PipelineStage>
+  <PipelineStage config-id="6" primary="true"></PipelineStage>
+  
+</SolverPipeline>
+
+<Job name="test pipeline">
+
+<JobAttributes>
+<description value="This job verifies that piplined jobs are working."/>
+<queue-id value="1"/>
+<cpu-timeout value="12"/>
+<wallclock-timeout value="11"/>
+<mem-limit value="2.0"/>
+</JobAttributes>
+
+  <JobLine pipe-name="pipeline"  bench-id="6"/>
+</Job>
+</tns:Jobs>
