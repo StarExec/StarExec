@@ -625,9 +625,9 @@ function setUpButtons() {
 			});
 		});
 		var message =
-			"Do you want to make the single space " +
-			(changingToPublic ? "public" : "private") +
-			" or the hierarchy?"
+			"Do you want to make " + spaceName + 
+			(changingToPublic ? " public" : " private") +
+			", or " + spaceName + " and all subspaces."
 		;
 
 		// Display the confirmation dialog
@@ -638,7 +638,7 @@ function setUpButtons() {
 			height: 265,
 			buttons: {
 				"space": doPost(false).bind(this),
-				"hierarchy": doPost(true).bind(this),
+				"space and all subspaces": doPost(true).bind(this),
 				"cancel": function() {
 					log('user canceled making public action');
 					$(this).dialog("close");

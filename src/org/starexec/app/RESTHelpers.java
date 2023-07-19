@@ -10,6 +10,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
+import org.starexec.app.RESTHelpers.JSTreeItem;
 import org.starexec.command.C;
 import org.starexec.command.Connection;
 import org.starexec.command.JsonHandler;
@@ -221,9 +222,13 @@ public class RESTHelpers {
 				int sortColumnIndex = Integer.parseInt(iSortCol);
 				query.setSortColumn(sortColumnIndex);
 			}
-
 			//set the sortASC flag
-			if (sDir.contains("asc")) {
+			if (Util.isNullOrEmpty(sDir)) {
+				//WARNING: if you don't do this check, sometimes null gets passed, and this
+				//causes null pointer exception. This is extremely hard to debug. DO NOT REMOVE!
+				query.setSortASC(false);
+			}
+			else if (sDir.contains("asc")) {
 				query.setSortASC(true);
 			} else if (sDir.contains("desc")) {
 				query.setSortASC(false);
@@ -248,7 +253,7 @@ public class RESTHelpers {
 
 			return query;
 		} catch (Exception e) {
-			log.error(e.getMessage(), e);
+			log.error("There was a problem getting the paramaters for the datatables query:" + e.getCause());
 		}
 
 		return null;
@@ -952,7 +957,6 @@ public class RESTHelpers {
 		if (query == null) {
 			return null;
 		}
-
 		// Retrieves the relevant Job objects to use in constructing the
 		// JSON to send to the client
 		List<Job> jobsToDisplay = Jobs.getJobsForNextPage(query, id);

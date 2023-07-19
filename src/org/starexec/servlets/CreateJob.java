@@ -458,7 +458,7 @@ public class CreateJob extends HttpServlet {
 					Analytics.JOB_CREATE_QUICKJOB.record(userId);
 					response.sendRedirect(Util.docRoot("secure/details/job.jsp?id=" + j.getId()));
 				} else {
-					response.sendRedirect(Util.docRoot("secure/explore/spaces.jsp"));
+					response.sendRedirect(Util.docRoot("secure/details/job.jsp?id=" + j.getId()));
 				}
 			} else { // if not submitSuccess
 				response.sendError(
