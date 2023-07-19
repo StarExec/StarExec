@@ -11,6 +11,7 @@ var syncResults = false;
 var DETAILS_JOB = {};
 var selectedJobSpaceId = null;
 var getPanelTableInitializer;
+var subspaces = []; //sometimes, jobs have pairs in multiple subspaces, those are here
 // contains requests that have been sent to the server to update pairs, stats, or graphs that
 // have not yet returned. If the user clicks on a new job space, these requests will all
 // be aborted, as they will no longer be useful.
@@ -224,6 +225,7 @@ function initPairLinksForLJP() {
 		unparsedIds.each(
 			function(i) {
 				ids.push($(this).attr('id'));
+				subspaces.push($(this).attr('id'));
 			}
 		)
 	}
@@ -1256,7 +1258,7 @@ function getPanelTable(space) {
 
 	var includeUnkownStatusButton = ""
 	if (!isLocalJobPage) {
-		includeUnkownStatusButton = "<button>Include Unknown Status</button>";
+		includeUnkownStatusButton = "<button id=\"" + spaceId + "_includeUnknownButton\">Include Unknown Status</button>";
 	}
 	console.log(typeof(includeUnkownStatusButton));
 	return "<fieldset class=\"panelField\">" +
