@@ -19,7 +19,7 @@ import org.starexec.logger.StarLogger;
 import org.starexec.servlets.UploadBenchmark;
 import org.starexec.util.Mail;
 import org.starexec.util.RobustRunnable;
-import org.starexec.util.ResumableRobustRunnable;
+import org.starexec.util.ResumableUploadsMonitor;
 import org.starexec.util.Util;
 
 import java.io.File;
@@ -401,38 +401,5 @@ class PeriodicTasks {
     // a part of making the benchmark upload process robust to a system restart
     // @author: odin5on
     private static final String processResumableBenchmarksTask = "processResumableBenchmarksTask";
-    private static final ResumableRobustRunnable PROCESS_RESUMABLE_BENCHMARKS_TASK = new ResumableRobustRunnable(processResumableBenchmarksTask) {
-        @Override
-        protected void dorun() {
-            log.debug("DANNY: Start of process resumable benchmarks task");
-            List<BenchmarkUploadStatus> benchmarksToProcess = Uploads.getResumableBenchmarkUploads();
-			Iterator<BenchmarkUploadStatus> b = benchmarksToProcess.iterator();
-            ArrayList<Integer> runningIds = PROCESS_RESUMABLE_BENCHMARKS_TASK.getUploadIds();
-            log.debug("DANNY: running Ids: "+runningIds.toString());
-
-            while(b.hasNext()){
-                BenchmarkUploadStatus benchmark = b.next();
-                log.debug("DANNY: start processing?: " + (!runningIds.contains(benchmark.getId())));
-                if(!runningIds.contains(benchmark.getId())){
-                    Util.threadPoolExecute(() -> {
-                        try {
-                            PROCESS_RESUMABLE_BENCHMARKS_TASK.addThread(benchmark.getId());
-                            log.info("New thread created to process resumable benchmark with ID: "+benchmark.getId());
-                            UploadBenchmark.extractAndProcess(benchmark.getUserId(), benchmark.getSpaceId(), benchmark.getTypeId(), 
-                            benchmark.getDownloadable(), benchmark.getPermission(), benchmark.getUploadMethod(), benchmark.getId(), 
-                            benchmark.getHasDependencies(), benchmark.getLinked(), benchmark.getSpaceId(), benchmark.getResumable(), new File(benchmark.getPath()));
-            
-                            Uploads.benchmarkEverythingComplete(benchmark.getId());
-                            log.info("Processed resumable benchmark with id: "+benchmark.getId());
-                            PROCESS_RESUMABLE_BENCHMARKS_TASK.uploadIdFinished(benchmark.getId());
-                        } catch (Exception e) {
-                            log.error("Could not process a resumable benchmark", e);
-                        }
-                    });
-                } else {
-                    log.info("Encountered a resumable benchmark that is already processing with ID: " + benchmark.getId());
-                }
-            } 
-        }    
-    };
+    private static final ResumableUploadsMonitor PROCESS_RESUMABLE_BENCHMARKS_TASK = new ResumableUploadsMonitor(processResumableBenchmarksTask);
 }
