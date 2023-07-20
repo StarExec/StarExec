@@ -11,7 +11,15 @@ var syncResults = false;
 var DETAILS_JOB = {};
 var selectedJobSpaceId = null;
 var getPanelTableInitializer;
-var subspaces;
+/* 
+This maps the subspace id to the boolean value of if we include solvers with unknown stats.
+*/
+var subspaceSummaryMap = new Map(); 
+/* 
+maps the subspace id to a boolean representing if the solver table should include the solvers with unknown 
+statuses in its calculation
+*/
+var solverTableMap = new Map();
 // contains requests that have been sent to the server to update pairs, stats, or graphs that
 // have not yet returned. If the user clicks on a new job space, these requests will all
 // be aborted, as they will no longer be useful.
@@ -35,7 +43,7 @@ $(document).ready(function() {
 	if (!isLocalJobPage) {
 		$.getJSON(starexecRoot + "services/space/" + jobId + "/jobspaces/false?id=" + DETAILS_JOB.rootJobSpaceId,
 		function(data) {
-			setupButtonsForSubspaceSummaries(data);
+			setupEverythingForUnknownStatus(data);
 		}
 	);	
 	}
@@ -909,27 +917,40 @@ function setupDeleteJobButton() {
 }
 
 /* 
-* this sets up the buttons for getting pair times with unknown requests.
-* @author aguo2
+* this sets up everything related to getting stats for solvers with unknown satus. This 
+* includes all the hash maps for state, and the buttons
 */
-function setupButtonsForSubspaceSummaries(subspaces) {
-	
+function setupEverythingForUnknownStatus(subspaces) {
+	$("#solverTableIncludeUnknown").button({
+		icons: {
+			primary: "ui-icon-arrowrefresh-1-e"
+		}
+	}).click(
+		function() {
+			solverTableMap.set(parseInt(curSpaceId), !solverTableMap.get(parseInt(curSpaceId)));
+			$('[id$=solveTbl]').DataTable().ajax.reload();
+		}
+	)
+
 	for (var i = 0; i < subspaces.length; i++) {
 		var spaceId = subspaces[i].id;
-		console.log("#" + spaceId + "_includeUnknownButton");
+		subspaceSummaryMap.set(spaceId,false);
+		solverTableMap.set(spaceId,false);
 		var button = $("#" + spaceId + "_includeUnknownButton");
-		console.log(button);
 		button.button({
 			icons: {
 				primary: "ui-icon-arrowrefresh-1-e"
 			}
 		}).click(function() {
-			console.log(spaceId);
-			var $panel = $("#panel" + spaceId);
+			var id = parseInt($(this).attr("id").split("_")[0]);
+			console.log(id)
+			var $panel = $("#panel" + id);
+			subspaceSummaryMap.set(id, !subspaceSummaryMap.get(id));
+			console.log(subspaceSummaryMap);
 			$panel.dataTable().api().ajax.reload();
-			
 		});
 	}
+	solverTableMap.set(parseInt(DETAILS_JOB.rootJobSpaceId),false);
 
 }
 
@@ -1718,14 +1739,19 @@ function getSolverTableInitializer() {
 		solverTableInitializer["fnServerData"] = fnStatsPaginationHandler;
 	} else {
 		delete solverTableInitializer["aoColumns"];
-	}
+	}	
 
 	return solverTableInitializer;
 }
 
 function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
-	$.post(
-		sSource + useWallclock + "/" + getSelectedStage(),
+	/* 
+	I'm so sorry, but because the way that this is build, we need to parse the spaceid out of the url
+	there is no other way to get it cleanly without having to rewrite all of it :(
+	*/
+	var spaceId = parseInt(sSource.split("/")[6]);
+	var xhr = $.post(
+		sSource + useWallclock + "/" + getSelectedStage() + "/" + subspaceSummaryMap.get(spaceId),
 		aoData,
 		function(nextDataTablePage) {
 			//if the user has clicked on a different space since this was called, we want those results, not these
@@ -1738,6 +1764,8 @@ function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
 	).fail(function(code, textStatus) {
 		handleAjaxError(textStatus);
 	});
+
+	openAjaxRequests.push(xhr);
 }
 
 function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
@@ -1751,7 +1779,7 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 			"anonId") +
 			"/" + DETAILS_JOB.primitivesToAnonymize + "/false/" + useWallclock + "/" + getSelectedStage();
 	} else {
-		postUrl = sSource + "solvers/pagination/" + curSpaceId + "/false/" + useWallclock + "/" + getSelectedStage();
+		postUrl = sSource + "solvers/pagination/" + curSpaceId + "/false/" + useWallclock + "/" + getSelectedStage() + "/" + solverTableMap.get(parseInt(curSpaceId));
 	}
 	var xhr = $.post(
 		postUrl,

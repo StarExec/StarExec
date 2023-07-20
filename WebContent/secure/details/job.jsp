@@ -184,6 +184,9 @@
 					</c:forEach>
 				</c:when>
 				<c:otherwise>
+					<div id="solverTableIncludeUnknownWrapper">
+						<button id="solverTableIncludeUnknown">Include Unknown In Time</button>
+					</div>
 					<table id="solveTbl" class="shaded">
 						<thead>
 						<tr>

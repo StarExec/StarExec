@@ -1285,15 +1285,16 @@ public class RESTServices {
 	 * @param stageNumber the stage number to get job pair data for
 	 * @param shortFormat Whether to retrieve the fields for the full stats table or the truncated stats for the space summary tables
 	 * @param wallclock True to use wallclock time and false to use cpu time
+	 * @param includeUnknown True to include pairs with unknown status
 	 * @param request HTTP request
 	 * @return a json DataTables object containing the next page of stats.
 	 * @author Eric Burns
 	 */
 	@POST
-	@Path("/jobs/solvers/pagination/{jobSpaceId}/{shortFormat}/{wallclock}/{stageNum}")
+	@Path("/jobs/solvers/pagination/{jobSpaceId}/{shortFormat}/{wallclock}/{stageNum}/{includeUnknown}")
 	@Produces("application/json")
 	public String getJobStatsPaginated(@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId,
-			@PathParam("shortFormat") boolean shortFormat, @PathParam("wallclock") boolean wallclock,
+			@PathParam("shortFormat") boolean shortFormat, @PathParam("wallclock") boolean wallclock, @PathParam("includeUnknown") boolean includeUnknown,
 			@Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
