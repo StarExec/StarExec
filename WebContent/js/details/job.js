@@ -40,13 +40,7 @@ $(document).ready(function() {
 
 	//puts data into the data tables
 	reloadTables($("#spaceId").attr("value"));
-	if (!isLocalJobPage) {
-		$.getJSON(starexecRoot + "services/space/" + jobId + "/jobspaces/false?id=" + DETAILS_JOB.rootJobSpaceId,
-		function(data) {
-			setupEverythingForUnknownStatus(data);
-		}
-	);	
-	}
+	
 });
 
 // Initializes the fields of the global DETAILS_JOB object.
@@ -933,10 +927,12 @@ function setupEverythingForUnknownStatus(subspaces) {
 	)
 
 	for (var i = 0; i < subspaces.length; i++) {
-		var spaceId = subspaces[i].id;
+		var space = $(subspaces[i]);
+		var spaceId = parseInt(space.attr("id"));
 		subspaceSummaryMap.set(spaceId,false);
 		solverTableMap.set(spaceId,false);
 		var button = $("#" + spaceId + "_includeUnknownButton");
+		console.log(button);
 		button.button({
 			icons: {
 				primary: "ui-icon-arrowrefresh-1-e"
@@ -1350,6 +1346,7 @@ function handleSpacesData(spaces) {
 		$("#subspaceSummaryField").show();
 	}
 
+
 	/* I'm so sorry, but because JavaScript is a Function scoped language, I
 	 * need to wrap the body of this loop inside an anonymous function so that
 	 * the variables we create are limited to the body of the loop.
@@ -1401,7 +1398,7 @@ function handleSpacesData(spaces) {
 			});
 		})();
 	}
-
+	setupEverythingForUnknownStatus(spaces);
 	$(".viewSubspace").click(function() {
 		var spaceId = $(this).parents("table.panel").attr("spaceId");
 		openSpace(spaceId);
@@ -1777,7 +1774,7 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 	if (DETAILS_JOB.isAnonymousPage) {
 		postUrl = sSource + "solvers/anonymousLink/pagination/" + curSpaceId + "/" + getParameterByName(
 			"anonId") +
-			"/" + DETAILS_JOB.primitivesToAnonymize + "/false/" + useWallclock + "/" + getSelectedStage();
+			"/" + DETAILS_JOB.primitivesToAnonymize + "/false/" + useWallclock + "/" + getSelectedStage() + "/" + solverTableMap.get(curSpaceId);
 	} else {
 		postUrl = sSource + "solvers/pagination/" + curSpaceId + "/false/" + useWallclock + "/" + getSelectedStage() + "/" + solverTableMap.get(parseInt(curSpaceId));
 	}

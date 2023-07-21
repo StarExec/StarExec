@@ -1245,11 +1245,12 @@ public class RESTServices {
 	 * @param shortFormat Whether to get the full stats for the stats table (true) or a truncated version for the
 	 * space overview table
 	 * @param wallclock True to use wallclock time and false to use cpu time
+	 * @param includeUnknown if we include solvers with unknown status
 	 * @param request HTTP request
 	 * @return json DataTables object containing the next page of SolverStats objects
 	 */
 	@POST
-	@Path("/jobs/solvers/anonymousLink/pagination/{jobSpaceId}/{anonymousJobLink}/{primitivesToAnonymizeName}/{shortFormat}/{wallclock}/{stageNum}/")
+	@Path("/jobs/solvers/anonymousLink/pagination/{jobSpaceId}/{anonymousJobLink}/{primitivesToAnonymizeName}/{shortFormat}/{wallclock}/{stageNum}/{includeUnknown}")
 	@Produces("application/json")
 	public String getAnonymousJobStatsPaginated(
 			@PathParam("stageNum") int stageNumber,
@@ -1258,6 +1259,7 @@ public class RESTServices {
 			@PathParam("primitivesToAnonymizeName") String primitivesToAnonymizeName,
 			@PathParam("shortFormat") boolean shortFormat,
 			@PathParam("wallclock") boolean wallclock,
+			@PathParam("includeUnknown") boolean includeUnknown,
 			@Context HttpServletRequest request ) {
 
 		final String methodName = "getAnonymousJobStatsPaginated";
@@ -1270,7 +1272,7 @@ public class RESTServices {
 				PrimitivesToAnonymize primitivesToAnonymize = AnonymousLinks.createPrimitivesToAnonymize( primitivesToAnonymizeName );
 				JobSpace jobSpace = Spaces.getJobSpace(jobSpaceId);
 
-				return RESTHelpers.getNextDataTablePageForJobStats( stageNumber, jobSpace, primitivesToAnonymize, shortFormat, wallclock, false);
+				return RESTHelpers.getNextDataTablePageForJobStats( stageNumber, jobSpace, primitivesToAnonymize, shortFormat, wallclock, includeUnknown);
 			}
 		} catch (RuntimeException e) {
 			// Catch all runtime exceptions so we can debug them

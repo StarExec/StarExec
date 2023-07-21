@@ -110,9 +110,9 @@ public class RESTServicesSecurityTests extends TestSequence {
 	@StarexecTest
 	private void getAnonymousJobStatsTest() {
 		assertResultIsInvalid(services.getAnonymousJobStatsPaginated(1,-1,
-				anonymousJobId,"none",false,false, TestUtil.getMockHttpRequest(admin.getId())));
+				anonymousJobId,"none",false,false, false, TestUtil.getMockHttpRequest(admin.getId())));
 		assertResultIsInvalid(services.getAnonymousJobStatsPaginated(1,job.getPrimarySpace(),
-				"","none",false,false, TestUtil.getMockHttpRequest(admin.getId())));
+				"","none",false,false, false, TestUtil.getMockHttpRequest(admin.getId())));
 	}
 
 	@StarexecTest
