@@ -2,6 +2,7 @@ $(document).ready(function() {
 	initUI();
 	$("#saveConfigContents").val() 
 	attachFormValidation();
+	//if this is not done, we have random tab characters in the textarea
 	$("#saveConfigContents").text("");
 });
 
