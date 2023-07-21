@@ -381,9 +381,10 @@ public class RESTHelpers {
 	 * @param primitivesToAnonymize a PrimitivesToAnonymize enum describing which primitives should be given anonymous names.
 	 * @param shortFormat Whether to use the abbreviated short format.
 	 * @param wallclock Whether times should be in wallclock time or cpu time.
+	 * @param includeUnknown True to include pairs with unknown status in time calculation
 	 * @author Albert Giegerich
 	 */
-	protected static String getNextDataTablePageForJobStats(int stageNumber, JobSpace jobSpace, PrimitivesToAnonymize primitivesToAnonymize, boolean shortFormat, boolean wallclock) {
+	protected static String getNextDataTablePageForJobStats(int stageNumber, JobSpace jobSpace, PrimitivesToAnonymize primitivesToAnonymize, boolean shortFormat, boolean wallclock, boolean includeUnknown) {
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
@@ -391,7 +392,7 @@ public class RESTHelpers {
 		// had to split up a function call chain to one version that includes configs marked as deleted and another that does not
 		// this includes them; used to construct the solver summary table in the job space view
 		// Alexander Brown, 9/20
-		Collection<SolverStats> solverStats = Jobs.getAllJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(jobSpace, stageNumber, primitivesToAnonymize);
+		Collection<SolverStats> solverStats = Jobs.getAllJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(jobSpace, stageNumber, primitivesToAnonymize, includeUnknown);
 		stopWatch.stop();
 		log.debug("getNextDataTablePageForJobStats", "Time taken to get all jobs: " + stopWatch.toString());
 

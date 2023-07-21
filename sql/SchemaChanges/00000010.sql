@@ -1,5 +1,5 @@
 -- this makes it so our job stats cache has a column stating if the resulting calulation came from 
--- including pairs with unknown stats.
+-- including pairs with unknown stats. @author aguo2
 
 DROP PROCEDURE IF EXISTS UpdateTo9_10 //
 CREATE PROCEDURE UpdateTo9_10()

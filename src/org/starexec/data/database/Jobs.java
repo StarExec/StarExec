@@ -1157,14 +1157,14 @@ public class Jobs {
 		List<JobPair> pairs = getJobPairsInJobSpaceHierarchy(spaceId, primitivesToAnonymize);
 
 		//compiles pairs into solver stats
-		stats = processPairsToSolverStats(jobId, pairs);
+		stats = processPairsToSolverStats(jobId, pairs, false);
 		for (SolverStats s : stats) {
 			s.setJobSpaceId(spaceId);
 		}
 
 		//caches the job stats so we do not need to compute them again in the future
 		if (isJobComplete) {
-			saveStats(jobId, stats);
+			saveStats(jobId, stats, false);
 		}
 
 		//next, we simply filter down the stats to the ones for the given stage
@@ -1188,19 +1188,19 @@ public class Jobs {
 	 */
 
 	public static Collection<SolverStats> getAllJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(
-			JobSpace space, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize
+			JobSpace space, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize, boolean includeUnknown
 	) {
 		final int spaceId = space.getId();
 		Collection<SolverStats> stats;
-
-		stats = Jobs.getCachedJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(spaceId, stageNumber, primitivesToAnonymize);
+		/*
+		stats = Jobs.getCachedJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(spaceId, stageNumber, primitivesToAnonymize, includeUnknown);
 		//if the size is greater than 0, then this job is done and its stats have already been
 		//computed and stored
 		if (stats != null && !stats.isEmpty()) {
 			log.debug("stats already cached in database");
 			return stats;
 		}
-
+		*/
 		int jobId = space.getJobId();
 
 		//we will cache the stats only if the job is complete
@@ -1211,14 +1211,14 @@ public class Jobs {
 		List<JobPair> pairs = getJobPairsInJobSpaceHierarchy(spaceId, primitivesToAnonymize);
 
 		//compiles pairs into solver stats
-		stats = processPairsToSolverStats(jobId, pairs);
+		stats = processPairsToSolverStats(jobId, pairs, includeUnknown);
 		for (SolverStats s : stats) {
 			s.setJobSpaceId(spaceId);
 		}
 
 		//caches the job stats so we do not need to compute them again in the future
 		if (isJobComplete) {
-			saveStats(jobId, stats);
+			saveStats(jobId, stats, includeUnknown);
 		}
 
 		//next, we simply filter down the stats to the ones for the given stage
@@ -2945,12 +2945,13 @@ public class Jobs {
 	 * @param jobSpaceId The ID of the root job space for the stats
 	 * @param stageNumber The number of the stage to get data for
 	 * @param primitivesToAnonymize PrimitivesToAnonymize instance
+	 * @param includeUnknown if pairs with unknown results are included. 
 	 * @return A list of the relevant SolverStats objects in this space
 	 * @author Eric Burns
 	 */
 
 	public static List<SolverStats> getCachedJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(
-			int jobSpaceId, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize
+			int jobSpaceId, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize, boolean includeUnknown
 	) {
 		log.debug("calling GetJobStatsInJobSpace with jobspace = " + jobSpaceId + " and stage = " + stageNumber);
 		int jobId = Spaces.getJobSpace(jobSpaceId).getJobId();
@@ -2960,10 +2961,11 @@ public class Jobs {
 
 		try {
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetJobStatsInJobSpaceIncludeDeletedConfigs(?,?,?)}");
+			procedure = con.prepareCall("{CALL GetJobStatsInJobSpaceIncludeDeletedConfigs(?,?,?,?)}");
 			procedure.setInt(1, jobSpaceId);
 			procedure.setInt(2, jobId);
 			procedure.setInt(3, stageNumber);
+			procedure.setBoolean(4, includeUnknown);
 			results = procedure.executeQuery();
 			List<SolverStats> stats = new ArrayList<>();
 			while (results.next()) {
@@ -4577,7 +4579,7 @@ public class Jobs {
 		return null;
 	}
 
-	private static void addStageToSolverStats(SolverStats stats, JoblineStage stage) {
+	private static void addStageToSolverStats(SolverStats stats, JoblineStage stage, boolean includeUnknown) {
 		StatusCode statusCode = stage.getStatus().getCode();
 
 		if (statusCode.failed()) {
@@ -4594,6 +4596,7 @@ public class Jobs {
 		}
 
 		int correct = JobPairs.isPairCorrect(stage);
+		log.debug("feiwergj[iopergjp[aoierjgoipsejfapokdsfgj]]: " + correct);
 		if (correct == 0) {
 
 			stats.incrementWallTime(stage.getWallclockTime());
@@ -4602,16 +4605,30 @@ public class Jobs {
 		} else if (correct == 1) {
 			stats.incrementIncorrectJobPairs();
 		}
+		else if (correct == 2) {
+			//if the pair has unknown status, 
+			log.debug("I love my life");
+			log.debug("safdlkajsgflkjaewjtioejfg: " + includeUnknown);
+			if (includeUnknown) {
+				log.debug("I love my life 1$$$$");
+				log.debug("werfasdfasdsfadsfgasdrghs: " + stage.getWallclockTime());
+				stats.incrementWallTime(stage.getWallclockTime());
+				stats.incrementCpuTime(stage.getCpuTime());
+			}
+
+		}
 	}
 
 	/**
 	 * Given a list of JobPairs, compiles them into SolverStats objects.
 	 *
 	 * @param pairs The JobPairs with their relevant fields populated
+	 * @param includeUnknown do we include pairs with unknown status 
 	 * @return A list of SolverStats objects to use in a datatable
 	 * @author Eric Burns
 	 */
-	public static Collection<SolverStats> processPairsToSolverStats(int jobId, List<JobPair> pairs) {
+	public static Collection<SolverStats> processPairsToSolverStats(int jobId, List<JobPair> pairs, boolean includeUnknown) {
+		log.debug("adASOHUIHRFodpkadokrgjapo" + includeUnknown);
 		final String methodName = "processPairsToSolverStats";
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
@@ -4655,7 +4672,7 @@ public class Jobs {
 
 					//update stats info for entry that current job-pair belongs to
 					SolverStats curSolver = stats.get(key);
-					addStageToSolverStats(curSolver, stage);
+					addStageToSolverStats(curSolver, stage, includeUnknown);
 					if (stage.getStageNumber().equals(jp.getPrimaryStageNumber())) {
 						//if we get here, we need to add this stage to the primary stats as well
 						key = 0 + ":" + String.valueOf(stage.getConfiguration().getId());
@@ -4993,7 +5010,7 @@ public class Jobs {
 	 * @param stats The stats, which should have been compiled already
 	 * @author Eric Burns
 	 */
-	public static void saveStats(int jobId, Collection<SolverStats> stats) {
+	public static void saveStats(int jobId, Collection<SolverStats> stats, boolean includeUnknown) {
 
 		if (!isJobComplete(jobId)) {
 			log.debug("stats for job with id = " + jobId + " were not saved because the job is incomplete");
@@ -5005,12 +5022,12 @@ public class Jobs {
 			Common.beginTransaction(con);
 			for (SolverStats s : stats) {
 
-				if (!saveStats(s, con)) {
+				if (!saveStats(s, con, includeUnknown)) {
 					throw new Exception("saving stats failed, rolling back connection");
 				}
 			}
 		} catch (Exception e) {
-			log.error("saveStats", e);
+			log.error("caught exception in save stats: " + e.getMessage());
 			Common.doRollback(con);
 		} finally {
 			Common.endTransaction(con);
@@ -5029,10 +5046,10 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 
-	private static boolean saveStats(SolverStats stats, Connection con) {
+	private static boolean saveStats(SolverStats stats, Connection con, boolean includeUnknown) {
 		CallableStatement procedure = null;
 		try {
-			procedure = con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?,?,?,?,?,?,?)}");
+			procedure = con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?,?,?,?,?,?,?,?)}");
 			procedure.setInt(1, stats.getJobSpaceId());
 			procedure.setInt(2, stats.getConfiguration().getId());
 			procedure.setInt(3, stats.getCompleteJobPairs());
@@ -5045,10 +5062,11 @@ public class Jobs {
 			procedure.setInt(10, stats.getResourceOutJobPairs());
 			procedure.setInt(11, stats.getIncompleteJobPairs());
 			procedure.setInt(12, stats.getStageNumber());
+			procedure.setBoolean(13, includeUnknown);
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
-			log.error("saveStats", e);
+			log.error("caught an exception while trying to save a single stat: " + e.getMessage());
 		} finally {
 			Common.safeClose(procedure);
 		}
