@@ -1,6 +1,8 @@
 $(document).ready(function() {
 	initUI();
+	$("#saveConfigContents").val() 
 	attachFormValidation();
+	$("#saveConfigContents").text("");
 });
 
 /**
