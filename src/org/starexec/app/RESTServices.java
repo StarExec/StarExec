@@ -1264,7 +1264,7 @@ public class RESTServices {
 
 		final String methodName = "getAnonymousJobStatsPaginated";
 		try {
-
+			log.debug("dipogjaojregierg" + includeUnknown);
 			ValidatorStatusCode status = JobSecurity.isAnonymousLinkAssociatedWithJobSpace(anonymousJobLink, jobSpaceId);
 			if ( !status.isSuccess() ) {
 				return gson.toJson( status );
