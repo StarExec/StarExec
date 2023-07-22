@@ -1906,7 +1906,6 @@ public class RESTHelpers {
 
 			if (wallTime) {
 				entries.add(Math.round(js.getWallTime() * 100));
-				log.debug("asdfgpkjsgiopjwseoi" + js.getWallTime());
 			} else {
 				entries.add(Math.round(js.getCpuTime() * 100));
 			}

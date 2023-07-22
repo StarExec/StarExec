@@ -4546,7 +4546,6 @@ public class Jobs {
 		}
 
 		int correct = JobPairs.isPairCorrect(stage);
-		log.debug("feiwergj[iopergjp[aoierjgoipsejfapokdsfgj]]: " + correct);
 		if (correct == 0) {
 
 			stats.incrementWallTime(stage.getWallclockTime());
@@ -4557,11 +4556,7 @@ public class Jobs {
 		}
 		else if (correct == 2) {
 			//if the pair has unknown status, 
-			log.debug("I love my life");
-			log.debug("safdlkajsgflkjaewjtioejfg: " + includeUnknown);
 			if (includeUnknown) {
-				log.debug("I love my life 1$$$$");
-				log.debug("ananananananananan: " + stage.getWallclockTime());
 				stats.incrementWallTime(stage.getWallclockTime());
 				stats.incrementCpuTime(stage.getCpuTime());
 			}
@@ -4578,7 +4573,6 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 	public static Collection<SolverStats> processPairsToSolverStats(int jobId, List<JobPair> pairs, boolean includeUnknown) {
-		log.debug("adASOHUIHRFodpkadokrgjapo" + includeUnknown);
 		final String methodName = "processPairsToSolverStats";
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();

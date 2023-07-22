@@ -150,7 +150,6 @@ public class DoJobPage {
 			//this is the most maintainable way to do this, yes it's expensive. However, people who use this tool don't 
 			//want to code the css themselves. T
 			css = css.replace(target, replacement);
-			log.debug("sfjiwfwfwewegrgv: " + css);
 			FileUtils.write(path,css,"UTF-8");
 		}
 		catch (Exception e) {
