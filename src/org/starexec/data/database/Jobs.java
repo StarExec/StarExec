@@ -1141,9 +1141,9 @@ public class Jobs {
 			JobSpace space, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize, boolean includeUnknown
 	) {
 		final int spaceId = space.getId();
+		Collection<SolverStats> stats;
 		if (!includeUnknown) {
-			Collection<SolverStats> stats = getCachedJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(spaceId, stageNumber, primitivesToAnonymize);
-		
+			stats = getCachedJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(spaceId, stageNumber, primitivesToAnonymize);
 			if (stats != null && !stats.isEmpty()) {
 				log.debug("stats already cached in database");
 				return stats;
@@ -4989,7 +4989,7 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 
-	private static boolean saveStats(SolverStats stats, Connection con,) {
+	private static boolean saveStats(SolverStats stats, Connection con) {
 		CallableStatement procedure = null;
 		try {
 			procedure = con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?,?,?,?,?,?,?)}");
@@ -5005,7 +5005,6 @@ public class Jobs {
 			procedure.setInt(10, stats.getResourceOutJobPairs());
 			procedure.setInt(11, stats.getIncompleteJobPairs());
 			procedure.setInt(12, stats.getStageNumber());
-			procedure.setBoolean(13, includeUnknown);
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
