@@ -153,6 +153,23 @@ function initUI() {
 		);
 	});
 
+	$("#toggleReadOnly").button({
+		icons: {
+			primary: "ui-icon-circle-close"
+		}
+	}).click(function() {
+		$.post(
+			starexecRoot + "services/admin/readOnly",
+			{"readOnly": !star.readOnly},
+			function(returnCode) {
+				if (parseReturnCode(returnCode)) {
+					setTimeout(function() {document.location.reload(true)}, 1000);
+				}
+			},
+			"json"
+		);
+	});
+
 	setDebugText();
 }
 

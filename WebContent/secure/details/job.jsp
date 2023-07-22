@@ -91,7 +91,7 @@
 		<fieldset id="subspaceSummaryField">
 			<legend class="expd" id="subspaceExpd">subspace summaries</legend>
 			<fieldset id="panelActions" class="tableActions">
-				<c:if test="${!isAnonymousPage}">
+				<c:if test="${!isAnonymousPage && !isLocalJobPage}">
 					<button id="popoutPanels">Popout</button>
 				</c:if>
 				<button id="collapsePanels">Collapse All</button>
