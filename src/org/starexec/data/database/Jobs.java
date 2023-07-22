@@ -1141,18 +1141,16 @@ public class Jobs {
 			JobSpace space, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize, boolean includeUnknown
 	) {
 		final int spaceId = space.getId();
-		Collection<SolverStats> stats;
-		/*
-		This code was removed in summer of 2023 because there was a feature request for a button on the front end to include pairs with an 
-		unknown result. This requires a redisgn of the caching system, which we sadly do not have time for. 
-		stats = Jobs.getCachedJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(spaceId, stageNumber, primitivesToAnonymize, includeUnknown);
-		//if the size is greater than 0, then this job is done and its stats have already been
-		//computed and stored
-		if (stats != null && !stats.isEmpty()) {
-			log.debug("stats already cached in database");
-			return stats;
+		if (!includeUnknown) {
+			Collection<SolverStats> stats = getCachedJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(spaceId, stageNumber, primitivesToAnonymize);
+		
+			if (stats != null && !stats.isEmpty()) {
+				log.debug("stats already cached in database");
+				return stats;
+			}
 		}
-		*/
+		
+		
 		int jobId = space.getJobId();
 
 		//we will cache the stats only if the job is complete
@@ -1168,12 +1166,10 @@ public class Jobs {
 			s.setJobSpaceId(spaceId);
 		}
 
-		/*caches the job stats so we do not need to compute them again in the future
-		see above reason for removal of cache
-		if (isJobComplete) {
-			saveStats(jobId, stats, includeUnknown);
+		if (isJobComplete && !includeUnknown) {
+			saveStats(jobId, stats);
 		}
-		*/
+		
 
 		//next, we simply filter down the stats to the ones for the given stage
 		stats.removeIf((s) -> s.getStageNumber() != stageNumber);
@@ -2905,7 +2901,7 @@ public class Jobs {
 	 */
 
 	public static List<SolverStats> getCachedJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(
-			int jobSpaceId, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize, boolean includeUnknown
+			int jobSpaceId, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize
 	) {
 		log.debug("calling GetJobStatsInJobSpace with jobspace = " + jobSpaceId + " and stage = " + stageNumber);
 		int jobId = Spaces.getJobSpace(jobSpaceId).getJobId();
@@ -2915,11 +2911,10 @@ public class Jobs {
 
 		try {
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetJobStatsInJobSpaceIncludeDeletedConfigs(?,?,?,?)}");
+			procedure = con.prepareCall("{CALL GetJobStatsInJobSpaceIncludeDeletedConfigs(?,?,?)}");
 			procedure.setInt(1, jobSpaceId);
 			procedure.setInt(2, jobId);
 			procedure.setInt(3, stageNumber);
-			procedure.setBoolean(4, includeUnknown);
 			results = procedure.executeQuery();
 			List<SolverStats> stats = new ArrayList<>();
 			while (results.next()) {
@@ -4958,7 +4953,7 @@ public class Jobs {
 	 * @param stats The stats, which should have been compiled already
 	 * @author Eric Burns
 	 */
-	public static void saveStats(int jobId, Collection<SolverStats> stats, boolean includeUnknown) {
+	public static void saveStats(int jobId, Collection<SolverStats> stats) {
 
 		if (!isJobComplete(jobId)) {
 			log.debug("stats for job with id = " + jobId + " were not saved because the job is incomplete");
@@ -4970,7 +4965,7 @@ public class Jobs {
 			Common.beginTransaction(con);
 			for (SolverStats s : stats) {
 
-				if (!saveStats(s, con, includeUnknown)) {
+				if (!saveStats(s, con)) {
 					throw new Exception("saving stats failed, rolling back connection");
 				}
 			}
@@ -4994,10 +4989,10 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 
-	private static boolean saveStats(SolverStats stats, Connection con, boolean includeUnknown) {
+	private static boolean saveStats(SolverStats stats, Connection con,) {
 		CallableStatement procedure = null;
 		try {
-			procedure = con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?,?,?,?,?,?,?,?)}");
+			procedure = con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?,?,?,?,?,?,?)}");
 			procedure.setInt(1, stats.getJobSpaceId());
 			procedure.setInt(2, stats.getConfiguration().getId());
 			procedure.setInt(3, stats.getCompleteJobPairs());
