@@ -1143,6 +1143,8 @@ public class Jobs {
 		final int spaceId = space.getId();
 		Collection<SolverStats> stats;
 		/*
+		This code was removed in summer of 2023 because there was a feature request for a button on the front end to include pairs with an 
+		unknown result. This requires a redisgn of the caching system, which we sadly do not have time for. 
 		stats = Jobs.getCachedJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(spaceId, stageNumber, primitivesToAnonymize, includeUnknown);
 		//if the size is greater than 0, then this job is done and its stats have already been
 		//computed and stored
@@ -1166,10 +1168,12 @@ public class Jobs {
 			s.setJobSpaceId(spaceId);
 		}
 
-		//caches the job stats so we do not need to compute them again in the future
+		/*caches the job stats so we do not need to compute them again in the future
+		see above reason for removal of cache
 		if (isJobComplete) {
 			saveStats(jobId, stats, includeUnknown);
 		}
+		*/
 
 		//next, we simply filter down the stats to the ones for the given stage
 		stats.removeIf((s) -> s.getStageNumber() != stageNumber);
