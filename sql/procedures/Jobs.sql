@@ -144,27 +144,6 @@ CREATE PROCEDURE AddJobStats(IN _jobSpaceId INT, IN _configId INT, IN _complete 
 		VALUES (_jobSpaceId, _configId, _complete, _correct, _incorrect, _failed, _conflicts, _wallclock, _cpu,_resource, _incomplete,_stage, _IncludeUnknown);
 	END //
 
--- Gets the cached job results for the hierarchy rooted at the given job space
--- Author: Eric Burns
--- This is the root query of the "solver summary" table displayed in the job space view; Alexander Brown 9/7/2020
-
-DROP PROCEDURE IF EXISTS GetJobStatsInJobSpace //
-CREATE PROCEDURE GetJobStatsInJobSpace(IN _jobSpaceId INT, IN _jobId INT, IN _stageNumber INT)
-	BEGIN
-		SELECT *
-		FROM job_stats
-			JOIN configurations AS config ON config.id=job_stats.config_id
-			JOIN solvers AS solver ON solver.id=config.solver_id
-			LEFT JOIN anonymous_primitive_names AS anonymous_solver_names
-				ON solver.id=anonymous_solver_names.primitive_id AND anonymous_solver_names.primitive_type="solver"
-						AND anonymous_solver_names.job_id=_jobId
-			LEFT JOIN anonymous_primitive_names AS anonymous_config_names
-				ON config.id=anonymous_config_names.primitive_id AND anonymous_config_names.primitive_type="config"
-						AND anonymous_config_names.job_id=_jobId
-		WHERE job_stats.job_space_id = _jobSpaceId AND stage_number=_stageNumber AND config.deleted = 0;
-		-- configs are no longer removed from the table, so only non-deleted ones should be selected
-	END //
-
 -- this version includes deleted configs; used to construct the solver summary table in the job space view
 -- Alexander Brown, 9/20
 DROP PROCEDURE IF EXISTS GetJobStatsInJobSpaceIncludeDeletedConfigs //

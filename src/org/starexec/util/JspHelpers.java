@@ -120,11 +120,13 @@ public class JspHelpers {
 
 					Map<Integer, String> jobSpaceIdToWallclockTimeSolverStatsJsonMap =
 							RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, true);
+					//used to creat the panels for subspace summaries
 					request.setAttribute("jobSpaceIdToWallclockTimeSolverStatsJsonMap", jobSpaceIdToWallclockTimeSolverStatsJsonMap);
 					Map<Integer, List<JobPair>> jobSpaceIdToPairMap = JobPairs.buildJobSpaceIdToJobPairMapWithWallCpuTimesRounded(j);
 					request.setAttribute("jobSpaceIdToPairMap", jobSpaceIdToPairMap);
 					Map<Integer, Collection<SolverStats>> jobSpaceIdToSolverStatsMap =
 							Jobs.buildJobSpaceIdToSolverStatsMapWallCpuTimesRounded(j, 1);
+					//used to create the solver summary table
 					request.setAttribute("jobSpaceIdToSolverStatsMap", jobSpaceIdToSolverStatsMap);
 				}
 

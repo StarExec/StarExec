@@ -1122,57 +1122,7 @@ public class Jobs {
 	private static Job get(int jobId, boolean includeDeleted) {
 		return get(jobId, includeDeleted, false);
 	}
-
-	/**
-	 * Gets all the SolverStats objects for a given job in the given space hierarchy
-	 *
-	 * @param space The JobSpace root  in question
-	 * @param stageNumber The ID of the stage to get data for
-	 * @param primitivesToAnonymize PrimitivesToAnonymize instance
-	 * @return A list containing every SolverStats for the given job where the solvers reside in the given space
-	 * @author Eric Burns
-	 */
-
-	public static Collection<SolverStats> getAllJobStatsInJobSpaceHierarchy(
-			JobSpace space, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize
-	) {
-		final int spaceId = space.getId();
-		Collection<SolverStats> stats;
-
-		stats = Jobs.getCachedJobStatsInJobSpaceHierarchy(spaceId, stageNumber, primitivesToAnonymize);
-		//if the size is greater than 0, then this job is done and its stats have already been
-		//computed and stored
-		if (stats != null && !stats.isEmpty()) {
-			log.debug("stats already cached in database");
-			return stats;
-		}
-
-		int jobId = space.getJobId();
-
-		//we will cache the stats only if the job is complete
-		boolean isJobComplete = Jobs.isJobComplete(jobId);
-
-		//otherwise, we need to compile the stats
-		log.debug("stats not present in database -- compiling stats now");
-		List<JobPair> pairs = getJobPairsInJobSpaceHierarchy(spaceId, primitivesToAnonymize);
-
-		//compiles pairs into solver stats
-		stats = processPairsToSolverStats(jobId, pairs, false);
-		for (SolverStats s : stats) {
-			s.setJobSpaceId(spaceId);
-		}
-
-		//caches the job stats so we do not need to compute them again in the future
-		if (isJobComplete) {
-			saveStats(jobId, stats, false);
-		}
-
-		//next, we simply filter down the stats to the ones for the given stage
-		stats.removeIf((s) -> s.getStageNumber() != stageNumber);
-
-		return stats;
-	}
-
+	
 	/**
 	 * Gets all the SolverStats objects for a given job in the given space hierarchy
 	 *
@@ -1263,7 +1213,7 @@ public class Jobs {
 		for (JobSpace jobspace : jobSpaces) {
 			int jobspaceId = jobspace.getId();
 			Collection<SolverStats> stats =
-					getAllJobStatsInJobSpaceHierarchy(jobspace, stageNumber, PrimitivesToAnonymize.NONE);
+					getAllJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(jobspace, stageNumber, PrimitivesToAnonymize.NONE,false);
 					// tmp
 					log.debug( "\n\nTRIGGERED IN buildJobSpaceIdToSolverStatsMap(), Jobs.java:1214\n" );
 			jobSpaceIdToSolverStatsMap.put(jobspaceId, stats);

@@ -1950,7 +1950,7 @@ public class RESTHelpers {
 		Map<Integer, String> jobSpaceIdToSolverStatsJsonMap = new HashMap<>();
 
 		for (JobSpace jobSpace : jobSpaces) {
-			Collection<SolverStats> stats = Jobs.getAllJobStatsInJobSpaceHierarchy(jobSpace, stageNumber, PrimitivesToAnonymize.NONE);
+			Collection<SolverStats> stats = Jobs.getAllJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(jobSpace, stageNumber, PrimitivesToAnonymize.NONE,false);
 			DataTablesQuery query = new DataTablesQuery();
 			query.setTotalRecords(stats.size());
 			query.setTotalRecordsAfterQuery(stats.size());
