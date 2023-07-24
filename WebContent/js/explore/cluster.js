@@ -292,16 +292,13 @@ function getDetails(id, type, parent_node) {
 	selectedId = id;
 	jobPairTable.fnClearTable();	//immediately get rid of the current data, which makes it look more responsive
 	//get the queue, not that the global is set later so we can't use it
-	fetch(starexecRoot + "/services/queue/" + id + "/getDesc")
-  		.then(response => response.text())
-  		.then(data => {
-    	// Handle the response text
-    	document.getElementById('queueDescriptionText').innerText = data;
-  	})
-  		.catch(error => {
-    		// Handle any errors that occurred during the request
-		    document.getElementById('queueDescriptionText').innerText = "there was an internal error.";
-  	}); 
+	$.get(starexecRoot + "/services/queue/" + id + "/getDesc").done(
+		function(data) {
+			$("#queueDescriptionText").text(data);
+		}
+	).fail(function () {
+		$("#queueDescriptionText").text("There was an error fetching the description")
+	}); 
 	
 	
 	if (type == 'active_queue' || type == 'inactive_queue') {
