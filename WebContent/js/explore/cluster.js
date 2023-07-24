@@ -326,6 +326,7 @@ function getDetails(id, type, parent_node) {
 				10000);
 		}
 		$("#detailField .expdContainer").css("display", "none");
+		$("#descriptionContainer").show();
 	} else if (type == 'enabled_node' || type == 'disabled_node') {
 		$("#clusterExpd").html("<span class='list-count'/> Running Job Pairs");
 		$("#jobsContainer").hide();
@@ -337,6 +338,8 @@ function getDetails(id, type, parent_node) {
 			delete star.JobTableRefresh;
 		}
 		$("#detailField .expdContainer").css("display", "block");
+		//hide the queue desc
+		$("#descriptionContainer").hide();
 	} else {
 		showMessage('error', "Invalid node type", 5000);
 		return;

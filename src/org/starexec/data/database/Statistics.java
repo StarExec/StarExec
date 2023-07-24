@@ -102,6 +102,13 @@ public class Statistics {
 			for(Queue q : Queues.getQueues(-2)) {
 				numNodes += Queues.getNodes(q.getId()).size();
 			}
+			if (numNodes == 0) {
+				/*if we have no nodes, R.NODE_MULTIPLIER * numNodes * 1.1 will be 0.
+				This will cause an exception to be raised by setRange. To prevent it,
+				we return instantly.
+				*/
+				return;
+			}
 			plot.getRangeAxis().setRange(new Range(0, R.NODE_MULTIPLIER * numNodes * 1.1));
 
 			plot.getDomainAxis().setLabelPaint(new Color(255, 255, 255));
@@ -122,7 +129,7 @@ public class Statistics {
 			ChartUtilities.saveChartAsPNG(output, chart, 400, 400);
 			log.debug( "Finished chart making!: \n" + path.toString() + "/" + qId + "_queuegraph.png" );
 		} catch(Exception e) {
-			log.error("Error creating queue chart for "+Queues.getNameById(qId)+" ("+qId+")", e);
+			log.error("Error creating queue chart for "+Queues.getNameById(qId)+" ("+qId+"): " + e.getMessage());
 		}
 	}
 
