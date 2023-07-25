@@ -2,61 +2,65 @@ package org.starexec.util;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import org.starexec.util.Timer;
 import org.starexec.logger.StarLogger;
+import org.starexec.data.database.Benchmarks;
 import org.starexec.data.database.Uploads;
 import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.servlets.UploadBenchmark;
 import org.starexec.util.Util;
 
-
 public class ResumableUploadsMonitor extends RobustRunnable { // rename resumable uploads monitor
-  public ResumableUploadsMonitor(String name){
+  public ResumableUploadsMonitor(String name) {
     super(name);
   }
 
-  public static ArrayList<Integer> uploadIds = new ArrayList<Integer>();
+  public static HashMap<Integer, Integer> uploadIds = new HashMap<Integer, Integer>();
 
   @Override
   protected void dorun() {
     log.debug("DANNY: Calling from periodic task");
     processResumableBenchmarks();
   }
-  
-  public static void processResumableBenchmarks(){
+
+  public static void processResumableBenchmarks() {
     log.debug("DANNY: Start of process resumable benchmarks method");
     List<BenchmarkUploadStatus> benchmarksToProcess = Uploads.getResumableBenchmarkUploads();
     Iterator<BenchmarkUploadStatus> b = benchmarksToProcess.iterator();
-    ArrayList<Integer> runningIds = getUploadIds();
+    HashMap<Integer, Integer> runningIds = getUploadIds();
     log.debug("DANNY: running Ids: " + runningIds.toString());
-  
+
     while (b.hasNext()) {
       BenchmarkUploadStatus benchmarkUpload = b.next();
-      log.debug("DANNY: start processing?: " + (!runningIds.contains(benchmarkUpload.getId())));
-      if (!runningIds.contains(benchmarkUpload.getId())) {
+      log.debug("DANNY: start processing?: " + (!uploadIdRunning(benchmarkUpload.getId())));
+      if (!uploadIdRunning(benchmarkUpload.getId())) {
         Util.threadPoolExecute(() -> {
           try {
             addThread(benchmarkUpload.getId());
             log.info("New thread created to process resumable benchmark upload with ID: " + benchmarkUpload.getId());
+            File directory = new File(benchmarkUpload.getPath());
             if (!benchmarkUpload.isFileExtractionComplete()) {
+              log.debug("DANNY: calling UploadBenchmark.extractAndProcess");
               UploadBenchmark.extractAndProcess(benchmarkUpload.getUserId(), benchmarkUpload.getSpaceId(),
                   benchmarkUpload.getTypeId(),
                   benchmarkUpload.getDownloadable(), benchmarkUpload.getPermission(), benchmarkUpload.getUploadMethod(),
                   benchmarkUpload.getId(),
                   benchmarkUpload.getHasDependencies(), benchmarkUpload.getLinked(), benchmarkUpload.getSpaceId(),
                   benchmarkUpload.getResumable(), new File(benchmarkUpload.getPath()));
+            } else {
+              log.debug("DANNY: calling UploadBenchmark.process");
+              UploadBenchmark.process(benchmarkUpload.getUserId(),
+                  benchmarkUpload.getSpaceId(), benchmarkUpload.getTypeId(),
+                  benchmarkUpload.getDownloadable(), benchmarkUpload.getPermission(),
+                  benchmarkUpload.getUploadMethod(), benchmarkUpload.getId(),
+                  benchmarkUpload.getHasDependencies(), benchmarkUpload.getLinked(),
+                  benchmarkUpload.getSpaceId(), benchmarkUpload.getResumable(), directory,
+                  Benchmarks.buildCompleteSpace(directory, benchmarkUpload.getTypeId(), benchmarkUpload.getUserId(),
+                      benchmarkUpload.getDownloadable(), benchmarkUpload.getPermission(), benchmarkUpload.getId()), false);
             }
-            // else if(!benchmarkUpload.isProcessingBegun()){
-            // UploadBenchmark.process(benchmarkUpload.getUserId(),
-            // benchmarkUpload.getSpaceId(), benchmarkUpload.getTypeId(),
-            // benchmarkUpload.getDownloadable(), benchmarkUpload.getPermission(),
-            // benchmarkUpload.getUploadMethod(), benchmarkUpload.getId(),
-            // benchmarkUpload.getHasDependencies(), benchmarkUpload.getLinked(),
-            // benchmarkUpload.getSpaceId(), benchmarkUpload.getResumable(), new
-            // File(benchmarkUpload.getPath()), );
-            // }
             Uploads.benchmarkEverythingComplete(benchmarkUpload.getId());
             log.info("Processed resumable benchmark with id: " + benchmarkUpload.getId());
             uploadIdFinished(benchmarkUpload.getId());
@@ -71,21 +75,36 @@ public class ResumableUploadsMonitor extends RobustRunnable { // rename resumabl
     }
   }
 
-  public static ArrayList<Integer> getUploadIds() {
+  public static HashMap<Integer, Integer> getUploadIds() {
     return uploadIds;
   }
 
   public static void addThread(Integer uploadId) {
-    uploadIds.add(uploadId);
+    // code to see how many to skip is put here
+    Integer benchmarksToSkip = Uploads.getBenchmarksToSkip(uploadId);
+    log.debug("DANNY: benchmarksToSkip: " + benchmarksToSkip);
+    uploadIds.put(uploadId, benchmarksToSkip);
     log.debug("DANNY: Thread running to process job with id: " + uploadId);
   }
 
   public static Boolean uploadIdRunning(Integer uploadId) {
-    return uploadIds.contains(uploadId);
+    return uploadIds.containsKey(uploadId);
   }
 
   public static void uploadIdFinished(Integer uploadId) {
     uploadIds.remove(Integer.valueOf(uploadId));
     log.debug("DANNY: Thread finished processing job with id: " + uploadId);
+  }
+
+  public static Boolean doneSkippingBenchmarks(Integer uploadId) {
+    if(!uploadIds.containsKey(uploadId)){
+      return true;
+    }
+    if (uploadIds.get(uploadId) == 0) {
+      return true;
+    } else {
+      uploadIds.put(uploadId, uploadIds.get(uploadId) - 1);
+      return false;
+    }
   }
 }

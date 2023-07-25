@@ -416,6 +416,7 @@ public class Spaces {
 		}
 		
 		// Add any new benchmarks in the space to the database
+		log.debug("DANNY !parent.getBenchmarks().isEmpty(): "+!parent.getBenchmarks().isEmpty());
 		if (!parent.getBenchmarks().isEmpty()) {
 		    Benchmarks.processAndAdd(parent.getBenchmarks(), parent.getId(), depRootSpaceId, linked,
 							statusId, usesDeps
@@ -2511,8 +2512,23 @@ public class Spaces {
 	protected static void traverse(
 			Space space, int userId, Integer depRootSpaceId, Boolean linked, Integer statusId
 	) throws IOException, StarExecException {
+
+		int spaceId = -1;
+		Boolean addSpace = true;
+		List<Space> spaces = Spaces.getSubSpaces(space.getParentSpace());
+		for(Space s : spaces){
+			log.info("DANNY: s.getName(): " + s.getName() + " space.getName(): "+ space.getName());
+			log.info(String.valueOf(s.getName().equals(space.getName())));
+			log.info(String.valueOf(s.getId()));
+			if(s.getName().equals(space.getName())){
+				spaceId = s.getId();
+				addSpace = false;
+			}
+		}
 		// Add the new space to the database and get it's ID
-		int spaceId = Spaces.add(space, userId);
+		if(addSpace){
+			spaceId = Spaces.add(space, userId);
+		}
 
 		log.info("traversing (with deps) space " + space.getName());
 		for (Space sub : space.getSubspaces()) {

@@ -224,6 +224,7 @@ public class UploadBenchmark extends HttpServlet {
 				}
 				
 				if(resumable) { // if the upload is resumable, we want it to be processed by the periodic task.
+					ResumableUploadsMonitor.processResumableBenchmarks();
 					return ids;
 				}
 				
@@ -301,28 +302,44 @@ public class UploadBenchmark extends HttpServlet {
 		Uploads.fileExtractComplete(statusId);
 		log.info("Extraction Complete");
 
+		return UploadBenchmark.process(userId, spaceId, typeId, downloadable, perm, uploadMethod, statusId, hasDependencies, linked, depRootSpaceId, resumable, uniqueDir, result, true);
+	}
+
+	public static List<Integer> process(int userId, int spaceId, int typeId, boolean downloadable, Permission perm,
+			String uploadMethod, int statusId, boolean hasDependencies, boolean linked, Integer depRootSpaceId,
+			Boolean resumable, File uniqueDir, Space result, Boolean checkSpaceConflicts)
+			throws IOException, StarExecException {
+		result.setId(spaceId);
+		log.debug("DANNY: beginning of UploadBenchmark.process : result.getId()=" + result.getId());
 		// update Status
 		Uploads.processingBegun(statusId);
 
-		if (uploadMethod.equals("convert")) {
-			log.debug("convert");
+		List<Integer> ids = new ArrayList<Integer>();
 
+		if (uploadMethod.equals("convert")) {
+			log.debug("DANNY: in convert");
 			// first we test to see if any names conflict
-			ValidatorStatusCode status = doSpaceNamesConflict(uniqueDir, spaceId);
-			if (!status.isSuccess()) {
-				Uploads.setBenchmarkErrorMessage(statusId, status.getMessage());
-				return ids;
+			if (checkSpaceConflicts) {
+				ValidatorStatusCode status = doSpaceNamesConflict(uniqueDir, spaceId);
+				log.debug("DANNY: doSpaceNamesConflict(uniqueDir, spaceId).isSuccess(): "
+						+ doSpaceNamesConflict(uniqueDir, spaceId).isSuccess());
+				if (!status.isSuccess()) {
+					Uploads.setBenchmarkErrorMessage(statusId, status.getMessage());
+					return ids;
+				}
 			}
 
 			Spaces.addWithBenchmarks(result, userId, depRootSpaceId, linked, statusId,
 					hasDependencies);
 		} else if (uploadMethod.equals("dump")) {
+			log.debug("DANNY: in dump");
 			List<Benchmark> benchmarks = result.getBenchmarksRecursively();
 
 			ids.addAll(Benchmarks.processAndAdd(benchmarks, spaceId, depRootSpaceId, linked, statusId,
 					hasDependencies));
 		}
 		log.info("Handle upload method complete in " + spaceId + "for user " + userId);
+
 		return ids;
 	}
 
