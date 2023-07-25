@@ -1135,4 +1135,31 @@ public class Uploads {
 			Common.safeClose(procedure);
 		}
 	}
+
+	public static Integer getBenchmarksToSkip(Integer statusId){
+		if (statusId == null) {
+			return 0;
+		}
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL GetBenchmarksToSkip(?)}");
+
+			procedure.setInt(1, statusId);
+			results = procedure.executeQuery();
+			if(results.next()){
+				return results.getInt("skips");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return 0;
+	}
 }

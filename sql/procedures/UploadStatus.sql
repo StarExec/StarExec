@@ -362,3 +362,11 @@ CREATE PROCEDURE SetPermissionsId(IN _id INT, IN _permId INT)
 		SET permission_id = _permId
 		WHERE id = _id;
 	END //
+
+DROP PROCEDURE IF EXISTS GetBenchmarksToSkip //
+CREATE PROCEDURE GetBenchmarksToSkip(IN _id INT)
+	BEGIN
+		SELECT (validated_benchmarks + failed_benchmarks) AS skips
+		FROM benchmark_uploads
+		WHERE id = _id;
+	END //
