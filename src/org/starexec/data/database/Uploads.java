@@ -1083,7 +1083,7 @@ public class Uploads {
 		}
 	}
 
-	public static Boolean setBUdeets(Integer statusId, Boolean downloadable, Boolean hasDependencies, Boolean linked, String uploadMethod){
+	public static Boolean setBenchmarkUploadStatusDetails(Integer statusId, Boolean downloadable, Boolean hasDependencies, Boolean linked, String uploadMethod){
 		if (statusId == null) {
 			return false;
 		}
@@ -1093,7 +1093,7 @@ public class Uploads {
 		try {
 			con = Common.getConnection();
 
-			procedure = con.prepareCall("{CALL SetBUdeets(?,?,?,?,?)}");
+			procedure = con.prepareCall("{CALL SetBenchmarkUploadStatusDetails(?,?,?,?,?)}");
 
 			procedure.setInt(1, statusId);
 			procedure.setBoolean(2, downloadable);

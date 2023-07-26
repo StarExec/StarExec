@@ -344,8 +344,8 @@ CREATE PROCEDURE GetTypeId(IN _id INT)
 		WHERE id = _id;
 	END //
 
-DROP PROCEDURE IF EXISTS SetBUdeets //
-CREATE PROCEDURE SetBUdeets(IN _id INT, IN _downloadable TINYINT, IN _hasdeps TINYINT, IN _linked TINYINT, IN _uploadmethod VARCHAR(256))
+DROP PROCEDURE IF EXISTS SetBenchmarkUploadStatusDetails //
+CREATE PROCEDURE SetBenchmarkUploadStatusDetails(IN _id INT, IN _downloadable TINYINT, IN _hasdeps TINYINT, IN _linked TINYINT, IN _uploadmethod VARCHAR(256))
 	BEGIN
 		UPDATE benchmark_uploads
 		SET downloadable = _downloadable,

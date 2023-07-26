@@ -272,7 +272,7 @@ public class UploadBenchmark extends HttpServlet {
 		Uploads.setResumableBenchmarkUploadPath(statusId, uniqueDir.getAbsolutePath());
 		log.debug("DANNY settypeId success?: " + Uploads.setResumableBenchmarkUploadTypeId(statusId, typeId));
 		log.debug("DANNY typeId: "+typeId);
-		Uploads.setBUdeets(statusId, downloadable, hasDependencies, linked, uploadMethod);
+		Uploads.setBenchmarkUploadStatusDetails(statusId, downloadable, hasDependencies, linked, uploadMethod);
 		Uploads.setPermissionsId(statusId, Permissions.addPermission(perm));
 
 		return true;
@@ -362,7 +362,7 @@ public class UploadBenchmark extends HttpServlet {
 		 * @throws Exception
 		 */
 		public static void addBenchmarksGit(File gitSpace, int userId, int spaceId, int typeId, boolean downloadable, Permission perm,
-		String uploadMethod, int statusId, boolean hasDependencies, boolean linked, Integer depRootSpaceId)
+		String uploadMethod, int statusId, boolean hasDependencies, boolean linked, Integer depRootSpaceId, boolean resumable)
 		throws IOException, StarExecException{
 			ArrayList<Integer> benchmarkIds = new ArrayList<>();
 
@@ -387,48 +387,53 @@ public class UploadBenchmark extends HttpServlet {
 			log.info("upload complete - now extracting");
 			Uploads.benchmarkFileUploadComplete(statusId);
 			
-			
-			log.debug("has dependencies = " + hasDependencies);
-			log.debug("linked = " + linked);
-			log.debug("depRootSpaceIds = " + depRootSpaceId);
-			
-			log.info("about to add benchmarks to space " + spaceId + " for user " + userId);
-			Space result = Benchmarks.extractSpacesAndBenchmarks(gitSpace, typeId, userId, downloadable, perm, statusId);
-			if (result == null) {
-				String message = "StarExec has failed to extract the spaces and benchmarks from the files.";
-				Uploads.setBenchmarkErrorMessage(statusId, message);
-				log.error(message + " - status id = " + statusId);
-				return;
+			if(resumable) { // if the upload is resumable, we want it to be processed by the periodic task.
+				ResumableUploadsMonitor.processResumableBenchmarks();
+			} else {
+				UploadBenchmark.extractAndProcess(userId, spaceId, typeId, downloadable, perm, uploadMethod, statusId, hasDependencies, linked, depRootSpaceId, resumable, gitSpace);
 			}
-			result.setId(spaceId);
+
+			// log.debug("has dependencies = " + hasDependencies);
+			// log.debug("linked = " + linked);
+			// log.debug("depRootSpaceIds = " + depRootSpaceId);
 			
-			//update upload status
-			//This was apart of the orignial archive process so I left the message update
-			log.info("Extraction Complete");
-			Uploads.fileExtractComplete(statusId);
+			// log.info("about to add benchmarks to space " + spaceId + " for user " + userId);
+			// Space result = Benchmarks.extractSpacesAndBenchmarks(gitSpace, typeId, userId, downloadable, perm, statusId);
+			// if (result == null) {
+			// 	String message = "StarExec has failed to extract the spaces and benchmarks from the files.";
+			// 	Uploads.setBenchmarkErrorMessage(statusId, message);
+			// 	log.error(message + " - status id = " + statusId);
+			// 	return;
+			// }
+			// result.setId(spaceId);
 			
-			//update Status
-			Uploads.processingBegun(statusId);
+			// //update upload status
+			// //This was apart of the orignial archive process so I left the message update
+			// log.info("Extraction Complete");
+			// Uploads.fileExtractComplete(statusId);
+			
+			// //update Status
+			// Uploads.processingBegun(statusId);
 
-			if (uploadMethod.equals("convert")) {
-				log.debug("convert");
+			// if (uploadMethod.equals("convert")) {
+			// 	log.debug("convert");
 
-				//first we test to see if any names conflict
-				ValidatorStatusCode status = doSpaceNamesConflict(gitSpace, spaceId);
-				if (!status.isSuccess()) {
-					Uploads.setBenchmarkErrorMessage(statusId, status.getMessage());
-					return;
-				}
+			// 	//first we test to see if any names conflict
+			// 	ValidatorStatusCode status = doSpaceNamesConflict(gitSpace, spaceId);
+			// 	if (!status.isSuccess()) {
+			// 		Uploads.setBenchmarkErrorMessage(statusId, status.getMessage());
+			// 		return;
+			// 	}
 
-				Spaces.addWithBenchmarks(result, userId, depRootSpaceId, linked, statusId,
-		                                         hasDependencies);
-			} else if (uploadMethod.equals("dump")) {
-				List<Benchmark> benchmarks = result.getBenchmarksRecursively();
+			// 	Spaces.addWithBenchmarks(result, userId, depRootSpaceId, linked, statusId,
+		  //                                        hasDependencies);
+			// } else if (uploadMethod.equals("dump")) {
+			// 	List<Benchmark> benchmarks = result.getBenchmarksRecursively();
 
-				Benchmarks.processAndAdd(benchmarks, spaceId, depRootSpaceId, linked, statusId,
-				                         hasDependencies
-				);
-			}
+			// 	Benchmarks.processAndAdd(benchmarks, spaceId, depRootSpaceId, linked, statusId,
+			// 	                         hasDependencies
+			// 	);
+			// }
 			log.info("Handle upload method complete in " + spaceId + "for user " + userId);
 		}
 
@@ -566,7 +571,7 @@ public class UploadBenchmark extends HttpServlet {
 			Util.threadPoolExecute(() -> {
 				try {
 					addBenchmarksGit(gitSpace, userId, spaceId, typeId, downloadable, perm, uploadMethod,
-					                         statusId, hasDependencies, linked, depRootSpaceId
+					                         statusId, hasDependencies, linked, depRootSpaceId, resumable
 					);
 
 					BenchmarkUploadStatus status = Uploads.getBenchmarkStatus(statusId);

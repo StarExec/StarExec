@@ -504,7 +504,7 @@ public class Benchmarks {
 		// 	log.info("No benches to add with this call to addWithDeps from space " + spaceId);
 		// 	return new ArrayList<>();
 		// }
-		return attachBenchAttrs2(benchmarks, spaceId, depRootSpaceId, linked, statusId, usesDeps);
+		return processAndAddLinearly(benchmarks, spaceId, depRootSpaceId, linked, statusId, usesDeps);
 	}
 
 	/**
@@ -681,7 +681,7 @@ public class Benchmarks {
 	}
 	
 	// wip: odin5on
-	public static List<Integer> attachBenchAttrs2(List<Benchmark> benchmarks, Integer spaceId, Integer depRootSpaceId,
+	public static List<Integer> processAndAddLinearly(List<Benchmark> benchmarks, Integer spaceId, Integer depRootSpaceId,
 			Boolean linked, Integer statusId, Boolean usesDeps)
 			throws IOException, StarExecException {
 		if (!benchmarks.isEmpty()) {
@@ -806,7 +806,7 @@ public class Benchmarks {
 	
 						benchmarkIds.add(id);
 					} catch (Exception e) {
-						log.error("attachBenchAttrs2", e);
+						log.error("processAndAddLinearly", e);
 					}
 
 					if (validatedCounter > 0) {
