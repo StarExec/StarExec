@@ -334,6 +334,14 @@ public class Uploads {
 		s.setEverythingComplete(results.getBoolean("everything_complete"));
 		s.setErrorMessage(results.getString("error_message"));
 		s.setFailedBenchmarks(results.getInt("failed_benchmarks"));
+		s.setResumable(results.getBoolean("resumable"));
+		s.setPath(results.getString("path"));
+		s.setTypeId(results.getInt("type_id"));
+		s.setDownloadable(results.getBoolean("downloadable"));
+		s.setHasDependencies(results.getBoolean("has_dependencies"));
+		s.setLinked(results.getBoolean("linked"));
+		s.setUploadMethod(results.getString("upload_method"));
+		s.setPermission(Permissions.getPermissionFromId(results.getInt("permission_id")));
 		return s;
 	}
 
@@ -460,6 +468,108 @@ public class Uploads {
 		}
 
 		return null;
+	}
+
+	public static Boolean setResumableBenchmarkUpload(Integer statusId, Boolean resumable) {
+		if (statusId == null || statusId <= 0) {
+			return false;
+		}
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL SetResumable(?,?)}");
+
+			procedure.setInt(1, statusId);
+			if(resumable){
+				procedure.setInt(2, 1);
+			}
+			else{
+				procedure.setInt(2, 0);
+			}
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return false;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+
+	public static Boolean getResumableBenchmarkUpload(int id) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetResumable(?)}");
+			procedure.setInt(1, id);
+			results = procedure.executeQuery();
+			if (results.next()) {
+				return results.getBoolean(1);
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(results);
+			Common.safeClose(procedure);
+		}
+
+		return null;
+	}
+
+	public static Boolean setResumableBenchmarkUploadPath(Integer statusId, String path) {
+		if (statusId == null || statusId <= 0) {
+			return false;
+		}
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL SetPath(?,?)}");
+
+			procedure.setInt(1, statusId);
+			procedure.setString(2, path);
+			
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return false;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+
+	public static Boolean setResumableBenchmarkUploadTypeId(Integer statusId, Integer typeId){
+		if (statusId == null || statusId <= 0) {
+			return false;
+		}
+		Connection con = null;
+		CallableStatement procedure = null;
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL SetTypeId(?,?)}");
+
+			procedure.setInt(1, statusId);
+			procedure.setInt(2, typeId);
+			
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return false;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
 	}
 
 	/**
@@ -940,5 +1050,115 @@ public class Uploads {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
+	}
+
+	/**
+	 * Gets all resumable benchmark uploads to be processed by periodic task
+	 */
+	public static List<BenchmarkUploadStatus> getResumableBenchmarkUploads(){
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			con = Common.getConnection();
+			procedure = con.prepareCall("{CALL GetResumableBenchmarkUploads()}");
+			results = procedure.executeQuery();
+
+			List<BenchmarkUploadStatus> benchmarksToProcess = new LinkedList<>();
+
+			while(results.next()){
+				benchmarksToProcess.add(Uploads.resultsToBenchmarkUploadStatus(results));
+			}
+
+			return benchmarksToProcess;
+
+		} catch (Exception e) {
+			log.error("getResumableBenchmarkUploads", e.getMessage());
+			return (new LinkedList<BenchmarkUploadStatus>());
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+	}
+
+	public static Boolean setBenchmarkUploadStatusDetails(Integer statusId, Boolean downloadable, Boolean hasDependencies, Boolean linked, String uploadMethod){
+		if (statusId == null) {
+			return false;
+		}
+		Connection con = null;
+		CallableStatement procedure = null;
+
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL SetBenchmarkUploadStatusDetails(?,?,?,?,?)}");
+
+			procedure.setInt(1, statusId);
+			procedure.setBoolean(2, downloadable);
+			procedure.setBoolean(3, hasDependencies);
+			procedure.setBoolean(4, linked);
+			procedure.setString(5, uploadMethod);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return false;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+
+	public static Boolean setPermissionsId(Integer statusId, Integer permissionsId){
+		if (statusId == null) {
+			return false;
+		}
+		Connection con = null;
+		CallableStatement procedure = null;
+
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL SetPermissionsId(?,?)}");
+
+			procedure.setInt(1, statusId);
+			procedure.setInt(2, permissionsId);
+			procedure.executeUpdate();
+			return true;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			return false;
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+	}
+
+	public static Integer getBenchmarksToSkip(Integer statusId){
+		if (statusId == null) {
+			return 0;
+		}
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		
+		try {
+			con = Common.getConnection();
+
+			procedure = con.prepareCall("{CALL GetBenchmarksToSkip(?)}");
+
+			procedure.setInt(1, statusId);
+			results = procedure.executeQuery();
+			if(results.next()){
+				return results.getInt("skips");
+			}
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+		}
+		return 0;
 	}
 }

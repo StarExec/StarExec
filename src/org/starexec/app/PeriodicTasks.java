@@ -5,6 +5,7 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.starexec.constants.R;
 import org.starexec.data.database.*;
 import org.starexec.data.security.GeneralSecurity;
+import org.starexec.data.to.BenchmarkUploadStatus;
 import org.starexec.data.to.ErrorLog;
 import org.starexec.data.to.Status;
 import org.starexec.data.to.User;
@@ -15,8 +16,10 @@ import org.starexec.exceptions.StarExecException;
 import org.starexec.jobs.JobManager;
 import org.starexec.jobs.ProcessingManager;
 import org.starexec.logger.StarLogger;
+import org.starexec.servlets.UploadBenchmark;
 import org.starexec.util.Mail;
 import org.starexec.util.RobustRunnable;
+import org.starexec.util.ResumableUploadsMonitor;
 import org.starexec.util.Util;
 
 import java.io.File;
@@ -24,11 +27,12 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
+import java.util.ArrayList;
 
 /**
  * Class that contains the periodic task enumerations.
@@ -53,7 +57,7 @@ class PeriodicTasks {
         CLEAR_TEMPORARY_FILES(false, CLEAR_TEMPORARY_FILES_TASK, 0, () -> 3, TimeUnit.HOURS),
         CLEAR_JOB_LOG(false, CLEAR_JOB_LOG_TASK, 0, () -> 7, TimeUnit.DAYS),
         CLEAR_JOB_GRAPHS(false, CLEAR_JOB_GRAPHS_TASK, 0, () -> 7, TimeUnit.DAYS),
-	FIND_BROKEN_NODES(true, FIND_BROKEN_NODES_TASK, 0, () -> 6, TimeUnit.HOURS),
+	    FIND_BROKEN_NODES(true, FIND_BROKEN_NODES_TASK, 0, () -> 6, TimeUnit.HOURS),
         CLEAR_JOB_SCRIPTS(false, CLEAR_JOB_SCRIPTS_TASK, 0, () -> 12, TimeUnit.HOURS),
         CLEAN_DATABASE(false, CLEAN_DATABASE_TASK, 0, () -> 7, TimeUnit.DAYS),
         CREATE_WEEKLY_REPORTS(false, CREATE_WEEKLY_REPORTS_TASK, 0, () -> 1, TimeUnit.DAYS),
@@ -62,8 +66,9 @@ class PeriodicTasks {
         UPDATE_COMMUNITY_STATS(false, UPDATE_COMMUNITY_STATS_TASK, 0, () -> 6, TimeUnit.HOURS),
         SAVE_ANALYTICS(false, SAVE_ANALYTICS_TASK, 10, () -> 10, TimeUnit.MINUTES),
         NOTIFY_USERS_OF_JOBS(false, NOTIFY_USERS_OF_JOBS_TASK, 0, () -> 5, TimeUnit.MINUTES),
-	GENERATE_CLUSTER_GRAPH(true, GENERATE_CLUSTER_GRAPH_TASK, 5, () -> 5, TimeUnit.SECONDS);
-	//CLEAR_JOB_SCRIPTS(true, CLEAR_JOB_SCRIPTS_TASK, 0, () -> 7, TimeUnit.DAYS); 
+	    GENERATE_CLUSTER_GRAPH(true, GENERATE_CLUSTER_GRAPH_TASK, 5, () -> 5, TimeUnit.SECONDS),
+        PROCESS_RESUMABLE_BENCHMARKS(true, PROCESS_RESUMABLE_BENCHMARKS_TASK, 0, () -> 1, TimeUnit.HOURS);
+	    //CLEAR_JOB_SCRIPTS(true, CLEAR_JOB_SCRIPTS_TASK, 0, () -> 7, TimeUnit.DAYS); 
 
         public final boolean fullInstanceOnly;
         public final Runnable task;
@@ -391,4 +396,10 @@ class PeriodicTasks {
 			Notifications.sendEmailNotifications();
 		}
 	};
+
+    // Task to look for benchmarks that have not been processed and process them
+    // a part of making the benchmark upload process robust to a system restart
+    // @author: odin5on
+    private static final String processResumableBenchmarksTask = "processResumableBenchmarksTask";
+    private static final ResumableUploadsMonitor PROCESS_RESUMABLE_BENCHMARKS_TASK = new ResumableUploadsMonitor(processResumableBenchmarksTask);
 }

@@ -412,7 +412,7 @@ public class ResourceLoader implements AutoCloseable {
 			Integer statusId = Uploads.createBenchmarkUploadStatus(parentSpaceId, userId);
 			Permission p=new Permission();
 			List<Integer> ids=UploadBenchmark.addBenchmarksFromArchive(archiveCopy, userId, parentSpaceId, Processors.getNoTypeProcessor().getId(), false, p,
-					"dump", statusId, false, false, null);
+					"dump", statusId, false, false, null, Uploads.getResumableBenchmarkUpload(statusId));
 			for (Integer i : ids) {
 				Benchmarks.updateDetails(i, TestUtil.getRandomAlphaString(DB.BENCH_NAME_LEN-2), TestUtil.getRandomAlphaString(50),
 						false, Processors.getNoTypeProcessor().getId());

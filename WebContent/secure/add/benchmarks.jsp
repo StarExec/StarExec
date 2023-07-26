@@ -29,9 +29,9 @@
 		request.setAttribute("types", postProcs);
 		request.setAttribute("userSpaces", userSpaces);
 		request.setAttribute("defaultProc", defaultProc);
-		request.setAttribute("dependenciesEnabled",
-		                     settings.isDependenciesEnabled()
-		);
+		request.setAttribute("dependenciesEnabled", settings.isDependenciesEnabled());
+
+
 		// Verify this user can add spaces to this space
 		Permission p = SessionUtil.getPermission(request, spaceId);
 		if ((p == null || !p.canAddBenchmark()) &&
@@ -186,6 +186,18 @@
 							type="radio" name="dependency" value="false"/>
 						<label
 								for="radioNoDependency">no</label></td>
+				</tr>
+				<tr
+						title="Do you want the processing of benchmarks to resume if the system goes down during processing?">
+					<td class="label"><p>resumable</p></td>
+					<td id="selectResumable"><input
+							id="radioResumable" type="radio"
+							name="resumable" value="true"/> <label
+							for="radioResumable">yes</label> <input
+							id="radioNotResumable"
+							type="radio" name="resumable" value="false" checked="checked"/>
+						<label
+								for="radioNotResumable">no</label></td>
 				</tr>
 				<tr id="depSpaces">
 					<td class="label"><p>dependency root space</p></td>

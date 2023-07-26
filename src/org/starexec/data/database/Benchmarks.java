@@ -478,32 +478,7 @@ public class Benchmarks {
 			List<Benchmark> benchmarks, Integer spaceId, Integer depRootSpaceId, Boolean linked, Integer statusId,
 			Boolean usesDeps, Connection con
 	) throws IOException, SQLException, StarExecException {
-		if (!benchmarks.isEmpty()) {
-			log.info("Adding (with deps) " + benchmarks.size() + " to Space " + spaceId);
-			// Get the processor of the first benchmark (they should all have the same processor)
-			Processor p = Processors.get(benchmarks.get(0).getType().getId());
-
-			log.info("About to attach attributes to " + benchmarks.size());
-
-			Benchmarks.attachBenchAttrs(benchmarks, p, statusId);
-			if (usesDeps) {
-				boolean success = Benchmarks.validateDependencies(benchmarks, depRootSpaceId, linked, statusId);
-				if (!success) {
-					Uploads.setBenchmarkErrorMessage(
-							statusId,
-							"Benchmark dependencies failed to validate. Please check your processor output"
-					);
-				return null;
-				}
-			}
-
-			// Next add them to the database (must happen AFTER they are processed and have dependencies
-			// validated);
-			return Benchmarks.addAndAssociate(benchmarks, spaceId, statusId);
-		} else {
-			log.info("No benches to add with this call to addWithDeps from space " + spaceId);
-			return new ArrayList<>();
-		}
+		return processAndAddLinearly(benchmarks, spaceId, depRootSpaceId, linked, statusId, usesDeps);
 	}
 
 	/**
@@ -611,70 +586,214 @@ public class Benchmarks {
 		int failedCounter = 0; //stores the TOTAL number of benchmarks that failed
 		Timer timer = new Timer();
 		for (Benchmark b : benchmarks) {
-			List<File> files = new ArrayList<>();
-			files.add(new File(p.getFilePath()));
-			files.add(new File(b.getPath()));
-			File sandbox = Util.copyFilesToNewSandbox(files);
-			String benchPath = new File(sandbox, new File(b.getPath()).getName()).getAbsolutePath();
-			File working = new File(sandbox, new File(p.getFilePath()).getName());
-			// Run the processor on the benchmark file
-			log.info("executing - " + p.getExecutablePath() + " \"" + b.getPath() + "\"");
-			String[] procCmd = new String[2];
-
-			procCmd[0] = "./" + R.PROCESSOR_RUN_SCRIPT;
-			procCmd[1] = benchPath;
-			String propstr = null;
-			propstr = Util.executeSandboxCommand(procCmd, null, working);
-
-			checkProcessorOutput(propstr);
-
-			FileUtils.deleteQuietly(sandbox);
-			// Load results into a properties file
-			Properties prop = new Properties();
-
-			prop.load(new StringReader(propstr));
-
-			log.debug("read this string from the processor: " + propstr);
-			log.debug("read " + prop.size() + " properties");
-
-			// Attach the attributes to the benchmark
-			Map<String, String> attrs = new HashMap<>();
-
-			for (Object o : prop.keySet()) {
-				attrs.put((String) o, (String) prop.get(o));
-			}
-			b.setAttributes(attrs);
-			count--;
-			if (Benchmarks.isBenchValid(attrs)) {
-				validatedCounter++;
-				if (timer.getTime() > R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
-					Uploads.incrementValidatedBenchmarks(statusId, validatedCounter);
-					validatedCounter = 0;
-					timer.reset();
+			if(ResumableUploadsMonitor.doneSkippingBenchmarks(statusId)){
+				List<File> files = new ArrayList<>();
+				files.add(new File(p.getFilePath()));
+				files.add(new File(b.getPath()));
+				File sandbox = Util.copyFilesToNewSandbox(files);
+				String benchPath = new File(sandbox, new File(b.getPath()).getName()).getAbsolutePath();
+				File working = new File(sandbox, new File(p.getFilePath()).getName());
+				// Run the processor on the benchmark file
+				log.info("executing - " + p.getExecutablePath() + " \"" + b.getPath() + "\"");
+				String[] procCmd = new String[2];
+	
+				procCmd[0] = "./" + R.PROCESSOR_RUN_SCRIPT;
+				procCmd[1] = benchPath;
+				String propstr = null;
+				propstr = Util.executeSandboxCommand(procCmd, null, working);
+	
+				checkProcessorOutput(propstr);
+	
+				FileUtils.deleteQuietly(sandbox);
+				// Load results into a properties file
+				Properties prop = new Properties();
+	
+				prop.load(new StringReader(propstr));
+	
+				log.debug("read this string from the processor: " + propstr);
+				log.debug("read " + prop.size() + " properties");
+	
+				// Attach the attributes to the benchmark
+				Map<String, String> attrs = new HashMap<>();
+	
+				for (Object o : prop.keySet()) {
+					attrs.put((String) o, (String) prop.get(o));
 				}
-			} else {
-				failedCounter++;
-				Uploads.incrementFailedBenchmarks(statusId, 1);
-				if (failedCounter < R.MAX_FAILED_VALIDATIONS) {
-					if (propstr.length() > DB.TEXT_FIELD_LEN) {
-						propstr = propstr.substring(0, DB.TEXT_FIELD_LEN);
+				b.setAttributes(attrs);
+				count--;
+				if (Benchmarks.isBenchValid(attrs)) {
+					validatedCounter++;
+					if (timer.getTime() > R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
+						Uploads.incrementValidatedBenchmarks(statusId, validatedCounter);
+						validatedCounter = 0;
+						timer.reset();
 					}
-					Uploads.addFailedBenchmark(statusId, b.getName(), propstr);
-					String message = b.getName() + " failed validation";
-					log.debug(message);
-					Uploads.setBenchmarkErrorMessage(statusId, message);
 				} else {
-					String message = "Major Benchmark Validation Errors - examine your validator";
-					log.warn(message + ", status id = " + statusId);
-					Uploads.setBenchmarkErrorMessage(statusId, message);
+					failedCounter++;
+					Uploads.incrementFailedBenchmarks(statusId, 1);
+					if (failedCounter < R.MAX_FAILED_VALIDATIONS) {
+						if (propstr.length() > DB.TEXT_FIELD_LEN) {
+							propstr = propstr.substring(0, DB.TEXT_FIELD_LEN);
+						}
+						Uploads.addFailedBenchmark(statusId, b.getName(), propstr);
+						String message = b.getName() + " failed validation";
+						log.debug(message);
+						Uploads.setBenchmarkErrorMessage(statusId, message);
+					} else {
+						String message = "Major Benchmark Validation Errors - examine your validator";
+						log.warn(message + ", status id = " + statusId);
+						Uploads.setBenchmarkErrorMessage(statusId, message);
+					}
 				}
+				log.info(b.getName() + " processed. " + count + " more benchmarks to go.");
 			}
-			log.info(b.getName() + " processed. " + count + " more benchmarks to go.");
 		}
 		if (validatedCounter > 0) {
 			Uploads.incrementValidatedBenchmarks(statusId, validatedCounter);
 		}
 		return true;
+	}
+	
+	// wip: odin5on
+	public static List<Integer> processAndAddLinearly(List<Benchmark> benchmarks, Integer spaceId, Integer depRootSpaceId,
+			Boolean linked, Integer statusId, Boolean usesDeps)
+			throws IOException, StarExecException {
+		if (!benchmarks.isEmpty()) {
+			log.info("Adding (with deps) " + benchmarks.size() + " to Space " + spaceId);
+
+			// Get the processor of the first benchmark (they should all have the same
+			// processor)
+			Processor p = Processors.get(benchmarks.get(0).getType().getId());
+
+			HashMap<String, BenchmarkDependency> foundDependencies = new HashMap<>();
+
+			ArrayList<Integer> benchmarkIds = new ArrayList<>();
+
+			// if we are using the no_type processor, we do not need to actually execute
+			// anything-- just validate every
+			// benchmark.
+			int notype = Processors.getNoTypeProcessor().getId();
+
+			log.info("Beginning processing for " + benchmarks.size() + " benchmarks");
+			int count = benchmarks.size();
+			// For each benchmark in the list to process...
+			int validatedCounter = 0; // stores the number of benchmarks that have been validated since the last
+																// update
+			int failedCounter = 0; // stores the TOTAL number of benchmarks that failed
+			Timer timer = new Timer();
+			for (Benchmark b : benchmarks) {
+				if (ResumableUploadsMonitor.doneSkippingBenchmarks(statusId)) {
+
+					if (p.getId() == notype) {
+
+						Map<String, String> prop = new HashMap<>();
+						prop.put(R.VALID_BENCHMARK_ATTRIBUTE, "true");
+						b.setAttributes(prop);
+					} else {
+
+						List<File> files = new ArrayList<>();
+						files.add(new File(p.getFilePath()));
+						files.add(new File(b.getPath()));
+						File sandbox = Util.copyFilesToNewSandbox(files);
+						String benchPath = new File(sandbox, new File(b.getPath()).getName()).getAbsolutePath();
+						File working = new File(sandbox, new File(p.getFilePath()).getName());
+						// Run the processor on the benchmark file
+						log.info("executing - " + p.getExecutablePath() + " \"" + b.getPath() + "\"");
+						String[] procCmd = new String[2];
+
+						procCmd[0] = "./" + R.PROCESSOR_RUN_SCRIPT;
+						procCmd[1] = benchPath;
+						String propstr = null;
+						propstr = Util.executeSandboxCommand(procCmd, null, working);
+
+						checkProcessorOutput(propstr);
+
+						FileUtils.deleteQuietly(sandbox);
+						// Load results into a properties file
+						Properties prop = new Properties();
+
+						prop.load(new StringReader(propstr));
+
+						log.debug("read this string from the processor: " + propstr);
+						log.debug("read " + prop.size() + " properties");
+
+						// Attach the attributes to the benchmark
+						Map<String, String> attrs = new HashMap<>();
+
+						for (Object o : prop.keySet()) {
+							attrs.put((String) o, (String) prop.get(o));
+						}
+						b.setAttributes(attrs);
+						count--;
+						if (Benchmarks.isBenchValid(attrs)) {
+							validatedCounter++;
+							if (timer.getTime() > R.UPLOAD_STATUS_TIME_BETWEEN_UPDATES) {
+								Uploads.incrementValidatedBenchmarks(statusId, validatedCounter);
+								validatedCounter = 0;
+								timer.reset();
+							}
+						} else {
+							failedCounter++;
+							Uploads.incrementFailedBenchmarks(statusId, 1);
+							if (failedCounter < R.MAX_FAILED_VALIDATIONS) {
+								if (propstr.length() > DB.TEXT_FIELD_LEN) {
+									propstr = propstr.substring(0, DB.TEXT_FIELD_LEN);
+								}
+								Uploads.addFailedBenchmark(statusId, b.getName(), propstr);
+								String message = b.getName() + " failed validation";
+								log.debug(message);
+								Uploads.setBenchmarkErrorMessage(statusId, message);
+							} else {
+								String message = "Major Benchmark Validation Errors - examine your validator";
+								log.warn(message + ", status id = " + statusId);
+								Uploads.setBenchmarkErrorMessage(statusId, message);
+							}
+						}
+						log.info(b.getName() + " processed. " + count + " more benchmarks to go.");
+					}
+					// new things inserted into attachBenchAttrs
+
+					// validate dependencies
+					if (usesDeps) {
+						String out = validateIndBenchDependencies(b, spaceId, linked, foundDependencies);
+						if (out != "true") {
+							log.warn("Dependent benchs not found for Bench " + b.getName());
+							Uploads.addFailedBenchmark(statusId, b.getName(),
+									"Dependancy check failed for this benchmark. Failed search for " + out + ".");
+							Uploads.setBenchmarkErrorMessage(statusId,
+									"Benchmark dependencies failed to validate. Please check your processor output");
+							return null;
+						}
+					}
+
+					// add and associate
+					try {
+						int id = Benchmarks.addAndAssociate(b, spaceId, statusId);
+						if (id < 0) {
+							String message = ("failed to add bench " + b.getName());
+							Uploads.setBenchmarkErrorMessage(statusId, message);
+							// Note - this does not occur when Benchmark fails validation even though those
+							// benchmarks not added
+							throw new StarExecValidationException(
+									String.format("Failed to add benchmark [%s] to space [%d]", b.getName(), spaceId));
+						}
+	
+						benchmarkIds.add(id);
+						Uploads.incrementCompletedBenchmarks(statusId, 1);
+					} catch (Exception e) {
+						log.error("processAndAddLinearly", e);
+					}
+
+					if (validatedCounter > 0) {
+						Uploads.incrementValidatedBenchmarks(statusId, validatedCounter);
+					}
+				}
+			}
+			return benchmarkIds;
+		} else {
+			log.info("No benches to add with this call to addWithDeps from space " + spaceId);
+			return new ArrayList<>();
+		}
 	}
 
 	/**
@@ -973,6 +1092,50 @@ public class Benchmarks {
 		Uploads.incrementTotalBenchmarks(statusId, benchCounter);//for upload status page
 		Uploads.incrementTotalSpaces(statusId, spaceCounter);//for upload status page
 
+		return space;
+	}
+
+	public static Space buildCompleteSpace(
+			File directory, int typeId, int userId, boolean downloadable, Permission perm, Integer statusId
+	) throws IOException, StarExecException {
+		// Create a space for the current directory and set it's name
+		Space space = new Space();
+		space.setName(directory.getName());
+		space.setPermission(perm);
+		String spaceDescription = "";
+
+		// Search for description file within the directory...
+		File descriptionFile = new File(directory, R.BENCHMARK_DESC_PATH);
+		if (descriptionFile.exists()) {
+			spaceDescription = FileUtils.readFileToString(descriptionFile);
+		}
+
+		space.setDescription(spaceDescription);
+		for (File f : directory.listFiles()) {
+
+			// If it's a sub-directory
+			if (f.isDirectory()) {
+				// Recursively extract spaces/benchmarks from that directory
+				space.getSubspaces()
+							.add(Benchmarks.buildCompleteSpace(f, typeId, userId, downloadable, perm, statusId));
+			}
+
+      else if ((!f.getName().equals(R.BENCHMARK_DESC_PATH)) && (!f.getName().equals("README.md")) &&
+              (!f.getName().equals(".gitattributes")) && (!f.getName().equals(".gitignore")) &&
+							(!f.getName().equals(".gitmodules")) && (!f.getName().equals(".git")))
+
+       { //Not a description file, readme, .gitattributes, .gitmodules, and .gitignore
+
+				if (Validator.isValidBenchName(f.getName())) {
+					space.addBenchmark(constructBenchmark(f, typeId, downloadable, userId));
+				}
+        else {
+					String msg = "\"" + f.getName() + "\" is not accepted as a legal benchmark name.";
+					Uploads.setBenchmarkErrorMessage(statusId, msg);
+					throw new StarExecException(msg);
+				}
+			}
+		}
 		return space;
 	}
 

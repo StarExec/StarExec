@@ -2511,8 +2511,20 @@ public class Spaces {
 	protected static void traverse(
 			Space space, int userId, Integer depRootSpaceId, Boolean linked, Integer statusId
 	) throws IOException, StarExecException {
+
+		int spaceId = -1;
+		Boolean addSpace = true;
+		List<Space> spaces = Spaces.getSubSpaces(space.getParentSpace());
+		for(Space s : spaces){
+			if(s.getName().equals(space.getName())){
+				spaceId = s.getId();
+				addSpace = false;
+			}
+		}
 		// Add the new space to the database and get it's ID
-		int spaceId = Spaces.add(space, userId);
+		if(addSpace){
+			spaceId = Spaces.add(space, userId);
+		}
 
 		log.info("traversing (with deps) space " + space.getName());
 		for (Space sub : space.getSubspaces()) {

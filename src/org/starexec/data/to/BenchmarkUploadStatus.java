@@ -22,6 +22,14 @@ public class BenchmarkUploadStatus extends Identifiable {
 	private int completedBenchmarks;
 	private int failedBenchmarks;
 	private String errorMessage;
+	private boolean resumable;
+	private String path;
+	private int typeId;
+	private boolean downloadable;
+	private boolean hasDependencies;
+	private boolean linked;
+	private String uploadMethod;
+	private Permission permission;
     
 
         public BenchmarkUploadStatus() {
@@ -221,6 +229,118 @@ public class BenchmarkUploadStatus extends Identifiable {
 	 */
 	public void setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
+	}
+
+	/**
+	 * @return resumable
+	 */
+	public boolean getResumable() {
+		return resumable;
+	}
+
+	/**
+	 * @param resumable the resumable to set
+	 */
+	public void setResumable(boolean resumable){
+		this.resumable = resumable;
+	}
+
+	/**
+	 * @return the path
+	 */
+	public String getPath() {
+		return path;
+	}
+
+	/**
+	 * @param path the path to set
+	 */
+	public void setPath(String path) {
+		this.path = path;
+	}
+
+	/**
+	 * @return the type ID
+	 */
+	public int getTypeId(){
+		return typeId;
+	}
+
+	/**
+	 * @param typeId the typeId to set
+	 */
+	public void setTypeId(int typeId){
+		this.typeId = typeId;
+	}
+
+	/**
+	 * @return downloadable
+	 */
+	public boolean getDownloadable() {
+		return downloadable;
+	}
+
+	/**
+	 * @param downloadable the downloadable to set
+	 */
+	public void setDownloadable(boolean downloadable){
+		this.downloadable = downloadable;
+	}
+
+	/**
+	 * @return hasDependencies
+	 */
+	public boolean getHasDependencies() {
+		return hasDependencies;
+	}
+
+	/**
+	 * @param hasDependencies the hasDependencies to set
+	 */
+	public void setHasDependencies(boolean hasDependencies){
+		this.hasDependencies = hasDependencies;
+	}
+
+	/**
+	 * @return linked
+	 */
+	public boolean getLinked() {
+		return linked;
+	}
+
+	/**
+	 * @param linked the linked to set
+	 */
+	public void setLinked(boolean linked){
+		this.linked = downloadable;
+	}
+
+	/**
+	 * @return the uploadMethod
+	 */
+	public String getUploadMethod() {
+		return uploadMethod;
+	}
+
+	/**
+	 * @param uploadMethod the uploadMethod to set
+	 */
+	public void setUploadMethod(String uploadMethod) {
+		this.uploadMethod = uploadMethod;
+	}
+
+	/**
+	 * @return the permission
+	 */
+	public Permission getPermission() {
+		return permission;
+	}
+
+	/**
+	 * @param permission the permission to set
+	 */
+	public void setPermission(Permission permission) {
+		this.permission = permission;
 	}
 }
 

@@ -114,6 +114,10 @@
 				<td>upload error message</td>
 				<td>${status.errorMessage}</td>
 			</tr>
+			<tr>
+				<td>resumable</td>
+				<td>${status.resumable}</td>
+			</tr>
 			</tbody>
 		</table>
 	</fieldset>

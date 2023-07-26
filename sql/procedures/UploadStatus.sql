@@ -46,6 +46,34 @@ CREATE PROCEDURE FileExtractComplete(IN _id INT)
 		WHERE id = _id;
 	END //
 
+-- Sets the resumable status of a benchmark upload. (Resumable means it will resume on system restart)
+-- Author: Danny Bodin (odin5on)
+DROP PROCEDURE IF EXISTS SetResumable //
+CREATE PROCEDURE SetResumable(IN _id INT, IN _resumable TINYINT)
+	BEGIN
+		UPDATE benchmark_uploads
+		SET resumable = _resumable
+		WHERE id = _id;
+	END //
+
+DROP PROCEDURE IF EXISTS GetResumable //
+CREATE PROCEDURE GetResumable(IN _id INT)
+	BEGIN
+		SELECT resumable
+		FROM benchmark_uploads
+		WHERE id = _id;
+	END //
+
+-- Sets the path to the resumable benchmark upload.
+-- Author: Danny Bodin (odin5on)
+DROP PROCEDURE IF EXISTS SetPath //
+CREATE PROCEDURE SetPath(IN _id INT, IN _path VARCHAR(256))
+	BEGIN
+		UPDATE benchmark_uploads
+		SET path = _path
+		WHERE id = _id;
+	END //
+
 -- Updates status when java object is created and processing/entering of benchmarks in db has begun
 -- Author: Benton McCune
 DROP PROCEDURE IF EXISTS ProcessingBegun //
@@ -288,3 +316,57 @@ CREATE PROCEDURE GetUploadCountByUserWithQuery(IN _userId INT, IN _query TEXT)
                 WHERE   user_id=_userId AND
                                 (upload_time  LIKE   CONCAT('%', _query, '%'));
         END //
+
+DROP PROCEDURE IF EXISTS GetResumableBenchmarkUploads //
+CREATE PROCEDURE GetResumableBenchmarkUploads()
+	BEGIN
+		SELECT *
+		FROM benchmark_uploads
+		WHERE resumable=TRUE
+		AND everything_complete=FALSE;
+	END //
+
+-- Sets the typeId to the resumable benchmark upload.
+-- Author: Danny Bodin (odin5on)
+DROP PROCEDURE IF EXISTS SetTypeId //
+CREATE PROCEDURE SetTypeId(IN _id INT, IN _typeid INT)
+	BEGIN
+		UPDATE benchmark_uploads
+		SET type_id = _typeid
+		WHERE id = _id;
+	END //
+
+DROP PROCEDURE IF EXISTS GetTypeId //
+CREATE PROCEDURE GetTypeId(IN _id INT)
+	BEGIN
+		SELECT type_id
+		FROM benchmark_uploads
+		WHERE id = _id;
+	END //
+
+DROP PROCEDURE IF EXISTS SetBenchmarkUploadStatusDetails //
+CREATE PROCEDURE SetBenchmarkUploadStatusDetails(IN _id INT, IN _downloadable TINYINT, IN _hasdeps TINYINT, IN _linked TINYINT, IN _uploadmethod VARCHAR(256))
+	BEGIN
+		UPDATE benchmark_uploads
+		SET downloadable = _downloadable,
+				has_dependencies = _hasdeps,
+				linked = _linked,
+				upload_method = _uploadmethod
+		WHERE id = _id;
+	END //
+
+DROP PROCEDURE IF EXISTS SetPermissionsId //
+CREATE PROCEDURE SetPermissionsId(IN _id INT, IN _permId INT)
+	BEGIN
+		UPDATE benchmark_uploads
+		SET permission_id = _permId
+		WHERE id = _id;
+	END //
+
+DROP PROCEDURE IF EXISTS GetBenchmarksToSkip //
+CREATE PROCEDURE GetBenchmarksToSkip(IN _id INT)
+	BEGIN
+		SELECT (validated_benchmarks + failed_benchmarks) AS skips
+		FROM benchmark_uploads
+		WHERE id = _id;
+	END //
