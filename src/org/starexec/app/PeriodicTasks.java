@@ -67,7 +67,7 @@ class PeriodicTasks {
         SAVE_ANALYTICS(false, SAVE_ANALYTICS_TASK, 10, () -> 10, TimeUnit.MINUTES),
         NOTIFY_USERS_OF_JOBS(false, NOTIFY_USERS_OF_JOBS_TASK, 0, () -> 5, TimeUnit.MINUTES),
 	    GENERATE_CLUSTER_GRAPH(true, GENERATE_CLUSTER_GRAPH_TASK, 5, () -> 5, TimeUnit.SECONDS),
-        PROCESS_RESUMABLE_BENCHMARKS(true, PROCESS_RESUMABLE_BENCHMARKS_TASK, 0, () -> 20, TimeUnit.SECONDS);
+        PROCESS_RESUMABLE_BENCHMARKS(true, PROCESS_RESUMABLE_BENCHMARKS_TASK, 0, () -> 1, TimeUnit.HOURS);
 	    //CLEAR_JOB_SCRIPTS(true, CLEAR_JOB_SCRIPTS_TASK, 0, () -> 7, TimeUnit.DAYS); 
 
         public final boolean fullInstanceOnly;
