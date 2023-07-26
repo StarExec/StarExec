@@ -61,6 +61,8 @@ public class ResumableUploadsMonitor extends RobustRunnable { // rename resumabl
             uploadIdFinished(benchmarkUpload.getId());
           } catch (Exception e) {
             log.error("Could not process a resumable benchmark upload", e);
+            // remove from list
+            uploadIdFinished(benchmarkUpload.getId());
           }
         });
       } else {

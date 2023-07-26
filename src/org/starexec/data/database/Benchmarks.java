@@ -779,6 +779,7 @@ public class Benchmarks {
 						}
 	
 						benchmarkIds.add(id);
+						Uploads.incrementCompletedBenchmarks(statusId, 1);
 					} catch (Exception e) {
 						log.error("processAndAddLinearly", e);
 					}
