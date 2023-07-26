@@ -1124,7 +1124,6 @@ public class Benchmarks {
 			File directory, int typeId, int userId, boolean downloadable, Permission perm, Integer statusId
 	) throws IOException, StarExecException {
 		// Create a space for the current directory and set it's name
-		log.debug("DANNY: beginning of buildCompleteSpace");
 		Space space = new Space();
 		space.setName(directory.getName());
 		space.setPermission(perm);
@@ -1162,7 +1161,6 @@ public class Benchmarks {
 				}
 			}
 		}
-		log.debug("DANNY: space benchmarks size: " + space.getBenchmarks().size() + "space subspaces size: " + space.getSubspaces().size());
 		return space;
 	}
 

@@ -215,7 +215,6 @@ public class UploadBenchmark extends HttpServlet {
 			File archiveFile, int userId, int spaceId, int typeId, boolean downloadable, Permission perm,
 			String uploadMethod, int statusId, boolean hasDependencies, boolean linked, Integer depRootSpaceId, Boolean resumable
 			) throws IOException, StarExecException {
-				log.debug("\nDANNY: statusId: "+statusId);
 				List<Integer> ids = new ArrayList<Integer>();
 				final File uniqueDir = getDirectoryForBenchmarkUpload(userId, null);
 				
@@ -270,8 +269,6 @@ public class UploadBenchmark extends HttpServlet {
 
 		// put the path the archive was extracted to in the database
 		Uploads.setResumableBenchmarkUploadPath(statusId, uniqueDir.getAbsolutePath());
-		log.debug("DANNY settypeId success?: " + Uploads.setResumableBenchmarkUploadTypeId(statusId, typeId));
-		log.debug("DANNY typeId: "+typeId);
 		Uploads.setBenchmarkUploadStatusDetails(statusId, downloadable, hasDependencies, linked, uploadMethod);
 		Uploads.setPermissionsId(statusId, Permissions.addPermission(perm));
 
@@ -310,19 +307,15 @@ public class UploadBenchmark extends HttpServlet {
 			Boolean resumable, File uniqueDir, Space result, Boolean checkSpaceConflicts)
 			throws IOException, StarExecException {
 		result.setId(spaceId);
-		log.debug("DANNY: beginning of UploadBenchmark.process : result.getId()=" + result.getId());
 		// update Status
 		Uploads.processingBegun(statusId);
 
 		List<Integer> ids = new ArrayList<Integer>();
 
 		if (uploadMethod.equals("convert")) {
-			log.debug("DANNY: in convert");
 			// first we test to see if any names conflict
 			if (checkSpaceConflicts) {
 				ValidatorStatusCode status = doSpaceNamesConflict(uniqueDir, spaceId);
-				log.debug("DANNY: doSpaceNamesConflict(uniqueDir, spaceId).isSuccess(): "
-						+ doSpaceNamesConflict(uniqueDir, spaceId).isSuccess());
 				if (!status.isSuccess()) {
 					Uploads.setBenchmarkErrorMessage(statusId, status.getMessage());
 					return ids;
@@ -332,7 +325,6 @@ public class UploadBenchmark extends HttpServlet {
 			Spaces.addWithBenchmarks(result, userId, depRootSpaceId, linked, statusId,
 					hasDependencies);
 		} else if (uploadMethod.equals("dump")) {
-			log.debug("DANNY: in dump");
 			List<Benchmark> benchmarks = result.getBenchmarksRecursively();
 
 			ids.addAll(Benchmarks.processAndAdd(benchmarks, spaceId, depRootSpaceId, linked, statusId,
@@ -562,7 +554,6 @@ public class UploadBenchmark extends HttpServlet {
 		}
 
 		final File archiveFile = archive;
-		log.debug("\n\nDANNY: " + archiveFile.getAbsolutePath() +"\n");
 		final File gitSpace = uniqueDir;
 
 		if (localOrUrlOrGit.equals("Git")){

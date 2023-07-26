@@ -22,20 +22,17 @@ public class ResumableUploadsMonitor extends RobustRunnable { // rename resumabl
 
   @Override
   protected void dorun() {
-    log.debug("DANNY: Calling from periodic task");
     processResumableBenchmarks();
   }
 
   public static void processResumableBenchmarks() {
-    log.debug("DANNY: Start of process resumable benchmarks method");
     List<BenchmarkUploadStatus> benchmarksToProcess = Uploads.getResumableBenchmarkUploads();
     Iterator<BenchmarkUploadStatus> b = benchmarksToProcess.iterator();
     HashMap<Integer, Integer> runningIds = getUploadIds();
-    log.debug("DANNY: running Ids: " + runningIds.toString());
+    log.debug("running Ids: " + runningIds.toString());
 
     while (b.hasNext()) {
       BenchmarkUploadStatus benchmarkUpload = b.next();
-      log.debug("DANNY: start processing?: " + (!uploadIdRunning(benchmarkUpload.getId())));
       if (!uploadIdRunning(benchmarkUpload.getId())) {
         Util.threadPoolExecute(() -> {
           try {
@@ -43,7 +40,6 @@ public class ResumableUploadsMonitor extends RobustRunnable { // rename resumabl
             log.info("New thread created to process resumable benchmark upload with ID: " + benchmarkUpload.getId());
             File directory = new File(benchmarkUpload.getPath());
             if (!benchmarkUpload.isFileExtractionComplete()) {
-              log.debug("DANNY: calling UploadBenchmark.extractAndProcess");
               UploadBenchmark.extractAndProcess(benchmarkUpload.getUserId(), benchmarkUpload.getSpaceId(),
                   benchmarkUpload.getTypeId(),
                   benchmarkUpload.getDownloadable(), benchmarkUpload.getPermission(), benchmarkUpload.getUploadMethod(),
@@ -51,7 +47,6 @@ public class ResumableUploadsMonitor extends RobustRunnable { // rename resumabl
                   benchmarkUpload.getHasDependencies(), benchmarkUpload.getLinked(), benchmarkUpload.getSpaceId(),
                   benchmarkUpload.getResumable(), new File(benchmarkUpload.getPath()));
             } else {
-              log.debug("DANNY: calling UploadBenchmark.process");
               UploadBenchmark.process(benchmarkUpload.getUserId(),
                   benchmarkUpload.getSpaceId(), benchmarkUpload.getTypeId(),
                   benchmarkUpload.getDownloadable(), benchmarkUpload.getPermission(),
@@ -82,9 +77,8 @@ public class ResumableUploadsMonitor extends RobustRunnable { // rename resumabl
   public static void addThread(Integer uploadId) {
     // code to see how many to skip is put here
     Integer benchmarksToSkip = Uploads.getBenchmarksToSkip(uploadId);
-    log.debug("DANNY: benchmarksToSkip: " + benchmarksToSkip);
     uploadIds.put(uploadId, benchmarksToSkip);
-    log.debug("DANNY: Thread running to process job with id: " + uploadId);
+    log.debug("Thread running to process job with id: " + uploadId);
   }
 
   public static Boolean uploadIdRunning(Integer uploadId) {
@@ -93,7 +87,7 @@ public class ResumableUploadsMonitor extends RobustRunnable { // rename resumabl
 
   public static void uploadIdFinished(Integer uploadId) {
     uploadIds.remove(Integer.valueOf(uploadId));
-    log.debug("DANNY: Thread finished processing job with id: " + uploadId);
+    log.debug("Thread finished processing job with id: " + uploadId);
   }
 
   public static Boolean doneSkippingBenchmarks(Integer uploadId) {
