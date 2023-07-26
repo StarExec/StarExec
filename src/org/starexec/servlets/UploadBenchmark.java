@@ -378,6 +378,11 @@ public class UploadBenchmark extends HttpServlet {
 
 			log.info("upload complete - now extracting");
 			Uploads.benchmarkFileUploadComplete(statusId);
+
+			Uploads.setResumableBenchmarkUploadPath(statusId, gitSpace.getAbsolutePath());
+			Uploads.setBenchmarkUploadStatusDetails(statusId, downloadable, hasDependencies, linked, uploadMethod);
+			Uploads.setPermissionsId(statusId, Permissions.addPermission(perm));
+			Uploads.setResumableBenchmarkUploadTypeId(statusId, typeId);
 			
 			if(resumable) { // if the upload is resumable, we want it to be processed by the periodic task.
 				ResumableUploadsMonitor.processResumableBenchmarks();
@@ -540,7 +545,9 @@ public class UploadBenchmark extends HttpServlet {
 					;
 					log.error("handleUploadRequest", msg, e);
 				} finally {
-					Uploads.benchmarkEverythingComplete(statusId);
+					if(!resumable){
+						Uploads.benchmarkEverythingComplete(statusId);
+					}
 				}
 			});
 		}
