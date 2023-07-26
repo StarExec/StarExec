@@ -384,48 +384,7 @@ public class UploadBenchmark extends HttpServlet {
 			} else {
 				UploadBenchmark.extractAndProcess(userId, spaceId, typeId, downloadable, perm, uploadMethod, statusId, hasDependencies, linked, depRootSpaceId, resumable, gitSpace);
 			}
-
-			// log.debug("has dependencies = " + hasDependencies);
-			// log.debug("linked = " + linked);
-			// log.debug("depRootSpaceIds = " + depRootSpaceId);
 			
-			// log.info("about to add benchmarks to space " + spaceId + " for user " + userId);
-			// Space result = Benchmarks.extractSpacesAndBenchmarks(gitSpace, typeId, userId, downloadable, perm, statusId);
-			// if (result == null) {
-			// 	String message = "StarExec has failed to extract the spaces and benchmarks from the files.";
-			// 	Uploads.setBenchmarkErrorMessage(statusId, message);
-			// 	log.error(message + " - status id = " + statusId);
-			// 	return;
-			// }
-			// result.setId(spaceId);
-			
-			// //update upload status
-			// //This was apart of the orignial archive process so I left the message update
-			// log.info("Extraction Complete");
-			// Uploads.fileExtractComplete(statusId);
-			
-			// //update Status
-			// Uploads.processingBegun(statusId);
-
-			// if (uploadMethod.equals("convert")) {
-			// 	log.debug("convert");
-
-			// 	//first we test to see if any names conflict
-			// 	ValidatorStatusCode status = doSpaceNamesConflict(gitSpace, spaceId);
-			// 	if (!status.isSuccess()) {
-			// 		Uploads.setBenchmarkErrorMessage(statusId, status.getMessage());
-			// 		return;
-			// 	}
-
-			// 	Spaces.addWithBenchmarks(result, userId, depRootSpaceId, linked, statusId,
-		  //                                        hasDependencies);
-			// } else if (uploadMethod.equals("dump")) {
-			// 	List<Benchmark> benchmarks = result.getBenchmarksRecursively();
-
-			// 	Benchmarks.processAndAdd(benchmarks, spaceId, depRootSpaceId, linked, statusId,
-			// 	                         hasDependencies
-			// 	);
-			// }
 			log.info("Handle upload method complete in " + spaceId + "for user " + userId);
 		}
 

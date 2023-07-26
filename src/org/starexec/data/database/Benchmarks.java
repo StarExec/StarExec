@@ -478,32 +478,6 @@ public class Benchmarks {
 			List<Benchmark> benchmarks, Integer spaceId, Integer depRootSpaceId, Boolean linked, Integer statusId,
 			Boolean usesDeps, Connection con
 	) throws IOException, SQLException, StarExecException {
-		// if (!benchmarks.isEmpty()) {
-		// 	log.info("Adding (with deps) " + benchmarks.size() + " to Space " + spaceId);
-		// 	// Get the processor of the first benchmark (they should all have the same processor)
-		// 	Processor p = Processors.get(benchmarks.get(0).getType().getId());
-
-		// 	log.info("About to attach attributes to " + benchmarks.size());
-
-		// 	Benchmarks.attachBenchAttrs(benchmarks, p, statusId); // this is running the benchmark through the processor
-		// 	if (usesDeps) {
-		// 		boolean success = Benchmarks.validateDependencies(benchmarks, depRootSpaceId, linked, statusId);
-		// 		if (!success) {
-		// 			Uploads.setBenchmarkErrorMessage(
-		// 					statusId,
-		// 					"Benchmark dependencies failed to validate. Please check your processor output"
-		// 			);
-		// 		return null;
-		// 		}
-		// 	}
-
-		// 	// Next add them to the database (must happen AFTER they are processed and have dependencies
-		// 	// validated);
-		// 	return Benchmarks.addAndAssociate(benchmarks, spaceId, statusId);
-		// } else {
-		// 	log.info("No benches to add with this call to addWithDeps from space " + spaceId);
-		// 	return new ArrayList<>();
-		// }
 		return processAndAddLinearly(benchmarks, spaceId, depRootSpaceId, linked, statusId, usesDeps);
 	}
 
