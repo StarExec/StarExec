@@ -43,18 +43,22 @@
 	<c:if test="${isLocalJobPage}">
 		<span style="display:none" id="isLocalJobPage"
 		      value="${isLocalJobPage}"></span>
+		<%-- Get the JSON Data for the space explorer --%>
 		<span style="display:none" id="jobSpaceTreeJson"
 		      value='${jobSpaceTreeJson}'></span>
+		<%-- This is the json with all the subspace data --%>
 		<c:forEach var="jsIdKey"
-		           items="${jobSpaceIdToSubspaceJsonMap.keySet()}">
+		        items="${jobSpaceIdToSubspaceJsonMap.keySet()}">
 			<span style='display:none' id='subspacePanelJson${jsIdKey}'
-			      value='${jobSpaceIdToSubspaceJsonMap.get(jsIdKey)}'></span>
+			    value='${jobSpaceIdToSubspaceJsonMap.get(jsIdKey)}'></span>
 		</c:forEach>
+		<%-- This is the solver stats with cpu time--%>
 		<c:forEach var="jsIdKey"
 		           items="${jobSpaceIdToCpuTimeSolverStatsJsonMap.keySet()}">
 			<span style='display:none' id='jobSpaceCpuTimeSolverStats${jsIdKey}'
 			      value='${jobSpaceIdToCpuTimeSolverStatsJsonMap.get(jsIdKey)}'></span>
 		</c:forEach>
+		<%-- This is the solver stats with wallclock time--%>
 		<c:forEach var="jsIdKey"
 		           items="${jobSpaceIdToWallclockTimeSolverStatsJsonMap.keySet()}">
 			<span style='display:none'

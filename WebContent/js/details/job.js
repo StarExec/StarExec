@@ -1337,7 +1337,7 @@ function handleSpacesData(spaces) {
 				return;
 			}
 			$("#panelActions").after(child); //put the table after the panelActions fieldset
-
+			//if this is a local job page, the getPanelTableInitializer gets the json for the space and parses it.
 			var panelTableInitializer = getPanelTableInitializer(jobId,
 				spaceId);
 			var $panel = $("#panel" + spaceId);
