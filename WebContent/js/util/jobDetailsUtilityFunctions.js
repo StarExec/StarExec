@@ -19,9 +19,17 @@ function showStageSelectors() {
 
 function setTimeButtonText() {
 	if (useWallclock) {
-		$(".changeTime .ui-button-text").html("use CPU time");
+		$(".changeTime .ui-button-text").html("Use CPU Time");
 	} else {
-		$(".changeTime .ui-button-text").html("use wall time");
+		$(".changeTime .ui-button-text").html("Use Wall Time");
+	}
+}
+
+function setUnknownButtonText() {
+	if (includeUnknown) {
+		$("#includeUnknown .ui-button-text").html("Exclude Unknown Status");
+	} else {
+		$("#includeUnknown .ui-button-text").html("Include Unknown Status");
 	}
 }
 

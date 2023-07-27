@@ -2,6 +2,7 @@ var jobSpaceId; //stores the ID of the job space that is currently selected from
 var jobId; //the ID of the job being viewed
 var panelArray = null;
 var useWallclock = true;
+var includeUnknown = false;
 var stageNumber;
 $(document).ready(function() {
 	jobId = $("#jobId").attr("value");
@@ -48,13 +49,25 @@ function initUI() {
 			primary: "ui-icon-folder-open"
 		}
 	});
-	$("#changeTime").button({
+	$(".changeTime").button({
 		icons: {
 			primary: "ui-icon-refresh"
 		}
 
 	});
-	$("#changeTime").click(function() {
+	$("#includeUnknown").button({
+		icons: {
+			primary: "ui-icon-refresh"
+		}
+
+	})
+	$("#includeUnknown").click(
+		function () {
+			includeUnknown = !includeUnknown;
+			setUnknownButtonText();
+		}
+	);
+	$(".changeTime").click(function() {
 		useWallclock = !useWallclock;
 		setTimeButtonText();
 		refreshPanels();
@@ -206,7 +219,7 @@ function initializePanels() {
 
 function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
 	$.post(
-		sSource + useWallclock + '/' + stageNumber,
+		sSource + useWallclock + '/' + stageNumber + '/' + includeUnknown,
 		aoData,
 		function(nextDataTablePage) {
 			//if the user has clicked on a different space since this was called, we want those results, not these

@@ -15,7 +15,7 @@ var getPanelTableInitializer;
 // have not yet returned. If the user clicks on a new job space, these requests will all
 // be aborted, as they will no longer be useful.
 var openAjaxRequests = [];
-var includeUnknowns = false;
+var includeUnknown = false;
 
 $(document).ready(function() {
     initializeGlobalPageVariables();
@@ -917,7 +917,8 @@ function setupEverythingForUnknownStatus(subspaces) {
 	if (!isLocalJobPage) {
 		button.click(
 			function () {
-				includeUnknowns = !includeUnknowns;
+				includeUnknown = !includeUnknown;
+				setUnknownButtonText();
 				//go through all the subspace sumaries and refresh it
 				console.log("clicked");
 				refreshPanels();
@@ -1720,7 +1721,7 @@ function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
 	*/
 	var spaceId = parseInt(sSource.split("/")[6]);
 	var xhr = $.post(
-		sSource + useWallclock + "/" + getSelectedStage() + "/" + includeUnknowns,
+		sSource + useWallclock + "/" + getSelectedStage() + "/" + includeUnknown,
 		aoData,
 		function(nextDataTablePage) {
 			//if the user has clicked on a different space since this was called, we want those results, not these
@@ -1746,9 +1747,9 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 	if (DETAILS_JOB.isAnonymousPage) {
 		postUrl = sSource + "solvers/anonymousLink/pagination/" + curSpaceId + "/" + getParameterByName(
 			"anonId") +
-			"/" + DETAILS_JOB.primitivesToAnonymize + "/false/" + useWallclock + "/" + getSelectedStage() + "/" + includeUnknowns;
+			"/" + DETAILS_JOB.primitivesToAnonymize + "/false/" + useWallclock + "/" + getSelectedStage() + "/" + includeUnknown;
 	} else {
-		postUrl = sSource + "solvers/pagination/" + curSpaceId + "/false/" + useWallclock + "/" + getSelectedStage() + "/" + includeUnknowns;
+		postUrl = sSource + "solvers/pagination/" + curSpaceId + "/false/" + useWallclock + "/" + getSelectedStage() + "/" + includeUnknown;
 	}
 	var xhr = $.post(
 		postUrl,
