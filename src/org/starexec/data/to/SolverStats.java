@@ -184,5 +184,20 @@ public class SolverStats extends Identifiable {
 
 	public int getConfigDeleted() { return configuration.getDeleted(); }
 
+	/* 
+	 * One of the users wanted us to include a button that adds the feature
+	 * to get pairs with an unknown status in the solver tables, this required 
+	 * a redesign of the database table, related procedures, api, along with 
+	 * the associated cache. We need a toString to make sure that the cache
+	 * is working correctly. I made every effort to display what the front end shows.
+	 * @author aguo2 
+	 */
+	@Override
+	public String toString() {
+		return "{" + solver.getName() + ", " + configuration.getName() + ", " + correctJobPairs 
+		+ "/" + getTotalJobPairs() + ", " + incorrectJobPairs + ", " + resourceOutJobPairs + ", " + failedJobPairs + ", " +
+		getUnknown() + ", " + getIncompleteJobPairs() + ", CPU: " + getCpuTime() + ", wall: " + getWallTime() + ", " + getConflicts() + "}";
+	}
+
 
 }

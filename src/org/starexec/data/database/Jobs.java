@@ -1142,15 +1142,16 @@ public class Jobs {
 	) {
 		final int spaceId = space.getId();
 		Collection<SolverStats> stats;
-		/* 
-		if (!includeUnknown) {
-			stats = getCachedJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(spaceId, stageNumber, primitivesToAnonymize);
-			if (stats != null && !stats.isEmpty()) {
-				log.debug("stats already cached in database");
-				return stats;
+		
+		stats = getCachedJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(spaceId, stageNumber, primitivesToAnonymize, includeUnknown);
+		if (stats != null && !stats.isEmpty()) {
+			StringBuilder sb = new StringBuilder();
+			for (SolverStats s : stats) {
+				sb.append(s.toString() + "\n");
 			}
+			log.debug("stats already cached in database:\n" + sb.toString());
+			return stats;
 		}
-		*/
 		
 		int jobId = space.getJobId();
 
@@ -2902,7 +2903,7 @@ public class Jobs {
 	 */
 
 	public static List<SolverStats> getCachedJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(
-			int jobSpaceId, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize
+			int jobSpaceId, int stageNumber, PrimitivesToAnonymize primitivesToAnonymize, boolean includeUnknown
 	) {
 		log.debug("calling GetJobStatsInJobSpace with jobspace = " + jobSpaceId + " and stage = " + stageNumber);
 		int jobId = Spaces.getJobSpace(jobSpaceId).getJobId();
@@ -2912,10 +2913,11 @@ public class Jobs {
 
 		try {
 			con = Common.getConnection();
-			procedure = con.prepareCall("{CALL GetJobStatsInJobSpaceIncludeDeletedConfigs(?,?,?)}");
+			procedure = con.prepareCall("{CALL GetJobStatsInJobSpaceIncludeDeletedConfigs(?,?,?,?)}");
 			procedure.setInt(1, jobSpaceId);
 			procedure.setInt(2, jobId);
 			procedure.setInt(3, stageNumber);
+			procedure.setBoolean(4, includeUnknown);
 			results = procedure.executeQuery();
 			List<SolverStats> stats = new ArrayList<>();
 			while (results.next()) {
