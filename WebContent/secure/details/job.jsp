@@ -77,6 +77,7 @@
 			<button id="matrixViewButton" type="button">matrix view</button>
 			<button id="jobPairAttributes" type="button">attributes summary
 			</button>
+			<button id="includeUnknown">include unknown status</button>
 		</c:if>
 		<c:if test="${isAnonymousPage && (job.userId == userId || isAdmin) }">
 			<button id="solverNameKeyButton" type="button">solver name key
@@ -184,9 +185,6 @@
 					</c:forEach>
 				</c:when>
 				<c:otherwise>
-					<div id="solverTableIncludeUnknownWrapper">
-						<button id="solverTableIncludeUnknown">Include Unknown In Time</button>
-					</div>
 					<table id="solveTbl" class="shaded">
 						<thead>
 						<tr>

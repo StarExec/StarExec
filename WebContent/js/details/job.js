@@ -11,19 +11,11 @@ var syncResults = false;
 var DETAILS_JOB = {};
 var selectedJobSpaceId = null;
 var getPanelTableInitializer;
-/* 
-This maps the subspace id to the boolean value of if we include solvers with unknown stats.
-*/
-var subspaceSummaryMap = new Map(); 
-/* 
-maps the subspace id to a boolean representing if the solver table should include the solvers with unknown 
-statuses in its calculation
-*/
-var solverTableMap = new Map();
 // contains requests that have been sent to the server to update pairs, stats, or graphs that
 // have not yet returned. If the user clicks on a new job space, these requests will all
 // be aborted, as they will no longer be useful.
 var openAjaxRequests = [];
+var includeUnknowns = false;
 
 $(document).ready(function() {
     initializeGlobalPageVariables();
@@ -915,38 +907,24 @@ function setupDeleteJobButton() {
 * includes all the hash maps for state, and the buttons
 */
 function setupEverythingForUnknownStatus(subspaces) {
-	$("#solverTableIncludeUnknown").button({
-		icons: {
-			primary: "ui-icon-arrowrefresh-1-e"
+	var button = $("#includeUnknown");
+	button.button(
+		{icons: {
+			primary: "ui-icon-refresh"
 		}
-	}).click(
-		function() {
-			solverTableMap.set(parseInt(curSpaceId), !solverTableMap.get(parseInt(curSpaceId)));
-			$('[id$=solveTbl]').DataTable().ajax.reload();
-		}
-	)
-
-	for (var i = 0; i < subspaces.length; i++) {
-		var space = $(subspaces[i]);
-		var spaceId = parseInt(space.attr("id"));
-		subspaceSummaryMap.set(spaceId,false);
-		solverTableMap.set(spaceId,false);
-		var button = $("#" + spaceId + "_includeUnknownButton");
-		console.log(button);
-		button.button({
-			icons: {
-				primary: "ui-icon-arrowrefresh-1-e"
-			}
-		}).click(function() {
-			var id = parseInt($(this).attr("id").split("_")[0]);
-			console.log(id)
-			var $panel = $("#panel" + id);
-			subspaceSummaryMap.set(id, !subspaceSummaryMap.get(id));
-			console.log(subspaceSummaryMap);
-			$panel.dataTable().api().ajax.reload();
-		});
 	}
-	solverTableMap.set(parseInt(DETAILS_JOB.rootJobSpaceId),false);
+	);
+	if (!isLocalJobPage) {
+		button.click(
+			function () {
+				includeUnknowns = !includeUnknowns;
+				//go through all the subspace sumaries and refresh it
+				console.log("clicked");
+				refreshPanels();
+				$("#solveTbl").DataTable().ajax.reload();
+			}
+		)
+	}
 
 }
 
@@ -1304,14 +1282,8 @@ function openSpace(childId) {
 function getPanelTable(space) {
 	var spaceName = space.attr("name");
 	var spaceId = parseInt(space.attr("id"));
-
-	var includeUnkownStatusButton = ""
-	if (!isLocalJobPage) {
-		includeUnkownStatusButton = "<button id=\"" + spaceId + "_includeUnknownButton\">Include Unknown Status</button>";
-	}
 	return "<fieldset class=\"panelField\">" +
 		"<legend class=\"panelHeader\">" + spaceName + "</legend>" +
-		includeUnkownStatusButton + 
 		"<table id=panel" + spaceId + " spaceId=\"" + spaceId + "\" class=\"panel\"><thead>" +
 		"<tr class=\"viewSubspace\"><th colspan=\"4\" >Go To Subspace</th></tr>" +
 		"<tr><th class=\"solverHead\">solver</th><th class=\"configHead\">config</th> " +
@@ -1748,7 +1720,7 @@ function fnShortStatsPaginationHandler(sSource, aoData, fnCallback) {
 	*/
 	var spaceId = parseInt(sSource.split("/")[6]);
 	var xhr = $.post(
-		sSource + useWallclock + "/" + getSelectedStage() + "/" + subspaceSummaryMap.get(spaceId),
+		sSource + useWallclock + "/" + getSelectedStage() + "/" + includeUnknowns,
 		aoData,
 		function(nextDataTablePage) {
 			//if the user has clicked on a different space since this was called, we want those results, not these
@@ -1774,9 +1746,9 @@ function fnStatsPaginationHandler(sSource, aoData, fnCallback) {
 	if (DETAILS_JOB.isAnonymousPage) {
 		postUrl = sSource + "solvers/anonymousLink/pagination/" + curSpaceId + "/" + getParameterByName(
 			"anonId") +
-			"/" + DETAILS_JOB.primitivesToAnonymize + "/false/" + useWallclock + "/" + getSelectedStage() + "/" + solverTableMap.get(parseInt(curSpaceId));
+			"/" + DETAILS_JOB.primitivesToAnonymize + "/false/" + useWallclock + "/" + getSelectedStage() + "/" + includeUnknowns;
 	} else {
-		postUrl = sSource + "solvers/pagination/" + curSpaceId + "/false/" + useWallclock + "/" + getSelectedStage() + "/" + solverTableMap.get(parseInt(curSpaceId));
+		postUrl = sSource + "solvers/pagination/" + curSpaceId + "/false/" + useWallclock + "/" + getSelectedStage() + "/" + includeUnknowns;
 	}
 	var xhr = $.post(
 		postUrl,
