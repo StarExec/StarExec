@@ -77,8 +77,8 @@
 			<button id="matrixViewButton" type="button">matrix view</button>
 			<button id="jobPairAttributes" type="button">attributes summary
 			</button>
-			<button id="includeUnknown">include unknown status</button>
 		</c:if>
+		<button id="includeUnknown">include unknown status</button>
 		<c:if test="${isAnonymousPage && (job.userId == userId || isAdmin) }">
 			<button id="solverNameKeyButton" type="button">solver name key
 			</button>
