@@ -1641,10 +1641,17 @@ function getSolverTableInitializer() {
 
 	if (isLocalJobPage) {
 		window.getPanelTableInitializer = function(jobId, spaceId) {
+			var incUnk;
+			if (includeUnknown) {
+				incUnk = "IncludeUnknown"
+			}
+			else {
+				incUnk = "ExcludeUnknown"
+			}
 			if (useWallclock) {
 				// get the JSON directly from the page if this is a local page.
 				return $.extend({},
-					$.parseJSON($('#jobSpaceWallclockTimeSolverStats' + spaceId)
+					$.parseJSON($('#jobSpaceWallclockTimeSolverStats' + incUnk + spaceId)
 					.attr('value')),
 					panelTableInitializer
 				);

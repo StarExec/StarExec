@@ -52,18 +52,34 @@
 			<span style='display:none' id='subspacePanelJson${jsIdKey}'
 			    value='${jobSpaceIdToSubspaceJsonMap.get(jsIdKey)}'></span>
 		</c:forEach>
-		<%-- This is the solver stats with cpu time--%>
+		<%-- This space has all the solver stats json. They are all of the format
+		--%>
+		<%-- This is the solver stats with cpu time and unknowns--%>
 		<c:forEach var="jsIdKey"
-		           items="${jobSpaceIdToCpuTimeSolverStatsJsonMap.keySet()}">
-			<span style='display:none' id='jobSpaceCpuTimeSolverStats${jsIdKey}'
-			      value='${jobSpaceIdToCpuTimeSolverStatsJsonMap.get(jsIdKey)}'></span>
+		           items="${jobSpaceIdToCpuTimeSolverStatsJsonMapIncludeUnknowns.keySet()}">
+			<span style='display:none' id='solverStatsCpuTimeIncludeUnknown${jsIdKey}'
+			      value='${jobSpaceIdToCpuTimeSolverStatsJsonMapIncludeUnknowns.get(jsIdKey)}'></span>
 		</c:forEach>
-		<%-- This is the solver stats with wallclock time--%>
+		<%-- This is the solver stats with wallclock time and unknowns--%>
 		<c:forEach var="jsIdKey"
-		           items="${jobSpaceIdToWallclockTimeSolverStatsJsonMap.keySet()}">
+		           items="${jobSpaceIdToWallclockTimeSolverStatsJsonMapIncludeUnknowns.keySet()}">
 			<span style='display:none'
-			      id='jobSpaceWallclockTimeSolverStats${jsIdKey}'
-			      value='${jobSpaceIdToWallclockTimeSolverStatsJsonMap.get(jsIdKey)}'></span>
+			      id='solverStatsWallTimeIncludeUnknowns${jsIdKey}'
+			      value='${jobSpaceIdToWallclockTimeSolverStatsJsonMapIncludeUnknowns.get(jsIdKey)}'></span>
+		</c:forEach>
+
+		<%-- This is the solver stats with cpu time and NO unknowns--%>
+		<c:forEach var="jsIdKey"
+		           items="${jobSpaceIdToCpuTimeSolverStatsJsonMapExcludeUnknowns.keySet()}">
+			<span style='display:none' id='solverStatsCpuTimeExcludeUnknown${jsIdKey}'
+			      value='${jobSpaceIdToCpuTimeSolverStatsJsonMapExcludeUnknowns.get(jsIdKey)}'></span>
+		</c:forEach>
+		<%-- This is the solver stats with wallclock time and NO unknowns--%>
+		<c:forEach var="jsIdKey"
+		           items="${jobSpaceIdToWallclockTimeSolverStatsJsonMapExcludeUnknowns.keySet()}">
+			<span style='display:none'
+			      id='solverStatsWallTimeExcludeUnknowns${jsIdKey}'
+			      value='${jobSpaceIdToWallclockTimeSolverStatsJsonMapExcludeUnknowns.get(jsIdKey)}'></span>
 		</c:forEach>
 	</c:if>
 
@@ -132,61 +148,42 @@
 			</fieldset>
 			<c:choose>
 				<c:when test="${isLocalJobPage}">
-					<c:forEach var="jobspaceIdKey"
-					           items="${jobSpaceIdToSolverStatsMap.keySet()}">
-						<table id="${jobspaceIdKey}solveTbl" class="shaded">
-							<thead>
-							<tr>
-								<th class="solverHead">solver</th>
-								<th class="configHead">config</th>
-								<th class="solvedHead"><span
-										title="Number of job pairs for which the result matched the expected result, or those attributes are undefined, over the number of job pairs that completed without any system errors. If either the actual or the expected result is starexec-unknown, it is not counted">solved</span>
-								</th>
-								<th class="wrongHead"><span
-										title="Number of job pairs that completed successfully and without resource errors, but for which the result did not match the expected result. If the actual or expected result is starexec-unknown, it is not counted.">wrong</span>
-								</th>
-								<th class="resourceHead"><span
-										title="Number of job pairs for which there was a timeout or memout">resource out</span>
-								</th>
-								<th class="failedHead"><span
-										title="Number of job pairs that failed due to some sort of internal error, such as job script or benchmark errors">failed</span>
-								</th>
-								<th class="unknownHead"><span
-										title="Number of job pairs that had the result starexec-unknown">unknown</span>
-								</th>
-								<th class="incompleteHead"><span
-										title="Number of job pairs that are still waiting to run or are running right now">incomplete</span>
-								</th>
-								<th class="timeHead"><span
-										title="total wallclock or cpu time for all job pairs run that were solved correctly">time</span>
-								</th>
-								<th class="conflictsHead"><span
-										title="Number of job pairs that had conflicting results for this solver/config.">conflics</span>
-								</th>
-							</tr>
-							</thead>
-							<tbody>
-							<c:forEach var="stats"
-							           items="${jobSpaceIdToSolverStatsMap.get(jobspaceIdKey)}">
-								<tr>
-									<td>${stats.getSolver().getName()}</td>
-									<td>${stats.getConfiguration().getName()}</td>
-									<td>${stats.getCorrectOverCompleted()}</td>
-									<td>${stats.getIncorrectJobPairs()}</td>
-									<td>${stats.getResourceOutJobPairs()}</td>
-									<td>${stats.getFailedJobPairs()}</td>
-									<td>${stats.getUnknown()}</td>
-									<td>${stats.getIncompleteJobPairs()}</td>
-									<td>
-										<span class="wallclockTime">${stats.getWallTime()}</span>
-										<span class="cpuTime">${stats.getCpuTime()}</span>
-									</td>
-									<td>${stats.getConflicts()}</td>
-								</tr>
-							</c:forEach>
-							</tbody>
-						</table>
-					</c:forEach>
+					<table id="${jobspaceIdKey}solveTbl" class="shaded">
+						<thead>
+						<tr>
+							<th class="solverHead">solver</th>
+							<th class="configHead">config</th>
+							<th class="solvedHead"><span
+									title="Number of job pairs for which the result matched the expected result, or those attributes are undefined, over the number of job pairs that completed without any system errors. If either the actual or the expected result is starexec-unknown, it is not counted">solved</span>
+							</th>
+							<th class="wrongHead"><span
+									title="Number of job pairs that completed successfully and without resource errors, but for which the result did not match the expected result. If the actual or expected result is starexec-unknown, it is not counted.">wrong</span>
+							</th>
+							<th class="resourceHead"><span
+									title="Number of job pairs for which there was a timeout or memout">resource out</span>
+							</th>
+							<th class="failedHead"><span
+									title="Number of job pairs that failed due to some sort of internal error, such as job script or benchmark errors">failed</span>
+							</th>
+							<th class="unknownHead"><span
+									title="Number of job pairs that had the result starexec-unknown">unknown</span>
+							</th>
+							<th class="incompleteHead"><span
+									title="Number of job pairs that are still waiting to run or are running right now">incomplete</span>
+							</th>
+							<th class="timeHead"><span
+									title="total wallclock or cpu time for all job pairs run that were solved correctly">time</span>
+							</th>
+							<th class="conflictsHead"><span
+									title="Number of job pairs that had conflicting results for this solver/config.">conflics</span>
+							</th>
+						</tr>
+						</thead>
+						<tbody>
+							<%-- this will get filled out by the js on a local job page--%>
+						</tbody>
+						
+					</table>
 				</c:when>
 				<c:otherwise>
 					<table id="solveTbl" class="shaded">

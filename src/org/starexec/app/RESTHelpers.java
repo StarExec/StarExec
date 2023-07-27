@@ -1947,7 +1947,7 @@ public class RESTHelpers {
 		return sb.toString();
 	}
 
-	public static Map<Integer, String> getJobSpaceIdToSolverStatsJsonMap(List<JobSpace> jobSpaces, int stageNumber, boolean wallclock) {
+	public static Map<Integer, String> getJobSpaceIdToSolverStatsJsonMap(List<JobSpace> jobSpaces, int stageNumber, boolean wallclock, Boolean includeUnknown) {
 		Map<Integer, String> jobSpaceIdToSolverStatsJsonMap = new HashMap<>();
 
 		for (JobSpace jobSpace : jobSpaces) {
