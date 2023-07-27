@@ -1,5 +1,13 @@
--- this adds the read only mode, which disables job submission. This implements
--- the requirements as specified in ticket 353
+-- this change updates the job_stats table which serves as a cache
+-- for queries about job stats from the front end. This changes a 
+-- table originally created by Eric Burns, the documentation which 
+-- I have included his docs as a reference below.
+
+-- Stores a cache of stats for a particular job space. Incomplete pairs are not stored,
+-- as we only store complete jobs, so incomplete=failed. Stats are hierarchical,
+-- so stats at a particular job space include all pairs below that job space
+-- Author: Eric Burns
+
 
 -- Author: aguo2
 
