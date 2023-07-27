@@ -1142,6 +1142,7 @@ public class Jobs {
 	) {
 		final int spaceId = space.getId();
 		Collection<SolverStats> stats;
+		/* 
 		if (!includeUnknown) {
 			stats = getCachedJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(spaceId, stageNumber, primitivesToAnonymize);
 			if (stats != null && !stats.isEmpty()) {
@@ -1149,7 +1150,7 @@ public class Jobs {
 				return stats;
 			}
 		}
-		
+		*/
 		
 		int jobId = space.getJobId();
 
@@ -1166,8 +1167,8 @@ public class Jobs {
 			s.setJobSpaceId(spaceId);
 		}
 
-		if (isJobComplete && !includeUnknown) {
-			saveStats(jobId, stats);
+		if (isJobComplete) {
+			saveStats(jobId, stats, includeUnknown);
 		}
 		
 
@@ -2954,7 +2955,7 @@ public class Jobs {
 			}
 			return stats;
 		} catch (Exception e) {
-			log.error("getCachedJobStatsInJobSpaceHierarchyIncludeDeletedConfigs", e);
+			log.error("getCachedJobStatsInJobSpaceHierarchyIncludeDeletedConfigs: " + e.getMessage());
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
@@ -4953,7 +4954,7 @@ public class Jobs {
 	 * @param stats The stats, which should have been compiled already
 	 * @author Eric Burns
 	 */
-	public static void saveStats(int jobId, Collection<SolverStats> stats) {
+	public static void saveStats(int jobId, Collection<SolverStats> stats, boolean includeUnknown) {
 
 		if (!isJobComplete(jobId)) {
 			log.debug("stats for job with id = " + jobId + " were not saved because the job is incomplete");
@@ -4965,7 +4966,7 @@ public class Jobs {
 			Common.beginTransaction(con);
 			for (SolverStats s : stats) {
 
-				if (!saveStats(s, con)) {
+				if (!saveStats(s, con, includeUnknown)) {
 					throw new Exception("saving stats failed, rolling back connection");
 				}
 			}
@@ -4989,10 +4990,10 @@ public class Jobs {
 	 * @author Eric Burns
 	 */
 
-	private static boolean saveStats(SolverStats stats, Connection con) {
+	private static boolean saveStats(SolverStats stats, Connection con, boolean includeUnknown) {
 		CallableStatement procedure = null;
 		try {
-			procedure = con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?,?,?,?,?,?,?)}");
+			procedure = con.prepareCall("{CALL AddJobStats(?,?,?,?,?,?,?,?,?,?,?,?,?)}");
 			procedure.setInt(1, stats.getJobSpaceId());
 			procedure.setInt(2, stats.getConfiguration().getId());
 			procedure.setInt(3, stats.getCompleteJobPairs());
@@ -5005,6 +5006,7 @@ public class Jobs {
 			procedure.setInt(10, stats.getResourceOutJobPairs());
 			procedure.setInt(11, stats.getIncompleteJobPairs());
 			procedure.setInt(12, stats.getStageNumber());
+			procedure.setBoolean(13, includeUnknown);
 			procedure.executeUpdate();
 			return true;
 		} catch (Exception e) {
