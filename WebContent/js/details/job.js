@@ -127,9 +127,36 @@ function parseStatsForLJP(json, isShortStats) {
 
 }
 
+/* 
+* goes through each of the subspace summaries and reloads the data based on if
+* this is a local job page
+* @author aguo2 and pathawks
+*/
 function refreshPanels() {
-	for (var i = 0; i < panelArray.length; i++) {
-		panelArray[i].api().ajax.reload(null, true);
+	if (!isLocalJobPage) {
+		for (var i = 0; i < panelArray.length; i++) {
+			panelArray[i].api().ajax.reload(null, true);
+		}
+	}
+	else {
+		//go through all the subspace sumaries and refresh it
+		for (var i = 0; i < panelArray.length; i ++) {
+				
+			//the simplest way is to just parse the element out of the id.
+			let id = parseInt(panelArray[i].attr("id").replace('panel',''));
+			//get the json and parse for current pannel
+			let json = $.parseJSON($(getIDStringForJSON(id)).attr("value"));
+			/*console.log has some weird problem as shown in the link, this is why was do 
+			stringify to make sure it works. This took me an hour to figure out...
+			let this be a WARNING to the next person that sees this
+			https://stackoverflow.com/questions/23392111/console-log-async-or-sync
+			*/
+			//console.log(JSON.stringify(json));
+			var newDataArray = parseStatsForLJP(json, true);
+			//console.log(JSON.stringify(json));
+			panelArray[i].DataTable().clear().rows.add(newDataArray).draw();
+			}
+			loadStatsIntoSolveTbl();
 	}
 }
 
@@ -603,10 +630,14 @@ function initUI() {
 			$('.wallclockTime').hide();
 		}
 		setTimeButtonText();
+		refreshPanels();
 		if (!isLocalJobPage) {
-			refreshPanels();
 			refreshStats(curSpaceId);
 			pairTable.fnDraw(false);
+		}
+		else {
+			refreshPanels();
+			loadStatsIntoSolveTbl();
 		}
 	});
 
@@ -962,24 +993,7 @@ function setupEverythingForUnknownStatus(subspaces) {
 				includeUnknown = !includeUnknown;
 				setUnknownButtonText();
 				console.log("clicked to toggle include unknown");
-				//go through all the subspace sumaries and refresh it
-				for (var i = 0; i < panelArray.length; i ++) {
-				
-						//the simplest way is to just parse the element out of the id.
-						let id = parseInt(panelArray[i].attr("id").replace('panel',''));
-						//get the json and parse for current pannel
-						let json = $.parseJSON($(getIDStringForJSON(id)).attr("value"));
-						/*console.log has some weird problem as shown in the link, this is why was do 
-						stringify to make sure it works. This took me an hour to figure out...
-						let this be a WARNING to the next person that sees this
-						https://stackoverflow.com/questions/23392111/console-log-async-or-sync
-						*/
-						//console.log(JSON.stringify(json));
-						var newDataArray = parseStatsForLJP(json, true);
-						//console.log(JSON.stringify(json));
-						panelArray[i].DataTable().clear().rows.add(newDataArray).draw();
-						}
-						loadStatsIntoSolveTbl();
+				refreshPanels();
 				}
 				
 			
