@@ -6,9 +6,6 @@ var curSpaceId; //stores the ID of the job space that is currently selected from
 var jobId; //the ID of the job being viewed
 var lastValidSelectOption;
 var panelArray = [];
-//for local job pages only, ljpSubspaces has the subspace id, where the ith element in the panelArray, 
-//has id of ith element in ljpSubspaces
-var ljpSubspaces = [];
 var useWallclock = true;
 var syncResults = false;
 var DETAILS_JOB = {};
@@ -122,6 +119,10 @@ function parseStatsForLJP(json, isShortStats) {
 			}
 		}
 		return array;
+	}
+	else {
+		//we want the full stats, just return the aadata
+		return json.aaData;
 	}
 
 }
@@ -316,7 +317,9 @@ function initSpaceExplorer() {
 			//no solvers will be selected when a space changes, so hide this button
 			$("#compareSolvers").hide();
 			reloadTables(id);
-
+			if (isLocalJobPage) {
+				loadStatsIntoSolveTbl();
+			}
 		}
 	}).on("click", "a", function(event, data) {
 		event.preventDefault();  // This just disable's links in the node title
@@ -381,9 +384,7 @@ function reloadTables(id) {
 			else {
 				$('#' + id + 'pairTbl_wrapper').show();
 			}
-			$('[id$=solveTbl_wrapper]').hide();
-			$('#' + id + 'solveTbl_wrapper').show();
-			log('showing id: ' + id);
+			
 		}
 		initializePanels();
 	}
@@ -971,16 +972,19 @@ function setupEverythingForUnknownStatus(subspaces) {
 						let this be a WARNING to the next person that sees this
 						https://stackoverflow.com/questions/23392111/console-log-async-or-sync
 						*/
-						console.log(JSON.stringify(json));
+						//console.log(JSON.stringify(json));
 						var newDataArray = parseStatsForLJP(json, true);
-						console.log(JSON.stringify(json));
+						//console.log(JSON.stringify(json));
 						panelArray[i].DataTable().clear().rows.add(newDataArray).draw();
 						}
+						loadStatsIntoSolveTbl();
 				}
 				
 			
 		)
+		
 	}
+	 
 
 }
 
@@ -1519,6 +1523,18 @@ function initDataTables() {
 	$pairTbl.dataTable().fnFilterOnDoneTyping();
 }
 
+/* 
+* 
+*/
+function loadStatsIntoSolveTbl() {
+	//get the datatable api
+	var id = parseInt(curSpaceId);
+	var $solveTbl = $("#solveTbl").DataTable()
+	let json = $.parseJSON($(getIDStringForJSON(id)).attr("value"));
+	var newDataArray = parseStatsForLJP(json, false);
+	$solveTbl.clear().rows.add(newDataArray).draw()
+}
+
 /*
 * For the local job page, we have json that's embedded into the html.
 * Given the space id, produce the string that gets the correct json.
@@ -1720,7 +1736,7 @@ function getSolverTableInitializer() {
 		})
 	}
 	else {
-		//if its not a local job page, take out the links when rendering...
+		//if its a local job page, take out the links when rendering...
 		
 		formatSolver = function(row, type, val) {
 			var href = getSolverLink(val[SOLVER_ID]);
