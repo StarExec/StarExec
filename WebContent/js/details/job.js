@@ -936,6 +936,7 @@ function setupDeleteJobButton() {
 * includes all the hash maps for state, and the buttons
 */
 function setupEverythingForUnknownStatus(subspaces) {
+	
 	var button = $("#includeUnknown");
 	button.button(
 		{icons: {
@@ -955,6 +956,7 @@ function setupEverythingForUnknownStatus(subspaces) {
 		)
 	}
 	else {
+		loadStatsIntoSolveTbl();
 		button.click(
 			function () {
 				includeUnknown = !includeUnknown;
@@ -1545,7 +1547,7 @@ function getIDStringForJSON(id) {
 		str += "WallTime"
 	}
 	else {
-		str += CpuTime
+		str += "CpuTime"
 	}
 	if (includeUnknown) {
 		str += "IncludeUnknowns"
@@ -1816,9 +1818,7 @@ function getSolverTableInitializer() {
 	if (!isLocalJobPage) {
 		solverTableInitializer["sAjaxSource"] = starexecRoot + "services/jobs/";
 		solverTableInitializer["fnServerData"] = fnStatsPaginationHandler;
-	} else {
-		delete solverTableInitializer["aoColumns"];
-	}	
+	}
 
 	return solverTableInitializer;
 }
