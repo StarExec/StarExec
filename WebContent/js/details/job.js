@@ -1556,7 +1556,8 @@ function initDataTables() {
 }
 
 /* 
-* 
+* loads the solver stats for the long form solverstats table
+* @author aguo2
 */
 function loadStatsIntoSolveTbl() {
 	//get the datatable api
