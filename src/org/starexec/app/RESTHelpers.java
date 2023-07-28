@@ -1936,7 +1936,6 @@ public class RESTHelpers {
 
 			dataTablePageEntries.add(entries);
 		}
-		log.debug("drhpkajermtkjerot" + dataTablePageEntries);
 		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 

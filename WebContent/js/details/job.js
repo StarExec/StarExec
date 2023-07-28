@@ -967,7 +967,6 @@ function setupDeleteJobButton() {
 * includes all the hash maps for state, and the buttons
 */
 function setupEverythingForUnknownStatus(subspaces) {
-	console.log("called");
 	var button = $("#includeUnknown");
 	button.button(
 		{icons: {
@@ -992,8 +991,8 @@ function setupEverythingForUnknownStatus(subspaces) {
 			function () {
 				includeUnknown = !includeUnknown;
 				setUnknownButtonText();
-				console.log("clicked to toggle include unknown");
 				refreshPanels();
+				loadStatsIntoSolveTbl();
 				}
 				
 			
@@ -1373,7 +1372,6 @@ function getPanelTable(space) {
 * only set up everything once.
 */
 function setupEverythingForUnknownStatusWrapper() {
-	console.log("called");
 	if (isLocalJobPage) {
 		var panelJson = $.parseJSON($("#subspacePanelJson" + curSpaceId)
 		.attr("value"));
