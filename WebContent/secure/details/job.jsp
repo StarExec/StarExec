@@ -53,11 +53,12 @@
 			    value='${jobSpaceIdToSubspaceJsonMap.get(jsIdKey)}'></span>
 		</c:forEach>
 		<%-- This space has all the solver stats json. They are all of the format
+			 "solverStats" + time + "____cludeUnknown. see below for examples"
 		--%>
 		<%-- This is the solver stats with cpu time and unknowns--%>
 		<c:forEach var="jsIdKey"
 		           items="${jobSpaceIdToCpuTimeSolverStatsJsonMapIncludeUnknowns.keySet()}">
-			<span style='display:none' id='solverStatsCpuTimeIncludeUnknown${jsIdKey}'
+			<span style='display:none' id='solverStatsCpuTimeIncludeUnknowns${jsIdKey}'
 			      value='${jobSpaceIdToCpuTimeSolverStatsJsonMapIncludeUnknowns.get(jsIdKey)}'></span>
 		</c:forEach>
 		<%-- This is the solver stats with wallclock time and unknowns--%>
@@ -71,7 +72,7 @@
 		<%-- This is the solver stats with cpu time and NO unknowns--%>
 		<c:forEach var="jsIdKey"
 		           items="${jobSpaceIdToCpuTimeSolverStatsJsonMapExcludeUnknowns.keySet()}">
-			<span style='display:none' id='solverStatsCpuTimeExcludeUnknown${jsIdKey}'
+			<span style='display:none' id='solverStatsCpuTimeExcludeUnknowns${jsIdKey}'
 			      value='${jobSpaceIdToCpuTimeSolverStatsJsonMapExcludeUnknowns.get(jsIdKey)}'></span>
 		</c:forEach>
 		<%-- This is the solver stats with wallclock time and NO unknowns--%>

@@ -6,6 +6,9 @@ var curSpaceId; //stores the ID of the job space that is currently selected from
 var jobId; //the ID of the job being viewed
 var lastValidSelectOption;
 var panelArray = [];
+//for local job pages only, ljpSubspaces has the subspace id, where the ith element in the panelArray, 
+//has id of ith element in ljpSubspaces
+var ljpSubspaces = [];
 var useWallclock = true;
 var syncResults = false;
 var DETAILS_JOB = {};
@@ -96,6 +99,31 @@ function setSyncResultsText() {
 	} else {
 		$("#syncResults .ui-button-text").html("synchronize results");
 	}
+}
+
+/* 
+* This function takes the json and returns a 2d array representing the data we need for our datatable
+* but alex, what if we had a million job pairs, wouldn't this be slow? If we had that amout, the user
+* problably won't download the local job page. We warned the users that this might take a while to 
+* download for large jobs when the user tries to download it...
+* @author aguo2
+*/
+function parseStatsForLJP(json, isShortStats) {
+	/* as of right now, the last 8 items are excluded in short stats. 
+	   we need to CHANGE THIS IF THE API CHANGES OR IT WILL BREAK!
+	   This choice for the api was originaly made to reduce the data
+	   sent from the backend
+	*/
+	if (isShortStats) {
+		var array = json.aaData;
+		for (var i = 0; i < array.length; i ++ ) {
+			for (var j = 0; j < 8; j++) {
+				array[i].pop();
+			}
+		}
+		return array;
+	}
+
 }
 
 function refreshPanels() {
@@ -920,10 +948,37 @@ function setupEverythingForUnknownStatus(subspaces) {
 				includeUnknown = !includeUnknown;
 				setUnknownButtonText();
 				//go through all the subspace sumaries and refresh it
-				console.log("clicked");
 				refreshPanels();
 				$("#solveTbl").DataTable().ajax.reload();
 			}
+		)
+	}
+	else {
+		button.click(
+			function () {
+				includeUnknown = !includeUnknown;
+				setUnknownButtonText();
+				console.log("clicked to toggle include unknown");
+				//go through all the subspace sumaries and refresh it
+				for (var i = 0; i < panelArray.length; i ++) {
+				
+						//the simplest way is to just parse the element out of the id.
+						let id = parseInt(panelArray[i].attr("id").replace('panel',''));
+						//get the json and parse for current pannel
+						let json = $.parseJSON($(getIDStringForJSON(id)).attr("value"));
+						/*console.log has some weird problem as shown in the link, this is why was do 
+						stringify to make sure it works. This took me an hour to figure out...
+						let this be a WARNING to the next person that sees this
+						https://stackoverflow.com/questions/23392111/console-log-async-or-sync
+						*/
+						console.log(JSON.stringify(json));
+						var newDataArray = parseStatsForLJP(json, true);
+						console.log(JSON.stringify(json));
+						panelArray[i].DataTable().clear().rows.add(newDataArray).draw();
+						}
+				}
+				
+			
 		)
 	}
 
@@ -1341,7 +1396,8 @@ function handleSpacesData(spaces) {
 			var panelTableInitializer = getPanelTableInitializer(jobId,
 				spaceId);
 			var $panel = $("#panel" + spaceId);
-
+			//for each panel attach the following event handler to be executed when the fieldset is opened
+			//then, immediately get rid of the event listener
 			$panel.parents(".panelField").one("open.expandable", function() {
 				var $this = $(this);
 				panelArray.push($panel.dataTable(panelTableInitializer));
@@ -1461,6 +1517,28 @@ function initDataTables() {
 
 	// Change the filter so that it only queries the server when the user stops typing
 	$pairTbl.dataTable().fnFilterOnDoneTyping();
+}
+
+/*
+* For the local job page, we have json that's embedded into the html.
+* Given the space id, produce the string that gets the correct json.
+*/
+function getIDStringForJSON(id) {
+	var str = "#solverStats"
+	if (useWallclock) {
+		str += "WallTime"
+	}
+	else {
+		str += CpuTime
+	}
+	if (includeUnknown) {
+		str += "IncludeUnknowns"
+	}
+	else {
+		str += "ExcludeUnknowns"
+	}
+	str += id;
+	return str; 
 }
 
 //
@@ -1628,41 +1706,49 @@ function getSolverTableInitializer() {
 		return link(href, val[CONFLICTS]);
 	};
 
-	var panelTableInitializer = new window.star.DataTableConfig({
-		"dom": 'rt<"clear">',
-		"pageLength": 1000, // make sure we show every entry
-		"aoColumns": [
-			{"mRender": formatSolver},
-			{"mRender": formatConfig},
-			{"mRender": formatSolvedText},
-			{"mRender": formatTime},
-		]
-	});
+	var panelTableInitializer;
+	if (!isLocalJobPage) {
+		panelTableInitializer = new window.star.DataTableConfig({
+			"dom": 'rt<"clear">',
+			"pageLength": 1000, // make sure we show every entry
+			"aoColumns": [
+				{"mRender": formatSolver},
+				{"mRender": formatConfig},
+				{"mRender": formatSolvedText},
+				{"mRender": formatTime},
+			]
+		})
+	}
+	else {
+		//if its not a local job page, take out the links when rendering...
+		
+		formatSolver = function(row, type, val) {
+			var href = getSolverLink(val[SOLVER_ID]);
+			return val[SOLVER_NAME];
+		};
+
+		formatConfig = function(row, type, val) {
+			return val[CONFIG_NAME];
+		}
+		panelTableInitializer = new window.star.DataTableConfig({
+			"dom": 'rt<"clear">',
+			"pageLength": 1000, // make sure we show every entry
+			"aoColumns": [
+				{"mRender": formatSolver},
+				{"mRender": formatConfig},
+				{"mRender": formatSolvedText},
+				{"mRender": formatTime},
+			]
+		})
+	}
 
 	if (isLocalJobPage) {
 		window.getPanelTableInitializer = function(jobId, spaceId) {
-			var incUnk;
-			if (includeUnknown) {
-				incUnk = "IncludeUnknown"
-			}
-			else {
-				incUnk = "ExcludeUnknown"
-			}
-			if (useWallclock) {
-				// get the JSON directly from the page if this is a local page.
-				return $.extend({},
-					$.parseJSON($('#jobSpaceWallclockTimeSolverStats' + incUnk + spaceId)
-					.attr('value')),
-					panelTableInitializer
-				);
-			} else {
-				// get the JSON directly from the page if this is a local page.
-				return $.extend({},
-					$.parseJSON($('#jobSpaceCpuTimeSolverStats' + spaceId)
-					.attr('value')),
-					panelTableInitializer
-				);
-			}
+			return $.extend({},
+				$.parseJSON($(getIDStringForJSON(spaceId))
+				.attr('value')),
+				panelTableInitializer
+			);
 		}
 	} else {
 		var paginationUrlTemplate;

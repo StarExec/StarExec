@@ -404,7 +404,6 @@ public class RESTHelpers {
 
 
 		JsonObject nextDataTablesPage = RESTHelpers.convertSolverStatsToJsonObject(solverStats, new DataTablesQuery(solverStats.size(), solverStats.size(), 1), jobSpace.getId(), jobSpace.getJobId(), shortFormat, wallclock, primitivesToAnonymize);
-
 		return gson.toJson(nextDataTablesPage);
 	}
 
@@ -1937,6 +1936,7 @@ public class RESTHelpers {
 
 			dataTablePageEntries.add(entries);
 		}
+		log.debug("drhpkajermtkjerot" + dataTablePageEntries);
 		return createPageDataJsonObject(query, dataTablePageEntries);
 	}
 
@@ -1949,14 +1949,13 @@ public class RESTHelpers {
 
 	public static Map<Integer, String> getJobSpaceIdToSolverStatsJsonMap(List<JobSpace> jobSpaces, int stageNumber, boolean wallclock, Boolean includeUnknown) {
 		Map<Integer, String> jobSpaceIdToSolverStatsJsonMap = new HashMap<>();
-
 		for (JobSpace jobSpace : jobSpaces) {
-			Collection<SolverStats> stats = Jobs.getAllJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(jobSpace, stageNumber, PrimitivesToAnonymize.NONE,false);
+			Collection<SolverStats> stats = Jobs.getAllJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(jobSpace, stageNumber, PrimitivesToAnonymize.NONE, includeUnknown);
 			DataTablesQuery query = new DataTablesQuery();
 			query.setTotalRecords(stats.size());
 			query.setTotalRecordsAfterQuery(stats.size());
 			query.setSyncValue(1);
-			JsonObject solverStatsJson = RESTHelpers.convertSolverStatsToJsonObject(stats, query, jobSpace.getId(), jobSpace.getJobId(), true, wallclock, PrimitivesToAnonymize.NONE);
+			JsonObject solverStatsJson = RESTHelpers.convertSolverStatsToJsonObject(stats, query, jobSpace.getId(), jobSpace.getJobId(), false, wallclock, PrimitivesToAnonymize.NONE);
 			if (solverStatsJson != null) {
 				jobSpaceIdToSolverStatsJsonMap.put(jobSpace.getId(), gson.toJson(solverStatsJson));
 			}
