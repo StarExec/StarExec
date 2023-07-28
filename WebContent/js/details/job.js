@@ -29,9 +29,9 @@ $(document).ready(function() {
 			pairTable.fnDraw(false);
 		}, 30000);
 	}
-
 	//puts data into the data tables
 	reloadTables($("#spaceId").attr("value"));
+	setupEverythingForUnknownStatusWrapper();
 	
 });
 
@@ -936,7 +936,7 @@ function setupDeleteJobButton() {
 * includes all the hash maps for state, and the buttons
 */
 function setupEverythingForUnknownStatus(subspaces) {
-	
+	console.log("called");
 	var button = $("#includeUnknown");
 	button.button(
 		{icons: {
@@ -1355,6 +1355,25 @@ function getPanelTable(space) {
 		"<tbody></tbody> </table></fieldset>";
 }
 
+/* 
+* only set up everything once.
+*/
+function setupEverythingForUnknownStatusWrapper() {
+	console.log("called");
+	if (isLocalJobPage) {
+		var panelJson = $.parseJSON($("#subspacePanelJson" + curSpaceId)
+		.attr("value"));
+		setupEverythingForUnknownStatus(panelJson);
+
+	} else if (DETAILS_JOB.isAnonymousPage) {
+		$.getJSON(starexecRoot + "services/space/anonymousLink/" + DETAILS_JOB.anonymousLinkUuid + "/jobspaces/false/" + DETAILS_JOB.primitivesToAnonymize + "?id=" + curSpaceId,
+		setupEverythingForUnknownStatus);
+	} else {
+		$.getJSON(starexecRoot + "services/space/" + jobId + "/jobspaces/false?id=" + curSpaceId,
+		setupEverythingForUnknownStatus);
+	}
+}
+
 function initializePanels() {
 	DETAILS_JOB.sentSpaceId = curSpaceId;
 	if (isLocalJobPage) {
@@ -1433,7 +1452,6 @@ function handleSpacesData(spaces) {
 			});
 		})();
 	}
-	setupEverythingForUnknownStatus(spaces);
 	$(".viewSubspace").click(function() {
 		var spaceId = $(this).parents("table.panel").attr("spaceId");
 		openSpace(spaceId);
