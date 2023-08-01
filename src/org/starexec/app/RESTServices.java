@@ -1263,11 +1263,12 @@ public class RESTServices {
 	 * @param shortFormat Whether to get the full stats for the stats table (true) or a truncated version for the
 	 * space overview table
 	 * @param wallclock True to use wallclock time and false to use cpu time
+	 * @param includeUnknown if we include solvers with unknown status
 	 * @param request HTTP request
 	 * @return json DataTables object containing the next page of SolverStats objects
 	 */
 	@POST
-	@Path("/jobs/solvers/anonymousLink/pagination/{jobSpaceId}/{anonymousJobLink}/{primitivesToAnonymizeName}/{shortFormat}/{wallclock}/{stageNum}/")
+	@Path("/jobs/solvers/anonymousLink/pagination/{jobSpaceId}/{anonymousJobLink}/{primitivesToAnonymizeName}/{shortFormat}/{wallclock}/{stageNum}/{includeUnknown}")
 	@Produces("application/json")
 	public String getAnonymousJobStatsPaginated(
 			@PathParam("stageNum") int stageNumber,
@@ -1276,11 +1277,11 @@ public class RESTServices {
 			@PathParam("primitivesToAnonymizeName") String primitivesToAnonymizeName,
 			@PathParam("shortFormat") boolean shortFormat,
 			@PathParam("wallclock") boolean wallclock,
+			@PathParam("includeUnknown") boolean includeUnknown,
 			@Context HttpServletRequest request ) {
 
 		final String methodName = "getAnonymousJobStatsPaginated";
 		try {
-
 			ValidatorStatusCode status = JobSecurity.isAnonymousLinkAssociatedWithJobSpace(anonymousJobLink, jobSpaceId);
 			if ( !status.isSuccess() ) {
 				return gson.toJson( status );
@@ -1288,7 +1289,7 @@ public class RESTServices {
 				PrimitivesToAnonymize primitivesToAnonymize = AnonymousLinks.createPrimitivesToAnonymize( primitivesToAnonymizeName );
 				JobSpace jobSpace = Spaces.getJobSpace(jobSpaceId);
 
-				return RESTHelpers.getNextDataTablePageForJobStats( stageNumber, jobSpace, primitivesToAnonymize, shortFormat, wallclock );
+				return RESTHelpers.getNextDataTablePageForJobStats( stageNumber, jobSpace, primitivesToAnonymize, shortFormat, wallclock, includeUnknown);
 			}
 		} catch (RuntimeException e) {
 			// Catch all runtime exceptions so we can debug them
@@ -1303,24 +1304,24 @@ public class RESTServices {
 	 * @param stageNumber the stage number to get job pair data for
 	 * @param shortFormat Whether to retrieve the fields for the full stats table or the truncated stats for the space summary tables
 	 * @param wallclock True to use wallclock time and false to use cpu time
+	 * @param includeUnknown True to include pairs with unknown status in time calculation
 	 * @param request HTTP request
 	 * @return a json DataTables object containing the next page of stats.
 	 * @author Eric Burns
 	 */
 	@POST
-	@Path("/jobs/solvers/pagination/{jobSpaceId}/{shortFormat}/{wallclock}/{stageNum}")
+	@Path("/jobs/solvers/pagination/{jobSpaceId}/{shortFormat}/{wallclock}/{stageNum}/{includeUnknown}")
 	@Produces("application/json")
 	public String getJobStatsPaginated(@PathParam("stageNum") int stageNumber, @PathParam("jobSpaceId") int jobSpaceId,
-			@PathParam("shortFormat") boolean shortFormat, @PathParam("wallclock") boolean wallclock,
+			@PathParam("shortFormat") boolean shortFormat, @PathParam("wallclock") boolean wallclock, @PathParam("includeUnknown") boolean includeUnknown,
 			@Context HttpServletRequest request) {
 		int userId=SessionUtil.getUserId(request);
 		ValidatorStatusCode status=JobSecurity.canUserSeeJobSpace(jobSpaceId, userId);
-
 		if (!status.isSuccess()) {
 			return gson.toJson(status);
 		} else {
 			JobSpace space = Spaces.getJobSpace(jobSpaceId);
-			return RESTHelpers.getNextDataTablePageForJobStats( stageNumber, space, PrimitivesToAnonymize.NONE, shortFormat, wallclock );
+			return RESTHelpers.getNextDataTablePageForJobStats(stageNumber, space, PrimitivesToAnonymize.NONE, shortFormat, wallclock, includeUnknown);
 		}
 	}
 

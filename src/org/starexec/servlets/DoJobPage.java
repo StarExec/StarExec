@@ -53,32 +53,32 @@ public class DoJobPage {
             FileWriter writer = new FileWriter(readme);
             writer.write("This tool was created by aguo2, presdod, and pathawks. \n\n");
             writer.write("WARNING: if you download the same page multiple times, the OS will mess with the file name \n");
-			writer.write("by putting a number at the end. This messes with the CSS, causing some image dependencies to \n");
-			writer.write("not load correctly. \n");
-			writer.write("\n");
-			writer.write("\n");
-			writer.write("\n");
-			writer.write("\n");
-			//mit licence
-			writer.write("The MIT License (MIT)\n");
-			writer.write("\n");
-			writer.write("Permission is hereby granted, free of charge, to any person obtaining a copy\n");
-			writer.write("of this software and associated documentation files (the \"Software\"), to deal\n");
-			writer.write("in the Software without restriction, including without limitation the rights\n");
-			writer.write("to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n");
-			writer.write("copies of the Software, and to permit persons to whom the Software is\n");
-			writer.write("furnished to do so, subject to the following conditions:\n");
-			writer.write("\n");
-			writer.write("The above copyright notice and this permission notice shall be included in all\n");
-			writer.write("copies or substantial portions of the Software.\n");
-			writer.write("\n");
-			writer.write("THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n");
-			writer.write("IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n");
-			writer.write("FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n");
-			writer.write("AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n");
-			writer.write("LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n");
-			writer.write("OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n");
-			writer.write("SOFTWARE.\n");
+            writer.write("by putting a number at the end. This messes with the CSS, causing some image dependencies to \n");
+            writer.write("not load correctly. \n");
+            writer.write("\n");
+            writer.write("\n");
+            writer.write("\n");
+            writer.write("\n");
+            //mit licence
+            writer.write("The MIT License (MIT)\n");
+            writer.write("\n");
+            writer.write("Permission is hereby granted, free of charge, to any person obtaining a copy\n");
+            writer.write("of this software and associated documentation files (the \"Software\"), to deal\n");
+            writer.write("in the Software without restriction, including without limitation the rights\n");
+            writer.write("to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n");
+            writer.write("copies of the Software, and to permit persons to whom the Software is\n");
+            writer.write("furnished to do so, subject to the following conditions:\n");
+            writer.write("\n");
+            writer.write("The above copyright notice and this permission notice shall be included in all\n");
+            writer.write("copies or substantial portions of the Software.\n");
+            writer.write("\n");
+            writer.write("THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n");
+            writer.write("IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n");
+            writer.write("FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n");
+            writer.write("AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n");
+            writer.write("LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n");
+            writer.write("OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n");
+            writer.write("SOFTWARE.\n");
             writer.close();
         } catch (Exception e) {
             String msg = e.getMessage();
@@ -150,7 +150,6 @@ public class DoJobPage {
 			//this is the most maintainable way to do this, yes it's expensive. However, people who use this tool don't 
 			//want to code the css themselves. T
 			css = css.replace(target, replacement);
-			log.debug("sfjiwfwfwewegrgv: " + css);
 			FileUtils.write(path,css,"UTF-8");
 		}
 		catch (Exception e) {

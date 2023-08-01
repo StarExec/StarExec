@@ -114,18 +114,24 @@ public class JspHelpers {
 					Map<Integer, String> jobSpaceIdToSubspaceJsonMap = RESTHelpers.getJobSpaceIdToSubspaceJsonMap(j.getId(), jobSpaces);
 					request.setAttribute("jobSpaceIdToSubspaceJsonMap", jobSpaceIdToSubspaceJsonMap);
 
-					Map<Integer, String> jobSpaceIdToCpuTimeSolverStatsJsonMap =
-							RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, false);
-					request.setAttribute("jobSpaceIdToCpuTimeSolverStatsJsonMap", jobSpaceIdToCpuTimeSolverStatsJsonMap);
+					Map<Integer, String> jobSpaceIdToCpuTimeSolverStatsJsonMapExcludeUnknowns =
+							RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, false, false);
+					request.setAttribute("jobSpaceIdToCpuTimeSolverStatsJsonMapExcludeUnknowns", jobSpaceIdToCpuTimeSolverStatsJsonMapExcludeUnknowns);
 
-					Map<Integer, String> jobSpaceIdToWallclockTimeSolverStatsJsonMap =
-							RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, true);
-					request.setAttribute("jobSpaceIdToWallclockTimeSolverStatsJsonMap", jobSpaceIdToWallclockTimeSolverStatsJsonMap);
+					Map<Integer, String> jobSpaceIdToWallclockTimeSolverStatsJsonMapExcludeUnknowns =
+							RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, true,false);
+					//used to creat the panels for subspace summaries
+					request.setAttribute("jobSpaceIdToWallclockTimeSolverStatsJsonMapExcludeUnknowns", jobSpaceIdToWallclockTimeSolverStatsJsonMapExcludeUnknowns);
+					Map<Integer, String> jobSpaceIdToCpuTimeSolverStatsJsonMapIncludeUnknowns =
+							RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, false, true);
+					request.setAttribute("jobSpaceIdToCpuTimeSolverStatsJsonMapIncludeUnknowns", jobSpaceIdToCpuTimeSolverStatsJsonMapIncludeUnknowns);
+
+					Map<Integer, String> jobSpaceIdToWallclockTimeSolverStatsJsonMapIncludeUnknowns =
+							RESTHelpers.getJobSpaceIdToSolverStatsJsonMap(jobSpaces, 1, true, true);
+					//used to creat the panels for subspace summaries
+					request.setAttribute("jobSpaceIdToWallclockTimeSolverStatsJsonMapIncludeUnknowns", jobSpaceIdToWallclockTimeSolverStatsJsonMapIncludeUnknowns);
 					Map<Integer, List<JobPair>> jobSpaceIdToPairMap = JobPairs.buildJobSpaceIdToJobPairMapWithWallCpuTimesRounded(j);
 					request.setAttribute("jobSpaceIdToPairMap", jobSpaceIdToPairMap);
-					Map<Integer, Collection<SolverStats>> jobSpaceIdToSolverStatsMap =
-							Jobs.buildJobSpaceIdToSolverStatsMapWallCpuTimesRounded(j, 1);
-					request.setAttribute("jobSpaceIdToSolverStatsMap", jobSpaceIdToSolverStatsMap);
 				}
 
 				String primitivesToAnonymizeName = AnonymousLinks.getPrimitivesToAnonymizeName( primitivesToAnonymize );

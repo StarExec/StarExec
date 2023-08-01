@@ -138,37 +138,16 @@ CREATE PROCEDURE GetNewJobAttrs(IN _jobId INT, IN _completionId INT)
 -- Adds a new job stats record to the database
 -- Author : Eric Burns
 DROP PROCEDURE IF EXISTS AddJobStats //
-CREATE PROCEDURE AddJobStats(IN _jobSpaceId INT, IN _configId INT, IN _complete INT, IN _correct INT, IN _incorrect INT, IN _failed INT, IN _conflicts INT, IN _wallclock DOUBLE, IN _cpu DOUBLE, IN _resource INT, IN _incomplete INT, IN _stage INT)
+CREATE PROCEDURE AddJobStats(IN _jobSpaceId INT, IN _configId INT, IN _complete INT, IN _correct INT, IN _incorrect INT, IN _failed INT, IN _conflicts INT, IN _wallclock DOUBLE, IN _cpu DOUBLE, IN _resource INT, IN _incomplete INT, IN _stage INT, IN _includeUnknown BOOLEAN)
 	BEGIN
-		INSERT IGNORE INTO job_stats (job_space_id, config_id, complete, correct, incorrect, failed, conflicts, wallclock,cpu,resource_out, incomplete,stage_number)
-		VALUES (_jobSpaceId, _configId, _complete, _correct, _incorrect, _failed, _conflicts, _wallclock, _cpu,_resource, _incomplete,_stage);
-	END //
-
--- Gets the cached job results for the hierarchy rooted at the given job space
--- Author: Eric Burns
--- This is the root query of the "solver summary" table displayed in the job space view; Alexander Brown 9/7/2020
-
-DROP PROCEDURE IF EXISTS GetJobStatsInJobSpace //
-CREATE PROCEDURE GetJobStatsInJobSpace(IN _jobSpaceId INT, IN _jobId INT, IN _stageNumber INT)
-	BEGIN
-		SELECT *
-		FROM job_stats
-			JOIN configurations AS config ON config.id=job_stats.config_id
-			JOIN solvers AS solver ON solver.id=config.solver_id
-			LEFT JOIN anonymous_primitive_names AS anonymous_solver_names
-				ON solver.id=anonymous_solver_names.primitive_id AND anonymous_solver_names.primitive_type="solver"
-						AND anonymous_solver_names.job_id=_jobId
-			LEFT JOIN anonymous_primitive_names AS anonymous_config_names
-				ON config.id=anonymous_config_names.primitive_id AND anonymous_config_names.primitive_type="config"
-						AND anonymous_config_names.job_id=_jobId
-		WHERE job_stats.job_space_id = _jobSpaceId AND stage_number=_stageNumber AND config.deleted = 0;
-		-- configs are no longer removed from the table, so only non-deleted ones should be selected
+		INSERT IGNORE INTO job_stats (job_space_id, config_id, complete, correct, incorrect, failed, conflicts, wallclock,cpu,resource_out, incomplete, stage_number, include_unknowns)
+		VALUES (_jobSpaceId, _configId, _complete, _correct, _incorrect, _failed, _conflicts, _wallclock, _cpu,_resource, _incomplete, _stage, _includeUnknown);
 	END //
 
 -- this version includes deleted configs; used to construct the solver summary table in the job space view
 -- Alexander Brown, 9/20
 DROP PROCEDURE IF EXISTS GetJobStatsInJobSpaceIncludeDeletedConfigs //
-CREATE PROCEDURE GetJobStatsInJobSpaceIncludeDeletedConfigs(IN _jobSpaceId INT, IN _jobId INT, IN _stageNumber INT)
+CREATE PROCEDURE GetJobStatsInJobSpaceIncludeDeletedConfigs(IN _jobSpaceId INT, IN _jobId INT, IN _stageNumber INT, IN _includeUnknown BOOLEAN)
 BEGIN
 SELECT *
 FROM job_stats
@@ -180,7 +159,7 @@ AND anonymous_solver_names.job_id=_jobId
 LEFT JOIN anonymous_primitive_names AS anonymous_config_names
 	ON config.id=anonymous_config_names.primitive_id AND anonymous_config_names.primitive_type="config"
 AND anonymous_config_names.job_id=_jobId
-WHERE job_stats.job_space_id = _jobSpaceId AND stage_number=_stageNumber;
+WHERE job_stats.job_space_id = _jobSpaceId AND stage_number=_stageNumber AND include_unknowns=_includeUnknown;
 END //
 
 -- Clears the entire cache of job stats

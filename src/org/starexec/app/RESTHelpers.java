@@ -383,9 +383,10 @@ public class RESTHelpers {
 	 * @param primitivesToAnonymize a PrimitivesToAnonymize enum describing which primitives should be given anonymous names.
 	 * @param shortFormat Whether to use the abbreviated short format.
 	 * @param wallclock Whether times should be in wallclock time or cpu time.
+	 * @param includeUnknown True to include pairs with unknown status in time calculation
 	 * @author Albert Giegerich
 	 */
-	protected static String getNextDataTablePageForJobStats(int stageNumber, JobSpace jobSpace, PrimitivesToAnonymize primitivesToAnonymize, boolean shortFormat, boolean wallclock) {
+	protected static String getNextDataTablePageForJobStats(int stageNumber, JobSpace jobSpace, PrimitivesToAnonymize primitivesToAnonymize, boolean shortFormat, boolean wallclock, boolean includeUnknown) {
 		StopWatch stopWatch = new StopWatch();
 		stopWatch.start();
 
@@ -393,7 +394,7 @@ public class RESTHelpers {
 		// had to split up a function call chain to one version that includes configs marked as deleted and another that does not
 		// this includes them; used to construct the solver summary table in the job space view
 		// Alexander Brown, 9/20
-		Collection<SolverStats> solverStats = Jobs.getAllJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(jobSpace, stageNumber, primitivesToAnonymize);
+		Collection<SolverStats> solverStats = Jobs.getAllJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(jobSpace, stageNumber, primitivesToAnonymize, includeUnknown);
 		stopWatch.stop();
 		log.debug("getNextDataTablePageForJobStats", "Time taken to get all jobs: " + stopWatch.toString());
 
@@ -403,7 +404,6 @@ public class RESTHelpers {
 
 
 		JsonObject nextDataTablesPage = RESTHelpers.convertSolverStatsToJsonObject(solverStats, new DataTablesQuery(solverStats.size(), solverStats.size(), 1), jobSpace.getId(), jobSpace.getJobId(), shortFormat, wallclock, primitivesToAnonymize);
-
 		return gson.toJson(nextDataTablesPage);
 	}
 
@@ -1946,16 +1946,15 @@ public class RESTHelpers {
 		return sb.toString();
 	}
 
-	public static Map<Integer, String> getJobSpaceIdToSolverStatsJsonMap(List<JobSpace> jobSpaces, int stageNumber, boolean wallclock) {
+	public static Map<Integer, String> getJobSpaceIdToSolverStatsJsonMap(List<JobSpace> jobSpaces, int stageNumber, boolean wallclock, Boolean includeUnknown) {
 		Map<Integer, String> jobSpaceIdToSolverStatsJsonMap = new HashMap<>();
-
 		for (JobSpace jobSpace : jobSpaces) {
-			Collection<SolverStats> stats = Jobs.getAllJobStatsInJobSpaceHierarchy(jobSpace, stageNumber, PrimitivesToAnonymize.NONE);
+			Collection<SolverStats> stats = Jobs.getAllJobStatsInJobSpaceHierarchyIncludeDeletedConfigs(jobSpace, stageNumber, PrimitivesToAnonymize.NONE, includeUnknown);
 			DataTablesQuery query = new DataTablesQuery();
 			query.setTotalRecords(stats.size());
 			query.setTotalRecordsAfterQuery(stats.size());
 			query.setSyncValue(1);
-			JsonObject solverStatsJson = RESTHelpers.convertSolverStatsToJsonObject(stats, query, jobSpace.getId(), jobSpace.getJobId(), true, wallclock, PrimitivesToAnonymize.NONE);
+			JsonObject solverStatsJson = RESTHelpers.convertSolverStatsToJsonObject(stats, query, jobSpace.getId(), jobSpace.getJobId(), false, wallclock, PrimitivesToAnonymize.NONE);
 			if (solverStatsJson != null) {
 				jobSpaceIdToSolverStatsJsonMap.put(jobSpace.getId(), gson.toJson(solverStatsJson));
 			}

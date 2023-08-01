@@ -59,7 +59,8 @@
 			<fieldset id="panelActions">
 				<button id="collapsePanels">Collapse All</button>
 				<button id="openPanels">Open All</button>
-				<button id="changeTime">Use CPU Time</button>
+				<button class="changeTime ui-button-text">Use CPU Time</button>
+				<button id="includeUnknown">Include Unknown Status</button>
 			</fieldset>
 		</fieldset>
 	</div>
