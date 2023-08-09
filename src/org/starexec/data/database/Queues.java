@@ -1119,7 +1119,6 @@ public class Queues {
 		ResultSet results = null;
 		try {
 			con = Common.getConnection();
-			Common.beginTransaction(con);
 			procedure = con.prepareCall("{CALL GetDescForQueue(?)}");
 			procedure.setInt(1, qid);
 			results = procedure.executeQuery();
@@ -1150,7 +1149,6 @@ public class Queues {
 		CallableStatement procedure = null;
 		try {
 			con = Common.getConnection();
-			Common.beginTransaction(con);
 			procedure = con.prepareCall("{CALL SetDescForQueue(?,?)}");
 			procedure.setInt(1, qid);
 			procedure.setString(2, desc);
