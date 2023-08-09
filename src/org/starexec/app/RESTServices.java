@@ -4425,7 +4425,6 @@ public class RESTServices {
 		if (!status.isSuccess()) {
 		    return gson.toJson(status);
 		}
-		log.debug("aeroikgjefserfwef: " + Hash.hashPassword("t!lc_7rlclqeca9p7*O$"));
 		JsonObject nextDataTablesPage = RESTHelpers.getNextDataTablesPageForUserDetails(Primitive.UPLOAD, usrId, request, false, false);
 		return nextDataTablesPage == null ? gson.toJson(ERROR_DATABASE) : gson.toJson(nextDataTablesPage);
     }

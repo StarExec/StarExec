@@ -118,7 +118,6 @@ public class Common {
 	 */
 	protected synchronized static Connection getConnection() throws SQLException {
 		try {
-			log.debug(dataPool.getIdle() + "afasdfasd");
 			Connection c = dataPool.getConnection();
 			++connectionsOpened;
 			checkConnectionsCount();
@@ -452,11 +451,7 @@ public class Common {
 	protected static synchronized void safeClose(Connection c) {
 		try {
 			if(c != null && !c.isClosed()) {
-				int total = dataPool.getIdle() + dataPool.getActive();
-				log.debug("eargihisejfiejfi" + total);
 				c.close();
-				total = dataPool.getIdle() + dataPool.getActive();
-				log.debug("eargihisejfiejfi" + total);
 				--connectionsOpened;
 			}
 		} catch (SQLException e) {
