@@ -981,6 +981,21 @@ public class Util {
 			Util.executeCommand(chmod);
 		}
 	}
+	// public static void sandboxChownDirectory(File dir) throws IOException {
+	// 	if (!dir.isDirectory()) {
+	// 		return;
+	// 	}
+	// 	//make owner sandbox
+	// 	String[] chown = new String[7];
+	// 	chown[0] = "sudo";
+	// 	chown[1] = "chown";
+	// 	chown[2] = "-R";
+	// 	chown[3] = "sandbox:sandbox";
+	// 	for (File f : dir.listFiles()) {
+	// 		chown[4] = f.getAbsolutePath();
+	// 		Util.executeCommand(chown);
+	// 	}
+	// }
 
 	/**
 	 * Adds rwx permissions to the directory for either the owner or the group
@@ -1076,6 +1091,7 @@ public class Util {
 	public static void logSandboxContents() {
 		try {
 			log.debug("logging sandbox contents");
+			log.debug("PERMISSION CHECK");
 			log.debug(Util.executeCommand("ls -l -R " + Util.getSandboxDirectory().getAbsolutePath()));
 
 		} catch (Exception e) {

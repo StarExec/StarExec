@@ -298,7 +298,6 @@ public class UploadSolver extends HttpServlet {
 			log.debug("location of archive file = " + archiveFile.getAbsolutePath() + " and archive file exists =" +
 					          archiveFile.exists());
 
-			
 			// in the change from tc7 to tc9, the temporary directory, sandboxDir, is not created with the permissions we expect
 			// this call manually changes them to what we expect -- this allows for the sandbox user using the unzip command
 			Util.sandboxChmodDirectoryDirect(sandboxDir);
@@ -309,6 +308,7 @@ public class UploadSolver extends HttpServlet {
 
 			//give sandbox full permissions over the solver directory
 			Util.sandboxChmodDirectory(sandboxDir);
+
 
 			//if there was an extraction error or if the temp directory is still empty.
 			if (!extracted || sandboxDir.listFiles().length == 0) {
