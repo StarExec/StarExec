@@ -205,8 +205,9 @@ function trySandbox {
 	fi
 	#force script to wait until it can get the outer lock file to do the block in parens
 	#timeout is 4 seconds-- we give up if we aren't able to get the lock in that amount of time
+	
 	if (
-	flock -x -w 4 200 || return 1
+		flock -x -w 4 200 || return 1
 		#we have exclusive rights to work on the lock for this sandbox within this block
 
 		log "got the right to use the lock for sandbox $1"
@@ -239,7 +240,6 @@ function trySandbox {
 		#could not get the sandbox
 		return 1
 
-
 	#End of Flock command. We return from trySandbox whatever flock returns
 	)200>"$LOCK_USED" ; then
 		return 0
@@ -254,22 +254,28 @@ function trySandbox {
 # figures out which sandbox the given job pair should run in.
 # If no sandbox can be secured, terminate this jobpair
 function initSandbox {
-	# try to get sandbox1 first
-  x="$(lscpu | grep -E "^Core" | sed -e "s/^.* \([0-9][0-9]*\)/\1/")"
+	# Check number of cores available:
+	coresPerSocket="$(lscpu | grep -E "^Core" | sed -e "s/^.* \([0-9][0-9]*\)/\1/")"
+
+	# Second sandbox should only be available if there are 2 (or more) sockets.
+	numSockets="$(lscpu | grep -E "^Socket" | sed -e "s/^.* \([0-9][0-9]*\)/\1/")"
+
 	if (trySandbox 1); then
 		SANDBOX=1
 		SANDBOX_PARAM=$SANDBOX_USER_ONE
 		core0_start=0
-    core0_end=$(($x-1))
-    CORES="$core0_start-$core0_end"
+		core0_end=$(($coresPerSocket-1))
+		CORES="$core0_start-$core0_end"
 		WORKING_DIR=$WORKING_DIR_BASE'/sandbox'
-	elif (trySandbox 2); then
+
+	elif ($numSockets > 1 && trySandbox 2); then # if trySandbox 2 AND there are 2 or more sockets
 		SANDBOX=2
 		SANDBOX_PARAM=$SANDBOX_USER_TWO
-    core1_start=$x
-    core1_end=$(($x * 2 - 1))
+		core1_start=$coresPerSocket
+		core1_end=$(($coresPerSocket * 2 - 1))
 		CORES="$core1_start-$core1_end"
 		WORKING_DIR=$WORKING_DIR_BASE'/sandbox2'
+
 	else #failed to get either sandbox
 		log "unable to secure any sandbox for this job!"
 		sendNode "$HOSTNAME" "0"
@@ -277,6 +283,7 @@ function initSandbox {
 		sendStatusToLaterStages "$ERROR_RUNSCRIPT" 0
 		exit 0
 	fi
+
 	sendNode "$HOSTNAME" "$SANDBOX"
 }
 
