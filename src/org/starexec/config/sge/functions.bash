@@ -268,7 +268,7 @@ function initSandbox {
 		CORES="$core0_start-$core0_end"
 		WORKING_DIR=$WORKING_DIR_BASE'/sandbox'
 
-	elif ($numSockets > 1 && trySandbox 2); then # if trySandbox 2 AND there are 2 or more sockets
+	elif (( numSockets > 1 )) && trySandbox 2; then # if trySandbox 2 AND there are 2 or more sockets
 		SANDBOX=2
 		SANDBOX_PARAM=$SANDBOX_USER_TWO
 		core1_start=$coresPerSocket
