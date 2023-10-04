@@ -255,10 +255,10 @@ function trySandbox {
 # If no sandbox can be secured, terminate this jobpair
 function initSandbox {
 	# Check number of cores available:
-	coresPerSocket="$(lscpu | grep -E "^Core" | sed -e "s/^.* \([0-9][0-9]*\)/\1/")"
+	coresPerSocket="$(lscpu | grep -E "^ *Core" | sed -e "s/^.* \([0-9][0-9]*\)/\1/")"
 
 	# Second sandbox should only be available if there are 2 (or more) sockets.
-	numSockets="$(lscpu | grep -E "^Socket" | sed -e "s/^.* \([0-9][0-9]*\)/\1/")"
+	numSockets="$(lscpu | grep -E "^ *Socket" | sed -e "s/^.* \([0-9][0-9]*\)/\1/")"
 
 	if (trySandbox 1); then
 		SANDBOX=1
