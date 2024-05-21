@@ -6,7 +6,9 @@
 	<td>					
 		<select id="editBenchmarkingFramework" name="benchmarkingFramework">
 			<option class="runsolverOption" value="RUNSOLVER" selected="selected">runsolver</option>
-			<option class="benchexecOption" value="BENCHEXEC">BenchExec</option>
+
+<!--			<option class="benchexecOption" value="BENCHEXEC">BenchExec</option> -->
+
 		</select>
 	</td>
 </tr>
