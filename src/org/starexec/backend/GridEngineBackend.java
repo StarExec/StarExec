@@ -484,7 +484,8 @@ public class GridEngineBackend implements Backend{
 						"\ns_rss                 INFINITY"+
 						"\nh_rss                 INFINITY"+
 						"\ns_vmem                INFINITY"+
-						"\nh_vmem                INFINITY";
+						"\nh_vmem                INFINITY"+
+						"\nmem_limit             INFINITY";			
 
 			File f2 = new File("/tmp/newQueue30.q");
 			FileUtils.writeStringToFile(f2, newQueue);

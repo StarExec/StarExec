@@ -622,6 +622,8 @@ function updateStats {
 	getTotalOutputSizeToCopy $3 $4
 	log "sending Pair Stats"
 
+        log "dbexec CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $((MAX_RESIDENT_SET_SIZE)), $((CURRENT_STAGE_NUMBER)), $((DISK_SIZE)))"
+
 	if ! (dbExec "CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $((MAX_RESIDENT_SET_SIZE)), $((CURRENT_STAGE_NUMBER)), $((DISK_SIZE)))") ; then
 		log "Error copying stats from watchfile into database. Copying varfile to log {"
 		cat $1
