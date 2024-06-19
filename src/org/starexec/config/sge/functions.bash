@@ -126,6 +126,7 @@ function initWorkspaceVariables {
 	WATCHFILE="$OUT_DIR/watcher.out"
 	VARFILE="$OUT_DIR/var.out"
 	STDOUT_FILE="$OUT_DIR/stdout.txt"
+	STDOUT_RAW_FILE="$OUT_DIR/stdout-raw.txt" # for raw output from runexec, which we have to drop the first 7 lines from
 
 	# The path to the benchmark on the execution host
 	PROCESSED_BENCH_PATH="$OUT_DIR/procBenchmark"
@@ -569,7 +570,10 @@ function updateStats {
 		CPU_TIME=$(sed -n 's/^{\?cputime=\([0-9\.]*\)s}\?$/\1/p' $1)
 		CPU_USER_TIME=0
 		SYSTEM_TIME=0
-		MAX_VIRTUAL_MEMORY=$(sed -n 's/^{\?memory=\([0-9\.]*\)}\?$/\1/p' $1)
+
+# the varfile doesn't seem to have a listing for memory anymore?
+#		MAX_VIRTUAL_MEMORY=$(sed -n 's/^{\?memory=\([0-9\.]*\)}\?$/\1/p' $1)
+                MAX_VIRTUAL_MEMORY=0
 
 		MAX_RESIDENT_SET_SIZE=0
 		PAGE_RECLAIMS=0
@@ -623,6 +627,8 @@ function updateStats {
 	log "sending Pair Stats"
 
         log "dbexec CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $((MAX_RESIDENT_SET_SIZE)), $((CURRENT_STAGE_NUMBER)), $((DISK_SIZE)))"
+
+        log "MAX_VIRTUAL_MEMORY = $MAX_VIRTUAL_MEMORY"
 
 	if ! (dbExec "CALL UpdatePairRunSolverStats($PAIR_ID, '$EXEC_HOST', $WALLCLOCK_TIME, $CPU_TIME, $CPU_USER_TIME, $SYSTEM_TIME, $MAX_VIRTUAL_MEMORY, $((MAX_RESIDENT_SET_SIZE)), $((CURRENT_STAGE_NUMBER)), $((DISK_SIZE)))") ; then
 		log "Error copying stats from watchfile into database. Copying varfile to log {"
