@@ -17,7 +17,16 @@ a listing of all of it pairs.
 The pair details page shows the most information about a job pair.
 If an attribute or statistic is unclear, hover your mouse over it to get
 a tool tip description.
+<hr>
+
+<h3><i>2 recently added features are described by this video:</i></h3>
+<video controls style="width:100%">
+	<source src="http://starexec.ccs.miami.edu/starexec/public/videos/gdvidv.mp4" type="video/mp4">
+</video>
+
 </p>
+
+
 <p>If the job pair was run successfully, you will have the option to view its
 output. Click the output list to have the job pair's combined stdout/stderr
 contents displayed in the browser.

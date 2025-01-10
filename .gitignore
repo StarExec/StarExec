@@ -77,7 +77,7 @@ Thumbs.db
 /WebContent/public/resources/postproc.zip
 
 # /build/
-/build/overrides.properties
+# /build/overrides.properties
 
 # /script/
 /script/newInstallWithTestData.sh

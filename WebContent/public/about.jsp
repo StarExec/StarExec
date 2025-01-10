@@ -31,11 +31,6 @@
 		</li>
 	</ul>
 
-	<p>The first public events ran on StarExec in Summer 2013 (CoCo 2013 and
-		SMT-EVAL 2013).
-		Several more will run in Summer 2014.
-	</p>
-
 	<p>See <a href="machine-specs.txt">here</a> for machine specifications for
 		the compute nodes.</p>
 
@@ -67,45 +62,53 @@
 
 	<h2>Credits</h2>
 
-	<p>StarExec is supported by a $1.85 million USD grant from the
-		National Science Foundation, the details of which can be found
-		<a href="http://www.fastlane.nsf.gov/servlet/showaward?award=1058748">here</a>
-		and
-		<a href="http://www.fastlane.nsf.gov/servlet/showaward?award=1058925">here</a>.
-	</p>
+<p>StarExec was first supported by a US$2.11 million grant from the
+    National Science Foundation, the details of which can be found
+    <a href="http://www.fastlane.nsf.gov/servlet/showaward?award=1058748">here (the Iowa part)</a>
+    and
+    <a href="http://www.fastlane.nsf.gov/servlet/showaward?award=1058925">here (the Miami part)</a>.
+        A further grant of US$1.00 million provided support for futher
+        development, the details of which can be found 
+        <a href="http://www.fastlane.nsf.gov/servlet/showaward?award=1729603">here (the Iowa part)</a>
+        and
+        <a href="http://www.fastlane.nsf.gov/servlet/showaward?award=1730419">here (the Miami part)</a>.
+  </p>
 
-	<p>Several people have contributed in various capacities to the StarExec
+	<p>Many people have contributed in various capacities to the StarExec
 		project so far.
 	</p>
+<p>
+    The following people were involved in the development
+    of the software infrastructure at various stages of the project:
+    Eric Burns (Iowa),
+    Todd Elvers (Iowa),
+    Albert Giegerich (Iowa),
+    Pat Hawks (Iowa),
+    Tyler Jensen (Iowa),
+    Wyatt Kaiser (Iowa),
+    Ben McCune (Iowa),
+    CJ Palmer (Iowa),
+    Vivek Sardeshmukh (Iowa),
+    Skylar Stark (Iowa),
+    Ruoyu Zhang (Iowa),
+    Rahul Dass (Miami),
+    Pedro Davila (Miami),
+    John McKeown (Miami),
+    Joseph Masterjohn (Miami),
+    and
+    Muhammad Nassar (Miami).
+  </p>
 
-	<p>
-		The following people were involved in the development
-		of the software infrastructure at various stages of the project:
-		Eric Burns,
-		Todd Elvers,
-		Albert Giegerich,
-		Pat Hawks,
-		Tyler Jensen,
-		Wyatt Kaiser,
-		Ben McCune,
-		Muhammad Nassar,
-		CJ Palmer,
-		Vivek Sardeshmukh,
-		Skylar Stark,
-		and
-		Ruoyu Zhang.
-	</p>
-
-	<p>
-		Computer system support and assistance in designing and building
-		the hardware infrastructure was provided by
-		Hugh Brown,
-		Dan Holstad,
-		Jamie Tisdale,
-		and
-		JJ Ulrich.
-	</p>
-
+<p>
+    Computer system support and assistance in designing and building
+    the hardware infrastructure was provided by
+    Hugh Brown (Iowa),
+    Dan Holstad (Iowa),
+    Jamie Tisdale (Iowa),
+    JJ Ulrich (Iowa),
+        and
+        Joel Zysman (Miami).
+  </p>
 	<p>
 		In addition to the members of the Advisory Board,
 		the following people have provided useful feedback and input:
@@ -128,3 +131,4 @@
 		Harald Zankl.
 	</p>
 </star:template>
+

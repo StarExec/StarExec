@@ -1574,7 +1574,7 @@ public class Benchmarks {
 				if (results.getBoolean("deleted")) {
 					b.setName(b.getName() + " (deleted)");
 				} else if (results.getBoolean("recycled")) {
-					b.setName(b.getName() + " (recycled)");
+					b.setName(b.getName() + " (in trash)");
 				}
 				b.setDeleted(results.getBoolean("deleted"));
 				b.setRecycled(results.getBoolean("recycled"));

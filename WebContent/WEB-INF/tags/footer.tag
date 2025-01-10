@@ -23,8 +23,6 @@
 			<li><a id="starexeccommand" href="${starexecRoot}/public/starexeccommand.jsp">StarExec Command</a></li>
 		</ul>
 	</c:if>
-	<a class="copyright" href="http://www.cs.uiowa.edu" target="_blank">&copy;
-		2012-18 The University of Iowa</a>
 </footer>
 
 <%= StatusMessage.getAsHtml() %>

@@ -71,7 +71,7 @@ jQuery(function($) {
 			"bServerSide": true,
 			"sAjaxSource": starexecRoot + "services/users/",
 			"fnServerData": fnRecycledPaginationHandler, // included in this file
-			"language": {"emptyTable": "No Solvers in Recycle Bin"},
+			"language": {"emptyTable": "No Solvers in Trash Bin"},
 			"columns": [
 				{"title": "Name"},
 				{"title": "Description"},
@@ -88,7 +88,7 @@ jQuery(function($) {
 			"bServerSide": true,
 			"sAjaxSource": starexecRoot + "services/users/",
 			"fnServerData": fnRecycledPaginationHandler, // included in this file
-			"language": {"emptyTable": "No Benchmarks in Recycle Bin"},
+			"language": {"emptyTable": "No Benchmarks in Trash Bin"},
 			"columns": [
 				{"title": "Name"},
 				{"title": "Type"}
@@ -154,7 +154,7 @@ var postCallback = function(nextDataTablePage) {
 };
 
 function deleteAll(prim) {
-	var message = 'Are you sure you want to delete all the ' + prim + '(s) from the recycle bin? After deletion, they can not be recovered';
+	var message = 'Are you sure you want to delete all the ' + prim + '(s) from the trash bin? After deletion, they can not be recovered';
 
 	// Display the confirmation dialog
 	star.openDialog({
@@ -164,7 +164,7 @@ function deleteAll(prim) {
 		buttons: {
 			'delete permanently': function() {
 				$(this).dialog("close");
-				createDialog("Clearing your recycled " + prim + "(s), please wait. This will take some time for large numbers of " + prim + "(s).");
+				createDialog("Clearing your trashed " + prim + "(s), please wait. This will take some time for large numbers of " + prim + "(s).");
 				$.post(
 					starexecRoot + "services/deleterecycled/" + prim + "s",
 					postCallback,
@@ -182,7 +182,7 @@ function deleteAll(prim) {
 }
 
 function restoreAll(prim) {
-	var message = 'Are you sure you want to restore all the ' + prim + '(s) from the recycle bin?';
+	var message = 'Are you sure you want to restore all the ' + prim + '(s) from the trash bin?';
 
 	// Display the confirmation dialog
 	star.openDialog({
@@ -192,7 +192,7 @@ function restoreAll(prim) {
 		buttons: {
 			'restore': function() {
 				$(this).dialog("close");
-				createDialog("Restoring your recycled " + prim + "(s), please wait. This will take some time for large numbers of " + prim + "(s).");
+				createDialog("Restoring your trashed " + prim + "(s), please wait. This will take some time for large numbers of " + prim + "(s).");
 				$.post(
 					starexecRoot + "services/restorerecycled/" + prim + "s",
 					postCallback,
@@ -210,7 +210,7 @@ function restoreAll(prim) {
 }
 
 function deleteSelected(prim) {
-	var message = 'Are you sure you want to delete all the selected ' + prim + '(s) from the recycle bin? After deletion, they can not be recovered';
+	var message = 'Are you sure you want to delete all the selected ' + prim + '(s) from the trash bin? After deletion, they can not be recovered';
 	if (prim == "solver") {
 		table = solverTable;
 	} else {
@@ -224,7 +224,7 @@ function deleteSelected(prim) {
 		buttons: {
 			'delete permanently': function() {
 				$(this).dialog("close");
-				createDialog("Clearing your recycled " + prim + "(s), please wait. This will take some time for large numbers of " + prim + "(s).");
+				createDialog("Clearing your trashed " + prim + "(s), please wait. This will take some time for large numbers of " + prim + "(s).");
 				$.post(
 					starexecRoot + "services/delete/" + prim,
 					{selectedIds: getSelectedRows(table)},
@@ -243,7 +243,7 @@ function deleteSelected(prim) {
 }
 
 function restoreSelected(prim) {
-	var message = 'Are you sure you want to restore all the selected ' + prim + '(s) from the recycle bin?';
+	var message = 'Are you sure you want to restore all the selected ' + prim + '(s) from the trash bin?';
 	if (prim == "solver") {
 		table = solverTable;
 	} else {
@@ -257,7 +257,7 @@ function restoreSelected(prim) {
 		buttons: {
 			'restore': function() {
 				$(this).dialog("close");
-				createDialog("Restoring your recycled " + prim + "(s), please wait. This will take some time for large numbers of " + prim + "(s).");
+				createDialog("Restoring your trashed " + prim + "(s), please wait. This will take some time for large numbers of " + prim + "(s).");
 				$.post(
 					starexecRoot + "services/restore/" + prim,
 					{selectedIds: getSelectedRows(table)},

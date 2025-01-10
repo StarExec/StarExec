@@ -60,6 +60,64 @@ JOB_IN_DIR="$SHARED_DIR/jobin"
 # Path to the job output directory
 JOB_OUT_DIR="$SHARED_DIR/joboutput"
 
+
+
+#######################################################################
+# when running StarExec in k8s (kubernetes),                          #
+# the jobscript is run on the head node (local backend)               #
+# which then will run a run_image_k8s.py script which will            #
+# run a k8s job on the cluster.                                       #
+#						                      #
+# In order for this to work, some global variables need to be changed.#
+#######################################################################
+function adjustForK8s {
+    log "adjustForK8s called"
+    # Loop through SOLVER_PATHS based on STAGE_INDEX to check for the specific Python script
+    for STAGE_INDEX in "${!SOLVER_PATHS[@]}"; do
+        log "adjustForK8s stage Index: $STAGE_INDEX"
+
+        # Decode the base64 encoded path
+        DECODED_PATH=$(echo "${SOLVER_PATHS[$STAGE_INDEX]}" | base64 --decode)
+
+        # Log directory contents for debugging
+        log "Listing contents of: $DECODED_PATH"
+        ls -al "$DECODED_PATH"
+        ls -al "$DECODED_PATH/bin/"
+
+        # Check if the run_image_k8s.py script exists in the decoded path's bin directory
+        if [[ -f "$DECODED_PATH/bin/run_image_k8s.py" ]]; then
+            log "run_image_k8s.py found at $DECODED_PATH/bin/"
+            # Redefine WORKING_DIR_BASE to the new path
+            WORKING_DIR_BASE="$SHARED_DIR/k8sSandboxes/$PAIR_ID"
+
+            # Redefine lock files and active lock indicators based on the new WORKING_DIR_BASE
+            SANDBOX_LOCK_DIR=$WORKING_DIR_BASE'/sandboxlock.lock'
+            SANDBOX2_LOCK_DIR=$WORKING_DIR_BASE'/sandbox2lock.lock'
+            SANDBOX_LOCK_USED=$WORKING_DIR_BASE'/sandboxlock.active'
+            SANDBOX2_LOCK_USED=$WORKING_DIR_BASE'/sandbox2lock.active'
+
+            # Create the k8sSandboxes directory if it does not exist
+            mkdir -p "$WORKING_DIR_BASE"
+
+            log "Adjusted WORKING_DIR_BASE to $WORKING_DIR_BASE and directory ensured"
+            break
+        else
+            log "run_image_k8s.py not found at $DECODED_PATH/bin/"
+        fi
+    done
+}
+
+
+
+
+
+
+
+
+
+
+
+
 ######################################################################
 
 # setup the memory limit for this stage
@@ -206,8 +264,9 @@ function trySandbox {
 	fi
 	#force script to wait until it can get the outer lock file to do the block in parens
 	#timeout is 4 seconds-- we give up if we aren't able to get the lock in that amount of time
+	
 	if (
-	flock -x -w 4 200 || return 1
+		flock -x -w 4 200 || return 1
 		#we have exclusive rights to work on the lock for this sandbox within this block
 
 		log "got the right to use the lock for sandbox $1"
@@ -240,7 +299,6 @@ function trySandbox {
 		#could not get the sandbox
 		return 1
 
-
 	#End of Flock command. We return from trySandbox whatever flock returns
 	)200>"$LOCK_USED" ; then
 		return 0
@@ -250,20 +308,33 @@ function trySandbox {
 
 }
 
+
+# UM edit: more robust approach to getting machine core numbers
 # figures out which sandbox the given job pair should run in.
 # If no sandbox can be secured, terminate this jobpair
 function initSandbox {
-	#try to get sandbox1 first
+	# Check number of cores available:
+	coresPerSocket="$(lscpu | grep -E "^ *Core" | sed -e "s/^.* \([0-9][0-9]*\)/\1/")"
+
+	# Second sandbox should only be available if there are 2 (or more) sockets.
+	numSockets="$(lscpu | grep -E "^ *Socket" | sed -e "s/^.* \([0-9][0-9]*\)/\1/")"
+
 	if (trySandbox 1); then
 		SANDBOX=1
 		SANDBOX_PARAM=$SANDBOX_USER_ONE
-		CORES="0-3"
+		core0_start=0
+		core0_end=$(($coresPerSocket-1))
+		CORES="$core0_start-$core0_end"
 		WORKING_DIR=$WORKING_DIR_BASE'/sandbox'
-	elif (trySandbox 2); then
+
+	elif (( numSockets > 1 )) && trySandbox 2; then # if trySandbox 2 AND there are 2 or more sockets
 		SANDBOX=2
 		SANDBOX_PARAM=$SANDBOX_USER_TWO
-		CORES="4-7"
+		core1_start=$coresPerSocket
+		core1_end=$(($coresPerSocket * 2 - 1))
+		CORES="$core1_start-$core1_end"
 		WORKING_DIR=$WORKING_DIR_BASE'/sandbox2'
+
 	else #failed to get either sandbox
 		log "unable to secure any sandbox for this job!"
 		sendNode "$HOSTNAME" "0"
@@ -271,6 +342,7 @@ function initSandbox {
 		sendStatusToLaterStages "$ERROR_RUNSCRIPT" 0
 		exit 0
 	fi
+
 	sendNode "$HOSTNAME" "$SANDBOX"
 }
 
@@ -677,6 +749,7 @@ function copyOutputNoStats {
 	fi
 
 	if (($2 != 1)); then
+ 		log "cp \"$STDOUT_FILE\" \"$PAIR_OUTPUT_PATH\""
 		cp "$STDOUT_FILE" "$PAIR_OUTPUT_PATH"
 	fi
 

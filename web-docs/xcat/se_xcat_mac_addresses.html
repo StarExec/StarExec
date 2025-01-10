@@ -1,0 +1,313 @@
+<!doctype html>
+<!--[if !IE]>
+<html class="no-js non-ie" lang="en-US"> <![endif]-->
+<!--[if IE 7 ]>
+<html class="no-js ie7" lang="en-US"> <![endif]-->
+<!--[if IE 8 ]>
+<html class="no-js ie8" lang="en-US"> <![endif]-->
+<!--[if IE 9 ]>
+<html class="no-js ie9" lang="en-US"> <![endif]-->
+<!--[if gt IE 9]><!-->
+<html class="no-js" lang="en-US"> <!--<![endif]-->
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#005030">
+<link rel="profile" href="http://gmpg.org/xfn/11">
+
+<title>Compute Node MAC addresses &#8211; StarExec Miami</title>
+<link rel='dns-prefetch' href='//fonts.googleapis.com' />
+<link rel='dns-prefetch' href='//s.w.org' />
+<link rel="alternate" type="application/rss+xml" title="StarExec Miami &raquo; Feed" href="https://starexec.ccs.miami.edu/docs/?feed=rss2" />
+<link rel="alternate" type="application/rss+xml" title="StarExec Miami &raquo; Comments Feed" href="https://starexec.ccs.miami.edu/docs/?feed=comments-rss2" />
+		<script type="text/javascript">
+			window._wpemojiSettings = {"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/11.2.0\/72x72\/","ext":".png","svgUrl":"https:\/\/s.w.org\/images\/core\/emoji\/11.2.0\/svg\/","svgExt":".svg","source":{"concatemoji":"https:\/\/starexec.ccs.miami.edu\/docs\/wp-includes\/js\/wp-emoji-release.min.js?ver=5.1.14"}};
+			!function(e,a,t){var n,r,o,i=a.createElement("canvas"),p=i.getContext&&i.getContext("2d");function s(e,t){var a=String.fromCharCode;p.clearRect(0,0,i.width,i.height),p.fillText(a.apply(this,e),0,0);e=i.toDataURL();return p.clearRect(0,0,i.width,i.height),p.fillText(a.apply(this,t),0,0),e===i.toDataURL()}function c(e){var t=a.createElement("script");t.src=e,t.defer=t.type="text/javascript",a.getElementsByTagName("head")[0].appendChild(t)}for(o=Array("flag","emoji"),t.supports={everything:!0,everythingExceptFlag:!0},r=0;r<o.length;r++)t.supports[o[r]]=function(e){if(!p||!p.fillText)return!1;switch(p.textBaseline="top",p.font="600 32px Arial",e){case"flag":return s([55356,56826,55356,56819],[55356,56826,8203,55356,56819])?!1:!s([55356,57332,56128,56423,56128,56418,56128,56421,56128,56430,56128,56423,56128,56447],[55356,57332,8203,56128,56423,8203,56128,56418,8203,56128,56421,8203,56128,56430,8203,56128,56423,8203,56128,56447]);case"emoji":return!s([55358,56760,9792,65039],[55358,56760,8203,9792,65039])}return!1}(o[r]),t.supports.everything=t.supports.everything&&t.supports[o[r]],"flag"!==o[r]&&(t.supports.everythingExceptFlag=t.supports.everythingExceptFlag&&t.supports[o[r]]);t.supports.everythingExceptFlag=t.supports.everythingExceptFlag&&!t.supports.flag,t.DOMReady=!1,t.readyCallback=function(){t.DOMReady=!0},t.supports.everything||(n=function(){t.readyCallback()},a.addEventListener?(a.addEventListener("DOMContentLoaded",n,!1),e.addEventListener("load",n,!1)):(e.attachEvent("onload",n),a.attachEvent("onreadystatechange",function(){"complete"===a.readyState&&t.readyCallback()})),(n=t.source||{}).concatemoji?c(n.concatemoji):n.wpemoji&&n.twemoji&&(c(n.twemoji),c(n.wpemoji)))}(window,document,window._wpemojiSettings);
+		</script>
+		<style type="text/css">
+img.wp-smiley,
+img.emoji {
+	display: inline !important;
+	border: none !important;
+	box-shadow: none !important;
+	height: 1em !important;
+	width: 1em !important;
+	margin: 0 .07em !important;
+	vertical-align: -0.1em !important;
+	background: none !important;
+	padding: 0 !important;
+}
+</style>
+	<link rel='stylesheet' id='dashicons-css'  href='https://starexec.ccs.miami.edu/docs/wp-includes/css/dashicons.min.css?ver=5.1.14' type='text/css' media='all' />
+<link rel='stylesheet' id='admin-bar-css'  href='https://starexec.ccs.miami.edu/docs/wp-includes/css/admin-bar.min.css?ver=5.1.14' type='text/css' media='all' />
+<link rel='stylesheet' id='wp-block-library-css'  href='https://starexec.ccs.miami.edu/docs/wp-includes/css/dist/block-library/style.min.css?ver=5.1.14' type='text/css' media='all' />
+<link rel='stylesheet' id='wordfenceAJAXcss-css'  href='https://starexec.ccs.miami.edu/docs/wp-content/plugins/wordfence/css/wordfenceBox.1663593635.css?ver=7.6.2' type='text/css' media='all' />
+<link rel='stylesheet' id='sparkling-bootstrap-css'  href='https://starexec.ccs.miami.edu/docs/wp-content/themes/sparkling/assets/css/bootstrap.min.css?ver=5.1.14' type='text/css' media='all' />
+<link rel='stylesheet' id='sparkling-icons-css'  href='https://starexec.ccs.miami.edu/docs/wp-content/themes/sparkling/assets/css/fontawesome-all.min.css?ver=5.1.1.' type='text/css' media='all' />
+<link rel='stylesheet' id='sparkling-fonts-css'  href='//fonts.googleapis.com/css?family=Open+Sans%3A400italic%2C400%2C600%2C700%7CRoboto+Slab%3A400%2C300%2C700&#038;ver=5.1.14' type='text/css' media='all' />
+<link rel='stylesheet' id='sparkling-style-css'  href='https://starexec.ccs.miami.edu/docs/wp-content/themes/sparkling/style.css?ver=2.4.2' type='text/css' media='all' />
+<script type='text/javascript' src='https://starexec.ccs.miami.edu/docs/wp-includes/js/jquery/jquery.js?ver=1.12.4'></script>
+<script type='text/javascript' src='https://starexec.ccs.miami.edu/docs/wp-includes/js/jquery/jquery-migrate.min.js?ver=1.4.1'></script>
+<script type='text/javascript'>
+/* <![CDATA[ */
+var WordfenceI18nStrings = {"${totalIPs} addresses in this network":"${totalIPs} addresses in this network","%s in POST body: %s":"%s in POST body: %s","%s in cookie: %s":"%s in cookie: %s","%s in file: %s":"%s in file: %s","%s in query string: %s":"%s in query string: %s","%s is not valid hostname":"%s is not valid hostname",".htaccess Updated":".htaccess Updated",".htaccess change":".htaccess change","404 Not Found":"404 Not Found","Activity Log Sent":"Activity Log Sent","Add action to allowlist":"Add action to allowlist","Add code to .htaccess":"Add code to .htaccess","All Hits":"All Hits","All capabilties of admin user %s were successfully revoked.":"All capabilties of admin user %s were successfully revoked.","An error occurred":"An error occurred","An error occurred when adding the request to the allowlist.":"An error occurred when adding the request to the allowlist.","Are you sure you want to allowlist this action?":"Are you sure you want to allowlist this action?","Authentication Code":"Authentication Code","Background Request Blocked":"Background Request Blocked","Block This Network":"Block This Network","Blocked":"Blocked","Blocked By Firewall":"Blocked By Firewall","Blocked WAF":"Blocked WAF","Blocked by Wordfence":"Blocked by Wordfence","Blocked by Wordfence plugin settings":"Blocked by Wordfence plugin settings","Blocked by the Wordfence Application Firewall and plugin settings":"Blocked by the Wordfence Application Firewall and plugin settings","Blocked by the Wordfence Security Network":"Blocked by the Wordfence Security Network","Blocked by the Wordfence Web Application Firewall":"Blocked by the Wordfence Web Application Firewall","Bot":"Bot","Cancel Changes":"Cancel Changes","Cellphone Sign-In Recovery Codes":"Cellphone Sign-In Recovery Codes","Cellphone Sign-in activated for user.":"Cellphone Sign-in activated for user.","Click here to download a backup copy of this file now":"Click here to download a backup copy of this file now","Click here to download a backup copy of your .htaccess file now":"Click here to download a backup copy of your .htaccess file now","Click to fix .htaccess":"Click to fix .htaccess","Close":"Close","Crawlers":"Crawlers","Diagnostic report has been sent successfully.":"Diagnostic report has been sent successfully.","Directory Listing Disabled":"Directory Listing Disabled","Directory listing has been disabled on your server.":"Directory listing has been disabled on your server.","Disabled":"Disabled","Dismiss":"Dismiss","Don't ask again":"Don't ask again","Download":"Download","Download Backup File":"Download Backup File","Each line of 16 letters and numbers is a single recovery code, with optional spaces for readability. When typing your password, enter \"wf\" followed by the entire code like \"mypassword wf1234 5678 90AB CDEF\". If your site shows a separate prompt for entering a code after entering only your username and password, enter only the code like \"1234 5678 90AB CDEF\". Your recovery codes are:":"Each line of 16 letters and numbers is a single recovery code, with optional spaces for readability. When typing your password, enter \"wf\" followed by the entire code like \"mypassword wf1234 5678 90AB CDEF\". If your site shows a separate prompt for entering a code after entering only your username and password, enter only the code like \"1234 5678 90AB CDEF\". Your recovery codes are:","Email Diagnostic Report":"Email Diagnostic Report","Email Wordfence Activity Log":"Email Wordfence Activity Log","Enter a valid IP or domain":"Enter a valid IP or domain","Enter the email address you would like to send the Wordfence activity log to. Note that the activity log may contain thousands of lines of data. This log is usually only sent to a member of the Wordfence support team. It also contains your PHP configuration from the phpinfo() function for diagnostic data.":"Enter the email address you would like to send the Wordfence activity log to. Note that the activity log may contain thousands of lines of data. This log is usually only sent to a member of the Wordfence support team. It also contains your PHP configuration from the phpinfo() function for diagnostic data.","Error":"Error","Error Enabling All Options Page":"Error Enabling All Options Page","Error Restoring Defaults":"Error Restoring Defaults","Error Saving Option":"Error Saving Option","Error Saving Options":"Error Saving Options","Failed Login":"Failed Login","Failed Login: Invalid Username":"Failed Login: Invalid Username","Failed Login: Valid Username":"Failed Login: Valid Username","File hidden successfully":"File hidden successfully","File restored OK":"File restored OK","Filter Traffic":"Filter Traffic","Firewall Response":"Firewall Response","Full Path Disclosure":"Full Path Disclosure","Google Bot":"Google Bot","Google Crawlers":"Google Crawlers","HTTP Response Code":"HTTP Response Code","Human":"Human","Humans":"Humans","IP":"IP","Key:":"Key:","Last Updated: %s":"Last Updated: %s","Learn more about repairing modified files.":"Learn more about repairing modified files.","Loading...":"Loading...","Locked Out":"Locked Out","Locked out from logging in":"Locked out from logging in","Logged In":"Logged In","Logins":"Logins","Logins and Logouts":"Logins and Logouts","Look up IP or Domain":"Look up IP or Domain","Manual block by administrator":"Manual block by administrator","Next Update Check: %s":"Next Update Check: %s","No activity to report yet. Please complete your first scan.":"No activity to report yet. Please complete your first scan.","No issues have been ignored.":"No issues have been ignored.","No new issues have been found.":"No new issues have been found.","No rules were updated. Please verify you have permissions to write to the \/wp-content\/wflogs directory.":"No rules were updated. Please verify you have permissions to write to the \/wp-content\/wflogs directory.","No rules were updated. Please verify your website can reach the Wordfence servers.":"No rules were updated. Please verify your website can reach the Wordfence servers.","No rules were updated. Your website has reached the maximum number of rule update requests. Please try again later.":"No rules were updated. Your website has reached the maximum number of rule update requests. Please try again later.","Note: Status will update when changes are saved":"Note: Status will update when changes are saved","OK":"OK","Pages Not Found":"Pages Not Found","Paid Members Only":"Paid Members Only","Please enter a valid IP address or domain name for your whois lookup.":"Please enter a valid IP address or domain name for your whois lookup.","Please enter a valid email address.":"Please enter a valid email address.","Please include your support ticket number or forum username.":"Please include your support ticket number or forum username.","Please make a backup of this file before proceeding. If you need to restore this backup file, you can copy it to the following path from your site's root:":"Please make a backup of this file before proceeding. If you need to restore this backup file, you can copy it to the following path from your site's root:","Please specify a reason":"Please specify a reason","Please specify a valid IP address range in the form of \"1.2.3.4 - 1.2.3.5\" without quotes. Make sure the dash between the IP addresses in a normal dash (a minus sign on your keyboard) and not another character that looks like a dash.":"Please specify a valid IP address range in the form of \"1.2.3.4 - 1.2.3.5\" without quotes. Make sure the dash between the IP addresses in a normal dash (a minus sign on your keyboard) and not another character that looks like a dash.","Please specify either an IP address range, Hostname or a web browser pattern to match.":"Please specify either an IP address range, Hostname or a web browser pattern to match.","Recent Activity":"Recent Activity","Recovery Codes":"Recovery Codes","Redirected":"Redirected","Redirected by Country Blocking bypass URL":"Redirected by Country Blocking bypass URL","Referer":"Referer","Registered Users":"Registered Users","Restore Defaults":"Restore Defaults","Rule Update Failed":"Rule Update Failed","Rules Updated":"Rules Updated","Save Changes":"Save Changes","Scan Complete.":"Scan Complete.","Scan the code below with your authenticator app to add this account. Some authenticator apps also allow you to type in the text version instead.":"Scan the code below with your authenticator app to add this account. Some authenticator apps also allow you to type in the text version instead.","Security Event":"Security Event","Send":"Send","Sorry, but no data for that IP or domain was found.":"Sorry, but no data for that IP or domain was found.","Specify a valid IP range":"Specify a valid IP range","Specify a valid hostname":"Specify a valid hostname","Specify an IP range, Hostname or Browser pattern":"Specify an IP range, Hostname or Browser pattern","Success deleting file":"Success deleting file","Success removing option":"Success removing option","Success restoring file":"Success restoring file","Success updating option":"Success updating option","Successfully deleted admin":"Successfully deleted admin","Successfully revoked admin":"Successfully revoked admin","Test Email Sent":"Test Email Sent","The 'How does Wordfence get IPs' option was successfully updated to the recommended value.":"The 'How does Wordfence get IPs' option was successfully updated to the recommended value.","The Full Path disclosure issue has been fixed":"The Full Path disclosure issue has been fixed","The admin user %s was successfully deleted.":"The admin user %s was successfully deleted.","The file %s was successfully deleted.":"The file %s was successfully deleted.","The file %s was successfully hidden from public view.":"The file %s was successfully hidden from public view.","The file %s was successfully restored.":"The file %s was successfully restored.","The option %s was successfully removed.":"The option %s was successfully removed.","The request has been allowlisted. Please try it again.":"The request has been allowlisted. Please try it again.","There was an error while sending the email.":"There was an error while sending the email.","This will be shown only once. Keep these codes somewhere safe.":"This will be shown only once. Keep these codes somewhere safe.","Throttled":"Throttled","Two Factor Status":"Two Factor Status","Type":"Type","Type: %s":"Type: %s","URL":"URL","Unable to automatically hide file":"Unable to automatically hide file","Use one of these %s codes to log in if you are unable to access your phone. Codes are 16 characters long, plus optional spaces. Each one may be used only once.":"Use one of these %s codes to log in if you are unable to access your phone. Codes are 16 characters long, plus optional spaces. Each one may be used only once.","Use one of these %s codes to log in if you lose access to your authenticator device. Codes are 16 characters long, plus optional spaces. Each one may be used only once.":"Use one of these %s codes to log in if you lose access to your authenticator device. Codes are 16 characters long, plus optional spaces. Each one may be used only once.","User Agent":"User Agent","User ID":"User ID","Username":"Username","WHOIS LOOKUP":"WHOIS LOOKUP","We are about to change your <em>.htaccess<\/em> file. Please make a backup of this file before proceeding.":"We are about to change your <em>.htaccess<\/em> file. Please make a backup of this file before proceeding.","We can't modify your .htaccess file for you because: %s":"We can't modify your .htaccess file for you because: %s","We encountered a problem":"We encountered a problem","Wordfence Firewall blocked a background request to WordPress for the URL %s. If this occurred as a result of an intentional action, you may consider allowlisting the request to allow it in the future.":"Wordfence Firewall blocked a background request to WordPress for the URL %s. If this occurred as a result of an intentional action, you may consider allowlisting the request to allow it in the future.","Wordfence is working...":"Wordfence is working...","You are using Nginx as your web server. You'll need to disable autoindexing in your nginx.conf. See the <a target='_blank'  rel='noopener noreferrer' href='https:\/\/nginx.org\/en\/docs\/http\/ngx_http_autoindex_module.html'>Nginx docs for more info<\/a> on how to do this.":"You are using Nginx as your web server. You'll need to disable autoindexing in your nginx.conf. See the <a target='_blank'  rel='noopener noreferrer' href='https:\/\/nginx.org\/en\/docs\/http\/ngx_http_autoindex_module.html'>Nginx docs for more info<\/a> on how to do this.","You are using an Nginx web server and using a FastCGI processor like PHP5-FPM. You will need to manually delete or hide those files.":"You are using an Nginx web server and using a FastCGI processor like PHP5-FPM. You will need to manually delete or hide those files.","You are using an Nginx web server and using a FastCGI processor like PHP5-FPM. You will need to manually modify your php.ini to disable <em>display_error<\/em>":"You are using an Nginx web server and using a FastCGI processor like PHP5-FPM. You will need to manually modify your php.ini to disable <em>display_error<\/em>","You forgot to include a reason you're blocking this IP range. We ask you to include this for your own record keeping.":"You forgot to include a reason you're blocking this IP range. We ask you to include this for your own record keeping.","You have unsaved changes to your options. If you leave this page, those changes will be lost.":"You have unsaved changes to your options. If you leave this page, those changes will be lost.","Your .htaccess has been updated successfully. Please verify your site is functioning normally.":"Your .htaccess has been updated successfully. Please verify your site is functioning normally.","Your Wordfence activity log was sent to %s":"Your Wordfence activity log was sent to %s","Your rules have been updated successfully.":"Your rules have been updated successfully.","Your rules have been updated successfully. You are currently using the free version of Wordfence. Upgrade to Wordfence premium to have your rules updated automatically as new threats emerge. <a href=\"https:\/\/www.wordfence.com\/wafUpdateRules1\/wordfence-signup\/\">Click here to purchase a premium license<\/a>. <em>Note: Your rules will still update every 30 days as a free user.<\/em>":"Your rules have been updated successfully. You are currently using the free version of Wordfence. Upgrade to Wordfence premium to have your rules updated automatically as new threats emerge. <a href=\"https:\/\/www.wordfence.com\/wafUpdateRules1\/wordfence-signup\/\">Click here to purchase a premium license<\/a>. <em>Note: Your rules will still update every 30 days as a free user.<\/em>","Your test email was sent to the requested email address. The result we received from the WordPress wp_mail() function was: %s<br \/><br \/>A 'True' result means WordPress thinks the mail was sent without errors. A 'False' result means that WordPress encountered an error sending your mail. Note that it's possible to get a 'True' response with an error elsewhere in your mail system that may cause emails to not be delivered.":"Your test email was sent to the requested email address. The result we received from the WordPress wp_mail() function was: %s<br \/><br \/>A 'True' result means WordPress thinks the mail was sent without errors. A 'False' result means that WordPress encountered an error sending your mail. Note that it's possible to get a 'True' response with an error elsewhere in your mail system that may cause emails to not be delivered.","blocked by firewall":"blocked by firewall","blocked by firewall for %s":"blocked by firewall for %s","blocked by real-time IP blocklist":"blocked by real-time IP blocklist","blocked by the Wordfence Security Network":"blocked by the Wordfence Security Network","blocked for %s":"blocked for %s","locked out from logging in":"locked out from logging in"};
+/* ]]> */
+</script>
+<script type='text/javascript' src='https://starexec.ccs.miami.edu/docs/wp-content/plugins/wordfence/js/wfi18n.1663593635.js?ver=7.6.2'></script>
+<script type='text/javascript'>
+/* <![CDATA[ */
+var WFAJAXWatcherVars = {"nonce":"5af5232d86"};
+/* ]]> */
+</script>
+<script type='text/javascript' src='https://starexec.ccs.miami.edu/docs/wp-content/plugins/wordfence/js/admin.ajaxWatcher.1663593635.js?ver=7.6.2'></script>
+<script type='text/javascript' src='https://starexec.ccs.miami.edu/docs/wp-content/themes/sparkling/assets/js/vendor/bootstrap.min.js?ver=5.1.14'></script>
+<script type='text/javascript' src='https://starexec.ccs.miami.edu/docs/wp-content/themes/sparkling/assets/js/functions.js?ver=20180503'></script>
+<link rel='https://api.w.org/' href='https://starexec.ccs.miami.edu/docs/index.php?rest_route=/' />
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://starexec.ccs.miami.edu/docs/xmlrpc.php?rsd" />
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="https://starexec.ccs.miami.edu/docs/wp-includes/wlwmanifest.xml" /> 
+<meta name="generator" content="WordPress 5.1.14" />
+<link rel="canonical" href="https://starexec.ccs.miami.edu/docs/?page_id=72" />
+<link rel='shortlink' href='https://starexec.ccs.miami.edu/docs/?p=72' />
+<link rel="alternate" type="application/json+oembed" href="https://starexec.ccs.miami.edu/docs/index.php?rest_route=%2Foembed%2F1.0%2Fembed&#038;url=https%3A%2F%2Fstarexec.ccs.miami.edu%2Fdocs%2F%3Fpage_id%3D72" />
+<link rel="alternate" type="text/xml+oembed" href="https://starexec.ccs.miami.edu/docs/index.php?rest_route=%2Foembed%2F1.0%2Fembed&#038;url=https%3A%2F%2Fstarexec.ccs.miami.edu%2Fdocs%2F%3Fpage_id%3D72&#038;format=xml" />
+<style id="mystickymenu" type="text/css">#mysticky-nav { width:100%; position: static; }#mysticky-nav.wrapfixed { position:fixed; left: 0px; margin-top:0px;  z-index: 99990; -webkit-transition: 0.3s; -moz-transition: 0.3s; -o-transition: 0.3s; transition: 0.3s; -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=90)"; filter: alpha(opacity=90); opacity:0.9; background-color: #005030;}#mysticky-nav.wrapfixed { } #mysticky-nav.wrapfixed.up { } #mysticky-nav.wrapfixed.down { } #mysticky-nav .myfixed { margin:0 auto; float:none; border:0px; background:none; max-width:100%; }</style><style type="text/css">a, #infinite-handle span, #secondary .widget .post-content a, .entry-meta a {color:#f47321}.btn-default, .label-default, .flex-caption h2, .btn.btn-default.read-more,button,
+              .navigation .wp-pagenavi-pagination span.current,.navigation .wp-pagenavi-pagination a:hover,
+              .woocommerce a.button, .woocommerce button.button,
+              .woocommerce input.button, .woocommerce #respond input#submit.alt,
+              .woocommerce a.button, .woocommerce button.button,
+              .woocommerce a.button.alt, .woocommerce button.button.alt, .woocommerce input.button.alt { background-color: #f47321; border-color: #f47321;}.site-main [class*="navigation"] a, .more-link, .pagination>li>a, .pagination>li>span, .cfa-button { color: #f47321}.cfa-button {border-color: #f47321;}.cfa-text { color: #f47321;}.cfa-button {border-color: #f47321; color: #f47321;}.navbar.navbar-default, .navbar-default .navbar-nav .open .dropdown-menu > li > a {background-color: #005030;}.navbar-default .navbar-nav > li:hover > a, .navbar-nav > li:hover > .caret, .navbar-default .navbar-nav.sparkling-mobile-menu > li.open > a, .navbar-default .navbar-nav.sparkling-mobile-menu > li.open > .caret, .navbar-default .navbar-nav > li:hover, .navbar-default .navbar-nav > .active > a, .navbar-default .navbar-nav > .active > .caret, .navbar-default .navbar-nav > .active > a:hover, .navbar-default .navbar-nav > .active > a:focus, .navbar-default .navbar-nav > li > a:hover, .navbar-default .navbar-nav > li > a:focus, .navbar-default .navbar-nav > .open > a, .navbar-default .navbar-nav > .open > a:hover, .navbar-default .navbar-nav > .open > a:focus {color: #f47321;}@media (max-width: 767px){ .navbar-default .navbar-nav > li.open > a, .navbar-default .navbar-nav > li.open > .caret { color: #f47321 !important; } }.dropdown-menu {background-color: #f47321;}.navbar-default .navbar-nav .open .dropdown-menu > li > a, .dropdown-menu > li > a, .dropdown-menu > li > .caret { color: #005030;}.navbar-default .navbar-nav .dropdown-menu > li:hover, .navbar-default .navbar-nav .dropdown-menu > li:focus, .dropdown-menu > .active {background-color: #f47321;}@media (max-width: 767px) {.navbar-default .navbar-nav .dropdown-menu > li:hover, .navbar-default .navbar-nav .dropdown-menu > li:focus, .dropdown-menu > .active {background: transparent;} }#colophon {background-color: #005030;}#footer-area {background-color: #005030;}</style>		<style type="text/css">
+				.navbar > .container .navbar-brand {
+			color: #dadada;
+		}
+		</style>
+	<style type="text/css" media="print">#wpadminbar { display:none; }</style>
+	<style type="text/css" media="screen">
+	html { margin-top: 32px !important; }
+	* html body { margin-top: 32px !important; }
+	@media screen and ( max-width: 782px ) {
+		html { margin-top: 46px !important; }
+		* html body { margin-top: 46px !important; }
+	}
+</style>
+			<style type="text/css" id="wp-custom-css">
+			code {
+	color:#000;
+	background-color:#cce0dc;
+}
+
+a, h1, h2, h3, #infinite-handle span, #secondary .widget .post-content a, .entry-meta a {
+		color:#F47321;
+	  display:inline
+}		</style>
+		
+</head>
+
+<body class="page-template page-template-page-fullwidth page-template-page-fullwidth-php page page-id-72 logged-in admin-bar no-customize-support">
+<a class="sr-only sr-only-focusable" href="#content">Skip to main content</a>
+<div id="page" class="hfeed site">
+
+	<header id="masthead" class="site-header" role="banner">
+		<nav class="navbar navbar-default 
+		" role="navigation">
+			<div class="container">
+				<div class="row">
+					<div class="site-navigation-inner col-sm-12">
+						<div class="navbar-header">
+							<button type="button" class="btn navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+								<span class="sr-only">Toggle navigation</span>
+								<span class="icon-bar"></span>
+								<span class="icon-bar"></span>
+								<span class="icon-bar"></span>
+							</button>
+
+														<div id="logo">
+															<p class="site-name">																		<a class="navbar-brand" href="https://starexec.ccs.miami.edu/docs/" title="StarExec Miami" rel="home">StarExec Miami</a>
+																</p>																													</div><!-- end of #logo -->
+						</div>
+						<div class="collapse navbar-collapse navbar-ex1-collapse"><ul id="menu-main" class="nav navbar-nav"><li id="menu-item-43" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-home menu-item-43"><a href="https://starexec.ccs.miami.edu/docs/">Home</a></li>
+<li id="menu-item-139" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children menu-item-139 dropdown"><a href="http://starexec.ccs.miami.edu/starexec">StarExec</a><span class="caret sparkling-dropdown"></span>
+<ul role="menu" class=" dropdown-menu">
+	<li id="menu-item-391" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-391"><a href="https://starexec.ccs.miami.edu/docs/?page_id=388">StarExec Maintenance Commands.</a></li>
+	<li id="menu-item-241" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-241"><a href="https://starexec.ccs.miami.edu/docs/?page_id=237">StarExec README.markdown</a></li>
+	<li id="menu-item-36" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-36"><a href="https://starexec.ccs.miami.edu/docs/?page_id=32">Dependencies</a></li>
+	<li id="menu-item-165" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-165"><a href="https://starexec.ccs.miami.edu/docs/?page_id=160">TPTP new config</a></li>
+	<li id="menu-item-142" class="menu-item menu-item-type-custom menu-item-object-custom menu-item-142"><a href="https://wiki.uiowa.edu/display/stardev/User+Guide">User Guide</a></li>
+</ul>
+</li>
+<li id="menu-item-9" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-9"><a href="https://starexec.ccs.miami.edu/docs/?page_id=5">Meeting notes</a></li>
+<li id="menu-item-37" class="menu-item menu-item-type-post_type menu-item-object-page current-menu-ancestor current-menu-parent current_page_parent current_page_ancestor menu-item-has-children menu-item-37 dropdown"><a href="https://starexec.ccs.miami.edu/docs/?page_id=2">xCAT</a><span class="caret sparkling-dropdown"></span>
+<ul role="menu" class=" dropdown-menu">
+	<li id="menu-item-98" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-98"><a href="https://starexec.ccs.miami.edu/docs/?page_id=97">Installation</a></li>
+	<li id="menu-item-92" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-92"><a href="https://starexec.ccs.miami.edu/docs/?page_id=91">Configuration</a></li>
+	<li id="menu-item-74" class="menu-item menu-item-type-post_type menu-item-object-page current-menu-item page_item page-item-72 current_page_item menu-item-74 active"><a href="https://starexec.ccs.miami.edu/docs/?page_id=72">MAC Addresses</a></li>
+	<li id="menu-item-104" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-104"><a href="https://starexec.ccs.miami.edu/docs/?page_id=103">Node Discovery</a></li>
+	<li id="menu-item-109" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-109"><a href="https://starexec.ccs.miami.edu/docs/?page_id=106">Troubleshooting</a></li>
+</ul>
+</li>
+<li id="menu-item-55" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-has-children menu-item-55 dropdown"><a href="https://starexec.ccs.miami.edu/docs/?page_id=54">SGE</a><span class="caret sparkling-dropdown"></span>
+<ul role="menu" class=" dropdown-menu">
+	<li id="menu-item-115" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-115"><a href="https://starexec.ccs.miami.edu/docs/?page_id=113">SGE – jobscript</a></li>
+	<li id="menu-item-116" class="menu-item menu-item-type-post_type menu-item-object-page menu-item-116"><a href="https://starexec.ccs.miami.edu/docs/?page_id=111">SGE – functions.bash</a></li>
+</ul>
+</li>
+</ul></div>					</div>
+				</div>
+			</div>
+		</nav><!-- .site-navigation -->
+	</header><!-- #masthead -->
+
+	<div id="content" class="site-content">
+
+		<div class="top-section">
+								</div>
+
+		<div class="container main-content-area">
+						<div class="row side-pull-left">
+				<div class="main-content-inner col-sm-12 col-md-12">
+
+  <div id="primary" class="content-area">
+
+	<main id="main" class="site-main" role="main">
+
+		
+		
+
+<div class="post-inner-content">
+<article id="post-72" class="post-72 page type-page status-publish hentry">
+	<header class="entry-header page-header">
+		<h1 class="entry-title">Compute Node MAC addresses</h1>
+	</header><!-- .entry-header -->
+
+	<div class="entry-content">
+		
+<h1>Get MAC Addresses of n0XX (ie n032)</h1>
+<pre>
+Connect to the node's remote console
+<code>
+[root@se-m1 ~]# chdef n0XX cons=ipmi
+[root@se-m1 ~]# rcons n0XX
+</code>
+In a second terminal, start the node
+<code>
+[root@se-m1 ~]# rpower n0XX on
+</code>
+Get the MAC Addresses from the Network configuration window in the Bios.  Then power down the node.
+<code>
+[root@se-m1 ~]# rpower n0XX off
+</code>
+</pre>
+
+<p>This will
+
+<p>MAC address</p>
+<p>n032<br />MAC:00:0E:1E:EE:CF:30 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:CF:32 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:5C:C6 Onboard PFA 16:0:0<br />MAC:10:05:01:41:5C:C7 Onboard PFA 16:0:1</p>
+<p>n031<br />MAC:00:0E:1E:EE:CD:D0 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:CD:D2 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:5C:FC Onboard PFA 16:0:0<br />MAC:10:05:01:41:5C:FD Onboard PFA 16:0:1</p>
+<p>n030<br />MAC:00:0E:1E:EE:CF:00 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:CF:02 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:5C:42 Onboard PFA 16:0:0<br />MAC:10:05:01:41:5C:43 Onboard PFA 16:0:1</p>
+<p>n029<br />MAC:00:0E:1E:EE:CF:F0 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:CF:F2 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:5D:F2 Onboard PFA 16:0:0<br />MAC:10:05:01:41:5D:F3 Onboard PFA 16:0:1</p>
+<p>n028<br />MAC:00:0E:1E:EE:CF:A0 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:CF:A2 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:63:68 Onboard PFA 16:0:0<br />MAC:10:05:01:41:63:69 Onboard PFA 16:0:1</p>
+<p>n027<br />MAC:00:0E:1E:EE:CE:F0 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:CE:F2 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:5C:F6 Onboard PFA 16:0:0<br />MAC:10:05:01:41:5C:F7 Onboard PFA 16:0:1</p>
+<p>n026<br />MAC:00:0E:1E:EE:CF:C0 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:CF:C2 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:63:B6 Onboard PFA 16:0:0<br />MAC:10:05:01:41:63:B7 Onboard PFA 16:0:1</p>
+<p>n025<br />MAC:00:0E:1E:EE:CF:80 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:CF:82 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:5C:F0 Onboard PFA 16:0:0<br />MAC:10:05:01:41:5C:F1 Onboard PFA 16:0:1</p>
+<p>n024<br />MAC:00:0E:1E:EE:C8:60 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:C8:62 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:3B:44 Onboard PFA 16:0:0<br />MAC:10:05:01:41:3B:45 Onboard PFA 16:0:1</p>
+<p>n023<br />MAC:00:0E:1E:EE:CB:70 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:CB:72 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:39:46 Onboard PFA 16:0:0<br />MAC:10:05:01:41:39:47 Onboard PFA 16:0:1</p>
+<p>n022<br />MAC:00:0E:1E:EE:C8:70 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:C8:72 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:35:8C Onboard PFA 16:0:0<br />MAC:10:05:01:41:35:8D Onboard PFA 16:0:1</p>
+<p>n021<br />MAC:00:0E:1E:EE:BF:80 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:BF:82 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:5B:5E Onboard PFA 16:0:0<br />MAC:10:05:01:41:5B:5F Onboard PFA 16:0:1</p>
+<p>n020<br />MAC:00:0E:1E:EE:CC:80 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:CC:82 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:3A:E4 Onboard PFA 16:0:0<br />MAC:10:05:01:41:3A:E5 Onboard PFA 16:0:1</p>
+<p>n019<br />MAC:00:0E:1E:EE:AE:F0 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:AE:F2 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:36:76 Onboard PFA 16:0:0<br />MAC:10:05:01:41:36:77 Onboard PFA 16:0:1</p>
+<p>n018<br />MAC:00:0E:1E:EE:CF:40 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:CF:42 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:60:2C Onboard PFA 16:0:0<br />MAC:10:05:01:41:60:2D Onboard PFA 16:0:1</p>
+<p>n017<br />MAC:00:0E:1E:EE:CF:D0 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:CF:D2 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:64:52 Onboard PFA 16:0:0<br />MAC:10:05:01:41:64:53 Onboard PFA 16:0:1</p>
+<p>n016<br />MAC:00:0E:1E:EE:CF:60 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:CF:62 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:60:F8 Onboard PFA 16:0:0<br />MAC:10:05:01:41:60:F9 Onboard PFA 16:0:1</p>
+<p>n015<br />MAC:00:0E:1E:EE:B1:F0 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:B1:F2 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:5D:50 Onboard PFA 16:0:0<br />MAC:10:05:01:41:5D:51 Onboard PFA 16:0:1</p>
+<p>n014<br />MAC:00:0E:1E:EE:C4:20 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:C4:22 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:3B:1A Onboard PFA 16:0:0<br />MAC:10:05:01:41:3B:1B Onboard PFA 16:0:1</p>
+<p>n013<br />MAC:00:0E:1E:EE:CF:E0 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:CF:E2 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:37:A8 Onboard PFA 16:0:0<br />MAC:10:05:01:41:37:A9 Onboard PFA 16:0:1</p>
+<p>n012<br />MAC:00:0E:1E:EE:C7:90 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:C7:92 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:3B:CE Onboard PFA 16:0:0<br />MAC:10:05:01:41:3B:CF Onboard PFA 16:0:1</p>
+<p>n011<br />MAC:00:0E:1E:EE:D0:00 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:D0:02 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:5B:3A Onboard PFA 16:0:0<br />MAC:10:05:01:41:5B:3B Onboard PFA 16:0:1</p>
+<p>n010<br />MAC:00:0E:1E:EE:CD:60 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:CD:62 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:5D:1A Onboard PFA 16:0:0<br />MAC:10:05:01:41:5D:1B Onboard PFA 16:0:1</p>
+<p>n009<br />MAC:00:0E:1E:EE:C7:B0 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:C7:B2 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:3B:68 Onboard PFA 16:0:0<br />MAC:10:05:01:41:3B:69 Onboard PFA 16:0:1</p>
+<p>n008<br />MAC:00:0E:1E:EE:B8:60 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:B8:62 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:3B:38 Onboard PFA 16:0:0<br />MAC:10:05:01:41:3B:39 Onboard PFA 16:0:1</p>
+<p>n007<br />MAC:00:0E:1E:EE:C7:70 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:C7:72 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:5A:FE Onboard PFA 16:0:0<br />MAC:10:05:01:41:5A:FF Onboard PFA 16:0:1</p>
+<p>n006 &#8211; Network Device List<br />&gt; MAC:00:0E:1E:EE:C8:E0 Slot 6 Dev PFA 6:0:0<br />&gt; MAC:00:0E:1E:EE:C8:E2 Slot 6 Dev PFA 6:0:1<br />&gt; MAC:10:05:01:41:35:68 Onboard PFA 16:0:0<br />&gt; MAC:10:05:01:41:35:69 Onboard PFA 16:0:1</p>
+<p>n005 &#8211; Network Device List<br />&gt; MAC:00:0E:1E:EE:CF:B0 Slot 6 Dev PFA 6:0:0<br />&gt; MAC:00:0E:1E:EE:CF:B2 Slot 6 Dev PFA 6:0:1<br />&gt; MAC:10:05:01:41:39:AC Onboard PFA 16:0:0<br />&gt; MAC:10:05:01:41:39:AD Onboard PFA 16:0:1</p>
+<p>n004 &#8211; Network Device List<br />&gt; MAC:00:0E:1E:EE:C6:10 Slot 6 Dev PFA 6:0:0<br />&gt; MAC:00:0E:1E:EE:C6:12 Slot 6 Dev PFA 6:0:1<br />&gt; MAC:10:05:01:41:37:5A Onboard PFA 16:0:0<br />&gt; MAC:10:05:01:41:37:5B Onboard PFA 16:0:1</p>
+<p>n003 &#8211; Network Device List<br />&gt; MAC:00:0E:1E:EE:CB:B0 Slot 6 Dev PFA 6:0:0<br />&gt; MAC:00:0E:1E:EE:CB:B2 Slot 6 Dev PFA 6:0:1<br />&gt; MAC:10:05:01:41:60:A4 Onboard PFA 16:0:0<br />&gt; MAC:10:05:01:41:60:A5 Onboard PFA 16:0:1</p>
+<p>n002 &#8211; Network Device List<br />&gt; MAC:00:0E:1E:EE:C8:00 Slot 6 Dev PFA 6:0:0<br />&gt; MAC:00:0E:1E:EE:C8:02 Slot 6 Dev PFA 6:0:1<br />&gt; MAC:10:05:01:41:61:34 Onboard PFA 16:0:0<br />&gt; MAC:10:05:01:41:61:35 Onboard PFA 16:0:1</p>
+<p>n001 &#8211; Network Device List<br />MAC:00:0E:1E:EE:CC:50 Slot 6 Dev PFA 6:0:0<br />MAC:00:0E:1E:EE:CC:52 Slot 6 Dev PFA 6:0:1<br />MAC:10:05:01:41:5F:6C Onboard PFA 16:0:0<br />MAC:10:05:01:41:5F:6D Onboard PFA 16:0:1</p>
+
+		</div><!-- .entry-content -->
+
+	</article><!-- #post-## -->
+</div>
+
+		
+		
+	</main><!-- #main -->
+
+  </div><!-- #primary -->
+
+</div><!-- close .main-content-inner -->
+
+		</div><!-- close .row -->
+	</div><!-- close .container -->
+</div><!-- close .site-content -->
+
+	<div id="footer-area">
+		<div class="container footer-inner">
+			<div class="row">
+				
+				</div>
+		</div>
+
+		<footer id="colophon" class="site-footer" role="contentinfo">
+			<div class="site-info container">
+				<div class="row">
+										<nav role="navigation" class="col-md-6">
+											</nav>
+					<div class="copyright col-md-6">
+						sparkling						Theme by <a href="http://colorlib.com/" target="_blank">Colorlib</a> Powered by <a href="http://wordpress.org/" target="_blank">WordPress</a>					</div>
+				</div>
+			</div><!-- .site-info -->
+			<div class="scroll-to-top"><i class="fa fa-angle-up"></i></div><!-- .scroll-to-top -->
+		</footer><!-- #colophon -->
+	</div>
+</div><!-- #page -->
+
+		<script type="text/javascript">
+		  jQuery(document).ready(function ($) {
+			if ($(window).width() >= 767) {
+			  $('.navbar-nav > li.menu-item > a').click(function () {
+				if ($(this).attr('target') !== '_blank') {
+				  window.location = $(this).attr('href')
+				}
+			  })
+			}
+		  })
+		</script>
+	<script type='text/javascript' src='https://starexec.ccs.miami.edu/docs/wp-includes/js/admin-bar.min.js?ver=5.1.14'></script>
+<script type='text/javascript'>
+/* <![CDATA[ */
+var option = {"mystickyClass":".navbar","activationHeight":"0","disableWidth":"0","disableLargeWidth":"0","adminBar":"true","mystickyTransition":"on","mysticky_disable_down":"false"};
+/* ]]> */
+</script>
+<script type='text/javascript' src='https://starexec.ccs.miami.edu/docs/wp-content/plugins/mystickymenu/js/mystickymenu.min.js?ver=2.0.6'></script>
+<script type='text/javascript' src='https://starexec.ccs.miami.edu/docs/wp-content/themes/sparkling/assets/js/skip-link-focus-fix.min.js?ver=20140222'></script>
+<script type='text/javascript' src='https://starexec.ccs.miami.edu/docs/wp-includes/js/wp-embed.min.js?ver=5.1.14'></script>
+	<!--[if lte IE 8]>
+		<script type="text/javascript">
+			document.body.className = document.body.className.replace( /(^|\s)(no-)?customize-support(?=\s|$)/, '' ) + ' no-customize-support';
+		</script>
+	<![endif]-->
+	<!--[if gte IE 9]><!-->
+		<script type="text/javascript">
+			(function() {
+				var request, b = document.body, c = 'className', cs = 'customize-support', rcs = new RegExp('(^|\\s+)(no-)?'+cs+'(\\s+|$)');
+
+						request = true;
+		
+				b[c] = b[c].replace( rcs, ' ' );
+				// The customizer requires postMessage and CORS (if the site is cross domain)
+				b[c] += ( window.postMessage && request ? ' ' : ' no-' ) + cs;
+			}());
+		</script>
+	<!--<![endif]-->
+</body>
+</html>

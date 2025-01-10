@@ -4,6 +4,7 @@ import org.starexec.backend.Backend;
 import org.starexec.backend.GridEngineBackend;
 import org.starexec.backend.LocalBackend;
 import org.starexec.backend.OARBackend;
+import org.starexec.backend.KubernetesBackend;
 import org.starexec.data.to.User;
 import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.exceptions.StarExecException;
@@ -107,6 +108,7 @@ public class R {
 	public static final String SGE_TYPE = "sge";
 	public static final String OAR_TYPE = "oar";
 	public static final String LOCAL_TYPE = "local";
+	public static final String K8S_TYPE = "k8s";
 
 	public static String BACKEND_TYPE = "@Backend.Type@";
 	public static Backend BACKEND;
@@ -121,6 +123,9 @@ public class R {
 			break;
 		case LOCAL_TYPE:
 			b = new LocalBackend();
+			break;
+		case K8S_TYPE:
+			b = new KubernetesBackend();
 			break;
 		default:
 			log.error("BACKEND", "Not a valid BACKEND_TYPE: " + BACKEND_TYPE);

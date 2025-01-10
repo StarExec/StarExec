@@ -71,7 +71,7 @@ function attachButtonActions() {
 	// deletes the solver via AJAX, then redirects to explore/spaces.jsp
 	$("#delete").click(function() {
 		$('#dialog-confirm-delete-txt')
-		.text('are you sure you want to recycle this benchmark?');
+		.text('are you sure you want to move this benchmark to your trash bin?');
 
 		$('#dialog-confirm-delete').dialog({
 			modal: true,
