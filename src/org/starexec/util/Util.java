@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
+import java.net.URI;
 import java.net.URLConnection;
 import java.sql.Timestamp;
 import java.sql.SQLException;
@@ -1157,10 +1158,12 @@ public class Util {
 	 * @throws IOException
 	 * @author Albert Giegerich
 	 */
+
 	public static String getWebPage(String url, List<Cookie> cookiesToSend) throws IOException {
 		String nextLine;
 		StringBuilder outputHtml = new StringBuilder();
-		URL inputUrl = new URL(url);
+		URI uri = URI.create(url);
+		URL inputUrl = uri.toURL();
 		URLConnection urlConnection = inputUrl.openConnection();
 		if (nonNull(cookiesToSend)) {
 			String cookieString = buildCookieString(cookiesToSend);

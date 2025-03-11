@@ -126,17 +126,14 @@ public class ErrorLogsTests extends TestSequence {
             Optional<Integer> id = ErrorLogs.add(message, level);
             Assert.assertTrue(id.isPresent());
             Optional<ErrorLog> optionalLog = ErrorLogs.getById(id.get());
-            Assert.assertTrue("Log did not exist in database.",optionalLog.isPresent());
-            if (optionalLog.isPresent()) {
-                ErrorLog log = optionalLog.get();
-                Assert.assertEquals(new Integer(log.getId()), id.get());
-                Assert.assertEquals(level, log.getLevel());
-                Assert.assertEquals(message, log.getMessage());
-
-                ErrorLogs.deleteWithId(id.get());
-            }
+            Assert.assertTrue("Log did not exist in database.", optionalLog.isPresent());
+            ErrorLog log = optionalLog.get();
+            Assert.assertEquals(Integer.valueOf(log.getId()), id.get());
+            Assert.assertEquals(level, log.getLevel());
+            Assert.assertEquals(message, log.getMessage());
+            ErrorLogs.deleteWithId(id.get());
         } catch (SQLException e) {
-            Assert.fail("Caught SQLException:\n"+ Util.getStackTrace(e));
+            Assert.fail("Caught SQLException:\n" + Util.getStackTrace(e));
         }
     }
 }
