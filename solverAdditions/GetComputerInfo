@@ -1,0 +1,299 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use Getopt::Std;
+
+#----------------------------------------------------------------------------
+# Set base directories and commands
+#----------------------------------------------------------------------------
+my $tptp_dir = $ENV{TPTP_HOME} // "/home/tptp";
+
+my $get_computer_info_cmd = "$tptp_dir/SystemExecution/GetComputerInfo";
+my $available_computers_file = "$tptp_dir/SystemExecution/AvailableComputers";
+
+#----------------------------------------------------------------------------
+# Detect Operating System (Linux or OSX)
+#----------------------------------------------------------------------------
+my ($is_osx, $is_linux) = (0, 0);
+my $os_info = `uname -sr`;
+if (defined $os_info and $os_info =~ /Darwin/) {
+    $is_osx = 1;
+} elsif (defined $os_info and $os_info =~ /Linux/) {
+    $is_linux = 1;
+} else {
+    die "ERROR: Cannot detect operating system\n";
+}
+
+#----------------------------------------------------------------------------
+# Define commands based on OS
+#----------------------------------------------------------------------------
+my %cmd;
+if ($is_linux) {
+    %cmd = (
+        remote_shell   => '/usr/bin/ssh',
+        nslookup       => '/usr/bin/nslookup -sil',
+        ping           => '/bin/ping -c1',
+        top            => '/usr/bin/top -d0 -n1 -b -p0',
+        free           => '/bin/free -m',
+        hostname       => '/bin/hostname',
+        uname          => '/bin/uname',
+        uname_model    => '/bin/uname -mp',
+        uname_os       => '/bin/uname -sr',
+        cat            => '/bin/cat',
+    );
+} elsif ($is_osx) {
+    %cmd = (
+        remote_shell   => '/usr/bin/rsh',
+        nslookup       => '/usr/bin/nslookup -sil',
+        ping           => '/sbin/ping -c1',
+        top            => '/usr/bin/top -C -d0 -n6 -b -p0',
+        hostname       => '/bin/hostname',
+        uname          => '/usr/bin/uname',
+        uname_model    => '/usr/bin/uname -mp',
+        uname_os       => '/usr/bin/uname -sr',
+        cat            => '/bin/cat',
+    );
+}
+
+#----------------------------------------------------------------------------
+# Process command-line options
+#----------------------------------------------------------------------------
+my %opts;
+getopts("a:prsh", \%opts) or usage();
+
+usage() if $opts{h};
+
+$available_computers_file = $opts{a} if defined $opts{a};
+my $pretty = $opts{p} ? 1 : 0;
+my $flags = $pretty ? " -p " : "";
+
+# Allow overriding remote shell command
+if ($opts{r}) {
+    $cmd{remote_shell} =~ s/\.sh/rsh/;
+}
+if ($opts{s}) {
+    $cmd{remote_shell} =~ s/\.sh/ssh/;
+}
+
+# Must have at least 1 argument
+usage() unless @ARGV;
+
+# First argument is the computer identifier; the rest are field names.
+my $computer_arg = shift @ARGV;
+my @fields = @ARGV;        
+
+#----------------------------------------------------------------------------
+# Build list of computers
+#----------------------------------------------------------------------------
+my @computers;
+if ($computer_arg eq 'ALL') {
+    if (-e $available_computers_file) {
+        open my $fh, '<', $available_computers_file
+          or die "Cannot open $available_computers_file: $!";
+        while (my $line = <$fh>) {
+            chomp $line;
+            next if $line =~ m/^\s*#/;
+            push @computers, $line if $line ne '';
+        }
+        close $fh;
+    }
+} elsif ($computer_arg eq 'THIS') {
+    @computers = get_command_output($cmd{hostname});
+} else {
+    @computers = ($computer_arg);
+}
+
+# Get fully qualified name of current machine
+my $this_computer = get_fqdn( get_scalar_command_output($cmd{hostname}) );
+
+#----------------------------------------------------------------------------
+# Process each target computer
+#----------------------------------------------------------------------------
+foreach my $comp (@computers) {
+    chomp $comp;
+    my $target = ($comp . ".local" eq $this_computer) 
+                 ? $this_computer
+                 : get_fqdn($comp);
+    if ($this_computer eq $target) {
+        get_computer_info($target, $pretty, @fields);
+    } else {
+        system("$cmd{remote_shell} $target $get_computer_info_cmd $flags $target @fields");
+    }
+}
+
+#----------------------------------------------------------------------------
+# Subroutine definitions
+#----------------------------------------------------------------------------
+
+sub usage {
+    print <<'EOF';
+Usage: GetComputerInfo Options ComputerName RequiredFields
+
+Options:
+   -h                        : Print help
+   -a AvailableComputersFile : Use specified computer list file
+   -p                        : Pretty print output
+   -r                        : Use rsh for remote shell
+   -s                        : Use ssh for remote shell
+
+ComputerName: Name of computer, ALL, or THIS
+
+RequiredFields:
+  Model, CPUModel, NumberOfCPUs, SpareCPUs, RAMPerCPU, FreeRAM,
+  SwapInUse, FreeSwap, OS, or ALL (to print all fields)
+EOF
+    exit;
+}
+
+# Get a scalar result (first line) from a command
+sub get_scalar_command_output {
+    my ($cmd_line) = @_;
+    my $result = `$cmd_line`;
+    chomp $result;
+    return $result;
+}
+
+# Get array of lines from a command
+sub get_command_output {
+    my ($cmd_line) = @_;
+    my @lines = `$cmd_line`;
+    chomp @lines;
+    return @lines;
+}
+
+# Get fully qualified domain name via nslookup
+sub get_fqdn {
+    my ($computer) = @_;
+    chomp $computer;
+    if ($computer !~ /\.local$/) {
+        my @ns_lines = get_command_output($cmd{nslookup} . " $computer");
+        my ($fqdn) = map { s/^Name:\s*//; $_ } grep { /^Name:/ } @ns_lines;
+        return $fqdn || $computer;
+    }
+    return $computer;
+}
+
+# Get and print computer information
+sub get_computer_info {
+    my ($computer, $pretty, @fields) = @_;
+    my %info;
+    $info{Computer} = $computer;
+
+    # Check reachability via ping
+    my @ping = get_command_output("$cmd{ping} $computer 2>&1");
+    unless (grep { /is alive/ || /0% loss/ || /0% packet loss/ } @ping) {
+        print "ERROR: $computer does not respond to ping\n";
+        exit 1;
+    }
+
+    $info{Model} = get_computer_model($computer);
+    ($info{CPUModel}, $info{NumberOfCPUs}) = get_cpu_info($computer);
+    ($info{TotalRAM}, $info{FreeRAM}, $info{SwapInUse}, $info{FreeSwap}) =
+        get_memory($computer);
+    $info{RAMPerCPU} = $info{TotalRAM} / $info{NumberOfCPUs};
+
+    # Append units
+    $info{TotalRAM}   .= "MB";
+    $info{RAMPerCPU}  .= "MB";
+    $info{FreeRAM}    .= "MB";
+    $info{SwapInUse}  .= "MB";
+    $info{FreeSwap}   .= "MB";
+
+    $info{OS} = get_operating_system($computer);
+    $info{SpareCPUs} = $info{NumberOfCPUs} *
+        (get_idle_percentage($computer, $info{NumberOfCPUs}) / 100);
+
+    # If the user provided "ALL" as field, select all keys except "Computer"
+    if (@fields == 1 && $fields[0] eq "ALL") {
+        @fields = grep { $_ ne 'Computer' } keys %info;
+    }
+
+    if ($pretty) {
+        printf "%-12s : %s\n", "Computer", $info{Computer};
+    } else {
+        printf "%-20s => ", $info{Computer};
+    }
+    foreach my $field (@fields) {
+        print $pretty ? sprintf("%-12s : ", $field) : "";
+        printf exists $info{$field} ? "%s" : "NO INFORMATION", $info{$field} // "";
+        print $pretty ? "\n" : "; ";
+    }
+    print "\n" unless $pretty;
+}
+
+# Retrieve computer model information using uname -mp
+sub get_computer_model {
+    my ($computer) = @_;
+    my @lines = get_command_output($cmd{uname_model});
+    return $lines[0] // "Unknown";
+}
+
+# Retrieve CPU Information from /proc/cpuinfo (Linux only)
+sub get_cpu_info {
+    my ($computer) = @_;
+    my ($cpu_model, $num_cpus) = ("Unknown", 0);
+    if ($is_linux) {
+        my @cpuinfo = get_command_output("$cmd{cat} /proc/cpuinfo");
+        my @model_lines = grep { /model name/ } @cpuinfo;
+        $num_cpus = scalar @model_lines;
+        die "ERROR: No CPU models found for $computer\n" if $num_cpus == 0;
+        ($cpu_model) = $model_lines[0] =~ /model name\s*:\s*(.*)/;
+        foreach my $line (@model_lines) {
+            my ($temp) = $line =~ /model name\s*:\s*(.*)/;
+            die "ERROR: Mixed CPU types for $computer\n" if defined $temp && $temp ne $cpu_model;
+        }
+    }
+    return ($cpu_model, $num_cpus);
+}
+
+# Retrieve memory information using free (Linux only)
+sub get_memory {
+    my ($computer) = @_;
+    my ($total, $free, $swapUsed, $swapFree) = (0, 0, 0, 0);
+    if ($is_linux) {
+        my @meminfo = get_command_output("$cmd{free} 2>&1");
+        my ($mem_line) = grep { /^Mem\s*:/ } @meminfo;
+        ($total, $free) = $mem_line =~ /^Mem\s*:\s*(\d+)\s+\d+\s+(\d+)/;
+        my ($swap_line) = grep { /^Swap\s*:/ } @meminfo;
+        ($swapUsed, $swapFree) = $swap_line =~ /^Swap\s*:\s*\d+\s+(\d+)\s+(\d+)/;
+    }
+    return ($total, $free, $swapUsed, $swapFree);
+}
+
+# Retrieve OS version using uname -sr
+sub get_operating_system {
+    my ($computer) = @_;
+    my @lines = get_command_output($cmd{uname_os});
+    return $lines[0] // "Unknown";
+}
+
+# Retrieve the idle percentage via top (Linux only)
+sub get_idle_percentage {
+    my ($computer, $num_cpus) = @_;
+    my $min_idle = 100;
+    if ($is_linux) {
+        my @top_output = get_command_output("$cmd{top} 2>&1");
+        my @idle_lines = grep { /CPU.*:/ } @top_output;
+        # Check if top output is in a two-line format
+        my $two_line_format = 0;
+        if (@idle_lines and $idle_lines[0] =~ /CPU states:  cpu/) {
+            $two_line_format = 1;
+            @idle_lines = grep { / total / } @top_output;
+        }
+        # Remove the first line if necessary
+        shift @idle_lines if @idle_lines;
+        foreach my $line (@idle_lines) {
+            my ($nice, $idle);
+            if ($two_line_format) {
+                ($nice, $idle) = $line =~ /total\s+\d+\.\d+\%\s+(\d+\.\d+)\%\s+\d+\.\d+\%\s+\d+\.\d+\%\s+\d+\.\d+\%\s+\d+\.\d+\%\s+(\d+\.\d+)\%/;
+            } else {
+                ($nice, $idle) = $line =~ /CPU.*?:.*\s+(\d+\.\d+)\% nice.*\s+(\d+\.\d+)\% idle/;
+            }
+            # Adjust idle based on nice value (if present)
+            $idle += ($nice / 4) if defined $nice;
+            $idle /= $num_cpus if $num_cpus;
+            $min_idle = $idle if $idle < $min_idle;
+        }
+    }
+    return $min_idle;
+}

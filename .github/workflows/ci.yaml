@@ -1,0 +1,55 @@
+name: CI Build
+
+on:
+  push:
+    branches:
+      - UMprod
+      - main
+      - develop
+      - 'feature/*'
+      - containerised
+  pull_request:
+    branches:
+      - UMprod
+      - main
+      - develop
+      - 'feature/*'
+      - containerised
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            make \
+            gcc \
+            g++ \
+            git \
+            libnuma-dev
+          sudo rm -rf /var/lib/apt/lists/*
+
+      - name: Setup SSH configuration
+        run: |
+          mkdir -p ~/.ssh
+          touch ~/.ssh/known_hosts ~/.ssh/authorized_keys
+          chmod 600 ~/.ssh/known_hosts ~/.ssh/authorized_keys
+
+      - name: Show Podman version
+        run: podman --version
+
+      - name: Build project with Makefile
+        run: |
+          make clean
+          make starexec
+
+      - name: Cleanup images and volumes after build
+        if: always()
+        run: make clean

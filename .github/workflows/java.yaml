@@ -1,0 +1,89 @@
+name: Java CI
+
+on:
+  push:
+    branches: [ UMprod, main, develop, feature/*, containerised ]
+  pull_request:
+    branches: [ UMprod, main, develop, feature/*, containerised ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: starexec
+      MYSQL_USER: se_admin
+      MYSQL_PASSWORD: dfsdf34RFerfg3TFGRfrF3edFVg12few2
+
+    services:
+      mysql:
+        image: mariadb:10.3
+        env:
+          MYSQL_ROOT_PASSWORD: ${{ env.MYSQL_ROOT_PASSWORD }}
+          MYSQL_DATABASE: ${{ env.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ env.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ env.MYSQL_PASSWORD }}
+        ports:
+          - 3306:3306
+        options: "--health-cmd=\"mysqladmin ping -h localhost\" --health-interval=10s --health-timeout=5s --health-retries=3"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 8
+        uses: actions/setup-java@v3
+        with:
+          java-version: '8'
+          distribution: 'adopt'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ant ruby ruby-dev rubygems g++ make curl tar
+
+      - name: Configure MariaDB
+        run: |
+          mysql -h 127.0.0.1 -u root -p$MYSQL_ROOT_PASSWORD -e "CREATE DATABASE IF NOT EXISTS $MYSQL_DATABASE;"
+          mysql -h 127.0.0.1 -u root -p$MYSQL_ROOT_PASSWORD -e "GRANT ALL PRIVILEGES ON $MYSQL_DATABASE.* TO '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD';"
+          mysql -h 127.0.0.1 -u root -p$MYSQL_ROOT_PASSWORD -e "FLUSH PRIVILEGES;"
+
+      - name: Install Sass
+        run: sudo gem install sass --no-user-install
+
+      - name: Create project directories
+        run: |
+          sudo mkdir -p /home/starexec/data_dir
+          sudo chmod -R 755 /home/starexec
+          sudo mkdir -p /local/sandbox
+          sudo chmod 770 /local/sandbox
+
+      - name: Setup Tomcat and download MySQL connector
+        env:
+          TOMCAT_VERSION: 7.0.109
+          MYSQL_CON_VERSION: 8.0.30
+        run: |
+          sudo mkdir -p /project && cd /project
+          sudo curl -fsSL https://archive.apache.org/dist/tomcat/tomcat-7/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz | sudo tar -xz
+          sudo mv apache-tomcat-${TOMCAT_VERSION} apache-tomcat-7
+          sudo chown -R $(whoami):$(whoami) /project/apache-tomcat-7
+          sudo curl -fsSL -o /project/apache-tomcat-7/lib/mysql-connector-java-${MYSQL_CON_VERSION}.jar \
+            https://search.maven.org/remotecontent?filepath=mysql/mysql-connector-java/${MYSQL_CON_VERSION}/mysql-connector-java-${MYSQL_CON_VERSION}.jar
+
+      - name: Build project with Ant
+        run: ant build
+
+      - name: Run tests
+        run: ant test
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: target/site/jacoco/
+
+      - name: Publish built artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: starexec
+          path: target/starexec.war
