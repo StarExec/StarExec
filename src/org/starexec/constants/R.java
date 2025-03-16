@@ -300,7 +300,7 @@ public class R {
 	public static final long MAX_PAIR_FILE_WRITE = @JobPair.MaxFileWrite@;      // The largest possible amount disk space (in kilobytes) a job pair is allowed to use
 	public static final String JOBPAIR_EXECUTION_PREFIX = "@JobPair.ExecutionPrefix@"; // Prefix to (ie) enable GCC 7 for Solver build jobs
 	public static final long DEFAULT_PAIR_VMEM = 17179869184L;                              // The default limit on memory (in bytes) for job pairs
-	public static final int NODE_MULTIPLIER = 8;                                  // The number of job scripts to submit is the number of nodes in the queue times this
+	public static final int NODE_MULTIPLIER = 16;                                  // The number of job scripts to submit is the number of nodes in the queue times this
 
 	public static final int MAX_STAGES_PER_PIPELINE = 10000;
 	public static final int NUM_JOB_PAIRS_AT_A_TIME = 5;  // the number of job pairs from a job to submit at the same time, as we cycle through all jobs submitting pairs.
