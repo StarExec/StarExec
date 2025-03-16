@@ -118,12 +118,16 @@ public class KubernetesBackend implements Backend {
     private void runJobsForever() {
         while (true) {
             try {
+                log.info("activeIds.size(): " + activeIds.size());
+                log.info("jobsToRun.size(): " + jobsToRun.size());
+                removeInactiveJobs();
+
                 // Sleep for a while if there are no jobs to run
                 if (jobsToRun.isEmpty()) {
                     Thread.sleep(R.JOB_SUBMISSION_PERIOD * 1000);
                     continue;
                 }
-    
+
                 // Check if the number of currently running jobs is below the limit
                 if (activeIds.size() < MAX_CONCURRENT_JOBS) {
                     // Peek the job queue but don't remove the job yet
@@ -135,16 +139,35 @@ public class KubernetesBackend implements Backend {
                         jobsToRun.poll();
                     }
                 }
-    
+
                 // Sleep for a short time before checking the job queue again
                 Thread.sleep(200);
-    
+
             } catch (Exception e) {
                 log.error("Error in job execution loop: " + e.getMessage(), e);
             }
         }
     }
-    
+
+
+    /**
+     * Removes jobs from activeIds whose local process has finished (i.e. the process is no longer alive).
+     * This method assumes that once the local process started by the script at j.scriptPath completes,
+     * the corresponding k8s job is either finished or detached.
+     */
+    public synchronized void removeInactiveJobs() {
+        Iterator<Map.Entry<Integer, LocalJob>> iterator = activeIds.entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<Integer, LocalJob> entry = iterator.next();
+            LocalJob job = entry.getValue();
+            // Only check jobs that have a process (i.e. have been started).
+            if (job.process != null && !job.process.isAlive()) {
+                log.info("Removing inactive job: " + job.execId);
+                iterator.remove();
+            }
+        }
+    }
+
 
     @Override
     public synchronized int submitScript(String scriptPath, String workingDirectoryPath, String logPath) {
