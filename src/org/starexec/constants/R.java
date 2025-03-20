@@ -202,7 +202,7 @@ public class R {
 	public static final String COMPUTE_NODE_MYSQL_USERNAME = "@Cluster.DB.User@"; // username for database to use from compute nodes
 	public static final String COMPUTE_NODE_MYSQL_PASSWORD = "@Cluster.DB.Pass@"; // DB password for COMPUTE_NODE_MYSQL_USERNAME
 	public static final String REPORT_HOST                 = "@Cluster.DB.Url@";  // where to report job status updates during jobs
-	public static final String MYSQL_DRIVER = "com.mysql.jdbc.Driver"; // MySQL java driver class (we use JDBC)
+	public static final String MYSQL_DRIVER = "com.mysql.cj.jdbc.Driver"; // MySQL java driver class (we use JDBC)
 
 	// Global path information
 	public static final String SOLVER_BUILD_OUTPUT = "starexec_build_log";           // The name of the file in which we're storing build output
