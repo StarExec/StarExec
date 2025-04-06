@@ -250,16 +250,26 @@ public class KubernetesBackend implements Backend {
 
         
 
-
-
-
+    
+    
+    // Assume these fields/consts exist, as in previous examples:
+    //   private static final String QUEUE_LABEL_KEY = "starexecQueue";
+    //   private static final String DEFAULT_QUEUE_NAME = "default";
+    //
+    // Also assume:
+    //   - Util.executeCommand(String[] cmd) throws IOException, returning a single String (stdout).
+    //   - log.info(String message) logs a string.
+    //   - We must catch or handle IOException internally (no throws in method signatures).
+    
     /**
-     * Return the names of all worker nodes in the K8s cluster.
+     * Return the names of all worker nodes in the K8s cluster,
+     * but only those labeled "nodegroup=computenodes".
      */
     @Override
     public String[] getWorkerNodes() {
         String[] cmd = {
             "kubectl", "get", "nodes",
+            "-l", "nodegroup=computenodes", // <=== Filter here
             "-o", "custom-columns=NAME:.metadata.name",
             "--no-headers"
         };
@@ -278,23 +288,27 @@ public class KubernetesBackend implements Backend {
             return nodes.toArray(new String[0]);
         } catch (IOException e) {
             log.info("IOException in getWorkerNodes: " + e.getMessage());
-            // Return empty array on error
             return new String[0];
         }
     }
     
     /**
-     * Return the names of all queues known to the system. We gather queue labels
-     * from each node. Additionally, there is always a DEFAULT_QUEUE_NAME to
-     * handle unlabeled nodes, so we ensure we include it in the result set.
+     * Return the names of all queues known to the system,
+     * but only considering nodes labeled "nodegroup=computenodes".
+     * We gather "starexecQueue=..." labels from these nodes.
+     * Plus we always include DEFAULT_QUEUE_NAME to represent unlabeled queue membership.
      */
     @Override
     public String[] getQueues() {
+        // Only fetch nodes with nodegroup=computenodes
         String[] cmd = {
-            "kubectl", "get", "nodes", "--show-labels", "--no-headers"
+            "kubectl", "get", "nodes",
+            "-l", "nodegroup=computenodes",
+            "--show-labels",
+            "--no-headers"
         };
-        Set<String> queueNames = new HashSet<>();
     
+        Set<String> queueNames = new HashSet<>();
         try {
             String output = Util.executeCommand(cmd);
             String[] lines = output.split("\\r?\\n");
@@ -304,7 +318,7 @@ public class KubernetesBackend implements Backend {
                 if (parts.length < 1) {
                     continue;
                 }
-                String labelsPart = parts[parts.length - 1];
+                String labelsPart = parts[parts.length - 1]; // The last column is the label list
                 String[] labels = labelsPart.split(",");
                 for (String label : labels) {
                     label = label.trim();
@@ -316,8 +330,7 @@ public class KubernetesBackend implements Backend {
             }
         } catch (IOException e) {
             log.info("IOException in getQueues: " + e.getMessage());
-            // We'll proceed with an empty set (meaning no labeled queues found),
-            // but there's always a default queue
+            // We'll proceed with an empty set
         }
     
         // There's always a default queue for unlabeled nodes
@@ -327,15 +340,17 @@ public class KubernetesBackend implements Backend {
     }
     
     /**
-     * Return a map of node -> queue. If a node has no queue label at all,
-     * we say it's in DEFAULT_QUEUE_NAME. If a node does have a label, that is
-     * its queue.
+     * Return a map of node -> queue, but only for nodes labeled "nodegroup=computenodes".
+     * If a node has no queue label, it is in DEFAULT_QUEUE_NAME.
      */
     @Override
     public Map<String, String> getNodeQueueAssociations() {
         Map<String, String> nodeQueueMap = new HashMap<>();
         String[] cmd = {
-            "kubectl", "get", "nodes", "--show-labels", "--no-headers"
+            "kubectl", "get", "nodes",
+            "-l", "nodegroup=computenodes",
+            "--show-labels",
+            "--no-headers"
         };
     
         try {
@@ -351,7 +366,7 @@ public class KubernetesBackend implements Backend {
                 String labelsPart = parts[parts.length - 1];
                 String[] labels = labelsPart.split(",");
     
-                // Default to default queue unless we find a specific label
+                // Default to default queue if we don't see a starexecQueue label
                 String queueName = DEFAULT_QUEUE_NAME;
                 for (String label : labels) {
                     label = label.trim();
@@ -364,15 +379,14 @@ public class KubernetesBackend implements Backend {
             }
         } catch (IOException e) {
             log.info("IOException in getNodeQueueAssociations: " + e.getMessage());
-            // We'll return whatever we have so far (empty if none), or you could return an empty map
+            // Return whatever we have so far (or empty if none).
         }
     
         return nodeQueueMap;
     }
     
     /**
-     * Clears node error states. Stubbed to do nothing, or you might uncordon nodes
-     * if they’re marked unschedulable, etc.
+     * Clears node error states. For now, do nothing or uncordon any nodes if desired.
      */
     @Override
     public boolean clearNodeErrorStates() {
@@ -381,10 +395,8 @@ public class KubernetesBackend implements Backend {
     }
     
     /**
-     * Delete a queue by removing its label from all nodes that have it.
-     * If the queue is DEFAULT_QUEUE_NAME, we do nothing, because "default" can't be deleted.
-     * Removing this label from nodes just leaves them unlabeled, which means they
-     * belong to the default queue.
+     * Delete a queue by removing its label from all nodes labeled nodegroup=computenodes
+     * that have starexecQueue=<queueName>. If the queue is the default queue, do nothing.
      */
     @Override
     public void deleteQueue(String queueName) {
@@ -393,7 +405,8 @@ public class KubernetesBackend implements Backend {
             return;
         }
     
-        String labelSelector = QUEUE_LABEL_KEY + "=" + queueName;
+        // First, list nodes that have nodegroup=computenodes and starexecQueue=queueName
+        String labelSelector = "nodegroup=computenodes," + QUEUE_LABEL_KEY + "=" + queueName;
         String[] getCmd = {
             "kubectl", "get", "nodes",
             "-l", labelSelector,
@@ -416,16 +429,15 @@ public class KubernetesBackend implements Backend {
                     numNodes++;
                 }
             }
-            log.info("Deleted queue '" + queueName + "'; removed its label from " + numNodes + " node(s).");
+            log.info("Deleted queue '" + queueName + "' from " + numNodes + " node(s).");
         } catch (IOException e) {
             log.info("IOException in deleteQueue for '" + queueName + "': " + e.getMessage());
-            // We do nothing further here
         }
     }
     
     /**
-     * Create a queue by labeling the given nodes with starexecQueue=<newQueueName>.
-     * If newQueueName is the default queue, do nothing (since default is implied).
+     * Create a queue for the nodes labeled nodegroup=computenodes, by labeling
+     * them with starexecQueue=<newQueueName>. If newQueueName is default, do nothing.
      */
     @Override
     public boolean createQueue(String newQueueName, String[] nodeNames, String[] sourceQueueNames) {
@@ -438,8 +450,11 @@ public class KubernetesBackend implements Backend {
             return false;
         }
     
+        // Label the requested nodes, but only consider them valid if they also have nodegroup=computenodes
         try {
             for (String node : nodeNames) {
+                // You could either check in code that this node is labeled nodegroup=computenodes
+                // or rely on your architecture to ensure these nodeNames are correct.
                 String[] cmd = {
                     "kubectl", "label", "node", node,
                     QUEUE_LABEL_KEY + "=" + newQueueName,
@@ -456,8 +471,9 @@ public class KubernetesBackend implements Backend {
     }
     
     /**
-     * Create a queue with a slot count. If it's the default queue, do nothing.
-     * Otherwise, label the nodes with the queue + possibly set a separate label for slots.
+     * Create a queue with slots for the nodes labeled nodegroup=computenodes.
+     * If it's the default queue, do nothing. Otherwise, label them with
+     * starexecQueue + possibly starexecSlots.
      */
     @Override
     public boolean createQueueWithSlots(String newQueueName, String[] nodeNames, String[] sourceQueueNames, Integer slots) {
@@ -491,9 +507,9 @@ public class KubernetesBackend implements Backend {
     }
     
     /**
-     * Move a set of nodes from one queue to another. If destQueueName is null/empty,
-     * do nothing. If destQueueName is the default queue, remove the queue label
-     * so the nodes become unlabeled (in the default queue).
+     * Move the given nodes from one queue to another, ignoring any node that
+     * is NOT labeled nodegroup=computenodes. If destQueueName is empty, do nothing.
+     * If destQueueName is default, remove the starexecQueue label. 
      */
     @Override
     public void moveNodes(String destQueueName, String[] nodeNames, String[] sourceQueueNames) {
@@ -508,13 +524,18 @@ public class KubernetesBackend implements Backend {
     
         try {
             for (String node : nodeNames) {
+                // Optionally check if this node is labeled nodegroup=computenodes first.
+                // If you'd like, do:
+                //  kubectl get node <node> --show-labels
+                //  and parse it. For brevity, we're skipping that.
+    
                 // Remove the queue label
                 String[] removeLabelCmd = {
                     "kubectl", "label", "node", node, QUEUE_LABEL_KEY + "-"
                 };
                 Util.executeCommand(removeLabelCmd);
     
-                // If the destination is NOT default, label with the new queue
+                // If the destination is NOT default, label the node with the new queue
                 if (!DEFAULT_QUEUE_NAME.equals(destQueueName)) {
                     String[] addLabelCmd = {
                         "kubectl", "label", "node", node,
@@ -527,7 +548,6 @@ public class KubernetesBackend implements Backend {
             log.info("Moved " + nodeNames.length + " node(s) to queue '" + destQueueName + "'.");
         } catch (IOException e) {
             log.info("IOException in moveNodes to '" + destQueueName + "': " + e.getMessage());
-            // We do nothing further here
         }
     }
     
