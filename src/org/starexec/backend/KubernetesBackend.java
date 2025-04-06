@@ -249,6 +249,10 @@ public class KubernetesBackend implements Backend {
     }
 
         
+
+
+
+
     /**
      * Return the names of all worker nodes in the K8s cluster.
      */
@@ -260,18 +264,23 @@ public class KubernetesBackend implements Backend {
             "--no-headers"
         };
     
-        String output = Util.executeCommand(cmd);
-        // Split into lines, ignoring any empty line
-        String[] lines = output.split("\\r?\\n");
-        List<String> nodes = new ArrayList<>();
+        try {
+            String output = Util.executeCommand(cmd);
+            String[] lines = output.split("\\r?\\n");
+            List<String> nodes = new ArrayList<>();
     
-        for (String line : lines) {
-            String trimmed = line.trim();
-            if (!trimmed.isEmpty()) {
-                nodes.add(trimmed);
+            for (String line : lines) {
+                String trimmed = line.trim();
+                if (!trimmed.isEmpty()) {
+                    nodes.add(trimmed);
+                }
             }
+            return nodes.toArray(new String[0]);
+        } catch (IOException e) {
+            log.info("IOException in getWorkerNodes: " + e.getMessage());
+            // Return empty array on error
+            return new String[0];
         }
-        return nodes.toArray(new String[0]);
     }
     
     /**
@@ -281,29 +290,34 @@ public class KubernetesBackend implements Backend {
      */
     @Override
     public String[] getQueues() {
-        // Get all node labels
         String[] cmd = {
             "kubectl", "get", "nodes", "--show-labels", "--no-headers"
         };
-        String output = Util.executeCommand(cmd);
-        String[] lines = output.split("\\r?\\n");
         Set<String> queueNames = new HashSet<>();
     
-        for (String line : lines) {
-            // The labels are typically in the last column, comma-separated
-            String[] parts = line.split("\\s+");
-            if (parts.length < 1) {
-                continue;
-            }
-            String labelsPart = parts[parts.length - 1];
-            String[] labels = labelsPart.split(",");
-            for (String label : labels) {
-                label = label.trim();
-                if (label.startsWith(QUEUE_LABEL_KEY + "=")) {
-                    String queue = label.substring(label.indexOf('=') + 1);
-                    queueNames.add(queue);
+        try {
+            String output = Util.executeCommand(cmd);
+            String[] lines = output.split("\\r?\\n");
+    
+            for (String line : lines) {
+                String[] parts = line.split("\\s+");
+                if (parts.length < 1) {
+                    continue;
+                }
+                String labelsPart = parts[parts.length - 1];
+                String[] labels = labelsPart.split(",");
+                for (String label : labels) {
+                    label = label.trim();
+                    if (label.startsWith(QUEUE_LABEL_KEY + "=")) {
+                        String queue = label.substring(label.indexOf('=') + 1);
+                        queueNames.add(queue);
+                    }
                 }
             }
+        } catch (IOException e) {
+            log.info("IOException in getQueues: " + e.getMessage());
+            // We'll proceed with an empty set (meaning no labeled queues found),
+            // but there's always a default queue
         }
     
         // There's always a default queue for unlabeled nodes
@@ -319,33 +333,40 @@ public class KubernetesBackend implements Backend {
      */
     @Override
     public Map<String, String> getNodeQueueAssociations() {
+        Map<String, String> nodeQueueMap = new HashMap<>();
         String[] cmd = {
             "kubectl", "get", "nodes", "--show-labels", "--no-headers"
         };
-        String output = Util.executeCommand(cmd);
-        String[] lines = output.split("\\r?\\n");
-        Map<String, String> nodeQueueMap = new HashMap<>();
     
-        for (String line : lines) {
-            String[] parts = line.split("\\s+");
-            if (parts.length < 1) {
-                continue;
-            }
-            String nodeName = parts[0];
-            String labelsPart = parts[parts.length - 1];
-            String[] labels = labelsPart.split(",");
+        try {
+            String output = Util.executeCommand(cmd);
+            String[] lines = output.split("\\r?\\n");
     
-            // Default to default queue unless we find a specific label
-            String queueName = DEFAULT_QUEUE_NAME;
-            for (String label : labels) {
-                label = label.trim();
-                if (label.startsWith(QUEUE_LABEL_KEY + "=")) {
-                    queueName = label.substring(label.indexOf('=') + 1);
-                    break;
+            for (String line : lines) {
+                String[] parts = line.split("\\s+");
+                if (parts.length < 1) {
+                    continue;
                 }
+                String nodeName = parts[0];
+                String labelsPart = parts[parts.length - 1];
+                String[] labels = labelsPart.split(",");
+    
+                // Default to default queue unless we find a specific label
+                String queueName = DEFAULT_QUEUE_NAME;
+                for (String label : labels) {
+                    label = label.trim();
+                    if (label.startsWith(QUEUE_LABEL_KEY + "=")) {
+                        queueName = label.substring(label.indexOf('=') + 1);
+                        break;
+                    }
+                }
+                nodeQueueMap.put(nodeName, queueName);
             }
-            nodeQueueMap.put(nodeName, queueName);
+        } catch (IOException e) {
+            log.info("IOException in getNodeQueueAssociations: " + e.getMessage());
+            // We'll return whatever we have so far (empty if none), or you could return an empty map
         }
+    
         return nodeQueueMap;
     }
     
@@ -372,7 +393,6 @@ public class KubernetesBackend implements Backend {
             return;
         }
     
-        // 1) Find all nodes that have label starexecQueue=queueName
         String labelSelector = QUEUE_LABEL_KEY + "=" + queueName;
         String[] getCmd = {
             "kubectl", "get", "nodes",
@@ -380,22 +400,27 @@ public class KubernetesBackend implements Backend {
             "-o", "custom-columns=NAME:.metadata.name",
             "--no-headers"
         };
-        String output = Util.executeCommand(getCmd);
-        String[] lines = output.split("\\r?\\n");
     
-        // 2) Remove the label from each node
-        int numNodes = 0;
-        for (String node : lines) {
-            String trimmed = node.trim();
-            if (!trimmed.isEmpty()) {
-                String[] removeLabelCmd = {
-                    "kubectl", "label", "node", trimmed, QUEUE_LABEL_KEY + "-"
-                };
-                Util.executeCommand(removeLabelCmd);
-                numNodes++;
+        try {
+            String output = Util.executeCommand(getCmd);
+            String[] lines = output.split("\\r?\\n");
+            int numNodes = 0;
+    
+            for (String node : lines) {
+                String trimmed = node.trim();
+                if (!trimmed.isEmpty()) {
+                    String[] removeLabelCmd = {
+                        "kubectl", "label", "node", trimmed, QUEUE_LABEL_KEY + "-"
+                    };
+                    Util.executeCommand(removeLabelCmd);
+                    numNodes++;
+                }
             }
+            log.info("Deleted queue '" + queueName + "'; removed its label from " + numNodes + " node(s).");
+        } catch (IOException e) {
+            log.info("IOException in deleteQueue for '" + queueName + "': " + e.getMessage());
+            // We do nothing further here
         }
-        log.info("Deleted queue '" + queueName + "'; removed its label from " + numNodes + " node(s).");
     }
     
     /**
@@ -413,16 +438,21 @@ public class KubernetesBackend implements Backend {
             return false;
         }
     
-        for (String node : nodeNames) {
-            String[] cmd = {
-                "kubectl", "label", "node", node,
-                QUEUE_LABEL_KEY + "=" + newQueueName,
-                "--overwrite"
-            };
-            Util.executeCommand(cmd);
+        try {
+            for (String node : nodeNames) {
+                String[] cmd = {
+                    "kubectl", "label", "node", node,
+                    QUEUE_LABEL_KEY + "=" + newQueueName,
+                    "--overwrite"
+                };
+                Util.executeCommand(cmd);
+            }
+            log.info("Created queue '" + newQueueName + "', labeling " + nodeNames.length + " node(s).");
+            return true;
+        } catch (IOException e) {
+            log.info("IOException in createQueue for '" + newQueueName + "': " + e.getMessage());
+            return false;
         }
-        log.info("Created queue '" + newQueueName + "', labeling " + nodeNames.length + " node(s).");
-        return true;
     }
     
     /**
@@ -436,21 +466,26 @@ public class KubernetesBackend implements Backend {
             return true;
         }
     
-        boolean success = createQueue(newQueueName, nodeNames, sourceQueueNames);
-        if (!success) {
+        if (!createQueue(newQueueName, nodeNames, sourceQueueNames)) {
             return false;
         }
+    
         if (slots != null) {
-            for (String node : nodeNames) {
-                String[] cmd = {
-                    "kubectl", "label", "node", node,
-                    "starexecSlots=" + slots,
-                    "--overwrite"
-                };
-                Util.executeCommand(cmd);
+            try {
+                for (String node : nodeNames) {
+                    String[] cmd = {
+                        "kubectl", "label", "node", node,
+                        "starexecSlots=" + slots,
+                        "--overwrite"
+                    };
+                    Util.executeCommand(cmd);
+                }
+                log.info("Set 'starexecSlots=" + slots + "' for queue '" + newQueueName
+                         + "' on " + nodeNames.length + " node(s).");
+            } catch (IOException e) {
+                log.info("IOException in createQueueWithSlots for '" + newQueueName + "': " + e.getMessage());
+                return false;
             }
-            log.info("Set 'starexecSlots=" + slots + "' for queue '" + newQueueName
-                     + "' on " + nodeNames.length + " node(s).");
         }
         return true;
     }
@@ -471,24 +506,29 @@ public class KubernetesBackend implements Backend {
             return;
         }
     
-        for (String node : nodeNames) {
-            // Remove the queue label
-            String[] removeLabelCmd = {
-                "kubectl", "label", "node", node, QUEUE_LABEL_KEY + "-"
-            };
-            Util.executeCommand(removeLabelCmd);
-    
-            // If the destination is NOT default, label with the new queue
-            if (!DEFAULT_QUEUE_NAME.equals(destQueueName)) {
-                String[] addLabelCmd = {
-                    "kubectl", "label", "node", node,
-                    QUEUE_LABEL_KEY + "=" + destQueueName,
-                    "--overwrite"
+        try {
+            for (String node : nodeNames) {
+                // Remove the queue label
+                String[] removeLabelCmd = {
+                    "kubectl", "label", "node", node, QUEUE_LABEL_KEY + "-"
                 };
-                Util.executeCommand(addLabelCmd);
+                Util.executeCommand(removeLabelCmd);
+    
+                // If the destination is NOT default, label with the new queue
+                if (!DEFAULT_QUEUE_NAME.equals(destQueueName)) {
+                    String[] addLabelCmd = {
+                        "kubectl", "label", "node", node,
+                        QUEUE_LABEL_KEY + "=" + destQueueName,
+                        "--overwrite"
+                    };
+                    Util.executeCommand(addLabelCmd);
+                }
             }
+            log.info("Moved " + nodeNames.length + " node(s) to queue '" + destQueueName + "'.");
+        } catch (IOException e) {
+            log.info("IOException in moveNodes to '" + destQueueName + "': " + e.getMessage());
+            // We do nothing further here
         }
-        log.info("Moved " + nodeNames.length + " node(s) to queue '" + destQueueName + "'.");
     }
     
     /**
@@ -499,6 +539,15 @@ public class KubernetesBackend implements Backend {
         moveNodes(queueName, new String[]{nodeName}, null);
     }
 
+
+
+
+
+
+
+
+
+    
 
     @Override
     public void destroyIf() {
