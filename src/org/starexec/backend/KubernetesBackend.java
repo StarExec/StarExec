@@ -29,11 +29,15 @@ public class KubernetesBackend implements Backend {
     // this needs to be low enough that the head node can handle it.
     // Think about "ulimit -Sn" which shows the max number of subprocesses a user/process can make.
     private static final int MAX_CONCURRENT_JOBS = 50;
-
     
+    // Label key used to identify a "queue" in Kubernetes.
+    // If you want something else (like "starexec-queue" or "starexecQueue"),
+    // just change this constant.
+    private static final String QUEUE_LABEL_KEY = "starexecQueue";
+    private static final String DEFAULT_QUEUE_NAME = "default";
+
     private final Map<Integer, LocalJob> activeIds = new HashMap<>();
     
-    private String NODE_NAME = "n001";
     /**
      * An ordered queue of all jobs that have been 
      * submitted to the backend and have not yet completed. 
@@ -244,55 +248,255 @@ public class KubernetesBackend implements Backend {
         return newSet;
     }
 
+
+    /**
+     * Return the names of all worker nodes in the K8s cluster.
+     */
     @Override
     public String[] getWorkerNodes() {
-        return new String[] { NODE_NAME };
+        String[] cmd = {
+            "kubectl", "get", "nodes",
+            "-o", "custom-columns=NAME:.metadata.name",
+            "--no-headers"
+        };
+        List<String> lines = Util.executeCommand(cmd);
+        List<String> nodes = new ArrayList<>();
+        for (String line : lines) {
+            String trimmed = line.trim();
+            if (!trimmed.isEmpty()) {
+                nodes.add(trimmed);
+            }
+        }
+        return nodes.toArray(new String[0]);
     }
-
+    
+    /**
+     * Return the names of all queues known to the system. We gather queue labels
+     * from each node. Additionally, there is always a DEFAULT_QUEUE_NAME to
+     * handle unlabeled nodes, so we ensure we include it in the result set.
+     */
     @Override
     public String[] getQueues() {
-        return new String[] { R.DEFAULT_QUEUE_NAME };
+        // Get all node labels
+        String[] cmd = {
+            "kubectl", "get", "nodes", "--show-labels", "--no-headers"
+        };
+        List<String> lines = Util.executeCommand(cmd);
+        Set<String> queueNames = new HashSet<>();
+    
+        for (String line : lines) {
+            // The labels are typically in the last column, comma-separated
+            String[] parts = line.split("\\s+");
+            if (parts.length < 1) {
+                continue;
+            }
+            String labelsPart = parts[parts.length - 1];
+            String[] labels = labelsPart.split(",");
+            for (String label : labels) {
+                label = label.trim();
+                if (label.startsWith(QUEUE_LABEL_KEY + "=")) {
+                    String queue = label.substring(label.indexOf('=') + 1);
+                    queueNames.add(queue);
+                }
+            }
+        }
+    
+        // There's always a default queue for unlabeled nodes
+        queueNames.add(DEFAULT_QUEUE_NAME);
+    
+        return queueNames.toArray(new String[0]);
     }
-
+    
+    /**
+     * Return a map of node -> queue. If a node has no queue label at all,
+     * we say it's in DEFAULT_QUEUE_NAME. If a node does have a label, that is
+     * its queue.
+     */
     @Override
     public Map<String, String> getNodeQueueAssociations() {
-        HashMap<String, String> mapping = new HashMap<>();
-        mapping.put(NODE_NAME, R.DEFAULT_QUEUE_NAME);
-        return mapping;
+        String[] cmd = {
+            "kubectl", "get", "nodes", "--show-labels", "--no-headers"
+        };
+        List<String> lines = Util.executeCommand(cmd);
+        Map<String, String> nodeQueueMap = new HashMap<>();
+    
+        for (String line : lines) {
+            String[] parts = line.split("\\s+");
+            if (parts.length < 1) {
+                continue;
+            }
+            String nodeName = parts[0];
+            String labelsPart = parts[parts.length - 1];
+            String[] labels = labelsPart.split(",");
+    
+            // Default to default queue unless we find a specific label
+            String queueName = DEFAULT_QUEUE_NAME;
+            for (String label : labels) {
+                label = label.trim();
+                if (label.startsWith(QUEUE_LABEL_KEY + "=")) {
+                    queueName = label.substring(label.indexOf('=') + 1);
+                    break;
+                }
+            }
+            nodeQueueMap.put(nodeName, queueName);
+        }
+        return nodeQueueMap;
     }
-
+    
+    /**
+     * Clears node error states. Stubbed to do nothing, or you might uncordon nodes
+     * if they’re marked unschedulable, etc.
+     */
     @Override
     public boolean clearNodeErrorStates() {
+        // For example:
+        // 1) list nodes that are NotReady or cordoned
+        // 2) kubectl uncordon <node>
+        // Here we do nothing.
+        log.info("clearNodeErrorStates() called, but not implemented. Doing nothing.");
         return true;
     }
-
-    /*
-     * This backend does not support having multiple nodes or queues, so all of the
-     * functions
-     * below simply return false.
+    
+    /**
+     * Delete a queue by removing its label from all nodes that have it.
+     * If the queue is DEFAULT_QUEUE_NAME, we do nothing, because "default" can't be deleted.
+     * Removing this label from nodes just leaves them unlabeled, which means they
+     * belong to the default queue.
      */
     @Override
     public void deleteQueue(String queueName) {
+        if (DEFAULT_QUEUE_NAME.equals(queueName)) {
+            log.info("Cannot delete the default queue; doing nothing.");
+            return;
+        }
+    
+        // 1) Find all nodes that have label starexecQueue=queueName
+        String labelSelector = QUEUE_LABEL_KEY + "=" + queueName;
+        String[] getCmd = {
+            "kubectl", "get", "nodes",
+            "-l", labelSelector,
+            "-o", "custom-columns=NAME:.metadata.name",
+            "--no-headers"
+        };
+        List<String> nodes = Util.executeCommand(getCmd);
+    
+        // 2) Remove the label from each node
+        for (String node : nodes) {
+            String trimmed = node.trim();
+            if (!trimmed.isEmpty()) {
+                String[] removeLabelCmd = {
+                    "kubectl", "label", "node", trimmed, QUEUE_LABEL_KEY + "-"
+                };
+                Util.executeCommand(removeLabelCmd);
+            }
+        }
+        log.info("Deleted queue '{}'; removed its label from {} node(s).", queueName, nodes.size());
     }
-
+    
+    /**
+     * Create a queue by labeling the given nodes with starexecQueue=<newQueueName>.
+     * If newQueueName is the default queue, do nothing (since default is implied).
+     */
     @Override
     public boolean createQueue(String newQueueName, String[] nodeNames, String[] sourceQueueNames) {
-        return false;
+        if (DEFAULT_QUEUE_NAME.equals(newQueueName)) {
+            // The default queue always exists as a fallback for unlabeled nodes
+            log.info("createQueue called for default queue. Nothing to do.");
+            return true; // or false, depending on your desired semantics
+        }
+        if (nodeNames == null || nodeNames.length == 0) {
+            log.info("No nodes specified; no queue created.");
+            return false;
+        }
+    
+        // Label each node
+        for (String node : nodeNames) {
+            String[] cmd = {
+                "kubectl", "label", "node", node,
+                QUEUE_LABEL_KEY + "=" + newQueueName,
+                "--overwrite"
+            };
+            Util.executeCommand(cmd);
+        }
+        log.info("Created queue '{}', labeling {} node(s).", newQueueName, nodeNames.length);
+        return true;
     }
-
+    
+    /**
+     * Create a queue with a slot count. If it's the default queue, do nothing.
+     * Otherwise, label the nodes with the queue + possibly set a separate label for slots.
+     */
     @Override
-    public boolean createQueueWithSlots(String newQueueName, String[] nodeNames, String[] sourceQueueNames,
-            Integer slots) {
-        return false;
+    public boolean createQueueWithSlots(String newQueueName, String[] nodeNames, String[] sourceQueueNames, Integer slots) {
+        if (DEFAULT_QUEUE_NAME.equals(newQueueName)) {
+            log.info("createQueueWithSlots called for default queue. Nothing to do.");
+            return true;
+        }
+    
+        boolean success = createQueue(newQueueName, nodeNames, sourceQueueNames);
+        if (!success) {
+            return false;
+        }
+        if (slots != null) {
+            // Optionally store slot info in another label
+            for (String node : nodeNames) {
+                String[] cmd = {
+                    "kubectl", "label", "node", node,
+                    "starexecSlots=" + slots,
+                    "--overwrite"
+                };
+                Util.executeCommand(cmd);
+            }
+            log.info("Set 'starexecSlots={}' for queue '{}' on {} node(s).", slots, newQueueName, nodeNames.length);
+        }
+        return true;
     }
-
+    
+    /**
+     * Move nodes to a destination queue. If destQueueName is the default queue, remove
+     * the label (if present). If destQueueName is empty or null, do nothing
+     * (i.e. "attempts to remove nodes from that queue ... just result in nothing").
+     */
     @Override
     public void moveNodes(String destQueueName, String[] nodeNames, String[] sourceQueueNames) {
+        if (nodeNames == null || nodeNames.length == 0) {
+            log.info("moveNodes called with no node names; doing nothing.");
+            return;
+        }
+        if (destQueueName == null || destQueueName.trim().isEmpty()) {
+            log.info("No destination queue specified; doing nothing.");
+            return;
+        }
+    
+        for (String node : nodeNames) {
+            // Remove any queue label if the node has one
+            // (We don't strictly check sourceQueues here, but you could if you want.)
+            String[] removeLabelCmd = {
+                "kubectl", "label", "node", node, QUEUE_LABEL_KEY + "-"
+            };
+            Util.executeCommand(removeLabelCmd);
+    
+            // If the destination is NOT default, label the node with the new queue
+            if (!DEFAULT_QUEUE_NAME.equals(destQueueName)) {
+                String[] addLabelCmd = {
+                    "kubectl", "label", "node", node,
+                    QUEUE_LABEL_KEY + "=" + destQueueName,
+                    "--overwrite"
+                };
+                Util.executeCommand(addLabelCmd);
+            }
+        }
+        log.info("Moved {} node(s) to queue '{}'.", nodeNames.length, destQueueName);
     }
-
+    
+    /**
+     * Move a single node. Convenience wrapper around moveNodes.
+     */
     @Override
     public void moveNode(String nodeName, String queueName) {
+        moveNodes(queueName, new String[]{nodeName}, null);
     }
+
 
     @Override
     public void destroyIf() {
@@ -305,14 +509,6 @@ public class KubernetesBackend implements Backend {
      */
     @Override
     public void initialize(String BACKEND_ROOT) {
-        // set the name of the single node used by this backend to the name of the
-        // system
-        try {
-            String nodeName = Util.executeCommand("hostname");
-            NODE_NAME = nodeName.split("\n")[0];
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-        }
         final Runnable runLocalJobsRunnable = new RobustRunnable("runLocalJobsRunnable") {
             @Override
             protected void dorun() {
@@ -321,7 +517,7 @@ public class KubernetesBackend implements Backend {
             }
         };
         new Thread(runLocalJobsRunnable).start();
-        log.debug("returning from local backend initialization");
+        log.debug("returning from k8s backend initialization");
     }
 
 }
