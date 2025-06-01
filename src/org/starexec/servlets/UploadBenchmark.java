@@ -439,13 +439,13 @@ public class UploadBenchmark extends HttpServlet {
 
 		// Create a unique path the zip file will be extracted to
 		File uniqueDir = new File(R.getBenchmarkPath(), "" + userId);
-		Date d = new Date();
+		Calendar calendar = Calendar.getInstance();
 
-		uniqueDir = new File(uniqueDir, d.getYear() + "");
-		uniqueDir = new File(uniqueDir, d.getMonth() + "");
-		uniqueDir = new File(uniqueDir, d.getDay() + "");
-		uniqueDir = new File(uniqueDir, d.getHours() + "");
-		uniqueDir = new File(uniqueDir, d.getMinutes() + "");
+		uniqueDir = new File(uniqueDir, calendar.get(Calendar.YEAR) + "");
+		uniqueDir = new File(uniqueDir, (calendar.get(Calendar.MONTH) + 1) + "");
+		uniqueDir = new File(uniqueDir, calendar.get(Calendar.DAY_OF_MONTH) + "");
+		uniqueDir = new File(uniqueDir, calendar.get(Calendar.HOUR_OF_DAY) + "");
+		uniqueDir = new File(uniqueDir, calendar.get(Calendar.MINUTE) + "");
 		// the random string is to ensure that this directory is unique. It would not be otherwise if the
 		// user uploads two benchmark directories in the same minute, which can easily happen using StarexecCommand
 		uniqueDir = new File(uniqueDir, TestUtil.getRandomAlphaString(20));

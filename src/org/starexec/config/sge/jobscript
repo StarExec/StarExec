@@ -119,6 +119,10 @@ NUM_STAGES=${#STAGE_NUMBERS[@]}
 
 ((NUM_BENCH_INPUTS = ${#BENCH_INPUT_PATHS[@]} - 1)) # we terminate the array with an empty string, so the number is the size-1
 
+
+
+
+
 #==========================================================================
 # Signal Traps
 #
@@ -131,13 +135,13 @@ trap "limitExceeded 'file write' $EXCEED_FILE_WRITE" SIGXFSZ
 trap 'echo "Jobscript received USR2."' USR2
 trap exitJobscript EXIT
 
-
 #==========================================================================
 # Execute (prolog will take care of data staging)
 #==========================================================================
 
+
 echo "STAREXEC Job Log"
-echo "(C) $(date +%Y) The University of Iowa"
+echo "(C) $(date +%Y) The University of Miami"
 echo "====================================="
 echo "date: $(date)"
 echo "user: $USER_ID"
@@ -147,6 +151,7 @@ echo "benchmark id: $BENCH_ID"
 echo "execution host: $HOSTNAME"
 echo "benchmarking framework: $BENCHMARKING_FRAMEWORK"
 echo "whoami: $(whoami)"
+adjustForK8s
 
 if [ "$BENCHMARKING_FRAMEWORK" == "$BENCHEXEC" ]; then
 	log "Using benchexec."
@@ -347,10 +352,8 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++STAGE_INDEX )); do
 
 		# make a blank watchfile
 		touch "$WATCHFILE"
-	else
+	elif [ "$BENCHMARKING_FRAMEWORK" == "$RUNSOLVER" ]; then
 		# run runsolver
-		log "Running runsolver."
-		echo "  $LOCAL_RUNSOLVER_PATH $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $CURRENT_STAGE_CPU -W $CURRENT_STAGE_WALLCLOCK $KILL_DELAY_FLAG -M $$MAX_MEM$$  -w $WATCHFILE -v $VARFILE -o $STDOUT_FILE $LOCAL_CONFIG_PATH $LOCAL_BENCH_PATH"
 
 		if [ "$SUPPRESS_TIMESTAMP" = true ]; then
 			log "Suppressing timestamp."
@@ -362,7 +365,75 @@ for (( STAGE_INDEX = 0; STAGE_INDEX < NUM_STAGES; ++STAGE_INDEX )); do
 			ADDEOF_PARAM="--add-eof"
 		fi
 
-		sudo -u "$SANDBOX_PARAM" TMPDIR="$LOCAL_TMP_DIR" STAREXEC_MAX_MEM="$CURRENT_STAGE_MEMORY" STAREXEC_MAX_WRITE=$$MAX_WRITE$$ STAREXEC_CPU_LIMIT="$CURRENT_STAGE_CPU" STAREXEC_WALLCLOCK_LIMIT="$CURRENT_STAGE_WALLCLOCK" $$JOBPAR_EXECUTION_PREFIX$$ "$LOCAL_RUNSOLVER_PATH" $TIMESTAMP_PARAM $ADDEOF_PARAM --cores $CORES -C $CURRENT_STAGE_CPU -W $CURRENT_STAGE_WALLCLOCK $KILL_DELAY_FLAG -M $MAX_MEM  -w "$WATCHFILE" -v "$VARFILE" -o "$STDOUT_FILE" "$LOCAL_CONFIG_PATH" "$LOCAL_BENCH_PATH" "$OUT_DIR/output_files" "$OTHER_INPUT_PATH" $ARGUMENT_STRING
+		# If $WORKING_DIR/solver/bin/run_image.py exists, we use it instead of runsolver.
+		# Also, in this case, we're using the local backend, so this jobscript is actually running on the
+		# head node of starexec. (this run_image without k8s is likely buggy and should be considered deprecated.)
+		if [ -f "$WORKING_DIR_BASE/$SANDBOX_PARAM/solver/bin/run_image.py" ]; then
+			# Run a theorem proving image: https://www.eprover.org/EVENTS/IWIL-2024/IWIL-24-Preproceedings.pdf
+			# get prover tag:
+			PROVER=$(cat "$WORKING_DIR_BASE/$SANDBOX_PARAM/solver/bin/prover.txt")
+
+			# sandbox or sandbox2
+			if [[ $SANDBOX_PARAM =~ ([0-9])$ ]]; then
+				SANDBOX_NUM=${BASH_REMATCH[1]}
+			else
+				SANDBOX_NUM=1
+			fi
+
+			# Use SANDBOX_NUM in your command
+			RUNIMAGE_CMD="python3 \"$WORKING_DIR_BASE/$SANDBOX_PARAM/solver/bin/run_image.py\" \"$PROVER\" \
+							-P \"$LOCAL_BENCH_PATH\" \
+							-C $CURRENT_STAGE_CPU \
+							-W $CURRENT_STAGE_WALLCLOCK \
+							-M \"$CURRENT_STAGE_MEMORY\" \
+							--starexec=$SANDBOX_NUM"
+
+			log "Running run_image.py: $RUNIMAGE_CMD"
+			eval "$RUNIMAGE_CMD"
+
+		elif [ -f "$WORKING_DIR_BASE/$SANDBOX_PARAM/solver/bin/run_image_k8s.py" ]; then
+			# Run a theorem proving image: https://www.eprover.org/EVENTS/IWIL-2024/IWIL-24-Preproceedings.pdf
+			# in kubernettes instead of podman remote. Assumes kubectl is working in the container.
+
+			# get prover tag:
+			PROVER=$(cat "$WORKING_DIR_BASE/$SANDBOX_PARAM/solver/bin/prover.txt")
+
+			RUNIMAGE_CMD="python3 \"$WORKING_DIR_BASE/$SANDBOX_PARAM/solver/bin/run_image_k8s.py\" \"$PROVER\" \
+							-P \"$LOCAL_BENCH_PATH\" \
+							-C $CURRENT_STAGE_CPU \
+							-W $CURRENT_STAGE_WALLCLOCK \
+							-M \"$CURRENT_STAGE_MEMORY\" \
+							--sandbox=\"$WORKING_DIR_BASE/$SANDBOX_PARAM\" \
+							--job-template-path=\"$WORKING_DIR_BASE/$SANDBOX_PARAM/solver/bin/job_template.yaml\" "
+			
+			log "Running run_image_k8s.py: $RUNIMAGE_CMD"
+			eval "$RUNIMAGE_CMD"
+
+		else
+			# Assemble the runsolver command, including placeholders that will be dynamically replaced
+			RUNSOLVER_CMD="sudo -u $SANDBOX_PARAM TMPDIR=\"$LOCAL_TMP_DIR\" \
+				STAREXEC_MAX_MEM=\"$CURRENT_STAGE_MEMORY\" \
+				STAREXEC_MAX_WRITE=$$MAX_WRITE$$ \
+				STAREXEC_CPU_LIMIT=\"$CURRENT_STAGE_CPU\" \
+				STAREXEC_WALLCLOCK_LIMIT=\"$CURRENT_STAGE_WALLCLOCK\" \
+				$$JOBPAR_EXECUTION_PREFIX$$ \"$LOCAL_RUNSOLVER_PATH\" \
+				$TIMESTAMP_PARAM $ADDEOF_PARAM \
+				--cores $CORES \
+				-C $CURRENT_STAGE_CPU \
+				-W $CURRENT_STAGE_WALLCLOCK \
+				$KILL_DELAY_FLAG \
+				-M $$MAX_MEM$$ \
+				-w \"$WATCHFILE\" -v \"$VARFILE\" -o \"$STDOUT_FILE\" \
+				\"$LOCAL_CONFIG_PATH\" \
+				\"$LOCAL_BENCH_PATH\" \
+				\"$OUT_DIR/output_files\" \
+				\"$OTHER_INPUT_PATH\" \
+				$ARGUMENT_STRING"
+
+			# Log and run the command
+			log "Running runsolver: $RUNSOLVER_CMD"
+			eval "$RUNSOLVER_CMD"		
+		fi
 	fi
 
 

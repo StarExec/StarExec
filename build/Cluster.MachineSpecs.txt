@@ -1,0 +1,54 @@
+# Starexec stats for each node (001 - 032):
+CPU Model name:                 Intel(R) Xeon(R) CPU E5-2620 v4 @ 2.10GHz 
+Cache size:                     25600 KB
+
+CPUs per node (Sockets):        2
+Cores per CPU:                  8
+Threads per core:               2
+Total Threads of Execution:     32 (2 CPUs * 8 Cores * 2 Threads)
+(Only one CPU is available to each job-pair.)
+
+Compute node main memory:       256 GB
+
+# Software:
+OS:        CentOS Linux release 7.9.2009 (Core) 
+kernel:    3.10.0-957.12.2.el7.x86_64 
+glibc:     gcc-4.8.5-28.el7_5.1.x86_64
+           glibc-2.17-222.el7.x86_64
+python2:   Python 2.7.5 
+python3:   Python 3.6.8
+
+-------------------------------------------------------------------------------
+Stats gathered from these commands on the nodes:
+[se-m1 ~]$ cat /etc/system-release
+CentOS Linux release 7.9.2009 (Core)
+
+[se-m1 ~]$ uname -r
+3.10.0-957.12.2.el7.x86_64
+
+[se-m1]$ cat /proc/cpuinfo  | egrep "^model name|^cache size" | head -2
+model name: Intel(R) Xeon(R) CPU E5-2667 v4 @ 3.20GHz
+cache size: 25600 KB
+
+[se-m1 StarExec-deploy]$ cat /proc/meminfo  | grep MemTotal
+MemTotal: 131415112 KB
+
+[se-m1 StarExec-deploy]$ rpm -qa | egrep "^glibc-[0-9]|^gcc-[0-9]"
+gcc-4.8.5-28.el7_5.1.x86_64
+glibc-2.17-222.el7.x86_64
+
+[se-m1 StarExec-deploy]$ lscpu | egrep 'Model name|Socket|Thread|CPU\(s\)'
+CPU(s):                32
+On-line CPU(s) list:   0-31
+Thread(s) per core:    2
+Socket(s):             2
+Model name:            Intel(R) Xeon(R) CPU E5-2667 v4 @ 3.20GHz
+NUMA node0 CPU(s):     0-7,16-23
+NUMA node1 CPU(s):     8-15,24-31
+
+[se-m1 StarExec-deploy]$ python2 --version
+Python 2.7.5
+
+[se-m1 StarExec-deploy]$ python3 --version
+Python 3.6.8
+

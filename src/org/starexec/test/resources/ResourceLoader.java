@@ -560,7 +560,7 @@ public class ResourceLoader implements AutoCloseable {
 	}
 
 	public User loadUserIntoDatabase(String password, String role) {
-		return loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),password,password,"The University of Iowa",role);
+		return loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),password,password,"The University of Miami",role);
 	}
 
 	public CommunityRequest loadCommunityRequestIntoDatabase(int userId, int commId) {

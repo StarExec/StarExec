@@ -38,19 +38,19 @@ public class CommunitiesTests extends TestSequence {
 	@StarexecTest
 	private void communityMapUsersTest() {
 		Communities.updateCommunityMap();
-		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("users"), new Long(4));
+		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("users"), Long.valueOf(4));
 	}
 	@StarexecTest
 	private void communityMapSolversTest() {
 		Communities.updateCommunityMap();
-		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("solvers"), new Long(3));
+		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("solvers"), Long.valueOf(3));
 	}
 	
 	@StarexecTest
 	private void communityMapBenchmarksTest() {
 		Communities.updateCommunityMap();
 		
-		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("benchmarks"), new Long(benchmarkIds.size()));
+		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("benchmarks"), Long.valueOf(benchmarkIds.size()));
 	}
 	
 	@StarexecTest
@@ -71,8 +71,8 @@ public class CommunitiesTests extends TestSequence {
 	@StarexecTest
 	private void communityMapJobsTest() {
 		Communities.updateCommunityMap();
-		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("jobs"), new Long(2));
-		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("job_pairs"), new Long(job1.getJobPairs().size() + job2.getJobPairs().size()));
+		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("jobs"), Long.valueOf(2));
+		Assert.assertEquals(R.COMM_INFO_MAP.get(community.getId()).get("job_pairs"), Long.valueOf(job1.getJobPairs().size() + job2.getJobPairs().size()));
 	}
 	
 	@StarexecTest
@@ -150,7 +150,7 @@ public class CommunitiesTests extends TestSequence {
 
 	@Override
 	protected void setup() throws Exception {
-		admin = loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
+		admin = loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Miami",R.ADMIN_ROLE_NAME);
 		testUser = loader.loadUserIntoDatabase();
 		user1 = loader.loadUserIntoDatabase();
 		user2 = loader.loadUserIntoDatabase();

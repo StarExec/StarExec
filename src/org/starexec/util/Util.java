@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
+import java.net.URI;
 import java.net.URLConnection;
 import java.sql.Timestamp;
 import java.sql.SQLException;
@@ -39,7 +40,7 @@ import static java.util.Objects.nonNull;
  * This class contains utility functions used throughout Starexec, including many
  * for executing commands and interacting with the filesystem.
  *
- * @author Eric and Aguo2
+ * @author Eric, and others who hate git
  */
 public class Util {
 	protected static final ExecutorService threadPool = Executors.newCachedThreadPool();
@@ -1000,6 +1001,21 @@ public class Util {
 			Util.executeCommand(chmod);
 		}
 	}
+	// public static void sandboxChownDirectory(File dir) throws IOException {
+	// 	if (!dir.isDirectory()) {
+	// 		return;
+	// 	}
+	// 	//make owner sandbox
+	// 	String[] chown = new String[7];
+	// 	chown[0] = "sudo";
+	// 	chown[1] = "chown";
+	// 	chown[2] = "-R";
+	// 	chown[3] = "sandbox:sandbox";
+	// 	for (File f : dir.listFiles()) {
+	// 		chown[4] = f.getAbsolutePath();
+	// 		Util.executeCommand(chown);
+	// 	}
+	// }
 
 	/**
 	 * Adds rwx permissions to the directory for either the owner or the group
@@ -1095,6 +1111,7 @@ public class Util {
 	public static void logSandboxContents() {
 		try {
 			log.debug("logging sandbox contents");
+			log.debug("PERMISSION CHECK");
 			log.debug(Util.executeCommand("ls -l -R " + Util.getSandboxDirectory().getAbsolutePath()));
 
 		} catch (Exception e) {
@@ -1141,10 +1158,12 @@ public class Util {
 	 * @throws IOException
 	 * @author Albert Giegerich
 	 */
+
 	public static String getWebPage(String url, List<Cookie> cookiesToSend) throws IOException {
 		String nextLine;
 		StringBuilder outputHtml = new StringBuilder();
-		URL inputUrl = new URL(url);
+		URI uri = URI.create(url);
+		URL inputUrl = uri.toURL();
 		URLConnection urlConnection = inputUrl.openConnection();
 		if (nonNull(cookiesToSend)) {
 			String cookieString = buildCookieString(cookiesToSend);

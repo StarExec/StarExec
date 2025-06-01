@@ -4,6 +4,7 @@ import org.starexec.backend.Backend;
 import org.starexec.backend.GridEngineBackend;
 import org.starexec.backend.LocalBackend;
 import org.starexec.backend.OARBackend;
+import org.starexec.backend.KubernetesBackend;
 import org.starexec.data.to.User;
 import org.starexec.data.to.enums.BenchmarkingFramework;
 import org.starexec.exceptions.StarExecException;
@@ -107,6 +108,7 @@ public class R {
 	public static final String SGE_TYPE = "sge";
 	public static final String OAR_TYPE = "oar";
 	public static final String LOCAL_TYPE = "local";
+	public static final String K8S_TYPE = "k8s";
 
 	public static String BACKEND_TYPE = "@Backend.Type@";
 	public static Backend BACKEND;
@@ -121,6 +123,9 @@ public class R {
 			break;
 		case LOCAL_TYPE:
 			b = new LocalBackend();
+			break;
+		case K8S_TYPE:
+			b = new KubernetesBackend();
 			break;
 		default:
 			log.error("BACKEND", "Not a valid BACKEND_TYPE: " + BACKEND_TYPE);
@@ -197,7 +202,7 @@ public class R {
 	public static final String COMPUTE_NODE_MYSQL_USERNAME = "@Cluster.DB.User@"; // username for database to use from compute nodes
 	public static final String COMPUTE_NODE_MYSQL_PASSWORD = "@Cluster.DB.Pass@"; // DB password for COMPUTE_NODE_MYSQL_USERNAME
 	public static final String REPORT_HOST                 = "@Cluster.DB.Url@";  // where to report job status updates during jobs
-	public static final String MYSQL_DRIVER = "com.mysql.jdbc.Driver"; // MySQL java driver class (we use JDBC)
+	public static final String MYSQL_DRIVER = "com.mysql.cj.jdbc.Driver"; // MySQL java driver class (we use JDBC)
 
 	// Global path information
 	public static final String SOLVER_BUILD_OUTPUT = "starexec_build_log";           // The name of the file in which we're storing build output
@@ -295,7 +300,7 @@ public class R {
 	public static final long MAX_PAIR_FILE_WRITE = @JobPair.MaxFileWrite@;      // The largest possible amount disk space (in kilobytes) a job pair is allowed to use
 	public static final String JOBPAIR_EXECUTION_PREFIX = "@JobPair.ExecutionPrefix@"; // Prefix to (ie) enable GCC 7 for Solver build jobs
 	public static final long DEFAULT_PAIR_VMEM = 17179869184L;                              // The default limit on memory (in bytes) for job pairs
-	public static final int NODE_MULTIPLIER = 8;                                  // The number of job scripts to submit is the number of nodes in the queue times this
+	public static final int NODE_MULTIPLIER = 16;                                  // The number of job scripts to submit is the number of nodes in the queue times this
 
 	public static final int MAX_STAGES_PER_PIPELINE = 10000;
 	public static final int NUM_JOB_PAIRS_AT_A_TIME = 5;  // the number of job pairs from a job to submit at the same time, as we cycle through all jobs submitting pairs.

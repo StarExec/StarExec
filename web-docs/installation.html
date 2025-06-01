@@ -1,0 +1,1177 @@
+<HTML>
+<HEAD>
+<TITLE>StarExec Installation</TITLE>
+</HEAD>
+<BODY>
+<HR> <!-- ------------------------------------------------------------------------------------- -->
+<H1>Everything We Needed to Know and Do to Install StarExec</H1>
+<HR> <!-- ------------------------------------------------------------------------------------- -->
+<H2>Dependencies</H2>
+
+<UL>
+<LI> Installing and verifying Java v1.8.0
+     <PRE>
+$ sudo yum install java-1.8.0-openjdk
+$ yum list installed | grep "java"
+$ sudo yum install java-1.8.0-openjdk-devel
+$ yum list installed | grep "openjdk=devel"
+$ javac -version
+$ java -version
+     </PRE>
+<LI> Installing MariaDB v5.5.56
+     <PRE>
+$ sudo yum install mariadb-client mariadb-server
+$ sudo systemctl start mariadb
+$ sudo systemctl enable mariadb
+$ sudo mysql_secure_installation
+Created symlink from /etc/systemd/system/multi-user.target.wants/mariadb.service to /usr/lib/systemd/system/mariadb.service.
+[root@starexec-dev ~]# sudo mysql_secure_installation
+...
+Set root password? [Y/n] y
+New password: [PASSWORD]
+Re-enter new password: [PASSWORD]
+Password updated successfully!
+Remove anonymous users? [Y/n] y
+Disallow root login remotely? [Y/n] y
+Remove test database and access to it? [Y/n] y
+Reload privilege tables now? [Y/n] y
+$ sudo vim /root/.my.cnf 
+$ sudo cat /root/.my.cnf 
+[client]
+password=THE_SECURE_PASSWORD_YOU_USED
+[root@starexec-dev ~]# mysql -u root --version
+mysql  Ver 15.1 Distrib 5.5.60-MariaDB, for Linux (x86_64) using readline 5.1
+     </PRE>
+<LI> Installing and verifying Ant
+     <PRE>
+$ sudo yum install ant ant-junit
+$ ant -version
+Apache Ant(TM) version 1.9.2 compiled on June 10 2014
+     </PRE>
+<LI> Installing SASS and Ruby
+     <PRE>
+$ sudo yum install ruby
+$ which ruby
+$ sudo yum install -y ruby-devel rubygems
+$ sudo yum install gcc-c++ patch readline readline-devel curl zlib zlib-devel libyaml-devel libffi-devel openssl-devel make bzip2 autoconf automake libtool bison iconv-devel
+$ curl -L https://get.rvm.io | bash -s stable --ruby
+$ sudo gem install sass --no-user-install
+$ sass -v
+     </PRE>
+<LI> StarExec database
+     <PRE>
+$ mysql -u root -p
+   >> CREATE DATABASE starexec;
+   >> GRANT ALL PRIVILEGES ON starexec.* TO 'se_admin'@'localhost' IDENTIFIED BY 'dfsdf34RFerfg3TFGRfrF3edFVg12few2';
+   >> FLUSH PRIVILEGES;
+$ exit
+     </PRE>
+<LI> Installing wordpress (and LAMP: Linux Apache MariaDB PHP)
+     <UL>
+     <LI> Install Apache
+          <PRE>
+$ sudo yum install httpd
+$ sudo systemctl start httpd.service
+$ curl ipinfo.io/ip (to find out what public ip address is)
+$ http://204.68.92.141/ (check on browser)
+$ sudo systemctl enable httpd.service
+          </PRE>
+     <LI> Start MariaDB
+          <PRE>
+$ sudo systemctl start mariadb
+$ sudo mysql_secure_installation
+          </PRE>
+          (Go through the process, added root password and entered for the rest)
+          <PRE>
+$ sudo systemctl enable mariadb.service
+$ sudo rm /var/www/html/info.php
+          </PRE>
+     <LI> Installing PHP
+          <PRE>
+$ sudo yum install php php-mysql
+$ sudo systemctl restart httpd.service
+          </PRE>
+     <LI> Create a MySQL Database and User for WordPress (no longer needed now this is HTML)
+          <PRE>
+$ mysql -u root -p
+$ CREATE DATABASE wordpress;
+$ CREATE USER rkd38@localhost IDENTIFIED BY 'starexec';
+$ GRANT ALL PRIVILEGES ON wordpress.* TO rkd38@localhost IDENTIFIED BY 'starexec';
+$ FLUSH PRIVILEGES;
+$ exit
+          </PRE>
+     <LI> Install WordPress
+          <PRE>
+$ sudo yum install php-gd (packaged needed by wordpress)
+$ sudo service httpd restart
+$ wget http://wordpress.org/latest.tar.gz
+$ tar xzvf latest.tar.gz
+$ sudo rsync -avP ~/wordpress/ /var/www/html/
+$ mkdir /var/www/html/wp-content/uploads
+$ sudo chown -R apache:apache /var/www/html/*
+          </PRE>
+     <LI> Configure WordPress
+          <PRE>
+$ cd /var/www/html
+$ cp wp-config-sample.php wp-config.php
+$ vim wp-config.php
+          </PRE>
+          (complete the online installation process)
+     </UL>
+<P>
+<LI> Install Eclipse
+     <PRE>
+$ sudo su -
+$ curl -O http://ftp.jaist.ac.jp/pub/eclipse/technology/epp/downloads/release/oxygen/1a/eclipse-java-oxygen-1a-linux-gtk-x86_64.tar.gz/code>
+code>$ tar -zxvf eclipse-java-oxygen-1a-linux-gtk-x86_64.tar.gz -C /opt
+code>$ ln -s /opt/eclipse/eclipse /usr/bin/eclipse
+$ vim /usr/share/applications/eclipse-4.7.desktop
+     </PRE>
+Enter the following:
+     <PRE>
+[Desktop Entry]
+Encoding=UTF-8
+Name=Eclipse 4.7
+Comment=Eclipse Oxygen
+Exec=/usr/bin/eclipse
+Icon=/opt/eclipse/icon.xpm
+Categories=Application;Development;Java;IDE
+Version=1.0
+Type=Application
+Terminal=0
+$ eclipse
+     </PRE>
+<LI> Install and Configure tomcat
+     A full release of Tomcat is included in the starexec package under the
+     `distribution/` directory. This is identical to a release that you can download
+     from Apache, with the exception that the `mysql-connector-java-5.1.22-bin.jar`
+     and `drmaa.jar` files are included in the `lib/` directory. These `.jar` files
+     are required for StarExec to connect to its database and backend, and as such we
+     recommend that you install Tomcat using the provided archive. If you would like
+     to install a clean copy of Tomcat, you will need to copy the MySQL connector and
+     DRMAA files to the new lib directory.
+     <P>
+     If you install Tomcat using the provided archive, you may need to update
+     permissions on the install directory to make Tomcat’s scripts executable. This
+     can be done, for example, by using `chmod 700 -R tomcat_directory`
+     <P>
+     We will use the tomcat distribution included in the starexec package. 
+     We will install CentOS tomcat packages to create the tomcat user and install all tomcat 
+     dependancies.
+     <UL>
+     <LI> Install StarExec tomcat distribution
+          <PRE>
+$ sudo mkdir /project
+$ cd /project
+$ sudo unzip ~starexec/StarExec-deploy/distribution/apache-tomcat-7.0.64.zip
+$ sudo ln -s /project/apache-tomcat-7.0.64 /project/apache-tomcat-7
+$ sudo chown -R tomcat:tomcat /project/apache-tomcat-7.0.64
+          </PRE>
+     <LI> Install Latest tomcat 7 distribution
+          <PRE>
+$ wget https://archive.apache.org/dist/tomcat/tomcat-7/v7.0.94/bin/apache-tomcat-7.0.94.tar.gz
+$ cd /project
+$ sudo tar -xzvf apache-tomcat-7.0.94.tar.gz
+$ sudo cp /project/apache-tomcat-7.0.64/lib/drmaa.jar /project/apache-tomcat-7.0.94/lib/
+$ sudo cp /project/apache-tomcat-7.0.64/lib/mysql-connector-java-5.1.22-bin.jar /project/apache-tomcat-7.0.94/lib/
+$ sudo chown -R tomcat:tomcat /project/apache-tomcat-7.0.94
+$ ln -s /project/apache-tomcat-7.0.94 /project/apache-tomcat-7
+$ chmod 744 /project/apache-tomcat-7/bin/*.sh 
+          </PRE>
+     <LI> Create Tomcat Startup Script
+          <PRE>
+cat /etc/systemd/system/tomcat7.service
+[Unit]
+Description=StarExec Apache Tomcat 7 Servlet Container
+After=syslog.target network.target
+[Service]
+User=tomcat
+Group=tomcat
+Type=forking
+Environment=CATALINA_PID=/var/run/tomcat-7.pid
+Environment=CATALINA_HOME=/project/apache-tomcat-7
+Environment=CATALINA_BASE=/project/apache-tomcat-7
+ExecStart=/project/apache-tomcat-7/bin/startup.sh
+ExecStop=/project/apache-tomcat-7/bin/shutdown.sh
+Restart=on-failure
+[Install]
+WantedBy=multi-user.target
+          </PRE>
+     <LI> Create tomcat-7 serenv.sh file to pass SGE env variables to tomcat
+          <PRE>
+$ sudo vim /project/apache-tomcat-7/bin/setenv.sh
+$ cat /project/apache-tomcat-7/bin/setenv.sh
+export SGE_ROOT="/cluster/gridengine-8.1.9-2"
+export SGE_CELL="default"
+
+export SGE_ARCH="lx-amd64"
+export SGE_CLUSTER_NAME="se"
+
+if [ -e $SGE_ROOT/$SGE_CELL ]
+  then
+    . $SGE_ROOT/$SGE_CELL/common/settings.sh
+fi
+
+export LD_LIBRARY_PATH=$SGE_ROOT/lib/$ARCH:$SGE_ROOT/lib/$ARCH/lx-amd64:$LD_LIBRARY_PATH
+export DRMAA_LIBRARY_PATH=$SGE_ROOT/lib/$ARCH/lx-amd64
+$ sudo chown tomcat:tomcat /project/apache-tomcat-7/bin/setenv.sh
+          </PRE>
+     <LI> Configure Tomcat manager-gui user
+          <PRE>
+$ cd /project/apache-tomcat-7/conf
+ $ sudo vim tomcat-users.xml
+    (add this line) <user username="tomcat" password="TA-passwd" roles="manager-gui"/>
+
+$ cat /project/apache-tomcat-7/conf/tomcat-users.xml | grep manager-gui
+  <user username="tomcat" password="TA-passwd" roles="manager-gui"/>
+          </PRE>
+</UL>
+<HR> <!-- ------------------------------------------------------------------------------------- -->
+<H2>Backend</H2>
+
+StarExec’s backend refers to the utility that is responsible for accepting new jobs from the web 
+app and distributing them over the available compute nodes.
+StarExec supports 3 different backend implementations:
+<UL>
+<LI> SGE - https://arc.liv.ac.uk/trac/SGE
+<LI> OAR - https://oar.imag.fr/
+<LI> A simple local backend implemented in StarExec itself.
+</UL>
+To install SGE or OAR, you will need to refer to their documentation. 
+In the case of OAR, the document <TT>distribution/OAR installation notes.txt</TT> describes extra 
+installation steps you should take to configure OAR for use with StarExec.
+SGE and OAR Installation Instructions included below
+<P>
+The local backend is a primitive solution if you only want to run jobs on the same machine that 
+StarExec is running on. 
+The local backend does not support multiple queues or nodes, and only a single job will run at 
+a time.
+
+<H3>Configuration</H3>
+
+StarExec is configured by Ant at build time.
+StarExec’s default configuration is specified by <TT>build/default.properties</TT>, but several 
+properties need to be overridden for a particular StarExec instance. 
+These properties may be overridden in three ways:
+<OL>
+<LI> If `build/overrides.properties` exists, any properties specified in this file
+     will override the defaults
+<LI> Ant can be passed a `.properties` file if invoked with the `-propertyfile`
+     option. Any properties specified in this file will override the defaults
+     _and_ any properties that exist in `build/overrides.properties`
+<LI> Individual properties can be set by invoking Ant with the
+     `-D=` option. Any properties set this way will take precedence.
+</OL>
+<P>
+An empty configuration file is provided as <TT>example.properties</TT>.
+This file also explains the properties that must be set for a particular StarExec instance.
+Our build/overrides.properties file
+<PRE>
+$ sudo cat ~starexec/StarExec-deploy/build/overrides.properties
+# the name of your copy of Starexec. This name will be used for
+# the database to be created.  Also, users will access the web
+# interface to StarExec at ${Web.Address}/${STAREXEC_APPNAME}$
+STAREXEC_APPNAME: starexec
+
+Backend.Root: /cluster/gridengine-8.1.9-2
+#Backend.Root: /usr/share/oar
+
+# Backend.WorkingDir is local storage on compute nodes used only while the job is executing.
+Backend.WorkingDir: /export/starexec
+
+Backend.Type: sge
+#Backend.Type: oar
+#Backend.Type: local
+
+# Host running the database; the compute nodes will connect to this host
+# to report back as job pairs finish.
+#Cluster.DB.Url: db.example.com
+Cluster.DB.Url: starexec.ccs.miami.edu
+
+# If desired, a user with fewer permissions may be used by the compute nodes to 
+# report results to the database. This user only needs EXECUTE permission, and
+# is configured via Cluster.DB.User and Cluster.DB.Pass. If unspecified, these
+#  will default to the values of DB.User and DB.Pass.
+#Cluster.DB.User: starexec_cluster
+#Cluster.UpdatePeriod: 1200
+
+# Text file describing machine specs of cluster nodes
+# Build fails with the following message if "Cluster.MachineSpecs" is not set here.
+# BUILD FAILED
+# /home/starexec/StarExec-deploy/build/build-compile.xml:25: Cannot open Cluster.MachineSpecs:
+#
+Cluster.MachineSpecs: build/Cluster.MachineSpecs.txt
+
+# Database configuration
+DB.Name: ${STAREXEC_APPNAME}
+DB.User: se_admin
+DB.Pass: dfsdf34RFerfg3TFGRfrF3edFVg12few2
+DB.Url: jdbc:mysql://localhost/${STAREXEC_APPNAME}
+DB.Pool.Max: 125
+DB.Pool.Min: 20
+
+# Path to SQL script that will be executed when doing a fresh install
+# This is primarily intended for developers (who will frequently clear the
+# database and start fresh) to setup user accounts. This script will be executed
+# AFTER the schema and all procedures have been created.
+#DB.Initialize: /home/starexec/StarExec-deploy/sql/NewInstall.sql
+
+# Email credentials for outgoing messages
+Email.Contact: se-admin@ccs.miami.edu
+Email.Port: 25
+Email.Smtp: farley.ccs.miami.edu
+Email.User: noreply@starexec.ccs.miami.edu
+
+Job.SubmissionPeriod: 20
+JobPair.MaxFileWrite: 600
+JobPair.ExecutionPrefix: scl enable devtoolset-7 --
+
+# Domain name for the web interface of your copy of StarExec
+Web.Address: starexec.ccs.miami.edu
+
+# Path to a custom logo that will be used on website
+# Must be a 300x70 PNG image
+# Web.Image.Banner: WebContent/images/starlogo.png
+
+# set this to the data directory where benchmarks, solvers,
+# and job output will be stored (in subdirectories created
+# automatically)
+# data_dir is an nfs mounted on all hosts.
+data_dir: /home/starexec
+
+tomcat-dir: /project/apache-tomcat-7
+web-home: /project/apache-tomcat-7/webapps
+
+logging_levels: DEBUG,STAREXEC
+ALLOW_TESTING: true
+
+# The following values are not declared in Iowa's override.properties files. I'm
+# commenting them out while we wait on support from Iowa.
+#
+# New fields to overwrite default
+Proxy.Address: starexec.ccs.miami.edu
+Proxy.Port: 80
+Proxy.Scheme: http://
+Proxy.URL: ${Proxy.Scheme}${Proxy.Address}
+Report.Host: starexec.ccs.miami.edu
+
+# sandbox directory for doing processing and building on the head node
+sandbox_dir: /local/sandbox
+</PRE>
+
+<H3>Database</H3>
+
+DB.User must be set to the username of a MariaDB user that has full permissions for the database. 
+DB.Pass must be set to the password for that user. 
+This user requires _all_ permissions in the StarExec database, excluding server administration 
+permissions.
+If desired, a user with fewer permissions may be used by the compute nodes to report results to 
+the database. 
+This user _only_ needs EXECUTE permission, and is configured via Cluster.DB.User and 
+Cluster.DB.Pass. 
+If unspecified, these will default to the values of DB.User and DB.Pass.
+<P>
+Create StarExec database and MariaDB user with full permissions for the database.
+<PRE>
+$ mysql -u root -p
+   DROP DATABASE starexec;
+   CREATE DATABASE starexec;
+   GRANT ALL PRIVILEGES ON starexec.* TO 'se_admin'@'localhost' IDENTIFIED BY 'dfsdf34RFerfg3TFGRfrF3edFVg12few2';
+   FLUSH PRIVILEGES;
+   exit
+   # exit
+</PRE>
+
+<H3>Email</H3>
+
+StarExec sends automated emails for several purposes, such as sending notifications when new 
+users are registered or sending weekly status updates.
+To do this, StarExec requires an email account that it can send emails from.
+Email.User should be set to the username of the account to send from, and Email.Pass, 
+Email.Smtp and Email.Port should be set as decribed.
+<P>
+StarExec is also configured to use a Email.Contact, which is intended to receive emails directed 
+at StarExec admins. 
+This email address will appear on the site for users who want to send bug reports or ask questions.
+<P>
+StarExec automated emails configured in overrides.properties.
+
+<H3>Backend</H3>
+
+You will need to make sure that you have mapped the StarExec data directory, data_dir, to a 
+matching path on each compute node, as your compute nodes will need access to the StarExec data 
+directory that exists on the head node.
+<P>
+Setup the data_dir (/home/starexec) configured in overrides.properties.
+<PRE>
+$ sudo mkdir /scratch/projects/exempt/starexe/data_dir
+$ sudo chown tomcat:star-web /scratch/projects/exempt/starexe/data_dir
+$ sudo ln -s /scratch/projects/exempt/starexec /starexec
+$ sudo ln -s /scratch/projects/exempt/starexec/data_dir /home/starexec
+$ sudo echo "/export 10.10.1.0/24(rw,no_root_squash,sync,no_subtree_check)" >> /etc/exports
+$ cat /etc/exports
+#/tftpboot *(rw,no_root_squash,sync,no_subtree_check)
+/tftpboot 10.10.1.0/24(rw,no_root_squash,sync,no_subtree_check)
+/tftpboot 10.10.2.0/24(rw,no_root_squash,sync,no_subtree_check)
+#/install *(rw,no_root_squash,sync,no_subtree_check)
+/install 10.10.1.0/24(rw,no_root_squash,sync,no_subtree_check)
+/install 10.10.2.0/24(rw,no_root_squash,sync,no_subtree_check)
+#
+/cluster 10.10.2.0/24(rw,no_root_squash,sync,no_subtree_check)
+/starexec/data_dir 10.10.1.0/24(rw,no_root_squash,sync,no_subtree_check)
+
+$ exportfs -ra
+</PRE>
+<P>
+<PRE>
+$ #!/bin/bash
+hostname
+#mkdir /export
+#echo "10.10.1.254:/export /export nfs defaults 0 0" >> /etc/fstab
+
+# Clean up old share ----------------------------------------------------------
+# In this case, the existing file is copied to /etc/fstab.bak and the 
+# replacements are made automatically to /etc/fstab. If you want to reverse 
+# the changes, issue a command similar to mv /etc/fstab.bak /etc/fstab.
+## sed -r -i.bak 's/share/export/g' /etc/fstab
+
+#umount /share
+#umount /export
+
+# Delete line with "cnas.ccs.miami.edu"
+# sed -i '/cnas.ccs.miami.edu/d' /etc/fstab 
+
+# Delete old symbolic link if it exists
+rm -f /home/starexec
+
+# Create new mount point
+mkdir /home/starexec
+
+# Delete line with "export"
+sed -i '/export/d' /etc/fstab 
+# Add new mount for /home/starexec
+echo "10.10.1.254:/starexec/data_dir /home/starexec nfs defaults 0 0" >> /etc/fstab
+# Mount it
+mount -a
+# -----------------------------------------------------------------------------
+df -h | egrep "starexec|cluster" 
+</PRE>
+<P>
+<PRE>
+$ sudo for n in {001..032}; do ssh n${n} /cluster/scripts/setup_share.sh ; done
+n001
+10.10.2.254:/cluster            218G   21G  197G  10% /cluster
+10.10.1.254:/starexec/data_dir   15T  2.0G   15T   1% /home/starexec
+...
+n032
+10.10.2.254:/cluster            218G   21G  197G  10% /cluster
+10.10.1.254:/starexec/data_dir   15T  2.0G   15T   1% /home/starexec
+</PRE>
+<P>
+Cluster.UserOne and Cluster.UserTwo (by default, sandbox and sandbox2 respectively) refer to 
+users that execute jobs on compute nodes.
+Ensure that these accounts exist on the head node and all compute nodes, and
+have appropriate permissions.
+<P>
+Create the `star-web` group.
+<P>
+Create the user tomcat and add this user to the star-web group, and change the primary group for 
+tomcat to star-web.
+This is the user that you will need to use when starting up tomcat using startup.sh in the tomcat
+bin folder.
+You should also ensure that tomcat is the owner of the entire tomcat installation directory.
+<P>
+Setup sandbox, sandbox2 and tomcat accounts and star-web group
+<PRE>
+$ sudo useradd -r -m -d /home/sandbox -s /bin/bash -c "Cluster UserOne" -u 111 sandbox
+$ sudo useradd -r -m -d /home/sandbox2 -s /bin/bash -c "Cluster UserTwo" -u 112 sandbox2
+$ sudo su -c "useradd -r -m -d /home/tomcat -s /bin/bash -c \"Tomcat User\" -u 153 -g 160 tomcat"
+$ sudo groupadd -g 160 star-web
+
+$ sudo chown -R tomcat:star-web /project/apache-tomcat-7
+$ cat /etc/passwd | grep tomcat
+tomcat:x:153:160:Apache Tomcat:/usr/share/tomcat:/bin/bash
+$ cat /etc/group|grep tomcat
+tomcat:x:153:starexec
+star-web:x:160:tomcat,sandbox,sandbox2,starexec
+</PRE>
+<P>
+<PRE>
+$ cat /cluster/scripts/setup_users.sh 
+#!/bin/bash
+# Create star-web group
+sudo su -c "groupadd -g 160 star-web"
+# Add sandbox and sandbox2 users
+sudo su -c "useradd -r -m -d /share/home/sandbox -s /bin/bash -c \"Cluster UserOne\" -u 111 sandbox"
+sudo su -c "useradd -r -m -d /share/home/sandbox2 -s /bin/bash -c \"Cluster UserTwo\" -u 112 sandbox2"
+# And sandbox and sandbox2 user to star-web group
+usermod -aG star-web sandbox
+usermod -aG star-web sandbox2
+# Create Tomcat Account on compute nodes.  
+sudo su -c "useradd -r -m -d /home/tomcat -s /bin/bash -c \"Tomcat User\" -u 153 -g 160 tomcat"
+# And tomcat aacount to star-web group
+usermod -aG star-web tomcat
+usermod -aG star-web tomcat
+</PRE>
+<P>
+<PRE>
+$ sudo for n in {001..032}; do ssh n${n} /opt/sge/scripts/setup_users.sh; done  //no need if local install 
+</PRE>
+<P>
+Finally, any users that are going to be administering StarExec should also be added to the 
+star-web group. 
+Being a member of star-web will be necessary for correctly executing the StarExec deploy scripts.
+<P>
+Create the sandbox group, and add Cluster.UserOne to this group.
+Create another group sandbox2 and add Cluster.UserTwo to this group.
+Add the tomcat user to both of these groups.
+<P>
+The sandbox and sandbox2 groups were created and updated above.
+<P>
+If you are using SGE as a backend, you need to create the user sgeadmin and
+ensure this user does have administrator privileges in SGE.
+<P>
+The sgeadmin account was created on the headnote and compute nodes when SGE was installed. 
+Instructions included below in SGE installation section.
+<P>
+A sandbox directory will need to be created on the StarExec head node.
+This directory is used to execute user-provided scripts in a sandboxed environment, preventing 
+them from affecting other parts of the system.
+You should create a directory at the location specified by sandbox_dir.
+Make the owner Cluster.UserOne, and make the group sandbox.
+Use chmod on the directory to make permissions 770.
+Additionally, use chmod g+s to set the GID for the directory.
+Finally, use the following command to ensure that new directories in the sandbox have g+rwx 
+permissions.
+<P>
+setfacl -d -m g::rwx sandbox
+<PRE>
+$ mkdir -p /local/sandbox
+$ sudo chown sandbox:sandbox /local/sandbox/
+$ sudo chmod 770 /local/sandbox/
+$ sudo chmod g+s /local/sandbox/
+$ ls -l /local
+drwxrws---+ 2 sandbox sandbox 6 Aug 24 11:41 sandbox
+$ sudo setfacl -d -m g::rwx /local/sandbox/
+$ sudo getfacl /local/sandbox/
+# file: local/sandbox/
+# owner: sandbox
+# group: sandbox
+# flags: -s-
+user::rwx
+group::rwx
+other::---
+default:user::rwx
+default:group::rwx
+default:other::---
+</PRE>
+<P>
+ON EACH HOST (headnote and compute nodes):<BR>
+The directory configured as Backend.WorkingDir needs to be created.
+tomcat should be the owner and star-web should be the group.
+Under this directory, create two directories named sandbox/ and sandbox2/.
+These should also use the tomcat user and the star-web group.
+<P>
+Create and configure Backend.WorkingDir.
+<PRE>
+$ sudo mkdir /export/starexec
+$ sudo mkdir /export/starexec/sandbox
+$ sudo mkdir /export/starexec/sandbox2
+$ sudo chown -R tomcat:star-web /export/starexec
+</PRE>
+Sudo permissions need to be configured.
+StarExec uses sudo in several locations to execute commands as other users,
+most often to execute commands using the Cluster.UserOne and Cluster.UserTwo users. 
+The tomcat user will need all of the following sudo permissions.
+
+<H4>HEAD NODE</H4>
+
+User tomcat may run the following commands on this host:
+<PRE>
+(SANDBOX_USER_ONE) NOPASSWD: ALL
+(SANDBOX_USER_TWO) NOPASSWD: ALL
+(root) NOPASSWD: /sbin/service tomcat7 restart, /sbin/service tomcat7 stop, /sbin/service tomcat7 start
+</PRE>
+<P>
+The following entries are needed only if you are using an SGE backend.
+Replace /cluster/gridengine-8.1.8/bin/lx-amd64/ in each path with your install directory
+<P>
+(sgeadmin) NOPASSWD: /cluster/gridengine-8.1.8/bin/lx-amd64/qconf, /cluster/gridengine-8.1.8/bin/lx-amd64/qmod
+<P>
+Add the following sudo rules using the visudo command
+<PRE>
+ # Head Node sudo commands with help from Dan Holstad <dan-holstad@uiowa.edu>
+Defaults    env_reset
+Defaults    env_keep = "COLORS DISPLAY HOSTNAME HISTSIZE INPUTRC KDEDIR \
+                        LS_COLORS MAIL PS1 PS2 QTDIR USERNAME \
+                        LANG LC_ADDRESS LC_CTYPE LC_COLLATE LC_IDENTIFICATION \
+                        LC_MEASUREMENT LC_MESSAGES LC_MONETARY LC_NAME LC_NUMERIC \
+                        LC_PAPER LC_TELEPHONE LC_TIME LC_ALL LANGUAGE LINGUAS \
+                        _XKB_CHARSET XAUTHORITY"
+Defaults    env_keep += "SGE_ROOT SGE_CELL SGE_CLUSTER_NAME SGE_QMASTER_PORT SGE_EXECD_PORT"
+
+Cmnd_Alias SANDBOXCHOWN = /bin/chown -R sandbox /export/starexec/sandbox, \
+                          /bin/chown -R tomcat /export/starexec/sandbox, \
+                          /bin/chown -R tomcat /export/starexec/sandbox/benchmark, \
+                          /bin/chown tomcat /export/starexec/sandbox
+
+Cmnd_Alias SANDBOXCHOWN2 = /bin/chown -R sandbox2 /export/starexec/sandbox2, \
+                           /bin/chown -R tomcat /export/starexec/sandbox2, \
+                           /bin/chown -R tomcat /export/starexec/sandbox2/benchmark, \
+                           /bin/chown tomcat /export/starexec/sandbox2
+
+#Host_Alias NODES = n*.star.cs.uiowa.edu
+#Host_Alias CLUSTER = localhost, starexec[123].star.cs.uiowa.edu, n*.star.cs.uiowa.edu
+Host_Alias NODES = n*.cluster.edu
+Host_Alias CLUSTER = localhost, n*.cluster.edu
+
+tomcat CLUSTER=(sandbox) NOPASSWD: ALL
+tomcat NODES=NOPASSWD:SANDBOXCHOWN
+tomcat CLUSTER=(sandbox2) NOPASSWD: ALL
+tomcat NODES=NOPASSWD:SANDBOXCHOWN2
+
+Cmnd_Alias SGECMDS = /cluster/gridengine-8.1.9-2/bin/lx24-amd64/qconf, /cluster/gridengine-8.1.9-2/bin/lx24-amd64/qmod
+tomcat CLUSTER=(sgeadmin) NOPASSWD:SGECMDS
+</dan-holstad@uiowa.edu>
+</PRE>
+
+<H4>COMPUTE NODE (or head node if you are using a local backend)</H4>
+
+User tomcat may run the following commands on this host:
+<P>
+For all of the following, the prefix /export/starexec should be replaced with your configured 
+value of Backend.WorkingDir, and UserOne and UserTwo should be replaced with the values of 
+Cluster.UserOne and Cluster.UserTwo respectively.
+<P>
+(UserOne) NOPASSWD: ALL
+(root) NOPASSWD: /bin/chown -R UserOne /export/starexec/sandbox, /bin/chown -R tomcat /export/starexec/sandbox, /bin/chown -R tomcat /export/starexec/sandbox/benchmark, /bin/chown tomcat
+(UserTwo) NOPASSWD: ALL
+(root) NOPASSWD: /bin/chown -R UserTwo /export/starexec/sandbox2, /bin/chown -R tomcat /export/starexec/sandbox2, /bin/chown -R tomcat /export/starexec/sandbox2/benchmark, /bin/chown tomcat
+<P>
+The same applies as on the head node for the following commands
+<P>
+(sgeadmin) NOPASSWD: /cluster/gridengine-8.1.8/bin/lx-amd64/qconf, /cluster/gridengine-8.1.8/bin/lx-amd64/qmod
+<P>
+Update sudo privileges on compute node
+<PRE>
+$ cat /cluster/scripts/update_visudo.sh 
+# Pedro 2018/08/22
+tomcat ALL=(sgeadmin) NOPASSWD: ALL
+
+# Pedro 2018/10/29 - Debug, allow tomcat to run all commands as sandbox and sandbox2
+tomcat ALL=(sandbox) NOPASSWD: ALL
+tomcat ALL=(sandbox2) NOPASSWD: ALL
+
+Defaults    env_keep += "SGE_ROOT SGE_CELL SGE_CLUSTER_NAME SGE_QMASTER_PORT SGE_EXECD_PORT"
+Defaults    secure_path = /sbin:/bin:/usr/sbin:/usr/bin:/cluster/gridengine-8.1.9-2/bin:/cluster/gridengine-8.1.9-2/bin/lx-amd64:/opt/xcat/bin:/opt/xcat/sbin:/opt/xcat/share/xcat/tools:/cluster/gridengine-8.1.9-2/bin:/cluster/gridengine-8.1.9-2/bin/lx-amd64
+
+##
+## Iowa Sudoers entries, our directories have been updated to match Iowa
+##
+
+Defaults    env_reset
+Defaults    env_keep = "COLORS DISPLAY HOSTNAME HISTSIZE INPUTRC KDEDIR \
+                        LS_COLORS MAIL PS1 PS2 QTDIR USERNAME \
+                        LANG LC_ADDRESS LC_CTYPE LC_COLLATE LC_IDENTIFICATION \
+                        LC_MEASUREMENT LC_MESSAGES LC_MONETARY LC_NAME LC_NUMERIC \
+                        LC_PAPER LC_TELEPHONE LC_TIME LC_ALL LANGUAGE LINGUAS \
+                        _XKB_CHARSET XAUTHORITY"
+Defaults    env_keep += "SGE_ROOT SGE_CELL SGE_CLUSTER_NAME SGE_QMASTER_PORT SGE_EXECD_PORT"
+Cmnd_Alias SANDBOXCHOWN = /bin/chown -R sandbox /export/starexec/sandbox, \
+                          /bin/chown -R tomcat /export/starexec/sandbox, \
+                          /bin/chown -R tomcat /export/starexec/sandbox/benchmark, \
+                          /bin/chown tomcat /export/starexec/sandbox
+Cmnd_Alias SANDBOXCHOWN2 = /bin/chown -R sandbox2 /export/starexec/sandbox2, \
+                           /bin/chown -R tomcat /export/starexec/sandbox2, \
+                           /bin/chown -R tomcat /export/starexec/sandbox2/benchmark, \
+                           /bin/chown tomcat /export/starexec/sandbox2
+
+Host_Alias NODES = n*.cluster.edu
+Host_Alias CLUSTER = localhost, n*.cluster.edu
+
+tomcat CLUSTER=(sandbox) NOPASSWD: ALL
+tomcat NODES=NOPASSWD:SANDBOXCHOWN
+tomcat CLUSTER=(sandbox2) NOPASSWD: ALL
+tomcat NODES=NOPASSWD:SANDBOXCHOWN2
+
+Cmnd_Alias SGECMDS = /cluster/gridengine-8.1.9-2/bin/lx24-amd64/qconf, /cluster/gridengine-8.1.9-2/bin/lx24-amd64/qmod
+tomcat CLUSTER=(sgeadmin) NOPASSWD:SGECMDS
+
+echo "$update" | (EDITOR="tee -a" visudo)
+</PRE>
+<P>
+<PRE>
+$ sudo for n in {001..032}; do ssh n${n} /cluster/scripts/update_visudo.sh; done
+</PRE>
+<P>
+Below is our current procedure for building and deploying the StarExec App
+<PRE>
+1. Login to Tomcat manager, stop and undeploy StarExec app if it is up.
+$ firefox http://starexec.ccs.miami.edu:8080/manager
+Username: tomcat password:TA-passwd
+
+$ cat /project/apache-tomcat-7/conf/tomcat-users.xml | grep username
+  username="tomcat" password="TA-passwd" roles="manager-gui"...
+
+2. Drop and recreate the database
+[root@se-m1 ~]# mysql -u root
+ mysql > DROP DATABASE starexec;
+         CREATE DATABASE starexec;
+         GRANT ALL PRIVILEGES ON starexec.* TO 'se_admin'@'localhost' IDENTIFIED BY 'dfsdf34RFerfg3TFGRfrF3edFVg12few2';
+         FLUSH PRIVILEGES;
+         exit
+
+[root@se-m1 ~]# 
+  cd ~tomcat/StarExec-deploy/sql
+  mysql -u root starexec < NewInstall.sql
+
+   su - tomcat -s /bin/bash
+[tomcat@se-m1 ~]$ cd StarExec-deploy/
+
+[tomcat@se-m1 StarExec-deploy]# ant build -buildfile build.xml reload-sql update-sql
+...
+BUILD SUCCESSFUL
+
+[tomcat@se-m1 StarExec-deploy]# script/soft-deploy.sh
+</PRE>
+<P>
+The following was also done in an attempt to get the StarExec application working with SGE
+<PRE>
+cat ~starexec/StarExec-deploy/src/org/starexec/backend/GridEngineBackend.java |grep gridengine
+//    private static final String GRID_ENGINE_PATH = "/cluster/gridengine-8.1.8/bin/lx-amd64/";
+    private static final String GRID_ENGINE_PATH = "/cluster/gridengine-8.1.9-2/bin/lx-amd64/";
+
+$ sudo ln -s /cluster/gridengine-8.1.9-2 /cluster/gridengine-8.1.8
+$ ls -l /cluster/ | grep gridengine
+lrwxrwxrwx  1 root     root      18 Jul 27 14:15 gridengine-8.1.8 -> gridengine-8.1.9-2
+drwxrwxr-x 15 sgeadmin sgeadmin 289 Aug 17 15:46 gridengine-8.1.9-2
+</PRE>
+<P>
+Enable password less authentication for sandbox and sandbox2 accounts
+<PRE>
+[sandbox@se-m1 ~]$ ssh-keygen -t rsa -b 2048
+[sandbox@se-m1 ~]$ cat .ssh/id_rsa.pub > .ssh/authorized_keys
+
+[sandbox2@se-m1 ~]$ ssh-keygen -t rsa -b 2048
+[sandbox2@se-m1 ~]$ cat .ssh/id_rsa.pub > .ssh/authorized_keys
+</PRE>
+<P>
+Setup Apache Reverse Proxy on port 80 to port 8080 (Tomcat)
+<P>
+Create the new default virtual host by creating a new empty Apache configuration file in the
+/etc/httpd/conf.d directory.
+<P>
+Paste the following contents into the default-site.conf file, so your configuration file looks 
+like this:
+<PRE>
+# -------------------------------------------------------------------------- #
+#Redirect permanent / https://starexec.ccs.miami.edu/starexec/
+RedirectMatch Permanent "^(/(?!docs).*)" https://starexec.ccs.miami.edu/starexec$1
+
+# Alias for wordpress website
+  Alias /docs "/var/www/vhosts/docs"
+
+## --------------------------------------------------------------------------- #
+  ProxyPreserveHost On
+  ProxyRequests off
+  AllowEncodedSlashes NoDecode
+  
+    Order deny,allow
+    Allow from all
+  
+
+  # Exclude /docs from ProxyPass rule
+  ProxyPass /docs !
+  ProxyPass /starexec http://starexec.ccs.miami.edu:8080/starexec
+  ProxyPassReverse /starexec http://starexec.ccs.miami.edu:8080/starexec
+
+  # Ensures the URLs generated inside satrexec app are using the desired domain and protocol
+  RequestHeader set X-Forwarded-Proto "https"
+  RequestHeader set X-Forwarded-Port "443"
+
+# --------------------------------------------------------------------------- #
+</PRE>
+<P>
+To put these changes into effect, restart Apache.
+<PRE>
+[root@se-m1 ~]# systemctl restart httpd
+</PRE>
+<P>
+Our starexec_specs file
+<PRE>
+$ sudo cat ~starexec/StarExec-deploy/build/Cluster.MachineSpecs.txt
+Lenovo NeXtScale n1200 Enclosures
+
+Compute Node
+32 x Lenovo NeXtScale nx360 M5
+- 2 Intel Xeon Processor E5-2620 v4 8C
+- 256GB Ram
+- Dual Port 10GbE SFP+
+- 1TB SATA Hard Drive
+
+Head node
+Lenovo System x3650 M5
+- 2 x Intel Xeon Processor E5-2667 v4 8C 3.2GHz
+- 128GB Ram
+- 100GbE/EDR IB
+- Dual Port 10GbE SFP+
+- 2 x 240GB Enterprise SSD
+
+Lenovo RackSwitch G8264
+
+5Yr Next Business Day Support
+
+Network Config
+10.10.1.x/24 10Gb Storage (/export)
+10.10.2.x/24 1Gb Management (/cluster)
+10.11.210.x  FDR IB (head node)  
+</PRE>
+<P>
+Debugging – Execute StarExec application commands, manually as tomcat user.
+<PRE>
+Example from getSGEEnv() and moveNode() functions in ~starexec/StarExec-deploy/src/org/starexec/backend/GridEngineBackend.java 
+
+# StarExec Java Function:
+private String[] getSGEEnv() {
+        String[] envp = new String[1];
+        envp[0] = "SGE_ROOT="+BACKEND_ROOT;
+        return envp;
+}
+...
+    /**
+     * moves the given node to the given queue
+     * @param nodeName the name of a node
+     * @param queueName the name of a queue
+     */
+    public void moveNode(String nodeName, String queueName){
+        try {
+                Util.executeCommand("sudo -u sgeadmin "+GRID_ENGINE_PATH+"qconf -dattr hostgroup hostlist " + nodeName + " @" + queueName + "hosts", getSGEEnv());
+
+            } catch (Exception e) {
+                log.error(e.getMessage(),e);
+        }
+    }
+
+        @Override
+        public Set getActiveExecutionIds() throws IOException {
+                String output = Util.executeCommand("qstat -s a");
+                Set answer = new HashSet<>();
+                for (String s : output.split(System.getProperty("line.separator"))) {
+                        for (String e : s.split("\\s+")) {
+                                if (!e.isEmpty()) {
+                                        if (Validator.isValidInteger(e)) {
+                                                answer.add(Integer.parseInt(e));
+                                        }
+                                        break;
+                                }
+                        }
+                }
+                return answer;
+        }
+</PRE>
+<P>
+Code: sudo -u sgeadmin “+GRID_ENGINE_PATH+”qconf -dattr hostgroup hostlist ” + nodeName
++ ” @” + queueName + “hosts”, getSGEEnv());
+<PRE>
+[tomcat@se-m1 ~]$ declare -a a=("SGE_ROOT=/cluster/gridengine-8.1.9-2");
+[tomcat@se-m1 ~]$ sudo -u sgeadmin /cluster/gridengine-8.1.9-2/bin/lx-amd64/qconf -dattr hostgroup hostlist n001 @all.q, $a
+denied: host group "@all.q," does not exist
+denied: host group "SGE_ROOT=/cluster/gridengine-8.1.9-2" does not exist
+</PRE>
+<P>
+We also tried to get the StarExec application working with the OAR and local backend without 
+success.
+</UL>
+<HR> <!-- ------------------------------------------------------------------------------------- -->
+<H2>Making StarExec</H2>
+
+<UL>
+<LI> Download StarExec Code
+     <PRE>
+$ sudo su -s /bin/bash - starexec
+[starexec@se-m1 ~]$ git clone -- https://github.com/StarExec/StarExec.git StarExec-deploy
+$ ls -l
+drwxrwxr-x 14 starexec starexec 307 Aug 31 09:15 StarExec-deploy
+$ exit
+
+//MAKE AN EMPTY FILE CALLED "Cluster.MachineSpecs.txt" UNDER StarExec-deploy/build FOR LOCAL INSTALL
+     </PRE>
+<LI> Start StarExec tomcat instance
+     <PRE>
+$ sudo systemctl start tomcat7
+$ sudo systemctl status tomcat7
+● tomcat7.service - StarExec Apache Tomcat 7 Servlet Container
+   Loaded: loaded (/etc/systemd/system/tomcat7.service; disabled; vendor preset: disabled)
+   Active: active (running) since Wed 2019-04-17 17:26:59 EDT; 2s ago
+  Process: 25453 ExecStart=/project/apache-tomcat-7/bin/startup.sh (code=exited, status=0/SUCCESS)
+ Main PID: 25466 (java)
+   CGroup: /system.slice/tomcat7.service
+           └─25466 /usr/bin/java -Djava.util.logging.config.file=/project/apache-tomcat-7/conf/logging.properties -Djava.util.logging.manager=org.apache.jul...
+
+Apr 17 17:26:59 starexec-dev.ccs.miami.edu systemd[1]: Starting StarExec Apache Tomcat 7 Servlet Container...
+Apr 17 17:26:59 starexec-dev.ccs.miami.edu systemd[1]: Started StarExec Apache Tomcat 7 Servlet Container.
+     </PRE>
+<LI> Start StarExec tomcat instance manually
+     <PRE>
+$ sudo su - tomcat -s /bin/bash
+$ /project/apache-tomcat-7/bin/startup.sh
+     </PRE>
+</UL>
+<HR> <!-- ------------------------------------------------------------------------------------- -->
+<H2>TPTP New Config</H2>
+
+This documentation is for the purposes of creating a new instance of the TPTP community. 
+It is assumed that the user is logged in as admin.
+<P>
+<OL>
+<LI> TPTP space
+     <P>
+     Create TPTP subspace:
+     <OL>
+     <LI> Click on “Spaces” menu item.
+     <LI> Click on “root” space. 
+          Within “subspaces” option, expand tab by clicking “(+)”, then click “add subspace +”
+     <LI> Fill using following details:
+          <OL>
+          <LI> name: TPTP
+          <LI> description: TPTP community
+          <LI> check all default permissions for adding and removing
+          <LI> leave all other default settings
+          </OL>
+     <LI> Upon success, a “TPTP” subspace will be created with a “Users” subsubspace. 
+          Navigate to the TPTP subspace
+          [NB: for the remainder of this documentation, TPTP subspace will be referred to as 
+          the TPTP space and everything within it will be referred to as subspace, eg: “Users” 
+          subspace]
+     <LI> If “Users” subspace was not created when the “TPTP” space was created, the environment 
+          was not properly cleaned up before redeploying the app.
+          <OL>
+          <LI> Click on “TPTP” > Expand “Subspaces” > add subspace
+          <LI> Fill using following details:
+               <UL>
+               <LI> name: Users
+               <LI> description: TPTP users space (optional)
+               <LI> default: check all for now (optional, can be changed later)
+               <LI> Inherit-Users: No
+               <LI> Leave all other options as default settings
+               </UL>
+          </OL>
+     </OL>
+     <P>
+     Adding users to TPTP space.
+     <OL>
+     <LI> If members were added to the “root” space, you have the option of adding those users 
+          to the newly created space directly.
+          <OL>
+          <LI> Click on the TPTP space > “edit space permissions” > (scroll to bottom) “Add users 
+               to TPTP”
+          <LI> Select individual users (will turn from red to orange) > add
+          <LI> Or, click on “All” to select all users in root class to be added to TPTP space
+          <LI> Ensure that users are added to space hierarchy, to ensure they have access to all 
+               subspaces and content from other subspaces
+          </OL>
+     <LI> To add a user to TPTP space (who does not belong to the root class):
+          <OL>
+          <LI> Navigate to “Admin” (first menu item, top of page) > Users
+          <LI> Select individual user to be added, click on “Edit” under user’s permissions
+          <LI> Navigate to the TPTP space under “official” (on left, orginization tree) > 
+               Permissions > “make member”<BR>
+               [NB: GUI does not change message once user memeber is added. Needs to be fixed.]
+          </OL>
+     <LI> Create individual user’s space
+          <OL>
+          <LI> Click on “Users” subspace > Expand “Subspaces” > add subspace
+          <LI> Here we will give an example for a user called “John Doe”. 
+               Fill using following details (anything not explicitly specified will be assumed 
+               to follow the default settings):
+               <UL>
+               <LI> name: John Doe
+               <LI> As leader, you have control over how much access “John Doe” has, i.e.,
+                    default permissions
+               <LI> default: check all for now (optional, can be changed later)
+               <LI> Inherit-Users: No
+               </UL>
+          <LI> Repeat process for all users to be added to the “Users” TPTP subspace.
+          </OL>
+     </OL>
+     <P>
+     Promoting User to Community Leader
+     <OL>
+     <LI> Click on TPTP space > “edit space permissions” > Within “users”, click on the user 
+          to be promoted as leader (once highlighted, color changes to orange)
+     <LI> Under “change permissions”, there is a label termed “leader” with the option to 
+          “promote”. Click it.
+     </OL>
+<P>
+<LI> Processors + TPTP default settings
+     <P>
+     Installing processors
+     <OL>
+     <LI> benchmark types: TPTP
+          <OL>
+          <LI> Spaces (3rd menu option) > Communities
+          <LI> Select TPTP (under Official) > edit > benchmark_types > add new
+               <UL>
+               <LI> name: TPTP
+               <LI> processor: /root/TPTP/processors/benchmark_types/TPTP.tar.gz
+               </UL>
+          </OL>
+          Click Add
+     <LI> post processors: SZS
+          <OL>
+          <LI> Spaces (3rd menu option) > Communities
+          <LI> Select TPTP (under Official) > edit > post processors > add new
+               <UL>
+               <LI> name: SZS
+               <LI> processor: /root/TPTP/processors/post_processors/SZS.tar.gz
+               </UL>
+          </OL>
+          Click Add
+     </OL>
+     <P>
+     Default settings
+     WHERE, HOW?
+     <OL>
+     <LI> bench processor: TPTP
+     <LI> post processor: SZS
+     </OL>
+<P>
+<LI> ATPSystems subspace
+     Creating and uploading TPTP benchmarks, solvers and axioms.
+     <OL>
+     <LI> Create ATPSystems subspace:
+          <OL>
+          <LI> Within TPTP space, expand “subspaces” option, expand tab by clicking “(+)”, then 
+               click “add subspace +”
+          <LI> Fill using: name: ATPSystems; rest: optional/leave as default settings
+          </OL>
+     <LI> Create Axioms subsubspace:
+          <OL>
+          <LI> Click on “ATPSystems”, expand “subspaces” option, expand tab and click 
+               “add subspace +”
+          <LI> Fill using name: Axioms; Inherit-Solvers: no; Inherit-Benchmarks: no; rest: 
+               leave as default settings
+          <LI> Upon Success, Axioms subspace will be created with appropriate number of users 
+               and 0 for all other fields
+          </OL>
+     <LI> Uploading Axioms<BR>
+          [NB: Upload not as se-admin, but as leader.]
+          <OL>
+          <LI> Within Axioms subsubspace > benchmarks > upload benchmarks
+               <UL>
+               <LI> benchmarks: /root/TPTP/ATPSystems/axioms/axioms.tar.tgz
+               <LI> upload method: “place all benchmarks in Axioms”<BR>
+                    What about the “benchmark type” field, default is no_type, option is TPTP?
+                    As the leader I get “http 400 – bad request, You do not have permission to 
+                    upload benchmarks to this space try again report error” 
+                    <P>
+                    I logged out, logged in as superuser, Clicked Spaces, Explorer (main menu), 
+                    Selected ATPSystems (left menu), clicked edit permissions, selected Geoff’s 
+                    account, click promote to leader (with hierarchal option for Axioms subspace), 
+                    click Save. 
+                    You will be prompted, do you want the changes to be hierarchical? yes
+                    <P>
+                    log out, log back in as leader. 
+                    <P>
+                    I think We need to clean this up. 
+                    Do everything we need to do as super user, then login as leader and do 
+                    everything we need to do as leader.
+               </UL>
+          <LI> Upon success:
+               <UL>
+               <LI> total benchmarks: 25
+               <LI> validated benchmarks: 25
+               <LI> completed benchmarks: 25
+               <LI> total spaces: 1
+               <LI> entire upload complete: true
+               <LI> upload error message: no error
+               </UL>
+               And, when clicked on “back”: 25 benchmarks
+          </OL>
+     <LI> Uploading Benchmarks
+          <OL>
+          <LI> Within ATPSystems subspace > benchmarks > upload benchmarks
+               <UL>
+               <LI> benchmarks: /root/TPTP/ATPSystems//ATPSystems/benchmarks/benchmarks.tar.gz
+               <LI> upload method: “place all benchmarks in ATPSystems”
+               <LI> dependencies: yes
+               <LI> dependency root space: Axioms
+               </UL>
+               [NB: With the space id from creating the above space in step 3]
+          <LI> Upon success:
+               <UL>
+               <LI> total benchmarks: 26
+               <LI> validated benchmarks: 26
+               <LI> completed benchmarks: 26
+               <LI> total spaces: 1
+               <LI> entire upload complete: true
+               <LI> upload error message: no error
+               </UL>
+               And, when clicked on “back”: 26 benchmarks
+          </OL>
+     <LI> Uploading Solvers<BR>
+          Path: /root/TPTP/ATPSystems/solvers<BR>
+          Total available: 2
+          <OL>
+          <LI> Within ATPSystems subspace > solver > upload solver
+               <UL>
+               <LI> solver location: /root/TPTP/ATPSystems/solvers/E—2.1.zip
+               <LI> solver name: E—2.1
+               <LI> rest: leave all default settings
+               </UL>
+          <LI> Upon success:
+               <UL>
+               <LI> build status: uploaded built
+               <LI> configurations should contain the solver’s description
+               </UL>
+          </OL>
+     </OL>
+<P>
+<LI> Running a job<BR>
+     Within the ATPSystems subspace, we run a test job using the E—2.1 solver, as an example. 
+     Ensure to not run a job while being se-admin. 
+     There are two ways to go about this:
+     <OL>
+     <LI> Running a job within ATPSystems subspace
+          <OL>
+          <LI> Click on “ATPSystems” > Expand jobs > create job
+          <LI> Ensure the following:
+               <UL>
+               <LI> setting profile: TPTP
+               <LI> job name: (depending on user)
+               <LI> pre processor: none
+               <LI> post processor: SZS
+               <LI> worker queue: all.q
+               <LI> Leave all other as default settings
+               </UL>
+          <LI> solver selection method: choose
+          <LI> benchmark selection method: choose in ATPSystems
+          <LI> solver selection: E—2.1 (will turn orange upon selection)
+          <LI> benchmark selection from space: choose any one; if all are to be selected, in 
+               the bottom click the “all” selection; to negate all, click “none”
+          </OL>
+     <LI> Running a job within a user’s space<BR>
+          [NB: Ensure that the user has been given sufficient permissions to link/copy 
+          solvers/benchmarks, if not, login as either se-admin or community leader to rectify 
+          this.]
+          <OL>
+          <LI> Click on “Users” > John Doe’s space (whoever is logged in)
+          <LI> Expand “ATPSystems” space > expand both “solvers” and “benchmarks”
+          <LI> Click and drag the “E—2.1” solver to John Doe’s space. User can choose either to 
+               “link in space” or “copy to space”. 
+               Either will work, “copy to space” will duplicate the solver in John Doe’s space 
+               and “link in space” will only establish a link.<BR>
+               [NB: Caution, at either end (ATPSystems or John Doe’s space) if the solver is 
+               trashed then it is removed in both locations. This is not the case for a “copy 
+               to space”.]
+          <LI> Repeat above step for a benchmark in John Doe’s space.
+          <LI> Once at the very least a solver and benchmark has been linked/copied, repeat the 
+               steps from Step 1, except the User will be creating/running a job from their space 
+               instead of ATPSystems.
+          </OL>
+     </OL>
+</OL>
+<P>
+<HR> <!-- ------------------------------------------------------------------------------------- -->
+</BODY>
+</HTML>

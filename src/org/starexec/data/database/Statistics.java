@@ -289,7 +289,7 @@ public class Statistics {
 			return null;
 		} else {
 			for (String n : commMap.keySet()) {
-				dataset.setValue(n, (new Double(commMap.get(n))) / total);
+				dataset.setValue(n, (Double.valueOf(commMap.get(n))) / total);
 			}
 			return dataset;
 		}

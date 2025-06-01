@@ -174,7 +174,21 @@ public class JspHelpers {
 				request.setAttribute("buildJob", j.isBuildJob());
 				request.setAttribute("isHighPriority", j.isHighPriority());
 
-				request.setAttribute("starexecUrl", R.STAREXEC_URL_PREFIX+"://"+R.STAREXEC_SERVERNAME+"/"+R.STAREXEC_APPNAME+"/");
+				String starexecUrl;
+				String forwardedHost = request.getHeader("X-Forwarded-Host");
+				if (forwardedHost != null) {
+					// When behind a proxy or in Docker/Podman
+					String scheme = request.getHeader("X-Forwarded-Proto");
+					if (scheme == null) {
+						scheme = R.STAREXEC_URL_PREFIX;
+					}
+					starexecUrl = String.format("%s://%s/%s/", scheme, forwardedHost, R.STAREXEC_APPNAME);
+				} else {
+					// Direct access
+					starexecUrl = String.format("%s://%s/%s/", R.STAREXEC_URL_PREFIX, R.STAREXEC_SERVERNAME, R.STAREXEC_APPNAME);
+				}
+				request.setAttribute("starexecUrl", starexecUrl);
+
 			} else {
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "The details for this job could not be obtained");
 			}
@@ -309,7 +323,7 @@ public class JspHelpers {
 		if (Solvers.isSolverDeleted(solverId)) {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "This solver has been deleted. You likely want to remove it from your spaces.");
 		} else if (Solvers.isSolverRecycled(solverId))  {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "This solver has been moved to the recycle bin by its owner.");
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "This solver has been moved to the trash bin by its owner.");
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Solver does not exist or is restricted");
 		}
@@ -460,7 +474,7 @@ public class JspHelpers {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND,
 				"This benchmark has been deleted. You likely want to remove it from your spaces");
 		} else if (Benchmarks.isBenchmarkRecycled(benchId))  {
-			response.sendError(HttpServletResponse.SC_NOT_FOUND, "This benchmark has been moved to the recycle bin by its owner.");
+			response.sendError(HttpServletResponse.SC_NOT_FOUND, "This benchmark has been moved to the trash bin by its owner.");
 		} else {
 			response.sendError(HttpServletResponse.SC_NOT_FOUND, "Benchmark does not exist or is restricted");
 		}

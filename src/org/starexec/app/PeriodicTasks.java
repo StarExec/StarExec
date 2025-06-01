@@ -45,7 +45,7 @@ class PeriodicTasks {
     enum PeriodicTask {
         // period needs to be a supplier since CLUSTER_UPDATE_PERIOD is dynamically set by configuration.
         UPDATE_CLUSTER(true, UPDATE_CLUSTER_TASK, 0, () -> R.CLUSTER_UPDATE_PERIOD, TimeUnit.SECONDS),
-        SUBMIT_JOBS(true, SUBMIT_JOBS_TASK, 0, () -> 60, TimeUnit.SECONDS),
+        SUBMIT_JOBS(true, SUBMIT_JOBS_TASK, 0, () -> 20, TimeUnit.SECONDS),
         POST_PROCESS_JOBS(true, POST_PROCESS_JOBS_TASK, 0, () -> 45, TimeUnit.SECONDS),
         RERUN_FAILED_PAIRS(true, RERUN_FAILED_PAIRS_TASK, 0, () -> 90, TimeUnit.MINUTES),
         FIND_BROKEN_JOB_PAIRS(true, FIND_BROKEN_JOB_PAIRS_TASK, 0, () -> 3, TimeUnit.HOURS),

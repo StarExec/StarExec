@@ -1687,7 +1687,7 @@ public class Solvers {
 				if (results.getBoolean("deleted")) {
 					s.setName(s.getName() + " (deleted)");
 				} else if (results.getBoolean("recycled")) {
-					s.setName(s.getName() + " (recycled)");
+					s.setName(s.getName() + " (in trash)");
 				}
 				s.setDeleted(results.getBoolean("deleted"));
 				s.setRecycled(results.getBoolean("recycled"));

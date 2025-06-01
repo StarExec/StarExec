@@ -117,32 +117,28 @@
 					<td class="label"><p>locked</p></td>
 					<td>
 						<input type="radio" name="locked" value="true"/> yes
-						<input type="radio" name="locked" value="false"
-						       checked="checked"/> no
+						<input type="radio" name="locked" value="false" checked="checked"/> no
 					</td>
 				</tr>
 				<tr>
 					<td class="label"><p>Inherit-Users</p></td>
 					<td>
-						<input type="radio" name="users" value="true"
-						       checked="checked"/> yes
-						<input type="radio" name="users" value="false"/> no
+						<input type="radio" name="users" value="true"/> yes
+						<input type="radio" name="users" value="false" checked="checked"/> no
 					</td>
 				</tr>
 				<tr>
 					<td class="label"><p>Inherit-Solvers</p></td>
 					<td>
-						<input type="radio" name="solvers" value="true"
-						       checked="checked"/> yes
-						<input type="radio" name="solvers" value="false"/> no
+						<input type="radio" name="solvers" value="true"/> yes
+						<input type="radio" name="solvers" value="false" checked="checked"/> no
 					</td>
 				</tr>
 				<tr>
 					<td class="label"><p>Inherit-Benchmarks</p></td>
 					<td>
-						<input type="radio" name="benchmarks" value="true"
-						       checked="checked"/> yes
-						<input type="radio" name="benchmarks" value="false"/> no
+						<input type="radio" name="benchmarks" value="true"/> yes
+						<input type="radio" name="benchmarks" value="false" checked="checked"/> no
 					</td>
 				</tr>
 				<c:if test="${!isRoot}">
@@ -150,8 +146,7 @@
 						<td class="label"><p>Sticky-Leaders</p></td>
 						<td>
 							<input type="radio" name="sticky" value="true"/> yes
-							<input type="radio" name="sticky" value="false"
-							       checked="checked"/> no
+							<input type="radio" name="sticky" value="false" checked="checked"/> no
 						</td>
 					</tr>
 				</c:if>
