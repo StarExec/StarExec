@@ -40,7 +40,7 @@ public class QueueSecurityTests extends TestSequence {
 	protected void setup() throws Exception {
 		user1=loader.loadUserIntoDatabase();
 		user2=loader.loadUserIntoDatabase();
-		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Miami",R.ADMIN_ROLE_NAME);
 		Assert.assertNotNull(user1);
 		Assert.assertNotNull(user2);
 		Assert.assertNotNull(admin);

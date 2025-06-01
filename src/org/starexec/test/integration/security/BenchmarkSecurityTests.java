@@ -176,7 +176,7 @@ public class BenchmarkSecurityTests extends TestSequence {
 
 		space=loader.loadSpaceIntoDatabase(user2.getId(),Communities.getTestCommunity().getId());
 		space2=loader.loadSpaceIntoDatabase(user2.getId(), Communities.getTestCommunity().getId());
-		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Miami",R.ADMIN_ROLE_NAME);
 		benchmarkIds=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space.getId(), user1.getId());
 		benchmarkIds2=loader.loadBenchmarksIntoDatabase("benchmarks.zip", space2.getId(), user2.getId());
 		Assert.assertNotNull(benchmarkIds);

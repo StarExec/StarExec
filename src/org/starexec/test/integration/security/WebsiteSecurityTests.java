@@ -111,7 +111,7 @@ public class WebsiteSecurityTests extends TestSequence {
 	protected void setup() throws Exception {
 		owner=loader.loadUserIntoDatabase();
 		nonOwner=loader.loadUserIntoDatabase();
-		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Miami",R.ADMIN_ROLE_NAME);
 		space=loader.loadSpaceIntoDatabase(owner.getId(), 1);
 		solver=loader.loadSolverIntoDatabase(space.getId(), owner.getId());
 	}

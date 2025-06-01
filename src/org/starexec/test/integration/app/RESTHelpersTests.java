@@ -312,7 +312,7 @@ public class RESTHelpersTests extends TestSequence {
 		space1=loader.loadSpaceIntoDatabase(testUser.getId(), community.getId());
 		space2=loader.loadSpaceIntoDatabase(testUser.getId(), community.getId());
 		childOf1=loader.loadSpaceIntoDatabase(testUser.getId(), space1.getId());
-		admin = loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
+		admin = loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Miami",R.ADMIN_ROLE_NAME);
 		Users.associate(extraUser.getId(), community.getId());
 		s1 = loader.loadSolverIntoDatabase(community.getId(), testUser.getId());
 		s2 = loader.loadSolverIntoDatabase(community.getId(), testUser.getId());

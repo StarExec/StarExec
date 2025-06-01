@@ -566,7 +566,7 @@ public class BenchmarkTests extends TestSequence {
 	protected void setup() throws Exception {
 		user=loader.loadUserIntoDatabase();
 		user2=loader.loadUserIntoDatabase();
-		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Miami",R.ADMIN_ROLE_NAME);
 		space=loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
 		space2=loader.loadSpaceIntoDatabase(user2.getId(), Communities.getTestCommunity().getId());
 		scratchSpace = loader.loadSpaceIntoDatabase(user.getId(), Communities.getTestCommunity().getId());
