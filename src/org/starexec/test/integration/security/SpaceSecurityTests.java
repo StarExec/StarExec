@@ -125,7 +125,7 @@ public class SpaceSecurityTests extends TestSequence {
 		Assert.assertNotNull(nonOwner);
 		Assert.assertNotNull(noPerms);
 
-		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Miami",R.ADMIN_ROLE_NAME);
 		space1=loader.loadSpaceIntoDatabase(owner.getId(),testCommunity.getId());
 		space2=loader.loadSpaceIntoDatabase(owner.getId(),testCommunity.getId());
 		Assert.assertTrue(Permissions.get(owner.getId(), space1.getId()).isLeader() );

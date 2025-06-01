@@ -243,7 +243,7 @@ public class DefaultSettingsTests extends TestSequence {
 		settings2=loader.loadDefaultSettingsProfileIntoDatabase(u2.getId());
         settingsWithDefaultBenchmarks=loader.loadDefaultSettingsProfileIntoDatabaseWithDefaultBenchmarks(u3.getId(), benchIds);
 
-		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Miami",R.ADMIN_ROLE_NAME);
 	}
 
 	@Override
