@@ -41,7 +41,7 @@ public class GeneralSecurityTests extends TestSequence {
 	protected void setup() throws Exception {
 		plaintextPassword=Util.getTempPassword();
 		user1=loader.loadUserIntoDatabase(plaintextPassword);
-		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Miami",R.ADMIN_ROLE_NAME);
 	}
 
 	@Override

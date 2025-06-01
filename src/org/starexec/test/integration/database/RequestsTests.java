@@ -135,7 +135,7 @@ public class RequestsTests extends TestSequence {
 		registeredUser=loader.loadUserIntoDatabase();
 		requestedUser=loader.loadUserIntoDatabase();
    
-		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Iowa",R.ADMIN_ROLE_NAME);
+		admin=loader.loadUserIntoDatabase(TestUtil.getRandomAlphaString(10),TestUtil.getRandomAlphaString(10),TestUtil.getRandomPassword(),TestUtil.getRandomPassword(),"The University of Miami",R.ADMIN_ROLE_NAME);
 		comm=loader.loadSpaceIntoDatabase(admin.getId(), 1);
 		comm2=loader.loadSpaceIntoDatabase(admin.getId(), 1);
 		request= loader.loadCommunityRequestIntoDatabase(requestedUser.getId(), comm.getId());

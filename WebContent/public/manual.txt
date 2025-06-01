@@ -329,7 +329,7 @@ EXAMPLE: 'setfirstname val=newname'
 --setinstitution -Sets the user's institution.
 REQUIRED: "val"
 OPTIONAL: None
-EXAMPLE: 'setinstitution val=The University of Iowa'
+EXAMPLE: 'setinstitution val=The University of Miami'
 
 --setlastname -Sets the user's last name
 REQUIRED: "val"
