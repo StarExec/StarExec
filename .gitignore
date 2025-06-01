@@ -93,7 +93,3 @@ Thumbs.db
 
 # /src/org/starexec/test/junit/
 /src/org/starexec/test/junit/test.java
-
-*.log
-starexec_podman_key*
-/venv
