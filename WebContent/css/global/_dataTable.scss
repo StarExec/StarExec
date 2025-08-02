@@ -16,6 +16,11 @@
 	text-align: justify;
 }
 
+.dataTables_processing {
+	z-index: 10;
+	color: #000;
+}
+
 table.dataTable {
 	width: 100%;
 	margin: 0 auto;
