@@ -8,6 +8,8 @@ import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.data.to.Solver;
+import org.starexec.data.to.Benchmark;
 import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.*;
@@ -1154,21 +1156,41 @@ public class Users {
 	}
 
 	/**
-	 * Deletes a user's benchmark and solver directory in the data directory.
+	 * Deletes ALL user-related data from the filesystem.
+	 * This includes: solvers, benchmarks, jobs, and ALL pictures (user, solver, and benchmark).
 	 *
-	 * @param userId Id of user whose benchmark and solver directories are to be deleted.
-	 * @author Albert Giegerich
+	 * @param userId Id of user whose data is to be completely deleted.
+	 * @author Albert Giegerich, Andres Caicedo (comprehensive cleanup)
 	 */
 	private static void deleteUsersPrimitiveDirectories(int userId) {
-		log.debug("Deleting primitive directories of user with id=" + userId);
+		final String method = "deleteUsersPrimitiveDirectories";
+		log.info(method + ": Deleting ALL data for user with id=" + userId);
+		
+		// Delete user's solver directory
 		deleteUsersSolverDirectory(userId);
+		
+		// Delete user's benchmark directory
 		deleteUsersBenchmarkDirectory(userId);
+		
+		// Delete all job output directories for user's jobs
 		deleteUsersJobDirectories(userId);
+		
+		// Delete user's profile pictures
+		deleteUserPictures(userId);
+		
+		// Delete pictures for all user's solvers
+		deleteUsersSolverPictures(userId);
+		
+		// Delete pictures for all user's benchmarks
+		deleteUsersBenchmarkPictures(userId);
+		
+		log.info(method + ": Completed deletion of all data for user with id=" + userId);
 	}
 
 	/**
-	 * Deletes the given jobs' directories.
+	 * Deletes the given user's job output directories.
 	 *
+	 * @param userId Id of user whose job directories are to be deleted.
 	 * @author Albert Giegerich
 	 */
 	private static void deleteUsersJobDirectories(int userId) {
@@ -1177,7 +1199,7 @@ public class Users {
 		List<Job> jobs = Jobs.getByUserId(userId);
 		for (Job job : jobs) {
 			final String jobDirectory = Jobs.getDirectory(job.getId());
-			log.debug(method, "User is being deleted, deleting job directory with path: " + jobDirectory);
+			log.debug(method + ": Deleting job directory: " + jobDirectory);
 			Util.safeDeleteDirectory(jobDirectory);
 		}
 	}
@@ -1189,7 +1211,9 @@ public class Users {
 	 * @author Albert Giegerich
 	 */
 	private static void deleteUsersSolverDirectory(int userId) {
+		final String method = "deleteUsersSolverDirectory";
 		String pathToSolverDirectory = R.getSolverPath() + "/" + userId;
+		log.debug(method + ": Deleting solver directory: " + pathToSolverDirectory);
 		Util.safeDeleteDirectory(pathToSolverDirectory);
 	}
 
@@ -1200,8 +1224,178 @@ public class Users {
 	 * @author Albert Giegerich
 	 */
 	private static void deleteUsersBenchmarkDirectory(int userId) {
+		final String method = "deleteUsersBenchmarkDirectory";
 		String pathToBenchmarkDirectory = R.getBenchmarkPath() + "/" + userId;
+		log.debug(method + ": Deleting benchmark directory: " + pathToBenchmarkDirectory);
 		Util.safeDeleteDirectory(pathToBenchmarkDirectory);
+	}
+
+	/**
+	 * Deletes a user's profile pictures (original and thumbnail) from the pictures directory.
+	 * User pictures are stored as:
+	 * - Original: /app/data/pictures/users/Pic{userId}_org.jpg
+	 * - Thumbnail: /app/data/pictures/users/Pic{userId}_thn.jpg
+	 *
+	 * @param userId Id of user whose pictures are to be deleted.
+	 * @author Andres Caicedo (Storage Leak Fix)
+	 */
+	private static void deleteUserPictures(int userId) {
+		final String method = "deleteUserPictures";
+		log.debug(method + ": Deleting pictures for user with id=" + userId);
+
+		String picturePath = R.getPicturePath();
+		long totalFreedSpace = 0;
+
+		// Delete original picture
+		String originalPicture = picturePath + java.io.File.separator + "users" + 
+								java.io.File.separator + "Pic" + userId + "_org.jpg";
+		java.io.File originalFile = new java.io.File(originalPicture);
+		if (originalFile.exists()) {
+			long originalSize = originalFile.length();
+			if (originalFile.delete()) {
+				totalFreedSpace += originalSize;
+				log.info(method + ": Deleted original picture: " + originalPicture + 
+						" (" + FileUtils.byteCountToDisplaySize(originalSize) + ")");
+			} else {
+				log.warn(method + ": Failed to delete original picture: " + originalPicture);
+			}
+		} else {
+			log.debug(method + ": No original picture found at: " + originalPicture);
+		}
+
+		// Delete thumbnail picture
+		String thumbnailPicture = picturePath + java.io.File.separator + "users" + 
+								 java.io.File.separator + "Pic" + userId + "_thn.jpg";
+		java.io.File thumbnailFile = new java.io.File(thumbnailPicture);
+		if (thumbnailFile.exists()) {
+			long thumbnailSize = thumbnailFile.length();
+			if (thumbnailFile.delete()) {
+				totalFreedSpace += thumbnailSize;
+				log.info(method + ": Deleted thumbnail picture: " + thumbnailPicture + 
+						" (" + FileUtils.byteCountToDisplaySize(thumbnailSize) + ")");
+			} else {
+				log.warn(method + ": Failed to delete thumbnail picture: " + thumbnailPicture);
+			}
+		} else {
+			log.debug(method + ": No thumbnail picture found at: " + thumbnailPicture);
+		}
+
+		if (totalFreedSpace > 0) {
+			log.info(method + ": Total space freed from user pictures: " + 
+					FileUtils.byteCountToDisplaySize(totalFreedSpace));
+		}
+	}
+
+	/**
+	 * Deletes profile pictures (original and thumbnail) for all solvers owned by the user.
+	 * Solver pictures are stored as:
+	 * - Original: /app/data/pictures/solvers/Pic{solverId}_org.jpg
+	 * - Thumbnail: /app/data/pictures/solvers/Pic{solverId}_thn.jpg
+	 *
+	 * @param userId Id of user whose solver pictures are to be deleted.
+	 * @author Andres Caicedo (Storage Leak Fix)
+	 */
+	private static void deleteUsersSolverPictures(int userId) {
+		final String method = "deleteUsersSolverPictures";
+		long totalFreed = 0;
+		
+		try {
+			// Get all solver IDs for this user
+			List<Solver> solvers = Solvers.getByUser(userId);
+			if (solvers == null || solvers.isEmpty()) {
+				log.debug(method + ": No solvers found for user " + userId);
+				return;
+			}
+			
+			String picturePath = R.getPicturePath() + java.io.File.separator + "solvers";
+			
+			for (Solver solver : solvers) {
+				// Delete original picture
+				java.io.File orgFile = new java.io.File(picturePath + java.io.File.separator + 
+														"Pic" + solver.getId() + "_org.jpg");
+				if (orgFile.exists()) {
+					long size = orgFile.length();
+					if (orgFile.delete()) {
+						totalFreed += size;
+						log.debug(method + ": Deleted solver picture: " + orgFile.getPath());
+					}
+				}
+				
+				// Delete thumbnail
+				java.io.File thnFile = new java.io.File(picturePath + java.io.File.separator + 
+														"Pic" + solver.getId() + "_thn.jpg");
+				if (thnFile.exists()) {
+					long size = thnFile.length();
+					if (thnFile.delete()) {
+						totalFreed += size;
+						log.debug(method + ": Deleted solver thumbnail: " + thnFile.getPath());
+					}
+				}
+			}
+			
+			if (totalFreed > 0) {
+				log.info(method + ": Freed " + FileUtils.byteCountToDisplaySize(totalFreed) + 
+						" from solver pictures for user " + userId);
+			}
+		} catch (Exception e) {
+			log.error(method + ": Error deleting solver pictures for user " + userId, e);
+		}
+	}
+
+	/**
+	 * Deletes profile pictures (original and thumbnail) for all benchmarks owned by the user.
+	 * Benchmark pictures are stored as:
+	 * - Original: /app/data/pictures/benchmarks/Pic{benchmarkId}_org.jpg
+	 * - Thumbnail: /app/data/pictures/benchmarks/Pic{benchmarkId}_thn.jpg
+	 *
+	 * @param userId Id of user whose benchmark pictures are to be deleted.
+	 * @author Andres Caicedo (Storage Leak Fix)
+	 */
+	private static void deleteUsersBenchmarkPictures(int userId) {
+		final String method = "deleteUsersBenchmarkPictures";
+		long totalFreed = 0;
+		
+		try {
+			// Get all benchmark IDs for this user
+			List<Benchmark> benchmarks = Benchmarks.getByUser(userId);
+			if (benchmarks == null || benchmarks.isEmpty()) {
+				log.debug(method + ": No benchmarks found for user " + userId);
+				return;
+			}
+			
+			String picturePath = R.getPicturePath() + java.io.File.separator + "benchmarks";
+			
+			for (Benchmark benchmark : benchmarks) {
+				// Delete original picture
+				java.io.File orgFile = new java.io.File(picturePath + java.io.File.separator + 
+														"Pic" + benchmark.getId() + "_org.jpg");
+				if (orgFile.exists()) {
+					long size = orgFile.length();
+					if (orgFile.delete()) {
+						totalFreed += size;
+						log.debug(method + ": Deleted benchmark picture: " + orgFile.getPath());
+					}
+				}
+				
+				// Delete thumbnail
+				java.io.File thnFile = new java.io.File(picturePath + java.io.File.separator + 
+														"Pic" + benchmark.getId() + "_thn.jpg");
+				if (thnFile.exists()) {
+					long size = thnFile.length();
+					if (thnFile.delete()) {
+						totalFreed += size;
+						log.debug(method + ": Deleted benchmark thumbnail: " + thnFile.getPath());
+					}
+				}
+			}
+			
+			if (totalFreed > 0) {
+				log.info(method + ": Freed " + FileUtils.byteCountToDisplaySize(totalFreed) + 
+						" from benchmark pictures for user " + userId);
+			}
+		} catch (Exception e) {
+			log.error(method + ": Error deleting benchmark pictures for user " + userId, e);
+		}
 	}
 
 	/**
