@@ -1135,6 +1135,17 @@ public class Users {
 			// so we can still get the users job id's from the database.
 			deleteUsersPrimitiveDirectories(userToDeleteId);
 
+			// Delete the user's personal space if it exists
+			Space personalSpace = Spaces.getPersonalSpace(userToDeleteId);
+			if (personalSpace != null) {
+				log.info("Deleting personal space for user " + userToDeleteId + " with space id " + personalSpace.getId());
+				if (!Spaces.removeSubspace(personalSpace.getId())) {
+					log.warn("Failed to delete personal space for user " + userToDeleteId);
+					// Continue anyway - we don't want to fail user deletion because of this
+				}
+			} else {
+				log.debug("No personal space found for user " + userToDeleteId);
+			}
 
 			// Delete the user from the database, this should delete all benchmarks and solvers and jobs
 			// from the database using cascading deletes.
