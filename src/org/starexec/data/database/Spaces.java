@@ -2795,4 +2795,54 @@ public class Spaces {
 			return true;
 		}
 	}
+
+	/**
+	 * Gets the personal space for a given user. The personal space is identified by the naming
+	 * convention firstname_lastname in lowercase.
+	 *
+	 * @param userId The ID of the user to get the personal space for
+	 * @return The personal space object, or null if not found
+	 * @author Generated for user deletion fix
+	 */
+	public static Space getPersonalSpace(int userId) {
+		Connection con = null;
+		CallableStatement procedure = null;
+		ResultSet results = null;
+		try {
+			// First, get the user's information to construct the expected space name
+			User user = Users.get(userId);
+			if (user == null) {
+				return null;
+			}
+
+			// Generate the expected personal space name
+			String expectedName = (user.getFirstName() + "_" + user.getLastName()).toLowerCase();
+
+			con = Common.getConnection();
+			// Search for a space with this name that the user owns
+			procedure = con.prepareCall("{CALL GetSpacesByUser(?)}");
+			procedure.setInt(1, userId);
+			results = procedure.executeQuery();
+
+			while (results.next()) {
+				String spaceName = results.getString("space.name");
+				if (expectedName.equals(spaceName)) {
+					Space s = new Space();
+					s.setId(results.getInt("space.id"));
+					s.setName(spaceName);
+					s.setDescription(results.getString("space.description"));
+					s.setLocked(results.getBoolean("space.locked"));
+					s.setStickyLeaders(results.getBoolean("space.sticky_leaders"));
+					return s;
+				}
+			}
+		} catch (Exception e) {
+			log.error("getPersonalSpace", e);
+		} finally {
+			Common.safeClose(con);
+			Common.safeClose(procedure);
+			Common.safeClose(results);
+		}
+		return null;
+	}
 }
