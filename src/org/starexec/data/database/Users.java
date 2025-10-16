@@ -1129,41 +1129,61 @@ public class Users {
 		log.debug("User with id=" + userToDeleteId + " is about to be deleted");
 		Connection con = null;
 		CallableStatement procedure = null;
+
+		// Preload all user-related entities before any deletion to avoid inconsistent state
+		List<Job> jobs = Jobs.getByUserId(userToDeleteId);
+		if (jobs == null) {
+			jobs = new ArrayList<>();
+		}
+
+		List<Solver> solvers = Solvers.getByUser(userToDeleteId);
+		if (solvers == null) {
+			solvers = new ArrayList<>();
+		}
+
+		List<Benchmark> benchmarks = Benchmarks.getByUser(userToDeleteId);
+		if (benchmarks == null) {
+			benchmarks = new ArrayList<>();
+		}
+
+		Space personalSpace = Spaces.getPersonalSpace(userToDeleteId);
+		boolean deletionSucceeded = false;
+
 		try {
-
-			// Delete the users primitive directories. This must occur before we delete the user
-			// so we can still get the users job id's from the database.
-			deleteUsersPrimitiveDirectories(userToDeleteId);
-
-			// Delete the user's personal space if it exists
-			Space personalSpace = Spaces.getPersonalSpace(userToDeleteId);
-			if (personalSpace != null) {
-				log.info("Deleting personal space for user " + userToDeleteId + " with space id " + personalSpace.getId());
-				if (!Spaces.removeSubspace(personalSpace.getId())) {
-					log.warn("Failed to delete personal space for user " + userToDeleteId);
-					// Continue anyway - we don't want to fail user deletion because of this
-				}
-			} else {
-				log.debug("No personal space found for user " + userToDeleteId);
-			}
-
-			// Delete the user from the database, this should delete all benchmarks and solvers and jobs
-			// from the database using cascading deletes.
+			// Delete the user from the database first using executeUpdate (not executeQuery)
+			// This ensures we don't delete files if the DB deletion fails
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL DeleteUser(?)}");
 			procedure.setInt(1, userToDeleteId);
-			procedure.executeQuery();
-
-			log.debug("Successfully deleted user with id=" + userToDeleteId);
-			return true;
+			procedure.executeUpdate();
+			deletionSucceeded = true;
+			log.debug("DeleteUser stored procedure executed for user " + userToDeleteId);
 		} catch (Exception e) {
-			log.error("deleteUse", e);
+			log.error("deleteUser", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-		log.debug("internal error trying to delete user with id = " + userToDeleteId);
-		return false;
+
+		if (!deletionSucceeded) {
+			log.debug("internal error trying to delete user with id = " + userToDeleteId);
+			return false;
+		}
+
+		// Delete the user's personal space if it exists (after successful DB deletion)
+		if (personalSpace != null) {
+			log.info("Deleting personal space for user " + userToDeleteId + " with space id " + personalSpace.getId());
+			if (!Spaces.removeSubspace(personalSpace.getId())) {
+				log.warn("Failed to delete personal space for user " + userToDeleteId);
+			}
+		} else {
+			log.debug("No personal space found for user " + userToDeleteId);
+		}
+
+		// Delete filesystem data using preloaded lists (after successful DB deletion)
+		deleteUsersPrimitiveDirectories(userToDeleteId, jobs, solvers, benchmarks);
+		log.debug("Successfully deleted user with id=" + userToDeleteId);
+		return true;
 	}
 
 	/**
@@ -1171,30 +1191,22 @@ public class Users {
 	 * This includes: solvers, benchmarks, jobs, and ALL pictures (user, solver, and benchmark).
 	 *
 	 * @param userId Id of user whose data is to be completely deleted.
+	 * @param jobs Preloaded jobs owned by the user.
+	 * @param solvers Preloaded solvers owned by the user.
+	 * @param benchmarks Preloaded benchmarks owned by the user.
 	 * @author Albert Giegerich, Andres Caicedo (comprehensive cleanup)
 	 */
-	private static void deleteUsersPrimitiveDirectories(int userId) {
+	private static void deleteUsersPrimitiveDirectories(int userId, List<Job> jobs, List<Solver> solvers, List<Benchmark> benchmarks) {
 		final String method = "deleteUsersPrimitiveDirectories";
 		log.info(method + ": Deleting ALL data for user with id=" + userId);
-		
-		// Delete user's solver directory
+
 		deleteUsersSolverDirectory(userId);
-		
-		// Delete user's benchmark directory
 		deleteUsersBenchmarkDirectory(userId);
-		
-		// Delete all job output directories for user's jobs
-		deleteUsersJobDirectories(userId);
-		
-		// Delete user's profile pictures
+		deleteUsersJobDirectories(userId, jobs);
 		deleteUserPictures(userId);
-		
-		// Delete pictures for all user's solvers
-		deleteUsersSolverPictures(userId);
-		
-		// Delete pictures for all user's benchmarks
-		deleteUsersBenchmarkPictures(userId);
-		
+		deleteUsersSolverPictures(userId, solvers);
+		deleteUsersBenchmarkPictures(userId, benchmarks);
+
 		log.info(method + ": Completed deletion of all data for user with id=" + userId);
 	}
 
@@ -1202,12 +1214,18 @@ public class Users {
 	 * Deletes the given user's job output directories.
 	 *
 	 * @param userId Id of user whose job directories are to be deleted.
+	 * @param jobs Preloaded jobs owned by the user whose directories should be removed.
 	 * @author Albert Giegerich
 	 */
-	private static void deleteUsersJobDirectories(int userId) {
+	private static void deleteUsersJobDirectories(int userId, List<Job> jobs) {
 		final String method = "deleteUsersJobDirectories";
 		log.entry(method);
-		List<Job> jobs = Jobs.getByUserId(userId);
+
+		if (jobs == null || jobs.isEmpty()) {
+			log.debug(method + ": No jobs found for user " + userId);
+			return;
+		}
+
 		for (Job job : jobs) {
 			final String jobDirectory = Jobs.getDirectory(job.getId());
 			log.debug(method + ": Deleting job directory: " + jobDirectory);
@@ -1304,26 +1322,24 @@ public class Users {
 	 * - Thumbnail: /app/data/pictures/solvers/Pic{solverId}_thn.jpg
 	 *
 	 * @param userId Id of user whose solver pictures are to be deleted.
+	 * @param solvers Preloaded solvers owned by the user.
 	 * @author Andres Caicedo (Storage Leak Fix)
 	 */
-	private static void deleteUsersSolverPictures(int userId) {
+	private static void deleteUsersSolverPictures(int userId, List<Solver> solvers) {
 		final String method = "deleteUsersSolverPictures";
 		long totalFreed = 0;
-		
+
+		if (solvers == null || solvers.isEmpty()) {
+			log.debug(method + ": No solvers found for user " + userId);
+			return;
+		}
+
 		try {
-			// Get all solver IDs for this user
-			List<Solver> solvers = Solvers.getByUser(userId);
-			if (solvers == null || solvers.isEmpty()) {
-				log.debug(method + ": No solvers found for user " + userId);
-				return;
-			}
-			
 			String picturePath = R.getPicturePath() + java.io.File.separator + "solvers";
-			
+
 			for (Solver solver : solvers) {
-				// Delete original picture
-				java.io.File orgFile = new java.io.File(picturePath + java.io.File.separator + 
-														"Pic" + solver.getId() + "_org.jpg");
+				java.io.File orgFile =
+						new java.io.File(picturePath + java.io.File.separator + "Pic" + solver.getId() + "_org.jpg");
 				if (orgFile.exists()) {
 					long size = orgFile.length();
 					if (orgFile.delete()) {
@@ -1331,10 +1347,9 @@ public class Users {
 						log.debug(method + ": Deleted solver picture: " + orgFile.getPath());
 					}
 				}
-				
-				// Delete thumbnail
-				java.io.File thnFile = new java.io.File(picturePath + java.io.File.separator + 
-														"Pic" + solver.getId() + "_thn.jpg");
+
+				java.io.File thnFile =
+						new java.io.File(picturePath + java.io.File.separator + "Pic" + solver.getId() + "_thn.jpg");
 				if (thnFile.exists()) {
 					long size = thnFile.length();
 					if (thnFile.delete()) {
@@ -1343,9 +1358,9 @@ public class Users {
 					}
 				}
 			}
-			
+
 			if (totalFreed > 0) {
-				log.info(method + ": Freed " + FileUtils.byteCountToDisplaySize(totalFreed) + 
+				log.info(method + ": Freed " + FileUtils.byteCountToDisplaySize(totalFreed) +
 						" from solver pictures for user " + userId);
 			}
 		} catch (Exception e) {
@@ -1360,26 +1375,24 @@ public class Users {
 	 * - Thumbnail: /app/data/pictures/benchmarks/Pic{benchmarkId}_thn.jpg
 	 *
 	 * @param userId Id of user whose benchmark pictures are to be deleted.
+	 * @param benchmarks Preloaded benchmarks owned by the user.
 	 * @author Andres Caicedo (Storage Leak Fix)
 	 */
-	private static void deleteUsersBenchmarkPictures(int userId) {
+	private static void deleteUsersBenchmarkPictures(int userId, List<Benchmark> benchmarks) {
 		final String method = "deleteUsersBenchmarkPictures";
 		long totalFreed = 0;
-		
+
+		if (benchmarks == null || benchmarks.isEmpty()) {
+			log.debug(method + ": No benchmarks found for user " + userId);
+			return;
+		}
+
 		try {
-			// Get all benchmark IDs for this user
-			List<Benchmark> benchmarks = Benchmarks.getByUser(userId);
-			if (benchmarks == null || benchmarks.isEmpty()) {
-				log.debug(method + ": No benchmarks found for user " + userId);
-				return;
-			}
-			
 			String picturePath = R.getPicturePath() + java.io.File.separator + "benchmarks";
-			
+
 			for (Benchmark benchmark : benchmarks) {
-				// Delete original picture
-				java.io.File orgFile = new java.io.File(picturePath + java.io.File.separator + 
-														"Pic" + benchmark.getId() + "_org.jpg");
+				java.io.File orgFile =
+						new java.io.File(picturePath + java.io.File.separator + "Pic" + benchmark.getId() + "_org.jpg");
 				if (orgFile.exists()) {
 					long size = orgFile.length();
 					if (orgFile.delete()) {
@@ -1387,10 +1400,9 @@ public class Users {
 						log.debug(method + ": Deleted benchmark picture: " + orgFile.getPath());
 					}
 				}
-				
-				// Delete thumbnail
-				java.io.File thnFile = new java.io.File(picturePath + java.io.File.separator + 
-														"Pic" + benchmark.getId() + "_thn.jpg");
+
+				java.io.File thnFile =
+						new java.io.File(picturePath + java.io.File.separator + "Pic" + benchmark.getId() + "_thn.jpg");
 				if (thnFile.exists()) {
 					long size = thnFile.length();
 					if (thnFile.delete()) {
@@ -1399,9 +1411,9 @@ public class Users {
 					}
 				}
 			}
-			
+
 			if (totalFreed > 0) {
-				log.info(method + ": Freed " + FileUtils.byteCountToDisplaySize(totalFreed) + 
+				log.info(method + ": Freed " + FileUtils.byteCountToDisplaySize(totalFreed) +
 						" from benchmark pictures for user " + userId);
 			}
 		} catch (Exception e) {
