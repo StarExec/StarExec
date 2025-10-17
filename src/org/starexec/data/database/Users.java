@@ -8,6 +8,8 @@ import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
+import org.starexec.data.to.Benchmark;
+import org.starexec.data.to.Solver;
 import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.*;
