@@ -8,8 +8,6 @@ import org.starexec.data.to.DefaultSettings.SettingType;
 import org.starexec.data.to.Job;
 import org.starexec.data.to.Space;
 import org.starexec.data.to.User;
-import org.starexec.data.to.Solver;
-import org.starexec.data.to.Benchmark;
 import org.starexec.exceptions.StarExecSecurityException;
 import org.starexec.logger.StarLogger;
 import org.starexec.util.*;
@@ -21,12 +19,32 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Handles all database interaction for users
  */
 public class Users {
 	private static final StarLogger log = StarLogger.getLogger(Users.class);
+	
+	// Cache for isAdmin results to reduce database calls
+	private static final ConcurrentHashMap<Integer, CacheEntry<Boolean>> isAdminCache = new ConcurrentHashMap<>();
+	private static final long CACHE_DURATION_MS = TimeUnit.MINUTES.toMillis(5); // Cache for 5 minutes
+
+	private static class CacheEntry<T> {
+		final T value;
+		final long timestamp;
+
+		CacheEntry(T value) {
+			this.value = value;
+			this.timestamp = System.currentTimeMillis();
+		}
+
+		boolean isExpired(long duration) {
+			return (System.currentTimeMillis() - timestamp) > duration;
+		}
+	}
 
 	/**
 	 * Associates a user with a space (i.e. adds the user to the space)
@@ -1129,61 +1147,37 @@ public class Users {
 		log.debug("User with id=" + userToDeleteId + " is about to be deleted");
 		Connection con = null;
 		CallableStatement procedure = null;
-
-		// Preload all user-related entities before any deletion to avoid inconsistent state
-		List<Job> jobs = Jobs.getByUserId(userToDeleteId);
-		if (jobs == null) {
-			jobs = new ArrayList<>();
-		}
-
-		List<Solver> solvers = Solvers.getByUser(userToDeleteId);
-		if (solvers == null) {
-			solvers = new ArrayList<>();
-		}
-
-		List<Benchmark> benchmarks = Benchmarks.getByUser(userToDeleteId);
-		if (benchmarks == null) {
-			benchmarks = new ArrayList<>();
-		}
-
-		Space personalSpace = Spaces.getPersonalSpace(userToDeleteId);
-		boolean deletionSucceeded = false;
-
 		try {
-			// Delete the user from the database first using executeUpdate (not executeQuery)
-			// This ensures we don't delete files if the DB deletion fails
+			deleteUsersPrimitiveDirectories(userToDeleteId);
+
+			Space personalSpace = Spaces.getPersonalSpace(userToDeleteId);
+			if (personalSpace != null) {
+				log.info("Deleting personal space for user " + userToDeleteId + " with space id " + personalSpace.getId());
+				if (!Spaces.removeSubspace(personalSpace.getId())) {
+					log.warn("Failed to delete personal space for user " + userToDeleteId);
+				}
+			} else {
+				log.debug("No personal space found for user " + userToDeleteId);
+			}
+
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL DeleteUser(?)}");
 			procedure.setInt(1, userToDeleteId);
-			procedure.executeUpdate();
-			deletionSucceeded = true;
-			log.debug("DeleteUser stored procedure executed for user " + userToDeleteId);
+			procedure.executeQuery();
+			
+			// Invalidate cache after deletion
+			invalidateIsAdminCache(userToDeleteId);
+
+			log.debug("Successfully deleted user with id=" + userToDeleteId);
+			return true;
 		} catch (Exception e) {
 			log.error("deleteUser", e);
 		} finally {
 			Common.safeClose(con);
 			Common.safeClose(procedure);
 		}
-
-		if (!deletionSucceeded) {
-			log.debug("internal error trying to delete user with id = " + userToDeleteId);
-			return false;
-		}
-
-		// Delete the user's personal space if it exists (after successful DB deletion)
-		if (personalSpace != null) {
-			log.info("Deleting personal space for user " + userToDeleteId + " with space id " + personalSpace.getId());
-			if (!Spaces.removeSubspace(personalSpace.getId())) {
-				log.warn("Failed to delete personal space for user " + userToDeleteId);
-			}
-		} else {
-			log.debug("No personal space found for user " + userToDeleteId);
-		}
-
-		// Delete filesystem data using preloaded lists (after successful DB deletion)
-		deleteUsersPrimitiveDirectories(userToDeleteId, jobs, solvers, benchmarks);
-		log.debug("Successfully deleted user with id=" + userToDeleteId);
-		return true;
+		log.debug("internal error trying to delete user with id = " + userToDeleteId);
+		return false;
 	}
 
 	/**
@@ -1191,44 +1185,46 @@ public class Users {
 	 * This includes: solvers, benchmarks, jobs, and ALL pictures (user, solver, and benchmark).
 	 *
 	 * @param userId Id of user whose data is to be completely deleted.
-	 * @param jobs Preloaded jobs owned by the user.
-	 * @param solvers Preloaded solvers owned by the user.
-	 * @param benchmarks Preloaded benchmarks owned by the user.
 	 * @author Albert Giegerich, Andres Caicedo (comprehensive cleanup)
 	 */
-	private static void deleteUsersPrimitiveDirectories(int userId, List<Job> jobs, List<Solver> solvers, List<Benchmark> benchmarks) {
-		final String method = "deleteUsersPrimitiveDirectories";
-		log.info(method + ": Deleting ALL data for user with id=" + userId);
-
+	private static void deleteUsersPrimitiveDirectories(int userId) {
+		log.debug("Deleting primitive directories of user with id=" + userId);
 		deleteUsersSolverDirectory(userId);
 		deleteUsersBenchmarkDirectory(userId);
-		deleteUsersJobDirectories(userId, jobs);
+		deleteUsersJobDirectories(userId);
 		deleteUserPictures(userId);
+		
+		// Get solvers and benchmarks to delete their pictures
+		List<Solver> solvers = Solvers.getByUser(userId);
+		if (solvers == null) {
+			solvers = new ArrayList<>();
+		}
+		List<Benchmark> benchmarks = Benchmarks.getByUser(userId);
+		if (benchmarks == null) {
+			benchmarks = new ArrayList<>();
+		}
+		
 		deleteUsersSolverPictures(userId, solvers);
 		deleteUsersBenchmarkPictures(userId, benchmarks);
-
-		log.info(method + ": Completed deletion of all data for user with id=" + userId);
 	}
 
 	/**
 	 * Deletes the given user's job output directories.
 	 *
 	 * @param userId Id of user whose job directories are to be deleted.
-	 * @param jobs Preloaded jobs owned by the user whose directories should be removed.
 	 * @author Albert Giegerich
 	 */
-	private static void deleteUsersJobDirectories(int userId, List<Job> jobs) {
+	private static void deleteUsersJobDirectories(int userId) {
 		final String method = "deleteUsersJobDirectories";
 		log.entry(method);
-
-		if (jobs == null || jobs.isEmpty()) {
+		List<Job> jobs = Jobs.getByUserId(userId);
+		if (jobs == null) {
 			log.debug(method + ": No jobs found for user " + userId);
 			return;
 		}
-
 		for (Job job : jobs) {
 			final String jobDirectory = Jobs.getDirectory(job.getId());
-			log.debug(method + ": Deleting job directory: " + jobDirectory);
+			log.debug(method + ": User is being deleted, deleting job directory with path: " + jobDirectory);
 			Util.safeDeleteDirectory(jobDirectory);
 		}
 	}
@@ -1240,9 +1236,7 @@ public class Users {
 	 * @author Albert Giegerich
 	 */
 	private static void deleteUsersSolverDirectory(int userId) {
-		final String method = "deleteUsersSolverDirectory";
 		String pathToSolverDirectory = R.getSolverPath() + "/" + userId;
-		log.debug(method + ": Deleting solver directory: " + pathToSolverDirectory);
 		Util.safeDeleteDirectory(pathToSolverDirectory);
 	}
 
@@ -1253,9 +1247,7 @@ public class Users {
 	 * @author Albert Giegerich
 	 */
 	private static void deleteUsersBenchmarkDirectory(int userId) {
-		final String method = "deleteUsersBenchmarkDirectory";
 		String pathToBenchmarkDirectory = R.getBenchmarkPath() + "/" + userId;
-		log.debug(method + ": Deleting benchmark directory: " + pathToBenchmarkDirectory);
 		Util.safeDeleteDirectory(pathToBenchmarkDirectory);
 	}
 
@@ -1422,19 +1414,55 @@ public class Users {
 	}
 
 	/**
-	 * Checks to see whether the given user is an admin
+	 * Checks to see whether the given user is an admin (cached version)
 	 *
 	 * @param userId
 	 * @return True if the user is an admin and false otherwise (including if there was an error)
 	 */
 	public static boolean isAdmin(int userId) {
-		User u = Users.get(userId);
-		return u != null && u.getRole().equals(R.ADMIN_ROLE_NAME);
+		CacheEntry<Boolean> entry = isAdminCache.get(userId);
+		if (entry != null && !entry.isExpired(CACHE_DURATION_MS)) {
+			return entry.value;
+		}
+
+		Connection con = null;
+		try {
+			con = Common.getConnection();
+			boolean isAdmin = isAdmin(con, userId);
+			isAdminCache.put(userId, new CacheEntry<>(isAdmin));
+			return isAdmin;
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		} finally {
+			Common.safeClose(con);
+		}
+		return false;
 	}
 
 	public static boolean isAdmin(Connection con, int userId) {
+		CacheEntry<Boolean> entry = isAdminCache.get(userId);
+		if (entry != null && !entry.isExpired(CACHE_DURATION_MS)) {
+			return entry.value;
+		}
+
 		User u = Users.get(con, userId);
-		return u != null && u.getRole().equals(R.ADMIN_ROLE_NAME);
+		boolean isAdmin = u != null && u.getRole().equals(R.ADMIN_ROLE_NAME);
+		if (entry == null || entry.value != isAdmin) {
+			log.info("Checking isAdmin for userId=" + userId + ", result=" + isAdmin);
+		}
+		isAdminCache.put(userId, new CacheEntry<>(isAdmin));
+		return isAdmin;
+	}
+
+	/**
+	 * Invalidates the isAdmin cache for a specific user.
+	 * Should be called whenever a user's role changes or user is deleted.
+	 *
+	 * @param userId The user ID whose cache entry should be invalidated
+	 */
+	public static void invalidateIsAdminCache(int userId) {
+		isAdminCache.remove(userId);
+		log.debug("Invalidated isAdmin cache for userId=" + userId);
 	}
 
 	/**
@@ -1560,6 +1588,9 @@ public class Users {
 			procedure.setInt(1, userId);
 			procedure.setString(2, role);
 			procedure.executeUpdate();
+			
+			// Invalidate cache after role change
+			invalidateIsAdminCache(userId);
 
 			return true;
 		} catch (Exception e) {
