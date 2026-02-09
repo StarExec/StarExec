@@ -217,7 +217,14 @@ public class GridEngineBackend implements Backend{
     		String nodeResults = Util.executeCommand(NODE_LIST_COMMAND);
     		log.trace("getWorkerNodes got the following results");
     		log.trace(nodeResults);
-    		return nodeResults.split(System.getProperty("line.separator"));
+    		String[] lines = nodeResults.split(System.getProperty("line.separator"));
+    		// Normalize node names: take first part before dot (handle FQDNs)
+    		for (int i = 0; i < lines.length; i++) {
+    			if (lines[i] != null && !lines[i].isEmpty()) {
+    				lines[i] = lines[i].split("\\.")[0];
+    			}
+    		}
+    		return lines;
     	} catch (Exception e) {
     		log.error(e.getMessage(),e);
     	} finally {
@@ -267,7 +274,9 @@ public class GridEngineBackend implements Backend{
     		while(matcher.find()) {
     			// Split apart the key from the value
     			String[] queueNode = matcher.group().split("@");
-    			nodesToQueuesMap.put(queueNode[1], queueNode[0]);
+    			// Normalize node name: take first part before dot (handle FQDNs)
+    			String nodeName = queueNode[1].split("\\.")[0];
+    			nodesToQueuesMap.put(nodeName, queueNode[0]);
     		}
 
     		return nodesToQueuesMap;
