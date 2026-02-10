@@ -4,9 +4,7 @@
 DROP PROCEDURE IF EXISTS UpdateJobPairStatus //
 CREATE PROCEDURE UpdateJobPairStatus(IN _pairId INT, IN _statusCode INT)
 	BEGIN
-		UPDATE job_pairs
-		SET status_code = _statusCode
-		WHERE id = _pairId;
+		CALL UpdatePairStatus(_pairId, _statusCode);
 	END //
 
 DROP PROCEDURE IF EXISTS UpdateJobSpaceId //
@@ -114,12 +112,21 @@ DROP PROCEDURE IF EXISTS UpdatePairStatus //
 CREATE PROCEDURE UpdatePairStatus(IN _jobPairId INT, IN _statusCode TINYINT)
 	BEGIN
 		UPDATE job_pairs SET status_code=_statusCode WHERE id=_jobPairId ;
-		IF (_statusCode>6 AND _statusCode<19) THEN
+		-- List of terminal status codes (ones that mean the pair is finished and won't be updated further)
+		-- 7-18: Normal completion, resource limits, and common errors
+		-- 21: Killed
+		-- 23: Not reached
+		-- 24: Benchmark dependency missing
+		-- 25: Pre-processor error
+		-- 26: Post-processor error
+		IF ((_statusCode>6 AND _statusCode<19) OR _statusCode IN (21, 23, 24, 25, 26)) THEN
 			REPLACE INTO job_pair_completion (pair_id) VALUES (_jobPairId);
 
 			-- this checks to see if the job is done and sets its completion id if so.
 			-- It checks by trying to find exactly 1 pair (for efficiency) that is not yet complete
-			IF (SELECT COUNT(*) FROM (select id from job_pairs WHERE job_id=(SELECT job_id FROM job_pairs WHERE job_pairs.id=_jobPairId) AND (status_code<7 || status_code>18) LIMIT 1) as theCount)=0 THEN
+			-- A pair is "not yet complete" if its status is Pending (1), Enqueued (2), Running (4), 
+			-- Processing Results (19), Paused (20), or Awaiting post-processor (22).
+			IF (SELECT COUNT(*) FROM (SELECT id FROM job_pairs WHERE job_id=(SELECT job_id FROM job_pairs WHERE job_pairs.id=_jobPairId) AND (status_code IN (1, 2, 4, 19, 20, 22)) LIMIT 1) as theCount)=0 THEN
 				UPDATE jobs SET completed=CURRENT_TIMESTAMP WHERE id=(SELECT job_id FROM job_pairs WHERE job_pairs.id=_jobPairId);
 			END IF;
 		END IF;
