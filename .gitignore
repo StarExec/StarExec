@@ -1,3 +1,4 @@
+**/*.o
 *.class
 *.css.map
 *.war
@@ -93,3 +94,5 @@ Thumbs.db
 
 # /src/org/starexec/test/junit/
 /src/org/starexec/test/junit/test.java
+
+/src/org/starexec/config/sge/RunSolverSource/runsolver
