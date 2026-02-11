@@ -1150,18 +1150,20 @@ public class Users {
 		Connection con = null;
 		CallableStatement procedure = null;
 		try {
-			deleteUsersPrimitiveDirectories(userToDeleteId);
-
+			// Step 1: Delete personal space first to clean up permissions
+			// This must succeed before we delete the user to avoid orphan permissions
 			Space personalSpace = Spaces.getPersonalSpace(userToDeleteId);
 			if (personalSpace != null) {
 				log.info("Deleting personal space for user " + userToDeleteId + " with space id " + personalSpace.getId());
 				if (!Spaces.removeSubspace(personalSpace.getId())) {
-					log.warn("Failed to delete personal space for user " + userToDeleteId);
+					log.error("Failed to delete personal space for user " + userToDeleteId + " - aborting user deletion to avoid orphan permissions");
+					return false;
 				}
 			} else {
 				log.debug("No personal space found for user " + userToDeleteId);
 			}
 
+			// Step 2: Delete user from database (cascades to related tables)
 			con = Common.getConnection();
 			procedure = con.prepareCall("{CALL DeleteUser(?)}");
 			procedure.setInt(1, userToDeleteId);
@@ -1169,6 +1171,10 @@ public class Users {
 			
 			// Invalidate cache after deletion
 			invalidateIsAdminCache(userToDeleteId);
+
+			// Step 3: Only delete filesystem after successful database deletion
+			// This ensures we don't leave orphan directories if DB deletion fails
+			deleteUsersPrimitiveDirectories(userToDeleteId);
 
 			log.debug("Successfully deleted user with id=" + userToDeleteId);
 			return true;

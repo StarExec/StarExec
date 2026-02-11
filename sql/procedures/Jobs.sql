@@ -208,8 +208,8 @@ CREATE PROCEDURE GetJobPairOverview(IN _jobId INT)
 		SELECT * FROM (
 			(SELECT total_pairs AS totalPairs FROM jobs WHERE id=_jobId) AS a, -- Gets the total number of pairs
 			(SELECT COUNT(*) AS completePairs FROM job_pairs WHERE job_id=_jobId AND status_code=7) AS b, -- Gets number of pairs with COMPLETE status codes
-			(SELECT COUNT(*) AS pendingPairs FROM job_pairs WHERE job_id=_jobId AND (status_code BETWEEN 1 AND 6 OR status_code=22)) AS c, -- Gets number of pairs with non complete and non error status codes
-			(SELECT COUNT(*) AS errorPairs FROM job_pairs WHERE job_id=_jobId AND (status_code BETWEEN 8 AND 17 OR status_code=0)) AS d, -- Gets number of UNKNOWN or ERROR status code pairs
+			(SELECT COUNT(*) AS pendingPairs FROM job_pairs WHERE job_id=_jobId AND (status_code BETWEEN 1 AND 6 OR status_code=22 OR status_code=19)) AS c, -- Gets number of pairs with non complete and non error status codes
+			(SELECT COUNT(*) AS errorPairs FROM job_pairs WHERE job_id=_jobId AND (status_code BETWEEN 8 AND 17 OR status_code=0 OR status_code BETWEEN 24 AND 26)) AS d, -- Gets number of UNKNOWN or ERROR status code pairs
 			(SELECT TIMESTAMPDIFF( -- Gets time difference between earliest completed pair's start time and latest completed pair's end time
 				MICROSECOND,
 				(SELECT MIN(start_time) FROM job_pairs WHERE job_id=_jobId AND status_code=7),
@@ -763,7 +763,7 @@ CREATE PROCEDURE GetQueueJobsById(IN _queueId INT)
 			(SELECT distinct job_id FROM job_pairs WHERE status_code BETWEEN 1 AND 6)
 		  AND NOT paused
 		  AND NOT killed
-		ORDER BY created DESC;
+		  ORDER BY created DESC;
 	END //
 
 -- Returns the number of jobs in the entire system
