@@ -13,7 +13,7 @@
 	</target>
 
 	<target name="css" depends="css-properties">
-		<exec executable="sass" failonerror="true">
+		<exec executable="/usr/local/bin/sass" failonerror="true">
 			<arg line="--style compressed" />
 			<arg line="--update ${css-input-dir}:${css-output-dir}" />
 		</exec>
@@ -21,7 +21,7 @@
 
 	<target name="format-css" depends="css-properties">
 		<!-- autoformat all SCSS files -->
-		<exec executable="sass-convert" failonerror="true">
+		<exec executable="/usr/local/bin/sass-convert" failonerror="true">
 			<arg line="--indent t" />
 			<arg value="-i" />
 			<arg value="-R" />
