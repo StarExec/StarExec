@@ -1,26 +1,24 @@
 <html>
-<header><nav>
-<!--
-$ tree /home/tomcat/StarExec-Deploy/web-docs
-./
-├── Home.html
-├── index.html -> Home.html
-├── Installation.html
-├── Maintenance.html
-├── Passwords.txt
-├── SGE
-│   ├── index.html
-│   ├── se_sge_functions.html
-│   ├── se_sge_install.html
-│   └── se_sge_jobscript.html
-└── XCAT
-    ├── index.html
-    ├── se_xcat_config.html
-    ├── se_xcat_installation.html
-    ├── se_xcat_mac_addresses.html
-    ├── se_xcat_mac_discovery.html
-    └── se_xcat_troubleshoot.html
-<div>
+<head>
+<title>SGE &#8211; Install &#8211; StarExec Miami</title>
+<style>
+  /* Horizontal Nav Bar ***************/
+  ul {list-style: none;padding: 0px;margin: 0px;}
+  ul li {display: block;position: relative;float: right;}
+  li ul {display: none;}
+  ul li a {display: block;background: #f47321;padding: 5px;text-decoration: none;white-space: nowrap;color: #fff;}
+  ul li a:hover {background: #005030;}
+  li:hover ul {display: block; position: absolute;}
+  li:hover li {float: none;}
+  li:hover a {background: #005030;}
+  li:hover li a:hover {background: #f47321;}
+  #menu li ul li {border-top: 0px;}
+
+</style>
+
+</head>
+
+<div class="menu">
 <ul>
 <li><a href="https://starexec.ccs.miami.edu">StarExec</a></li>
 <li><a href="https://starexec.ccs.miami.edu/docs">Docs</a>
@@ -32,40 +30,27 @@ $ tree /home/tomcat/StarExec-Deploy/web-docs
 </li>
 <li><a href="/docs/xcat">xCAT</a>
 <ul>
-<li><a href="se_xcat_installation.html">Installation</a></li>
-<li><a href="se_xcat_config.html">Configuration</a></li>
-<li><a href="se_xcat_mac_addresses.html">MAC Addresses</a></li>
-<li><a href="se_xcat_mac_discovery.html">Node Discovery</a></li>
-<li><a href="se_xcat_troubleshoot.html">Troubleshooting</a></li>
+<li><a href="/docs/xcat/se_xcat_installation.html">Installation</a></li>
+<li><a href="/docs/xcat/se_xcat_config.html">Configuration</a></li>
+<li><a href="/docs/xcat/se_xcat_mac_addresses.html">MAC Addresses</a></li>
+<li><a href="/docs/xcat/se_xcat_mac_discovery.html">Node Discovery</a></li>
+<li><a href="/docs/xcat/se_xcat_troubleshoot.html">Troubleshooting</a></li>
 </ul>
 </li>
 <li><a href="/docs/sge">SGE</a>
 <ul>
-<li><a href="se_sge_jobscript.html">SGE &ndash; jobscript</a></li>
-<li><a href="se_sge_functions.html">SGE &ndash; functions.bash</a></li>
+<li><a href="/docs/sge/se_sge_jobscript.html">SGE &ndash; jobscript</a></li>
+<li><a href="/docs/sge/se_sge_functions.html">SGE &ndash; functions.bash</a></li>
 </ul>
 </li>
 </ul>
 </div>
-</nav>
--->
-</header>
 
-<div>
-<div>
-<div>
-<div>
-<div>
-<div>
-<article><header>
-<h1>SGE</h1>
-</header>
-<div>
 <h1>Install SGE (Son of Grid Engine)</h1>
 <p>Installation instructions using Loveshack&rsquo;s CentOS 7 SGE Repo. The University of Iowa uses&nbsp;Loveshack&rsquo;s SGE Repo. Iowa runs SGE 8.1.8. Unfortunately, 8.1.8 for CentOS 7 is no longer available on the Loveshack repo. We currently run Loveshack 8.1.9-2.</p>
 <p>We have tried SGE 8.1.8 and 8.1.9-2 builds from source. We have also tried both the interactive and graphical installs for both the builds and repo installs. Below is our current setup.</p>
 <p>Run the following commands on the cluster headnode.</p>
-<pre><code>
+<pre><PRE>
 # Create the Loveshack&rsquo;s CentOS7 SGE Repo
 [root@se-m1 ~]# cat &gt; /etc/yum.repos.d/loveshack-SGE.repo &lt;&lt; EOL
 [loveshack-SGE]
@@ -84,20 +69,20 @@ EOL
 [root@se-m1 ~]# yum install epel-release -y # Already installed
 [root@se-m1 ~]# yum install --downloadonly --downloaddir=/cluster/rpms/ gridengine* -y
 [root@se-m1 ~]# yum localinstall /cluster/rpms/* -y
-</code></pre>
+</PRE>
 <p>The loveshack SGE packages install files to /opt/sge/. We will copy this directory to /cluster/gridengine-8.1.9-2/. The /cluster/ directory is exported to the compute nodes over NFS.</p>
 <p>We download the rpms so we can reproduce, should the third party repo not be available.</p>
 <p>We will install the gridengine, gridengine-execd, and gridengine-guiins packages on all the compute nodes in order to install all SGE dependencies on all the nodes.</p>
 <p>For the starexec-dev we use the same commands, except the dev cluseter currently has two compute nodes, d001, d002.</p>
 <p>On Dev</p>
-<pre><code>
+<pre><PRE>
  yum localinstall /cluster/rpms/* -y
-</code></pre>
-<pre><code>
+</PRE>
+<pre><PRE>
 [root@se-m1 ~]# for n in {001..032}; do scp /etc/yum.repos.d/loveshack-SGE.repo n${n}:/etc/yum.repos.d/ ; done
 [root@se-m1 ~]# for n in {001..032}; do ssh n${n} yum install -y epel-release ; done
-</code></pre>
-<pre><code>
+</PRE>
+<pre><PRE>
 [root@se-m1 ~]# for n in {001..032}; do ssh n${n} yum install -y gridengine gridengine-execd gridengine-guiinst ; done
 [root@se-m1 cluster]# rsync -av /opt/sge/ /cluster/gridengine-8.1.9-2/
 [root@se-m1 cluster]# chown -R sgeadmin:sgeadmin /cluster/gridengine-8.1.9-2
@@ -113,23 +98,37 @@ EOL
 [root@se-m1 gridengine-8.1.9-2]# [pdavila@se-m1 ~]$ ln -s /cluster/gridengine-8.1.9-2 /cluster/gridengine-8.1.8
 # Run the Graphical SGE Installer
 [root@se-m1 gridengine-8.1.9-2]# ./start_gui_installer
-</code></pre>
-<p><img src="http://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_01-1024x791.png" sizes="(max-width: 648px) 100vw, 648px" srcset="https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_01-1024x791.png 1024w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_01-300x232.png 300w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_01-768x593.png 768w" alt="" width="648" height="501" /><img src="http://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_02-1024x791.png" sizes="(max-width: 648px) 100vw, 648px" srcset="https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_02-1024x791.png 1024w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_02-300x232.png 300w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_02-768x593.png 768w" alt="" width="648" height="501" /><img src="http://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_03-1024x791.png" sizes="(max-width: 648px) 100vw, 648px" srcset="https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_03-1024x791.png 1024w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_03-300x232.png 300w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_03-768x593.png 768w" alt="" width="648" height="501" /><img src="http://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_04-1024x791.png" sizes="(max-width: 648px) 100vw, 648px" srcset="https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_04-1024x791.png 1024w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_04-300x232.png 300w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_04-768x593.png 768w" alt="" width="648" height="501" /><img src="http://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_05-1024x791.png" sizes="(max-width: 648px) 100vw, 648px" srcset="https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_05-1024x791.png 1024w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_05-300x232.png 300w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_05-768x593.png 768w" alt="" width="648" height="501" /><img src="http://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_06-1024x791.png" sizes="(max-width: 648px) 100vw, 648px" srcset="https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_06-1024x791.png 1024w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_06-300x232.png 300w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_06-768x593.png 768w" alt="" width="648" height="501" /><img src="http://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_07-1024x1006.png" sizes="(max-width: 648px) 100vw, 648px" srcset="https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_07-1024x1006.png 1024w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_07-300x295.png 300w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_07-768x754.png 768w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_07-60x60.png 60w" alt="" width="648" height="637" /><img src="http://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_08-1024x791.png" sizes="(max-width: 648px) 100vw, 648px" srcset="https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_08-1024x791.png 1024w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_08-300x232.png 300w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_08-768x593.png 768w" alt="" width="648" height="501" /><img src="http://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_09-1010x1024.png" sizes="(max-width: 648px) 100vw, 648px" srcset="https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_09-1010x1024.png 1010w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_09-296x300.png 296w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_09-768x778.png 768w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_09-60x60.png 60w" alt="" width="648" height="657" /><img src="http://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_10-1010x1024.png" sizes="(max-width: 648px) 100vw, 648px" srcset="https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_10-1010x1024.png 1010w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_10-296x300.png 296w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_10-768x778.png 768w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_10-60x60.png 60w" alt="" width="648" height="657" /><img src="http://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_11-1024x787.png" sizes="(max-width: 648px) 100vw, 648px" srcset="https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_11-1024x787.png 1024w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_11-300x231.png 300w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_11-768x590.png 768w" alt="" width="648" height="498" /><img src="http://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_12-1024x791.png" sizes="(max-width: 648px) 100vw, 648px" srcset="https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_12-1024x791.png 1024w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_12-300x232.png 300w, https://starexec.ccs.miami.edu/docs/wp-content/uploads/2018/08/sge_gui_install_12-768x593.png 768w" alt="" width="648" height="501" /></p>
+</PRE>
+<p>
+<img src="/docs/images/sge_gui_install_01.png" alt="" width="648" height="501" />
+<img src="/docs/images/sge_gui_install_02.png" alt="" width="648" height="501" />
+<img src="/docs/images/sge_gui_install_03.png" alt="" width="648" height="501" />
+<img src="/docs/images/sge_gui_install_04.png" alt="" width="648" height="501" />
+<img src="/docs/images/sge_gui_install_05.png" alt="" width="648" height="501" />
+<img src="/docs/images/sge_gui_install_06.png" alt="" width="648" height="501" />
+<img src="/docs/images/sge_gui_install_07.png" alt="" width="648" height="501" />
+<img src="/docs/images/sge_gui_install_08.png" alt="" width="648" height="501" />
+<img src="/docs/images/sge_gui_install_09.png" alt="" width="648" height="501" />
+<img src="/docs/images/sge_gui_install_10.png" alt="" width="648" height="501" />
+<img src="/docs/images/sge_gui_install_11.png" alt="" width="648" height="501" />
+<img src="/docs/images/sge_gui_install_12.png" alt="" width="648" height="501" />
+</p>
+
 <h1>Uninstall SGE (Son of Grid Engine)</h1>
-<pre><code>[root@se-m1 ~]# cd /opt/sge
+<pre><PRE>[root@se-m1 ~]# cd /opt/sge
 [root@se-m1 sge]# ./inst_sge -ux -host "n001 n002 n003 n004 n005 n006 n007 n008 n009 n010 n011 n012 n013 n014 n015 n016 n017 n018 n019 n020 n021 n022 n023 n024 n025 n026 n027 n028 n029 n030 n031 n032"
 [root@se-m1 sge]# ./inst_sge -um
 [root@se-m1 sge]# for n in {001..032}; do ssh n${n} rm -f /etc/profile.d/settings.sh; done
 [root@se-m1 sge]# rm -f /etc/profile.d/settings.sh
 [root@se-m1 sge]# rm -f /etc/profile.d/sge.sh
-[root@se-m1 sge]# cd ..; mv sge sge-build</code></pre>
+[root@se-m1 sge]# cd ..; mv sge sge-build</PRE>
 <p># If you used a repo to install gridengine, remove the packages<br /> [root@se-m1 ~]# yum remove gridengine*</p>
 <p># Cleanup /root/.bashrc on compute nodes<br /> [root@se-m1 cluster]# for n in {001..032}; do scp ~/.bashrc n${n}: ; done</p>
 <p>Source: <a href="https://docs.oracle.com/cd/E19957-01/820-0697/eoxsu/index.html">https://docs.oracle.com/cd/E19957-01/820-0697/eoxsu/index.html</a></p>
 <h2>Useful troubleshooting commands</h2>
-<pre><code>
+<pre><PRE>
 To directly modify the file:
  sed -i '/pattern to match/d' /path/file
-</code></pre>
-</div>
+</PRE>
+
 </html>

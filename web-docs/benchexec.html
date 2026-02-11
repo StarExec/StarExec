@@ -1,0 +1,47 @@
+<HTML>
+<HEAD>
+<TITLE>BenchExec Installation</TITLE>
+</HEAD>
+<BODY>
+<HR> <!-- ------------------------------------------------------------------------------------- -->
+<HR>
+<H1>Benchexec Installation Instructions</H1>
+<HR>
+<ol>
+<li>
+I'm building Python3.9 from source in the tomcat home folder like this:<br>
+<pre>
+sudo yum install gcc openssl-devel bzip2-devel libffi-devel zlib-devel \
+libsqlite3x-devel sqlite-devel xz-devel tk-devel uuid-devel readline-devel \
+libdb-devel gdbm-devel ncurses-devel
+wget https://www.python.org/ftp/python/3.9.6/Python-3.9.6.tgz
+tar -xvf Python-3.9.6.tgz
+./configure 
+make
+sudo make altinstall
+</pre>
+</li>
+
+<li>
+After the altinstall line above, we have /usr/local/bin/python3.9 and can pip install benchexec:<br>
+sudo /usr/local/bin/python3.9 -m pip install benchexec
+</li>
+<br>
+<li>Then we can setup the Cgroups stuff:<br>
+see <a href="https://github.com/StarExecMiami/StarExec/blob/a78a50ab6851c2e0a7d9b9bc1b014013830d0ae7/src/org/starexec/config/sge/jobscript#L335C1-L343C1">here</a>
+and <a href="https://github.com/sosy-lab/benchexec/blob/main/doc/INSTALL.md#setting-up-cgroups-v1-on-machines-with-systemd">here</a>:<br>
+<pre>
+sudo groupadd benchexec
+sudo usermod -a -G benchexec tomcat
+sudo usermod -a -G benchexec sandbox
+sudo usermod -a -G benchexec sandbox2
+sudo curl -o /etc/systemd/system/benchexec-cgroup.service https://raw.githubusercontent.com/sosy-lab/benchexec/main/debian/benchexec-cgroup.service
+systemctl daemon-reload; systemctl enable --now benchexec-cgroup 
+</pre>
+</li>
+
+</ol>
+
+<HR> <!-- ------------------------------------------------------------------------------------- -->
+</BODY>
+</HTML>

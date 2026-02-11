@@ -6,50 +6,237 @@
 <HR> <!-- ------------------------------------------------------------------------------------- -->
 <H1>Everything We Need to Know and Do to Maintain StarExec</H1>
 <HR> <!-- ------------------------------------------------------------------------------------- -->
-<H2>Routine StarExec Maintenance</H2>
+<H2>Updating this Documentation</H2>
+
+<UL>
+<LI> First ssh into the head node as your user. 
+     You can then switch users to become the tomcat user which hosts everything using
+<LI> <TT>sudo su - tomcat </TT><BR>
+     You’ll have to enter the long weird tomcat user password at this point.
+<LI> As tomcat, you’ll find the main StarExec code directory under "~/StarExec-Deploy"<BR>
+     <TT>vim StarExec-Deploy/web-docs/maintenance.html</TT>
+</UL>
+<P>
+<HR> <!-- ------------------------------------------------------------------------------------- -->
+<H2>Redeploying StarExec</H2>
 
 My (Jack’s) experience maintaining StarExec on the head node has mostly consisted of 
 “re-deploying” StarExec after code changes and restarting Apache (web server) or Apache Tomcat 
 (java web framework server that normal apache forwards to) when they’re down.
+<UL>
+<LI> First ssh into the head node as your user. 
+     You can then switch users to become the tomcat user which hosts everything using
+<LI> <TT>sudo su - tomcat </TT><BR>
+     You’ll have to enter the long weird tomcat user password at this point.
 <P>
-First ssh into the head node as your user. 
-You can then switch users to become the tomcat user which hosts everything using
-<PRE>
-sudo su - tomcat
-</PRE>
-(You’ll have to enter the long weird tomcat user password at this point.)
-<P>
-As tomcat, you’ll find the main StarExec code directory under “~/StarExec-deploy”:
-<PRE>
-cd ~/StarExec-deploy
-</PRE>
+<LI> As tomcat, you’ll find the main StarExec code directory under “~/StarExec-Deploy”:
+     <PRE>
+cd ~/StarExec-Deploy </PRE>
 <P> 
-You can rebuild and redeploy using the following incantation from within that directory:
-<PRE>
-ant build -buildfile build.xml; script/soft-deploy.sh
-</PRE>
+<LI> You can rebuild and redeploy using the following incantation from within that directory:
+     <PRE>
+ant build -buildfile build.xml; script/soft-deploy.sh </PRE>
 <P> 
-If ever there is a problem with tomcat, it would normally be restarted using 
-<PRE>
-sudo systemctl restart tomcat7
-</PRE>
-I don’t have  sudo privileges to run this, however, so instead you can run the following:
-<PRE>
+<LI> If ever there is a problem with tomcat, it would normally be restarted using 
+     <PRE>
+sudo /usr/bin/systemctl status tomcat7 
+sudo /usr/bin/systemctl stop tomcat7
+sudo /usr/bin/systemctl status tomcat7 
+sudo /usr/bin/systemctl start tomcat7 
+sudo /usr/bin/systemctl status tomcat7 </PRE>
+     Note that you have to use the full path <TT>/usr/bin/systemctl</TT>.
+     We used to offer this alternative, but Pedro says to not use it:
+     <PRE>
 /project/apache-tomcat-7/bin/shutdown.sh
-/project/apache-tomcat-7/bin/startup.sh
-</PRE>
+/project/apache-tomcat-7/bin/startup.sh </PRE>
 <P> 
-To see the state of SGE queues:
-<PRE>
-qstat -f | less 
-</PRE>
+<LI> To see the state of SGE queues:
+     <PRE>
+qstat -f | less </PRE>
+</UL>
+
 <P> 
-To remove an error flag (E) from an SGE queue, as user ‘jam771’ (or any other user with the 
-privilege to run this) run the following, for example:
-<PRE>
-sudo qmod -c all.q@n001.cluster.edu 
-</PRE>
+<HR> <!-- ------------------------------------------------------------------------------------- -->
+<H2>Fixing Compute Nodes and Database</H2>
+
+<UL>
+<LI> To remove an error flag (E) from an SGE queue, as user ‘jam771’ (or any other user with the 
+     privilege to run this) run the following, for example:
+     <PRE>
+sudo qmod -c all.q@n001.cluster.edu </PRE>
 <P>
+<LI> Restarting frozen compute nodes
+     <PRE>
+#----kill all "dr" and "Eqw" jobs
+qstat -u '*' | awk '$5 == "dr" {print $1}' | xargs -I {} qdel -f {}
+#----restart SGE engine on the nodes
+sudo su -
+root> for n in {001..032}; do echo n${n}; ssh -o ConnectTimeout=1 n${n} service sgeexecd.p6444 restart; done
+     </PRE>
+<P>
+<LI> Cleaning the SGE queues
+     <PRE>
+Disable or enable SGE (Son of Grid Engine) node on StarExec
+1. List all nodes in queue
+> /cluster/gridengine-8.1.9-2/bin/lx-amd64/qconf -sel
+...
+n030.cluster.edu
+n031.cluster.edu
+n032.cluster.edu
+se-m1
+2. Disable nodes
+sudo su -
+root> for n in {001..032}; do echo n${n}; /cluster/gridengine-8.1.9-2/bin/lx-amd64/qmod -d all.q@n${n}; done
+root@se-m1 changed state of all.q@n032.cluster.edu (disabled)
+3. Confirm node is disabled (states contains "d")
+> qstat -f | egrep -A 1 "states|n030|n032"
+queuename qtype resv/used/tot. load_avg arch states
+ State Code  Meaning
+ u           Unknown (execd not responding)
+ a           Alarm state (load threshold exceeded)
+ d           Disabled (admin disabled via qmod -d)
+ s           Suspended (queue manually suspended)
+ E           Error (comm failure, daemon down, etc)
+ -           OK (enabled and available) 
+4. Enable node (I disabled n030 again after confirming .)
+sudo su -
+root> for n in {001..032}; do echo n${n}; /cluster/gridengine-8.1.9-2/bin/lx-amd64/qmod -e all.q@n${n}; done
+5. Confirm node is enabled (states contains "-")
+> qstat -f 
+6. Optionally restart the SGE master
+> sudo service sgemaster.p6444 restart
+</PRE>
+</UL>
+
+<P>
+<HR> <!-- ------------------------------------------------------------------------------------- -->
+<H2>Cleaning the Database</H2>
+
+0th, you want to delete the old jobs (/starexec/starexec_db_cleanup/delete_a_users_jobs.py)<br>
+1st, you have to stop starexec (/project/apache-tomcat-7/bin/shutdown.sh)<br>
+2nd, you have to export the database contents to a file:
+<pre>
+mysqldump -u se_admin -pdfsdf34RFerfg3TFGRfrF3edFVg12few2 starexec > /starexec/data_dir/jacks_db_backup2
+</pre> 
+3rd, kill the database service (service mariadb stop)<br>
+4th, you should backup the /var/lib/mysql/ibdata1 and possibly other files there.<br>
+I think now you just delete the ibdata1 and other files to make mariadb start from a blank slate...but maybe I'm wrong about this part...<br>
+5th, restart mariadb (service mariadb start)<br>
+6th, restore your earlier sql backup: (mysql < /starexec/db_backup/mysql_backup_2025-5-5.sql)<br>
+7th, restart all your services and redeploy.
+<HR> <!-- ------------------------------------------------------------------------------------- -->
+<H2>Certificate Maintenance</H2>
+
+<UL>
+<LI> Installing Starexec Certificate
+     <PRE>
+## 2024/11/04: Switched back to Certbot Certificate
+sudo vim /opt/rh/httpd24/root/etc/httpd/conf.d/ssl.conf
+
+  #SSLCertificateFile /etc/pki/tls/certs/starexec_ccs_miami_edu_cert.cer
+  #SSLCertificateKeyFile /etc/pki/tls/private/starexec_ccs_miami_edu.key
+  #SSLCertificateChainFile /etc/pki/tls/certs/starexec_ccs_miami_edu_interm.cer
+  Include /etc/letsencrypt/options-ssl-apache.conf
+  SSLCertificateFile /etc/letsencrypt/live/starexec.ccs.miami.edu/fullchain.pem
+  SSLCertificateKeyFile /etc/letsencrypt/live/starexec.ccs.miami.edu/privkey.pem
+
+sudo systemctl restart httpd24-httpd.service
+sudo crontab -l
+  # Renew certificate every month
+  0  0,12 *  *  * /bin/certbot renew --post-hook "/bin/systemctl reload httpd24-httpd.service"
+    </PRE>
+     Update manually if certbot fails
+     <PRE>
+sudo su
+/bin/certbot renew
+/bin/systemctl reload httpd24-httpd.service
+     </PRE>
+     All together now ...
+     <PRE>
+sudo su
+/bin/certbot renew --post-hook "/bin/systemctl reload httpd24-httpd.service"
+     </PRE>
+<P>
+<LI> Request IDSC renew the certificate and update the certificates on the server
+    <PRE>
+# - Optional: We can request a new InCommon Certificate from UMIT.  If so we would also need to update the key /etc/pki/tls/private/starexec_ccs_miami_edu.key
+
+# Update starexec_ccs_miami_edu_cert.cer and starexec_ccs_miami_edu_interm.cer in /etc/pki/tls/certs/
+
+# - Confirm the certificate and key match 
+# New certificate
+openssl x509 -modulus -noout -in ~/starexec_ccs_miami_edu_cert.cer| openssl md5
+# Old certificate
+openssl x509 -modulus -noout -in /etc/pki/tls/certs/starexec_ccs_miami_edu_cert.cer| openssl md5
+# Key
+openssl rsa -modulus -noout -in /etc/pki/tls/private/starexec_ccs_miami_edu.key| openssl md5
+
+# - Backup original cert
+cd /etc/pki/tls/certs/
+cp -p starexec_ccs_miami_edu_cert.cer starexec_ccs_miami_edu_cert.cer.20230911
+cp -p starexec_ccs_miami_edu_interm.cer starexec_ccs_miami_edu_interm.cer.20230911
+
+# - Update certs
+cp -p ~/starexec_ccs_miami_edu_cert.cer ~/starexec_ccs_miami_edu_interm.cer /etc/pki/tls/certs/
+
+# - Restart httpd
+sudo /usr/bin/systemctl restart httpd24-httpd.service
+     </PRE>
+</UL> 
+
+<P> 
+<HR> <!-- ------------------------------------------------------------------------------------- -->
+<H2>Installing Software</H2>
+
+<UL>
+<LI> Option 1 (preferred) - as a user
+     <UL>
+     <LI> Install software to cluster shared filesystem (/starexec) and create a module for it 
+          (or update your .bash_profile).
+     <LI> All members of the sutcliffe IDSC Project (LDAP group) can:
+          <UL>
+          <LI> install software in /starexec/sw/sutcliffe.
+          <LI> create modules in /starexec/sw/lmod/lmod/modulefiles/Sutcliffe
+          </UL>
+          Current members of sutcliffe group are you, jack and me. 
+     </UL>
+<P>
+<LI> Option 2 (dangerous) - as root
+     <UL>
+     <LI> Use yum “download only” plugin to save the rpm’s to a shared space, then a loop to 
+          push the packages to all the nodes. 
+     <LI> Installing packages with yum has the potential of bricking the cluster environment, so 
+          only root can push yum packages to nodes.  
+          Pedro granted Geoff's account privilege to run the yum commands below on the head 
+          node and Pedro can also grant Geoff privilege to run on the compute nodes.
+          Pedro cautions against this though because the software and hardware is long since out 
+          of support.
+     <LI> Example installing git on all nodes using yum
+          <UL>
+          <LI> Download the rpms <PRE>
+[pdavila@se-m1 ~]$ sudo /usr/bin/yum install --downloadonly --downloaddir=/cluster/rpms/sutcliffe/git git -y </PRE>
+          <LI> Install on head node <PRE>
+[pdavila@se-m1 ~]$ sudo /usr/bin/yum --disablerepo="*" localinstall /cluster/rpms/sutcliffe/git/*.rpm -y </PRE>
+          <LI> Disable all the dead repos, or yum commands will hang indefinitely. <PRE>
+[root@se-m1 yum.repos.d]# for n in {001..032}; do echo "n${n}"; ssh n${n} 'mv /etc/yum.repos.d/CentOS* /etc/yum.repos.d/disabled'; done </PRE>
+               Pedro also added the Vault repo to the compute nodes to address any issue that 
+               may arise from inconsistences with packages installed on head node and those 
+               installed on compute nodes. <PRE>
+[root@se-m1 yum.repos.d]# for n in {001..032}; do echo n${n}; scp CentOS-Vault.repo n${n}:/etc/yum.repos.d/ ; done </PRE>
+          <LI> Install on compute nodes (using xCat's CentOS 7 repo)<PRE>
+[pdavila@se-m1 ~]$ sudo /opt/xcat/bin/psh n001-n032 yum install ncdu -y
+          <LI> Install on compute nodes (using downloaded rpms)<PRE>
+[pdavila@se-m1 ~]$ sudo /opt/xcat/bin/psh n001-n032 yum --disablerepo="*" localinstall /cluster/rpms/sutcliffe/git/*.rpm -y
+          <LI> Install on compute nodes (old way)<PRE>
+[pdavila@se-m1 ~]$ sudo su -
+[root@se-m1 ~]# for n in {001..032}; do echo n${n}; ssh -o ConnectTimeout=1 n${n} yum --disablerepo="*" localinstall /cluster/rpms/sutcliffe/git/*.rpm -y; done </PRE>
+          <LI> Shutdown all compute nodes compute nodes<PRE>
+[pdavila@se-m1 ~]$ sudo /opt/xcat/bin/psh n001-n032 shutdown -h now  </PRE>
+          </UL>
+     </UL>
+</UL>
+
+<P> 
 <HR> <!-- ------------------------------------------------------------------------------------- -->
 </BODY>
 </HTML>
