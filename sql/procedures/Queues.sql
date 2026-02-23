@@ -203,7 +203,7 @@ CREATE PROCEDURE GetPairsRunningOnNode(IN _nodeId INT)
 		JOIN users ON users.id = jobs.user_id
 		JOIN jobpair_stage_data ON jobpair_stage_data.jobpair_id = job_pairs.id
 
-		WHERE node_id = _nodeId AND (job_pairs.status_code = 4 OR job_pairs.status_code = 3) AND jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data;
+		WHERE node_id = _nodeId AND job_pairs.status_code = 4 AND jobpair_stage_data.stage_number=job_pairs.primary_jobpair_data;
 	END //
 
 
