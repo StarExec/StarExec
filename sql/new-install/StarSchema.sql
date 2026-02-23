@@ -135,7 +135,7 @@ CREATE TABLE processors (
 	time_limit TINYINT DEFAULT 15,
 	PRIMARY KEY (id),
 	CONSTRAINT processors_community FOREIGN KEY (community) REFERENCES spaces(id) ON DELETE CASCADE,
-	CONSTRAINT processors_syntax FOREIGN KEY (syntax_id) REFERENCES syntax(id)
+	CONSTRAINT processors_syntax FOREIGN KEY (syntax_id) REFERENCES syntax(id) ON DELETE RESTRICT
 );
 
 -- The record for an individual benchmark
@@ -823,7 +823,7 @@ CREATE TABLE analytics_historical (
 	date_recorded DATE NOT NULL,
 	count INT NOT NULL DEFAULT 0,
 	PRIMARY KEY (event_id, date_recorded),
-	CONSTRAINT id_assoc FOREIGN KEY (event_id) REFERENCES analytics_events(event_id)
+	CONSTRAINT id_assoc FOREIGN KEY (event_id) REFERENCES analytics_events(event_id) ON DELETE CASCADE
 );
 
 -- Table to keep track of how many Users trigger an Event
@@ -832,8 +832,8 @@ CREATE TABLE analytics_users (
 	date_recorded DATE NOT NULL,
 	user_id INT NOT NULL,
 	PRIMARY KEY (event_id, date_recorded, user_id),
-	CONSTRAINT analytics_users_to_event FOREIGN KEY (event_id) REFERENCES analytics_events(event_id),
-	CONSTRAINT analytics_users_to_users FOREIGN KEY (user_id)  REFERENCES users(id)
+	CONSTRAINT analytics_users_to_event FOREIGN KEY (event_id) REFERENCES analytics_events(event_id) ON DELETE CASCADE,
+	CONSTRAINT analytics_users_to_users FOREIGN KEY (user_id)  REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Users can subscribe to be notified when a Job status changes

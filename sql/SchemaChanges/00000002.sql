@@ -16,7 +16,7 @@ BEGIN
 			time TIMESTAMP NOT NULL DEFAULT NOW(),
 			PRIMARY KEY (id),
 			CONSTRAINT runscript_errors_node_id FOREIGN KEY (node_id) REFERENCES nodes(id) ON DELETE CASCADE,
-			CONSTRAINT runscript_errors_job_pair_id FOREIGN KEY (job_pair_id) REFERENCES job_pairs(id)
+			CONSTRAINT runscript_errors_job_pair_id FOREIGN KEY (job_pair_id) REFERENCES job_pairs(id) ON DELETE CASCADE
 		);
 	END IF;
 END //
