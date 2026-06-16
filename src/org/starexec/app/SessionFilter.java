@@ -68,20 +68,33 @@ public class SessionFilter implements Filter {
 	}
 
 	/**
-	 * Returns true for sequential-ID detail pages that must never be served
-	 * to anonymous/no-principal requests. Explicit anonymous-link flows use
-	 * anonId and are intentionally excluded to preserve existing functionality.
+	 * Returns true for sequential-ID detail/download resources that must never be served
+	 * to anonymous/no-principal requests. Explicit anonymous-link detail flows use
+	 * anonId without a sequential id and are intentionally excluded to preserve existing
+	 * functionality. Download requests with anonId are passed to Download for UUID/type
+	 * validation before any object is served.
 	 *
 	 * @param request HTTP request
 	 * @return true when the request requires an authenticated principal
 	 */
 	private static boolean requiresAuthenticatedPrincipal(HttpServletRequest request) {
 		String requestUri = request.getRequestURI();
-		boolean isSequentialDetailPage = requestUri.endsWith("/secure/details/user.jsp") ||
-				requestUri.endsWith("/secure/details/job.jsp") ||
+		boolean isUserDetailPage = requestUri.endsWith("/secure/details/user.jsp");
+		boolean isAnonymousLinkDetailPage = requestUri.endsWith("/secure/details/job.jsp") ||
 				requestUri.endsWith("/secure/details/solver.jsp");
+		boolean isDownloadEndpoint = requestUri.endsWith("/secure/download");
+		boolean hasAnonId = request.getParameter("anonId") != null;
+		boolean hasSequentialId = request.getParameter("id") != null;
 
-		return isSequentialDetailPage && request.getParameter("anonId") == null;
+		if (isUserDetailPage) {
+			return true;
+		}
+
+		if (isAnonymousLinkDetailPage) {
+			return !hasAnonId || hasSequentialId;
+		}
+
+		return isDownloadEndpoint && !hasAnonId;
 	}
 
 	@Override
