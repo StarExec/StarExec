@@ -43,6 +43,26 @@ public class Download extends HttpServlet {
 	private static final String PARAM_ANON_ID = "anonId";
 	private static final String PARAM_REUPLOAD = "reupload";
 
+	private static ValidatorStatusCode badRequest(String message) {
+		return new ValidatorStatusCode(false, message, HttpServletResponse.SC_BAD_REQUEST);
+	}
+
+	private static ValidatorStatusCode forbidden(String message) {
+		return new ValidatorStatusCode(false, message, HttpServletResponse.SC_FORBIDDEN);
+	}
+
+	private static ValidatorStatusCode notFound(String message) {
+		return new ValidatorStatusCode(false, message, HttpServletResponse.SC_NOT_FOUND);
+	}
+
+	private static ValidatorStatusCode internalServerError(String message) {
+		return new ValidatorStatusCode(false, message, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+	}
+
+	private static int getValidationFailureStatus(ValidatorStatusCode status) {
+		return status.getStatusCode() == 0 ? HttpServletResponse.SC_FORBIDDEN : status.getStatusCode();
+	}
+
 	private static Optional<Solver> handleSolverAndSolverSrc(HttpServletRequest request, HttpServletResponse response)
 			throws IOException, SQLException {
 		final String methodName = "handleSolverAndSolverSrc";
@@ -673,7 +693,7 @@ public class Download extends HttpServlet {
 			if (!Util.paramExists(PARAM_TYPE, request)) {
 				final String message = "A download type was not specified";
 				log.debug(methodName, "Download request was invalid: " + message);
-				return new ValidatorStatusCode(false, message);
+				return badRequest(message);
 			}
 			String type = request.getParameter(PARAM_TYPE);
 			log.debug(methodName, "Download request is of type: " + type);
@@ -685,7 +705,7 @@ public class Download extends HttpServlet {
 					type.equals(R.JOB_PAGE_DOWNLOAD_TYPE))) {
 				final String message = "The supplied download type was not valid";
 				log.debug(methodName, "Download request was invalid: " + message);
-				return new ValidatorStatusCode(false, message);
+				return badRequest(message);
 			}
 
 
@@ -696,8 +716,7 @@ public class Download extends HttpServlet {
 				log.debug(methodName, idArrayParam + " = " + ids);
 				if (!Validator.isValidIntegerList(ids)) {
 					log.debug(methodName, idArrayParam + " was not a valid integer list.");
-					return new ValidatorStatusCode(
-							false, "The given list of ids contained one or more invalid integers");
+					return badRequest("The given list of ids contained one or more invalid integers");
 				}
 			} else {
 				String universallyUniqueId = request.getParameter(PARAM_ANON_ID);
@@ -714,13 +733,27 @@ public class Download extends HttpServlet {
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
 		}
-		return new ValidatorStatusCode(false, "Internal error processing download request");
+		return internalServerError("Internal error processing download request");
 	}
 
 	private static ValidatorStatusCode validateForAnonymousLink(
 			String universallyUniqueId, String type, HttpServletRequest request
-	) {
-		return new ValidatorStatusCode(true);
+	) throws SQLException {
+		switch (type) {
+		case R.SOLVER:
+		case R.SOLVER_SOURCE:
+			if (AnonymousLinks.getIdOfSolverAssociatedWithLink(universallyUniqueId).isPresent()) {
+				return new ValidatorStatusCode(true);
+			}
+			return notFound("Solver not found.");
+		case R.BENCHMARK:
+			if (AnonymousLinks.getIdOfBenchmarkAssociatedWithLink(universallyUniqueId).isPresent()) {
+				return new ValidatorStatusCode(true);
+			}
+			return notFound("Benchmark not found.");
+		default:
+			return forbidden("Anonymous downloads are not supported for this download type.");
+		}
 	}
 
 	private static ValidatorStatusCode validateForUser(int userId, String type, HttpServletRequest request) {
@@ -729,7 +762,7 @@ public class Download extends HttpServlet {
 		if (!Validator.isValidPosInteger(request.getParameter(PARAM_ID))) {
 			final String message = "The given id was not a valid integer";
 			log.debug(methodName, "Download request validation failed: " + message);
-			return new ValidatorStatusCode(false, message);
+			return badRequest(message);
 		}
 
 		int id = Integer.parseInt(request.getParameter(PARAM_ID));
@@ -748,7 +781,7 @@ public class Download extends HttpServlet {
 		case R.SPACE:
 		case R.PROCESSOR:
 			if (!Permissions.canUserSeeSpace(id, userId)) {
-				return new ValidatorStatusCode(false, "You do not have permission to see this space");
+				return forbidden("You do not have permission to see this space");
 			}
 			break;
 		case R.JOB:
@@ -802,12 +835,20 @@ public class Download extends HttpServlet {
 		boolean success;
 		String shortName = null;
 		try {
+			if (request.getParameter(PARAM_ANON_ID) != null && request.getParameter(PARAM_ID) != null) {
+				response.sendError(
+						HttpServletResponse.SC_BAD_REQUEST,
+						"Invalid request: cannot combine anonId with sequential id"
+				);
+				return;
+			}
+
 			ValidatorStatusCode status = validateRequest(request);
 			if (!status.isSuccess()) {
 				log.debug("Bad download Request--" + status.getMessage());
 				//attach the message as a cookie so we don't need to be parsing HTML in StarexecCommand
 				response.addCookie(new Cookie(R.STATUS_MESSAGE_COOKIE, status.getMessage()));
-				response.sendError(HttpServletResponse.SC_BAD_REQUEST, status.getMessage());
+				response.sendError(getValidationFailureStatus(status), status.getMessage());
 				return;
 			}
 

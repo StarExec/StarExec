@@ -4,6 +4,10 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%
+	if (request.getUserPrincipal() == null && request.getParameter("anonId") == null) {
+		response.sendError(HttpServletResponse.SC_FORBIDDEN, "Authentication is required to access this resource.");
+		return;
+	}
 
 	try {
 		String uniqueId = request.getParameter("anonId");

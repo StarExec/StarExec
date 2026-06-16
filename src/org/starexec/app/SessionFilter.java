@@ -67,6 +67,36 @@ public class SessionFilter implements Filter {
 		// Do nothing
 	}
 
+	/**
+	 * Returns true for sequential-ID detail/download resources that must never be served
+	 * to anonymous/no-principal requests. Explicit anonymous-link detail flows use
+	 * anonId without a sequential id and are intentionally excluded to preserve existing
+	 * functionality. Download requests with anonId are passed to Download for UUID/type
+	 * validation before any object is served.
+	 *
+	 * @param request HTTP request
+	 * @return true when the request requires an authenticated principal
+	 */
+	private static boolean requiresAuthenticatedPrincipal(HttpServletRequest request) {
+		String requestUri = request.getRequestURI();
+		boolean isUserDetailPage = requestUri.endsWith("/secure/details/user.jsp");
+		boolean isAnonymousLinkDetailPage = requestUri.endsWith("/secure/details/job.jsp") ||
+				requestUri.endsWith("/secure/details/solver.jsp");
+		boolean isDownloadEndpoint = requestUri.endsWith("/secure/download");
+		boolean hasAnonId = request.getParameter("anonId") != null;
+		boolean hasSequentialId = request.getParameter("id") != null;
+
+		if (isUserDetailPage) {
+			return true;
+		}
+
+		if (isAnonymousLinkDetailPage) {
+			return !hasAnonId || hasSequentialId;
+		}
+
+		return isDownloadEndpoint && !hasAnonId;
+	}
+
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 		try {
@@ -147,6 +177,12 @@ public class SessionFilter implements Filter {
 				log.debug(method, "httpRequest.getUserPrincipal() returned null.");
 				if (isCommandRequest) {
 					httpResponse.setHeader("CommandBadCredentials","CommandBadCredentials");
+				}
+
+				if (requiresAuthenticatedPrincipal(httpRequest)) {
+					log.warn(method, "Rejecting unauthenticated sequential-ID details request: " + httpRequest.getRequestURI());
+					httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Authentication is required to access this resource.");
+					return;
 				}
 
 			}

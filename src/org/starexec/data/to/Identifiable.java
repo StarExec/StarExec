@@ -2,6 +2,7 @@ package org.starexec.data.to;
 
 import com.google.gson.annotations.Expose;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,7 +11,9 @@ import java.util.List;
  *
  * @author Tyler Jensen
  */
-public class Identifiable {
+public class Identifiable implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	@Expose private int id = -1;
 
 	/**
