@@ -68,11 +68,11 @@ public class SessionFilter implements Filter {
 	}
 
 	/**
-	 * Returns true for sequential-ID detail/download resources that must never be served
-	 * to anonymous/no-principal requests. Explicit anonymous-link detail flows use
-	 * anonId without a sequential id and are intentionally excluded to preserve existing
-	 * functionality. Download requests with anonId are passed to Download for UUID/type
-	 * validation before any object is served.
+	 * Returns true for protected detail, explore, and download resources that must
+	 * never be served to anonymous/no-principal requests. Explicit anonymous-link
+	 * detail flows use anonId without a sequential id and are intentionally excluded
+	 * to preserve existing functionality. Download requests with anonId are passed
+	 * to Download for UUID/type validation before any object is served.
 	 *
 	 * @param request HTTP request
 	 * @return true when the request requires an authenticated principal
@@ -81,12 +81,33 @@ public class SessionFilter implements Filter {
 		String requestUri = request.getRequestURI();
 		boolean isUserDetailPage = requestUri.endsWith("/secure/details/user.jsp");
 		boolean isAnonymousLinkDetailPage = requestUri.endsWith("/secure/details/job.jsp") ||
-				requestUri.endsWith("/secure/details/solver.jsp");
-		boolean isDownloadEndpoint = requestUri.endsWith("/secure/download");
+				requestUri.endsWith("/secure/details/solver.jsp") ||
+				requestUri.endsWith("/secure/details/benchmark.jsp");
+		boolean isProtectedDetailPage = requestUri.endsWith("/secure/details/spaces.jsp") ||
+				requestUri.endsWith("/secure/details/community.jsp") ||
+				requestUri.endsWith("/secure/details/cluster.jsp") ||
+				requestUri.endsWith("/secure/details/configuration.jsp") ||
+				requestUri.endsWith("/secure/details/conflictingBenchmarks.jsp") ||
+				requestUri.endsWith("/secure/details/conflictingSolvers.jsp") ||
+				requestUri.endsWith("/secure/details/jobAttributes.jsp") ||
+				requestUri.endsWith("/secure/details/jobMatrixView.jsp") ||
+				requestUri.endsWith("/secure/details/jobPanelView.jsp") ||
+				requestUri.endsWith("/secure/details/pair.jsp") ||
+				requestUri.endsWith("/secure/details/pairsInSpace.jsp") ||
+				requestUri.endsWith("/secure/details/solverComparison.jsp") ||
+				requestUri.endsWith("/secure/details/solverconfigs.jsp") ||
+				requestUri.endsWith("/secure/details/XMLuploadStatus.jsp") ||
+				requestUri.endsWith("/secure/details/uploadStatus.jsp");
+		boolean isProtectedExplorePage = requestUri.endsWith("/secure/explore/statistics.jsp") ||
+				requestUri.endsWith("/secure/explore/reports.jsp") ||
+				requestUri.endsWith("/secure/explore/communities.jsp") ||
+				requestUri.endsWith("/secure/explore/spaces.jsp") ||
+				requestUri.endsWith("/secure/explore/cluster.jsp");
+		boolean isDownloadEndpoint = requestUri.contains("/secure/download");
 		boolean hasAnonId = request.getParameter("anonId") != null;
 		boolean hasSequentialId = request.getParameter("id") != null;
 
-		if (isUserDetailPage) {
+		if (isUserDetailPage || isProtectedDetailPage || isProtectedExplorePage) {
 			return true;
 		}
 
@@ -180,7 +201,7 @@ public class SessionFilter implements Filter {
 				}
 
 				if (requiresAuthenticatedPrincipal(httpRequest)) {
-					log.warn(method, "Rejecting unauthenticated sequential-ID details request: " + httpRequest.getRequestURI());
+					log.warn(method, "Rejecting unauthenticated protected resource request: " + httpRequest.getRequestURI());
 					httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Authentication is required to access this resource.");
 					return;
 				}

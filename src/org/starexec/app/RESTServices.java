@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -5020,12 +5021,21 @@ public class RESTServices {
 	@GET
 	@Path("/reports/past/{reportName}")
 	@Produces("text/plain")
-	public String getPastReport(@PathParam("reportName") String reportName, @Context HttpServletRequest request) {
+	public Response getPastReport(@PathParam("reportName") String reportName, @Context HttpServletRequest request) {
+		int userId = SessionUtil.getUserId(request);
+		if (userId == R.PUBLIC_USER_ID) {
+			return Response.status(Response.Status.FORBIDDEN)
+					.entity(gson.toJson(new ValidatorStatusCode(false,
+							"Authentication is required to access report data.")))
+					.type("application/json")
+					.build();
+		}
+
 		try {
 			File pastReport = new File(R.STAREXEC_DATA_DIR, "/reports/" + reportName);
-			return FileUtils.readFileToString(pastReport, "UTF8");
+			return Response.ok(FileUtils.readFileToString(pastReport, "UTF8"), "text/plain").build();
 		} catch (IOException e) {
-			return "Could not get file.";
+			return Response.ok("Could not get file.", "text/plain").build();
 		}
 	}
 
